@@ -67,6 +67,16 @@ The decisive arms are:
 - `shuffled_character_state`: full policy with wrong prior state, negative control.
 - `scripted_oracle`: upper-bound sanity check.
 
+The robustness runner also supports fixture-family and stronger-control screens:
+
+- Fixture families: `base`, `ratio_series`, `definition_boundary`,
+  `causal_identification`.
+- Stronger controls: `stale_character_state`, `overconfident_character_state`,
+  `compressed_character_state`, and `state_without_proof_policy`.
+- `--expanded-families` selects all fixture families.
+- Robustness artifacts include `claim-audit.md` and
+  `human-pilot-hypotheses.md` in addition to the machine summary and report.
+
 ## Artifacts
 
 Each run writes:
@@ -153,3 +163,56 @@ can coordinate proof-DAG transitions, resistance routing, peripeteia pressure,
 and matched character-state routing as one adaptation policy layer. It does not
 establish human learning, deployed tutoring reliability, or real interior
 character development.
+
+## Expanded Family and Control Result
+
+Completed on 2026-06-30 as a stronger synthetic robustness development pass.
+The runner now generates three additional fixture families, four stronger
+state/control arms, a claim-audit artifact, and human-pilot hypothesis notes.
+
+Expanded mock screen:
+
+```bash
+npm run adaptation:character-dag-drama-robustness -- \
+  --llm mock \
+  --learner-mode llm \
+  --seeds 2 \
+  --expanded-families \
+  --arms policy_only,full_character_dag_drama,shuffled_character_state,stale_character_state,overconfident_character_state,compressed_character_state,state_without_proof_policy \
+  --perturbations baseline,noisy_openings,harder_transfer,state_dependent_transfer \
+  --out-dir exports/character-dag-drama-framework-family-controls-mock-v2
+```
+
+Result: PASS across 16 family/perturbation runs. Artifacts:
+
+- `exports/character-dag-drama-framework-family-controls-mock-v2/robustness-report.md`
+- `exports/character-dag-drama-framework-family-controls-mock-v2/claim-audit.md`
+- `exports/character-dag-drama-framework-family-controls-mock-v2/human-pilot-hypotheses.md`
+
+Real generated-learner stronger-control screen:
+
+```bash
+NODE_OPTIONS='-r dotenv/config' npm run adaptation:character-dag-drama-robustness -- \
+  --llm real \
+  --learner-mode llm \
+  --seeds 1 \
+  --families base \
+  --arms policy_only,full_character_dag_drama,shuffled_character_state,stale_character_state,overconfident_character_state,compressed_character_state,state_without_proof_policy \
+  --perturbations state_dependent_transfer \
+  --checkpoint \
+  --out-dir exports/character-dag-drama-framework-family-controls-real-v2-base
+```
+
+Result: scenario acceptance PASS but stronger robustness FAIL. The leak guards
+passed and `full_character_dag_drama` separated from policy-only, shuffled,
+stale, overconfident, and state-without-proof controls. It did not separate from
+`compressed_character_state`: both full and compressed scored 8/8 first-response
+success and 3/3 transfer first-response success, with zero remediation burden.
+
+Interpretation: the current transfer observer accepts generic "some condition
+must hold" reasoning as a sufficient transfer check. That is too weak for the
+compressed-state control. The next development should add a task-specific
+transfer evidence contract that requires the learner to name the relevant prior
+condition/check from public state, while compressed state should remain unable to
+recover that detail. Until that passes, the stronger claim is not supported; the
+prior three-arm apparatus claim remains synthetic and exploratory.

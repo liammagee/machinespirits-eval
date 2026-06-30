@@ -95,6 +95,50 @@ arms:
     character_routing: true
     shuffled_state: false
     oracle: true
+  stale_character_state:
+    label: stale character-state control
+    proof_policy: true
+    resistance_policy: true
+    staged_policy: true
+    drama_routing: true
+    character_routing: true
+    shuffled_state: false
+    state_control: stale_prior
+    negative_control: true
+    oracle: false
+  overconfident_character_state:
+    label: overconfident character-state control
+    proof_policy: true
+    resistance_policy: true
+    staged_policy: true
+    drama_routing: true
+    character_routing: true
+    shuffled_state: false
+    state_control: overconfident_prior
+    negative_control: true
+    oracle: false
+  compressed_character_state:
+    label: compressed character-state control
+    proof_policy: true
+    resistance_policy: true
+    staged_policy: true
+    drama_routing: true
+    character_routing: true
+    shuffled_state: false
+    state_control: compressed_prior
+    negative_control: true
+    oracle: false
+  state_without_proof_policy:
+    label: state without proof-policy control
+    proof_policy: false
+    resistance_policy: false
+    staged_policy: false
+    drama_routing: true
+    character_routing: true
+    shuffled_state: false
+    state_control: matched_prior
+    negative_control: true
+    oracle: false
 
 scenes:
   - id: scene_1_setup_boredom

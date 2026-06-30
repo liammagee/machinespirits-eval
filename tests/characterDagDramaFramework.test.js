@@ -6,16 +6,20 @@ import { describe, it } from 'node:test';
 
 import { initialCharacterState, updateCharacterStateFromEvidence } from '../services/adaptiveTutor/characterState.js';
 import {
+  ALL_ARM_ORDER,
   collectTargetEvidenceLabels,
   DEFAULT_ARM_ORDER,
   FRAMEWORK_OBSERVER_VERSION,
+  NEGATIVE_CONTROL_ARM_ORDER,
   buildFrameworkSceneScenario,
   loadFrameworkFixture,
   publicPeripeteiaSignature,
   runCharacterDagDramaFramework,
 } from '../scripts/run-character-dag-drama-framework.js';
 import {
+  buildFixtureFamily,
   buildRobustnessFixture,
+  parseFamilyList,
   parsePerturbationList,
   runCharacterDagDramaRobustness,
 } from '../scripts/run-character-dag-drama-robustness.js';
@@ -29,7 +33,9 @@ describe('Synthetic Character-DAG drama framework', () => {
     const fixture = loadFrameworkFixture();
 
     assert.deepEqual(fixture.arc.phases, ['setup', 'pressure', 'peripeteia', 'consolidation', 'transfer']);
-    assert.deepEqual(Object.keys(fixture.arms), DEFAULT_ARM_ORDER);
+    assert.deepEqual(Object.keys(fixture.arms), ALL_ARM_ORDER);
+    for (const arm of DEFAULT_ARM_ORDER) assert.equal(fixture.arms[arm].negative_control, false);
+    for (const arm of NEGATIVE_CONTROL_ARM_ORDER) assert.equal(fixture.arms[arm].negative_control, true);
     assert.equal(fixture.scenes.length, 8);
     assert.equal(fixture.scenes.filter((scene) => scene.dramatic_contract.requires_peripeteia).length, 1);
     assert.equal(fixture.scenes.filter((scene) => scene.transfer).length, 3);
@@ -131,6 +137,66 @@ describe('Synthetic Character-DAG drama framework', () => {
 
     assert.match(full.hidden.publicLearnerContext.transferGuidance, /what carries over/i);
     assert.equal(policy.hidden.publicLearnerContext.transferGuidance, null);
+  });
+
+  it('routes stronger negative controls with distinct public-safe state quality', () => {
+    const fixture = loadFrameworkFixture();
+    const scene = fixture.scenes.find((candidate) => candidate.transfer);
+    const matured = updateCharacterStateFromEvidence(initialCharacterState(), {
+      sceneId: 'prior_transfer',
+      outcome: 'success',
+      evidence: evidence({
+        'learner-authored rationale': true,
+        'learner-authored transfer': true,
+        'task reorientation': true,
+      }),
+    });
+
+    const stale = buildFrameworkSceneScenario({
+      fixture,
+      arm: 'stale_character_state',
+      scene,
+      sceneIndex: 5,
+      characterState: matured,
+      learnerMode: 'llm',
+      seedIndex: 0,
+    });
+    const overconfident = buildFrameworkSceneScenario({
+      fixture,
+      arm: 'overconfident_character_state',
+      scene,
+      sceneIndex: 5,
+      characterState: matured,
+      learnerMode: 'llm',
+      seedIndex: 0,
+    });
+    const compressed = buildFrameworkSceneScenario({
+      fixture,
+      arm: 'compressed_character_state',
+      scene,
+      sceneIndex: 5,
+      characterState: matured,
+      learnerMode: 'llm',
+      seedIndex: 0,
+    });
+    const stateWithoutProof = buildFrameworkSceneScenario({
+      fixture,
+      arm: 'state_without_proof_policy',
+      scene,
+      sceneIndex: 5,
+      characterState: matured,
+      learnerMode: 'llm',
+      seedIndex: 0,
+    });
+
+    assert.equal(stale.hidden.responseMode, 'llm_stale_state');
+    assert.equal(stale.hidden.publicLearnerContext.stateQuality, 'stale_prior');
+    assert.equal(overconfident.hidden.responseMode, 'llm_overconfident_state');
+    assert.equal(overconfident.hidden.publicLearnerContext.characterState.maturity, 1);
+    assert.equal(compressed.hidden.responseMode, 'llm_compressed_state');
+    assert.match(compressed.hidden.publicLearnerContext.transferGuidance, /compressed prior/i);
+    assert.equal(stateWithoutProof.hidden.responseMode, 'llm_state_without_proof_policy');
+    assert.equal(stateWithoutProof.hidden.publicLearnerContext.proofPolicyEnabled, false);
   });
 
   it('detects real-style peripeteia language without requiring the literal phrase now the check', () => {
@@ -297,11 +363,16 @@ describe('Synthetic Character-DAG drama framework', () => {
 
   it('builds deterministic robustness fixture perturbations', () => {
     const fixture = loadFrameworkFixture();
+    const family = buildFixtureFamily(fixture.raw, 'ratio_series');
     const noisy = buildRobustnessFixture(fixture.raw, 'noisy_openings');
     const harder = buildRobustnessFixture(fixture.raw, 'harder_transfer');
     const stateDependent = buildRobustnessFixture(fixture.raw, 'state_dependent_transfer');
     const shuffled = buildRobustnessFixture(fixture.raw, 'shuffled_scene_order');
 
+    assert.deepEqual(parseFamilyList('base,ratio_series,base'), ['base', 'ratio_series']);
+    assert.equal(family.fixture_family.id, 'ratio_series');
+    assert.match(family.world_spec.id, /RATIO_SERIES/);
+    assert.match(family.scenes.find((scene) => scene.id === 'scene_3_peripeteia_irrelevance').opening, /series/);
     assert.deepEqual(parsePerturbationList('baseline,noisy_openings,baseline'), ['baseline', 'noisy_openings']);
     assert.match(noisy.scenes[0].opening, /mixing two ideas/);
     assert.equal(noisy.scenes.length, fixture.scenes.length);
@@ -360,7 +431,40 @@ describe('Synthetic Character-DAG drama framework', () => {
     assert.ok(summary.runs.every((run) => fs.existsSync(run.artifacts.summaryPath)));
     assert.ok(fs.existsSync(artifacts.summaryPath));
     assert.ok(fs.existsSync(artifacts.reportPath));
+    assert.ok(fs.existsSync(artifacts.claimAuditPath));
+    assert.ok(fs.existsSync(artifacts.humanPilotHypothesesPath));
     assert.ok(fs.existsSync(path.join(outDir, 'fixtures', 'baseline.yaml')));
     assert.ok(fs.existsSync(path.join(outDir, 'runs', 'baseline', 'report.md')));
+  });
+
+  it('runs a mock expanded-family/control screen and writes family artifacts', async () => {
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'character-dag-drama-family-'));
+    const { summary, artifacts } = await runCharacterDagDramaRobustness({
+      llm: 'mock',
+      learnerMode: 'llm',
+      seeds: 1,
+      families: ['base', 'ratio_series'],
+      arms: [
+        'policy_only',
+        'full_character_dag_drama',
+        'shuffled_character_state',
+        'stale_character_state',
+        'overconfident_character_state',
+        'compressed_character_state',
+        'state_without_proof_policy',
+      ],
+      perturbations: ['state_dependent_transfer'],
+      outDir,
+    });
+
+    assert.deepEqual(summary.family_order, ['base', 'ratio_series']);
+    assert.equal(summary.runs.length, 2);
+    assert.ok(summary.runs.every((run) => run.negative_control_diagnostics.length === 4));
+    assert.equal(summary.claim_audit.claim_boundary.disallowed.includes('Human learning improved.'), true);
+    assert.equal(summary.human_pilot_hypotheses.length, 4);
+    assert.ok(fs.existsSync(path.join(outDir, 'fixtures', 'ratio_series__state_dependent_transfer.yaml')));
+    assert.ok(fs.existsSync(path.join(outDir, 'runs', 'ratio_series', 'state_dependent_transfer', 'report.md')));
+    assert.ok(fs.existsSync(artifacts.claimAuditPath));
+    assert.ok(fs.existsSync(artifacts.humanPilotHypothesesPath));
   });
 });

@@ -36,6 +36,13 @@ export const DEFAULT_ARM_ORDER = Object.freeze([
   'shuffled_character_state',
   'scripted_oracle',
 ]);
+export const NEGATIVE_CONTROL_ARM_ORDER = Object.freeze([
+  'stale_character_state',
+  'overconfident_character_state',
+  'compressed_character_state',
+  'state_without_proof_policy',
+]);
+export const ALL_ARM_ORDER = Object.freeze([...DEFAULT_ARM_ORDER, ...NEGATIVE_CONTROL_ARM_ORDER]);
 
 const PUBLIC_LEAK_PATTERNS = Object.freeze([
   /\bperipeteia\b/i,
@@ -109,7 +116,7 @@ function normalizeScene(scene, index) {
 
 function normalizeArms(rawArms = {}) {
   const out = {};
-  for (const arm of DEFAULT_ARM_ORDER) {
+  for (const arm of ALL_ARM_ORDER) {
     const raw = rawArms[arm];
     if (!raw) throw new Error(`fixture missing required arm ${arm}`);
     out[arm] = {
@@ -121,6 +128,10 @@ function normalizeArms(rawArms = {}) {
       character_routing: raw.character_routing === true,
       shuffled_state: raw.shuffled_state === true,
       oracle: raw.oracle === true,
+      state_control:
+        raw.state_control ||
+        (raw.shuffled_state === true ? 'mismatched_prior' : raw.character_routing === true ? 'matched_prior' : 'none'),
+      negative_control: NEGATIVE_CONTROL_ARM_ORDER.includes(arm) || raw.negative_control === true,
     };
   }
   return out;
@@ -276,10 +287,54 @@ function mismatchedCharacterStateFor(scene) {
   };
 }
 
+function staleCharacterStateFor(scene) {
+  const state = mismatchedCharacterStateFor(scene);
+  return {
+    ...state,
+    state_age: 'stale',
+    dominant_axes: `${state.dominant_axes}; stale prior from a different task family`,
+  };
+}
+
+function overconfidentCharacterStateFor() {
+  const axes = Object.fromEntries(CHARACTER_AXES.map((axis) => [axis, 1]));
+  return {
+    version: 'adaptive-character-state.v0.1',
+    maturity: 1,
+    axes,
+    dominant_axes: 'all axes overconfident=1.00',
+    scene_count: 1,
+    state_age: 'overconfident_control',
+  };
+}
+
+function compressedCharacterStateFor(characterState) {
+  return {
+    version: 'adaptive-character-state.v0.1-compressed',
+    maturity: characterMaturityScore(characterState),
+    summary: 'Prior public work exists, but axis detail and scene-level evidence have been compressed away.',
+    scene_count: characterState?.scene_summaries?.length || 0,
+  };
+}
+
+function stateControlForArm(armConfig = {}) {
+  if (armConfig.shuffled_state === true) return 'mismatched_prior';
+  if (armConfig.character_routing !== true) return 'none';
+  return armConfig.state_control || 'matched_prior';
+}
+
+function isMatchedCharacterRoute(armConfig = {}) {
+  return (
+    armConfig.character_routing === true &&
+    !armConfig.shuffled_state &&
+    stateControlForArm(armConfig) === 'matched_prior'
+  );
+}
+
 function learnerResponseMode({ armConfig, characterState, scene }) {
   if (armConfig.oracle) return 'oracle';
   if (armConfig.drama_routing && scene.dramatic_contract.requires_peripeteia) return 'drama';
-  if (!armConfig.character_routing || armConfig.shuffled_state) return 'partial';
+  if (!isMatchedCharacterRoute(armConfig)) return 'partial';
   return shouldUseMatureFirstResponse(characterState, {
     signal: scene.resistance_signal,
     transfer: scene.transfer,
@@ -289,14 +344,46 @@ function learnerResponseMode({ armConfig, characterState, scene }) {
 }
 
 function publicLearnerContext({ fixture, arm, armConfig, learnerMode, scene, sceneIndex, seedIndex, characterState }) {
-  const shuffled = armConfig.shuffled_state === true;
-  const routed = armConfig.character_routing === true && !shuffled;
+  const stateControl = stateControlForArm(armConfig);
+  const shuffled = stateControl === 'mismatched_prior';
+  const routed = stateControl !== 'none';
+  const matched = stateControl === 'matched_prior';
   const dramatic = armConfig.drama_routing === true;
+  const stateWithoutProofPolicy =
+    stateControl === 'matched_prior' && armConfig.character_routing === true && armConfig.proof_policy !== true;
+  const characterStateView =
+    stateControl === 'matched_prior'
+      ? characterStateForTutorContext(characterState)
+      : stateControl === 'mismatched_prior'
+        ? mismatchedCharacterStateFor(scene)
+        : stateControl === 'stale_prior'
+          ? staleCharacterStateFor(scene)
+          : stateControl === 'overconfident_prior'
+            ? overconfidentCharacterStateFor()
+            : stateControl === 'compressed_prior'
+              ? compressedCharacterStateFor(characterState)
+              : null;
+  const priorSceneSummaries =
+    stateControl === 'matched_prior'
+      ? publicPriorSceneSummaries(characterState)
+      : stateControl === 'compressed_prior'
+        ? [
+            {
+              scene_id: 'compressed_prior_summary',
+              outcome: 'mixed',
+              staged_followup: null,
+              maturity_after: characterMaturityScore(characterState),
+            },
+          ]
+        : stateControl === 'none'
+          ? []
+          : publicPriorSceneSummaries(characterState, { shuffled: true });
   return {
     learnerMode,
     arm,
-    stateQuality: shuffled ? 'mismatched_prior' : routed ? 'matched_prior' : 'none',
-    memoryEnabled: routed,
+    stateQuality: stateControl,
+    stateVisible: routed,
+    memoryEnabled: matched,
     proofPolicyEnabled: armConfig.proof_policy,
     resistancePolicyEnabled: armConfig.resistance_policy,
     dramaEnabled: dramatic,
@@ -307,16 +394,24 @@ function publicLearnerContext({ fixture, arm, armConfig, learnerMode, scene, sce
     transfer: Boolean(scene.transfer),
     openingStance: scene.opening,
     actualSophistication: 'intermediate',
-    characterState: routed
-      ? characterStateForTutorContext(characterState)
-      : shuffled
-        ? mismatchedCharacterStateFor(scene)
-        : null,
-    priorSceneSummaries: armConfig.character_routing ? publicPriorSceneSummaries(characterState, { shuffled }) : [],
+    characterState: characterStateView,
+    priorSceneSummaries,
     transferGuidance:
-      scene.transfer && routed
+      scene.transfer && matched
         ? 'This is a new or similar case. Answer by naming what carries over from prior public work, what may fail or be missing here, and the check or evidence that decides whether the prior move is valid for this task.'
-        : null,
+        : scene.transfer && stateControl === 'compressed_prior'
+          ? 'Use the compressed prior work cautiously: do not reconstruct the missing detail or claim a decisive transfer check from the thin summary.'
+          : null,
+    controlConstraint:
+      stateControl === 'stale_prior'
+        ? 'Apply silently: the prior state comes from a different task family. Do not use it to solve transfer on the first response; ask for the missing relevance link or give only a partial reason.'
+        : stateControl === 'overconfident_prior'
+          ? 'Apply silently: over-apply the old move too quickly. Do not add a boundary check or exception unless the tutor explicitly presses for it.'
+          : stateControl === 'compressed_prior'
+            ? 'Apply silently: the summary is too thin. Name uncertainty about what carries over, but do not supply the decisive evidence check on the first response.'
+            : stateWithoutProofPolicy
+              ? 'Apply silently: respond to the dramatic situation or prior memory, but do not produce a concrete validating proof/evidence check on the first response.'
+              : null,
     dramaticContext: dramatic
       ? {
           phase: scene.phase,
@@ -329,7 +424,7 @@ function publicLearnerContext({ fixture, arm, armConfig, learnerMode, scene, sce
       peripeteiaPhase: fixture.arc.peripeteia_phase,
     },
     guidance:
-      'Respond as the learner from public context only. Do not mention rubrics, hidden state, evidence labels, policy machinery, or simulation machinery.',
+      'Respond as the learner from public context only. Do not mention rubrics, hidden state, evidence labels, policy machinery, simulation machinery, peripeteia, anagnorisis, proof-DAG, observer, or contracts.',
   };
 }
 
@@ -406,13 +501,21 @@ export function buildFrameworkSceneScenario({
   const mode = learnerResponseMode({ armConfig, characterState, scene });
   const responseMode =
     learnerMode === 'llm' && !armConfig.oracle
-      ? armConfig.shuffled_state
+      ? stateControlForArm(armConfig) === 'mismatched_prior'
         ? 'llm_mismatched_state'
-        : armConfig.character_routing
-          ? 'llm_state_conditioned'
-          : armConfig.drama_routing
-            ? 'llm_drama_conditioned'
-            : 'llm_unconditioned'
+        : stateControlForArm(armConfig) === 'stale_prior'
+          ? 'llm_stale_state'
+          : stateControlForArm(armConfig) === 'overconfident_prior'
+            ? 'llm_overconfident_state'
+            : stateControlForArm(armConfig) === 'compressed_prior'
+              ? 'llm_compressed_state'
+              : armConfig.character_routing && !armConfig.proof_policy
+                ? 'llm_state_without_proof_policy'
+                : armConfig.character_routing
+                  ? 'llm_state_conditioned'
+                  : armConfig.drama_routing
+                    ? 'llm_drama_conditioned'
+                    : 'llm_unconditioned'
       : mode;
   const publicContext = publicLearnerContext({
     fixture,
@@ -451,7 +554,9 @@ export function buildFrameworkSceneScenario({
       phase: scene.phase,
       drama_routing: armConfig.drama_routing,
       character_routing: armConfig.character_routing,
+      state_control: stateControlForArm(armConfig),
       shuffled_state: armConfig.shuffled_state,
+      negative_control: armConfig.negative_control,
       oracle: armConfig.oracle,
     },
   };
@@ -729,8 +834,10 @@ function aggregateArm(armResult) {
     label: armResult.label,
     proof_policy: armResult.arm_config.proof_policy,
     drama_routing: armResult.arm_config.drama_routing,
-    character_state_routed: armResult.arm_config.character_routing && !armResult.arm_config.shuffled_state,
+    character_state_routed: isMatchedCharacterRoute(armResult.arm_config),
     shuffled_state: armResult.arm_config.shuffled_state,
+    state_control: armResult.arm_config.state_control,
+    negative_control: armResult.arm_config.negative_control,
     oracle: armResult.arm_config.oracle,
     scenes: scenes.length,
     success_n: scenes.filter((scene) => scene.outcome === 'success').length,

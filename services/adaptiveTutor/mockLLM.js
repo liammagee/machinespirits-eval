@@ -419,6 +419,18 @@ const fixtures = {
       if (context.stateQuality === 'mismatched_prior') {
         return 'I can see there was prior work, but I am not sure how it applies here yet, so I only have a partial reason.';
       }
+      if (context.stateQuality === 'stale_prior') {
+        return 'The prior work sounds familiar, but it feels like it came from a different task, so I cannot yet justify this move for the present case.';
+      }
+      if (context.stateQuality === 'overconfident_prior') {
+        return 'I think I already have this, so I will reuse the old move and assume it works here too.';
+      }
+      if (context.stateQuality === 'compressed_prior' && context.transfer === true) {
+        return 'A prior move might carry over, but the summary is too thin for me to know what actually transfers yet.';
+      }
+      if (context.stateQuality === 'matched_prior' && context.proofPolicyEnabled === false) {
+        return 'I can feel the old pattern in this scene, but I am still describing the situation more than proving the next step.';
+      }
       if (actionType === 'staged_followup') {
         if (signal === 'boredom') {
           return 'Because the relation supports the next step, I will test one concrete case and use what happens there as my reason.';

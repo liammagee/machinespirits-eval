@@ -21,8 +21,15 @@ links:
     - exports/character-dag-drama-framework-llm-real/report.md
     - exports/character-dag-drama-framework-robustness-policy-repair-mock/robustness-report.md
     - exports/character-dag-drama-framework-robustness-policy-repair-real/robustness-report.md
+    - exports/character-dag-drama-framework-family-controls-mock-v2/robustness-report.md
+    - exports/character-dag-drama-framework-family-controls-mock-v2/claim-audit.md
+    - exports/character-dag-drama-framework-family-controls-mock-v2/human-pilot-hypotheses.md
+    - exports/character-dag-drama-framework-family-controls-real-v2-base/robustness-report.md
+    - exports/character-dag-drama-framework-family-controls-real-v2-base/claim-audit.md
+    - exports/character-dag-drama-framework-family-controls-real-v2-base/human-pilot-hypotheses.md
   items:
     - dag-resistance-character-state-longitudinal
+    - character-dag-drama-transfer-specificity-controls
 tags:
   - dag-resistance
   - character-state
@@ -56,3 +63,17 @@ strongly on state-dependent transfer (full 9/9, policy-only 1/9, shuffled 2/9).
 Paper 2.0 §6.8.9 now records this as an exploratory synthetic apparatus claim,
 not as evidence of human learning, deployed reliability, or real interior
 character development.
+
+2026-06-30 Codex: Added expanded fixture-family and stronger-control robustness
+support. Mock generated-learner screen passes across four fixture families
+(`base`, `ratio_series`, `definition_boundary`, `causal_identification`), four
+strict perturbations, and seven arms including stale, overconfident, compressed,
+and state-without-proof controls. A bounded real generated-learner repair screen
+on `base/state_dependent_transfer` passes scenario acceptance and leak guards
+and separates full from policy-only, shuffled, stale, overconfident, and
+state-without-proof controls, but fails the stronger robustness claim because
+`compressed_character_state` ties full at 8/8 first-response and 3/3 transfer.
+Decision: do not promote a stronger real claim or update Paper 2.0. Follow-up is
+`character-dag-drama-transfer-specificity-controls`: the transfer evidence
+contract must require a specific prior condition/check rather than accepting
+generic "some condition must hold" reasoning.
