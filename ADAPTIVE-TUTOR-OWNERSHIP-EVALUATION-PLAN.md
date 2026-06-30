@@ -15,6 +15,27 @@ The A20/A21 closeout is accepted as a proof-control boundary:
 
 The next missing object is learner ownership under fixed proof control.
 
+## Closeout Status
+
+The ownership evaluator and proof-matched ownership benchmark are implemented.
+
+Benchmark controls passed 12/12:
+
+- 4 positive controls detected ownership gain with proof state fixed;
+- 4 negative controls rejected warmer/prose-only changes;
+- 4 disqualification controls rejected proof/release-confounded gains.
+
+Post-benchmark mined artifact scoring found no qualifying proof-safe ownership
+gain. Proof-safe pairs did not exceed the ownership-gain gate, and
+higher-ownership cases were disqualified by proof/release mismatch or proof
+failure.
+
+No paid run or runtime policy promotion is warranted from this artifact pool.
+
+The ownership benchmark remains a regression/evaluation asset. It should be used
+only for future predeclared quality-layer studies or new proof-identical
+transcript pairs, not to continue mining the same artifact pool for a win.
+
 ## Success Definition
 
 A new overlay or teaching regime succeeds only if it satisfies both tracks:
