@@ -27,6 +27,9 @@ links:
     - exports/character-dag-drama-framework-family-controls-real-v2-base/robustness-report.md
     - exports/character-dag-drama-framework-family-controls-real-v2-base/claim-audit.md
     - exports/character-dag-drama-framework-family-controls-real-v2-base/human-pilot-hypotheses.md
+    - exports/character-dag-drama-framework-transfer-specificity-mock/robustness-report.md
+    - exports/character-dag-drama-framework-transfer-specificity-real-base/robustness-report.md
+    - exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md
   items:
     - dag-resistance-character-state-longitudinal
     - character-dag-drama-transfer-specificity-controls
@@ -77,3 +80,13 @@ Decision: do not promote a stronger real claim or update Paper 2.0. Follow-up is
 `character-dag-drama-transfer-specificity-controls`: the transfer evidence
 contract must require a specific prior condition/check rather than accepting
 generic "some condition must hold" reasoning.
+
+2026-07-01 Codex: Transfer-specificity repair passed the bounded real screen.
+The observer now requires a concrete public prior check for transfer success.
+Expanded mock family/control matrix passed. Bounded real
+`base/state_dependent_transfer` screen passed all stronger-control gates: full
+7/8 first-response, 3/3 transfer; compressed control 5/8 first-response, 1/3
+transfer; zero label/process leaks. This upgrades the stronger-control repair
+from failing to locally supported, but still synthetic-only and not yet a Paper
+2.0 update; next evidence should be a larger real state-dependent-transfer
+matrix across fixture families.

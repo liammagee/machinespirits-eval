@@ -1,14 +1,14 @@
 {
-  "generated": "2026-06-30T11:38:06.813Z",
+  "generated": "2026-06-30T14:45:11.400Z",
   "counts": {
     "total": 61,
     "byStatus": {
-      "done": 51,
+      "done": 52,
       "blocked": 1,
       "dropped": 2,
-      "triaged": 5,
       "review": 1,
-      "active": 1
+      "active": 1,
+      "triaged": 4
     },
     "byType": {
       "research": 32,
@@ -21,39 +21,6 @@
     }
   },
   "items": [
-    {
-      "id": "character-dag-drama-transfer-specificity-controls",
-      "title": "Tighten Character-DAG transfer specificity controls",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-30",
-      "updated": "2026-06-30",
-      "verification": "Expanded real state-dependent transfer screen passes stronger controls only after transfer evidence requires a specific prior condition/check and compressed-state control remains below full without label/process leaks.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "docs/next-steps/character-dag-drama-framework-plan.md"
-        ],
-        "exports": [
-          "exports/character-dag-drama-framework-family-controls-real-v2-base/robustness-report.md",
-          "exports/character-dag-drama-framework-family-controls-real-v2-base/claim-audit.md"
-        ],
-        "items": [
-          "character-dag-drama-framework-synthetic-contrast"
-        ]
-      },
-      "tags": [
-        "dag-resistance",
-        "character-state",
-        "transfer",
-        "negative-control",
-        "synthetic-learner"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
-    },
     {
       "id": "lean-semantic-web-proof-dag-validation",
       "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
@@ -729,7 +696,10 @@
           "exports/character-dag-drama-framework-family-controls-mock-v2/human-pilot-hypotheses.md",
           "exports/character-dag-drama-framework-family-controls-real-v2-base/robustness-report.md",
           "exports/character-dag-drama-framework-family-controls-real-v2-base/claim-audit.md",
-          "exports/character-dag-drama-framework-family-controls-real-v2-base/human-pilot-hypotheses.md"
+          "exports/character-dag-drama-framework-family-controls-real-v2-base/human-pilot-hypotheses.md",
+          "exports/character-dag-drama-framework-transfer-specificity-mock/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-base/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md"
         ],
         "items": [
           "dag-resistance-character-state-longitudinal",
@@ -743,6 +713,44 @@
         "peripeteia",
         "synthetic-learner",
         "adaptive-runner"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "character-dag-drama-transfer-specificity-controls",
+      "title": "Tighten Character-DAG transfer specificity controls",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-30",
+      "updated": "2026-07-01",
+      "verification": "Focused framework tests pass; expanded mock family/control screen passes; bounded real base/state_dependent_transfer screen passes with compressed-state below full and zero label/process leaks.",
+      "branch": "codex/dag-resistance-adaptation-framework",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "docs/next-steps/character-dag-drama-framework-plan.md"
+        ],
+        "exports": [
+          "exports/character-dag-drama-framework-family-controls-real-v2-base/robustness-report.md",
+          "exports/character-dag-drama-framework-family-controls-real-v2-base/claim-audit.md",
+          "exports/character-dag-drama-framework-transfer-specificity-mock/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-mock/claim-audit.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-base/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md"
+        ],
+        "items": [
+          "character-dag-drama-framework-synthetic-contrast"
+        ]
+      },
+      "tags": [
+        "dag-resistance",
+        "character-state",
+        "transfer",
+        "negative-control",
+        "synthetic-learner"
       ],
       "milestone": "paper-2-evidence-cleanup"
     },

@@ -27,7 +27,7 @@ export const DEFAULT_FIXTURE_PATH = 'config/character-dag-drama-framework.yaml';
 export const DEFAULT_OUT_DIR = 'exports/character-dag-drama-framework';
 export const LEARNER_MODES = Object.freeze(['scripted', 'llm']);
 export const LLM_MODES = Object.freeze(['mock', 'real']);
-export const FRAMEWORK_OBSERVER_VERSION = 'character-dag-drama-observer.v0.4';
+export const FRAMEWORK_OBSERVER_VERSION = 'character-dag-drama-observer.v0.5';
 export const DEFAULT_ARM_ORDER = Object.freeze([
   'policy_only',
   'drama_only',
@@ -92,6 +92,18 @@ function normalizeEvidenceContract(scene) {
   };
 }
 
+function normalizeTransferContract(scene) {
+  if (scene.transfer !== true) return null;
+  const raw = scene.transfer_contract || {};
+  const publicPriorCheck = String(raw.public_prior_check || 'prior validity condition').trim();
+  const requiredTerms = Array.isArray(raw.required_terms) ? raw.required_terms.map(String).filter(Boolean) : [];
+  return {
+    public_prior_check: publicPriorCheck,
+    required_terms: requiredTerms.length ? requiredTerms : [publicPriorCheck],
+    missing_label: String(raw.missing_label || 'specific prior transfer check'),
+  };
+}
+
 function normalizeScene(scene, index) {
   if (!scene?.id) throw new Error(`scene ${index} missing id`);
   if (!scene.phase) throw new Error(`scene ${scene.id} missing phase`);
@@ -111,6 +123,7 @@ function normalizeScene(scene, index) {
       ? scene.character_axis_targets.filter((axis) => CHARACTER_AXES.includes(axis))
       : [],
     transfer: scene.transfer === true,
+    transfer_contract: normalizeTransferContract(scene),
   };
 }
 
@@ -317,6 +330,34 @@ function compressedCharacterStateFor(characterState) {
   };
 }
 
+function publicTransferMemory(scene, stateControl) {
+  if (scene.transfer !== true || !scene.transfer_contract) return null;
+  if (stateControl === 'matched_prior') {
+    return {
+      status: 'available',
+      priorCheck: scene.transfer_contract.public_prior_check,
+      use: `Name the prior ${scene.transfer_contract.public_prior_check} before deciding whether the earlier move carries over.`,
+    };
+  }
+  if (stateControl === 'compressed_prior') {
+    return {
+      status: 'compressed',
+      priorCheck: null,
+      detailAvailable: false,
+      use: 'Prior work exists, but the specific prior check has been compressed away.',
+    };
+  }
+  if (stateControl === 'stale_prior') {
+    return {
+      status: 'stale',
+      priorCheck: null,
+      detailAvailable: false,
+      use: 'Prior work comes from a different task family and should not license transfer here.',
+    };
+  }
+  return null;
+}
+
 function stateControlForArm(armConfig = {}) {
   if (armConfig.shuffled_state === true) return 'mismatched_prior';
   if (armConfig.character_routing !== true) return 'none';
@@ -396,9 +437,10 @@ function publicLearnerContext({ fixture, arm, armConfig, learnerMode, scene, sce
     actualSophistication: 'intermediate',
     characterState: characterStateView,
     priorSceneSummaries,
+    transferMemory: publicTransferMemory(scene, stateControl),
     transferGuidance:
       scene.transfer && matched
-        ? 'This is a new or similar case. Answer by naming what carries over from prior public work, what may fail or be missing here, and the check or evidence that decides whether the prior move is valid for this task.'
+        ? `This is a new or similar case. Answer by naming what carries over from prior public work, what may fail or be missing here, and the prior ${scene.transfer_contract?.public_prior_check || 'validity condition'} that decides whether the old move is valid for this task.`
         : scene.transfer && stateControl === 'compressed_prior'
           ? 'Use the compressed prior work cautiously: do not reconstruct the missing detail or claim a decisive transfer check from the thin summary.'
           : null,
@@ -448,7 +490,8 @@ function matureResponse(scene, { includeDrama = false } = {}) {
   }
   if (scene.resistance_signal === 'irrelevance') {
     if (scene.transfer) {
-      return 'In this new case, the same idea carries over only if the condition still holds; this step matters for the actual problem because it tests whether the prior move is valid here.';
+      const priorCheck = scene.transfer_contract?.public_prior_check || 'validity condition';
+      return `In this new case, the same idea carries over only if the ${priorCheck} still holds; this step matters for the actual problem because it tests whether the prior move is valid here.`;
     }
     return 'Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.';
   }
@@ -584,16 +627,35 @@ function evidenceLabelsFromText(text, { semanticOutcomeObserver = false } = {}) 
     .sort();
 }
 
-function sceneEvidenceSatisfied(scene, labels = []) {
+function normalizeMatchText(value = '') {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function transferSpecificitySatisfied(scene, text = '') {
+  if (scene.transfer !== true) return true;
+  const terms = scene.transfer_contract?.required_terms || [];
+  if (!terms.length) return true;
+  const haystack = normalizeMatchText(text);
+  return terms.some((term) => {
+    const needle = normalizeMatchText(term);
+    return needle && haystack.includes(needle);
+  });
+}
+
+function sceneEvidenceSatisfied(scene, labels = [], text = '') {
   const observed = new Set(labels);
   const coreOk = scene.proof_contract.core_evidence.every((label) => observed.has(label));
   const resistanceLabels = scene.proof_contract.resistance_core.labels || [];
   const resistanceMin = Math.max(1, Number(scene.proof_contract.resistance_core.min || 1));
   const resistanceOk = resistanceLabels.filter((label) => observed.has(label)).length >= resistanceMin;
-  return coreOk && resistanceOk;
+  return coreOk && resistanceOk && transferSpecificitySatisfied(scene, text);
 }
 
-function missingEvidenceForScene(scene, labels = []) {
+function missingEvidenceForScene(scene, labels = [], text = '') {
   const observed = new Set(labels);
   const missingCore = scene.proof_contract.core_evidence.filter((label) => !observed.has(label));
   const resistanceLabels = scene.proof_contract.resistance_core.labels || [];
@@ -606,6 +668,9 @@ function missingEvidenceForScene(scene, labels = []) {
   return {
     core: missingCore,
     resistance_core: missingResistance,
+    transfer_specificity: transferSpecificitySatisfied(scene, text)
+      ? []
+      : [scene.transfer_contract?.missing_label || 'specific prior transfer check'],
   };
 }
 
@@ -667,7 +732,7 @@ export function publicPeripeteiaSignature(text = '') {
   return oldCheck && (oldCheckRejected || reversal) && newCheck && taskTurn;
 }
 
-function analyzeScenePeripeteia({ scene, armConfig, result }) {
+export function analyzeScenePeripeteia({ scene, armConfig, result }) {
   const turns = dialogueToPoeticsTurns(result.final.dialogue || []);
   const analyzer = analyzePeripeteia(turns, [], {
     tutorAdaptationPolicy: armConfig.drama_routing ? 'peripeteia' : 'none',
@@ -675,11 +740,14 @@ function analyzeScenePeripeteia({ scene, armConfig, result }) {
   const postOpeningLearnerText = learnerTexts(result).slice(1).join('\n') || learnerTexts(result).join('\n');
   const publicText = [...tutorTexts(result), postOpeningLearnerText].join('\n');
   const publicSignature = publicPeripeteiaSignature(publicText);
+  const fixtureRequired = scene.dramatic_contract.requires_peripeteia === true;
+  const instrumentedPeripeteia = fixtureRequired && armConfig.drama_routing === true;
   return {
-    fixture_required: scene.dramatic_contract.requires_peripeteia === true,
-    required: scene.dramatic_contract.requires_peripeteia === true && armConfig.drama_routing === true,
-    observed: publicSignature || analyzer.tutor_adaptive_mechanism === true,
+    fixture_required: fixtureRequired,
+    required: instrumentedPeripeteia,
+    observed: instrumentedPeripeteia && (publicSignature || analyzer.tutor_adaptive_mechanism === true),
     public_signature: publicSignature,
+    public_signature_unscored: !instrumentedPeripeteia && publicSignature,
     analyzer,
   };
 }
@@ -690,12 +758,16 @@ function reanalyzeSceneRow({ fixture, armConfig, row, targetLabels }) {
   const postOpeningLearnerText = (row.learner_texts || []).slice(1).join('\n') || (row.learner_texts || []).join('\n');
   const publicText = [...(row.tutor_texts || []), postOpeningLearnerText].join('\n');
   const publicSignature = publicPeripeteiaSignature(publicText);
+  const fixtureRequired = scene.dramatic_contract.requires_peripeteia === true;
+  const instrumentedPeripeteia = fixtureRequired && armConfig.drama_routing === true;
   const peripeteia = {
     ...(row.peripeteia || {}),
-    fixture_required: scene.dramatic_contract.requires_peripeteia === true,
-    required: scene.dramatic_contract.requires_peripeteia === true && armConfig.drama_routing === true,
-    observed: publicSignature || row.peripeteia?.analyzer?.tutor_adaptive_mechanism === true,
+    fixture_required: fixtureRequired,
+    required: instrumentedPeripeteia,
+    observed:
+      instrumentedPeripeteia && (publicSignature || row.peripeteia?.analyzer?.tutor_adaptive_mechanism === true),
     public_signature: publicSignature,
+    public_signature_unscored: !instrumentedPeripeteia && publicSignature,
   };
   const evidenceLabels = evidenceLabelsFromText(postOpeningLearnerText, {
     semanticOutcomeObserver: armConfig.staged_policy === true,
@@ -705,6 +777,7 @@ function reanalyzeSceneRow({ fixture, armConfig, row, targetLabels }) {
     sceneEvidenceSatisfied(
       scene,
       evidenceLabels.length ? evidenceLabels : Array.isArray(row.evidence_labels) ? row.evidence_labels : [],
+      postOpeningLearnerText,
     );
   return {
     ...row,
@@ -712,10 +785,12 @@ function reanalyzeSceneRow({ fixture, armConfig, row, targetLabels }) {
     missing_evidence: missingEvidenceForScene(
       scene,
       evidenceLabels.length ? evidenceLabels : row.evidence_labels || [],
+      postOpeningLearnerText,
     ),
     outcome: frameworkSuccess ? 'success' : row.graph_outcome === 'failure' ? 'failure' : 'inconclusive',
     framework_contract_satisfied: frameworkSuccess,
     first_response_success: frameworkSuccess && !row.staged_followup,
+    transfer_specificity_satisfied: transferSpecificitySatisfied(scene, postOpeningLearnerText),
     peripeteia,
     target_label_leaks: targetLabelLeaks(row.public_learner_context, targetLabels),
     public_leak_violations: publicLeakViolations([...(row.tutor_texts || []), ...(row.learner_texts || [])]),
@@ -779,6 +854,7 @@ function sceneAuditIssues(row) {
   if ((row.target_label_leaks || []).length > 0) issues.push('target_label_leak');
   if ((row.public_leak_violations || []).length > 0) issues.push('public_theory_or_process_leak');
   if (row.framework_contract_satisfied !== true) issues.push('framework_contract_not_satisfied');
+  if ((row.missing_evidence?.transfer_specificity || []).length > 0) issues.push('transfer_specificity_missing');
   if (row.staged_followup === true) issues.push('staged_followup_used');
   if (row.transfer === true && row.first_response_success !== true) issues.push('transfer_first_response_miss');
   if (row.peripeteia?.required === true && row.peripeteia?.observed !== true) {
@@ -809,7 +885,8 @@ function diagnosticAudit(armResults, acceptanceGates) {
         outcome: row.outcome,
         issues,
         evidence_labels: row.evidence_labels || [],
-        missing_evidence: row.missing_evidence || { core: [], resistance_core: [] },
+        missing_evidence: row.missing_evidence || { core: [], resistance_core: [], transfer_specificity: [] },
+        transfer_specificity_satisfied: row.transfer_specificity_satisfied !== false,
         target_label_leaks: row.target_label_leaks || [],
         public_leak_violations: row.public_leak_violations || [],
       });
@@ -849,6 +926,8 @@ function aggregateArm(armResult) {
     transfer_scene_n: transferScenes.length,
     transfer_success_n: transferScenes.filter((scene) => scene.outcome === 'success').length,
     transfer_first_response_success_n: transferScenes.filter((scene) => scene.first_response_success).length,
+    transfer_specificity_miss_n: transferScenes.filter((scene) => scene.transfer_specificity_satisfied === false)
+      .length,
     peripeteia_required_n: peripeteiaRequired.length,
     peripeteia_observed_required_n: peripeteiaRequired.filter((scene) => scene.peripeteia.observed).length,
     peripeteia_observed_unrequired_n: peripeteiaUnrequired.filter((scene) => scene.peripeteia.observed).length,
@@ -1068,7 +1147,8 @@ async function runArm({
         semanticOutcomeObserver: armConfig.staged_policy === true,
       });
       const labels = textLabels.length ? textLabels : evidenceLabels(closed);
-      const frameworkSuccess = closed?.outcome !== 'failure' && sceneEvidenceSatisfied(scene, labels);
+      const frameworkSuccess =
+        closed?.outcome !== 'failure' && sceneEvidenceSatisfied(scene, labels, postOpeningLearnerText);
       const firstResponseSuccess = frameworkSuccess && !stagedFollowup;
       const peripeteia = analyzeScenePeripeteia({ scene, armConfig, result });
       characterState = updateCharacterStateFromEvidence(before, {
@@ -1094,7 +1174,8 @@ async function runArm({
         first_response_success: firstResponseSuccess,
         staged_followup: stagedFollowup,
         evidence_labels: labels,
-        missing_evidence: missingEvidenceForScene(scene, labels),
+        missing_evidence: missingEvidenceForScene(scene, labels, postOpeningLearnerText),
+        transfer_specificity_satisfied: transferSpecificitySatisfied(scene, postOpeningLearnerText),
         peripeteia,
         target_label_leaks: targetLabelLeaks(scenario.hidden.publicLearnerContext, targetLabels),
         public_leak_violations: publicLeakViolations([...tutorTexts(result), ...learnerTexts(result)]),
@@ -1237,11 +1318,11 @@ function markdownReport(report) {
   const samples = audit.scene_issues.slice(0, 8);
   if (samples.length) {
     lines.push('');
-    lines.push('| arm | seed | scene | issues | missing core | missing resistance |');
-    lines.push('|---|---:|---|---|---|---|');
+    lines.push('| arm | seed | scene | issues | missing core | missing resistance | missing transfer specificity |');
+    lines.push('|---|---:|---|---|---|---|---|');
     for (const sample of samples) {
       lines.push(
-        `| ${sample.arm} | ${sample.seed_index} | ${sample.scene_id} | ${sample.issues.join(', ')} | ${(sample.missing_evidence.core || []).join(', ') || '-'} | ${(sample.missing_evidence.resistance_core || []).join(', ') || '-'} |`,
+        `| ${sample.arm} | ${sample.seed_index} | ${sample.scene_id} | ${sample.issues.join(', ')} | ${(sample.missing_evidence.core || []).join(', ') || '-'} | ${(sample.missing_evidence.resistance_core || []).join(', ') || '-'} | ${(sample.missing_evidence.transfer_specificity || []).join(', ') || '-'} |`,
       );
     }
   }

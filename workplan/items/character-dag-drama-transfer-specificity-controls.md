@@ -1,21 +1,26 @@
 ---
 id: character-dag-drama-transfer-specificity-controls
 title: Tighten Character-DAG transfer specificity controls
-status: triaged
+status: done
 type: research
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-06-30
-updated: 2026-06-30
-verification: "Expanded real state-dependent transfer screen passes stronger controls only after transfer evidence requires a specific prior condition/check and compressed-state control remains below full without label/process leaks."
-claim_status: planned
+updated: 2026-07-01
+verification: "Focused framework tests pass; expanded mock family/control screen passes; bounded real base/state_dependent_transfer screen passes with compressed-state below full and zero label/process leaks."
+branch: codex/dag-resistance-adaptation-framework
+claim_status: exploratory
 links:
   notes:
     - docs/next-steps/character-dag-drama-framework-plan.md
   exports:
     - exports/character-dag-drama-framework-family-controls-real-v2-base/robustness-report.md
     - exports/character-dag-drama-framework-family-controls-real-v2-base/claim-audit.md
+    - exports/character-dag-drama-framework-transfer-specificity-mock/robustness-report.md
+    - exports/character-dag-drama-framework-transfer-specificity-mock/claim-audit.md
+    - exports/character-dag-drama-framework-transfer-specificity-real-base/robustness-report.md
+    - exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md
   items:
     - character-dag-drama-framework-synthetic-contrast
 tags:
@@ -45,3 +50,14 @@ state:
 - Keep compressed state intentionally unable to recover that detail.
 - Rerun mock expanded-family controls, then a bounded real
   `state_dependent_transfer` screen before any larger real matrix or paper note.
+
+2026-07-01 Codex: Implemented transfer-specificity contracts. Transfer scenes
+now carry a public-safe `transfer_contract`; matched state exposes the concrete
+prior check, compressed/stale state withholds it, and the observer requires the
+learner's own response to name the relevant prior check for transfer success.
+Expanded mock screen passed across four fixture families and four strict
+perturbations. Bounded real screen on `base/state_dependent_transfer` passed all
+stronger gates: full 7/8 first-response and 3/3 transfer; compressed 5/8
+first-response and 1/3 transfer with two transfer-specificity misses; no target
+label or public theory/process leaks. Next escalation is a larger real
+state-dependent-transfer matrix before any paper update.

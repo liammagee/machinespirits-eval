@@ -452,7 +452,8 @@ const fixtures = {
         return 'I am not sure yet; I need one clearer next step before I can give my reason.';
       }
       if (context.transfer === true) {
-        return 'In this new case, the same idea carries over only if the condition still holds; this step matters for the actual problem because it tests whether the prior move is valid here.';
+        const priorCheck = context.transferMemory?.priorCheck || 'validity condition';
+        return `In this new case, the same idea carries over only if the ${priorCheck} still holds; this step matters for the actual problem because it tests whether the prior move is valid here.`;
       }
       if (/concrete|case|live|worksheet|boring/.test(prompt)) {
         return 'I can test one concrete case and use what happens there as my reason for the next step.';

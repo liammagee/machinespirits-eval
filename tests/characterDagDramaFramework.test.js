@@ -7,6 +7,7 @@ import { describe, it } from 'node:test';
 import { initialCharacterState, updateCharacterStateFromEvidence } from '../services/adaptiveTutor/characterState.js';
 import {
   ALL_ARM_ORDER,
+  analyzeScenePeripeteia,
   collectTargetEvidenceLabels,
   DEFAULT_ARM_ORDER,
   FRAMEWORK_OBSERVER_VERSION,
@@ -40,6 +41,12 @@ describe('Synthetic Character-DAG drama framework', () => {
     assert.equal(fixture.scenes.filter((scene) => scene.dramatic_contract.requires_peripeteia).length, 1);
     assert.equal(fixture.scenes.filter((scene) => scene.transfer).length, 3);
     assert.equal(fixture.scenes.at(-1).transfer, true);
+    assert.ok(
+      fixture.scenes.filter((scene) => scene.transfer).every((scene) => scene.transfer_contract.public_prior_check),
+    );
+    assert.ok(
+      fixture.scenes.filter((scene) => scene.transfer).every((scene) => scene.transfer_contract.required_terms.length),
+    );
   });
 
   it('builds public learner context without target evidence-label leaks', () => {
@@ -136,7 +143,13 @@ describe('Synthetic Character-DAG drama framework', () => {
     });
 
     assert.match(full.hidden.publicLearnerContext.transferGuidance, /what carries over/i);
+    assert.equal(full.hidden.publicLearnerContext.transferMemory.status, 'available');
+    assert.equal(
+      full.hidden.publicLearnerContext.transferMemory.priorCheck,
+      scene.transfer_contract.public_prior_check,
+    );
     assert.equal(policy.hidden.publicLearnerContext.transferGuidance, null);
+    assert.equal(policy.hidden.publicLearnerContext.transferMemory, null);
   });
 
   it('routes stronger negative controls with distinct public-safe state quality', () => {
@@ -191,10 +204,14 @@ describe('Synthetic Character-DAG drama framework', () => {
 
     assert.equal(stale.hidden.responseMode, 'llm_stale_state');
     assert.equal(stale.hidden.publicLearnerContext.stateQuality, 'stale_prior');
+    assert.equal(stale.hidden.publicLearnerContext.transferMemory.status, 'stale');
+    assert.equal(stale.hidden.publicLearnerContext.transferMemory.priorCheck, null);
     assert.equal(overconfident.hidden.responseMode, 'llm_overconfident_state');
     assert.equal(overconfident.hidden.publicLearnerContext.characterState.maturity, 1);
     assert.equal(compressed.hidden.responseMode, 'llm_compressed_state');
     assert.match(compressed.hidden.publicLearnerContext.transferGuidance, /compressed prior/i);
+    assert.equal(compressed.hidden.publicLearnerContext.transferMemory.status, 'compressed');
+    assert.equal(compressed.hidden.publicLearnerContext.transferMemory.priorCheck, null);
     assert.equal(stateWithoutProof.hidden.responseMode, 'llm_state_without_proof_policy');
     assert.equal(stateWithoutProof.hidden.publicLearnerContext.proofPolicyEnabled, false);
   });
@@ -256,6 +273,38 @@ describe('Synthetic Character-DAG drama framework', () => {
       ),
       true,
     );
+  });
+
+  it('records but does not count public reversal language outside required peripeteia scenes', () => {
+    const fixture = loadFrameworkFixture();
+    const transferScene = fixture.scenes.find((scene) => scene.id === 'scene_8_transfer_negative_case');
+    const requiredScene = fixture.scenes.find((scene) => scene.dramatic_contract.requires_peripeteia);
+    const armConfig = fixture.arms.full_character_dag_drama;
+    const result = {
+      final: {
+        dialogue: [
+          { role: 'tutor', content: 'What check would make the next step valid?' },
+          {
+            role: 'learner',
+            content: [
+              'I was using the old check that the terms repeat, but that does not show why this matters for the task.',
+              'The evidence I need is that the pattern connects to the goal, not just that I can spot it.',
+              'The next step should connect the repeating part to what the task is actually asking.',
+            ].join(' '),
+          },
+        ],
+      },
+    };
+
+    const transferPeripeteia = analyzeScenePeripeteia({ scene: transferScene, armConfig, result });
+    const requiredPeripeteia = analyzeScenePeripeteia({ scene: requiredScene, armConfig, result });
+
+    assert.equal(transferPeripeteia.public_signature, true);
+    assert.equal(transferPeripeteia.public_signature_unscored, true);
+    assert.equal(transferPeripeteia.observed, false);
+    assert.equal(requiredPeripeteia.public_signature, true);
+    assert.equal(requiredPeripeteia.public_signature_unscored, false);
+    assert.equal(requiredPeripeteia.observed, true);
   });
 
   it('runs the mock scripted benchmark and writes all artifacts', async () => {
@@ -373,6 +422,15 @@ describe('Synthetic Character-DAG drama framework', () => {
     assert.equal(family.fixture_family.id, 'ratio_series');
     assert.match(family.world_spec.id, /RATIO_SERIES/);
     assert.match(family.scenes.find((scene) => scene.id === 'scene_3_peripeteia_irrelevance').opening, /series/);
+    assert.equal(
+      family.scenes.find((scene) => scene.id === 'scene_6_transfer_new_case').transfer_contract.public_prior_check,
+      'ratio criterion',
+    );
+    assert.ok(
+      family.scenes
+        .find((scene) => scene.id === 'scene_6_transfer_new_case')
+        .transfer_contract.required_terms.includes('ratio criterion'),
+    );
     assert.deepEqual(parsePerturbationList('baseline,noisy_openings,baseline'), ['baseline', 'noisy_openings']);
     assert.match(noisy.scenes[0].opening, /mixing two ideas/);
     assert.equal(noisy.scenes.length, fixture.scenes.length);

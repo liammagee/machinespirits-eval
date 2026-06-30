@@ -212,14 +212,26 @@ export function buildFixtureFamily(rawFixture, family = 'base') {
         scene_6_transfer_new_case: {
           opening:
             'New ratio case: it looks patterned, but I do not yet see why the ratio check decides the actual problem.',
+          transfer_contract: {
+            public_prior_check: 'ratio criterion',
+            required_terms: ['ratio criterion', 'common ratio check', 'convergence condition'],
+          },
         },
         scene_7_transfer_boundary_case: {
           opening:
             'Similar series, but one denominator changed and I do not know what from the earlier ratio argument carries over.',
+          transfer_contract: {
+            public_prior_check: 'common ratio check',
+            required_terms: ['common ratio check', 'ratio criterion', 'convergence condition'],
+          },
         },
         scene_8_transfer_negative_case: {
           opening:
             'Another series looks analogous, but I suspect the condition that made the ratio move valid may fail here.',
+          transfer_contract: {
+            public_prior_check: 'convergence condition',
+            required_terms: ['convergence condition', 'ratio criterion', 'common ratio check'],
+          },
         },
       },
     },
@@ -257,14 +269,26 @@ export function buildFixtureFamily(rawFixture, family = 'base') {
         scene_6_transfer_new_case: {
           opening:
             'New example: it looks like the same class, but I do not yet know which definition clause decides it.',
+          transfer_contract: {
+            public_prior_check: 'definition clause',
+            required_terms: ['definition clause', 'criterion clause', 'classification criterion'],
+          },
         },
         scene_7_transfer_boundary_case: {
           opening:
             'Similar object, but one clause from the earlier definition might be missing, and I do not know what carries over.',
+          transfer_contract: {
+            public_prior_check: 'criterion clause',
+            required_terms: ['criterion clause', 'definition clause', 'classification criterion'],
+          },
         },
         scene_8_transfer_negative_case: {
           opening:
             'Another object looks analogous, but I suspect the condition that made the earlier classification valid may fail.',
+          transfer_contract: {
+            public_prior_check: 'classification criterion',
+            required_terms: ['classification criterion', 'definition clause', 'criterion clause'],
+          },
         },
       },
     },
@@ -303,14 +327,26 @@ export function buildFixtureFamily(rawFixture, family = 'base') {
         scene_6_transfer_new_case: {
           opening:
             'New causal case: the association is visible, but I do not yet see why the identifying check decides the actual problem.',
+          transfer_contract: {
+            public_prior_check: 'identifying condition',
+            required_terms: ['identifying condition', 'identification check', 'adjustment condition'],
+          },
         },
         scene_7_transfer_boundary_case: {
           opening:
             'Similar causal setup, but one adjustment variable may be missing, and I do not know what carries over.',
+          transfer_contract: {
+            public_prior_check: 'adjustment condition',
+            required_terms: ['adjustment condition', 'identifying condition', 'identification check'],
+          },
         },
         scene_8_transfer_negative_case: {
           opening:
             'Another graph looks analogous, but I suspect the condition that made the earlier identification valid may fail here.',
+          transfer_contract: {
+            public_prior_check: 'identification check',
+            required_terms: ['identification check', 'identifying condition', 'adjustment condition'],
+          },
         },
       },
     },

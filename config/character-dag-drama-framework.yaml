@@ -254,6 +254,12 @@ scenes:
     dramatic_contract:
       requires_peripeteia: false
       public_pressure: Learner must transfer relevance orientation to a new case.
+    transfer_contract:
+      public_prior_check: validity condition
+      required_terms:
+        - validity condition
+        - method validity check
+        - method-validity check
     character_axis_targets:
       - relevance_orientation
       - next_step_agency
@@ -274,6 +280,12 @@ scenes:
     dramatic_contract:
       requires_peripeteia: false
       public_pressure: Learner must transfer the relevance check while noticing the boundary condition.
+    transfer_contract:
+      public_prior_check: boundary condition
+      required_terms:
+        - boundary condition
+        - boundary-condition check
+        - missing assumption
     character_axis_targets:
       - relevance_orientation
       - proof_ownership
@@ -295,6 +307,12 @@ scenes:
     dramatic_contract:
       requires_peripeteia: false
       public_pressure: Learner must avoid blind analogy and state the transfer check that decides whether the prior move still applies.
+    transfer_contract:
+      public_prior_check: proof-validity condition
+      required_terms:
+        - proof validity condition
+        - proof-validity condition
+        - validity condition
     character_axis_targets:
       - relevance_orientation
       - non_formulaic_reasoning

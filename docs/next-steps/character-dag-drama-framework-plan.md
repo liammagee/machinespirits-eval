@@ -216,3 +216,54 @@ transfer evidence contract that requires the learner to name the relevant prior
 condition/check from public state, while compressed state should remain unable to
 recover that detail. Until that passes, the stronger claim is not supported; the
 prior three-arm apparatus claim remains synthetic and exploratory.
+
+## Transfer-Specificity Repair Result
+
+Completed on 2026-07-01 local time. The harness now adds a public-safe
+`transfer_contract` to transfer scenes. Matched character state exposes a
+specific prior check such as `validity condition`, `ratio criterion`,
+`definition clause`, or `identifying condition`; compressed and stale controls
+mark that detail unavailable. The observer now requires the learner's own
+transfer response to name the scene's required public term in addition to the
+existing rationale and task-reorientation evidence.
+
+Expanded mock screen:
+
+```bash
+npm run adaptation:character-dag-drama-robustness -- \
+  --llm mock \
+  --learner-mode llm \
+  --seeds 2 \
+  --expanded-families \
+  --arms policy_only,full_character_dag_drama,shuffled_character_state,stale_character_state,overconfident_character_state,compressed_character_state,state_without_proof_policy \
+  --perturbations baseline,noisy_openings,harder_transfer,state_dependent_transfer \
+  --out-dir exports/character-dag-drama-framework-transfer-specificity-mock
+```
+
+Result: PASS across 16 family/perturbation runs.
+
+Bounded real generated-learner screen:
+
+```bash
+NODE_OPTIONS='-r dotenv/config' npm run adaptation:character-dag-drama-robustness -- \
+  --llm real \
+  --learner-mode llm \
+  --seeds 1 \
+  --families base \
+  --arms policy_only,full_character_dag_drama,shuffled_character_state,stale_character_state,overconfident_character_state,compressed_character_state,state_without_proof_policy \
+  --perturbations state_dependent_transfer \
+  --checkpoint \
+  --out-dir exports/character-dag-drama-framework-transfer-specificity-real-base
+```
+
+Result: PASS. `full_character_dag_drama` reached 7/8 first-response success and
+3/3 transfer first-response success. `compressed_character_state` dropped to
+5/8 first-response success and 1/3 transfer first-response success, with two
+transfer-specificity misses. All target-label and public theory/process leak
+guards passed.
+
+Interpretation: the compressed-state negative control now behaves as intended in
+the bounded real screen. This supports the synthetic apparatus claim at the
+benchmark-design level, but it is still not a human-learning or deployed-tutor
+claim. The next escalation is a larger real state-dependent-transfer matrix
+across all fixture families and at least two seeds before any Paper 2.0 update.

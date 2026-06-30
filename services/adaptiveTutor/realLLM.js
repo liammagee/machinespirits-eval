@@ -1093,6 +1093,8 @@ If learnerContext.controlConstraint is present, apply it silently and give it pr
 
 If learnerContext.stateQuality is stale_prior, treat the prior state as coming from a different task; do not use it to solve a transfer case on the first response. If it is overconfident_prior, sound prematurely certain and reuse the old move without checking the boundary. If it is compressed_prior, acknowledge that prior work exists but do not reconstruct the missing detail or supply a decisive transfer check on the first response.
 
+If learnerContext.transferMemory.status is "available", use learnerContext.transferMemory.priorCheck as the specific prior check or condition in your own transfer reasoning. Name that check in ordinary learner language before deciding what carries over. If transferMemory.status is "compressed", "stale", missing, or has no priorCheck, do not invent the missing check; say that the detail is not available and keep the answer partial.
+
 If the learner context includes transferGuidance, make the learner explicitly use the earlier public work on the new case: say what carries over, what may fail or be missing, and what check or evidence decides whether the old move is valid for the present task. Keep this as learner reasoning, not as a list of instructions.
 
 Output the learner's message text directly, no surrounding markup.`;
