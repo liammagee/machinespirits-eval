@@ -112,14 +112,6 @@ function evidenceContractState(pending, categories = {}) {
   return analyzeEvidenceContract(successSignalForAnalysis(pending), categories);
 }
 
-function missingRequiredLabels(pending, categories = {}) {
-  return evidenceContractState(pending, categories).missing_required_evidence || [];
-}
-
-function observedRequiredLabels(pending, categories = {}) {
-  return evidenceContractState(pending, categories).observed_required_evidence || [];
-}
-
 function missingEvidenceAxes(pending, categories = {}) {
   return evidenceContractState(pending, categories).missing_evidence_axes || [];
 }
@@ -173,7 +165,6 @@ function maybeStagePartialIntervention({ pending, observation, turnIndex, config
 
   const previousState = evidenceContractState(pending, previousCategories);
   const nextState = evidenceContractState(pending, nextCategories);
-  const previousMissing = previousState.missing_required_evidence || [];
   const nextMissing = nextState.missing_required_evidence || [];
   const observed = nextState.observed_required_evidence || [];
   const madeProgress = observed.length > (previousState.observed_required_evidence || []).length;

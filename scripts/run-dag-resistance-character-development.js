@@ -391,7 +391,7 @@ function averageAxes(states = []) {
   );
 }
 
-async function runArm({ arm, llm, learnerMode, seedCount, verbose }) {
+async function runArm({ arm, learnerMode, seedCount, verbose }) {
   const sceneRows = [];
   const seedResults = [];
   for (let seedIndex = 0; seedIndex < seedCount; seedIndex++) {
