@@ -13,6 +13,61 @@ export {
   visibleConflictDiagnosticBudget,
 } from './learnerEntitlement.js';
 export {
+  ADAPTATION_SCOPES,
+  PROOF_PRIVATE_KEYS,
+  PUBLIC_EVIDENCE_SCHEMA,
+  PUBLIC_EVIDENCE_STANCES,
+  auditPublicOnlyInput,
+  cleanPublicText,
+  derivePublicLearnerEvidence,
+  publicDialogueLines,
+} from './publicEvidence.js';
+export {
+  OPPORTUNITY_COST_AUDIT_SCHEMA,
+  OPPORTUNITY_COST_SCHEMA,
+  auditOpportunityCost,
+  deriveOpportunityCostBudget,
+  isProofNeutralTutorMove,
+  nextOpportunityCostBudget,
+  opportunityCostContext,
+} from './opportunityCost.js';
+export {
+  DISCURSIVE_ADAPTATION_SCHEMA,
+  DISCURSIVE_MODES,
+  deriveDiscursiveAdaptationState,
+} from './discursiveAdaptation.js';
+export {
+  ADAPTATION_ARBITER_SCHEMA,
+  ADAPTATION_TRACE_SCHEMA,
+  arbitrateAdaptation,
+  normalizeProofControlDecision,
+} from './adaptationArbiter.js';
+export {
+  UPTAKE_BENCHMARK_CASES,
+  UPTAKE_BENCHMARK_SCHEMA,
+  UPTAKE_NEGOTIATION_SCHEMA,
+  UPTAKE_STATUSES,
+  deriveUptakeNegotiationState,
+  evaluateUptakeBenchmark,
+  renderUptakeBenchmarkMarkdown,
+} from './uptakeNegotiation.js';
+export {
+  SELF_REGULATION_BENCHMARK_CASES,
+  SELF_REGULATION_BENCHMARK_SCHEMA,
+  SELF_REGULATION_SCHEMA,
+  deriveSelfRegulationState,
+  evaluateSelfRegulationBenchmark,
+  renderSelfRegulationBenchmarkMarkdown,
+} from './selfRegulation.js';
+export {
+  QUALITY_PAIR_CASES,
+  QUALITY_PAIR_REPORT_SCHEMA,
+  QUALITY_PAIR_SCHEMA,
+  evaluateQualityPair,
+  evaluateQualityPairs,
+  renderQualityPairMarkdown,
+} from './qualityPairs.js';
+export {
   auditDiscursiveCalibrationPublicInput,
   deriveDiscursiveCalibrationState,
   DISCURSIVE_CALIBRATION_SCHEMA,
