@@ -1,17 +1,17 @@
 {
-  "generated": "2026-06-30T20:28:48.807Z",
+  "generated": "2026-06-30T23:54:11.950Z",
   "counts": {
-    "total": 61,
+    "total": 62,
     "byStatus": {
       "done": 52,
       "blocked": 1,
       "dropped": 2,
       "review": 1,
-      "active": 1,
+      "active": 2,
       "triaged": 4
     },
     "byType": {
-      "research": 32,
+      "research": 33,
       "experiment": 5,
       "content": 2,
       "infra": 9,
@@ -110,6 +110,30 @@
         "git-history"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "layered-task-session-adaptation",
+      "title": "Layered adaptive tutor task/session adaptation prototype",
+      "status": "active",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-01",
+      "branch": "codex/task-session-adaptation",
+      "verification": "TaskMasteryState remains public-only/advisory; focused tests and zero-paid taskloop benchmark pass; workplan render/validate stays clean.",
+      "claim_status": "planned",
+      "links": {
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-benchmark-report.md"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "task-loop",
+        "outer-loop"
+      ]
     },
     {
       "id": "charisma-desire-generalizability-matrix",
