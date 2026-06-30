@@ -1,7 +1,7 @@
 # Cartoon Image Prompts
 
 Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
-Generated at: 2026-06-28T23:15:50.596Z
+Generated at: 2026-06-30T20:43:21.605Z
 Panel count: 9
 Format: png
 

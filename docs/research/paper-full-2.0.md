@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "June 2026"
-version: "3.0.180"
+version: "3.0.181"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true

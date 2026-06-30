@@ -262,8 +262,49 @@ Result: PASS. `full_character_dag_drama` reached 7/8 first-response success and
 transfer-specificity misses. All target-label and public theory/process leak
 guards passed.
 
-Interpretation: the compressed-state negative control now behaves as intended in
-the bounded real screen. This supports the synthetic apparatus claim at the
+Interpretation: the compressed-state negative control behaves as intended in the
+bounded real screen. This supports the synthetic apparatus claim at the
 benchmark-design level, but it is still not a human-learning or deployed-tutor
-claim. The next escalation is a larger real state-dependent-transfer matrix
-across all fixture families and at least two seeds before any Paper 2.0 update.
+claim. The larger real state-dependent-transfer matrix below is the completed
+escalation that justified the exploratory Paper 2.0 note.
+
+## Expanded Real Family Transfer Result
+
+Completed on 2026-07-01 local time. The larger real generated-learner matrix ran
+two seeds across four fixture families, seven arms, and eight scenes per
+family:
+
+```bash
+NODE_OPTIONS='-r dotenv/config' npm run adaptation:character-dag-drama-robustness -- \
+  --llm real \
+  --learner-mode llm \
+  --seeds 2 \
+  --expanded-families \
+  --arms policy_only,full_character_dag_drama,shuffled_character_state,stale_character_state,overconfident_character_state,compressed_character_state,state_without_proof_policy \
+  --perturbations state_dependent_transfer \
+  --checkpoint \
+  --out-dir exports/character-dag-drama-framework-transfer-specificity-real-family
+```
+
+Result: PASS. All four family runs pass the acceptance gates under
+`character-dag-drama-observer.v0.5`. `full_character_dag_drama` reached
+first-response success of 15/16, 14/16, 14/16, and 13/16 across `base`,
+`ratio_series`, `definition_boundary`, and `causal_identification`. `policy_only`
+reached 6/16, 3/16, 5/16, and 4/16; `shuffled_character_state` reached 7/16,
+6/16, 6/16, and 5/16. Full transfer closure was 6/6, 5/6, 6/6, and 5/6, while
+policy-only and shuffled-state transfer stayed 0/6 in all families. Compressed
+state stayed at 0/6 transfer outside the earlier bounded base screen. Target-label
+and public theory/process leak guards remained clean.
+
+Artifacts:
+
+- `exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-report.md`
+- `exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-summary.json`
+- `exports/character-dag-drama-framework-transfer-specificity-real-family/claim-audit.md`
+
+Paper status: Paper 2.0 §6.8.9 now carries this as an exploratory synthetic
+apparatus note. The boundary remains strict: the result supports coordination of
+proof-DAG policy, resistance routing, peripeteia pressure, and evidence-derived
+character state inside the synthetic harness. It does not establish human
+learning, deployed reliability, model-weight adaptation, or real interior
+character development.
