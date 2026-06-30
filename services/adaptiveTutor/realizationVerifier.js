@@ -197,11 +197,35 @@ function resistanceSignalForAction(selectedAction, stateBelief) {
 }
 
 function requestEvidenceTextForAction(selectedAction, stateBelief, interventionLedger = [], config = {}) {
+  const dramaPrompt = characterDagDramaRequestEvidencePrompt(config);
+  if (dramaPrompt) return dramaPrompt;
   const signal = resistanceSignalForAction(selectedAction, stateBelief);
   if (signal && RESISTANCE_REQUEST_EVIDENCE_TEMPLATES[signal]) {
     return RESISTANCE_REQUEST_EVIDENCE_TEMPLATES[signal];
   }
   return contextualTextForAction('request_evidence', stateBelief, interventionLedger, config);
+}
+
+function characterDagDramaRequestEvidencePrompt(config = {}) {
+  const hint = config.characterDagDramaRealization || config.character_dag_drama_realization;
+  if (!hint?.enabled) return null;
+  const signal = hint.resistance_signal || hint.resistanceSignal || '';
+  if (hint.transfer === true) {
+    return 'Use the earlier public work carefully: what carries over, what condition might fail here, and what check or evidence decides whether the old move is valid for this task?';
+  }
+  if (hint.requires_peripeteia === true || hint.requiresPeripeteia === true) {
+    return 'Do not stop at the old pattern check: what does the new check help decide for the actual task, and what evidence justifies replacing the old check?';
+  }
+  if (signal === 'rote_parroting') {
+    return 'Make a prediction in your own words: if the case changes, what do you expect will hold or break, and what evidence justifies that expectation?';
+  }
+  if (signal === 'question_flood') {
+    return 'Choose one question only: what single question does your next step answer, and what evidence justifies using that question now?';
+  }
+  if (signal === 'boredom') {
+    return 'Use one concrete case: what does the case show, and why is that evidence for the next step rather than just worksheet filling?';
+  }
+  return null;
 }
 
 export function realizeTutorUtterance({ selectedAction, stateBelief, interventionLedger = [], config = {} } = {}) {

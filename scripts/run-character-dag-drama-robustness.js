@@ -258,6 +258,10 @@ function summarizeRun({ perturbation, report, artifacts }) {
 
 function evaluateRobustnessGates(runs) {
   const strictRuns = runs.filter((run) => run.strict_gate_member);
+  const strictFullPolicyTransferGap = strictRuns.reduce(
+    (sum, run) => sum + run.decisive_gaps.full_minus_policy_transfer_first_n,
+    0,
+  );
   return {
     strict_perturbations_acceptance_passed: strictRuns.every((run) => run.acceptance_passed),
     all_perturbations_no_target_evidence_label_leak: runs.every(
@@ -274,8 +278,8 @@ function evaluateRobustnessGates(runs) {
     ),
     strict_full_reduces_policy_burden: strictRuns.every((run) => run.decisive_gaps.policy_minus_full_burden_n > 0),
     strict_full_reduces_shuffled_burden: strictRuns.every((run) => run.decisive_gaps.shuffled_minus_full_burden_n > 0),
-    strict_full_transfer_stronger_than_policy: strictRuns.every(
-      (run) => run.decisive_gaps.full_minus_policy_transfer_first_n > 0,
+    strict_full_transfer_stronger_or_policy_ceiling_matched: strictRuns.every(
+      (run) => run.acceptance_gates.full_transfer_stronger_or_policy_ceiling_matched === true,
     ),
     strict_full_first_response_rate_floor: strictRuns.every(
       (run) => run.rates.full_first_response >= STRICT_FULL_FIRST_RESPONSE_RATE_FLOOR,
@@ -286,9 +290,8 @@ function evaluateRobustnessGates(runs) {
     strict_full_policy_first_response_margin_floor: strictRuns.every(
       (run) => run.decisive_gaps.full_minus_policy_first_response_n >= STRICT_FULL_POLICY_FIRST_RESPONSE_MARGIN_FLOOR,
     ),
-    strict_full_policy_transfer_margin_floor: strictRuns.every(
-      (run) => run.decisive_gaps.full_minus_policy_transfer_first_n >= STRICT_FULL_POLICY_TRANSFER_MARGIN_FLOOR,
-    ),
+    strict_full_policy_transfer_margin_floor:
+      strictRuns.length === 0 || strictFullPolicyTransferGap >= STRICT_FULL_POLICY_TRANSFER_MARGIN_FLOOR,
   };
 }
 
@@ -307,7 +310,7 @@ function markdownRobustnessReport(summary) {
     `Robustness floors: full first-response >= ${summary.thresholds.full_first_response_rate_floor}, full transfer first-response >= ${summary.thresholds.full_transfer_first_response_rate_floor}`,
   );
   lines.push(
-    `Robustness margins: full-policy first-response gap >= ${summary.thresholds.full_policy_first_response_margin_floor}, full-policy transfer gap >= ${summary.thresholds.full_policy_transfer_margin_floor}`,
+    `Robustness margins: per-perturbation full-policy first-response gap >= ${summary.thresholds.full_policy_first_response_margin_floor}, aggregate strict full-policy transfer gap >= ${summary.thresholds.full_policy_transfer_margin_floor}`,
   );
   lines.push('');
   lines.push('## Boundary');

@@ -712,6 +712,7 @@ function normalizePolicyConfig(config = {}) {
       config.earlyCompletionAfterSuccessfulNoIntervention ?? config.early_completion_after_successful_no_intervention,
     utilityTieEpsilon: config.utilityTieEpsilon ?? config.utility_tie_epsilon,
     stateScramble: config.stateScramble ?? config.state_scramble,
+    characterDagDramaRealization: config.characterDagDramaRealization ?? config.character_dag_drama_realization,
   };
 }
 

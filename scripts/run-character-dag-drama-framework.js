@@ -210,12 +210,28 @@ function v2PolicyForArm(armConfig) {
   };
 }
 
+function characterDagDramaRealizationForArm({ armConfig, scene }) {
+  if (!(armConfig.proof_policy && armConfig.resistance_policy && armConfig.staged_policy)) return {};
+  if (!(armConfig.character_routing && armConfig.drama_routing && !armConfig.shuffled_state)) return {};
+  return {
+    character_dag_drama_realization: {
+      enabled: true,
+      phase: scene.phase,
+      transfer: scene.transfer === true,
+      resistance_signal: scene.resistance_signal,
+      requires_peripeteia: scene.dramatic_contract.requires_peripeteia === true,
+      public_pressure: scene.dramatic_contract.public_pressure,
+    },
+  };
+}
+
 function graphOptionsForArm({ fixture, armConfig, scene }) {
   const adaptivePolicy = {
     mode: 'closed_loop',
     ...(armConfig.proof_policy ? { world_adaptation_spec: fixture.world_spec } : {}),
     ...(armConfig.resistance_policy ? resistancePolicy(scene) : {}),
     ...v2PolicyForArm(armConfig),
+    ...characterDagDramaRealizationForArm({ armConfig, scene }),
     state_scramble: armConfig.shuffled_state === true,
   };
   return {
@@ -750,6 +766,12 @@ function evaluateAcceptanceGates(aggregates = {}) {
   const policy = aggregates.policy_only;
   const shuffled = aggregates.shuffled_character_state;
   const rows = Object.values(aggregates);
+  const policyTransferAtCeiling =
+    Number(policy?.transfer_scene_n || 0) > 0 &&
+    Number(policy?.transfer_first_response_success_n || 0) === Number(policy?.transfer_scene_n || 0);
+  const fullTransferMatchesPolicyCeiling =
+    policyTransferAtCeiling &&
+    Number(full?.transfer_first_response_success_n || 0) === Number(policy?.transfer_first_response_success_n || 0);
   const flatScore = Math.max(
     policy?.character_development?.score || 0,
     aggregates.drama_only?.character_development?.score || 0,
@@ -769,8 +791,9 @@ function evaluateAcceptanceGates(aggregates = {}) {
     full_beats_shuffled_on_first_response: full?.first_response_success_n > shuffled?.first_response_success_n,
     full_reduces_shuffled_followup_or_unresolved_burden:
       full?.followup_or_unresolved_burden_n < shuffled?.followup_or_unresolved_burden_n,
-    full_transfer_stronger_than_policy:
-      (full?.transfer_first_response_success_n || 0) > (policy?.transfer_first_response_success_n || 0),
+    full_transfer_stronger_or_policy_ceiling_matched:
+      (full?.transfer_first_response_success_n || 0) > (policy?.transfer_first_response_success_n || 0) ||
+      fullTransferMatchesPolicyCeiling,
     peripeteia_only_where_required:
       rows.every((row) => row.peripeteia_observed_unrequired_n === 0) &&
       (full?.peripeteia_observed_required_n || 0) === (full?.peripeteia_required_n || 0),

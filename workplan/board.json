@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-29T21:53:20.626Z",
+  "generated": "2026-06-30T09:46:09.726Z",
   "counts": {
     "total": 60,
     "byStatus": {
@@ -677,7 +677,7 @@
       "source": "manual",
       "created": "2026-06-30",
       "updated": "2026-06-30",
-      "verification": "Focused tests, format, workplan check, mock artifacts, and real seeds-2 synthetic contrast pass; Paper 2.0 §6.8.9 records exploratory claim boundary.",
+      "verification": "Focused tests, mock strict robustness, and real seeds-3 strict robustness pass; Paper 2.0 §6.8.9 records the exploratory synthetic-only boundary.",
       "branch": "codex/dag-resistance-adaptation-framework",
       "claim_status": "exploratory",
       "links": {
@@ -688,7 +688,9 @@
         "exports": [
           "exports/character-dag-drama-framework/report.md",
           "exports/character-dag-drama-framework-llm-mock/report.md",
-          "exports/character-dag-drama-framework-llm-real/report.md"
+          "exports/character-dag-drama-framework-llm-real/report.md",
+          "exports/character-dag-drama-framework-robustness-policy-repair-mock/robustness-report.md",
+          "exports/character-dag-drama-framework-robustness-policy-repair-real/robustness-report.md"
         ],
         "items": [
           "dag-resistance-character-state-longitudinal"

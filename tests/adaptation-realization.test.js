@@ -108,6 +108,47 @@ test('request_evidence realization is shaped by learner resistance signal', () =
   assert.equal(checks.allowed, true);
 });
 
+test('character-DAG drama realization sharpens rote prediction prompts without hidden labels', () => {
+  const selectedAction = { action_type: 'request_evidence' };
+  const realized = realizeTutorUtterance({
+    selectedAction,
+    config: {
+      characterDagDramaRealization: {
+        enabled: true,
+        resistance_signal: 'rote_parroting',
+      },
+    },
+  });
+  const checks = verifyRealization({ tutorText: realized.text, selectedAction });
+
+  assert.match(realized.text, /Make a prediction in your own words/u);
+  assert.match(realized.text, /case changes/u);
+  assert.match(realized.text, /evidence justifies/u);
+  assert.doesNotMatch(realized.text, /learner-authored|evidence label|rubric/u);
+  assert.equal(checks.allowed, true);
+});
+
+test('character-DAG drama realization asks transfer scenes for boundary checks', () => {
+  const selectedAction = { action_type: 'request_evidence' };
+  const realized = realizeTutorUtterance({
+    selectedAction,
+    config: {
+      characterDagDramaRealization: {
+        enabled: true,
+        transfer: true,
+        resistance_signal: 'irrelevance',
+      },
+    },
+  });
+  const checks = verifyRealization({ tutorText: realized.text, selectedAction });
+
+  assert.match(realized.text, /what carries over/u);
+  assert.match(realized.text, /condition might fail/u);
+  assert.match(realized.text, /old move is valid/u);
+  assert.doesNotMatch(realized.text, /task reorientation|learner-authored|evidence label|rubric/u);
+  assert.equal(checks.allowed, true);
+});
+
 test('staged follow-up targets missing combined evidence labels', () => {
   const realized = realizeStagedFollowup({
     pendingIntervention: {

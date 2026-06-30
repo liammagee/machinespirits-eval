@@ -219,6 +219,8 @@ export function detectOutcomeEvidence(learnerTurn = '', config = {}) {
           /\b(?:condition|assumption|precondition|guarantee) (?:still )?(?:holds|hold|is still in place|is satisfied|is present)\b/u,
           /\b(?:only follows|follows only) if (?:the )?(?:condition|assumption|precondition)\b/u,
           /\bbefore (?:applying|using|trusting|reusing) (?:the )?(?:main |same |old |earlier |prior )?(?:rule|move|route|approach)\b/u,
+          /\b(?:old|earlier|prior) (?:move|route|argument|proof|reasoning) (?:transfers|carries over|goes through|ports over)\b/u,
+          /\b(?:valid|invalid) transfer\b|\bnot (?:a|doing a) valid transfer\b/u,
           /\bneed (?:a|to find a) different (?:route|move|step|link)\b/u,
         ]
       : []),

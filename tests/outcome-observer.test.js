@@ -208,6 +208,33 @@ test('semantic observer recognizes boundary-condition transfer checks as task re
   assert.equal(result.evidence_contract.satisfied, true);
 });
 
+test('semantic observer recognizes valid-transfer boundary language', () => {
+  const result = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      success_signal: {
+        evidence_contract: {
+          core_evidence: ['learner-authored rationale'],
+          resistance_core: {
+            labels: ['learner-authored transfer', 'task reorientation'],
+            min: 2,
+          },
+        },
+        forbidden_evidence: ['mere agreement'],
+      },
+    },
+    learnerTurn:
+      'My reason is that the old move matters because it only carries over if this case has the condition that made the earlier proof work. If I can verify that, then the old move transfers cleanly. If I cannot find it, then I am not doing a valid transfer and need a different route.',
+    turnIndex: 6,
+    config: { semanticOutcomeObserver: true },
+  });
+
+  assert.equal(result.outcome, 'success');
+  assert.equal(result.evidence[0].categories['learner-authored transfer'], true);
+  assert.equal(result.evidence[0].categories['task reorientation'], true);
+  assert.equal(result.evidence_contract.satisfied, true);
+});
+
 test('semantic observer recognizes contracted prediction and route-relevance language', () => {
   const prediction = detectOutcomeEvidence(
     'I would not just repeat the formula. I’d predict the power relation is unstable because one side depends on the other.',

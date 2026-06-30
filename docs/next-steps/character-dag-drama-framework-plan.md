@@ -84,7 +84,9 @@ Each run writes:
   on first-response success and lower staged-or-unresolved remediation burden.
   Raw staged-followup counts are still reported separately; unresolved failures
   are included in the gate so a control is not rewarded for failing before repair.
-- `full_character_dag_drama` has stronger transfer first-response success than `policy_only`.
+- `full_character_dag_drama` has stronger transfer first-response success than `policy_only`;
+  if `policy_only` is already at transfer ceiling, full must match that ceiling and
+  the robustness layer must still show aggregate transfer margin across strict perturbations.
 - Peripeteia is detected only where the fixture requires it.
 - Any character-development score above flat controls has transcript evidence and no gullibility flags.
 
@@ -121,4 +123,33 @@ npm run adaptation:character-dag-drama-framework -- \
   --arms policy_only,full_character_dag_drama,shuffled_character_state
 ```
 
+Strict robustness screen:
+
+```bash
+NODE_OPTIONS='-r dotenv/config' npm run adaptation:character-dag-drama-robustness -- \
+  --llm real \
+  --learner-mode llm \
+  --seeds 3 \
+  --arms policy_only,full_character_dag_drama,shuffled_character_state \
+  --perturbations baseline,noisy_openings,harder_transfer,state_dependent_transfer \
+  --checkpoint \
+  --reanalyze-existing \
+  --out-dir exports/character-dag-drama-framework-robustness-policy-repair-real
+```
+
 Paper/workplan updates happen only if the real synthetic contrast passes the gates.
+
+## Strict Robustness Result
+
+Completed on 2026-06-30 with real generated learners, three seeds, three decisive
+arms, and four strict perturbations. The robustness screen passed. `full_character_dag_drama`
+reached 21/24 first-response successes in every perturbation; `policy_only` reached
+16/24, 12/24, 17/24, and 11/24; `shuffled_character_state` reached 14/24, 11/24,
+9/24, and 9/24. Transfer first-response closure was full 9/9, 8/9, 9/9, 9/9;
+policy-only 8/9, 5/9, 9/9, 1/9; shuffled 4/9, 4/9, 3/9, 2/9.
+
+The accepted interpretation remains synthetic and apparatus-level: the harness
+can coordinate proof-DAG transitions, resistance routing, peripeteia pressure,
+and matched character-state routing as one adaptation policy layer. It does not
+establish human learning, deployed tutoring reliability, or real interior
+character development.
