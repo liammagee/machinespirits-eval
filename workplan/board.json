@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-30T14:45:11.400Z",
+  "generated": "2026-06-30T20:28:48.807Z",
   "counts": {
     "total": 61,
     "byStatus": {
@@ -676,8 +676,8 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-30",
-      "updated": "2026-06-30",
-      "verification": "Focused tests, mock strict robustness, and real seeds-3 strict robustness pass; Paper 2.0 §6.8.9 records the exploratory synthetic-only boundary.",
+      "updated": "2026-07-01",
+      "verification": "Focused tests, mock strict robustness, real seeds-3 strict robustness, and real expanded-family state_dependent_transfer robustness pass; Paper 2.0 §6.8.9 records the exploratory synthetic-only boundary.",
       "branch": "codex/dag-resistance-adaptation-framework",
       "claim_status": "exploratory",
       "links": {
@@ -699,7 +699,10 @@
           "exports/character-dag-drama-framework-family-controls-real-v2-base/human-pilot-hypotheses.md",
           "exports/character-dag-drama-framework-transfer-specificity-mock/robustness-report.md",
           "exports/character-dag-drama-framework-transfer-specificity-real-base/robustness-report.md",
-          "exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md"
+          "exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-summary.json",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/claim-audit.md"
         ],
         "items": [
           "dag-resistance-character-state-longitudinal",
@@ -726,7 +729,7 @@
       "source": "manual",
       "created": "2026-06-30",
       "updated": "2026-07-01",
-      "verification": "Focused framework tests pass; expanded mock family/control screen passes; bounded real base/state_dependent_transfer screen passes with compressed-state below full and zero label/process leaks.",
+      "verification": "Focused framework tests pass; expanded mock family/control screen passes; bounded real base/state_dependent_transfer screen passes; expanded real family state_dependent_transfer matrix passes with full above policy/shuffled/compressed transfer controls and zero label/process leaks.",
       "branch": "codex/dag-resistance-adaptation-framework",
       "claim_status": "exploratory",
       "links": {
@@ -739,7 +742,10 @@
           "exports/character-dag-drama-framework-transfer-specificity-mock/robustness-report.md",
           "exports/character-dag-drama-framework-transfer-specificity-mock/claim-audit.md",
           "exports/character-dag-drama-framework-transfer-specificity-real-base/robustness-report.md",
-          "exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md"
+          "exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-summary.json",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/claim-audit.md"
         ],
         "items": [
           "character-dag-drama-framework-synthetic-contrast"

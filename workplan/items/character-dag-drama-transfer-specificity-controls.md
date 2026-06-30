@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-06-30
 updated: 2026-07-01
-verification: "Focused framework tests pass; expanded mock family/control screen passes; bounded real base/state_dependent_transfer screen passes with compressed-state below full and zero label/process leaks."
+verification: "Focused framework tests pass; expanded mock family/control screen passes; bounded real base/state_dependent_transfer screen passes; expanded real family state_dependent_transfer matrix passes with full above policy/shuffled/compressed transfer controls and zero label/process leaks."
 branch: codex/dag-resistance-adaptation-framework
 claim_status: exploratory
 links:
@@ -21,6 +21,9 @@ links:
     - exports/character-dag-drama-framework-transfer-specificity-mock/claim-audit.md
     - exports/character-dag-drama-framework-transfer-specificity-real-base/robustness-report.md
     - exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md
+    - exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-report.md
+    - exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-summary.json
+    - exports/character-dag-drama-framework-transfer-specificity-real-family/claim-audit.md
   items:
     - character-dag-drama-framework-synthetic-contrast
 tags:
@@ -61,3 +64,13 @@ stronger gates: full 7/8 first-response and 3/3 transfer; compressed 5/8
 first-response and 1/3 transfer with two transfer-specificity misses; no target
 label or public theory/process leaks. Next escalation is a larger real
 state-dependent-transfer matrix before any paper update.
+
+2026-07-01 Codex: Larger real expanded-family `state_dependent_transfer` matrix
+passed; Paper 2.0 §6.8.9 now includes the exploratory note. Across `base`,
+`ratio_series`, `definition_boundary`, and `causal_identification`,
+`full_character_dag_drama` reached 15/16, 14/16, 14/16, and 13/16
+first-response success and 6/6, 5/6, 6/6, and 5/6 transfer closure. Policy-only
+and shuffled-state remained at 0/6 transfer in all families, and compressed
+state remained at 0/6 transfer outside the earlier bounded base screen. No
+target-label or public theory/process leaks. This closes the transfer-specific
+control follow-up as a synthetic apparatus result, not a human-learning claim.

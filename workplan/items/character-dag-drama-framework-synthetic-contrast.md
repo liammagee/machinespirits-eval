@@ -7,8 +7,8 @@ priority: P2
 owner: codex
 source: manual
 created: 2026-06-30
-updated: 2026-06-30
-verification: "Focused tests, mock strict robustness, and real seeds-3 strict robustness pass; Paper 2.0 §6.8.9 records the exploratory synthetic-only boundary."
+updated: 2026-07-01
+verification: "Focused tests, mock strict robustness, real seeds-3 strict robustness, and real expanded-family state_dependent_transfer robustness pass; Paper 2.0 §6.8.9 records the exploratory synthetic-only boundary."
 branch: codex/dag-resistance-adaptation-framework
 claim_status: exploratory
 links:
@@ -30,6 +30,9 @@ links:
     - exports/character-dag-drama-framework-transfer-specificity-mock/robustness-report.md
     - exports/character-dag-drama-framework-transfer-specificity-real-base/robustness-report.md
     - exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md
+    - exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-report.md
+    - exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-summary.json
+    - exports/character-dag-drama-framework-transfer-specificity-real-family/claim-audit.md
   items:
     - dag-resistance-character-state-longitudinal
     - character-dag-drama-transfer-specificity-controls
@@ -90,3 +93,15 @@ transfer; zero label/process leaks. This upgrades the stronger-control repair
 from failing to locally supported, but still synthetic-only and not yet a Paper
 2.0 update; next evidence should be a larger real state-dependent-transfer
 matrix across fixture families.
+
+2026-07-01 Codex: Larger real expanded-family `state_dependent_transfer` matrix
+passed and was added to Paper 2.0 §6.8.9 as an exploratory note. The run used
+two seeds, four fixture families (`base`, `ratio_series`,
+`definition_boundary`, `causal_identification`), seven arms, and eight scenes.
+All family runs passed acceptance under `character-dag-drama-observer.v0.5`;
+overall robustness passed; full first-response success was 15/16, 14/16,
+14/16, and 13/16, while policy-only was 6/16, 3/16, 5/16, and 4/16 and
+shuffled-state was 7/16, 6/16, 6/16, and 5/16. Full transfer closure was 6/6,
+5/6, 6/6, and 5/6; policy/shuffled transfer stayed 0/6 in all families. Claim
+boundary remains synthetic apparatus form only: no human learning, no deployed
+reliability, and no real interior character-development claim.
