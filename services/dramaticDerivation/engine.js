@@ -707,7 +707,7 @@ export async function runDrama({ world, roles, options = {} }) {
     const strainedSignals = new Set(['stalled', 'echo_only', 'misapplied', 'overloaded', 'purpose_gap']);
     let selected = null;
     for (let i = rows.length - 1; i >= 0; i -= 1) {
-      if (rows[i].scope === 'next_act') {
+      if (rows[i].scope === 'act' || rows[i].scope === 'next_act') {
         selected = rows[i];
         break;
       }
