@@ -223,7 +223,10 @@ function triggerFromSignals({
   const didacticFailed =
     didacticMode?.learningSignal &&
     didacticMode.learningSignal !== 'unknown' &&
-    (didacticMode.scope === 'next_act' || scene?.closeStatus === 'needs_repair' || scene?.status === 'needs_repair');
+    (didacticMode.scope === 'act' ||
+      didacticMode.scope === 'next_act' ||
+      scene?.closeStatus === 'needs_repair' ||
+      scene?.status === 'needs_repair');
   if (posture === 'fluent_echo' || didacticMode?.learningSignal === 'echo_only') {
     return { trigger: 'echo_without_ownership', rationale: 'public learner talk echoes the tutor without ownership' };
   }
