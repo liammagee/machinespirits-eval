@@ -770,7 +770,7 @@ function markdownClaimAudit(summary) {
   return `${lines.join('\n')}\n`;
 }
 
-function buildHumanPilotHypotheses(summary) {
+function buildHumanPilotHypotheses(_summary) {
   return [
     {
       id: 'hp1_state_conditioned_transfer',

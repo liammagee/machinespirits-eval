@@ -1,10 +1,29 @@
 # Adaptive Tutor Didactic Mode Plan
 
-**Status:** proposed next-after-discursive arc  
+**Status:** implemented scaffold, not promoted
 **Date:** 2026-06-16  
-**Activation gate:** do not commence implementation until the current discursive calibration arm concludes and its final local/paid evidence is summarized.  
+**Activation gate:** local scaffold implementation is complete; experimental activation remains gated on proof-safe uptake/ownership evidence.
 **Primary substrate:** hidden + proofDebt proof-continuity control  
 **Primary question:** when the learner is not learning the current object, can the tutor switch explanatory mode at scene or act scale without weakening proof control?
+
+---
+
+## Current Status: Implemented Scaffold, Not Promoted
+
+Didactic mode primitives, public-only audit, rhetorical-policy integration,
+runtime flag, replay inheritance, and act-level metadata carryover are
+implemented and locally gated.
+
+The local Hethel S0/S1 mock pair changed explanatory/rhetorical regime while
+preserving prefix integrity, release timing, and proof-control state. It did not
+improve the formal outcome or demonstrate ownership/uptake gain.
+
+Didactic mode is retained as a quality-layer scaffold. It is not promoted as
+proof control, and no paid mini-run is warranted from the current local evidence.
+
+The original activation gate is superseded for local scaffold implementation.
+Experimental activation remains gated: no paid run or policy promotion without
+proof-safe uptake/ownership evidence.
 
 ---
 
@@ -148,7 +167,9 @@ Acts are the escalation scope. If a scene-level mode fails, the next act plot ma
 
 ## 6. Implementation Surfaces
 
-Do this only after the discursive arm concludes.
+Implementation is complete for the local scaffold. The original "after the
+discursive arm concludes" gate is retained as historical sequencing, not as a
+current blocker for the documented local surfaces.
 
 Likely new files:
 
@@ -228,7 +249,9 @@ Primary paid outcomes, only after local gates:
 
 ### Phase 0: Wait and Summarize Discursive Arm
 
-Do not begin implementation until the current discursive arm has concluded.
+Historical gate: implementation was originally blocked until the discursive arm
+concluded. Local scaffold implementation has since completed; future experimental
+activation remains gated on proof-safe uptake/ownership evidence.
 
 Deliverable:
 
@@ -348,7 +371,9 @@ Status 2026-06-16: minimal metadata path implemented.
 
 ### Phase 5: Paid Mini-Run
 
-Only after replay gates pass.
+Not warranted from the current local evidence. A paid mini-run may be considered
+only for a future proof-safe uptake/ownership study after replay gates pass on a
+new predeclared design.
 
 Candidate design:
 
@@ -401,7 +426,7 @@ The useful claim to aim for is narrower:
 
 ## 10. First Candidate Local Gate
 
-After the discursive arm concludes:
+Historical local-gate recipe, now completed for the first scaffold pass:
 
 1. Choose one existing replay prefix with repeated public non-uptake.
 2. Build a fixture from the public transcript and safe metadata only.

@@ -386,7 +386,6 @@ function learnerResponseMode({ armConfig, characterState, scene }) {
 
 function publicLearnerContext({ fixture, arm, armConfig, learnerMode, scene, sceneIndex, seedIndex, characterState }) {
   const stateControl = stateControlForArm(armConfig);
-  const shuffled = stateControl === 'mismatched_prior';
   const routed = stateControl !== 'none';
   const matched = stateControl === 'matched_prior';
   const dramatic = armConfig.drama_routing === true;
@@ -470,7 +469,7 @@ function publicLearnerContext({ fixture, arm, armConfig, learnerMode, scene, sce
   };
 }
 
-function partialResponse(scene) {
+function partialResponse() {
   return 'Because the relation I named supports the next step.';
 }
 
@@ -1096,7 +1095,6 @@ function seedResultsFromRows({ seedCount, sceneRows, seedStates, arm }) {
 async function runArm({
   fixture,
   arm,
-  llm,
   learnerMode,
   seedCount,
   targetLabels,
