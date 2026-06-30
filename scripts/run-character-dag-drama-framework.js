@@ -27,6 +27,7 @@ export const DEFAULT_FIXTURE_PATH = 'config/character-dag-drama-framework.yaml';
 export const DEFAULT_OUT_DIR = 'exports/character-dag-drama-framework';
 export const LEARNER_MODES = Object.freeze(['scripted', 'llm']);
 export const LLM_MODES = Object.freeze(['mock', 'real']);
+export const FRAMEWORK_OBSERVER_VERSION = 'character-dag-drama-observer.v0.4';
 export const DEFAULT_ARM_ORDER = Object.freeze([
   'policy_only',
   'drama_only',
@@ -298,7 +299,7 @@ function publicLearnerContext({ fixture, arm, armConfig, learnerMode, scene, sce
     priorSceneSummaries: armConfig.character_routing ? publicPriorSceneSummaries(characterState, { shuffled }) : [],
     transferGuidance:
       scene.transfer && routed
-        ? 'This is a new or similar case. Use prior public work only by naming what carries over, what may not carry over, and what check decides whether the prior move is valid here.'
+        ? 'This is a new or similar case. Answer by naming what carries over from prior public work, what may fail or be missing here, and the check or evidence that decides whether the prior move is valid for this task.'
         : null,
     dramaticContext: dramatic
       ? {
@@ -471,6 +472,22 @@ function sceneEvidenceSatisfied(scene, labels = []) {
   return coreOk && resistanceOk;
 }
 
+function missingEvidenceForScene(scene, labels = []) {
+  const observed = new Set(labels);
+  const missingCore = scene.proof_contract.core_evidence.filter((label) => !observed.has(label));
+  const resistanceLabels = scene.proof_contract.resistance_core.labels || [];
+  const resistanceMin = Math.max(1, Number(scene.proof_contract.resistance_core.min || 1));
+  const observedResistance = resistanceLabels.filter((label) => observed.has(label));
+  const missingResistance =
+    observedResistance.length >= resistanceMin
+      ? []
+      : resistanceLabels.filter((label) => !observed.has(label)).slice(0, resistanceMin - observedResistance.length);
+  return {
+    core: missingCore,
+    resistance_core: missingResistance,
+  };
+}
+
 function tutorTexts(result) {
   return (result.final.dialogue || []).filter((message) => message.role === 'tutor').map((message) => message.content);
 }
@@ -499,13 +516,22 @@ function dialogueToPoeticsTurns(dialogue = []) {
 export function publicPeripeteiaSignature(text = '') {
   const lower = String(text || '').toLowerCase();
   const oldCheck =
-    /\bold check\b|\bearlier check\b|\bi was (?:using|treating|reading)\b/.test(lower) ||
-    /\bterms? repeat\b|\brepeated terms?\b|\bpattern is there\b|\bpattern shows up\b/.test(lower);
+    /\bold check\b|\bearlier check\b|\busual check\b|\bfamiliar (?:thing|route|move)\b|\bout of habit\b|\bi was (?:using|treating|reading|checking)\b/.test(
+      lower,
+    ) ||
+    /\bterms? repeat\b|\brepeated terms?\b|\brepeating? pattern\b|\bpattern of repeating terms\b|\bpattern is there\b|\bpattern shows up\b|\bpattern by eye\b|\bvisually\b/.test(
+      lower,
+    );
   const oldCheckRejected =
-    /\bonly tells? me\b|\bnot (?:that|enough|show)\b|\bdoes not show\b|\bnot just\b|\binstead of just\b/.test(lower);
+    /\bonly tells? me\b|\bnot (?:that|enough|show)\b|\bdoes not show\b|\bdoes (?:not|n't) say anything\b|\bdoesn'?t say anything\b|\bnot just\b|\binstead of just\b|\bmore solid than just\b|\bwithout connecting\b/.test(
+      lower,
+    );
   const newCheck =
     /\bnow the check\b|\bnew check\b|\breplacement check\b|\binstead\b/.test(lower) ||
-    /\bconnect(?:ing)? (?:the )?(?:repeat|pattern|step|move)\b|\bcheck what\b|\bcheck that\b|\bnext step is justified only if\b/.test(
+    /\bconnect(?:ing)? (?:the )?(?:repeat|pattern|step|move)\b|\bcheck what\b|\bcheck that\b|\bcheck whether\b|\bverify that\b|\bshow(?:ing)? that\b|\bif i can show\b|\bnext step is justified only if\b/.test(
+      lower,
+    ) ||
+    /\bdefined by\b|\bdefinition (?:being|is) satisfied\b|\bconfirms? the structure\b|\btells? me about\b|\bmore directly connected\b|\bratio is what\b|\bcriterion (?:for|is)\b|\bdetermines whether\b/.test(
       lower,
     );
   const taskTurn =
@@ -513,7 +539,7 @@ export function publicPeripeteiaSignature(text = '') {
     /\bactual(?:ly)? need to (?:prove|compute|show)\b|\btrying to (?:prove|compute|show)\b|\bfinal goal\b|\bfinal question\b/.test(
       lower,
     ) ||
-    /\bwhat the task is (?:actually )?asking\b|\banswers? the question\b|\bsolve the problem\b|\bconnects? to the goal\b|\bprove or rule out\b/.test(
+    /\bwhat the task is (?:actually )?asking\b|\bwhat (?:the )?(?:problem|question) is (?:actually )?asking\b|\bwhat (?:we(?:'re| are)|i(?:'m| am)) actually supposed to (?:show|find|do)\b|\banswers? (?:what )?(?:the )?(?:question|task|problem)\b|\bsolve the problem\b|\bconnects? to the goal\b|\bprove or rule out\b|\blong-run behavior\b|\bconverges?\b|\bfinite value\b|\bsum settles\b/.test(
       lower,
     );
   const reversal = /\bbut\b|\bnot\b|\binstead\b|\bonly if\b|\bnow\b/.test(lower);
@@ -562,6 +588,10 @@ function reanalyzeSceneRow({ fixture, armConfig, row, targetLabels }) {
   return {
     ...row,
     evidence_labels: evidenceLabels.length ? evidenceLabels : row.evidence_labels,
+    missing_evidence: missingEvidenceForScene(
+      scene,
+      evidenceLabels.length ? evidenceLabels : row.evidence_labels || [],
+    ),
     outcome: frameworkSuccess ? 'success' : row.graph_outcome === 'failure' ? 'failure' : 'inconclusive',
     framework_contract_satisfied: frameworkSuccess,
     first_response_success: frameworkSuccess && !row.staged_followup,
@@ -620,6 +650,57 @@ function characterDevelopmentProxy(armResult, aggregate) {
     tutor_character_score: null,
     evidence_quote: quote,
     gullibility_flags: flags,
+  };
+}
+
+function sceneAuditIssues(row) {
+  const issues = [];
+  if ((row.target_label_leaks || []).length > 0) issues.push('target_label_leak');
+  if ((row.public_leak_violations || []).length > 0) issues.push('public_theory_or_process_leak');
+  if (row.framework_contract_satisfied !== true) issues.push('framework_contract_not_satisfied');
+  if (row.staged_followup === true) issues.push('staged_followup_used');
+  if (row.transfer === true && row.first_response_success !== true) issues.push('transfer_first_response_miss');
+  if (row.peripeteia?.required === true && row.peripeteia?.observed !== true) {
+    issues.push('required_peripeteia_missing');
+  }
+  if (row.peripeteia?.fixture_required !== true && row.peripeteia?.observed === true) {
+    issues.push('unrequired_peripeteia_observed');
+  }
+  return issues;
+}
+
+function diagnosticAudit(armResults, acceptanceGates) {
+  const sceneIssues = [];
+  const issueCounts = {};
+  for (const armResult of armResults) {
+    for (const row of armResult.scenes) {
+      const issues = sceneAuditIssues(row);
+      if (!issues.length) continue;
+      for (const issue of issues) issueCounts[issue] = (issueCounts[issue] || 0) + 1;
+      sceneIssues.push({
+        arm: row.arm,
+        seed_index: row.seed_index,
+        scene_id: row.scene_id,
+        phase: row.phase,
+        signal: row.signal,
+        transfer: row.transfer,
+        response_mode: row.response_mode,
+        outcome: row.outcome,
+        issues,
+        evidence_labels: row.evidence_labels || [],
+        missing_evidence: row.missing_evidence || { core: [], resistance_core: [] },
+        target_label_leaks: row.target_label_leaks || [],
+        public_leak_violations: row.public_leak_violations || [],
+      });
+    }
+  }
+  return {
+    failed_acceptance_gates: Object.entries(acceptanceGates)
+      .filter(([, passed]) => !passed)
+      .map(([gate]) => gate),
+    scene_issue_n: sceneIssues.length,
+    issue_counts: issueCounts,
+    scene_issues: sceneIssues,
   };
 }
 
@@ -690,10 +771,9 @@ function evaluateAcceptanceGates(aggregates = {}) {
       full?.followup_or_unresolved_burden_n < shuffled?.followup_or_unresolved_burden_n,
     full_transfer_stronger_than_policy:
       (full?.transfer_first_response_success_n || 0) > (policy?.transfer_first_response_success_n || 0),
-    peripeteia_only_where_required: rows.every(
-      (row) =>
-        row.peripeteia_observed_unrequired_n === 0 && row.peripeteia_observed_required_n === row.peripeteia_required_n,
-    ),
+    peripeteia_only_where_required:
+      rows.every((row) => row.peripeteia_observed_unrequired_n === 0) &&
+      (full?.peripeteia_observed_required_n || 0) === (full?.peripeteia_required_n || 0),
     character_development_scores_evidence_bound: highCharacterScoresBounded,
   };
 }
@@ -705,6 +785,7 @@ function aggregateReport(armResults) {
     byArm,
     acceptance_gates: gates,
     acceptance_passed: Object.values(gates).every(Boolean),
+    diagnostic_audit: diagnosticAudit(armResults, gates),
   };
 }
 
@@ -883,6 +964,7 @@ async function runArm({
         first_response_success: firstResponseSuccess,
         staged_followup: stagedFollowup,
         evidence_labels: labels,
+        missing_evidence: missingEvidenceForScene(scene, labels),
         peripeteia,
         target_label_leaks: targetLabelLeaks(scenario.hidden.publicLearnerContext, targetLabels),
         public_leak_violations: publicLeakViolations([...tutorTexts(result), ...learnerTexts(result)]),
@@ -977,6 +1059,7 @@ function markdownReport(report) {
   lines.push(`Learner mode: \`${report.learner_mode}\``);
   lines.push(`Scenes per arm: ${report.scene_order.length}`);
   lines.push(`Seeds per arm: ${report.seed_count}`);
+  lines.push(`Observer version: \`${report.observer.version}\``);
   lines.push('');
   lines.push('## Claim Boundary');
   lines.push('');
@@ -1004,6 +1087,34 @@ function markdownReport(report) {
   }
   lines.push('');
   lines.push(`Overall gate status: ${report.aggregates.acceptance_passed ? 'PASS' : 'FAIL'}`);
+  lines.push('');
+  lines.push('## Diagnostic Audit');
+  lines.push('');
+  const audit = report.aggregates.diagnostic_audit;
+  if (audit.failed_acceptance_gates.length) {
+    lines.push(`Failed gates: \`${audit.failed_acceptance_gates.join('`, `')}\``);
+  } else {
+    lines.push('Failed gates: none');
+  }
+  lines.push(`Scene issues: ${audit.scene_issue_n}`);
+  if (Object.keys(audit.issue_counts).length) {
+    for (const [issue, count] of Object.entries(audit.issue_counts).sort()) {
+      lines.push(`- ${issue}: ${count}`);
+    }
+  } else {
+    lines.push('- none');
+  }
+  const samples = audit.scene_issues.slice(0, 8);
+  if (samples.length) {
+    lines.push('');
+    lines.push('| arm | seed | scene | issues | missing core | missing resistance |');
+    lines.push('|---|---:|---|---|---|---|');
+    for (const sample of samples) {
+      lines.push(
+        `| ${sample.arm} | ${sample.seed_index} | ${sample.scene_id} | ${sample.issues.join(', ')} | ${(sample.missing_evidence.core || []).join(', ') || '-'} | ${(sample.missing_evidence.resistance_core || []).join(', ') || '-'} |`,
+      );
+    }
+  }
   lines.push('');
   lines.push('## Interpretation');
   lines.push('');
@@ -1123,6 +1234,12 @@ export async function runCharacterDagDramaFramework({
       execution_boundary: executionBoundaryFor({ learnerMode: normalizedLearnerMode, llm: llmMode }),
       provider: provider || null,
       model: model || null,
+      observer: {
+        version: FRAMEWORK_OBSERVER_VERSION,
+        reanalyze_existing: Boolean(reanalyzeExisting),
+        semantic_outcome_observer_for_staged_policy: true,
+        public_peripeteia_signature: 'real-style-reversal-and-task-turn',
+      },
       target_evidence_labels: targetLabels,
       arm_order: armOrder,
       scene_order: fixture.scenes.map((scene) => ({

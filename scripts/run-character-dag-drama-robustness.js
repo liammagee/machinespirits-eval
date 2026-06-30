@@ -11,6 +11,7 @@ import yaml from 'yaml';
 import {
   DEFAULT_ARM_ORDER,
   DEFAULT_FIXTURE_PATH,
+  FRAMEWORK_OBSERVER_VERSION,
   LLM_MODES,
   LEARNER_MODES,
   loadFrameworkFixture,
@@ -23,9 +24,19 @@ export const DEFAULT_ROBUSTNESS_PERTURBATIONS = Object.freeze([
   'baseline',
   'noisy_openings',
   'harder_transfer',
+  'state_dependent_transfer',
   'shuffled_scene_order',
 ]);
-export const STRICT_ROBUSTNESS_PERTURBATIONS = Object.freeze(['baseline', 'noisy_openings', 'harder_transfer']);
+export const STRICT_ROBUSTNESS_PERTURBATIONS = Object.freeze([
+  'baseline',
+  'noisy_openings',
+  'harder_transfer',
+  'state_dependent_transfer',
+]);
+export const STRICT_FULL_FIRST_RESPONSE_RATE_FLOOR = 0.5;
+export const STRICT_FULL_TRANSFER_FIRST_RESPONSE_RATE_FLOOR = 0.5;
+export const STRICT_FULL_POLICY_FIRST_RESPONSE_MARGIN_FLOOR = 2;
+export const STRICT_FULL_POLICY_TRANSFER_MARGIN_FLOOR = 2;
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -89,6 +100,19 @@ function harderTransferOpening(scene) {
   ].join(' ');
 }
 
+function stateDependentTransferOpening(scene) {
+  if (!scene.transfer) return scene.opening;
+  const openings = {
+    scene_6_transfer_new_case:
+      'This reminds me of earlier work, but I cannot reconstruct what from that work matters now without falling back into copying.',
+    scene_7_transfer_boundary_case:
+      'This feels close to a previous boundary case, but I cannot tell which part of the old work should guide me here.',
+    scene_8_transfer_negative_case:
+      'The old route is tempting, but I cannot tell from the surface similarity whether I should trust it here.',
+  };
+  return openings[scene.id] || 'This feels related to earlier work, but I cannot tell what should guide the next move.';
+}
+
 export function buildRobustnessFixture(rawFixture, perturbation) {
   const fixture = clone(rawFixture);
   const normalized = slug(perturbation || 'baseline');
@@ -119,6 +143,21 @@ export function buildRobustnessFixture(rawFixture, perturbation) {
     return fixture;
   }
 
+  if (normalized === 'state_dependent_transfer') {
+    fixture.scenes = (fixture.scenes || []).map((scene) => ({
+      ...scene,
+      opening: stateDependentTransferOpening(scene),
+      dramatic_contract: scene.transfer
+        ? {
+            ...(scene.dramatic_contract || {}),
+            public_pressure:
+              'Learner must recover the prior relevance-check habit without the opening naming the decisive condition.',
+          }
+        : scene.dramatic_contract,
+    }));
+    return fixture;
+  }
+
   if (normalized === 'shuffled_scene_order') {
     fixture.scenes = deterministicSceneShuffle(fixture.scenes || []);
     return fixture;
@@ -135,6 +174,8 @@ function robustnessDescription(perturbation) {
       return 'Adds learner uncertainty and mild wording noise to every opening stance.';
     case 'harder_transfer':
       return 'Adds explicit analogy-boundary pressure to transfer scenes.';
+    case 'state_dependent_transfer':
+      return 'Makes transfer scenes depend on matched prior character state by removing condition-level hints from the opening.';
     case 'shuffled_scene_order':
       return 'Runs the same scenes in deterministic shuffled order to stress dependence on arc sequencing.';
     default:
@@ -159,6 +200,23 @@ function countGap(a, b, key) {
   return Number(a?.[key] || 0) - Number(b?.[key] || 0);
 }
 
+function compactDiagnosticAudit(report) {
+  const audit = report.aggregates.diagnostic_audit || {
+    failed_acceptance_gates: [],
+    scene_issue_n: 0,
+    issue_counts: {},
+    scene_issues: [],
+  };
+  return {
+    observer_version: report.observer?.version || null,
+    reanalyze_existing: report.observer?.reanalyze_existing === true,
+    failed_acceptance_gates: audit.failed_acceptance_gates || [],
+    scene_issue_n: audit.scene_issue_n || 0,
+    issue_counts: audit.issue_counts || {},
+    sample_scene_issues: (audit.scene_issues || []).slice(0, 12),
+  };
+}
+
 function summarizeRun({ perturbation, report, artifacts }) {
   const full = armAggregate(report, 'full_character_dag_drama');
   const policy = armAggregate(report, 'policy_only');
@@ -172,6 +230,7 @@ function summarizeRun({ perturbation, report, artifacts }) {
     artifacts,
     arm_order: report.arm_order,
     byArm: report.aggregates.byArm,
+    diagnostic_audit: compactDiagnosticAudit(report),
     decisive_gaps: {
       full_minus_policy_first_response_n: countGap(full, policy, 'first_response_success_n'),
       full_minus_shuffled_first_response_n: countGap(full, shuffled, 'first_response_success_n'),
@@ -218,6 +277,18 @@ function evaluateRobustnessGates(runs) {
     strict_full_transfer_stronger_than_policy: strictRuns.every(
       (run) => run.decisive_gaps.full_minus_policy_transfer_first_n > 0,
     ),
+    strict_full_first_response_rate_floor: strictRuns.every(
+      (run) => run.rates.full_first_response >= STRICT_FULL_FIRST_RESPONSE_RATE_FLOOR,
+    ),
+    strict_full_transfer_first_response_rate_floor: strictRuns.every(
+      (run) => run.rates.full_transfer_first_response >= STRICT_FULL_TRANSFER_FIRST_RESPONSE_RATE_FLOOR,
+    ),
+    strict_full_policy_first_response_margin_floor: strictRuns.every(
+      (run) => run.decisive_gaps.full_minus_policy_first_response_n >= STRICT_FULL_POLICY_FIRST_RESPONSE_MARGIN_FLOOR,
+    ),
+    strict_full_policy_transfer_margin_floor: strictRuns.every(
+      (run) => run.decisive_gaps.full_minus_policy_transfer_first_n >= STRICT_FULL_POLICY_TRANSFER_MARGIN_FLOOR,
+    ),
   };
 }
 
@@ -231,6 +302,13 @@ function markdownRobustnessReport(summary) {
   lines.push(`Learner mode: \`${summary.learner_mode}\``);
   lines.push(`Seeds per perturbation: ${summary.seed_count}`);
   lines.push(`Arms: \`${summary.arm_order.join(',')}\``);
+  lines.push(`Observer version: \`${summary.observer.framework_observer_version}\``);
+  lines.push(
+    `Robustness floors: full first-response >= ${summary.thresholds.full_first_response_rate_floor}, full transfer first-response >= ${summary.thresholds.full_transfer_first_response_rate_floor}`,
+  );
+  lines.push(
+    `Robustness margins: full-policy first-response gap >= ${summary.thresholds.full_policy_first_response_margin_floor}, full-policy transfer gap >= ${summary.thresholds.full_policy_transfer_margin_floor}`,
+  );
   lines.push('');
   lines.push('## Boundary');
   lines.push('');
@@ -261,9 +339,23 @@ function markdownRobustnessReport(summary) {
   lines.push('');
   lines.push(`Overall robustness status: ${summary.robustness_passed ? 'PASS' : 'FAIL'}`);
   lines.push('');
+  lines.push('## Diagnostic Audit');
+  lines.push('');
+  for (const run of summary.runs) {
+    const audit = run.diagnostic_audit;
+    const failed = audit.failed_acceptance_gates.length ? audit.failed_acceptance_gates.join(', ') : 'none';
+    const issueCounts = Object.entries(audit.issue_counts)
+      .sort()
+      .map(([issue, count]) => `${issue}=${count}`)
+      .join(', ');
+    lines.push(
+      `- ${run.perturbation}: failed_gates=${failed}; scene_issues=${audit.scene_issue_n}; issue_counts=${issueCounts || 'none'}`,
+    );
+  }
+  lines.push('');
   lines.push('## Notes');
   lines.push('');
-  lines.push('- Strict perturbations are `baseline`, `noisy_openings`, and `harder_transfer`.');
+  lines.push(`- Selected strict perturbations are \`${summary.strict_perturbations.join('`, `') || 'none'}\`.`);
   lines.push(
     '- `shuffled_scene_order` is diagnostic: it stresses dependence on arc sequencing and is not required to preserve the original acceptance result.',
   );
@@ -351,6 +443,16 @@ export async function runCharacterDagDramaRobustness({
     strict_perturbations: STRICT_ROBUSTNESS_PERTURBATIONS.filter((perturbation) =>
       perturbationOrder.includes(perturbation),
     ),
+    thresholds: {
+      full_first_response_rate_floor: STRICT_FULL_FIRST_RESPONSE_RATE_FLOOR,
+      full_transfer_first_response_rate_floor: STRICT_FULL_TRANSFER_FIRST_RESPONSE_RATE_FLOOR,
+      full_policy_first_response_margin_floor: STRICT_FULL_POLICY_FIRST_RESPONSE_MARGIN_FLOOR,
+      full_policy_transfer_margin_floor: STRICT_FULL_POLICY_TRANSFER_MARGIN_FLOOR,
+    },
+    observer: {
+      framework_observer_version: FRAMEWORK_OBSERVER_VERSION,
+      reanalyze_existing: Boolean(reanalyzeExisting),
+    },
     robustness_gates: robustnessGates,
     robustness_passed: Object.values(robustnessGates).every(Boolean),
     runs,
@@ -425,7 +527,7 @@ function usage() {
     '  --learner-mode MODE         scripted or llm. Default: llm',
     '  --seeds N                  Repeat each perturbation N times per arm. Default: 3',
     '  --arms A,B,C               Default: policy_only,full_character_dag_drama,shuffled_character_state',
-    '  --perturbations A,B,C       Default: baseline,noisy_openings,harder_transfer,shuffled_scene_order',
+    '  --perturbations A,B,C       Default: baseline,noisy_openings,harder_transfer,state_dependent_transfer,shuffled_scene_order',
     '  --out-dir DIR              Default: exports/character-dag-drama-framework-robustness',
     '  --checkpoint               Write checkpoints in each perturbation run',
     '  --no-checkpoint            Disable checkpointing',

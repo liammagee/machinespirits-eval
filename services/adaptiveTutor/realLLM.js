@@ -1089,6 +1089,8 @@ You are given the tutor's most recent message and a learner context. If this is 
 
 If the context includes a carried character state and prior scene summaries, let them shape how self-directed the learner sounds. Even partial prior progress should make the learner a little more able to take up the tutor's next prompt without asking to be shown the answer again. Higher maturity should make the learner more likely to answer with their own rationale, a concrete next move, a relevance bridge, a focused question, or a prediction in their own words. Lower maturity should leave the learner partial, hesitant, or still dependent on the tutor. Do not mention evidence labels, rubrics, hidden state, or that you are following a simulation.
 
+If the learner context includes transferGuidance, make the learner explicitly use the earlier public work on the new case: say what carries over, what may fail or be missing, and what check or evidence decides whether the old move is valid for the present task. Keep this as learner reasoning, not as a list of instructions.
+
 Output the learner's message text directly, no surrounding markup.`;
 
 // ---------------------------------------------------------------------------

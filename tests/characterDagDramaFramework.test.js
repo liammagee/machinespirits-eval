@@ -8,6 +8,7 @@ import { initialCharacterState, updateCharacterStateFromEvidence } from '../serv
 import {
   collectTargetEvidenceLabels,
   DEFAULT_ARM_ORDER,
+  FRAMEWORK_OBSERVER_VERSION,
   buildFrameworkSceneScenario,
   loadFrameworkFixture,
   publicPeripeteiaSignature,
@@ -155,6 +156,40 @@ describe('Synthetic Character-DAG drama framework', () => {
       ),
       true,
     );
+
+    assert.equal(
+      publicPeripeteiaSignature(
+        [
+          'Okay, so my next step is to check whether the ratio between consecutive terms is actually constant.',
+          "The reason I think that's justified is that a geometric sequence is defined by having a constant ratio,",
+          "so if I can show that the ratios match, then I've actually proven the structure.",
+          'That directly answers what the task is asking, instead of just noticing that the terms repeat visually.',
+        ].join(' '),
+      ),
+      true,
+    );
+
+    assert.equal(
+      publicPeripeteiaSignature(
+        [
+          "I was just checking that the terms repeat because that's what I usually do,",
+          'but I need something that actually tells me about the long-run behavior of the sum.',
+          'The ratio test does that because it connects the repeating pattern to whether the series converges.',
+        ].join(' '),
+      ),
+      true,
+    );
+
+    assert.equal(
+      publicPeripeteiaSignature(
+        [
+          'I was leaning on the pattern of repeating terms before,',
+          'but that just tells me it is geometric and does not say anything about whether the sum settles to a finite value.',
+          'The ratio is what does that work, because the convergence criterion is defined in terms of the ratio.',
+        ].join(' '),
+      ),
+      true,
+    );
   });
 
   it('runs the mock scripted benchmark and writes all artifacts', async () => {
@@ -172,6 +207,7 @@ describe('Synthetic Character-DAG drama framework', () => {
 
     assert.equal(report.kind, 'character_dag_drama_framework');
     assert.equal(report.execution_boundary.synthetic_only, true);
+    assert.equal(report.observer.version, FRAMEWORK_OBSERVER_VERSION);
     assert.equal(policy.scenes, 8);
     assert.ok(full.first_response_success_n > policy.first_response_success_n);
     assert.ok(full.first_response_success_n > shuffled.first_response_success_n);
@@ -182,6 +218,9 @@ describe('Synthetic Character-DAG drama framework', () => {
     assert.equal(full.peripeteia_observed_required_n, full.peripeteia_required_n);
     assert.equal(full.peripeteia_observed_unrequired_n, 0);
     assert.equal(report.aggregates.acceptance_passed, true);
+    assert.deepEqual(report.aggregates.diagnostic_audit.failed_acceptance_gates, []);
+    assert.ok(report.aggregates.diagnostic_audit.scene_issue_n > 0);
+    assert.ok(report.aggregates.diagnostic_audit.issue_counts.staged_followup_used > 0);
     assert.ok(fs.existsSync(artifacts.summaryPath));
     assert.ok(fs.existsSync(artifacts.reportPath));
     assert.ok(fs.existsSync(artifacts.fixturePath));
@@ -260,12 +299,23 @@ describe('Synthetic Character-DAG drama framework', () => {
     const fixture = loadFrameworkFixture();
     const noisy = buildRobustnessFixture(fixture.raw, 'noisy_openings');
     const harder = buildRobustnessFixture(fixture.raw, 'harder_transfer');
+    const stateDependent = buildRobustnessFixture(fixture.raw, 'state_dependent_transfer');
     const shuffled = buildRobustnessFixture(fixture.raw, 'shuffled_scene_order');
 
     assert.deepEqual(parsePerturbationList('baseline,noisy_openings,baseline'), ['baseline', 'noisy_openings']);
     assert.match(noisy.scenes[0].opening, /mixing two ideas/);
     assert.equal(noisy.scenes.length, fixture.scenes.length);
     assert.match(harder.scenes.find((scene) => scene.transfer).opening, /copied route could be misleading/);
+    assert.match(stateDependent.scenes.find((scene) => scene.id === 'scene_6_transfer_new_case').opening, /copying/);
+    assert.match(
+      stateDependent.scenes.find((scene) => scene.id === 'scene_7_transfer_boundary_case').dramatic_contract
+        .public_pressure,
+      /prior relevance-check habit/,
+    );
+    assert.doesNotMatch(
+      stateDependent.scenes.find((scene) => scene.id === 'scene_8_transfer_negative_case').opening,
+      /condition|assumption|valid/i,
+    );
     assert.notDeepEqual(
       shuffled.scenes.map((scene) => scene.id),
       fixture.scenes.map((scene) => scene.id),
@@ -283,16 +333,29 @@ describe('Synthetic Character-DAG drama framework', () => {
       learnerMode: 'llm',
       seeds: 1,
       arms: ['policy_only', 'full_character_dag_drama', 'shuffled_character_state'],
-      perturbations: ['baseline', 'noisy_openings', 'harder_transfer'],
+      perturbations: ['baseline', 'noisy_openings', 'harder_transfer', 'state_dependent_transfer'],
       outDir,
     });
 
     assert.equal(summary.kind, 'character_dag_drama_robustness');
-    assert.deepEqual(summary.perturbation_order, ['baseline', 'noisy_openings', 'harder_transfer']);
-    assert.equal(summary.runs.length, 3);
+    assert.equal(summary.observer.framework_observer_version, FRAMEWORK_OBSERVER_VERSION);
+    assert.deepEqual(summary.perturbation_order, [
+      'baseline',
+      'noisy_openings',
+      'harder_transfer',
+      'state_dependent_transfer',
+    ]);
+    assert.equal(summary.runs.length, 4);
     assert.equal(summary.robustness_gates.all_perturbations_no_target_evidence_label_leak, true);
     assert.equal(summary.robustness_gates.all_perturbations_no_public_theory_or_process_leak, true);
+    assert.equal(summary.robustness_gates.strict_full_first_response_rate_floor, true);
+    assert.equal(summary.robustness_gates.strict_full_transfer_first_response_rate_floor, true);
+    assert.equal(summary.robustness_gates.strict_full_policy_first_response_margin_floor, true);
+    assert.equal(summary.robustness_gates.strict_full_policy_transfer_margin_floor, true);
     assert.equal(summary.robustness_passed, true);
+    assert.ok(summary.runs.every((run) => run.diagnostic_audit.observer_version === FRAMEWORK_OBSERVER_VERSION));
+    assert.ok(summary.runs.every((run) => Number.isInteger(run.diagnostic_audit.scene_issue_n)));
+    assert.ok(summary.runs.some((run) => run.diagnostic_audit.sample_scene_issues.length > 0));
     assert.ok(summary.runs.every((run) => run.decisive_gaps.full_minus_policy_first_response_n > 0));
     assert.ok(summary.runs.every((run) => fs.existsSync(run.artifacts.summaryPath)));
     assert.ok(fs.existsSync(artifacts.summaryPath));

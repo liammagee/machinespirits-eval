@@ -216,6 +216,9 @@ export function detectOutcomeEvidence(learnerTurn = '', config = {}) {
           /\bconnect (?:it|this|the step|the move) to (?:what|the thing) (?:we(?:'re| are)|i(?:'m| am)) trying\b/u,
           /\bmaking the target testable\b/u,
           /\b(?:old|same|earlier|prior) (?:move|route|step) (?:is|would be|becomes) (?:not )?relevant\b/u,
+          /\b(?:condition|assumption|precondition|guarantee) (?:still )?(?:holds|hold|is still in place|is satisfied|is present)\b/u,
+          /\b(?:only follows|follows only) if (?:the )?(?:condition|assumption|precondition)\b/u,
+          /\bbefore (?:applying|using|trusting|reusing) (?:the )?(?:main |same |old |earlier |prior )?(?:rule|move|route|approach)\b/u,
           /\bneed (?:a|to find a) different (?:route|move|step|link)\b/u,
         ]
       : []),
