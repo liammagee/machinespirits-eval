@@ -1,6 +1,6 @@
 # @machinespirits/eval
 
-Evaluation framework for the Machine Spirits tutor system. Implements a 2x2x2 factorial design testing the effect of Hegelian recognition theory on AI tutoring quality, using LLM-powered ego-superego agent architectures for both tutor and learner.
+Evaluation framework for the Machine Spirits tutor system. It tests how prompt orientation, ego/superego architecture, learner simulation, and explicit state-policy control change AI tutor behaviour.
 
 This is the evaluation and analysis companion to [`@machinespirits/tutor-core`](https://github.com/liammagee/machinespirits-tutor-core).
 
@@ -8,11 +8,11 @@ This is the evaluation and analysis companion to [`@machinespirits/tutor-core`](
 
 The system runs automated tutoring dialogues across configurable experimental cells, then scores them with LLM judges against a multi-dimensional rubric. It supports:
 
-- **Factorial evaluation** — ~97 tutor agent cells varying recognition theory, architecture, learner type, and mechanism design
+- **Mechanism evaluation** — 190+ registered tutor cells varying recognition theory, architecture, learner type, prompt family, id-director variants, and state-policy control
 - **Multi-turn dialogues** — Learner agents with their own ego-superego deliberation
-- **Multi-judge validation** — Cross-judge reliability via Claude Opus, GPT-5.2, and others
+- **Multi-judge validation** — Cross-judge scoring with Sonnet, Gemini, GPT/OpenAI-family, and CLI-backed judges
 - **Placebo/active controls** — Length-matched prompts without recognition theory
-- **Memory isolation** — Disentangling recognition effects from conversational memory
+- **State-governance tests** — Adaptive trap suites, yoked contingency probes, and proof-debt guarded derivation worlds
 
 ## Prerequisites
 
@@ -50,7 +50,7 @@ cp .env.example .env
 
 **Required**: At least `OPENROUTER_API_KEY` for ego/superego model generation.
 
-**For judging**: `ANTHROPIC_API_KEY` (for Claude Opus judge) or use OpenRouter-based judges.
+**For judging**: use the configured default judge, `--judge <provider.alias>`, or `--judge-cli <claude|gemini|codex>` for local CLI-backed scoring.
 
 See `.env.example` for all available configuration options.
 
@@ -73,7 +73,7 @@ node scripts/eval-cli.js run \
   --profiles cell_1_base_single_unified,cell_5_recog_single_unified \
   --runs 3
 
-# Score responses with the default judge (Claude Opus)
+# Score responses with the configured default judge
 node scripts/eval-cli.js evaluate <run-id>
 
 # Re-score with a different judge
@@ -130,7 +130,7 @@ tests/                     Test suites
 
 ### Key configuration files
 
-- `config/tutor-agents.yaml` — All ~97 experimental cells and their prompt mappings
+- `config/tutor-agents.yaml` — Experimental cells and their prompt / runner mappings
 - `config/suggestion-scenarios.yaml` — Learner scenarios (single-turn and multi-turn)
 - `config/evaluation-rubric.yaml` — Tutor rubric (v2.2, 8 dimensions); see also `config/rubrics/v{1.0,2.0,2.1,2.2}/` for versioned rubrics
 - `config/providers.yaml` — AI provider and model configuration
@@ -145,11 +145,22 @@ The core factorial design crosses three factors:
 | B: Tutor architecture | Single-agent vs Ego+Superego |
 | C: Learner architecture | Single-agent vs Multi-agent |
 
-Additional cells test enhanced prompts (9-12), hardwired rules (13-14), placebo controls (15-18), memory isolation (19-20), dynamic prompt rewriting (21), dialectical superego modulation (22-39), self-reflective evolution (40-45), insight-action mechanisms (46-53), other-ego profiling (54-59), dynamic learner mechanism testing (60-79), messages-mode variants (80-90), and pedagogical-orientation density controls (95-96). See `config/tutor-agents.yaml` for the canonical mapping; new cells should be cross-referenced with `services/evaluationRunner.js::EVAL_ONLY_PROFILES` and the `resolveEvalProfile` dispatch.
+Additional cells test enhanced prompts, hardwired rules, placebo controls, memory isolation, dynamic prompt rewriting, dialectical superego modulation, self-reflective evolution, insight-action mechanisms, other-ego profiling, dynamic learner mechanisms, messages-mode variants, pedagogical-orientation density controls, id-director charisma variants, adaptive trap runners, and Plan 2.x state-policy / proof-debt variants. See `config/tutor-agents.yaml` for the canonical mapping; new cells should be cross-referenced with `services/evaluationRunner.js::EVAL_ONLY_PROFILES` and the `resolveEvalProfile` dispatch.
+
+## How to Build an AI Tutor
+
+The current Paper 2.0 result is not "use a longer prompt" or "always add more agents." The build lesson is a layered architecture:
+
+1. **Start with an intersubjective prompt orientation.** Recognition theory is one explicit vocabulary, but matched constructivist prompts grounded in Vygotsky/Piaget-style scaffolding reproduce the effect. The prompt must make the learner's contribution shape the next tutor move.
+2. **Use ego/superego critique selectively.** A second critique-and-revision voice is valuable under baseline or weaker generation, but recognition-oriented prompts substitute for much of that error correction on stronger models.
+3. **Do not count on within-dialogue slope magic.** Recognition improves tutor output from turn one; it does not reliably make quality climb over a 3-5 turn dialogue.
+4. **If adaptivity matters, externalise state and policy.** The later state-policy results work by typed learner-state contracts, outcome closure, and explicit strategy-shift checks, not by asking the tutor to "be more adaptive."
+5. **For proof-like tutoring, put pacing outside the model.** The promoted derivation arm uses hidden `proofDebt` plus a guard that controls premise release. Visible-transcript proxies only work when the task geometry makes visible uptake faithfully project hidden proof state.
+6. **Evaluate the tutor, not just the prompt.** Use matched-specificity controls, multiple judges, per-turn traces, rubric-versioned storage, and human validation before claiming learning outcomes. Current paper claims concern tutor output quality with synthetic learners, not confirmed human learning.
 
 ## Reproducing Paper Findings
 
-The full research paper is at `docs/research/paper-full.md`. A Jupyter notebook in `notebooks/` independently reproduces all 17 tables and key statistical findings.
+The canonical research paper is `docs/research/paper-full-2.0.md`; legacy Paper 1.0 remains at `docs/research/paper-full.md`. Public app-facing explainers live under `public/eval/`, especially `public/eval/geist-explained.html` and `public/eval/geist-in-the-machine.html`.
 
 The evaluation dataset (database + dialogue logs, ~19 MB) is available as a [GitHub Release artifact](https://github.com/liammagee/machinespirits-eval/releases/tag/v0.2.0). See `notebooks/README.md` for setup instructions.
 
