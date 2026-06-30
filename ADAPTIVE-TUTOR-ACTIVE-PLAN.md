@@ -556,9 +556,9 @@ over proof advance, and classify whether the failure is release starvation,
 learner uptake, decay/repair continuity, tutor discourse, or over-constrained
 runtime policy.
 
-A21 opened 2026-06-16 as a separate action-value microbench arc; see
-`A21-action-value-tutoring-microbench-implementation-plan.md` and the copied
-research note at `docs/research/A21-action-value-tutoring-microbench.md`.
+A21 opened 2026-06-16 as a separate action-value microbench arc; see the
+canonical research note at
+`docs/research/A21-action-value-tutoring-microbench.md`.
 Initial implementation is isolated under `services/dramaticDerivation/a21/` and
 does not change selector defaults, hidden+proofDebt behavior, conduct
 enforcement, or paid/replay validation gates. The first scaffold freezes the

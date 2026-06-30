@@ -88,8 +88,10 @@ in the same commit, with a comment explaining why — never silently.
   `buildMenuTemplate({ navItems })` renders them. Add a destination to `NAV` and it
   shows up in BOTH the rail (web + desktop) and the native menu — one definition.
 - **Board CRUD — `POST /api/workplan/{move,add,update,delete}`.** `/board` is an
-  editable kanban: drag = move (status), card click = edit, lane "+" = add, editor
-  Delete = delete. The routes call the workplan's exported `setItemField` /
+  editable kanban: it defaults to open-work focus while `?focus=all` and
+  `?focus=settled` expose completed/dropped history; drag = move (status), card
+  click = edit, lane "+" = add, editor Delete = delete. The routes call the
+  workplan's exported `setItemField` /
   `updateItem` / `addItem` / `deleteItem` (`scripts/workplan.js`), which write the
   item file + re-render `board.json` — the CLI (`wp …`) and the dashboard share that
   one write path. Writes need `workplan/` on disk, so editing works in dev + the
