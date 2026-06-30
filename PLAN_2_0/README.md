@@ -29,6 +29,7 @@ Use this file as the entry point before opening individual Plan 2.x notes.
 | Plan 2.x cleanup status | `latest_paper_status_next_steps.md` |
 | Plan 2.x general adaptation evidence boundary | `plan2-general-adaptation-closeout.md` |
 | Plan 2.1 evidence-bearing closeout | `plan2-1-evidence-bearing-closeout.md` |
+| Layered adaptive-tutor next-stage technical plan | `layered_adaptive_tutor_technical_spec.md` |
 | Real-generation M0 validation runbook | `M0-BASELINE-VALIDATION-RUNBOOK.md` |
 | Yoked-contingency paper-bearing claim boundary | `yoked-contingency-main-claim-readiness.md` |
 
@@ -64,6 +65,7 @@ explicitly reopens the work:
 - `general-adaptation-evidence-plan.md`
 - `plan-2-1-adaptation-technical-plan.md`
 - `plan2-1-belief-closure-technical-plan.md`
+- `layered_adaptive_tutor_technical_spec.md`
 - `plan2_4-world-adaptation-spec-note.md`
 - `plan2_5-rhetorical-dramatic-curriculum-compiler-plan.md`
 - `adaptation-extension-deep-research.md`
