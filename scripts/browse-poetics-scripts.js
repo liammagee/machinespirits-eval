@@ -1692,7 +1692,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // `npm run wp:render`. The project's historical arc now lives in the Project
   // history band on /timeline. Originates no claims — durable results live in
   // /summary + the paper; workplan/items/ is the source of truth.
-  app.get('/board', (_req, res) => res.type('html').send(renderWorkplanBoardHtml()));
+  app.get('/board', (req, res) => res.type('html').send(renderWorkplanBoardHtml(req.query || {})));
   app.get('/api/workplan', (_req, res) => res.json(readWorkplanBoard()));
   // Explicit refresh from disk: regenerate BOARD.md + board.json from
   // workplan/items/*.md, then let the board page reload against fresh artifacts.
@@ -8599,7 +8599,17 @@ function invalidWorkplanFields(b) {
   return null;
 }
 
-function renderWorkplanBoardHtml() {
+function normalizeWorkplanFocus(query = {}) {
+  const requested = String(query.focus || '').toLowerCase();
+  if (['open', 'all', 'settled'].includes(requested)) return requested;
+  const hasTargetedFilter = ['tag', 'type', 'milestone', 'unscheduled', 'item', 'id'].some((key) => {
+    const value = query[key];
+    return value !== undefined && value !== null && String(value) !== '';
+  });
+  return hasTargetedFilter ? 'all' : 'open';
+}
+
+function renderWorkplanBoardHtml(query = {}) {
   const board = readWorkplanBoard();
   const e = escapeHtml;
   const LIFE = ['triaged', 'active', 'blocked', 'review', 'done', 'archived', 'dropped', 'inbox'];
@@ -8607,8 +8617,24 @@ function renderWorkplanBoardHtml() {
   const byId = Object.fromEntries(items.map((i) => [i.id, i]));
   const milestones = loadMilestones();
   const milestoneById = Object.fromEntries(milestones.map((m) => [m.id, m]));
+  const focus = normalizeWorkplanFocus(query);
   const completeStatuses = new Set(['done', 'archived']);
   const openStatuses = new Set(['triaged', 'active', 'blocked', 'review', 'inbox']);
+  const settledStatuses = new Set(['done', 'archived', 'dropped']);
+  const focusedItems =
+    focus === 'open'
+      ? items.filter((i) => openStatuses.has(i.status))
+      : focus === 'settled'
+        ? items.filter((i) => settledStatuses.has(i.status))
+        : items;
+  const openCount = items.filter((i) => openStatuses.has(i.status)).length;
+  const settledCount = items.filter((i) => settledStatuses.has(i.status)).length;
+  const focusSummary =
+    focus === 'open'
+      ? `${focusedItems.length} open item${focusedItems.length === 1 ? '' : 's'} shown; ${settledCount} settled hidden`
+      : focus === 'settled'
+        ? `${focusedItems.length} settled item${focusedItems.length === 1 ? '' : 's'} shown; ${openCount} open hidden`
+        : `${items.length} item${items.length === 1 ? '' : 's'} shown`;
   const milestoneStats = milestones
     .map((m) => {
       const assigned = items.filter((i) => i.milestone === m.id);
@@ -8628,10 +8654,9 @@ function renderWorkplanBoardHtml() {
         String(a.title || a.id).localeCompare(String(b.title || b.id)),
     );
   const unscheduled = items.filter((i) => !i.milestone || !milestoneById[i.milestone]);
-  const types = [...new Set(items.map((i) => i.type).filter(Boolean))].sort();
   const tagFilters = [
     ...new Set(
-      items
+      focusedItems
         .flatMap((i) => (Array.isArray(i.tags) ? i.tags : []))
         .filter((t) =>
           ['scriptorium', 'ux', 'review', 'jobs', 'evidence', 'navigation', 'dashboard', 'static-surfaces'].includes(t),
@@ -8645,7 +8670,7 @@ function renderWorkplanBoardHtml() {
   // JSON cannot break out of the <script> tag it is embedded in.
   const wpData = JSON.stringify({
     items,
-    statuses: DEFAULT_LANES,
+    statuses: WORKPLAN_STATUSES,
     milestones,
     types: WP_TYPES,
     priorities: WP_PRIORITIES,
@@ -8692,9 +8717,11 @@ function renderWorkplanBoardHtml() {
           .join('')}
       </div>`
     : '';
-  const sections = LIFE.filter((s) => DEFAULT_LANES.includes(s) || items.some((i) => i.status === s))
+  const laneDefaults =
+    focus === 'settled' ? ['done', 'archived', 'dropped'] : focus === 'open' ? DEFAULT_LANES : DEFAULT_LANES;
+  const sections = LIFE.filter((s) => laneDefaults.includes(s) || focusedItems.some((i) => i.status === s))
     .map((status) => {
-      const group = items.filter((i) => i.status === status);
+      const group = focusedItems.filter((i) => i.status === status);
       const cards = group
         .map((it) => {
           const tags = [it.type, it.owner, it.claim_status, it.milestone ? `ms:${it.milestone}` : null]
@@ -8724,11 +8751,23 @@ function renderWorkplanBoardHtml() {
     .join('');
   const chips = [
     '<button class="chip on" data-filter="all" data-filter-kind="all">all</button>',
-    ...types.map((t) => `<button class="chip" data-filter="${e(t)}" data-filter-kind="type">${e(t)}</button>`),
+    ...[...new Set(focusedItems.map((i) => i.type).filter(Boolean))]
+      .sort()
+      .map((t) => `<button class="chip" data-filter="${e(t)}" data-filter-kind="type">${e(t)}</button>`),
     ...tagFilters.map(
       (t) => `<button class="chip chip--tag" data-filter="${e(t)}" data-filter-kind="tag">#${e(t)}</button>`,
     ),
   ].join('');
+  const focusChips = [
+    { id: 'open', label: `open ${openCount}` },
+    { id: 'all', label: `all ${items.length}` },
+    { id: 'settled', label: `settled ${settledCount}` },
+  ]
+    .map(
+      (c) =>
+        `<a class="focus-chip${focus === c.id ? ' on' : ''}" href="/board?focus=${e(c.id)}" data-focus="${e(c.id)}">${e(c.label)}</a>`,
+    )
+    .join('');
   const err = board.__error
     ? `<div class="blurb" style="border-left-color:var(--brick);background:var(--brick-soft)">${e(board.__error)}</div>`
     : '';
@@ -8742,6 +8781,10 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 	.board-tools{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:-4px 0 16px; }
 	.board-tools__status{ font:12px ui-monospace,monospace; color:var(--ink-4); min-height:16px; }
 	.board-tools__link{ text-decoration:none; display:inline-flex; align-items:center; }
+	.focus-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 14px; }
+	.focus-row__note{ font:12px ui-monospace,monospace; color:var(--ink-4); }
+	.focus-chip{ min-height:40px; display:inline-flex; align-items:center; font:12px ui-monospace,monospace; padding:3px 10px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); text-decoration:none; }
+	.focus-chip.on{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
 	.bar{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:16px; }
 	.chip{ min-height:40px; display:inline-flex; align-items:center; font:12px ui-monospace,monospace; padding:3px 10px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; }
 	.chip.on,.ms-mini.on{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
@@ -8829,7 +8872,8 @@ ${railHtml({
 })}
 <main>
 	  ${err}
-	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). <b>Click a card to edit · drag between lanes to move · <span style="font-weight:700">+</span> to add · delete from the editor</b> — every change writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. Project history → <a href="/timeline#project-history">/timeline</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
+	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). The default view focuses on open work; completed and dropped history stay available through the focus controls. <b>Click a card to edit · drag between lanes to move · <span style="font-weight:700">+</span> to add · delete from the editor</b> — every change writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. Project history → <a href="/timeline#project-history">/timeline</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
+	  <div class="focus-row" aria-label="Board focus">${focusChips}<span class="focus-row__note">${e(focusSummary)}</span></div>
 	  <div class="board-tools">
 	    <button type="button" class="wpm__btn" id="wp-refresh">Refresh from disk</button>
 	    <button type="button" class="wpm__btn" id="wp-expand-all">Expand all</button>
@@ -13133,6 +13177,7 @@ export {
   renderDerivationLogicVisualizer,
   renderOntologyHtml,
   renderRubricHtml,
+  renderWorkplanBoardHtml,
   renderScriptoriumHome,
   saveBrowserLabel,
   saveBrowserReviewFlag,

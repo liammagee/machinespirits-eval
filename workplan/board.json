@@ -1,9 +1,9 @@
 {
-  "generated": "2026-06-30T23:54:11.950Z",
+  "generated": "2026-07-01T02:21:54.314Z",
   "counts": {
-    "total": 62,
+    "total": 64,
     "byStatus": {
-      "done": 52,
+      "done": 54,
       "blocked": 1,
       "dropped": 2,
       "review": 1,
@@ -15,7 +15,7 @@
       "experiment": 5,
       "content": 2,
       "infra": 9,
-      "maintenance": 3,
+      "maintenance": 5,
       "paper": 4,
       "ops": 6
     }
@@ -1026,6 +1026,38 @@
       "milestone": "board-pm"
     },
     {
+      "id": "docs-board-plan-consolidation",
+      "title": "Consolidate Plan 2.x docs and board routing",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-01",
+      "branch": "codex/docs-board-consolidation",
+      "verification": "`node scripts/workplan.js render`, `node scripts/workplan.js validate`, `npm run wp:check`, and `npm run wp:test` pass after adding the Plan 2.x documentation map and board-routing notes.",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md",
+        "notes": [
+          "PLAN_2_0/README.md",
+          "PLAN_2_0/latest_paper_status_next_steps.md",
+          "ADAPTIVE-TUTOR-ACTIVE-PLAN.md",
+          "docs/research/A21-action-value-tutoring-microbench.md"
+        ],
+        "items": [
+          "workplan-governance-checks-and-github-mirror",
+          "paper-workplan-closure-audit-2026-06-24"
+        ]
+      },
+      "tags": [
+        "documentation",
+        "planning",
+        "workplan",
+        "plan-2"
+      ]
+    },
+    {
       "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
       "title": "Environment-Grounded Automated Prompt Optimization for LLM Game Agents",
       "status": "done",
@@ -1501,6 +1533,35 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "workplan-board-focus-policy",
+      "title": "Add open-work focus policy to the board",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-01",
+      "branch": "codex/docs-board-consolidation",
+      "verification": "`node --test --test-force-exit tests/workplanBoardFocus.test.js`, `node --test tests/workplan.test.js tests/workplanSetField.test.js`, `node --check scripts/browse-poetics-scripts.js tests/workplanBoardFocus.test.js`, `node scripts/workplan.js render`, `node scripts/workplan.js validate`, and `npm run wp:check` pass.",
+      "links": {
+        "notes": [
+          "workplan/README.md",
+          "desktop/README.md",
+          "desktop/ARCHITECTURE.md"
+        ],
+        "items": [
+          "docs-board-plan-consolidation",
+          "workplan-governance-checks-and-github-mirror"
+        ]
+      },
+      "tags": [
+        "workplan",
+        "dashboard",
+        "documentation"
+      ]
     },
     {
       "id": "workplan-governance-checks-and-github-mirror",
