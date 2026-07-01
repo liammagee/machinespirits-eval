@@ -368,6 +368,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_192_id_director_charisma_resistance_commitment_probe_breakthrough_dynamic_verified',
   'cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified',
   'cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified',
+  'cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified',
   'cell_110_langgraph_adaptive',
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',

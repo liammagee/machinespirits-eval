@@ -6746,6 +6746,66 @@ profiles:
         temperature: 0.4
         max_tokens: 6000
 
+  # ─── Cell 195: Scripted-learner role-isolation control ─────────────────
+  # Control counterpart for cell_193. It preserves the cell_193 tutor/id
+  # mechanism stack but turns the learner back into the scripted unified
+  # scenario turns. This is not a promotion cell and not outcome-evaluable for
+  # learner breakthrough; it is a tutor-register control for the role-isolation
+  # gate after GLM generation failed to reproduce the Codex-stack mechanism.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified
+  cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified:
+    description: "Id-Director (cell 195): scripted-learner control counterpart for cell 193. Holds the tutor/id router stack fixed while replacing dynamic learner generation with scripted resistance turns, so failures can be separated into tutor-register shape versus dynamic learner gate drift."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
   # ===========================================================================
   # ADAPTIVE-STATE CELL (LangGraph)
   # ===========================================================================
