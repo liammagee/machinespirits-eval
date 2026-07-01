@@ -49,7 +49,10 @@ test('evaluation DB path falls back to canonical data home before repo data', ()
   withEnv({ MS_DATA_HOME: dataHome, EVAL_DB_PATH: null }, () => {
     assert.equal(resolveEvaluationDbPath(root), dataHomeDb);
     assert.equal(resolveConfiguredEvaluationDbPath(root, 'data/evaluations.db'), dataHomeDb);
-    assert.equal(resolveConfiguredEvaluationDbPath(root, 'custom/evaluations.db'), path.join(root, 'custom/evaluations.db'));
+    assert.equal(
+      resolveConfiguredEvaluationDbPath(root, 'custom/evaluations.db'),
+      path.join(root, 'custom/evaluations.db'),
+    );
   });
 });
 
@@ -89,6 +92,9 @@ test('configured log paths preserve explicit evidence paths and avoid double tut
 
   withEnv({ MS_DATA_HOME: dataHome, EVAL_LOGS_DIR: null }, () => {
     assert.equal(resolveConfiguredTutorDialoguesDir(root, 'custom/logs'), path.join(root, 'custom', 'logs'));
-    assert.equal(resolveTutorDialoguesDir(root, path.join(root, 'logs', 'tutor-dialogues')), path.join(root, 'logs', 'tutor-dialogues'));
+    assert.equal(
+      resolveTutorDialoguesDir(root, path.join(root, 'logs', 'tutor-dialogues')),
+      path.join(root, 'logs', 'tutor-dialogues'),
+    );
   });
 });

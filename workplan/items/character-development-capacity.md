@@ -1,22 +1,21 @@
 ---
 id: character-development-capacity
 title: Character-development capacity (learner + tutor) — instrument + run
-status: review
+status: done
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-06-27
-updated: 2026-06-28
+updated: 2026-07-01
 branch: worktree-character-development
 claim_status: scope-bound
-verification: "deterministic: characterArc layer test + plotLint + lint/format; paid evidence preserved in ignored exports and package manifest; paper claim registered in provable-discourse with residual environment/snapshot warnings"
+verification: "2026-07-01 closeout: characterArc test 5/5; world-018 plotLint PASS and Oedipus screen scoped out of accepted evidence; lint/format pass; paper manifest, atlas, provable-discourse, integrity, and workplan validators have 0 failures; Appendix E.7 claim passes against tracked evidence manifest."
 links:
   paper: docs/research/paper-full-2.0.md#e7-character-desire-the-script-outline-as-a-source-of-desire
   notes:
     - CHARACTER-DESIRE.md
-    - config/character-development/evidence-manifest-2026-06-28.md
-  exports: exports/character-development/CAPACITY-REPORT.md
+  evidence: config/character-development/evidence-manifest-2026-06-28.md
 tags:
   - character-desire
   - dramatic-derivation
@@ -53,11 +52,12 @@ Build:
       earned 71–81 / bare **0** / flat **0**; perfect separation, margin 76.3,
       anti-simulation max(bare) < min(earned). The instrument is not fooled by
       transformation-vocabulary. (`exports/character-development/gate-sonnet.json`)
-- [~] **Author + screen a run-grade "character world"**: `world-018-edmund.yaml`
+- [x] **Author + screen a run-grade "character world"**: `world-018-edmund.yaml`
       authored (bell-founding AND-join, mutual reversal, both bearers develop) —
-      `plotLint` PASS (S forced t13 ≥ floor 10; mirror never entailed). S-under-
-      ivability (Oedipus) screen PENDING (paid GLM call). marrick = de-risked
-      learner-side fallback (already run-grade) — used for the first pilot.
+      `plotLint` PASS (S forced t13 ≥ floor 10; mirror never entailed). The paid
+      S-underivability (Oedipus) screen is scoped out of this accepted evidence
+      package because `world-018` was set aside and the run-grade `world-005-marrick`
+      fallback carried the pilot; no additional paid generation is required here.
 - [x] **Small attended A/B run** (characterArc on/off on marrick ×2 reps, flash gen,
       sonnet critic): all 4 grounded. **arc_on 25.0 < arc_off 35.6 (Δ−10.6)** —
       the mechanism HURTS, concentrated in its target dims (L1 3v4, L2 2v3); no
@@ -74,19 +74,20 @@ Build:
       elicitation-only stayed 2.5→2.5); elicitation alone does not carry the effect.
 - [x] **D4 de-confound**: n=4, two judges (Sonnet+GPT), both pass the Phase-0 gate; L3 effect
       direction-robust; overall magnitude judge-sensitive; zero gullibility flags.
-- [x] **Capacity report**: `exports/character-development/CAPACITY-REPORT.md` (supersedes
-      PILOT-REPORT.md). Paper sub-§ of Appendix E.7 = the narrow judge-robust claim, to draft
-      via the paper-claim-auditor; flash-only + one-world limits stand.
+- [x] **Capacity report**: ignored/local `exports/character-development/CAPACITY-REPORT.md`
+      generated (supersedes PILOT-REPORT.md) and hash-listed in the tracked evidence
+      manifest. Paper sub-§ of Appendix E.7 = the narrow judge-robust claim; flash-only
+      + one-world limits stand.
 - [x] **Paper closeout**: Appendix E.7 now carries only the scoped pilot claim
       (self-recognition unlocks when the mirror is the learner's own prior public
       commitment; no §6 body number, no human-learning claim, no robust magnitude
       claim). Paper bumped to v3.0.176 with Appendix F entry. Evidence package
-      boundary tracked in `config/character-development/evidence-manifest-2026-06-28.md`.
+      boundary tracked in `config/character-development/evidence-manifest-2026-06-28.md`;
+      v3.0.184 clarifies that this tracked manifest is the durable evidence pointer.
 - [x] **Claim registry**: `paper2.appendix_e.character_development_self_commitment_pilot`
-      added to `config/provable-discourse-mechanisms.yaml`. Default local audit
-      is blocked by this worktree's zero-byte `data/evaluations.db`; real-DB audit
-      with `/Users/lmagee/.machinespirits-data/evaluations.db` verifies the new claim
-      as evidence-matched, with the expected no-snapshot warning for a new claim.
+      added to `config/provable-discourse-mechanisms.yaml`. Current audit resolves
+      `data/evaluations.db` to the populated shared DB and verifies the Appendix E.7
+      claim as evidence-matched against the tracked manifest.
 
 Constraint (2026-06-27): OpenRouter balance ≈ **$9.20** remaining — caps the
 pilot; surfaced to the user before spend (`budget_tracker_gap`).
@@ -98,3 +99,8 @@ Review notes (2026-06-28, Codex): targeted character-arc test passed (5/5);
 `world-018-edmund.yaml` plot lint passed; `npm run format:check` and `npm run lint`
 passed after formatting `scripts/score-character-development.js`. Remaining review
 risk is paper-claim scope/audit, not generation spend.
+
+Closeout notes (2026-07-01, Codex): no further paid generation required. The accepted
+claim is scope-bound to Appendix E.7 and passes provable-discourse against
+`config/character-development/evidence-manifest-2026-06-28.md`; the raw ignored
+`exports/character-development/` bundle is not assumed present in every checkout.

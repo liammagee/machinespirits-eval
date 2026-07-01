@@ -633,7 +633,9 @@ function main() {
   } else {
     let runs;
     if (allRuns) {
-      runs = db.prepare(`SELECT DISTINCT run_id FROM evaluation_results WHERE tutor_scores IS NOT NULL ORDER BY run_id`).all();
+      runs = db
+        .prepare(`SELECT DISTINCT run_id FROM evaluation_results WHERE tutor_scores IS NOT NULL ORDER BY run_id`)
+        .all();
       console.log(`\n═══ Provenance Validation: All Runs (${runs.length}) ═══`);
     } else {
       const selection = selectCompleteProvenanceRuns(db);

@@ -1,12 +1,11 @@
 {
-  "generated": "2026-07-01T05:55:23.980Z",
+  "generated": "2026-07-01T07:14:09.697Z",
   "counts": {
     "total": 66,
     "byStatus": {
-      "done": 58,
+      "done": 59,
       "blocked": 1,
       "dropped": 2,
-      "review": 1,
       "active": 1,
       "triaged": 3
     },
@@ -246,34 +245,6 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "character-development-capacity",
-      "title": "Character-development capacity (learner + tutor) — instrument + run",
-      "status": "review",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-06-27",
-      "updated": "2026-06-28",
-      "branch": "worktree-character-development",
-      "claim_status": "scope-bound",
-      "verification": "deterministic: characterArc layer test + plotLint + lint/format; paid evidence preserved in ignored exports and package manifest; paper claim registered in provable-discourse with residual environment/snapshot warnings",
-      "links": {
-        "paper": "docs/research/paper-full-2.0.md#e7-character-desire-the-script-outline-as-a-source-of-desire",
-        "notes": [
-          "CHARACTER-DESIRE.md",
-          "config/character-development/evidence-manifest-2026-06-28.md"
-        ],
-        "exports": "exports/character-development/CAPACITY-REPORT.md"
-      },
-      "tags": [
-        "character-desire",
-        "dramatic-derivation",
-        "rubric",
-        "poetics"
-      ]
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -819,6 +790,33 @@
         "synthetic-learner"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "character-development-capacity",
+      "title": "Character-development capacity (learner + tutor) — instrument + run",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-27",
+      "updated": "2026-07-01",
+      "branch": "worktree-character-development",
+      "claim_status": "scope-bound",
+      "verification": "2026-07-01 closeout: characterArc test 5/5; world-018 plotLint PASS and Oedipus screen scoped out of accepted evidence; lint/format pass; paper manifest, atlas, provable-discourse, integrity, and workplan validators have 0 failures; Appendix E.7 claim passes against tracked evidence manifest.",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#e7-character-desire-the-script-outline-as-a-source-of-desire",
+        "notes": [
+          "CHARACTER-DESIRE.md"
+        ],
+        "evidence": "config/character-development/evidence-manifest-2026-06-28.md"
+      },
+      "tags": [
+        "character-desire",
+        "dramatic-derivation",
+        "rubric",
+        "poetics"
+      ]
     },
     {
       "id": "consolidate-logs-db-private-archive",

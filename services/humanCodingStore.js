@@ -50,7 +50,8 @@ export const HUMAN_CODING_CATEGORIES = Object.freeze([
     signals: ['wrong lecture', 'not in current content', 'mismatched to level', 'unverified curriculum reference'],
     example:
       "Introduces a content reference that is not verified in the learner context, so the response should be grounded in the learner's actual curriculum position.",
-    boundary: 'If the critique emphasizes invented metrics, use FABRICATION. If it emphasizes the wrong curriculum location, use CONTEXT_BLINDNESS.',
+    boundary:
+      'If the critique emphasizes invented metrics, use FABRICATION. If it emphasizes the wrong curriculum location, use CONTEXT_BLINDNESS.',
   },
   {
     id: 'RECOGNITION_FAILURE',
@@ -71,8 +72,7 @@ export const HUMAN_CODING_CATEGORIES = Object.freeze([
     signals: ['routes to new lecture', 'pivots away', 'directs them elsewhere', 'navigating away'],
     example:
       'The learner says their head is spinning, but the response sends them to a different lecture instead of stabilizing the current struggle.',
-    boundary:
-      'Redirection chooses a new destination. Context blindness operates in the wrong place from the start.',
+    boundary: 'Redirection chooses a new destination. Context blindness operates in the wrong place from the start.',
   },
   {
     id: 'FABRICATION',
@@ -80,8 +80,7 @@ export const HUMAN_CODING_CATEGORIES = Object.freeze([
     definition:
       'The ego invents engagement data such as session metrics, activity counts, time-on-page numbers, or behavioral patterns not present in context.',
     signals: ['invented', 'no evidence of', 'not in structured data', 'made up', 'fabricated'],
-    example:
-      "Mentions generic time or note-taking data that the learner context never provided.",
+    example: 'Mentions generic time or note-taking data that the learner context never provided.',
     boundary: 'Fabrication adds false specificity. VAGUENESS omits required specificity.',
   },
   {
@@ -90,8 +89,7 @@ export const HUMAN_CODING_CATEGORIES = Object.freeze([
     definition:
       'The response lacks concrete detail: no specific concept, actionable target, activity ID, or curriculum-linked detail where one was needed.',
     signals: ['too general', 'generic', 'no specific concepts', 'missing activity ID'],
-    example:
-      'The suggestion needs a concrete curriculum-linked activity and a clearer bridge to this specific moment.',
+    example: 'The suggestion needs a concrete curriculum-linked activity and a clearer bridge to this specific moment.',
     boundary: 'Use when specificity is missing, not when the response invents false specifics.',
   },
   {
@@ -101,20 +99,16 @@ export const HUMAN_CODING_CATEGORIES = Object.freeze([
       'The ego jumps to content without acknowledging affective signals such as frustration, joy, overwhelm, or repair moments.',
     signals: ['overwhelmed', 'frustrated', 'breakthrough', 'bypasses affect', 'does not validate feeling'],
     example:
-      "Jumps straight into a simulation without first acknowledging that the learner explicitly said they feel overwhelmed.",
-    boundary:
-      'Emotional neglect concerns affect. RECOGNITION_FAILURE concerns intellectual agency and contribution.',
+      'Jumps straight into a simulation without first acknowledging that the learner explicitly said they feel overwhelmed.',
+    boundary: 'Emotional neglect concerns affect. RECOGNITION_FAILURE concerns intellectual agency and contribution.',
   },
   {
     id: 'REGISTER_MISMATCH',
     name: 'Register mismatch',
-    definition:
-      "The vocabulary, tone, or pedagogical register is inappropriate for the learner's developmental level.",
+    definition: "The vocabulary, tone, or pedagogical register is inappropriate for the learner's developmental level.",
     signals: ['wrong register', 'too advanced', 'too simple', 'tone mismatched', 'developmental level'],
-    example:
-      'Uses graduate-level terminology with a learner whose profile indicates first exposure to the domain.',
-    boundary:
-      'Register is surface communication. PEDAGOGICAL_MISJUDGMENT is a wrong read of the learner state.',
+    example: 'Uses graduate-level terminology with a learner whose profile indicates first exposure to the domain.',
+    boundary: 'Register is surface communication. PEDAGOGICAL_MISJUDGMENT is a wrong read of the learner state.',
   },
   {
     id: 'PEDAGOGICAL_MISJUDGMENT',
@@ -124,8 +118,7 @@ export const HUMAN_CODING_CATEGORIES = Object.freeze([
     signals: ['misreads their state', 'prematurely resolves', 'treats struggle as resolved', 'confuses readiness'],
     example:
       'Validates a metaphor as perfect in a way that prematurely resolves the productive tension the learner is still working through.',
-    boundary:
-      'Use this when the critique is about the learner-state diagnosis, not just word choice or tone.',
+    boundary: 'Use this when the critique is about the learner-state diagnosis, not just word choice or tone.',
   },
   {
     id: 'LACK_OF_AGENCY',
@@ -133,8 +126,7 @@ export const HUMAN_CODING_CATEGORIES = Object.freeze([
     definition:
       'The response funnels the learner with directive instruction where choice, inquiry, or a menu of next moves was warranted.',
     signals: ['directive instruction', 'no choice offered', 'funnels without autonomy', 'does not invite inquiry'],
-    example:
-      "Provides a directive next step without engaging the learner's own question about how the concept works.",
+    example: "Provides a directive next step without engaging the learner's own question about how the concept works.",
     boundary:
       'Recognition is retrospective: did the response honor what the learner already said? Agency is prospective: does it offer choice about what comes next?',
   },
@@ -144,8 +136,7 @@ export const HUMAN_CODING_CATEGORIES = Object.freeze([
     definition:
       'The ego treats a returning learner as a stranger, failing to reference session history, prior commitments, or intellectual trajectory.',
     signals: ['returning user', '8 sessions', 'ignores history', 'prior work', 'treats as new learner'],
-    example:
-      "Fails to acknowledge the learner's significant history and evolution across prior sessions.",
+    example: "Fails to acknowledge the learner's significant history and evolution across prior sessions.",
     boundary:
       'Use when the critique centers accumulated history. Use CONTEXT_BLINDNESS for wrong current-curriculum grounding.',
   },
@@ -452,7 +443,10 @@ function perCategoryF1(pairs) {
     }
     const precision = tp + fp === 0 ? null : tp / (tp + fp);
     const recall = tp + fn === 0 ? null : tp / (tp + fn);
-    const f1 = precision == null || recall == null || precision + recall === 0 ? null : (2 * precision * recall) / (precision + recall);
+    const f1 =
+      precision == null || recall == null || precision + recall === 0
+        ? null
+        : (2 * precision * recall) / (precision + recall);
     return { category: id, tp, fp, fn, precision, recall, f1 };
   }).filter((row) => row.tp || row.fp || row.fn);
 }

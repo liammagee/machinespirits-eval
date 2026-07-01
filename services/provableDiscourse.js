@@ -3,10 +3,7 @@ import path from 'path';
 import { createHash } from 'crypto';
 import YAML from 'yaml';
 import Database from 'better-sqlite3';
-import {
-  resolveConfiguredEvaluationDbPath,
-  resolveConfiguredTutorDialoguesDir,
-} from './evaluationDataPaths.js';
+import { resolveConfiguredEvaluationDbPath, resolveConfiguredTutorDialoguesDir } from './evaluationDataPaths.js';
 
 const METRIC_DIM_KEYS = [
   'mutual_recognition',
