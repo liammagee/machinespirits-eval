@@ -842,3 +842,11 @@ five resistance signals: Codex tutor/Codex learner baseline, Codex tutor/GLM
 learner, GLM tutor/Codex learner, full GLM reference, plus scripted-turn
 controls for Codex and GLM tutors. This separates dynamic learner drift from
 tutor/id register failure; scripted controls are not learner-outcome evidence.
+
+2026-07-01 Codex: After Claude Code subscription access was disabled for the
+planned Claude id role, added `openrouter.sonnet-5` as the API-backed
+`anthropic/claude-sonnet-5` provider alias and regenerated the role-isolation
+gate so the Codex-tutor arms use Sonnet 5 for the id/superego role. Deleted
+two empty start artifacts before continuing: the all-failed Claude Code access
+run `eval-2026-07-01-c2166d93` and the interrupted zero-row Sonnet reroute
+run `eval-2026-07-01-8ae1e11f`.

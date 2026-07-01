@@ -31,9 +31,9 @@ const SCENARIO_LIST = CONTROLLED_SCENARIOS.join(',');
 
 const STACKS = {
   codexTutor: {
-    label: 'Codex tutor + Claude id',
+    label: 'Codex tutor + Claude Sonnet 5 id',
     egoModel: 'codex.gpt-5.5',
-    superegoModel: 'claude-code.sonnet-4-6',
+    superegoModel: 'openrouter.sonnet-5',
   },
   glmTutor: {
     label: 'GLM tutor + GLM id',

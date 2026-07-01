@@ -79,6 +79,7 @@ providers:
       gemini-flash-3.1: google/gemini-3.1-flash-lite-preview
       # Mid-tier options
       sonnet: anthropic/claude-sonnet-4.6
+      sonnet-5: anthropic/claude-sonnet-5
       gpt-mini: openai/gpt-5-mini
       # Premium options
       opus: anthropic/claude-opus-4.6
