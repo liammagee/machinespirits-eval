@@ -56,13 +56,18 @@ import {
 } from './resistanceSignalGate.js';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 import { chalk } from './cliTheme.js';
+import {
+  resolveEvaluationLogsRoot,
+  resolveEvaluationSecondaryArtifactDir,
+  resolveTutorDialoguesDir,
+} from './evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
-const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(EVAL_ROOT, 'logs');
-const LOGS_DIR = path.join(LOGS_ROOT, 'tutor-dialogues');
-const TRANSCRIPTS_DIR = path.join(LOGS_ROOT, 'transcripts');
-const CHECKPOINTS_DIR = path.join(LOGS_ROOT, 'checkpoints');
+const LOGS_ROOT = resolveEvaluationLogsRoot(EVAL_ROOT);
+const LOGS_DIR = resolveTutorDialoguesDir(EVAL_ROOT);
+const TRANSCRIPTS_DIR = resolveEvaluationSecondaryArtifactDir(EVAL_ROOT, 'transcripts');
+const CHECKPOINTS_DIR = resolveEvaluationSecondaryArtifactDir(EVAL_ROOT, 'checkpoints');
 
 function isAdaptiveTraceLog(log) {
   return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));

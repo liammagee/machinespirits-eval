@@ -1,13 +1,12 @@
 {
-  "generated": "2026-07-01T07:27:33.568Z",
+  "generated": "2026-07-01T07:35:25.105Z",
   "counts": {
     "total": 66,
     "byStatus": {
-      "done": 59,
-      "blocked": 1,
+      "done": 60,
+      "blocked": 3,
       "dropped": 2,
-      "active": 1,
-      "triaged": 3
+      "active": 1
     },
     "byType": {
       "research": 35,
@@ -20,74 +19,6 @@
     }
   },
   "items": [
-    {
-      "id": "lean-semantic-web-proof-dag-validation",
-      "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-24",
-      "updated": "2026-06-24",
-      "verification": "A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.",
-      "claim_status": "future",
-      "links": {
-        "notes": "notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md"
-      },
-      "tags": [
-        "proof-dag",
-        "lean",
-        "semantic-web",
-        "provenance",
-        "shacl"
-      ],
-      "milestone": "poetics-followups"
-    },
-    {
-      "id": "colocate-runner-secondary-artifacts",
-      "title": "Co-locate runner transcripts and checkpoints with canonical logs",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-28",
-      "updated": "2026-06-28",
-      "verification": "A smoke run writes dialogue logs, transcripts, and checkpoints under the same canonical data-home logs root unless an explicit test override is set; `npm test` and `npm run wp:check` pass.",
-      "links": {
-        "items": "consolidate-logs-db-private-archive"
-      },
-      "tags": [
-        "logs",
-        "runner",
-        "data-home",
-        "artifacts"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
-    },
-    {
-      "id": "debloat-private-log-archive",
-      "title": "De-bloat the private dialogue-log archive",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-28",
-      "updated": "2026-06-28",
-      "verification": "The private archive has a documented chosen storage path, logs are no longer ordinary large git history, and a clone/sync smoke confirms the canonical DB + logs remain recoverable.",
-      "links": {
-        "items": "consolidate-logs-db-private-archive"
-      },
-      "tags": [
-        "logs",
-        "archive",
-        "private-repo",
-        "git-history"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
-    },
     {
       "id": "charisma-desire-generalizability-matrix",
       "title": "Route charisma/desire by engagement register",
@@ -248,6 +179,55 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "lean-semantic-web-proof-dag-validation",
+      "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
+      "status": "blocked",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-07-01",
+      "verification": "A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.",
+      "blocked_by": "Lean/Lake is not installed locally, so generated Lean certificates cannot be checked yet.",
+      "claim_status": "future",
+      "links": {
+        "notes": "notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md"
+      },
+      "tags": [
+        "proof-dag",
+        "lean",
+        "semantic-web",
+        "provenance",
+        "shacl"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
+      "id": "debloat-private-log-archive",
+      "title": "De-bloat the private dialogue-log archive",
+      "status": "blocked",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-07-01",
+      "verification": "The private archive has a documented chosen storage path, logs are no longer ordinary large git history, and a clone/sync smoke confirms the canonical DB + logs remain recoverable.",
+      "blocked_by": "Maintainer must choose and schedule the private-repo de-bloat path (freeze, Git LFS migration, or history rewrite) outside this public checkout.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive",
+        "notes": "docs/archive-replication.md"
+      },
+      "tags": [
+        "logs",
+        "archive",
+        "private-repo",
+        "git-history"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -1696,6 +1676,28 @@
       ],
       "milestone": "poetics-followups",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "colocate-runner-secondary-artifacts",
+      "title": "Co-locate runner transcripts and checkpoints with canonical logs",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-07-01",
+      "verification": "A smoke run writes dialogue logs, transcripts, and checkpoints under the same canonical data-home logs root unless an explicit test override is set; `npm test` and `npm run wp:check` pass.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive"
+      },
+      "tags": [
+        "logs",
+        "runner",
+        "data-home",
+        "artifacts"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "d3-insight-action-gap-heavy-bridge-followups",

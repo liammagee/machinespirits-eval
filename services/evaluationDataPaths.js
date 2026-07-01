@@ -24,22 +24,32 @@ export function resolveEvaluationDbPath(rootDir, explicitPath = null) {
   return repoDb;
 }
 
+function isEvaluationRepoRoot(rootDir) {
+  return fs.existsSync(path.join(rootDir, 'package.json')) && fs.existsSync(path.join(rootDir, 'services'));
+}
+
 export function resolveEvaluationLogsRoot(rootDir, explicitPath = null) {
   const explicit = explicitPath || process.env.EVAL_LOGS_DIR;
   if (explicit) return resolvePathFromRoot(rootDir, explicit);
 
-  const repoLogs = path.join(rootDir, 'logs');
-  if (fs.existsSync(repoLogs)) return repoLogs;
+  const rootLogs = path.join(rootDir, 'logs');
+  if (!isEvaluationRepoRoot(rootDir) && fs.existsSync(rootLogs)) return rootLogs;
 
   const dataHome = resolveEvaluationDataHome();
   if (fs.existsSync(dataHome)) return path.join(dataHome, 'logs');
 
-  return repoLogs;
+  return rootLogs;
 }
 
 export function resolveTutorDialoguesDir(rootDir, explicitPath = null) {
   const logsRoot = resolveEvaluationLogsRoot(rootDir, explicitPath);
   return path.basename(logsRoot) === 'tutor-dialogues' ? logsRoot : path.join(logsRoot, 'tutor-dialogues');
+}
+
+export function resolveEvaluationSecondaryArtifactDir(rootDir, name, explicitPath = null) {
+  const logsRoot = resolveEvaluationLogsRoot(rootDir, explicitPath);
+  const artifactRoot = path.basename(logsRoot) === 'tutor-dialogues' ? path.dirname(logsRoot) : logsRoot;
+  return path.join(artifactRoot, name);
 }
 
 export function resolveConfiguredEvaluationDbPath(rootDir, configuredPath = null) {
