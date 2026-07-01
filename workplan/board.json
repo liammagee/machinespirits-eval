@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-01T02:21:54.314Z",
+  "generated": "2026-07-01T03:17:06.392Z",
   "counts": {
     "total": 64,
     "byStatus": {
-      "done": 54,
+      "done": 55,
       "blocked": 1,
       "dropped": 2,
       "review": 1,
-      "active": 2,
+      "active": 1,
       "triaged": 4
     },
     "byType": {
@@ -110,30 +110,6 @@
         "git-history"
       ],
       "milestone": "paper-2-evidence-cleanup"
-    },
-    {
-      "id": "layered-task-session-adaptation",
-      "title": "Layered adaptive tutor task/session adaptation prototype",
-      "status": "active",
-      "type": "research",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-01",
-      "updated": "2026-07-01",
-      "branch": "codex/task-session-adaptation",
-      "verification": "TaskMasteryState remains public-only/advisory; focused tests and zero-paid taskloop benchmark pass; workplan render/validate stays clean.",
-      "claim_status": "planned",
-      "links": {
-        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
-        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-benchmark-report.md"
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "task-loop",
-        "outer-loop"
-      ]
     },
     {
       "id": "charisma-desire-generalizability-matrix",
@@ -457,6 +433,31 @@
         "notes": "TODO.md"
       },
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "layered-task-session-adaptation",
+      "title": "Layered adaptive tutor task/session adaptation prototype",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-01",
+      "branch": "codex/task-session-adaptation",
+      "verification": "PR #71 merged; TaskMasteryState remains public-only/advisory; zero-paid taskloop benchmark, focused tests, workplan check, lint, format check, git diff check, and full npm test passed.",
+      "claim_status": "methods",
+      "links": {
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-benchmark-report.md",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/71"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "task-loop",
+        "outer-loop"
+      ]
     },
     {
       "id": "scriptorium-evidence-workbenches",

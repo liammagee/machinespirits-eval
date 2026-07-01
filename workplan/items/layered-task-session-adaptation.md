@@ -1,7 +1,7 @@
 ---
 id: layered-task-session-adaptation
 title: Layered adaptive tutor task/session adaptation prototype
-status: active
+status: done
 type: research
 priority: P1
 owner: codex
@@ -9,11 +9,12 @@ source: manual
 created: 2026-07-01
 updated: 2026-07-01
 branch: codex/task-session-adaptation
-verification: TaskMasteryState remains public-only/advisory; focused tests and zero-paid taskloop benchmark pass; workplan render/validate stays clean.
-claim_status: planned
+verification: "PR #71 merged; TaskMasteryState remains public-only/advisory; zero-paid taskloop benchmark, focused tests, workplan check, lint, format check, git diff check, and full npm test passed."
+claim_status: methods
 links:
   notes: PLAN_2_0/layered_adaptive_tutor_technical_spec.md
   exports: exports/dramatic-derivation/layered-adaptation/taskloop-benchmark-report.md
+  prs: https://github.com/liammagee/machinespirits-eval/pull/71
 tags:
   - adaptive-tutor
   - derivation
@@ -37,3 +38,10 @@ Acceptance criteria:
 2026-07-01 Codex: Opened `codex/task-session-adaptation` from merged main after
 the layered adaptive tutor v0 gates landed. Human/hybrid handoff remains a
 separate deferred project.
+
+2026-07-01 Codex: Closed scaffold pass after PR #71 merged. Local and remote
+checks passed: `npm run derivation:taskloop-benchmark` reported 12/12 adaptive
+vs 2/12 fixed progression controls; focused tests, workplan check, lint, format
+check, `git diff --check`, and full `npm test` passed. This remains a
+public-only advisory task/session scaffold, not runtime deployment or
+human-learning evidence.
