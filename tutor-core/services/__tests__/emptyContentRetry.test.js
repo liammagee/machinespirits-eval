@@ -71,6 +71,7 @@ describe('callAI empty-content retry', () => {
     delete process.env.OPENROUTER_REASONING_MAX_TOKENS;
     delete process.env.OPENROUTER_REASONING_EXCLUDE;
     delete process.env.OPENROUTER_MAX_COMPLETION_TOKENS;
+    delete process.env.OPENROUTER_API_TIMEOUT_MS;
   });
 
   it('returns immediately on non-empty response (no retry)', async () => {
@@ -110,6 +111,20 @@ describe('callAI empty-content retry', () => {
     expect(result.text).toBe('Runtime-controlled');
     expect(body.reasoning).toEqual({ max_tokens: 0, exclude: true });
     expect(body.max_completion_tokens).toBe(1800);
+  });
+
+  it('sends OpenRouter abort signal and maps aborts to timeout errors when configured', async () => {
+    process.env.OPENROUTER_API_TIMEOUT_MS = '1234';
+    const abortError = new Error('The operation was aborted');
+    abortError.name = 'AbortError';
+    mockFetch.mockRejectedValueOnce(abortError);
+
+    await expect(callAI(makeAgentConfig(), 'system', 'user', 'ego')).rejects.toThrow(
+      /OpenRouter API request timed out after 1234ms/,
+    );
+
+    const [, options] = mockFetch.mock.calls[0];
+    expect(options.signal).toBeInstanceOf(AbortSignal);
   });
 
   it('retries on empty content with 0 output tokens and succeeds', async () => {

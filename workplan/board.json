@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-01T09:12:06.069Z",
+  "generated": "2026-07-01T11:09:09.966Z",
   "counts": {
     "total": 66,
     "byStatus": {
@@ -92,7 +92,14 @@
           "eval-2026-06-28-f857f51f",
           "eval-2026-07-01-5dad2e60",
           "eval-2026-07-01-dff9f159",
-          "eval-2026-07-01-ed9f7288"
+          "eval-2026-07-01-ed9f7288",
+          "eval-2026-07-01-02c8aa86",
+          "eval-2026-07-01-7ec37d3c",
+          "eval-2026-07-01-69bb7f83",
+          "eval-2026-07-01-2e3dfced",
+          "eval-2026-07-01-58193750",
+          "eval-2026-07-01-02e8712f",
+          "eval-2026-07-01-a09281f7"
         ],
         "exports": [
           "exports/charisma-desire-stage0-matrix-sanity.md",

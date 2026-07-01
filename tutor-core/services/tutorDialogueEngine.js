@@ -1173,6 +1173,11 @@ async function _fetchProvider({
       ...hyperparameters,
       reasoning_effort,
     });
+    const timeoutMs = parseOptionalInteger(
+      envOrHyperparameter('OPENROUTER_API_TIMEOUT_MS', hyperparameters, 'api_timeout_ms'),
+    );
+    const controller = timeoutMs > 0 ? new AbortController() : null;
+    const timeout = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
     const orBody = {
       model,
       temperature,
@@ -1184,46 +1189,58 @@ async function _fetchProvider({
     if (maxCompletionTokens !== undefined) orBody.max_completion_tokens = maxCompletionTokens;
     if (onToken) orBody.stream = true;
 
-    const res = await fetch(providerConfig.base_url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${providerConfig.apiKey}`,
-        'HTTP-Referer': process.env.OPENROUTER_REFERER || 'https://machine-spirits.com',
-        'X-Title': 'Machine Spirits Tutor',
-      },
-      body: JSON.stringify(orBody),
-    });
+    try {
+      const res = await fetch(providerConfig.base_url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${providerConfig.apiKey}`,
+          'HTTP-Referer': process.env.OPENROUTER_REFERER || 'https://machine-spirits.com',
+          'X-Title': 'Machine Spirits Tutor',
+        },
+        body: JSON.stringify(orBody),
+        ...(controller ? { signal: controller.signal } : {}),
+      });
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(`OpenRouter API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
-    }
-
-    let text, inputTokens, outputTokens, finishReason, generationId, cost;
-    if (onToken) {
-      const parsed = await parseSSEStream(res, { onToken, format: 'openai' });
-      text = parsed.text?.trim() || '';
-      inputTokens = parsed.inputTokens;
-      outputTokens = parsed.outputTokens;
-    } else {
-      const data = await res.json();
-      text = data?.choices?.[0]?.message?.content?.trim() || '';
-      inputTokens = data?.usage?.prompt_tokens;
-      outputTokens = data?.usage?.completion_tokens;
-      finishReason = data?.choices?.[0]?.finish_reason;
-      generationId = data?.id;
-      cost = data?.usage?.cost || 0;
-
-      if (!text) {
-        const reason = data?.choices?.[0]?.finish_reason || 'unknown';
-        const reasoning = data?.usage?.completion_tokens_details?.reasoning_tokens;
-        const reasoningNote = reasoning ? `, reasoning=${reasoning}` : '';
-        console.warn(`[_fetchProvider] Empty content from ${data?.model || model} (finish=${reason}, ${inputTokens}in/${outputTokens}out${reasoningNote})`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(`OpenRouter API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
       }
-    }
 
-    return { text, inputTokens, outputTokens, finishReason, generationId, cost, latencyMs: Date.now() - startTime };
+      let text, inputTokens, outputTokens, finishReason, generationId, cost;
+      if (onToken) {
+        const parsed = await parseSSEStream(res, { onToken, format: 'openai' });
+        text = parsed.text?.trim() || '';
+        inputTokens = parsed.inputTokens;
+        outputTokens = parsed.outputTokens;
+      } else {
+        const data = await res.json();
+        text = data?.choices?.[0]?.message?.content?.trim() || '';
+        inputTokens = data?.usage?.prompt_tokens;
+        outputTokens = data?.usage?.completion_tokens;
+        finishReason = data?.choices?.[0]?.finish_reason;
+        generationId = data?.id;
+        cost = data?.usage?.cost || 0;
+
+        if (!text) {
+          const reason = data?.choices?.[0]?.finish_reason || 'unknown';
+          const reasoning = data?.usage?.completion_tokens_details?.reasoning_tokens;
+          const reasoningNote = reasoning ? `, reasoning=${reasoning}` : '';
+          console.warn(
+            `[_fetchProvider] Empty content from ${data?.model || model} (finish=${reason}, ${inputTokens}in/${outputTokens}out${reasoningNote})`,
+          );
+        }
+      }
+
+      return { text, inputTokens, outputTokens, finishReason, generationId, cost, latencyMs: Date.now() - startTime };
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        throw new Error(`OpenRouter API request timed out after ${timeoutMs}ms`);
+      }
+      throw error;
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
   }
 
   // --- Gemini ---

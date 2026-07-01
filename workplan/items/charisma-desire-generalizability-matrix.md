@@ -105,6 +105,13 @@ links:
     - eval-2026-07-01-5dad2e60
     - eval-2026-07-01-dff9f159
     - eval-2026-07-01-ed9f7288
+    - eval-2026-07-01-02c8aa86
+    - eval-2026-07-01-7ec37d3c
+    - eval-2026-07-01-69bb7f83
+    - eval-2026-07-01-2e3dfced
+    - eval-2026-07-01-58193750
+    - eval-2026-07-01-02e8712f
+    - eval-2026-07-01-a09281f7
   exports:
     - exports/charisma-desire-stage0-matrix-sanity.md
     - exports/charisma-desire-router-stage0-sanity.md
@@ -890,3 +897,18 @@ and not-started arms plus remaining rows. Current shared-archive progress is
 tutor-fixed/GLM-learner arm is partial, scripted Codex tutor is complete, GLM
 scripted-control attempts are present but not successful, and the GLM tutor
 dynamic arms remain unstarted.
+
+2026-07-01 Codex: Audited the older dirty
+`charisma-role-isolation-next` worktree and ported the sound runtime guards into
+`codex/charisma-role-isolation-followup`: API payload capture now replays the
+response body after snapshotting, OpenRouter tutor-core calls honor an optional
+abort timeout, and generated role-isolation commands disable
+`EVAL_CAPTURE_API_PAYLOADS` while keeping the 180s OpenRouter timeout. Targeted
+tests passed for API-payload replay, role-isolation command generation,
+breakthrough matrix path overrides, and the OpenRouter timeout/empty-content
+retry path. Shared-archive progress is now 34/50 successful rows after
+`tutor_fixed_glm_learner` completed 10/10 and
+`learner_fixed_glm_tutor` reached 9/10. The remaining 16 rows are blocked in
+this Codex process by missing `OPENROUTER_API_KEY`; a patched resume attempt for
+`eval-2026-07-01-a09281f7` failed fast on the final rote-parroting row with
+`Provider openrouter not configured`, leaving that run at 9/10.

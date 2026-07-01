@@ -173,6 +173,7 @@ function commandEnvForArm(arm) {
     String(model || '').startsWith('openrouter.'),
   );
   const env = [
+    'EVAL_CAPTURE_API_PAYLOADS=false',
     'ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS=600000',
     'ID_DIRECTOR_CODEX_CLI_TIMEOUT_MS=600000',
     'EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml',

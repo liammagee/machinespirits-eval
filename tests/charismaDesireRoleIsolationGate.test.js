@@ -38,6 +38,7 @@ describe('charisma desire role-isolation gate', () => {
     const reportPath = path.resolve(__dirname, '..', 'exports', 'charisma-desire-role-isolation-gate-summary.md');
     const report = await import('node:fs/promises').then((fs) => fs.readFile(reportPath, 'utf8'));
     assert.match(report, /OPENROUTER_API_TIMEOUT_MS=180000/);
+    assert.match(report, /EVAL_CAPTURE_API_PAYLOADS=false/);
   });
 
   it('summarizes role-isolation progress from an explicit DB path', async () => {
