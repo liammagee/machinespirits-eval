@@ -1,10 +1,10 @@
 # Layered Adaptive Tutor: Technical Specification and Implementation Plan
 
 - **Date:** 2026-06-30
-- **Status:** v0 in-dialogue layers merged; task/session scaffold and held-out task-loop artifact gate merged; human/hybrid handoff probe opened 2026-07-01
+- **Status:** v0 in-dialogue layers, task/session scaffold, held-out task-loop gate, and human/hybrid handoff probe merged 2026-07-01
 - **Primary substrate:** hidden + proofDebt proof-continuity control
 - **Core decision:** do not build another proof-control overlay unless a predeclared hidden+proofDebt failure first clears a failure-atlas gate.
-- **Current worktree scope:** `codex/layered-human-handoff-probe` adds a zero-paid local deployment-risk probe for advisory human/hybrid review recommendations. Runtime routing, deployment, and human-learning claims remain deferred.
+- **Current closeout:** PR #73 answered the human/hybrid handoff question with a bounded local advisory deployment-risk classification claim. Runtime routing, deployment, safety coverage, and human-learning claims remain deferred.
 
 ## 1. Executive Summary
 
@@ -29,7 +29,7 @@ deployment adaptation:
   human handoff / teacher review
 ```
 
-The production proof-control kernel remains hidden+proofDebt. New work should add auditable quality and learner-state layers above that kernel, with proof-control no-harm as a hard gate. The first implementation targeted in-dialogue scopes: turn, dialogue block, scene, and act. The follow-on task/session scaffold added advisory next-task selection. The held-out gate showed that selector generalizes to frozen derivation artifacts under a local advisory boundary. The current handoff probe opens deployment-risk classification only as advisory metadata; it does not route learners or implement deployed escalation.
+The production proof-control kernel remains hidden+proofDebt. New work should add auditable quality and learner-state layers above that kernel, with proof-control no-harm as a hard gate. The first implementation targeted in-dialogue scopes: turn, dialogue block, scene, and act. The follow-on task/session scaffold added advisory next-task selection. The held-out gate showed that selector generalizes to frozen derivation artifacts under a local advisory boundary. The handoff probe adds deployment-risk classification only as advisory metadata; it does not route learners or implement deployed escalation.
 
 ## 2. Current Status and Boundary Conditions
 
@@ -120,9 +120,9 @@ Out of scope for this worktree:
 3. Runtime task assignment or UI deployment.
 4. Human handoff execution or human-learning claims.
 
-### 2.6 Current human/hybrid handoff probe scope
+### 2.6 Closed human/hybrid handoff probe scope
 
-Opened in `codex/layered-human-handoff-probe`:
+Completed by PR #73 from `codex/layered-human-handoff-probe`:
 
 1. Add a public-only `HumanHandoffState` scaffold.
 2. Recommend conservative human/hybrid review actions from public signals:
@@ -1255,8 +1255,8 @@ progression, 0 public-only failures, and 0 proof-control drift rows.
 
 **Goal:** add “who should help?” as an adaptation action.
 
-Status: active in `codex/layered-human-handoff-probe` as a zero-paid local
-probe. Do not implement runtime routing in this branch.
+Status: merged by PR #73 from `codex/layered-human-handoff-probe` as a
+zero-paid local probe. Runtime routing remains deferred.
 
 Implementation:
 
@@ -1287,6 +1287,14 @@ Completion rule for this branch:
 `npm run derivation:human-handoff-probe` writes a passing report, the focused
 handoff tests pass, workplan validation passes, and no runtime routing,
 human-learning, safety, or proof-control promotion claim is made.
+```
+
+Completion result:
+
+```text
+The zero-paid probe passed: 8/8 deterministic controls, 0 public-only failures,
+0 non-advisory rows, 4 human followup recommendations, and 2 optional review
+recommendations.
 ```
 
 ## 10. Reopening Criteria for Proof-Control Adaptation

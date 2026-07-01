@@ -40,14 +40,9 @@ function normalizeAffectRisk(value) {
 function normalizeProofReliabilityIssue(value) {
   const issue = norm(value || 'none');
   if (
-    [
-      'none',
-      'low_confidence',
-      'proof_gate_failed',
-      'generator_unverified',
-      'audit_gap',
-      'policy_conflict',
-    ].includes(issue)
+    ['none', 'low_confidence', 'proof_gate_failed', 'generator_unverified', 'audit_gap', 'policy_conflict'].includes(
+      issue,
+    )
   ) {
     return issue;
   }
@@ -101,7 +96,9 @@ function collectHandoffSignals(input = {}, taskState) {
   if (['proof_gate_failed', 'policy_conflict'].includes(proofReliabilityIssue)) {
     signals.push(signal('proof_reliability_failure', 'strong', `proof reliability issue: ${proofReliabilityIssue}`));
   } else if (['low_confidence', 'generator_unverified', 'audit_gap'].includes(proofReliabilityIssue)) {
-    signals.push(signal('proof_reliability_uncertain', 'moderate', `proof reliability issue: ${proofReliabilityIssue}`));
+    signals.push(
+      signal('proof_reliability_uncertain', 'moderate', `proof reliability issue: ${proofReliabilityIssue}`),
+    );
   }
   if (modelConfidence < 0.35) {
     signals.push(signal('low_model_confidence', 'moderate', `model confidence ${modelConfidence.toFixed(2)}`));
@@ -180,7 +177,8 @@ export function deriveHumanHandoffState(input = {}) {
     };
   }
 
-  const taskInput = input.taskMasteryInput && typeof input.taskMasteryInput === 'object' ? input.taskMasteryInput : input;
+  const taskInput =
+    input.taskMasteryInput && typeof input.taskMasteryInput === 'object' ? input.taskMasteryInput : input;
   const taskState = deriveTaskMasteryState(taskInput);
   const signalState = collectHandoffSignals(input, taskState);
   const recommendation = recommendationFor(signalState);
@@ -368,9 +366,7 @@ export function renderHumanHandoffProbeMarkdown(report) {
     lines.push(
       `| ${row.id} | ${row.expectedRecommendation} | ${row.recommendation} | ${
         row.helperRecommendation
-      } | ${row.signalIds.join(', ') || 'none'} | ${row.advisoryOnly ? 'yes' : 'no'} | ${
-        row.passed ? 'yes' : 'no'
-      } |`,
+      } | ${row.signalIds.join(', ') || 'none'} | ${row.advisoryOnly ? 'yes' : 'no'} | ${row.passed ? 'yes' : 'no'} |`,
     );
   }
 

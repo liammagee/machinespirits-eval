@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-01T04:17:34.746Z",
+  "generated": "2026-07-01T04:52:25.442Z",
   "counts": {
     "total": 66,
     "byStatus": {
-      "done": 56,
+      "done": 57,
       "blocked": 1,
       "dropped": 2,
-      "review": 2,
+      "review": 1,
       "active": 1,
       "triaged": 4
     },
@@ -268,33 +268,6 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "layered-human-handoff-probe",
-      "title": "Layered adaptive tutor human/hybrid handoff probe",
-      "status": "review",
-      "type": "research",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-01",
-      "updated": "2026-07-01",
-      "branch": "codex/layered-human-handoff-probe",
-      "verification": "Focused handoff tests and zero-paid human handoff probe pass with public-only advisory recommendations, no proof-control behavior change, and no runtime routing or human-learning claim.",
-      "claim_status": "methods",
-      "links": {
-        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
-        "exports": "exports/dramatic-derivation/layered-adaptation/human-handoff-probe-report.md",
-        "items": "layered-taskloop-heldout-gate",
-        "prs": "https://github.com/liammagee/machinespirits-eval/pull/73"
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "handoff",
-        "outer-loop",
-        "deployment-risk"
-      ]
-    },
-    {
       "id": "character-development-capacity",
       "title": "Character-development capacity (learner + tutor) — instrument + run",
       "status": "review",
@@ -460,6 +433,33 @@
         "notes": "TODO.md"
       },
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "layered-human-handoff-probe",
+      "title": "Layered adaptive tutor human/hybrid handoff probe",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-01",
+      "branch": "codex/layered-human-handoff-probe",
+      "verification": "PR #73 merged; focused handoff tests and zero-paid human handoff probe passed with 8/8 controls, 0 public-only failures, 0 non-advisory rows, no proof-control behavior change, and no runtime routing or human-learning claim.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/human-handoff-probe-report.md",
+        "items": "layered-taskloop-heldout-gate",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/73"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "handoff",
+        "outer-loop",
+        "deployment-risk"
+      ]
     },
     {
       "id": "layered-task-session-adaptation",

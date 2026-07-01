@@ -1,7 +1,7 @@
 ---
 id: layered-human-handoff-probe
 title: Layered adaptive tutor human/hybrid handoff probe
-status: review
+status: done
 type: research
 priority: P1
 owner: codex
@@ -9,8 +9,8 @@ source: manual
 created: 2026-07-01
 updated: 2026-07-01
 branch: codex/layered-human-handoff-probe
-verification: "Focused handoff tests and zero-paid human handoff probe pass with public-only advisory recommendations, no proof-control behavior change, and no runtime routing or human-learning claim."
-claim_status: methods
+verification: "PR #73 merged; focused handoff tests and zero-paid human handoff probe passed with 8/8 controls, 0 public-only failures, 0 non-advisory rows, no proof-control behavior change, and no runtime routing or human-learning claim."
+claim_status: scope-bound
 links:
   notes: PLAN_2_0/layered_adaptive_tutor_technical_spec.md
   exports: exports/dramatic-derivation/layered-adaptation/human-handoff-probe-report.md
@@ -51,3 +51,10 @@ held-out task-loop gate, workplan check, `git diff --check`, and full
 `npm test`.
 
 2026-07-01 Codex: Opened PR #73 for review.
+
+2026-07-01 Codex: Closed after PR #73 merged. Local lint now passes after
+formatting `services/dramaticDerivation/humanHandoff.js`; the prior CI lint
+failure was `npm run format:check`, not ESLint. The result remains a bounded
+local advisory deployment-risk classification claim only: no learner routing,
+no deployed safety coverage, no proof-control behavior change, and no
+human-learning claim.
