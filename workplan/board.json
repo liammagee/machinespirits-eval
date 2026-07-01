@@ -1,17 +1,17 @@
 {
-  "generated": "2026-07-01T03:52:00.989Z",
+  "generated": "2026-07-01T04:17:34.746Z",
   "counts": {
-    "total": 65,
+    "total": 66,
     "byStatus": {
       "done": 56,
       "blocked": 1,
       "dropped": 2,
-      "review": 1,
+      "review": 2,
       "active": 1,
       "triaged": 4
     },
     "byType": {
-      "research": 34,
+      "research": 35,
       "experiment": 5,
       "content": 2,
       "infra": 9,
@@ -266,6 +266,33 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "layered-human-handoff-probe",
+      "title": "Layered adaptive tutor human/hybrid handoff probe",
+      "status": "review",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-01",
+      "branch": "codex/layered-human-handoff-probe",
+      "verification": "Focused handoff tests and zero-paid human handoff probe pass with public-only advisory recommendations, no proof-control behavior change, and no runtime routing or human-learning claim.",
+      "claim_status": "methods",
+      "links": {
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/human-handoff-probe-report.md",
+        "items": "layered-taskloop-heldout-gate",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/73"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "handoff",
+        "outer-loop",
+        "deployment-risk"
+      ]
     },
     {
       "id": "character-development-capacity",

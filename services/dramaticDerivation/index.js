@@ -78,6 +78,16 @@ export {
   renderTaskLoopHeldoutGateMarkdown,
 } from './taskLoopHeldoutGate.js';
 export {
+  HUMAN_HANDOFF_PROBE_CASES,
+  HUMAN_HANDOFF_PROBE_SCHEMA,
+  HUMAN_HANDOFF_RECOMMENDATIONS,
+  HUMAN_HANDOFF_SCHEMA,
+  assertHumanHandoffRecommendation,
+  deriveHumanHandoffState,
+  evaluateHumanHandoffProbe,
+  renderHumanHandoffProbeMarkdown,
+} from './humanHandoff.js';
+export {
   QUALITY_PAIR_CASES,
   QUALITY_PAIR_REPORT_SCHEMA,
   QUALITY_PAIR_SCHEMA,
