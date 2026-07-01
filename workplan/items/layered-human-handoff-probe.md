@@ -15,6 +15,7 @@ links:
   notes: PLAN_2_0/layered_adaptive_tutor_technical_spec.md
   exports: exports/dramatic-derivation/layered-adaptation/human-handoff-probe-report.md
   items: layered-taskloop-heldout-gate
+  prs: https://github.com/liammagee/machinespirits-eval/pull/73
 tags:
   - adaptive-tutor
   - derivation
@@ -48,3 +49,5 @@ controls passing, with 0 public-only failures and 0 non-advisory rows. Passing
 checks: focused handoff/task-loop tests, handoff probe, task-loop benchmark,
 held-out task-loop gate, workplan check, `git diff --check`, and full
 `npm test`.
+
+2026-07-01 Codex: Opened PR #73 for review.

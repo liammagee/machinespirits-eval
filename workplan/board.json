@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-01T04:14:34.500Z",
+  "generated": "2026-07-01T04:17:34.746Z",
   "counts": {
     "total": 66,
     "byStatus": {
@@ -283,7 +283,8 @@
       "links": {
         "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
         "exports": "exports/dramatic-derivation/layered-adaptation/human-handoff-probe-report.md",
-        "items": "layered-taskloop-heldout-gate"
+        "items": "layered-taskloop-heldout-gate",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/73"
       },
       "tags": [
         "adaptive-tutor",
