@@ -112,6 +112,8 @@ links:
     - eval-2026-07-01-58193750
     - eval-2026-07-01-02e8712f
     - eval-2026-07-01-a09281f7
+    - eval-2026-07-01-9066df81
+    - eval-2026-07-01-9f4eecf2
   exports:
     - exports/charisma-desire-stage0-matrix-sanity.md
     - exports/charisma-desire-router-stage0-sanity.md
@@ -912,3 +914,17 @@ retry path. Shared-archive progress is now 34/50 successful rows after
 this Codex process by missing `OPENROUTER_API_KEY`; a patched resume attempt for
 `eval-2026-07-01-a09281f7` failed fast on the final rote-parroting row with
 `Provider openrouter not configured`, leaving that run at 9/10.
+
+2026-07-01 Codex: Fast-forward merged
+`codex/charisma-role-isolation-followup` into `main` and reran the remaining
+role-isolation matrix from the main checkout so `.env` provided
+`OPENROUTER_API_KEY`. The scripted GLM tutor control completed 5/5 as
+`eval-2026-07-01-9066df81` after a transient question-flood JSON parse failure
+recovered inside the same run. The full GLM reference run
+`eval-2026-07-01-9f4eecf2` advanced to 7/10 successful rows: boredom,
+frustration, irrelevance, and one question-flood draw are complete; one
+question-flood draw plus both rote-parroting draws remain unresolved after
+stopping a stalled resume. The role-isolation matrix now stands at 47/50
+successful generation-only rows. The generated command sheet now uses a 600s
+OpenRouter timeout because 180s and 240s produced avoidable GLM/id timeouts
+while 600s cleared several previously failing rows.

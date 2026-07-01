@@ -179,7 +179,7 @@ function commandEnvForArm(arm) {
     'EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml',
   ];
   if (usesOpenRouter) {
-    env.unshift('OPENROUTER_API_TIMEOUT_MS=180000');
+    env.unshift('OPENROUTER_API_TIMEOUT_MS=600000');
   }
   if (tutor.openrouterRuntimeControl || learner.openrouterRuntimeControl) {
     env.unshift('OPENROUTER_REASONING_EXCLUDE=true');
