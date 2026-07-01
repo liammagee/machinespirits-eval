@@ -2,7 +2,28 @@
      8 sweep angles (2024-2026 literature) -> 60 raw candidates -> 44 after dedup
      -> 44 screened against repo evidence (cells + paper-full-2.0.md sections)
      -> 23 probe-worthy survivors, 0 genuinely new.
-     Companion to fables_big_plan.md §2. Agent journal: session workflow wf_cd3ab72e-4b4. -->
+     Companion to fables_big_plan.md §2. Agent journal: session workflow wf_cd3ab72e-4b4.
+
+     Citation-verification pass (2026-07-02, web-checked): all 16 load-bearing sources
+     verified, with these corrections to the text below —
+     (1) the "66% answer-leak" figure belongs to Macina et al. 2023 (MathDial), not
+         BEA 2025; the taxonomy paper (Maurya et al., NAACL 2025, MRBench) reports
+         GPT-4 revealing the answer ~47%.
+     (2) Sinha & Kapur (RER 2021) report Cohen's d = 0.36 [0.20, 0.51], not g.
+     (3) Tutor CoPilot's +9pp is for students of LOWER-RATED tutors; venue is
+         arXiv 2410.03017 / Annenberg EdWorkingPaper 24-1054, not NBER.
+     (4) Learning to Prompt (arXiv 2606.20138): the real-A/B null holds for the GREEDY
+         router variant (19.1% vs 19.6%, n.s.); a stochastic variant reached 28.1%
+         conversion with fewer turns — the sim-to-real caution stands but is not a
+         blanket failure.
+     (5) Title fixes: PersonaMem = benchmark inside "Know Me, Respond to Me" (arXiv
+         2504.14225, COLM 2025); TASA = system in "Teaching According to Students'
+         Aptitude" (arXiv 2511.15163); GDP-Zero = system in "Prompt-Based Monte-Carlo
+         Tree Search for Goal-Oriented Dialogue Policy Planning" (EMNLP 2023).
+     (6) IRT calibration (arXiv 2507.08232): abstract supports "highly model-dependent"
+         alignment, not the stronger "no model-prompt pair achieves calibration".
+     (7) Wood contingent-shift rule: Wood, Wood & Middleton, IJBD 1978; the 1999 item
+         is Wood & Wood, Computers & Education 33. -->
 
 # PLAN 3.0 Closing Screen: Does Recent Research Surface Adaptation Mechanisms the Synthetic Program Missed?
 
