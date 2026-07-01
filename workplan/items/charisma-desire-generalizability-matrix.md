@@ -39,13 +39,14 @@ verification: Engagement router cell 180, contract/repair cell 181, split-repair
   cell 193 GLM 5.2 provider/runtime-control run completing 5/5 clean DB
   validation but failing the local breakthrough criterion, and no-paid
   role-isolation gate design adding the cell 195 scripted-learner control,
-  plus partial Sonnet 5 role-isolation start showing a completed Codex
-  tutor/Sonnet 5 id/Codex learner baseline but stalled GLM dynamic-learner arm;
+  and full 50-row role-isolation closeout showing all six planned arms complete
+  under the 480s OpenRouter timeout guard, with dynamic cell 193 arms retaining
+  local positives while scripted controls stay tutor-register-only evidence;
   register-switch/breakthrough scenarios, router service/tests, no-paid Stage
   0/router sanity reports, paid smokes/matrices, config validation, workplan
   render/validate, and focused id-director/learner/gate tests pass.
 claim_status: exploratory
-branch: codex/charisma-desire-role-isolation
+branch: codex/charisma-role-isolation-next
 links:
   notes:
     - notes/2026-06-25-charisma-desire-generalizability-plan.md
@@ -104,7 +105,10 @@ links:
     - eval-2026-06-28-f857f51f
     - eval-2026-07-01-5dad2e60
     - eval-2026-07-01-dff9f159
-    - eval-2026-07-01-ed9f7288
+    - eval-2026-07-01-02e8712f
+    - eval-2026-07-01-a09281f7
+    - eval-2026-07-01-9f4eecf2
+    - eval-2026-07-01-9066df81
   exports:
     - exports/charisma-desire-stage0-matrix-sanity.md
     - exports/charisma-desire-router-stage0-sanity.md
@@ -867,3 +871,29 @@ rows. Partial analysis over 15 rows found 7 strict candidates and 8 positive
 local outcomes. Boundary: dynamic-learner/runtime drift is now a live failure
 source; GLM tutor/id with Codex learner and scripted controls remain open. No
 promotion or human-learning claim.
+
+2026-07-01 Codex: Completed the role-isolation matrix in the
+`codex/charisma-role-isolation-next` worktree and cleaned the superseded
+zero-row/failed-start artifacts. The practical GLM runtime guard is now
+`OPENROUTER_API_TIMEOUT_MS=480000` plus
+`OPENROUTER_REASONING_MAX_TOKENS=0`,
+`OPENROUTER_REASONING_EXCLUDE=true`, and
+`EVAL_CAPTURE_API_PAYLOADS=false`; 120s was too strict for GLM rote/frustration
+rows, while 480s plus checkpointed resume completed the stalled arms. Clean
+generation runs now cover all 50 planned rows: baseline Codex tutor/Sonnet 5
+id/Codex learner `eval-2026-07-01-5dad2e60` (10/10), Codex tutor/Sonnet 5
+id/GLM learner `eval-2026-07-01-dff9f159` (10/10), GLM tutor/id/Codex learner
+`eval-2026-07-01-a09281f7` (10/10), full GLM reference
+`eval-2026-07-01-9f4eecf2` (10/10), scripted Codex tutor control
+`eval-2026-07-01-02e8712f` (5/5), and scripted GLM tutor control
+`eval-2026-07-01-9066df81` (5/5). Role-isolation report:
+`exports/charisma-desire-role-isolation-gate-summary.md` records 50/50
+successful generation rows; the shared-log outcome reporter over the same
+runs records 20/40 strict candidates and 23/40 positive local outcomes across
+dynamic cell 193 arms, with scripted controls at 0/10 positives as expected.
+Per-arm local positives: baseline 6/10, tutor-fixed GLM learner 5/10,
+learner-fixed GLM tutor/id 8/10, full GLM reference 4/10, scripted controls
+0/5 and 0/5. Boundary: GLM can now complete the full grid under runtime
+guarding, so the remaining limitation is outcome quality/generalization, not
+an unresolved GLM learner stall. No promotion, runtime deployment, or
+human-learning claim.

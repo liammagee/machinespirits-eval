@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import Database from 'better-sqlite3';
 import yaml from 'yaml';
 
 import { EVAL_ONLY_PROFILES } from '../services/evaluationRunner.js';
@@ -13,8 +14,10 @@ const ROOT = path.resolve(__dirname, '..');
 
 const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-scenarios.yaml');
 const TUTOR_AGENTS_PATH = path.join(ROOT, 'config', 'tutor-agents.yaml');
+const DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT, 'data', 'evaluations.db');
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-role-isolation-gate-summary.md');
 const JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-role-isolation-gate.json');
+const OPENROUTER_TIMEOUT_MS = '480000';
 
 const CELL_193 = 'cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified';
 const CELL_195 = 'cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified';
@@ -149,11 +152,18 @@ function markdownTable(headers, rows) {
 function commandEnvForArm(arm) {
   const tutor = STACKS[arm.tutorStack];
   const learner = arm.learnerStack ? STACKS[arm.learnerStack] : {};
+  const usesOpenRouter = [tutor.egoModel, tutor.superegoModel, learner.learnerModel].some((model) =>
+    String(model || '').startsWith('openrouter.'),
+  );
   const env = [
+    'EVAL_CAPTURE_API_PAYLOADS=false',
     'ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS=600000',
     'ID_DIRECTOR_CODEX_CLI_TIMEOUT_MS=600000',
     'EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml',
   ];
+  if (usesOpenRouter) {
+    env.unshift(`OPENROUTER_API_TIMEOUT_MS=${OPENROUTER_TIMEOUT_MS}`);
+  }
   if (tutor.openrouterRuntimeControl || learner.openrouterRuntimeControl) {
     env.unshift('OPENROUTER_REASONING_EXCLUDE=true');
     env.unshift('OPENROUTER_REASONING_MAX_TOKENS=0');
@@ -181,6 +191,8 @@ function buildRunCommand(arm) {
 
 function buildReportCommand() {
   return [
+    'EVAL_DB_PATH=/path/to/evaluations.db \\',
+    'EVAL_LOGS_DIR=/path/to/logs \\',
     'node scripts/report-charisma-desire-breakthrough-matrix.js \\',
     '  --runs <comma-separated-role-isolation-run-ids>',
     '',
@@ -283,7 +295,125 @@ function scenarioRows() {
   ]);
 }
 
-function buildReport({ generatedAt, errors }) {
+function parseArgs(argv) {
+  const flags = {};
+  for (let i = 2; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (!arg.startsWith('--')) continue;
+    const key = arg.slice(2);
+    const next = argv[i + 1];
+    if (next === undefined || next.startsWith('--')) {
+      flags[key] = true;
+    } else {
+      flags[key] = next;
+      i += 1;
+    }
+  }
+  return flags;
+}
+
+function runIdsFromFlags(flags) {
+  return typeof flags.runs === 'string'
+    ? flags.runs
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean)
+    : [];
+}
+
+function armForRun(run) {
+  return ALL_ARMS.find((arm) => String(run.description || '').includes(arm.id)) || null;
+}
+
+function loadRunSummaries(runIds) {
+  if (runIds.length === 0) return [];
+  const placeholders = runIds.map(() => '?').join(',');
+  const db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
+  try {
+    const runs = db
+      .prepare(
+        `SELECT id, status, description
+         FROM evaluation_runs
+         WHERE id IN (${placeholders})`,
+      )
+      .all(...runIds);
+    const resultRows = db
+      .prepare(
+        `SELECT run_id, scenario_id, success, passes_required, passes_forbidden, error_message
+         FROM evaluation_results
+         WHERE run_id IN (${placeholders})`,
+      )
+      .all(...runIds);
+
+    return ALL_ARMS.map((arm) => {
+      const armRuns = runs.filter((run) => armForRun(run)?.id === arm.id);
+      const armRunIds = armRuns.map((run) => run.id);
+      const rows = resultRows.filter((row) => armRunIds.includes(row.run_id));
+      const expectedRows = CONTROLLED_SCENARIOS.length * arm.repeats;
+      const successfulRows = rows.filter((row) => row.success === 1).length;
+      const failedRows = rows.filter((row) => row.success === 0).length;
+      const requiredPassRows = rows.filter((row) => row.success === 1 && row.passes_required === 1).length;
+      const forbiddenPassRows = rows.filter((row) => row.success === 1 && row.passes_forbidden === 1).length;
+      const scenarioCounts = CONTROLLED_SCENARIOS.map((scenarioId) => {
+        const count = rows.filter((row) => row.scenario_id === scenarioId && row.success === 1).length;
+        return `${scenarioId.replace('charisma_desire_resistance_breakthrough_', '')}:${count}/${arm.repeats}`;
+      });
+      return {
+        armId: arm.id,
+        runIds: armRunIds,
+        expectedRows,
+        storedRows: rows.length,
+        successfulRows,
+        failedRows,
+        requiredPassRows,
+        forbiddenPassRows,
+        scenarioCounts,
+        status: successfulRows === expectedRows ? 'complete' : successfulRows > 0 ? 'partial' : 'missing',
+      };
+    });
+  } finally {
+    db.close();
+  }
+}
+
+function resultRows(results) {
+  return results.map((result) => [
+    result.armId,
+    result.runIds.join(', ') || '-',
+    `${result.successfulRows}/${result.expectedRows}`,
+    String(result.failedRows),
+    `${result.requiredPassRows}/${result.successfulRows}`,
+    `${result.forbiddenPassRows}/${result.successfulRows}`,
+    result.status,
+    result.scenarioCounts.join('; '),
+  ]);
+}
+
+function buildResultsSection(results) {
+  if (!results.length) return '';
+  const totalExpected = results.reduce((sum, result) => sum + result.expectedRows, 0);
+  const totalSuccessful = results.reduce((sum, result) => sum + result.successfulRows, 0);
+  const complete = results.every((result) => result.status === 'complete');
+  return `## Run Results
+
+Status: ${complete ? 'COMPLETE' : 'PARTIAL'}
+
+Observed rows: ${totalSuccessful}/${totalExpected} successful generation rows.
+
+Runtime guard used for GLM/OpenRouter arms: \`OPENROUTER_API_TIMEOUT_MS=${OPENROUTER_TIMEOUT_MS}\`, \`OPENROUTER_REASONING_MAX_TOKENS=0\`, \`OPENROUTER_REASONING_EXCLUDE=true\`, and \`EVAL_CAPTURE_API_PAYLOADS=false\`.
+
+${markdownTable(
+  ['Arm', 'Run IDs', 'Successful rows', 'Failed rows', 'Required pass', 'Forbidden pass', 'Status', 'Scenario counts'],
+  resultRows(results),
+)}
+
+Interpretive boundary: these are generation/validation counts. Use the
+breakthrough-matrix reporter for local learner-outcome labels; scripted-control
+rows remain tutor-register controls, not learner-outcome evidence.
+`;
+}
+
+function buildReport({ generatedAt, errors, results }) {
   const commandBlocks = ALL_ARMS.map((arm) => `### ${arm.id}\n\n\`\`\`bash\n${buildRunCommand(arm)}\n\`\`\``);
   return `# Charisma/Desire Role-Isolation Gate
 
@@ -310,6 +440,8 @@ ${markdownTable(['Arm', 'Contrast', 'Profile', 'Tutor/id stack', 'Learner stack'
 
 Planned rows: ${plannedRows()} generation-only rows.
 
+${buildResultsSection(results)}
+
 ## Decision Rules
 
 - If \`baseline_codex_tutor_codex_learner\` reproduces the local pass and \`tutor_fixed_glm_learner\` fails, the immediate suspect is dynamic learner gate drift.
@@ -335,10 +467,13 @@ ${errors.length === 0 ? '- No validation errors.' : errors.map((error) => `- ${e
 }
 
 function main() {
-  const checkOnly = process.argv.includes('--check');
+  const flags = parseArgs(process.argv);
+  const checkOnly = flags.check === true;
+  const runIds = runIdsFromFlags(flags);
   const scenarios = readYaml(SCENARIO_PATH)?.scenarios || {};
   const profiles = readYaml(TUTOR_AGENTS_PATH)?.profiles || {};
   const errors = validateConfig({ scenarios, profiles });
+  const results = loadRunSummaries(runIds);
   const data = {
     generatedAt: new Date().toISOString(),
     status: errors.length === 0 ? 'PASS' : 'FAIL',
@@ -346,13 +481,15 @@ function main() {
     dynamicArms: DYNAMIC_ARMS,
     scriptedArms: SCRIPTED_ARMS,
     plannedRows: plannedRows(),
+    resultRuns: runIds,
+    results,
     errors,
   };
 
   if (!checkOnly) {
     fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });
     fs.writeFileSync(JSON_PATH, `${JSON.stringify(data, null, 2)}\n`);
-    fs.writeFileSync(REPORT_PATH, buildReport({ generatedAt: data.generatedAt, errors }));
+    fs.writeFileSync(REPORT_PATH, buildReport({ generatedAt: data.generatedAt, errors, results }));
   }
 
   console.log('Scenario set: charisma_desire_role_isolation');
@@ -360,6 +497,10 @@ function main() {
   console.log(`Controlled scenarios: ${CONTROLLED_SCENARIOS.length}`);
   console.log(`Isolation arms: ${ALL_ARMS.length}`);
   console.log(`Planned rows: ${data.plannedRows}`);
+  if (results.length > 0) {
+    const successfulRows = results.reduce((sum, result) => sum + result.successfulRows, 0);
+    console.log(`Observed rows: ${successfulRows}/${data.plannedRows}`);
+  }
   console.log(`Scripted control: ${CELL_195}`);
   if (!checkOnly) console.log(`Report: ${path.relative(ROOT, REPORT_PATH)}`);
   if (errors.length > 0) {

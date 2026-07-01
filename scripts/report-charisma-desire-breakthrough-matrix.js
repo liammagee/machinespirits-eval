@@ -12,10 +12,11 @@ import { routeEngagementMode } from '../services/engagementModeRouter.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
-const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
+const DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT, 'data', 'evaluations.db');
 const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-scenarios.yaml');
 const LEARNER_AGENTS_PATH = path.join(ROOT, 'config', 'learner-agents.yaml');
-const LOGS_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
+const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(ROOT, 'logs');
+const LOGS_DIR = path.join(LOGS_ROOT, 'tutor-dialogues');
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-matrix-summary.md');
 const JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-matrix.json');
 

@@ -23,4 +23,18 @@ describe('charisma desire role-isolation gate', () => {
     assert.match(stdout, /Planned rows: 50/);
     assert.match(stdout, /cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified/);
   });
+
+  it('documents an OpenRouter timeout guard for metered role-isolation arms', async () => {
+    const { stdout } = await exec('node', [SCRIPT], {
+      timeout: 15000,
+      env: { ...process.env, NODE_NO_WARNINGS: '1' },
+    });
+
+    assert.match(stdout, /Status: PASS/);
+
+    const reportPath = path.resolve(__dirname, '..', 'exports', 'charisma-desire-role-isolation-gate-summary.md');
+    const report = await import('node:fs/promises').then((fs) => fs.readFile(reportPath, 'utf8'));
+    assert.match(report, /OPENROUTER_API_TIMEOUT_MS=480000/);
+    assert.match(report, /EVAL_CAPTURE_API_PAYLOADS=false/);
+  });
 });
