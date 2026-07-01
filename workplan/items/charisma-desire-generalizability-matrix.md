@@ -7,7 +7,7 @@ priority: P2
 owner: codex
 source: manual
 created: 2026-06-25
-updated: 2026-07-01
+updated: 2026-07-02
 verification: Engagement router cell 180, contract/repair cell 181, split-repair
   cell 182, failed transfer-stake cell 183 smoke, clean-but-insufficient
   transfer-compression cell 184 smoke, adaptation-slice audit disconfirming the
@@ -46,7 +46,7 @@ verification: Engagement router cell 180, contract/repair cell 181, split-repair
   0/router sanity reports, paid smokes/matrices, config validation, workplan
   render/validate, and focused id-director/learner/gate tests pass.
 claim_status: exploratory
-branch: codex/charisma-role-isolation-next
+branch: codex/charisma-desire-heldout-quality-gate
 links:
   notes:
     - notes/2026-06-25-charisma-desire-generalizability-plan.md
@@ -109,6 +109,12 @@ links:
     - eval-2026-07-01-a09281f7
     - eval-2026-07-01-9f4eecf2
     - eval-2026-07-01-9066df81
+    - eval-2026-07-01-caab0c08
+    - eval-2026-07-01-0fd5defa
+    - eval-2026-07-01-6af87b98
+    - eval-2026-07-01-22e62eb4
+    - eval-2026-07-01-e42ecc3b
+    - eval-2026-07-01-fcb7a871
   exports:
     - exports/charisma-desire-stage0-matrix-sanity.md
     - exports/charisma-desire-router-stage0-sanity.md
@@ -155,8 +161,13 @@ links:
     - exports/charisma-desire-breakthrough-cell193-glm52-runtime-control-summary.json
     - exports/charisma-desire-role-isolation-gate-summary.md
     - exports/charisma-desire-role-isolation-gate.json
+    - exports/charisma-desire-heldout-quality-gate-summary.md
+    - exports/charisma-desire-heldout-quality-gate.json
+    - exports/charisma-desire-breakthrough-heldout-matrix-summary.md
+    - exports/charisma-desire-breakthrough-heldout-matrix.json
   items:
     - refresh-weber-id-charisma-recognition-thread
+    - charisma-desire-heldout-quality-gate
 tags:
   - id-director
   - charisma
@@ -897,3 +908,21 @@ learner-fixed GLM tutor/id 8/10, full GLM reference 4/10, scripted controls
 guarding, so the remaining limitation is outcome quality/generalization, not
 an unresolved GLM learner stall. No promotion, runtime deployment, or
 human-learning claim.
+
+2026-07-02 Codex: Completed the held-out artifact quality gate in the
+`codex/charisma-desire-heldout-quality-gate` worktree. Six guarded arms
+generated all 50 planned rows with zero failed rows: Codex/Codex baseline
+`eval-2026-07-01-caab0c08`, Codex tutor/Sonnet 5 id + GLM learner
+`eval-2026-07-01-0fd5defa`, GLM tutor/id + Codex learner
+`eval-2026-07-01-6af87b98`, full GLM reference
+`eval-2026-07-01-22e62eb4`, scripted Codex-tutor control
+`eval-2026-07-01-e42ecc3b`, and scripted GLM-tutor control
+`eval-2026-07-01-fcb7a871`. Runtime completion passed and scripted controls
+remained negative at 0/5 and 0/5 positive local outcomes. The held-out gate
+does not advance: `FAIL_HELDOUT_QUALITY` because the Codex/Codex baseline
+route-hit rate was 70% below the 80% floor, the GLM-learner arm had only 20%
+positive local outcomes and 40% target-match, and the full-GLM reference had
+70% target-match. Boundary: the current cell 193 charisma/desire arc remains
+exploratory; do not fold a held-out artifact claim into the paper/spec, open a
+human/hybrid escalation gate, or promote runtime behavior from this artifact
+pool.
