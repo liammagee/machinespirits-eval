@@ -28,4 +28,16 @@ describe('charisma desire resistance-breakthrough matrix', () => {
     assert.match(stdout, /Question-flood gate: /);
     assert.match(stdout, /Status: (READY_NO_ROWS|ANALYZED_ROWS)/);
   });
+
+  it('validates the held-out resistance-signal scenario grid', async () => {
+    const { stdout } = await exec('node', [SCRIPT, '--check', '--scenario-set', 'heldout'], {
+      timeout: 15000,
+      env: { ...process.env, NODE_NO_WARNINGS: '1' },
+    });
+
+    assert.match(stdout, /Scenario set: charisma_desire_resistance_breakthrough_heldout/);
+    assert.match(stdout, /Held-out scenarios: 5/);
+    assert.match(stdout, /cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified/);
+    assert.match(stdout, /Status: (READY_NO_ROWS|ANALYZED_ROWS)/);
+  });
 });

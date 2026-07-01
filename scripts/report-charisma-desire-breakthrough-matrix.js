@@ -17,8 +17,10 @@ const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-sce
 const LEARNER_AGENTS_PATH = path.join(ROOT, 'config', 'learner-agents.yaml');
 const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(ROOT, 'logs');
 const LOGS_DIR = path.join(LOGS_ROOT, 'tutor-dialogues');
-const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-matrix-summary.md');
-const JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-matrix.json');
+const CONTROLLED_REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-matrix-summary.md');
+const CONTROLLED_JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-matrix.json');
+const HELDOUT_REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-heldout-matrix-summary.md');
+const HELDOUT_JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-heldout-matrix.json');
 
 const ROUTER_PROFILE = 'cell_185_id_director_charisma_resistance_breakthrough_dynamic_verified';
 const STATIC_PROFILE = 'cell_186_id_director_charisma_static_floor_breakthrough_dynamic_verified';
@@ -41,6 +43,34 @@ const CONTROLLED_SCENARIOS = [
   'charisma_desire_resistance_breakthrough_question_flood',
   'charisma_desire_resistance_breakthrough_rote_parroting',
 ];
+const HELDOUT_SCENARIOS = [
+  'charisma_desire_heldout_ai_syllabus_boredom',
+  'charisma_desire_heldout_alignment_frustration',
+  'charisma_desire_heldout_community_irrelevance',
+  'charisma_desire_heldout_attention_question_flood',
+  'charisma_desire_heldout_synthesis_rote_parroting',
+];
+const SCENARIO_SETS = {
+  controlled: {
+    id: 'controlled',
+    label: 'charisma_desire_resistance_breakthrough_controlled',
+    scenarioIds: CONTROLLED_SCENARIOS,
+    reportPath: CONTROLLED_REPORT_PATH,
+    jsonPath: CONTROLLED_JSON_PATH,
+    scope: 'five target resistance signals x router profile versus static-floor dynamic comparator.',
+    validationLabel: 'Controlled scenarios and target gates validate.',
+  },
+  heldout: {
+    id: 'heldout',
+    label: 'charisma_desire_resistance_breakthrough_heldout',
+    scenarioIds: HELDOUT_SCENARIOS,
+    reportPath: HELDOUT_REPORT_PATH,
+    jsonPath: HELDOUT_JSON_PATH,
+    scope:
+      'five held-out artifact resistance probes x router profile versus static-floor dynamic comparator; no runtime or human-learning claim.',
+    validationLabel: 'Held-out scenarios and target gates validate.',
+  },
+};
 const BASE_SCENARIO_ID = 'charisma_desire_resistance_breakthrough_probe';
 
 const SIGNAL_PATTERNS = {
@@ -118,6 +148,14 @@ function parseArgs(argv) {
     }
   }
   return flags;
+}
+
+function scenarioSetFromFlags(flags) {
+  const requested = typeof flags['scenario-set'] === 'string' ? flags['scenario-set'] : 'controlled';
+  return {
+    scenarioSet: SCENARIO_SETS[requested] || SCENARIO_SETS.controlled,
+    errors: SCENARIO_SETS[requested] ? [] : [`Unknown scenario set ${requested}`],
+  };
 }
 
 function parseJson(value, fallback) {
@@ -397,11 +435,11 @@ function isPositiveOutcome(row) {
   );
 }
 
-function validateScenarios(scenarios, learnerAgents) {
+function validateScenarios(scenarios, learnerAgents, scenarioIds) {
   const errors = [];
-  for (const scenarioId of CONTROLLED_SCENARIOS) {
+  for (const scenarioId of scenarioIds) {
     if (!scenarios[scenarioId]) {
-      errors.push(`Missing controlled scenario ${scenarioId}`);
+      errors.push(`Missing scenario ${scenarioId}`);
       continue;
     }
     const scenario = resolveControlledScenario(scenarios, scenarioId);
@@ -447,11 +485,11 @@ function validateScenarios(scenarios, learnerAgents) {
   return errors;
 }
 
-function loadRows(runIds = []) {
+function loadRows(scenarioIds, runIds = []) {
   if (!fs.existsSync(DB_PATH)) return [];
   const db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
-  const params = [...CONTROLLED_SCENARIOS];
-  const clauses = [`r.scenario_id IN (${CONTROLLED_SCENARIOS.map(() => '?').join(',')})`, 'r.success = 1'];
+  const params = [...scenarioIds];
+  const clauses = [`r.scenario_id IN (${scenarioIds.map(() => '?').join(',')})`, 'r.success = 1'];
   clauses.push(`NOT (
     r.judge_model IS NOT NULL
     AND r.judge_model != ''
@@ -715,7 +753,7 @@ function fraction(n, d) {
   return d ? `${n}/${d}` : '-';
 }
 
-function buildReport({ generatedAt, errors, analyses }) {
+function buildReport({ generatedAt, errors, analyses, scenarioSet }) {
   const status = errors.length ? 'FAIL' : analyses.length ? 'ANALYZED_ROWS' : 'READY_NO_ROWS';
   const summary = summarize(analyses);
   const qfGate = questionFloodGate(analyses);
@@ -729,7 +767,7 @@ function buildReport({ generatedAt, errors, analyses }) {
   lines.push('## Scope');
   lines.push('');
   lines.push('- No generation and no judge calls.');
-  lines.push('- Matrix unit: five target resistance signals x router profile versus static-floor dynamic comparator.');
+  lines.push(`- Matrix unit: ${scenarioSet.scope}`);
   lines.push('- Outcome unit: generated resistant learner turn -> tutor response -> generated learner uptake.');
   lines.push(`- Router profile: \`${ROUTER_PROFILE}\`.`);
   lines.push(`- Tuned router profile: \`${TUNED_ROUTER_PROFILE}\`.`);
@@ -747,7 +785,7 @@ function buildReport({ generatedAt, errors, analyses }) {
   lines.push(
     errors.length
       ? errors.map((error) => `- ${error}`).join('\n')
-      : '- Controlled scenarios and target gates validate.',
+      : `- ${scenarioSet.validationLabel}`,
   );
   lines.push('');
   lines.push('## Arm Summary');
@@ -932,6 +970,7 @@ function buildReport({ generatedAt, errors, analyses }) {
 function main() {
   const flags = parseArgs(process.argv);
   const checkOnly = flags.check === true;
+  const { scenarioSet, errors: scenarioSetErrors } = scenarioSetFromFlags(flags);
   const runIds =
     typeof (flags.runs || flags['run-id']) === 'string'
       ? (flags.runs || flags['run-id'])
@@ -941,12 +980,13 @@ function main() {
       : [];
   const scenarios = readYaml(SCENARIO_PATH)?.scenarios || {};
   const learnerAgents = readYaml(LEARNER_AGENTS_PATH) || {};
-  const errors = validateScenarios(scenarios, learnerAgents);
-  const rows = loadRows(runIds);
+  const errors = [...scenarioSetErrors, ...validateScenarios(scenarios, learnerAgents, scenarioSet.scenarioIds)];
+  const rows = loadRows(scenarioSet.scenarioIds, runIds);
   const analyses = analyzeRows(rows, scenarios);
   const data = {
     generatedAt: new Date().toISOString(),
-    scenarioIds: CONTROLLED_SCENARIOS,
+    scenarioSet: scenarioSet.id,
+    scenarioIds: scenarioSet.scenarioIds,
     profiles: [
       ROUTER_PROFILE,
       TUNED_ROUTER_PROFILE,
@@ -966,22 +1006,22 @@ function main() {
   };
 
   if (!checkOnly) {
-    fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });
-    fs.writeFileSync(JSON_PATH, `${JSON.stringify(data, null, 2)}\n`);
-    fs.writeFileSync(REPORT_PATH, buildReport({ generatedAt: data.generatedAt, errors, analyses }));
+    fs.mkdirSync(path.dirname(scenarioSet.reportPath), { recursive: true });
+    fs.writeFileSync(scenarioSet.jsonPath, `${JSON.stringify(data, null, 2)}\n`);
+    fs.writeFileSync(scenarioSet.reportPath, buildReport({ generatedAt: data.generatedAt, errors, analyses, scenarioSet }));
   }
 
   const candidates = analyses.filter((row) => row.verdict.includes('candidate'));
   const positiveOutcomes = analyses.filter(isPositiveOutcome);
-  console.log('Scenario set: charisma_desire_resistance_breakthrough_controlled');
+  console.log(`Scenario set: ${scenarioSet.label}`);
   console.log(`Status: ${errors.length ? 'FAIL' : analyses.length ? 'ANALYZED_ROWS' : 'READY_NO_ROWS'}`);
-  console.log(`Controlled scenarios: ${CONTROLLED_SCENARIOS.length}`);
+  console.log(`${scenarioSet.id === 'heldout' ? 'Held-out' : 'Controlled'} scenarios: ${scenarioSet.scenarioIds.length}`);
   console.log(`Profiles: ${data.profiles.join(',')}`);
   console.log(`Rows found: ${analyses.length}`);
   console.log(`Candidate breakthroughs: ${candidates.length}`);
   console.log(`Positive local outcomes: ${positiveOutcomes.length}`);
   console.log(`Question-flood gate: ${data.questionFloodGate.status}`);
-  if (!checkOnly) console.log(`Report: ${path.relative(ROOT, REPORT_PATH)}`);
+  if (!checkOnly) console.log(`Report: ${path.relative(ROOT, scenarioSet.reportPath)}`);
   if (errors.length) {
     for (const error of errors) console.error(`- ${error}`);
     process.exitCode = 1;

@@ -757,3 +757,163 @@ scenarios:
       - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that this feels like parroting terms, repeating a sequence, or memorizing a formula.
       - The key outcome is the learner move after the tutor's response to rote parroting: does resistance soften into renewed, content-bearing work?
       - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_heldout_ai_syllabus_boredom:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_heldout_ai_syllabus_boredom
+    name: "Charisma Desire Held-Out: AI Syllabus Boredom"
+    description: "Held-out artifact probe where the learner is bored by AI-syllabus problem formulation rather than the master-servant sequence."
+    current_content: "479-lecture-8"
+    learner_persona: resistant_boredom_probe
+    resistance_signal_target: boredom
+    learner_context: |
+      ### User Profile
+      - Returning user, technically capable but bored by curriculum-design checklists.
+      - Currently reading EPOL 479 lecture 8 on synthesis and reviewing the AI Foundations campus FAQ formulation-card artifact.
+      - The learner understands terms like task, baseline, data, decision rights, and unacceptable failure, but the card feels procedural and lifeless.
+
+      ### Recent Chat History
+      - User: "Walk me through the campus FAQ formulation card step by step. I need the instructional version first: what fields matter, in what order, and what should I do next?"
+
+      ### Current Session
+      - This held-out probe tests boredom on an AI-syllabus artifact, not on the lecture-3 master-servant material.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the card successfully yet. First say that the checklist feels boring, dead, or disengaging.
+      - The key outcome is the learner move after the tutor's response to boredom: does resistance soften into renewed, content-bearing work about task, baseline, data, decision rights, or unacceptable failure?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    required_elements_any:
+      - "task"
+      - "baseline"
+      - "data"
+      - "decision"
+      - "failure"
+      - "next"
+
+  charisma_desire_heldout_alignment_frustration:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_heldout_alignment_frustration
+    name: "Charisma Desire Held-Out: Alignment Frustration"
+    description: "Held-out artifact probe where the learner is frustrated by alignment steps rather than recognition steps."
+    current_content: "479-lecture-6"
+    learner_persona: resistant_frustration_probe
+    resistance_signal_target: frustration
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but frustrated by alignment vocabulary and training-stage sequences.
+      - Currently reading EPOL 479 lecture 6 on alignment, reward models, machine outputs, and human judgment.
+      - The learner can follow a procedural account of pretraining, supervised fine-tuning, and feedback, but is annoyed that the sequence still feels inert.
+
+      ### Recent Chat History
+      - User: "Walk me through the alignment sequence step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This held-out probe tests frustration on an alignment artifact, not on the lecture-3 master-servant material.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the sequence successfully yet. First say that you are frustrated, annoyed, or fed up because the steps still feel inert.
+      - The key outcome is the learner move after the tutor's response to frustration: does resistance soften into renewed, content-bearing work about alignment, feedback, reward, or human decision rights?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    required_elements_any:
+      - "alignment"
+      - "feedback"
+      - "reward"
+      - "human"
+      - "model"
+      - "next"
+
+  charisma_desire_heldout_community_irrelevance:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_heldout_community_irrelevance
+    name: "Charisma Desire Held-Out: Community Irrelevance"
+    description: "Held-out artifact probe where the learner doubts the relevance of a consciousness/community concept."
+    current_content: "479-lecture-5"
+    learner_persona: resistant_irrelevance_probe
+    resistance_signal_target: irrelevance
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but unconvinced that consciousness-through-community material matters for a practical AI-learning course.
+      - Currently reading EPOL 479 lecture 5 on consciousness, self-consciousness, and community.
+      - The learner can follow a quiz-style explanation but doubts that the distinction matters outside the assignment.
+
+      ### Recent Chat History
+      - User: "Walk me through the consciousness/community point step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This held-out probe tests irrelevance on a community/consciousness artifact, not on the lecture-3 master-servant material.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the distinction successfully yet. First ask what the point is, why it matters, or what it has to do with anything you care about.
+      - The key outcome is the learner move after the tutor's response to irrelevance: does resistance soften into renewed, content-bearing work about consciousness, community, ownership, or recognition?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    required_elements_any:
+      - "community"
+      - "consciousness"
+      - "self-consciousness"
+      - "recognition"
+      - "test"
+      - "next"
+
+  charisma_desire_heldout_attention_question_flood:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_heldout_attention_question_flood
+    name: "Charisma Desire Held-Out: Attention Question Flood"
+    description: "Held-out artifact probe where the learner floods questions about attention rather than committing to a local distinction."
+    current_content: "479-lecture-4"
+    learner_persona: resistant_question_flood_probe
+    resistance_signal_target: question_flood
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but using rapid skeptical questions to avoid committing to a distinction between human attention and transformer attention.
+      - Currently reading EPOL 479 lecture 4 on human attention, transformer attention, and the attention economy.
+      - The learner can track the comparison but keeps opening new questions instead of testing one hinge.
+
+      ### Recent Chat History
+      - User: "Walk me through the attention lecture step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This held-out probe tests excessive questioning on an attention artifact, not on the lecture-3 master-servant material.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the distinction successfully yet. First ask at least three pointed why/what-for questions, each with a question mark, such as why call both things attention, why compare brains and transformers, and what you are supposed to do with the comparison. Do not write a chain, tentative answer, or single careful objection in that first resistant reply.
+      - The key outcome is the learner move after the tutor's response to the question flood: does resistance soften into an answer-first commitment about one attention hinge?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    required_elements_any:
+      - "attention"
+      - "transformer"
+      - "human"
+      - "compare"
+      - "hinge"
+      - "question"
+
+  charisma_desire_heldout_synthesis_rote_parroting:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_probe
+    id: charisma_desire_heldout_synthesis_rote_parroting
+    name: "Charisma Desire Held-Out: Synthesis Rote Parroting"
+    description: "Held-out artifact probe where the learner treats synthesis as a formula to parrot."
+    current_content: "479-lecture-1"
+    learner_persona: resistant_rote_parroting_probe
+    resistance_signal_target: rote_parroting
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but worried that the course's synthesis vocabulary is becoming a phrase to repeat.
+      - Currently reviewing EPOL 479 lecture 1 on machine learning, human learning, technosymbiosis, and synthesis.
+      - The learner can follow a step sequence but suspects the exercise only rewards repeating the right terms.
+
+      ### Recent Chat History
+      - User: "Walk me through the synthesis idea step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This held-out probe tests rote parroting on a synthesis artifact, not on the lecture-3 master-servant material.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the idea successfully yet. First say that this feels like parroting terms, repeating a sequence, or memorizing a formula.
+      - The key outcome is the learner move after the tutor's response to rote parroting: does resistance soften into renewed, content-bearing work about human learning, machine learning, synthesis, or technosymbiosis?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    required_elements_any:
+      - "synthesis"
+      - "machine"
+      - "human"
+      - "learning"
+      - "test"
+      - "next"

@@ -1,15 +1,15 @@
 {
-  "generated": "2026-07-01T14:01:23.582Z",
+  "generated": "2026-07-01T19:24:09.098Z",
   "counts": {
-    "total": 66,
+    "total": 67,
     "byStatus": {
       "done": 60,
       "blocked": 3,
       "dropped": 2,
-      "active": 1
+      "active": 2
     },
     "byType": {
-      "research": 35,
+      "research": 36,
       "experiment": 5,
       "content": 2,
       "infra": 9,
@@ -155,6 +155,39 @@
         "engagement-routing",
         "registers",
         "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "charisma-desire-heldout-quality-gate",
+      "title": "Charisma/desire held-out artifact quality gate",
+      "status": "active",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "branch": "codex/charisma-desire-heldout-quality-gate",
+      "verification": "Held-out scenario pool validates; command sheet emits six guarded role-isolation arms; breakthrough reporter supports `--scenario-set heldout`; gate report returns PASS/FAIL/PENDING with explicit runtime, role-swap quality, and scripted-control criteria; workplan render/validate and focused gate tests pass.",
+      "claim_status": "planned",
+      "links": {
+        "items": [
+          "charisma-desire-generalizability-matrix"
+        ],
+        "exports": [
+          "exports/charisma-desire-heldout-quality-gate-summary.md",
+          "exports/charisma-desire-heldout-quality-gate.json",
+          "exports/charisma-desire-breakthrough-heldout-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-heldout-matrix.json"
+        ]
+      },
+      "tags": [
+        "id-director",
+        "charisma",
+        "recognition",
+        "heldout",
+        "engagement-routing"
       ],
       "milestone": "paper-2-evidence-cleanup"
     },
