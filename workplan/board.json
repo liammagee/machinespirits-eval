@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-01T03:32:03.418Z",
+  "generated": "2026-07-01T03:52:00.989Z",
   "counts": {
     "total": 65,
     "byStatus": {
-      "done": 55,
+      "done": 56,
       "blocked": 1,
       "dropped": 2,
-      "review": 2,
+      "review": 1,
       "active": 1,
       "triaged": 4
     },
@@ -268,33 +268,6 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "layered-taskloop-heldout-gate",
-      "title": "Layered adaptive tutor held-out task-loop artifact gate",
-      "status": "review",
-      "type": "research",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-01",
-      "updated": "2026-07-01",
-      "branch": "codex/taskloop-heldout-gate",
-      "verification": "Held-out task-loop gate passes with public-only selector inputs, unchanged proof-control fingerprints, adaptive recommendations beating fixed progression, and no runtime or human-learning claim.",
-      "claim_status": "methods",
-      "links": {
-        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
-        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-heldout-gate-report.md",
-        "items": "layered-task-session-adaptation",
-        "prs": "https://github.com/liammagee/machinespirits-eval/pull/72"
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "task-loop",
-        "heldout",
-        "outer-loop"
-      ]
-    },
-    {
       "id": "character-development-capacity",
       "title": "Character-development capacity (learner + tutor) — instrument + run",
       "status": "review",
@@ -483,6 +456,34 @@
         "adaptive-tutor",
         "derivation",
         "task-loop",
+        "outer-loop"
+      ]
+    },
+    {
+      "id": "layered-taskloop-heldout-gate",
+      "title": "Layered adaptive tutor held-out task-loop artifact gate",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-01",
+      "branch": "codex/taskloop-heldout-gate",
+      "verification": "PR #72 merged; paper/spec folded in bounded advisory sequencing claim; held-out task-loop gate passed 12/12 adaptive vs 2/12 fixed with 0 public-only failures and 0 proof-control drift rows.",
+      "claim_status": "scope-bound",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#selector-trajectory-v0-v4-and-a20a21-closeout-the-selector-fails-the-adaptive-claim-and-proofdebt-becomes-the-reliability-baseline",
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-heldout-gate-report.md",
+        "items": "layered-task-session-adaptation",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/72"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "task-loop",
+        "heldout",
         "outer-loop"
       ]
     },

@@ -1,10 +1,10 @@
 # Layered Adaptive Tutor: Technical Specification and Implementation Plan
 
 - **Date:** 2026-06-30
-- **Status:** v0 in-dialogue layers merged; task/session scaffold merged; held-out task-loop artifact gate opened 2026-07-01
+- **Status:** v0 in-dialogue layers merged; task/session scaffold and held-out task-loop artifact gate merged 2026-07-01
 - **Primary substrate:** hidden + proofDebt proof-continuity control
 - **Core decision:** do not build another proof-control overlay unless a predeclared hidden+proofDebt failure first clears a failure-atlas gate.
-- **Current worktree scope:** `codex/taskloop-heldout-gate` asks whether the task/session selector still beats fixed progression on held-out derivation artifacts without hidden proof-state input and without proof-control behavior changes. Human handoff remains deferred.
+- **Current closeout:** PR #72 answered the held-out task-loop question with a bounded local advisory sequencing claim. Human handoff remains deferred.
 
 ## 1. Executive Summary
 
@@ -29,7 +29,7 @@ deployment adaptation:
   human handoff / teacher review
 ```
 
-The production proof-control kernel remains hidden+proofDebt. New work should add auditable quality and learner-state layers above that kernel, with proof-control no-harm as a hard gate. The first implementation targeted in-dialogue scopes: turn, dialogue block, scene, and act. The follow-on task/session scaffold added advisory next-task selection. The current gate asks whether that selector generalizes to held-out derivation artifacts. It does not implement deployment escalation.
+The production proof-control kernel remains hidden+proofDebt. New work should add auditable quality and learner-state layers above that kernel, with proof-control no-harm as a hard gate. The first implementation targeted in-dialogue scopes: turn, dialogue block, scene, and act. The follow-on task/session scaffold added advisory next-task selection. The held-out gate showed that selector generalizes to frozen derivation artifacts under a local advisory boundary. It does not implement deployment escalation.
 
 ## 2. Current Status and Boundary Conditions
 
@@ -93,15 +93,25 @@ Still out of scope after that merge:
 3. Human-learning claims.
 4. Runtime task assignment without a later validation gate.
 
-### 2.5 Current held-out artifact gate scope
+### 2.5 Closed held-out artifact gate scope
 
-In scope for `codex/taskloop-heldout-gate`:
+Completed by PR #72 from `codex/taskloop-heldout-gate`:
 
 1. Build a frozen held-out artifact fixture set from existing derivation traces, closeout reports, world specs, and episode outputs.
 2. Run the public-only task/session selector against those artifacts.
 3. Compare it against fixed progression without passing proof-control fingerprints into the selector.
 4. Require proof-control fingerprints to remain identical between the fixed and adaptive arms.
 5. Emit a zero-paid report that answers: does task/session selection still beat fixed progression on held-out artifacts?
+
+Result:
+
+```text
+Adaptive task/session selector: 12/12
+Fixed progression baseline: 2/12
+Accuracy delta: 0.833
+Public-only failures: 0
+Proof-control drift rows: 0
+```
 
 Out of scope for this worktree:
 
@@ -1174,7 +1184,7 @@ advisory.
 
 **Goal:** test whether task/session selection still beats fixed progression on held-out derivation artifacts without hidden proof-state input and without proof-control behavior changes.
 
-Status: active in `codex/taskloop-heldout-gate`.
+Status: merged by PR #72 from `codex/taskloop-heldout-gate`.
 
 Implementation:
 
@@ -1206,6 +1216,13 @@ Completion rule for this branch:
 `npm run derivation:taskloop-heldout-gate` writes a passing report, the focused
 held-out gate test passes, workplan validation passes, and no runtime,
 human-learning, or proof-control promotion claim is made.
+```
+
+Completion result:
+
+```text
+The zero-paid gate passed: 12/12 adaptive recommendations versus 2/12 fixed
+progression, 0 public-only failures, and 0 proof-control drift rows.
 ```
 
 ## Deferred Project B: Human / Hybrid Escalation Probe
@@ -1464,10 +1481,12 @@ Do not collapse these into “adaptive tutor works.”
 
 Layered Adaptive Tutor v0 may make claims only for proof, discursive, didactic,
 ownership, uptake, self-regulation, and proof-matched transcript quality. The
-task/session layer may add only a local advisory sequencing claim after the
-task-loop benchmark and held-out artifact gate pass. It must not claim runtime
-task assignment, human escalation, or human-learning evidence until those
-deferred projects are opened and validated.
+task/session layer now adds one local advisory sequencing claim: under the
+task-loop benchmark and held-out artifact gate, public learner/task signals beat
+fixed progression for next-task recommendation while proof-control fingerprints
+remain unchanged. It must not claim runtime task assignment, human escalation,
+proof-control promotion, or human-learning evidence until those deferred
+projects are opened and validated.
 
 Correct claim form:
 

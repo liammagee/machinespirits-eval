@@ -1,7 +1,7 @@
 ---
 id: layered-taskloop-heldout-gate
 title: Layered adaptive tutor held-out task-loop artifact gate
-status: review
+status: done
 type: research
 priority: P1
 owner: codex
@@ -9,9 +9,10 @@ source: manual
 created: 2026-07-01
 updated: 2026-07-01
 branch: codex/taskloop-heldout-gate
-verification: "Held-out task-loop gate passes with public-only selector inputs, unchanged proof-control fingerprints, adaptive recommendations beating fixed progression, and no runtime or human-learning claim."
-claim_status: methods
+verification: "PR #72 merged; paper/spec folded in bounded advisory sequencing claim; held-out task-loop gate passed 12/12 adaptive vs 2/12 fixed with 0 public-only failures and 0 proof-control drift rows."
+claim_status: scope-bound
 links:
+  paper: docs/research/paper-full-2.0.md#selector-trajectory-v0-v4-and-a20a21-closeout-the-selector-fails-the-adaptive-claim-and-proofdebt-becomes-the-reliability-baseline
   notes: PLAN_2_0/layered_adaptive_tutor_technical_spec.md
   exports: exports/dramatic-derivation/layered-adaptation/taskloop-heldout-gate-report.md
   items: layered-task-session-adaptation
@@ -49,3 +50,10 @@ validation passed. The zero-paid gate reports 12/12 adaptive recommendations vs
 proof-control drift rows. Passing checks: focused held-out test, held-out gate
 script, workplan check, format check, lint, diff check, and full `npm test`.
 Opened PR #72 for review.
+
+2026-07-01 Codex: Closed after PR #72 merged. Folded the result into
+`docs/research/paper-full-2.0.md` v3.0.182 and
+`PLAN_2_0/layered_adaptive_tutor_technical_spec.md` as a bounded local advisory
+sequencing claim only: 12/12 adaptive recommendations versus 2/12 fixed
+progression on frozen held-out artifacts, with no public-only failures, no
+proof-control drift, no runtime task assignment, and no human-learning claim.
