@@ -4,15 +4,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import Database from 'better-sqlite3';
 import yaml from 'yaml';
 
 import { EVAL_ONLY_PROFILES } from '../services/evaluationRunner.js';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
 const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-scenarios.yaml');
 const TUTOR_AGENTS_PATH = path.join(ROOT, 'config', 'tutor-agents.yaml');
+const DB_PATH = resolveEvaluationDbPath(ROOT);
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-role-isolation-gate-summary.md');
 const JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-role-isolation-gate.json');
 
@@ -146,6 +149,23 @@ function markdownTable(headers, rows) {
   ].join('\n');
 }
 
+function parseArgs(argv) {
+  const flags = {};
+  for (let i = 2; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (!arg.startsWith('--')) continue;
+    const key = arg.slice(2);
+    const next = argv[i + 1];
+    if (next === undefined || next.startsWith('--')) {
+      flags[key] = true;
+    } else {
+      flags[key] = next;
+      i += 1;
+    }
+  }
+  return flags;
+}
+
 function commandEnvForArm(arm) {
   const tutor = STACKS[arm.tutorStack];
   const learner = arm.learnerStack ? STACKS[arm.learnerStack] : {};
@@ -197,6 +217,77 @@ function buildReportCommand() {
 
 function plannedRows(arms = ALL_ARMS) {
   return arms.reduce((sum, arm) => sum + CONTROLLED_SCENARIOS.length * arm.repeats, 0);
+}
+
+function armByDescription(description) {
+  const suffix = String(description || '').replace(/^Charisma desire role isolation:\s*/, '');
+  return ALL_ARMS.find((arm) => suffix === arm.id || suffix.startsWith(`${arm.id} `)) || null;
+}
+
+function emptyProgressByArm() {
+  return new Map(
+    ALL_ARMS.map((arm) => [
+      arm.id,
+      {
+        arm,
+        expectedRows: CONTROLLED_SCENARIOS.length * arm.repeats,
+        runs: [],
+        persistedRows: 0,
+        successfulRows: 0,
+        scenarios: new Set(),
+      },
+    ]),
+  );
+}
+
+function loadProgress(runIds = [], dbPath = DB_PATH) {
+  const byArm = emptyProgressByArm();
+  const ignoredRuns = [];
+  if (!fs.existsSync(dbPath)) return { byArm: [...byArm.values()], ignoredRuns, dbPath };
+
+  const db = new Database(dbPath, { readonly: true, fileMustExist: true });
+  try {
+    const params = [];
+    const where = [`er.description LIKE 'Charisma desire role isolation:%'`];
+    if (runIds.length > 0) {
+      where.push(`er.id IN (${runIds.map(() => '?').join(',')})`);
+      params.push(...runIds);
+    }
+    const rows = db
+      .prepare(
+        `SELECT
+           er.id,
+           er.description,
+           er.status,
+           er.total_tests,
+           COUNT(r.id) AS persisted_rows,
+           SUM(CASE WHEN r.success = 1 THEN 1 ELSE 0 END) AS successful_rows,
+           COUNT(DISTINCT r.scenario_id) AS scenario_count
+         FROM evaluation_runs er
+         LEFT JOIN evaluation_results r ON r.run_id = er.id
+         WHERE ${where.join(' AND ')}
+         GROUP BY er.id, er.description, er.status, er.total_tests
+         ORDER BY er.created_at, er.id`,
+      )
+      .all(...params);
+
+    for (const row of rows) {
+      const arm = armByDescription(row.description);
+      if (!arm) {
+        ignoredRuns.push(row.id);
+        continue;
+      }
+      const progress = byArm.get(arm.id);
+      progress.runs.push(row);
+      progress.persistedRows += Number(row.persisted_rows || 0);
+      progress.successfulRows += Number(row.successful_rows || 0);
+      progress.scenarios.add(Number(row.scenario_count || 0));
+    }
+  } finally {
+    db.close();
+  }
+
+  return { byArm: [...byArm.values()], ignoredRuns, dbPath };
 }
 
 function validateConfig({ scenarios, profiles }) {
@@ -282,6 +373,31 @@ function armRows() {
   });
 }
 
+function progressRows(progress) {
+  return progress.byArm.map((item) => {
+    const runLabels = item.runs.length
+      ? item.runs.map((run) => `${run.id} (${run.status}; ${run.persisted_rows}/${run.total_tests})`).join('<br>')
+      : '';
+    const state =
+      item.successfulRows >= item.expectedRows ? 'complete' : item.successfulRows > 0 ? 'partial' : 'not-started';
+    return [
+      item.arm.id,
+      state,
+      `${item.successfulRows}/${item.expectedRows}`,
+      String(item.persistedRows),
+      runLabels || '-',
+    ];
+  });
+}
+
+function remainingArms(progress) {
+  return progress.byArm.filter((item) => item.successfulRows < item.expectedRows).map((item) => item.arm);
+}
+
+function remainingRows(progress) {
+  return progress.byArm.reduce((sum, item) => sum + Math.max(0, item.expectedRows - item.successfulRows), 0);
+}
+
 function scenarioRows() {
   return CONTROLLED_SCENARIOS.map((scenarioId) => [
     scenarioId,
@@ -289,8 +405,10 @@ function scenarioRows() {
   ]);
 }
 
-function buildReport({ generatedAt, errors }) {
+function buildReport({ generatedAt, errors, progress = null }) {
   const commandBlocks = ALL_ARMS.map((arm) => `### ${arm.id}\n\n\`\`\`bash\n${buildRunCommand(arm)}\n\`\`\``);
+  const remaining = progress ? remainingArms(progress) : ALL_ARMS;
+  const remainingCommandBlocks = remaining.map((arm) => `### ${arm.id}\n\n\`\`\`bash\n${buildRunCommand(arm)}\n\`\`\``);
   return `# Charisma/Desire Role-Isolation Gate
 
 Generated: ${generatedAt}
@@ -316,6 +434,19 @@ ${markdownTable(['Arm', 'Contrast', 'Profile', 'Tutor/id stack', 'Learner stack'
 
 Planned rows: ${plannedRows()} generation-only rows.
 
+${
+  progress
+    ? `## Current Progress
+
+DB path: \`${progress.dbPath}\`
+
+${markdownTable(['Arm', 'State', 'Successful/Expected', 'Persisted rows', 'Runs'], progressRows(progress))}
+
+Remaining rows: ${remainingRows(progress)} generation-only rows.
+`
+    : ''
+}
+
 ## Decision Rules
 
 - If \`baseline_codex_tutor_codex_learner\` reproduces the local pass and \`tutor_fixed_glm_learner\` fails, the immediate suspect is dynamic learner gate drift.
@@ -327,6 +458,8 @@ Planned rows: ${plannedRows()} generation-only rows.
 ## Planned Commands
 
 ${commandBlocks.join('\n\n')}
+
+${progress ? `## Remaining Commands\n\n${remainingCommandBlocks.join('\n\n')}\n` : ''}
 
 ## After Runs
 
@@ -341,10 +474,21 @@ ${errors.length === 0 ? '- No validation errors.' : errors.map((error) => `- ${e
 }
 
 function main() {
-  const checkOnly = process.argv.includes('--check');
+  const flags = parseArgs(process.argv);
+  const checkOnly = flags.check === true;
+  const progressRequested = flags.progress === true;
+  const runIds =
+    typeof flags.runs === 'string'
+      ? flags.runs
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
+      : [];
+  const progressDbPath = typeof flags.db === 'string' ? resolveEvaluationDbPath(ROOT, flags.db) : DB_PATH;
   const scenarios = readYaml(SCENARIO_PATH)?.scenarios || {};
   const profiles = readYaml(TUTOR_AGENTS_PATH)?.profiles || {};
   const errors = validateConfig({ scenarios, profiles });
+  const progress = progressRequested || runIds.length ? loadProgress(runIds, progressDbPath) : null;
   const data = {
     generatedAt: new Date().toISOString(),
     status: errors.length === 0 ? 'PASS' : 'FAIL',
@@ -352,13 +496,22 @@ function main() {
     dynamicArms: DYNAMIC_ARMS,
     scriptedArms: SCRIPTED_ARMS,
     plannedRows: plannedRows(),
+    progress: progress
+      ? {
+          ...progress,
+          byArm: progress.byArm.map((item) => ({
+            ...item,
+            scenarios: [...item.scenarios],
+          })),
+        }
+      : null,
     errors,
   };
 
   if (!checkOnly) {
     fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });
     fs.writeFileSync(JSON_PATH, `${JSON.stringify(data, null, 2)}\n`);
-    fs.writeFileSync(REPORT_PATH, buildReport({ generatedAt: data.generatedAt, errors }));
+    fs.writeFileSync(REPORT_PATH, buildReport({ generatedAt: data.generatedAt, errors, progress }));
   }
 
   console.log('Scenario set: charisma_desire_role_isolation');
@@ -366,6 +519,11 @@ function main() {
   console.log(`Controlled scenarios: ${CONTROLLED_SCENARIOS.length}`);
   console.log(`Isolation arms: ${ALL_ARMS.length}`);
   console.log(`Planned rows: ${data.plannedRows}`);
+  if (progress) {
+    const completedRows = progress.byArm.reduce((sum, item) => sum + item.successfulRows, 0);
+    console.log(`Progress rows: ${completedRows}/${data.plannedRows}`);
+    console.log(`Remaining rows: ${remainingRows(progress)}`);
+  }
   console.log(`Scripted control: ${CELL_195}`);
   if (!checkOnly) console.log(`Report: ${path.relative(ROOT, REPORT_PATH)}`);
   if (errors.length > 0) {

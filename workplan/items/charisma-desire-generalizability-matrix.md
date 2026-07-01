@@ -45,7 +45,7 @@ verification: Engagement router cell 180, contract/repair cell 181, split-repair
   0/router sanity reports, paid smokes/matrices, config validation, workplan
   render/validate, and focused id-director/learner/gate tests pass.
 claim_status: exploratory
-branch: codex/charisma-desire-matrix-next
+branch: codex/charisma-role-isolation-followup
 links:
   notes:
     - notes/2026-06-25-charisma-desire-generalizability-plan.md
@@ -879,3 +879,14 @@ shared archive; the partial role-isolation run set now resolves 15 rows from
 `~/.machinespirits-data` under explicit `EVAL_DB_PATH`/`EVAL_LOGS_DIR`.
 Also added the OpenRouter API timeout guard to generated role-isolation run
 commands.
+
+2026-07-01 Codex: Follow-up branch
+`codex/charisma-role-isolation-followup` made the role-isolation command sheet
+progress-aware. `report-charisma-desire-role-isolation-gate.js --progress`
+now reads `evaluation_runs`/`evaluation_results` and maps run descriptions back
+to the six planned arms, so the continuation sheet reports completed, partial,
+and not-started arms plus remaining rows. Current shared-archive progress is
+23/50 successful rows: baseline Codex tutor/Codex learner is complete, the
+tutor-fixed/GLM-learner arm is partial, scripted Codex tutor is complete, GLM
+scripted-control attempts are present but not successful, and the GLM tutor
+dynamic arms remain unstarted.
