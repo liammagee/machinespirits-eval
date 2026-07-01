@@ -135,6 +135,7 @@
     "derivation:selfreg-benchmark": "node scripts/derivation-selfreg-benchmark.js",
     "derivation:taskloop-benchmark": "node scripts/derivation-taskloop-benchmark.js",
     "derivation:taskloop-heldout-gate": "node scripts/derivation-taskloop-heldout-gate.js",
+    "derivation:human-handoff-probe": "node scripts/derivation-human-handoff-probe.js",
     "derivation:quality-pairs": "node scripts/derivation-quality-pairs.js",
     "adaptation:policy-eval": "node scripts/evaluate-adaptation-policy.js",
     "adaptation:dag-resistance-comparison": "node scripts/run-dag-resistance-comparison.js",
