@@ -928,3 +928,15 @@ stopping a stalled resume. The role-isolation matrix now stands at 47/50
 successful generation-only rows. The generated command sheet now uses a 600s
 OpenRouter timeout because 180s and 240s produced avoidable GLM/id timeouts
 while 600s cleared several previously failing rows.
+
+2026-07-02 Codex: Rechecked the main checkout with dotenv loading; `.env`
+provides `OPENROUTER_API_KEY`, and the shared archive now contains the complete
+50/50 role-isolation generation matrix. The six planned arms are all completed:
+`eval-2026-07-01-5dad2e60`, `eval-2026-07-01-dff9f159`,
+`eval-2026-07-01-a09281f7`, `eval-2026-07-01-9f4eecf2`,
+`eval-2026-07-01-02e8712f`, and `eval-2026-07-01-9066df81`. Each controlled
+scenario has the expected successful row count. The local breakthrough reporter
+found 50 analyzed rows, 20 strict candidate breakthroughs, and 23 positive
+local outcomes; the question-flood commitment gate remains pending because the
+role-isolation grid is not a commitment-probe comparison. Boundary: this closes
+the generation matrix but does not promote the GLM/full-stack claim.
