@@ -149,11 +149,17 @@ function markdownTable(headers, rows) {
 function commandEnvForArm(arm) {
   const tutor = STACKS[arm.tutorStack];
   const learner = arm.learnerStack ? STACKS[arm.learnerStack] : {};
+  const usesOpenRouter = [tutor.egoModel, tutor.superegoModel, learner.learnerModel].some((model) =>
+    String(model || '').startsWith('openrouter.'),
+  );
   const env = [
     'ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS=600000',
     'ID_DIRECTOR_CODEX_CLI_TIMEOUT_MS=600000',
     'EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml',
   ];
+  if (usesOpenRouter) {
+    env.unshift('OPENROUTER_API_TIMEOUT_MS=180000');
+  }
   if (tutor.openrouterRuntimeControl || learner.openrouterRuntimeControl) {
     env.unshift('OPENROUTER_REASONING_EXCLUDE=true');
     env.unshift('OPENROUTER_REASONING_MAX_TOKENS=0');

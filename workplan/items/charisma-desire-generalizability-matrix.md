@@ -45,7 +45,7 @@ verification: Engagement router cell 180, contract/repair cell 181, split-repair
   0/router sanity reports, paid smokes/matrices, config validation, workplan
   render/validate, and focused id-director/learner/gate tests pass.
 claim_status: exploratory
-branch: codex/charisma-desire-role-isolation
+branch: codex/charisma-desire-matrix-next
 links:
   notes:
     - notes/2026-06-25-charisma-desire-generalizability-plan.md
@@ -867,3 +867,15 @@ rows. Partial analysis over 15 rows found 7 strict candidates and 8 positive
 local outcomes. Boundary: dynamic-learner/runtime drift is now a live failure
 source; GLM tutor/id with Codex learner and scripted controls remain open. No
 promotion or human-learning claim.
+
+2026-07-01 Codex: Created fresh continuation worktree
+`machinespirits-eval-charisma-desire-matrix-next` on branch
+`codex/charisma-desire-matrix-next` because the recorded
+`codex/charisma-desire-role-isolation` branch is now stale against `main`, while
+the separate `charisma-role-isolation-next` worktree contains unrelated
+uncommitted changes. Fixed the resistance-breakthrough matrix reporter to use
+the shared evaluation DB/log path resolver so fresh worktrees can analyze the
+shared archive; the partial role-isolation run set now resolves 15 rows from
+`~/.machinespirits-data` under explicit `EVAL_DB_PATH`/`EVAL_LOGS_DIR`.
+Also added the OpenRouter API timeout guard to generated role-isolation run
+commands.
