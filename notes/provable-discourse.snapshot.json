@@ -635,6 +635,26 @@
         "ref_claim": "paper2.s1.pilot.factorial_d"
       },
       "actual_value": 1
+    },
+    "paper2.s6_8_9.character_dag_family_transfer_robustness": {
+      "updated_at": "2026-07-01T04:03:11.259Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "config/character-dag-drama/evidence-manifest-2026-07-01.md",
+        "pattern": "All four family runs pass acceptance gates under `character-dag-drama-observer\\.v0\\.5`",
+        "match_count": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.appendix_e.character_development_self_commitment_pilot": {
+      "updated_at": "2026-07-01T04:03:11.259Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "config/character-development/evidence-manifest-2026-06-28.md",
+        "pattern": "L3 moved from 1\\.0 to 3\\.0 under Sonnet and\\s+from 1\\.5 to 4\\.5 under GPT",
+        "match_count": 1
+      },
+      "actual_value": 1
     }
   }
 }

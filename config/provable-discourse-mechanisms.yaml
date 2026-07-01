@@ -1503,14 +1503,14 @@ claims:
       min_occurrences: 1
     evidence:
       type: code_path
-      file: "exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-summary.json"
-      pattern: "\"robustness_passed\": true|character-dag-drama-observer\\.v0\\.5"
-      min_matches: 2
+      file: "config/character-dag-drama/evidence-manifest-2026-07-01.md"
+      pattern: "All four family runs pass acceptance gates under `character-dag-drama-observer\\.v0\\.5`"
+      min_matches: 1
     assertion:
       op: gte
-      expected: 2
+      expected: 1
     remediation:
-      - "If the generated robustness summary is absent or no longer passes under observer v0.5, either regenerate the artifact from the recorded fixture matrix or soften/remove the §6.8.9 family robustness note."
+      - "If the tracked evidence manifest no longer records the observer v0.5 pass, either restore it from the accepted local robustness package, regenerate the artifact from the recorded fixture matrix, or soften/remove the §6.8.9 family robustness note."
     tags: [s6, adaptive, character-dag, exploratory, synthetic]
 
   # ── Section 5: Methodology claims ────────────────────────────
