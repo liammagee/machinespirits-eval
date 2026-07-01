@@ -60,6 +60,18 @@ export {
   renderSelfRegulationBenchmarkMarkdown,
 } from './selfRegulation.js';
 export {
+  NEXT_TASK_ACTIONS,
+  TASK_LOOP_BENCHMARK_CASES,
+  TASK_LOOP_BENCHMARK_SCHEMA,
+  TASK_MASTERY_SCHEMA,
+  TASK_MASTERY_SIGNAL_TYPES,
+  assertTaskRecommendation,
+  deriveTaskMasteryState,
+  evaluateTaskLoopBenchmark,
+  fixedProgressionRecommendation,
+  renderTaskLoopBenchmarkMarkdown,
+} from './taskMastery.js';
+export {
   QUALITY_PAIR_CASES,
   QUALITY_PAIR_REPORT_SCHEMA,
   QUALITY_PAIR_SCHEMA,

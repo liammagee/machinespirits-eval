@@ -1,10 +1,10 @@
 # Layered Adaptive Tutor: Technical Specification and Implementation Plan
 
 - **Date:** 2026-06-30
-- **Status:** proposed next-stage technical plan; v0 scope update 2026-07-01
+- **Status:** v0 in-dialogue layers merged; task/session outer-loop prototype opened 2026-07-01
 - **Primary substrate:** hidden + proofDebt proof-continuity control
 - **Core decision:** do not build another proof-control overlay unless a predeclared hidden+proofDebt failure first clears a failure-atlas gate.
-- **Current worktree scope:** plan/spec cleanup plus local v0 scaffolding for turn/block/scene/act quality and learner-state layers. Task/session mastery and human handoff remain deferred.
+- **Current worktree scope:** `codex/task-session-adaptation` opens the task/session mastery prototype after the v0 turn/block/scene/act gates merged. Human handoff remains deferred.
 
 ## 1. Executive Summary
 
@@ -29,7 +29,7 @@ deployment adaptation:
   human handoff / teacher review
 ```
 
-The production proof-control kernel remains hidden+proofDebt. New work should add auditable quality and learner-state layers above that kernel, with proof-control no-harm as a hard gate. The first implementation targets in-dialogue scopes: turn, dialogue block, scene, and act. It does not yet implement next-task selection or deployment escalation.
+The production proof-control kernel remains hidden+proofDebt. New work should add auditable quality and learner-state layers above that kernel, with proof-control no-harm as a hard gate. The first implementation targeted in-dialogue scopes: turn, dialogue block, scene, and act. The current follow-on work opens task/session selection as a separate advisory prototype. It does not implement deployment escalation.
 
 ## 2. Current Status and Boundary Conditions
 
@@ -57,9 +57,9 @@ The following remain valuable research assets:
 - Generator-compliance audit.
 - Proof-matched transcript-pair scoring.
 
-### 2.3 Current worktree scope
+### 2.3 Closed v0 worktree scope
 
-In scope for `codex/layered-adaptive-tutor-plan`:
+Completed in `codex/layered-adaptive-tutor-plan`:
 
 1. Make the plan internally consistent after A20/A21 closeout.
 2. Define nested adaptation scopes: turn, dialogue block, scene, act, and task/session.
@@ -68,7 +68,7 @@ In scope for `codex/layered-adaptive-tutor-plan`:
 5. Add uptake and self-regulation evaluators as local, public-only scaffolds.
 6. Add proof-matched quality-pair scoring, if the preceding gates are green.
 
-Out of scope for this worktree:
+Out of scope for that v0 worktree:
 
 1. Any new proof-control policy.
 2. Runtime promotion of A20/A21/didactic/ownership overlays.
@@ -76,7 +76,24 @@ Out of scope for this worktree:
 4. Human handoff or teacher-review routing.
 5. Paid runs or human-learning claims unless a later plan explicitly opens them.
 
-### 2.4 Why this boundary matters
+### 2.4 Current task/session worktree scope
+
+In scope for `codex/task-session-adaptation`:
+
+1. Add a public-only `TaskMasteryState` scaffold.
+2. Recommend next task actions from ownership, transfer, uptake, self-regulation, repair, and error signals.
+3. Compare the adaptive recommendation against a fixed progression baseline on deterministic controls.
+4. Keep recommendations advisory and unable to override hidden+proofDebt proof control.
+5. Record a workplan item and zero-paid validation command.
+
+Out of scope for this worktree:
+
+1. Human or hybrid handoff execution.
+2. Paid LLM runs.
+3. Human-learning claims.
+4. Runtime task assignment without a later validation gate.
+
+### 2.5 Why this boundary matters
 
 A20/A21 do not harm by existing. They harm only when promoted overlays gain runtime authority and spend scarce proof turns on diagnostics, consolidation, readback, or teach-back while proof-critical releases remain pending. Kept off the production path, they make the system more auditable.
 
@@ -665,6 +682,7 @@ services/dramaticDerivation/discursiveAdaptation.js
 services/dramaticDerivation/opportunityCost.js
 services/dramaticDerivation/uptakeNegotiation.js
 services/dramaticDerivation/selfRegulation.js
+services/dramaticDerivation/taskMastery.js
 services/dramaticDerivation/adaptationArbiter.js
 ```
 
@@ -689,6 +707,7 @@ tests/dramaticDerivationDiscursiveAdaptation.test.js
 tests/dramaticDerivationOpportunityCost.test.js
 tests/dramaticDerivationUptakeNegotiation.test.js
 tests/dramaticDerivationSelfRegulation.test.js
+tests/dramaticDerivationTaskMastery.test.js
 tests/dramaticDerivationAdaptationArbiter.test.js
 ```
 
@@ -699,6 +718,7 @@ tests/dramaticDerivationAdaptationArbiter.test.js
   "derivation:adaptation-gates": "node scripts/derivation-adaptation-gates.js",
   "derivation:uptake-benchmark": "node scripts/derivation-uptake-benchmark.js",
   "derivation:selfreg-benchmark": "node scripts/derivation-selfreg-benchmark.js",
+  "derivation:taskloop-benchmark": "node scripts/derivation-taskloop-benchmark.js",
   "derivation:quality-pairs": "node scripts/derivation-quality-pairs.js"
 }
 ```
@@ -711,25 +731,26 @@ exports/dramatic-derivation/layered-adaptation/
   opportunity-cost-report.md
   uptake-benchmark-report.md
   selfreg-benchmark-report.md
+  taskloop-benchmark-report.md
   quality-pair-report.md
 ```
 
 ### 7.6 Deferred modules
 
-The following are deliberately not part of the current worktree's completion criteria:
+The task/session module is now opened in `codex/task-session-adaptation` after
+the v0 turn/block/scene/act gates merged. The following deployment module remains
+deferred and is deliberately not part of the current worktree's completion
+criteria:
 
 ```text
-services/dramaticDerivation/taskMastery.js
 services/dramaticDerivation/humanHandoff.js
-scripts/derivation-taskloop-benchmark.js
 scripts/derivation-human-handoff-probe.js
-tests/dramaticDerivationTaskMastery.test.js
 tests/dramaticDerivationHumanHandoff.test.js
-exports/dramatic-derivation/layered-adaptation/taskloop-benchmark-report.md
 exports/dramatic-derivation/layered-adaptation/human-handoff-probe-report.md
 ```
 
-They should reopen only after the turn/block/scene/act layers have passed the local proof-control, opportunity-cost, uptake, self-regulation, and quality-pair gates.
+Human handoff should reopen only after the task/session layer has passed its
+local benchmark and a separate deployment-risk gate is written.
 
 ## 8. Evaluation Gates
 
@@ -849,17 +870,23 @@ choose the next task.
 
 Candidate actions:
 
-- repeat;
-- near transfer;
-- contrast case;
-- prerequisite review;
-- harder extension;
-- human follow-up.
+- `repeat_same_object`;
+- `near_transfer`;
+- `contrast_case`;
+- `review_prerequisite`;
+- `increase_difficulty`;
+- `human_followup`.
 
 Pass condition:
 
 ```text
 Task-loop selector improves simulated or human-scored task choice over fixed progression.
+```
+
+Current local gate:
+
+```bash
+npm run derivation:taskloop-benchmark
 ```
 
 ## 8.7 Human validation gate
@@ -1080,16 +1107,17 @@ S1 wins quality pairwise by predeclared margin
 AND proof-control no-harm holds.
 ```
 
-## Deferred Project A: Task-Loop Adaptation Prototype
+## Phase 6: Task-Loop Adaptation Prototype
 
 **Goal:** open a separate outer-loop adaptation project only after the step-loop is cleanly bounded.
 
-Status: deferred. Do not implement in `codex/layered-adaptive-tutor-plan`.
+Status: active in `codex/task-session-adaptation`. This phase remains outside
+the merged v0 in-dialogue worktree and must not reopen proof-control policy.
 
 Implementation:
 
 ```text
-taskMastery.js
+services/dramaticDerivation/taskMastery.js
 scripts/derivation-taskloop-benchmark.js
 tests/dramaticDerivationTaskMastery.test.js
 ```
@@ -1105,7 +1133,7 @@ Initial data source:
 Candidate next-task actions:
 
 ```text
-repeat, near_transfer, contrast_case, prerequisite_review, harder_extension, human_followup
+repeat_same_object, near_transfer, contrast_case, review_prerequisite, increase_difficulty, human_followup
 ```
 
 Exit rule:
@@ -1114,7 +1142,13 @@ Exit rule:
 Task-loop selector improves simulated or human-scored task choice over fixed progression.
 ```
 
-This should be treated as a new research project.
+Completion rule for this branch:
+
+```text
+The deterministic task-loop benchmark passes, adaptive recommendations beat the
+fixed progression baseline, and `TaskMasteryState` remains public-only and
+advisory.
+```
 
 ## Deferred Project B: Human / Hybrid Escalation Probe
 
@@ -1297,6 +1331,34 @@ exports/dramatic-derivation/layered-adaptation/quality-pair-report.md
 ```
 
 Do not add task-loop or human-handoff modules in this commit sequence. They require a later task/session outer-loop worktree.
+
+### Task/session branch commit
+
+For `codex/task-session-adaptation`:
+
+```text
+derivation: add task-session mastery benchmark
+```
+
+Files:
+
+```text
+PLAN_2_0/layered_adaptive_tutor_technical_spec.md
+package.json
+services/dramaticDerivation/index.js
+services/dramaticDerivation/taskMastery.js
+scripts/derivation-taskloop-benchmark.js
+tests/dramaticDerivationTaskMastery.test.js
+workplan/items/layered-task-session-adaptation.md
+```
+
+Validation:
+
+```bash
+node --test tests/dramaticDerivationTaskMastery.test.js
+npm run derivation:taskloop-benchmark -- --out "$tmp/taskloop-benchmark"
+npm run wp:validate
+```
 
 ## 14. Success Claims by Layer
 
