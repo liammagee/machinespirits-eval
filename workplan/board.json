@@ -1,17 +1,17 @@
 {
-  "generated": "2026-07-01T03:17:06.392Z",
+  "generated": "2026-07-01T03:30:17.847Z",
   "counts": {
-    "total": 64,
+    "total": 65,
     "byStatus": {
       "done": 55,
       "blocked": 1,
       "dropped": 2,
-      "review": 1,
+      "review": 2,
       "active": 1,
       "triaged": 4
     },
     "byType": {
-      "research": 33,
+      "research": 34,
       "experiment": 5,
       "content": 2,
       "infra": 9,
@@ -266,6 +266,32 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "layered-taskloop-heldout-gate",
+      "title": "Layered adaptive tutor held-out task-loop artifact gate",
+      "status": "review",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-01",
+      "branch": "codex/taskloop-heldout-gate",
+      "verification": "Held-out task-loop gate passes with public-only selector inputs, unchanged proof-control fingerprints, adaptive recommendations beating fixed progression, and no runtime or human-learning claim.",
+      "claim_status": "methods",
+      "links": {
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-heldout-gate-report.md",
+        "items": "layered-task-session-adaptation"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "task-loop",
+        "heldout",
+        "outer-loop"
+      ]
     },
     {
       "id": "character-development-capacity",
