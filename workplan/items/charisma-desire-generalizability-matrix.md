@@ -38,7 +38,9 @@ verification: Engagement router cell 180, contract/repair cell 181, split-repair
   local action shape on completed rows but failing full GLM robustness, and full
   cell 193 GLM 5.2 provider/runtime-control run completing 5/5 clean DB
   validation but failing the local breakthrough criterion, and no-paid
-  role-isolation gate design adding the cell 195 scripted-learner control;
+  role-isolation gate design adding the cell 195 scripted-learner control,
+  plus partial Sonnet 5 role-isolation start showing a completed Codex
+  tutor/Sonnet 5 id/Codex learner baseline but stalled GLM dynamic-learner arm;
   register-switch/breakthrough scenarios, router service/tests, no-paid Stage
   0/router sanity reports, paid smokes/matrices, config validation, workplan
   render/validate, and focused id-director/learner/gate tests pass.
@@ -100,6 +102,9 @@ links:
     - eval-2026-06-28-daf80863
     - eval-2026-06-28-f18df068
     - eval-2026-06-28-f857f51f
+    - eval-2026-07-01-5dad2e60
+    - eval-2026-07-01-dff9f159
+    - eval-2026-07-01-ed9f7288
   exports:
     - exports/charisma-desire-stage0-matrix-sanity.md
     - exports/charisma-desire-router-stage0-sanity.md
@@ -850,3 +855,15 @@ gate so the Codex-tutor arms use Sonnet 5 for the id/superego role. Deleted
 two empty start artifacts before continuing: the all-failed Claude Code access
 run `eval-2026-07-01-c2166d93` and the interrupted zero-row Sonnet reroute
 run `eval-2026-07-01-8ae1e11f`.
+
+2026-07-01 Codex: Ran the Sonnet 5 role-isolation start after rerouting the
+Claude id role through OpenRouter. Baseline Codex tutor/Sonnet 5 id/Codex
+learner completed 10/10 as `eval-2026-07-01-5dad2e60` with required/forbidden
+validation 9/10 and 10/10 and 7/10 positive local outcomes under the local
+reporter. The tutor-fixed GLM-learner arm completed 5/10 rows as
+`eval-2026-07-01-dff9f159` before stalling on the second irrelevance draw; a
+one-row irrelevance backfill `eval-2026-07-01-ed9f7288` also stalled with zero
+rows. Partial analysis over 15 rows found 7 strict candidates and 8 positive
+local outcomes. Boundary: dynamic-learner/runtime drift is now a live failure
+source; GLM tutor/id with Codex learner and scripted controls remain open. No
+promotion or human-learning claim.
