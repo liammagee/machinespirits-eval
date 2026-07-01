@@ -1196,6 +1196,38 @@ test('verifyTurnIdsForRow: verifies matching turn IDs', () => {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
+test('verifyTurnIdsForRow: prefers persisted log contentTurnId for current logs', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-test-'));
+  fs.mkdirSync(tmpDir, { recursive: true });
+
+  const dialogueId = 'dlg-verify-current-log';
+  const contentTurnId = 'persisted-current-id';
+  fs.writeFileSync(
+    path.join(tmpDir, `${dialogueId}.json`),
+    JSON.stringify({
+      dialogueId,
+      turnResults: [
+        {
+          turnIndex: 0,
+          turnId: 'tid-0',
+          contentTurnId,
+          suggestions: [{ message: 'hello' }],
+        },
+      ],
+    }),
+  );
+
+  const tutorScores = {
+    turn_0: { turnIndex: 0, contentTurnId, scores: { r: { score: 4 } } },
+  };
+
+  const result = verifyTurnIdsForRow(dialogueId, tutorScores, tmpDir);
+  assert.strictEqual(result.size, 1);
+  assert.strictEqual(result.get(0), true);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
 test('verifyTurnIdsForRow: detects mismatching turn IDs', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-test-'));
   fs.mkdirSync(tmpDir, { recursive: true });

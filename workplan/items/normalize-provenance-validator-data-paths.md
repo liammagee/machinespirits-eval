@@ -1,14 +1,16 @@
 ---
 id: normalize-provenance-validator-data-paths
 title: Honor canonical data-home paths in provenance validators
-status: triaged
+status: done
 type: maintenance
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-06-28
-updated: 2026-06-28
-verification: "`npm run provenance:validate`, `npm run paper:provable-discourse -- --epoch 2.0 --strict --no-color`, and `npm run wp:check` pass from a fresh worktree without repo-local DB/log symlinks."
+updated: 2026-07-01
+verification: "`npm run provenance:validate`, `npm run paper:provable-discourse
+  -- --epoch 2.0 --strict --no-color`, and `npm run wp:check` pass from a fresh
+  worktree without repo-local DB/log symlinks."
 links:
   items: consolidate-logs-db-private-archive
 tags:
@@ -17,6 +19,7 @@ tags:
   - data-home
   - validators
 milestone: paper-2-evidence-cleanup
+branch: codex/normalize-provenance-validator-data-paths
 ---
 
 Follow-up split from `consolidate-logs-db-private-archive`.

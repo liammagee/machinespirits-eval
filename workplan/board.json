@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-01T04:52:25.442Z",
+  "generated": "2026-07-01T05:41:15.010Z",
   "counts": {
     "total": 66,
     "byStatus": {
-      "done": 57,
+      "done": 58,
       "blocked": 1,
       "dropped": 2,
       "review": 1,
       "active": 1,
-      "triaged": 4
+      "triaged": 3
     },
     "byType": {
       "research": 35,
@@ -44,28 +44,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "normalize-provenance-validator-data-paths",
-      "title": "Honor canonical data-home paths in provenance validators",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-06-28",
-      "updated": "2026-06-28",
-      "verification": "`npm run provenance:validate`, `npm run paper:provable-discourse -- --epoch 2.0 --strict --no-color`, and `npm run wp:check` pass from a fresh worktree without repo-local DB/log symlinks.",
-      "links": {
-        "items": "consolidate-logs-db-private-archive"
-      },
-      "tags": [
-        "provenance",
-        "logs",
-        "data-home",
-        "validators"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "colocate-runner-secondary-artifacts",
@@ -1290,6 +1268,29 @@
       "milestone": "human-pilot-prep",
       "branch": "codex/workplan-board-triage",
       "claim_status": "methods"
+    },
+    {
+      "id": "normalize-provenance-validator-data-paths",
+      "title": "Honor canonical data-home paths in provenance validators",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-07-01",
+      "verification": "`npm run provenance:validate`, `npm run paper:provable-discourse -- --epoch 2.0 --strict --no-color`, and `npm run wp:check` pass from a fresh worktree without repo-local DB/log symlinks.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive"
+      },
+      "tags": [
+        "provenance",
+        "logs",
+        "data-home",
+        "validators"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/normalize-provenance-validator-data-paths"
     },
     {
       "id": "not-all-flips-are-conformity-decomposing-stance-convergence",

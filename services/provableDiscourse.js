@@ -3,6 +3,10 @@ import path from 'path';
 import { createHash } from 'crypto';
 import YAML from 'yaml';
 import Database from 'better-sqlite3';
+import {
+  resolveConfiguredEvaluationDbPath,
+  resolveConfiguredTutorDialoguesDir,
+} from './evaluationDataPaths.js';
 
 const METRIC_DIM_KEYS = [
   'mutual_recognition',
@@ -916,7 +920,7 @@ function evaluateJudgePairCorrelation(db, evidence) {
 function evaluateLogTraceCoverage(db, evidence, rootDir) {
   const runIds = Array.isArray(evidence?.run_ids) ? evidence.run_ids : [];
   if (runIds.length === 0) throw new Error('log_trace_coverage requires run_ids');
-  const logDir = resolvePath(rootDir, evidence?.log_dir || 'logs/tutor-dialogues');
+  const logDir = resolveEvidenceLogDir(rootDir, evidence);
   const where = buildWhereClause({
     ...(evidence?.filters || {}),
     run_ids: runIds,
@@ -1006,9 +1010,13 @@ export function verifyTurnIdsForRow(dialogueId, tutorScoresObj, logDir) {
       result.set(turnIndex, false);
       continue;
     }
+    if (matchingTurn.contentTurnId) {
+      result.set(turnIndex, matchingTurn.contentTurnId === scoreTurnId);
+      continue;
+    }
     const turnContent = JSON.stringify({
       turnIndex: matchingTurn.turnIndex,
-      suggestion: matchingTurn.suggestion ? [matchingTurn.suggestion] : [],
+      suggestion: matchingTurn.suggestions || (matchingTurn.suggestion ? [matchingTurn.suggestion] : []),
       turnId: matchingTurn.turnId,
     });
     const expectedId = createHash('sha256')
@@ -1032,7 +1040,7 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
   if (checks.length === 0) throw new Error('provenance_check requires at least one check');
 
   const runIds = Array.isArray(evidence?.run_ids) ? evidence.run_ids : [];
-  const logDir = resolvePath(rootDir, evidence?.log_dir || 'logs/tutor-dialogues');
+  const logDir = resolveEvidenceLogDir(rootDir, evidence);
   const waivers = loadOrphanWaivers(rootDir);
 
   const where = buildWhereClause({
@@ -1505,7 +1513,7 @@ function evaluateTrajectorySlope(db, evidence, rootDir) {
   let logMismatches = 0;
 
   // Resolve log directory for turn-level log verification
-  const logDir = turnLevel && rootDir ? path.join(rootDir, 'logs/tutor-dialogues') : null;
+  const logDir = turnLevel && rootDir ? resolveConfiguredTutorDialoguesDir(rootDir) : null;
 
   for (const row of rows) {
     if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
@@ -1664,7 +1672,7 @@ function evaluateConditionalDelta(db, evidence, rootDir) {
   let logMismatches = 0;
 
   // Resolve log directory for turn-level log verification
-  const logDir = turnLevel && rootDir ? path.join(rootDir, 'logs/tutor-dialogues') : null;
+  const logDir = turnLevel && rootDir ? resolveConfiguredTutorDialoguesDir(rootDir) : null;
 
   for (const row of rows) {
     if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
@@ -2171,6 +2179,10 @@ function resolvePath(rootDir, value) {
   return path.isAbsolute(value) ? value : path.join(rootDir, value);
 }
 
+function resolveEvidenceLogDir(rootDir, evidence) {
+  return resolveConfiguredTutorDialoguesDir(rootDir, evidence?.log_dir || null);
+}
+
 /**
  * Load the accepted-missing dialogue-log waivers (config/provenance-orphan-waivers.json).
  *
@@ -2479,7 +2491,7 @@ export function runProvableDiscourseAudit({
 
   const paperSources = buildPaperSources(baseDir, spec, epoch);
   const resolvedManifestPath = resolvePath(baseDir, spec.manifest_path);
-  const resolvedDbPath = resolvePath(baseDir, spec.db_path);
+  const resolvedDbPath = resolveConfiguredEvaluationDbPath(baseDir, spec.db_path);
   const resolvedAuditPath = resolvePath(baseDir, spec.audit_report_path);
   const resolvedSnapshotPath = resolvePath(baseDir, spec.snapshot_path);
   const resolvedInventoryPath = resolvePath(baseDir, spec.inventory_path);
