@@ -1,10 +1,10 @@
 {
-  "generated": "2026-07-01T19:22:05.994Z",
+  "generated": "2026-07-01T20:55:14.523Z",
   "counts": {
     "total": 66,
     "byStatus": {
-      "done": 60,
-      "blocked": 3,
+      "done": 61,
+      "blocked": 2,
       "dropped": 2,
       "review": 1
     },
@@ -68,30 +68,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "debloat-private-log-archive",
-      "title": "De-bloat the private dialogue-log archive",
-      "status": "blocked",
-      "type": "maintenance",
-      "priority": "P3",
-      "owner": "human",
-      "source": "manual",
-      "created": "2026-06-28",
-      "updated": "2026-07-01",
-      "verification": "The private archive has a documented chosen storage path, logs are no longer ordinary large git history, and a clone/sync smoke confirms the canonical DB + logs remain recoverable.",
-      "blocked_by": "Maintainer must choose and schedule the private-repo de-bloat path (freeze, Git LFS migration, or history rewrite) outside this public checkout.",
-      "links": {
-        "items": "consolidate-logs-db-private-archive",
-        "notes": "docs/archive-replication.md"
-      },
-      "tags": [
-        "logs",
-        "archive",
-        "private-repo",
-        "git-history"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "charisma-desire-generalizability-matrix",
@@ -1796,6 +1772,29 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "debloat-private-log-archive",
+      "title": "De-bloat the private dialogue-log archive",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-07-02",
+      "verification": "docs/archive-replication.md documents the chosen policy: freeze machinespirits-eval-private as a historical/read-only mirror, keep ~/.machinespirits-data as the canonical logs + snapshot archive, and reopen Git LFS/history rewrite only as a separate explicit maintenance project.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive",
+        "notes": "docs/archive-replication.md"
+      },
+      "tags": [
+        "logs",
+        "archive",
+        "private-repo",
+        "git-history"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
     },
     {
       "id": "grouptom-bench-benchmarking-group-theory-of-mind-nonlinear",

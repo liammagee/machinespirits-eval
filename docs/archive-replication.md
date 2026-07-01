@@ -28,6 +28,28 @@ treat them as one folder:
   DB itself.
 - **`.stignore`** keeps Syncthing off the live DBs and their WAL/SHM sidecars.
 
+## Historical private Git archive policy
+
+The old `machinespirits-eval-private` repository is a legacy mirror, not the
+active archive. Its historical `logs/` tree remains useful for provenance and
+manual recovery, but new writes should not target it and the project should not
+add more dialogue logs to ordinary Git history there.
+
+Policy:
+
+- **Freeze the private Git repository as historical/read-only.** Do not rewrite
+  history, migrate to Git LFS, or delete its `logs/` tree as routine public-repo
+  maintenance.
+- **Treat `~/.machinespirits-data` as canonical.** Active logs live in
+  `~/.machinespirits-data/logs`; consistent DB copies live in
+  `~/.machinespirits-data/snapshots`.
+- **Use Syncthing plus DB snapshots for replication.** This is the supported
+  recovery path for another machine.
+- **Reopen private-repo migration only as a separate, explicit maintenance
+  project.** Git LFS migration or history rewrite is justified only if clone
+  size or hosting policy becomes a material problem, and it should be scheduled
+  with a fresh backup and recovery test.
+
 ## What is set up on this machine
 
 1. **Snapshot job.** `scripts/snapshot-archive.sh` is installed at
