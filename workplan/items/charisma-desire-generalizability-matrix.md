@@ -1,13 +1,13 @@
 ---
 id: charisma-desire-generalizability-matrix
 title: Route charisma/desire by engagement register
-status: active
+status: review
 type: research
 priority: P2
 owner: codex
 source: manual
 created: 2026-06-25
-updated: 2026-07-01
+updated: 2026-07-02
 verification: Engagement router cell 180, contract/repair cell 181, split-repair
   cell 182, failed transfer-stake cell 183 smoke, clean-but-insufficient
   transfer-compression cell 184 smoke, adaptation-slice audit disconfirming the
@@ -39,13 +39,13 @@ verification: Engagement router cell 180, contract/repair cell 181, split-repair
   cell 193 GLM 5.2 provider/runtime-control run completing 5/5 clean DB
   validation but failing the local breakthrough criterion, and no-paid
   role-isolation gate design adding the cell 195 scripted-learner control,
-  plus partial Sonnet 5 role-isolation start showing a completed Codex
-  tutor/Sonnet 5 id/Codex learner baseline but stalled GLM dynamic-learner arm;
-  register-switch/breakthrough scenarios, router service/tests, no-paid Stage
-  0/router sanity reports, paid smokes/matrices, config validation, workplan
-  render/validate, and focused id-director/learner/gate tests pass.
-claim_status: exploratory
-branch: codex/charisma-role-isolation-followup
+  and completed six-arm role-isolation matrix with arm-level report scoping the
+  GLM boundary to dynamic-learner completion/target drift rather than tutor/id
+  register production; register-switch/breakthrough scenarios, router
+  service/tests, no-paid Stage 0/router sanity reports, paid smokes/matrices,
+  config validation, workplan render/validate, and focused
+  id-director/learner/gate tests pass.
+claim_status: scope-bound
 links:
   notes:
     - notes/2026-06-25-charisma-desire-generalizability-plan.md
@@ -940,3 +940,15 @@ found 50 analyzed rows, 20 strict candidate breakthroughs, and 23 positive
 local outcomes; the question-flood commitment gate remains pending because the
 role-isolation grid is not a commitment-probe comparison. Boundary: this closes
 the generation matrix but does not promote the GLM/full-stack claim.
+
+2026-07-02 Codex: Extended
+`scripts/report-charisma-desire-breakthrough-matrix.js` with a dedicated
+role-isolation arm summary keyed from `evaluation_runs.description`, covering
+the six planned arms including guarded suffixes. The completed six-run report
+diagnoses `DYNAMIC_LEARNER_COMPLETION_AND_TARGET_DRIFT_BOUNDARY`: the local
+Codex/Claude reference reproduces, GLM tutor/id works when the Codex learner is
+fixed, both scripted controls route the public register cleanly enough, and rows
+with a GLM dynamic learner lose post-turn completion or target stability. Moved
+the item to review with a scope-bound claim; the question-flood
+commitment-probe comparison remains a separate pending gate, not part of this
+role-isolation closure.

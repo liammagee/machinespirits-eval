@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-01T12:42:43.912Z",
+  "generated": "2026-07-01T19:22:05.994Z",
   "counts": {
     "total": 66,
     "byStatus": {
       "done": 60,
       "blocked": 3,
       "dropped": 2,
-      "active": 1
+      "review": 1
     },
     "byType": {
       "research": 35,
@@ -20,18 +20,91 @@
   },
   "items": [
     {
+      "id": "a1-human-learner-validation",
+      "title": "Human-learner validation pilot (real learning gains)",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P0",
+      "owner": "human",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Phased N≈90 pilot runs end-to-end across 3 arms; pre/post MCQ + immediate transfer + coded free-text explanation + 1-week retention scored; the tutor-quality → learning-gains path is estimated (or shown null) in exports/.",
+      "blocked_by": "IRB approval + real consent text + real item content (content/legal track, not engineering)",
+      "claim_status": "future",
+      "links": {
+        "paper": "§8.1, §9",
+        "notes": "notes/design-a1-human-learner-pilot.md",
+        "items": "socratic-structured-tutoring-readings"
+      },
+      "tags": [
+        "pilot",
+        "human-learner",
+        "critical"
+      ],
+      "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "lean-semantic-web-proof-dag-validation",
+      "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
+      "status": "blocked",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-07-01",
+      "verification": "A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.",
+      "blocked_by": "Lean/Lake is not installed locally, so generated Lean certificates cannot be checked yet.",
+      "claim_status": "future",
+      "links": {
+        "notes": "notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md"
+      },
+      "tags": [
+        "proof-dag",
+        "lean",
+        "semantic-web",
+        "provenance",
+        "shacl"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
+      "id": "debloat-private-log-archive",
+      "title": "De-bloat the private dialogue-log archive",
+      "status": "blocked",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-07-01",
+      "verification": "The private archive has a documented chosen storage path, logs are no longer ordinary large git history, and a clone/sync smoke confirms the canonical DB + logs remain recoverable.",
+      "blocked_by": "Maintainer must choose and schedule the private-repo de-bloat path (freeze, Git LFS migration, or history rewrite) outside this public checkout.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive",
+        "notes": "docs/archive-replication.md"
+      },
+      "tags": [
+        "logs",
+        "archive",
+        "private-repo",
+        "git-history"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
       "id": "charisma-desire-generalizability-matrix",
       "title": "Route charisma/desire by engagement register",
-      "status": "active",
+      "status": "review",
       "type": "research",
       "priority": "P2",
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-25",
-      "updated": "2026-07-01",
-      "verification": "Engagement router cell 180, contract/repair cell 181, split-repair cell 182, failed transfer-stake cell 183 smoke, clean-but-insufficient transfer-compression cell 184 smoke, adaptation-slice audit disconfirming the current register-change-specific charisma claim, register-effect decomposition narrowing the visible signal to process/register correctness plus exploratory agency-return discipline, Codex-only dynamic-learner resistance-breakthrough smoke, a controlled 5-signal router-vs-static dynamic matrix, paid cell 187 resistance-tuning matrix, paid cell 188 owned-test smoke, failed cell 189 precision smoke, dynamic resistance-signal gate implementation, full gated 5-signal cell188-vs-static matrix, paid cell 190 rote generation repair smoke, cell 190 non-rote regression check, 30-row stability-repeat matrix, irrelevance-vs-question-flood boundary confirmation, paid cell 191 question-lock confirmation, paid cell 191-vs-190 repeat demoting question-lock as a promotion branch, no-paid cell 192 commitment-probe design plus reporter commitment taxonomy and frozen Question-Flood Gate, paid cell 192-vs-190-vs-188 gate promoting commitment-probe for question-flood, paid cell 192 five-signal composite stability pass with refined carry-through measurement showing question-flood/irrelevance/rote-owned strength but not general five-signal breakthrough, no-paid cell 193 boredom-live-stake design/registration/reporter plumbing, paid cell 193 boredom gate showing local cleanliness but not displacement of cell 188, paid cell 193 non-boredom regression showing clean validation plus 8/8 positive local outcomes but only 4/8 strict breakthroughs, paid cell 193 five-signal stability showing clean validation plus 14/15 positive local outcomes and a combined 25/26 positive local mechanism pass, GLM 5.2 OpenRouter generation robustness failing the model-stack pass, GLM 5.2 independent v2.2/charisma judging completing on the Codex stability rows, cell 194 GLM-compact partial repair showing stronger local action shape on completed rows but failing full GLM robustness, and full cell 193 GLM 5.2 provider/runtime-control run completing 5/5 clean DB validation but failing the local breakthrough criterion, and no-paid role-isolation gate design adding the cell 195 scripted-learner control, plus partial Sonnet 5 role-isolation start showing a completed Codex tutor/Sonnet 5 id/Codex learner baseline but stalled GLM dynamic-learner arm; register-switch/breakthrough scenarios, router service/tests, no-paid Stage 0/router sanity reports, paid smokes/matrices, config validation, workplan render/validate, and focused id-director/learner/gate tests pass.",
-      "claim_status": "exploratory",
-      "branch": "codex/charisma-role-isolation-followup",
+      "updated": "2026-07-02",
+      "verification": "Engagement router cell 180, contract/repair cell 181, split-repair cell 182, failed transfer-stake cell 183 smoke, clean-but-insufficient transfer-compression cell 184 smoke, adaptation-slice audit disconfirming the current register-change-specific charisma claim, register-effect decomposition narrowing the visible signal to process/register correctness plus exploratory agency-return discipline, Codex-only dynamic-learner resistance-breakthrough smoke, a controlled 5-signal router-vs-static dynamic matrix, paid cell 187 resistance-tuning matrix, paid cell 188 owned-test smoke, failed cell 189 precision smoke, dynamic resistance-signal gate implementation, full gated 5-signal cell188-vs-static matrix, paid cell 190 rote generation repair smoke, cell 190 non-rote regression check, 30-row stability-repeat matrix, irrelevance-vs-question-flood boundary confirmation, paid cell 191 question-lock confirmation, paid cell 191-vs-190 repeat demoting question-lock as a promotion branch, no-paid cell 192 commitment-probe design plus reporter commitment taxonomy and frozen Question-Flood Gate, paid cell 192-vs-190-vs-188 gate promoting commitment-probe for question-flood, paid cell 192 five-signal composite stability pass with refined carry-through measurement showing question-flood/irrelevance/rote-owned strength but not general five-signal breakthrough, no-paid cell 193 boredom-live-stake design/registration/reporter plumbing, paid cell 193 boredom gate showing local cleanliness but not displacement of cell 188, paid cell 193 non-boredom regression showing clean validation plus 8/8 positive local outcomes but only 4/8 strict breakthroughs, paid cell 193 five-signal stability showing clean validation plus 14/15 positive local outcomes and a combined 25/26 positive local mechanism pass, GLM 5.2 OpenRouter generation robustness failing the model-stack pass, GLM 5.2 independent v2.2/charisma judging completing on the Codex stability rows, cell 194 GLM-compact partial repair showing stronger local action shape on completed rows but failing full GLM robustness, and full cell 193 GLM 5.2 provider/runtime-control run completing 5/5 clean DB validation but failing the local breakthrough criterion, and no-paid role-isolation gate design adding the cell 195 scripted-learner control, and completed six-arm role-isolation matrix with arm-level report scoping the GLM boundary to dynamic-learner completion/target drift rather than tutor/id register production; register-switch/breakthrough scenarios, router service/tests, no-paid Stage 0/router sanity reports, paid smokes/matrices, config validation, workplan render/validate, and focused id-director/learner/gate tests pass.",
+      "claim_status": "scope-bound",
       "links": {
         "notes": [
           "notes/2026-06-25-charisma-desire-generalizability-plan.md",
@@ -161,80 +234,6 @@
         "engagement-routing",
         "registers",
         "paper-2"
-      ],
-      "milestone": "paper-2-evidence-cleanup"
-    },
-    {
-      "id": "a1-human-learner-validation",
-      "title": "Human-learner validation pilot (real learning gains)",
-      "status": "blocked",
-      "type": "experiment",
-      "priority": "P0",
-      "owner": "human",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-24",
-      "verification": "Phased N≈90 pilot runs end-to-end across 3 arms; pre/post MCQ + immediate transfer + coded free-text explanation + 1-week retention scored; the tutor-quality → learning-gains path is estimated (or shown null) in exports/.",
-      "blocked_by": "IRB approval + real consent text + real item content (content/legal track, not engineering)",
-      "claim_status": "future",
-      "links": {
-        "paper": "§8.1, §9",
-        "notes": "notes/design-a1-human-learner-pilot.md",
-        "items": "socratic-structured-tutoring-readings"
-      },
-      "tags": [
-        "pilot",
-        "human-learner",
-        "critical"
-      ],
-      "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "lean-semantic-web-proof-dag-validation",
-      "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
-      "status": "blocked",
-      "type": "research",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-06-24",
-      "updated": "2026-07-01",
-      "verification": "A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.",
-      "blocked_by": "Lean/Lake is not installed locally, so generated Lean certificates cannot be checked yet.",
-      "claim_status": "future",
-      "links": {
-        "notes": "notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md"
-      },
-      "tags": [
-        "proof-dag",
-        "lean",
-        "semantic-web",
-        "provenance",
-        "shacl"
-      ],
-      "milestone": "poetics-followups"
-    },
-    {
-      "id": "debloat-private-log-archive",
-      "title": "De-bloat the private dialogue-log archive",
-      "status": "blocked",
-      "type": "maintenance",
-      "priority": "P3",
-      "owner": "human",
-      "source": "manual",
-      "created": "2026-06-28",
-      "updated": "2026-07-01",
-      "verification": "The private archive has a documented chosen storage path, logs are no longer ordinary large git history, and a clone/sync smoke confirms the canonical DB + logs remain recoverable.",
-      "blocked_by": "Maintainer must choose and schedule the private-repo de-bloat path (freeze, Git LFS migration, or history rewrite) outside this public checkout.",
-      "links": {
-        "items": "consolidate-logs-db-private-archive",
-        "notes": "docs/archive-replication.md"
-      },
-      "tags": [
-        "logs",
-        "archive",
-        "private-repo",
-        "git-history"
       ],
       "milestone": "paper-2-evidence-cleanup"
     },

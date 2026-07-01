@@ -34,6 +34,47 @@ const BOREDOM_STAKE_ROUTER_PROFILE =
   'cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified';
 const GLM_COMPACT_ROUTER_PROFILE = 'cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified';
 
+const ROLE_ISOLATION_PREFIX = 'Charisma desire role isolation:';
+const ROLE_ISOLATION_ARMS = [
+  {
+    id: 'baseline_codex_tutor_codex_learner',
+    contrast: 'reference',
+    evidence: 'dynamic outcome',
+    expectedRows: 10,
+  },
+  {
+    id: 'tutor_fixed_glm_learner',
+    contrast: 'hold tutor fixed; vary learner',
+    evidence: 'dynamic outcome',
+    expectedRows: 10,
+  },
+  {
+    id: 'learner_fixed_glm_tutor',
+    contrast: 'hold learner fixed; vary tutor/id',
+    evidence: 'dynamic outcome',
+    expectedRows: 10,
+  },
+  {
+    id: 'full_glm_reference',
+    contrast: 'full GLM stack reference',
+    evidence: 'dynamic outcome',
+    expectedRows: 10,
+  },
+  {
+    id: 'scripted_control_codex_tutor',
+    contrast: 'fixed resistant turns; Codex tutor/id',
+    evidence: 'register control',
+    expectedRows: 5,
+  },
+  {
+    id: 'scripted_control_glm_tutor',
+    contrast: 'fixed resistant turns; GLM tutor/id',
+    evidence: 'register control',
+    expectedRows: 5,
+  },
+];
+const ROLE_ISOLATION_ARM_BY_ID = new Map(ROLE_ISOLATION_ARMS.map((arm) => [arm.id, arm]));
+
 const CONTROLLED_SCENARIOS = [
   'charisma_desire_resistance_breakthrough_boredom',
   'charisma_desire_resistance_breakthrough_frustration',
@@ -490,6 +531,48 @@ function loadRows(runIds = []) {
     .all(...params);
 }
 
+function databaseHasTable(db, tableName) {
+  const row = db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`).get(tableName);
+  return Boolean(row);
+}
+
+function roleIsolationArmFromDescription(description) {
+  const raw = String(description || '');
+  if (!raw.startsWith(ROLE_ISOLATION_PREFIX)) return null;
+  const suffix = raw.slice(ROLE_ISOLATION_PREFIX.length).trim();
+  return ROLE_ISOLATION_ARMS.find((arm) => suffix === arm.id || suffix.startsWith(`${arm.id} `)) || null;
+}
+
+function loadRoleIsolationRunMap(runIds = []) {
+  const byRunId = new Map();
+  const uniqueRunIds = [...new Set(runIds.filter(Boolean))];
+  if (!uniqueRunIds.length || !fs.existsSync(DB_PATH)) return byRunId;
+
+  const db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
+  try {
+    if (!databaseHasTable(db, 'evaluation_runs')) return byRunId;
+    const rows = db
+      .prepare(
+        `SELECT id, description, status, total_tests
+         FROM evaluation_runs
+         WHERE id IN (${uniqueRunIds.map(() => '?').join(',')})`,
+      )
+      .all(...uniqueRunIds);
+    for (const row of rows) {
+      const arm = roleIsolationArmFromDescription(row.description);
+      if (!arm) continue;
+      byRunId.set(row.id, {
+        ...arm,
+        runStatus: row.status || '',
+        totalTests: Number(row.total_tests || 0),
+      });
+    }
+  } finally {
+    db.close();
+  }
+  return byRunId;
+}
+
 function analyzeRows(rows, scenarios) {
   return rows.map((row) => {
     const scenario = resolveControlledScenario(scenarios, row.scenario_id);
@@ -707,6 +790,159 @@ function questionFloodGate(analyses) {
   };
 }
 
+function emptyRoleIsolationArmSummary(arm) {
+  return {
+    key: arm.id,
+    contrast: arm.contrast,
+    evidence: arm.evidence,
+    expectedRows: arm.expectedRows,
+    rows: 0,
+    preGenerated: 0,
+    postGenerated: 0,
+    eligible: 0,
+    candidates: 0,
+    positiveOutcomes: 0,
+    routeHits: 0,
+    targetMatches: 0,
+    gateMatches: 0,
+    gatedRows: 0,
+    missingPostTurns: 0,
+    scoreSum: 0,
+  };
+}
+
+function addRoleIsolationRow(summary, row) {
+  const eligible = row.preGenerated && row.postGenerated && row.targetMatched;
+  summary.rows += 1;
+  summary.preGenerated += row.preGenerated ? 1 : 0;
+  summary.postGenerated += row.postGenerated ? 1 : 0;
+  summary.eligible += eligible ? 1 : 0;
+  summary.candidates += row.verdict.includes('candidate') ? 1 : 0;
+  summary.positiveOutcomes += isPositiveOutcome(row) ? 1 : 0;
+  summary.routeHits += row.routeHit ? 1 : 0;
+  summary.targetMatches += row.targetMatched ? 1 : 0;
+  summary.gateMatches += row.learnerGateMatched ? 1 : 0;
+  summary.gatedRows += row.learnerGateAttempts ? 1 : 0;
+  summary.missingPostTurns += row.verdict === 'missing_post_learner_turn' ? 1 : 0;
+  summary.scoreSum += row.lexicalScore || 0;
+}
+
+function roleIsolationArmInterpretation(row) {
+  if (!row.rows) return 'not represented in this run set';
+  if (row.evidence === 'register control') {
+    return row.routeHits === row.rows && row.targetMatches >= row.rows - 1
+      ? 'register shape passes; not learner-outcome evidence'
+      : 'register-control weakness';
+  }
+  if (row.key === 'baseline_codex_tutor_codex_learner') {
+    return row.routeHits === row.rows && row.targetMatches === row.rows && row.positiveOutcomes >= 5
+      ? 'local Codex-stack reference reproduced'
+      : 'reference weakened';
+  }
+  if (row.key === 'tutor_fixed_glm_learner') {
+    return row.postGenerated < row.rows || row.targetMatches < row.rows
+      ? 'learner-side completion/target drift'
+      : 'GLM learner held the outcome path';
+  }
+  if (row.key === 'learner_fixed_glm_tutor') {
+    return row.routeHits === row.rows && row.targetMatches === row.rows && row.positiveOutcomes >= 5
+      ? 'GLM tutor/id works with Codex learner'
+      : 'tutor/id-side weakness';
+  }
+  if (row.key === 'full_glm_reference') {
+    return row.postGenerated < row.rows || row.targetMatches < row.rows || row.routeHits < row.rows
+      ? 'full GLM remains unstable'
+      : 'full GLM matched the local mechanism';
+  }
+  return '';
+}
+
+function diagnoseRoleIsolation(byArm) {
+  const arm = (id) =>
+    byArm.find((row) => row.key === id) || emptyRoleIsolationArmSummary(ROLE_ISOLATION_ARM_BY_ID.get(id));
+  const totalRows = byArm.reduce((sum, row) => sum + row.rows, 0);
+  const expectedRows = byArm.reduce((sum, row) => sum + row.expectedRows, 0);
+  if (totalRows < expectedRows) {
+    return {
+      status: 'INCOMPLETE_ROLE_ISOLATION_GRID',
+      bullets: [`Only ${totalRows}/${expectedRows} planned role-isolation rows are represented.`],
+    };
+  }
+
+  const baseline = arm('baseline_codex_tutor_codex_learner');
+  const tutorFixed = arm('tutor_fixed_glm_learner');
+  const learnerFixed = arm('learner_fixed_glm_tutor');
+  const fullGlm = arm('full_glm_reference');
+  const scriptedGlm = arm('scripted_control_glm_tutor');
+  const scriptedCodex = arm('scripted_control_codex_tutor');
+
+  const learnerFixedStable =
+    learnerFixed.rows > 0 &&
+    learnerFixed.routeHits === learnerFixed.rows &&
+    learnerFixed.targetMatches === learnerFixed.rows &&
+    learnerFixed.positiveOutcomes >= baseline.positiveOutcomes;
+  const scriptedControlsPass =
+    scriptedCodex.rows > 0 &&
+    scriptedGlm.rows > 0 &&
+    scriptedCodex.routeHits === scriptedCodex.rows &&
+    scriptedGlm.routeHits === scriptedGlm.rows &&
+    scriptedCodex.targetMatches >= scriptedCodex.rows - 1 &&
+    scriptedGlm.targetMatches >= scriptedGlm.rows - 1;
+  const glmLearnerDrifts =
+    tutorFixed.postGenerated < tutorFixed.rows ||
+    tutorFixed.targetMatches < tutorFixed.rows ||
+    fullGlm.postGenerated < fullGlm.rows ||
+    fullGlm.targetMatches < fullGlm.rows;
+
+  if (learnerFixedStable && scriptedControlsPass && glmLearnerDrifts) {
+    return {
+      status: 'DYNAMIC_LEARNER_COMPLETION_AND_TARGET_DRIFT_BOUNDARY',
+      bullets: [
+        `Baseline reproduces the local reference (${baseline.positiveOutcomes}/${baseline.rows} positive; ${baseline.candidates}/${baseline.rows} strict candidates).`,
+        `Holding the learner fixed while swapping in GLM tutor/id does not break the path (${learnerFixed.positiveOutcomes}/${learnerFixed.rows} positive; ${learnerFixed.candidates}/${learnerFixed.rows} strict candidates).`,
+        `Both scripted controls route the public register cleanly enough (${scriptedCodex.routeHits}/${scriptedCodex.rows} Codex route hits; ${scriptedGlm.routeHits}/${scriptedGlm.rows} GLM route hits), so the GLM boundary is not primarily public register production.`,
+        `Rows involving a GLM dynamic learner lose completion or target stability: tutor-fixed/GLM-learner has ${tutorFixed.postGenerated}/${tutorFixed.rows} post turns and ${tutorFixed.targetMatches}/${tutorFixed.rows} target matches; full GLM has ${fullGlm.postGenerated}/${fullGlm.rows} post turns and ${fullGlm.targetMatches}/${fullGlm.rows} target matches.`,
+        'Conclusion: keep the claim scoped to the Codex/Claude-stack local mechanism and a GLM boundary diagnosis; do not promote a full-GLM or general model-stack robustness claim.',
+      ],
+    };
+  }
+
+  if (!learnerFixedStable && !scriptedControlsPass) {
+    return {
+      status: 'TUTOR_ID_REGISTER_PRODUCTION_BOUNDARY',
+      bullets: [
+        'Both the learner-fixed GLM tutor/id arm and the scripted GLM tutor control are weak, so the immediate suspect is tutor/id register production.',
+      ],
+    };
+  }
+
+  return {
+    status: 'MIXED_ROLE_ISOLATION_BOUNDARY',
+    bullets: [
+      'The six-arm grid is complete, but the observed pattern does not isolate a single failure side under the built-in decision rules.',
+      'Treat the result as a scoped boundary diagnosis, not as a promoted model-stack robustness claim.',
+    ],
+  };
+}
+
+function summarizeRoleIsolation(analyses) {
+  const roleRows = analyses.filter((row) => row.roleIsolationArm);
+  if (!roleRows.length) return null;
+
+  const byArm = new Map(ROLE_ISOLATION_ARMS.map((arm) => [arm.id, emptyRoleIsolationArmSummary(arm)]));
+  for (const row of roleRows) {
+    const summary = byArm.get(row.roleIsolationArm);
+    if (summary) addRoleIsolationRow(summary, row);
+  }
+  const rows = [...byArm.values()];
+  return {
+    rows: roleRows.length,
+    expectedRows: ROLE_ISOLATION_ARMS.reduce((sum, arm) => sum + arm.expectedRows, 0),
+    byArm: rows,
+    diagnosis: diagnoseRoleIsolation(rows),
+  };
+}
+
 function pct(n, d) {
   return d ? `${Math.round((n / d) * 100)}%` : '0%';
 }
@@ -718,6 +954,7 @@ function fraction(n, d) {
 function buildReport({ generatedAt, errors, analyses }) {
   const status = errors.length ? 'FAIL' : analyses.length ? 'ANALYZED_ROWS' : 'READY_NO_ROWS';
   const summary = summarize(analyses);
+  const roleSummary = summarizeRoleIsolation(analyses);
   const qfGate = questionFloodGate(analyses);
   const lines = [];
   lines.push('# Charisma Desire Resistance-Breakthrough Matrix');
@@ -834,6 +1071,59 @@ function buildReport({ generatedAt, errors, analyses }) {
     lines.push('- No target rows found.');
   }
   lines.push('');
+  if (roleSummary) {
+    lines.push('## Role-Isolation Arm Summary');
+    lines.push('');
+    lines.push(
+      '- This section is populated only for runs whose `evaluation_runs.description` starts with `Charisma desire role isolation:`.',
+    );
+    lines.push('- Scripted-control arms are tutor-register checks, not learner-outcome evidence.');
+    lines.push('');
+    lines.push(
+      markdownTable(
+        [
+          'Arm',
+          'Contrast',
+          'Evidence',
+          'Rows',
+          'Eligible',
+          'Candidates',
+          'Positive',
+          'Route hits',
+          'Target matches',
+          'Gate matches',
+          'Post generated',
+          'Missing post',
+          'Mean score',
+          'Interpretation',
+        ],
+        roleSummary.byArm.map((row) => [
+          row.key,
+          row.contrast,
+          row.evidence,
+          `${row.rows}/${row.expectedRows}`,
+          `${row.eligible}/${row.rows || row.expectedRows}`,
+          `${row.candidates}/${row.rows || row.expectedRows}`,
+          `${row.positiveOutcomes}/${row.rows || row.expectedRows}`,
+          `${row.routeHits}/${row.rows || row.expectedRows}`,
+          `${row.targetMatches}/${row.rows || row.expectedRows}`,
+          row.gatedRows ? `${row.gateMatches}/${row.gatedRows}` : '-',
+          `${row.postGenerated}/${row.rows || row.expectedRows}`,
+          `${row.missingPostTurns}/${row.rows || row.expectedRows}`,
+          row.rows ? (row.scoreSum / row.rows).toFixed(1) : '',
+          roleIsolationArmInterpretation(row),
+        ]),
+      ),
+    );
+    lines.push('');
+    lines.push('## Role-Isolation Diagnosis');
+    lines.push('');
+    lines.push(`Status: \`${roleSummary.diagnosis.status}\``);
+    lines.push('');
+    lines.push(roleSummary.diagnosis.bullets.map((bullet) => `- ${bullet}`).join('\n'));
+    lines.push('');
+  }
+  lines.push('');
   lines.push('## Question-Flood Gate');
   lines.push('');
   lines.push(`Status: \`${qfGate.status}\``);
@@ -943,7 +1233,18 @@ function main() {
   const learnerAgents = readYaml(LEARNER_AGENTS_PATH) || {};
   const errors = validateScenarios(scenarios, learnerAgents);
   const rows = loadRows(runIds);
-  const analyses = analyzeRows(rows, scenarios);
+  const roleIsolationRuns = loadRoleIsolationRunMap(rows.map((row) => row.run_id));
+  const analyses = analyzeRows(rows, scenarios).map((row) => {
+    const roleIsolationArm = roleIsolationRuns.get(row.runId);
+    if (!roleIsolationArm) return row;
+    return {
+      ...row,
+      roleIsolationArm: roleIsolationArm.id,
+      roleIsolationContrast: roleIsolationArm.contrast,
+      roleIsolationEvidence: roleIsolationArm.evidence,
+    };
+  });
+  const roleIsolationSummary = summarizeRoleIsolation(analyses);
   const data = {
     generatedAt: new Date().toISOString(),
     scenarioIds: CONTROLLED_SCENARIOS,
@@ -962,6 +1263,7 @@ function main() {
     errors,
     analyses,
     summary: summarize(analyses),
+    roleIsolation: roleIsolationSummary,
     questionFloodGate: questionFloodGate(analyses),
   };
 
@@ -980,6 +1282,11 @@ function main() {
   console.log(`Rows found: ${analyses.length}`);
   console.log(`Candidate breakthroughs: ${candidates.length}`);
   console.log(`Positive local outcomes: ${positiveOutcomes.length}`);
+  if (roleIsolationSummary) {
+    const populatedArms = roleIsolationSummary.byArm.filter((row) => row.rows > 0).length;
+    console.log(`Role-isolation arms: ${populatedArms}/${ROLE_ISOLATION_ARMS.length}`);
+    console.log(`Role-isolation diagnosis: ${roleIsolationSummary.diagnosis.status}`);
+  }
   console.log(`Question-flood gate: ${data.questionFloodGate.status}`);
   if (!checkOnly) console.log(`Report: ${path.relative(ROOT, REPORT_PATH)}`);
   if (errors.length) {

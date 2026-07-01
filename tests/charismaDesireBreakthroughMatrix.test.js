@@ -66,6 +66,12 @@ describe('charisma desire resistance-breakthrough matrix', () => {
 
     const db = new Database(dbPath);
     db.exec(`
+      CREATE TABLE evaluation_runs (
+        id TEXT PRIMARY KEY,
+        description TEXT,
+        total_tests INTEGER,
+        status TEXT
+      );
       CREATE TABLE evaluation_results (
         id TEXT,
         run_id TEXT,
@@ -80,6 +86,16 @@ describe('charisma desire resistance-breakthrough matrix', () => {
         judge_model TEXT
       )
     `);
+    db.prepare(
+      `INSERT INTO evaluation_runs
+       (id, description, total_tests, status)
+       VALUES (?, ?, ?, ?)`,
+    ).run(
+      'eval-path-override',
+      'Charisma desire role isolation: baseline_codex_tutor_codex_learner guarded',
+      10,
+      'completed',
+    );
     db.prepare(
       `INSERT INTO evaluation_results
        (id, run_id, scenario_id, profile_name, dialogue_id, suggestions, id_construction_trace, tutor_scores, dialogue_content_hash, success, judge_model)
@@ -122,6 +138,8 @@ describe('charisma desire resistance-breakthrough matrix', () => {
       assert.match(stdout, /Status: ANALYZED_ROWS/);
       assert.match(stdout, /Rows found: 1/);
       assert.match(stdout, /Positive local outcomes: 1/);
+      assert.match(stdout, /Role-isolation arms: 1\/6/);
+      assert.match(stdout, /Role-isolation diagnosis: INCOMPLETE_ROLE_ISOLATION_GRID/);
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
