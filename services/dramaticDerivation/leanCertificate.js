@@ -140,9 +140,7 @@ function theoremForPath(world, pathSpec, index) {
     const ruleName = ruleNameByIndex.get(appCursor);
     appCursor += 1;
     const haveName = uniqueName(`h__${factIdentifier(node.fact).replace(/^fact__/u, '')}`, usedNames);
-    lines.push(
-      `  have ${haveName} : ${factIdentifier(node.fact)} := ${[ruleName, ...premiseNames].join(' ')}`,
-    );
+    lines.push(`  have ${haveName} : ${factIdentifier(node.fact)} := ${[ruleName, ...premiseNames].join(' ')}`);
     derivedNameByKey.set(key, haveName);
     return haveName;
   };
@@ -235,12 +233,7 @@ export function findLeanTool(name) {
   });
 }
 
-export function checkLeanCertificate({
-  projectDir,
-  leanFile,
-  lakeBin = findLeanTool('lake'),
-  timeoutMs = 30000,
-} = {}) {
+export function checkLeanCertificate({ projectDir, leanFile, lakeBin = findLeanTool('lake'), timeoutMs = 30000 } = {}) {
   if (!lakeBin) {
     return {
       ok: false,
