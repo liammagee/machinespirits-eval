@@ -72,6 +72,12 @@ export {
   renderTaskLoopBenchmarkMarkdown,
 } from './taskMastery.js';
 export {
+  TASK_LOOP_HELDOUT_GATE_SCHEMA,
+  evaluateTaskLoopHeldoutArtifact,
+  evaluateTaskLoopHeldoutGate,
+  renderTaskLoopHeldoutGateMarkdown,
+} from './taskLoopHeldoutGate.js';
+export {
   QUALITY_PAIR_CASES,
   QUALITY_PAIR_REPORT_SCHEMA,
   QUALITY_PAIR_SCHEMA,

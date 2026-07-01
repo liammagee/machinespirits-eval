@@ -1,10 +1,10 @@
 # Layered Adaptive Tutor: Technical Specification and Implementation Plan
 
 - **Date:** 2026-06-30
-- **Status:** v0 in-dialogue layers merged; task/session outer-loop prototype opened 2026-07-01
+- **Status:** v0 in-dialogue layers merged; task/session scaffold merged; held-out task-loop artifact gate opened 2026-07-01
 - **Primary substrate:** hidden + proofDebt proof-continuity control
 - **Core decision:** do not build another proof-control overlay unless a predeclared hidden+proofDebt failure first clears a failure-atlas gate.
-- **Current worktree scope:** `codex/task-session-adaptation` opens the task/session mastery prototype after the v0 turn/block/scene/act gates merged. Human handoff remains deferred.
+- **Current worktree scope:** `codex/taskloop-heldout-gate` asks whether the task/session selector still beats fixed progression on held-out derivation artifacts without hidden proof-state input and without proof-control behavior changes. Human handoff remains deferred.
 
 ## 1. Executive Summary
 
@@ -29,7 +29,7 @@ deployment adaptation:
   human handoff / teacher review
 ```
 
-The production proof-control kernel remains hidden+proofDebt. New work should add auditable quality and learner-state layers above that kernel, with proof-control no-harm as a hard gate. The first implementation targeted in-dialogue scopes: turn, dialogue block, scene, and act. The current follow-on work opens task/session selection as a separate advisory prototype. It does not implement deployment escalation.
+The production proof-control kernel remains hidden+proofDebt. New work should add auditable quality and learner-state layers above that kernel, with proof-control no-harm as a hard gate. The first implementation targeted in-dialogue scopes: turn, dialogue block, scene, and act. The follow-on task/session scaffold added advisory next-task selection. The current gate asks whether that selector generalizes to held-out derivation artifacts. It does not implement deployment escalation.
 
 ## 2. Current Status and Boundary Conditions
 
@@ -76,9 +76,9 @@ Out of scope for that v0 worktree:
 4. Human handoff or teacher-review routing.
 5. Paid runs or human-learning claims unless a later plan explicitly opens them.
 
-### 2.4 Current task/session worktree scope
+### 2.4 Closed task/session worktree scope
 
-In scope for `codex/task-session-adaptation`:
+Completed by PR #71 from `codex/task-session-adaptation`:
 
 1. Add a public-only `TaskMasteryState` scaffold.
 2. Recommend next task actions from ownership, transfer, uptake, self-regulation, repair, and error signals.
@@ -86,14 +86,31 @@ In scope for `codex/task-session-adaptation`:
 4. Keep recommendations advisory and unable to override hidden+proofDebt proof control.
 5. Record a workplan item and zero-paid validation command.
 
-Out of scope for this worktree:
+Still out of scope after that merge:
 
 1. Human or hybrid handoff execution.
 2. Paid LLM runs.
 3. Human-learning claims.
 4. Runtime task assignment without a later validation gate.
 
-### 2.5 Why this boundary matters
+### 2.5 Current held-out artifact gate scope
+
+In scope for `codex/taskloop-heldout-gate`:
+
+1. Build a frozen held-out artifact fixture set from existing derivation traces, closeout reports, world specs, and episode outputs.
+2. Run the public-only task/session selector against those artifacts.
+3. Compare it against fixed progression without passing proof-control fingerprints into the selector.
+4. Require proof-control fingerprints to remain identical between the fixed and adaptive arms.
+5. Emit a zero-paid report that answers: does task/session selection still beat fixed progression on held-out artifacts?
+
+Out of scope for this worktree:
+
+1. Any proof-control behavior change.
+2. Any hidden proof-state feature in `TaskMasteryState`.
+3. Runtime task assignment or UI deployment.
+4. Human handoff execution or human-learning claims.
+
+### 2.6 Why this boundary matters
 
 A20/A21 do not harm by existing. They harm only when promoted overlays gain runtime authority and spend scarce proof turns on diagnostics, consolidation, readback, or teach-back while proof-critical releases remain pending. Kept off the production path, they make the system more auditable.
 
@@ -708,6 +725,7 @@ tests/dramaticDerivationOpportunityCost.test.js
 tests/dramaticDerivationUptakeNegotiation.test.js
 tests/dramaticDerivationSelfRegulation.test.js
 tests/dramaticDerivationTaskMastery.test.js
+tests/dramaticDerivationTaskLoopHeldoutGate.test.js
 tests/dramaticDerivationAdaptationArbiter.test.js
 ```
 
@@ -719,6 +737,7 @@ tests/dramaticDerivationAdaptationArbiter.test.js
   "derivation:uptake-benchmark": "node scripts/derivation-uptake-benchmark.js",
   "derivation:selfreg-benchmark": "node scripts/derivation-selfreg-benchmark.js",
   "derivation:taskloop-benchmark": "node scripts/derivation-taskloop-benchmark.js",
+  "derivation:taskloop-heldout-gate": "node scripts/derivation-taskloop-heldout-gate.js",
   "derivation:quality-pairs": "node scripts/derivation-quality-pairs.js"
 }
 ```
@@ -732,6 +751,7 @@ exports/dramatic-derivation/layered-adaptation/
   uptake-benchmark-report.md
   selfreg-benchmark-report.md
   taskloop-benchmark-report.md
+  taskloop-heldout-gate-report.md
   quality-pair-report.md
 ```
 
@@ -1111,8 +1131,8 @@ AND proof-control no-harm holds.
 
 **Goal:** open a separate outer-loop adaptation project only after the step-loop is cleanly bounded.
 
-Status: active in `codex/task-session-adaptation`. This phase remains outside
-the merged v0 in-dialogue worktree and must not reopen proof-control policy.
+Status: merged by PR #71 from `codex/task-session-adaptation`. This phase remains outside
+the merged v0 in-dialogue worktree and did not reopen proof-control policy.
 
 Implementation:
 
@@ -1148,6 +1168,44 @@ Completion rule for this branch:
 The deterministic task-loop benchmark passes, adaptive recommendations beat the
 fixed progression baseline, and `TaskMasteryState` remains public-only and
 advisory.
+```
+
+## Phase 7: Held-Out Task-Loop Artifact Gate
+
+**Goal:** test whether task/session selection still beats fixed progression on held-out derivation artifacts without hidden proof-state input and without proof-control behavior changes.
+
+Status: active in `codex/taskloop-heldout-gate`.
+
+Implementation:
+
+```text
+services/dramaticDerivation/taskLoopHeldoutGate.js
+scripts/derivation-taskloop-heldout-gate.js
+tests/dramaticDerivationTaskLoopHeldoutGate.test.js
+tests/fixtures/taskloop-heldout-artifacts.json
+```
+
+Gate inputs:
+
+- public ownership, transfer, uptake, self-regulation, repair, and error signals;
+- frozen artifact provenance;
+- expected next-task labels;
+- opaque proof-control fingerprints used only for equality/no-harm checks.
+
+Exit rule:
+
+```text
+Adaptive task/session recommendations must beat fixed progression on the
+held-out artifact set, all selector inputs must pass the public-only audit, and
+fixed/adaptive proof-control fingerprints must be byte-equivalent.
+```
+
+Completion rule for this branch:
+
+```text
+`npm run derivation:taskloop-heldout-gate` writes a passing report, the focused
+held-out gate test passes, workplan validation passes, and no runtime,
+human-learning, or proof-control promotion claim is made.
 ```
 
 ## Deferred Project B: Human / Hybrid Escalation Probe
@@ -1360,6 +1418,35 @@ npm run derivation:taskloop-benchmark -- --out "$tmp/taskloop-benchmark"
 npm run wp:validate
 ```
 
+### Held-out task-loop gate branch commit
+
+For `codex/taskloop-heldout-gate`:
+
+```text
+derivation: add held-out task-loop artifact gate
+```
+
+Files:
+
+```text
+PLAN_2_0/layered_adaptive_tutor_technical_spec.md
+package.json
+services/dramaticDerivation/index.js
+services/dramaticDerivation/taskLoopHeldoutGate.js
+scripts/derivation-taskloop-heldout-gate.js
+tests/dramaticDerivationTaskLoopHeldoutGate.test.js
+tests/fixtures/taskloop-heldout-artifacts.json
+workplan/items/layered-taskloop-heldout-gate.md
+```
+
+Validation:
+
+```bash
+node --test tests/dramaticDerivationTaskLoopHeldoutGate.test.js
+npm run derivation:taskloop-heldout-gate -- --out "$tmp/taskloop-heldout-gate"
+npm run wp:validate
+```
+
 ## 14. Success Claims by Layer
 
 | Layer | Claim type |
@@ -1376,9 +1463,11 @@ npm run wp:validate
 Do not collapse these into “adaptive tutor works.”
 
 Layered Adaptive Tutor v0 may make claims only for proof, discursive, didactic,
-ownership, uptake, self-regulation, and proof-matched transcript quality. It
-must not claim task-loop sequencing or human escalation until the deferred
-projects are opened and validated.
+ownership, uptake, self-regulation, and proof-matched transcript quality. The
+task/session layer may add only a local advisory sequencing claim after the
+task-loop benchmark and held-out artifact gate pass. It must not claim runtime
+task assignment, human escalation, or human-learning evidence until those
+deferred projects are opened and validated.
 
 Correct claim form:
 
