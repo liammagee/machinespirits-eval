@@ -15,6 +15,7 @@ links:
   notes: PLAN_2_0/layered_adaptive_tutor_technical_spec.md
   exports: exports/dramatic-derivation/layered-adaptation/taskloop-heldout-gate-report.md
   items: layered-task-session-adaptation
+  prs: https://github.com/liammagee/machinespirits-eval/pull/72
 tags:
   - adaptive-tutor
   - derivation
@@ -47,3 +48,4 @@ validation passed. The zero-paid gate reports 12/12 adaptive recommendations vs
 2/12 fixed progression, delta 0.833, with zero public-only failures and zero
 proof-control drift rows. Passing checks: focused held-out test, held-out gate
 script, workplan check, format check, lint, diff check, and full `npm test`.
+Opened PR #72 for review.

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-01T03:30:17.847Z",
+  "generated": "2026-07-01T03:32:03.418Z",
   "counts": {
     "total": 65,
     "byStatus": {
@@ -283,7 +283,8 @@
       "links": {
         "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
         "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-heldout-gate-report.md",
-        "items": "layered-task-session-adaptation"
+        "items": "layered-task-session-adaptation",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/72"
       },
       "tags": [
         "adaptive-tutor",
