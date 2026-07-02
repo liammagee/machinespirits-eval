@@ -310,6 +310,19 @@ Operational note: background tasks were externally stopped six times across
 the gate; every interruption recovered cleanly via `eval-cli resume` with no
 duplicate or empty rows persisted — the checkpoint/resume discipline held.
 
+## 10. H2 repeats contrast (pre-registration, 2026-07-03, user-authorized)
+
+Frozen before launch: cell_193 vs cell_199 only, 5 gated resistance
+scenarios × 3 repeats each = 30 rows, same Codex-only stack and serial
+generation-only execution as the gate, scored with the same codex CLI v2.2
+judge and the breakthrough-matrix reporter. Primary outcome: per-arm
+positive-local-outcome rate and candidate rate on the local transition
+(combined with the gate's Block R rows for n=4 per cell×scenario). Decision
+rule: the H2 regression is treated as real if cell_199's combined positive
+rate stays at least 2 scenarios' worth below cell_193's (e.g. ≤12/20 vs
+≥18/20-shaped gap); dissolved if the arms converge within 1 scenario's
+worth. No prompt or config edits between gate and repeats. Stop rules as §5.
+
 **Gate verdict (bounded)**: sub-additivity (H1) is supported everywhere it
 could be measured — the full stack never beats the kernel beyond noise, on
 either suite, and the action-contract module adds nothing detectable at
