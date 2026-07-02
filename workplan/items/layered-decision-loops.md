@@ -93,3 +93,14 @@ blueprint-composition (cells 199-200) worktrees must merge first; then refresh
 from main, re-run v1 gates, finalize the v2 pre-registration against the
 merged register registry. Binding-conditions precondition gate: T* variance
 must exist before any matrix spends.
+
+2026-07-03 Claude: Register-taxonomy arc landed on main (merge 4f919c23) and
+was merged into this branch (07c91091); v1 gates re-run 22/22, registry +
+stance-fidelity tests green. Part 6 revised: register dependency RESOLVED
+(menu binds to engagementRegisterRegistry; surface-style vs interpersonal-
+stance axes kept distinct); two-gate adjudication imported as a structural
+requirement (treatment-fidelity gate before effectiveness review — the
+warm-in-costume lesson, 10/15 pre-repair vs 15/15 post-repair faithful);
+negative registers palette-only, face_threat simulated-only;
+blueprint-composition downgraded from blocking to watch. v2 pre-registration
+now unblocked.
