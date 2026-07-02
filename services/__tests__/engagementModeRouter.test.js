@@ -7,11 +7,29 @@ import {
   extractEngagementRegisterHistory,
   routeEngagementMode,
 } from '../engagementModeRouter.js';
+import { getEngagementRegisterNames } from '../engagementRegisterRegistry.js';
 
 describe('routeEngagementMode', () => {
   test('defines the adaptive states as engagement registers', () => {
     assert.ok(ENGAGEMENT_REGISTERS.includes('scaffolding'));
     assert.ok(ENGAGEMENT_REGISTERS.includes('charismatic_challenge'));
+  });
+
+  test('negative registers are arm-assigned, not router-selectable', () => {
+    assert.ok(ENGAGEMENT_REGISTERS.includes('ironic_challenge'));
+    assert.ok(ENGAGEMENT_REGISTERS.includes('sarcastic_challenge'));
+    assert.ok(ENGAGEMENT_REGISTERS.includes('face_threat_challenge'));
+    const routerSelectable = getEngagementRegisterNames({ includeArmAssigned: false });
+    assert.ok(!routerSelectable.includes('ironic_challenge'));
+    assert.ok(!routerSelectable.includes('sarcastic_challenge'));
+    assert.ok(!routerSelectable.includes('face_threat_challenge'));
+
+    const routed = routeEngagementMode({
+      learnerMessage:
+        'I can follow the steps, but this is starting to feel like a worksheet. Why should I care about this instead of memorizing the formula?',
+      registerHistory: ['scaffolding'],
+    });
+    assert.equal(routed.selected_register, 'charismatic_challenge');
   });
 
   test('routes authority refusal to accountable-bid authority', () => {

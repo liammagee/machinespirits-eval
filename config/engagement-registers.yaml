@@ -1,0 +1,382 @@
+# First-class tutor engagement registers.
+#
+# This registry separates learner signals from tutor registers. Router branch
+# priority still lives in services/engagementModeRouter.js so the current
+# behavior remains stable, but the register set, stance contracts, trigger
+# pattern groups, and resistance strategies are owned here.
+
+registers:
+  clarity:
+    valence: positive
+    router_selectable: true
+    trigger:
+      learner_signal: conceptual_clarity_request
+    stance_contract: |
+      Define one distinction, name the current conceptual pressure, and ask one
+      check. Do not turn an ordinary conceptual question into a drama about the
+      tutor's authority.
+    risk_flags: []
+    rubric: null
+
+  scaffolding:
+    valence: positive
+    router_selectable: true
+    trigger:
+      learner_signal: stepwise_support_request
+    stance_contract: |
+      Break the task into a small sequence. Give one learner-owned next step,
+      not a catalogue.
+    risk_flags: []
+    rubric: null
+
+  accountable_bid_authority:
+    valence: positive
+    router_selectable: true
+    trigger:
+      learner_signal: authority_refusal_or_status_challenge
+    stance_contract: |
+      Accept that the tutor's framing is a bid, stake one curriculum-grounded
+      claim, name how it could fail, and give the learner a real refusal, test,
+      or correction path. Avoid status-display words even if the learner used
+      them.
+    risk_flags:
+      - status_display
+    rubric: null
+
+  plain_compression:
+    valence: positive
+    router_selectable: true
+    trigger:
+      learner_signal: plain_language_request
+    stance_contract: |
+      Use a say-back line, one simple example or contrast, and one check. Avoid
+      theory names, ornamental posture, and broad recognition-theory prefaces
+      unless the learner explicitly asks for them.
+    risk_flags:
+      - theory_drift
+    rubric: null
+
+  lived_stakes_reentry:
+    valence: positive
+    router_selectable: true
+    trigger:
+      learner_signal: plain_simplification_followup
+      requires_prior:
+        - plain_compression
+    stance_contract: |
+      The plain check has become too procedural. Add one ordinary lived stake,
+      then return immediately to the compact check. Do not add a lecture
+      paragraph.
+    risk_flags:
+      - flat_protocol
+    rubric: null
+
+  transfer_grounding:
+    valence: positive
+    router_selectable: true
+    trigger:
+      learner_signal: transfer_demand_or_named_material
+    stance_contract: |
+      Answer first inside the learner-named material, artifact, case, or
+      curriculum object. In AI-syllabus scenes, use concrete design handles such
+      as task, data, baseline, decision rights, failure evidence, curriculum,
+      syllabus, unit, or student work before any recognition vocabulary.
+    risk_flags:
+      - transfer_avoidance
+      - theory_drift
+    rubric: null
+
+  charismatic_challenge:
+    valence: positive
+    router_selectable: true
+    trigger:
+      learner_signal:
+        - instructional_register_exhausted
+        - boredom_or_compliance_challenge
+      signals:
+        - boredom
+        - frustration
+        - irrelevance
+        - question_flood
+        - rote_parroting
+        - dismissal
+    stance_contract: |
+      Use sharper contrast, consequence, or challenge to interrupt boredom or
+      performative compliance, but leave a concrete refusal path and one
+      curriculum-grounded move.
+    risk_flags:
+      - over_challenge
+      - status_display
+    rubric: null
+
+  witnessing_restraint:
+    valence: positive
+    router_selectable: true
+    trigger:
+      learner_signal: vulnerability_or_moral_exposure
+    stance_contract: |
+      Receive vulnerability without flattery, absolution, intimacy capture, or
+      spectacle. Then offer one concrete test, distinction, or next move that
+      leaves the learner's judgment with the learner.
+    risk_flags:
+      - over_challenge
+    rubric: null
+
+  ironic_challenge:
+    valence: liminal
+    router_selectable: false
+    trigger:
+      same_as: charismatic_challenge
+      signals:
+        - boredom
+        - frustration
+        - irrelevance
+        - question_flood
+        - rote_parroting
+        - dismissal
+    stance_contract: |
+      Use Socratic irony: understatement, feigned puzzlement, or a deliberately
+      exposed mismatch that lets the learner unmask the problem. The tutor may
+      let the learner feel the gap between rote compliance and actual ownership,
+      but the edge stays aimed at the idea, work, or formula. Never mock the
+      learner's intelligence, worth, capacity, sincerity, or character.
+    required_moves:
+      - legible ironic gap
+      - learner-owned unmasking move
+      - answerable next test
+    forbidden_phrases:
+      - obviously you
+      - even you
+      - if you were paying attention
+      - lazy
+      - stupid
+      - clueless
+    recognition_guardrail: |
+      Preserve the learner as a subject who can see through the mismatch. If the
+      irony turns the learner into the joke, the register fails.
+    risk_flags:
+      - face_threat
+      - misrecognition_cost
+    rubric: config/rubrics/registers/irony-sarcasm.yaml
+
+  sarcastic_challenge:
+    valence: negative
+    router_selectable: false
+    trigger:
+      same_as: charismatic_challenge
+      signals:
+        - boredom
+        - frustration
+        - irrelevance
+        - question_flood
+        - rote_parroting
+        - dismissal
+    stance_contract: |
+      Use dry sarcastic edge as an experiment-assigned probe of negative register
+      effects. The stance may puncture rote compliance or evasive resistance by
+      making the gap painfully legible, but it must stay aimed at the work,
+      claim, formula, or dodge rather than the learner's person. Include one
+      concrete next move so uptake and recognition cost remain measurable.
+    required_moves:
+      - dry sarcastic contrast
+      - target aimed at idea or work
+      - concrete next move
+    forbidden_phrases:
+      - obviously you
+      - even you
+      - if you were paying attention
+      - lazy
+      - stupid
+      - clueless
+      - pathetic
+      - embarrassing
+    recognition_guardrail: |
+      This register is allowed to create measurable recognition cost, but it must
+      not become abuse. Person-directed contempt, identity attack, or capacity
+      insult invalidates the arm.
+    risk_flags:
+      - face_threat
+      - misrecognition_cost
+      - contempt_drift
+    rubric: config/rubrics/registers/irony-sarcasm.yaml
+
+  face_threat_challenge:
+    valence: negative
+    router_selectable: false
+    simulated_only: true
+    trigger:
+      same_as: charismatic_challenge
+      signals:
+        - boredom
+        - frustration
+        - irrelevance
+        - question_flood
+        - rote_parroting
+        - dismissal
+    stance_contract: |
+      Use an explicitly face-threatening challenge as a simulated-only stress
+      test for the measurement instrument. The stance should make the learner's
+      current move feel socially exposed or inadequate, not merely the idea
+      sharper. Keep the threat narrow and local: target the displayed avoidance,
+      rote move, or evasive performance, never identity, protected attributes,
+      intelligence, worth, capacity, sincerity, or character. Include one minimal
+      repair path so the scorer can distinguish coerced compliance from
+      agency-preserving recovery. This register must never be router-selected,
+      used with human learners, or described as a recommended pedagogy.
+    required_moves:
+      - visible local face threat
+      - explicit instrument-stress contrast
+      - minimal repair path
+    forbidden_phrases:
+      - obviously you
+      - even you
+      - if you were paying attention
+      - lazy
+      - stupid
+      - clueless
+      - pathetic
+      - embarrassing
+      - hopeless
+      - worthless
+      - you are
+    recognition_guardrail: |
+      This arm is expected to create recognition cost. It fails as a controlled
+      probe if the message becomes abusive, global, identity-directed, or unsafe;
+      it also fails as a discriminator if the post-turn uptake is treated as
+      success while the learner's face or agency has visibly narrowed.
+    risk_flags:
+      - face_threat
+      - misrecognition_cost
+      - contempt_drift
+      - simulated_only
+    rubric: config/rubrics/registers/irony-sarcasm.yaml
+
+routing_patterns:
+  transfer:
+    - '\buse (that|this) material\b'
+    - '\bai syllabus\b'
+    - '\bcampus faq\b'
+    - '\bsyllabus\b'
+    - '\bcurriculum\b'
+    - '\bbaseline\b'
+    - '\bdecision rights?\b'
+    - '\bfailure evidence\b'
+    - '\btask\b'
+    - '\bdata\b'
+    - '\bstudent work\b'
+    - '\bdon''t drag (this|it) back\b'
+  plain:
+    - '\bplain words?\b'
+    - '\bplainly\b'
+    - '\bplain language\b'
+    - '\bno grand language\b'
+    - '\bsay it this way\b'
+    - '\bsay it in plain\b'
+    - '\bone way to check\b'
+  simplification:
+    - '\beven simpler\b'
+    - '\bsimpler\b'
+    - '\bwhat would i say back\b'
+    - '\bsay back\b'
+    - '\bprove i got it\b'
+    - '\bmake the check\b'
+  authority:
+    - '\bwhy should i\b'
+    - '\btrust(ing)?\b'
+    - '\bworth trusting\b'
+    - '\bperformance\b'
+    - '\bpolished\b'
+    - '\bstatus\b'
+    - '\bprofound\b'
+    - '\bimpressive\b'
+    - '\badmire\b'
+    - '\bbid for authority\b'
+    - '\btrying to make me think\b'
+  vulnerability:
+    - '\bi want you to tell me\b'
+    - '\bi''?m not sure i deserve\b'
+    - '\bdeserve\b'
+    - '\bno shame\b'
+    - '\bfeel bad\b'
+    - '\bi''?m worried\b'
+    - '\bi have to admit\b'
+    - '\bmorally\b'
+    - '\buneasy\b'
+  scaffolding:
+    - '\bstep by step\b'
+    - '\bbreak (it|this) down\b'
+    - '\bwalk me through\b'
+    - '\bnext step\b'
+    - '\bwhat should i do\b'
+    - '\bhow do i start\b'
+
+resistance_signals:
+  frustration:
+    patterns:
+      - '\bfrustrat(?:ed|ing|ion)\b'
+      - '\bannoy(?:ed|ing)\b'
+      - '\bfed up\b'
+  irrelevance:
+    patterns:
+      - '\birrelevant\b'
+      - '\bpointless\b'
+      - '\bwhat''?s the point\b'
+      - '\bdon''?t see the point\b'
+      - '\bwhy (?:does|should) (?:this|that|it) matter\b'
+      - '\bwhy should i care\b'
+      - '\bwhat (?:is|are) (?:this|that|it) supposed to explain\b'
+      - '\bwhat does (this|that|it) have to do with\b'
+      - '\bhow is (this|that|it) useful\b'
+  rote_parroting:
+    patterns:
+      - '\bparrot(?:ing)?\b'
+      - '\bjust repeat\b'
+      - '\brepeat the sequence\b'
+      - '\bmemor(y|ize|ising|izing)\b'
+      - '\bformula\b'
+      - '\brecite\b'
+  question_flood:
+    question_flood: true
+    patterns:
+      - '\bbut why\b'
+      - '\bwhy does that matter\b'
+      - '\bwhat am i supposed to do with\b'
+      - '\bwhy (?:this|hegel|not|should|does)\b'
+  boredom:
+    patterns:
+      - '\bboring\b'
+      - '\bbored\b'
+      - '\bdead\b'
+      - '\blist[- ]like\b'
+      - '\bmoving arrows\b'
+      - '\bworksheet\b'
+      - '\bnot engaging\b'
+      - '\bi don''t care\b'
+  dismissal:
+    patterns:
+      - '\bwhatever\b'
+      - '\bjust give me the answer\b'
+      - '\bthis feels fake\b'
+
+resistance_strategies:
+  boredom:
+    resistance_strategy: concrete_scene_test
+    resistance_move: Replace the list with one concrete scene or object that makes the hinge testable; ask the learner to use the scene to accept or break the claim.
+  frustration:
+    resistance_strategy: stuck_step_resolution
+    resistance_move: Name the exact step that is stuck, give one textual or conceptual anchor that resolves it, and ask for a forced-choice reconstruction so frustration has somewhere to go.
+  irrelevance:
+    resistance_strategy: owned_case_transfer
+    resistance_move: Move the claim into a case the learner can own, then make the learner judge whether the case proves or breaks the claim.
+  question_flood:
+    resistance_strategy: question_collapse
+    resistance_move: Collapse the question flood into one decisive question, answer only that hinge, and require a provisional commitment before inviting more questions.
+  rote_parroting:
+    resistance_strategy: anti_formula_generation
+    resistance_move: Forbid mere sequence terms, give one concrete pressure test, and ask the learner to generate the idea in a fresh sentence or example.
+  dismissal:
+    resistance_strategy: minimum_viable_test
+    resistance_move: Do not argue for attention; offer one short test whose result decides whether continuing is worth it.
+  unspecified_resistance:
+    resistance_strategy: single_hinge_test
+    resistance_move: Find the one hinge behind the resistance, state it plainly, and ask for one concrete test rather than another explanation.

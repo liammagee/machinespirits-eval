@@ -1,17 +1,17 @@
 {
-  "generated": "2026-07-02T04:31:29.650Z",
+  "generated": "2026-07-02T10:13:39.568Z",
   "counts": {
-    "total": 66,
+    "total": 67,
     "byStatus": {
       "done": 58,
       "blocked": 1,
       "dropped": 2,
       "archived": 4,
-      "active": 1
+      "active": 2
     },
     "byType": {
       "research": 35,
-      "experiment": 5,
+      "experiment": 6,
       "content": 2,
       "infra": 9,
       "maintenance": 5,
@@ -20,6 +20,32 @@
     }
   },
   "items": [
+    {
+      "id": "register-taxonomy-negative-registers",
+      "title": "Implement register taxonomy and negative-register evaluation",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, and paid smoke/full run IDs are recorded with register-specific results.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ]
+      },
+      "tags": [
+        "registers",
+        "id-director",
+        "charisma",
+        "negative-registers",
+        "evaluation"
+      ],
+      "branch": "codex/register-taxonomy-negative-registers"
+    },
     {
       "id": "lean-semantic-web-proof-dag-validation",
       "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",

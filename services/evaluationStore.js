@@ -335,6 +335,7 @@ migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN tutor_charisma_judge_model TEXT`,
   'tutor_charisma_judge_model',
 );
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_register_scores TEXT`, 'tutor_register_scores');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN id_construction_trace TEXT`, 'id_construction_trace');
 
 // Adaptive grader (cells with runner: adaptive — 110, 111-113, 118-120).
@@ -2044,6 +2045,7 @@ function parseResultRow(row) {
     tutorCharismaSummary: row.tutor_charisma_summary || null,
     tutorCharismaRubricVersion: row.tutor_charisma_rubric_version || null,
     tutorCharismaJudgeModel: row.tutor_charisma_judge_model || null,
+    tutorRegisterScores: row.tutor_register_scores ? JSON.parse(row.tutor_register_scores) : null,
     // Prompt versioning
     tutorEgoPromptVersion: row.tutor_ego_prompt_version || null,
     tutorSuperegoPromptVersion: row.tutor_superego_prompt_version || null,
@@ -2899,6 +2901,50 @@ export function updateResultTutorCharismaScores(resultId, evaluation) {
     evaluation.charismaJudgeModel || null,
     resultId,
   );
+
+  recordAudit();
+}
+
+export function updateResultTutorRegisterScore(resultId, evaluation) {
+  const registerName = String(evaluation.register || '').trim();
+  const sliceKey = String(evaluation.sliceKey || '').trim();
+  if (!registerName) throw new Error('updateResultTutorRegisterScore requires evaluation.register');
+  if (!sliceKey) throw new Error('updateResultTutorRegisterScore requires evaluation.sliceKey');
+
+  const recordAudit = withAuditTrail(
+    resultId,
+    ['tutor_register_scores'],
+    'updateResultTutorRegisterScore',
+    {
+      judgeModel: evaluation.judgeModel,
+      rubricVersion: evaluation.rubricVersion,
+    },
+  );
+
+  const current = db.prepare(`SELECT tutor_register_scores FROM evaluation_results WHERE id = ?`).get(resultId);
+  let payload = {};
+  if (current?.tutor_register_scores) {
+    try {
+      payload = JSON.parse(current.tutor_register_scores) || {};
+    } catch {
+      payload = {};
+    }
+  }
+
+  payload[registerName] = payload[registerName] || {};
+  payload[registerName][sliceKey] = {
+    scores: evaluation.scores || null,
+    overall: evaluation.overall ?? null,
+    summary: evaluation.summary || null,
+    rubric_version: evaluation.rubricVersion || null,
+    rubric_path: evaluation.rubricPath || null,
+    judge_model: evaluation.judgeModel || null,
+    slice_ref: evaluation.sliceRef || null,
+    scored_at: evaluation.scoredAt || new Date().toISOString(),
+  };
+
+  const stmt = db.prepare(`UPDATE evaluation_results SET tutor_register_scores = ? WHERE id = ?`);
+  stmt.run(JSON.stringify(payload), resultId);
 
   recordAudit();
 }

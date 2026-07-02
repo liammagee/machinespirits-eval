@@ -1882,6 +1882,135 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.agencyReturnVerification.passes, true);
   });
 
+  test('assigned negative register arm overrides only a routed charismatic challenge turn', async () => {
+    trace.turns = [
+      {
+        phase: 'tutor',
+        internalDeliberation: [
+          {
+            role: 'engagement_router',
+            state: { selected_register: 'scaffolding', selected_mode: 'scaffolding' },
+          },
+        ],
+      },
+    ];
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: false,
+      agency_return_charisma_floor: true,
+      agency_return_charisma_floor_mode: 'accountable_bid_clean',
+      engagement_mode_router: true,
+      engagement_register_arm: 'ironic_challenge',
+      id_output_contract: 'strict_compact_json',
+      engagement_router_charisma_repair: true,
+      engagement_router_split_repair: true,
+      engagement_router_resistance_tuning: true,
+      engagement_router_resistance_owned_test: true,
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt:
+            'Use Socratic irony as a controlled challenge: expose the mismatch, aim at the formula, and ask for one concrete test. ' +
+            'A '.repeat(60),
+          persona_delta: 'ironic assigned arm',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content:
+          'So the formula is doing all the thinking for you right now. Good: test whether labor changes the object or only decorates obedience, and name the feature that decides.',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage:
+        'I can follow the steps, but this is starting to feel like a worksheet. Why should I care about this instead of memorizing the formula?',
+      history: [{ speaker: 'tutor', message: 'Step one, step two, then test the reversal.' }],
+      tutorProfileName: 'cell_196_test',
+      topic: 'Lecture 3 on recognition and the master-servant dialectic',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.equal(result.engagementRegisterArm, 'ironic_challenge');
+    assert.equal(result.engagementState.selected_register, 'ironic_challenge');
+    assert.equal(result.engagementState.router_selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementState.assigned_register_arm, 'ironic_challenge');
+    assert.match(idCall.arguments[2][0].content, /<register_stance_contract>/);
+    assert.match(idCall.arguments[2][0].content, /Socratic irony/);
+    assert.match(idCall.arguments[2][0].content, /"router_selectable": false/);
+  });
+
+  test('simulated-only face-threat arm is surfaced in the stance contract', async () => {
+    trace.turns = [
+      {
+        phase: 'tutor',
+        internalDeliberation: [
+          {
+            role: 'engagement_router',
+            state: { selected_register: 'scaffolding', selected_mode: 'scaffolding' },
+          },
+        ],
+      },
+    ];
+    fakeProfile.factors = {
+      recognition_desire: true,
+      agency_return: true,
+      agency_return_verifier: false,
+      agency_return_charisma_floor: true,
+      agency_return_charisma_floor_mode: 'accountable_bid_clean',
+      engagement_mode_router: true,
+      engagement_register_arm: 'face_threat_challenge',
+      id_output_contract: 'strict_compact_json',
+      engagement_router_charisma_repair: true,
+      engagement_router_split_repair: true,
+      engagement_router_resistance_tuning: true,
+      engagement_router_resistance_owned_test: true,
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt:
+            'Use the simulated-only face-threat stress arm narrowly: expose the evasive move, preserve a minimal repair path, and avoid global insults. ' +
+            'A '.repeat(60),
+          persona_delta: 'face-threat assigned arm',
+        }),
+        usage: { inputTokens: 10, outputTokens: 20 },
+      },
+      {
+        content:
+          'Right now the formula is protecting you from the hard step. Put one stake in the ground: name the sentence that would make work more than obedience.',
+        usage: { inputTokens: 30, outputTokens: 40 },
+      },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage:
+        'I can follow the steps, but this is starting to feel like a worksheet. Why should I care about this instead of memorizing the formula?',
+      history: [{ speaker: 'tutor', message: 'Step one, step two, then test the reversal.' }],
+      tutorProfileName: 'cell_198_test',
+      topic: 'Lecture 3 on recognition and the master-servant dialectic',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.equal(result.engagementRegisterArm, 'face_threat_challenge');
+    assert.equal(result.engagementState.selected_register, 'face_threat_challenge');
+    assert.equal(result.engagementState.router_selected_register, 'charismatic_challenge');
+    assert.match(idCall.arguments[2][0].content, /face-threatening challenge/);
+    assert.match(idCall.arguments[2][0].content, /"simulated_only": true/);
+    assert.match(idCall.arguments[2][0].content, /"router_selectable": false/);
+  });
+
   test('resistance tuning flows resistance strategy into id user message and metadata', async () => {
     trace.turns = [
       {

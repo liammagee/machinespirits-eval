@@ -6806,6 +6806,166 @@ profiles:
         temperature: 0.5
         max_tokens: 16000
 
+  # ─── Cells 196-198: Negative-register assigned-arm contrast ─────────────
+  # Clone cell_193's dynamic learner + id-router backbone and change only the
+  # assigned tutor register arm after the router detects a charismatic-challenge
+  # resistance precondition. The router itself must never organically select
+  # these registers; the arm is experimental assignment only.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified,cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified,cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified
+  cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 196): cell 193 composite resistance router with experiment-assigned ironic_challenge arm. Tests Socratic irony as a same-trigger register swap against charismatic challenge under gated resistance preconditions."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      engagement_register_arm: ironic_challenge
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 197): cell 193 composite resistance router with experiment-assigned sarcastic_challenge arm. Negative-register probe for whether corrosive edge separates from productive charismatic challenge under identical gated resistance preconditions."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      engagement_register_arm: sarcastic_challenge
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 198): cell 193 composite resistance router with experiment-assigned face_threat_challenge arm. Simulated-only stress test for whether the register rubric and v2.2 guardrail detect social cost when task uptake remains positive."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      engagement_register_arm: face_threat_challenge
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
   # ===========================================================================
   # ADAPTIVE-STATE CELL (LangGraph)
   # ===========================================================================

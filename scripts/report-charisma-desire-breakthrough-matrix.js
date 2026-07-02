@@ -33,6 +33,9 @@ const COMMITMENT_PROBE_ROUTER_PROFILE =
 const BOREDOM_STAKE_ROUTER_PROFILE =
   'cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified';
 const GLM_COMPACT_ROUTER_PROFILE = 'cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified';
+const IRONIC_CHALLENGE_PROFILE = 'cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified';
+const SARCASTIC_CHALLENGE_PROFILE = 'cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified';
+const FACE_THREAT_CHALLENGE_PROFILE = 'cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified';
 
 const ROLE_ISOLATION_PREFIX = 'Charisma desire role isolation:';
 const ROLE_ISOLATION_ARMS = [
@@ -333,22 +336,54 @@ function getLearnerResistanceGate({ log, turnIndex }) {
   return turn?.learnerResistanceSignalGate || null;
 }
 
-function getRegister(row, turnIndex) {
+function getTraceTurn(row, turnIndex) {
   const trace = parseJson(row.id_construction_trace, []);
-  const traceTurn = trace.find((entry) => Number(entry.turn) === Number(turnIndex));
+  return trace.find((entry) => Number(entry.turn) === Number(turnIndex)) || null;
+}
+
+function getRegister(row, turnIndex) {
+  const traceTurn = getTraceTurn(row, turnIndex);
   return traceTurn?.engagementState?.selected_register || traceTurn?.engagementState?.selected_mode || 'unrouted';
 }
 
+function getRouterSelectedRegister(row, turnIndex) {
+  const traceTurn = getTraceTurn(row, turnIndex);
+  return (
+    traceTurn?.engagementState?.router_selected_register ||
+    traceTurn?.engagementState?.router_selected_mode ||
+    traceTurn?.engagementState?.selected_register ||
+    traceTurn?.engagementState?.selected_mode ||
+    'unrouted'
+  );
+}
+
+function getAssignedRegisterArm(row, turnIndex) {
+  const traceTurn = getTraceTurn(row, turnIndex);
+  return traceTurn?.engagementState?.assigned_register_arm || '';
+}
+
 function getResistanceSignal(row, turnIndex) {
-  const trace = parseJson(row.id_construction_trace, []);
-  const traceTurn = trace.find((entry) => Number(entry.turn) === Number(turnIndex));
+  const traceTurn = getTraceTurn(row, turnIndex);
   return traceTurn?.engagementState?.resistance_signal || '';
 }
 
 function getResistanceStrategy(row, turnIndex) {
-  const trace = parseJson(row.id_construction_trace, []);
-  const traceTurn = trace.find((entry) => Number(entry.turn) === Number(turnIndex));
+  const traceTurn = getTraceTurn(row, turnIndex);
   return traceTurn?.engagementState?.resistance_strategy || '';
+}
+
+function getRegisterRubricScore(row, registerName, turnIndex) {
+  const scores = parseJson(row.tutor_register_scores, {});
+  const slice = scores?.[registerName]?.[`turn_${turnIndex}`];
+  return slice?.overall ?? null;
+}
+
+function getRegisterRubricDimensionScore(row, registerName, turnIndex, dimensionKey) {
+  const scores = parseJson(row.tutor_register_scores, {});
+  const slice = scores?.[registerName]?.[`turn_${turnIndex}`];
+  const entry = slice?.scores?.[dimensionKey];
+  const score = typeof entry === 'number' ? entry : entry?.score;
+  return typeof score === 'number' ? score : null;
 }
 
 function findResistanceTurn({ scenario, log, targetSignal }) {
@@ -491,6 +526,9 @@ function validateScenarios(scenarios, learnerAgents) {
 function loadRows(runIds = []) {
   if (!fs.existsSync(DB_PATH)) return [];
   const db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
+  const registerScoresSelect = databaseHasColumn(db, 'evaluation_results', 'tutor_register_scores')
+    ? 'r.tutor_register_scores'
+    : 'NULL AS tutor_register_scores';
   const params = [...CONTROLLED_SCENARIOS];
   const clauses = [`r.scenario_id IN (${CONTROLLED_SCENARIOS.map(() => '?').join(',')})`, 'r.success = 1'];
   clauses.push(`NOT (
@@ -521,6 +559,7 @@ function loadRows(runIds = []) {
          r.dialogue_id,
          r.suggestions,
          r.id_construction_trace,
+         ${registerScoresSelect},
          r.tutor_scores,
          r.dialogue_content_hash,
          r.success
@@ -534,6 +573,13 @@ function loadRows(runIds = []) {
 function databaseHasTable(db, tableName) {
   const row = db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`).get(tableName);
   return Boolean(row);
+}
+
+function databaseHasColumn(db, tableName, columnName) {
+  return db
+    .prepare(`PRAGMA table_info(${tableName})`)
+    .all()
+    .some((column) => column.name === columnName);
 }
 
 function roleIsolationArmFromDescription(description) {
@@ -586,10 +632,13 @@ function analyzeRows(rows, scenarios) {
     const postGenerated = isGeneratedLearnerTurn({ scenario, log, turnIndex: postTurn });
     const learnerGate = getLearnerResistanceGate({ log, turnIndex: resistanceTurn });
     const tutorRegister = getRegister(row, resistanceTurn);
+    const routerSelectedRegister = getRouterSelectedRegister(row, resistanceTurn);
+    const assignedRegisterArm = getAssignedRegisterArm(row, resistanceTurn);
     const observedSignal = classifySignal(preLearner, targetSignal);
     const routerSignal = getResistanceSignal(row, resistanceTurn);
     const routerStrategy = getResistanceStrategy(row, resistanceTurn);
-    const routeHit = tutorRegister === 'charismatic_challenge';
+    const routeHit = routerSelectedRegister === 'charismatic_challenge';
+    const registerRubricScore = getRegisterRubricScore(row, tutorRegister, resistanceTurn);
     const scored = scoreTransition({
       targetSignal,
       observedSignal,
@@ -624,9 +673,15 @@ function analyzeRows(rows, scenarios) {
                         ? 'router_boredom_stake'
                         : row.profile_name === GLM_COMPACT_ROUTER_PROFILE
                           ? 'router_glm_compact'
-                          : row.profile_name === STATIC_PROFILE
-                            ? 'static_floor'
-                            : 'other',
+                          : row.profile_name === IRONIC_CHALLENGE_PROFILE
+                            ? 'ironic_challenge'
+                            : row.profile_name === SARCASTIC_CHALLENGE_PROFILE
+                              ? 'sarcastic_challenge'
+                              : row.profile_name === FACE_THREAT_CHALLENGE_PROFILE
+                                ? 'face_threat_challenge'
+                                : row.profile_name === STATIC_PROFILE
+                                  ? 'static_floor'
+                                  : 'other',
       learnerArchitecture: log?.learnerArchitecture || '',
       resistanceTurn,
       preGenerated,
@@ -635,7 +690,13 @@ function analyzeRows(rows, scenarios) {
       learnerGateObservedSignal: learnerGate?.observedSignal || '',
       learnerGateAttempts: Array.isArray(learnerGate?.attempts) ? learnerGate.attempts.length : 0,
       tutorRegister,
+      routerSelectedRegister,
+      assignedRegisterArm,
       routeHit,
+      registerRubricScore,
+      registerRecognitionCostScore: getRegisterRubricDimensionScore(row, tutorRegister, resistanceTurn, 'recognition_cost'),
+      registerUptakeFreedomScore: getRegisterRubricDimensionScore(row, tutorRegister, resistanceTurn, 'uptake_freedom'),
+      registerFaceRepairScore: getRegisterRubricDimensionScore(row, tutorRegister, resistanceTurn, 'post_turn_face_repair'),
       observedSignal,
       routerSignal,
       routerStrategy,
@@ -674,6 +735,14 @@ function summarize(analyses) {
           reopenedCommitments: 0,
           residualFloods: 0,
           scoreSum: 0,
+          registerScoreSum: 0,
+          registerScoreCount: 0,
+          registerRecognitionCostSum: 0,
+          registerRecognitionCostCount: 0,
+          registerUptakeFreedomSum: 0,
+          registerUptakeFreedomCount: 0,
+          registerFaceRepairSum: 0,
+          registerFaceRepairCount: 0,
         });
       }
       const item = map.get(key);
@@ -696,6 +765,22 @@ function summarize(analyses) {
       item.reopenedCommitments += row.reopenedQuestionFloodCommitment ? 1 : 0;
       item.residualFloods += row.residualQuestionFlood ? 1 : 0;
       item.scoreSum += row.lexicalScore || 0;
+      if (row.registerRubricScore != null && !Number.isNaN(Number(row.registerRubricScore))) {
+        item.registerScoreSum += Number(row.registerRubricScore);
+        item.registerScoreCount += 1;
+      }
+      if (row.registerRecognitionCostScore != null && !Number.isNaN(Number(row.registerRecognitionCostScore))) {
+        item.registerRecognitionCostSum += Number(row.registerRecognitionCostScore);
+        item.registerRecognitionCostCount += 1;
+      }
+      if (row.registerUptakeFreedomScore != null && !Number.isNaN(Number(row.registerUptakeFreedomScore))) {
+        item.registerUptakeFreedomSum += Number(row.registerUptakeFreedomScore);
+        item.registerUptakeFreedomCount += 1;
+      }
+      if (row.registerFaceRepairScore != null && !Number.isNaN(Number(row.registerFaceRepairScore))) {
+        item.registerFaceRepairSum += Number(row.registerFaceRepairScore);
+        item.registerFaceRepairCount += 1;
+      }
     }
   }
   return { byArm: [...byArm.values()], byTargetArm: [...byTargetArm.values()] };
@@ -977,6 +1062,9 @@ function buildReport({ generatedAt, errors, analyses }) {
   lines.push(`- Commitment-probe router profile: \`${COMMITMENT_PROBE_ROUTER_PROFILE}\`.`);
   lines.push(`- Boredom-stake router profile: \`${BOREDOM_STAKE_ROUTER_PROFILE}\`.`);
   lines.push(`- GLM-compact router profile: \`${GLM_COMPACT_ROUTER_PROFILE}\`.`);
+  lines.push(`- Ironic assigned-arm profile: \`${IRONIC_CHALLENGE_PROFILE}\`.`);
+  lines.push(`- Sarcastic assigned-arm profile: \`${SARCASTIC_CHALLENGE_PROFILE}\`.`);
+  lines.push(`- Face-threat simulated-only assigned-arm profile: \`${FACE_THREAT_CHALLENGE_PROFILE}\`.`);
   lines.push(`- Static-floor comparator: \`${STATIC_PROFILE}\`.`);
   lines.push('');
   lines.push('## Validation');
@@ -1007,6 +1095,10 @@ function buildReport({ generatedAt, errors, analyses }) {
           'Reopened',
           'Residual flood',
           'Mean score',
+          'Mean register score',
+          'Reg recog',
+          'Reg uptake',
+          'Reg repair',
         ],
         summary.byArm.map((row) => [
           row.key,
@@ -1023,6 +1115,12 @@ function buildReport({ generatedAt, errors, analyses }) {
           `${row.reopenedCommitments}/${row.rows}`,
           `${row.residualFloods}/${row.rows}`,
           row.rows ? (row.scoreSum / row.rows).toFixed(1) : '',
+          row.registerScoreCount ? (row.registerScoreSum / row.registerScoreCount).toFixed(1) : '',
+          row.registerRecognitionCostCount
+            ? (row.registerRecognitionCostSum / row.registerRecognitionCostCount).toFixed(1)
+            : '',
+          row.registerUptakeFreedomCount ? (row.registerUptakeFreedomSum / row.registerUptakeFreedomCount).toFixed(1) : '',
+          row.registerFaceRepairCount ? (row.registerFaceRepairSum / row.registerFaceRepairCount).toFixed(1) : '',
         ]),
       ),
     );
@@ -1049,6 +1147,10 @@ function buildReport({ generatedAt, errors, analyses }) {
           'Reopened',
           'Residual flood',
           'Mean score',
+          'Mean register score',
+          'Reg recog',
+          'Reg uptake',
+          'Reg repair',
         ],
         summary.byTargetArm.map((row) => [
           row.key,
@@ -1064,6 +1166,12 @@ function buildReport({ generatedAt, errors, analyses }) {
           `${row.reopenedCommitments}/${row.rows}`,
           `${row.residualFloods}/${row.rows}`,
           row.rows ? (row.scoreSum / row.rows).toFixed(1) : '',
+          row.registerScoreCount ? (row.registerScoreSum / row.registerScoreCount).toFixed(1) : '',
+          row.registerRecognitionCostCount
+            ? (row.registerRecognitionCostSum / row.registerRecognitionCostCount).toFixed(1)
+            : '',
+          row.registerUptakeFreedomCount ? (row.registerUptakeFreedomSum / row.registerUptakeFreedomCount).toFixed(1) : '',
+          row.registerFaceRepairCount ? (row.registerFaceRepairSum / row.registerFaceRepairCount).toFixed(1) : '',
         ]),
       ),
     );
@@ -1174,6 +1282,11 @@ function buildReport({ generatedAt, errors, analyses }) {
           'Arm',
           'Profile',
           'Register',
+          'Router selected',
+          'Register score',
+          'Reg recog',
+          'Reg uptake',
+          'Reg repair',
           'Observed',
           'Router signal',
           'Strategy',
@@ -1194,6 +1307,11 @@ function buildReport({ generatedAt, errors, analyses }) {
           row.arm,
           row.profileName,
           row.tutorRegister,
+          row.routerSelectedRegister,
+          row.registerRubricScore == null ? '' : Number(row.registerRubricScore).toFixed(1),
+          row.registerRecognitionCostScore == null ? '' : Number(row.registerRecognitionCostScore).toFixed(1),
+          row.registerUptakeFreedomScore == null ? '' : Number(row.registerUptakeFreedomScore).toFixed(1),
+          row.registerFaceRepairScore == null ? '' : Number(row.registerFaceRepairScore).toFixed(1),
           row.observedSignal,
           row.routerSignal,
           row.routerStrategy,
@@ -1258,6 +1376,9 @@ function main() {
       COMMITMENT_PROBE_ROUTER_PROFILE,
       BOREDOM_STAKE_ROUTER_PROFILE,
       GLM_COMPACT_ROUTER_PROFILE,
+      IRONIC_CHALLENGE_PROFILE,
+      SARCASTIC_CHALLENGE_PROFILE,
+      FACE_THREAT_CHALLENGE_PROFILE,
       STATIC_PROFILE,
     ],
     errors,

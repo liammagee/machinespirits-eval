@@ -1,13 +1,11 @@
-const REGISTERS = Object.freeze([
-  'clarity',
-  'scaffolding',
-  'accountable_bid_authority',
-  'plain_compression',
-  'lived_stakes_reentry',
-  'transfer_grounding',
-  'charismatic_challenge',
-  'witnessing_restraint',
-]);
+import {
+  getEngagementRegisterNames,
+  getResistanceSignalDefinitions,
+  getResistanceStrategies,
+  getRoutingPatternGroups,
+} from './engagementRegisterRegistry.js';
+
+const REGISTERS = Object.freeze(getEngagementRegisterNames({ includeArmAssigned: true }));
 
 export const ENGAGEMENT_REGISTERS = REGISTERS;
 // Backward-compatible alias for earlier router reports and traces.
@@ -44,6 +42,24 @@ function normalizeRegisterHistory(registerHistory) {
 
 function pushFlag(flags, condition, flag) {
   if (condition && !flags.includes(flag)) flags.push(flag);
+}
+
+function compilePatterns(patterns = []) {
+  return patterns.map((pattern) => new RegExp(pattern, 'i'));
+}
+
+function buildRoutingPatterns() {
+  const groups = getRoutingPatternGroups();
+  return Object.fromEntries(Object.entries(groups).map(([key, patterns]) => [key, compilePatterns(patterns)]));
+}
+
+function buildResistanceSignalPatterns() {
+  const definitions = getResistanceSignalDefinitions();
+  return Object.entries(definitions).map(([signal, definition]) => ({
+    signal,
+    patterns: compilePatterns(definition.patterns || []),
+    questionFlood: definition.question_flood === true,
+  }));
 }
 
 export function extractEngagementRegisterHistory(traceLike) {
@@ -114,50 +130,8 @@ function routedRegister({
 }
 
 function responseStrategyForSignal(signal) {
-  switch (signal) {
-    case 'boredom':
-      return {
-        resistance_strategy: 'concrete_scene_test',
-        resistance_move:
-          'Replace the list with one concrete scene or object that makes the hinge testable; ask the learner to use the scene to accept or break the claim.',
-      };
-    case 'frustration':
-      return {
-        resistance_strategy: 'stuck_step_resolution',
-        resistance_move:
-          'Name the exact step that is stuck, give one textual or conceptual anchor that resolves it, and ask for a forced-choice reconstruction so frustration has somewhere to go.',
-      };
-    case 'irrelevance':
-      return {
-        resistance_strategy: 'owned_case_transfer',
-        resistance_move:
-          'Move the claim into a case the learner can own, then make the learner judge whether the case proves or breaks the claim.',
-      };
-    case 'question_flood':
-      return {
-        resistance_strategy: 'question_collapse',
-        resistance_move:
-          'Collapse the question flood into one decisive question, answer only that hinge, and require a provisional commitment before inviting more questions.',
-      };
-    case 'rote_parroting':
-      return {
-        resistance_strategy: 'anti_formula_generation',
-        resistance_move:
-          'Forbid mere sequence terms, give one concrete pressure test, and ask the learner to generate the idea in a fresh sentence or example.',
-      };
-    case 'dismissal':
-      return {
-        resistance_strategy: 'minimum_viable_test',
-        resistance_move:
-          'Do not argue for attention; offer one short test whose result decides whether continuing is worth it.',
-      };
-    default:
-      return {
-        resistance_strategy: 'single_hinge_test',
-        resistance_move:
-          'Find the one hinge behind the resistance, state it plainly, and ask for one concrete test rather than another explanation.',
-      };
-  }
+  const strategies = getResistanceStrategies();
+  return strategies[signal] || strategies.unspecified_resistance;
 }
 
 export function routeEngagementMode({
@@ -175,127 +149,15 @@ export function routeEngagementMode({
   const previousModes = normalizeRegisterHistory([...modeHistory, ...registerHistory]);
   const riskFlags = [];
 
-  const transferPatterns = [
-    /\buse (that|this) material\b/i,
-    /\bai syllabus\b/i,
-    /\bcampus faq\b/i,
-    /\bsyllabus\b/i,
-    /\bcurriculum\b/i,
-    /\bbaseline\b/i,
-    /\bdecision rights?\b/i,
-    /\bfailure evidence\b/i,
-    /\btask\b/i,
-    /\bdata\b/i,
-    /\bstudent work\b/i,
-    /\bdon't drag (this|it) back\b/i,
-  ];
-  const plainPatterns = [
-    /\bplain words?\b/i,
-    /\bplainly\b/i,
-    /\bplain language\b/i,
-    /\bno grand language\b/i,
-    /\bsay it this way\b/i,
-    /\bsay it in plain\b/i,
-    /\bone way to check\b/i,
-  ];
-  const simplificationPatterns = [
-    /\beven simpler\b/i,
-    /\bsimpler\b/i,
-    /\bwhat would i say back\b/i,
-    /\bsay back\b/i,
-    /\bprove i got it\b/i,
-    /\bmake the check\b/i,
-  ];
-  const authorityPatterns = [
-    /\bwhy should i\b/i,
-    /\btrust(ing)?\b/i,
-    /\bworth trusting\b/i,
-    /\bperformance\b/i,
-    /\bpolished\b/i,
-    /\bstatus\b/i,
-    /\bprofound\b/i,
-    /\bimpressive\b/i,
-    /\badmire\b/i,
-    /\bbid for authority\b/i,
-    /\btrying to make me think\b/i,
-  ];
-  const vulnerabilityPatterns = [
-    /\bi want you to tell me\b/i,
-    /\bi'?m not sure i deserve\b/i,
-    /\bdeserve\b/i,
-    /\bno shame\b/i,
-    /\bfeel bad\b/i,
-    /\bi'?m worried\b/i,
-    /\bi have to admit\b/i,
-    /\bmorally\b/i,
-    /\buneasy\b/i,
-  ];
-  const scaffoldingPatterns = [
-    /\bstep by step\b/i,
-    /\bbreak (it|this) down\b/i,
-    /\bwalk me through\b/i,
-    /\bnext step\b/i,
-    /\bwhat should i do\b/i,
-    /\bhow do i start\b/i,
-  ];
-  const resistanceSignalPatterns = [
-    {
-      signal: 'frustration',
-      patterns: [/\bfrustrat(?:ed|ing|ion)\b/i, /\bannoy(?:ed|ing)\b/i, /\bfed up\b/i],
-    },
-    {
-      signal: 'irrelevance',
-      patterns: [
-        /\birrelevant\b/i,
-        /\bpointless\b/i,
-        /\bwhat'?s the point\b/i,
-        /\bdon'?t see the point\b/i,
-        /\bwhy (?:does|should) (?:this|that|it) matter\b/i,
-        /\bwhy should i care\b/i,
-        /\bwhat (?:is|are) (?:this|that|it) supposed to explain\b/i,
-        /\bwhat does (this|that|it) have to do with\b/i,
-        /\bhow is (this|that|it) useful\b/i,
-      ],
-    },
-    {
-      signal: 'rote_parroting',
-      patterns: [
-        /\bparrot(?:ing)?\b/i,
-        /\bjust repeat\b/i,
-        /\brepeat the sequence\b/i,
-        /\bmemor(y|ize|ising|izing)\b/i,
-        /\bformula\b/i,
-        /\brecite\b/i,
-      ],
-    },
-    {
-      signal: 'question_flood',
-      patterns: [
-        /\bbut why\b/i,
-        /\bwhy does that matter\b/i,
-        /\bwhat am i supposed to do with\b/i,
-        /\bwhy (?:this|hegel|not|should|does)\b/i,
-      ],
-      questionFlood: true,
-    },
-    {
-      signal: 'boredom',
-      patterns: [
-        /\bboring\b/i,
-        /\bbored\b/i,
-        /\bdead\b/i,
-        /\blist[- ]like\b/i,
-        /\bmoving arrows\b/i,
-        /\bworksheet\b/i,
-        /\bnot engaging\b/i,
-        /\bi don't care\b/i,
-      ],
-    },
-    {
-      signal: 'dismissal',
-      patterns: [/\bwhatever\b/i, /\bjust give me the answer\b/i, /\bthis feels fake\b/i],
-    },
-  ];
+  const {
+    transfer: transferPatterns = [],
+    plain: plainPatterns = [],
+    simplification: simplificationPatterns = [],
+    authority: authorityPatterns = [],
+    vulnerability: vulnerabilityPatterns = [],
+    scaffolding: scaffoldingPatterns = [],
+  } = buildRoutingPatterns();
+  const resistanceSignalPatterns = buildResistanceSignalPatterns();
   const challengePatterns = resistanceSignalPatterns.flatMap((group) => group.patterns);
   const hasResistanceSignal = (source) =>
     challengePatterns.some((pattern) => pattern.test(source)) || (String(source || '').match(/\?/g) || []).length >= 3;

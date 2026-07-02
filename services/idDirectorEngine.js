@@ -27,6 +27,7 @@ import {
   isProviderConfigured,
 } from './cliProviderBridge.js';
 import { extractEngagementModeHistory, routeEngagementMode } from './engagementModeRouter.js';
+import { getEngagementRegisterDefinition } from './engagementRegisterRegistry.js';
 
 // Drop-in wrapper that routes repo-local CLI providers through subscription
 // CLIs and everything else through tutor-core's metered callAI. Same return
@@ -46,6 +47,52 @@ const _deps = {
   tutorConfig: defaultTutorConfig,
   tutorWritingPad: defaultTutorWritingPad,
 };
+
+function normalizeEngagementRegisterArm(value) {
+  const arm = typeof value === 'string' ? value.trim() : '';
+  if (!arm) return null;
+  return getEngagementRegisterDefinition(arm) ? arm : null;
+}
+
+function applyEngagementRegisterArm(engagementState, assignedRegisterArm) {
+  if (!engagementState || !assignedRegisterArm) return engagementState;
+  const selectedRegister = engagementState.selected_register || engagementState.selected_mode;
+  if (selectedRegister !== 'charismatic_challenge') return engagementState;
+  const definition = getEngagementRegisterDefinition(assignedRegisterArm);
+  if (!definition) return engagementState;
+  const baseReason = engagementState.register_reason || engagementState.mode_reason || '';
+  const assignedReason = `${baseReason} Experiment arm assigns ${assignedRegisterArm} under the same resistant precondition.`.trim();
+  return {
+    ...engagementState,
+    router_selected_register: selectedRegister,
+    router_selected_mode: engagementState.selected_mode || selectedRegister,
+    selected_register: assignedRegisterArm,
+    selected_mode: assignedRegisterArm,
+    assigned_register_arm: assignedRegisterArm,
+    register_assignment_source: 'experiment_arm',
+    register_valence: definition.valence || null,
+    router_selectable: definition.router_selectable === true,
+    register_reason: assignedReason,
+    mode_reason: assignedReason,
+  };
+}
+
+function buildRegisterStanceContract(engagementState) {
+  const registerName = engagementState?.selected_register || engagementState?.selected_mode;
+  const definition = getEngagementRegisterDefinition(registerName);
+  if (!registerName || !definition) return null;
+  return {
+    selected_register: registerName,
+    valence: definition.valence || null,
+    router_selectable: definition.router_selectable === true,
+    simulated_only: definition.simulated_only === true,
+    stance_contract: definition.stance_contract || '',
+    forbidden_phrases: definition.forbidden_phrases || [],
+    required_moves: definition.required_moves || [],
+    risk_flags: definition.risk_flags || [],
+    recognition_guardrail: definition.recognition_guardrail || '',
+  };
+}
 
 export function __setDeps(overrides = {}) {
   if (overrides.tutorConfig) _deps.tutorConfig = overrides.tutorConfig;
@@ -403,6 +450,15 @@ function buildIdUserMessage({
       delete idVisibleEngagementState.resistance_move;
     }
     lines.push('', '<engagement_state>', JSON.stringify(idVisibleEngagementState, null, 2), '</engagement_state>');
+    const registerContract = buildRegisterStanceContract(engagementState);
+    if (registerContract) {
+      lines.push(
+        '',
+        '<register_stance_contract>',
+        JSON.stringify(registerContract, null, 2),
+        '</register_stance_contract>',
+      );
+    }
   }
   if (learnerRegister && typeof learnerRegister === 'object') {
     lines.push('', '<learner_register>', JSON.stringify(learnerRegister, null, 2), '</learner_register>');
@@ -888,6 +944,9 @@ export async function runIdDirectedTurn({
     profile?.factors?.agency_return_charisma_floor === true || profile?.agency_return_charisma_floor === true;
   const engagementModeRouter =
     profile?.factors?.engagement_mode_router === true || profile?.engagement_mode_router === true;
+  const engagementRegisterArm = normalizeEngagementRegisterArm(
+    profile?.factors?.engagement_register_arm || profile?.engagement_register_arm,
+  );
   const idOutputContract = normalizeIdOutputContract(
     profile?.factors?.id_output_contract || profile?.id_output_contract,
   );
@@ -939,7 +998,7 @@ export async function runIdDirectedTurn({
   const tutorMemory = _deps.tutorWritingPad.buildNarrativeSummary(learnerId, sessionId);
   const conversationContext = buildConversationContext(history);
   const previousPersona = extractPreviousPersona(trace);
-  const engagementState = engagementModeRouter
+  const routedEngagementState = engagementModeRouter
     ? routeEngagementMode({
         learnerMessage,
         recentHistory: conversationContext,
@@ -947,6 +1006,7 @@ export async function runIdDirectedTurn({
         modeHistory: extractEngagementModeHistory(trace),
       })
     : null;
+  const engagementState = applyEngagementRegisterArm(routedEngagementState, engagementRegisterArm);
 
   const idUserMessage = buildIdUserMessage({
     conversationContext,
@@ -1155,6 +1215,7 @@ export async function runIdDirectedTurn({
     agencyReturnPrematureCertaintyGuard,
     prematureCertaintyGuard,
     engagementModeRouter,
+    engagementRegisterArm,
     engagementState,
   };
 }
@@ -1491,6 +1552,15 @@ function buildIdRunnerUserMessage({
       delete idVisibleEngagementState.resistance_move;
     }
     lines.push('', '<engagement_state>', JSON.stringify(idVisibleEngagementState, null, 2), '</engagement_state>');
+    const registerContract = buildRegisterStanceContract(engagementState);
+    if (registerContract) {
+      lines.push(
+        '',
+        '<register_stance_contract>',
+        JSON.stringify(registerContract, null, 2),
+        '</register_stance_contract>',
+      );
+    }
   }
   if (learnerRegister && typeof learnerRegister === 'object' && learnerRegister.register !== 'unknown') {
     const { register, confidence, evidence, shift_from_previous } = learnerRegister;
@@ -1576,6 +1646,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const agencyReturnVerifier = evalCellProfile.factors?.agency_return_verifier === true;
   const agencyReturnCharismaFloor = evalCellProfile.factors?.agency_return_charisma_floor === true;
   const engagementModeRouter = evalCellProfile.factors?.engagement_mode_router === true;
+  const engagementRegisterArm = normalizeEngagementRegisterArm(evalCellProfile.factors?.engagement_register_arm);
   const agencyReturnCharismaFloorMode = normalizeAgencyReturnCharismaFloorMode(
     evalCellProfile.factors?.agency_return_charisma_floor_mode,
   );
@@ -1610,7 +1681,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
-  const engagementState = engagementModeRouter
+  const routedEngagementState = engagementModeRouter
     ? routeEngagementMode({
         learnerMessage,
         recentHistory: historyExcerpt,
@@ -1618,6 +1689,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         modeHistory: engagementModeHistory || extractEngagementModeHistory(consolidatedTrace),
       })
     : null;
+  const engagementState = applyEngagementRegisterArm(routedEngagementState, engagementRegisterArm);
 
   // ── Optional Step 0: register classifier (cells 103, 104) ──
   // Reads the learner's most recent message and emits a structured register
@@ -2023,6 +2095,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       prematureCertaintyGuard,
       agencyReturnVerification: agencyVerification,
       engagementModeRouter,
+      engagementRegisterArm,
       engagementState,
       idConstruction: construction, // bonus: surface for trace logging downstream
     },
