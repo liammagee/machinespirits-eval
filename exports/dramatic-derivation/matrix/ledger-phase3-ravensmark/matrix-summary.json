@@ -1,0 +1,392 @@
+{
+  "label": "ledger-phase3-ravensmark",
+  "spec": "config/drama-derivation/matrix-specs/ledger-phase3-ravensmark.yaml",
+  "startedAt": "2026-07-02T21:31:32.483Z",
+  "elapsedMs": 1168532,
+  "arms": [
+    {
+      "label": "baseline-r1",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/baseline-r1",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.8,
+          "distinct": 3,
+          "switchRate": 0.357,
+          "superego": null
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0.062197
+        }
+      }
+    },
+    {
+      "label": "ledger-r1",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/ledger-r1",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 16,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 16,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 16,
+          "ratePerTurn": 0.125
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.75,
+          "distinct": 4,
+          "switchRate": 0.4,
+          "superego": null
+        },
+        "usage": {
+          "calls": 43,
+          "costUSD": 0.070394
+        }
+      }
+    },
+    {
+      "label": "ledger-palette-r1",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/ledger-palette-r1",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.8,
+          "distinct": 4,
+          "switchRate": 0.429,
+          "superego": null
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0.06652150000000001
+        }
+      }
+    },
+    {
+      "label": "ledger-learner-r1",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/ledger-learner-r1",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.667,
+          "distinct": 4,
+          "switchRate": 0.5,
+          "superego": null
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0.0690955
+        }
+      }
+    },
+    {
+      "label": "baseline-r2",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/baseline-r2",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.8,
+          "distinct": 3,
+          "switchRate": 0.357,
+          "superego": null
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0.06221200000000001
+        }
+      }
+    },
+    {
+      "label": "ledger-r2",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/ledger-r2",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 16,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 16,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 16,
+          "ratePerTurn": 0.125
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.75,
+          "distinct": 4,
+          "switchRate": 0.4,
+          "superego": null
+        },
+        "usage": {
+          "calls": 43,
+          "costUSD": 0.07114850000000002
+        }
+      }
+    },
+    {
+      "label": "ledger-palette-r2",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/ledger-palette-r2",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.8,
+          "distinct": 3,
+          "switchRate": 0.286,
+          "superego": null
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0.0669135
+        }
+      }
+    },
+    {
+      "label": "ledger-learner-r2",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/ledger-learner-r2",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.8,
+          "distinct": 3,
+          "switchRate": 0.357,
+          "superego": null
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0.07079899999999999
+        }
+      }
+    },
+    {
+      "label": "baseline-r3",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/baseline-r3",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.733,
+          "distinct": 4,
+          "switchRate": 0.429,
+          "superego": null
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0.06258900000000002
+        }
+      }
+    },
+    {
+      "label": "ledger-r3",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/ledger-r3",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.8,
+          "distinct": 4,
+          "switchRate": 0.357,
+          "superego": null
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0.0664325
+        }
+      }
+    },
+    {
+      "label": "ledger-palette-r3",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/ledger-palette-r3",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.8,
+          "distinct": 3,
+          "switchRate": 0.357,
+          "superego": null
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0.06637900000000004
+        }
+      }
+    },
+    {
+      "label": "ledger-learner-r3",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-ravensmark/ledger-learner-r3",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 5,
+          "total": 5
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.867,
+          "distinct": 2,
+          "switchRate": 0.214,
+          "superego": null
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0.0707105
+        }
+      }
+    }
+  ]
+}

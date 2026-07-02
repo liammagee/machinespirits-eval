@@ -9,7 +9,7 @@ source: manual
 created: 2026-07-02
 updated: 2026-07-02
 verification: "Phases 0-2 implemented: npm run derivation:ledger-gates 22/22 zero-paid checks (proof fingerprints byte-identical on/off, both casts; row-schema symmetry); tests/dramaticDerivationStrategyLedger.test.js 13/13 (off-state invariance pinned); full npm test 4653/0. Phase 3 contrasts pre-registered before any paid run."
-claim_status: methods
+claim_status: scope-bound
 links:
   notes: LAYERED-DECISION-LOOPS-PLAN.md
   items:
@@ -72,3 +72,12 @@ echoes for zero-paid runs; runner dials + gate script
 pins proof-control fingerprints byte-identical ledger-on vs ledger-off.
 Phase 3 (E1 persistence / E2 register-as-decision / E3 learner ledger)
 awaits a go decision — nothing empirical claimed.
+
+2026-07-03 Claude: Phase 3 executed as pre-registered
+(STRATEGY-LEDGER-PHASE3-PREREGISTRATION.md): 4-arm single-delta ladder,
+bitterwell+ravensmark, 3 interleaved repeats, gemini-flash, ~$1.97 total.
+NULL on E1/E2/E3 with 15/15 guardrails passing (0 leaks, release parity,
+coverage 1.00). Levers measurably unexercised: 0/24 register switches,
+blocks 1-3/arm, all runs grounded at the forcing turn (ceiling). Report:
+exports/dramatic-derivation/strategy-ledger/phase3-contrasts-report.{json,md}.
+Pilot null stands; any binding-conditions follow-up is a new pre-registration.

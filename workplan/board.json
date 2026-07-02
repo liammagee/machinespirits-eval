@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-02T13:08:38.081Z",
+  "generated": "2026-07-02T21:53:51.716Z",
   "counts": {
     "total": 68,
     "byStatus": {
@@ -31,7 +31,7 @@
       "created": "2026-07-02",
       "updated": "2026-07-02",
       "verification": "Phases 0-2 implemented: npm run derivation:ledger-gates 22/22 zero-paid checks (proof fingerprints byte-identical on/off, both casts; row-schema symmetry); tests/dramaticDerivationStrategyLedger.test.js 13/13 (off-state invariance pinned); full npm test 4653/0. Phase 3 contrasts pre-registered before any paid run.",
-      "claim_status": "methods",
+      "claim_status": "scope-bound",
       "links": {
         "notes": "LAYERED-DECISION-LOOPS-PLAN.md",
         "items": [

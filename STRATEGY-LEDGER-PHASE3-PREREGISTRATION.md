@@ -73,3 +73,26 @@ Per run: let `T*` = `assertedGroundedTurn`, imputed `turn_cap + 1` when null (ne
 - Runs: `exports/dramatic-derivation/matrix/ledger-phase3-<world>/<arm>/`
 - Analysis: `scripts/analyze-strategy-ledger-contrasts.js` → `exports/dramatic-derivation/strategy-ledger/phase3-contrasts-report.{json,md}`
 - The analysis script is validated end-to-end on a zero-paid mock matrix BEFORE the paid matrix runs, and is not modified after the paid data lands (any post-hoc analysis is labeled post-hoc).
+
+---
+
+## Results addendum (2026-07-03, same day; analysis script unmodified)
+
+**Execution.** 24/24 runs completed on `openrouter`/`gemini-flash` (one matrix interruption mid-block; the five remaining labels re-ran under the pre-registered retry path, interleaving kept arms balanced throughout). Probe + matrix total spend ≈ **$1.97** (balance $5.89 → $3.92). Report: `exports/dramatic-derivation/strategy-ledger/phase3-contrasts-report.{json,md}`.
+
+**Guardrails: 15/15 PASS.** Zero leaks; release counts identical to baseline in every arm×world (7.00 bitterwell, 5.00 ravensmark); zero aporia-like verdicts anywhere; commitment coverage 1.00; learner-intent coverage 1.00.
+
+**Pre-registered outcome: NULL on all three contrasts.** No endpoint met the signal rule (consistent per-world direction AND |Δ| ≥ 0.5 pooled SD):
+
+- E1 persistence: flap 0.12 vs 0.10 (Δ +0.02, direction inconsistent); time-to-recognition 15.33 vs 15.00; grounded 1.00 vs 1.00.
+- E2 register-as-decision: flap 0.14 vs 0.12; T* 15.17 vs 15.33; grounded 1.00 vs 1.00.
+- E3 learner mirror: T* 15.17 vs 15.33; voiced 1.50 vs 1.83; overreach 0 vs 0; hypotheses 13.33 vs 13.83.
+
+**Two instrument-limiting conditions, visible in the data (not post-hoc excuses — both are measurable in the artifacts):**
+
+1. **Outcome ceiling.** Every run in every arm reached `grounded_anagnorisis`, almost all at the first post-forcing turn (T* ≈ 15 in both worlds). The outcome endpoints had no headroom; these worlds under this model are solved by the schedule alone.
+2. **The distinctive levers went unexercised.** The tutor chose the base register in **every scene of every palette run** (0 switches / 24 opportunities — offered the choice, it declines the costume); dialogue blocks barely opened (1–3 per arm across 6 runs — the flash learner rarely gets confused/resistant in these worlds), so the hold/escalation machinery ran idle; baseline flap was already low (0.10–0.12), leaving little flap to remove.
+
+**Descriptive color:** the commitments were real decisions (varied didactic defaults, hold→consolidate posture shifts, budgets 1–3) and the audits did real work (~35–40% of clauses drift rather than rubber-stamp kept). Conduct changed visibly at the commitment layer; outcomes did not move.
+
+**Bounded conclusion (pilot tier).** At pilot scale, on schedule-solvable worlds with a compliant learner, adding held-and-audited scene commitments (tutor or learner) neither helps nor harms: conduct machinery engages fully, proof conduct is untouched (guardrails), and no pre-registered endpoint moves. This is consistent with the repository's standing adaptivity finding — gains come from new signal, not from re-encoding decisions the model already makes acceptably. A signal, if one exists, requires conditions where the levers bind: worlds with genuine confusion/resistance pressure (blocks), register pressure (a reason to switch), and outcome headroom (no forcing-turn ceiling). Any such follow-up is a separate pre-registration; this pilot's null stands as recorded.
