@@ -76,6 +76,13 @@ test('admin tool pages require Basic Auth', async () => {
   const allowed = await request('/admin/runs', { user: 'admin', pass: 'secret' });
   assert.equal(allowed.status, 200);
   assert.match(allowed.body, /Run launcher/);
+
+  const chatDenied = await request('/admin/chat/');
+  assert.equal(chatDenied.status, 401);
+
+  const chatAllowed = await request('/admin/chat/', { user: 'admin', pass: 'secret' });
+  assert.equal(chatAllowed.status, 200);
+  assert.match(chatAllowed.body, /Machine Spirits \/ Chat/);
 });
 
 test('legacy public tool paths redirect pages but do not execute APIs', async () => {
@@ -87,4 +94,50 @@ test('legacy public tool paths redirect pages but do not execute APIs', async ()
   assert.equal(api.status, 404);
   assert.match(api.body, /admin endpoint moved/);
   assert.equal(JSON.parse(api.body).adminPath, '/poetics/admin/api/jobs');
+
+  const chatPage = await request('/chat/');
+  assert.equal(chatPage.status, 302);
+  assert.equal(chatPage.headers.location, '/poetics/admin/chat/');
+
+  const chatCells = await request('/api/chat/cells');
+  assert.equal(chatCells.status, 404);
+  assert.equal(JSON.parse(chatCells.body).adminPath, '/poetics/admin/api/chat/cells');
+
+  const publicChatTurn = await request('/api/chat/turn', {
+    method: 'POST',
+    body: { learnerMessage: 'hello', dryRun: true },
+  });
+  assert.equal(publicChatTurn.status, 404);
+  assert.equal(JSON.parse(publicChatTurn.body).adminPath, '/poetics/admin/api/chat/turn');
+
+  const pilotChatTurn = await request('/api/chat/turn', {
+    method: 'POST',
+    body: { sessionId: 'missing-session', learnerMessage: 'hello', dryRun: true },
+  });
+  assert.equal(pilotChatTurn.status, 404);
+  assert.match(pilotChatTurn.body, /pilot session missing-session not found/);
+});
+
+test('admin chat API exposes the full playground behind auth', async () => {
+  const denied = await request('/admin/api/chat/cells');
+  assert.equal(denied.status, 401);
+
+  const cells = await request('/admin/api/chat/cells', { user: 'admin', pass: 'secret' });
+  assert.equal(cells.status, 200);
+  const parsedCells = JSON.parse(cells.body);
+  assert.ok(parsedCells.count >= 100);
+
+  const dryTurn = await request('/admin/api/chat/turn', {
+    method: 'POST',
+    user: 'admin',
+    pass: 'secret',
+    body: {
+      cellName: 'cell_7_recog_multi_unified',
+      learnerMessage: 'I think bigger denominators always mean bigger fractions.',
+      topic: 'fractions',
+      dryRun: true,
+    },
+  });
+  assert.equal(dryTurn.status, 200);
+  assert.equal(JSON.parse(dryTurn.body).dryRun, true);
 });

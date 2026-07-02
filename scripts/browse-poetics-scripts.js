@@ -19,6 +19,7 @@ import YAML from 'yaml';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
 import { resolveBasicAuthGuard, makeRoleGate } from '../services/httpBasicAuth.js';
 import { mountEvalSurfaces } from '../services/evalSurfaces.js';
+import chatRoutes from '../routes/chatRoutes.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
@@ -1134,6 +1135,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     const qs = new URLSearchParams(req.query || {}).toString();
     return res.redirect(302, `${req.baseUrl || ''}/admin/compose/live${qs ? '?' + qs : ''}`);
   });
+  app.use('/chat', (req, res) => {
+    const mountPrefix = (req.baseUrl || '').replace(/\/chat$/, '');
+    const url = req.url || '/';
+    return res.redirect(302, `${mountPrefix}/admin/chat${url}`);
+  });
   const movedAdminPath = (req) => {
     const original = req.originalUrl || req.url || '';
     const queryAt = original.indexOf('?');
@@ -1147,6 +1153,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     [
       '/api/jobs',
       '/api/compose/live',
+      '/api/chat/cells',
+      '/api/chat/curricula',
+      '/api/chat/learner-turn',
+      '/api/chat/personas',
+      '/api/chat/resolve',
       '/api/tts',
       '/api/labels',
       '/api/review-flags',
@@ -1163,7 +1174,19 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         adminPath: movedAdminPath(req),
       }),
   );
+  // Public /api/chat/turn is retained only for the blinded participant pilot,
+  // whose browser sends a sessionId. All free-form chat/playground turns belong
+  // under /admin/api/chat/turn so they stay authenticated with the workbench.
+  app.use('/api/chat/turn', (req, res, next) => {
+    if (req.body?.sessionId) return next();
+    return res.status(404).json({
+      error: 'admin endpoint moved',
+      adminPath: movedAdminPath(req),
+    });
+  });
   adminRouter.get('/', (req, res) => res.redirect(302, `${req.baseUrl || ''}/runs`));
+  adminRouter.use('/api/chat', chatRoutes);
+  adminRouter.use('/chat', express.static(path.resolve(ROOT, 'public/chat')));
   app.get('/favicon.ico', (_req, res) => res.status(204).end());
   app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db), disciplines: distinctDisciplines(db) }));
   app.get('/api/stats', (_req, res) => res.json({ ...corpusStats(db), replays: listReplayBundles().length }));
@@ -2315,7 +2338,7 @@ const NAV = [
   ],
   [
     'tutor',
-    '/chat',
+    '/admin/chat',
     'tutor',
     'Interactive tutor — play the learner &amp; watch the ego/superego deliberation for any cell in tutor-agents.yaml',
   ],

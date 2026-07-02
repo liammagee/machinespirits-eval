@@ -3119,8 +3119,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
       // claude CLI override (local claude -p · opus 4.7)
       useClaudeCli: false,
+      apiBase: window.location.pathname.startsWith('/admin/') ? '/admin/api/chat' : '/api/chat',
 
       _resolveTimer: null,
+      api(path) { return this.apiBase + path; },
 
       async init() {
         // populate xray overlay grid
@@ -3137,9 +3139,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.buildRuler();
         try {
           const [cellsRes, personasRes, curriculaRes] = await Promise.all([
-            fetch('/api/chat/cells'),
-            fetch('/api/chat/personas'),
-            fetch('/api/chat/curricula'),
+            fetch(this.api('/cells')),
+            fetch(this.api('/personas')),
+            fetch(this.api('/curricula')),
           ]);
           this.cells = (await cellsRes.json()).cells || [];
           this.personas = (await personasRes.json()).personas || [];
@@ -3356,7 +3358,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
       async resolve() {
         try {
-          const res = await fetch('/api/chat/resolve', {
+          const res = await fetch(this.api('/resolve'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(this.features),
@@ -3437,7 +3439,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           ? 'learner ego → superego → revision'
           : 'learner drafting';
         try {
-          const lr = await fetch('/api/chat/learner-turn', {
+          const lr = await fetch(this.api('/learner-turn'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3470,7 +3472,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           ? 'tutor ego → superego → revision'
           : 'tutor drafting';
         try {
-          const tr = await fetch('/api/chat/turn', {
+          const tr = await fetch(this.api('/turn'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3516,7 +3518,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           .map((t) => ({ role: t.role, content: t.role === 'tutor' ? t.finalMessage : t.content }));
 
         try {
-          const res = await fetch('/api/chat/turn', {
+          const res = await fetch(this.api('/turn'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -3574,7 +3576,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           .map((t) => ({ role: t.role, content: t.role === 'tutor' ? t.finalMessage : t.content }));
 
         try {
-          const lr = await fetch('/api/chat/learner-turn', {
+          const lr = await fetch(this.api('/learner-turn'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
