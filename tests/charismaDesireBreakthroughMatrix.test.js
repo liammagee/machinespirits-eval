@@ -144,4 +144,145 @@ describe('charisma desire resistance-breakthrough matrix', () => {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
+
+  it('counts ordinary provisional hold language as question-flood commitment', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'charisma-qf-commitment-'));
+    const dbPath = path.join(tmpDir, 'evaluations.db');
+    const logsRoot = path.join(tmpDir, 'logs');
+    const dialogueDir = path.join(logsRoot, 'tutor-dialogues');
+    fs.mkdirSync(dialogueDir, { recursive: true });
+
+    const profiles = {
+      owned: 'cell_188_id_director_charisma_resistance_owned_test_breakthrough_dynamic_verified',
+      probe: 'cell_192_id_director_charisma_resistance_commitment_probe_breakthrough_dynamic_verified',
+    };
+    const rows = [
+      {
+        id: 'owned-1',
+        profile: profiles.owned,
+        post:
+          'My answer is hold: the passage decides it because paragraph 196 gives the servant a durable object and a failure test.',
+      },
+      {
+        id: 'owned-2',
+        profile: profiles.owned,
+        post:
+          'The hinge is hold because the deciding phrase is durable work; I would reopen it if the line only shaped the object.',
+      },
+      {
+        id: 'probe-1',
+        profile: profiles.probe,
+        post:
+          "Okay, I'll make the commitment provisionally: I'd hold the claim. The warrant is the phrase being-for-itself becomes his own.",
+      },
+      {
+        id: 'probe-2',
+        profile: profiles.probe,
+        post:
+          "I'll tentatively hold it: durable existence marks the difference, but I would reopen it if forming names only the object.",
+      },
+    ];
+
+    for (const row of rows) {
+      fs.writeFileSync(
+        path.join(dialogueDir, `${row.id}.json`),
+        JSON.stringify(
+          {
+            learnerArchitecture: 'ego_superego',
+            turnResults: [
+              { turnIndex: 0, learnerMessage: 'Start.' },
+              {
+                turnIndex: 1,
+                learnerMessage: 'Why this paragraph? Why this phrase? What does it prove?',
+                learnerMessageGenerated: true,
+                learnerResistanceSignalGate: { matched: true, observedSignal: 'question_flood', attempts: [{}] },
+              },
+              {
+                turnIndex: 2,
+                learnerMessage: row.post,
+                learnerMessageGenerated: true,
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+      );
+    }
+
+    const db = new Database(dbPath);
+    db.exec(`
+      CREATE TABLE evaluation_runs (
+        id TEXT PRIMARY KEY,
+        description TEXT,
+        total_tests INTEGER,
+        status TEXT
+      );
+      CREATE TABLE evaluation_results (
+        id TEXT,
+        run_id TEXT,
+        scenario_id TEXT,
+        profile_name TEXT,
+        dialogue_id TEXT,
+        suggestions TEXT,
+        id_construction_trace TEXT,
+        tutor_scores TEXT,
+        dialogue_content_hash TEXT,
+        success INTEGER,
+        judge_model TEXT
+      )
+    `);
+    db.prepare(
+      `INSERT INTO evaluation_runs
+       (id, description, total_tests, status)
+       VALUES (?, ?, ?, ?)`,
+    ).run('eval-qf-commitment', 'Question-flood commitment fixture', rows.length, 'completed');
+    const insert = db.prepare(
+      `INSERT INTO evaluation_results
+       (id, run_id, scenario_id, profile_name, dialogue_id, suggestions, id_construction_trace, tutor_scores, dialogue_content_hash, success, judge_model)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    );
+    for (const row of rows) {
+      insert.run(
+        row.id,
+        'eval-qf-commitment',
+        'charisma_desire_resistance_breakthrough_question_flood',
+        row.profile,
+        row.id,
+        '[]',
+        JSON.stringify([
+          {
+            turn: 1,
+            engagementState: {
+              selected_register: 'charismatic_challenge',
+              resistance_signal: 'question_flood',
+              resistance_strategy: 'question_collapse',
+            },
+          },
+        ]),
+        '{}',
+        null,
+        1,
+        null,
+      );
+    }
+    db.close();
+
+    try {
+      const { stdout } = await exec('node', [SCRIPT, '--runs', 'eval-qf-commitment', '--check'], {
+        timeout: 15000,
+        env: {
+          ...process.env,
+          NODE_NO_WARNINGS: '1',
+          EVAL_DB_PATH: dbPath,
+          EVAL_LOGS_DIR: logsRoot,
+        },
+      });
+
+      assert.match(stdout, /Rows found: 4/);
+      assert.match(stdout, /Question-flood gate: PROMOTE_COMMITMENT_PROBE_FOR_QUESTION_FLOOD/);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
 });

@@ -214,7 +214,7 @@ function questionCount(text) {
 
 function hasAnswerFirstCommitment(text) {
   const normalized = normalizeForMatching(text).slice(0, 220);
-  return /\b(?:my hinge is|my answer is|the hinge is|provisional hinge|provisional (?:hold|break)|the passage decides|the deciding (?:feature|phrase|case) is|the phrase i(?:'d| would)?\s+(?:test|use)\s+is|(?:it|that|the hinge)\s+(?:holds?|breaks?)|forced obedience cannot|i(?:'ll| will)?\s+(?:make\s+a\s+provisional\s+)?(?:still\s+)?(?:choose|pick|commit|mark|\*+hold\*+|hold|\*+break\*+|break)|i think my break point is|commit first|hold the hinge|break the hinge|okay,? provisionally)(?=\W|$)/i.test(
+  return /\b(?:my hinge is|my answer is|the hinge is|provisional hinge|provisional (?:hold|break)|the passage decides|the deciding (?:feature|phrase|case) is|the phrase i(?:'d| would)?\s+(?:test|use)\s+is|(?:it|that|the hinge)\s+(?:holds?|breaks?)|forced obedience cannot|i(?:'ll| will)?\s+(?:make\s+(?:a\s+provisional\s+)?(?:commitment|commit)|make\s+the\s+commitment\s+provisionally|(?:tentatively|provisionally)\s+(?:hold|break)|(?:still\s+)?(?:choose|pick|commit|mark|\*+hold\*+|hold|\*+break\*+|break))|i(?:'d| would)\s+(?:hold|break)|i think my break point is|commit first|hold the hinge|break the hinge|okay,? provisionally)(?=\W|$)/i.test(
     normalized,
   );
 }

@@ -1,7 +1,7 @@
 ---
 id: charisma-desire-generalizability-matrix
 title: Route charisma/desire by engagement register
-status: review
+status: done
 type: research
 priority: P2
 owner: codex
@@ -41,9 +41,11 @@ verification: Engagement router cell 180, contract/repair cell 181, split-repair
   role-isolation gate design adding the cell 195 scripted-learner control,
   and completed six-arm role-isolation matrix with arm-level report scoping the
   GLM boundary to dynamic-learner completion/target drift rather than tutor/id
-  register production; register-switch/breakthrough scenarios, router
-  service/tests, no-paid Stage 0/router sanity reports, paid smokes/matrices,
-  config validation, workplan render/validate, and focused
+  register production, and fresh Codex-learner question-flood commitment-probe
+  closeout run promoting cell 192 for the question-flood subtype after a
+  reporter commitment-wording regression fix; register-switch/breakthrough
+  scenarios, router service/tests, no-paid Stage 0/router sanity reports, paid
+  smokes/matrices, config validation, workplan render/validate, and focused
   id-director/learner/gate tests pass.
 claim_status: scope-bound
 links:
@@ -114,6 +116,7 @@ links:
     - eval-2026-07-01-a09281f7
     - eval-2026-07-01-9066df81
     - eval-2026-07-01-9f4eecf2
+    - eval-2026-07-02-67be317c
   exports:
     - exports/charisma-desire-stage0-matrix-sanity.md
     - exports/charisma-desire-router-stage0-sanity.md
@@ -952,3 +955,29 @@ with a GLM dynamic learner lose post-turn completion or target stability. Moved
 the item to review with a scope-bound claim; the question-flood
 commitment-probe comparison remains a separate pending gate, not part of this
 role-isolation closure.
+
+2026-07-02 Codex: Folded the question-flood commitment-probe gate into this
+closeout branch. Two profile-default attempts were deleted before persistence
+because the small-budget OpenRouter learner path terminated or leaked
+deliberation text. The valid gate rerun `eval-2026-07-02-67be317c` used Codex
+GPT-5.5 for tutor ego and dynamic learner, OpenRouter Sonnet 5 for id/superego,
+and serial execution. It completed 6/6 generation-only rows in 30.6 minutes
+($2.7277): cell 192, cell 190, and cell 188 each had 2/2 successful rows with
+clean forbidden validation. Cell 192 and cell 190 each missed one broad
+required phrase group, while cell 188 was 2/2 required-clean. The local matrix
+report now combines 56 current controlled rows and returns
+`PROMOTE_COMMITMENT_PROBE_FOR_QUESTION_FLOOD`: cell 192 is 2/2 candidates,
+2/2 route hits, 2/2 gate matches, 2/2 answer-first usable commitments, and
+0/2 reopened/residual floods. Added a reporter regression test so ordinary
+forms such as "I'll make the commitment provisionally" and "I'll tentatively
+hold it" count as usable question-flood commitments. This promotes cell 192
+only for the question-flood subtype; it does not change the broader
+role-isolation boundary or promote full GLM/model-stack robustness.
+
+2026-07-02 Codex: Documented the final findings in the durable plan note and
+canonical paper boundary. `docs/research/paper-full-2.0.md` v3.0.189 now records
+the completed six-arm role-isolation diagnosis
+`DYNAMIC_LEARNER_COMPLETION_AND_TARGET_DRIFT_BOUNDARY` plus the separate
+question-flood subtype promotion for cell 192. The claim remains scope-bound:
+no full-GLM robustness, scripted-control learner-outcome, human-learning,
+deployment, or general charismatic-tutoring claim is promoted.

@@ -1693,6 +1693,58 @@ Cell 193 GLM provider/runtime control pass:
   negative model-stack robustness result for full cell 193, not as a reason to
   simplify the prompt retroactively.
 
+Final role-isolation and question-flood closeout:
+
+- The completed six-arm role-isolation matrix is now 50/50 successful
+  generation-only rows across the planned contrasts:
+  `eval-2026-07-01-5dad2e60` (Codex/Sonnet tutor-id + Codex learner),
+  `eval-2026-07-01-dff9f159` (Codex/Sonnet tutor-id + GLM learner),
+  `eval-2026-07-01-a09281f7` (GLM tutor-id + Codex learner),
+  `eval-2026-07-01-9f4eecf2` (full GLM reference),
+  `eval-2026-07-01-02e8712f` (scripted Codex/Sonnet tutor control), and
+  `eval-2026-07-01-9066df81` (scripted GLM tutor control).
+- The local report analyzes 50 role-isolation rows with 20 strict candidate
+  breakthroughs and 23 positive local outcomes. Arm-level diagnosis:
+  the Codex/Sonnet reference reproduces only modestly (6/10 positive,
+  5/10 strict), GLM tutor/id works with a fixed Codex dynamic learner
+  (8/10 positive, 6/10 strict, 10/10 post turns), the tutor-fixed GLM learner
+  arm loses completion/target stability (6/10 post turns, 8/10 target matches),
+  the full GLM arm remains unstable (5/10 post turns, 4/10 positive), and both
+  scripted controls route the public register with fixed resistant turns
+  (5/5 route hits each). Scripted controls remain register-shape checks only,
+  not learner-outcome evidence.
+- Final role-isolation diagnosis:
+  `DYNAMIC_LEARNER_COMPLETION_AND_TARGET_DRIFT_BOUNDARY`. The main GLM failure
+  is not that the GLM tutor/id stack cannot publicly produce the target
+  charismatic-challenge register. The remaining failure is that rows involving
+  GLM as the dynamic learner lose post-turn completion or drift away from the
+  target resistance signal.
+- The separate question-flood commitment-probe gate is closed by
+  `eval-2026-07-02-67be317c`. Two profile-default OpenRouter learner attempts
+  were deleted before persistence because they produced zero usable rows:
+  `eval-2026-07-02-4d05e961` exposed small-budget hidden-reasoning/empty-content
+  behavior, and `eval-2026-07-02-5d44265b` terminated or leaked deliberation
+  text. They are runtime invalid attempts, not gate evidence.
+- The valid gate used Codex GPT-5.5 for tutor ego and dynamic learner,
+  OpenRouter Sonnet 5 for id/superego, serial execution, and generation-only
+  local analysis. It completed 6/6 rows across cell 188, cell 190, and cell 192
+  in 30.6 minutes at $2.7277. Cell 192 produced 2/2 strict candidates, 2/2 route
+  hits, 2/2 gate matches, 2/2 answer-first usable commitments, and 0/2 reopened
+  or residual floods. Cell 188 produced 1/2 usable commitments; cell 190
+  produced 0/2.
+- The reporter was repaired and regression-tested so ordinary commitment
+  language such as "I'll make the commitment provisionally," "I'll tentatively
+  hold it," and "I'd hold/break" counts as usable question-flood commitment
+  evidence. The resulting gate status is
+  `PROMOTE_COMMITMENT_PROBE_FOR_QUESTION_FLOOD`.
+- Conclusion: promote cell 192 only for the question-flood subtype. Keep the
+  broader charisma/desire claim scope-bound: local Codex/Claude or
+  Codex/Sonnet-stack engagement routing works in several controlled simulated
+  resistance slices, role isolation points to GLM dynamic-learner completion and
+  target drift as the boundary, and no full GLM robustness, human-learning,
+  deployed runtime, scripted-control learner-outcome, or general charismatic
+  tutoring claim follows.
+
 Revised decision rule:
 
 - Primary outcome: generated learner uptake after resistance, measured on the
