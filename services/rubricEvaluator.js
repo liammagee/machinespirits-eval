@@ -1589,7 +1589,9 @@ ${criteriaText}`;
     .join(',\n');
 
   const labels = rubric?.scale?.labels || {};
-  const scaleLines = Object.entries(labels).map(([score, label]) => `- ${score}: ${label}`).join('\n');
+  const scaleLines = Object.entries(labels)
+    .map(([score, label]) => `- ${score}: ${label}`)
+    .join('\n');
 
   return `You are an expert evaluator of tutor register execution in AI tutoring. Evaluate the TUTOR turn as a local register-conditional slice.
 

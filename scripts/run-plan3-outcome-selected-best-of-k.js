@@ -116,16 +116,20 @@ function correctChoice(item) {
 
 function buildBehaviorLog({ seedId, items, responses, learnerId }) {
   const itemById = new Map(items.map((item) => [item.id, item]));
-  return responses.map((response, index) => {
-    const item = itemById.get(response.item_id);
-    const selected = selectedChoice(item, response);
-    const correct = correctChoice(item);
-    return `${index + 1}. ${item.id}
+  return (
+    responses
+      .map((response, index) => {
+        const item = itemById.get(response.item_id);
+        const selected = selectedChoice(item, response);
+        const correct = correctChoice(item);
+        return `${index + 1}. ${item.id}
 Stem: ${item.stem}
 Selected: ${selected.value}. ${selected.label}
 Correct: ${correct.value}. ${correct.label}
 Result: ${response.is_seeded_error ? 'not accepted' : 'accepted'}`;
-  }).join('\n\n') + `\n\nLearner id: ${learnerId}; seed: ${seedId}`;
+      })
+      .join('\n\n') + `\n\nLearner id: ${learnerId}; seed: ${seedId}`
+  );
 }
 
 function buildCandidatePrompt({ sessionId, candidateIndex, behaviorLog, planTurns }) {
@@ -170,7 +174,9 @@ function normalizePlan(parsed, { candidateIndex, planTurns }) {
     .filter((family) => !MISCONCEPTION_FAMILIES.includes(family));
   return {
     candidateIndex,
-    selfScore: Number.isFinite(Number(parsed.self_score ?? parsed.selfScore)) ? Number(parsed.self_score ?? parsed.selfScore) : 0,
+    selfScore: Number.isFinite(Number(parsed.self_score ?? parsed.selfScore))
+      ? Number(parsed.self_score ?? parsed.selfScore)
+      : 0,
     plan,
     rationale: String(parsed.rationale || '').trim(),
     invalidTargetFamilies,
@@ -190,18 +196,29 @@ function mockCandidate({ candidateIndex, targetState, planTurns }) {
   return {
     candidateIndex,
     selfScore: candidateIndex % 3 === 1 ? 0.82 : candidateIndex % 3 === 2 ? 0.68 : 0.74,
-    plan: pattern.slice(0, planTurns).filter(Boolean).map((targetFamily, turn) => ({
-      turn,
-      targetFamily,
-      intervention: `Mock candidate ${candidateIndex} targets ${targetFamily}.`,
-    })),
+    plan: pattern
+      .slice(0, planTurns)
+      .filter(Boolean)
+      .map((targetFamily, turn) => ({
+        turn,
+        targetFamily,
+        intervention: `Mock candidate ${candidateIndex} targets ${targetFamily}.`,
+      })),
     rationale: 'deterministic mock candidate',
     invalidTargetFamilies: [],
     planLengthValid: true,
   };
 }
 
-async function generateCandidate({ backend, callCounter, sessionId, candidateIndex, behaviorLog, targetState, planTurns }) {
+async function generateCandidate({
+  backend,
+  callCounter,
+  sessionId,
+  candidateIndex,
+  behaviorLog,
+  targetState,
+  planTurns,
+}) {
   if (canonicalBackend(backend) === 'mock') return mockCandidate({ candidateIndex, targetState, planTurns });
   callCounter.increment('candidate_episode');
   const raw = await callBackend(buildCandidatePrompt({ sessionId, candidateIndex, behaviorLog, planTurns }), backend);
@@ -222,7 +239,9 @@ function scoreCandidate({ candidate, preScore, postItems, targetState }) {
     postScore: Number(postScore.toFixed(3)),
     gain: Number((postScore - preScore).toFixed(3)),
     activeTargets: candidate.plan.filter((turn) => targetState[turn.targetFamily]).length,
-    inactiveTargets: candidate.plan.filter((turn) => MISCONCEPTION_FAMILIES.includes(turn.targetFamily) && !targetState[turn.targetFamily]).length,
+    inactiveTargets: candidate.plan.filter(
+      (turn) => MISCONCEPTION_FAMILIES.includes(turn.targetFamily) && !targetState[turn.targetFamily],
+    ).length,
   };
 }
 
@@ -242,7 +261,9 @@ async function runSession({ spec, items, backend, k, planTurns, callCounter }) {
     items: preItems,
     responses: preResponses,
   });
-  const recovered = estimateStateFromBehavior(preResponses).filter((row) => row.predictedActive).map((row) => row.family);
+  const recovered = estimateStateFromBehavior(preResponses)
+    .filter((row) => row.predictedActive)
+    .map((row) => row.family);
   const candidates = [];
   for (let i = 1; i <= k; i++) {
     console.log(`plan3 outcome-selected: ${spec.sessionId} candidate ${i}/${k} via ${backend}`);
@@ -359,7 +380,9 @@ export function renderOutcomeSelectedReport(result) {
   lines.push('');
   lines.push(`- Outcome minus single-K1: ${fmt(result.summary.meanOutcomeMinusSingle)}`);
   lines.push(`- Outcome minus opinion-best-K: ${fmt(result.summary.meanOutcomeMinusOpinion)}`);
-  lines.push(`- Sessions where outcome beats opinion: ${result.summary.outcomeBeatsOpinion}/${result.controls.sessions}`);
+  lines.push(
+    `- Sessions where outcome beats opinion: ${result.summary.outcomeBeatsOpinion}/${result.controls.sessions}`,
+  );
   lines.push('');
   lines.push('## Sessions');
   lines.push('');
@@ -376,9 +399,13 @@ export function renderOutcomeSelectedReport(result) {
   lines.push('## Read');
   lines.push('');
   if (result.status === 'pass_bounded_outcome_selection') {
-    lines.push('Outcome selection adds value over both single-K1 and model/self-opinion selection in this bounded run.');
+    lines.push(
+      'Outcome selection adds value over both single-K1 and model/self-opinion selection in this bounded run.',
+    );
   } else {
-    lines.push('Bounded run does not show outcome-selection headroom over opinion selection; scale only if the failure mode is instrumentation, not ceiling.');
+    lines.push(
+      'Bounded run does not show outcome-selection headroom over opinion selection; scale only if the failure mode is instrumentation, not ceiling.',
+    );
   }
   lines.push('');
   return lines.join('\n');
