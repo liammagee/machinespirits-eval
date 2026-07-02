@@ -323,6 +323,46 @@ rate stays at least 2 scenarios' worth below cell_193's (e.g. ≤12/20 vs
 ≥18/20-shaped gap); dissolved if the arms converge within 1 scenario's
 worth. No prompt or config edits between gate and repeats. Stop rules as §5.
 
+### §10 result (2026-07-03)
+
+Run `eval-2026-07-02-ad0b5a8b`: 30/30 successful rows (three external
+process stops, all recovered via resume; validation 29/30 required — both
+misses cell_199 × boredom — and 29/30 forbidden). Combined with the gate's
+Block R rows (n=4 per cell×scenario, 40 rows total in the contrast):
+
+| Scenario | 193 candidates | 199 candidates | 193 positive | 199 positive | 193 mean | 199 mean |
+|---|---|---|---|---|---:|---:|
+| boredom | 4/4 | 3/4 | 4/4 | 3/4 | 91.3 | 88.8 |
+| frustration | 0/4 | 0/4 | 4/4 | 1/4 | 80.0 | 72.5 |
+| irrelevance | 4/4 | 4/4 | 4/4 | 4/4 | 91.3 | 82.5 |
+| question_flood | 4/4 | 4/4 | 4/4 | 4/4 | 88.8 | 85.0 |
+| rote_parroting | 0/4 | 1/4 | 4/4 | 3/4 | 86.3 | 76.3 |
+| **Combined** | **12/20** | **12/20** | **20/20** | **15/20** | — | — |
+
+Route hits 20/20 (193) vs 19/20 (199).
+
+**Frozen-rule verdict: the middle zone.** The positive-rate gap is 5/20 —
+below the ≥6-row "real" shape, above the ≤4-row "dissolved" shape. The
+gate's dramatic 2/5-vs-5/5 regression **attenuated but did not vanish**:
+
+- On **strict candidate breakthroughs the arms are equal** (12/20 each) —
+  the kernel converts hard breakthroughs at cell 193's rate.
+- The deficit is concentrated in **soft positives**: cell 193 turns every
+  frustration and rote-parroting row into productive carry-through (8/8),
+  the kernel manages 4/8. Frustration is the sharpest split (4/4 vs 1/4).
+- **Sign-consistency**: cell 193's mean local score is higher on all five
+  scenarios (5/5), and the kernel never wins a scenario on any column.
+
+Bounded reading: recognition orientation on the id-director chassis does not
+impair the kernel's ability to produce strict local breakthroughs, but it
+reliably erodes the carry-through band — the marginal rows where cell 193's
+base-prompt stance keeps a still-frustrated or still-parroting learner doing
+content-bearing work. Under the pre-registration this is neither confirmed
+nor dissolved; a further 2 repeats per cell×scenario (20 rows) would settle
+the positive-rate gap, but the equal strict-candidate rates already narrow
+what a "real" verdict could claim. v2.2 covariate scoring of the repeats is
+recorded separately when complete; it is not part of this decision.
+
 **Gate verdict (bounded)**: sub-additivity (H1) is supported everywhere it
 could be measured — the full stack never beats the kernel beyond noise, on
 either suite, and the action-contract module adds nothing detectable at

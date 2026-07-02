@@ -49,6 +49,16 @@ Acceptance:
   frozen hypotheses H1-H3, per-suite local decision rules, and stop rules;
   no paid run without a recorded go decision.
 
+2026-07-03 Claude: H2 repeats contrast COMPLETE (`eval-2026-07-02-ad0b5a8b`,
+30/30; pre-registration + result in note §10). Combined n=4/cell×scenario:
+strict candidates EQUAL (12/20 both arms); positive local outcomes 193 20/20
+vs kernel 15/20 (gap 5 rows — the frozen rule's middle zone: not confirmed,
+not dissolved); 193 higher mean local score on 5/5 scenarios. The regression
+attenuated and relocated: recognition orientation does not impair strict
+breakthroughs but erodes the soft carry-through band (frustration 4/4 vs
+1/4). PR #77 open. Optional next: +2 repeats/cell×scenario (20 rows) to
+settle the positive-rate gap.
+
 2026-07-03 Claude: Paid composition gate COMPLETE (user go 2026-07-02; frozen
 plan + full results in the note §8-§9). Runs: canary
 `eval-2026-07-02-b0be0524`; Block R `eval-2026-07-02-b4ccb58d` (20/20, scored,
