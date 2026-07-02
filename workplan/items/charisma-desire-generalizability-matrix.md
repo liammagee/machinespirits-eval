@@ -973,3 +973,11 @@ forms such as "I'll make the commitment provisionally" and "I'll tentatively
 hold it" count as usable question-flood commitments. This promotes cell 192
 only for the question-flood subtype; it does not change the broader
 role-isolation boundary or promote full GLM/model-stack robustness.
+
+2026-07-02 Codex: Documented the final findings in the durable plan note and
+canonical paper boundary. `docs/research/paper-full-2.0.md` v3.0.189 now records
+the completed six-arm role-isolation diagnosis
+`DYNAMIC_LEARNER_COMPLETION_AND_TARGET_DRIFT_BOUNDARY` plus the separate
+question-flood subtype promotion for cell 192. The claim remains scope-bound:
+no full-GLM robustness, scripted-control learner-outcome, human-learning,
+deployment, or general charismatic-tutoring claim is promoted.
