@@ -1,11 +1,12 @@
 {
-  "generated": "2026-07-02T02:25:05.659Z",
+  "generated": "2026-07-02T04:31:29.650Z",
   "counts": {
     "total": 66,
     "byStatus": {
-      "done": 62,
+      "done": 58,
       "blocked": 1,
       "dropped": 2,
+      "archived": 4,
       "active": 1
     },
     "byType": {
@@ -206,86 +207,6 @@
         "notes": "TODO.md"
       },
       "milestone": "paper-2-evidence-cleanup"
-    },
-    {
-      "id": "layered-human-handoff-probe",
-      "title": "Layered adaptive tutor human/hybrid handoff probe",
-      "status": "done",
-      "type": "research",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-01",
-      "updated": "2026-07-01",
-      "branch": "codex/layered-human-handoff-probe",
-      "verification": "PR #73 merged; focused handoff tests and zero-paid human handoff probe passed with 8/8 controls, 0 public-only failures, 0 non-advisory rows, no proof-control behavior change, and no runtime routing or human-learning claim.",
-      "claim_status": "scope-bound",
-      "links": {
-        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
-        "exports": "exports/dramatic-derivation/layered-adaptation/human-handoff-probe-report.md",
-        "items": "layered-taskloop-heldout-gate",
-        "prs": "https://github.com/liammagee/machinespirits-eval/pull/73"
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "handoff",
-        "outer-loop",
-        "deployment-risk"
-      ]
-    },
-    {
-      "id": "layered-task-session-adaptation",
-      "title": "Layered adaptive tutor task/session adaptation prototype",
-      "status": "done",
-      "type": "research",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-01",
-      "updated": "2026-07-01",
-      "branch": "codex/task-session-adaptation",
-      "verification": "PR #71 merged; TaskMasteryState remains public-only/advisory; zero-paid taskloop benchmark, focused tests, workplan check, lint, format check, git diff check, and full npm test passed.",
-      "claim_status": "methods",
-      "links": {
-        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
-        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-benchmark-report.md",
-        "prs": "https://github.com/liammagee/machinespirits-eval/pull/71"
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "task-loop",
-        "outer-loop"
-      ]
-    },
-    {
-      "id": "layered-taskloop-heldout-gate",
-      "title": "Layered adaptive tutor held-out task-loop artifact gate",
-      "status": "done",
-      "type": "research",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-01",
-      "updated": "2026-07-01",
-      "branch": "codex/taskloop-heldout-gate",
-      "verification": "PR #72 merged; paper/spec folded in bounded advisory sequencing claim; held-out task-loop gate passed 12/12 adaptive vs 2/12 fixed with 0 public-only failures and 0 proof-control drift rows.",
-      "claim_status": "scope-bound",
-      "links": {
-        "paper": "docs/research/paper-full-2.0.md#selector-trajectory-v0-v4-and-a20a21-closeout-the-selector-fails-the-adaptive-claim-and-proofdebt-becomes-the-reliability-baseline",
-        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
-        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-heldout-gate-report.md",
-        "items": "layered-task-session-adaptation",
-        "prs": "https://github.com/liammagee/machinespirits-eval/pull/72"
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "task-loop",
-        "heldout",
-        "outer-loop"
-      ]
     },
     {
       "id": "scriptorium-evidence-workbenches",
@@ -1025,38 +946,6 @@
       ],
       "branch": "codex/geist-positioning",
       "milestone": "board-pm"
-    },
-    {
-      "id": "docs-board-plan-consolidation",
-      "title": "Consolidate Plan 2.x docs and board routing",
-      "status": "done",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-01",
-      "updated": "2026-07-01",
-      "branch": "codex/docs-board-consolidation",
-      "verification": "`node scripts/workplan.js render`, `node scripts/workplan.js validate`, `npm run wp:check`, and `npm run wp:test` pass after adding the Plan 2.x documentation map and board-routing notes.",
-      "links": {
-        "paper": "docs/research/paper-full-2.0.md",
-        "notes": [
-          "PLAN_2_0/README.md",
-          "PLAN_2_0/latest_paper_status_next_steps.md",
-          "ADAPTIVE-TUTOR-ACTIVE-PLAN.md",
-          "docs/research/A21-action-value-tutoring-microbench.md"
-        ],
-        "items": [
-          "workplan-governance-checks-and-github-mirror",
-          "paper-workplan-closure-audit-2026-06-24"
-        ]
-      },
-      "tags": [
-        "documentation",
-        "planning",
-        "workplan",
-        "plan-2"
-      ]
     },
     {
       "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
@@ -1851,6 +1740,118 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "layered-human-handoff-probe",
+      "title": "Layered adaptive tutor human/hybrid handoff probe",
+      "status": "archived",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-02",
+      "branch": "codex/layered-human-handoff-probe",
+      "verification": "PR #73 merged; focused handoff tests and zero-paid human handoff probe passed with 8/8 controls, 0 public-only failures, 0 non-advisory rows, no proof-control behavior change, and no runtime routing or human-learning claim.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/human-handoff-probe-report.md",
+        "items": "layered-taskloop-heldout-gate",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/73"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "handoff",
+        "outer-loop",
+        "deployment-risk"
+      ]
+    },
+    {
+      "id": "layered-task-session-adaptation",
+      "title": "Layered adaptive tutor task/session adaptation prototype",
+      "status": "archived",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-02",
+      "branch": "codex/task-session-adaptation",
+      "verification": "PR #71 merged; TaskMasteryState remains public-only/advisory; zero-paid taskloop benchmark, focused tests, workplan check, lint, format check, git diff check, and full npm test passed.",
+      "claim_status": "methods",
+      "links": {
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-benchmark-report.md",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/71"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "task-loop",
+        "outer-loop"
+      ]
+    },
+    {
+      "id": "layered-taskloop-heldout-gate",
+      "title": "Layered adaptive tutor held-out task-loop artifact gate",
+      "status": "archived",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-02",
+      "branch": "codex/taskloop-heldout-gate",
+      "verification": "PR #72 merged; paper/spec folded in bounded advisory sequencing claim; held-out task-loop gate passed 12/12 adaptive vs 2/12 fixed with 0 public-only failures and 0 proof-control drift rows.",
+      "claim_status": "scope-bound",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#selector-trajectory-v0-v4-and-a20a21-closeout-the-selector-fails-the-adaptive-claim-and-proofdebt-becomes-the-reliability-baseline",
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-heldout-gate-report.md",
+        "items": "layered-task-session-adaptation",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/72"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "task-loop",
+        "heldout",
+        "outer-loop"
+      ]
+    },
+    {
+      "id": "docs-board-plan-consolidation",
+      "title": "Consolidate Plan 2.x docs and board routing",
+      "status": "archived",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-02",
+      "branch": "codex/docs-board-consolidation",
+      "verification": "`node scripts/workplan.js render`, `node scripts/workplan.js validate`, `npm run wp:check`, and `npm run wp:test` pass after adding the Plan 2.x documentation map and board-routing notes.",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md",
+        "notes": [
+          "PLAN_2_0/README.md",
+          "PLAN_2_0/latest_paper_status_next_steps.md",
+          "ADAPTIVE-TUTOR-ACTIVE-PLAN.md",
+          "docs/research/A21-action-value-tutoring-microbench.md"
+        ],
+        "items": [
+          "workplan-governance-checks-and-github-mirror",
+          "paper-workplan-closure-audit-2026-06-24"
+        ]
+      },
+      "tags": [
+        "documentation",
+        "planning",
+        "workplan",
+        "plan-2"
+      ]
     },
     {
       "id": "a18-38-teacher-as-learner-ml-fine-tuning-ladder",

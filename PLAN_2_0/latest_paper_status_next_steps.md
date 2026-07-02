@@ -1,14 +1,14 @@
 # Paper Finalization & Plan Cleanup Checklist
 
 **Date:** 2026-06-30
-**Status:** Historical cleanup checklist. The checklist items have been applied
-to the current planning ledgers unless a later workplan item explicitly reopens
-them.
+**Status:** closed historical cleanup checklist. The checklist items have been
+applied to the current planning ledgers and Plan 2.x is now archived unless a
+later workplan item explicitly reopens a bounded follow-up.
 **Purpose:** Convert the earlier "latest paper status / next steps" note into a de-duplicated finalization checklist.
 **Scope:** Paper 2.0 manuscript, adaptive-tutor active plans, A20/A21/ownership/didactic closeout notes, and regression-command hygiene.
 **Decision:** Do **not** add more adaptive-policy prose to the paper. Verify and preserve the hierarchy already integrated in the manuscript; clean up stale planning notes so future work does not reopen closed arcs.
-**Current routing:** Use `PLAN_2_0/README.md` for the Plan 2.x documentation
-map and `workplan/items/` for live follow-up ownership.
+**Current routing:** Use `PLAN_2_0/README.md` for the closed Plan 2.x archive
+map and `workplan/items/` for any future live follow-up ownership.
 
 ---
 

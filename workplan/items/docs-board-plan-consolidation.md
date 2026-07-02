@@ -1,13 +1,13 @@
 ---
 id: docs-board-plan-consolidation
 title: Consolidate Plan 2.x docs and board routing
-status: done
+status: archived
 type: maintenance
 priority: P2
 owner: codex
 source: manual
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-02
 branch: codex/docs-board-consolidation
 verification: "`node scripts/workplan.js render`, `node scripts/workplan.js validate`, `npm run wp:check`, and `npm run wp:test` pass after adding the Plan 2.x documentation map and board-routing notes."
 links:
@@ -40,3 +40,7 @@ deleting evidence-bearing notes:
 
 The important boundary is deliberate: `PLAN_2_0/` preserves designs,
 preregistrations, closeouts, and evidence context; the workplan owns live todos.
+
+2026-07-02 Codex: Archived after the Plan 2.x directory was stamped as a closed
+evidence archive. Future Plan 2.x follow-up requires a new workplan item rather
+than editing `PLAN_2_0/` as a live roadmap.

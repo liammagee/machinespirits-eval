@@ -1,16 +1,22 @@
 # Layered Adaptive Tutor: Technical Specification and Implementation Plan
 
 - **Date:** 2026-06-30
-- **Status:** v0 in-dialogue layers, task/session scaffold, held-out task-loop gate, and human/hybrid handoff probe merged 2026-07-01
+- **Status:** closed archive; v0 in-dialogue layers, task/session scaffold, held-out task-loop gate, and human/hybrid handoff probe merged by 2026-07-01
 - **Primary substrate:** hidden + proofDebt proof-continuity control
 - **Core decision:** do not build another proof-control overlay unless a predeclared hidden+proofDebt failure first clears a failure-atlas gate.
-- **Current closeout:** PR #73 answered the human/hybrid handoff question with a bounded local advisory deployment-risk classification claim. Runtime routing, deployment, safety coverage, and human-learning claims remain deferred.
+- **Current closeout:** PR #73 answered the human/hybrid handoff question with a bounded local advisory deployment-risk classification claim. Runtime routing, deployment, safety coverage, and human-learning claims remain out of scope unless a future workplan item explicitly reopens them.
+
+> **Archive note (2026-07-02):** this specification is retained as provenance
+> for the completed Plan 2.x / layered-adaptive-tutor arc. Its implementation
+> phases are closed. Treat "next" language below as historical design rationale,
+> not as active work, unless a new `workplan/items/` card reopens a bounded
+> follow-up with fresh evidence.
 
 ## 1. Executive Summary
 
-The next adaptive-tutor project should not be another H/V selector, conduct-policy promotion attempt, or proof-control overlay. A20 and A21 have already shown that hidden+proofDebt is a strong production proof-control arm. It releases safe public evidence, repairs proof debt, avoids treating fluent learner talk as ownership, and was not beaten by the A20/A21 overlays in the current artifact pool.
+The layered adaptive-tutor arc was opened to avoid another H/V selector, conduct-policy promotion attempt, or proof-control overlay. A20 and A21 had already shown that hidden+proofDebt is a strong production proof-control arm. It releases safe public evidence, repairs proof debt, avoids treating fluent learner talk as ownership, and was not beaten by the A20/A21 overlays in the current artifact pool.
 
-The next technical object should be **layered adaptive tutoring**:
+The technical object was **layered adaptive tutoring**:
 
 ```text
 proof-control adaptation:
@@ -29,7 +35,15 @@ deployment adaptation:
   human handoff / teacher review
 ```
 
-The production proof-control kernel remains hidden+proofDebt. New work should add auditable quality and learner-state layers above that kernel, with proof-control no-harm as a hard gate. The first implementation targeted in-dialogue scopes: turn, dialogue block, scene, and act. The follow-on task/session scaffold added advisory next-task selection. The held-out gate showed that selector generalizes to frozen derivation artifacts under a local advisory boundary. The handoff probe adds deployment-risk classification only as advisory metadata; it does not route learners or implement deployed escalation.
+The production proof-control kernel remains hidden+proofDebt. This arc added
+auditable quality and learner-state layers above that kernel, with
+proof-control no-harm as a hard gate. The first implementation targeted
+in-dialogue scopes: turn, dialogue block, scene, and act. The follow-on
+task/session scaffold added advisory next-task selection. The held-out gate
+showed that selector generalizes to frozen derivation artifacts under a local
+advisory boundary. The handoff probe adds deployment-risk classification only
+as advisory metadata; it does not route learners or implement deployed
+escalation.
 
 ## 2. Current Status and Boundary Conditions
 
@@ -952,7 +966,11 @@ Two human gates are needed later:
 1. Human expert coding for tutor conduct, uptake, and ownership.
 2. Human learner pre/post/transfer for actual learning.
 
-## 9. Work Plan
+## 9. Closed Work Plan
+
+All phases in this work plan are closed for the current artifact pool. The
+sections below are retained to show how the implementation and gates were
+structured.
 
 ## Phase 0: Completed Closeout and Plan Hygiene
 
@@ -1565,9 +1583,9 @@ Representative references:
 
 ## 16. Final Recommendation
 
-Build the next project as **Layered Adaptive Tutor v0**, with hidden+proofDebt frozen as the proof-control kernel and turn/block/scene/act scopes made explicit.
+The completed project should be cited as **Layered Adaptive Tutor v0**, with hidden+proofDebt frozen as the proof-control kernel and turn/block/scene/act scopes made explicit.
 
-The first implementation should not add a new proof controller. It should add:
+The implementation did not add a new proof controller. It added:
 
 1. shared public evidence extraction across turn/block/scene/act;
 2. opportunity-cost budgeting across turn/block/scene/act;
@@ -1576,4 +1594,4 @@ The first implementation should not add a new proof controller. It should add:
 5. self-regulation evaluation;
 6. proof-matched quality-pair scoring.
 
-This route studies richer adaptation without undoing the main result of A20/A21. The current paper and closeout establish that proof-control overlays are not promotable from the artifact pool. The next technical object is an auditable set of in-dialogue quality and learner-state layers that can show gains while hidden+proofDebt remains untouched. Task/session sequencing and human handoff remain later outer-loop projects.
+This route studies richer adaptation without undoing the main result of A20/A21. The current paper and closeout establish that proof-control overlays are not promotable from the artifact pool. The implemented technical object is an auditable set of in-dialogue quality and learner-state layers that can show gains while hidden+proofDebt remains untouched. Task/session sequencing and human/hybrid handoff were added only as advisory outer-loop probes, not as runtime routing or human-learning claims.
