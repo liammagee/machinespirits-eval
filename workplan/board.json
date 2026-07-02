@@ -1,17 +1,18 @@
 {
-  "generated": "2026-07-02T22:43:02.022Z",
+  "generated": "2026-07-02T23:04:24.138Z",
   "counts": {
-    "total": 67,
+    "total": 68,
     "byStatus": {
-      "done": 58,
+      "done": 59,
       "blocked": 1,
       "dropped": 2,
       "archived": 4,
-      "active": 2
+      "active": 1,
+      "triaged": 1
     },
     "byType": {
       "research": 35,
-      "experiment": 6,
+      "experiment": 7,
       "content": 2,
       "infra": 9,
       "maintenance": 5,
@@ -21,30 +22,49 @@
   },
   "items": [
     {
-      "id": "register-taxonomy-negative-registers",
-      "title": "Implement register taxonomy and negative-register evaluation",
-      "status": "active",
+      "id": "negative-register-effect-estimation-grid",
+      "title": "Estimate negative-register effects with stance-fidelity gating",
+      "status": "triaged",
       "type": "experiment",
-      "priority": "P1",
-      "owner": "codex",
+      "priority": "P2",
+      "owner": "unassigned",
       "source": "manual",
-      "created": "2026-07-02",
+      "created": "2026-07-03",
       "updated": "2026-07-03",
-      "verification": "Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, paid smoke/full run IDs are recorded with register-specific results, and the hand-authored corrosive-exemplar test separates v2.2 guardrail sensitivity from register-rubric compression.",
-      "claim_status": "planned",
+      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
+      "claim_status": "future",
       "links": {
         "notes": [
+          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
           "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
+          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
+        ],
+        "exports": [
+          "exports/charisma-desire-breakthrough-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-matrix.json",
+          "exports/negative-register-corrosive-exemplar-results.md"
+        ],
+        "runs": [
+          "eval-2026-07-02-e7b15809",
+          "eval-2026-07-02-7e461a5c",
+          "eval-2026-07-02-5c4d52e6"
+        ],
+        "items": [
+          "register-taxonomy-negative-registers"
         ]
       },
+      "depends_on": [
+        "register-taxonomy-negative-registers"
+      ],
       "tags": [
         "registers",
-        "id-director",
-        "charisma",
         "negative-registers",
-        "evaluation"
-      ],
-      "branch": "codex/negative-register-exemplar-test"
+        "effect-estimation",
+        "stance-fidelity"
+      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -233,6 +253,32 @@
         "notes": "TODO.md"
       },
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "register-taxonomy-negative-registers",
+      "title": "Implement register taxonomy and negative-register evaluation",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-03",
+      "verification": "Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, paid smoke/full run IDs are recorded with register-specific results, and the hand-authored corrosive-exemplar test separates v2.2 guardrail sensitivity from register-rubric compression.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ]
+      },
+      "tags": [
+        "registers",
+        "id-director",
+        "charisma",
+        "negative-registers",
+        "evaluation"
+      ],
+      "branch": "codex/negative-register-exemplar-test"
     },
     {
       "id": "scriptorium-evidence-workbenches",

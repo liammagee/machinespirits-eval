@@ -1,7 +1,7 @@
 ---
 id: register-taxonomy-negative-registers
 title: Implement register taxonomy and negative-register evaluation
-status: active
+status: done
 type: experiment
 priority: P1
 owner: codex
@@ -9,7 +9,7 @@ source: manual
 created: 2026-07-02
 updated: 2026-07-03
 verification: Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, paid smoke/full run IDs are recorded with register-specific results, and the hand-authored corrosive-exemplar test separates v2.2 guardrail sensitivity from register-rubric compression.
-claim_status: planned
+claim_status: methods
 links:
   notes:
     - notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md
@@ -57,3 +57,5 @@ Acceptance:
 2026-07-03 Codex: Ran the paid cue-repair canary `eval-2026-07-02-7e461a5c` on cells 196/197/198 across boredom, irrelevance, and rote-parroting targets. Generation completed 9/9 in 31.6 minutes; tutor-only v2.2 scoring completed 9/9 with mean tutor score 90.1; register-rubric scoring completed 14/14. The first matrix pass showed 6/9 faithful, 2 exclusions, and 1 invalid, but row inspection found two gate implementation bugs: new registry cue phrases were not counted as marker evidence, and substring forbidden-phrase matching falsely treated "not stupidity" as the banned insult "stupid." After repairing `services/registerStanceFidelity.js` to use registry `stance_fidelity_cues` and word-bounded forbidden phrase matching, the same scored rows classify as 9/9 faithful, 0 exclusions, and 0 invalid violations. Next empirical step: either a modest held-out-target check on frustration/question_flood or the full five-target negative-arm grid with assigned-arm and faithful-arm reporting.
 
 2026-07-03 Codex: Ran the held-out two-target check first, as requested: `eval-2026-07-02-5c4d52e6` covered cells 196/197/198 across frustration and question-flood. Generation completed 6/6 rows; tutor-only v2.2 scoring completed 6/6 with mean tutor score 87.8; register-rubric scoring completed 9/9 slices. The breakthrough matrix found 3/6 strict candidate breakthroughs and 4/6 positive local outcomes, while the stance gate classified 6/6 assigned negative-register rows as faithful evidence with 0 exclusions and 0 invalid person-attack violations. By arm, faithful evidence was irony 2/2, sarcasm 2/2, and face-threat 2/2; positive local outcomes were irony 2/2, sarcasm 1/2, and face-threat 1/2. Combined with the prior 9-row cue-repair canary, the repaired stance contract has now sampled all five controlled resistance targets with 15/15 faithful assigned rows and 0 invalid violations. Practical next step: do not spend on the full five-target negative-arm grid merely for treatment-fidelity proof; run it only if the question is a consolidated assigned-arm versus faithful-arm effect estimate with clear reporting that the evidence remains simulated and non-human-facing.
+
+2026-07-03 Codex: Closed this implementation item for merge. Future effect estimation is split into `negative-register-effect-estimation-grid` so the completed measurement repair is not conflated with an optional larger paid grid.
