@@ -1,0 +1,33 @@
+# Strategy Ledger Phase 3 matrix — ravensmark block
+# (STRATEGY-LEDGER-PHASE3-PREREGISTRATION.md; single-delta arm ladder,
+# repeats interleaved so an interrupted matrix stays arm-balanced.)
+base:
+  world: config/drama-derivation/world-009-ravensmark.yaml
+  script: config/drama-derivation/tutor-scripts/ravensmark-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+arms:
+  - label: baseline-r1
+  - label: ledger-r1
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: ledger-palette-r1
+    flags: { strategy-ledger: '{"registerPalette":["modern","period"]}' }
+  - label: ledger-learner-r1
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}', learner-ledger: true }
+  - label: baseline-r2
+  - label: ledger-r2
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: ledger-palette-r2
+    flags: { strategy-ledger: '{"registerPalette":["modern","period"]}' }
+  - label: ledger-learner-r2
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}', learner-ledger: true }
+  - label: baseline-r3
+  - label: ledger-r3
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: ledger-palette-r3
+    flags: { strategy-ledger: '{"registerPalette":["modern","period"]}' }
+  - label: ledger-learner-r3
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}', learner-ledger: true }
