@@ -103,7 +103,8 @@ function applyEngagementRegisterArm(engagementState, assignedRegisterArm) {
   const definition = getEngagementRegisterDefinition(assignedRegisterArm);
   if (!definition) return engagementState;
   const baseReason = engagementState.register_reason || engagementState.mode_reason || '';
-  const assignedReason = `${baseReason} Experiment arm assigns ${assignedRegisterArm} under the same resistant precondition.`.trim();
+  const assignedReason =
+    `${baseReason} Experiment arm assigns ${assignedRegisterArm} under the same resistant precondition.`.trim();
   return {
     ...engagementState,
     router_selected_register: selectedRegister,

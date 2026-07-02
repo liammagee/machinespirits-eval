@@ -48,3 +48,15 @@ Acceptance:
 - The composition matrix is pre-registered in the plan note (§5) with
   frozen hypotheses H1-H3, per-suite local decision rules, and stop rules;
   no paid run without a recorded go decision.
+
+2026-07-02 Claude: Implementation complete on `worktree-blueprint-composition`
+(plan note §7 has the full log). Registry + loader + enforced-as-check tests,
+action-contract middleware extracted from the LangGraph runner (ownership gate
+excluded; observe-don't-repair), both id-director entry paths wired, cells
+199-200 registered and validate-config clean. Stage-0 green: focused tests
+76/76, blueprint tests 11/11, full hermetic suite green except 12 pre-existing
+provableDiscourse failures reproduced identically on the base commit. Key
+composability corrections recorded: writing_pad_enabled is dead config (pads
+key on learnerId; only the drama pad lives on this chassis — A7 cross-session
+claim NOT inherited), and the conventional superego structurally conflicts
+with the id-director chassis. No paid run; the §5 matrix awaits a go decision.

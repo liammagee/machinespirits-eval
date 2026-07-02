@@ -29,6 +29,14 @@ chassis:
     charisma_target: true
     multi_agent_tutor: true
     multi_agent_learner: true
+  # The dynamic learner is the measurement instrument, held constant across
+  # every composition arm (cell 193 comparator included). It deliberately
+  # stays on the base ego_superego profile even though the tutor side is
+  # recognition-oriented: recognition orientation is a TUTOR-side calibration
+  # mechanism here, and switching the learner to ego_superego_recognition
+  # would vary the instrument between arms and confound the contrast.
+  base_profile_fields:
+    learner_architecture: ego_superego
 
 modules:
   orientation_prompt:
@@ -45,6 +53,9 @@ modules:
       id's generated_prompt via the <recognition_mode_branch> of
       prompts/tutor-id-director.md (cell 104 precedent). The ego skeleton file
       is inert on this path — the id's generated_prompt fully replaces it.
+      Tutor-side only by design: the learner instrument stays on the base
+      ego_superego profile (see chassis.base_profile_fields), so this module
+      does NOT switch the learner to ego_superego_recognition.
 
   register_router:
     title: Engagement-register routing (+ cell-193 composite resistance repairs)

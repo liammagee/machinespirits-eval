@@ -6983,7 +6983,7 @@ profiles:
   #   node scripts/eval-cli.js validate-config \
   #     --profile cell_199_blueprint_kernel_verified,cell_200_blueprint_full_verified
   cell_199_blueprint_kernel_verified:
-    description: "Blueprint kernel (cell 199): recognition orientation + drama-pad memory + cell-193 engagement-register composite on the id-director chassis. The three-layer kernel arm of the pre-registered composition test (notes/2026-07-02-blueprint-composition-plan.md §5)."
+    description: "Blueprint kernel (cell 199): recognition orientation + drama-pad memory + cell-193 engagement-register composite on the id-director chassis. The three-layer kernel arm of the pre-registered composition test (notes/2026-07-02-blueprint-composition-plan.md §5). Recognition orientation is tutor-side only BY DESIGN: the dynamic learner stays on the base ego_superego profile so the instrument is constant across arms (see config/tutor-blueprint.yaml chassis note)."
     factors:
       prompt_type: recognition
       multi_agent_tutor: true
@@ -7032,7 +7032,7 @@ profiles:
         max_tokens: 16000
 
   cell_200_blueprint_full_verified:
-    description: "Blueprint full (cell 200): the cell 199 kernel plus the extracted Plan 2.x action-contract middleware (typed action selection, contract, realization check, closure ledger — services/blueprintActionContracts.js). The full-stack arm of the pre-registered composition test."
+    description: "Blueprint full (cell 200): the cell 199 kernel plus the extracted Plan 2.x action-contract middleware (typed action selection, contract, realization check, closure ledger — services/blueprintActionContracts.js). The full-stack arm of the pre-registered composition test. Learner instrument held at base ego_superego across arms by design (see cell 199 / registry chassis note)."
     factors:
       prompt_type: recognition
       multi_agent_tutor: true

@@ -83,7 +83,9 @@ test('ledger round-trips through both trace persistence shapes', () => {
   });
 
   const interactionShape = [{ role: BLUEPRINT_CONTRACT_TRACE_ROLE, state: payload }];
-  const adapterShape = { consolidatedTrace: [{ agent: BLUEPRINT_CONTRACT_TRACE_ROLE, detail: JSON.stringify(payload) }] };
+  const adapterShape = {
+    consolidatedTrace: [{ agent: BLUEPRINT_CONTRACT_TRACE_ROLE, detail: JSON.stringify(payload) }],
+  };
   assert.deepEqual(extractContractLedger(interactionShape), final.ledger);
   assert.deepEqual(extractContractLedger(adapterShape), final.ledger);
 

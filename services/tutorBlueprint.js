@@ -46,8 +46,10 @@ export function validateBlueprint(blueprint) {
     if (!module.evidence) throw new Error(`tutorBlueprint: module ${name} missing evidence pointer`);
     if (module.factors != null && typeof module.factors !== 'object')
       throw new Error(`tutorBlueprint: module ${name} factors must be a map`);
-    if ((module.status === 'conditional' || module.status === 'not_portable_v1') &&
-        !(Array.isArray(module.caveats) && module.caveats.length > 0)) {
+    if (
+      (module.status === 'conditional' || module.status === 'not_portable_v1') &&
+      !(Array.isArray(module.caveats) && module.caveats.length > 0)
+    ) {
       throw new Error(`tutorBlueprint: module ${name} is ${module.status} but records no caveats`);
     }
   }
@@ -68,7 +70,7 @@ export function validateBlueprint(blueprint) {
  */
 export function resolveBlueprintModules(moduleNames, { blueprint = loadBlueprint() } = {}) {
   const factors = { ...(blueprint.chassis?.base_factors || {}) };
-  const profileFields = {};
+  const profileFields = { ...(blueprint.chassis?.base_profile_fields || {}) };
   const warnings = [];
   for (const name of moduleNames || []) {
     const module = blueprint.modules[name];

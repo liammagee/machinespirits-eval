@@ -72,11 +72,7 @@ test('blueprint cells in tutor-agents.yaml carry exactly the resolved factors', 
     const cell = profiles[resolved.cell];
     assert.ok(cell, `cell ${resolved.cell} must exist in tutor-agents.yaml`);
     for (const [key, value] of Object.entries(resolved.factors)) {
-      assert.deepEqual(
-        cell.factors?.[key],
-        value,
-        `${resolved.cell} factors.${key} must match blueprint resolution`,
-      );
+      assert.deepEqual(cell.factors?.[key], value, `${resolved.cell} factors.${key} must match blueprint resolution`);
     }
     for (const [key, value] of Object.entries(resolved.profileFields)) {
       assert.deepEqual(cell[key], value, `${resolved.cell} ${key} must match blueprint resolution`);

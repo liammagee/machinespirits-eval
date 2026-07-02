@@ -122,4 +122,57 @@ Register both in `EVAL_ONLY_PROFILES`; run the cell-config-auditor.
 
 ## 7. Implementation log
 
-(appended as work lands)
+2026-07-02 — Implementation landed on `worktree-blueprint-composition`:
+
+- Composability trace corrected two §3 assumptions. (a) `writing_pad_enabled`
+  is dead config: no JS reads it; pads key on `learnerId`, which the runner
+  always supplies. Two distinct pads exist — the tutor-core SQLite
+  three-layer pad (dialogue-engine path; the A7 +1.31/session evidence) and
+  the drama pads (`services/memory/*WritingPad.js`; what the id-director
+  path reads via `buildNarrativeSummary` and the interaction loop writes).
+  The `writing_pad` module is therefore declared `inherent` on this chassis,
+  with the A7 cross-session claim explicitly NOT inherited. (b) The
+  conventional superego is structurally excluded: the id-director re-uses
+  the `superego:` YAML block as the id and short-circuits the deliberation
+  loop, so `superego_error_correction` is `conflicts_with: chassis`.
+- `config/tutor-blueprint.yaml` + `services/tutorBlueprint.js`: modules
+  declared with evidence pointers and portability status; profile resolution
+  enforced-as-check by `services/__tests__/tutorBlueprint.test.js` against
+  the explicit cell factor blocks (6/6 tests).
+- `services/blueprintActionContracts.js`: the Plan 2.x
+  select→contract→verify→close cycle extracted from the LangGraph runner as
+  pure per-turn middleware. Ownership gate not ported (proof-state-specific);
+  realization checks recorded in the trace, never used to repair the tutor
+  message. Ledger continuity rides the dialogue trace exactly as register
+  history does. 5/5 middleware tests, including a cross-turn
+  close-the-pending-intervention round-trip through both trace shapes.
+- `idDirectorEngine.js`: `factors.action_contracts` threaded through both
+  entry paths; `<adaptation_contract>` block injected into the id user
+  message; contract/ledger persisted as an `action_contract` trace entry.
+  Contract failures degrade to a warning, never kill the turn.
+- Cells `cell_199_blueprint_kernel_verified` (orientation + drama pad +
+  cell-193 register composite) and `cell_200_blueprint_full_verified`
+  (kernel + action contracts) registered in `tutor-agents.yaml` and
+  `EVAL_ONLY_PROFILES`; `validate-config` clean (0 warnings, 0 errors).
+- Stage-0: focused id-director/router/blueprint tests green; full hermetic
+  suite green except 12 pre-existing `provableDiscourse.test.js` failures
+  reproduced bit-identically on the base commit (fresh-worktree epoch/
+  snapshot state, not this change); whole-repo eslint clean; prettier clean
+  on all files this branch touches (11 pre-existing warns inherited from
+  main are out of scope).
+
+Cell-config audit (same day): registration, naming, runner dispatch, and
+scoring-channel routing all passed. One substantive finding — cells 199/200
+pair a recognition tutor with the base (non-recognition) `ego_superego`
+learner profile, and no id-director precedent existed for that pairing.
+Resolution: this is deliberate, now documented and enforced. The dynamic
+learner is the measurement instrument and is held constant across every
+composition arm (the cell 193 comparator uses the same profile); switching
+it to `ego_superego_recognition` would vary the instrument between arms and
+confound the contrast. The registry chassis now declares
+`base_profile_fields.learner_architecture: ego_superego`, the consistency
+test enforces it on every blueprint cell, and both cell descriptions state
+the choice.
+
+No paid run has been performed. The §5 matrix remains gated on a recorded
+go decision.
