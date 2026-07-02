@@ -81,3 +81,15 @@ coverage 1.00). Levers measurably unexercised: 0/24 register switches,
 blocks 1-3/arm, all runs grounded at the forcing turn (ceiling). Report:
 exports/dramatic-derivation/strategy-ledger/phase3-contrasts-report.{json,md}.
 Pilot null stands; any binding-conditions follow-up is a new pre-registration.
+
+2026-07-03 Claude: Strategy Ledger v2 (mechanism trialling) designed after the
+operator's re-articulation: strategy = choice among adaptive mechanisms made by
+reviewing history (effectiveness review, not conformance audit), guiding but
+not determining turns (licensed departures, justified_deviation vocabulary),
+layered adjudication over one instrument (scene release INTENT under
+release-authority with guards binding). Spec: LAYERED-DECISION-LOOPS-PLAN.md
+Part 6. Blocked on integration: register-taxonomy (cells 196-198) and
+blueprint-composition (cells 199-200) worktrees must merge first; then refresh
+from main, re-run v1 gates, finalize the v2 pre-registration against the
+merged register registry. Binding-conditions precondition gate: T* variance
+must exist before any matrix spends.
