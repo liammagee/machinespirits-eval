@@ -803,6 +803,25 @@ section.fg::before {
   display: grid;
   gap: 3px;
 }
+.alternatives__head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-bottom: 1px;
+}
+.onboarding__cta {
+  display: inline-flex;
+  margin: 0.2em 0 0.8em;
+  font-family: "JetBrains Mono", monospace;
+}
+.onboarding__aside {
+  font-size: var(--s-1);
+  color: var(--ink-3);
+  font-style: italic;
+}
+.preflight-note .mini-btn { margin: 0 0.25em; }
 .alt-row {
   all: unset;
   cursor: pointer;
@@ -2116,19 +2135,15 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   font-variation-settings: "opsz" 16;
 }
 
-/* persona — compact horizontal scroll row */
+/* persona — compact wrapping chip row (no inner scroll: an overflow box here
+   captures the wheel and traps page scrolling mid-column) */
 .persona-strip {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin: 4px 0 6px;
-  max-height: 112px;
-  overflow: auto;
-  scrollbar-width: thin;
   padding-bottom: 2px;
 }
-.persona-strip::-webkit-scrollbar { height: 4px; }
-.persona-strip::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--ink) 16%, transparent); }
 .persona-chip {
   all: unset;
   cursor: pointer;
@@ -2157,7 +2172,32 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   color: var(--ink-3);
   font-size: 1.02em;
   font-variation-settings: "opsz" 14;
+  max-width: 26ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* collapsed research-probe personas */
+.persona-more { margin: 0 0 6px; }
+.persona-more > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0.45em;
+  padding: 2px 0 3px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.92);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.persona-more > summary::-webkit-details-marker { display: none; }
+.persona-more > summary .chev { color: var(--brick); transition: transform 0.15s; display: inline-block; }
+.persona-more[open] > summary .chev { transform: rotate(90deg); }
+.persona-more > summary .count { color: var(--ink-3); letter-spacing: 0.04em; text-transform: none; }
+.persona-more > summary .active { color: var(--moss-deep); text-transform: none; letter-spacing: 0.02em; }
+.persona-strip--probes { margin-top: 4px; }
 .persona-chip.is-active {
   background: var(--ochre);
   color: var(--ink);
@@ -2576,15 +2616,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                 <span x-show="!assist.pending">ask</span>
                 <span x-show="assist.pending">...</span>
               </button>
-              <button class="assist-btn" type="button" @click="assist.dryRun = !assist.dryRun" :aria-pressed="assist.dryRun">
-                <span x-text="assist.dryRun ? 'dry on' : 'dry off'"></span>
-              </button>
               <button class="assist-btn" type="button" @click="assist.open = !assist.open" :aria-pressed="assist.open">
                 <span x-text="assist.open ? 'hide' : 'history'"></span>
               </button>
             </div>
-            <div class="assist-meta" x-show="assistHealth.provider === 'none' && !useClaudeCli">
-              Set OPENROUTER_API_KEY, enable substrate: local claude, or switch dry run on.
+            <div class="assist-meta" x-show="assistDisabled">
+              concierge is offline — no model key.
+              <button class="mini-btn" type="button" @click="dryRunTurns = true">try it in dry run (free)</button>
             </div>
             <div class="assist-history" x-show="assist.open">
               <template x-for="(m, i) in assist.messages.slice(-4)" :key="'assist-' + i + '-' + m.role">
@@ -2775,40 +2813,72 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <span class="hint" x-text="mode === 'human' ? 'used when AI writes learner lines' : personaName"></span>
           </div>
           <div class="persona-strip">
-            <template x-for="p in personas" :key="'stage-' + p.id">
+            <template x-for="p in curatedPersonas" :key="'stage-' + p.id">
               <button
                 class="persona-chip"
                 :class="{'is-active': personaId === p.id}"
                 @click="personaId = p.id"
+                :title="p.hint"
               >
                 <span class="name" x-text="p.name"></span>
                 <span class="hint" x-text="'· ' + p.hint"></span>
               </button>
             </template>
           </div>
+          <details class="persona-more" x-show="probePersonas.length">
+            <summary>
+              <span class="chev">▸</span>
+              <span>research probes</span>
+              <span class="count" x-text="probePersonas.length + ' scripted stress-test learners'"></span>
+              <template x-if="activeProbePersona">
+                <span class="active" x-text="'· active: ' + activeProbePersona.name"></span>
+              </template>
+            </summary>
+            <div class="persona-strip persona-strip--probes">
+              <template x-for="p in probePersonas" :key="'probe-' + p.id">
+                <button
+                  class="persona-chip"
+                  :class="{'is-active': personaId === p.id}"
+                  @click="personaId = p.id"
+                  :title="p.hint"
+                >
+                  <span class="name" x-text="p.name"></span>
+                </button>
+              </template>
+            </div>
+          </details>
         </section>
 
         <section class="stage-block">
           <div class="mode">
             <span class="mode__lbl">◦ who writes the lines?</span>
             <div class="mode__toggle">
-              <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')">human learner</button>
-              <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')">human teacher</button>
-              <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">AI learner</button>
+              <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')" title="you type the learner's lines; the tutor cell answers">I play learner</button>
+              <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')" title="you type the tutor's lines; the simulated learner answers">I play tutor</button>
+              <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')" title="the AI drafts both sides, one exchange at a time">AI plays both</button>
             </div>
+            <span class="mode__meta" x-show="mode === 'human'">— you write the learner; the tutor cell answers</span>
+            <span class="mode__meta" x-show="mode === 'teacher'">— you write the tutor; <span x-text="personaName"></span> answers</span>
+            <span class="mode__meta" x-show="mode === 'auto'">— <span x-text="personaName"></span> and the tutor cell draft each exchange</span>
           </div>
           <div class="preflight-note" x-show="turnsNeedKeyWarning">
-            OPENROUTER_API_KEY is not set. Enable dry run, substrate: local claude, or set the key.
+            No model key configured, so live turns can't run. Either
+            <button class="mini-btn" type="button" @click="dryRunTurns = true">switch to dry run · free canned output</button>
+            <button class="mini-btn" type="button" @click="useClaudeCli = true">use the local claude CLI</button>
+            or set OPENROUTER_API_KEY and restart the server.
           </div>
           <div class="stage-actions">
-            <button class="stage-btn stage-btn--primary" type="button" @click="startPrimary()" :disabled="pending || !resolved || (mode === 'auto' && turnsNeedKeyWarning)">
+            <button class="stage-btn stage-btn--primary" type="button" @click="startPrimary()" :disabled="pending || !resolved || (mode === 'auto' && turnsNeedKeyWarning)"
+                    :title="mode === 'auto' ? 'draft the next learner → tutor exchange' : 'jump to the composer and start typing'">
               <span x-text="startActionLabel"></span>
             </button>
-            <a class="stage-btn" :href="runLauncherHref()">batch via launcher →</a>
-            <button class="stage-btn" type="button" @click="dryRunTurns = !dryRunTurns" :aria-pressed="dryRunTurns">
-              <span x-text="dryRunTurns ? 'dry run on' : 'dry run off'"></span>
+            <a class="stage-btn" :href="runLauncherHref()" title="send this cell through eval scenarios in the run launcher — produces batch scripts instead of one live scene">batch via launcher →</a>
+            <button class="stage-btn" type="button" @click="dryRunTurns = !dryRunTurns" :aria-pressed="dryRunTurns"
+                    title="dry run substitutes free canned output for real model calls — for trying the desk without spending">
+              <span x-text="dryRunTurns ? '✓ dry run · free' : '○ dry run · free'"></span>
             </button>
-            <button class="stage-btn" type="button" @click="exportTranscript()" :disabled="!turns.length">export transcript</button>
+            <button class="stage-btn" type="button" @click="exportTranscript()" :disabled="!turns.length"
+                    :title="turns.length ? 'download this scene as markdown' : 'no turns yet — start a scene first'">export transcript</button>
           </div>
         </section>
 
@@ -2830,10 +2900,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               </div>
             </template>
             <div class="alternatives" x-show="alternatives.length">
+              <div class="alternatives__head">≈ near matches · click to switch</div>
               <template x-for="alt in alternatives" :key="alt.name">
                 <button class="alt-row" type="button" @click="pickAlternative(alt)">
                   <span class="n" x-text="alt.name.replace('cell_','c')"></span>
-                  <span class="relaxed" x-text="alt.relaxed?.length ? 'relaxed: ' + alt.relaxed.join(', ') : 'exact aside from score'"></span>
+                  <span class="relaxed" x-text="alt.relaxed?.length ? 'gives up: ' + alt.relaxed.join(', ') : 'also an exact match'"></span>
                   <span x-text="alt.score + '/' + maxScore"></span>
                 </button>
               </template>
@@ -3281,14 +3352,19 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <!-- onboarding -->
         <template x-if="turns.length === 0 && resolved">
           <div class="onboarding">
-            <p>This is a script desk for a <em>pedagogical drama</em>. Set the source and director frame in <em>§00</em>, pick a tutor architecture, then use the composer below to write the next line of the scene.</p>
-            <p>For a human-in-the-loop draft, choose <em>I write learner</em> or <em>I write tutor</em>. For a fully synthetic draft, choose <em>AI writes both</em> and press <em>Start scene</em>.</p>
+            <p>This desk stages a <em>pedagogical drama</em>. Everything needed to start is in the <em>Stage</em> panel on the left: a topic, a tutor style, a learner persona, and who writes the lines.</p>
+            <p x-show="mode === 'human'">You are playing the <em>learner</em>. Write the learner's opening line in the composer below — the tutor cell (<em x-text="resolved?.name"></em>) answers.</p>
+            <p x-show="mode === 'teacher'">You are playing the <em>tutor</em>. Write the tutor's opening line below — <em x-text="personaName"></em> replies.</p>
+            <p x-show="mode === 'auto'">The AI plays <em>both sides</em>: <em x-text="personaName"></em> opens, the tutor cell replies, one exchange per press.</p>
+            <button class="stage-btn stage-btn--primary onboarding__cta" type="button" x-show="mode === 'auto'"
+                    @click="step()" :disabled="pending || turnsNeedKeyWarning">Start scene →</button>
+            <p class="onboarding__aside">The director frame, inner critic, and model substrates live under <em>fine controls</em>; scores and research context under <em>dossier</em>.</p>
           </div>
         </template>
 
         <template x-if="!resolved">
           <div class="onboarding">
-            <p>Pick an <em>approach</em> and an <em>inner critic</em> on the left. Every combination resolves to a specific evaluation cell.</p>
+            <p>Pick a <em>tutor style</em> on the left. Every combination of stage choices resolves to a registered evaluation cell.</p>
           </div>
         </template>
 
@@ -3724,7 +3800,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         pending: false,
         proposal: null,
         proposalResolved: null,
-        dryRun: false,
       },
       restore: {
         available: false,
@@ -3772,6 +3847,22 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
       get personaName() {
         return this.personas.find((p) => p.id === this.personaId)?.name || this.personaId;
+      },
+
+      // Curated personas get chips; scripted stress-test probes (long
+      // machine-authored hints, ids ending in _probe) collapse behind a
+      // drawer so the stage panel stays scannable.
+      isProbePersona(p) {
+        return /_probe$/.test(p.id) || (p.hint || '').length > 64;
+      },
+      get curatedPersonas() {
+        return this.personas.filter((p) => !this.isProbePersona(p));
+      },
+      get probePersonas() {
+        return this.personas.filter((p) => this.isProbePersona(p));
+      },
+      get activeProbePersona() {
+        return this.probePersonas.find((p) => p.id === this.personaId) || null;
       },
 
       get totalLectures() {
@@ -3825,12 +3916,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
       get startActionLabel() {
         if (this.mode === 'auto') return this.turns.length ? 'Next exchange →' : 'Start scene →';
-        if (this.mode === 'teacher') return 'Write tutor line →';
-        return 'Write learner line →';
+        if (this.mode === 'teacher') return 'Write tutor line ↓';
+        return 'Write learner line ↓';
       },
 
       get assistDisabled() {
-        return this.assistHealth.provider === 'none' && !this.useClaudeCli && !this.assist.dryRun;
+        return this.assistHealth.provider === 'none' && !this.useClaudeCli && !this.dryRunTurns;
       },
 
       get turnsNeedKeyWarning() {
@@ -3945,7 +4036,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           if (!raw) return;
           const snapshot = JSON.parse(raw);
           const turnCount = Array.isArray(snapshot.turns) ? snapshot.turns.length : 0;
-          if (!snapshot || (!turnCount && !snapshot.topic)) return;
+          // Only offer a restore when there is an actual scene to bring back —
+          // config alone (topic defaults etc.) is not worth a banner.
+          if (!snapshot || !turnCount) return;
           this.restore = { available: true, dismissed: false, turnCount, snapshot };
         } catch {
           localStorage.removeItem('ms-chat-session-v1');
@@ -4246,7 +4339,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               messages: this.assist.messages,
               currentConfig: this.currentAssistConfig(),
               useClaudeCli: this.useClaudeCli,
-              dryRun: this.assist.dryRun,
+              dryRun: this.dryRunTurns,
             }),
           });
           const data = await res.json();
