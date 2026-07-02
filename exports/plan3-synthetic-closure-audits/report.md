@@ -4,15 +4,15 @@ Offline audit over existing artifacts. No LLM calls were made.
 
 ## Inputs
 
-- Worktree: `/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-optional-probes`
+- Worktree: `/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-sfs-audit`
 - DB: `data/evaluations.db`
 - Logs: `logs/tutor-dialogues`
 - Exports: `exports`
 
 ## Corpus
 
-- DB rows read: 16270
-- DB/log recommendation texts: 183104
+- DB rows read: 16285
+- DB/log recommendation texts: 183149
 - Dialogue records: 13395
 - Tutor turns: 63707
 - Learner turns: 58686
@@ -24,12 +24,12 @@ Offline audit over existing artifacts. No LLM calls were made.
 
 | audit | status | observed metric | gate |
 |---|---:|---:|---|
-| Answer leak/risk | PASS | 300/246811 high-risk (0.1%) | Recognition answer-delivery risk <= 10% with n >= 10 |
+| Answer leak/risk | PASS | 300/246856 high-risk (0.1%) | Recognition answer-delivery risk <= 10% with n >= 10 |
 | Help ladder | PASS | 6928/7804 compliant (88.8%) | Spontaneous help-ladder compliance >= 80% after learner struggle or false mastery |
 | Mastery gate phase 0 | PASS | 38/265 assessable unsupported closures (14.3%) | Unsupported mastery/advancement closure <= 15% with n >= 10 |
 | Learner fidelity | PROXY | 8/58686 false-mastery turns (0.0%) | Descriptive only: prompted learner fidelity cannot be validated without human/item anchors |
 | First-error localization | PASS | 29/29 localizable failure arms (100.0%) | >= 90% of non-grounding detector arms carry a deterministic first-error locator |
-| SFS | SCAFFOLDED_NOT_RUN | ~144 single-turn generations unless a matched targeted/mismatched/generic corpus is materialized first | Selective Flip Score requires targeted, mismatched, and generic feedback generations over the same seeded misconception |
+| SFS | COMPLETE | SFS 0.000; targeted 1.000; false-flip 1.000; rows 150 | Selective Flip Score requires targeted, mismatched, and generic feedback generations over the same seeded misconception |
 | IRT ability placement | BLOCKED | 20 pilot item stubs | IRT placement requires human-anchored, psychometrically meaningful items and response data |
 
 ## Notes On Closure
@@ -45,8 +45,8 @@ Gate: Recognition answer-delivery risk <= 10% with n >= 10.
 
 | family | n | high-risk | rate |
 |---|---:|---:|---:|
-| base | 32752 | 58 | 0.2% |
-| unknown | 161696 | 203 | 0.1% |
+| base | 32788 | 58 | 0.2% |
+| unknown | 161705 | 203 | 0.1% |
 | recognition | 50686 | 39 | 0.1% |
 | placebo | 429 | 0 | 0.0% |
 | derivation | 1248 | 0 | 0.0% |
@@ -168,6 +168,6 @@ Detector reports: 4; failure arms: 29; localizable: 29 (100.0%).
 
 ## SFS And IRT
 
-- SFS: SCAFFOLDED_NOT_RUN. Materialize a JSONL with misconception id, feedback condition, pre/post learner answer, and deterministic flip label; this harness can then add the SFS computation.
+- SFS: COMPLETE_MATCHED_CORPUS. SFS 0.000; targeted 1.000; mismatched 1.000; generic 1.000; false-flip 1.000; paired CI 0.000 to 0.000; artifact: `exports/plan3-sfs-audit/sfs-matched-feedback.json`. Near-zero selectivity means the simulated learner corrects after irrelevant/generic feedback as readily as after targeted feedback. Carry this as a synthetic-learner validity bound into the pilot go-memo; do not treat it as human learning evidence.
 - IRT: BLOCKED_BY_ITEM_BANK. Replace placeholder fractions items with NAEP-derived/approved items, then collect persona responses and human p-values.
 

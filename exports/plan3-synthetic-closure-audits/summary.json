@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-07-02T04:51:50.124Z",
+  "generatedAt": "2026-07-02T05:24:47.363Z",
   "inputs": {
     "dbPath": "/Users/lmagee/Dev/machinespirits/machinespirits-eval/data/evaluations.db",
     "logsDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval/logs/tutor-dialogues",
-    "exportsDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-optional-probes/exports",
-    "pilotItemsPath": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-optional-probes/config/pilot/fractions-items.yaml"
+    "exportsDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-sfs-audit/exports",
+    "pilotItemsPath": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-sfs-audit/config/pilot/fractions-items.yaml"
   },
   "corpus": {
-    "dbRows": 16270,
-    "responseRecords": 183104,
+    "dbRows": 16285,
+    "responseRecords": 183149,
     "dialogues": 13395,
     "tutorTurns": 63707,
     "learnerTurns": 58686,
@@ -21,19 +21,19 @@
     "answerLeak": {
       "status": "PASS",
       "gate": "Recognition answer-delivery risk <= 10% with n >= 10",
-      "totalMessages": 246811,
+      "totalMessages": 246856,
       "highRiskMessages": 300,
-      "highRiskRate": 0.0012155049815445827,
+      "highRiskRate": 0.0012152834040898338,
       "byFamily": {
         "base": {
-          "n": 32752,
+          "n": 32788,
           "highRisk": 58,
-          "highRiskRate": 0.0017708842208109428
+          "highRiskRate": 0.0017689398560448944
         },
         "unknown": {
-          "n": 161696,
+          "n": 161705,
           "highRisk": 203,
-          "highRiskRate": 0.00125544231149812
+          "highRiskRate": 0.001255372437463282
         },
         "recognition": {
           "n": 50686,
@@ -766,11 +766,51 @@
       "nextStep": "Replace placeholder fractions items with NAEP-derived/approved items, then collect persona responses and human p-values."
     },
     "sfs": {
-      "status": "SCAFFOLDED_NOT_RUN",
+      "status": "COMPLETE_MATCHED_CORPUS",
       "gate": "Selective Flip Score requires targeted, mismatched, and generic feedback generations over the same seeded misconception",
-      "reusableTrapDialogues": 2060,
-      "requiredFreshGenerations": "~144 single-turn generations unless a matched targeted/mismatched/generic corpus is materialized first",
-      "nextStep": "Materialize a JSONL with misconception id, feedback condition, pre/post learner answer, and deterministic flip label; this harness can then add the SFS computation."
+      "artifact": "exports/plan3-sfs-audit/sfs-matched-feedback.json",
+      "backend": "codex",
+      "rows": 150,
+      "modelCalls": 150,
+      "invalidChoiceCount": 0,
+      "controls": {
+        "families": [
+          "same_denominator_operation",
+          "magnitude_denominator_bias",
+          "equivalence_scaling",
+          "fraction_of_quantity",
+          "part_whole_mapping"
+        ],
+        "replicates": 10,
+        "conditions": [
+          "targeted",
+          "mismatched",
+          "generic"
+        ],
+        "expectedRows": 150,
+        "itemBank": "config/pilot/fractions-items.yaml with analysis-side misconception tags"
+      },
+      "boundary": "near_zero_selectivity_high_sycophancy",
+      "targetedCorrectFlipRate": 1,
+      "mismatchedCorrectFlipRate": 1,
+      "genericCorrectFlipRate": 1,
+      "falseFlipRate": 1,
+      "selectiveFlipScore": 0,
+      "pairedSelectiveFlip": {
+        "n": 50,
+        "mean": 0,
+        "se": 0,
+        "ci95": [
+          0,
+          0
+        ],
+        "positive": 0,
+        "zero": 50,
+        "negative": 0
+      },
+      "observedMetric": "SFS 0.000; targeted 1.000; false-flip 1.000; rows 150",
+      "interpretation": "Near-zero selectivity means the simulated learner corrects after irrelevant/generic feedback as readily as after targeted feedback.",
+      "nextStep": "Carry this as a synthetic-learner validity bound into the pilot go-memo; do not treat it as human learning evidence."
     }
   }
 }

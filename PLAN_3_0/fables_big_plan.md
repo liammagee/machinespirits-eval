@@ -116,8 +116,9 @@ Ranked by dependency weight:
    $0 offline audit batch over existing logs plus two bounded paid closing
    probes. The hard offline gates are now complete: answer leak/risk,
    help-ladder compliance, mastery-gate phase 0, and first-error localization
-   all pass on existing artifacts; learner fidelity is proxy-only; SFS still
-   needs a matched feedback corpus; and IRT waits on a real A1 item bank. The
+   all pass on existing artifacts; learner fidelity is proxy-only; SFS now
+   confirms near-zero flip selectivity on a fresh matched corpus; and IRT waits
+   on a real A1 item bank. The
    paid probes are also complete: outcome-selected best-of-K returned a null
    on the validated held-out posttest endpoint, so the episode-level
    RL/outcome-reward selector path is closed for the synthetic program; the ESS
@@ -178,7 +179,9 @@ The eval harness is strong. The product shell around it is not.
    help-ladder, mastery-gate, or first-error-localization blocker requiring
    another synthetic enforcement cell; the outcome-selected null closes the
    last plausible synthetic selector upgrade; and the ESS result bounds
-   synthetic-learner over-crediting. Use the Tutor CoPilot RCT effect sizes
+   synthetic-learner over-crediting while the SFS result confirms simulated
+   learner flips are nonselective under targeted, mismatched, and generic
+   feedback. Use the Tutor CoPilot RCT effect sizes
    (+4pp topic mastery overall, +9pp for students of lower-rated tutors) as the
    prior for the pilot power analysis, and treat productive failure (d~=0.36 on
    exactly the pretest/posttest instrument the pilot has) as the best-evidenced
