@@ -57,6 +57,33 @@ test('invalidates person-directed contempt even when the register is vivid', () 
   assert.ok(result.score <= 20);
 });
 
+test('uses registry stance-fidelity cues for face-threat rows', () => {
+  const result = evaluateRegisterStanceFidelity({
+    registerName: 'face_threat_challenge',
+    learnerMessage: 'This still feels like I am parroting the formula.',
+    tutorMessage:
+      'Right now this move is protecting you: the formula sounds complete while the object stays untouched. Name the warped board feature that decides whether the work forms the servant or merely serves the master.',
+    postLearnerMessage: 'My example is the warped tabletop because the flatness proves corrected skill took form.',
+  });
+
+  assert.equal(result.passed, true);
+  assert.equal(result.label, 'faithful');
+  assert.equal(result.gate, 'faithful_arm_evidence');
+});
+
+test('does not treat non-insult discussion of stupidity as banned phrase', () => {
+  const result = evaluateRegisterStanceFidelity({
+    registerName: 'face_threat_challenge',
+    learnerMessage: 'This still feels dead to me.',
+    tutorMessage:
+      'Right now this move is protecting you from the hard hinge. The honest objection is not stupidity; it is the dangerous step Hegel makes you test. Choose hold or break and name the counterexample.',
+    postLearnerMessage: 'I choose hold, cautiously, because the risk has to answer recognition rather than thrill.',
+  });
+
+  assert.equal(result.label, 'faithful');
+  assert.deepEqual(result.forbiddenFound, []);
+});
+
 test('classifies stance labels into prospective evidence dispositions', () => {
   assert.deepEqual(classifyRegisterStanceEvidence({ applies: true, label: 'faithful' }), {
     gate: 'faithful_arm_evidence',

@@ -94,14 +94,39 @@ function findMatches(text, patterns) {
   return patterns.map((pattern) => normalized.match(pattern)?.[0]).filter(Boolean);
 }
 
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function phrasePattern(phrase) {
+  const escaped = escapeRegExp(normalize(phrase).trim()).replace(/\s+/g, '\\s+');
+  const prefix = /^[a-z0-9]/i.test(phrase) ? '\\b' : '';
+  const suffix = /[a-z0-9]$/i.test(phrase) ? '\\b' : '';
+  return new RegExp(`${prefix}${escaped}${suffix}`, 'i');
+}
+
+function findPhraseMatches(text, phrases) {
+  return findMatches(
+    text,
+    (phrases || [])
+      .map((phrase) => String(phrase || '').trim())
+      .filter(Boolean)
+      .map((phrase) => phrasePattern(phrase)),
+  );
+}
+
 function forbiddenPhrases(registerName) {
   const definition = getEngagementRegisterDefinition(registerName);
   return Array.isArray(definition?.forbidden_phrases) ? definition.forbidden_phrases : [];
 }
 
 function findForbiddenPhrases(registerName, text) {
-  const normalized = normalize(text).toLowerCase();
-  return forbiddenPhrases(registerName).filter((phrase) => normalized.includes(String(phrase).toLowerCase()));
+  return findPhraseMatches(text, forbiddenPhrases(registerName));
+}
+
+function stanceFidelityCues(registerName) {
+  const definition = getEngagementRegisterDefinition(registerName);
+  return Array.isArray(definition?.stance_fidelity_cues) ? definition.stance_fidelity_cues : [];
 }
 
 function personAttackMatches(text) {
@@ -232,7 +257,10 @@ export function evaluateRegisterStanceFidelity({ registerName, tutorMessage, lea
     };
   }
 
-  const markerHits = findMatches(tutorMessage, REGISTER_MARKERS[registerName] || []);
+  const markerHits = [
+    ...findPhraseMatches(tutorMessage, stanceFidelityCues(registerName)),
+    ...findMatches(tutorMessage, REGISTER_MARKERS[registerName] || []),
+  ];
   const targetHits = findMatches(tutorMessage, TARGET_DISCIPLINE_PATTERNS);
   const nextMoveHits = findMatches(tutorMessage, NEXT_MOVE_PATTERNS);
   const repairHits = findMatches(`${tutorMessage}\n${postLearnerMessage}`, REPAIR_PATH_PATTERNS);

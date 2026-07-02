@@ -521,3 +521,37 @@ negative registers declare cue lists and that the cues reach the id-director
 message. This is a no-paid repair; the next empirical check should be a small
 fresh smoke or canary, not a full scale-up, to see whether faithful rows rise
 without increasing invalid person-attack violations.
+
+## 13. Addendum (2026-07-03, cue-repair canary)
+
+Paid 9-row canary `eval-2026-07-02-7e461a5c` tested the stance-realization
+repair on cells 196/197/198 across the three diagnostic targets where the
+previous run had multiple weak-fidelity failures: boredom, irrelevance, and
+rote parroting. Generation completed 9/9 rows in 31.6 minutes with
+`codex.gpt-5.5` tutor and learner overrides. Tutor-only v2.2 scoring completed
+9/9 with mean tutor score 90.1. Generic register-rubric scoring completed
+14/14 eligible slices with `openrouter.gpt-mini`.
+
+The first matrix pass reported 6/9 faithful, 2 exclusions, and 1 invalid
+violation. Inspecting the rows showed this was a gate implementation problem,
+not a new generation failure:
+
+- the repaired face-threat cue "right now this move is protecting you" was
+  present in generated rows but was not in the gate's hardcoded marker list;
+- the forbidden-phrase check used substring matching, so "The honest objection
+  is not stupidity" was falsely treated as the banned insult "stupid."
+
+`services/registerStanceFidelity.js` now uses the registry's
+`stance_fidelity_cues` as marker evidence and applies word-bounded phrase
+matching for forbidden phrases. Re-running the no-paid matrix on the same
+scored rows gives the intended canary result: **9/9 faithful evidence rows,
+0/9 exclusions, 0/9 invalid violations**. By arm: irony 3/3, sarcasm 3/3,
+face-threat 3/3.
+
+Practical interpretation: visible stance cues repaired treatment fidelity for
+this sampled Codex canary without triggering valid person-attack violations.
+This supports moving from "fix treatment fidelity" to "estimate effects with
+assigned-arm and faithful-arm reporting," but only after one more modest
+coverage check that includes the two held-out targets (frustration and
+question_flood) or the full five-target negative-arm grid. It still does not
+license any claim that sarcasm is pedagogically safe.
