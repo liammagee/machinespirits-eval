@@ -61,7 +61,8 @@ function applyEngagementRegisterArm(engagementState, assignedRegisterArm) {
   const definition = getEngagementRegisterDefinition(assignedRegisterArm);
   if (!definition) return engagementState;
   const baseReason = engagementState.register_reason || engagementState.mode_reason || '';
-  const assignedReason = `${baseReason} Experiment arm assigns ${assignedRegisterArm} under the same resistant precondition.`.trim();
+  const assignedReason =
+    `${baseReason} Experiment arm assigns ${assignedRegisterArm} under the same resistant precondition.`.trim();
   return {
     ...engagementState,
     router_selected_register: selectedRegister,
@@ -87,6 +88,7 @@ function buildRegisterStanceContract(engagementState) {
     router_selectable: definition.router_selectable === true,
     simulated_only: definition.simulated_only === true,
     stance_contract: definition.stance_contract || '',
+    stance_fidelity_cues: definition.stance_fidelity_cues || [],
     forbidden_phrases: definition.forbidden_phrases || [],
     required_moves: definition.required_moves || [],
     risk_flags: definition.risk_flags || [],

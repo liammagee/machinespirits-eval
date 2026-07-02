@@ -7,7 +7,7 @@ import {
   extractEngagementRegisterHistory,
   routeEngagementMode,
 } from '../engagementModeRouter.js';
-import { getEngagementRegisterNames } from '../engagementRegisterRegistry.js';
+import { getEngagementRegisterDefinition, getEngagementRegisterNames } from '../engagementRegisterRegistry.js';
 
 describe('routeEngagementMode', () => {
   test('defines the adaptive states as engagement registers', () => {
@@ -30,6 +30,18 @@ describe('routeEngagementMode', () => {
       registerHistory: ['scaffolding'],
     });
     assert.equal(routed.selected_register, 'charismatic_challenge');
+  });
+
+  test('negative registers declare visible stance-fidelity cues', () => {
+    for (const registerName of ['ironic_challenge', 'sarcastic_challenge', 'face_threat_challenge']) {
+      const definition = getEngagementRegisterDefinition(registerName);
+      assert.ok(Array.isArray(definition.stance_fidelity_cues), `${registerName} cues should be an array`);
+      assert.ok(definition.stance_fidelity_cues.length >= 3, `${registerName} should have several cue options`);
+      assert.ok(
+        definition.required_moves.some((move) => /cue/.test(move)),
+        `${registerName} required moves should include visible cue discipline`,
+      );
+    }
   });
 
   test('routes authority refusal to accountable-bid authority', () => {

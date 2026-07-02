@@ -20,12 +20,7 @@ const STABLE_ROOT = '/Users/lmagee/Dev/machinespirits/machinespirits-eval';
 
 const DEFAULT_OUT_DIR = path.join(ROOT_DIR, 'exports', 'plan3-synthetic-closure-audits');
 const DEFAULT_SFS_ARTIFACT = path.join(ROOT_DIR, 'exports', 'plan3-sfs-audit', 'sfs-matched-feedback.json');
-const DEFAULT_DAG_SFS_ARTIFACT = path.join(
-  ROOT_DIR,
-  'exports',
-  'plan3-dag-sfs-audit',
-  'dag-sfs-matched-feedback.json',
-);
+const DEFAULT_DAG_SFS_ARTIFACT = path.join(ROOT_DIR, 'exports', 'plan3-dag-sfs-audit', 'dag-sfs-matched-feedback.json');
 const DIRECT_ANSWER_PATTERNS = [
   { code: 'explicit_answer_phrase', re: /\b(?:the|your|correct|right)\s+answer\s+(?:is|would be|should be)\b/i },
   { code: 'solution_phrase', re: /\b(?:the|a)\s+solution\s+(?:is|would be|should be)\b/i },
@@ -871,9 +866,10 @@ function auditDagSfsReadiness() {
     const rows = Number.isFinite(summary.n) ? summary.n : artifact.rows?.length || 0;
     return {
       status:
-        artifact.status === 'complete_dag_sfs' ? 'COMPLETE_PROOF_GROUNDED_CORPUS' : 'COMPLETE_PROOF_GROUNDED_WITH_WARNINGS',
-      gate:
-        'DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring',
+        artifact.status === 'complete_dag_sfs'
+          ? 'COMPLETE_PROOF_GROUNDED_CORPUS'
+          : 'COMPLETE_PROOF_GROUNDED_WITH_WARNINGS',
+      gate: 'DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring',
       artifact: compactPath(DEFAULT_DAG_SFS_ARTIFACT),
       backend: artifact.backendDetail?.label || artifact.backend || 'unknown',
       rows,
@@ -885,10 +881,9 @@ function auditDagSfsReadiness() {
       falseGroundedRate: summary.falseGroundedRate ?? null,
       selectiveProofScore: summary.selectiveProofScore ?? null,
       pairedSelectiveProof: summary.pairedSelectiveProof || null,
-      observedMetric:
-        `DAG-SFS ${num(summary.selectiveProofScore)}; targeted ${num(
-          byCondition.targeted?.proofGroundedRate,
-        )}; false-grounded ${num(summary.falseGroundedRate)}; rows ${int(rows)}`,
+      observedMetric: `DAG-SFS ${num(summary.selectiveProofScore)}; targeted ${num(
+        byCondition.targeted?.proofGroundedRate,
+      )}; false-grounded ${num(summary.falseGroundedRate)}; rows ${int(rows)}`,
       interpretation:
         'Positive DAG-SFS means the synthetic learner discriminates when proof state is public, typed, and scored by exact evidence-edge use.',
       nextStep:
@@ -897,8 +892,7 @@ function auditDagSfsReadiness() {
   }
   return {
     status: 'NOT_RUN',
-    gate:
-      'DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring',
+    gate: 'DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring',
     artifact: compactPath(DEFAULT_DAG_SFS_ARTIFACT),
     requiredFreshGenerations:
       'Run npm run probe:plan3-dag-sfs to materialize a proof-grounded targeted/wrong/generic/nonsense corpus.',

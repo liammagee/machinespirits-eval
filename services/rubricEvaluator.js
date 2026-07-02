@@ -1589,7 +1589,9 @@ ${criteriaText}`;
     .join(',\n');
 
   const labels = rubric?.scale?.labels || {};
-  const scaleLines = Object.entries(labels).map(([score, label]) => `- ${score}: ${label}`).join('\n');
+  const scaleLines = Object.entries(labels)
+    .map(([score, label]) => `- ${score}: ${label}`)
+    .join('\n');
 
   return `You are an expert evaluator of tutor register execution in AI tutoring. Evaluate the TUTOR turn as a local register-conditional slice.
 
@@ -1607,6 +1609,26 @@ Score each dimension from ${rubric?.scale?.min || 1}-${rubric?.scale?.max || 5}:
 ${scaleLines || '- 1: poor\n- 3: adequate\n- 5: excellent'}
 
 ${dimensionCriteria}
+
+## HARD CALIBRATION RULES FOR NEGATIVE REGISTERS
+
+Apply these rules before assigning dimension scores:
+
+- If the tutor uses person-directed contempt, a capacity insult, an attention
+  insult, or a forbidden phrase such as 'if you were paying attention',
+  'lazy', 'stupid', 'clueless', 'pathetic', or 'embarrassing', then
+  target_discipline must be 1, recognition_cost must be at most 2, and
+  reparative_closure must be at most 2. A concrete task instruction does not
+  repair this by itself.
+- If the learner post-turn is mainly apologetic or appeasing, for example it
+  starts with 'sorry', 'I guess', 'I will just', or repeats the tutor's phrase
+  to avoid further exposure, uptake_freedom must be at most 2.
+- If the learner completes the task but remains socially diminished,
+  apologetic, or cornered, post_turn_face_repair must be at most 2.
+- Do not use score 3 as a safe default. For corrosive social harm, use 1 or 2
+  even when the content answer improved. For agency-preserving productive
+  irony, use 4 or 5 when the learner retains refusal rights and the tutor gives
+  a dignified next move.
 
 ## SCENARIO CONTEXT
 

@@ -22,6 +22,7 @@ import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 import interactionEngine, { extractTutorMessage } from '../services/learnerTutorInteractionEngine.js';
 import * as pilotStore from '../services/pilotStore.js';
+import { FEATURE_META, DIRECTOR_META, normalizeAssistProposal } from '../public/chat/assist-helpers.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -205,7 +206,12 @@ function loadResultStatsByProfile() {
   let db;
   try {
     db = new Database(EVAL_DB_PATH, { readonly: true, fileMustExist: true });
-    const cols = new Set(db.prepare('PRAGMA table_info(evaluation_results)').all().map((c) => c.name));
+    const cols = new Set(
+      db
+        .prepare('PRAGMA table_info(evaluation_results)')
+        .all()
+        .map((c) => c.name),
+    );
     for (const required of [
       'profile_name',
       'success',
@@ -511,52 +517,59 @@ router.get('/models', (_req, res) => {
   }
 });
 
+function chatCellCandidates() {
+  const data = evalConfigLoader.loadTutorAgents();
+  const profiles = data?.profiles || {};
+  const orientations = data?.pedagogical_orientations || {};
+  const resultStats = loadResultStatsByProfile();
+  return Object.entries(profiles)
+    .filter(([name]) => /^cell_\d/.test(name))
+    .map(([name, profile]) => summarizeCell(name, profile, orientations, resultStats));
+}
+
+function resolveFeatureSelection(rawFeatures = {}) {
+  const features = normalizeFeatures(rawFeatures || {});
+  const candidates = chatCellCandidates();
+  const target = deriveTarget(features);
+  const scored = candidates.map((cell) => scoreCell(cell, target));
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    const na = cellSortKey(a.cell.name);
+    const nb = cellSortKey(b.cell.name);
+    return na - nb;
+  });
+
+  const best = scored[0];
+  const maxScore = DIMENSION_WEIGHTS.reduce((s, d) => s + d.weight, 0);
+  const exact = best ? best.matches.every((m) => m.match) : false;
+
+  return {
+    features,
+    target,
+    maxScore,
+    matchQuality: exact ? 'exact' : 'closest',
+    resolved: best
+      ? {
+          ...best.cell,
+          score: best.score,
+          matches: best.matches,
+        }
+      : null,
+    alternatives: scored.slice(1, 4).map((s) => ({
+      name: s.cell.name,
+      description: s.cell.description,
+      score: s.score,
+      relaxed: s.matches.filter((m) => !m.match).map((m) => m.dimension),
+    })),
+  };
+}
+
 // Human-readable features map to cell characteristics. The resolver scores every
 // cell against the requested target and returns the best match plus a description
 // of which dimensions matched exactly vs were relaxed.
 router.post('/resolve', (req, res) => {
   try {
-    const features = normalizeFeatures(req.body || {});
-    const data = evalConfigLoader.loadTutorAgents();
-    const profiles = data?.profiles || {};
-    const orientations = data?.pedagogical_orientations || {};
-    const resultStats = loadResultStatsByProfile();
-    const candidates = Object.entries(profiles)
-      .filter(([name]) => /^cell_\d/.test(name))
-      .map(([name, profile]) => summarizeCell(name, profile, orientations, resultStats));
-
-    const target = deriveTarget(features);
-    const scored = candidates.map((cell) => scoreCell(cell, target));
-    scored.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      const na = cellSortKey(a.cell.name);
-      const nb = cellSortKey(b.cell.name);
-      return na - nb;
-    });
-
-    const best = scored[0];
-    const maxScore = DIMENSION_WEIGHTS.reduce((s, d) => s + d.weight, 0);
-    const exact = best.matches.every((m) => m.match);
-
-    res.json({
-      features,
-      target,
-      maxScore,
-      matchQuality: exact ? 'exact' : 'closest',
-      resolved: best
-        ? {
-            ...best.cell,
-            score: best.score,
-            matches: best.matches,
-          }
-        : null,
-      alternatives: scored.slice(1, 4).map((s) => ({
-        name: s.cell.name,
-        description: s.cell.description,
-        score: s.score,
-        relaxed: s.matches.filter((m) => !m.match).map((m) => m.dimension),
-      })),
-    });
+    res.json(resolveFeatureSelection(req.body || {}));
   } catch (err) {
     console.error('[chat] resolve error:', err);
     res.status(500).json({ error: err.message });
@@ -710,6 +723,23 @@ const PERSONA_SKETCHES = {
   struggling_anxious: { name: 'Struggling Anxious', hint: 'easily frustrated · needs reassurance' },
   adversarial_tester: { name: 'Adversarial Tester', hint: 'challenges the tutor · probes reasoning' },
 };
+
+function listChatPersonas() {
+  const base = learnerConfigLoader.listPersonas();
+  const known = new Set(base.map((p) => p.id));
+  // Surface persona-modifier stubs from YAML too (they're valid persona IDs)
+  const yamlModifiers = learnerConfigLoader.loadConfig?.()?.persona_modifiers || {};
+  const extraIds = Object.keys(yamlModifiers).filter((id) => !known.has(id));
+  return [...base, ...extraIds.map((id) => ({ id, name: null, description: null }))].map((p) => {
+    const sketch = PERSONA_SKETCHES[p.id];
+    return {
+      id: p.id,
+      name: p.name || sketch?.name || p.id.replace(/_/g, ' '),
+      hint: sketch?.hint || p.description || '',
+      defaultArchitecture: p.defaultArchitecture || null,
+    };
+  });
+}
 
 // ════════════════════════════════════════════════════════════════════
 //  CURRICULUM (content packages on disk)
@@ -878,9 +908,7 @@ function listCurriculumSceneSources({ includeRaw = false } = {}) {
     sources.push(source);
   }
 
-  const worlds = Array.isArray(artifacts.worlds.world_adaptation_specs)
-    ? artifacts.worlds.world_adaptation_specs
-    : [];
+  const worlds = Array.isArray(artifacts.worlds.world_adaptation_specs) ? artifacts.worlds.world_adaptation_specs : [];
   for (const world of worlds) {
     const module = modulesById.get(world.module_id);
     const verifier = firstListItem(world.learner_state_evidence?.verifier_signals) || module?.primary_verifier || null;
@@ -1016,7 +1044,9 @@ function buildModuleContextText(module) {
     module.essential_question ? `Essential question: ${module.essential_question}` : null,
     module.main_artifact ? `Main artifact: ${module.main_artifact}` : null,
     module.primary_verifier ? `Verifier: ${module.primary_verifier}` : null,
-    Array.isArray(module.canonical_tasks) ? `Canonical tasks:\n${module.canonical_tasks.map((t) => `- ${t}`).join('\n')}` : null,
+    Array.isArray(module.canonical_tasks)
+      ? `Canonical tasks:\n${module.canonical_tasks.map((t) => `- ${t}`).join('\n')}`
+      : null,
     Array.isArray(module.knowledge_components)
       ? `Knowledge components:\n${module.knowledge_components.map((kc) => `- ${kc.id}: ${kc.statement}`).join('\n')}`
       : null,
@@ -1035,7 +1065,9 @@ function buildWorldContextText(world, module = null) {
   const lines = [
     `WORLD ADAPTATION SPEC ${world.id}: ${world.module_title || module?.title || world.module_id}`,
     module ? buildModuleContextText(module) : null,
-    Array.isArray(evidence.verifier_signals) ? `Verifier signals:\n${evidence.verifier_signals.map((s) => `- ${s}`).join('\n')}` : null,
+    Array.isArray(evidence.verifier_signals)
+      ? `Verifier signals:\n${evidence.verifier_signals.map((s) => `- ${s}`).join('\n')}`
+      : null,
     Array.isArray(evidence.knowledge_components)
       ? `Observable knowledge evidence:\n${evidence.knowledge_components
           .map((kc) => `- ${kc.kc_id}: ${kc.statement}\n  evidence: ${(kc.observable_evidence || []).join('; ')}`)
@@ -1047,7 +1079,9 @@ function buildWorldContextText(world, module = null) {
           .join('\n')}`
       : null,
     `Action policy:\n${yamlSnippet(action, 5000)}`,
-    Array.isArray(world.expected_transitions) ? `Expected transitions:\n${yamlSnippet(world.expected_transitions, 5000)}` : null,
+    Array.isArray(world.expected_transitions)
+      ? `Expected transitions:\n${yamlSnippet(world.expected_transitions, 5000)}`
+      : null,
   ].filter(Boolean);
   return clipText(lines.join('\n\n'));
 }
@@ -1080,7 +1114,9 @@ function buildPlanContextText(plan, module = null) {
     plan.pacing ? `Pacing and beats:\n${yamlSnippet(plan.pacing, 7000)}` : null,
     plan.character ? `Characters:\n${yamlSnippet(plan.character, 5000)}` : null,
     plan.scene ? `Scene:\n${yamlSnippet(plan.scene, 3000)}` : null,
-    plan.public_prompt_constraints ? `Public prompt constraints:\n${yamlSnippet(plan.public_prompt_constraints, 4000)}` : null,
+    plan.public_prompt_constraints
+      ? `Public prompt constraints:\n${yamlSnippet(plan.public_prompt_constraints, 4000)}`
+      : null,
   ].filter(Boolean);
   return clipText(lines.join('\n\n'));
 }
@@ -1359,23 +1395,351 @@ ${clipText(lines.join('\n\n'), SCENE_DIRECTOR_MAX_CHARS)}
 
 router.get('/personas', (req, res) => {
   try {
-    const base = learnerConfigLoader.listPersonas();
-    const known = new Set(base.map((p) => p.id));
-    // Surface persona-modifier stubs from YAML too (they're valid persona IDs)
-    const yamlModifiers = learnerConfigLoader.loadConfig?.()?.persona_modifiers || {};
-    const extraIds = Object.keys(yamlModifiers).filter((id) => !known.has(id));
-    const enriched = [...base, ...extraIds.map((id) => ({ id, name: null, description: null }))].map((p) => {
-      const sketch = PERSONA_SKETCHES[p.id];
-      return {
-        id: p.id,
-        name: p.name || sketch?.name || p.id.replace(/_/g, ' '),
-        hint: sketch?.hint || p.description || '',
-        defaultArchitecture: p.defaultArchitecture || null,
-      };
-    });
-    res.json({ personas: enriched });
+    res.json({ personas: listChatPersonas() });
   } catch (err) {
     console.error('[chat] personas error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const CHAT_ASSIST_PROMPT_FILE = 'chat-assist-concierge.md';
+const CHAT_ASSIST_MODEL = process.env.CHAT_ASSIST_MODEL || 'openrouter.gpt-mini';
+const ASSIST_CATALOG_TTL_MS = 5 * 60 * 1000;
+let assistCatalogCache = null;
+
+function compactAssistLine(value, max = 260) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+}
+
+function truncateAssistBlock(lines, maxChars = 4000) {
+  const out = [];
+  let used = 0;
+  for (const line of lines) {
+    const text = String(line || '');
+    if (!text) continue;
+    if (used + text.length + 1 > maxChars) {
+      out.push(`[catalog clipped after ${out.length} entries]`);
+      break;
+    }
+    out.push(text);
+    used += text.length + 1;
+  }
+  return out.join('\n');
+}
+
+function featureCatalogText() {
+  const sections = [];
+  for (const [dimension, values] of Object.entries(FEATURE_META)) {
+    sections.push(
+      `${dimension}: ${Object.entries(values)
+        .map(([value, hint]) => `${value} (${hint})`)
+        .join('; ')}`,
+    );
+  }
+  return sections.join('\n');
+}
+
+function directorCatalogText() {
+  const sections = [];
+  for (const [dimension, values] of Object.entries(DIRECTOR_META)) {
+    sections.push(
+      `${dimension}: ${Object.entries(values)
+        .map(([value, hint]) => `${value} (${hint})`)
+        .join('; ')}`,
+    );
+  }
+  return sections.join('\n');
+}
+
+function buildAssistCatalog() {
+  const now = Date.now();
+  if (assistCatalogCache && now - assistCatalogCache.createdAt < ASSIST_CATALOG_TTL_MS) {
+    return assistCatalogCache.catalog;
+  }
+
+  const personas = listChatPersonas();
+  const sceneSources = listCurriculumSceneSources();
+  const packages = listCurricula();
+  const lectureRefs = [];
+  const curriculumLines = [];
+  for (const pkg of packages) {
+    for (const course of pkg.courses || []) {
+      curriculumLines.push(`- ${pkg.label} / ${course.id}: ${course.title}`);
+      for (const lec of course.lectures || []) {
+        lectureRefs.push(lec.ref);
+        curriculumLines.push(`  - ${lec.ref}: ${lec.title}`);
+      }
+    }
+  }
+
+  const sceneLines = sceneSources.map((src) =>
+    [
+      `- ${src.ref}: ${src.label}`,
+      src.topic ? `topic=${compactAssistLine(src.topic, 140)}` : null,
+      src.summary ? `summary=${compactAssistLine(src.summary, 140)}` : null,
+    ]
+      .filter(Boolean)
+      .join(' | '),
+  );
+
+  const text = [
+    'FEATURE VOCABULARY',
+    featureCatalogText(),
+    '',
+    'PERSONAS',
+    personas.map((p) => `- ${p.id}: ${p.name}${p.hint ? ` (${p.hint})` : ''}`).join('\n'),
+    '',
+    'DIRECTOR VOCABULARY',
+    directorCatalogText(),
+    '',
+    'SCENE SOURCES',
+    truncateAssistBlock(sceneLines, 4000),
+    '',
+    'CURRICULUM PACKAGES AND LECTURES',
+    truncateAssistBlock(curriculumLines, 4000),
+  ].join('\n');
+
+  const catalog = {
+    text,
+    personas,
+    sceneRefs: sceneSources.map((src) => src.ref),
+    lectureRefs,
+    personaIds: personas.map((p) => p.id),
+  };
+  assistCatalogCache = { createdAt: now, catalog };
+  return catalog;
+}
+
+function sanitizeAssistMessages(raw = []) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .slice(-12)
+    .map((m) => ({
+      role: m?.role === 'assistant' ? 'assistant' : 'user',
+      content: compactAssistLine(m?.content, 1500),
+    }))
+    .filter((m) => m.content);
+}
+
+function extractAssistJson(text) {
+  const raw = String(text || '').trim();
+  if (!raw) return null;
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const candidate = fenced ? fenced[1].trim() : raw;
+  try {
+    return JSON.parse(candidate);
+  } catch {
+    const start = candidate.indexOf('{');
+    const end = candidate.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(candidate.slice(start, end + 1));
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
+function resolveAssistPreview(currentConfig = {}, proposal = null) {
+  const currentFeatures = normalizeFeatures(currentConfig?.features || {});
+  const proposedFeatures = proposal?.features && typeof proposal.features === 'object' ? proposal.features : {};
+  const resolved = resolveFeatureSelection({ ...currentFeatures, ...proposedFeatures });
+  return {
+    name: resolved.resolved?.name || null,
+    matchQuality: resolved.matchQuality,
+    score: resolved.resolved?.score ?? null,
+    maxScore: resolved.maxScore,
+  };
+}
+
+function finalizeAssistResponse({ message, rawProposal, currentConfig, totals = {}, catalog }) {
+  const { proposal, dropped } = normalizeAssistProposal(rawProposal || {}, {
+    sceneRefs: catalog.sceneRefs,
+    lectureRefs: catalog.lectureRefs,
+    personaIds: catalog.personaIds,
+  });
+  const dropNote = dropped.length ? ` Dropped unsupported field(s): ${dropped.join(', ')}.` : '';
+  return {
+    message: `${compactAssistLine(message, 1200) || 'I drafted a staging proposal.'}${dropNote}`,
+    proposal,
+    resolved: proposal ? resolveAssistPreview(currentConfig, proposal) : null,
+    totals: {
+      latencyMs: totals.latencyMs || 0,
+      outputTokens: totals.outputTokens || 0,
+    },
+  };
+}
+
+function dryRunAssistProposal(messages = [], currentConfig = {}) {
+  const latest = messages[messages.length - 1]?.content || '';
+  const text = latest.toLowerCase();
+  const proposal = {
+    features: {},
+    action: 'none',
+    rationale: {},
+  };
+
+  if (text.includes('charismatic') || text.includes('weber')) {
+    proposal.features.approach = 'charismatic';
+    proposal.features.charismaVariant = 'generalist';
+    proposal.rationale['features.approach'] = 'The request asks for a charismatic tutor.';
+  } else if (text.includes('recognition') || text.includes('hegel')) {
+    proposal.features.approach = 'recognition';
+    proposal.rationale['features.approach'] = 'The request foregrounds recognition/Hegelian framing.';
+  } else if (text.includes('minimal') || text.includes('naive')) {
+    proposal.features.approach = 'minimalist';
+    proposal.rationale['features.approach'] = 'The request asks for a minimal baseline.';
+  }
+
+  if (text.includes('anxious')) {
+    proposal.personaId = 'struggling_anxious';
+    proposal.rationale.personaId = 'An anxious learner maps to the struggling_anxious persona.';
+  } else if (text.includes('adversarial') || text.includes('challenge')) {
+    proposal.personaId = 'adversarial_tester';
+    proposal.rationale.personaId = 'A challenging learner maps to the adversarial_tester persona.';
+  }
+
+  if (text.includes('ai plays both') || text.includes('ai writes both') || text.includes('both sides')) {
+    proposal.mode = 'auto';
+    proposal.action = 'start_scene';
+    proposal.rationale.mode = 'AI writes both sides means the synthetic learner and tutor should advance together.';
+  }
+
+  const topic = latest
+    .replace(/^stage\s+(a\s+)?(drama|scene)\s+(about|on)\s+/i, '')
+    .replace(/\s+(with|using|make)\s+.*$/i, '')
+    .replace(/,\s*(with|make|ai plays|ai writes).*$/i, '')
+    .trim();
+  if (topic && topic.length > 8) {
+    proposal.topic = topic.slice(0, 180);
+    proposal.rationale.topic = 'Use the user description as the scene topic.';
+  } else if (currentConfig?.topic) {
+    proposal.topic = currentConfig.topic;
+  }
+
+  if (!Object.keys(proposal.features).length) {
+    proposal.features.approach = currentConfig?.features?.approach || 'standard';
+  }
+  return proposal;
+}
+
+router.get('/assist/health', (_req, res) => {
+  const hasOpenRouter = !!process.env.OPENROUTER_API_KEY;
+  res.json({
+    ok: hasOpenRouter,
+    provider: hasOpenRouter ? 'openrouter' : 'none',
+    model: CHAT_ASSIST_MODEL,
+  });
+});
+
+router.post('/assist', async (req, res) => {
+  const startedAt = Date.now();
+  try {
+    const catalog = buildAssistCatalog();
+    const messages = sanitizeAssistMessages(req.body?.messages || []);
+    const currentConfig =
+      req.body?.currentConfig && typeof req.body.currentConfig === 'object' ? req.body.currentConfig : {};
+    const useClaudeCli = req.body?.useClaudeCli === true;
+    const dryRun = req.body?.dryRun === true;
+
+    if (!messages.length) {
+      return res.status(400).json({ error: 'messages must include at least one user message' });
+    }
+
+    if (dryRun) {
+      return res.json(
+        finalizeAssistResponse({
+          message: 'Dry-run concierge proposal. No model call was made.',
+          rawProposal: dryRunAssistProposal(messages, currentConfig),
+          currentConfig,
+          catalog,
+        }),
+      );
+    }
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!useClaudeCli && !apiKey) {
+      return res.status(503).json({
+        error: 'OPENROUTER_API_KEY is not set — either enable the Claude CLI toggle or use dry run.',
+      });
+    }
+
+    const prompt =
+      loadPromptFile(CHAT_ASSIST_PROMPT_FILE) || 'You are a concise stage manager for a pedagogical drama.';
+    const system = `${prompt}\n\nCATALOG\n${catalog.text}`;
+    const userPayload = JSON.stringify(
+      {
+        messages,
+        currentConfig,
+        requiredJsonShape: {
+          message: 'short prose reply',
+          proposal: {
+            features: { approach: 'optional', critic: 'optional', stance: 'optional', learnerModel: 'optional' },
+            topic: 'optional',
+            curriculumRef: 'optional or null',
+            lectureRef: 'optional or null',
+            director: { mode: 'optional', act: 'optional', beat: 'optional', scene: 'optional', note: 'optional' },
+            personaId: 'optional',
+            mode: 'optional human|teacher|auto',
+            action: 'optional none|start_scene|open_batch_launcher',
+            rationale: 'optional string or object',
+          },
+        },
+      },
+      null,
+      2,
+    );
+
+    const call = async (user) => {
+      if (useClaudeCli) return callClaudeCli({ system, user });
+      const modelRef = resolveOpenRouterModelOverride(CHAT_ASSIST_MODEL);
+      return callModel(apiKey, {
+        modelId: modelRef.model,
+        system,
+        user,
+        temperature: 0.2,
+        maxTokens: 900,
+      });
+    };
+
+    let out = await call(userPayload);
+    let parsed = extractAssistJson(out.content);
+    if (!parsed) {
+      out = await call(`${userPayload}\n\nYour previous response was not valid JSON. Return one JSON object only.`);
+      parsed = extractAssistJson(out.content);
+    }
+
+    if (!parsed) {
+      return res.json({
+        message: compactAssistLine(out.content, 1200) || 'The concierge did not return parseable JSON.',
+        proposal: null,
+        resolved: null,
+        totals: {
+          latencyMs: Date.now() - startedAt,
+          outputTokens: out.outputTokens || 0,
+        },
+      });
+    }
+
+    return res.json(
+      finalizeAssistResponse({
+        message: parsed.message,
+        rawProposal: parsed.proposal,
+        currentConfig,
+        totals: {
+          latencyMs: Date.now() - startedAt,
+          outputTokens: out.outputTokens || 0,
+        },
+        catalog,
+      }),
+    );
+  } catch (err) {
+    console.error('[chat] assist error:', err);
     res.status(500).json({ error: err.message });
   }
 });

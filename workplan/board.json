@@ -1,25 +1,72 @@
 {
-  "generated": "2026-07-02T21:53:51.716Z",
+  "generated": "2026-07-02T23:18:59.555Z",
   "counts": {
-    "total": 68,
+    "total": 70,
     "byStatus": {
-      "done": 58,
+      "done": 59,
       "blocked": 1,
       "dropped": 2,
+      "review": 1,
       "archived": 4,
-      "active": 3
+      "active": 2,
+      "triaged": 1
     },
     "byType": {
       "research": 36,
-      "experiment": 6,
+      "experiment": 7,
+      "infra": 10,
       "content": 2,
-      "infra": 9,
       "maintenance": 5,
       "paper": 4,
       "ops": 6
     }
   },
   "items": [
+    {
+      "id": "negative-register-effect-estimation-grid",
+      "title": "Estimate negative-register effects with stance-fidelity gating",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-03",
+      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
+          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
+        ],
+        "exports": [
+          "exports/charisma-desire-breakthrough-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-matrix.json",
+          "exports/negative-register-corrosive-exemplar-results.md"
+        ],
+        "runs": [
+          "eval-2026-07-02-e7b15809",
+          "eval-2026-07-02-7e461a5c",
+          "eval-2026-07-02-5c4d52e6"
+        ],
+        "items": [
+          "register-taxonomy-negative-registers"
+        ]
+      },
+      "depends_on": [
+        "register-taxonomy-negative-registers"
+      ],
+      "tags": [
+        "registers",
+        "negative-registers",
+        "effect-estimation",
+        "stance-fidelity"
+      ]
+    },
     {
       "id": "layered-decision-loops",
       "title": "Strategy Ledger v1 — per-agent commit/audit loops at block/scene/act scope",
@@ -46,32 +93,6 @@
         "strategy-ledger",
         "symmetry"
       ]
-    },
-    {
-      "id": "register-taxonomy-negative-registers",
-      "title": "Implement register taxonomy and negative-register evaluation",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-02",
-      "updated": "2026-07-02",
-      "verification": "Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, and paid smoke/full run IDs are recorded with register-specific results.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
-        ]
-      },
-      "tags": [
-        "registers",
-        "id-director",
-        "charisma",
-        "negative-registers",
-        "evaluation"
-      ],
-      "branch": "codex/register-taxonomy-negative-registers"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -121,6 +142,25 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "admin-chat-drama-launcher-simplification",
+      "title": "Admin chat drama launcher simplification",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "npm test plus localhost browser smoke at /admin/chat/",
+      "claim_status": "planned",
+      "tags": [
+        "admin-chat",
+        "drama-machine",
+        "ux"
+      ],
+      "milestone": "admin-chat"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -260,6 +300,32 @@
         "notes": "TODO.md"
       },
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "register-taxonomy-negative-registers",
+      "title": "Implement register taxonomy and negative-register evaluation",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-03",
+      "verification": "Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, paid smoke/full run IDs are recorded with register-specific results, and the hand-authored corrosive-exemplar test separates v2.2 guardrail sensitivity from register-rubric compression.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ]
+      },
+      "tags": [
+        "registers",
+        "id-director",
+        "charisma",
+        "negative-registers",
+        "evaluation"
+      ],
+      "branch": "codex/negative-register-exemplar-test"
     },
     {
       "id": "scriptorium-evidence-workbenches",
