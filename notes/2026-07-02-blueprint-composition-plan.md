@@ -174,5 +174,48 @@ confound the contrast. The registry chassis now declares
 test enforces it on every blueprint cell, and both cell descriptions state
 the choice.
 
-No paid run has been performed. The §5 matrix remains gated on a recorded
-go decision.
+## 8. Go decision (2026-07-02, user-authorized): frozen execution plan
+
+The user authorized the §5 paid matrix. Frozen at go time:
+
+- **Model stack — Codex-only**: `--ego-model codex.gpt-5.5
+  --superego-model codex.gpt-5.5 --learner-model codex.gpt-5.5` for every
+  arm (run-wide overrides make the generation stack model-clean across
+  arms). This is the exact stack the cell-193 comparator evidence was
+  generated on. The initially preferred `openrouter.sonnet-5` id slot was
+  ruled out by a pre-run credit probe: the OpenRouter account has ~$6.2
+  remaining ($1403.77 of $1410 used) — the BudgetTracker-blind-spot check
+  doing its job.
+- **Repeats**: 1 per arm × scenario for this gate (register-arc precedent:
+  small gates first; stability repeats are a later decision).
+- **Execution**: serial (`--parallelism 1`), generation-only
+  (`--skip-rubric`), block-per-run so each block is independently
+  resumable. Worktree DB/logs re-pointed at the canonical store
+  (`~/.machinespirits-data`) before any row was generated; the stray
+  worktree-local test DB (12 junk rows) was verified as today's test
+  artifacts and replaced with the symlink.
+- **Block R — resistance (primary)**: 5 gated resistance scenarios ×
+  {budget, cell_193, cell_199, cell_200} = 20 rows. Fresh cell_193 arm in
+  the same run doubles as a consistency check against its historical rows
+  on the same stack.
+- **Block S — suggestion**: {misconception_correction_flow,
+  epistemic_resistance_impasse} × {budget, cell_5_recog_single_unified,
+  cell_199, cell_200} = 8 rows.
+- **Block T — trap (exploratory)**: {false_confusion_v1,
+  resistance_to_insight_v1} × {cell_199, cell_200} via
+  `scripts/run-id-director-trap-pilot.js` (4 rows), compared against the
+  historical §6.8 cell_110/114 results rather than fresh adaptive-runner
+  arms. Exploratory because policy-action labelling on id-director traces
+  is adapter-mediated; a labelling mismatch invalidates the block, not the
+  gate.
+- **Scoring**: v2.2 via `evaluate <runId> --judge-cli codex` on blocks R
+  and S; breakthrough-matrix reporter on block R; strategy-shift analyzer
+  on block T. Register rubric only if OpenRouter budget allows
+  (covariate, not decision).
+- **Canary**: 1 row (cell_199 × boredom) before block R.
+
+Decision rules and stop rules are §5's, unchanged.
+
+## 9. Run log
+
+(appended as blocks complete)
