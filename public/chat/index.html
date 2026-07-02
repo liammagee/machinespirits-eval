@@ -649,7 +649,16 @@ section.fg::before {
   border: 1px solid color-mix(in oklab, var(--prussian) 34%, transparent);
   background: color-mix(in oklab, var(--prussian) 5%, transparent);
   padding: 7px;
+  margin-top: 10px;
   margin-bottom: 8px;
+}
+.assist-kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.88);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--prussian);
+  margin-bottom: 4px;
 }
 .assist-strip.is-disabled {
   opacity: 0.72;
@@ -761,6 +770,49 @@ section.fg::before {
   gap: 5px;
   align-items: center;
   margin-top: 7px;
+}
+.stage-actions--secondary { margin-top: 5px; }
+.stage-actions--secondary .stage-btn {
+  font-size: calc(var(--s-0) * 0.86);
+  padding: 3px 7px;
+  min-height: 0;
+  opacity: 0.9;
+}
+
+/* the one dominant action on the page */
+.launch { margin-top: 9px; }
+.launch-btn {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+  width: 100%;
+  min-height: 46px;
+  background: var(--moss-deep);
+  color: var(--paper);
+  border: 1px solid var(--moss-deep);
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-1) * 1.05);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.launch-btn:hover:not(:disabled) { background: var(--brick); border-color: var(--brick); }
+.launch-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.launch-btn__sig { color: var(--sun); font-size: 0.9em; }
+.launch-what {
+  margin: 4px 0 0;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-variation-settings: "opsz" 16;
+  font-size: var(--s-0);
+  line-height: 1.35;
+  color: var(--ink-3);
 }
 .resolution-readout {
   all: unset;
@@ -2601,65 +2653,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <button class="mini-btn" type="button" @click="dismissSavedSession()">dismiss</button>
           </div>
 
-          <div class="assist-strip" :class="{'is-disabled': assistDisabled}">
-            <div class="assist-line">
-              <input
-                class="assist-input"
-                type="text"
-                x-model="assist.input"
-                :disabled="assistDisabled || assist.pending"
-                @keydown.enter.prevent="sendAssist()"
-                placeholder="describe the drama you want to stage..."
-                aria-label="Drama concierge prompt"
-              />
-              <button class="assist-btn" type="button" @click="sendAssist()" :disabled="assistDisabled || assist.pending || !assist.input.trim()">
-                <span x-show="!assist.pending">ask</span>
-                <span x-show="assist.pending">...</span>
-              </button>
-              <button class="assist-btn" type="button" @click="assist.open = !assist.open" :aria-pressed="assist.open">
-                <span x-text="assist.open ? 'hide' : 'history'"></span>
-              </button>
-            </div>
-            <div class="assist-meta" x-show="assistDisabled">
-              concierge is offline — no model key.
-              <button class="mini-btn" type="button" @click="dryRunTurns = true">try it in dry run (free)</button>
-            </div>
-            <div class="assist-history" x-show="assist.open">
-              <template x-for="(m, i) in assist.messages.slice(-4)" :key="'assist-' + i + '-' + m.role">
-                <div class="assist-msg">
-                  <span class="role" x-text="m.role"></span>
-                  <span x-html="md(m.content)"></span>
-                </div>
-              </template>
-              <template x-if="assist.proposal">
-                <div class="proposal-card">
-                  <template x-for="row in assistProposalRows" :key="row.field">
-                    <div class="proposal-row">
-                      <span class="field" x-text="row.field"></span>
-                      <span class="value" x-text="row.value"></span>
-                      <span class="why" x-show="row.rationale" x-text="row.rationale"></span>
-                    </div>
-                  </template>
-                  <div class="assist-meta" x-show="assist.proposalResolved?.name">
-                    resolves to <em x-text="assist.proposalResolved?.name"></em>
-                    · <span x-text="assist.proposalResolved?.matchQuality"></span>
-                    <span x-show="assist.proposalResolved?.score != null">
-                      · <span x-text="assist.proposalResolved?.score"></span>/<span x-text="assist.proposalResolved?.maxScore"></span>
-                    </span>
-                  </div>
-                  <div class="proposal-actions">
-                    <button class="mini-btn" type="button" @click="applyProposal(assist.proposal)">apply</button>
-                    <button class="mini-btn" type="button" @click="applyProposalAndStart(assist.proposal)">apply & start scene</button>
-                    <button class="mini-btn" type="button" x-show="assist.proposal?.action === 'open_batch_launcher'" @click="openProposalBatch(assist.proposal)">open batch launcher</button>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </div>
-
           <div class="topic">
           <label class="topic__lbl" for="chat-topic">
-            Topic
+            1 · Topic
             <template x-if="activeSourceLabel">
               <span class="topic__curriculum-pill" title="curriculum attached">◦ <em x-text="activeSourceLabel"></em> <button type="button" class="topic__clear" @click="clearCurriculum()">×</button></span>
             </template>
@@ -2746,7 +2742,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <!-- §01 Approach -->
         <section class="stage-block" id="fg-01">
           <div class="stage-block__head">
-            <span>§01 Tutor style</span>
+            <span>2 · Tutor style</span>
             <span class="hint">what the tutor has been told to be</span>
           </div>
           <div class="chips">
@@ -2785,7 +2781,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
         <section class="stage-block" id="fg-01b" x-show="features.approach === 'charismatic'" x-transition.opacity>
           <div class="stage-block__head">
-            <span>§01b Charisma frontier</span>
+            <span>2b · Charisma frontier</span>
             <span class="hint">Pareto design point</span>
           </div>
           <div class="chips">
@@ -2809,7 +2805,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
         <section class="stage-block">
           <div class="stage-block__head">
-            <span>Learner persona</span>
+            <span>3 · Learner persona</span>
             <span class="hint" x-text="mode === 'human' ? 'used when AI writes learner lines' : personaName"></span>
           </div>
           <div class="persona-strip">
@@ -2851,15 +2847,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
         <section class="stage-block">
           <div class="mode">
-            <span class="mode__lbl">◦ who writes the lines?</span>
+            <span class="mode__lbl">4 · who writes the lines?</span>
             <div class="mode__toggle">
+              <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')" title="the AI drafts both sides, one exchange at a time">AI plays both</button>
               <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')" title="you type the learner's lines; the tutor cell answers">I play learner</button>
               <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')" title="you type the tutor's lines; the simulated learner answers">I play tutor</button>
-              <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')" title="the AI drafts both sides, one exchange at a time">AI plays both</button>
             </div>
-            <span class="mode__meta" x-show="mode === 'human'">— you write the learner; the tutor cell answers</span>
-            <span class="mode__meta" x-show="mode === 'teacher'">— you write the tutor; <span x-text="personaName"></span> answers</span>
-            <span class="mode__meta" x-show="mode === 'auto'">— <span x-text="personaName"></span> and the tutor cell draft each exchange</span>
           </div>
           <div class="preflight-note" x-show="turnsNeedKeyWarning">
             No model key configured, so live turns can't run. Either
@@ -2867,11 +2860,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <button class="mini-btn" type="button" @click="useClaudeCli = true">use the local claude CLI</button>
             or set OPENROUTER_API_KEY and restart the server.
           </div>
-          <div class="stage-actions">
-            <button class="stage-btn stage-btn--primary" type="button" @click="startPrimary()" :disabled="pending || !resolved || (mode === 'auto' && turnsNeedKeyWarning)"
-                    :title="mode === 'auto' ? 'draft the next learner → tutor exchange' : 'jump to the composer and start typing'">
+          <div class="launch">
+            <button class="launch-btn" type="button" @click="startPrimary()" :disabled="pending || !resolved || (mode === 'auto' && turnsNeedKeyWarning)">
+              <span class="launch-btn__sig" aria-hidden="true">▶</span>
               <span x-text="startActionLabel"></span>
             </button>
+            <p class="launch-what" x-text="launchSublabel"></p>
+          </div>
+          <div class="stage-actions stage-actions--secondary">
             <a class="stage-btn" :href="runLauncherHref()" title="send this cell through eval scenarios in the run launcher — produces batch scripts instead of one live scene">batch via launcher →</a>
             <button class="stage-btn" type="button" @click="dryRunTurns = !dryRunTurns" :aria-pressed="dryRunTurns"
                     title="dry run substitutes free canned output for real model calls — for trying the desk without spending">
@@ -2879,6 +2875,63 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             </button>
             <button class="stage-btn" type="button" @click="exportTranscript()" :disabled="!turns.length"
                     :title="turns.length ? 'download this scene as markdown' : 'no turns yet — start a scene first'">export transcript</button>
+          </div>
+
+          <div class="assist-strip" :class="{'is-disabled': assistDisabled}">
+            <div class="assist-kicker">✦ or describe it — the concierge fills in steps 1–4</div>
+            <div class="assist-line">
+              <input
+                class="assist-input"
+                type="text"
+                x-model="assist.input"
+                :disabled="assistDisabled || assist.pending"
+                @keydown.enter.prevent="sendAssist()"
+                placeholder="e.g. a recognition drama about fractions with an anxious learner"
+                aria-label="Drama concierge prompt"
+              />
+              <button class="assist-btn" type="button" @click="sendAssist()" :disabled="assistDisabled || assist.pending || !assist.input.trim()">
+                <span x-show="!assist.pending">ask</span>
+                <span x-show="assist.pending">...</span>
+              </button>
+              <button class="assist-btn" type="button" @click="assist.open = !assist.open" :aria-pressed="assist.open">
+                <span x-text="assist.open ? 'hide' : 'history'"></span>
+              </button>
+            </div>
+            <div class="assist-meta" x-show="assistDisabled">
+              concierge is offline — no model key.
+              <button class="mini-btn" type="button" @click="dryRunTurns = true">try it in dry run (free)</button>
+            </div>
+            <div class="assist-history" x-show="assist.open">
+              <template x-for="(m, i) in assist.messages.slice(-4)" :key="'assist-' + i + '-' + m.role">
+                <div class="assist-msg">
+                  <span class="role" x-text="m.role"></span>
+                  <span x-html="md(m.content)"></span>
+                </div>
+              </template>
+              <template x-if="assist.proposal">
+                <div class="proposal-card">
+                  <template x-for="row in assistProposalRows" :key="row.field">
+                    <div class="proposal-row">
+                      <span class="field" x-text="row.field"></span>
+                      <span class="value" x-text="row.value"></span>
+                      <span class="why" x-show="row.rationale" x-text="row.rationale"></span>
+                    </div>
+                  </template>
+                  <div class="assist-meta" x-show="assist.proposalResolved?.name">
+                    resolves to <em x-text="assist.proposalResolved?.name"></em>
+                    · <span x-text="assist.proposalResolved?.matchQuality"></span>
+                    <span x-show="assist.proposalResolved?.score != null">
+                      · <span x-text="assist.proposalResolved?.score"></span>/<span x-text="assist.proposalResolved?.maxScore"></span>
+                    </span>
+                  </div>
+                  <div class="proposal-actions">
+                    <button class="mini-btn" type="button" @click="applyProposal(assist.proposal)">apply</button>
+                    <button class="mini-btn" type="button" @click="applyProposalAndStart(assist.proposal)">apply & start scene</button>
+                    <button class="mini-btn" type="button" x-show="assist.proposal?.action === 'open_batch_launcher'" @click="openProposalBatch(assist.proposal)">open batch launcher</button>
+                  </div>
+                </div>
+              </template>
+            </div>
           </div>
         </section>
 
@@ -3357,7 +3410,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <p x-show="mode === 'teacher'">You are playing the <em>tutor</em>. Write the tutor's opening line below — <em x-text="personaName"></em> replies.</p>
             <p x-show="mode === 'auto'">The AI plays <em>both sides</em>: <em x-text="personaName"></em> opens, the tutor cell replies, one exchange per press.</p>
             <button class="stage-btn stage-btn--primary onboarding__cta" type="button" x-show="mode === 'auto'"
-                    @click="step()" :disabled="pending || turnsNeedKeyWarning">Start scene →</button>
+                    @click="step()" :disabled="pending || turnsNeedKeyWarning">▶ Start the drama</button>
             <p class="onboarding__aside">The director frame, inner critic, and model substrates live under <em>fine controls</em>; scores and research context under <em>dossier</em>.</p>
           </div>
         </template>
@@ -3770,8 +3823,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       pending: false,
       pendingStage: 'ego drafting',
 
-      // auto-learner mode
-      mode: 'human',
+      // scene-author mode — default to the fully synthetic drama so the
+      // launch button works with zero further decisions; saved sessions
+      // restore whatever mode they used.
+      mode: 'auto',
       personas: [],
       personaId: 'eager_novice',
 
@@ -3915,9 +3970,23 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       },
 
       get startActionLabel() {
-        if (this.mode === 'auto') return this.turns.length ? 'Next exchange →' : 'Start scene →';
-        if (this.mode === 'teacher') return 'Write tutor line ↓';
-        return 'Write learner line ↓';
+        if (this.mode === 'auto') return this.turns.length ? 'Next exchange' : 'Start the drama';
+        if (this.mode === 'teacher') return 'Start — write the tutor line';
+        return 'Start — write the learner line';
+      },
+
+      // One sentence under the launch button saying exactly what pressing
+      // it will do, so the launch path never has to be inferred.
+      get launchSublabel() {
+        const cell = this.resolved?.name || 'the resolved cell';
+        const free = this.dryRunTurns ? ' Dry run: free canned output.' : '';
+        if (this.mode === 'auto') {
+          return `${this.personaName} opens on “${this.topic || 'general conversation'}”; ${cell} replies. One exchange per press.${free}`;
+        }
+        if (this.mode === 'teacher') {
+          return `You write the tutor's lines in the composer; ${this.personaName} answers.${free}`;
+        }
+        return `You write the learner's lines in the composer; ${cell} answers.${free}`;
       },
 
       get assistDisabled() {
@@ -4023,6 +4092,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       },
 
       saveSession() {
+        // Only scenes with turns are restorable, so only they are worth
+        // saving — and an idle page load must never clobber a restorable
+        // snapshot with an empty one.
+        if (!this.turns.length) return;
         try {
           localStorage.setItem('ms-chat-session-v1', JSON.stringify(this.sessionSnapshot()));
         } catch (err) {
