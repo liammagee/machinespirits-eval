@@ -495,3 +495,29 @@ future analyses as explicitly two estimands: assigned-arm/intention-to-treat
 versus faithful-arm/per-protocol. The paper should report this only as a
 methodological measurement-development result, not as evidence that sarcasm
 is pedagogically safe.
+
+## 12. Addendum (2026-07-03, stance-realization repair)
+
+The prospective smoke showed that the main failure was treatment fidelity:
+most assigned negative-register rows were useful tutor responses but not
+faithful executions of the assigned stance. The repair therefore targets the
+id-director contract rather than the outcome reporter.
+
+`config/engagement-registers.yaml` now gives each negative arm explicit
+`stance_fidelity_cues` and marks a visible cue as a required move. Examples:
+`ironic_challenge` must surface a Socratic-irony cue such as "the small irony
+is" or "conveniently"; `sarcastic_challenge` must surface a dry-sarcastic cue
+such as "wonderful", "nice trick", or "the answer vending machine";
+`face_threat_challenge` must surface a local face-threat cue such as "right
+now this move is protecting you" or "this is an escape route." These cues are
+not free license for person attack: they remain bound by the forbidden phrase
+and recognition guardrail rules.
+
+`services/idDirectorEngine.js` now passes `stance_fidelity_cues` through the
+`<register_stance_contract>` JSON, and `prompts/tutor-id-director.md`
+explicitly tells the director that a visible cue is a treatment-fidelity
+requirement for experiment-assigned negative arms. Focused tests confirm that
+negative registers declare cue lists and that the cues reach the id-director
+message. This is a no-paid repair; the next empirical check should be a small
+fresh smoke or canary, not a full scale-up, to see whether faithful rows rise
+without increasing invalid person-attack violations.
