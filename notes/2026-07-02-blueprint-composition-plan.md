@@ -297,7 +297,12 @@ trace carries `dialogue` + `idConstructions`, no `tutorInternal.policyAction`
 slot — the binary strict-shift metric is **structurally non-evaluable on
 this adapter**, so Block T is recorded exploratory-invalidated per §8's
 proviso. Cell 200's contract `action_type` entries (in the id trace) could
-support a future mapping into the shift scorer, off-gate.
+support a future mapping into the shift scorer, off-gate. Cell 200's trap
+rows were NOT generated: three attempts were externally stopped before any
+row persisted, and with the block's metric already invalidated no further
+spend was justified; all empty run records were deleted
+(`eval-2026-07-02-c47ceb73` last). Cell 200 trap generation, if ever wanted,
+belongs to the future mapping work, not this gate.
 
 **Cost**: OpenRouter spend for the whole gate ≈ $0.30 (trap + S2 nemotron
 rows); ~$5.94 credit remains. Everything else ran on CLI subscription quota.
