@@ -218,4 +218,22 @@ Decision rules and stop rules are §5's, unchanged.
 
 ## 9. Run log
 
-(appended as blocks complete)
+**Canary** — `eval-2026-07-02-b0be0524`: cell_199 × boredom, 1/1 stored,
+required + forbidden clean, all three id constructions `parse_status: ok`,
+router routed scaffolding → charismatic_challenge with
+`resistance_signal: boredom`. Kernel wiring confirmed live on the Codex
+stack.
+
+**Block R (resistance)** — `eval-2026-07-02-b4ccb58d`: 20/20 successful
+generation rows across {cell_186 floor, cell_193 comparator, cell_199
+kernel, cell_200 full} × 5 gated resistance scenarios, Codex-only stack,
+serial. Two external interruptions of the background process (at 7/20 and
+17/20 rows); both recovered with `resume` — the checkpoint/resume protocol
+worked as designed, no duplicate or empty rows. Deviation from §8 as
+frozen: the resistance-suite floor arm is cell_186 (the family's static
+floor with the same dynamic learner, hence gate-eligible), not raw
+`budget` — raw budget cannot witness the resistant-precondition gate on
+this suite; budget remains the Block S floor. Validation: forbidden 20/20;
+required 19/20, the single miss being cell_200 × irrelevance (agency-return
+phrase group), consistent with the family's historical occasional misses.
+Scoring pending.
