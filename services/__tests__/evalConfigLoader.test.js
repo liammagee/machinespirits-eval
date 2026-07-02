@@ -187,6 +187,12 @@ describe('resolveModel (string format)', () => {
     assert.strictEqual(r.model, 'anthropic/claude-sonnet-5');
   });
 
+  it('resolves "claude-code.sonnet-5" to Claude CLI model ID', () => {
+    const r = resolveModel('claude-code.sonnet-5');
+    assert.strictEqual(r.provider, 'claude-code');
+    assert.strictEqual(r.model, 'claude-sonnet-5');
+  });
+
   it('resolves "openrouter.nemotron"', () => {
     const r = resolveModel('openrouter.nemotron');
     assert.strictEqual(r.provider, 'openrouter');
