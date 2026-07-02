@@ -834,6 +834,55 @@ section.fg::before {
 .pigment--none     { background: var(--paper-3); color: var(--ink-2); border-style: dashed; }
 .pigment--none em { font-style: italic; font-family: "Fraunces", serif; letter-spacing: 0; }
 
+.model-controls {
+  margin-top: 6px;
+  padding: 6px 0 7px;
+  border-top: 1px dashed color-mix(in oklab, var(--ink) 18%, transparent);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.model-control {
+  min-width: 0;
+}
+.model-control label {
+  display: block;
+  margin-bottom: 2px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.model-select {
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--paper-4) 88%, transparent);
+  color: var(--ink);
+  padding: 4px 7px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.92);
+  letter-spacing: 0.02em;
+}
+.model-select:focus {
+  outline: 1px solid var(--brick);
+  outline-offset: 1px;
+}
+.model-select:disabled {
+  color: var(--ink-3);
+  background: color-mix(in oklab, var(--paper-2) 60%, transparent);
+  cursor: not-allowed;
+}
+.model-note {
+  grid-column: 1 / -1;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.84);
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+
 /* trade-offs (closest match) */
 .tradeoffs {
   margin-top: 6px;
@@ -2474,12 +2523,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <div class="pigments">
           <div class="pigment pigment--ego">
             <span>ego</span>
-            <em x-text="resolved?.ego ? resolved.ego.provider + '.' + resolved.ego.model : '—'"></em>
+            <em x-text="effectiveModelLabel('ego')"></em>
           </div>
           <template x-if="resolved?.superego">
             <div class="pigment pigment--superego">
               <span>superego</span>
-              <em x-text="resolved?.superego ? resolved.superego.provider + '.' + resolved.superego.model : ''"></em>
+              <em x-text="effectiveModelLabel('superego')"></em>
             </div>
           </template>
           <template x-if="!resolved?.superego">
@@ -2488,6 +2537,34 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               <em>none</em>
             </div>
           </template>
+        </div>
+
+        <div class="model-controls">
+          <div class="model-control">
+            <label for="ego-model-select">ego substrate</label>
+            <select id="ego-model-select"
+                    class="model-select"
+                    x-model="modelOverrides.ego"
+                    :disabled="useClaudeCli || !modelOptions.length">
+              <option value="">cell default</option>
+              <template x-for="m in modelOptions" :key="'ego-' + m.value">
+                <option :value="m.value" x-text="m.alias"></option>
+              </template>
+            </select>
+          </div>
+          <div class="model-control">
+            <label for="superego-model-select">superego substrate</label>
+            <select id="superego-model-select"
+                    class="model-select"
+                    x-model="modelOverrides.superego"
+                    :disabled="useClaudeCli || !resolved?.superego || !modelOptions.length">
+              <option value="" x-text="resolved?.superego ? 'cell default' : 'none'"></option>
+              <template x-for="m in modelOptions" :key="'superego-' + m.value">
+                <option :value="m.value" x-text="m.alias"></option>
+              </template>
+            </select>
+          </div>
+          <div class="model-note" x-show="useClaudeCli">claude cli active</div>
         </div>
 
         <div class="tradeoffs" x-show="relaxedDimensions.length">
@@ -3088,6 +3165,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       cells: [],
       cellFilter: '',
       xray: false,
+      modelOptions: [],
+      modelOverrides: {
+        ego: '',
+        superego: '',
+      },
 
       features: {
         approach: 'standard',
@@ -3145,14 +3227,16 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         // build the 60-cell ruler
         this.buildRuler();
         try {
-          const [cellsRes, personasRes, curriculaRes] = await Promise.all([
+          const [cellsRes, personasRes, curriculaRes, modelsRes] = await Promise.all([
             fetch(this.api('/cells')),
             fetch(this.api('/personas')),
             fetch(this.api('/curricula')),
+            fetch(this.api('/models')),
           ]);
           this.cells = (await cellsRes.json()).cells || [];
           this.personas = (await personasRes.json()).personas || [];
           this.curricula = (await curriculaRes.json()).packages || [];
+          this.modelOptions = (await modelsRes.json()).models || [];
         } catch (err) { console.error(err); }
         await this.resolve();
         this.$watch('features', () => this.debouncedResolve(), { deep: true });
@@ -3393,6 +3477,30 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
       toggleCli() { this.useClaudeCli = !this.useClaudeCli; },
 
+      modelOption(value) {
+        return this.modelOptions.find((m) => m.value === value) || null;
+      },
+
+      defaultModelLabel(role) {
+        const cfg = role === 'superego' ? this.resolved?.superego : this.resolved?.ego;
+        return cfg ? cfg.provider + '.' + cfg.model : '—';
+      },
+
+      effectiveModelLabel(role) {
+        if (this.useClaudeCli) return 'claude-cli.opus-4.7';
+        const selected = role === 'superego' ? this.modelOverrides.superego : this.modelOverrides.ego;
+        const option = selected ? this.modelOption(selected) : null;
+        return option ? option.value : this.defaultModelLabel(role);
+      },
+
+      tutorModelOverrides() {
+        if (this.useClaudeCli) return {};
+        return {
+          ego: this.modelOverrides.ego || null,
+          superego: this.resolved?.superego ? (this.modelOverrides.superego || null) : null,
+        };
+      },
+
       scrollTo(id) {
         const el = document.getElementById(id);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3489,6 +3597,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               topic: this.topic || 'general conversation',
               lectureRef: this.lectureRef || null,
               useClaudeCli: this.useClaudeCli,
+              modelOverrides: this.tutorModelOverrides(),
             }),
           });
           const tdata = await tr.json();
@@ -3535,6 +3644,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               topic: this.topic || 'general conversation',
               lectureRef: this.lectureRef || null,
               useClaudeCli: this.useClaudeCli,
+              modelOverrides: this.tutorModelOverrides(),
             }),
           });
           const data = await res.json();

@@ -250,6 +250,36 @@ router.get('/cells', (req, res) => {
   }
 });
 
+router.get('/models', (_req, res) => {
+  try {
+    const providers = evalConfigLoader.loadProviders()?.providers || {};
+    const openrouter = providers.openrouter || {};
+    const models = Object.entries(openrouter.models || {})
+      .map(([alias, modelId]) => ({
+        provider: 'openrouter',
+        alias,
+        value: `openrouter.${alias}`,
+        model: modelId,
+        label: `${alias} · ${modelId}`,
+      }))
+      .sort((a, b) => a.alias.localeCompare(b.alias));
+    res.json({
+      defaultValue: '',
+      models,
+      providers: [
+        {
+          id: 'openrouter',
+          label: 'OpenRouter',
+          models,
+        },
+      ],
+    });
+  } catch (err) {
+    console.error('[chat] models error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Human-readable features map to cell characteristics. The resolver scores every
 // cell against the requested target and returns the best match plus a description
 // of which dimensions matched exactly vs were relaxed.
@@ -792,6 +822,27 @@ function dryRunMetrics(model = 'dry-run') {
   };
 }
 
+function resolveOpenRouterModelOverride(raw) {
+  if (raw == null) return null;
+  const value =
+    typeof raw === 'string' ? raw.trim() : typeof raw === 'object' ? String(raw.model || raw.alias || '').trim() : '';
+  if (!value || value === 'cell-default') return null;
+
+  if (typeof raw === 'object' && raw.provider && raw.provider !== 'openrouter') {
+    throw new Error(`chat model overrides currently support openrouter only, got "${raw.provider}"`);
+  }
+  if (value.includes('/') || value.startsWith('~')) {
+    return evalConfigLoader.resolveModel({ provider: 'openrouter', model: value });
+  }
+  if (value.startsWith('openrouter.')) {
+    return evalConfigLoader.resolveModel(value);
+  }
+  if (value.includes('.')) {
+    throw new Error(`chat model overrides currently support openrouter only, got "${value}"`);
+  }
+  return evalConfigLoader.resolveModel(`openrouter.${value}`);
+}
+
 function buildDryRunLearnerTurn({ learnerProfileName, personaId, topic, tutorMessage }) {
   const dynamicLearner = String(learnerProfileName || '').startsWith('ego_superego');
   const message = `(dry run) I can answer from a learner stance: I heard the tutor ask about ${topic}, and I would try a tentative explanation before checking it.`;
@@ -838,17 +889,25 @@ function buildDryRunLearnerTurn({ learnerProfileName, personaId, topic, tutorMes
   };
 }
 
-function buildDryRunTutorTurn({ profile, learnerMessage, topic }) {
+function buildDryRunTutorTurn({
+  profile,
+  learnerMessage,
+  topic,
+  egoModelOverride = null,
+  superegoModelOverride = null,
+}) {
   const promptType = profile.factors?.prompt_type || null;
   const recognitionMode = !!profile.recognition_mode;
+  const egoDryRunModel = egoModelOverride?.model || 'dry-run/tutor-ego';
+  const superegoDryRunModel = superegoModelOverride?.model || 'dry-run/tutor-superego';
   const egoDraft = `(dry run) I hear the learner saying: "${learnerMessage}". For ${topic}, I would answer with a short worked example and then ask the learner to make the next move.`;
   const deliberation = [
     {
       role: 'ego',
       label: 'Ego — initial draft',
       content: egoDraft,
-      model: 'dry-run/tutor-ego',
-      provider: 'dry-run',
+      model: egoDryRunModel,
+      provider: egoModelOverride?.provider || 'dry-run',
       temperature: 0,
       latencyMs: 0,
       inputTokens: 0,
@@ -871,8 +930,8 @@ function buildDryRunTutorTurn({ profile, learnerMessage, topic }) {
         role: 'superego',
         label: 'Superego — critique',
         content: critique,
-        model: 'dry-run/tutor-superego',
-        provider: 'dry-run',
+        model: superegoDryRunModel,
+        provider: superegoModelOverride?.provider || 'dry-run',
         temperature: 0,
         latencyMs: 0,
         inputTokens: 0,
@@ -917,6 +976,7 @@ router.post('/turn', async (req, res) => {
     lectureRef = null,
     useClaudeCli = false,
   } = req.body || {};
+  const { modelOverrides = null, egoModelOverride = null, superegoModelOverride = null } = req.body || {};
   const sessionId = req.body?.sessionId || null;
 
   if (!learnerMessage || !String(learnerMessage).trim()) {
@@ -964,6 +1024,20 @@ router.post('/turn', async (req, res) => {
   if (!profile) return res.status(404).json({ error: `cell "${cellName}" not found` });
   if (!profile.ego) return res.status(400).json({ error: `cell "${cellName}" has no ego config` });
 
+  let egoOverrideRef = null;
+  let superegoOverrideRef = null;
+  if (!pilotSession && !useClaudeCli) {
+    try {
+      const overrides = modelOverrides && typeof modelOverrides === 'object' ? modelOverrides : {};
+      egoOverrideRef = resolveOpenRouterModelOverride(egoModelOverride ?? overrides.ego ?? overrides.tutorEgo);
+      superegoOverrideRef = resolveOpenRouterModelOverride(
+        superegoModelOverride ?? overrides.superego ?? overrides.tutorSuperego,
+      );
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
+  }
+
   if (dryRun === true) {
     if (pilotSession) {
       return res.status(400).json({ error: 'dryRun is not allowed for pilot sessions' });
@@ -973,6 +1047,8 @@ router.post('/turn', async (req, res) => {
         profile,
         learnerMessage: String(learnerMessage),
         topic: String(topic),
+        egoModelOverride: egoOverrideRef,
+        superegoModelOverride: superegoOverrideRef,
       }),
     );
   }
@@ -1006,6 +1082,7 @@ router.post('/turn', async (req, res) => {
         learnerMessage: String(learnerMessage),
         topic: String(topic),
         curriculum,
+        egoModelOverride: egoOverrideRef,
         onDelta: (d) => send({ delta: d }),
       });
 
@@ -1090,6 +1167,8 @@ router.post('/turn', async (req, res) => {
       topic: String(topic),
       curriculum,
       useClaudeCli: !!useClaudeCli,
+      egoModelOverride: egoOverrideRef,
+      superegoModelOverride: superegoOverrideRef,
     });
 
     if (pilotSession) {
@@ -1292,9 +1371,18 @@ async function callModel(apiKey, { modelId, system, user, temperature, maxTokens
 // Multi-agent cells (with superego) intentionally fall through to the
 // non-streaming runTutorTurn — we'd have to buffer the ego output for the
 // superego review anyway, defeating the streaming benefit.
-async function streamSingleAgentTurn({ profile, apiKey, history, learnerMessage, topic, curriculum = null, onDelta }) {
+async function streamSingleAgentTurn({
+  profile,
+  apiKey,
+  history,
+  learnerMessage,
+  topic,
+  curriculum = null,
+  egoModelOverride = null,
+  onDelta,
+}) {
   const conversationContext = recentContext(history);
-  const egoModelRef = evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
+  const egoModelRef = egoModelOverride || evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
   const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
   const egoMaxTokens = profile.ego.hyperparameters?.max_tokens ?? 2000;
@@ -1395,7 +1483,7 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
   return {
     finalMessage: accumulated,
     egoModel: egoModelRef.model,
-    egoProvider: profile.ego.provider,
+    egoProvider: egoModelRef.provider,
     inputTokens,
     outputTokens,
     latencyMs,
@@ -1405,7 +1493,7 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
         label: 'Ego — initial draft',
         content: accumulated,
         model: egoModelRef.model,
-        provider: profile.ego.provider,
+        provider: egoModelRef.provider,
         temperature: egoTemp,
         latencyMs,
         inputTokens,
@@ -1429,12 +1517,14 @@ async function runTutorTurn({
   // maxTokens caps the ego/superego output. Batch eval never sets either.
   styleDirective = '',
   maxTokens = null,
+  egoModelOverride = null,
+  superegoModelOverride = null,
 }) {
   const conversationContext = recentContext(history);
   const deliberation = [];
   const styleLine = styleDirective ? `\n\n${styleDirective}` : '';
 
-  const egoModelRef = evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
+  const egoModelRef = egoModelOverride || evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
   const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
   const egoMaxTokens = maxTokens ?? profile.ego.hyperparameters?.max_tokens ?? 2000;
@@ -1484,7 +1574,7 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
     label: 'Ego — initial draft',
     content: egoDraft,
     model: useClaudeCli ? CLAUDE_CLI_MODEL : egoModelRef.model,
-    provider: useClaudeCli ? 'claude-cli' : profile.ego.provider,
+    provider: useClaudeCli ? 'claude-cli' : egoModelRef.provider,
     temperature: egoTemp,
     latencyMs: egoOut.latencyMs,
     inputTokens: egoOut.inputTokens,
@@ -1496,7 +1586,8 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
   let wasRevised = false;
 
   if (profile.superego) {
-    const superModelRef = evalConfigLoader.resolveModel(`${profile.superego.provider}.${profile.superego.model}`);
+    const superModelRef =
+      superegoModelOverride || evalConfigLoader.resolveModel(`${profile.superego.provider}.${profile.superego.model}`);
     const superPromptBody = loadPromptFile(profile.superego.prompt_file);
     const superTemp = profile.superego.hyperparameters?.temperature ?? 0.2;
     const superMaxTokens = maxTokens ?? profile.superego.hyperparameters?.max_tokens ?? 2000;
@@ -1536,7 +1627,7 @@ IMPROVED: [refined response, or "APPROVED"]`;
       label: 'Superego — critique',
       content: superegoCritique,
       model: useClaudeCli ? CLAUDE_CLI_MODEL : superModelRef.model,
-      provider: useClaudeCli ? 'claude-cli' : profile.superego.provider,
+      provider: useClaudeCli ? 'claude-cli' : superModelRef.provider,
       temperature: superTemp,
       latencyMs: superOut.latencyMs,
       inputTokens: superOut.inputTokens,

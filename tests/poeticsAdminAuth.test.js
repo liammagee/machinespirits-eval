@@ -108,6 +108,10 @@ test('legacy public tool paths redirect pages but do not execute APIs', async ()
   assert.equal(chatCells.status, 404);
   assert.equal(JSON.parse(chatCells.body).adminPath, '/poetics/admin/api/chat/cells');
 
+  const chatModels = await request('/api/chat/models');
+  assert.equal(chatModels.status, 404);
+  assert.equal(JSON.parse(chatModels.body).adminPath, '/poetics/admin/api/chat/models');
+
   const publicChatTurn = await request('/api/chat/turn', {
     method: 'POST',
     body: { learnerMessage: 'hello', dryRun: true },
@@ -132,6 +136,11 @@ test('admin chat API exposes the full playground behind auth', async () => {
   const parsedCells = JSON.parse(cells.body);
   assert.ok(parsedCells.count >= 100);
 
+  const models = await request('/admin/api/chat/models', { user: 'admin', pass: 'secret' });
+  assert.equal(models.status, 200);
+  const parsedModels = JSON.parse(models.body);
+  assert.ok(parsedModels.models.some((m) => m.value === 'openrouter.gpt-mini'));
+
   const dryTurn = await request('/admin/api/chat/turn', {
     method: 'POST',
     user: 'admin',
@@ -141,8 +150,15 @@ test('admin chat API exposes the full playground behind auth', async () => {
       learnerMessage: 'I think bigger denominators always mean bigger fractions.',
       topic: 'fractions',
       dryRun: true,
+      modelOverrides: {
+        ego: 'openrouter.gpt-mini',
+        superego: 'openrouter.kimi-k2.5',
+      },
     },
   });
   assert.equal(dryTurn.status, 200);
-  assert.equal(JSON.parse(dryTurn.body).dryRun, true);
+  const parsedDryTurn = JSON.parse(dryTurn.body);
+  assert.equal(parsedDryTurn.dryRun, true);
+  assert.equal(parsedDryTurn.deliberation[0].model, 'openai/gpt-5-mini');
+  assert.equal(parsedDryTurn.deliberation[1].model, 'moonshotai/kimi-k2.5');
 });

@@ -1156,6 +1156,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       '/api/chat/cells',
       '/api/chat/curricula',
       '/api/chat/learner-turn',
+      '/api/chat/models',
       '/api/chat/personas',
       '/api/chat/resolve',
       '/api/tts',

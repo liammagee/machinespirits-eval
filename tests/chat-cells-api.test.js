@@ -157,4 +157,13 @@ describe('GET /api/chat/cells', () => {
       );
     }
   });
+
+  it('GET /api/chat/models returns OpenRouter model choices for the chat UI', async () => {
+    const { status, body } = await get(baseUrl, '/api/chat/models');
+    assert.equal(status, 200);
+    assert.equal(body.defaultValue, '');
+    assert.ok(Array.isArray(body.models));
+    assert.ok(body.models.some((m) => m.value === 'openrouter.gpt-mini' && m.model === 'openai/gpt-5-mini'));
+    assert.ok(body.models.every((m) => m.provider === 'openrouter'));
+  });
 });
