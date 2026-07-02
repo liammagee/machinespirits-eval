@@ -779,6 +779,105 @@ section.fg::before {
   opacity: 0.9;
 }
 
+/* playbill — every knob as a chip; overridden knobs light up */
+.playbill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px;
+  margin-top: 7px;
+  padding-top: 6px;
+  border-top: 1px dashed color-mix(in oklab, var(--ink) 16%, transparent);
+}
+.playbill__lbl {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brick);
+  margin-right: 0.4em;
+}
+.playbill__chip {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.35em;
+  align-items: baseline;
+  padding: 1px 6px 2px;
+  border: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.84);
+  letter-spacing: 0.03em;
+  color: var(--ink-3);
+  max-width: 100%;
+}
+.playbill__chip:hover { border-color: var(--ink); color: var(--ink); }
+.playbill__chip .k { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.9em; }
+.playbill__chip .v {
+  color: var(--ink-2);
+  font-style: italic;
+  font-family: "Fraunces", serif;
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 18ch;
+}
+.playbill__chip.is-set {
+  border-color: color-mix(in oklab, var(--moss-deep) 55%, transparent);
+  background: color-mix(in oklab, var(--moss-deep) 8%, transparent);
+}
+.playbill__chip.is-set .v { color: var(--moss-deep); font-weight: 500; }
+
+/* guided walkthrough */
+.guide-card {
+  border: 1px solid var(--sun);
+  background: color-mix(in oklab, var(--sun) 10%, transparent);
+  padding: 7px 9px;
+  margin-bottom: 8px;
+}
+.guide-card__step {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.84);
+  letter-spacing: 0.12em;
+  color: var(--ochre-d);
+  margin-bottom: 2px;
+}
+.guide-card__text {
+  margin: 0 0 6px;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.guide-card__actions { display: flex; gap: 6px; }
+.guide-hi {
+  outline: 2px solid var(--sun);
+  outline-offset: 3px;
+  transition: outline-color 0.3s var(--ease);
+}
+
+/* subject row + notes */
+.topic__row { display: flex; gap: 6px; align-items: center; }
+.topic__row .topic__input { flex: 1 1 auto; }
+.topic__shuffle { white-space: nowrap; flex: 0 0 auto; }
+.topic__lbl-hint {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  margin-left: 0.5em;
+}
+.topic__note {
+  margin: 4px 0 0;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: var(--s-0);
+  line-height: 1.35;
+  color: var(--ink-3);
+}
+
 /* the one dominant action on the page */
 .launch { margin-top: 9px; }
 .launch-btn {
@@ -2644,7 +2743,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <span class="sig">◦</span>
             <span>Stage <em>pedagogical drama</em></span>
             <span class="rule"></span>
+            <button class="mini-btn" type="button" @click="startGuide()" x-show="!guide.on">guide me</button>
             <span>launch desk</span>
+          </div>
+
+          <div class="guide-card" x-show="guide.on" x-transition.opacity>
+            <div class="guide-card__step" x-text="(guide.i + 1) + ' / ' + guideSteps.length"></div>
+            <p class="guide-card__text" x-text="guideSteps[guide.i]?.text || ''"></p>
+            <div class="guide-card__actions">
+              <button class="mini-btn" type="button" @click="nextGuide()" x-text="guide.i + 1 < guideSteps.length ? 'next →' : 'done'"></button>
+              <button class="mini-btn" type="button" @click="endGuide()" x-show="guide.i + 1 < guideSteps.length">skip</button>
+            </div>
           </div>
 
           <div class="restore-strip" x-show="restore.available && !restore.dismissed">
@@ -2655,16 +2764,25 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
           <div class="topic">
           <label class="topic__lbl" for="chat-topic">
-            1 · Topic
+            1 · Subject
+            <span class="topic__lbl-hint">type anything — the drama is improvised around it</span>
             <template x-if="activeSourceLabel">
-              <span class="topic__curriculum-pill" title="curriculum attached">◦ <em x-text="activeSourceLabel"></em> <button type="button" class="topic__clear" @click="clearCurriculum()">×</button></span>
+              <span class="topic__curriculum-pill" title="this source's text is injected as teaching context">◦ teaching from <em x-text="activeSourceLabel"></em> <button type="button" class="topic__clear" @click="clearCurriculum()" title="detach — back to freeform">×</button></span>
             </template>
           </label>
-          <input id="chat-topic" type="text" class="topic__input" x-model="topic" placeholder="e.g. Hegel's concept of recognition — a line is a dot that went for a walk" />
+          <div class="topic__row">
+            <input id="chat-topic" type="text" class="topic__input" x-model="topic" :placeholder="topicPlaceholder" />
+            <button class="mini-btn topic__shuffle" type="button" @click="shuffleSubject()"
+                    title="pick a random lecture or compiled scene source">⚄ surprise me</button>
+          </div>
+          <p class="topic__note" x-show="!activeSourceLabel">
+            Freeform: the tutor improvises from this line alone. Attach a source below and it teaches
+            from that actual text instead — the scene frame is seeded from it too.
+          </p>
           <details class="curriculum-drawer" x-ref="curriculumDrawer">
             <summary>
               <span class="chev">▸</span>
-              <span>pick from <em>curriculum</em></span>
+              <span>or teach from <em>curriculum</em> — lectures &amp; compiled scenes</span>
               <span class="count" x-show="curricula.length || sceneSources.length" x-text="sourceCountLabel"></span>
             </summary>
             <div class="curriculum-body">
@@ -2854,6 +2972,18 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')" title="you type the tutor's lines; the simulated learner answers">I play tutor</button>
             </div>
           </div>
+          <!-- playbill — every knob that shapes the next turn, one chip each.
+               Clicking a chip opens the drawer that owns that control. -->
+          <div class="playbill">
+            <span class="playbill__lbl" title="the full configuration of the next turn — click any entry to edit it">playbill</span>
+            <template x-for="k in playbillKnobs" :key="k.key">
+              <button class="playbill__chip" :class="{'is-set': !k.isDefault}" type="button" @click="openKnob(k)" :title="k.title">
+                <span class="k" x-text="k.label"></span>
+                <span class="v" x-text="k.value"></span>
+              </button>
+            </template>
+          </div>
+
           <div class="preflight-note" x-show="turnsNeedKeyWarning">
             No model key configured, so live turns can't run. Either
             <button class="mini-btn" type="button" @click="dryRunTurns = true">switch to dry run · free canned output</button>
@@ -3115,6 +3245,46 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               <span class="chip__name">Reflective</span>
               <span class="chip__hint">ego + superego</span>
             </button>
+          </div>
+        </section>
+
+        <!-- §05 Models & sampling — same overrides the dossier manifest binds,
+             surfaced here so every knob is reachable from fine controls. -->
+        <section class="fg" data-ghost="V" id="fg-05">
+          <div class="fg-head">
+            <span class="fg-head__no">§05</span>
+            <span class="fg-head__ttl">Models &amp; <em>sampling</em></span>
+            <span class="fg-head__rule"></span>
+            <span class="fg-head__hint">blank = the cell's own YAML values</span>
+          </div>
+          <div class="model-controls" style="border-top: 0; margin-top: 0; padding-top: 0;">
+            <div class="model-control">
+              <label for="fc-ego-model">ego substrate</label>
+              <select id="fc-ego-model" class="model-select" x-model="modelOverrides.ego" :disabled="useClaudeCli || !modelOptions.length">
+                <option value="">cell default</option>
+                <template x-for="m in modelOptions" :key="'fc-ego-' + m.value">
+                  <option :value="m.value" x-text="m.alias"></option>
+                </template>
+              </select>
+            </div>
+            <div class="model-control">
+              <label for="fc-superego-model">superego substrate</label>
+              <select id="fc-superego-model" class="model-select" x-model="modelOverrides.superego" :disabled="useClaudeCli || !resolved?.superego || !modelOptions.length">
+                <option value="" x-text="resolved?.superego ? 'cell default' : 'none'"></option>
+                <template x-for="m in modelOptions" :key="'fc-superego-' + m.value">
+                  <option :value="m.value" x-text="m.alias"></option>
+                </template>
+              </select>
+            </div>
+            <div class="model-control">
+              <label for="fc-temp">tutor temperature <span style="text-transform: none;">(0–2 · ego only)</span></label>
+              <input id="fc-temp" class="model-select" type="number" min="0" max="2" step="0.1" x-model="sampling.temperature" :placeholder="'cell default · ' + (resolved?.ego?.hyperparameters?.temperature ?? '0.6')" />
+            </div>
+            <div class="model-control">
+              <label for="fc-maxtok">max tokens per turn</label>
+              <input id="fc-maxtok" class="model-select" type="number" min="64" max="8000" step="50" x-model="sampling.maxTokens" placeholder="cell default" />
+            </div>
+            <div class="model-note" x-text="useClaudeCli ? 'Claude CLI substrate active — model selectors are bypassed; sampling still applies to OpenRouter turns only.' : 'Overrides apply to live turns in this desk only; batch runs keep the cell YAML.'"></div>
           </div>
         </section>
           </div>
@@ -3817,7 +3987,43 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       // Default null → auto-pick a "natural opposite" via compareCell getter.
       compareCellName: null,
 
-      topic: "Hegel's concept of recognition",
+      // Empty by default: the placeholder rotates through examples so it is
+      // obviously a free-text field, not a fixed title.
+      topic: '',
+      // Live sampling overrides for tutor turns; blank = the cell's YAML values.
+      sampling: { temperature: '', maxTokens: '' },
+      // Guided walkthrough state (client-side, no LLM needed).
+      guide: { on: false, i: 0 },
+      guideSteps: [
+        {
+          sel: '.topic',
+          text: 'Step 1 — Subject. Type anything here: the drama improvises around this line. Or open "teach from curriculum" to attach a real lecture or compiled scene — its text is injected as teaching context and the scene frame is seeded from it. "Surprise me" rolls a random source.',
+        },
+        {
+          sel: '#fg-01',
+          text: "Step 2 — Tutor style. Which experimental tutor architecture plays the part: plain baseline, best-practice, Hegelian recognition, a placebo control, or the Weberian charismatic id-director. This maps onto real evaluation cells.",
+        },
+        {
+          sel: '.persona-strip',
+          text: 'Step 3 — Learner persona. Who the simulated learner is when the AI writes their lines. Six curated temperaments; six scripted research probes behind the drawer.',
+        },
+        {
+          sel: '.mode',
+          text: 'Step 4 — Who writes the lines. AI plays both (watch a drama unfold one exchange per press), or take a seat yourself as learner or tutor.',
+        },
+        {
+          sel: '.playbill',
+          text: 'The playbill lists every knob shaping the next turn — critic, director frame, models, sampling. Click any entry to edit it; entries light up when you have overridden a default.',
+        },
+        {
+          sel: '.launch',
+          text: 'Then press Start. The line beneath the button always says exactly what will happen. Dry run (below) rehearses the whole desk for free with canned output.',
+        },
+        {
+          sel: '.assist-strip',
+          text: 'Or skip all of it: describe the drama you want in plain language and the concierge proposes a full configuration you can apply with one click.',
+        },
+      ],
       turns: [],
       input: '',
       pending: false,
@@ -3980,13 +4186,164 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       get launchSublabel() {
         const cell = this.resolved?.name || 'the resolved cell';
         const free = this.dryRunTurns ? ' Dry run: free canned output.' : '';
+        const src = this.activeSourceLabel ? ` (teaching from ${this.activeSourceLabel})` : '';
         if (this.mode === 'auto') {
-          return `${this.personaName} opens on “${this.topic || 'general conversation'}”; ${cell} replies. One exchange per press.${free}`;
+          return `${this.personaName} opens on “${this.topic || 'general conversation'}”${src}; ${cell} replies. One exchange per press.${free}`;
         }
         if (this.mode === 'teacher') {
           return `You write the tutor's lines in the composer; ${this.personaName} answers.${free}`;
         }
-        return `You write the learner's lines in the composer; ${cell} answers.${free}`;
+        return `You write the learner's lines in the composer; ${cell} answers${src}.${free}`;
+      },
+
+      get topicPlaceholder() {
+        return "e.g. Hegel's concept of recognition · why the sky is blue · proof by induction — or ⚄ surprise me";
+      },
+
+      // Attach a random lecture or compiled scene source — a one-click way to
+      // discover that the desk can teach from real curriculum text.
+      shuffleSubject() {
+        const lectures = [];
+        for (const pkg of this.curricula) {
+          for (const course of pkg.courses) {
+            for (const lec of course.lectures || []) lectures.push({ course, lec });
+          }
+        }
+        const total = this.sceneSources.length + lectures.length;
+        if (!total) return;
+        const i = Math.floor(Math.random() * total);
+        if (i < this.sceneSources.length) {
+          this.pickSceneSource(this.sceneSources[i]);
+        } else {
+          const pick = lectures[i - this.sceneSources.length];
+          this.pickLecture(pick.course, pick.lec);
+        }
+      },
+
+      // The playbill: one chip per knob shaping the next turn. isDefault
+      // dims untouched knobs; target names the drawer section that owns it.
+      get playbillKnobs() {
+        const f = this.features;
+        const d = this.director;
+        const knobs = [];
+        knobs.push({
+          key: 'critic',
+          label: 'critic',
+          value: f.critic === 'none' ? 'none' : f.critic + (this.stanceVisible ? ' · ' + f.stance : ''),
+          isDefault: f.critic === 'none',
+          target: 'fg-02',
+          title: 'inner critic (superego) — a second voice reviewing each draft',
+        });
+        knobs.push({
+          key: 'learner-mind',
+          label: 'learner mind',
+          value: f.learnerModel === 'reflective' ? 'ego + superego' : 'unified',
+          isDefault: f.learnerModel === 'surface',
+          target: 'fg-04',
+          title: "the simulated learner's internal architecture",
+        });
+        knobs.push({
+          key: 'director',
+          label: 'director',
+          value: d.mode === 'off' ? 'off' : `${d.mode} · ${d.act}/${d.beat}`,
+          isDefault: d.mode === 'scene-card' && d.act === 'setup' && d.beat === 'opening',
+          target: 'fg-00',
+          title: 'dramaturgical frame: directing mode, act, and beat for the next turn',
+        });
+        knobs.push({
+          key: 'scene',
+          label: 'scene',
+          value: d.scene || '—',
+          isDefault: d.scene === 'artifact review desk',
+          target: 'fg-00',
+          title: 'where the scene is set',
+        });
+        const egoValue = this.useClaudeCli
+          ? 'claude cli'
+          : this.modelOverrides.ego
+            ? this.modelOption(this.modelOverrides.ego)?.alias || this.modelOverrides.ego
+            : 'cell default';
+        knobs.push({
+          key: 'ego-model',
+          label: 'ego model',
+          value: egoValue,
+          isDefault: !this.useClaudeCli && !this.modelOverrides.ego,
+          target: 'fg-05',
+          title: "the model voicing the tutor's ego",
+        });
+        if (this.resolved?.superego) {
+          knobs.push({
+            key: 'superego-model',
+            label: 'superego model',
+            value: this.useClaudeCli
+              ? 'claude cli'
+              : this.modelOverrides.superego
+                ? this.modelOption(this.modelOverrides.superego)?.alias || this.modelOverrides.superego
+                : 'cell default',
+            isDefault: !this.useClaudeCli && !this.modelOverrides.superego,
+            target: 'fg-05',
+            title: 'the model voicing the inner critic',
+          });
+        }
+        knobs.push({
+          key: 'temp',
+          label: 'temp',
+          value: this.sampling.temperature !== '' ? String(this.sampling.temperature) : 'default',
+          isDefault: this.sampling.temperature === '',
+          target: 'fg-05',
+          title: 'tutor ego sampling temperature (blank = cell YAML)',
+        });
+        knobs.push({
+          key: 'maxtok',
+          label: 'max tok',
+          value: this.sampling.maxTokens !== '' ? String(this.sampling.maxTokens) : 'default',
+          isDefault: this.sampling.maxTokens === '',
+          target: 'fg-05',
+          title: 'output cap per tutor turn (blank = cell YAML)',
+        });
+        return knobs;
+      },
+
+      openKnob(k) {
+        const drawer = document.getElementById('fine-controls');
+        if (drawer) drawer.open = true;
+        this.$nextTick(() => this.scrollTo(k.target));
+      },
+
+      samplingPayload() {
+        return {
+          temperature: this.sampling.temperature === '' ? null : Number(this.sampling.temperature),
+          maxTokens: this.sampling.maxTokens === '' ? null : Number(this.sampling.maxTokens),
+        };
+      },
+
+      // ── guided walkthrough (pure client, no LLM) ──
+      startGuide() {
+        this.guide.on = true;
+        this.guide.i = 0;
+        this._applyGuideHighlight();
+      },
+      nextGuide() {
+        if (this.guide.i + 1 >= this.guideSteps.length) return this.endGuide();
+        this.guide.i += 1;
+        this._applyGuideHighlight();
+        return null;
+      },
+      endGuide() {
+        this.guide.on = false;
+        this._clearGuideHighlight();
+      },
+      _clearGuideHighlight() {
+        document.querySelectorAll('.guide-hi').forEach((el) => el.classList.remove('guide-hi'));
+      },
+      _applyGuideHighlight() {
+        this._clearGuideHighlight();
+        const step = this.guideSteps[this.guide.i];
+        if (!step) return;
+        const el = document.querySelector(step.sel);
+        if (!el) return;
+        el.classList.add('guide-hi');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       },
 
       get assistDisabled() {
@@ -4067,6 +4424,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.$watch('turns', save, { deep: true });
         this.$watch('useClaudeCli', save);
         this.$watch('dryRunTurns', save);
+        this.$watch('sampling', save, { deep: true });
       },
 
       sessionSnapshot() {
@@ -4079,6 +4437,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           personaId: this.personaId,
           mode: this.mode,
           modelOverrides: { ...this.modelOverrides },
+          sampling: { ...this.sampling },
           useClaudeCli: this.useClaudeCli,
           dryRunTurns: this.dryRunTurns,
           turns: this.turns,
@@ -4129,6 +4488,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.personaId = s.personaId || this.personaId;
         this.mode = ['human', 'teacher', 'auto'].includes(s.mode) ? s.mode : this.mode;
         this.modelOverrides = { ...this.modelOverrides, ...(s.modelOverrides || {}) };
+        this.sampling = { temperature: '', maxTokens: '', ...(s.sampling || {}) };
         this.useClaudeCli = !!s.useClaudeCli;
         this.dryRunTurns = !!s.dryRunTurns;
         this.turns = Array.isArray(s.turns) ? s.turns : [];
@@ -4617,6 +4977,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           director: this.directorPayload(),
           useClaudeCli: this.useClaudeCli,
           modelOverrides: this.tutorModelOverrides(),
+              sampling: this.samplingPayload(),
           dryRun: this.dryRunTurns,
         };
         try {
@@ -4658,6 +5019,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           director: this.directorPayload(),
           useClaudeCli: this.useClaudeCli,
           modelOverrides: this.tutorModelOverrides(),
+              sampling: this.samplingPayload(),
           dryRun: this.dryRunTurns,
         };
 

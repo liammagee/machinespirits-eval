@@ -206,7 +206,12 @@ function loadResultStatsByProfile() {
   let db;
   try {
     db = new Database(EVAL_DB_PATH, { readonly: true, fileMustExist: true });
-    const cols = new Set(db.prepare('PRAGMA table_info(evaluation_results)').all().map((c) => c.name));
+    const cols = new Set(
+      db
+        .prepare('PRAGMA table_info(evaluation_results)')
+        .all()
+        .map((c) => c.name),
+    );
     for (const required of [
       'profile_name',
       'success',
@@ -903,9 +908,7 @@ function listCurriculumSceneSources({ includeRaw = false } = {}) {
     sources.push(source);
   }
 
-  const worlds = Array.isArray(artifacts.worlds.world_adaptation_specs)
-    ? artifacts.worlds.world_adaptation_specs
-    : [];
+  const worlds = Array.isArray(artifacts.worlds.world_adaptation_specs) ? artifacts.worlds.world_adaptation_specs : [];
   for (const world of worlds) {
     const module = modulesById.get(world.module_id);
     const verifier = firstListItem(world.learner_state_evidence?.verifier_signals) || module?.primary_verifier || null;
@@ -1041,7 +1044,9 @@ function buildModuleContextText(module) {
     module.essential_question ? `Essential question: ${module.essential_question}` : null,
     module.main_artifact ? `Main artifact: ${module.main_artifact}` : null,
     module.primary_verifier ? `Verifier: ${module.primary_verifier}` : null,
-    Array.isArray(module.canonical_tasks) ? `Canonical tasks:\n${module.canonical_tasks.map((t) => `- ${t}`).join('\n')}` : null,
+    Array.isArray(module.canonical_tasks)
+      ? `Canonical tasks:\n${module.canonical_tasks.map((t) => `- ${t}`).join('\n')}`
+      : null,
     Array.isArray(module.knowledge_components)
       ? `Knowledge components:\n${module.knowledge_components.map((kc) => `- ${kc.id}: ${kc.statement}`).join('\n')}`
       : null,
@@ -1060,7 +1065,9 @@ function buildWorldContextText(world, module = null) {
   const lines = [
     `WORLD ADAPTATION SPEC ${world.id}: ${world.module_title || module?.title || world.module_id}`,
     module ? buildModuleContextText(module) : null,
-    Array.isArray(evidence.verifier_signals) ? `Verifier signals:\n${evidence.verifier_signals.map((s) => `- ${s}`).join('\n')}` : null,
+    Array.isArray(evidence.verifier_signals)
+      ? `Verifier signals:\n${evidence.verifier_signals.map((s) => `- ${s}`).join('\n')}`
+      : null,
     Array.isArray(evidence.knowledge_components)
       ? `Observable knowledge evidence:\n${evidence.knowledge_components
           .map((kc) => `- ${kc.kc_id}: ${kc.statement}\n  evidence: ${(kc.observable_evidence || []).join('; ')}`)
@@ -1072,7 +1079,9 @@ function buildWorldContextText(world, module = null) {
           .join('\n')}`
       : null,
     `Action policy:\n${yamlSnippet(action, 5000)}`,
-    Array.isArray(world.expected_transitions) ? `Expected transitions:\n${yamlSnippet(world.expected_transitions, 5000)}` : null,
+    Array.isArray(world.expected_transitions)
+      ? `Expected transitions:\n${yamlSnippet(world.expected_transitions, 5000)}`
+      : null,
   ].filter(Boolean);
   return clipText(lines.join('\n\n'));
 }
@@ -1105,7 +1114,9 @@ function buildPlanContextText(plan, module = null) {
     plan.pacing ? `Pacing and beats:\n${yamlSnippet(plan.pacing, 7000)}` : null,
     plan.character ? `Characters:\n${yamlSnippet(plan.character, 5000)}` : null,
     plan.scene ? `Scene:\n${yamlSnippet(plan.scene, 3000)}` : null,
-    plan.public_prompt_constraints ? `Public prompt constraints:\n${yamlSnippet(plan.public_prompt_constraints, 4000)}` : null,
+    plan.public_prompt_constraints
+      ? `Public prompt constraints:\n${yamlSnippet(plan.public_prompt_constraints, 4000)}`
+      : null,
   ].filter(Boolean);
   return clipText(lines.join('\n\n'));
 }
@@ -1631,7 +1642,8 @@ router.post('/assist', async (req, res) => {
   try {
     const catalog = buildAssistCatalog();
     const messages = sanitizeAssistMessages(req.body?.messages || []);
-    const currentConfig = req.body?.currentConfig && typeof req.body.currentConfig === 'object' ? req.body.currentConfig : {};
+    const currentConfig =
+      req.body?.currentConfig && typeof req.body.currentConfig === 'object' ? req.body.currentConfig : {};
     const useClaudeCli = req.body?.useClaudeCli === true;
     const dryRun = req.body?.dryRun === true;
 
@@ -1657,7 +1669,8 @@ router.post('/assist', async (req, res) => {
       });
     }
 
-    const prompt = loadPromptFile(CHAT_ASSIST_PROMPT_FILE) || 'You are a concise stage manager for a pedagogical drama.';
+    const prompt =
+      loadPromptFile(CHAT_ASSIST_PROMPT_FILE) || 'You are a concise stage manager for a pedagogical drama.';
     const system = `${prompt}\n\nCATALOG\n${catalog.text}`;
     const userPayload = JSON.stringify(
       {
@@ -1921,6 +1934,23 @@ function dryRunMetrics(model = 'dry-run') {
   };
 }
 
+// Live-chat sampling overrides. Blank/absent fields fall through to the cell
+// YAML hyperparameters. Temperature applies to the tutor ego only (the
+// superego review keeps its own configured temperature); maxTokens caps both.
+function normalizeSampling(raw) {
+  const out = { temperature: null, maxTokens: null };
+  if (!raw || typeof raw !== 'object') return out;
+  if (raw.temperature != null && raw.temperature !== '') {
+    const t = Number(raw.temperature);
+    if (Number.isFinite(t)) out.temperature = Math.min(Math.max(t, 0), 2);
+  }
+  if (raw.maxTokens != null && raw.maxTokens !== '') {
+    const m = Number(raw.maxTokens);
+    if (Number.isFinite(m)) out.maxTokens = Math.min(Math.max(Math.round(m), 64), 8000);
+  }
+  return out;
+}
+
 function resolveOpenRouterModelOverride(raw) {
   if (raw == null) return null;
   const value =
@@ -2078,6 +2108,7 @@ router.post('/turn', async (req, res) => {
     useClaudeCli = false,
   } = req.body || {};
   const { modelOverrides = null, egoModelOverride = null, superegoModelOverride = null } = req.body || {};
+  const sampling = normalizeSampling(req.body?.sampling);
   const sessionId = req.body?.sessionId || null;
 
   if (!learnerMessage || !String(learnerMessage).trim()) {
@@ -2188,6 +2219,8 @@ router.post('/turn', async (req, res) => {
         curriculum,
         directorPlan,
         egoModelOverride: egoOverrideRef,
+        temperature: sampling.temperature,
+        maxTokens: sampling.maxTokens,
         onDelta: (d) => send({ delta: d }),
       });
 
@@ -2276,6 +2309,8 @@ router.post('/turn', async (req, res) => {
       useClaudeCli: !!useClaudeCli,
       egoModelOverride: egoOverrideRef,
       superegoModelOverride: superegoOverrideRef,
+      temperature: sampling.temperature,
+      maxTokens: sampling.maxTokens,
     });
 
     if (pilotSession) {
@@ -2492,13 +2527,15 @@ async function streamSingleAgentTurn({
   curriculum = null,
   directorPlan = null,
   egoModelOverride = null,
+  temperature = null,
+  maxTokens = null,
   onDelta,
 }) {
   const conversationContext = recentContext(history);
   const egoModelRef = egoModelOverride || evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
-  const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
-  const egoMaxTokens = profile.ego.hyperparameters?.max_tokens ?? 2000;
+  const egoTemp = temperature ?? profile.ego.hyperparameters?.temperature ?? 0.6;
+  const egoMaxTokens = maxTokens ?? profile.ego.hyperparameters?.max_tokens ?? 2000;
 
   const curriculumBlock = buildCurriculumPromptBlock(curriculum);
   const directorBlock = buildDirectorPromptBlock(directorPlan);
@@ -2620,6 +2657,7 @@ async function runTutorTurn({
   // maxTokens caps the ego/superego output. Batch eval never sets either.
   styleDirective = '',
   maxTokens = null,
+  temperature = null,
   egoModelOverride = null,
   superegoModelOverride = null,
 }) {
@@ -2629,7 +2667,7 @@ async function runTutorTurn({
 
   const egoModelRef = egoModelOverride || evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
-  const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
+  const egoTemp = temperature ?? profile.ego.hyperparameters?.temperature ?? 0.6;
   const egoMaxTokens = maxTokens ?? profile.ego.hyperparameters?.max_tokens ?? 2000;
 
   const curriculumBlock = buildCurriculumPromptBlock(curriculum);
