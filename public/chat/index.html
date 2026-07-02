@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300..900&family=JetBrains+Mono:wght@300..700&family=Space+Grotesk:wght@300..700&display=swap" />
+<link rel="stylesheet" href="/components/techne.css" />
 
 <!-- D6 orientation helpers (effect-size binning, family grouping, compare
      defaults). Loads as a deferred ES module before Alpine so window.OH
@@ -23,12 +24,12 @@
 
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   Machine Spirits / Chat — after grid_60_47
-   klee-aged palette · 60-column canon · editorial specimen
+   Machine Spirits / Chat — techne workbench
+   shared paper/ink tokens · admin tutor playground
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
-  /* palette — klee-aged */
+  /* shared paper/ink palette, mirrored from /components/techne.css */
   --paper:     #F1E9D8;
   --paper-2:   #E9DFC7;
   --paper-3:   #EFE4CC;
@@ -44,6 +45,11 @@
   --moss-deep: #3A4824;  /* injected rail (rail-inject.js) active-state highlight */
   --moss-soft: #E3E6CE;
   --linen:     #D8C7A9;
+  --paper-4:   #F7EFDD;
+  --rule:      rgba(28, 22, 16, 0.18);
+  --rule-soft: rgba(28, 22, 16, 0.10);
+  --brick-d:   #7C2C1F;
+  --indigo:    #2A4F6B;
   --red-mark:  #D62828;
 
   /* fluid scale */
@@ -65,32 +71,32 @@
    (rail-inject.js) sets data-skin on <html>; this page consumes the same token
    names, so overriding them here re-skins it in lockstep. */
 :root[data-skin="stark"] {
-  --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA;
+  --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA; --paper-4:#FFFFFF;
   --ink:#0A0A0A; --ink-2:#262626; --ink-3:#525252;
   --ochre:#737373; --ochre-d:#525252; --prussian:#404040;
-  --brick:#E63946; --sun:#E63946; --moss:#171717; --moss-deep:#000000; --moss-soft:#ECECEC;
-  --linen:#D4D4D8; --red-mark:#E63946;
+  --brick:#E63946; --brick-d:#C1121F; --sun:#E63946; --moss:#171717; --moss-deep:#000000; --moss-soft:#ECECEC;
+  --linen:#D4D4D8; --rule:rgba(10,10,10,0.16); --rule-soft:rgba(10,10,10,0.07); --red-mark:#E63946;
 }
 :root[data-skin="stark"][data-theme="dark"] {
-  --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618;
+  --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618; --paper-4:#1C1C1F;
   --ink:#FAFAFA; --ink-2:#E4E4E7; --ink-3:#A1A1AA;
   --ochre:#A1A1AA; --ochre-d:#C4C4CC; --prussian:#C4C4CC;
-  --brick:#E63946; --sun:#E63946; --moss:#F5F5F5; --moss-deep:#FFFFFF; --moss-soft:rgba(250,250,250,.12);
-  --linen:#2A2A2E; --red-mark:#E63946;
+  --brick:#E63946; --brick-d:#F4606C; --sun:#E63946; --moss:#F5F5F5; --moss-deep:#FFFFFF; --moss-soft:rgba(250,250,250,.12);
+  --linen:#2A2A2E; --rule:rgba(250,250,250,0.16); --rule-soft:rgba(250,250,250,0.08); --red-mark:#E63946;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; max-width: 100%; overflow-x: hidden; }
 html { -webkit-text-size-adjust: 100%; background: var(--paper); }
 body {
-  background: transparent;
+  background: var(--paper);
   color: var(--ink);
-  font-family: "Inter", "Helvetica Neue", system-ui, sans-serif;
+  font-family: "Source Serif 4", "Fraunces", Georgia, serif;
   font-size: var(--s-1);
   line-height: var(--lead);
   font-feature-settings: "ss01", "cv11", "kern";
   font-optical-sizing: auto;
-  letter-spacing: -0.005em;
+  letter-spacing: 0.003em;
   overflow: hidden;
   position: relative;
 }
@@ -102,30 +108,35 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: -2;
-  opacity: 0.88;
+  opacity: 0.28;
   pointer-events: none;
 }
+:root[data-skin="stark"] #field { display: none; }
 
-/* paper texture layer — vignette + 60-col hairline rule on top of shader */
+/* paper texture layer — subtle grain and column memory on top of the shell */
 .paper {
   position: fixed; inset: 0;
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(120% 80% at 50% 10%, transparent 40%, rgba(24,19,16,0.10) 100%),
-    radial-gradient(70% 50% at 10% 90%, rgba(165,62,46,0.07), transparent 60%),
-    radial-gradient(60% 50% at 95% 20%, rgba(42,79,107,0.07), transparent 60%);
+    radial-gradient(120% 80% at 50% 10%, transparent 48%, color-mix(in oklab, var(--ink) 7%, transparent) 100%),
+    radial-gradient(70% 50% at 10% 90%, color-mix(in oklab, var(--brick) 4%, transparent), transparent 60%);
   mix-blend-mode: multiply;
 }
 .paper::after {
   content: "";
   position: absolute; inset: 0;
-  background-image: linear-gradient(to right, rgba(24,19,16,0.04) 1px, transparent 1px);
+  background-image: linear-gradient(to right, color-mix(in oklab, var(--ink) 4%, transparent) 1px, transparent 1px);
   background-size: calc((100vw - 2 * var(--margin)) / 60) 100%;
   background-position: var(--margin) 0;
   mix-blend-mode: multiply;
-  opacity: 0.45;
+  opacity: 0.24;
 }
+:root[data-skin="stark"] .paper {
+  background: linear-gradient(180deg, var(--paper), var(--paper-3));
+  mix-blend-mode: normal;
+}
+:root[data-skin="stark"] .paper::after { opacity: 0.08; }
 
 /* ══════ grid ══════ */
 .grid {
@@ -147,11 +158,9 @@ body {
 /* ══════ chrome (sticky top) ══════ */
 .chrome {
   z-index: 20;
-  padding-block: 0.7rem 0.5rem;
-  backdrop-filter: saturate(1.2) blur(6px);
-  -webkit-backdrop-filter: saturate(1.2) blur(6px);
-  background: color-mix(in oklab, var(--paper) 80%, transparent);
-  border-bottom: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  padding-block: 0.55rem 0.45rem;
+  background: color-mix(in oklab, var(--paper) 94%, transparent);
+  border-bottom: 1px solid var(--rule);
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: var(--s-0);
   letter-spacing: 0.02em;
@@ -176,7 +185,6 @@ body {
   font-size: 1.3em;
   transform: translateY(0.12em);
   display: inline-block;
-  animation: spin 28s linear infinite;
 }
 @keyframes spin { to { transform: translateY(0.12em) rotate(360deg); } }
 .mark__sep { color: var(--ink-3); margin: 0 0.25em; }
@@ -248,7 +256,7 @@ body {
 
 /* ruler — live 60-col register below the chrome nav */
 .ruler {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(60, 1fr);
   column-gap: var(--gutter);
   padding: 4px var(--margin) 3px;
@@ -346,8 +354,10 @@ body.xray-on .xray-overlay { opacity: 1; }
 
 /* ══════ cover pretext ══════ */
 .cover-pretext {
-  padding-block: 0.5rem 0.55rem;
-  border-bottom: 1px solid color-mix(in oklab, var(--ink) 18%, transparent);
+  margin: 10px var(--margin) 0;
+  padding: 8px 12px;
+  border: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--paper-4) 92%, transparent);
   font-family: "JetBrains Mono", monospace;
   font-size: var(--s-0);
   letter-spacing: 0.08em;
@@ -357,13 +367,12 @@ body.xray-on .xray-overlay { opacity: 1; }
   grid-template-columns: repeat(60, 1fr);
   column-gap: var(--gutter);
   align-items: baseline;
-  padding-inline: var(--margin);
   flex-shrink: 0;
 }
-.cover-pretext__sig  { grid-column: 2 / 3; color: var(--brick); font-size: 1.15em; transform: translateY(0.1em); }
-.cover-pretext__tag  { grid-column: 3 / 10; color: var(--brick); font-weight: 500; letter-spacing: 0.16em; }
-.cover-pretext__rule { grid-column: 10 / 15; height: 1px; border-bottom: 1px dashed color-mix(in oklab, var(--ink) 28%, transparent); transform: translateY(-0.32em); }
-.cover-pretext__body { grid-column: 15 / 46; color: var(--ink-2); }
+.cover-pretext__sig  { grid-column: auto; color: var(--brick); font-size: 1.15em; transform: translateY(0.1em); }
+.cover-pretext__tag  { grid-column: auto; color: var(--brick); font-weight: 500; letter-spacing: 0.16em; }
+.cover-pretext__rule { grid-column: auto; height: 1px; border-bottom: 1px dashed color-mix(in oklab, var(--ink) 28%, transparent); transform: translateY(-0.32em); }
+.cover-pretext__body { grid-column: 4 / 46; color: var(--ink-2); }
 .cover-pretext__body em { color: var(--ink); font-style: normal; font-weight: 500; letter-spacing: 0.04em; text-transform: none; padding-inline: 0.15em; }
 .cover-pretext__cta  { grid-column: 46 / 60; color: var(--brick); letter-spacing: 0.12em; text-align: right; font-weight: 500; }
 .cover-pretext__cta.warn { color: var(--ochre); }
@@ -376,14 +385,14 @@ main.split {
   padding-inline: var(--margin);
   flex: 1 1 0;
   min-height: 0;
-  padding-block: 0;
+  padding-block: 10px 0;
   position: relative;
 }
 
 /* LEFT: configurator */
 aside.config {
   grid-column: 2 / 26;
-  border-right: 1px solid color-mix(in oklab, var(--ink) 16%, transparent);
+  border-right: 1px solid var(--rule);
   padding-right: calc(var(--gutter) * 2);
   display: flex;
   flex-direction: column;
@@ -412,7 +421,7 @@ section.dialogue {
 section.fg {
   position: relative;
   padding: 10px 0 12px;
-  border-top: 1px solid color-mix(in oklab, var(--ink) 10%, transparent);
+  border-top: 1px solid var(--rule-soft);
 }
 section.fg:first-child { border-top: 0; padding-top: 6px; }
 
@@ -598,17 +607,17 @@ section.fg::before {
   line-height: 1.15;
 }
 .chip.is-active {
-  background: var(--ink);
+  background: var(--moss-deep);
   color: var(--paper);
-  border-color: var(--ink);
+  border-color: var(--moss-deep);
 }
 .chip.is-active .chip__letter { color: var(--sun); }
 .chip.is-active .chip__name   { color: var(--paper); }
 .chip.is-active .chip__hint   { color: color-mix(in oklab, var(--paper) 72%, transparent); }
 
 .chip.accent.is-active {
-  background: var(--brick);
-  border-color: var(--brick);
+  background: var(--brick-d);
+  border-color: var(--brick-d);
 }
 .chip.accent.is-active .chip__letter { color: var(--sun); }
 .chip.accent.is-active .chip__name   { color: var(--paper); }
@@ -1241,8 +1250,9 @@ section.fg::before {
   line-height: 1.45;
   color: var(--ink-2);
   padding-block: clamp(24px, 4vw, 60px);
-  border-top: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
-  border-bottom: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  border: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--paper-4) 70%, transparent);
+  padding-inline: clamp(16px, 2vw, 28px);
 }
 .onboarding em { font-style: italic; color: var(--brick); }
 .onboarding p { margin: 0 0 0.6em; max-width: 44ch; }
@@ -1287,13 +1297,10 @@ section.fg::before {
 }
 .plate--tutor .plate__stage {
   position: relative;
-  background:
-    linear-gradient(180deg, color-mix(in oklab, var(--paper) 96%, var(--linen) 4%), color-mix(in oklab, var(--paper-2) 65%, transparent));
-  border: 1px solid color-mix(in oklab, var(--ink) 16%, transparent);
+  background: color-mix(in oklab, var(--paper-4) 86%, transparent);
+  border: 1px solid var(--rule);
   padding: clamp(16px, 2vw, 26px) clamp(16px, 2vw, 26px) clamp(14px, 1.8vw, 22px);
-  box-shadow:
-    0 1px 0 color-mix(in oklab, var(--ink) 10%, transparent),
-    0 28px 44px -36px color-mix(in oklab, var(--ink) 35%, transparent);
+  box-shadow: none;
   overflow: hidden;
 }
 .plate--tutor .plate__stage::before {
@@ -1727,7 +1734,7 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   border-right: 1px solid var(--ink);
 }
 .mode__btn:last-child { border-right: 0; }
-.mode__btn.is-active { background: var(--ink); color: var(--paper); }
+.mode__btn.is-active { background: var(--moss-deep); color: var(--paper); }
 .mode__btn:hover:not(.is-active) { background: color-mix(in oklab, var(--ink) 10%, transparent); }
 .mode__meta {
   color: var(--ink-3);
@@ -1825,7 +1832,7 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 .composer {
   flex-shrink: 0;
   padding: 7px 0 10px;
-  border-top: 1px solid var(--ink);
+  border-top: 1px solid var(--rule);
   position: relative;
 }
 .composer::before {
@@ -1859,7 +1866,7 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   column-gap: 0.6em;
   align-items: start;
   padding: 0.35em 0.2em;
-  border-bottom: 1px solid var(--ink);
+  border-bottom: 1px solid var(--rule);
 }
 .composer__prompt {
   font-family: "JetBrains Mono", monospace;
@@ -1892,8 +1899,8 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   align-self: start;
   cursor: pointer;
   padding: 0.35em 0.9em 0.4em;
-  border: 1px solid var(--ink);
-  background: var(--ink);
+  border: 1px solid var(--moss-deep);
+  background: var(--moss-deep);
   color: var(--paper);
   font-family: "JetBrains Mono", monospace;
   font-size: var(--s-0);

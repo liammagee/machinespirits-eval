@@ -66,6 +66,11 @@ test('read-only poetics pages stay public on a public-bind app', async () => {
   const browse = await request('/browse');
   assert.equal(browse.status, 200);
   assert.match(browse.body, /Poetics Script Browser/);
+
+  const nav = await request('/_nav.html?active=tutor');
+  assert.equal(nav.status, 200);
+  assert.match(nav.body, /Make/);
+  assert.match(nav.body, /href="\/admin\/chat"[^>]*>tutor chat<\/a>/);
 });
 
 test('admin tool pages require Basic Auth', async () => {

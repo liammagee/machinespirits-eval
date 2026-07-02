@@ -2339,7 +2339,7 @@ const NAV = [
   [
     'tutor',
     '/admin/chat',
-    'tutor',
+    'tutor chat',
     'Interactive tutor — play the learner &amp; watch the ego/superego deliberation for any cell in tutor-agents.yaml',
   ],
   [
