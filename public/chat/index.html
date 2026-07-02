@@ -2805,6 +2805,108 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 .mini-step__body > :first-child { margin-top: 0; }
 .mini-step__body > :last-child { margin-bottom: 0; }
 
+/* ══════ collapsible left panel ══════ */
+main.split.is-collapsed section.dialogue { grid-column: 3 / 60; }
+.config-rail {
+  all: unset;
+  cursor: pointer;
+  grid-column: 1 / 3;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  border-right: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--paper-2) 60%, transparent);
+  color: var(--ink-3);
+  transition: color 0.15s var(--ease), background 0.15s var(--ease);
+}
+.config-rail:hover { color: var(--ink); background: color-mix(in oklab, var(--paper-2) 90%, transparent); }
+.config-rail__chev { font-size: var(--s-2); color: var(--brick); }
+.config-rail__label {
+  writing-mode: vertical-rl;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* ══════ glossary ══════ */
+.gloss {
+  border-bottom: 1px dotted color-mix(in oklab, var(--ink) 40%, transparent);
+  cursor: help;
+}
+.chip[data-gloss] .chip__name { border-bottom: 1px dotted color-mix(in oklab, currentColor 45%, transparent); }
+.gloss-strip {
+  position: fixed;
+  left: var(--margin);
+  bottom: 10px;
+  z-index: 30;
+  max-width: min(38ch, 40vw);
+  padding: 8px 11px;
+  background: var(--ink);
+  color: var(--paper);
+  border-left: 3px solid var(--sun);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+  font-family: "Fraunces", serif;
+  font-size: var(--s-0);
+  line-height: 1.4;
+}
+.gloss-strip__term {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--sun);
+  margin-bottom: 2px;
+}
+
+/* ══════ session metrics bar ══════ */
+.metrics-bar {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--prussian);
+  background: color-mix(in oklab, var(--prussian) 5%, transparent);
+  padding: 8px 11px 9px;
+  margin-bottom: 12px;
+}
+.metrics-bar__head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--prussian);
+  margin-bottom: 6px;
+}
+.metrics-bar__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 6px 16px;
+}
+.metric { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.metric__k {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.8);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.metric__v {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.98);
+  color: var(--ink);
+  word-break: break-word;
+}
+.ps-meta, .swim-card__meta {
+  margin: 4px 0 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.82);
+  letter-spacing: 0.03em;
+  color: var(--ink-3);
+}
+.swim-card--learner .swim-card__meta { text-align: right; }
+
 /* scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -3052,6 +3154,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       <li><a @click.prevent="scrollTo('dialogue')"><em>§V</em> <span class="chapter-label">Script</span></a></li>
     </ol>
     <div class="chat-toolbar__actions">
+      <button class="xray-btn" @click="toggleConfigCollapsed" :aria-pressed="configCollapsed" :title="configCollapsed ? 'show the setup panel' : 'collapse the setup panel — give the script full width'">
+        <span aria-hidden="true" x-text="configCollapsed ? '⇥' : '⇤'"></span><span x-text="configCollapsed ? 'setup' : 'hide setup'"></span>
+      </button>
+      <button class="xray-btn" @click="toggleMetrics" :aria-pressed="showMetrics" title="show LLM metadata: model, tokens, timing, and cost per turn and for the whole session">
+        <span aria-hidden="true">◷</span><span>metrics</span>
+      </button>
       <button class="xray-btn cli-btn" @click="toggleCli" :aria-pressed="useClaudeCli" :title="'click to cycle substrate: cell models → claude CLI → codex CLI. Model + effort in fine controls §05.'">
         <span aria-hidden="true">◇</span><span x-text="substrateLabel"></span>
       </button>
@@ -3062,11 +3170,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   </header>
 
   <!-- ══════ MAIN SPLIT ══════ -->
-  <main class="split">
+  <main class="split" :class="{ 'is-collapsed': configCollapsed }">
+
+    <!-- re-open rail (visible only when collapsed) -->
+    <button class="config-rail" type="button" x-show="configCollapsed" @click="toggleConfigCollapsed()" title="show the setup panel">
+      <span class="config-rail__chev" aria-hidden="true">›</span>
+      <span class="config-rail__label">setup</span>
+    </button>
 
     <!-- ═══ LEFT: CONFIGURATOR ═══ -->
-    <aside class="config">
-      <div class="config__body">
+    <aside class="config" x-show="!configCollapsed">
+      <div class="config__body" @mouseover="glossHover($event)" @mouseleave="glossActive = null">
 
         <section class="stage-tier" id="stage">
           <div class="stage-title">
@@ -3190,36 +3304,36 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <!-- §01 Approach -->
         <section class="stage-block" id="fg-01">
           <div class="stage-block__head">
-            <span>2 · Tutor style</span>
+            <span>2 · <span class="gloss" data-gloss="tutor style">Tutor style</span></span>
             <span class="hint">what the tutor has been told to be</span>
           </div>
           <div class="chips">
-            <button class="chip" :class="{'is-active': features.approach === 'standard'}" @click="setApproach('standard')">
+            <button class="chip" data-gloss="standard" :class="{'is-active': features.approach === 'standard'}" @click="setApproach('standard')">
               <span class="chip__letter">a</span>
               <span class="chip__name">Standard</span>
               <span class="chip__hint">default AI tutor</span>
             </button>
-            <button class="chip" :class="{'is-active': features.approach === 'polished'}" @click="setApproach('polished')">
+            <button class="chip" data-gloss="polished" :class="{'is-active': features.approach === 'polished'}" @click="setApproach('polished')">
               <span class="chip__letter">b</span>
               <span class="chip__name">Polished</span>
               <span class="chip__hint">best-practice pedagogy</span>
             </button>
-            <button class="chip accent" :class="{'is-active': features.approach === 'recognition'}" @click="setApproach('recognition')">
+            <button class="chip accent" data-gloss="recognition" :class="{'is-active': features.approach === 'recognition'}" @click="setApproach('recognition')">
               <span class="chip__letter">c</span>
               <span class="chip__name">Recognition</span>
               <span class="chip__hint">Hegelian theory</span>
             </button>
-            <button class="chip" :class="{'is-active': features.approach === 'placebo'}" @click="setApproach('placebo')">
+            <button class="chip" data-gloss="placebo" :class="{'is-active': features.approach === 'placebo'}" @click="setApproach('placebo')">
               <span class="chip__letter">d</span>
               <span class="chip__name">Placebo</span>
               <span class="chip__hint">length-matched control</span>
             </button>
-            <button class="chip" :class="{'is-active': features.approach === 'minimalist'}" @click="setApproach('minimalist')">
+            <button class="chip" data-gloss="minimalist" :class="{'is-active': features.approach === 'minimalist'}" @click="setApproach('minimalist')">
               <span class="chip__letter">e</span>
               <span class="chip__name">Minimalist</span>
               <span class="chip__hint">naive baseline</span>
             </button>
-            <button class="chip accent" :class="{'is-active': features.approach === 'charismatic'}" @click="setApproach('charismatic')">
+            <button class="chip accent" data-gloss="charismatic" :class="{'is-active': features.approach === 'charismatic'}" @click="setApproach('charismatic')">
               <span class="chip__letter">f</span>
               <span class="chip__name">Charismatic</span>
               <span class="chip__hint">Weberian id-director</span>
@@ -3253,7 +3367,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
         <section class="stage-block">
           <div class="stage-block__head">
-            <span>3 · Learner persona</span>
+            <span>3 · <span class="gloss" data-gloss="learner persona">Learner persona</span></span>
             <span class="hint" x-text="mode === 'human' ? 'used when AI writes learner lines' : personaName"></span>
           </div>
           <div class="persona-strip">
@@ -3307,7 +3421,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           <div class="playbill">
             <span class="playbill__lbl" title="the full configuration of the next turn — click any entry to edit it">playbill</span>
             <template x-for="k in playbillKnobs" :key="k.key">
-              <button class="playbill__chip" :class="{'is-set': !k.isDefault}" type="button" @click="openKnob(k)" :title="k.title">
+              <button class="playbill__chip" :class="{'is-set': !k.isDefault}" :data-gloss="k.gloss || ''" type="button" @click="openKnob(k)" :title="k.title">
                 <span class="k" x-text="k.label"></span>
                 <span class="v" x-text="k.value"></span>
               </button>
@@ -3436,7 +3550,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <section class="fg scene-frame" data-ghost="0" id="fg-00">
           <div class="fg-head">
             <span class="fg-head__no">§00</span>
-            <span class="fg-head__ttl">Director / <em>Scene</em></span>
+            <span class="fg-head__ttl gloss" data-gloss="director">Director / <em>Scene</em></span>
             <span class="fg-head__rule"></span>
             <span class="fg-head__hint">curriculum source, act, and beat before cell architecture</span>
           </div>
@@ -3498,7 +3612,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <section class="fg" data-ghost="II" id="fg-02">
           <div class="fg-head">
             <span class="fg-head__no">§02</span>
-            <span class="fg-head__ttl">Inner <em>critic</em></span>
+            <span class="fg-head__ttl gloss" data-gloss="inner critic">Inner <em>critic</em></span>
             <span class="fg-head__rule"></span>
             <span class="fg-head__hint">a <em>second voice</em>, or a single one</span>
           </div>
@@ -3508,22 +3622,22 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               <span class="chip__name">None</span>
               <span class="chip__hint">single voice</span>
             </button>
-            <button class="chip" :class="{'is-active': features.critic === 'pedagogical'}" @click="setCritic('pedagogical')">
+            <button class="chip" data-gloss="pedagogical" :class="{'is-active': features.critic === 'pedagogical'}" @click="setCritic('pedagogical')">
               <span class="chip__letter">b</span>
               <span class="chip__name">Pedagogical</span>
               <span class="chip__hint">standard critic</span>
             </button>
-            <button class="chip" :class="{'is-active': features.critic === 'dialectical'}" @click="setCritic('dialectical')">
+            <button class="chip" data-gloss="dialectical" :class="{'is-active': features.critic === 'dialectical'}" @click="setCritic('dialectical')">
               <span class="chip__letter">c</span>
               <span class="chip__name">Dialectical</span>
               <span class="chip__hint">engages the ego</span>
             </button>
-            <button class="chip" :class="{'is-active': features.critic === 'divergent'}" @click="setCritic('divergent')">
+            <button class="chip" data-gloss="divergent" :class="{'is-active': features.critic === 'divergent'}" @click="setCritic('divergent')">
               <span class="chip__letter">d</span>
               <span class="chip__name">Divergent</span>
               <span class="chip__hint">alternate stance</span>
             </button>
-            <button class="chip" :class="{'is-active': features.critic === 'hardwired'}" @click="setCritic('hardwired')">
+            <button class="chip" data-gloss="hardwired" :class="{'is-active': features.critic === 'hardwired'}" @click="setCritic('hardwired')">
               <span class="chip__letter">e</span>
               <span class="chip__name">Hardwired</span>
               <span class="chip__hint">rules baked in</span>
@@ -3540,17 +3654,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <span class="fg-head__hint">the critic's <em>posture</em></span>
           </div>
           <div class="chips">
-            <button class="chip" :class="{'is-active': features.stance === 'suspicious'}" @click="setStance('suspicious')">
+            <button class="chip" data-gloss="suspicious" :class="{'is-active': features.stance === 'suspicious'}" @click="setStance('suspicious')">
               <span class="chip__letter">a</span>
               <span class="chip__name">Suspicious</span>
               <span class="chip__hint">questions the draft</span>
             </button>
-            <button class="chip" :class="{'is-active': features.stance === 'adversary'}" @click="setStance('adversary')">
+            <button class="chip" data-gloss="adversary" :class="{'is-active': features.stance === 'adversary'}" @click="setStance('adversary')">
               <span class="chip__letter">b</span>
               <span class="chip__name">Adversary</span>
               <span class="chip__hint">challenges the draft</span>
             </button>
-            <button class="chip" :class="{'is-active': features.stance === 'advocate'}" @click="setStance('advocate')">
+            <button class="chip" data-gloss="advocate" :class="{'is-active': features.stance === 'advocate'}" @click="setStance('advocate')">
               <span class="chip__letter">c</span>
               <span class="chip__name">Advocate</span>
               <span class="chip__hint">supports the draft</span>
@@ -3562,17 +3676,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <section class="fg" data-ghost="IV" id="fg-04">
           <div class="fg-head">
             <span class="fg-head__no">§04</span>
-            <span class="fg-head__ttl">Simulated learner <em>mind</em></span>
+            <span class="fg-head__ttl gloss" data-gloss="learner mind">Simulated learner <em>mind</em></span>
             <span class="fg-head__rule"></span>
             <span class="fg-head__hint">evaluator's <em>simulation architecture</em></span>
           </div>
           <div class="chips">
-            <button class="chip" :class="{'is-active': features.learnerModel === 'surface'}" @click="setLearner('surface')">
+            <button class="chip" data-gloss="surface" :class="{'is-active': features.learnerModel === 'surface'}" @click="setLearner('surface')">
               <span class="chip__letter">a</span>
               <span class="chip__name">Surface</span>
               <span class="chip__hint">unified learner</span>
             </button>
-            <button class="chip" :class="{'is-active': features.learnerModel === 'reflective'}" @click="setLearner('reflective')">
+            <button class="chip" data-gloss="reflective" :class="{'is-active': features.learnerModel === 'reflective'}" @click="setLearner('reflective')">
               <span class="chip__letter">b</span>
               <span class="chip__name">Reflective</span>
               <span class="chip__hint">ego + superego</span>
@@ -3585,7 +3699,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <section class="fg" data-ghost="V" id="fg-05">
           <div class="fg-head">
             <span class="fg-head__no">§05</span>
-            <span class="fg-head__ttl">Models &amp; <em>sampling</em></span>
+            <span class="fg-head__ttl gloss" data-gloss="substrate">Models &amp; <em>sampling</em></span>
             <span class="fg-head__rule"></span>
             <span class="fg-head__hint">blank = the cell's own YAML values</span>
           </div>
@@ -3937,6 +4051,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         </details>
     </aside>
 
+    <!-- glossary hover strip — fixed so it never clips inside the scroll panel -->
+    <div class="gloss-strip" x-show="glossActive && !configCollapsed" x-transition.opacity>
+      <span class="gloss-strip__term" x-text="glossActive?.term"></span>
+      <span class="gloss-strip__def" x-text="glossActive?.def"></span>
+    </div>
+
     <!-- ═══ RIGHT: DIALOGUE ═══ -->
     <section class="dialogue" id="dialogue">
       <div class="dialogue__head">
@@ -3982,6 +4102,24 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               <p class="curtain__note">director's note — <em x-text="bill.note"></em></p>
             </template>
             <div class="curtain__rule">✦ ✦ ✦</div>
+          </div>
+        </template>
+
+        <!-- session LLM metrics (toggle: ◷ metrics) -->
+        <template x-if="showMetrics && turns.length">
+          <div class="metrics-bar">
+            <div class="metrics-bar__head">◷ session metrics</div>
+            <div class="metrics-bar__grid">
+              <div class="metric"><span class="metric__k">exchanges</span><span class="metric__v" x-text="sessionMetrics.tutorTurns + ' tutor · ' + sessionMetrics.learnerTurns + ' learner'"></span></div>
+              <div class="metric"><span class="metric__k">substrate</span><span class="metric__v" x-text="sessionMetrics.substrate + (sessionMetrics.effort ? ' · ' + sessionMetrics.effort : '')"></span></div>
+              <div class="metric"><span class="metric__k">models</span><span class="metric__v" x-text="sessionMetrics.models.length ? sessionMetrics.models.join(', ') : '—'"></span></div>
+              <div class="metric"><span class="metric__k">tokens in / out</span><span class="metric__v" x-text="fmtTok(sessionMetrics.inTok) + ' / ' + fmtTok(sessionMetrics.outTok)"></span></div>
+              <div class="metric"><span class="metric__k">tokens total</span><span class="metric__v" x-text="fmtTok(sessionMetrics.totalTok)"></span></div>
+              <div class="metric"><span class="metric__k">wall time</span><span class="metric__v" x-text="fmtDur(sessionMetrics.latencyMs)"></span></div>
+              <template x-if="sessionMetrics.costUsd">
+                <div class="metric"><span class="metric__k">est. cost</span><span class="metric__v" x-text="fmtCost(sessionMetrics.costUsd)"></span></div>
+              </template>
+            </div>
           </div>
         </template>
 
@@ -4182,6 +4320,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                       <span class="ps-sub" x-text="row.sub"></span>
                     </div>
                     <div class="ps-speech" x-html="md(row.text)"></div>
+                    <p class="ps-meta" x-show="showMetrics && turnMeta(row.turn)" x-text="turnMeta(row.turn)"></p>
                     <template x-if="row.turn.deliberation && row.turn.deliberation.length">
                       <details class="mini-trace">
                         <summary><span class="chev">▸</span> <span x-text="row.turn.deliberation.length + ' deliberation step' + (row.turn.deliberation.length === 1 ? '' : 's')"></span></summary>
@@ -4220,6 +4359,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                         <div class="swim-card swim-card--tutor">
                           <div class="swim-card__who" x-text="row.sub"></div>
                           <div class="swim-card__text" x-html="md(row.text)"></div>
+                          <p class="swim-card__meta" x-show="showMetrics && turnMeta(row.turn)" x-text="turnMeta(row.turn)"></p>
                           <template x-if="row.turn.deliberation && row.turn.deliberation.length > 1">
                             <details class="mini-trace"><summary><span class="chev">▸</span> ego → superego</summary>
                               <template x-for="(step, j) in row.turn.deliberation" :key="j">
@@ -4236,6 +4376,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                         <div class="swim-card swim-card--learner">
                           <div class="swim-card__who" x-text="row.sub"></div>
                           <div class="swim-card__text" x-html="md(row.text)"></div>
+                          <p class="swim-card__meta" x-show="showMetrics && turnMeta(row.turn)" x-text="turnMeta(row.turn)"></p>
                           <template x-if="row.turn.deliberation && row.turn.deliberation.length > 1">
                             <details class="mini-trace"><summary><span class="chev">▸</span> ego → superego</summary>
                               <template x-for="(step, j) in row.turn.deliberation" :key="j">
@@ -4429,6 +4570,40 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
     document.addEventListener('visibilitychange', () => { if (document.hidden) last = performance.now(); });
   })();
 
+  // Plain-language definitions for the specialised vocabulary. Surfaced as a
+  // non-clipping hover strip (see glossHover) and as native titles.
+  const CHAT_GLOSSARY = {
+    'tutor style': 'The prompt the tutor is given — which pedagogical persona it plays. Each maps to a registered evaluation cell.',
+    standard: 'A plain, capable AI tutor with no special theory. The baseline everything else is measured against.',
+    polished: 'Best-practice pedagogy: scaffolding, worked examples, checks for understanding — but no recognition theory.',
+    recognition: 'Hegelian mutual recognition: the tutor treats the learner as an autonomous subject to be recognised, not a vessel to be filled.',
+    placebo: 'A length-matched control prompt — as long and elaborate as the recognition prompt but with the theory stripped out. Isolates whether it is the theory or just the extra words that matter.',
+    minimalist: 'A naïve, near-empty prompt. The floor: what you get with almost no instruction.',
+    charismatic: 'A Weberian "id-director" that constructs an explicit charismatic persona each turn. Scored on charisma as well as pedagogy.',
+    'inner critic': 'An optional second voice (a superego) that reviews the tutor’s draft before it is sent and can force a revision.',
+    superego: 'The critic agent. It reads the ego’s draft and either approves it or rewrites it — the Freudian over-I of the tutor.',
+    ego: 'The voice that writes the actual reply. With a superego present, the ego drafts, is critiqued, then revises.',
+    pedagogical: 'A standard teaching critic: is this sound, clear, well-scaffolded?',
+    dialectical: 'A critic that argues with the ego rather than just correcting it — the two voices genuinely contend.',
+    divergent: 'A critic that adopts a deliberately different stance from the ego, to stress-test the draft.',
+    hardwired: 'No separate critic agent — the critic’s rules are baked directly into the ego’s own prompt.',
+    suspicious: 'The critic distrusts the draft and looks for what it is getting wrong.',
+    adversary: 'The critic actively challenges and pushes against the draft.',
+    advocate: 'The critic supports and strengthens the draft rather than opposing it.',
+    'learner persona': 'The character the simulated learner plays when the AI writes the learner’s lines.',
+    'learner mind': 'How the simulated learner is built internally.',
+    surface: 'A unified learner — a single voice with no visible inner deliberation.',
+    reflective: 'A bilateral learner with its own ego + superego: it reacts, critiques its own reaction, then revises — mirroring the tutor.',
+    director: 'The dramaturgical frame: it sets the scene, act, and beat, steering the drama like a stage director rather than teaching content.',
+    act: 'Where in the dramatic arc this turn sits: setup, complication, peripeteia (reversal), recognition, or catharsis.',
+    beat: 'The specific move this turn makes within the act — an opening, a stock-take, a route-change, an action gate, a recognition press, or closure.',
+    peripeteia: 'Aristotle’s term for the reversal — the turning point where the situation flips.',
+    substrate: 'Which engine actually runs the model calls: the OpenRouter cell models, or a local Claude / Codex CLI on your own subscription.',
+    scene: 'The imagined setting the drama plays out in — e.g. an artifact-review desk with a visible object between tutor and learner.',
+    curriculum: 'Real lecture or compiled-scene text attached as teaching material. Unlike the freeform topic, the tutor teaches from this actual content.',
+    effort: 'Reasoning effort for a CLI substrate — how hard the model thinks before answering (minimal → xhigh).',
+  };
+
   function chatApp() {
     return {
       cells: [],
@@ -4468,6 +4643,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       opening: 'tutor',
       // How the script is rendered: plates (editorial) · script (playscript) · swimlane.
       scriptView: 'plates',
+      // Show LLM metadata (models, tokens, timing, cost) per turn + session total.
+      showMetrics: false,
+      // Collapse the left configuration panel to give the script full width.
+      configCollapsed: false,
+      // Active glossary definition (hover strip).
+      glossActive: null,
       // The playbill captured at curtain-up — frozen so later knob changes
       // don't rewrite the record of what this scene was staged with.
       bill: null,
@@ -4711,6 +4892,87 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         if (['plates', 'script', 'swimlane'].includes(v)) this.scriptView = v;
       },
 
+      toggleMetrics() {
+        this.showMetrics = !this.showMetrics;
+      },
+      toggleConfigCollapsed() {
+        this.configCollapsed = !this.configCollapsed;
+      },
+
+      // Delegated glossary hover: read the nearest [data-gloss] ancestor and
+      // surface its definition in the non-clipping strip below the panel.
+      glossHover(ev) {
+        let el = ev.target;
+        while (el && el !== ev.currentTarget && !el.dataset?.gloss) el = el.parentElement;
+        const key = el && el.dataset ? el.dataset.gloss : null;
+        this.glossActive = key && CHAT_GLOSSARY[key] ? { term: key, def: CHAT_GLOSSARY[key] } : null;
+      },
+      glossText(key) {
+        return CHAT_GLOSSARY[key] || '';
+      },
+
+      fmtDur(ms) {
+        if (!ms) return '0s';
+        return ms >= 10000 ? (ms / 1000).toFixed(0) + 's' : (ms / 1000).toFixed(1) + 's';
+      },
+      fmtTok(n) {
+        return (n || 0).toLocaleString();
+      },
+      fmtCost(usd) {
+        if (!usd) return null;
+        return usd < 0.01 ? '<$0.01' : '$' + usd.toFixed(2);
+      },
+
+      // Compact per-turn metadata for the script + swimlane views.
+      turnMeta(turn) {
+        if (!turn || turn.role === 'error') return '';
+        const t = turn.totals || {};
+        const model = turn.deliberation && turn.deliberation[0] ? turn.deliberation[0].model : null;
+        const parts = [];
+        if (model) parts.push(model);
+        if (t.latencyMs) parts.push(this.fmtDur(t.latencyMs));
+        const tok = (t.inputTokens || 0) + (t.outputTokens || 0);
+        if (tok) parts.push(this.fmtTok(tok) + ' tok');
+        const cost = this.fmtCost(t.costUsd);
+        if (cost) parts.push(cost);
+        return parts.join(' · ');
+      },
+
+      // Session-wide LLM rollup across all spoken turns.
+      get sessionMetrics() {
+        let inTok = 0,
+          outTok = 0,
+          latencyMs = 0,
+          costUsd = 0,
+          tutorTurns = 0,
+          learnerTurns = 0;
+        const models = new Set();
+        for (const turn of this.turns) {
+          if (turn.role !== 'tutor' && turn.role !== 'learner') continue;
+          if (turn.role === 'tutor') tutorTurns += 1;
+          else learnerTurns += 1;
+          const t = turn.totals || {};
+          inTok += t.inputTokens || 0;
+          outTok += t.outputTokens || 0;
+          latencyMs += t.latencyMs || 0;
+          costUsd += t.costUsd || 0;
+          (turn.deliberation || []).forEach((d) => d.model && models.add(d.model));
+        }
+        return {
+          turns: tutorTurns + learnerTurns,
+          tutorTurns,
+          learnerTurns,
+          inTok,
+          outTok,
+          totalTok: inTok + outTok,
+          latencyMs,
+          costUsd,
+          models: [...models],
+          substrate: this.cliSub.provider ? this.cliSub.provider + ' cli' : 'cell models',
+          effort: this.cliSub.effort || null,
+        };
+      },
+
       get startActionLabel() {
         if (this.mode === 'auto') {
           if (this.turns.length) return 'Next exchange';
@@ -4858,6 +5120,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         const knobs = [];
         knobs.push({
           key: 'substrate',
+          gloss: 'substrate',
           label: 'substrate',
           value: this.cliSub.provider ? this.cliSub.provider + ' cli' : 'cell models',
           isDefault: !this.cliSub.provider,
@@ -4866,6 +5129,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         });
         knobs.push({
           key: 'critic',
+          gloss: 'inner critic',
           label: 'critic',
           value: f.critic === 'none' ? 'none' : f.critic + (this.stanceVisible ? ' · ' + f.stance : ''),
           isDefault: f.critic === 'none',
@@ -4874,6 +5138,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         });
         knobs.push({
           key: 'learner-mind',
+          gloss: 'learner mind',
           label: 'learner mind',
           value: f.learnerModel === 'reflective' ? 'ego + superego' : 'unified',
           isDefault: f.learnerModel === 'surface',
@@ -4882,6 +5147,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         });
         knobs.push({
           key: 'director',
+          gloss: 'director',
           label: 'director',
           value: d.mode === 'off' ? 'off' : `${d.mode} · ${d.act}/${d.beat}`,
           isDefault: d.mode === 'scene-card' && d.act === 'setup' && d.beat === 'opening',
@@ -4890,6 +5156,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         });
         knobs.push({
           key: 'scene',
+          gloss: 'scene',
           label: 'scene',
           value: d.scene || '—',
           isDefault: d.scene === 'artifact review desk',
@@ -4903,6 +5170,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             : 'cell default';
         knobs.push({
           key: 'ego-model',
+          gloss: 'ego',
           label: 'ego model',
           value: egoValue,
           isDefault: !this.useClaudeCli && !this.modelOverrides.ego,
@@ -4912,6 +5180,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         if (this.resolved?.superego) {
           knobs.push({
             key: 'superego-model',
+            gloss: 'superego',
             label: 'superego model',
             value: this.useClaudeCli
               ? this.cliSub.provider + ' cli'
@@ -4926,6 +5195,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         if (this.cliSub.provider) {
           knobs.push({
             key: 'cli-effort',
+            gloss: 'effort',
             label: 'effort',
             value: this.cliSub.effort || 'default',
             isDefault: !this.cliSub.effort,
@@ -5072,6 +5342,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.$watch('turns', save, { deep: true });
         this.$watch('cliSub', save, { deep: true });
         this.$watch('scriptView', save);
+        this.$watch('showMetrics', save);
+        this.$watch('configCollapsed', save);
         this.$watch('dryRunTurns', save);
         this.$watch('sampling', save, { deep: true });
       },
@@ -5090,6 +5362,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           cliSub: { ...this.cliSub },
           opening: this.opening,
           scriptView: this.scriptView,
+          showMetrics: this.showMetrics,
+          configCollapsed: this.configCollapsed,
           bill: this.bill,
           dryRunTurns: this.dryRunTurns,
           turns: this.turns,
@@ -5147,6 +5421,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.dryRunTurns = !!s.dryRunTurns;
         this.opening = s.opening === 'learner' ? 'learner' : 'tutor';
         this.scriptView = ['plates', 'script', 'swimlane'].includes(s.scriptView) ? s.scriptView : 'plates';
+        this.showMetrics = !!s.showMetrics;
+        this.configCollapsed = !!s.configCollapsed;
         this.bill = s.bill && typeof s.bill === 'object' ? s.bill : null;
         this.turns = Array.isArray(s.turns) ? s.turns : [];
         this.restore.dismissed = true;

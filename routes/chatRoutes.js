@@ -2833,6 +2833,7 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
     latencyMs: egoOut.latencyMs,
     inputTokens: egoOut.inputTokens,
     outputTokens: egoOut.outputTokens,
+    costUsd: egoOut.costUsd || 0,
   });
 
   let finalMessage = egoDraft;
@@ -2889,6 +2890,7 @@ IMPROVED: [refined response, or "APPROVED"]`;
       latencyMs: superOut.latencyMs,
       inputTokens: superOut.inputTokens,
       outputTokens: superOut.outputTokens,
+      costUsd: superOut.costUsd || 0,
     });
 
     const improvedMatch = superegoCritique.match(/IMPROVED:\s*([\s\S]*?)$/i);
@@ -2927,6 +2929,7 @@ IMPROVED: [refined response, or "APPROVED"]`;
       inputTokens: deliberation.reduce((s, d) => s + (d.inputTokens || 0), 0),
       outputTokens: deliberation.reduce((s, d) => s + (d.outputTokens || 0), 0),
       latencyMs: deliberation.reduce((s, d) => s + (d.latencyMs || 0), 0),
+      costUsd: deliberation.reduce((s, d) => s + (d.costUsd || 0), 0),
     },
   };
 }
