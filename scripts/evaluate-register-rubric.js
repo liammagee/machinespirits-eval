@@ -17,7 +17,11 @@ import {
   parseJudgeResponse,
   resolveRubricYamlPath,
 } from '../services/rubricEvaluator.js';
-import { getEngagementRegisterDefinition, getRegisterRubricPath } from '../services/engagementRegisterRegistry.js';
+import {
+  getEngagementRegisterDefinition,
+  getRegisterRubricPath,
+} from '../services/engagementRegisterRegistry.js';
+import { applyNegativeRegisterScoreGuardrails } from '../services/registerStanceFidelity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -217,18 +221,25 @@ async function scoreSlice(slice, { judgeModel = null }) {
 
   if (!parsed?.scores) return { ok: false, reason: 'parse_missing_scores', raw: responseText.slice(0, 400) };
 
-  const overall = calculateRubricOverallScore(parsed.scores, rubric);
+  const guarded = applyNegativeRegisterScoreGuardrails({
+    registerName: slice.registerName,
+    scores: parsed.scores,
+    tutorMessage: slice.tutorMessage,
+    postLearnerMessage: slice.postLearnerMessage,
+  });
+  const overall = calculateRubricOverallScore(guarded.scores, rubric);
   if (overall == null) return { ok: false, reason: 'no_valid_dimension_scores' };
 
   evaluationStore.updateResultTutorRegisterScore(slice.rowId, {
     register: slice.registerName,
     sliceKey: slice.sliceKey,
-    scores: parsed.scores,
+    scores: guarded.scores,
     overall,
     summary: parsed.summary || null,
     rubricVersion: rubric.version || null,
     rubricPath: path.relative(ROOT, resolveRubricYamlPath(slice.rubricPath)),
     judgeModel: judgeModel || 'default',
+    guardrailAdjustments: guarded.adjustments,
     sliceRef: {
       run_id: slice.runId,
       scenario_id: slice.scenarioId,

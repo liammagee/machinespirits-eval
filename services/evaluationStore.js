@@ -2934,6 +2934,7 @@ export function updateResultTutorRegisterScore(resultId, evaluation) {
     rubric_version: evaluation.rubricVersion || null,
     rubric_path: evaluation.rubricPath || null,
     judge_model: evaluation.judgeModel || null,
+    guardrail_adjustments: evaluation.guardrailAdjustments || [],
     slice_ref: evaluation.sliceRef || null,
     scored_at: evaluation.scoredAt || new Date().toISOString(),
   };

@@ -88,6 +88,7 @@ function buildRegisterStanceContract(engagementState) {
     router_selectable: definition.router_selectable === true,
     simulated_only: definition.simulated_only === true,
     stance_contract: definition.stance_contract || '',
+    stance_fidelity_cues: definition.stance_fidelity_cues || [],
     forbidden_phrases: definition.forbidden_phrases || [],
     required_moves: definition.required_moves || [],
     risk_flags: definition.risk_flags || [],
