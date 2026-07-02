@@ -17,7 +17,9 @@
      is populated when Alpine evaluates x-data. -->
 <script type="module">
   import * as OH from './orientation-helpers.js';
+  import * as AH from './assist-helpers.js';
   window.OH = OH;
+  window.AH = AH;
 </script>
 <script defer src="vendor/alpinejs-3.14.1.min.js"></script>
 <script src="vendor/marked-13.0.3.min.js"></script>
@@ -462,7 +464,7 @@ section.fg::before {
 /* ══════ chips (feature toggles) ══════ */
 .chips {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
   gap: 4px;
   position: relative;
   z-index: 1;
@@ -560,6 +562,272 @@ section.fg::before {
 .topic__curriculum-pill em { color: var(--sun); font-style: normal; font-weight: 500; }
 .topic__clear { all: unset; cursor: pointer; color: var(--paper); opacity: 0.7; padding: 0 0.15em; font-weight: 500; }
 .topic__clear:hover { opacity: 1; }
+
+/* stage tiers */
+.stage-tier {
+  border: 1px solid color-mix(in oklab, var(--ink) 12%, transparent);
+  background: color-mix(in oklab, var(--paper-4) 74%, transparent);
+  padding: 9px 10px 10px;
+  margin-bottom: 8px;
+}
+.stage-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55em;
+  margin-bottom: 7px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.stage-title .sig { color: var(--brick); }
+.stage-title .rule {
+  flex: 1 1 auto;
+  min-width: 2em;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 22%, transparent);
+  transform: translateY(-0.35em);
+}
+.stage-title em {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--brick);
+  font-variation-settings: "opsz" 16;
+}
+.stage-block { margin-top: 9px; }
+.stage-block__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45em;
+  margin: 0 0 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.95);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--brick);
+}
+.stage-block__head .hint {
+  margin-left: auto;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-3);
+}
+.drawer {
+  margin: 7px 0;
+  border-top: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+}
+.drawer > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0.45em;
+  padding: 7px 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.drawer > summary::-webkit-details-marker { display: none; }
+.drawer > summary .chev { color: var(--brick); transition: transform 0.15s; display: inline-block; }
+.drawer[open] > summary .chev { transform: rotate(90deg); }
+.drawer > summary em {
+  color: var(--brick);
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.drawer__body { padding: 0 0 8px; }
+
+.assist-strip {
+  border: 1px solid color-mix(in oklab, var(--prussian) 34%, transparent);
+  background: color-mix(in oklab, var(--prussian) 5%, transparent);
+  padding: 7px;
+  margin-bottom: 8px;
+}
+.assist-strip.is-disabled {
+  opacity: 0.72;
+  background: color-mix(in oklab, var(--ink) 4%, transparent);
+}
+.assist-line {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 5px;
+  align-items: center;
+}
+.assist-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 24%, transparent);
+  background: transparent;
+  color: var(--ink);
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  font-variation-settings: "opsz" 16;
+  padding: 2px 0;
+}
+.assist-input:disabled { color: var(--ink-3); }
+.assist-btn,
+.stage-btn,
+.mini-btn {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--ink);
+  padding: 3px 8px 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.92);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: color-mix(in oklab, var(--paper-4) 80%, transparent);
+}
+.assist-btn:hover,
+.stage-btn:hover,
+.mini-btn:hover { background: var(--moss-deep); color: var(--paper); border-color: var(--moss-deep); }
+.assist-btn:disabled,
+.stage-btn:disabled,
+.mini-btn:disabled { cursor: not-allowed; color: var(--ink-3); border-color: var(--rule); background: transparent; }
+.stage-btn--primary {
+  background: var(--moss-deep);
+  border-color: var(--moss-deep);
+  color: var(--paper);
+}
+.stage-btn--primary:hover { background: var(--brick); border-color: var(--brick); }
+.assist-meta,
+.preflight-note,
+.restore-strip {
+  margin-top: 5px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.9);
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+.preflight-note { color: var(--brick); }
+.assist-history {
+  margin-top: 7px;
+  display: grid;
+  gap: 5px;
+}
+.assist-msg {
+  border-top: 1px dashed color-mix(in oklab, var(--ink) 14%, transparent);
+  padding-top: 5px;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-0);
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+.assist-msg .role {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.82em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brick);
+}
+.proposal-card {
+  margin-top: 7px;
+  border: 1px solid color-mix(in oklab, var(--ink) 20%, transparent);
+  background: color-mix(in oklab, var(--paper) 80%, transparent);
+  padding: 7px;
+}
+.proposal-row {
+  display: grid;
+  grid-template-columns: minmax(112px, 0.7fr) 1fr;
+  gap: 6px;
+  padding: 3px 0;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 10%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.92);
+}
+.proposal-row:last-child { border-bottom: 0; }
+.proposal-row .field { color: var(--brick); letter-spacing: 0.08em; }
+.proposal-row .value { color: var(--ink); }
+.proposal-row .why {
+  grid-column: 2;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+.proposal-actions,
+.stage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  margin-top: 7px;
+}
+.resolution-readout {
+  all: unset;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 0 0;
+  border-top: 1px solid var(--ink);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.resolution-readout em {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink);
+  font-size: 1.4em;
+}
+.resolution-readout .score { float: right; color: var(--brick); }
+.manual-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-top: 4px;
+  padding: 2px 6px;
+  border: 1px solid color-mix(in oklab, var(--brick) 45%, transparent);
+  color: var(--brick);
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.9);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.alternatives {
+  margin-top: 4px;
+  display: grid;
+  gap: 3px;
+}
+.alt-row {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: minmax(90px, auto) 1fr auto;
+  gap: 6px;
+  align-items: baseline;
+  padding: 3px 5px;
+  border: 1px dashed color-mix(in oklab, var(--ink) 16%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.88);
+  color: var(--ink-3);
+}
+.alt-row:hover { border-color: var(--ink); color: var(--ink); }
+.alt-row .n { color: var(--brick); }
+.alt-row .relaxed { font-family: "Fraunces", serif; font-style: italic; letter-spacing: 0; }
+.restore-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+  padding: 5px 0;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 16%, transparent);
+  color: var(--ink-2);
+}
 
 /* curriculum drawer */
 .curriculum-drawer { margin-top: 0.5em; }
@@ -1851,9 +2119,11 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 /* persona — compact horizontal scroll row */
 .persona-strip {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   margin: 4px 0 6px;
-  overflow-x: auto;
+  max-height: 112px;
+  overflow: auto;
   scrollbar-width: thin;
   padding-bottom: 2px;
 }
@@ -1862,7 +2132,8 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 .persona-chip {
   all: unset;
   cursor: pointer;
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  max-width: 100%;
   padding: 3px 8px 4px;
   border: 1px solid color-mix(in oklab, var(--ink) 20%, transparent);
   font-family: "JetBrains Mono", monospace;
@@ -2254,16 +2525,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   <!-- ══════ CHAT TOOLBAR ══════ -->
   <header class="chat-toolbar" aria-label="Tutor chat controls">
     <ol class="chapters" aria-label="Chat sections">
-      <li><a @click.prevent="scrollTo('fg-00')"><em>§00</em> <span class="chapter-label">Scene</span></a></li>
-      <li><a @click.prevent="scrollTo('fg-01')"><em>§01</em> <span class="chapter-label">Approach</span></a></li>
-      <li><a @click.prevent="scrollTo('fg-02')"><em>§02</em> <span class="chapter-label">Critic</span></a></li>
-      <li><a @click.prevent="scrollTo('fg-03')" x-show="stanceVisible"><em>§03</em> <span class="chapter-label">Stance</span></a></li>
-      <li><a @click.prevent="scrollTo('fg-04')"><em>§04</em> <span class="chapter-label">Learner</span></a></li>
+      <li><a @click.prevent="scrollTo('stage')"><em>§I</em> <span class="chapter-label">Stage</span></a></li>
+      <li><a @click.prevent="openFineControls()"><em>§II</em> <span class="chapter-label">Fine Controls</span></a></li>
+      <li><a @click.prevent="openDossier()"><em>§III</em> <span class="chapter-label">Dossier</span></a></li>
       <li><a @click.prevent="scrollTo('dialogue')"><em>§V</em> <span class="chapter-label">Script</span></a></li>
     </ol>
     <div class="chat-toolbar__actions">
       <button class="xray-btn cli-btn" @click="toggleCli" :aria-pressed="useClaudeCli" :title="useClaudeCli ? 'routing all tutor calls through local claude CLI · click to disable' : 'use local claude CLI (opus 4.7) instead of cell YAML models'">
-        <span aria-hidden="true">◇</span><span x-text="useClaudeCli ? 'opus 4.7' : 'cli off'"></span>
+        <span aria-hidden="true">◇</span><span x-text="useClaudeCli ? 'substrate: local claude' : 'substrate: cell models'"></span>
       </button>
       <button class="xray-btn" @click="toggleXray" :aria-pressed="xray">
         <span aria-hidden="true">⌗</span><span>grid</span>
@@ -2278,7 +2547,79 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
     <aside class="config">
       <div class="config__body">
 
-        <div class="topic">
+        <section class="stage-tier" id="stage">
+          <div class="stage-title">
+            <span class="sig">◦</span>
+            <span>Stage <em>pedagogical drama</em></span>
+            <span class="rule"></span>
+            <span>launch desk</span>
+          </div>
+
+          <div class="restore-strip" x-show="restore.available && !restore.dismissed">
+            <span x-text="'restore previous scene? ' + restore.turnCount + ' turn' + (restore.turnCount === 1 ? '' : 's')"></span>
+            <button class="mini-btn" type="button" @click="restoreSavedSession()">restore</button>
+            <button class="mini-btn" type="button" @click="dismissSavedSession()">dismiss</button>
+          </div>
+
+          <div class="assist-strip" :class="{'is-disabled': assistDisabled}">
+            <div class="assist-line">
+              <input
+                class="assist-input"
+                type="text"
+                x-model="assist.input"
+                :disabled="assistDisabled || assist.pending"
+                @keydown.enter.prevent="sendAssist()"
+                placeholder="describe the drama you want to stage..."
+                aria-label="Drama concierge prompt"
+              />
+              <button class="assist-btn" type="button" @click="sendAssist()" :disabled="assistDisabled || assist.pending || !assist.input.trim()">
+                <span x-show="!assist.pending">ask</span>
+                <span x-show="assist.pending">...</span>
+              </button>
+              <button class="assist-btn" type="button" @click="assist.dryRun = !assist.dryRun" :aria-pressed="assist.dryRun">
+                <span x-text="assist.dryRun ? 'dry on' : 'dry off'"></span>
+              </button>
+              <button class="assist-btn" type="button" @click="assist.open = !assist.open" :aria-pressed="assist.open">
+                <span x-text="assist.open ? 'hide' : 'history'"></span>
+              </button>
+            </div>
+            <div class="assist-meta" x-show="assistHealth.provider === 'none' && !useClaudeCli">
+              Set OPENROUTER_API_KEY, enable substrate: local claude, or switch dry run on.
+            </div>
+            <div class="assist-history" x-show="assist.open">
+              <template x-for="(m, i) in assist.messages.slice(-4)" :key="'assist-' + i + '-' + m.role">
+                <div class="assist-msg">
+                  <span class="role" x-text="m.role"></span>
+                  <span x-html="md(m.content)"></span>
+                </div>
+              </template>
+              <template x-if="assist.proposal">
+                <div class="proposal-card">
+                  <template x-for="row in assistProposalRows" :key="row.field">
+                    <div class="proposal-row">
+                      <span class="field" x-text="row.field"></span>
+                      <span class="value" x-text="row.value"></span>
+                      <span class="why" x-show="row.rationale" x-text="row.rationale"></span>
+                    </div>
+                  </template>
+                  <div class="assist-meta" x-show="assist.proposalResolved?.name">
+                    resolves to <em x-text="assist.proposalResolved?.name"></em>
+                    · <span x-text="assist.proposalResolved?.matchQuality"></span>
+                    <span x-show="assist.proposalResolved?.score != null">
+                      · <span x-text="assist.proposalResolved?.score"></span>/<span x-text="assist.proposalResolved?.maxScore"></span>
+                    </span>
+                  </div>
+                  <div class="proposal-actions">
+                    <button class="mini-btn" type="button" @click="applyProposal(assist.proposal)">apply</button>
+                    <button class="mini-btn" type="button" @click="applyProposalAndStart(assist.proposal)">apply & start scene</button>
+                    <button class="mini-btn" type="button" x-show="assist.proposal?.action === 'open_batch_launcher'" @click="openProposalBatch(assist.proposal)">open batch launcher</button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="topic">
           <label class="topic__lbl" for="chat-topic">
             Topic
             <template x-if="activeSourceLabel">
@@ -2364,6 +2705,147 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           </details>
         </div>
 
+        <!-- §01 Approach -->
+        <section class="stage-block" id="fg-01">
+          <div class="stage-block__head">
+            <span>§01 Tutor style</span>
+            <span class="hint">what the tutor has been told to be</span>
+          </div>
+          <div class="chips">
+            <button class="chip" :class="{'is-active': features.approach === 'standard'}" @click="setApproach('standard')">
+              <span class="chip__letter">a</span>
+              <span class="chip__name">Standard</span>
+              <span class="chip__hint">default AI tutor</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.approach === 'polished'}" @click="setApproach('polished')">
+              <span class="chip__letter">b</span>
+              <span class="chip__name">Polished</span>
+              <span class="chip__hint">best-practice pedagogy</span>
+            </button>
+            <button class="chip accent" :class="{'is-active': features.approach === 'recognition'}" @click="setApproach('recognition')">
+              <span class="chip__letter">c</span>
+              <span class="chip__name">Recognition</span>
+              <span class="chip__hint">Hegelian theory</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.approach === 'placebo'}" @click="setApproach('placebo')">
+              <span class="chip__letter">d</span>
+              <span class="chip__name">Placebo</span>
+              <span class="chip__hint">length-matched control</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.approach === 'minimalist'}" @click="setApproach('minimalist')">
+              <span class="chip__letter">e</span>
+              <span class="chip__name">Minimalist</span>
+              <span class="chip__hint">naive baseline</span>
+            </button>
+            <button class="chip accent" :class="{'is-active': features.approach === 'charismatic'}" @click="setApproach('charismatic')">
+              <span class="chip__letter">f</span>
+              <span class="chip__name">Charismatic</span>
+              <span class="chip__hint">Weberian id-director</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="stage-block" id="fg-01b" x-show="features.approach === 'charismatic'" x-transition.opacity>
+          <div class="stage-block__head">
+            <span>§01b Charisma frontier</span>
+            <span class="hint">Pareto design point</span>
+          </div>
+          <div class="chips">
+            <button class="chip" :class="{'is-active': features.charismaVariant === 'generalist'}" @click="setCharismaVariant('generalist')">
+              <span class="chip__letter">a</span>
+              <span class="chip__name">Generalist</span>
+              <span class="chip__hint">c107 · witness · 78.5 / 66.3</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.charismaVariant === 'v22-specialist'}" @click="setCharismaVariant('v22-specialist')">
+              <span class="chip__letter">b</span>
+              <span class="chip__name">v2.2 specialist</span>
+              <span class="chip__hint">c104 · classifier+recog · 80.6 / 65.7</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.charismaVariant === 'charisma-specialist'}" @click="setCharismaVariant('charisma-specialist')">
+              <span class="chip__letter">c</span>
+              <span class="chip__name">Charisma specialist</span>
+              <span class="chip__hint">c105 · charisma-tuned · 70.0 / 71.0</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="stage-block">
+          <div class="stage-block__head">
+            <span>Learner persona</span>
+            <span class="hint" x-text="mode === 'human' ? 'used when AI writes learner lines' : personaName"></span>
+          </div>
+          <div class="persona-strip">
+            <template x-for="p in personas" :key="'stage-' + p.id">
+              <button
+                class="persona-chip"
+                :class="{'is-active': personaId === p.id}"
+                @click="personaId = p.id"
+              >
+                <span class="name" x-text="p.name"></span>
+                <span class="hint" x-text="'· ' + p.hint"></span>
+              </button>
+            </template>
+          </div>
+        </section>
+
+        <section class="stage-block">
+          <div class="mode">
+            <span class="mode__lbl">◦ who writes the lines?</span>
+            <div class="mode__toggle">
+              <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')">human learner</button>
+              <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')">human teacher</button>
+              <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">AI learner</button>
+            </div>
+          </div>
+          <div class="preflight-note" x-show="turnsNeedKeyWarning">
+            OPENROUTER_API_KEY is not set. Enable dry run, substrate: local claude, or set the key.
+          </div>
+          <div class="stage-actions">
+            <button class="stage-btn stage-btn--primary" type="button" @click="startPrimary()" :disabled="pending || !resolved || (mode === 'auto' && turnsNeedKeyWarning)">
+              <span x-text="startActionLabel"></span>
+            </button>
+            <a class="stage-btn" :href="runLauncherHref()">batch via launcher →</a>
+            <button class="stage-btn" type="button" @click="dryRunTurns = !dryRunTurns" :aria-pressed="dryRunTurns">
+              <span x-text="dryRunTurns ? 'dry run on' : 'dry run off'"></span>
+            </button>
+            <button class="stage-btn" type="button" @click="exportTranscript()" :disabled="!turns.length">export transcript</button>
+          </div>
+        </section>
+
+        <template x-if="resolved">
+          <div>
+            <button class="resolution-readout" type="button" @click="openDossier()">
+              <span>∴ resolves to</span>
+              <span class="score">
+                [<span x-text="(matchQuality || '').toUpperCase()"></span>]
+                <span x-show="resolved?.score !== undefined"><span x-text="resolved?.score ?? ''"></span>/<span x-text="maxScore"></span></span>
+              </span>
+              <br />
+              <em x-text="resolved?.name"></em>
+            </button>
+            <template x-if="manualPick">
+              <div class="manual-pill">
+                manual: <span x-text="manualPick"></span>
+                <button type="button" class="mini-btn" @click="clearManualPick()">clear</button>
+              </div>
+            </template>
+            <div class="alternatives" x-show="alternatives.length">
+              <template x-for="alt in alternatives" :key="alt.name">
+                <button class="alt-row" type="button" @click="pickAlternative(alt)">
+                  <span class="n" x-text="alt.name.replace('cell_','c')"></span>
+                  <span class="relaxed" x-text="alt.relaxed?.length ? 'relaxed: ' + alt.relaxed.join(', ') : 'exact aside from score'"></span>
+                  <span x-text="alt.score + '/' + maxScore"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+        </template>
+        </section>
+
+        <details class="drawer" id="fine-controls">
+          <summary><span class="chev">▸</span><span>Fine <em>controls</em></span></summary>
+          <div class="drawer__body">
+
         <!-- §00 Director / Scene -->
         <section class="fg scene-frame" data-ghost="0" id="fg-00">
           <div class="fg-head">
@@ -2424,75 +2906,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               </p>
             </div>
           </template>
-        </section>
-
-        <!-- §01 Approach -->
-        <section class="fg" data-ghost="I" id="fg-01">
-          <div class="fg-head">
-            <span class="fg-head__no">§01</span>
-            <span class="fg-head__ttl"><em>Approach</em></span>
-            <span class="fg-head__rule"></span>
-            <span class="fg-head__hint">what the tutor has been <em>told to be</em></span>
-          </div>
-          <div class="chips">
-            <button class="chip" :class="{'is-active': features.approach === 'standard'}" @click="setApproach('standard')">
-              <span class="chip__letter">a</span>
-              <span class="chip__name">Standard</span>
-              <span class="chip__hint">default AI tutor</span>
-            </button>
-            <button class="chip" :class="{'is-active': features.approach === 'polished'}" @click="setApproach('polished')">
-              <span class="chip__letter">b</span>
-              <span class="chip__name">Polished</span>
-              <span class="chip__hint">best-practice pedagogy</span>
-            </button>
-            <button class="chip accent" :class="{'is-active': features.approach === 'recognition'}" @click="setApproach('recognition')">
-              <span class="chip__letter">c</span>
-              <span class="chip__name">Recognition</span>
-              <span class="chip__hint">Hegelian theory</span>
-            </button>
-            <button class="chip" :class="{'is-active': features.approach === 'placebo'}" @click="setApproach('placebo')">
-              <span class="chip__letter">d</span>
-              <span class="chip__name">Placebo</span>
-              <span class="chip__hint">length-matched control</span>
-            </button>
-            <button class="chip" :class="{'is-active': features.approach === 'minimalist'}" @click="setApproach('minimalist')">
-              <span class="chip__letter">e</span>
-              <span class="chip__name">Minimalist</span>
-              <span class="chip__hint">naïve baseline</span>
-            </button>
-            <button class="chip accent" :class="{'is-active': features.approach === 'charismatic'}" @click="setApproach('charismatic')">
-              <span class="chip__letter">f</span>
-              <span class="chip__name">Charismatic</span>
-              <span class="chip__hint">Weberian id-director</span>
-            </button>
-          </div>
-        </section>
-
-        <!-- §01b Charisma Variant (conditional, shown only when approach='charismatic') -->
-        <section class="fg" data-ghost="I" id="fg-01b" x-show="features.approach === 'charismatic'" x-transition.opacity>
-          <div class="fg-head">
-            <span class="fg-head__no">§01b</span>
-            <span class="fg-head__ttl">Charisma <em>frontier point</em></span>
-            <span class="fg-head__rule"></span>
-            <span class="fg-head__hint">three Pareto design points · scored on <em>both</em> rubrics</span>
-          </div>
-          <div class="chips">
-            <button class="chip" :class="{'is-active': features.charismaVariant === 'generalist'}" @click="setCharismaVariant('generalist')">
-              <span class="chip__letter">a</span>
-              <span class="chip__name">Generalist</span>
-              <span class="chip__hint">c107 · witness · 78.5 / 66.3</span>
-            </button>
-            <button class="chip" :class="{'is-active': features.charismaVariant === 'v22-specialist'}" @click="setCharismaVariant('v22-specialist')">
-              <span class="chip__letter">b</span>
-              <span class="chip__name">v2.2 specialist</span>
-              <span class="chip__hint">c104 · classifier+recog · 80.6 / 65.7</span>
-            </button>
-            <button class="chip" :class="{'is-active': features.charismaVariant === 'charisma-specialist'}" @click="setCharismaVariant('charisma-specialist')">
-              <span class="chip__letter">c</span>
-              <span class="chip__name">Charisma specialist</span>
-              <span class="chip__hint">c105 · charisma-tuned · 70.0 / 71.0</span>
-            </button>
-          </div>
         </section>
 
         <!-- §02 Inner Critic -->
@@ -2563,7 +2976,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <section class="fg" data-ghost="IV" id="fg-04">
           <div class="fg-head">
             <span class="fg-head__no">§04</span>
-            <span class="fg-head__ttl">Learner <em>architecture</em></span>
+            <span class="fg-head__ttl">Simulated learner <em>mind</em></span>
             <span class="fg-head__rule"></span>
             <span class="fg-head__hint">evaluator's <em>simulation architecture</em></span>
           </div>
@@ -2580,8 +2993,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             </button>
           </div>
         </section>
+          </div>
+        </details>
 
         <!-- Advanced drawer -->
+        <details class="drawer" id="dossier" x-ref="dossierDrawer">
+          <summary><span class="chev">▸</span><span>Research <em>dossier</em></span></summary>
+          <div class="drawer__body">
         <details class="advanced">
           <summary>all cells · <span style="color: var(--ink-3); font-weight: 400;">advanced browser</span></summary>
           <div class="advanced__body">
@@ -2843,6 +3261,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           </div>
         </details>
       </aside>
+          </div>
+        </details>
     </aside>
 
     <!-- ═══ RIGHT: DIALOGUE ═══ -->
@@ -3023,6 +3443,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               <aside class="err">
                 <span class="tag">✕ error</span>
                 <span x-text="turn.content"></span>
+                <button class="mini-btn" type="button" x-show="turn.retry" @click="retryTurn(i)">retry</button>
               </aside>
             </template>
           </div>
@@ -3037,19 +3458,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
       <!-- composer -->
       <div class="composer" x-show="resolved">
-
-        <!-- mode toggle -->
-        <div class="mode">
-          <span class="mode__lbl">◦ scene author</span>
-          <div class="mode__toggle">
-            <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')">I write learner</button>
-            <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')">I write tutor</button>
-            <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">AI writes both</button>
-          </div>
-          <span class="mode__meta" x-show="mode === 'human'">— start here: write the learner line; the configured tutor answers</span>
-          <span class="mode__meta" x-show="mode === 'teacher'">— write the tutor line yourself; the selected learner answers</span>
-          <span class="mode__meta" x-show="mode === 'auto'">— choose a learner persona, then let both sides draft the next exchange</span>
-        </div>
 
         <!-- HUMAN MODE -->
         <template x-if="mode === 'human'">
@@ -3069,7 +3477,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                 rows="2"
                 placeholder="write the learner's opening line or next reply..."
               ></textarea>
-              <button type="submit" :disabled="pending || !input.trim()">
+              <button type="submit" :disabled="pending || !input.trim() || turnsNeedKeyWarning">
                 <span x-show="!pending">Send line →</span>
                 <span x-show="pending">···</span>
               </button>
@@ -3090,18 +3498,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                 unified · learner is a single voice
               </span>
             </p>
-            <div class="persona-strip">
-              <template x-for="p in personas" :key="p.id">
-                <button
-                  class="persona-chip"
-                  :class="{'is-active': personaId === p.id}"
-                  @click="personaId = p.id"
-                >
-                  <span class="name" x-text="p.name"></span>
-                  <span class="hint" x-text="'· ' + p.hint"></span>
-                </button>
-              </template>
-            </div>
             <div class="step-control">
               <div class="step-control__info">
                 <span x-show="turns.length === 0">Press <em>Start scene</em>; the <em x-text="personaName"></em> opens, then this tutor cell replies.</span>
@@ -3131,18 +3527,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                 replies from <em x-text="personaName"></em> · unified learner
               </span>
             </p>
-            <div class="persona-strip">
-              <template x-for="p in personas" :key="p.id">
-                <button
-                  class="persona-chip"
-                  :class="{'is-active': personaId === p.id}"
-                  @click="personaId = p.id"
-                >
-                  <span class="name" x-text="p.name"></span>
-                  <span class="hint" x-text="'· ' + p.hint"></span>
-                </button>
-              </template>
-            </div>
             <form @submit.prevent="sendAsTeacher">
               <span class="composer__prompt">tutor line</span>
               <textarea
@@ -3153,7 +3537,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                 rows="2"
                 placeholder="write the tutor's line: a question, reframing, provocation, or explanation..."
               ></textarea>
-              <button type="submit" :disabled="pending || !input.trim()">
+              <button type="submit" :disabled="pending || !input.trim() || turnsNeedKeyWarning">
                 <span x-show="!pending">Send line →</span>
                 <span x-show="pending">···</span>
               </button>
@@ -3297,6 +3681,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       matchQuality: '',
       maxScore: 11,
       relaxedDimensions: [],
+      alternatives: [],
+      manualPick: null,
 
       // D6 compare-orientations: which cell to contrast with the resolved one.
       // Default null → auto-pick a "natural opposite" via compareCell getter.
@@ -3328,10 +3714,28 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
       // claude CLI override (local claude -p · opus 4.7)
       useClaudeCli: false,
-      apiBase: window.location.pathname.startsWith('/admin/') ? '/admin/api/chat' : '/api/chat',
+      dryRunTurns: false,
+      mountInfo: window.AH.chatMountInfo(window.location.pathname),
+      assistHealth: { ok: false, provider: 'none', model: '' },
+      assist: {
+        open: false,
+        messages: [],
+        input: '',
+        pending: false,
+        proposal: null,
+        proposalResolved: null,
+        dryRun: false,
+      },
+      restore: {
+        available: false,
+        dismissed: false,
+        turnCount: 0,
+        snapshot: null,
+      },
 
       _resolveTimer: null,
-      api(path) { return this.apiBase + path; },
+      _saveTimer: null,
+      api(path) { return this.mountInfo.apiBase + path; },
 
       async init() {
         // populate xray overlay grid
@@ -3345,11 +3749,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           }
         }
         try {
-          const [cellsRes, personasRes, curriculaRes, modelsRes] = await Promise.all([
+          const [cellsRes, personasRes, curriculaRes, modelsRes, assistHealthRes] = await Promise.all([
             fetch(this.api('/cells')),
             fetch(this.api('/personas')),
             fetch(this.api('/curricula')),
             fetch(this.api('/models')),
+            fetch(this.api('/assist/health')).catch(() => null),
           ]);
           this.cells = (await cellsRes.json()).cells || [];
           this.personas = (await personasRes.json()).personas || [];
@@ -3357,9 +3762,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           this.curricula = curriculaPayload.packages || [];
           this.sceneSources = curriculaPayload.sceneSources || [];
           this.modelOptions = (await modelsRes.json()).models || [];
+          if (assistHealthRes?.ok) this.assistHealth = await assistHealthRes.json();
         } catch (err) { console.error(err); }
+        this.inspectSavedSession();
         await this.resolve();
         this.$watch('features', () => this.debouncedResolve(), { deep: true });
+        this.setupPersistence();
       },
 
       get personaName() {
@@ -3415,6 +3823,24 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         return 'learner';
       },
 
+      get startActionLabel() {
+        if (this.mode === 'auto') return this.turns.length ? 'Next exchange →' : 'Start scene →';
+        if (this.mode === 'teacher') return 'Write tutor line →';
+        return 'Write learner line →';
+      },
+
+      get assistDisabled() {
+        return this.assistHealth.provider === 'none' && !this.useClaudeCli && !this.assist.dryRun;
+      },
+
+      get turnsNeedKeyWarning() {
+        return this.assistHealth.provider === 'none' && !this.useClaudeCli && !this.dryRunTurns;
+      },
+
+      get assistProposalRows() {
+        return window.AH.proposalRows(this.assist.proposal || {});
+      },
+
       pickLecture(course, lec) {
         this.lectureRef = lec.ref;
         this.curriculumRef = null;
@@ -3466,6 +3892,127 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           src.directorPolicy ? `director: ${src.directorPolicy}` : null,
           src.turnCount ? `${src.turnCount} beats` : null,
         ].filter(Boolean).join(' · ');
+      },
+
+      setupPersistence() {
+        const save = () => this.debouncedSaveSession();
+        this.$watch('features', save, { deep: true });
+        this.$watch('topic', save);
+        this.$watch('lectureRef', save);
+        this.$watch('curriculumRef', save);
+        this.$watch('director', save, { deep: true });
+        this.$watch('personaId', save);
+        this.$watch('mode', save);
+        this.$watch('modelOverrides', save, { deep: true });
+        this.$watch('turns', save, { deep: true });
+        this.$watch('useClaudeCli', save);
+        this.$watch('dryRunTurns', save);
+      },
+
+      sessionSnapshot() {
+        return {
+          features: { ...this.features },
+          topic: this.topic,
+          lectureRef: this.lectureRef,
+          curriculumRef: this.curriculumRef,
+          director: { ...this.director },
+          personaId: this.personaId,
+          mode: this.mode,
+          modelOverrides: { ...this.modelOverrides },
+          useClaudeCli: this.useClaudeCli,
+          dryRunTurns: this.dryRunTurns,
+          turns: this.turns,
+          savedAt: new Date().toISOString(),
+        };
+      },
+
+      debouncedSaveSession() {
+        if (this._saveTimer) clearTimeout(this._saveTimer);
+        this._saveTimer = setTimeout(() => this.saveSession(), 160);
+      },
+
+      saveSession() {
+        try {
+          localStorage.setItem('ms-chat-session-v1', JSON.stringify(this.sessionSnapshot()));
+        } catch (err) {
+          console.warn('chat session save failed', err);
+        }
+      },
+
+      inspectSavedSession() {
+        try {
+          const raw = localStorage.getItem('ms-chat-session-v1');
+          if (!raw) return;
+          const snapshot = JSON.parse(raw);
+          const turnCount = Array.isArray(snapshot.turns) ? snapshot.turns.length : 0;
+          if (!snapshot || (!turnCount && !snapshot.topic)) return;
+          this.restore = { available: true, dismissed: false, turnCount, snapshot };
+        } catch {
+          localStorage.removeItem('ms-chat-session-v1');
+        }
+      },
+
+      async restoreSavedSession() {
+        const s = this.restore.snapshot;
+        if (!s) return;
+        this.features = { ...this.features, ...(s.features || {}) };
+        this.topic = s.topic || this.topic;
+        this.lectureRef = s.lectureRef || null;
+        this.curriculumRef = s.curriculumRef || null;
+        this.director = { ...this.director, ...(s.director || {}) };
+        this.personaId = s.personaId || this.personaId;
+        this.mode = ['human', 'teacher', 'auto'].includes(s.mode) ? s.mode : this.mode;
+        this.modelOverrides = { ...this.modelOverrides, ...(s.modelOverrides || {}) };
+        this.useClaudeCli = !!s.useClaudeCli;
+        this.dryRunTurns = !!s.dryRunTurns;
+        this.turns = Array.isArray(s.turns) ? s.turns : [];
+        this.restore.dismissed = true;
+        await this.resolve();
+        this.saveSession();
+      },
+
+      dismissSavedSession() {
+        this.restore.dismissed = true;
+      },
+
+      exportTranscript() {
+        const lines = [
+          `# Machine Spirits chat transcript`,
+          ``,
+          `- cell: ${this.resolved?.name || 'unresolved'}`,
+          `- match: ${this.matchQuality || 'n/a'} ${this.resolved?.score != null ? `${this.resolved.score}/${this.maxScore}` : ''}`,
+          `- topic: ${this.topic || 'general conversation'}`,
+          `- mode: ${this.mode}`,
+          `- persona: ${this.personaId}`,
+          `- source: ${this.curriculumRef || this.lectureRef || 'freeform'}`,
+          `- director: ${JSON.stringify(this.director)}`,
+          ``,
+        ];
+        for (const [idx, turn] of this.turns.entries()) {
+          if (turn.role === 'learner') {
+            lines.push(`## ${idx + 1}. Learner${turn.personaId ? ` (${turn.personaId})` : ''}`, '', turn.content || '', '');
+          } else if (turn.role === 'tutor') {
+            lines.push(`## ${idx + 1}. Tutor${turn.human ? ' (human)' : ''}`, '', turn.finalMessage || '', '');
+          } else if (turn.role === 'error') {
+            lines.push(`## ${idx + 1}. Error`, '', turn.content || '', '');
+          }
+          if (Array.isArray(turn.deliberation) && turn.deliberation.length) {
+            lines.push(`<details><summary>deliberation</summary>`, '');
+            for (const step of turn.deliberation) {
+              lines.push(`### ${step.label || step.role || 'step'}`, '', step.content || '', '');
+            }
+            lines.push(`</details>`, '');
+          }
+        }
+        const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `machine-spirits-chat-${Date.now()}.md`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
       },
 
       directorPayload() {
@@ -3545,6 +4092,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       orientationTooltip(o) { return window.OH.orientationTooltip(o); },
 
       setApproach(v) {
+        this.manualPick = null;
         this.features.approach = v;
         // When entering the charismatic family, default to the generalist
         // (c107) frontier point unless one is already selected.
@@ -3553,12 +4101,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         }
       },
       setCritic(v) {
+        this.manualPick = null;
         this.features.critic = v;
         if (v !== 'dialectical' && v !== 'divergent') this.features.stance = 'suspicious';
       },
-      setStance(v) { this.features.stance = v; },
-      setLearner(v) { this.features.learnerModel = v; },
-      setCharismaVariant(v) { this.features.charismaVariant = v; },
+      setStance(v) { this.manualPick = null; this.features.stance = v; },
+      setLearner(v) { this.manualPick = null; this.features.learnerModel = v; },
+      setCharismaVariant(v) { this.manualPick = null; this.features.charismaVariant = v; },
 
       debouncedResolve() {
         if (this._resolveTimer) clearTimeout(this._resolveTimer);
@@ -3566,6 +4115,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       },
 
       async resolve() {
+        if (this.manualPick) return;
         try {
           const res = await fetch(this.api('/resolve'), {
             method: 'POST',
@@ -3577,15 +4127,32 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           this.matchQuality = data.matchQuality || '';
           this.maxScore = data.maxScore || 11;
           this.relaxedDimensions = (data.resolved?.matches || []).filter((m) => !m.match);
+          this.alternatives = data.alternatives || [];
         } catch (err) { console.error(err); }
       },
 
       pickCellDirectly(cell) {
+        const mapped = window.AH.featuresFromCell(cell);
+        if (mapped?.features) {
+          this.features = { ...this.features, ...mapped.features };
+        }
         this.resolved = cell;
-        this.matchQuality = 'manual';
+        this.manualPick = mapped?.manual ? cell.name : null;
+        this.matchQuality = mapped?.manual ? 'manual' : 'manual-mapped';
         this.relaxedDimensions = [];
+        this.alternatives = [];
         this.turns = [];
         this.input = '';
+      },
+
+      clearManualPick() {
+        this.manualPick = null;
+        this.resolve();
+      },
+
+      pickAlternative(alt) {
+        const cell = this.cells.find((c) => c.name === alt.name) || alt;
+        this.pickCellDirectly(cell);
       },
 
       toggleXray() {
@@ -3646,7 +4213,99 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         if (this.topic) {
           q.set('description', `Pedagogical drama batch: ${this.resolved?.name || 'cell'} - ${this.topic}`.slice(0, 160));
         }
-        return `/admin/runs?${q.toString()}`;
+        return `${this.mountInfo.runLauncherBase}?${q.toString()}`;
+      },
+
+      currentAssistConfig() {
+        return {
+          features: { ...this.features },
+          topic: this.topic,
+          curriculumRef: this.curriculumRef || null,
+          lectureRef: this.lectureRef || null,
+          director: this.directorPayload(),
+          personaId: this.personaId,
+          mode: this.mode,
+        };
+      },
+
+      async sendAssist() {
+        const content = this.assist.input.trim();
+        if (!content || this.assist.pending || this.assistDisabled) return;
+        const userMsg = { role: 'user', content };
+        this.assist.messages.push(userMsg);
+        this.assist.input = '';
+        this.assist.pending = true;
+        this.assist.open = true;
+        this.assist.proposal = null;
+        this.assist.proposalResolved = null;
+        try {
+          const res = await fetch(this.api('/assist'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              messages: this.assist.messages,
+              currentConfig: this.currentAssistConfig(),
+              useClaudeCli: this.useClaudeCli,
+              dryRun: this.assist.dryRun,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'assist request failed');
+          this.assist.messages.push({ role: 'assistant', content: data.message || '' });
+          this.assist.proposal = data.proposal || null;
+          this.assist.proposalResolved = data.resolved || null;
+        } catch (err) {
+          this.assist.messages.push({ role: 'assistant', content: `Assist unavailable: ${err.message}` });
+        } finally {
+          this.assist.pending = false;
+        }
+      },
+
+      async applyProposal(proposal) {
+        if (!proposal) return;
+        const next = window.AH.applyProposalToState(this.sessionSnapshot(), proposal);
+        this.manualPick = null;
+        this.features = { ...this.features, ...(next.features || {}) };
+        this.topic = next.topic || this.topic;
+        this.lectureRef = next.lectureRef || null;
+        this.curriculumRef = next.curriculumRef || null;
+        this.director = { ...this.director, ...(next.director || {}) };
+        this.personaId = next.personaId || this.personaId;
+        this.mode = ['human', 'teacher', 'auto'].includes(next.mode) ? next.mode : this.mode;
+        await this.resolve();
+      },
+
+      async applyProposalAndStart(proposal) {
+        await this.applyProposal(proposal);
+        if (proposal?.mode) this.setMode(proposal.mode);
+        if (this.mode !== 'auto') this.setMode('auto');
+        await this.step();
+      },
+
+      async openProposalBatch(proposal) {
+        await this.applyProposal(proposal);
+        window.location.href = this.runLauncherHref();
+      },
+
+      startPrimary() {
+        if (this.mode === 'auto') return this.step();
+        this.scrollTo('dialogue');
+        this.$nextTick(() => {
+          const input = document.querySelector('.composer textarea');
+          if (input) input.focus();
+        });
+        return null;
+      },
+
+      openFineControls() {
+        const drawer = document.getElementById('fine-controls');
+        if (drawer) drawer.open = true;
+        this.scrollTo('fine-controls');
+      },
+
+      openDossier() {
+        if (this.$refs.dossierDrawer) this.$refs.dossierDrawer.open = true;
+        this.scrollTo('dossier');
       },
 
       scrollTo(id) {
@@ -3682,6 +4341,57 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         });
       },
 
+      async postJson(path, payload) {
+        const res = await fetch(this.api(path), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `${path} request failed`);
+        return data;
+      },
+
+      appendLearnerTurn(data) {
+        this.turns.push({
+          role: 'learner',
+          content: data.message,
+          deliberation: data.deliberation || [],
+          personaId: data.personaId || this.personaId,
+          totals: data.totals || { latencyMs: 0, outputTokens: 0 },
+        });
+      },
+
+      appendTutorTurn(data) {
+        this.turns.push({
+          role: 'tutor',
+          finalMessage: data.finalMessage,
+          wasRevised: data.wasRevised,
+          deliberation: data.deliberation || [],
+          architecture: data.architecture || {},
+          totals: data.totals || { latencyMs: 0, inputTokens: 0, outputTokens: 0 },
+        });
+      },
+
+      async retryTurn(i) {
+        const turn = this.turns[i];
+        const retry = turn?.retry;
+        if (!retry || this.pending) return;
+        this.turns.splice(i, 1);
+        this.pending = true;
+        this.pendingStage = retry.kind === 'learner' ? 'retrying learner turn' : 'retrying tutor turn';
+        try {
+          const data = await this.postJson(retry.endpoint, retry.payload);
+          if (retry.kind === 'learner') this.appendLearnerTurn(data);
+          else this.appendTutorTurn(data);
+        } catch (err) {
+          this.turns.push({ role: 'error', content: err.message, retry });
+        } finally {
+          this.pending = false;
+          this.scrollChatToBottom();
+        }
+      },
+
       // Auto-learner mode: run one full exchange (learner turn → tutor turn).
       async step() {
         if (this.pending || !this.resolved) return;
@@ -3701,33 +4411,27 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.pendingStage = this.resolved.learnerArchitecture?.startsWith('ego_superego')
           ? 'learner ego → superego → revision'
           : 'learner drafting';
+        const learnerPayload = {
+          cellName: this.resolved.name,
+          history: historyFor(),
+          topic: this.topic || 'general conversation',
+          lectureRef: this.lectureRef || null,
+          curriculumRef: this.curriculumRef || null,
+          director: this.directorPayload(),
+          personaId: this.personaId,
+          useClaudeCli: this.useClaudeCli,
+          dryRun: this.dryRunTurns,
+        };
         try {
-          const lr = await fetch(this.api('/learner-turn'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              cellName: this.resolved.name,
-              history: historyFor(),
-              topic: this.topic || 'general conversation',
-              lectureRef: this.lectureRef || null,
-              curriculumRef: this.curriculumRef || null,
-              director: this.directorPayload(),
-              personaId: this.personaId,
-              useClaudeCli: this.useClaudeCli,
-            }),
-          });
-          const ldata = await lr.json();
-          if (!lr.ok) throw new Error(ldata.error || 'learner request failed');
-          this.turns.push({
-            role: 'learner',
-            content: ldata.message,
-            deliberation: ldata.deliberation || [],
-            personaId: ldata.personaId || this.personaId,
-            totals: ldata.totals || { latencyMs: 0, outputTokens: 0 },
-          });
+          const ldata = await this.postJson('/learner-turn', learnerPayload);
+          this.appendLearnerTurn(ldata);
           this.scrollChatToBottom();
         } catch (err) {
-          this.turns.push({ role: 'error', content: `learner turn: ${err.message}` });
+          this.turns.push({
+            role: 'error',
+            content: `learner turn: ${err.message}`,
+            retry: { endpoint: '/learner-turn', payload: learnerPayload, kind: 'learner' },
+          });
           this.pending = false;
           this.scrollChatToBottom();
           return;
@@ -3737,34 +4441,27 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.pendingStage = this.resolved.superego
           ? 'tutor ego → superego → revision'
           : 'tutor drafting';
+        const tutorPayload = {
+          cellName: this.resolved.name,
+          history: historyFor().slice(0, -1),
+          learnerMessage: this.turns[this.turns.length - 1].content,
+          topic: this.topic || 'general conversation',
+          lectureRef: this.lectureRef || null,
+          curriculumRef: this.curriculumRef || null,
+          director: this.directorPayload(),
+          useClaudeCli: this.useClaudeCli,
+          modelOverrides: this.tutorModelOverrides(),
+          dryRun: this.dryRunTurns,
+        };
         try {
-          const tr = await fetch(this.api('/turn'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              cellName: this.resolved.name,
-              history: historyFor().slice(0, -1),
-              learnerMessage: this.turns[this.turns.length - 1].content,
-              topic: this.topic || 'general conversation',
-              lectureRef: this.lectureRef || null,
-              curriculumRef: this.curriculumRef || null,
-              director: this.directorPayload(),
-              useClaudeCli: this.useClaudeCli,
-              modelOverrides: this.tutorModelOverrides(),
-            }),
-          });
-          const tdata = await tr.json();
-          if (!tr.ok) throw new Error(tdata.error || 'tutor request failed');
-          this.turns.push({
-            role: 'tutor',
-            finalMessage: tdata.finalMessage,
-            wasRevised: tdata.wasRevised,
-            deliberation: tdata.deliberation || [],
-            architecture: tdata.architecture || {},
-            totals: tdata.totals || { latencyMs: 0, inputTokens: 0, outputTokens: 0 },
-          });
+          const tdata = await this.postJson('/turn', tutorPayload);
+          this.appendTutorTurn(tdata);
         } catch (err) {
-          this.turns.push({ role: 'error', content: `tutor turn: ${err.message}` });
+          this.turns.push({
+            role: 'error',
+            content: `tutor turn: ${err.message}`,
+            retry: { endpoint: '/turn', payload: tutorPayload, kind: 'tutor' },
+          });
         } finally {
           this.pending = false;
           this.scrollChatToBottom();
@@ -3785,35 +4482,28 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         const history = this.turns
           .filter((t) => t.role === 'learner' || t.role === 'tutor')
           .map((t) => ({ role: t.role, content: t.role === 'tutor' ? t.finalMessage : t.content }));
+        const tutorPayload = {
+          cellName: this.resolved.name,
+          history: history.slice(0, -1),
+          learnerMessage: msg,
+          topic: this.topic || 'general conversation',
+          lectureRef: this.lectureRef || null,
+          curriculumRef: this.curriculumRef || null,
+          director: this.directorPayload(),
+          useClaudeCli: this.useClaudeCli,
+          modelOverrides: this.tutorModelOverrides(),
+          dryRun: this.dryRunTurns,
+        };
 
         try {
-          const res = await fetch(this.api('/turn'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              cellName: this.resolved.name,
-              history: history.slice(0, -1),
-              learnerMessage: msg,
-              topic: this.topic || 'general conversation',
-              lectureRef: this.lectureRef || null,
-              curriculumRef: this.curriculumRef || null,
-              director: this.directorPayload(),
-              useClaudeCli: this.useClaudeCli,
-              modelOverrides: this.tutorModelOverrides(),
-            }),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'request failed');
-          this.turns.push({
-            role: 'tutor',
-            finalMessage: data.finalMessage,
-            wasRevised: data.wasRevised,
-            deliberation: data.deliberation || [],
-            architecture: data.architecture || {},
-            totals: data.totals || { latencyMs: 0, inputTokens: 0, outputTokens: 0 },
-          });
+          const data = await this.postJson('/turn', tutorPayload);
+          this.appendTutorTurn(data);
         } catch (err) {
-          this.turns.push({ role: 'error', content: err.message });
+          this.turns.push({
+            role: 'error',
+            content: err.message,
+            retry: { endpoint: '/turn', payload: tutorPayload, kind: 'tutor' },
+          });
         } finally {
           this.pending = false;
           this.scrollChatToBottom();
@@ -3846,33 +4536,27 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         const history = this.turns
           .filter((t) => t.role === 'learner' || t.role === 'tutor')
           .map((t) => ({ role: t.role, content: t.role === 'tutor' ? t.finalMessage : t.content }));
+        const learnerPayload = {
+          cellName: this.resolved.name,
+          history,
+          topic: this.topic || 'general conversation',
+          lectureRef: this.lectureRef || null,
+          curriculumRef: this.curriculumRef || null,
+          director: this.directorPayload(),
+          personaId: this.personaId,
+          useClaudeCli: this.useClaudeCli,
+          dryRun: this.dryRunTurns,
+        };
 
         try {
-          const lr = await fetch(this.api('/learner-turn'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              cellName: this.resolved.name,
-              history,
-              topic: this.topic || 'general conversation',
-              lectureRef: this.lectureRef || null,
-              curriculumRef: this.curriculumRef || null,
-              director: this.directorPayload(),
-              personaId: this.personaId,
-              useClaudeCli: this.useClaudeCli,
-            }),
-          });
-          const ldata = await lr.json();
-          if (!lr.ok) throw new Error(ldata.error || 'learner request failed');
-          this.turns.push({
-            role: 'learner',
-            content: ldata.message,
-            deliberation: ldata.deliberation || [],
-            personaId: ldata.personaId || this.personaId,
-            totals: ldata.totals || { latencyMs: 0, outputTokens: 0 },
-          });
+          const ldata = await this.postJson('/learner-turn', learnerPayload);
+          this.appendLearnerTurn(ldata);
         } catch (err) {
-          this.turns.push({ role: 'error', content: `learner turn: ${err.message}` });
+          this.turns.push({
+            role: 'error',
+            content: `learner turn: ${err.message}`,
+            retry: { endpoint: '/learner-turn', payload: learnerPayload, kind: 'learner' },
+          });
         } finally {
           this.pending = false;
           this.scrollChatToBottom();

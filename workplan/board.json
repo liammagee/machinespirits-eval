@@ -1,19 +1,20 @@
 {
-  "generated": "2026-07-02T10:13:39.568Z",
+  "generated": "2026-07-02T12:02:22.292Z",
   "counts": {
-    "total": 67,
+    "total": 68,
     "byStatus": {
       "done": 58,
       "blocked": 1,
       "dropped": 2,
+      "review": 1,
       "archived": 4,
       "active": 2
     },
     "byType": {
       "research": 35,
       "experiment": 6,
+      "infra": 10,
       "content": 2,
-      "infra": 9,
       "maintenance": 5,
       "paper": 4,
       "ops": 6
@@ -94,6 +95,25 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "admin-chat-drama-launcher-simplification",
+      "title": "Admin chat drama launcher simplification",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "npm test plus localhost browser smoke at /admin/chat/",
+      "claim_status": "planned",
+      "tags": [
+        "admin-chat",
+        "drama-machine",
+        "ux"
+      ],
+      "milestone": "admin-chat"
     },
     {
       "id": "scriptorium-control-room-first-run",
