@@ -221,6 +221,7 @@
     "ontology:elk": "node scripts/run-elk-reasoner.js",
     "audit:message-chain": "node scripts/audit-message-chain.js",
     "audit:message-chain:json": "node scripts/audit-message-chain.js --json",
+    "audit:plan3-synthetic-closure": "node scripts/plan3-synthetic-closure-audits.js",
     "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "test:hermetic": "EVAL_DB_PATH=$(mktemp -d)/test.db EVAL_LOGS_DIR=$(mktemp -d) node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "content:validate": "node scripts/validate-content.js",
