@@ -236,4 +236,82 @@ floor with the same dynamic learner, hence gate-eligible), not raw
 this suite; budget remains the Block S floor. Validation: forbidden 20/20;
 required 19/20, the single miss being cell_200 × irrelevance (agency-return
 phrase group), consistent with the family's historical occasional misses.
-Scoring pending.
+
+**Block R scoring** (v2.2, Codex CLI judge, 20/20 rows; n=5/arm):
+
+| Arm | v2.2 first | v2.2 last | v2.2 overall |
+|---|---:|---:|---:|
+| cell_186 floor | 76.5 | 98.3 | 90.4 |
+| cell_193 comparator | 78.5 | 97.0 | 91.6 |
+| cell_199 kernel | 78.3 | 100.0 | 92.3 |
+| cell_200 full | 81.5 | 98.3 | 92.0 |
+
+Flat band: **H1 (sub-additivity) consistent** — the full stack does not beat
+the kernel; **H3 (straitjacket collapse) not triggered** — no arm regresses.
+Note the suite is near-ceiling for every id-director arm under this stack.
+
+**Block R local decision metric** (breakthrough-matrix reporter, arm labels
+`blueprint_kernel`/`blueprint_full` added to the reporter; n=1 per
+cell×scenario):
+
+| Arm | Eligible | Candidates | Positive | Route hits | Mean local score |
+|---|---|---|---|---|---:|
+| cell_186 floor | 5/5 | 2/5 | 3/5 | 0/5 | 61.0 |
+| cell_193 comparator | 5/5 | 3/5 | 5/5 | 5/5 | 90.0 |
+| cell_199 kernel | 5/5 | 2/5 | 2/5 | 4/5 | 73.0 |
+| cell_200 full | 4/5 | 1/5 | 1/5 | 5/5 | 84.0 |
+
+**H2 fails on the comparator's home suite at this single-repeat gate**: both
+composite arms convert resistance less often than the plain cell-193
+backbone (kernel 2/5 positive vs 193's 5/5), despite routing correctly. The
+kernel stays above the floor (73.0 > 61.0), so no stop rule fired. The one
+factor separating the kernel from cell 193 is recognition orientation —
+directionally consistent with the arc's repeated finding that
+recognition-theory prose cools the local charismatic mechanism. Single
+repeats: directional only, not a claim.
+
+**Block S (suggestion)** — `eval-2026-07-02-fe9404d2` (blueprint arms,
+Codex stack) + `eval-2026-07-02-a4260aa3` (comparator arms). Deviation: the
+Codex CLI bridge does not reach tutor-core's dialogue engine, so `budget`
+and `cell_5_recog_single_unified` could not run on the frozen Codex stack;
+they ran on their canonical YAML stack (openrouter/nemotron) in the
+supplementary S2 run. Scored with the same Codex judge:
+
+| Arm | Stack | v2.2 first | v2.2 overall |
+|---|---|---:|---:|
+| budget | nemotron | 14.4 | 9.8 |
+| cell_5 orientation-only | nemotron | 38.1 | 26.9 |
+| cell_199 kernel | codex | 91.3 | 97.2 |
+| cell_200 full | codex | 96.3 | 97.4 |
+
+The cross-arm gap is **generation-model-dominated and is NOT composition
+evidence** (the blueprint arms ran a far stronger model). The clean
+within-stack contrast is kernel 97.2 ≈ full 97.4 — **H1-consistent again**.
+
+**Block T (trap, exploratory)** — cell 199 rows generated 2/2
+(`eval-2026-07-02-6547750c`, nemotron/kimi YAML stack; the pilot script does
+not read .env, first attempts failed on missing keys and their empty run
+records were deleted along with one interrupted empty cell-200 record).
+`analyze-strategy-shift.js` returns 0/0 evaluable: the id-director pilot
+trace carries `dialogue` + `idConstructions`, no `tutorInternal.policyAction`
+slot — the binary strict-shift metric is **structurally non-evaluable on
+this adapter**, so Block T is recorded exploratory-invalidated per §8's
+proviso. Cell 200's contract `action_type` entries (in the id trace) could
+support a future mapping into the shift scorer, off-gate.
+
+**Cost**: OpenRouter spend for the whole gate ≈ $0.30 (trap + S2 nemotron
+rows); ~$5.94 credit remains. Everything else ran on CLI subscription quota.
+Operational note: background tasks were externally stopped six times across
+the gate; every interruption recovered cleanly via `eval-cli resume` with no
+duplicate or empty rows persisted — the checkpoint/resume discipline held.
+
+**Gate verdict (bounded)**: sub-additivity (H1) is supported everywhere it
+could be measured — the full stack never beats the kernel beyond noise, on
+either suite, and the action-contract module adds nothing detectable at
+n=1. The straitjacket failure mode (H3) did not appear. The informative
+surprise is H2: on the resistance suite's local uptake metric the composite
+arms trail the plain cell-193 backbone, suggesting composing recognition
+orientation onto the register-router backbone has a local cost invisible to
+whole-dialogue v2.2 scoring. Licensed next step: a repeats-only contrast
+(cell 193 vs cell 199, 3+ repeats × 5 scenarios) to power that single
+comparison — not a broader matrix.

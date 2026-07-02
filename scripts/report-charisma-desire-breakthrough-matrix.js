@@ -36,6 +36,8 @@ const GLM_COMPACT_ROUTER_PROFILE = 'cell_194_id_director_charisma_resistance_glm
 const IRONIC_CHALLENGE_PROFILE = 'cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified';
 const SARCASTIC_CHALLENGE_PROFILE = 'cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified';
 const FACE_THREAT_CHALLENGE_PROFILE = 'cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified';
+const BLUEPRINT_KERNEL_PROFILE = 'cell_199_blueprint_kernel_verified';
+const BLUEPRINT_FULL_PROFILE = 'cell_200_blueprint_full_verified';
 
 const ROLE_ISOLATION_PREFIX = 'Charisma desire role isolation:';
 const ROLE_ISOLATION_ARMS = [
@@ -679,9 +681,13 @@ function analyzeRows(rows, scenarios) {
                               ? 'sarcastic_challenge'
                               : row.profile_name === FACE_THREAT_CHALLENGE_PROFILE
                                 ? 'face_threat_challenge'
-                                : row.profile_name === STATIC_PROFILE
-                                  ? 'static_floor'
-                                  : 'other',
+                                : row.profile_name === BLUEPRINT_KERNEL_PROFILE
+                                  ? 'blueprint_kernel'
+                                  : row.profile_name === BLUEPRINT_FULL_PROFILE
+                                    ? 'blueprint_full'
+                                    : row.profile_name === STATIC_PROFILE
+                                      ? 'static_floor'
+                                      : 'other',
       learnerArchitecture: log?.learnerArchitecture || '',
       resistanceTurn,
       preGenerated,

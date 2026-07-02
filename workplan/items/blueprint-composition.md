@@ -49,6 +49,22 @@ Acceptance:
   frozen hypotheses H1-H3, per-suite local decision rules, and stop rules;
   no paid run without a recorded go decision.
 
+2026-07-03 Claude: Paid composition gate COMPLETE (user go 2026-07-02; frozen
+plan + full results in the note §8-§9). Runs: canary
+`eval-2026-07-02-b0be0524`; Block R `eval-2026-07-02-b4ccb58d` (20/20, scored,
+codex judge); Block S `eval-2026-07-02-fe9404d2` + comparators
+`eval-2026-07-02-a4260aa3`; Block T `eval-2026-07-02-6547750c` (cell 199;
+strict-shift structurally non-evaluable on the id-director trap adapter —
+exploratory-invalidated as provisioned). Bounded verdict: H1 sub-additivity
+supported everywhere measured (kernel ≈ full: R overall 92.3 vs 92.0, S 97.2
+vs 97.4); H3 straitjacket not triggered; H2 FAILS on the comparator's home
+suite at n=1 — composite arms trail the plain cell-193 backbone on local
+resistance uptake (positive 2/5 and 1/5 vs 5/5, mean 73.0/84.0 vs 90.0)
+despite correct routing, pointing at recognition orientation as the costly
+ingredient. Licensed next step: repeats-only cell 193-vs-199 contrast (3+
+repeats × 5 scenarios), nothing broader. OpenRouter spend ≈$0.30; rest on
+CLI quota.
+
 2026-07-02 Claude: Implementation complete on `worktree-blueprint-composition`
 (plan note §7 has the full log). Registry + loader + enforced-as-check tests,
 action-contract middleware extracted from the LangGraph runner (ownership gate
