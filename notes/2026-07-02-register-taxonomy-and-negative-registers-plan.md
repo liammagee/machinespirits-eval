@@ -555,3 +555,29 @@ assigned-arm and faithful-arm reporting," but only after one more modest
 coverage check that includes the two held-out targets (frustration and
 question_flood) or the full five-target negative-arm grid. It still does not
 license any claim that sarcasm is pedagogically safe.
+
+## 14. Addendum (2026-07-03, held-out target check)
+
+Paid held-out check `eval-2026-07-02-5c4d52e6` tested cells 196/197/198 on the
+two targets not covered by the cue-repair canary: frustration and
+question_flood. Generation completed 6/6 rows. Tutor-only v2.2 scoring completed
+6/6 with mean tutor score 87.8. Generic register-rubric scoring completed 9/9
+eligible slices with `openrouter.gpt-mini`.
+
+The breakthrough matrix classified **6/6 assigned negative-register rows as
+faithful evidence**, with **0/6 exclusions** and **0/6 invalid person-attack
+violations**. By arm: irony 2/2, sarcasm 2/2, face-threat 2/2. The local outcome
+side is more mixed: 3/6 strict candidate breakthroughs and 4/6 positive local
+outcomes, with irony 2/2 positive, sarcasm 1/2 positive, and face-threat 1/2
+positive.
+
+Practical interpretation: the held-out check confirms the stance-realization
+repair on the two remaining resistance targets. Read together with
+`eval-2026-07-02-7e461a5c`, the repaired cue contract has now sampled all five
+controlled targets with 15/15 faithful assigned negative-register rows and 0
+invalid violations. That is enough to stop treating the next spend as a
+treatment-fidelity check. The full five-target negative-arm grid is warranted
+only if the next question is effect estimation under assigned-arm and
+faithful-arm reporting; it is not needed merely to prove that the repaired
+negative-register arms can instantiate their assigned stance. The result still
+does not license any claim that sarcasm is pedagogically safe or human-facing.
