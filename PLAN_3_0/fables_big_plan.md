@@ -113,16 +113,17 @@ Ranked by dependency weight:
    mechanism; the field's strongest results run through this repo's three
    positives, and the one deployed within-session adaptive A/B in the
    literature is a null against a strong static prompt. The sweep licensed a
-   $0 offline audit batch over existing logs — answer-leak rate,
-   help-ladder compliance, mastery-gate counterfactual replay, learner
-   fidelity/flip-selectivity metrics, and IRT ability placement of the learner
-   personas (this last rides the A1 item authoring) — plus two bounded paid
-   closing probes. Those paid probes are now complete: outcome-selected
-   best-of-K returned a null on the validated held-out posttest endpoint, so
-   the episode-level RL/outcome-reward selector path is closed for the
-   synthetic program; the ESS learner 2x2 put a number on the simulated-learner
-   objection, showing modest roleplay over-crediting and no recognition lift
-   under a harness-owned constrained endpoint. Everything else the sweep
+   $0 offline audit batch over existing logs plus two bounded paid closing
+   probes. The hard offline gates are now complete: answer leak/risk,
+   help-ladder compliance, mastery-gate phase 0, and first-error localization
+   all pass on existing artifacts; learner fidelity is proxy-only; SFS still
+   needs a matched feedback corpus; and IRT waits on a real A1 item bank. The
+   paid probes are also complete: outcome-selected best-of-K returned a null
+   on the validated held-out posttest endpoint, so the episode-level
+   RL/outcome-reward selector path is closed for the synthetic program; the ESS
+   learner 2x2 put a number on the simulated-learner objection, showing modest
+   roleplay over-crediting and no recognition lift under a harness-owned
+   constrained endpoint. Everything else the sweep
    surfaced is either covered by an existing null, foldable into sanctioned
    work (A7 Phase 2, A1 item bank), or human-phase by construction.
 
@@ -172,14 +173,16 @@ The eval harness is strong. The product shell around it is not.
 
 2. In parallel, unblock A1's non-engineering gates: IRB, consent text, and real
    fractions items. The infrastructure is waiting on these rather than on a new
-   mechanism. While IRB and item authoring proceed, run the litreview's $0
-   audit batch and carry the two completed paid probes into the pilot go-memo:
-   the outcome-selected null closes the last plausible synthetic selector
-   upgrade, and the ESS result bounds synthetic-learner over-crediting. Use the
-   Tutor CoPilot RCT effect sizes (+4pp topic mastery overall, +9pp for
-   students of lower-rated tutors) as the prior for the pilot power analysis,
-   and treat productive failure (d~=0.36 on exactly the pretest/posttest
-   instrument the pilot has) as the best-evidenced candidate arm design.
+   mechanism. Carry the completed hard offline gates and the two completed paid
+   probes into the pilot go-memo: the offline gates find no answer-leak,
+   help-ladder, mastery-gate, or first-error-localization blocker requiring
+   another synthetic enforcement cell; the outcome-selected null closes the
+   last plausible synthetic selector upgrade; and the ESS result bounds
+   synthetic-learner over-crediting. Use the Tutor CoPilot RCT effect sizes
+   (+4pp topic mastery overall, +9pp for students of lower-rated tutors) as the
+   prior for the pilot power analysis, and treat productive failure (d~=0.36 on
+   exactly the pretest/posttest instrument the pilot has) as the best-evidenced
+   candidate arm design.
 
 3. Compose the reference tutor and wire it into the pilot/admin surface with
    session persistence and hard cost ceilings. This converts the blueprint from
