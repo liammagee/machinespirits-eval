@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-07-02
 updated: 2026-07-02
-verification: Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, and paid smoke/full run IDs are recorded with register-specific results.
+verification: Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, paid smoke/full run IDs are recorded with register-specific results, and the hand-authored corrosive-exemplar test separates v2.2 guardrail sensitivity from register-rubric compression.
 claim_status: planned
 links:
   notes:
@@ -19,7 +19,7 @@ tags:
   - charisma
   - negative-registers
   - evaluation
-branch: codex/register-taxonomy-negative-registers
+branch: codex/negative-register-exemplar-test
 ---
 
 Implement the six-step plan from the register taxonomy note: make tutor registers first-class registry objects, add a generic register-score channel, author an irony/sarcasm rubric, add arm-assigned ironic and sarcastic challenge cells, extend the local reporter, and run the no-paid checks before deciding whether the 15-row smoke and larger evaluation are warranted.
@@ -32,6 +32,9 @@ Acceptance:
 - Cells 196, 197, and 198 are registered in `config/tutor-agents.yaml` and `EVAL_ONLY_PROFILES`.
 - The breakthrough reporter can compare charismatic, ironic, sarcastic, and simulated-only face-threat arms on the same gated resistance slices.
 - Paid runs, if performed, are recorded here with run IDs and the bounded claim they support.
+- Hand-authored corrosive exemplars are scored under both the register rubric and v2.2 recognition guardrail to distinguish judge blindness from generation-side warmth.
+- Negative-register rows expose a stance-fidelity gate before they count as arm evidence.
+- The breakthrough reporter separates assigned negative-register rows from faithful evidence rows, treatment-noncompliance exclusions, and invalid corrosive violations.
 
 2026-07-02 Codex: Started implementation on `codex/register-taxonomy-negative-registers` from the committed design note.
 
@@ -42,3 +45,9 @@ Acceptance:
 2026-07-02 Codex: Follow-up from smoke interpretation: split the negative-register family into Socratic irony (`ironic_challenge`), dry sarcastic edge (`sarcastic_challenge`), and a simulated-only face-threat stress arm (`face_threat_challenge`, cell 198). Rubric v1.1 adds uptake freedom and post-turn face repair so a correct learner answer no longer hides coerced compliance or social narrowing. Reporter now surfaces register recognition, uptake freedom, and face-repair dimensions beside the overall register score.
 
 2026-07-02 Codex: Paid four-arm smoke `eval-2026-07-02-e511f92c` completed generation 20/20 with `codex.gpt-5.5` tutor and learner overrides across cells 193, 196, 197, and 198 on the five controlled resistance-breakthrough scenarios. Tutor-only v2.2 guardrail scoring succeeded 20/20 with mean 90.3; arm means were router_boredom_stake 90.8, ironic_challenge 90.5, sarcastic_challenge 91.4, and face_threat_challenge 88.5. Last-turn recognition_quality means were 4.8, 5.0, 5.0, and 4.4 respectively. Generic register-rubric scoring succeeded 34/34 with `openrouter.gpt-mini`; slice-weighted means were router_boredom_stake 46.3, ironic_challenge 48.0, sarcastic_challenge 48.0, and face_threat_challenge 52.0, with social dimensions for face_threat_challenge at recognition_cost 3.1, uptake_freedom 4.1, and post_turn_face_repair 2.3. The regenerated matrix report found 11/20 candidate breakthroughs and 18/20 positive local outcomes; its row-weighted arm means were router_boredom_stake 46.3, ironic_challenge 48.0, sarcastic_challenge 48.0, and face_threat_challenge 54.4. Bounded interpretation: negative registers remain pedagogically viable in the transcripts and v2.2 guardrail, but face-threat shows measurable recognition/face-repair cost and should remain simulated-only; do not scale a full paid run until the register rubric's compressed score band and the residual question-flood commitment gate are tightened.
+
+2026-07-02 Codex: Follow-up branch `codex/negative-register-exemplar-test` implemented the note addendum's hand-authored corrosive-exemplar discrimination test. Fixture `config/register-exemplars/corrosive-sarcasm.yaml` defines three known-corrosive slices and two controls; `scripts/run-negative-register-exemplar-test.js` scores each slice under the register rubric and v2.2 and writes `exports/negative-register-corrosive-exemplar-results.{json,md}`. After adding deterministic register-score guardrail caps for forbidden person attacks, status-shame threats, and apologetic/coerced uptake, the run with `openrouter.gpt-mini` scored all five exemplars: register rubric caught 3/3 known-corrosive slices, v2.2 `recognition_quality` caught 3/3, and controls had 0/2 false positives. Means: known-corrosive register recognition_cost 2.0 / face_repair 2.0 / v2.2 recognition_quality 2.33; controls register recognition_cost 4.0 / v2.2 recognition_quality 3.5. Bounded interpretation: the judges are not globally blind to corrosive sarcasm; the earlier generated sarcasm smoke is better read as generation-side warmth or weak stance fidelity. Do not scale a negative-register run until the new stance-fidelity gate is used to exclude warm-in-costume rows from arm evidence.
+
+2026-07-02 Codex: Froze the prospective stance-fidelity gate in `services/registerStanceFidelity.js`: `faithful` counts as assigned-register effect evidence; `weak_or_warm_in_costume` and `not_instantiated` are treatment-noncompliance exclusions; `invalid_person_attack` is an invalid corrosive violation rather than successful register execution. The breakthrough matrix now writes a `Negative-Register Stance Gate` Markdown section plus JSON `stanceGate` summary and per-row assigned-arm/gate columns. Focused tests cover the gate dispositions and reporter counts. Attempted no-paid application to historical smoke rows found no local `evaluation_results` rows for `eval-2026-07-02-cfed3b13` or `eval-2026-07-02-e511f92c` in sibling worktree DBs, and no shared-DB profile rows for cells 196-198; reinterpreting those exact smokes requires restored DB/log artifacts or a fresh smoke.
+
+2026-07-02 Codex: Ran the fresh prospective stance-gated smoke `eval-2026-07-02-e7b15809` across cells 193/196/197/198 and the five controlled resistance-breakthrough scenarios with `codex.gpt-5.5` tutor/learner overrides. Generation completed 20/20 in 74.4 minutes; tutor-only v2.2 scoring completed 20/20 with mean tutor score 91.1; generic register-rubric scoring completed 35/35 with `openrouter.gpt-mini`. The breakthrough matrix found 14/20 candidate breakthroughs and 18/20 positive local outcomes, but the new stance gate contracts negative-register evidence to 5/15 faithful assigned rows: ironic 2/5, sarcastic 2/5, face-threat 1/5; 10/15 were `weak_or_warm_in_costume` exclusions and 0/15 were invalid person-attack violations. Bounded interpretation: the judges can score the slices and no invalid corrosive rows were generated, but most assigned negative-register rows still regress to warm/weak challenge, so the next step is stance-realization repair or explicit assigned-arm versus faithful-arm estimands before any full paid scale-up.

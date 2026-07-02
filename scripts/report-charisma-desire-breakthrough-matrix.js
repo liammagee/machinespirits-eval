@@ -9,6 +9,7 @@ import yaml from 'yaml';
 
 import { routeEngagementMode } from '../services/engagementModeRouter.js';
 import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
+import { evaluateRegisterStanceFidelity } from '../services/registerStanceFidelity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -317,6 +318,14 @@ function scriptedLearnerMessage(scenario, turnIndex) {
 function getLearnerMessage({ scenario, log, turnIndex }) {
   if (turnIndex === 0) return scriptedLearnerMessage(scenario, 0);
   return getTurnResult(log, turnIndex)?.learnerMessage || scriptedLearnerMessage(scenario, turnIndex);
+}
+
+function getTutorMessage({ row, log, turnIndex }) {
+  const turn = getTurnResult(log, turnIndex);
+  if (turn?.suggestions?.[0]?.message) return turn.suggestions[0].message;
+  if (turn?.tutorMessage) return turn.tutorMessage;
+  const suggestions = parseJson(row.suggestions, []);
+  return suggestions?.[turnIndex]?.message || suggestions?.[0]?.message || '';
 }
 
 function isGeneratedLearnerTurn({ scenario, log, turnIndex }) {
@@ -632,6 +641,7 @@ function analyzeRows(rows, scenarios) {
     const postGenerated = isGeneratedLearnerTurn({ scenario, log, turnIndex: postTurn });
     const learnerGate = getLearnerResistanceGate({ log, turnIndex: resistanceTurn });
     const tutorRegister = getRegister(row, resistanceTurn);
+    const tutorMessage = getTutorMessage({ row, log, turnIndex: resistanceTurn });
     const routerSelectedRegister = getRouterSelectedRegister(row, resistanceTurn);
     const assignedRegisterArm = getAssignedRegisterArm(row, resistanceTurn);
     const observedSignal = classifySignal(preLearner, targetSignal);
@@ -639,6 +649,12 @@ function analyzeRows(rows, scenarios) {
     const routerStrategy = getResistanceStrategy(row, resistanceTurn);
     const routeHit = routerSelectedRegister === 'charismatic_challenge';
     const registerRubricScore = getRegisterRubricScore(row, tutorRegister, resistanceTurn);
+    const stanceFidelity = evaluateRegisterStanceFidelity({
+      registerName: tutorRegister,
+      learnerMessage: preLearner,
+      tutorMessage,
+      postLearnerMessage: postLearner,
+    });
     const scored = scoreTransition({
       targetSignal,
       observedSignal,
@@ -690,10 +706,12 @@ function analyzeRows(rows, scenarios) {
       learnerGateObservedSignal: learnerGate?.observedSignal || '',
       learnerGateAttempts: Array.isArray(learnerGate?.attempts) ? learnerGate.attempts.length : 0,
       tutorRegister,
+      tutorMessage,
       routerSelectedRegister,
       assignedRegisterArm,
       routeHit,
       registerRubricScore,
+      stanceFidelity,
       registerRecognitionCostScore: getRegisterRubricDimensionScore(row, tutorRegister, resistanceTurn, 'recognition_cost'),
       registerUptakeFreedomScore: getRegisterRubricDimensionScore(row, tutorRegister, resistanceTurn, 'uptake_freedom'),
       registerFaceRepairScore: getRegisterRubricDimensionScore(row, tutorRegister, resistanceTurn, 'post_turn_face_repair'),
@@ -743,6 +761,13 @@ function summarize(analyses) {
           registerUptakeFreedomCount: 0,
           registerFaceRepairSum: 0,
           registerFaceRepairCount: 0,
+          stanceFidelityApplicable: 0,
+          stanceFidelityPassed: 0,
+          stanceFidelityScoreSum: 0,
+          stanceFidelityEvidenceRows: 0,
+          stanceFidelityEvidencePositiveOutcomes: 0,
+          stanceFidelityExcludedNoncompliance: 0,
+          stanceFidelityInvalidViolations: 0,
         });
       }
       const item = map.get(key);
@@ -781,9 +806,55 @@ function summarize(analyses) {
         item.registerFaceRepairSum += Number(row.registerFaceRepairScore);
         item.registerFaceRepairCount += 1;
       }
+      if (row.stanceFidelity?.applies) {
+        item.stanceFidelityApplicable += 1;
+        item.stanceFidelityPassed += row.stanceFidelity.passed ? 1 : 0;
+        item.stanceFidelityScoreSum += Number(row.stanceFidelity.score || 0);
+        item.stanceFidelityEvidenceRows += row.stanceFidelity.countsAsArmEvidence ? 1 : 0;
+        item.stanceFidelityEvidencePositiveOutcomes +=
+          row.stanceFidelity.countsAsArmEvidence && isPositiveOutcome(row) ? 1 : 0;
+        item.stanceFidelityExcludedNoncompliance += row.stanceFidelity.countsAsExcludedNoncompliance ? 1 : 0;
+        item.stanceFidelityInvalidViolations += row.stanceFidelity.countsAsInvalidViolation ? 1 : 0;
+      }
     }
   }
   return { byArm: [...byArm.values()], byTargetArm: [...byTargetArm.values()] };
+}
+
+function summarizeStanceGate(analyses) {
+  const rows = analyses.filter((row) => row.stanceFidelity?.applies);
+  const byArm = new Map();
+  for (const row of rows) {
+    if (!byArm.has(row.arm)) {
+      byArm.set(row.arm, {
+        arm: row.arm,
+        assignedRows: 0,
+        faithfulRows: 0,
+        faithfulPositiveOutcomes: 0,
+        excludedNoncompliance: 0,
+        invalidViolations: 0,
+        scoreSum: 0,
+        labels: {},
+      });
+    }
+    const item = byArm.get(row.arm);
+    item.assignedRows += 1;
+    item.faithfulRows += row.stanceFidelity.countsAsArmEvidence ? 1 : 0;
+    item.faithfulPositiveOutcomes += row.stanceFidelity.countsAsArmEvidence && isPositiveOutcome(row) ? 1 : 0;
+    item.excludedNoncompliance += row.stanceFidelity.countsAsExcludedNoncompliance ? 1 : 0;
+    item.invalidViolations += row.stanceFidelity.countsAsInvalidViolation ? 1 : 0;
+    item.scoreSum += Number(row.stanceFidelity.score || 0);
+    item.labels[row.stanceFidelity.label] = (item.labels[row.stanceFidelity.label] || 0) + 1;
+  }
+
+  return {
+    rows: rows.length,
+    faithfulRows: rows.filter((row) => row.stanceFidelity.countsAsArmEvidence).length,
+    faithfulPositiveOutcomes: rows.filter((row) => row.stanceFidelity.countsAsArmEvidence && isPositiveOutcome(row)).length,
+    excludedNoncompliance: rows.filter((row) => row.stanceFidelity.countsAsExcludedNoncompliance).length,
+    invalidViolations: rows.filter((row) => row.stanceFidelity.countsAsInvalidViolation).length,
+    byArm: [...byArm.values()],
+  };
 }
 
 function summarizeRows(rows, key) {
@@ -1039,6 +1110,7 @@ function fraction(n, d) {
 function buildReport({ generatedAt, errors, analyses }) {
   const status = errors.length ? 'FAIL' : analyses.length ? 'ANALYZED_ROWS' : 'READY_NO_ROWS';
   const summary = summarize(analyses);
+  const stanceGate = summarizeStanceGate(analyses);
   const roleSummary = summarizeRoleIsolation(analyses);
   const qfGate = questionFloodGate(analyses);
   const lines = [];
@@ -1075,6 +1147,40 @@ function buildReport({ generatedAt, errors, analyses }) {
       : '- Controlled scenarios and target gates validate.',
   );
   lines.push('');
+  if (stanceGate.rows) {
+    lines.push('## Negative-Register Stance Gate');
+    lines.push('');
+    lines.push(
+      '- Gate rule: only `faithful` rows count as assigned-register effect evidence for negative-register arms.',
+    );
+    lines.push(
+      '- `weak_or_warm_in_costume` and `not_instantiated` are treatment-noncompliance exclusions; `invalid_person_attack` is a corrosive violation, not successful register execution.',
+    );
+    lines.push(
+      `- Overall: ${stanceGate.faithfulRows}/${stanceGate.rows} faithful evidence rows; ` +
+        `${stanceGate.faithfulPositiveOutcomes}/${stanceGate.faithfulRows || 0} faithful positive local outcomes; ` +
+        `${stanceGate.excludedNoncompliance} noncompliance exclusions; ${stanceGate.invalidViolations} invalid violations.`,
+    );
+    lines.push('');
+    lines.push(
+      markdownTable(
+        ['Arm', 'Assigned rows', 'Faithful evidence', 'Faithful positive', 'Excluded', 'Invalid', 'Mean fidelity', 'Labels'],
+        stanceGate.byArm.map((row) => [
+          row.arm,
+          String(row.assignedRows),
+          `${row.faithfulRows}/${row.assignedRows}`,
+          `${row.faithfulPositiveOutcomes}/${row.faithfulRows || 0}`,
+          String(row.excludedNoncompliance),
+          String(row.invalidViolations),
+          row.assignedRows ? (row.scoreSum / row.assignedRows).toFixed(1) : '',
+          Object.entries(row.labels)
+            .map(([label, count]) => `${label}:${count}`)
+            .join(', '),
+        ]),
+      ),
+    );
+    lines.push('');
+  }
   lines.push('## Arm Summary');
   lines.push('');
   if (summary.byArm.length) {
@@ -1099,6 +1205,11 @@ function buildReport({ generatedAt, errors, analyses }) {
           'Reg recog',
           'Reg uptake',
           'Reg repair',
+          'Faithful evidence',
+          'Faithful positive',
+          'Excluded',
+          'Invalid',
+          'Stance fidelity',
         ],
         summary.byArm.map((row) => [
           row.key,
@@ -1121,6 +1232,17 @@ function buildReport({ generatedAt, errors, analyses }) {
             : '',
           row.registerUptakeFreedomCount ? (row.registerUptakeFreedomSum / row.registerUptakeFreedomCount).toFixed(1) : '',
           row.registerFaceRepairCount ? (row.registerFaceRepairSum / row.registerFaceRepairCount).toFixed(1) : '',
+          row.stanceFidelityApplicable ? `${row.stanceFidelityEvidenceRows}/${row.stanceFidelityApplicable}` : '',
+          row.stanceFidelityApplicable
+            ? `${row.stanceFidelityEvidencePositiveOutcomes}/${row.stanceFidelityEvidenceRows || 0}`
+            : '',
+          row.stanceFidelityApplicable ? String(row.stanceFidelityExcludedNoncompliance) : '',
+          row.stanceFidelityApplicable ? String(row.stanceFidelityInvalidViolations) : '',
+          row.stanceFidelityApplicable
+            ? `${row.stanceFidelityPassed}/${row.stanceFidelityApplicable} (${(
+                row.stanceFidelityScoreSum / row.stanceFidelityApplicable
+              ).toFixed(1)})`
+            : '',
         ]),
       ),
     );
@@ -1151,6 +1273,11 @@ function buildReport({ generatedAt, errors, analyses }) {
           'Reg recog',
           'Reg uptake',
           'Reg repair',
+          'Faithful evidence',
+          'Faithful positive',
+          'Excluded',
+          'Invalid',
+          'Stance fidelity',
         ],
         summary.byTargetArm.map((row) => [
           row.key,
@@ -1172,6 +1299,17 @@ function buildReport({ generatedAt, errors, analyses }) {
             : '',
           row.registerUptakeFreedomCount ? (row.registerUptakeFreedomSum / row.registerUptakeFreedomCount).toFixed(1) : '',
           row.registerFaceRepairCount ? (row.registerFaceRepairSum / row.registerFaceRepairCount).toFixed(1) : '',
+          row.stanceFidelityApplicable ? `${row.stanceFidelityEvidenceRows}/${row.stanceFidelityApplicable}` : '',
+          row.stanceFidelityApplicable
+            ? `${row.stanceFidelityEvidencePositiveOutcomes}/${row.stanceFidelityEvidenceRows || 0}`
+            : '',
+          row.stanceFidelityApplicable ? String(row.stanceFidelityExcludedNoncompliance) : '',
+          row.stanceFidelityApplicable ? String(row.stanceFidelityInvalidViolations) : '',
+          row.stanceFidelityApplicable
+            ? `${row.stanceFidelityPassed}/${row.stanceFidelityApplicable} (${(
+                row.stanceFidelityScoreSum / row.stanceFidelityApplicable
+              ).toFixed(1)})`
+            : '',
         ]),
       ),
     );
@@ -1282,11 +1420,14 @@ function buildReport({ generatedAt, errors, analyses }) {
           'Arm',
           'Profile',
           'Register',
+          'Assigned',
           'Router selected',
           'Register score',
           'Reg recog',
           'Reg uptake',
           'Reg repair',
+          'Stance fidelity',
+          'Stance gate',
           'Observed',
           'Router signal',
           'Strategy',
@@ -1307,11 +1448,16 @@ function buildReport({ generatedAt, errors, analyses }) {
           row.arm,
           row.profileName,
           row.tutorRegister,
+          row.assignedRegisterArm,
           row.routerSelectedRegister,
           row.registerRubricScore == null ? '' : Number(row.registerRubricScore).toFixed(1),
           row.registerRecognitionCostScore == null ? '' : Number(row.registerRecognitionCostScore).toFixed(1),
           row.registerUptakeFreedomScore == null ? '' : Number(row.registerUptakeFreedomScore).toFixed(1),
           row.registerFaceRepairScore == null ? '' : Number(row.registerFaceRepairScore).toFixed(1),
+          row.stanceFidelity?.applies
+            ? `${row.stanceFidelity.label} (${row.stanceFidelity.score ?? ''})`
+            : '',
+          row.stanceFidelity?.applies ? row.stanceFidelity.gate : '',
           row.observedSignal,
           row.routerSignal,
           row.routerStrategy,
@@ -1384,6 +1530,7 @@ function main() {
     errors,
     analyses,
     summary: summarize(analyses),
+    stanceGate: summarizeStanceGate(analyses),
     roleIsolation: roleIsolationSummary,
     questionFloodGate: questionFloodGate(analyses),
   };
@@ -1403,6 +1550,12 @@ function main() {
   console.log(`Rows found: ${analyses.length}`);
   console.log(`Candidate breakthroughs: ${candidates.length}`);
   console.log(`Positive local outcomes: ${positiveOutcomes.length}`);
+  if (data.stanceGate.rows) {
+    console.log(
+      `Negative-register stance gate: ${data.stanceGate.faithfulRows}/${data.stanceGate.rows} faithful; ` +
+        `${data.stanceGate.excludedNoncompliance} excluded; ${data.stanceGate.invalidViolations} invalid`,
+    );
+  }
   if (roleIsolationSummary) {
     const populatedArms = roleIsolationSummary.byArm.filter((row) => row.rows > 0).length;
     console.log(`Role-isolation arms: ${populatedArms}/${ROLE_ISOLATION_ARMS.length}`);
