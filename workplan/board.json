@@ -1,16 +1,16 @@
 {
-  "generated": "2026-07-02T10:13:39.568Z",
+  "generated": "2026-07-02T12:31:05.896Z",
   "counts": {
-    "total": 67,
+    "total": 68,
     "byStatus": {
       "done": 58,
       "blocked": 1,
       "dropped": 2,
       "archived": 4,
-      "active": 2
+      "active": 3
     },
     "byType": {
-      "research": 35,
+      "research": 36,
       "experiment": 6,
       "content": 2,
       "infra": 9,
@@ -20,6 +20,33 @@
     }
   },
   "items": [
+    {
+      "id": "layered-decision-loops",
+      "title": "Strategy Ledger v1 — per-agent commit/audit loops at block/scene/act scope",
+      "status": "active",
+      "type": "research",
+      "priority": "P1",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "Design review accepted; Phase-0 wiring (exit-condition checks, live opportunity counters, block segmentation, mode hold) passes zero-paid gates with proof-control fingerprints byte-identical ledger-on vs ledger-off; scene/learner commitment phases pre-registered before any paid contrast.",
+      "claim_status": "planned",
+      "links": {
+        "notes": "LAYERED-DECISION-LOOPS-PLAN.md",
+        "items": [
+          "layered-task-session-adaptation",
+          "layered-taskloop-heldout-gate"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "strategy-ledger",
+        "symmetry"
+      ]
+    },
     {
       "id": "register-taxonomy-negative-registers",
       "title": "Implement register taxonomy and negative-register evaluation",
