@@ -721,7 +721,16 @@ section.fg::before {
   letter-spacing: 0.04em;
   color: var(--ink-3);
 }
-.preflight-note { color: var(--brick); }
+.preflight-note {
+  color: var(--brick);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 8px;
+  margin-top: 8px;
+}
+.preflight-note__lead { flex-basis: 100%; letter-spacing: 0.02em; }
+.preflight-note__opts { display: inline-flex; flex-wrap: wrap; gap: 5px; }
 .assist-history {
   margin-top: 7px;
   display: grid;
@@ -2465,103 +2474,336 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 .step-control__btn:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
 
 /* composer — boot line (tight) */
+/* ══════ composer — the action zone ══════ */
 .composer {
   flex-shrink: 0;
-  padding: 10px 12px 12px;
-  margin-top: 6px;
+  padding: 11px 13px 12px;
+  margin-top: 8px;
   border: 1px solid var(--rule);
-  border-top: 2px solid var(--ink);
-  background: color-mix(in oklab, var(--paper-4) 90%, transparent);
+  border-top: 3px solid var(--ink);
+  background: color-mix(in oklab, var(--paper-4) 94%, transparent);
   position: relative;
 }
-.composer::after {
-  content: "⌨ the composer — lines are written here";
-  position: absolute;
-  top: -1.05em;
-  right: 0;
-  font-family: "JetBrains Mono", monospace;
-  font-size: calc(var(--s-0) * 0.8);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  background: var(--paper);
-  padding: 0 0.4em;
-}
+/* a colored spine keyed to who is speaking */
 .composer::before {
   content: "";
   position: absolute;
-  top: -1px; left: 0;
-  width: 44px; height: 2px;
+  top: -3px; left: 0;
+  width: 64px; height: 3px;
   background: var(--brick);
 }
-.composer__pretext {
-  font-family: "JetBrains Mono", monospace;
-  font-size: var(--s-0);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-  margin: 0 0 4px;
-  display: flex; align-items: baseline; gap: 0.5em;
-}
-.composer__pretext .tag { color: var(--brick); font-weight: 500; letter-spacing: 0.14em; }
-.composer__pretext .rule {
-  flex: 1 1 auto;
-  height: 1px;
-  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 22%, transparent);
-  transform: translateY(-0.3em);
-}
-.composer__pretext .cell { color: var(--ink); letter-spacing: 0.04em; }
+.composer--learner::before { background: var(--ochre-d); }
+.composer--tutor::before { background: var(--moss-deep); }
+.composer--auto::before { background: var(--prussian); }
 
-.composer form {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  column-gap: 0.6em;
-  align-items: start;
-  padding: 0.35em 0.2em;
-  border-bottom: 1px solid var(--rule);
-}
-.composer__prompt {
+.composer__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6em;
+  margin-bottom: 7px;
   font-family: "JetBrains Mono", monospace;
   font-size: var(--s-0);
-  color: var(--brick);
+  letter-spacing: 0.06em;
+}
+.composer__seat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 500;
-  padding-top: 0.4em;
-  align-self: start;
+  color: var(--ink);
 }
-.composer textarea {
+.composer__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brick); flex: 0 0 auto; }
+.composer--learner .composer__dot { background: var(--ochre-d); }
+.composer--tutor .composer__dot { background: var(--moss-deep); }
+.composer--auto .composer__dot { background: var(--prussian); }
+.composer__reply {
+  color: var(--ink-3);
+  font-style: italic;
+  font-family: "Fraunces", serif;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: right;
+}
+
+.composer__form { display: block; }
+.composer__input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   font-family: "Fraunces", serif;
   font-size: var(--s-2);
   font-variation-settings: "opsz" 20;
   line-height: 1.42;
-  border: none;
-  background: transparent;
   color: var(--ink);
-  resize: none;
-  min-height: 2.2em;
-  max-height: 7em;
-  padding: 0.25em 0;
+  background: var(--paper);
+  border: 1px solid color-mix(in oklab, var(--ink) 22%, transparent);
+  resize: vertical;
+  min-height: 3.4em;
+  max-height: 11em;
+  padding: 9px 11px;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
 }
-.composer textarea:focus { outline: none; }
-.composer textarea::placeholder { color: var(--ink-3); font-style: italic; }
+.composer__input:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ochre) 18%, transparent);
+}
+.composer--tutor .composer__input:focus { box-shadow: 0 0 0 3px color-mix(in oklab, var(--moss) 18%, transparent); }
+.composer__input::placeholder { color: var(--ink-3); font-style: italic; }
 
-.composer button {
+.composer__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8em;
+  margin-top: 8px;
+}
+.composer__kbd {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  margin: 0;
+}
+.composer__send {
   all: unset;
-  align-self: start;
   cursor: pointer;
-  padding: 0.35em 0.9em 0.4em;
+  padding: 8px 18px;
   border: 1px solid var(--moss-deep);
   background: var(--moss-deep);
   color: var(--paper);
   font-family: "JetBrains Mono", monospace;
   font-size: var(--s-0);
-  font-weight: 500;
-  letter-spacing: 0.22em;
+  font-weight: 600;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
 }
-.composer button:hover { background: var(--brick); border-color: var(--brick); }
-.composer button:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
+.composer__send:hover:not(:disabled) { background: var(--brick); border-color: var(--brick); }
+.composer__send:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
+.composer__warn {
+  margin: 6px 0 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  color: var(--brick);
+  letter-spacing: 0.02em;
+}
+
+.composer__advance {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--prussian);
+  background: var(--prussian);
+  color: var(--paper);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-1);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.composer__advance:hover:not(:disabled) { background: var(--brick); border-color: var(--brick); }
+.composer__advance:disabled { opacity: 0.45; cursor: not-allowed; }
+.composer__auto .composer__kbd { margin-top: 7px; text-align: center; font-style: normal; }
+
+/* ══════ script view toggle (plates · script · swimlanes) ══════ */
+.view-toggle { display: inline-flex; margin-right: 0.5em; }
+.vt-btn {
+  all: unset;
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--rule);
+  color: var(--ink-3);
+  padding: 3px 10px;
+}
+.vt-btn + .vt-btn { border-left: none; }
+.vt-btn:hover { color: var(--ink); }
+.vt-btn.is-active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ══════ playscript (dramatic) view ══════ */
+.playscript { padding: 4px 0 8px; max-width: 52rem; }
+.ps-line {
+  display: grid;
+  grid-template-columns: 8.5em 1fr;
+  gap: 0.4em 1.2em;
+  padding: 10px 0 12px;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.ps-cue { text-align: right; padding-top: 0.1em; }
+.ps-speaker {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.ps-line--tutor .ps-speaker { color: var(--moss-deep); }
+.ps-line--learner .ps-speaker { color: var(--ochre-d); }
+.ps-sub {
+  display: block;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: calc(var(--s-0) * 0.92);
+  color: var(--ink-3);
+  letter-spacing: 0;
+  margin-top: 2px;
+  word-break: break-word;
+}
+.ps-speech {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  font-variation-settings: "opsz" 26;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.ps-speech > :first-child { margin-top: 0; }
+.ps-speech > :last-child { margin-bottom: 0; }
+.ps-stage {
+  text-align: center;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  color: var(--brick);
+  padding: 8px 0;
+  margin: 0;
+}
+.ps-line .mini-trace { grid-column: 2 / 3; }
+
+/* ══════ swimlane view ══════ */
+.swim { max-width: 60rem; padding-bottom: 8px; }
+.swim-head {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: color-mix(in oklab, var(--paper) 92%, transparent);
+  backdrop-filter: blur(2px);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+.swim-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.9);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-bottom: 2px solid var(--rule);
+}
+.swim-label--tutor { color: var(--moss-deep); border-bottom-color: var(--moss-deep); }
+.swim-label--learner { color: var(--ochre-d); border-bottom-color: var(--ochre-d); text-align: right; }
+.swim-label--spine { border-bottom: 0; }
+.swim-row {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.swim-cell { min-width: 0; }
+.swim-card {
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  padding: 10px 13px;
+  margin-bottom: 6px;
+}
+.swim-card--tutor { border-left: 3px solid var(--moss-deep); }
+.swim-card--learner { border-right: 3px solid var(--ochre-d); }
+.swim-card__who {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.82);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+.swim-card--learner .swim-card__who { text-align: right; }
+.swim-card__text {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  font-variation-settings: "opsz" 20;
+  line-height: 1.46;
+  color: var(--ink);
+}
+.swim-card__text > :first-child { margin-top: 0; }
+.swim-card__text > :last-child { margin-bottom: 0; }
+.swim-spine { position: relative; min-height: 40px; }
+.swim-spine::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: -4px; bottom: -4px;
+  width: 2px;
+  transform: translateX(-50%);
+  background: var(--rule);
+}
+.swim-bead {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 26px; height: 26px;
+  margin: 2px auto 0;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1.5px solid var(--rule);
+  color: var(--ink-3);
+  font: 600 11px/24px "JetBrains Mono", monospace;
+  text-align: center;
+}
+.swim-row[data-side="tutor"] .swim-bead { border-color: var(--moss); color: var(--moss-deep); }
+.swim-row[data-side="learner"] .swim-bead { border-color: var(--ochre); color: var(--ochre-d); }
+
+/* ══════ compact deliberation trace (script + swimlane views) ══════ */
+.mini-trace { margin-top: 6px; }
+.mini-trace > summary {
+  cursor: pointer;
+  list-style: none;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.82);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+.mini-trace > summary::-webkit-details-marker { display: none; }
+.mini-trace > summary .chev { color: var(--brick); display: inline-block; transition: transform 0.15s; }
+.mini-trace[open] > summary .chev { transform: rotate(90deg); }
+.mini-step {
+  display: grid;
+  grid-template-columns: 7em 1fr;
+  gap: 0.6em;
+  padding: 5px 0;
+  border-top: 1px dashed var(--rule-soft);
+  margin-top: 5px;
+}
+.mini-step__lbl {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.82);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+.mini-step__lbl.step-superego, .mini-step__lbl.step-learner_superego { color: var(--prussian); }
+.mini-step__body {
+  font-family: "Fraunces", serif;
+  font-size: calc(var(--s-0) * 1.02);
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.mini-step__body > :first-child { margin-top: 0; }
+.mini-step__body > :last-child { margin-bottom: 0; }
 
 /* scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -3073,14 +3315,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           </div>
 
           <div class="preflight-note" x-show="turnsNeedKeyWarning">
-            No model key configured, so live turns can't run. Either
-            <button class="mini-btn" type="button" @click="dryRunTurns = true">switch to dry run · free canned output</button>
-            <button class="mini-btn" type="button" @click="cliSub.provider = 'claude'">use the local claude CLI</button>
-            <button class="mini-btn" type="button" @click="cliSub.provider = 'codex'">use the codex CLI</button>
-            or set OPENROUTER_API_KEY and restart the server.
+            <span class="preflight-note__lead">no model yet — pick one to run live turns:</span>
+            <span class="preflight-note__opts">
+              <button class="mini-btn" type="button" @click="dryRunTurns = true">dry run · free</button>
+              <button class="mini-btn" type="button" @click="cliSub.provider = 'claude'">claude CLI</button>
+              <button class="mini-btn" type="button" @click="cliSub.provider = 'codex'">codex CLI</button>
+            </span>
           </div>
           <div class="launch">
-            <button class="launch-btn" type="button" @click="startPrimary()" :disabled="pending || !resolved || (mode === 'auto' && turnsNeedKeyWarning)">
+            <button class="launch-btn" type="button" @click="startPrimary()" :disabled="pending || !resolved || launchBlockedByKey">
               <span class="launch-btn__sig" aria-hidden="true">▶</span>
               <span x-text="startActionLabel"></span>
             </button>
@@ -3701,9 +3944,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           <span class="fg-head__no">§V</span>
           <span class="fg-head__ttl"><em>Script</em></span>
           <span class="fg-head__rule"></span>
+          <div class="view-toggle" role="tablist" aria-label="Script view" x-show="turns.length">
+            <button class="vt-btn" role="tab" :aria-selected="scriptView === 'plates'" :class="{'is-active': scriptView === 'plates'}" @click="setScriptView('plates')" title="editorial plates — each turn as an illustrated figure with its apparatus">plates</button>
+            <button class="vt-btn" role="tab" :aria-selected="scriptView === 'script'" :class="{'is-active': scriptView === 'script'}" @click="setScriptView('script')" title="playscript — a theatrical script, speaker then line">script</button>
+            <button class="vt-btn" role="tab" :aria-selected="scriptView === 'swimlane'" :class="{'is-active': scriptView === 'swimlane'}" @click="setScriptView('swimlane')" title="swimlanes — tutor and learner as parallel voices on a shared time-spine">swimlanes</button>
+          </div>
           <button class="mini-btn" type="button" x-show="turns.length" @click="newScene()"
                   title="clear this scene and stage another — the config stays">✕ new scene</button>
-          <span class="fg-head__hint">drafted scene, <em>deliberation</em> legible below</span>
         </div>
       </div>
 
@@ -3746,9 +3993,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <p x-show="mode === 'teacher'">You are playing the <em>tutor</em>. Write the tutor's opening line below — <em x-text="personaName"></em> replies.</p>
             <p x-show="mode === 'auto'">The AI plays <em>both sides</em>: <em x-text="personaName"></em> opens, the tutor cell replies, one exchange per press.</p>
             <button class="stage-btn stage-btn--primary onboarding__cta" type="button"
-                    @click="startPrimary()" :disabled="pending || (mode === 'auto' && turnsNeedKeyWarning)">
+                    @click="startPrimary()" :disabled="pending || launchBlockedByKey">
               ▶ <span x-text="startActionLabel"></span>
             </button>
+            <p class="onboarding__aside" x-show="launchBlockedByKey" style="color: var(--brick);">
+              No model configured — turn on <em>dry run</em>, pick a <em>CLI substrate</em>, or set the key to begin.
+            </p>
             <p class="onboarding__aside">The director frame, inner critic, and model substrates live under <em>fine controls</em>; scores and research context under <em>dossier</em>.</p>
           </div>
         </template>
@@ -3759,7 +4009,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           </div>
         </template>
 
-        <!-- turns -->
+        <!-- ═══ PLATES VIEW (editorial figures) ═══ -->
+        <template x-if="scriptView === 'plates' && turns.length">
+        <div class="plates-view">
         <template x-for="(turn, i) in turns" :key="i">
           <div>
 
@@ -3915,6 +4167,94 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             </template>
           </div>
         </template>
+        </div>
+        </template>
+
+        <!-- ═══ SCRIPT VIEW (playscript) ═══ -->
+        <template x-if="scriptView === 'script' && turns.length">
+          <div class="playscript">
+            <template x-for="row in scriptRows" :key="'sc-' + row.i">
+              <div>
+                <template x-if="row.kind !== 'error'">
+                  <div class="ps-line" :class="'ps-line--' + row.side">
+                    <div class="ps-cue">
+                      <span class="ps-speaker" x-text="row.speaker"></span>
+                      <span class="ps-sub" x-text="row.sub"></span>
+                    </div>
+                    <div class="ps-speech" x-html="md(row.text)"></div>
+                    <template x-if="row.turn.deliberation && row.turn.deliberation.length">
+                      <details class="mini-trace">
+                        <summary><span class="chev">▸</span> <span x-text="row.turn.deliberation.length + ' deliberation step' + (row.turn.deliberation.length === 1 ? '' : 's')"></span></summary>
+                        <template x-for="(step, j) in row.turn.deliberation" :key="j">
+                          <div class="mini-step">
+                            <span class="mini-step__lbl" :class="'step-' + step.role" x-text="step.label"></span>
+                            <span class="mini-step__body" x-html="md(step.content)"></span>
+                          </div>
+                        </template>
+                      </details>
+                    </template>
+                  </div>
+                </template>
+                <template x-if="row.kind === 'error'">
+                  <p class="ps-stage" x-text="'✕ ' + row.text"></p>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- ═══ SWIMLANE VIEW (parallel voices) ═══ -->
+        <template x-if="scriptView === 'swimlane' && turns.length">
+          <div class="swim">
+            <div class="swim-head">
+              <span class="swim-label swim-label--tutor">tutor</span>
+              <span class="swim-label swim-label--spine" aria-hidden="true"></span>
+              <span class="swim-label swim-label--learner">learner</span>
+            </div>
+            <template x-for="row in scriptRows" :key="'sw-' + row.i">
+              <div>
+                <template x-if="row.kind !== 'error'">
+                  <div class="swim-row" :data-side="row.side">
+                    <div class="swim-cell swim-cell--tutor">
+                      <template x-if="row.side === 'tutor'">
+                        <div class="swim-card swim-card--tutor">
+                          <div class="swim-card__who" x-text="row.sub"></div>
+                          <div class="swim-card__text" x-html="md(row.text)"></div>
+                          <template x-if="row.turn.deliberation && row.turn.deliberation.length > 1">
+                            <details class="mini-trace"><summary><span class="chev">▸</span> ego → superego</summary>
+                              <template x-for="(step, j) in row.turn.deliberation" :key="j">
+                                <div class="mini-step"><span class="mini-step__lbl" :class="'step-' + step.role" x-text="step.label"></span><span class="mini-step__body" x-html="md(step.content)"></span></div>
+                              </template>
+                            </details>
+                          </template>
+                        </div>
+                      </template>
+                    </div>
+                    <div class="swim-spine"><span class="swim-bead" x-text="row.beat"></span></div>
+                    <div class="swim-cell swim-cell--learner">
+                      <template x-if="row.side === 'learner'">
+                        <div class="swim-card swim-card--learner">
+                          <div class="swim-card__who" x-text="row.sub"></div>
+                          <div class="swim-card__text" x-html="md(row.text)"></div>
+                          <template x-if="row.turn.deliberation && row.turn.deliberation.length > 1">
+                            <details class="mini-trace"><summary><span class="chev">▸</span> ego → superego</summary>
+                              <template x-for="(step, j) in row.turn.deliberation" :key="j">
+                                <div class="mini-step"><span class="mini-step__lbl" :class="'step-' + step.role" x-text="step.label"></span><span class="mini-step__body" x-html="md(step.content)"></span></div>
+                              </template>
+                            </details>
+                          </template>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+                <template x-if="row.kind === 'error'">
+                  <p class="ps-stage" x-text="'✕ ' + row.text"></p>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
 
         <!-- spinner -->
         <div class="spinner" x-show="pending" x-transition.opacity>
@@ -3923,92 +4263,56 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         </div>
       </div>
 
-      <!-- composer -->
-      <div class="composer" x-show="resolved">
+      <!-- composer — the action zone -->
+      <div class="composer" :class="'composer--' + (mode === 'teacher' ? 'tutor' : mode === 'human' ? 'learner' : 'auto')" x-show="resolved">
 
-        <!-- HUMAN MODE -->
-        <template x-if="mode === 'human'">
-          <div>
-            <p class="composer__pretext">
-              <span class="tag">◦ write learner line</span>
-              <span class="rule"></span>
-              <span class="cell">press send line to make the tutor answer</span>
-            </p>
-            <form @submit.prevent="send">
-              <span class="composer__prompt">learner line</span>
-              <textarea
-                aria-label="Learner message"
-                x-model="input"
-                @keydown.enter.prevent="$event.shiftKey ? input += '\n' : send()"
-                :disabled="pending"
-                rows="2"
-                placeholder="write the learner's opening line or next reply..."
-              ></textarea>
-              <button type="submit" :disabled="pending || !input.trim() || turnsNeedKeyWarning">
+        <!-- HUMAN / TEACHER: write a line -->
+        <template x-if="mode !== 'auto'">
+          <form class="composer__form" @submit.prevent="mode === 'teacher' ? sendAsTeacher() : send()">
+            <div class="composer__head">
+              <span class="composer__seat">
+                <span class="composer__dot" aria-hidden="true"></span>
+                <span x-text="mode === 'teacher' ? 'You speak — as the tutor' : 'You speak — as the learner'"></span>
+              </span>
+              <span class="composer__reply" x-text="mode === 'teacher' ? personaName + ' will answer' : (resolved?.name || 'the tutor') + ' will answer'"></span>
+            </div>
+            <textarea
+              class="composer__input"
+              :aria-label="mode === 'teacher' ? 'Tutor line' : 'Learner line'"
+              x-model="input"
+              @keydown.enter.prevent="$event.shiftKey ? (input += '\n') : (mode === 'teacher' ? sendAsTeacher() : send())"
+              :disabled="pending"
+              rows="3"
+              :placeholder="mode === 'teacher' ? 'write the tutor\'s line — a question, reframing, provocation, or explanation…' : 'write the learner\'s next line…'"
+            ></textarea>
+            <div class="composer__foot">
+              <span class="composer__kbd">Enter to send · Shift+Enter for a new line</span>
+              <button class="composer__send" type="submit" :disabled="pending || !input.trim() || turnsNeedKeyWarning">
                 <span x-show="!pending">Send line →</span>
-                <span x-show="pending">···</span>
-              </button>
-            </form>
-          </div>
-        </template>
-
-        <!-- AUTO MODE -->
-        <template x-if="mode === 'auto'">
-          <div>
-            <p class="composer__pretext">
-              <span class="tag">◦ AI cast</span>
-              <span class="rule"></span>
-              <span class="cell" x-show="resolved?.learnerArchitecture?.startsWith('ego_superego')">
-                bilateral · learner runs ego + superego
-              </span>
-              <span class="cell" x-show="!resolved?.learnerArchitecture?.startsWith('ego_superego')">
-                unified · learner is a single voice
-              </span>
-            </p>
-            <div class="step-control">
-              <div class="step-control__info">
-                <span x-show="turns.length === 0">Press <em>Start scene</em>; the <em x-text="personaName"></em> opens, then this tutor cell replies.</span>
-                <span x-show="turns.length > 0">Continue the script with another learner → tutor exchange.</span>
-              </div>
-              <button class="step-control__btn" @click="step()" :disabled="pending">
-                <span x-show="!pending && turns.length === 0">Start scene →</span>
-                <span x-show="!pending && turns.length > 0">Next exchange →</span>
-                <span x-show="pending && pendingStage.startsWith('learner')">learner ···</span>
-                <span x-show="pending && pendingStage.startsWith('tutor')">tutor ···</span>
-                <span x-show="pending && !pendingStage.startsWith('learner') && !pendingStage.startsWith('tutor')">···</span>
+                <span x-show="pending">sending ···</span>
               </button>
             </div>
-          </div>
+            <p class="composer__warn" x-show="turnsNeedKeyWarning">no model configured — turn on dry run or pick a CLI substrate to send</p>
+          </form>
         </template>
 
-        <!-- TEACHER MODE -->
-        <template x-if="mode === 'teacher'">
-          <div>
-            <p class="composer__pretext">
-              <span class="tag">◦ write tutor line</span>
-              <span class="rule"></span>
-              <span class="cell" x-show="resolved?.learnerArchitecture?.startsWith('ego_superego')">
-                replies from <em x-text="personaName"></em> · bilateral learner (ego + superego)
+        <!-- AUTO: advance the drama -->
+        <template x-if="mode === 'auto'">
+          <div class="composer__auto">
+            <div class="composer__head">
+              <span class="composer__seat">
+                <span class="composer__dot" aria-hidden="true"></span>
+                <span>The AI plays both parts</span>
               </span>
-              <span class="cell" x-show="!resolved?.learnerArchitecture?.startsWith('ego_superego')">
-                replies from <em x-text="personaName"></em> · unified learner
-              </span>
-            </p>
-            <form @submit.prevent="sendAsTeacher">
-              <span class="composer__prompt">tutor line</span>
-              <textarea
-                aria-label="Teacher message"
-                x-model="input"
-                @keydown.enter.prevent="$event.shiftKey ? input += '\n' : sendAsTeacher()"
-                :disabled="pending"
-                rows="2"
-                placeholder="write the tutor's line: a question, reframing, provocation, or explanation..."
-              ></textarea>
-              <button type="submit" :disabled="pending || !input.trim() || turnsNeedKeyWarning">
-                <span x-show="!pending">Send line →</span>
-                <span x-show="pending">···</span>
-              </button>
-            </form>
+              <span class="composer__reply" x-text="resolved?.learnerArchitecture?.startsWith('ego_superego') ? 'bilateral learner · ego + superego' : 'unified learner'"></span>
+            </div>
+            <button class="composer__advance" @click="startPrimary()" :disabled="pending || launchBlockedByKey">
+              <span x-show="!pending" x-text="'▶ ' + startActionLabel"></span>
+              <span x-show="pending && pendingStage.startsWith('learner')">learner speaking ···</span>
+              <span x-show="pending && pendingStage.startsWith('tutor')">tutor speaking ···</span>
+              <span x-show="pending && !pendingStage.startsWith('learner') && !pendingStage.startsWith('tutor')">···</span>
+            </button>
+            <p class="composer__kbd" x-text="turns.length ? 'each press drafts the next learner → tutor exchange' : launchSublabel"></p>
           </div>
         </template>
       </div>
@@ -4162,6 +4466,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       sampling: { temperature: '', maxTokens: '' },
       // Who speaks first when the curtain rises.
       opening: 'tutor',
+      // How the script is rendered: plates (editorial) · script (playscript) · swimlane.
+      scriptView: 'plates',
       // The playbill captured at curtain-up — frozen so later knob changes
       // don't rewrite the record of what this scene was staged with.
       bill: null,
@@ -4351,6 +4657,60 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         return 'learner';
       },
 
+      // True when pressing the launch button will fire a model turn immediately
+      // (AI-both, or a tutor-opens curtain) — as opposed to just focusing the
+      // composer for a human line. Used to gate on the missing-key warning.
+      get needsLiveTurnToStart() {
+        if (this.turns.length) return this.mode === 'auto';
+        return this.mode === 'auto' || (this.opening === 'tutor' && this.mode !== 'teacher');
+      },
+
+      get launchBlockedByKey() {
+        return this.needsLiveTurnToStart && this.turnsNeedKeyWarning;
+      },
+
+      // Normalized spoken rows for the script + swimlane views. One entry per
+      // tutor/learner/error turn, with a running beat number and the side.
+      get scriptRows() {
+        const rows = [];
+        let beat = 0;
+        this.turns.forEach((turn, i) => {
+          if (turn.role === 'tutor') {
+            beat += 1;
+            rows.push({
+              i,
+              beat,
+              kind: 'tutor',
+              side: 'tutor',
+              speaker: turn.human ? 'TUTOR' : 'TUTOR',
+              sub: turn.human ? 'you · in role' : this.resolved?.name || 'tutor cell',
+              text: turn.finalMessage,
+              turn,
+            });
+          } else if (turn.role === 'learner') {
+            beat += 1;
+            const human = !turn.deliberation || !turn.deliberation.length;
+            rows.push({
+              i,
+              beat,
+              kind: 'learner',
+              side: 'learner',
+              speaker: 'LEARNER',
+              sub: human ? 'you · in role' : turn.personaId || this.personaName,
+              text: turn.content,
+              turn,
+            });
+          } else if (turn.role === 'error') {
+            rows.push({ i, beat, kind: 'error', side: 'stage', speaker: '✕', sub: '', text: turn.content, turn });
+          }
+        });
+        return rows;
+      },
+
+      setScriptView(v) {
+        if (['plates', 'script', 'swimlane'].includes(v)) this.scriptView = v;
+      },
+
       get startActionLabel() {
         if (this.mode === 'auto') {
           if (this.turns.length) return 'Next exchange';
@@ -4417,6 +4777,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       // Curtain-up tutor turn: the tutor speaks first, per the director frame.
       async instigateTutor() {
         if (this.pending || !this.resolved) return;
+        if (this.turnsNeedKeyWarning) {
+          this.turns.push({
+            role: 'error',
+            content:
+              'The tutor can\'t open the scene without a model: turn on dry run, pick a local CLI substrate, or set OPENROUTER_API_KEY.',
+          });
+          return;
+        }
         this.captureBill();
         this.pending = true;
         this.pendingStage = 'tutor raising the curtain';
@@ -4703,6 +5071,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.$watch('modelOverrides', save, { deep: true });
         this.$watch('turns', save, { deep: true });
         this.$watch('cliSub', save, { deep: true });
+        this.$watch('scriptView', save);
         this.$watch('dryRunTurns', save);
         this.$watch('sampling', save, { deep: true });
       },
@@ -4720,6 +5089,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           sampling: { ...this.sampling },
           cliSub: { ...this.cliSub },
           opening: this.opening,
+          scriptView: this.scriptView,
           bill: this.bill,
           dryRunTurns: this.dryRunTurns,
           turns: this.turns,
@@ -4776,6 +5146,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           : { provider: s.useClaudeCli ? 'claude' : '', model: '', effort: '' };
         this.dryRunTurns = !!s.dryRunTurns;
         this.opening = s.opening === 'learner' ? 'learner' : 'tutor';
+        this.scriptView = ['plates', 'script', 'swimlane'].includes(s.scriptView) ? s.scriptView : 'plates';
         this.bill = s.bill && typeof s.bill === 'object' ? s.bill : null;
         this.turns = Array.isArray(s.turns) ? s.turns : [];
         this.restore.dismissed = true;
