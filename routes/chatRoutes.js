@@ -2098,6 +2098,8 @@ router.post('/turn', async (req, res) => {
   // override block below (cellName, lectureRef, history, topic, useClaudeCli).
   const { learnerMessage } = req.body || {};
   const dryRun = req.body?.dryRun || false;
+  // Curtain-up turn: the tutor speaks first, with no learner line yet.
+  const instigate = req.body?.instigate === true;
   let {
     cellName,
     history = [],
@@ -2112,8 +2114,8 @@ router.post('/turn', async (req, res) => {
   let cli = normalizeCli(req.body);
   const sessionId = req.body?.sessionId || null;
 
-  if (!learnerMessage || !String(learnerMessage).trim()) {
-    return res.status(400).json({ error: 'learnerMessage is required' });
+  if ((!learnerMessage || !String(learnerMessage).trim()) && !instigate) {
+    return res.status(400).json({ error: 'learnerMessage is required (or set instigate: true)' });
   }
 
   // Pilot mode: the session record is authoritative for cellName, lectureRef,
@@ -2145,6 +2147,7 @@ router.post('/turn', async (req, res) => {
     director = null;
     useClaudeCli = false; // pilot is locked to OpenRouter
     cli = { provider: null, model: null, effort: null };
+    if (instigate) return res.status(400).json({ error: 'instigate is not allowed for pilot sessions' });
     // Authoritative server-side history — replay from DB rather than trust client
     const dbTurns = pilotStore.listTurns(sessionId);
     history = dbTurns.map((t) => ({ role: t.role, content: t.content }));
@@ -2181,7 +2184,7 @@ router.post('/turn', async (req, res) => {
     return res.json(
       buildDryRunTutorTurn({
         profile,
-        learnerMessage: String(learnerMessage),
+        learnerMessage: instigate ? '(curtain rises — the tutor opens the scene)' : String(learnerMessage),
         topic: String(topic),
         egoModelOverride: egoOverrideRef,
         superegoModelOverride: superegoOverrideRef,
@@ -2304,7 +2307,8 @@ router.post('/turn', async (req, res) => {
       profile,
       apiKey,
       history,
-      learnerMessage: String(learnerMessage),
+      instigate,
+      learnerMessage: String(learnerMessage || ''),
       topic: String(topic),
       curriculum,
       directorPlan,
@@ -2763,6 +2767,7 @@ async function runTutorTurn({
   directorPlan = null,
   useClaudeCli = false,
   cli = null,
+  instigate = false,
   // Optional, live-only knobs. Defaults preserve the scored instrument exactly:
   // styleDirective is appended to the ego draft + superego revision instructions
   // (e.g. a brevity / one-question-per-turn rule for the interactive sit-in), and
@@ -2797,17 +2802,22 @@ Topic: ${topic}
 Recent conversation:
 ${conversationContext || '(none)'}
 
-The learner just said:
+${
+  instigate
+    ? `The curtain has just risen: there is no learner line yet. You speak first. Open the scene — set the stage per the director frame, welcome the learner in character, and pose one inviting opening move on the topic. Keep it short enough to answer.`
+    : `The learner just said:
 "${learnerMessage}"
 
-Draft your initial response as a tutor. Be warm but intellectually challenging. Don't be condescending. Build on their words.${styleLine} Provide ONLY the response text (no JSON, no meta-commentary).`;
+Draft your initial response as a tutor. Be warm but intellectually challenging. Don't be condescending. Build on their words.`
+}${styleLine} Provide ONLY the response text (no JSON, no meta-commentary).`;
 
+  const egoUser = instigate ? 'Open the scene now.' : learnerMessage;
   const egoOut = cliCfg
-    ? await callCli(cliCfg, { system: egoSystem, user: learnerMessage })
+    ? await callCli(cliCfg, { system: egoSystem, user: egoUser })
     : await callModel(apiKey, {
         modelId: egoModelRef.model,
         system: egoSystem,
-        user: learnerMessage,
+        user: egoUser,
         temperature: egoTemp,
         maxTokens: egoMaxTokens,
       });

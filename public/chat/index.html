@@ -596,12 +596,16 @@ section.fg::before {
   color: var(--brick);
   font-variation-settings: "opsz" 16;
 }
-.stage-block { margin-top: 9px; }
+.stage-block {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule-soft);
+}
 .stage-block__head {
   display: flex;
   align-items: baseline;
   gap: 0.45em;
-  margin: 0 0 4px;
+  margin: 0 0 7px;
   font-family: "JetBrains Mono", monospace;
   font-size: calc(var(--s-0) * 0.95);
   letter-spacing: 0.11em;
@@ -648,9 +652,9 @@ section.fg::before {
 .assist-strip {
   border: 1px solid color-mix(in oklab, var(--prussian) 34%, transparent);
   background: color-mix(in oklab, var(--prussian) 5%, transparent);
-  padding: 7px;
-  margin-top: 10px;
-  margin-bottom: 8px;
+  padding: 8px 9px;
+  margin-top: 16px;
+  margin-bottom: 10px;
 }
 .assist-kicker {
   font-family: "JetBrains Mono", monospace;
@@ -784,9 +788,9 @@ section.fg::before {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 3px;
-  margin-top: 7px;
-  padding-top: 6px;
+  gap: 4px;
+  margin-top: 14px;
+  padding-top: 10px;
   border-top: 1px dashed color-mix(in oklab, var(--ink) 16%, transparent);
 }
 .playbill__lbl {
@@ -879,7 +883,7 @@ section.fg::before {
 }
 
 /* the one dominant action on the page */
-.launch { margin-top: 9px; }
+.launch { margin-top: 12px; }
 .launch-btn {
   all: unset;
   cursor: pointer;
@@ -1781,6 +1785,71 @@ section.fg::before {
   gap: clamp(24px, 3vw, 44px);
 }
 
+/* curtain-raiser — the playbill page that opens every drama */
+.curtain {
+  margin: 6px 0 18px;
+  padding: 16px clamp(10px, 2vw, 26px) 12px;
+  border: 1px solid var(--rule);
+  border-top: 3px double var(--ink);
+  background: color-mix(in oklab, var(--paper-4) 80%, transparent);
+  text-align: center;
+}
+.curtain__kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.85);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brick);
+  margin-bottom: 6px;
+}
+.curtain__title {
+  font-family: "Fraunces", serif;
+  font-variation-settings: "opsz" 72;
+  font-weight: 360;
+  font-size: var(--s-3);
+  line-height: 1.15;
+  margin: 0 0 10px;
+  color: var(--ink);
+}
+.curtain__cast {
+  display: grid;
+  gap: 2px;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.95);
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+}
+.curtain__cast .role {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  font-size: 0.88em;
+  margin-right: 0.6em;
+}
+.curtain__cast .who { color: var(--ink); font-weight: 500; }
+.curtain__cast .via { color: var(--ink-3); margin-left: 0.5em; font-style: italic; font-family: "Fraunces", serif; letter-spacing: 0; }
+.curtain__setting {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: var(--s-1);
+  color: var(--ink-2);
+  margin-bottom: 6px;
+}
+.curtain__setting em { color: var(--brick); }
+.curtain__note {
+  max-width: 42ch;
+  margin: 0 auto 6px;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  font-style: italic;
+  color: var(--ink-2);
+  border-top: 1px dashed var(--rule);
+  padding-top: 6px;
+}
+.curtain__rule { color: var(--brick); letter-spacing: 0.6em; font-size: var(--s-0); margin-top: 4px; }
+
 /* empty / onboarding state */
 .onboarding {
   font-family: "Fraunces", serif;
@@ -2252,15 +2321,18 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 /* ══════ scene author toggle (inline, single-row) ══════ */
 .mode {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.5em;
+  gap: 6px 10px;
   padding: 0 0 4px;
   font-family: "JetBrains Mono", monospace;
   font-size: var(--s-0);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.mode__lbl { color: var(--brick); letter-spacing: 0.14em; font-weight: 500; }
+.mode__lbl { color: var(--brick); letter-spacing: 0.14em; font-weight: 500; flex-basis: 100%; }
+.mode__sub { color: var(--ink-3); letter-spacing: 0.1em; font-size: 0.9em; }
+.mode__toggle--sm .mode__btn { padding: 2px 8px 3px; font-size: calc(var(--s-0) * 0.86); }
 .mode__toggle { display: inline-flex; border: 1px solid var(--ink); }
 .mode__btn {
   all: unset;
@@ -2395,9 +2467,25 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 /* composer — boot line (tight) */
 .composer {
   flex-shrink: 0;
-  padding: 7px 0 10px;
-  border-top: 1px solid var(--rule);
+  padding: 10px 12px 12px;
+  margin-top: 6px;
+  border: 1px solid var(--rule);
+  border-top: 2px solid var(--ink);
+  background: color-mix(in oklab, var(--paper-4) 90%, transparent);
   position: relative;
+}
+.composer::after {
+  content: "⌨ the composer — lines are written here";
+  position: absolute;
+  top: -1.05em;
+  right: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.8);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  background: var(--paper);
+  padding: 0 0.4em;
 }
 .composer::before {
   content: "";
@@ -3613,11 +3701,42 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           <span class="fg-head__no">§V</span>
           <span class="fg-head__ttl"><em>Script</em></span>
           <span class="fg-head__rule"></span>
+          <button class="mini-btn" type="button" x-show="turns.length" @click="newScene()"
+                  title="clear this scene and stage another — the config stays">✕ new scene</button>
           <span class="fg-head__hint">drafted scene, <em>deliberation</em> legible below</span>
         </div>
       </div>
 
       <div class="chat-log" x-ref="chatLog">
+
+        <!-- curtain-raiser: the playbill page that opens every drama -->
+        <template x-if="bill && turns.length">
+          <div class="curtain">
+            <div class="curtain__kicker">— a pedagogical drama in one scene —</div>
+            <h2 class="curtain__title" x-text="bill.topic"></h2>
+            <div class="curtain__cast">
+              <div>
+                <span class="role">the tutor</span>
+                <span class="who" x-text="bill.tutorWho"></span>
+                <span class="via" x-text="bill.tutorVia"></span>
+              </div>
+              <div>
+                <span class="role">the learner</span>
+                <span class="who" x-text="bill.learnerWho"></span>
+              </div>
+            </div>
+            <div class="curtain__setting">
+              setting: <em x-text="bill.scene"></em> · act <em x-text="bill.act"></em> · beat
+              <em x-text="bill.beat"></em>
+              <template x-if="bill.source"><span> · teaching from <em x-text="bill.source"></em></span></template>
+              <template x-if="bill.dryRun"><span> · <em>dry-run rehearsal</em></span></template>
+            </div>
+            <template x-if="bill.note">
+              <p class="curtain__note">director's note — <em x-text="bill.note"></em></p>
+            </template>
+            <div class="curtain__rule">✦ ✦ ✦</div>
+          </div>
+        </template>
 
         <!-- onboarding -->
         <template x-if="turns.length === 0 && resolved">
@@ -3626,8 +3745,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <p x-show="mode === 'human'">You are playing the <em>learner</em>. Write the learner's opening line in the composer below — the tutor cell (<em x-text="resolved?.name"></em>) answers.</p>
             <p x-show="mode === 'teacher'">You are playing the <em>tutor</em>. Write the tutor's opening line below — <em x-text="personaName"></em> replies.</p>
             <p x-show="mode === 'auto'">The AI plays <em>both sides</em>: <em x-text="personaName"></em> opens, the tutor cell replies, one exchange per press.</p>
-            <button class="stage-btn stage-btn--primary onboarding__cta" type="button" x-show="mode === 'auto'"
-                    @click="step()" :disabled="pending || turnsNeedKeyWarning">▶ Start the drama</button>
+            <button class="stage-btn stage-btn--primary onboarding__cta" type="button"
+                    @click="startPrimary()" :disabled="pending || (mode === 'auto' && turnsNeedKeyWarning)">
+              ▶ <span x-text="startActionLabel"></span>
+            </button>
             <p class="onboarding__aside">The director frame, inner critic, and model substrates live under <em>fine controls</em>; scores and research context under <em>dossier</em>.</p>
           </div>
         </template>
@@ -4039,6 +4160,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       topic: '',
       // Live sampling overrides for tutor turns; blank = the cell's YAML values.
       sampling: { temperature: '', maxTokens: '' },
+      // Who speaks first when the curtain rises.
+      opening: 'tutor',
+      // The playbill captured at curtain-up — frozen so later knob changes
+      // don't rewrite the record of what this scene was staged with.
+      bill: null,
       // Guided walkthrough state (client-side, no LLM needed).
       guide: { on: false, i: 0 },
       guideSteps: [
@@ -4226,8 +4352,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       },
 
       get startActionLabel() {
-        if (this.mode === 'auto') return this.turns.length ? 'Next exchange' : 'Start the drama';
+        if (this.mode === 'auto') {
+          if (this.turns.length) return 'Next exchange';
+          return this.opening === 'tutor' ? 'Raise the curtain' : 'Start the drama';
+        }
         if (this.mode === 'teacher') return 'Start — write the tutor line';
+        if (!this.turns.length && this.opening === 'tutor') return 'Start — the tutor opens';
         return 'Start — write the learner line';
       },
 
@@ -4238,12 +4368,94 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         const free = this.dryRunTurns ? ' Dry run: free canned output.' : '';
         const src = this.activeSourceLabel ? ` (teaching from ${this.activeSourceLabel})` : '';
         if (this.mode === 'auto') {
+          if (!this.turns.length && this.opening === 'tutor') {
+            return `${cell} raises the curtain on “${this.topic || 'general conversation'}”${src}; then ${this.personaName} replies, one exchange per press.${free}`;
+          }
           return `${this.personaName} opens on “${this.topic || 'general conversation'}”${src}; ${cell} replies. One exchange per press.${free}`;
         }
         if (this.mode === 'teacher') {
           return `You write the tutor's lines in the composer; ${this.personaName} answers.${free}`;
         }
+        if (!this.turns.length && this.opening === 'tutor') {
+          return `${cell} opens the scene; then you write the learner's replies in the composer.${free}`;
+        }
         return `You write the learner's lines in the composer; ${cell} answers${src}.${free}`;
+      },
+
+      // Freeze the playbill at curtain-up.
+      captureBill() {
+        if (this.bill) return;
+        const f = this.features;
+        this.bill = {
+          topic: this.topic || 'general conversation',
+          tutorWho: this.mode === 'teacher' ? 'you' : this.resolved?.name || 'tutor',
+          tutorVia:
+            this.mode === 'teacher'
+              ? '· human-authored'
+              : '· ' +
+                f.approach +
+                (f.critic !== 'none' ? ' · critic: ' + f.critic : '') +
+                ' · ' +
+                (this.cliSub.provider ? this.cliSub.provider + ' cli' : 'cell models'),
+          learnerWho: this.mode === 'human' ? 'you' : this.personaName,
+          scene: this.director.scene || 'unset',
+          act: this.director.act,
+          beat: this.director.beat,
+          note: this.director.note || '',
+          source: this.activeSourceLabel || null,
+          dryRun: this.dryRunTurns,
+        };
+      },
+
+      newScene() {
+        this.turns = [];
+        this.bill = null;
+        this.input = '';
+        this.pendingStage = '';
+      },
+
+      // Curtain-up tutor turn: the tutor speaks first, per the director frame.
+      async instigateTutor() {
+        if (this.pending || !this.resolved) return;
+        this.captureBill();
+        this.pending = true;
+        this.pendingStage = 'tutor raising the curtain';
+        this.scrollChatToBottom();
+        try {
+          const res = await fetch(this.api('/turn'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cellName: this.resolved.name,
+              history: [],
+              instigate: true,
+              topic: this.topic || 'general conversation',
+              lectureRef: this.lectureRef || null,
+              curriculumRef: this.curriculumRef || null,
+              director: this.directorPayload(),
+              useClaudeCli: this.useClaudeCli,
+              cli: this.cliPayload(),
+              modelOverrides: this.tutorModelOverrides(),
+              sampling: this.samplingPayload(),
+              dryRun: this.dryRunTurns,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'request failed');
+          this.turns.push({
+            role: 'tutor',
+            finalMessage: data.finalMessage,
+            wasRevised: data.wasRevised,
+            deliberation: data.deliberation || [],
+            architecture: data.architecture || {},
+            totals: data.totals || { latencyMs: 0, inputTokens: 0, outputTokens: 0 },
+          });
+        } catch (err) {
+          this.turns.push({ role: 'error', content: `tutor opening: ${err.message}` });
+        } finally {
+          this.pending = false;
+          this.scrollChatToBottom();
+        }
       },
 
       get topicPlaceholder() {
@@ -4507,6 +4719,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           modelOverrides: { ...this.modelOverrides },
           sampling: { ...this.sampling },
           cliSub: { ...this.cliSub },
+          opening: this.opening,
+          bill: this.bill,
           dryRunTurns: this.dryRunTurns,
           turns: this.turns,
           savedAt: new Date().toISOString(),
@@ -4561,6 +4775,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           ? { provider: s.cliSub.provider || '', model: s.cliSub.model || '', effort: s.cliSub.effort || '' }
           : { provider: s.useClaudeCli ? 'claude' : '', model: '', effort: '' };
         this.dryRunTurns = !!s.dryRunTurns;
+        this.opening = s.opening === 'learner' ? 'learner' : 'tutor';
+        this.bill = s.bill && typeof s.bill === 'object' ? s.bill : null;
         this.turns = Array.isArray(s.turns) ? s.turns : [];
         this.restore.dismissed = true;
         await this.resolve();
@@ -4902,7 +5118,16 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       },
 
       startPrimary() {
-        if (this.mode === 'auto') return this.step();
+        if (this.mode === 'auto') {
+          if (!this.turns.length && this.opening === 'tutor') return this.instigateTutor();
+          return this.step();
+        }
+        if (this.mode === 'human' && this.opening === 'tutor' && !this.turns.length) {
+          return this.instigateTutor().then(() => {
+            const input = document.querySelector('.composer textarea');
+            if (input) input.focus();
+          });
+        }
         this.scrollTo('dialogue');
         this.$nextTick(() => {
           const input = document.querySelector('.composer textarea');
@@ -5009,6 +5234,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       // Auto-learner mode: run one full exchange (learner turn → tutor turn).
       async step() {
         if (this.pending || !this.resolved) return;
+        if (!this.turns.length) {
+          this.captureBill();
+          if (this.opening === 'tutor') return this.instigateTutor();
+        }
         this.pending = true;
         this.scrollChatToBottom();
 
@@ -5088,6 +5317,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       async send() {
         const msg = this.input.trim();
         if (!msg || this.pending || !this.resolved) return;
+        this.captureBill();
         this.turns.push({ role: 'learner', content: msg });
         this.input = '';
         this.pending = true;
@@ -5136,6 +5366,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       async sendAsTeacher() {
         const msg = this.input.trim();
         if (!msg || this.pending || !this.resolved) return;
+        this.captureBill();
         this.turns.push({
           role: 'tutor',
           finalMessage: msg,
