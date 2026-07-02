@@ -4,7 +4,7 @@ Offline audit over existing artifacts. No LLM calls were made.
 
 ## Inputs
 
-- Worktree: `/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-sfs-audit`
+- Worktree: `/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-dag-sfs`
 - DB: `data/evaluations.db`
 - Logs: `logs/tutor-dialogues`
 - Exports: `exports`
@@ -30,6 +30,7 @@ Offline audit over existing artifacts. No LLM calls were made.
 | Learner fidelity | PROXY | 8/58686 false-mastery turns (0.0%) | Descriptive only: prompted learner fidelity cannot be validated without human/item anchors |
 | First-error localization | PASS | 29/29 localizable failure arms (100.0%) | >= 90% of non-grounding detector arms carry a deterministic first-error locator |
 | SFS | COMPLETE | SFS 0.000; targeted 1.000; false-flip 1.000; rows 150 | Selective Flip Score requires targeted, mismatched, and generic feedback generations over the same seeded misconception |
+| DAG-SFS | COMPLETE | DAG-SFS 1.000; targeted 1.000; false-grounded 0.000; rows 120 | DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring |
 | IRT ability placement | BLOCKED | 20 pilot item stubs | IRT placement requires human-anchored, psychometrically meaningful items and response data |
 
 ## Notes On Closure
@@ -169,5 +170,6 @@ Detector reports: 4; failure arms: 29; localizable: 29 (100.0%).
 ## SFS And IRT
 
 - SFS: COMPLETE_MATCHED_CORPUS. SFS 0.000; targeted 1.000; mismatched 1.000; generic 1.000; false-flip 1.000; paired CI 0.000 to 0.000; artifact: `exports/plan3-sfs-audit/sfs-matched-feedback.json`. Near-zero selectivity means the simulated learner corrects after irrelevant/generic feedback as readily as after targeted feedback. Carry this as a synthetic-learner validity bound into the pilot go-memo; do not treat it as human learning evidence.
+- DAG-SFS: COMPLETE_PROOF_GROUNDED_CORPUS. DAG-SFS 1.000; targeted proof-grounded 1.000; false-grounded 0.000; paired CI 1.000 to 1.000; artifact: `exports/plan3-dag-sfs-audit/dag-sfs-matched-feedback.json`. Positive DAG-SFS means the synthetic learner discriminates when proof state is public, typed, and scored by exact evidence-edge use. Use this as the gold-standard synthetic harness shape for future learner-outcome probes; it is not human transfer evidence.
 - IRT: BLOCKED_BY_ITEM_BANK. Replace placeholder fractions items with NAEP-derived/approved items, then collect persona responses and human p-values.
 

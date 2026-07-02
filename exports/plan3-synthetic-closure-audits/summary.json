@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-02T05:24:47.363Z",
+  "generatedAt": "2026-07-02T06:02:40.251Z",
   "inputs": {
     "dbPath": "/Users/lmagee/Dev/machinespirits/machinespirits-eval/data/evaluations.db",
     "logsDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval/logs/tutor-dialogues",
-    "exportsDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-sfs-audit/exports",
-    "pilotItemsPath": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-sfs-audit/config/pilot/fractions-items.yaml"
+    "exportsDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-dag-sfs/exports",
+    "pilotItemsPath": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-dag-sfs/config/pilot/fractions-items.yaml"
   },
   "corpus": {
     "dbRows": 16285,
@@ -811,6 +811,53 @@
       "observedMetric": "SFS 0.000; targeted 1.000; false-flip 1.000; rows 150",
       "interpretation": "Near-zero selectivity means the simulated learner corrects after irrelevant/generic feedback as readily as after targeted feedback.",
       "nextStep": "Carry this as a synthetic-learner validity bound into the pilot go-memo; do not treat it as human learning evidence."
+    },
+    "dagSfs": {
+      "status": "COMPLETE_PROOF_GROUNDED_CORPUS",
+      "gate": "DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring",
+      "artifact": "exports/plan3-dag-sfs-audit/dag-sfs-matched-feedback.json",
+      "backend": "codex",
+      "rows": 120,
+      "modelCalls": 120,
+      "parseErrorCount": 0,
+      "controls": {
+        "cases": [
+          "gate_aven_stamp_noro",
+          "archive_luma_seal_vecc",
+          "garden_siva_key_renn",
+          "lab_nemi_phase_tor",
+          "route_orra_badge_senn",
+          "clinic_pavo_clearance_mek"
+        ],
+        "replicates": 5,
+        "conditions": [
+          "targeted",
+          "mismatched",
+          "generic",
+          "nonsense"
+        ],
+        "expectedRows": 120,
+        "scoringRule": "proved rows count only when status is proved, target conclusion is stated, and the exact released target edge ID is cited"
+      },
+      "boundary": "proof_selective_harness_signal",
+      "targetedProofGroundedRate": 1,
+      "falseGroundedRate": 0,
+      "selectiveProofScore": 1,
+      "pairedSelectiveProof": {
+        "n": 30,
+        "mean": 1,
+        "se": 0,
+        "ci95": [
+          1,
+          1
+        ],
+        "positive": 30,
+        "zero": 0,
+        "negative": 0
+      },
+      "observedMetric": "DAG-SFS 1.000; targeted 1.000; false-grounded 0.000; rows 120",
+      "interpretation": "Positive DAG-SFS means the synthetic learner discriminates when proof state is public, typed, and scored by exact evidence-edge use.",
+      "nextStep": "Use this as the gold-standard synthetic harness shape for future learner-outcome probes; it is not human transfer evidence."
     }
   }
 }

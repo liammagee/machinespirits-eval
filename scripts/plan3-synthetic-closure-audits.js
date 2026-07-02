@@ -20,6 +20,12 @@ const STABLE_ROOT = '/Users/lmagee/Dev/machinespirits/machinespirits-eval';
 
 const DEFAULT_OUT_DIR = path.join(ROOT_DIR, 'exports', 'plan3-synthetic-closure-audits');
 const DEFAULT_SFS_ARTIFACT = path.join(ROOT_DIR, 'exports', 'plan3-sfs-audit', 'sfs-matched-feedback.json');
+const DEFAULT_DAG_SFS_ARTIFACT = path.join(
+  ROOT_DIR,
+  'exports',
+  'plan3-dag-sfs-audit',
+  'dag-sfs-matched-feedback.json',
+);
 const DIRECT_ANSWER_PATTERNS = [
   { code: 'explicit_answer_phrase', re: /\b(?:the|your|correct|right)\s+answer\s+(?:is|would be|should be)\b/i },
   { code: 'solution_phrase', re: /\b(?:the|a)\s+solution\s+(?:is|would be|should be)\b/i },
@@ -857,6 +863,50 @@ function auditSfsReadiness(dialogues) {
   };
 }
 
+function auditDagSfsReadiness() {
+  const artifact = readJsonFile(DEFAULT_DAG_SFS_ARTIFACT);
+  if (artifact?.summary?.byCondition) {
+    const summary = artifact.summary;
+    const byCondition = summary.byCondition;
+    const rows = Number.isFinite(summary.n) ? summary.n : artifact.rows?.length || 0;
+    return {
+      status:
+        artifact.status === 'complete_dag_sfs' ? 'COMPLETE_PROOF_GROUNDED_CORPUS' : 'COMPLETE_PROOF_GROUNDED_WITH_WARNINGS',
+      gate:
+        'DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring',
+      artifact: compactPath(DEFAULT_DAG_SFS_ARTIFACT),
+      backend: artifact.backendDetail?.label || artifact.backend || 'unknown',
+      rows,
+      modelCalls: summary.modelCalls?.total ?? rows,
+      parseErrorCount: summary.parseErrorCount ?? null,
+      controls: artifact.controls || {},
+      boundary: summary.boundary || 'unknown',
+      targetedProofGroundedRate: byCondition.targeted?.proofGroundedRate ?? null,
+      falseGroundedRate: summary.falseGroundedRate ?? null,
+      selectiveProofScore: summary.selectiveProofScore ?? null,
+      pairedSelectiveProof: summary.pairedSelectiveProof || null,
+      observedMetric:
+        `DAG-SFS ${num(summary.selectiveProofScore)}; targeted ${num(
+          byCondition.targeted?.proofGroundedRate,
+        )}; false-grounded ${num(summary.falseGroundedRate)}; rows ${int(rows)}`,
+      interpretation:
+        'Positive DAG-SFS means the synthetic learner discriminates when proof state is public, typed, and scored by exact evidence-edge use.',
+      nextStep:
+        'Use this as the gold-standard synthetic harness shape for future learner-outcome probes; it is not human transfer evidence.',
+    };
+  }
+  return {
+    status: 'NOT_RUN',
+    gate:
+      'DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring',
+    artifact: compactPath(DEFAULT_DAG_SFS_ARTIFACT),
+    requiredFreshGenerations:
+      'Run npm run probe:plan3-dag-sfs to materialize a proof-grounded targeted/wrong/generic/nonsense corpus.',
+    nextStep:
+      'Materialize a JSON artifact with public proof edges, feedback condition, learner derivation, and exact edge-use score.',
+  };
+}
+
 function summarizeBy(records, keyFn, valueFn) {
   const groups = {};
   for (const record of records) {
@@ -945,6 +995,12 @@ function renderSummaryTable(audits) {
       statusIcon(audits.sfs.status),
       audits.sfs.observedMetric || audits.sfs.requiredFreshGenerations,
       audits.sfs.gate,
+    ],
+    [
+      'DAG-SFS',
+      statusIcon(audits.dagSfs.status),
+      audits.dagSfs.observedMetric || audits.dagSfs.requiredFreshGenerations,
+      audits.dagSfs.gate,
     ],
     [
       'IRT ability placement',
@@ -1134,6 +1190,19 @@ function renderMarkdown(report) {
   } else {
     lines.push(`- SFS: ${audits.sfs.status}. ${audits.sfs.nextStep}`);
   }
+  if (audits.dagSfs.status.startsWith('COMPLETE')) {
+    lines.push(
+      `- DAG-SFS: ${audits.dagSfs.status}. DAG-SFS ${num(
+        audits.dagSfs.selectiveProofScore,
+      )}; targeted proof-grounded ${num(audits.dagSfs.targetedProofGroundedRate)}; false-grounded ${num(
+        audits.dagSfs.falseGroundedRate,
+      )}; paired CI ${num(audits.dagSfs.pairedSelectiveProof?.ci95?.[0])} to ${num(
+        audits.dagSfs.pairedSelectiveProof?.ci95?.[1],
+      )}; artifact: \`${audits.dagSfs.artifact}\`. ${audits.dagSfs.interpretation} ${audits.dagSfs.nextStep}`,
+    );
+  } else {
+    lines.push(`- DAG-SFS: ${audits.dagSfs.status}. ${audits.dagSfs.nextStep}`);
+  }
   lines.push(`- IRT: ${audits.irt.status}. ${audits.irt.nextStep}`);
   lines.push('');
   return `${lines.join('\n')}\n`;
@@ -1171,6 +1240,7 @@ async function main() {
     firstError: auditFirstErrorLocalization(detectorArms),
     irt: auditIrtReadiness(inputs.pilotItemsPath),
     sfs: auditSfsReadiness(artifacts.dialogues),
+    dagSfs: auditDagSfsReadiness(),
   };
 
   const corpus = {
