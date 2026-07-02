@@ -377,6 +377,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified',
   'cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified',
   'cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified',
+  'cell_199_blueprint_kernel_verified',
+  'cell_200_blueprint_full_verified',
   'cell_110_langgraph_adaptive',
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',
