@@ -1,17 +1,17 @@
 {
-  "generated": "2026-07-02T10:13:39.568Z",
+  "generated": "2026-07-02T12:16:31.492Z",
   "counts": {
-    "total": 67,
+    "total": 68,
     "byStatus": {
       "done": 58,
       "blocked": 1,
       "dropped": 2,
-      "archived": 4,
-      "active": 2
+      "active": 3,
+      "archived": 4
     },
     "byType": {
       "research": 35,
-      "experiment": 6,
+      "experiment": 7,
       "content": 2,
       "infra": 9,
       "maintenance": 5,
@@ -20,6 +20,33 @@
     }
   },
   "items": [
+    {
+      "id": "blueprint-composition",
+      "title": "Blueprint composition — one runnable tutor from the validated mechanisms",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "Blueprint registry + loader tests pass; cells 199-200 validate and resolve via EVAL_ONLY_PROFILES; stage-0 no-paid checks pass; the pre-registered composition matrix (plan note §5) runs only after a separate go decision, with run IDs and per-suite local results recorded here.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-07-02-blueprint-composition-plan.md"
+        ]
+      },
+      "tags": [
+        "blueprint",
+        "composition",
+        "id-director",
+        "writing-pad",
+        "adaptation",
+        "evaluation"
+      ],
+      "branch": "worktree-blueprint-composition"
+    },
     {
       "id": "register-taxonomy-negative-registers",
       "title": "Implement register taxonomy and negative-register evaluation",

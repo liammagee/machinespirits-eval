@@ -1,0 +1,50 @@
+---
+id: blueprint-composition
+title: Blueprint composition — one runnable tutor from the validated mechanisms
+status: active
+type: experiment
+priority: P1
+owner: claude
+source: manual
+created: 2026-07-02
+updated: 2026-07-02
+verification: Blueprint registry + loader tests pass; cells 199-200 validate and resolve via EVAL_ONLY_PROFILES; stage-0 no-paid checks pass; the pre-registered composition matrix (plan note §5) runs only after a separate go decision, with run IDs and per-suite local results recorded here.
+claim_status: planned
+links:
+  notes:
+    - notes/2026-07-02-blueprint-composition-plan.md
+tags:
+  - blueprint
+  - composition
+  - id-director
+  - writing-pad
+  - adaptation
+  - evaluation
+branch: worktree-blueprint-composition
+---
+
+Compose the paper's validated mechanisms into one runnable tutor and test
+whether composition adds anything, following
+`notes/2026-07-02-blueprint-composition-plan.md`. Mechanisms become named
+modules in `config/tutor-blueprint.yaml` (evidence pointer + factor flags +
+portability status); `cell_199_blueprint_kernel_verified` composes
+orientation + writing pad + register router on the id-director chassis;
+`cell_200_blueprint_full_verified` adds every module portable at
+implementation time. The paper's own findings (universal substitution §6.4,
+prosthesis-straitjacket §7.8.3, state-richness reversal §6.8.6) predict
+sub-additivity — either outcome is a paper finding (§6.14 or §7 extension).
+
+Acceptance:
+
+- Blueprint modules are declared in config with evidence pointers and
+  resolve deterministically to profile factor flags via a loader service
+  with unit tests.
+- Cells 199-200 registered in `config/tutor-agents.yaml` and
+  `EVAL_ONLY_PROFILES`; cell-config-auditor and validate-config clean.
+- Non-portable mechanisms (pacing guard; possibly action contracts) are
+  declared as such with reasons, not silently dropped.
+- Stage-0 no-paid checks pass (profile resolution, module validation,
+  hermetic dry-run).
+- The composition matrix is pre-registered in the plan note (§5) with
+  frozen hypotheses H1-H3, per-suite local decision rules, and stop rules;
+  no paid run without a recorded go decision.
