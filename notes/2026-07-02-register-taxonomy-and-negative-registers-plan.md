@@ -318,3 +318,87 @@ arm-assigned).
 If this becomes an active workstream, create a `workplan/items/` card before
 the first implementation commit (board discipline), and treat step 7's
 expectations as the frozen pre-registration.
+
+## 8. Addendum (2026-07-02, post-implementation): smoke results and revised reading
+
+Steps 1–6 landed on main the same day (commit `dc8deb3e`, Codex, branch
+`codex/register-taxonomy-negative-registers`; card
+`workplan/items/register-taxonomy-negative-registers.md`). Deviations from
+§7: the cells are 196 (`ironic_challenge`), 197 (`sarcastic_challenge`), and
+— added after the first smoke — 198 (`face_threat_challenge`); the registry
+is `config/engagement-registers.yaml`; the generic channel is
+`tutor_register_scores` with `scripts/evaluate-register-rubric.js`; the
+rubric is `config/rubrics/registers/irony-sarcasm.yaml`.
+
+### First smoke: the pre-registered expectation failed
+
+Three-arm 15-row smoke `eval-2026-07-02-cfed3b13` (cells 193/196/197 × five
+gated resistance signals, `codex.gpt-5.5` overrides; register scoring via
+`openrouter.gpt-mini`): route/gate hits 15/15, positive local outcomes
+15/15, and register-rubric means **charismatic 46.3 < ironic 57.3 <
+sarcastic 71.8** — the sarcastic arm scored *highest* on its own execution
+rubric while v2.2 `recognition_quality` stayed flat across arms (all-turn
+means 4.67 / 4.60 / 4.53; last-turn 5.00 / 4.80 / 4.80). No recognition
+cost, no depressed uptake. Per §7's pre-registration this is recorded as
+the **instrument finding, not a sarcasm success**, and scaling was
+correctly withheld.
+
+### Redesign and second smoke: cost appears only at the face-threat extreme
+
+The family was split three ways — Socratic irony, dry sarcastic edge, and a
+simulated-only `face_threat_challenge` stress arm (cell 198) — and rubric
+v1.1 added `uptake_freedom` and `post_turn_face_repair` so a correct
+learner answer cannot hide coerced compliance. Four-arm 20-row smoke
+`eval-2026-07-02-e511f92c`: v2.2 guardrail remained flat (means 90.8 /
+90.5 / 91.4 / 88.5; the sarcastic arm was numerically *highest*), but the
+face-threat arm alone showed measurable cost: last-turn
+`recognition_quality` 4.4 vs 4.8–5.0, `recognition_cost` 3.1,
+`post_turn_face_repair` 2.3. Register-rubric overall means compressed into
+a narrow 46–54 band under v1.1.
+
+### Revised interpretation: two rival explanations, not one
+
+The failed expectation has two candidate causes and the smokes cannot yet
+separate them:
+
+1. **Judge gullibility** — the judges cannot see textual harm in
+   well-formed sarcasm (the D6-shaped reading). Weakened by the face-threat
+   result: the same instruments *do* register cost when the stance is
+   extreme enough, so the pipeline is not blind in principle.
+2. **Generation-side regression to warmth** — a strong tutor stack asked to
+   be sarcastic produces warm irony in costume; the corrosive register was
+   never actually generated, so there was no harm to detect. This parallels
+   the poetics author-confound ("fooled by costume") and is currently the
+   more plausible reading, given the sarcastic arm's near-ceiling v2.2
+   scores.
+
+Discriminating test (no generation confound): score **hand-authored
+corrosive-sarcasm slices** — fixed adversarial exemplars spliced into real
+transcripts — under rubric v1.1 and v2.2. If judges still miss the cost on
+exemplars we *know* are corrosive, it is gullibility; if they catch it, the
+problem is generation fidelity and the negative-register arm needs a
+stance-fidelity check (does the produced turn actually instantiate the
+contract?) before any uptake claim.
+
+### Standing next steps (supersede §7's step 7 follow-on)
+
+1. The exemplar-based discrimination test above, no-paid except judge
+   calls.
+2. Fix the register-rubric score-band compression (46–54 under v1.1) —
+   anchors are not spreading; likely needs harder level-1/level-5 anchor
+   exemplars per dimension.
+3. Add a stance-fidelity gate for negative registers (analogous to the
+   resistance-signal gate: verify the *tutor* turn instantiates the
+   register contract before the row counts as arm evidence).
+4. `face_threat_challenge` stays simulated-only; do not scale any paid
+   negative-register run until 1–3 land. The question-flood
+   commitment-probe gate for this family also remains pending.
+
+Bounded claims now licensed: the register registry/rubric/scoring plumbing
+works end-to-end (route hits 35/35 across both smokes); simulated
+negative-register arms did not depress uptake or recognition under this
+Codex stack; measurable recognition/face-repair cost appears only at the
+face-threat extreme. Not licensed: "sarcasm is pedagogically safe" (the
+corrosive register may simply not have been generated), any judge-blindness
+claim (untested against known-corrosive exemplars), and anything
+human-facing.
