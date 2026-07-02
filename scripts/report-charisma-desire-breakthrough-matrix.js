@@ -700,9 +700,19 @@ function analyzeRows(rows, scenarios) {
       assignedRegisterArm,
       routeHit,
       registerRubricScore,
-      registerRecognitionCostScore: getRegisterRubricDimensionScore(row, tutorRegister, resistanceTurn, 'recognition_cost'),
+      registerRecognitionCostScore: getRegisterRubricDimensionScore(
+        row,
+        tutorRegister,
+        resistanceTurn,
+        'recognition_cost',
+      ),
       registerUptakeFreedomScore: getRegisterRubricDimensionScore(row, tutorRegister, resistanceTurn, 'uptake_freedom'),
-      registerFaceRepairScore: getRegisterRubricDimensionScore(row, tutorRegister, resistanceTurn, 'post_turn_face_repair'),
+      registerFaceRepairScore: getRegisterRubricDimensionScore(
+        row,
+        tutorRegister,
+        resistanceTurn,
+        'post_turn_face_repair',
+      ),
       observedSignal,
       routerSignal,
       routerStrategy,
@@ -1125,7 +1135,9 @@ function buildReport({ generatedAt, errors, analyses }) {
           row.registerRecognitionCostCount
             ? (row.registerRecognitionCostSum / row.registerRecognitionCostCount).toFixed(1)
             : '',
-          row.registerUptakeFreedomCount ? (row.registerUptakeFreedomSum / row.registerUptakeFreedomCount).toFixed(1) : '',
+          row.registerUptakeFreedomCount
+            ? (row.registerUptakeFreedomSum / row.registerUptakeFreedomCount).toFixed(1)
+            : '',
           row.registerFaceRepairCount ? (row.registerFaceRepairSum / row.registerFaceRepairCount).toFixed(1) : '',
         ]),
       ),
@@ -1176,7 +1188,9 @@ function buildReport({ generatedAt, errors, analyses }) {
           row.registerRecognitionCostCount
             ? (row.registerRecognitionCostSum / row.registerRecognitionCostCount).toFixed(1)
             : '',
-          row.registerUptakeFreedomCount ? (row.registerUptakeFreedomSum / row.registerUptakeFreedomCount).toFixed(1) : '',
+          row.registerUptakeFreedomCount
+            ? (row.registerUptakeFreedomSum / row.registerUptakeFreedomCount).toFixed(1)
+            : '',
           row.registerFaceRepairCount ? (row.registerFaceRepairSum / row.registerFaceRepairCount).toFixed(1) : '',
         ]),
       ),
