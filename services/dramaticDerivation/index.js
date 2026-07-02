@@ -37,6 +37,28 @@ export {
   deriveDiscursiveAdaptationState,
 } from './discursiveAdaptation.js';
 export {
+  BLOCK_TYPES,
+  LEARNER_IF_LOST_POLICIES,
+  LEDGER_BLOCK_SCHEMA,
+  LEDGER_ROW_SCHEMA,
+  LEDGER_SCOPES,
+  REGISTER_PALETTE_VALUES,
+  RELEASE_POSTURES,
+  STRATEGY_LEDGER_SCHEMA,
+  auditLearnerSceneIntent,
+  auditTutorSceneCommitment,
+  blockTypeForExchange,
+  checkBlockClearance,
+  escalateDidacticMode,
+  ledgerRow,
+  normalizeLearnerActCarry,
+  normalizeLearnerSceneIntent,
+  normalizeSceneCommitment,
+  normalizeStrategyLedgerConfig,
+  openBlock,
+  updateBlockLedger,
+} from './strategyLedger.js';
+export {
   ADAPTATION_ARBITER_SCHEMA,
   ADAPTATION_TRACE_SCHEMA,
   arbitrateAdaptation,

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-02T12:31:05.896Z",
+  "generated": "2026-07-02T13:08:38.081Z",
   "counts": {
     "total": 68,
     "byStatus": {
@@ -30,8 +30,8 @@
       "source": "manual",
       "created": "2026-07-02",
       "updated": "2026-07-02",
-      "verification": "Design review accepted; Phase-0 wiring (exit-condition checks, live opportunity counters, block segmentation, mode hold) passes zero-paid gates with proof-control fingerprints byte-identical ledger-on vs ledger-off; scene/learner commitment phases pre-registered before any paid contrast.",
-      "claim_status": "planned",
+      "verification": "Phases 0-2 implemented: npm run derivation:ledger-gates 22/22 zero-paid checks (proof fingerprints byte-identical on/off, both casts; row-schema symmetry); tests/dramaticDerivationStrategyLedger.test.js 13/13 (off-state invariance pinned); full npm test 4653/0. Phase 3 contrasts pre-registered before any paid run.",
+      "claim_status": "methods",
       "links": {
         "notes": "LAYERED-DECISION-LOOPS-PLAN.md",
         "items": [

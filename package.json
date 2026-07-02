@@ -133,6 +133,7 @@
     "derivation:ownership-eval": "node scripts/derivation-ownership-eval.js",
     "derivation:ownership-benchmark": "node scripts/derivation-ownership-benchmark.js",
     "derivation:adaptation-gates": "node scripts/derivation-adaptation-gates.js",
+    "derivation:ledger-gates": "node scripts/derivation-ledger-gates.js",
     "derivation:uptake-benchmark": "node scripts/derivation-uptake-benchmark.js",
     "derivation:selfreg-benchmark": "node scripts/derivation-selfreg-benchmark.js",
     "derivation:taskloop-benchmark": "node scripts/derivation-taskloop-benchmark.js",

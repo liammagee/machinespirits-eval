@@ -8,8 +8,8 @@ owner: human
 source: manual
 created: 2026-07-02
 updated: 2026-07-02
-verification: "Design review accepted; Phase-0 wiring (exit-condition checks, live opportunity counters, block segmentation, mode hold) passes zero-paid gates with proof-control fingerprints byte-identical ledger-on vs ledger-off; scene/learner commitment phases pre-registered before any paid contrast."
-claim_status: planned
+verification: "Phases 0-2 implemented: npm run derivation:ledger-gates 22/22 zero-paid checks (proof fingerprints byte-identical on/off, both casts; row-schema symmetry); tests/dramaticDerivationStrategyLedger.test.js 13/13 (off-state invariance pinned); full npm test 4653/0. Phase 3 contrasts pre-registered before any paid run."
+claim_status: methods
 links:
   notes: LAYERED-DECISION-LOOPS-PLAN.md
   items:
@@ -55,3 +55,20 @@ Phases:
 
 Non-goals: proof-authority changes, task/session sequencing (stays archived),
 handoff activation, ToM layers, new rubrics.
+
+2026-07-02 Claude: Phases 0-2 implemented in worktree `strategy-ledger`
+(branch worktree-strategy-ledger). New `services/dramaticDerivation/strategyLedger.js`
+(blocks, deterministic exit-condition clearance, escalation table, commitment
+shape gates, boundary audits, mirrored row shape); engine wiring (opt-in
+`strategyLedger`/`learnerLedger` options, block state beside sceneState,
+scene-register apply/hold/revert, live opportunity counters with on_scene_exit
+resets, ledger rows + events, sealed-scene summaries); llmRoles wiring (tutor
+scene commitments demanded at openings + standing lines + deterministic
+scene-close audits that bind the next opening + didactic hold/escalation;
+learner scene intents + act carries, private to the learner); mock-client
+echoes for zero-paid runs; runner dials + gate script
+`scripts/derivation-ledger-gates.js` (npm run derivation:ledger-gates,
+22/22) + regression tests (13/13). Conduct-only discipline held: gate L3
+pins proof-control fingerprints byte-identical ledger-on vs ledger-off.
+Phase 3 (E1 persistence / E2 register-as-decision / E3 learner ledger)
+awaits a go decision — nothing empirical claimed.

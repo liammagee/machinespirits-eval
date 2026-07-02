@@ -101,6 +101,14 @@ import {
 } from './rhetoricalMovePolicy.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 import { derivationDistance, detectStall } from './slope.js';
+import { deriveOpportunityCostBudget, nextOpportunityCostBudget, auditOpportunityCost } from './opportunityCost.js';
+import {
+  blockTypeForExchange,
+  ledgerRow,
+  normalizeStrategyLedgerConfig,
+  openBlock,
+  updateBlockLedger,
+} from './strategyLedger.js';
 
 function renderFact(fact) {
   return fact.join(' ');
@@ -273,6 +281,23 @@ export async function runDrama({ world, roles, options = {} }) {
   // absent — no act state, no view bounding, no redaction, no new fields.
   const acts = options.acts ? normalizeActsConfig(options.acts) : null;
   const sceneConfig = options.sceneMode ? normalizeSceneConfig(options.sceneMode) : null;
+  // Strategy ledger (LAYERED-DECISION-LOOPS-PLAN.md Phases 0-2): opt-in and,
+  // like decay/acts, absent means absent — no block state, no commitment or
+  // audit rows, no new result fields. Both dials need the scene/exchange
+  // overlay: blocks segment its exchange types, commitments bind at its
+  // boundaries. Conduct-only by construction: nothing here may name, gate,
+  // or reorder a release/repair — the register is the one surface the
+  // engine applies, and it is a prompt surface.
+  const strategyLedgerConfig = options.strategyLedger ? normalizeStrategyLedgerConfig(options.strategyLedger) : null;
+  const learnerLedgerActive = Boolean(options.learnerLedger);
+  if (strategyLedgerConfig && !sceneConfig) {
+    throw new Error(
+      'strategy ledger requires scene mode (blocks segment scene exchanges; commitments bind at scene boundaries)',
+    );
+  }
+  if (learnerLedgerActive && !sceneConfig) {
+    throw new Error('learner ledger requires scene mode (scene intents bind at scene boundaries)');
+  }
   let sceneTempoThisTurn = null;
   let sceneRecognitionNeedThisTurn = null;
   const directorCadence = normalizeDirectorCadence(options.directorCadence, { sceneMode: Boolean(sceneConfig) });
@@ -287,6 +312,8 @@ export async function runDrama({ world, roles, options = {} }) {
     );
     registerRows.push({ turn: 0, register: publicRegisterForTurn, scope: 'run', scene: null });
   }
+  // The run's baseline register — what scene-scoped commitments revert to.
+  const baseRegisterForRun = publicRegisterForTurn;
   const stagePrologueEnabled = Boolean(options.stagePrologue);
   let stagePrologue = null;
   const runtimeMonitor = options.guardSpec ? createRuntimeMonitor(world, options.guardSpec) : null;
@@ -302,6 +329,23 @@ export async function runDrama({ world, roles, options = {} }) {
   const logicProjectionActive = Boolean(options.logicProjection);
   const worldIR = logicProjectionActive ? buildWorldIR(world) : null;
   const actState = acts ? { index: 1, startTurn: 1, brief: '', history: [] } : null;
+  // Strategy-ledger runtime state (opt-in; guard above). Blocks, counters,
+  // and the applied scene commitment live here; the COMMITMENT DECISIONS live
+  // in the role bridges (the plot pattern) — the engine records and applies.
+  const ledgerState = strategyLedgerConfig
+    ? {
+        config: strategyLedgerConfig,
+        block: null,
+        blockIndex: 0,
+        blockRows: [],
+        blockedModes: [],
+        budget: deriveOpportunityCostBudget({ scope: 'dialogue_block' }),
+        appliedCommitment: null,
+        rows: [],
+      }
+    : null;
+  const learnerLedgerRows = []; // learner-authored rows (learnerLedger dial)
+  let lastClosedSceneSummary = null; // public-only sealed-scene record; both boundary audits read it
   const reconstructionRows = []; // {turn, believed, truth} — reconstructing-tutor dial (roles-layer)
   const plotRows = []; // {act, turn, holdByEnd, withhold, friction, fallback} — C1 act-plot dial (roles-layer)
   const plotAuditRows = []; // {turn, [final,] act, clauses, summary[, arc][, throughlineAudit]} — C1 act-close audits
@@ -771,6 +815,38 @@ export async function runDrama({ world, roles, options = {} }) {
     });
   };
 
+  // Strategy-ledger projection for the tutor bridge: current block, blocked
+  // modes, live opportunity counters, the applied commitment, and the sealed
+  // record of the last closed scene (what the boundary audit reads). All
+  // public-only — nothing here names hidden proof state.
+  const strategyLedgerView = () => ({
+    block: ledgerState.block
+      ? {
+          index: ledgerState.block.index,
+          type: ledgerState.block.type,
+          openedTurn: ledgerState.block.openedTurn,
+          turns: ledgerState.block.turns,
+          heldMode: ledgerState.block.heldMode,
+          exitCondition: ledgerState.block.exitCondition,
+        }
+      : null,
+    blockedModes: [...ledgerState.blockedModes],
+    budget: {
+      context: ledgerState.budget.context,
+      currentProofNeutralTutorTurns: ledgerState.budget.currentProofNeutralTutorTurns,
+      maxProofNeutralTutorTurns: ledgerState.budget.maxProofNeutralTutorTurns,
+      currentProofNeutralLearnerTurns: ledgerState.budget.currentProofNeutralLearnerTurns,
+      maxProofNeutralLearnerTurns: ledgerState.budget.maxProofNeutralLearnerTurns,
+      exhausted: auditOpportunityCost(ledgerState.budget, { actor: 'tutor', conduct: 'advisory_probe' }).blocked,
+    },
+    lastClosedScene: lastClosedSceneSummary,
+    commitment: ledgerState.appliedCommitment,
+    config: {
+      maxBlockTurns: ledgerState.config.maxBlockTurns,
+      registerPalette: ledgerState.config.registerPalette,
+    },
+  });
+
   // Stage v2 bounding (header): in acts mode the learner's context is (a) its
   // own theory store and (b) the current act only — prior acts' prose,
   // releases, and voiced theorems drop from view; the theory is the only
@@ -835,6 +911,14 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn, brief: actState.brief } } : {}),
       ...(sceneState ? { scene: currentSceneView() } : {}),
       ...(stagePrologue ? { stagePrologue } : {}),
+      // Learner-ledger boundary material: the sealed last scene (public-only,
+      // and act-bounded — a scene sealed before this act's start stays gone,
+      // like everything else across the boundary).
+      ...(learnerLedgerActive &&
+      lastClosedSceneSummary &&
+      (!actState || lastClosedSceneSummary.endTurn >= actState.startTurn)
+        ? { lastClosedScene: lastClosedSceneSummary }
+        : {}),
       publicRegister: publicRegisterForTurn,
     };
   };
@@ -881,6 +965,7 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(tutorLearnerDagModel ? { tutorLearnerDagModel } : {}),
       ...(conductEntitlement ? { conductEntitlement } : {}),
       ...(conductTriggerOverride ? { conductTriggerOverride } : {}),
+      ...(ledgerState && roleName === 'tutor' ? { strategyLedger: strategyLedgerView() } : {}),
       ...(proofDebt
         ? { proofDebt: runtimeMonitor ? runtimeMonitor.proofDebtTutorView(proofDebt) : tutorProofDebtView(proofDebt) }
         : {}),
@@ -1157,6 +1242,83 @@ export async function runDrama({ world, roles, options = {} }) {
         nonLeakAuditOk: tutorOut.castState.nonLeakAudit?.ok === true,
       });
     }
+    // Strategy-ledger recording (the plot pattern: the bridge DECIDES, the
+    // engine records and applies). A scene commitment lands on a scene-opening
+    // turn; the register — the one surface the engine applies — switches for
+    // the scene's remainder and reverts at its close. The audit of the
+    // PREVIOUS scene arrives on the same opening turn (audit -> commit order
+    // lives in the bridge) and is attached to its row here.
+    if (ledgerState && tutorOut.sceneCommitment && sceneState) {
+      const commitment = tutorOut.sceneCommitment;
+      ledgerState.appliedCommitment = { sceneIndex: sceneState.index, ...commitment };
+      ledgerState.rows.push(
+        ledgerRow({
+          agent: 'tutor',
+          scope: 'scene',
+          commitment: {
+            register: commitment.register || null,
+            didacticDefault: commitment.didacticDefault || null,
+            releasePosture: commitment.releasePosture || null,
+            recognitionBudget: commitment.recognitionBudget ?? null,
+          },
+          committedTurn: turn,
+          expires: `scene_${sceneState.index}_close`,
+          rationale: commitment.rationale || null,
+          exitCondition: commitment.exitCondition || null,
+        }),
+      );
+      events.push({
+        turn,
+        type: 'strategy_commit',
+        detail: `scene ${sceneState.index}: ${
+          [
+            commitment.register ? `register ${commitment.register}` : null,
+            commitment.didacticDefault ? `didactic ${commitment.didacticDefault}` : null,
+            commitment.releasePosture ? `releases ${commitment.releasePosture}` : null,
+            commitment.recognitionBudget !== null && commitment.recognitionBudget !== undefined
+              ? `recognition budget ${commitment.recognitionBudget}`
+              : null,
+          ]
+            .filter(Boolean)
+            .join('; ') || 'committed'
+        }`,
+      });
+      if (
+        commitment.register &&
+        PUBLIC_REGISTERS.has(commitment.register) &&
+        commitment.register !== publicRegisterForTurn
+      ) {
+        publicRegisterForTurn = commitment.register;
+        registerRows.push({ turn, register: commitment.register, scope: 'scene', scene: sceneState.index });
+      }
+    }
+    if (ledgerState && tutorOut.sceneCommitmentAudit) {
+      const audit = tutorOut.sceneCommitmentAudit;
+      const row = [...ledgerState.rows]
+        .reverse()
+        .find(
+          (r) =>
+            r.agent === 'tutor' && r.scope === 'scene' && r.expires === `scene_${audit.sceneIndex}_close` && !r.audit,
+        );
+      if (row) row.audit = { clauses: audit.clauses, summary: audit.summary };
+      events.push({
+        turn,
+        type: 'strategy_audit',
+        detail: `scene ${audit.sceneIndex} commitment audited: ${audit.summary}`,
+      });
+    }
+    // Phase-0d hold: an open block adopts the tutor's first non-minimal
+    // didactic recommendation as its held mode; the bridge holds it steady
+    // until the block closes (clearance, supersession, or budget).
+    if (
+      ledgerState?.block &&
+      !ledgerState.block.heldMode &&
+      tutorOut.didacticMode?.recommendedMode &&
+      tutorOut.didacticMode.recommendedMode !== 'minimal_presence'
+    ) {
+      ledgerState.block.heldMode = tutorOut.didacticMode.recommendedMode;
+      ledgerState.block.exitCondition = tutorOut.didacticMode.exitCondition || null;
+    }
     if (tutorOut.learnerTransformation) {
       learnerTransformationRows.push(
         learnerTransformationRow(tutorOut.learnerTransformation, turn, actState?.index, 'pre_tutor'),
@@ -1430,6 +1592,127 @@ export async function runDrama({ world, roles, options = {} }) {
       transcript[transcript.length - 1].meta.exchange = sceneExchange;
     }
 
+    // Learner-ledger recording (Phase 2, mirrored on the tutor rows above):
+    // the learner's own scene intent and act carry-forward, authored in its
+    // bridge, recorded here. Private to the learner — nothing below enters a
+    // tutor view.
+    if (learnerLedgerActive && learnerOut.sceneIntent && sceneState) {
+      learnerLedgerRows.push(
+        ledgerRow({
+          agent: 'learner',
+          scope: 'scene',
+          commitment: learnerOut.sceneIntent,
+          committedTurn: turn,
+          expires: `scene_${sceneState.index}_close`,
+        }),
+      );
+      events.push({
+        turn,
+        type: 'learner_intent',
+        detail: `scene ${sceneState.index}: ${learnerOut.sceneIntent.want || learnerOut.sceneIntent.ifLost || 'committed'}`,
+      });
+    }
+    if (learnerLedgerActive && learnerOut.actCarry && actState) {
+      learnerLedgerRows.push(
+        ledgerRow({
+          agent: 'learner',
+          scope: 'act',
+          commitment: learnerOut.actCarry,
+          committedTurn: turn,
+          expires: `act_${actState.index}_close`,
+        }),
+      );
+      events.push({
+        turn,
+        type: 'learner_carry',
+        detail: `act ${actState.index}: ${learnerOut.actCarry.carryForward || 'carry committed'}`,
+      });
+    }
+    if (learnerLedgerActive && learnerOut.sceneIntentAudit) {
+      const audit = learnerOut.sceneIntentAudit;
+      const row = [...learnerLedgerRows]
+        .reverse()
+        .find(
+          (r) =>
+            r.agent === 'learner' && r.scope === 'scene' && r.expires === `scene_${audit.sceneIndex}_close` && !r.audit,
+        );
+      if (row) row.audit = { clauses: audit.clauses, summary: audit.summary };
+      events.push({
+        turn,
+        type: 'learner_intent_audit',
+        detail: `scene ${audit.sceneIndex} intent audited: ${audit.summary}`,
+      });
+    }
+
+    // Phase-0c blocks: update the open block with this turn's exchange, then
+    // open a new one if a pressing episode stands unhoused. Update-first means
+    // the opening exchange never double-counts against its own block.
+    if (ledgerState && sceneExchange) {
+      if (ledgerState.block) {
+        const updated = updateBlockLedger(ledgerState.block, {
+          turn,
+          learnerText: learnerOut.dialogue || '',
+          exchangeType: sceneExchange.type,
+          maxBlockTurns: ledgerState.config.maxBlockTurns,
+        });
+        ledgerState.block = updated.block;
+        if (updated.closed) {
+          ledgerState.blockRows.push(updated.closed);
+          events.push({
+            turn,
+            type: 'block_close',
+            detail: `block ${updated.closed.index} (${updated.closed.type}) ${updated.closed.status}: ${updated.closed.closeReason}`,
+          });
+          if (updated.closed.status === 'failed' && updated.closed.heldMode) {
+            // Phase-1c escalation: a mode that failed its exit condition is
+            // not re-selectable next block (the bridge remaps it).
+            ledgerState.blockedModes = [updated.closed.heldMode];
+          } else if (updated.closed.status === 'cleared') {
+            ledgerState.blockedModes = [];
+          }
+        }
+      }
+      if (!ledgerState.block) {
+        const blockType = blockTypeForExchange(sceneExchange.type);
+        if (blockType) {
+          ledgerState.blockIndex += 1;
+          ledgerState.block = openBlock({
+            index: ledgerState.blockIndex,
+            turn,
+            type: blockType,
+            scene: sceneState?.index ?? null,
+          });
+          events.push({
+            turn,
+            type: 'block_open',
+            detail: `block ${ledgerState.blockIndex} (${blockType}) opened`,
+          });
+        }
+      }
+    }
+
+    // Phase-0b opportunity counters, maintained live with the library's own
+    // update rule: any formal proof progress this turn resets both counters;
+    // otherwise each side's proof-neutral turn increments its own.
+    if (ledgerState) {
+      const repairedThisTurn = events.some((e) => e.turn === turn && e.type === 'repair');
+      const tutorProofAction = Boolean(tutorRelease) || repairedThisTurn;
+      const learnerProofAction =
+        Boolean(learnerOut.asserts) ||
+        (learnerOut.adopt || []).length > 0 ||
+        deriveOutcomes.some((o) => o.status === 'voiced');
+      if (tutorProofAction || learnerProofAction) {
+        ledgerState.budget = nextOpportunityCostBudget(ledgerState.budget, { proofActionTaken: true });
+      } else {
+        ledgerState.budget = nextOpportunityCostBudget(ledgerState.budget, {
+          actor: 'tutor',
+          conduct: 'advisory',
+          proofNeutral: true,
+        });
+        ledgerState.budget = nextOpportunityCostBudget(ledgerState.budget, { actor: 'learner', proofNeutral: true });
+      }
+    }
+
     for (const [a, b] of world.incompatible) {
       const cl = closure(valid, world.rules).facts;
       if (cl.has(factKey(a)) && cl.has(factKey(b))) {
@@ -1483,6 +1766,49 @@ export async function runDrama({ world, roles, options = {} }) {
           type: 'scene_close',
           detail: `scene ${closedScene.index} closed: ${closedScene.status} (${closedScene.closeReason})`,
         });
+        // Seal the scene for the boundary audits (either ledger dial): a
+        // public-only record — exchange types, counts, releases and schedule
+        // entries within the span (both already tutor-known), last learner
+        // line. The bridges audit against this at the next scene opening.
+        if (ledgerState || learnerLedgerActive) {
+          const span = (row) => row.turn >= closedScene.startTurn && row.turn <= closedScene.endTurn;
+          const learnerLines = transcript.filter((entry) => entry.role === 'learner' && span(entry));
+          lastClosedSceneSummary = {
+            index: closedScene.index,
+            startTurn: closedScene.startTurn,
+            endTurn: closedScene.endTurn,
+            status: closedScene.status,
+            closeReason: closedScene.closeReason,
+            counts: { ...closedScene.counts },
+            exchanges: closedScene.exchanges.map((e) => ({
+              turn: e.turn,
+              type: e.type,
+              formalActions: e.formalActions,
+            })),
+            lastLearnerText: learnerLines.length ? learnerLines[learnerLines.length - 1].text : '',
+            lastExchangeType: closedScene.exchanges.length
+              ? closedScene.exchanges[closedScene.exchanges.length - 1].type
+              : null,
+            releases: ledger.filter(span).map((entry) => ({ turn: entry.turn, premiseId: entry.premiseId })),
+            scheduled: world.releaseSchedule
+              .filter((entry) => entry.turn >= closedScene.startTurn && entry.turn <= closedScene.endTurn)
+              .map((entry) => ({ turn: entry.turn, premise: entry.premise })),
+            didacticModes: didacticModeRows.filter(span).map((row) => row.recommendedMode),
+            registerHeld: true,
+          };
+        }
+        // Scene exit under the strategy ledger: revert a scene-committed
+        // register to the run baseline, clear the applied commitment, and
+        // reset the opportunity counters (the documented on_scene_exit
+        // policy).
+        if (ledgerState) {
+          if (ledgerState.appliedCommitment?.register && publicRegisterForTurn !== baseRegisterForRun) {
+            publicRegisterForTurn = baseRegisterForRun;
+            registerRows.push({ turn, register: baseRegisterForRun, scope: 'scene_end', scene: closedScene.index });
+          }
+          ledgerState.appliedCommitment = null;
+          ledgerState.budget = deriveOpportunityCostBudget({ scope: 'dialogue_block' });
+        }
       }
     }
 
@@ -1633,6 +1959,46 @@ export async function runDrama({ world, roles, options = {} }) {
           }
         : {}),
       ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn } } : {}),
+      ...(ledgerState
+        ? {
+            strategyLedger: {
+              block: ledgerState.block
+                ? {
+                    index: ledgerState.block.index,
+                    type: ledgerState.block.type,
+                    heldMode: ledgerState.block.heldMode,
+                    turns: ledgerState.block.turns,
+                  }
+                : null,
+              ...(tutorOut.sceneCommitment
+                ? {
+                    commitment: {
+                      register: tutorOut.sceneCommitment.register || null,
+                      didacticDefault: tutorOut.sceneCommitment.didacticDefault || null,
+                      releasePosture: tutorOut.sceneCommitment.releasePosture || null,
+                      recognitionBudget: tutorOut.sceneCommitment.recognitionBudget ?? null,
+                    },
+                  }
+                : {}),
+              ...(tutorOut.sceneCommitmentAudit
+                ? {
+                    audit: {
+                      sceneIndex: tutorOut.sceneCommitmentAudit.sceneIndex,
+                      summary: tutorOut.sceneCommitmentAudit.summary,
+                    },
+                  }
+                : {}),
+            },
+          }
+        : {}),
+      ...(learnerLedgerActive && (learnerOut.sceneIntent || learnerOut.actCarry)
+        ? {
+            learnerLedger: {
+              ...(learnerOut.sceneIntent ? { intent: learnerOut.sceneIntent } : {}),
+              ...(learnerOut.actCarry ? { carry: learnerOut.actCarry } : {}),
+            },
+          }
+        : {}),
       ...(tutorOut.didacticMode
         ? {
             didacticMode: {
@@ -1687,6 +2053,16 @@ export async function runDrama({ world, roles, options = {} }) {
     sceneState.closeReason = endedBy ? `run ended: ${endedBy}` : 'run ended before the scene budget closed';
     sceneRows.push({ ...sceneState, exchanges: sceneState.exchanges.map((e) => ({ ...e })) });
     sceneState = null;
+  }
+
+  // Seal an open strategy block at run end (the mirror of the scene seal).
+  if (ledgerState?.block) {
+    const open = ledgerState.block;
+    open.endTurn = turn;
+    open.status = 'run_end';
+    open.closeReason = endedBy ? `run ended: ${endedBy}` : 'run ended before the block cleared';
+    ledgerState.blockRows.push({ ...open, clearance: open.clearance.map((c) => ({ ...c })) });
+    ledgerState.block = null;
   }
 
   // Close the final open act at the last turn played (stage v2).
@@ -1761,6 +2137,27 @@ export async function runDrama({ world, roles, options = {} }) {
     ...(publicRegisterPlan !== 'default' ? { publicRegister: publicRegisterPlan } : {}),
     ...(registerRows.length ? { publicRegisters: registerRows } : {}),
     ...(actState ? { acts: actState.history } : {}),
+    ...(ledgerState || learnerLedgerActive
+      ? {
+          strategyLedger: {
+            ...(ledgerState
+              ? {
+                  config: {
+                    maxBlockTurns: ledgerState.config.maxBlockTurns,
+                    registerPalette: ledgerState.config.registerPalette,
+                  },
+                  blocks: ledgerState.blockRows,
+                  budgetFinal: {
+                    context: ledgerState.budget.context,
+                    currentProofNeutralTutorTurns: ledgerState.budget.currentProofNeutralTutorTurns,
+                    currentProofNeutralLearnerTurns: ledgerState.budget.currentProofNeutralLearnerTurns,
+                  },
+                }
+              : {}),
+            rows: [...(ledgerState?.rows || []), ...learnerLedgerRows],
+          },
+        }
+      : {}),
     ...(reconstructionRows.length ? { reconstruction: reconstructionRows } : {}),
     ...(plotRows.length || plotAuditRows.length || throughlineRows.length
       ? {

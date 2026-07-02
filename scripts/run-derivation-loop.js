@@ -109,6 +109,31 @@
  *                                       uptake_only, repair_request,
  *                                       recap, hesitation, hypothesis,
  *                                       evidence, recognition.)
+ *     [--strategy-ledger '<json>'|on|off]
+ *                                      (LAYERED-DECISION-LOOPS-PLAN.md
+ *                                       Phases 0-1; requires --scene-mode.
+ *                                       Blocks segment pressing exchange
+ *                                       episodes with deterministic exit-
+ *                                       condition checks; the tutor commits
+ *                                       a scene strategy at each opening —
+ *                                       register (palette-bound, harness-
+ *                                       held), didactic default (held
+ *                                       within blocks; failed modes
+ *                                       escalate), release POSTURE,
+ *                                       recognition budget — audited
+ *                                       deterministically at the close;
+ *                                       the audit binds the next opening.
+ *                                       Conduct only: proof control and
+ *                                       the release calendar untouched.
+ *                                       JSON keys: maxBlockTurns,
+ *                                       registerPalette.)
+ *     [--learner-ledger]               (Phase 2, the learner mirror;
+ *                                       requires --scene-mode. The learner
+ *                                       commits its own scene intent
+ *                                       (want / if_lost / speech_posture)
+ *                                       and, in acts mode, an act carry-
+ *                                       forward; private to the learner,
+ *                                       conformance-audited at boundaries.)
  *     [--director-cadence turn|scene|release]
  *                                      (when the director speaks. Default:
  *                                       turn without scene mode; scene with
@@ -342,6 +367,7 @@ import {
   normalizeSceneConfig,
   normalizeDirectorCadence,
   normalizeRhetoricalPolicyConfig,
+  normalizeStrategyLedgerConfig,
   normalizePublicRegister,
   describePublicRegister,
   makeLlmClient,
@@ -593,6 +619,32 @@ async function main() {
     process.exit(1);
   }
   const stagePrologue = stagePrologueArg ? stagePrologueArg !== 'off' : Boolean(sceneMode);
+  // Strategy ledger (LAYERED-DECISION-LOOPS-PLAN.md Phases 0-2): tutor-side
+  // blocks + scene commitments (+ audits) and the learner's own scene/act
+  // commitments. Both need the scene overlay; malformed JSON dies here.
+  const strategyLedgerArg = arg('strategy-ledger', null);
+  let strategyLedger = null;
+  if (flag('strategy-ledger') && strategyLedgerArg !== 'off') {
+    try {
+      strategyLedger = normalizeStrategyLedgerConfig(
+        strategyLedgerArg && strategyLedgerArg !== 'on' ? strategyLedgerArg : true,
+      );
+    } catch (err) {
+      console.error(`--strategy-ledger ${err.message}`);
+      process.exit(1);
+    }
+  }
+  const learnerLedger = flag('learner-ledger');
+  if (strategyLedger && !sceneMode) {
+    console.error(
+      '--strategy-ledger requires --scene-mode (blocks segment scene exchanges; commitments bind at scene boundaries)',
+    );
+    process.exit(1);
+  }
+  if (learnerLedger && !sceneMode) {
+    console.error('--learner-ledger requires --scene-mode (scene intents bind at scene boundaries)');
+    process.exit(1);
+  }
   const reconstruct = flag('reconstruct');
   if (reconstruct && !acts) {
     console.error(
@@ -1192,6 +1244,7 @@ async function main() {
       ownershipProof,
       ownershipTransferGate,
       publicRegister,
+      strategyLedger: Boolean(strategyLedger),
     }),
     learner: makeLlmLearner({
       setting: world.setting,
@@ -1204,6 +1257,7 @@ async function main() {
       castLayer,
       learnerDrift: world.learnerDrift,
       learnerDriftLayer: learnerDrift,
+      learnerLedger,
     }),
   };
 
@@ -1240,6 +1294,18 @@ async function main() {
     }
     if (s.proxyDagPacing?.recommendedAction) bits.push(`proxy-dag ${s.proxyDagPacing.recommendedAction}`);
     if (s.closedScene) bits.push(`scene ${s.closedScene.index} ${s.closedScene.status}`);
+    if (s.strategyLedger?.commitment) {
+      const c = s.strategyLedger.commitment;
+      bits.push(`⚖ commit ${[c.register, c.didacticDefault, c.releasePosture].filter(Boolean).join('/') || 'scene'}`);
+    }
+    if (s.strategyLedger?.audit) bits.push(`⚖ audit s${s.strategyLedger.audit.sceneIndex}`);
+    if (s.strategyLedger?.block) {
+      bits.push(
+        `▤ block ${s.strategyLedger.block.type}${s.strategyLedger.block.heldMode ? `/${s.strategyLedger.block.heldMode}` : ''}`,
+      );
+    }
+    if (s.learnerLedger?.intent) bits.push('◆ L-intent');
+    if (s.learnerLedger?.carry) bits.push('◆ L-carry');
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
     if (s.intervened) bits.push('✎ superego');
     if (s.asserted) bits.push('ASSERTS');
@@ -1273,6 +1339,8 @@ async function main() {
         ...(sceneMode ? { sceneMode } : {}),
         ...(decay ? { decay } : {}),
         ...(acts ? { acts } : {}),
+        ...(strategyLedger ? { strategyLedger } : {}),
+        ...(learnerLedger ? { learnerLedger } : {}),
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
         ...(conductPolicy ? { conductPolicy } : {}),
         ...(conductPolicyEnforce ? { conductPolicyEnforce } : {}),
@@ -1308,6 +1376,9 @@ async function main() {
     actsConfig: acts || null,
     // Scene/exchange overlay — null on old turn-level runs.
     sceneMode: sceneMode || null,
+    // Strategy ledger dials (LAYERED-DECISION-LOOPS-PLAN.md) — null/false off.
+    strategyLedger: strategyLedger || null,
+    learnerLedger,
     directorCadence,
     stagePrologue,
     publicRegister,

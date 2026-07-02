@@ -37,7 +37,15 @@ import { deriveCastState, projectCastStateForRole } from './castLayer.js';
 import { deriveLearnerDriftState, learnerDriftLines } from './learnerDrift.js';
 import { deriveLearnerTransformationState, learnerTransformationLines } from './learnerTransformation.js';
 import { deriveDiscursiveCalibrationState } from './discursiveCalibration.js';
-import { deriveDidacticModeState } from './didacticMode.js';
+import { deriveDidacticModeState, DIDACTIC_MODE_FAMILIES } from './didacticMode.js';
+import {
+  auditLearnerSceneIntent,
+  auditTutorSceneCommitment,
+  escalateDidacticMode,
+  normalizeLearnerActCarry,
+  normalizeLearnerSceneIntent,
+  normalizeSceneCommitment,
+} from './strategyLedger.js';
 import { deriveEntitlementState, entitlementNeedsConduct } from './learnerEntitlement.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
@@ -1055,6 +1063,7 @@ function tutorSystem(
     ownershipProof = false,
     ownershipTransferGate = false,
     publicRegister = 'default',
+    strategyLedger = false,
   } = {},
 ) {
   const recognition = clampDial(dials.recognition);
@@ -1381,11 +1390,23 @@ function tutorSystem(
       throughline
         ? ', "throughline": {"arc": ["<waypoint>", ...], "hold_to_end": "...", "risk": "...", "salvage": "..."}, "throughline_reason": "<one line when revising voluntarily, else null>"'
         : ''
+    }${
+      strategyLedger
+        ? ', "scene_commitment": {"register": "<from the offered palette>", "didactic_default": "<mode family>", "release_posture": "eager" | "hold" | "consolidate", "recognition_budget": <0-4>, "rationale": "<one line>", "exit_condition": "<what the learner does when this scene has worked>"}'
+        : ''
     }}`,
     ...(plot ? ['("plot" belongs to act-opening turns ONLY — the harness marks them; omit the key mid-act.)'] : []),
     ...(throughline
       ? [
           '("throughline" belongs to the FIRST turn and to act-opening revisions — the harness marks when it is due; omit the key otherwise.)',
+        ]
+      : []),
+    ...(strategyLedger
+      ? [
+          '("scene_commitment" belongs to scene-opening turns ONLY — the harness marks them; omit the key mid-scene.',
+          'The commitment is CONDUCT strategy for the scene — register, explanatory default, pacing posture, recognition budget.',
+          'It never names, gates, or reorders a release, a repair, a proof target, or the concealed answer;',
+          'the release calendar and proof-control obligations outrank it everywhere they speak.)',
         ]
       : []),
   ].join('\n');
@@ -2095,6 +2116,7 @@ export function makeLlmTutor(
     ownershipTarget = null,
     ownershipProof = false,
     ownershipTransferGate = false,
+    strategyLedger = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -2245,6 +2267,7 @@ export function makeLlmTutor(
     ownershipProof,
     ownershipTransferGate,
     publicRegister,
+    strategyLedger,
   });
   const superegoSystem = superego
     ? tutorSuperegoSystem(world, {
@@ -2291,6 +2314,10 @@ export function makeLlmTutor(
   // the next opening's revision demand.
   const throughlineState = throughline ? { current: null, committedTurn: null, revisedTurns: [], lastArc: null } : null;
   const castRuntimeState = castLayer ? { activeReinvention: null, sceneIndex: null, actIndex: null } : null;
+  // Strategy-ledger bridge state (the plot pattern one scope down): the
+  // scene commitment lives here between its opening and its audit at the
+  // next opening; the engine records rows and applies the register.
+  const ledgerBridgeState = strategyLedger ? { commitment: null, sceneIndex: null } : null;
   // Plot shape gate: a plot is real only when at least one field is
   // non-empty — a malformed or empty plot drops to null, which keeps the
   // engine's recording gate closed for that act (absence is visible to the
@@ -2701,7 +2728,32 @@ export function makeLlmTutor(
       (discursiveProofStep?.moveFamily === 'release_next_evidence' ? 'the next exhibit entering the scene' : null) ||
       (discursiveProofStep?.moveFamily === 'invite_final_assertion' ? "the learner's final public answer" : null) ||
       (view.scene?.goal ? 'the current scene object' : null);
-    const didacticModeState = didacticMode
+    // --- Strategy-ledger scene lifecycle (the plot lifecycle one scope
+    // down): on a scene-opening turn the bridge FIRST audits the commitment
+    // for the scene just sealed (deterministically — the harness can check
+    // everything a commitment binds), THEN demands a fresh one; mid-scene
+    // turns read the standing commitment back. The final scene's commitment
+    // goes unaudited at run end — the missing row is the ledger of that
+    // lapse. ---
+    const ledgerInfo = strategyLedger ? view.strategyLedger || null : null;
+    const sceneOpening = Boolean(strategyLedger && view.scene && view.scene.startTurn === view.turn);
+    let sceneCommitmentAudit = null;
+    if (
+      strategyLedger &&
+      sceneOpening &&
+      ledgerBridgeState.commitment &&
+      ledgerInfo?.lastClosedScene &&
+      ledgerBridgeState.sceneIndex === ledgerInfo.lastClosedScene.index
+    ) {
+      const audit = auditTutorSceneCommitment(ledgerBridgeState.commitment, {
+        ...ledgerInfo.lastClosedScene,
+        didacticModes: didacticMode ? ledgerInfo.lastClosedScene.didacticModes : null,
+      });
+      if (audit) sceneCommitmentAudit = { sceneIndex: ledgerInfo.lastClosedScene.index, ...audit };
+      ledgerBridgeState.commitment = null;
+      ledgerBridgeState.sceneIndex = null;
+    }
+    const didacticModeStateBase = didacticMode
       ? deriveDidacticModeState({
           currentObject: didacticCurrentObject,
           transcript: publicTranscriptForCalibration,
@@ -2733,6 +2785,39 @@ export function makeLlmTutor(
             : null,
         })
       : null;
+    // Phase-0d hold / Phase-1c escalation (strategy ledger): an open block
+    // holds its adopted mode steady — the per-turn classifier proposes, the
+    // block disposes; a mode that failed its exit condition last block is
+    // not re-selectable and remaps one step up the intervention ladder.
+    let didacticModeState = didacticModeStateBase;
+    let heldDidacticNote = null;
+    if (strategyLedger && didacticModeState) {
+      const heldMode = ledgerInfo?.block?.heldMode || null;
+      if (heldMode && didacticModeState.recommendedMode !== heldMode) {
+        didacticModeState = {
+          ...didacticModeState,
+          recommendedMode: heldMode,
+          ...(ledgerInfo.block.exitCondition ? { exitCondition: ledgerInfo.block.exitCondition } : {}),
+          evidence: [...(didacticModeState.evidence || []).slice(0, 3), 'mode held for the open block'],
+        };
+        heldDidacticNote = `DIDACTIC HOLD: the open block holds mode ${heldMode} until its exit condition clears or its budget runs out.`;
+      } else if (
+        ledgerInfo?.blockedModes?.length &&
+        ledgerInfo.blockedModes.includes(didacticModeState.recommendedMode)
+      ) {
+        const failedMode = didacticModeState.recommendedMode;
+        const escalated = escalateDidacticMode(failedMode);
+        didacticModeState = {
+          ...didacticModeState,
+          recommendedMode: escalated,
+          evidence: [
+            ...(didacticModeState.evidence || []).slice(0, 3),
+            `${failedMode} failed its exit condition last block; escalated`,
+          ],
+        };
+        heldDidacticNote = `DIDACTIC ESCALATION: ${failedMode} failed its exit condition last block — use ${escalated} instead (do not repeat ${failedMode} without new grounds).`;
+      }
+    }
     const learnerTransformationState = ownershipProof
       ? deriveLearnerTransformationState({
           target: ownershipTarget || world.ownershipTarget || null,
@@ -2956,6 +3041,61 @@ export function makeLlmTutor(
               'Play under it; the audit at the act close distinguishes justified deviation from drift.',
             ]
           : [];
+    // Strategy-ledger prompt block (the plot section one scope down): the
+    // audit of the sealed scene binds at the opening, the standing commitment
+    // reads back mid-scene, and hold/escalation/budget notes ride along.
+    const strategyLedgerSection = (() => {
+      if (!strategyLedger) return [];
+      const lines = [];
+      if (sceneCommitmentAudit) {
+        lines.push(
+          '',
+          `THE AUDIT of your scene ${sceneCommitmentAudit.sceneIndex} commitment (deterministic, clause by clause):`,
+          ...sceneCommitmentAudit.clauses.map(
+            (c) => `- [${c.verdict}] ${c.clause}${c.evidence ? ` — ${c.evidence}` : ''}`,
+          ),
+          `Summary: ${sceneCommitmentAudit.summary}.`,
+          'THE AUDIT BINDS: the commitment you now make must answer every drifted clause — carry it forward, revise it, or change course with a stated reason.',
+        );
+      }
+      if (sceneOpening && view.scene) {
+        const palette = ledgerInfo?.config?.registerPalette?.length
+          ? ledgerInfo.config.registerPalette
+          : [activeRegisterName];
+        lines.push(
+          '',
+          `THIS TURN OPENS SCENE ${view.scene.index} — COMMIT YOUR SCENE STRATEGY in "scene_commitment", alongside your dialogue:`,
+          `- register: choose from [${palette.join(', ')}] — the harness holds your choice for the whole scene.`,
+          `- didactic_default: your explanatory mode of first resort this scene (${DIDACTIC_MODE_FAMILIES.join(', ')}).`,
+          '- release_posture: eager (play exhibits on their cue), hold (never ahead of schedule), consolidate (at most one release this scene).',
+          '- recognition_budget: how many phatic/uptake exchanges this scene can afford (0-4).',
+          '- exit_condition: what the learner will visibly do when this scene has worked.',
+          'Conduct only: the release calendar and proof-control obligations outrank this everywhere they speak.',
+        );
+      } else if (ledgerBridgeState?.commitment) {
+        const c = ledgerBridgeState.commitment;
+        lines.push(
+          '',
+          `YOUR SCENE COMMITMENT (scene ${ledgerBridgeState.sceneIndex}, standing since its opening):`,
+          ...(c.register ? [`- register: ${c.register} (held by the harness)`] : []),
+          ...(c.didacticDefault ? [`- didactic default: ${c.didacticDefault}`] : []),
+          ...(c.releasePosture ? [`- release posture: ${c.releasePosture}`] : []),
+          ...(c.recognitionBudget !== null && c.recognitionBudget !== undefined
+            ? [`- recognition budget: ${c.recognitionBudget}`]
+            : []),
+          ...(c.exitCondition ? [`- exit: ${c.exitCondition}`] : []),
+          'Play under it; the audit at the scene close distinguishes kept from drift.',
+        );
+      }
+      if (heldDidacticNote) lines.push('', heldDidacticNote);
+      if (ledgerInfo?.budget?.exhausted) {
+        lines.push(
+          '',
+          'OPPORTUNITY BUDGET EXHAUSTED: proof-neutral turns have run past the block budget — return to the proof obligation this turn (advisory; hard obligations already outrank).',
+        );
+      }
+      return lines;
+    })();
     // The tutor sees no staging state (movements are the director's diagnostic
     // dramaturgy, 2026-06-10): any rhythm-watching happens inside this bridge.
     let user;
@@ -2982,9 +3122,11 @@ export function makeLlmTutor(
         ...learnerTransformationSection,
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         // The two frames, course above lesson: the whole-play throughline
-        // reads back first, the act plot under it.
+        // reads back first, the act plot under it, the scene commitment under
+        // both.
         ...throughlineSection,
         ...plotSection,
+        ...strategyLedgerSection,
         ...rhetoricalPolicySection,
         ...proofDebtSection,
         ...tutorLearnerDagModelSection,
@@ -3033,6 +3175,7 @@ export function makeLlmTutor(
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         ...didacticModeSection,
         ...learnerTransformationSection,
+        ...strategyLedgerSection,
         '',
         ...(forcedNote ? [forcedNote, ''] : []),
         ...rhetoricalPolicySection,
@@ -3135,6 +3278,22 @@ export function makeLlmTutor(
                 salvage: 'fall back to the smallest two-fact join the board affords and build from there',
               };
             })(),
+          }
+        : {}),
+      // mock determinism (strategy ledger): a scene-opening commitment —
+      // second palette register when one is offered, schedule-aware posture.
+      // The real backend ignores meta.
+      ...(strategyLedger && sceneOpening
+        ? {
+            sceneCommitmentHint: {
+              register:
+                (ledgerInfo?.config?.registerPalette || []).find((r) => r !== activeRegisterName) || activeRegisterName,
+              didactic_default: 'slow_recap',
+              release_posture: view.scene?.targetPremise ? 'eager' : 'hold',
+              recognition_budget: 1,
+              rationale: 'open the scene on its stated goal',
+              exit_condition: 'the learner advances the scene goal in their own words',
+            },
           }
         : {}),
     };
@@ -3405,6 +3564,27 @@ export function makeLlmTutor(
     };
     const draftThroughline = parseThroughlineOut(draftOut);
     commitThroughline(draftThroughline);
+    // The scene commitment parses only on a scene-opening turn (the standing
+    // commitment is the mid-scene contract); a parse-miss leaves the scene
+    // uncommitted — the missing row stays visible to the scorer.
+    const parseSceneCommitment = (out) =>
+      strategyLedger && sceneOpening
+        ? normalizeSceneCommitment(out.scene_commitment, {
+            registerPalette: ledgerInfo?.config?.registerPalette || null,
+            currentRegister: activeRegisterName,
+          })
+        : null;
+    const commitScene = (commitment) => {
+      if (!commitment) return;
+      ledgerBridgeState.commitment = commitment;
+      ledgerBridgeState.sceneIndex = view.scene.index;
+    };
+    const draftSceneCommitment = parseSceneCommitment(draftOut);
+    commitScene(draftSceneCommitment);
+    const sceneLedgerBits = (commitment) => ({
+      ...(commitment ? { sceneCommitment: commitment } : {}),
+      ...(sceneCommitmentAudit ? { sceneCommitmentAudit } : {}),
+    });
     const releaseBits = normalizeRelease(draftOut);
     const plotBits = (finalPlot) => ({
       ...(finalPlot ? { plot: { act: view.acts?.index, turn: view.turn, ...finalPlot } } : {}),
@@ -3486,6 +3666,7 @@ export function makeLlmTutor(
       ...(draftTheory ? { theory: draftTheory } : {}),
       ...plotBits(draftPlot),
       ...throughlineBits(draftThroughline),
+      ...sceneLedgerBits(draftSceneCommitment),
     };
     const draftGuard = applyProofDebtGuard(draft, 'draft');
     draft = draftGuard.out;
@@ -3869,6 +4050,11 @@ export function makeLlmTutor(
     // loses the standing frame.
     const revisedThroughline = throughline && plotOpening ? parseThroughlineOut(revisedOut) || draftThroughline : null;
     commitThroughline(revisedThroughline);
+    // Same fallback contract for the scene commitment: an intervened opening
+    // may rewrite it; a parse-miss keeps the draft's.
+    const revisedSceneCommitment =
+      strategyLedger && sceneOpening ? parseSceneCommitment(revisedOut) || draftSceneCommitment : null;
+    commitScene(revisedSceneCommitment);
     let revised = {
       dialogue,
       move: normalizeMove(revisedOut) || draft.move,
@@ -3881,6 +4067,7 @@ export function makeLlmTutor(
       ...(revisedTheory ? { theory: revisedTheory } : {}),
       ...plotBits(revisedPlot),
       ...throughlineBits(revisedThroughline),
+      ...sceneLedgerBits(revisedSceneCommitment),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
@@ -4024,7 +4211,18 @@ function learnerSystem(setting, voice, view, publicRegister = 'default', opts = 
           ' "exchange_type": "substantive" | "phatic_ack" | "confusion" | "repair_request" | "resistance" | "hypothesis" | "assertion",',
         ]
       : []),
+    ...(opts.learnerLedger
+      ? [
+          ' "scene_intent": {"want": "<what you want from this scene>", "if_lost": "ask_repair" | "resist" | "try_own_derivation", "speech_posture": "<the voice you mean to keep>"} — SCENE-OPENING turns only; omit the key otherwise,',
+          ' "act_carry": {"carry_forward": "<what you carry on your record>", "still_owe": "<what you still owe the question>"} — the FIRST turn of a NEW act only; omit the key otherwise,',
+        ]
+      : []),
     ' "asserts_answer": "<the name that answers the public question, or null>"}',
+    ...(opts.learnerLedger
+      ? [
+          '(Your scene_intent and act_carry are YOURS — private commitments the tutor never sees. They shape how you conduct yourself; they never add facts to your record.)',
+        ]
+      : []),
   ].join('\n');
 }
 
@@ -4222,9 +4420,14 @@ export function makeLlmLearner({
   castLayer = false,
   learnerDrift = null,
   learnerDriftLayer = false,
+  learnerLedger = false,
 }) {
   if (!client) throw new Error('derivation.llmRoles: makeLlmLearner requires a client');
   const effectiveAssertionGroundingGate = assertionGroundingGate || sameTurnAssertionAffordance;
+  // Learner-ledger bridge state (Phase 2 — the tutor's scene-commitment
+  // machinery mirrored): the learner's own scene intent and act carry live
+  // here between boundaries; the engine records rows.
+  const learnerLedgerState = learnerLedger ? { intent: null, sceneIndex: null, carry: null, actIndex: null } : null;
   // Mock-determinism clock for the derive channel, view-visible material only:
   // a derivable non-pattern fact first SEEN at turn t (from the learner's own
   // board — one turn after the engine's firstAvailable, since the view shows
@@ -4281,6 +4484,81 @@ export function makeLlmLearner({
       : '(none yet)';
 
     const patternAssertion = computePatternAssertion(view, adoptable);
+    // --- Learner-ledger scene/act lifecycle (Phase 2): audit the sealed
+    // scene's intent at the next opening (conformance only — did I do what I
+    // said I would do when lost), then demand a fresh intent; the act carry
+    // expires when its act ends and is re-demanded on the new act's first
+    // turn. All learner-private: none of this enters a tutor view. ---
+    const ledgerSceneOpening = Boolean(learnerLedger && view.scene && view.scene.startTurn === view.turn);
+    const ledgerActOpening = Boolean(
+      learnerLedger &&
+      view.act &&
+      view.act.startTurn === view.turn &&
+      view.act.index > 1 &&
+      learnerLedgerState.actIndex !== view.act.index,
+    );
+    let sceneIntentAudit = null;
+    if (
+      learnerLedger &&
+      ledgerSceneOpening &&
+      learnerLedgerState.intent &&
+      view.lastClosedScene &&
+      learnerLedgerState.sceneIndex === view.lastClosedScene.index
+    ) {
+      const audit = auditLearnerSceneIntent(learnerLedgerState.intent, view.lastClosedScene);
+      if (audit) sceneIntentAudit = { sceneIndex: view.lastClosedScene.index, ...audit };
+      learnerLedgerState.intent = null;
+      learnerLedgerState.sceneIndex = null;
+    }
+    if (learnerLedger && view.act && learnerLedgerState.carry && learnerLedgerState.actIndex !== view.act.index) {
+      learnerLedgerState.carry = null; // its act has ended; the boundary already cleared the stage
+    }
+    const learnerLedgerLines = (() => {
+      if (!learnerLedger) return [];
+      const lines = [];
+      if (sceneIntentAudit) {
+        lines.push(
+          '',
+          `Your intention for the last scene, checked against the record: ${sceneIntentAudit.summary}.`,
+          ...sceneIntentAudit.clauses.map((c) => `- [${c.verdict}] ${c.clause}${c.evidence ? ` — ${c.evidence}` : ''}`),
+        );
+      }
+      if (ledgerSceneOpening) {
+        lines.push(
+          '',
+          'A new scene opens. COMMIT YOUR OWN INTENTION for it in "scene_intent" —',
+          'what you want from this scene ("want"), what you will do if you get lost',
+          '("if_lost": "ask_repair" | "resist" | "try_own_derivation"), and the speech',
+          'posture you mean to keep ("speech_posture"). This is yours alone; hold',
+          'yourself to it, or notice aloud when you cannot.',
+        );
+      } else if (learnerLedgerState.intent) {
+        const intent = learnerLedgerState.intent;
+        lines.push(
+          '',
+          `YOUR OWN INTENTION for this scene (you committed this at its opening):`,
+          ...(intent.want ? [`- want: ${intent.want}`] : []),
+          ...(intent.ifLost ? [`- if lost: ${intent.ifLost.replace(/_/g, ' ')}`] : []),
+          ...(intent.speechPosture ? [`- speech posture: ${intent.speechPosture}`] : []),
+          'Hold yourself to it, or notice aloud when you cannot.',
+        );
+      }
+      if (ledgerActOpening) {
+        lines.push(
+          '',
+          'The act has turned and the stage is cleared. COMMIT in "act_carry": what you',
+          'carry forward on your record ("carry_forward") and what you still owe the',
+          'question ("still_owe").',
+        );
+      } else if (learnerLedgerState.carry) {
+        const carry = learnerLedgerState.carry;
+        lines.push(
+          '',
+          `What you carried into this act: ${carry.carryForward || '(nothing named)'}. What you still owe: ${carry.stillOwe || '(nothing named)'}.`,
+        );
+      }
+      return lines;
+    })();
     const castState = castLayer
       ? deriveCastState({
           worldCast: cast,
@@ -4307,6 +4585,7 @@ export function makeLlmLearner({
       sameTurnAssertionAffordance,
       castState,
       learnerDriftState,
+      learnerLedger,
     });
     const user = [
       `Turn ${view.turn}.${
@@ -4321,6 +4600,7 @@ export function makeLlmLearner({
             ...sceneRecognitionNeedLines(view.scene, 'learner'),
           ]
         : []),
+      ...learnerLedgerLines,
       '',
       'The last lines spoken:',
       renderTranscriptTail(view.transcript),
@@ -4367,8 +4647,39 @@ export function makeLlmLearner({
         ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
         ...(castState ? { castState } : {}),
         ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),
+        // mock determinism (learner ledger): canned boundary commitments so
+        // zero-paid runs traverse the commit/audit path. Real backend ignores.
+        ...(ledgerSceneOpening
+          ? {
+              sceneIntentHint: {
+                want: 'follow the scene goal and test each claim before keeping it',
+                if_lost: 'ask_repair',
+                speech_posture: 'plain and testing',
+              },
+            }
+          : {}),
+        ...(ledgerActOpening
+          ? {
+              actCarryHint: {
+                carry_forward: 'the facts standing on my record',
+                still_owe: 'the final answer, not yet grounded',
+              },
+            }
+          : {}),
       },
     });
+    // Learner-ledger parse (shape-gated like every commitment): boundary
+    // turns only; a parse-miss leaves the boundary uncommitted, visibly.
+    const sceneIntent = ledgerSceneOpening ? normalizeLearnerSceneIntent(out.scene_intent) : null;
+    if (sceneIntent) {
+      learnerLedgerState.intent = sceneIntent;
+      learnerLedgerState.sceneIndex = view.scene.index;
+    }
+    const actCarry = ledgerActOpening ? normalizeLearnerActCarry(out.act_carry) : null;
+    if (actCarry) {
+      learnerLedgerState.carry = actCarry;
+      learnerLedgerState.actIndex = view.act.index;
+    }
 
     const adopt = validIndices(out.adopt_indices, adoptable.length).map((i) => adoptable[i]);
     const rawRetract = validIndices(out.retract_indices, view.abox.grounded.length).map((i) => view.abox.grounded[i]);
@@ -4431,6 +4742,9 @@ export function makeLlmLearner({
           }
         : {}),
       ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),
+      ...(sceneIntent ? { sceneIntent } : {}),
+      ...(actCarry ? { actCarry } : {}),
+      ...(sceneIntentAudit ? { sceneIntentAudit } : {}),
     };
   };
 }
