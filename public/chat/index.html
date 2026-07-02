@@ -19,8 +19,8 @@
   import * as OH from './orientation-helpers.js';
   window.OH = OH;
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@13.0.3/marked.min.js"></script>
+<script defer src="vendor/alpinejs-3.14.1.min.js"></script>
+<script src="vendor/marked-13.0.3.min.js"></script>
 
 <style>
 /* ═══════════════════════════════════════════════════════════════
@@ -155,48 +155,34 @@ body {
   height: 100vh;
 }
 
-/* ══════ chrome (sticky top) ══════ */
-.chrome {
+/* ══════ chat toolbar ══════ */
+.chat-toolbar {
   z-index: 20;
-  padding-block: 0.55rem 0.45rem;
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.4vw, 18px);
+  padding: 8px var(--margin);
   background: color-mix(in oklab, var(--paper) 94%, transparent);
   border-bottom: 1px solid var(--rule);
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: var(--s-0);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   flex-shrink: 0;
 }
-.chrome__nav {
-  display: grid;
-  grid-template-columns: repeat(60, 1fr);
-  column-gap: var(--gutter);
-  padding-inline: var(--margin);
-  align-items: baseline;
-}
-.mark {
-  grid-column: 2 / 15;
-  display: inline-flex; align-items: baseline; gap: 0.5em;
-  font-weight: 500;
-  font-size: var(--s-0);
-}
-.mark__glyph {
-  color: var(--brick);
-  font-size: 1.3em;
-  transform: translateY(0.12em);
-  display: inline-block;
-}
-@keyframes spin { to { transform: translateY(0.12em) rotate(360deg); } }
-.mark__sep { color: var(--ink-3); margin: 0 0.25em; }
-
 .chapters {
-  grid-column: 18 / 48;
   list-style: none; margin: 0; padding: 0;
   display: flex;
   gap: clamp(8px, 1.2vw, 22px);
-  justify-content: center;
-  align-items: baseline;
-  flex-wrap: wrap;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+.chapters::-webkit-scrollbar {
+  display: none;
 }
 .chapters a {
   text-decoration: none;
@@ -212,6 +198,9 @@ body {
   font-weight: 400;
   letter-spacing: 0.08em;
 }
+.chapter-label {
+  display: inline;
+}
 .chapters a::after {
   content: "";
   position: absolute; left: 0; right: 100%; bottom: -2px;
@@ -222,13 +211,12 @@ body {
 .chapters a.is-active em { color: var(--brick); }
 .chapters a.is-active::after { right: 0; background: var(--brick); }
 
-.stamp {
-  grid-column: 54 / 60;
-  justify-self: end;
-  display: inline-flex; align-items: baseline; gap: 0.4em;
+.chat-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
 }
-.stamp__glyph { color: var(--prussian); font-size: 1.1em; }
-.stamp__year  { color: var(--ink-2); }
 
 .xray-btn {
   all: unset;
@@ -248,80 +236,8 @@ body {
 .xray-btn span[aria-hidden] { color: var(--brick); font-size: 1.1em; }
 .xray-btn[aria-pressed="true"] span[aria-hidden] { color: var(--sun); }
 
-/* chrome button positions */
-.chrome__nav > .cli-btn      { grid-column: 45 / 51; }
-.chrome__nav > .xray-btn:not(.cli-btn) { grid-column: 51 / 54; }
 .cli-btn[aria-pressed="true"] { background: var(--brick); border-color: var(--brick); color: var(--paper); }
 .cli-btn[aria-pressed="true"] span[aria-hidden] { color: var(--sun); }
-
-/* ruler — live 60-col register below the chrome nav */
-.ruler {
-  display: none;
-  grid-template-columns: repeat(60, 1fr);
-  column-gap: var(--gutter);
-  padding: 4px var(--margin) 3px;
-  border-top: 1px solid color-mix(in oklab, var(--ink) 10%, transparent);
-  font-family: "JetBrains Mono", monospace;
-  font-size: clamp(8px, 0.62vw, 10.5px);
-  line-height: 1;
-  position: relative;
-  color: var(--ink-2);
-  user-select: none;
-}
-.ruler .cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 13px;
-  position: relative;
-  letter-spacing: 0;
-  transition: color 0.25s var(--ease);
-}
-.ruler .cell--num { color: var(--ink); font-weight: 500; }
-.ruler .cell--5   { color: color-mix(in oklab, var(--ink) 52%, transparent); }
-.ruler .cell--tick{ color: color-mix(in oklab, var(--ink) 22%, transparent); }
-.ruler .cell.is-lit { color: var(--brick); }
-.ruler .cell.is-lit::after {
-  content: "";
-  position: absolute; left: 0; right: 0; bottom: -3px;
-  height: 2px; background: var(--brick);
-}
-.ruler .cell.is-marker { color: var(--sun); font-weight: 600; }
-.ruler .cell.is-marker::before {
-  content: "▼";
-  position: absolute;
-  bottom: calc(100% - 1px);
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 7px;
-  color: var(--sun);
-}
-.ruler__span {
-  position: absolute;
-  bottom: 0;
-  height: 2px;
-  background: linear-gradient(to right, transparent, var(--brick), transparent);
-  transition: left 0.5s var(--ease), width 0.5s var(--ease), opacity 0.4s var(--ease);
-  opacity: 0.9;
-  pointer-events: none;
-}
-.ruler__label {
-  position: absolute;
-  bottom: 4px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
-  color: var(--brick);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  padding: 0 4px;
-  background: color-mix(in oklab, var(--paper) 88%, transparent);
-  transform: translateY(calc(100% + 2px));
-  transition: left 0.5s var(--ease), opacity 0.4s var(--ease);
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 2;
-}
-.ruler__label em { color: var(--ink); font-style: normal; margin-right: 0.35em; }
 
 /* grid x-ray overlay */
 .xray-overlay {
@@ -351,31 +267,6 @@ body.xray-on .xray-overlay { opacity: 1; }
 .xray-overlay__col[data-i="30"] {
   outline-color: color-mix(in oklab, var(--prussian) 60%, transparent);
 }
-
-/* ══════ cover pretext ══════ */
-.cover-pretext {
-  margin: 10px var(--margin) 0;
-  padding: 8px 12px;
-  border: 1px solid var(--rule);
-  background: color-mix(in oklab, var(--paper-4) 92%, transparent);
-  font-family: "JetBrains Mono", monospace;
-  font-size: var(--s-0);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-  display: grid;
-  grid-template-columns: repeat(60, 1fr);
-  column-gap: var(--gutter);
-  align-items: baseline;
-  flex-shrink: 0;
-}
-.cover-pretext__sig  { grid-column: auto; color: var(--brick); font-size: 1.15em; transform: translateY(0.1em); }
-.cover-pretext__tag  { grid-column: auto; color: var(--brick); font-weight: 500; letter-spacing: 0.16em; }
-.cover-pretext__rule { grid-column: auto; height: 1px; border-bottom: 1px dashed color-mix(in oklab, var(--ink) 28%, transparent); transform: translateY(-0.32em); }
-.cover-pretext__body { grid-column: 4 / 46; color: var(--ink-2); }
-.cover-pretext__body em { color: var(--ink); font-style: normal; font-weight: 500; letter-spacing: 0.04em; text-transform: none; padding-inline: 0.15em; }
-.cover-pretext__cta  { grid-column: 46 / 60; color: var(--brick); letter-spacing: 0.12em; text-align: right; font-weight: 500; }
-.cover-pretext__cta.warn { color: var(--ochre); }
 
 /* ══════ main split ══════ */
 main.split {
@@ -762,6 +653,98 @@ section.fg::before {
   text-transform: none;
   line-height: 1.3;
 }
+.scene-source-row {
+  grid-template-columns: 4.4em 1fr;
+}
+.scene-source-row .num {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.scene-source-row .ttl {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.scene-source-row .ttl small {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.lec-row.is-active .ttl small { color: color-mix(in oklab, var(--paper) 70%, transparent); }
+
+/* director / scene frame */
+.scene-frame {
+  border-bottom-color: color-mix(in oklab, var(--prussian) 28%, transparent);
+}
+.director-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 4px;
+}
+.director-control,
+.scene-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.director-control span,
+.scene-field span {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.director-control select,
+.scene-field input {
+  width: 100%;
+  min-height: 31px;
+  border: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--paper-4) 86%, transparent);
+  color: var(--ink);
+  padding: 4px 7px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.92);
+  letter-spacing: 0.02em;
+}
+.director-control select:focus,
+.scene-field input:focus {
+  outline: 1px solid var(--brick);
+  outline-offset: 1px;
+}
+.scene-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+.scene-source-note {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-left: 2px solid var(--prussian);
+  background: color-mix(in oklab, var(--prussian) 7%, transparent);
+  color: var(--ink-2);
+}
+.scene-source-note__head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.9);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--prussian);
+}
+.scene-source-note__body {
+  margin: 2px 0 0;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-0);
+  font-style: italic;
+  font-variation-settings: "opsz" 16;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
 
 /* ══════ manifest (compact) ══════ */
 .manifest {
@@ -881,6 +864,88 @@ section.fg::before {
   letter-spacing: 0.04em;
   color: var(--ink-3);
   text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.results-note {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed color-mix(in oklab, var(--moss-deep) 30%, transparent);
+  color: var(--ink-2);
+}
+.results-note__head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.9);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--moss-deep);
+  margin-bottom: 0.25em;
+}
+.results-note__body {
+  margin: 0;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-0);
+  font-style: italic;
+  font-variation-settings: "opsz" 16;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.results-note[data-status="no_data"] .results-note__head,
+.results-note[data-status="unavailable"] .results-note__head,
+.results-note[data-status="unscored"] .results-note__head {
+  color: var(--ink-3);
+}
+
+.session-actions {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed color-mix(in oklab, var(--brick) 28%, transparent);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.session-action {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--paper-4) 88%, transparent);
+  color: var(--ink);
+  text-decoration: none;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.9);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 5px 7px;
+  cursor: pointer;
+}
+.session-action:hover {
+  border-color: var(--brick);
+  background: color-mix(in oklab, var(--brick) 9%, var(--paper-4));
+}
+.session-action--primary {
+  background: var(--moss-deep);
+  border-color: var(--moss-deep);
+  color: var(--paper);
+}
+.session-action--primary:hover {
+  background: var(--brick);
+  border-color: var(--brick);
+}
+.session-action-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--ink-3);
+  font-family: "Fraunces", serif;
+  font-size: var(--s-0);
+  font-style: italic;
+  line-height: 1.3;
+}
+.session-action-note em {
+  color: var(--brick);
 }
 
 /* trade-offs (closest match) */
@@ -1264,20 +1329,7 @@ section.fg::before {
   flex-shrink: 0;
 }
 .dialogue__head::before {
-  content: "V";
-  position: absolute;
-  top: -4px;
-  right: 2px;
-  font-family: "Fraunces", serif;
-  font-variation-settings: "opsz" 144, "wght" 260;
-  font-style: italic;
-  font-size: clamp(2.6rem, 4.6vw, 4.4rem);
-  line-height: 0.8;
-  letter-spacing: -0.04em;
-  color: var(--ink);
-  opacity: 0.06;
-  pointer-events: none;
-  user-select: none;
+  display: none;
 }
 
 .chat-log {
@@ -1298,10 +1350,11 @@ section.fg::before {
   font-variation-settings: "opsz" 24;
   line-height: 1.45;
   color: var(--ink-2);
-  padding-block: clamp(24px, 4vw, 60px);
-  border: 1px solid var(--rule);
-  background: color-mix(in oklab, var(--paper-4) 70%, transparent);
-  padding-inline: clamp(16px, 2vw, 28px);
+  padding: clamp(22px, 3vw, 42px) clamp(8px, 1.5vw, 18px);
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  background: transparent;
+  max-width: 48rem;
 }
 .onboarding em { font-style: italic; color: var(--brick); }
 .onboarding p { margin: 0 0 0.6em; max-width: 44ch; }
@@ -1758,7 +1811,7 @@ details.learner-trace .spec-row__lbl em.step-ego { color: var(--ink-2); }
 details.learner-trace .spec-row__lbl em.step-superego { color: var(--moss); }
 details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre); }
 
-/* ══════ mode toggle (inline, single-row) ══════ */
+/* ══════ scene author toggle (inline, single-row) ══════ */
 .mode {
   display: flex;
   align-items: baseline;
@@ -1769,7 +1822,7 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.mode__lbl { color: var(--ink-3); letter-spacing: 0.14em; }
+.mode__lbl { color: var(--brick); letter-spacing: 0.14em; font-weight: 500; }
 .mode__toggle { display: inline-flex; border: 1px solid var(--ink); }
 .mode__btn {
   all: unset;
@@ -1960,22 +2013,6 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 .composer button:hover { background: var(--brick); border-color: var(--brick); }
 .composer button:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
 
-/* corner registers */
-.reg {
-  position: absolute;
-  font-family: "JetBrains Mono", monospace;
-  font-size: var(--s-0);
-  color: var(--ink-2);
-  letter-spacing: 0.06em;
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0.75;
-}
-.reg--tl { top: 6px; left: 6px; }
-.reg--tr { top: 6px; right: 6px; }
-.reg--bl { bottom: 72px; left: 6px; }
-.reg--br { bottom: 72px; right: 6px; color: var(--brick); font-size: var(--s-1); }
-
 /* scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -1996,39 +2033,28 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
     --gutter: 4px;
   }
   body {
-    overflow: hidden;
+    overflow: auto;
     letter-spacing: 0;
   }
+  .app {
+    height: auto;
+    min-height: 100vh;
+  }
   .app,
-  .chrome,
-  .cover-pretext,
+  .chat-toolbar,
   main.split,
   aside.config,
   section.dialogue {
     max-width: 100vw;
   }
-  .chrome {
-    padding-block: 0.55rem;
-  }
-  .chrome__nav {
-    display: flex;
-    flex-wrap: wrap;
+  .chat-toolbar {
+    flex-wrap: nowrap;
     gap: 8px 10px;
     align-items: center;
-    padding-inline: var(--margin);
-  }
-  .mark,
-  .chapters,
-  .stamp,
-  .chrome__nav > .cli-btn,
-  .chrome__nav > .xray-btn:not(.cli-btn) {
-    grid-column: auto;
-  }
-  .mark {
-    flex: 1 1 100%;
+    overflow: hidden;
   }
   .chapters {
-    flex: 1 1 100%;
+    flex: 1 1 0;
     justify-content: flex-start;
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -2047,41 +2073,32 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   .xray-btn {
     display: inline-flex;
   }
-  .stamp,
-  .ruler {
-    display: none;
-  }
-  .cover-pretext {
-    grid-template-columns: 1fr;
-    gap: 3px;
-    padding-inline: var(--margin);
-  }
-  .cover-pretext__sig,
-  .cover-pretext__tag,
-  .cover-pretext__rule,
-  .cover-pretext__body,
-  .cover-pretext__cta {
-    grid-column: auto;
-    text-align: left;
-  }
-  .cover-pretext__rule {
-    display: none;
+  .chat-toolbar__actions {
+    margin-left: 0;
   }
   main.split {
     grid-template-columns: 1fr;
     row-gap: 12px;
-    overflow: hidden;
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: visible;
   }
   aside.config {
     grid-column: auto;
-    max-height: 45vh;
+    max-height: none;
     border-right: 0;
     border-bottom: 1px solid color-mix(in oklab, var(--ink) 16%, transparent);
     padding-right: 0;
+    overflow: visible;
+  }
+  .config__body {
+    flex: 0 0 auto;
+    overflow: visible;
   }
   section.dialogue {
     grid-column: auto;
     padding-left: 0;
+    min-height: 72vh;
   }
   .fg-head {
     flex-wrap: wrap;
@@ -2136,6 +2153,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   .mode__meta {
     flex-basis: 100%;
   }
+  .session-actions {
+    grid-template-columns: 1fr;
+  }
+  .director-grid,
+  .scene-fields {
+    grid-template-columns: 1fr;
+  }
   .persona-strip {
     padding-bottom: 6px;
   }
@@ -2185,6 +2209,18 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   }
 }
 
+@media (max-width: 560px) {
+  .chat-toolbar {
+    gap: 8px;
+  }
+  .chapters {
+    gap: 10px;
+  }
+  .chapter-label {
+    display: none;
+  }
+}
+
 @media (max-width: 520px) {
   .chips {
     grid-template-columns: 1fr;
@@ -2215,66 +2251,38 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
 <div class="app" x-data="chatApp()" x-init="init()" x-cloak>
 
-  <!-- ══════ CHROME ══════ -->
-  <header class="chrome">
-    <nav class="chrome__nav">
-      <span class="mark">
-        <span class="mark__glyph">◐</span>
-        <span>Machine Spirits</span>
-        <span class="mark__sep">/</span>
-        <span>Chat</span>
-      </span>
-      <ol class="chapters">
-        <li><a @click.prevent="scrollTo('fg-01')"><em>§01</em> Approach</a></li>
-        <li><a @click.prevent="scrollTo('fg-02')"><em>§02</em> Critic</a></li>
-        <li><a @click.prevent="scrollTo('fg-03')" x-show="stanceVisible"><em>§03</em> Stance</a></li>
-        <li><a @click.prevent="scrollTo('fg-04')"><em>§04</em> Learner</a></li>
-        <li><a @click.prevent="scrollTo('dialogue')"><em>§V</em> Dialogue</a></li>
-      </ol>
+  <!-- ══════ CHAT TOOLBAR ══════ -->
+  <header class="chat-toolbar" aria-label="Tutor chat controls">
+    <ol class="chapters" aria-label="Chat sections">
+      <li><a @click.prevent="scrollTo('fg-00')"><em>§00</em> <span class="chapter-label">Scene</span></a></li>
+      <li><a @click.prevent="scrollTo('fg-01')"><em>§01</em> <span class="chapter-label">Approach</span></a></li>
+      <li><a @click.prevent="scrollTo('fg-02')"><em>§02</em> <span class="chapter-label">Critic</span></a></li>
+      <li><a @click.prevent="scrollTo('fg-03')" x-show="stanceVisible"><em>§03</em> <span class="chapter-label">Stance</span></a></li>
+      <li><a @click.prevent="scrollTo('fg-04')"><em>§04</em> <span class="chapter-label">Learner</span></a></li>
+      <li><a @click.prevent="scrollTo('dialogue')"><em>§V</em> <span class="chapter-label">Script</span></a></li>
+    </ol>
+    <div class="chat-toolbar__actions">
       <button class="xray-btn cli-btn" @click="toggleCli" :aria-pressed="useClaudeCli" :title="useClaudeCli ? 'routing all tutor calls through local claude CLI · click to disable' : 'use local claude CLI (opus 4.7) instead of cell YAML models'">
         <span aria-hidden="true">◇</span><span x-text="useClaudeCli ? 'opus 4.7' : 'cli off'"></span>
       </button>
       <button class="xray-btn" @click="toggleXray" :aria-pressed="xray">
         <span aria-hidden="true">⌗</span><span>grid</span>
       </button>
-      <span class="stamp">
-        <span class="stamp__glyph" aria-hidden="true">◎</span>
-        <span class="stamp__year">MMXXVI</span>
-      </span>
-    </nav>
-    <!-- live 60-col ruler -->
-    <div class="ruler" id="ruler" aria-hidden="true">
-      <div class="ruler__span" id="rulerSpan"></div>
-      <div class="ruler__label" id="rulerLabel" style="opacity: 0"></div>
     </div>
   </header>
-
-  <!-- ══════ COVER PRETEXT ══════ -->
-  <aside class="cover-pretext" aria-label="Specimen pretext">
-    <span class="cover-pretext__sig" aria-hidden="true">◦</span>
-    <span class="cover-pretext__tag">pretext</span>
-    <span class="cover-pretext__rule" aria-hidden="true"></span>
-    <span class="cover-pretext__body">
-      composing a tutor · <em x-text="resolved?.name || 'cell —'"></em> · specimen mmxxvi
-    </span>
-    <span class="cover-pretext__cta" :class="{warn: matchQuality === 'closest'}" x-show="resolved">
-      [match] <span x-text="(matchQuality || '').toUpperCase()"></span>
-      <span x-show="resolved?.score !== undefined"> · <span x-text="resolved?.score ?? ''"></span>/<span x-text="maxScore"></span></span>
-    </span>
-  </aside>
 
   <!-- ══════ MAIN SPLIT ══════ -->
   <main class="split">
 
     <!-- ═══ LEFT: CONFIGURATOR ═══ -->
-    <aside class="config" @mouseenter="setRulerZone('config')" @mouseleave="setRulerZone(null)">
+    <aside class="config">
       <div class="config__body">
 
         <div class="topic">
           <label class="topic__lbl" for="chat-topic">
             Topic
-            <template x-if="lectureRef">
-              <span class="topic__curriculum-pill" title="curriculum attached">◦ <em x-text="lectureRef"></em> <button type="button" class="topic__clear" @click="clearCurriculum()">×</button></span>
+            <template x-if="activeSourceLabel">
+              <span class="topic__curriculum-pill" title="curriculum attached">◦ <em x-text="activeSourceLabel"></em> <button type="button" class="topic__clear" @click="clearCurriculum()">×</button></span>
             </template>
           </label>
           <input id="chat-topic" type="text" class="topic__input" x-model="topic" placeholder="e.g. Hegel's concept of recognition — a line is a dot that went for a walk" />
@@ -2282,9 +2290,44 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <summary>
               <span class="chev">▸</span>
               <span>pick from <em>curriculum</em></span>
-              <span class="count" x-show="curricula.length" x-text="'· ' + totalLectures + ' lectures across ' + curricula.length + ' packages'"></span>
+              <span class="count" x-show="curricula.length || sceneSources.length" x-text="sourceCountLabel"></span>
             </summary>
             <div class="curriculum-body">
+              <template x-if="sceneSources.length">
+                <div class="curriculum-pkg">
+                  <div class="curriculum-pkg__head">
+                    <span class="sig">◦</span>
+                    <span class="lbl">compiled scene sources</span>
+                    <span class="rule"></span>
+                    <span class="folio">modules · worlds · dramas · plans</span>
+                  </div>
+                  <template x-for="grp in groupedSceneSources" :key="grp.group">
+                    <div class="curriculum-course">
+                      <div class="curriculum-course__title">
+                        <em x-text="grp.count"></em>
+                        <span x-text="grp.group"></span>
+                      </div>
+                      <div class="curriculum-lectures">
+                        <template x-for="src in grp.sources" :key="src.ref">
+                          <button
+                            type="button"
+                            class="lec-row scene-source-row"
+                            :class="{'is-active': curriculumRef === src.ref}"
+                            @click="pickSceneSource(src)"
+                            :title="src.ref"
+                          >
+                            <span class="num" x-text="sourceKindShort(src.kind)"></span>
+                            <span class="ttl">
+                              <span x-text="src.label"></span>
+                              <small x-text="sourceMeta(src)"></small>
+                            </span>
+                          </button>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
               <template x-for="pkg in curricula" :key="pkg.id">
                 <div class="curriculum-pkg">
                   <div class="curriculum-pkg__head">
@@ -2320,6 +2363,68 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             </div>
           </details>
         </div>
+
+        <!-- §00 Director / Scene -->
+        <section class="fg scene-frame" data-ghost="0" id="fg-00">
+          <div class="fg-head">
+            <span class="fg-head__no">§00</span>
+            <span class="fg-head__ttl">Director / <em>Scene</em></span>
+            <span class="fg-head__rule"></span>
+            <span class="fg-head__hint">curriculum source, act, and beat before cell architecture</span>
+          </div>
+          <div class="director-grid">
+            <label class="director-control">
+              <span>director</span>
+              <select x-model="director.mode">
+                <option value="scene-card">scene card</option>
+                <option value="strict">strict</option>
+                <option value="off">off</option>
+              </select>
+            </label>
+            <label class="director-control">
+              <span>act</span>
+              <select x-model="director.act">
+                <option value="setup">setup</option>
+                <option value="complication">complication</option>
+                <option value="peripeteia">peripeteia</option>
+                <option value="recognition">recognition</option>
+                <option value="catharsis">catharsis</option>
+              </select>
+            </label>
+            <label class="director-control">
+              <span>beat</span>
+              <select x-model="director.beat">
+                <option value="opening">opening</option>
+                <option value="stock_take">stock-take</option>
+                <option value="route_change">route-change</option>
+                <option value="action_gate">action gate</option>
+                <option value="recognition_press">recognition press</option>
+                <option value="closure">closure</option>
+              </select>
+            </label>
+          </div>
+          <div class="scene-fields">
+            <label class="scene-field">
+              <span>scene</span>
+              <input type="text" x-model="director.scene" placeholder="artifact review desk; visible object..." />
+            </label>
+            <label class="scene-field">
+              <span>director note</span>
+              <input type="text" x-model="director.note" placeholder="private constraint for the next turn..." />
+            </label>
+          </div>
+          <template x-if="selectedSceneSource">
+            <div class="scene-source-note">
+              <div class="scene-source-note__head" x-text="selectedSceneSource.sourceGroup"></div>
+              <p class="scene-source-note__body">
+                <span x-text="selectedSceneSource.dramaticShape || selectedSceneSource.summary || selectedSceneSource.title"></span>
+                <template x-if="selectedSceneSource.artifact">
+                  <span> · artifact: <em x-text="selectedSceneSource.artifact"></em></span>
+                </template>
+              </p>
+            </div>
+          </template>
+        </section>
 
         <!-- §01 Approach -->
         <section class="fg" data-ghost="I" id="fg-01">
@@ -2454,13 +2559,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           </div>
         </section>
 
-        <!-- §04 Learner model -->
+        <!-- §04 Learner architecture -->
         <section class="fg" data-ghost="IV" id="fg-04">
           <div class="fg-head">
             <span class="fg-head__no">§04</span>
-            <span class="fg-head__ttl">Learner <em>model</em></span>
+            <span class="fg-head__ttl">Learner <em>architecture</em></span>
             <span class="fg-head__rule"></span>
-            <span class="fg-head__hint">evaluator's <em>simulation</em> choice</span>
+            <span class="fg-head__hint">evaluator's <em>simulation architecture</em></span>
           </div>
           <div class="chips">
             <button class="chip" :class="{'is-active': features.learnerModel === 'surface'}" @click="setLearner('surface')">
@@ -2564,7 +2669,20 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               </template>
             </select>
           </div>
-          <div class="model-note" x-show="useClaudeCli">claude cli active</div>
+          <div class="model-note" x-text="overrideNote()"></div>
+        </div>
+
+        <template x-if="resolved?.resultSummary">
+          <div class="results-note" :data-status="resolved?.resultSummary?.status || 'unknown'">
+            <div class="results-note__head">existing results</div>
+            <p class="results-note__body" x-text="resolved?.resultSummary?.note || 'No existing result note available.'"></p>
+          </div>
+        </template>
+
+        <div class="session-actions">
+          <a class="session-action session-action--primary" :href="runLauncherHref()">batch-generate scripts</a>
+          <button class="session-action" type="button" @click="setMode('auto'); scrollTo('dialogue')">use AI cast here</button>
+          <p class="session-action-note">The live panel drafts <em>one scene</em>. Batch mode sends this cell through eval scenarios to produce candidate tutoring scripts.</p>
         </div>
 
         <div class="tradeoffs" x-show="relaxedDimensions.length">
@@ -2728,18 +2846,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
     </aside>
 
     <!-- ═══ RIGHT: DIALOGUE ═══ -->
-    <section class="dialogue" id="dialogue" @mouseenter="setRulerZone('dialogue')" @mouseleave="setRulerZone(null)">
-      <span class="reg reg--tl" aria-hidden="true">+ 01.00</span>
-      <span class="reg reg--tr" aria-hidden="true">60.00 +</span>
-      <span class="reg reg--bl" aria-hidden="true">+ 47.00</span>
-      <span class="reg reg--br" aria-hidden="true">∴</span>
-
+    <section class="dialogue" id="dialogue">
       <div class="dialogue__head">
         <div class="fg-head">
           <span class="fg-head__no">§V</span>
-          <span class="fg-head__ttl"><em>Dialogue</em></span>
+          <span class="fg-head__ttl"><em>Script</em></span>
           <span class="fg-head__rule"></span>
-          <span class="fg-head__hint">ego-superego loop, <em>legible</em> below</span>
+          <span class="fg-head__hint">drafted scene, <em>deliberation</em> legible below</span>
         </div>
       </div>
 
@@ -2748,8 +2861,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <!-- onboarding -->
         <template x-if="turns.length === 0 && resolved">
           <div class="onboarding">
-            <p>A dialogue begins with a <em>prompt</em>. Type a question or a provocation below, as the learner would, and the tutor will answer from the configuration you've composed.</p>
-            <p>Each tutor turn is decomposed into its steps — <em>ego draft</em>, <em>superego critique</em>, <em>ego revision</em> — so the architecture at work is visible, not hidden.</p>
+            <p>This is a script desk for a <em>pedagogical drama</em>. Set the source and director frame in <em>§00</em>, pick a tutor architecture, then use the composer below to write the next line of the scene.</p>
+            <p>For a human-in-the-loop draft, choose <em>I write learner</em> or <em>I write tutor</em>. For a fully synthetic draft, choose <em>AI writes both</em> and press <em>Start scene</em>.</p>
           </div>
         </template>
 
@@ -2927,37 +3040,37 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
         <!-- mode toggle -->
         <div class="mode">
-          <span class="mode__lbl">◦ <span x-text="humanSeat"></span></span>
+          <span class="mode__lbl">◦ scene author</span>
           <div class="mode__toggle">
-            <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')">I'm the learner</button>
-            <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')">I'm the teacher</button>
-            <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">Watch both</button>
+            <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')">I write learner</button>
+            <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')">I write tutor</button>
+            <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">AI writes both</button>
           </div>
-          <span class="mode__meta" x-show="mode === 'human'">— you reply as the learner; the resolved cell teaches</span>
-          <span class="mode__meta" x-show="mode === 'teacher'">— you teach; the synthetic learner (persona below) replies</span>
-          <span class="mode__meta" x-show="mode === 'auto'">— both agents converse; you observe</span>
+          <span class="mode__meta" x-show="mode === 'human'">— start here: write the learner line; the configured tutor answers</span>
+          <span class="mode__meta" x-show="mode === 'teacher'">— write the tutor line yourself; the selected learner answers</span>
+          <span class="mode__meta" x-show="mode === 'auto'">— choose a learner persona, then let both sides draft the next exchange</span>
         </div>
 
         <!-- HUMAN MODE -->
         <template x-if="mode === 'human'">
           <div>
             <p class="composer__pretext">
-              <span class="tag">◦ compose</span>
+              <span class="tag">◦ write learner line</span>
               <span class="rule"></span>
-              <span class="cell">enter ↵ · shift+enter for newline</span>
+              <span class="cell">press send line to make the tutor answer</span>
             </p>
             <form @submit.prevent="send">
-              <span class="composer__prompt">learner :~ $</span>
+              <span class="composer__prompt">learner line</span>
               <textarea
                 aria-label="Learner message"
                 x-model="input"
                 @keydown.enter.prevent="$event.shiftKey ? input += '\n' : send()"
                 :disabled="pending"
                 rows="2"
-                placeholder="type as the learner… a line is a dot that went for a walk."
+                placeholder="write the learner's opening line or next reply..."
               ></textarea>
               <button type="submit" :disabled="pending || !input.trim()">
-                <span x-show="!pending">Send →</span>
+                <span x-show="!pending">Send line →</span>
                 <span x-show="pending">···</span>
               </button>
             </form>
@@ -2968,7 +3081,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <template x-if="mode === 'auto'">
           <div>
             <p class="composer__pretext">
-              <span class="tag">◦ persona</span>
+              <span class="tag">◦ AI cast</span>
               <span class="rule"></span>
               <span class="cell" x-show="resolved?.learnerArchitecture?.startsWith('ego_superego')">
                 bilateral · learner runs ego + superego
@@ -2991,11 +3104,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             </div>
             <div class="step-control">
               <div class="step-control__info">
-                <span x-show="turns.length === 0">Click <em>Next exchange</em> to kick off the dialogue — the <em x-text="personaName"></em> will open.</span>
-                <span x-show="turns.length > 0">Continue the dialogue with another learner → tutor exchange.</span>
+                <span x-show="turns.length === 0">Press <em>Start scene</em>; the <em x-text="personaName"></em> opens, then this tutor cell replies.</span>
+                <span x-show="turns.length > 0">Continue the script with another learner → tutor exchange.</span>
               </div>
               <button class="step-control__btn" @click="step()" :disabled="pending">
-                <span x-show="!pending">Next exchange →</span>
+                <span x-show="!pending && turns.length === 0">Start scene →</span>
+                <span x-show="!pending && turns.length > 0">Next exchange →</span>
                 <span x-show="pending && pendingStage.startsWith('learner')">learner ···</span>
                 <span x-show="pending && pendingStage.startsWith('tutor')">tutor ···</span>
                 <span x-show="pending && !pendingStage.startsWith('learner') && !pendingStage.startsWith('tutor')">···</span>
@@ -3008,7 +3122,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <template x-if="mode === 'teacher'">
           <div>
             <p class="composer__pretext">
-              <span class="tag">◦ teaching</span>
+              <span class="tag">◦ write tutor line</span>
               <span class="rule"></span>
               <span class="cell" x-show="resolved?.learnerArchitecture?.startsWith('ego_superego')">
                 replies from <em x-text="personaName"></em> · bilateral learner (ego + superego)
@@ -3030,17 +3144,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               </template>
             </div>
             <form @submit.prevent="sendAsTeacher">
-              <span class="composer__prompt">teacher :~ $</span>
+              <span class="composer__prompt">tutor line</span>
               <textarea
                 aria-label="Teacher message"
                 x-model="input"
                 @keydown.enter.prevent="$event.shiftKey ? input += '\n' : sendAsTeacher()"
                 :disabled="pending"
                 rows="2"
-                placeholder="type as the teacher… open with a question, a reframing, a provocation."
+                placeholder="write the tutor's line: a question, reframing, provocation, or explanation..."
               ></textarea>
               <button type="submit" :disabled="pending || !input.trim()">
-                <span x-show="!pending">Send →</span>
+                <span x-show="!pending">Send line →</span>
                 <span x-show="pending">···</span>
               </button>
             </form>
@@ -3201,10 +3315,16 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
       // curriculum
       curricula: [],
+      sceneSources: [],
       lectureRef: null,
-
-      // ruler state
-      rulerZone: null,       // null | 'config' | 'dialogue'
+      curriculumRef: null,
+      director: {
+        mode: 'scene-card',
+        act: 'setup',
+        beat: 'opening',
+        scene: 'artifact review desk',
+        note: '',
+      },
 
       // claude CLI override (local claude -p · opus 4.7)
       useClaudeCli: false,
@@ -3224,8 +3344,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             grid.appendChild(c);
           }
         }
-        // build the 60-cell ruler
-        this.buildRuler();
         try {
           const [cellsRes, personasRes, curriculaRes, modelsRes] = await Promise.all([
             fetch(this.api('/cells')),
@@ -3235,96 +3353,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           ]);
           this.cells = (await cellsRes.json()).cells || [];
           this.personas = (await personasRes.json()).personas || [];
-          this.curricula = (await curriculaRes.json()).packages || [];
+          const curriculaPayload = await curriculaRes.json();
+          this.curricula = curriculaPayload.packages || [];
+          this.sceneSources = curriculaPayload.sceneSources || [];
           this.modelOptions = (await modelsRes.json()).models || [];
         } catch (err) { console.error(err); }
         await this.resolve();
         this.$watch('features', () => this.debouncedResolve(), { deep: true });
-        this.$watch('rulerZone', () => this.updateRulerSpan());
-        this.$watch('resolved', () => this.updateRulerSpan());
-        this.updateRulerSpan();
-      },
-
-      buildRuler() {
-        const ruler = document.getElementById('ruler');
-        if (!ruler) return;
-        const existingSpan = document.getElementById('rulerSpan');
-        const existingLabel = document.getElementById('rulerLabel');
-        ruler.innerHTML = '';
-        for (let i = 1; i <= 60; i++) {
-          const cell = document.createElement('span');
-          let ch, cls = 'cell';
-          if (i === 1 || i % 10 === 0) { ch = String(i).padStart(2, '0'); cls += ' cell--num'; }
-          else if (i % 5 === 0) { ch = '|'; cls += ' cell--5'; }
-          else { ch = '·'; cls += ' cell--tick'; }
-          cell.className = cls;
-          cell.setAttribute('data-c', i);
-          cell.textContent = ch;
-          ruler.appendChild(cell);
-        }
-        if (existingSpan) ruler.appendChild(existingSpan);
-        if (existingLabel) ruler.appendChild(existingLabel);
-      },
-
-      setRulerZone(zone) { this.rulerZone = zone; },
-
-      get rulerRange() {
-        if (this.rulerZone === 'config') return { from: 2, to: 26, label: 'configurator' };
-        if (this.rulerZone === 'dialogue') return { from: 27, to: 60, label: 'dialogue' };
-        return { from: 2, to: 60, label: null };
-      },
-
-      // Map resolved cell number (1-96) to a ruler column (2-60), so the
-      // little ▼ marker shows where in the factorial space we are.
-      get cellMarkerColumn() {
-        if (!this.resolved?.name) return null;
-        const m = this.resolved.name.match(/^cell_(\d+)/);
-        if (!m) return null;
-        const num = Number(m[1]);
-        // map 1..96 → cols 2..60
-        const col = Math.min(60, Math.max(2, Math.round(2 + (num / 96) * 58)));
-        return { num, col };
-      },
-
-      updateRulerSpan() {
-        const span = document.getElementById('rulerSpan');
-        const label = document.getElementById('rulerLabel');
-        if (!span) return;
-        const { from, to, label: zoneName } = this.rulerRange;
-        const left = ((from - 1) / 60) * 100;
-        const width = ((to - from + 1) / 60) * 100;
-        span.style.left = left + '%';
-        span.style.width = width + '%';
-        span.style.opacity = '1';
-
-        if (label) {
-          label.style.left = left + '%';
-          if (zoneName) {
-            const m = this.cellMarkerColumn;
-            label.innerHTML = `<em>${zoneName}</em> cols ${String(from).padStart(2,'0')}–${String(to).padStart(2,'0')}`
-              + (m ? ` · cell ${String(m.num).padStart(2,'0')}/96` : '');
-            label.style.opacity = '1';
-          } else {
-            const m = this.cellMarkerColumn;
-            if (m) {
-              label.innerHTML = `<em>cell</em> ${String(m.num).padStart(2,'0')}/96 · <em>col</em> ${String(m.col).padStart(2,'0')}`;
-              label.style.opacity = '0.85';
-            } else {
-              label.style.opacity = '0';
-            }
-          }
-        }
-
-        // light cells
-        const ruler = document.getElementById('ruler');
-        if (!ruler) return;
-        const markerCol = this.cellMarkerColumn?.col;
-        ruler.querySelectorAll('.cell').forEach((c) => {
-          const i = Number(c.dataset.c);
-          const inRange = i >= from && i <= to && (i % 10 === 0 || i === 1 || i === from || i === to);
-          c.classList.toggle('is-lit', inRange);
-          c.classList.toggle('is-marker', i === markerCol);
-        });
       },
 
       get personaName() {
@@ -3336,6 +3371,36 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           (s, pkg) => s + pkg.courses.reduce((t, c) => t + (c.lectures?.length || 0), 0),
           0,
         );
+      },
+
+      get selectedSceneSource() {
+        return this.sceneSources.find((src) => src.ref === this.curriculumRef) || null;
+      },
+
+      get activeSourceLabel() {
+        if (this.selectedSceneSource) return this.selectedSceneSource.moduleId || this.selectedSceneSource.id || 'scene';
+        return this.lectureRef || '';
+      },
+
+      get sourceCountLabel() {
+        const parts = [];
+        if (this.sceneSources.length) parts.push(`${this.sceneSources.length} scene sources`);
+        if (this.curricula.length) parts.push(`${this.totalLectures} lectures`);
+        return parts.length ? '· ' + parts.join(' · ') : '';
+      },
+
+      get groupedSceneSources() {
+        const groups = new Map();
+        for (const src of this.sceneSources) {
+          const key = src.sourceGroup || src.kind || 'sources';
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(src);
+        }
+        return [...groups.entries()].map(([group, sources]) => ({
+          group,
+          count: String(sources.length).padStart(2, '0'),
+          sources,
+        }));
       },
 
       setMode(m) {
@@ -3352,13 +3417,66 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
       pickLecture(course, lec) {
         this.lectureRef = lec.ref;
+        this.curriculumRef = null;
         this.topic = `${course.title} — ${lec.title}`;
         // close the drawer
         if (this.$refs.curriculumDrawer) this.$refs.curriculumDrawer.open = false;
       },
 
+      pickSceneSource(src) {
+        this.curriculumRef = src.ref;
+        this.lectureRef = null;
+        this.topic = src.topic || src.title || this.topic;
+        this.director.scene = this.sceneFromSource(src);
+        if (src.kind === 'dramatic_plan' || String(src.kind || '').includes('drama')) {
+          this.director.act = 'complication';
+          this.director.beat = 'opening';
+        }
+        if (this.$refs.curriculumDrawer) this.$refs.curriculumDrawer.open = false;
+      },
+
       clearCurriculum() {
         this.lectureRef = null;
+        this.curriculumRef = null;
+      },
+
+      sceneFromSource(src) {
+        if (src?.artifact) return `artifact review: ${src.artifact}`;
+        if (src?.dramaticShape) return src.dramaticShape;
+        if (src?.title) return src.title;
+        return 'artifact review desk';
+      },
+
+      sourceKindShort(kind) {
+        const map = {
+          module: 'mod',
+          world: 'world',
+          rhetorical_drama: 'rhet',
+          mvp_drama: 'mvp',
+          generated_drama: 'gen',
+          dramatic_plan: 'plan',
+        };
+        return map[kind] || 'src';
+      },
+
+      sourceMeta(src) {
+        return [
+          src.moduleId || null,
+          src.artifact || null,
+          src.directorPolicy ? `director: ${src.directorPolicy}` : null,
+          src.turnCount ? `${src.turnCount} beats` : null,
+        ].filter(Boolean).join(' · ');
+      },
+
+      directorPayload() {
+        return {
+          mode: this.director.mode,
+          act: this.director.act,
+          beat: this.director.beat,
+          scene: this.director.scene,
+          note: this.director.note,
+          sourceRef: this.curriculumRef || this.lectureRef || null,
+        };
       },
 
       get stanceVisible() {
@@ -3493,12 +3611,42 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         return option ? option.value : this.defaultModelLabel(role);
       },
 
+      overrideNote() {
+        if (this.useClaudeCli) {
+          return 'Claude CLI active: local CLI substrate bypasses OpenRouter model selectors.';
+        }
+        if (!this.resolved?.superego) {
+          return 'Admin override: ego substrate can change for this chat; this cell has no superego to override. Blank keeps the cell default.';
+        }
+        return 'Admin override: selectors replace the cell YAML substrates for this chat turn. Blank keeps the cell defaults; the architecture anchor stays this cell.';
+      },
+
       tutorModelOverrides() {
         if (this.useClaudeCli) return {};
         return {
           ego: this.modelOverrides.ego || null,
           superego: this.resolved?.superego ? (this.modelOverrides.superego || null) : null,
         };
+      },
+
+      runLauncherHref() {
+        const q = new URLSearchParams();
+        q.set('kind', 'eval-cell');
+        if (this.resolved?.name) q.set('cell', this.resolved.name);
+        q.set('runs', '1');
+        q.set('scenario', 'new_user_first_visit');
+        q.set('dryRun', '1');
+        q.set('skipRubric', '1');
+        if (!this.useClaudeCli) {
+          if (this.modelOverrides.ego) q.set('egoModel', this.modelOverrides.ego);
+          if (this.resolved?.superego && this.modelOverrides.superego) {
+            q.set('superegoModel', this.modelOverrides.superego);
+          }
+        }
+        if (this.topic) {
+          q.set('description', `Pedagogical drama batch: ${this.resolved?.name || 'cell'} - ${this.topic}`.slice(0, 160));
+        }
+        return `/admin/runs?${q.toString()}`;
       },
 
       scrollTo(id) {
@@ -3561,6 +3709,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               cellName: this.resolved.name,
               history: historyFor(),
               topic: this.topic || 'general conversation',
+              lectureRef: this.lectureRef || null,
+              curriculumRef: this.curriculumRef || null,
+              director: this.directorPayload(),
               personaId: this.personaId,
               useClaudeCli: this.useClaudeCli,
             }),
@@ -3596,6 +3747,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               learnerMessage: this.turns[this.turns.length - 1].content,
               topic: this.topic || 'general conversation',
               lectureRef: this.lectureRef || null,
+              curriculumRef: this.curriculumRef || null,
+              director: this.directorPayload(),
               useClaudeCli: this.useClaudeCli,
               modelOverrides: this.tutorModelOverrides(),
             }),
@@ -3643,6 +3796,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               learnerMessage: msg,
               topic: this.topic || 'general conversation',
               lectureRef: this.lectureRef || null,
+              curriculumRef: this.curriculumRef || null,
+              director: this.directorPayload(),
               useClaudeCli: this.useClaudeCli,
               modelOverrides: this.tutorModelOverrides(),
             }),
@@ -3700,6 +3855,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               cellName: this.resolved.name,
               history,
               topic: this.topic || 'general conversation',
+              lectureRef: this.lectureRef || null,
+              curriculumRef: this.curriculumRef || null,
+              director: this.directorPayload(),
               personaId: this.personaId,
               useClaudeCli: this.useClaudeCli,
             }),
@@ -3723,9 +3881,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
     };
   }
 </script>
-<!-- Dashboard nav rail (shared with the rendered pages via /_nav.html);
-     compact = drop the rail's own glyph + stamp since the chat chrome below
-     already carries a brand mark. -->
+<!-- Dashboard nav rail, shared with the rendered pages via /_nav.html. -->
 <script src="/components/rail-inject.js" data-active="tutor" data-compact="1" defer></script>
 </body>
 </html>

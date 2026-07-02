@@ -10507,7 +10507,7 @@ function renderRunsHtml() {
     title: 'Run launcher · poetics',
     css: `
 .controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:9px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
-.tabs{ display:flex; gap:0; }
+.tabs{ display:flex; flex-wrap:wrap; gap:0; }
 .tab{ font:12px ui-monospace,monospace; color:var(--ink-3); border:1px solid var(--rule); border-right:0; padding:5px 12px; background:var(--paper-4); cursor:pointer; }
 .tab:last-child{ border-right:1px solid var(--rule); }
 .tab.sel{ color:var(--ink); background:var(--paper); border-bottom-color:var(--paper); font-weight:600; }
@@ -10517,7 +10517,7 @@ function renderRunsHtml() {
 .goalbar__head{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:10px; }
 .goalbar__k{ font:700 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); }
 .goalbar__hint{ font:11px/1.35 ui-monospace,monospace; color:var(--ink-4); text-align:right; }
-.goals{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+.goals{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; }
 .goal-card{ min-height:116px; text-align:left; border:1px solid var(--rule); border-top:3px solid var(--moss); background:var(--paper-4); color:var(--ink-2); padding:12px 13px; cursor:pointer; display:flex; flex-direction:column; gap:7px; }
 .goal-card:hover{ border-color:var(--moss); }
 .goal-card.is-active{ border-color:var(--moss-deep); background:var(--moss-soft); }
@@ -10604,8 +10604,8 @@ function renderRunsHtml() {
 ${railHtml({
   active: 'runs',
   brand: 'run launcher',
-  sub: 'spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)',
-  hint: '<span><b>launch</b> — spawn new runs</span><span class="navhint__sep">·</span><span>to explore finished ones, see <a href="/browse">scripts</a> or <a href="/derivation">proof runs</a></span>',
+  sub: 'spawn tutor-cell · generative · replay · adversarial-CLI · online-score runs',
+  hint: '<span><b>launch</b> — preview exact commands before spawning</span><span class="navhint__sep">·</span><span>to explore finished ones, see <a href="/browse">scripts</a>, <a href="/derivation">proof runs</a>, or <a href="/eval">eval notes</a></span>',
 })}
 <section class="goalbar" aria-labelledby="launchGoalsTitle">
   <div class="goalbar__head">
@@ -10616,6 +10616,7 @@ ${railHtml({
     <div class="goalbar__hint">Pick a goal for safe defaults. The advanced command builder remains below.</div>
   </div>
   <div class="goals" id="goalCards" aria-label="Run goals">
+    <button class="goal-card" type="button" data-kind="eval-cell"><span class="goal-card__t">Generate tutor scripts</span><span class="goal-card__d">Use a resolved chat cell to draft scenario scripts with an AI learner. Dry-run stays free by default.</span><span class="goal-card__c">dry-run default</span></button>
     <button class="goal-card" type="button" data-kind="generate"><span class="goal-card__t">Generate a new script</span><span class="goal-card__d">Create a fresh pedagogical drama transcript. Mock stays free by default.</span><span class="goal-card__c">free default</span></button>
     <button class="goal-card" type="button" data-kind="replay"><span class="goal-card__t">Replay a script</span><span class="goal-card__d">Run a bounded counterfactual rewrite against an existing transcript.</span><span class="goal-card__c">mock / quota</span></button>
     <button class="goal-card" type="button" data-kind="derivation"><span class="goal-card__t">Run a proof-DAG derivation</span><span class="goal-card__d">Enact a tutor script against a world and stream to live proof runs.</span><span class="goal-card__c">mock default</span></button>
@@ -10670,6 +10671,34 @@ const state = { kind:'replay', fields:[], plan:null, jobs:[], selJob:null };
 // ── Per-kind form specs. showIf is evaluated against the live param object so the
 // input set narrows to what the selected script actually consumes. ───────────────
 const FORMS = {
+  'eval-cell': {
+    blurb: 'Generate script drafts through eval-cli: the selected tutor architecture talks to synthetic learner scenarios. This is the batch counterpart to the live scene composer. Dry-run is free; unchecking it may spend API budget.',
+    fields: [
+      { name:'cell', type:'text', label:'cell profile', placeholder:'cell_7_recog_multi_unified', help:'canonical cell name from the chat resolver' },
+      { name:'runs', type:'number', label:'runs per scenario', placeholder:'1' },
+      { name:'scenario', type:'text', label:'scenario id(s)', placeholder:'new_user_first_visit  (comma-separated OK)' },
+      { name:'cluster', type:'select', label:'scenario cluster', options:['','single-turn','multi-turn','core','mood','benchmark','recognition','multi_turn'], def:'', help:'leave blank when scenario ids are supplied' },
+      { name:'parallelism', type:'number', label:'parallelism', placeholder:'2' },
+      { name:'description', type:'text', label:'description', placeholder:'Admin chat eval-cell run' },
+      { name:'model', type:'text', label:'all-agent model override', placeholder:'openrouter.gpt  (optional)' },
+      { name:'tutorModel', type:'text', label:'tutor model override', placeholder:'openrouter.gpt  (ego + superego)' },
+      { name:'egoModel', type:'text', label:'tutor ego override', placeholder:'openrouter.gpt' },
+      { name:'superegoModel', type:'text', label:'tutor superego override', placeholder:'openrouter.kimi-k2.5' },
+      { name:'learnerModel', type:'text', label:'learner model override', placeholder:'openrouter.nemotron  (all learner agents)' },
+      { name:'learnerEgoModel', type:'text', label:'learner ego override', placeholder:'openrouter.gpt' },
+      { name:'learnerSuperegoModel', type:'text', label:'learner superego override', placeholder:'openrouter.kimi-k2.5' },
+      { name:'judgeCli', type:'select', label:'judge CLI', options:['none','claude','gemini','codex'], def:'none', help:'none keeps skip-rubric generation-only unless you uncheck skip-rubric' },
+      { name:'judgeCliModel', type:'text', label:'judge CLI model', placeholder:'optional CLI model alias', showIf:(p)=>p.judgeCli && p.judgeCli !== 'none' },
+      { name:'maxTokens', type:'number', label:'max tokens', placeholder:'optional tutor ego cap' },
+    ],
+    checks: [
+      { name:'dryRun', label:'dry-run (free mock)', def:true },
+      { name:'skipRubric', label:'skip rubric', def:true },
+      { name:'live', label:'live API stream' },
+      { name:'transcript', label:'write transcripts' },
+      { name:'allowModelMix', label:'allow model mix' },
+    ],
+  },
   replay: {
     blurb: 'One bounded counterfactual rewrite of an existing public transcript → optional adversarial check → local gate.',
     fields: [
