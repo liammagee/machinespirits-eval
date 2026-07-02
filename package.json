@@ -222,6 +222,8 @@
     "audit:message-chain": "node scripts/audit-message-chain.js",
     "audit:message-chain:json": "node scripts/audit-message-chain.js --json",
     "audit:plan3-synthetic-closure": "node scripts/plan3-synthetic-closure-audits.js",
+    "probe:plan3-outcome-selected": "node scripts/run-plan3-outcome-selected-best-of-k.js",
+    "probe:plan3-ess": "node scripts/run-plan3-ess-learner-2x2.js",
     "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "test:hermetic": "EVAL_DB_PATH=$(mktemp -d)/test.db EVAL_LOGS_DIR=$(mktemp -d) node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "content:validate": "node scripts/validate-content.js",

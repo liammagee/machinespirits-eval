@@ -112,18 +112,17 @@ Ranked by dependency weight:
    2024-2026 literature found no genuinely new within-session adaptation
    mechanism; the field's strongest results run through this repo's three
    positives, and the one deployed within-session adaptive A/B in the
-   literature is a null against a strong static prompt. What the sweep does
-   license, before the pilot: (a) a batch of $0 offline audits over existing
-   logs — answer-leak rate, help-ladder compliance, mastery-gate
-   counterfactual replay, learner fidelity/flip-selectivity metrics, and IRT
-   ability placement of the learner personas (this last rides the A1 item
-   authoring) — which convert the paper's simulated-learner caveats into
-   measured bounds for the pilot go-memo; and (b) at most two paid probes:
-   outcome-selected best-of-K (upgrade cell 100's selector from critic opinion
-   to the validated held-out posttest endpoint; a null closes the whole
-   RL/outcome-reward family) and the epistemically constrained learner 2x2
-   (harness-owned misconception lattice; answers the strongest external
-   objection to prompted simulated learners). Everything else the sweep
+   literature is a null against a strong static prompt. The sweep licensed a
+   $0 offline audit batch over existing logs — answer-leak rate,
+   help-ladder compliance, mastery-gate counterfactual replay, learner
+   fidelity/flip-selectivity metrics, and IRT ability placement of the learner
+   personas (this last rides the A1 item authoring) — plus two bounded paid
+   closing probes. Those paid probes are now complete: outcome-selected
+   best-of-K returned a null on the validated held-out posttest endpoint, so
+   the episode-level RL/outcome-reward selector path is closed for the
+   synthetic program; the ESS learner 2x2 put a number on the simulated-learner
+   objection, showing modest roleplay over-crediting and no recognition lift
+   under a harness-owned constrained endpoint. Everything else the sweep
    surfaced is either covered by an existing null, foldable into sanctioned
    work (A7 Phase 2, A1 item bank), or human-phase by construction.
 
@@ -174,13 +173,13 @@ The eval harness is strong. The product shell around it is not.
 2. In parallel, unblock A1's non-engineering gates: IRB, consent text, and real
    fractions items. The infrastructure is waiting on these rather than on a new
    mechanism. While IRB and item authoring proceed, run the litreview's $0
-   audit batch and, budget permitting, its two paid probes (section 2 item 7)
-   — their outcomes, null or not, are the completeness evidence the pilot
-   go-memo needs. Use the Tutor CoPilot RCT effect sizes (+4pp topic mastery
-   overall, +9pp for students of lower-rated tutors) as the prior for the
-   pilot power analysis, and treat productive failure (d~=0.36 on exactly the
-   pretest/posttest instrument the pilot has) as the best-evidenced candidate
-   arm design.
+   audit batch and carry the two completed paid probes into the pilot go-memo:
+   the outcome-selected null closes the last plausible synthetic selector
+   upgrade, and the ESS result bounds synthetic-learner over-crediting. Use the
+   Tutor CoPilot RCT effect sizes (+4pp topic mastery overall, +9pp for
+   students of lower-rated tutors) as the prior for the pilot power analysis,
+   and treat productive failure (d~=0.36 on exactly the pretest/posttest
+   instrument the pilot has) as the best-evidenced candidate arm design.
 
 3. Compose the reference tutor and wire it into the pilot/admin surface with
    session persistence and hard cost ceilings. This converts the blueprint from
