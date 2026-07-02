@@ -53,14 +53,6 @@ function parseArgs(argv) {
   return { positional, flags };
 }
 
-function parseJson(value, fallback) {
-  try {
-    return JSON.parse(value || '');
-  } catch {
-    return fallback;
-  }
-}
-
 function loadDialogueLog(dialogueId) {
   if (!dialogueId) return null;
   for (const root of LOG_ROOTS) {

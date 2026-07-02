@@ -50,6 +50,7 @@ export default [
       'exports/',
       'docs/',
       'content/',
+      'public/chat/vendor/',
       '.test-tmp/',
       '.codex-tmp/',
       '.venv/',

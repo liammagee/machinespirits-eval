@@ -986,7 +986,7 @@ function listCurriculumSceneSources({ includeRaw = false } = {}) {
     })
     .map((source) => {
       if (includeRaw) return source;
-      const { _raw, _module, _sourceKey, sortGroup, sortKey, ...pub } = source;
+      const { _raw, _module, _sourceKey, sortGroup: _sortGroup, sortKey: _sortKey, ...pub } = source;
       return pub;
     });
 }
