@@ -1,0 +1,119 @@
+{
+  "schema": "dramatic-derivation.strategy-ledger-gates.v0",
+  "world": "config/drama-derivation/world-000-smoke.yaml",
+  "checks": [
+    {
+      "id": "L0-pending",
+      "ok": true,
+      "detail": "confusion persists -> block stays open"
+    },
+    {
+      "id": "L0-cleared",
+      "ok": true,
+      "detail": "confusion clears on settled reasoning (confusion has passed)"
+    },
+    {
+      "id": "L0-superseded",
+      "ok": true,
+      "detail": "a resistance episode displaces a confusion block"
+    },
+    {
+      "id": "L0-failed",
+      "ok": true,
+      "detail": "budget exhaustion fails the block (exit condition did not clear within 3 turns)"
+    },
+    {
+      "id": "L0-teachback",
+      "ok": true,
+      "detail": "teach_back clears only on an own-words account"
+    },
+    {
+      "id": "L0b-rows",
+      "ok": true,
+      "detail": "engine sealed 3 block(s): confusion:cleared, resistance:failed, resistance:run_end"
+    },
+    {
+      "id": "L0b-cleared",
+      "ok": true,
+      "detail": "a block cleared through the live exit-condition check"
+    },
+    {
+      "id": "L0b-terminal",
+      "ok": true,
+      "detail": "an uncleared episode reached its budget or the run end"
+    },
+    {
+      "id": "L0b-events",
+      "ok": true,
+      "detail": "5 block events on the record"
+    },
+    {
+      "id": "L0b-counters",
+      "ok": true,
+      "detail": "opportunity counters ran live with scene-exit resets (tutor proof-neutral count 2)"
+    },
+    {
+      "id": "L1-commits",
+      "ok": true,
+      "detail": "4/4 scene openings committed"
+    },
+    {
+      "id": "L1-palette",
+      "ok": true,
+      "detail": "every committed register stays inside the offered palette"
+    },
+    {
+      "id": "L1-register-applied",
+      "ok": true,
+      "detail": "4 scene register switch(es) applied by the engine"
+    },
+    {
+      "id": "L1-register-held",
+      "ok": true,
+      "detail": "committed register held for the scene and reverted at its close"
+    },
+    {
+      "id": "L2-audits",
+      "ok": true,
+      "detail": "3/4 commitments audited (final scene's lapse expected)"
+    },
+    {
+      "id": "L2-verdicts",
+      "ok": true,
+      "detail": "audit verdicts stay inside the contract"
+    },
+    {
+      "id": "L3-mock-cast",
+      "ok": true,
+      "detail": "inline cast: ledger on/off proof fingerprints byte-identical"
+    },
+    {
+      "id": "L3-llm-cast",
+      "ok": true,
+      "detail": "llmRoles cast: ledger on/off proof fingerprints byte-identical"
+    },
+    {
+      "id": "L4-intents",
+      "ok": true,
+      "detail": "4/4 scene openings carry a learner intent"
+    },
+    {
+      "id": "L4-carries",
+      "ok": true,
+      "detail": "3 act carry-forward row(s) recorded"
+    },
+    {
+      "id": "L4-symmetry",
+      "ok": true,
+      "detail": "tutor and learner ledger rows share the identical field set"
+    },
+    {
+      "id": "L4-intent-audits",
+      "ok": true,
+      "detail": "2/4 learner intents audited (act-bounded + final-scene lapses expected)"
+    }
+  ],
+  "passed": 22,
+  "total": 22,
+  "ok": true
+}

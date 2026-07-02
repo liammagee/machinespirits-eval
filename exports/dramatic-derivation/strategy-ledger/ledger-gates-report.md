@@ -1,0 +1,33 @@
+# Strategy-ledger gates (zero-paid)
+
+World: `config/drama-derivation/world-000-smoke.yaml` — mock roles / mock LLM client only.
+
+| gate | ok | detail |
+|---|---|---|
+| L0-pending | PASS | confusion persists -> block stays open |
+| L0-cleared | PASS | confusion clears on settled reasoning (confusion has passed) |
+| L0-superseded | PASS | a resistance episode displaces a confusion block |
+| L0-failed | PASS | budget exhaustion fails the block (exit condition did not clear within 3 turns) |
+| L0-teachback | PASS | teach_back clears only on an own-words account |
+| L0b-rows | PASS | engine sealed 3 block(s): confusion:cleared, resistance:failed, resistance:run_end |
+| L0b-cleared | PASS | a block cleared through the live exit-condition check |
+| L0b-terminal | PASS | an uncleared episode reached its budget or the run end |
+| L0b-events | PASS | 5 block events on the record |
+| L0b-counters | PASS | opportunity counters ran live with scene-exit resets (tutor proof-neutral count 2) |
+| L1-commits | PASS | 4/4 scene openings committed |
+| L1-palette | PASS | every committed register stays inside the offered palette |
+| L1-register-applied | PASS | 4 scene register switch(es) applied by the engine |
+| L1-register-held | PASS | committed register held for the scene and reverted at its close |
+| L2-audits | PASS | 3/4 commitments audited (final scene's lapse expected) |
+| L2-verdicts | PASS | audit verdicts stay inside the contract |
+| L3-mock-cast | PASS | inline cast: ledger on/off proof fingerprints byte-identical |
+| L3-llm-cast | PASS | llmRoles cast: ledger on/off proof fingerprints byte-identical |
+| L4-intents | PASS | 4/4 scene openings carry a learner intent |
+| L4-carries | PASS | 3 act carry-forward row(s) recorded |
+| L4-symmetry | PASS | tutor and learner ledger rows share the identical field set |
+| L4-intent-audits | PASS | 2/4 learner intents audited (act-bounded + final-scene lapses expected) |
+
+**22/22 checks passed.**
+
+Scope: wiring gates only — no empirical claim. Proof control and the
+release calendar are asserted untouched (L3); everything else is conduct.
