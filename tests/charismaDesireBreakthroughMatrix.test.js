@@ -160,26 +160,22 @@ describe('charisma desire resistance-breakthrough matrix', () => {
       {
         id: 'owned-1',
         profile: profiles.owned,
-        post:
-          'My answer is hold: the passage decides it because paragraph 196 gives the servant a durable object and a failure test.',
+        post: 'My answer is hold: the passage decides it because paragraph 196 gives the servant a durable object and a failure test.',
       },
       {
         id: 'owned-2',
         profile: profiles.owned,
-        post:
-          'The hinge is hold because the deciding phrase is durable work; I would reopen it if the line only shaped the object.',
+        post: 'The hinge is hold because the deciding phrase is durable work; I would reopen it if the line only shaped the object.',
       },
       {
         id: 'probe-1',
         profile: profiles.probe,
-        post:
-          "Okay, I'll make the commitment provisionally: I'd hold the claim. The warrant is the phrase being-for-itself becomes his own.",
+        post: "Okay, I'll make the commitment provisionally: I'd hold the claim. The warrant is the phrase being-for-itself becomes his own.",
       },
       {
         id: 'probe-2',
         profile: profiles.probe,
-        post:
-          "I'll tentatively hold it: durable existence marks the difference, but I would reopen it if forming names only the object.",
+        post: "I'll tentatively hold it: durable existence marks the difference, but I would reopen it if forming names only the object.",
       },
     ];
 

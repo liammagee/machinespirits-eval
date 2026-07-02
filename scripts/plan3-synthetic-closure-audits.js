@@ -24,7 +24,10 @@ const DIRECT_ANSWER_PATTERNS = [
   { code: 'solution_phrase', re: /\b(?:the|a)\s+solution\s+(?:is|would be|should be)\b/i },
   { code: 'final_answer_phrase', re: /\bfinal\s+answer\s*(?::|is)\b/i },
   { code: 'answer_key_label', re: /\banswer\s+keys?\b/i },
-  { code: 'worked_solution_handoff', re: /\b(?:here'?s|here is)\s+(?:the\s+)?(?:full|complete|worked|step[- ]by[- ]step)\s+(?:solution|answer)\b/i },
+  {
+    code: 'worked_solution_handoff',
+    re: /\b(?:here'?s|here is)\s+(?:the\s+)?(?:full|complete|worked|step[- ]by[- ]step)\s+(?:solution|answer)\b/i,
+  },
   { code: 'solve_it_for_you', re: /\b(?:i'?ll|let me)\s+(?:solve|do)\s+(?:it|this)\s+for\s+you\b/i },
   { code: 'hidden_answer_reveal', re: /\b(?:secret|hidden)\s+(?:answer|solution|fact|premise|key)\b/i },
 ];
@@ -41,12 +44,14 @@ const STRUGGLE_RE =
   /\b(?:i'?m\s+not\s+sure|not\s+sure|confused|stuck|don'?t\s+understand|do\s+not\s+understand|can'?t|could\s+you\s+help|help\s+me|i\s+guess|maybe|i\s+don'?t\s+know|not\s+really)\b/i;
 const FALSE_MASTERY_RE =
   /^(?:yes|yeah|yep|ok|okay|right|got it|makes sense|that makes sense|thanks|thank you|yes that makes sense|yes,? thank you)[.! ]*$/i;
-const LEARNER_EVIDENCE_RE = /\b(?:because|so|therefore|that means|which means|if|then|in my own words|the reason|what breaks|i think|i see now)\b/i;
+const LEARNER_EVIDENCE_RE =
+  /\b(?:because|so|therefore|that means|which means|if|then|in my own words|the reason|what breaks|i think|i see now)\b/i;
 const CLOSURE_RE =
   /\b(?:you(?:'ve| have)\s+got\s+it|you\s+understand\s+(?:this|the)|ready\s+to\s+move\s+on|let'?s\s+move\s+on|now\s+we\s+can\s+move|you'?re\s+ready|mastered|nailed\s+it|glad\s+it\s+landed|looks\s+like\s+you\s+have\s+it|you'?ve\s+landed\s+the\s+core|you'?ve\s+committed\s+to|you\s+can\s+now)\b/i;
 const METACOGNITIVE_RE =
   /\b(?:i'?m\s+not\s+sure|i\s+think|i\s+thought|i\s+was\s+using|i\s+was\s+wrong|now\s+i\s+see|in\s+my\s+own\s+words|what\s+breaks|why|because|therefore|confused|stuck)\b/i;
-const FLIP_RE = /\b(?:actually|you'?re\s+right|i\s+guess|never\s+mind|i\s+changed\s+my\s+mind|i\s+was\s+wrong|i'?ll\s+just)\b/i;
+const FLIP_RE =
+  /\b(?:actually|you'?re\s+right|i\s+guess|never\s+mind|i\s+changed\s+my\s+mind|i\s+was\s+wrong|i'?ll\s+just)\b/i;
 
 function parseArgs(argv) {
   const args = {
@@ -297,7 +302,11 @@ function traceTextMap(log, role) {
   for (const entry of trace) {
     if (!roleAliases.has(entry?.agent)) continue;
     if (preferredActions.size && !preferredActions.has(entry?.action)) continue;
-    const idx = Number.isFinite(entry?.turnIndex) ? entry.turnIndex : Number.isFinite(entry?.round) ? entry.round : null;
+    const idx = Number.isFinite(entry?.turnIndex)
+      ? entry.turnIndex
+      : Number.isFinite(entry?.round)
+        ? entry.round
+        : null;
     if (idx == null) continue;
     const text = cleanText(entry?.detail || entry?.contextSummary || entry?.message || entry?.content);
     if (text) byTurn.set(idx, text);
@@ -307,7 +316,11 @@ function traceTextMap(log, role) {
     for (const entry of trace) {
       if (!(entry?.agent === 'learner' || entry?.agent === 'user')) continue;
       if (entry?.action !== 'turn_action') continue;
-      const idx = Number.isFinite(entry?.turnIndex) ? entry.turnIndex : Number.isFinite(entry?.round) ? entry.round : null;
+      const idx = Number.isFinite(entry?.turnIndex)
+        ? entry.turnIndex
+        : Number.isFinite(entry?.round)
+          ? entry.round
+          : null;
       if (idx == null || byTurn.has(idx)) continue;
       const text = cleanText(entry?.detail || entry?.contextSummary || entry?.message || entry?.content);
       if (text) byTurn.set(idx, text);
@@ -473,14 +486,18 @@ function auditAnswerLeak(records) {
     const hits = classifyAnswerRisk(record);
     if (hits.length) rows.push({ ...record, hits });
   }
-  const byFamily = summarizeBy(records, (r) => r.family || 'unknown', (subset) => {
-    const hitCount = subset.filter((r) => classifyAnswerRisk(r).length).length;
-    return {
-      n: subset.length,
-      highRisk: hitCount,
-      highRiskRate: rate(hitCount, subset.length),
-    };
-  });
+  const byFamily = summarizeBy(
+    records,
+    (r) => r.family || 'unknown',
+    (subset) => {
+      const hitCount = subset.filter((r) => classifyAnswerRisk(r).length).length;
+      return {
+        n: subset.length,
+        highRisk: hitCount,
+        highRiskRate: rate(hitCount, subset.length),
+      };
+    },
+  );
   const recognition = byFamily.recognition;
   const fail = recognition && recognition.n >= 10 && recognition.highRiskRate > 0.1;
   const insufficient = !recognition || recognition.n < 10;
@@ -497,13 +514,18 @@ function auditAnswerLeak(records) {
 
 function classifyHelpLevel(text) {
   const lower = text.toLowerCase();
-  if (classifyAnswerRisk({ text }).length || /\b(?:the key is|what this proves is|therefore the result is)\b/i.test(text)) {
+  if (
+    classifyAnswerRisk({ text }).length ||
+    /\b(?:the key is|what this proves is|therefore the result is)\b/i.test(text)
+  ) {
     return { level: 4, label: 'direct_answer' };
   }
   const questionCount = (text.match(/\?/g) || []).length;
   const words = lower.split(/\s+/).filter(Boolean).length;
   if (
-    /\b(?:here'?s how|let'?s work it through|step by step|the move is|notice that|this means|that means)\b/i.test(text) ||
+    /\b(?:here'?s how|let'?s work it through|step by step|the move is|notice that|this means|that means)\b/i.test(
+      text,
+    ) ||
     (words > 85 && questionCount === 0)
   ) {
     return { level: 3, label: 'worked_explanation' };
@@ -547,7 +569,8 @@ function auditHelpLadder(dialogues) {
       relevant++;
       const previous = classifyHelpLevel(ctx.previousTutor.text);
       const jump = current.level - previous.level;
-      const isCompliant = jump <= 1 && !(FALSE_MASTERY_RE.test(cleanText(ctx.previousLearner.text)) && current.level >= 4);
+      const isCompliant =
+        jump <= 1 && !(FALSE_MASTERY_RE.test(cleanText(ctx.previousLearner.text)) && current.level >= 4);
       if (isCompliant) compliant++;
       else {
         violations.push({
@@ -601,7 +624,8 @@ function isAssessableLearnerText(text) {
   const cleaned = cleanText(text);
   if (!cleaned) return false;
   if (/^learner:\s*[a-z_]+$/i.test(cleaned)) return false;
-  if (/^(?:asked_followup|deepening_engagement|surface_acknowledgment|confusion|resistance)$/i.test(cleaned)) return false;
+  if (/^(?:asked_followup|deepening_engagement|surface_acknowledgment|confusion|resistance)$/i.test(cleaned))
+    return false;
   return cleaned.split(/\s+/).filter(Boolean).length >= 3;
 }
 
@@ -671,12 +695,20 @@ function auditLearnerFidelityProxy(dialogues) {
       const text = cleanText(turn.text);
       if (text.length <= 90 && FALSE_MASTERY_RE.test(text)) {
         falseMastery++;
-        pushExample(examples.falseMastery, { source: dialogue.source, variant: dialogue.variant, text: sampleText(text) });
+        pushExample(examples.falseMastery, {
+          source: dialogue.source,
+          variant: dialogue.variant,
+          text: sampleText(text),
+        });
       }
       if (STRUGGLE_RE.test(text)) struggle++;
       if (METACOGNITIVE_RE.test(text)) {
         metacognitive++;
-        pushExample(examples.metacognitive, { source: dialogue.source, variant: dialogue.variant, text: sampleText(text) });
+        pushExample(examples.metacognitive, {
+          source: dialogue.source,
+          variant: dialogue.variant,
+          text: sampleText(text),
+        });
       }
       if (FLIP_RE.test(text)) {
         flips++;
@@ -709,7 +741,12 @@ function firstLocalizableError(arm) {
   const evidence = arm.evidence || {};
   const release = Array.isArray(evidence.fatalReleases) ? evidence.fatalReleases[0] : null;
   if (release && Number.isFinite(release.turn)) {
-    return { type: 'fatal_release', turn: release.turn, premise: release.premise || null, reason: release.reason || null };
+    return {
+      type: 'fatal_release',
+      turn: release.turn,
+      premise: release.premise || null,
+      reason: release.reason || null,
+    };
   }
   const slip = Array.isArray(evidence.unrepairedSlips) ? evidence.unrepairedSlips[0] : null;
   if (slip && Number.isFinite(slip.decayTurn)) {
@@ -729,7 +766,13 @@ function auditFirstErrorLocalization(arms) {
   for (const arm of failures) {
     const first = firstLocalizableError(arm);
     if (first) localized.push({ arm: arm.arm, reportPath: arm.reportPath, failureMode: arm.failureMode, first });
-    else unlocalized.push({ arm: arm.arm, reportPath: arm.reportPath, failureMode: arm.failureMode, reasons: arm.reasons || [] });
+    else
+      unlocalized.push({
+        arm: arm.arm,
+        reportPath: arm.reportPath,
+        failureMode: arm.failureMode,
+        reasons: arm.reasons || [],
+      });
   }
   const localizableRate = rate(localized.length, failures.length);
   const insufficient = failures.length < 5;
@@ -749,7 +792,9 @@ function auditFirstErrorLocalization(arms) {
 
 function auditIrtReadiness(pilotItemsPath) {
   const text = fs.existsSync(pilotItemsPath) ? fs.readFileSync(pilotItemsPath, 'utf8') : '';
-  const placeholder = /PLACEHOLDER CONTENT|NOT FOR DATA COLLECTION|psychometric properties are not established/i.test(text);
+  const placeholder = /PLACEHOLDER CONTENT|NOT FOR DATA COLLECTION|psychometric properties are not established/i.test(
+    text,
+  );
   const itemCount = (text.match(/^\s*-\s+id:/gm) || []).length;
   return {
     status: placeholder ? 'BLOCKED_BY_ITEM_BANK' : 'READY_FOR_ITEM_RESPONSES',
@@ -764,12 +809,15 @@ function auditIrtReadiness(pilotItemsPath) {
 }
 
 function auditSfsReadiness(dialogues) {
-  const trapLike = dialogues.filter((d) => /adaptive-|false_mastery|misrecognition|resistance|sophistication/i.test(d.source));
+  const trapLike = dialogues.filter((d) =>
+    /adaptive-|false_mastery|misrecognition|resistance|sophistication/i.test(d.source),
+  );
   return {
     status: 'SCAFFOLDED_NOT_RUN',
     gate: 'Selective Flip Score requires targeted, mismatched, and generic feedback generations over the same seeded misconception',
     reusableTrapDialogues: trapLike.length,
-    requiredFreshGenerations: '~144 single-turn generations unless a matched targeted/mismatched/generic corpus is materialized first',
+    requiredFreshGenerations:
+      '~144 single-turn generations unless a matched targeted/mismatched/generic corpus is materialized first',
     nextStep:
       'Materialize a JSONL with misconception id, feedback condition, pre/post learner answer, and deterministic flip label; this harness can then add the SFS computation.',
   };
@@ -854,7 +902,12 @@ function renderSummaryTable(audits) {
       audits.firstError.gate,
     ],
     ['SFS', statusIcon(audits.sfs.status), audits.sfs.requiredFreshGenerations, audits.sfs.gate],
-    ['IRT ability placement', statusIcon(audits.irt.status), `${audits.irt.itemCount} pilot item stubs`, audits.irt.gate],
+    [
+      'IRT ability placement',
+      statusIcon(audits.irt.status),
+      `${audits.irt.itemCount} pilot item stubs`,
+      audits.irt.gate,
+    ],
   ];
 
   const lines = ['| audit | status | observed metric | gate |', '|---|---:|---:|---|'];
@@ -1013,7 +1066,10 @@ function renderMarkdown(report) {
     ...renderExamples('First-error examples', audits.firstError.examples, [
       { label: 'arm', value: (r) => r.arm },
       { label: 'mode', value: (r) => r.failureMode },
-      { label: 'first error', value: (r) => `${r.first.type}@t${r.first.turn}${r.first.premise ? ` ${r.first.premise}` : ''}` },
+      {
+        label: 'first error',
+        value: (r) => `${r.first.type}@t${r.first.turn}${r.first.premise ? ` ${r.first.premise}` : ''}`,
+      },
       { label: 'report', value: (r) => r.reportPath },
     ]),
   );
