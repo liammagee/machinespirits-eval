@@ -1,13 +1,13 @@
 ---
 id: layered-task-session-adaptation
 title: Layered adaptive tutor task/session adaptation prototype
-status: done
+status: archived
 type: research
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-02
 branch: codex/task-session-adaptation
 verification: "PR #71 merged; TaskMasteryState remains public-only/advisory; zero-paid taskloop benchmark, focused tests, workplan check, lint, format check, git diff check, and full npm test passed."
 claim_status: methods
@@ -45,3 +45,7 @@ vs 2/12 fixed progression controls; focused tests, workplan check, lint, format
 check, `git diff --check`, and full `npm test` passed. This remains a
 public-only advisory task/session scaffold, not runtime deployment or
 human-learning evidence.
+
+2026-07-02 Codex: Archived as part of total Plan 2.x closeout. The scaffold is
+retained as advisory instrumentation and provenance, not a live implementation
+track.

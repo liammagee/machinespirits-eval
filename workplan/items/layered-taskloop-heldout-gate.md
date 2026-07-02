@@ -1,13 +1,13 @@
 ---
 id: layered-taskloop-heldout-gate
 title: Layered adaptive tutor held-out task-loop artifact gate
-status: done
+status: archived
 type: research
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-02
 branch: codex/taskloop-heldout-gate
 verification: "PR #72 merged; paper/spec folded in bounded advisory sequencing claim; held-out task-loop gate passed 12/12 adaptive vs 2/12 fixed with 0 public-only failures and 0 proof-control drift rows."
 claim_status: scope-bound
@@ -57,3 +57,7 @@ Opened PR #72 for review.
 sequencing claim only: 12/12 adaptive recommendations versus 2/12 fixed
 progression on frozen held-out artifacts, with no public-only failures, no
 proof-control drift, no runtime task assignment, and no human-learning claim.
+
+2026-07-02 Codex: Archived as part of total Plan 2.x closeout. The held-out
+gate remains the bounded advisory sequencing evidence; it is not an active
+runtime task-selection project.

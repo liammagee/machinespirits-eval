@@ -125,15 +125,15 @@ content/                   Bundled course content (philosophy 479)
 content-test-elementary/   Bundled test content (elementary 101)
 notebooks/                 Reproducibility notebook (Jupyter)
 docs/research/             Research paper and build scripts
-PLAN_2_0/                  Plan 2.x designs, preregistrations, and closeout ledgers
+PLAN_2_0/                  Closed Plan 2.x designs, preregistrations, and closeout ledgers
 workplan/                  Live project board; edit items, not generated board views
 tests/                     Test suites
 ```
 
 Planning note: `workplan/items/` is the live todo source of truth. `PLAN_2_0/`
-and root-level `*-PLAN.md` files are planning and evidence ledgers unless a
-matching workplan item makes the work live. Start with `PLAN_2_0/README.md` for
-the Plan 2.x documentation map.
+is a closed evidence archive, and root-level `*-PLAN.md` files are planning and
+evidence ledgers unless a matching workplan item makes the work live. Start with
+`PLAN_2_0/README.md` for the Plan 2.x archive map.
 
 ### Key configuration files
 

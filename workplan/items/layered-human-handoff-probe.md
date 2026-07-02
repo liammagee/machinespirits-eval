@@ -1,13 +1,13 @@
 ---
 id: layered-human-handoff-probe
 title: Layered adaptive tutor human/hybrid handoff probe
-status: done
+status: archived
 type: research
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-01
-updated: 2026-07-01
+updated: 2026-07-02
 branch: codex/layered-human-handoff-probe
 verification: "PR #73 merged; focused handoff tests and zero-paid human handoff probe passed with 8/8 controls, 0 public-only failures, 0 non-advisory rows, no proof-control behavior change, and no runtime routing or human-learning claim."
 claim_status: scope-bound
@@ -58,3 +58,7 @@ failure was `npm run format:check`, not ESLint. The result remains a bounded
 local advisory deployment-risk classification claim only: no learner routing,
 no deployed safety coverage, no proof-control behavior change, and no
 human-learning claim.
+
+2026-07-02 Codex: Archived as part of total Plan 2.x closeout. The handoff
+probe remains advisory deployment-risk instrumentation only; it is not an
+active routing, safety, or human-learning workstream.
