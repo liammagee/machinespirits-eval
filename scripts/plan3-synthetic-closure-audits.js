@@ -19,6 +19,13 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 const STABLE_ROOT = '/Users/lmagee/Dev/machinespirits/machinespirits-eval';
 
 const DEFAULT_OUT_DIR = path.join(ROOT_DIR, 'exports', 'plan3-synthetic-closure-audits');
+const DEFAULT_SFS_ARTIFACT = path.join(ROOT_DIR, 'exports', 'plan3-sfs-audit', 'sfs-matched-feedback.json');
+const DEFAULT_DAG_SFS_ARTIFACT = path.join(
+  ROOT_DIR,
+  'exports',
+  'plan3-dag-sfs-audit',
+  'dag-sfs-matched-feedback.json',
+);
 const DIRECT_ANSWER_PATTERNS = [
   { code: 'explicit_answer_phrase', re: /\b(?:the|your|correct|right)\s+answer\s+(?:is|would be|should be)\b/i },
   { code: 'solution_phrase', re: /\b(?:the|a)\s+solution\s+(?:is|would be|should be)\b/i },
@@ -812,14 +819,91 @@ function auditSfsReadiness(dialogues) {
   const trapLike = dialogues.filter((d) =>
     /adaptive-|false_mastery|misrecognition|resistance|sophistication/i.test(d.source),
   );
+  const artifact = readJsonFile(DEFAULT_SFS_ARTIFACT);
+  if (artifact?.summary?.byCondition) {
+    const summary = artifact.summary;
+    const byCondition = summary.byCondition;
+    const status =
+      artifact.status === 'complete_matched_sfs' ? 'COMPLETE_MATCHED_CORPUS' : 'COMPLETE_MATCHED_CORPUS_WITH_WARNINGS';
+    const rows = Number.isFinite(summary.n) ? summary.n : artifact.rows?.length || 0;
+    return {
+      status,
+      gate: 'Selective Flip Score requires targeted, mismatched, and generic feedback generations over the same seeded misconception',
+      artifact: compactPath(DEFAULT_SFS_ARTIFACT),
+      backend: artifact.backendDetail?.label || artifact.backend || 'unknown',
+      rows,
+      modelCalls: summary.modelCalls?.total ?? rows,
+      invalidChoiceCount: summary.invalidChoiceCount ?? null,
+      controls: artifact.controls || {},
+      boundary: summary.boundary || 'unknown',
+      targetedCorrectFlipRate: byCondition.targeted?.correctFlipRate ?? null,
+      mismatchedCorrectFlipRate: byCondition.mismatched?.correctFlipRate ?? null,
+      genericCorrectFlipRate: byCondition.generic?.correctFlipRate ?? null,
+      falseFlipRate: summary.falseFlipRate ?? null,
+      selectiveFlipScore: summary.selectiveFlipScore ?? null,
+      pairedSelectiveFlip: summary.pairedSelectiveFlip || null,
+      observedMetric:
+        `SFS ${num(summary.selectiveFlipScore)}; targeted ${num(byCondition.targeted?.correctFlipRate)}; ` +
+        `false-flip ${num(summary.falseFlipRate)}; rows ${int(rows)}`,
+      interpretation:
+        'Near-zero selectivity means the simulated learner corrects after irrelevant/generic feedback as readily as after targeted feedback.',
+      nextStep:
+        'Carry this as a synthetic-learner validity bound into the pilot go-memo; do not treat it as human learning evidence.',
+    };
+  }
   return {
     status: 'SCAFFOLDED_NOT_RUN',
     gate: 'Selective Flip Score requires targeted, mismatched, and generic feedback generations over the same seeded misconception',
+    artifact: compactPath(DEFAULT_SFS_ARTIFACT),
     reusableTrapDialogues: trapLike.length,
     requiredFreshGenerations:
       '~144 single-turn generations unless a matched targeted/mismatched/generic corpus is materialized first',
     nextStep:
       'Materialize a JSONL with misconception id, feedback condition, pre/post learner answer, and deterministic flip label; this harness can then add the SFS computation.',
+  };
+}
+
+function auditDagSfsReadiness() {
+  const artifact = readJsonFile(DEFAULT_DAG_SFS_ARTIFACT);
+  if (artifact?.summary?.byCondition) {
+    const summary = artifact.summary;
+    const byCondition = summary.byCondition;
+    const rows = Number.isFinite(summary.n) ? summary.n : artifact.rows?.length || 0;
+    return {
+      status:
+        artifact.status === 'complete_dag_sfs' ? 'COMPLETE_PROOF_GROUNDED_CORPUS' : 'COMPLETE_PROOF_GROUNDED_WITH_WARNINGS',
+      gate:
+        'DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring',
+      artifact: compactPath(DEFAULT_DAG_SFS_ARTIFACT),
+      backend: artifact.backendDetail?.label || artifact.backend || 'unknown',
+      rows,
+      modelCalls: summary.modelCalls?.total ?? rows,
+      parseErrorCount: summary.parseErrorCount ?? null,
+      controls: artifact.controls || {},
+      boundary: summary.boundary || 'unknown',
+      targetedProofGroundedRate: byCondition.targeted?.proofGroundedRate ?? null,
+      falseGroundedRate: summary.falseGroundedRate ?? null,
+      selectiveProofScore: summary.selectiveProofScore ?? null,
+      pairedSelectiveProof: summary.pairedSelectiveProof || null,
+      observedMetric:
+        `DAG-SFS ${num(summary.selectiveProofScore)}; targeted ${num(
+          byCondition.targeted?.proofGroundedRate,
+        )}; false-grounded ${num(summary.falseGroundedRate)}; rows ${int(rows)}`,
+      interpretation:
+        'Positive DAG-SFS means the synthetic learner discriminates when proof state is public, typed, and scored by exact evidence-edge use.',
+      nextStep:
+        'Use this as the gold-standard synthetic harness shape for future learner-outcome probes; it is not human transfer evidence.',
+    };
+  }
+  return {
+    status: 'NOT_RUN',
+    gate:
+      'DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring',
+    artifact: compactPath(DEFAULT_DAG_SFS_ARTIFACT),
+    requiredFreshGenerations:
+      'Run npm run probe:plan3-dag-sfs to materialize a proof-grounded targeted/wrong/generic/nonsense corpus.',
+    nextStep:
+      'Materialize a JSON artifact with public proof edges, feedback condition, learner derivation, and exact edge-use score.',
   };
 }
 
@@ -843,6 +927,10 @@ function pct(value) {
   return value == null ? 'n/a' : `${(value * 100).toFixed(1)}%`;
 }
 
+function num(value) {
+  return Number.isFinite(value) ? value.toFixed(3) : 'n/a';
+}
+
 function int(value) {
   return Number.isFinite(value) ? String(value) : '0';
 }
@@ -852,6 +940,7 @@ function statusIcon(status) {
   if (status === 'FAIL') return 'FAIL';
   if (status.startsWith('INSUFFICIENT')) return 'INSUFFICIENT';
   if (status.startsWith('BLOCKED')) return 'BLOCKED';
+  if (status.startsWith('COMPLETE')) return 'COMPLETE';
   if (status === 'PROXY_ONLY') return 'PROXY';
   return status;
 }
@@ -901,7 +990,18 @@ function renderSummaryTable(audits) {
       `${int(audits.firstError.localized)}/${int(audits.firstError.failureArms)} localizable failure arms (${pct(audits.firstError.localizableRate)})`,
       audits.firstError.gate,
     ],
-    ['SFS', statusIcon(audits.sfs.status), audits.sfs.requiredFreshGenerations, audits.sfs.gate],
+    [
+      'SFS',
+      statusIcon(audits.sfs.status),
+      audits.sfs.observedMetric || audits.sfs.requiredFreshGenerations,
+      audits.sfs.gate,
+    ],
+    [
+      'DAG-SFS',
+      statusIcon(audits.dagSfs.status),
+      audits.dagSfs.observedMetric || audits.dagSfs.requiredFreshGenerations,
+      audits.dagSfs.gate,
+    ],
     [
       'IRT ability placement',
       statusIcon(audits.irt.status),
@@ -1075,9 +1175,35 @@ function renderMarkdown(report) {
   );
   lines.push('## SFS And IRT');
   lines.push('');
-  lines.push(`- SFS: ${audits.sfs.status}. ${audits.sfs.nextStep}`);
+  if (audits.sfs.status.startsWith('COMPLETE')) {
+    lines.push(
+      `- SFS: ${audits.sfs.status}. SFS ${num(audits.sfs.selectiveFlipScore)}; targeted ${num(
+        audits.sfs.targetedCorrectFlipRate,
+      )}; mismatched ${num(audits.sfs.mismatchedCorrectFlipRate)}; generic ${num(
+        audits.sfs.genericCorrectFlipRate,
+      )}; false-flip ${num(audits.sfs.falseFlipRate)}; paired CI ${num(
+        audits.sfs.pairedSelectiveFlip?.ci95?.[0],
+      )} to ${num(audits.sfs.pairedSelectiveFlip?.ci95?.[1])}; artifact: \`${audits.sfs.artifact}\`. ${
+        audits.sfs.interpretation
+      } ${audits.sfs.nextStep}`,
+    );
+  } else {
+    lines.push(`- SFS: ${audits.sfs.status}. ${audits.sfs.nextStep}`);
+  }
+  if (audits.dagSfs.status.startsWith('COMPLETE')) {
+    lines.push(
+      `- DAG-SFS: ${audits.dagSfs.status}. DAG-SFS ${num(
+        audits.dagSfs.selectiveProofScore,
+      )}; targeted proof-grounded ${num(audits.dagSfs.targetedProofGroundedRate)}; false-grounded ${num(
+        audits.dagSfs.falseGroundedRate,
+      )}; paired CI ${num(audits.dagSfs.pairedSelectiveProof?.ci95?.[0])} to ${num(
+        audits.dagSfs.pairedSelectiveProof?.ci95?.[1],
+      )}; artifact: \`${audits.dagSfs.artifact}\`. ${audits.dagSfs.interpretation} ${audits.dagSfs.nextStep}`,
+    );
+  } else {
+    lines.push(`- DAG-SFS: ${audits.dagSfs.status}. ${audits.dagSfs.nextStep}`);
+  }
   lines.push(`- IRT: ${audits.irt.status}. ${audits.irt.nextStep}`);
-  lines.push('');
   return `${lines.join('\n')}\n`;
 }
 
@@ -1113,6 +1239,7 @@ async function main() {
     firstError: auditFirstErrorLocalization(detectorArms),
     irt: auditIrtReadiness(inputs.pilotItemsPath),
     sfs: auditSfsReadiness(artifacts.dialogues),
+    dagSfs: auditDagSfsReadiness(),
   };
 
   const corpus = {
