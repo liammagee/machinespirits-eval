@@ -2,7 +2,7 @@
 # Binding conditions on every arm: release authority + pacing guard + decay.
 # Backend: DERIVATION_PROVIDER=codex on the matrix process (constant, recorded).
 base:
-  world: config/drama-derivation/world-006-hethel.yaml
+  world: config/drama-derivation/world-010-hethel-resistant.yaml
   script: config/drama-derivation/tutor-scripts/hethel-v001.md
   mode: real
   flags:
@@ -11,7 +11,7 @@ base:
     register: modern
     release-authority: true
     pacing-guard: true
-    decay: '{"seed":11,"rate":0.25}'
+    decay: '{"seed":11,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}'
 arms:
   - label: baseline-r1
   - label: ledger-v1-r1

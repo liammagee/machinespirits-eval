@@ -68,3 +68,19 @@ Transport/CLI failures: one re-run under the same label; two failures exclude th
 - H0 probe runs: `exports/dramatic-derivation/strategy-ledger/h0-probe/`
 - Matrix runs: `exports/dramatic-derivation/matrix/ledger-v2-<world>/<arm>/`
 - Analysis: `scripts/analyze-strategy-ledger-contrasts.js` extended (arm map + repair-latency + faithful-arm split) BEFORE the paid matrix and frozen thereafter → `exports/dramatic-derivation/strategy-ledger/v2-contrasts-report.{json,md}`
+
+---
+
+## H0 addendum (2026-07-03): first gate FAILED — redesign recorded BEFORE re-probe
+
+**H0 result (hethel, 2 × A2, codex):** criterion (b) PASS — decay live (2 and 4 slips; repairs 0 and 2; repair channel exercised). Criterion (a) **FAIL** — both runs `T* = 20 = firstForcedTurn` (grounding at the designed earliest forcing turn). Diagnosis from the artifacts: decays hit only pre-forcing, non-critical premises; the final proof-critical release lands at t20 (hethel's authored earliest forcing); the learner asserts the same turn it is forced. With an instant-asserting learner, T\* is pinned to the release calendar regardless of tutor conduct.
+
+**Redesign (per the pre-registered failure action):**
+
+1. **World swap:** `world-006-hethel` → `world-010-hethel-resistant` (same geometry: t_min 18, cap 26; authored resistant clerk — "quick, defensive, status-conscious, reluctant to concede") — assertion becomes a negotiated act rather than a reflex, and resistance opens dialogue blocks. `world-005-marrick` stays (AND-join depth is its own headroom mechanism).
+2. **Decay strengthened to mutation mode:** `{"seed":11,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}` — misremembered premises create false beliefs, retraction/revision work, and wrong-assertion pressure past the forcing turn.
+3. Everything else unchanged (arms, endpoints, guardrails, decision rules, backend).
+
+**H0′ re-probe:** 2 × A2 on world-010 + 1 × A2 on marrick under the redesigned stack; same two criteria. A second flat result stops the design again (no third redesign without stepping back from the pilot).
+
+H0/H0′ probe runs are design probes; none enter the contrast data.

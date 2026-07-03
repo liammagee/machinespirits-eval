@@ -11,7 +11,7 @@ base:
     register: modern
     release-authority: true
     pacing-guard: true
-    decay: '{"seed":11,"rate":0.25}'
+    decay: '{"seed":11,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}'
 arms:
   - label: baseline-r1
   - label: ledger-v1-r1
