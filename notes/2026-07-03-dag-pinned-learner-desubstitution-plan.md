@@ -317,7 +317,6 @@ explicitly. The instrument-iteration hypothesis for the next decision is a
 one-line character-sheet amendment (when you accept the blocking element,
 name it by its token id) — a measurement-channel fix, not a behavioral one.
 A fresh go decision is required to iterate and re-probe.
-<<<<<<< HEAD
 
 ### Stage 1 iteration 1 (2026-07-03, user go: "iterate")
 
@@ -434,5 +433,3 @@ the bar's difficulty must be reported alongside it.
 
 **Stage 1 gate: PASS. Stage 2 (60-row matrix) unlocked pending its own
 recorded user go.**
-=======
->>>>>>> origin/main
