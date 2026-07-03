@@ -298,6 +298,14 @@ function mockResponse(role, meta = {}) {
     // whole-play plan on the turns the harness demands one; echoed on every
     // reply shape, like the plot, so revision calls re-commit it.
     const throughlineBits = meta.throughlineHint ? { throughline: meta.throughlineHint } : {};
+    // Strategy ledger: the bridge's sceneCommitmentHint is the deterministic
+    // scene-opening commitment; echoed on every reply shape (like the plot)
+    // so intervened openings re-commit. v2 rides the same channel: the
+    // review hint answers the history table. The real backend ignores meta.
+    const ledgerBits = {
+      ...(meta.sceneCommitmentHint ? { scene_commitment: meta.sceneCommitmentHint } : {}),
+      ...(meta.strategyReviewHint ? { strategy_review: meta.strategyReviewHint } : {}),
+    };
     // Proof-debt hygiene: when the bridge says an already-staged,
     // proof-critical exhibit must be restored, the mock obeys so zero-cost
     // runs exercise the same parser/repair path as real runs.
@@ -309,6 +317,7 @@ function mockResponse(role, meta = {}) {
         ...theory,
         ...plotBits,
         ...throughlineBits,
+        ...ledgerBits,
       });
     }
     // A revision call (the ego rewriting under its superego's note): a figure
@@ -330,6 +339,7 @@ function mockResponse(role, meta = {}) {
           ...theory,
           ...plotBits,
           ...throughlineBits,
+          ...ledgerBits,
         });
       }
       if (meta.revision.jurisdiction === 'unconfronted_reentry') {
@@ -344,6 +354,7 @@ function mockResponse(role, meta = {}) {
           ...theory,
           ...plotBits,
           ...throughlineBits,
+          ...ledgerBits,
         });
       }
       return JSON.stringify({
@@ -358,6 +369,7 @@ function mockResponse(role, meta = {}) {
         ...theory,
         ...plotBits,
         ...throughlineBits,
+        ...ledgerBits,
       });
     }
     // C5 mock choreography: on a cue-less turn with an exhibit already staged,
@@ -373,6 +385,7 @@ function mockResponse(role, meta = {}) {
         ...theory,
         ...plotBits,
         ...throughlineBits,
+        ...ledgerBits,
       });
     }
     if (meta.sceneTempo?.beat && !meta.releaseSurface) {
@@ -394,6 +407,7 @@ function mockResponse(role, meta = {}) {
           ...theory,
           ...plotBits,
           ...throughlineBits,
+          ...ledgerBits,
         });
       }
     }
@@ -452,6 +466,7 @@ function mockResponse(role, meta = {}) {
         ...theory,
         ...plotBits,
         ...throughlineBits,
+        ...ledgerBits,
       });
     }
     return JSON.stringify({
@@ -467,6 +482,7 @@ function mockResponse(role, meta = {}) {
       ...theory,
       ...plotBits,
       ...throughlineBits,
+      ...ledgerBits,
     });
   }
   if (role === 'tutor_superego') {
@@ -534,6 +550,12 @@ function mockResponse(role, meta = {}) {
   }
   if (role === 'learner') {
     const adoptAll = Array.from({ length: meta.adoptableCount || 0 }, (_, i) => i);
+    // Learner ledger: boundary commitments echoed from the bridge's hints so
+    // zero-paid runs traverse the commit/audit path. Real backend ignores.
+    const learnerLedgerBits = {
+      ...(meta.sceneIntentHint ? { scene_intent: meta.sceneIntentHint } : {}),
+      ...(meta.actCarryHint ? { act_carry: meta.actCarryHint } : {}),
+    };
     // The bridge's derive clock hints aged derivable facts (seen-age >= 3 =
     // engine age 4, one turn after the mock stall watcher fires at 3) — so a
     // mock run exercises voicing, the voiced ledger, and post-fire uptake
@@ -562,6 +584,7 @@ function mockResponse(role, meta = {}) {
           hypothesis: null,
           exchange_type: tempo.exchange_type,
           asserts_answer: null,
+          ...learnerLedgerBits,
         });
       }
     }
@@ -580,6 +603,7 @@ function mockResponse(role, meta = {}) {
       derive_indices: deriveIndices,
       hypothesis: meta.patternAssertion ? null : adoptAll.length ? 'weighing what this changes' : null,
       asserts_answer: meta.patternAssertion ? meta.patternAssertion.answer : null,
+      ...learnerLedgerBits,
     });
   }
   throw new Error(`derivation.llmClient: unknown mock role '${role}'`);
