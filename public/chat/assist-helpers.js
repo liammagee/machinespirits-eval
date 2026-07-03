@@ -279,15 +279,15 @@ export function featuresFromCell(cell = {}) {
   const lossy =
     ((dialectical || divergent) && !!cell.recognitionMode) ||
     ![
-    'base',
-    'recognition',
-    'enhanced',
-    'matched_pedagogical',
-    'placebo',
-    'naive',
-    'hardwired',
-    ...Object.keys(FEATURE_META.stance).flatMap((s) => [`dialectical_${s}`, `divergent_${s}`]),
-  ].includes(promptType);
+      'base',
+      'recognition',
+      'enhanced',
+      'matched_pedagogical',
+      'placebo',
+      'naive',
+      'hardwired',
+      ...Object.keys(FEATURE_META.stance).flatMap((s) => [`dialectical_${s}`, `divergent_${s}`]),
+    ].includes(promptType);
 
   return { manual: lossy, features };
 }

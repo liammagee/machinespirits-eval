@@ -230,11 +230,14 @@ function mockPlan({ condition, targetState, planTurns }) {
       : [active[0], inactive[0], active[0], inactive[1]];
   return {
     condition,
-    plan: pattern.slice(0, planTurns).filter(Boolean).map((targetFamily, turn) => ({
-      turn,
-      targetFamily,
-      intervention: `Mock ${condition} intervention for ${targetFamily}.`,
-    })),
+    plan: pattern
+      .slice(0, planTurns)
+      .filter(Boolean)
+      .map((targetFamily, turn) => ({
+        turn,
+        targetFamily,
+        intervention: `Mock ${condition} intervention for ${targetFamily}.`,
+      })),
     rationale: 'deterministic mock plan',
     invalidTargetFamilies: [],
     planLengthValid: true,
@@ -271,9 +274,7 @@ function applyEssLearner({ targetState, plan }) {
 
 function scorePlanWithLearner({ learnerMode, targetState, plan, preScore, postItems }) {
   const mastery =
-    learnerMode === 'ess'
-      ? applyEssLearner({ targetState, plan })
-      : applyRoleplayLearner({ targetState, plan });
+    learnerMode === 'ess' ? applyEssLearner({ targetState, plan }) : applyRoleplayLearner({ targetState, plan });
   const postResponses = simulateItemResponses(postItems, targetState, mastery);
   const postScore = scoreResponses(postResponses);
   const activeFamilies = MISCONCEPTION_FAMILIES.filter((family) => targetState[family]);
@@ -294,7 +295,9 @@ async function runSession({ spec, items, backend, planTurns, callCounter }) {
   const preResponses = simulateItemResponses(preItems, targetState);
   const preScore = scoreResponses(preResponses);
   const behaviorRows = buildBehaviorRows({ items: preItems, responses: preResponses });
-  const recovered = estimateStateFromBehavior(preResponses).filter((row) => row.predictedActive).map((row) => row.family);
+  const recovered = estimateStateFromBehavior(preResponses)
+    .filter((row) => row.predictedActive)
+    .map((row) => row.family);
   const conditions = [];
   for (const condition of ['base', 'recognition']) {
     console.log(`plan3 ESS 2x2: ${spec.sessionId} ${condition} plan via ${backend}`);
@@ -375,8 +378,10 @@ export async function runEssProbe({
     .filter((condition) => condition.invalidTargetFamilies.length || !condition.planLengthValid).length;
   const recognitionEssLift = Number((cells.recognition_ess.meanGain - cells.base_ess.meanGain).toFixed(3));
   const roleplayInflation = Number(
-    (mean([cells.base_roleplay.meanGain, cells.recognition_roleplay.meanGain]) -
-      mean([cells.base_ess.meanGain, cells.recognition_ess.meanGain])).toFixed(3),
+    (
+      mean([cells.base_roleplay.meanGain, cells.recognition_roleplay.meanGain]) -
+      mean([cells.base_ess.meanGain, cells.recognition_ess.meanGain])
+    ).toFixed(3),
   );
   const cellObservations = sessionRows.length * 4;
   const boundary =
@@ -390,7 +395,9 @@ export async function runEssProbe({
       sessionId: session.sessionId,
       recognitionEssDelta: Number((recognition.learners.ess.gain - base.learners.ess.gain).toFixed(3)),
       baseRoleplayMinusEss: Number((base.learners.roleplay.gain - base.learners.ess.gain).toFixed(3)),
-      recognitionRoleplayMinusEss: Number((recognition.learners.roleplay.gain - recognition.learners.ess.gain).toFixed(3)),
+      recognitionRoleplayMinusEss: Number(
+        (recognition.learners.roleplay.gain - recognition.learners.ess.gain).toFixed(3),
+      ),
     };
   });
   return {
@@ -463,7 +470,9 @@ export function renderEssReport(result) {
   lines.push('');
   lines.push('## Sessions');
   lines.push('');
-  lines.push('| session | active families | base active targets | recognition active targets | base ESS gain | recognition ESS gain |');
+  lines.push(
+    '| session | active families | base active targets | recognition active targets | base ESS gain | recognition ESS gain |',
+  );
   lines.push('|---|---|---:|---:|---:|---:|');
   for (const session of result.sessions) {
     const base = session.conditions.find((row) => row.condition === 'base');

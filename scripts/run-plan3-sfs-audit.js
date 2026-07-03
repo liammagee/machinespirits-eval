@@ -20,11 +20,7 @@ import {
   mean,
   parseJsonResponse,
 } from './run-yoked-contingency-g0-paid-smoke.js';
-import {
-  MISCONCEPTION_FAMILIES,
-  loadTaggedPilotItems,
-  simulateItemResponses,
-} from './run-yoked-contingency-smoke.js';
+import { MISCONCEPTION_FAMILIES, loadTaggedPilotItems, simulateItemResponses } from './run-yoked-contingency-smoke.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -205,13 +201,17 @@ function mockLearnerResponse(spec) {
 }
 
 function normalizeChoice(item, rawChoice) {
-  const raw = String(rawChoice ?? '').trim().toLowerCase();
+  const raw = String(rawChoice ?? '')
+    .trim()
+    .toLowerCase();
   if (!raw) return null;
   const exact = item.choices.find((choice) => String(choice.value).toLowerCase() === raw);
   if (exact) return exact.value;
   const label = item.choices.find((choice) => String(choice.label).trim().toLowerCase() === raw);
   if (label) return label.value;
-  const embedded = item.choices.find((choice) => new RegExp(`\\b${escapeRegExp(String(choice.value))}\\b`, 'i').test(raw));
+  const embedded = item.choices.find((choice) =>
+    new RegExp(`\\b${escapeRegExp(String(choice.value))}\\b`, 'i').test(raw),
+  );
   return embedded ? embedded.value : null;
 }
 
@@ -227,7 +227,10 @@ async function generateRow({ spec, backend, callCounter }) {
     callCounter.increment('learner_retry');
     parsed = parseJsonResponse(await callBackend(buildLearnerPrompt(spec), backend));
   }
-  const postChoice = normalizeChoice(spec.item, parsed.post_choice ?? parsed.choice ?? parsed.answer ?? parsed.selected);
+  const postChoice = normalizeChoice(
+    spec.item,
+    parsed.post_choice ?? parsed.choice ?? parsed.answer ?? parsed.selected,
+  );
   const validChoice = postChoice != null;
   const preCorrect = String(spec.preChoice) === String(spec.correctChoice);
   const postCorrect = validChoice && String(postChoice) === String(spec.correctChoice);
@@ -293,7 +296,9 @@ function summarizeRows(rows) {
     );
     if (triple.some((row) => !row)) continue;
     const [targeted, mismatched, generic] = triple;
-    matchedDeltas.push((targeted.selectiveFlip ? 1 : 0) - mean([mismatched.selectiveFlip ? 1 : 0, generic.selectiveFlip ? 1 : 0]));
+    matchedDeltas.push(
+      (targeted.selectiveFlip ? 1 : 0) - mean([mismatched.selectiveFlip ? 1 : 0, generic.selectiveFlip ? 1 : 0]),
+    );
   }
   const pairedMean = mean(matchedDeltas);
   const pairedSe = matchedDeltas.length > 1 ? sd(matchedDeltas) / Math.sqrt(matchedDeltas.length) : 0;
@@ -436,7 +441,10 @@ export function renderSfsReport(result) {
 }
 
 function escapeCell(value) {
-  return String(value ?? '').replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|');
+  return String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\|/g, '\\|');
 }
 
 function writeArtifacts({ result, outJson, outMd }) {

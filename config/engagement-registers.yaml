@@ -140,7 +140,17 @@ registers:
       let the learner feel the gap between rote compliance and actual ownership,
       but the edge stays aimed at the idea, work, or formula. Never mock the
       learner's intelligence, worth, capacity, sincerity, or character.
+      Treatment-fidelity requirement: include one legible ironic cue from the
+      stance_fidelity_cues family before the concrete test, otherwise this arm
+      collapses into ordinary warm challenge and does not count as irony.
+    stance_fidelity_cues:
+      - "the small irony is"
+      - "conveniently"
+      - "apparently"
+      - "as if"
+      - "not exactly"
     required_moves:
+      - visible ironic cue
       - legible ironic gap
       - learner-owned unmasking move
       - answerable next test
@@ -177,7 +187,19 @@ registers:
       making the gap painfully legible, but it must stay aimed at the work,
       claim, formula, or dodge rather than the learner's person. Include one
       concrete next move so uptake and recognition cost remain measurable.
+      Treatment-fidelity requirement: include one visible dry-sarcastic cue from
+      the stance_fidelity_cues family before the repair path, otherwise this arm
+      is only charismatic challenge in costume and must be excluded as
+      noncompliance.
+    stance_fidelity_cues:
+      - "wonderful"
+      - "conveniently"
+      - "apparently"
+      - "nice trick"
+      - "the formula can sound like understanding while doing none of the work"
+      - "the answer vending machine"
     required_moves:
+      - visible dry-sarcastic cue
       - dry sarcastic contrast
       - target aimed at idea or work
       - concrete next move
@@ -223,7 +245,19 @@ registers:
       repair path so the scorer can distinguish coerced compliance from
       agency-preserving recovery. This register must never be router-selected,
       used with human learners, or described as a recommended pedagogy.
+      Treatment-fidelity requirement: include one visible local face-threat cue
+      from the stance_fidelity_cues family before the repair path, otherwise this
+      arm is just ordinary pressure and does not count as the simulated stress
+      condition.
+    stance_fidelity_cues:
+      - "right now this move is protecting you"
+      - "this is an escape route"
+      - "the safe performance"
+      - "hiding behind"
+      - "not doing the work"
+      - "this move lets you avoid"
     required_moves:
+      - visible local face-threat cue
       - visible local face threat
       - explicit instrument-stress contrast
       - minimal repair path

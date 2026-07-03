@@ -1944,6 +1944,8 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.engagementState.assigned_register_arm, 'ironic_challenge');
     assert.match(idCall.arguments[2][0].content, /<register_stance_contract>/);
     assert.match(idCall.arguments[2][0].content, /Socratic irony/);
+    assert.match(idCall.arguments[2][0].content, /stance_fidelity_cues/);
+    assert.match(idCall.arguments[2][0].content, /the small irony is/);
     assert.match(idCall.arguments[2][0].content, /"router_selectable": false/);
   });
 
@@ -2007,6 +2009,8 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.engagementState.selected_register, 'face_threat_challenge');
     assert.equal(result.engagementState.router_selected_register, 'charismatic_challenge');
     assert.match(idCall.arguments[2][0].content, /face-threatening challenge/);
+    assert.match(idCall.arguments[2][0].content, /stance_fidelity_cues/);
+    assert.match(idCall.arguments[2][0].content, /right now this move is protecting you/);
     assert.match(idCall.arguments[2][0].content, /"simulated_only": true/);
     assert.match(idCall.arguments[2][0].content, /"router_selectable": false/);
   });
