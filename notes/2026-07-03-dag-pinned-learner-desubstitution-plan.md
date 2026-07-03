@@ -446,3 +446,9 @@ H-O symmetric for 199-vs-193. Instrument guards: rows with drift-gate
 if ALL arms ground 0 across the matrix the outcome is
 **instrument-floor-unresolved** (the canary 0/6 release floor risk), not a
 de-substitution verdict.
+
+**Stage 2 execution deviation (2026-07-04, user-authorized)**: parallelism
+raised from the frozen serial to 3 at 30/60 rows for wall-clock (projected
+18h → ~6h). Rows are independent; workers interleave arms from one queue so
+quota pressure lands roughly evenly across arms (the quota-bound
+between-arm-contrast concern), and generation config is unchanged.
