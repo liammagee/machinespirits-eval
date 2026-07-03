@@ -84,3 +84,11 @@ Transport/CLI failures: one re-run under the same label; two failures exclude th
 **H0′ re-probe:** 2 × A2 on world-010 + 1 × A2 on marrick under the redesigned stack; same two criteria. A second flat result stops the design again (no third redesign without stepping back from the pilot).
 
 H0/H0′ probe runs are design probes; none enter the contrast data.
+
+## H0′ result (2026-07-03): PASS — matrix authorized
+
+- `h0prime-resistant-r1`: **aporia** at t25, never forced; 6 decays, 4 repairs.
+- `h0prime-resistant-r2`: **disengagement** at t25, never forced; 5 decays, 2 repairs.
+- `h0prime-marrick-r1`: grounded at T\*=28 (= cap; zero slack); 9 decays (1 mutation), 8 repairs, 1 false-form retraction.
+
+Criterion (a) PASS — T\* now varies over {never, never, 28} and the baseline can fail outright; criterion (b) PASS — decay heavy and the repair channel exercised in every run. Note recorded for the reading: on the resistant world the contrast measures **rescue capacity** (baseline fails; can strategy machinery recover the drama?), and a floor is possible (if no arm grounds there, grounded-rate is uninformative on that world and T\*/repair-latency/aporia-rate carry the contrast). Conformance fix applied at this point, before any matrix run: T\* and repair-latency imputation corrected from `turnsPlayed+1` to the pre-registered `cap+1` (stall-stopped runs end early and must not impute better than grounded-at-cap runs); world caps pinned in the analysis.

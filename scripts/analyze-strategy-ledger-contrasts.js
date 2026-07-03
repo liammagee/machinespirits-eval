@@ -119,6 +119,22 @@ function modeFlapRate(result) {
 
 const NEGATIVE_STANCES = new Set(['ironic_challenge', 'sarcastic_challenge', 'face_threat_challenge']);
 
+// Pre-registered T* imputation is CAP+1 ("imputed cap+1 when absent"), not
+// turnsPlayed+1 — a stall-stopped run ends early and must not impute better
+// than a grounded-at-cap run. Conformance fix applied pre-matrix (H0 phase);
+// world caps pinned here because result.json does not carry turn_cap.
+const WORLD_CAPS = {
+  world_000_smoke: 14,
+  world_003_bitterwell: 20,
+  world_009_ravensmark: 24,
+  world_005_marrick: 28,
+  world_006_hethel: 26,
+  world_010_hethel_resistant: 26,
+};
+function turnCapFor(result) {
+  return WORLD_CAPS[result.worldId] ?? result.turnsPlayed;
+}
+
 // v2: mean turns from each decay slip to its first repair/re-adoption
 // (cap-end imputed when never repaired); null when the decay condition is off.
 function repairLatency(result) {
@@ -128,7 +144,7 @@ function repairLatency(result) {
   if (!decays.length) return null;
   const latencies = decays.map((d) => {
     const repair = rows.find((e) => e.type === 'repair' && e.premiseId === d.premiseId && e.turn >= d.turn);
-    return (repair ? repair.turn : result.turnsPlayed + 1) - d.turn;
+    return (repair ? repair.turn : turnCapFor(result) + 1) - d.turn;
   });
   return latencies.reduce((a, b) => a + b, 0) / latencies.length;
 }
@@ -173,7 +189,7 @@ function extractRun(world, label, dir) {
     ...armOf(label),
     verdict: result.verdict,
     grounded: result.verdict === 'grounded_anagnorisis' ? 1 : 0,
-    timeToRecognition: result.assertedGroundedTurn ?? result.turnsPlayed + 1,
+    timeToRecognition: result.assertedGroundedTurn ?? turnCapFor(result) + 1,
     turnsPlayed: result.turnsPlayed,
     turnCapSeen: turnCap,
     modeFlapRate: modeFlapRate(result),
