@@ -2,7 +2,11 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "July 2026"
+<<<<<<< HEAD
 version: "3.0.199"
+=======
+version: "3.0.198"
+>>>>>>> origin/main
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -4264,9 +4268,12 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 
 Individual v3.0.X entries follow in chronological order (newest first):
 
+<<<<<<< HEAD
 **v3.0.199** (2026-07-03)
 :   **New §7.11: interpretive synthesis of the substitution family.** Added a discussion subsection unifying the composition result (§6.14) with universal substitution (§6.4), the state-richness reversal (§6.8.6), the orientation-family result (§7.9), and the programme's ToM-redundancy nulls under one reading: prompt- and architecture-level mechanisms act through a single bottleneck (shaping attention over context the model can already see) and therefore converge on the model's existing competence, while the interventions that kept adding value (§6.13 pacing guards, §6.7 resistance gates) inject machine-checkable signal the model lacks. Design rule stated: instructions converge; only new signal accumulates. Explicitly framed as interpretation over established results — no new numbers, no new empirical claim; the constant-effect-magnitude observation it explains remains listed as an anomaly in §9.
 
+=======
+>>>>>>> origin/main
 **v3.0.198** (2026-07-03)
 :   **New §6.14: blueprint composition test.** Added the pre-registered composition study: the paper's validated mechanisms declared as registry modules (`config/tutor-blueprint.yaml`) and composed on the id-director chassis as cell_199 (kernel: recognition orientation + drama-pad memory + cell-193 register composite) and cell_200 (kernel + Plan 2.x action contracts extracted as per-turn middleware). Gate + repeats + decision runs (`eval-2026-07-02-b0be0524`, `eval-2026-07-02-b4ccb58d`, `eval-2026-07-02-fe9404d2`, `eval-2026-07-02-a4260aa3`, `eval-2026-07-02-6547750c`, `eval-2026-07-02-ad0b5a8b`, `eval-2026-07-03-f877e477`, `eval-2026-07-03-4deae92a`; Codex-only stack; pre-registrations in `notes/2026-07-02-blueprint-composition-plan.md`). Results: sub-additivity confirmed everywhere measured (kernel ≈ full on both suites; action contracts add nothing detectable); no straitjacket regression; the gate's apparent local cost of recognition orientation on resistance repair was run to a pre-registered decision at n=6 per cell×scenario and **dissolved exactly at the frozen boundary** (positives 30/30 vs 24/30, gap 6/30 vs ≥9 required; strict candidates 18/30 vs 17/30), leaving a one-directional frustration-subtype caveat (6/6 vs 3/6 carry-through) invisible to whole-dialogue v2.2 in both directions. Structural findings recorded: conventional superego structurally excluded from the id-director chassis; §6.13 pacing guard not portable; §6.6.11 cross-session pad claim does not transfer (drama pad only on this chassis); trap-suite strict-shift non-evaluable on the id-director adapter. Design consequence stated in §6.14: the evidence licenses a small-kernel tutor, not mechanism accumulation.
 
