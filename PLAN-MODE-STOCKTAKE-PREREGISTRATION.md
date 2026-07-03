@@ -36,9 +36,12 @@ Binding base (identical to the V2b confirmatory, both arms): `--scene-mode --did
 
 `world-010-hethel-resistant` + `world-005-marrick` (headroom established by the V2b confirmatory under these exact conditions — baseline grounded 0.50, failures common; no new headroom gate). 6 repeats per arm per world, interleaved, decay seeds **31, 37, 41, 43, 47, 53** shared within repeat pairs (fresh primes — no reuse of the confirmatory's seeds, so this is an independent draw of decay schedules). 24 runs, n = 12/arm pooled.
 
-## Backend
+## Backend and execution (parallelized — amended 2026-07-04, pre-freeze)
 
-`DERIVATION_PROVIDER=codex`, all roles, CLI default (recorded from the first diagnosis). Serialized; two attended world-blocks; hang > 40 min → kill, one same-label retry; two failures exclude the label.
+`DERIVATION_PROVIDER=codex`, all roles, CLI default (recorded from the first diagnosis). **Concurrency 3 within each world block** (probed 2026-07-04: three concurrent `codex exec` sessions complete in ~12s vs ~19s serialized — the CLI genuinely multiplexes); blocks run sequentially with the usual checkpoint between them (projected wall-clock ≈ 1.5–2 h total vs ≈ 5 h serialized). Two fairness safeguards, pre-committed:
+
+1. **Symmetric quota exposure.** The arm list stays pair-interleaved (`baseline-rN`, `plan-mode-rN`, …), so the concurrency pool keeps both arms in flight together — any provider throttling or quota-window degradation lands on both arms at once rather than biasing the contrast toward whichever arm ran in the cheaper hour. Total quota consumption is unchanged by parallelism; only the rate compresses, which raises the chance of hitting a rolling window cap mid-matrix — acceptable because:
+2. **The interruption discipline is the mitigation** (proven twice in this arc): any stalled/killed runs resume via trimmed same-label specs, and pair-matched seeds keep a partially-complete matrix balanced and analyzable. Hang > 40 min → kill, one same-label retry; two failures exclude the label (reported).
 
 ## Endpoints (outcome-primary — the bar any strategic apparatus must now clear here is "no negative transfer")
 

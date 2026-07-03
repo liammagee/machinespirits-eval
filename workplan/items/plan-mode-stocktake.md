@@ -58,7 +58,7 @@ failed; not confirmed → the outer-loop line in this stack closes whole (both
 variants non-promotable), no third variant without stepping back from the
 engine.
 
-AWAITING GO for the paid contrast (~5h codex attended, two blocks). The
+AWAITING GO for the paid contrast (parallelized 2026-07-04, pre-freeze: concurrency 3 per block with pair-interleaved arms for symmetric quota exposure — probed, the CLI multiplexes; ~1.5-2h wall-clock in two checkpointed blocks). The
 pre-registration freezes at the commit preceding the first paid run; the
 analysis gains its plan-mode design entry and is zero-paid validated before
 that freeze.
