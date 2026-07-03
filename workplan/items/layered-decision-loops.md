@@ -1,7 +1,7 @@
 ---
 id: layered-decision-loops
 title: Strategy Ledger v1 — per-agent commit/audit loops at block/scene/act scope
-status: active
+status: done
 type: research
 priority: P1
 owner: human
@@ -129,3 +129,8 @@ flawless (coverage/switch-after-failure 1.00, fidelity 19/27). D2 staged out
 (permission gate; only signal is a worsening). Report:
 exports/dramatic-derivation/strategy-ledger/v2-contrasts-report.{json,md}.
 Next: fold both pilots into paper-full-2.0.md as one bounded subsection.
+
+2026-07-03 Claude: Arc SHIPPED — PR #80 merged to main (merge commit 2e54476a,
+true merge so prereg-cited SHAs stay reachable); paper §6.13.16 at v3.0.200.
+Item closed; the live continuation is `strategy-ledger-followups` (confirm
+V2b before anything else; recorded don't-dos carried there).

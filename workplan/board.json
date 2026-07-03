@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-03T08:37:33.566Z",
+  "generated": "2026-07-03T10:59:42.455Z",
   "counts": {
-    "total": 72,
+    "total": 73,
     "byStatus": {
-      "done": 60,
+      "done": 61,
       "blocked": 1,
       "dropped": 2,
       "active": 4,
@@ -11,7 +11,7 @@
       "triaged": 1
     },
     "byType": {
-      "research": 36,
+      "research": 37,
       "experiment": 9,
       "infra": 10,
       "content": 2,
@@ -121,33 +121,6 @@
       "branch": "worktree-blueprint-composition"
     },
     {
-      "id": "layered-decision-loops",
-      "title": "Strategy Ledger v1 — per-agent commit/audit loops at block/scene/act scope",
-      "status": "active",
-      "type": "research",
-      "priority": "P1",
-      "owner": "human",
-      "source": "manual",
-      "created": "2026-07-02",
-      "updated": "2026-07-02",
-      "verification": "Phases 0-2 implemented: npm run derivation:ledger-gates 22/22 zero-paid checks (proof fingerprints byte-identical on/off, both casts; row-schema symmetry); tests/dramaticDerivationStrategyLedger.test.js 13/13 (off-state invariance pinned); full npm test 4653/0. Phase 3 contrasts pre-registered before any paid run.",
-      "claim_status": "scope-bound",
-      "links": {
-        "notes": "LAYERED-DECISION-LOOPS-PLAN.md",
-        "items": [
-          "layered-task-session-adaptation",
-          "layered-taskloop-heldout-gate"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "outer-loop",
-        "strategy-ledger",
-        "symmetry"
-      ]
-    },
-    {
       "id": "lean-semantic-web-proof-dag-validation",
       "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
       "status": "active",
@@ -170,6 +143,39 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "strategy-ledger-followups",
+      "title": "Strategy Ledger follow-ups — confirm V2b, then compose; do not rebuild trialling",
+      "status": "active",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-03",
+      "verification": "Each step below runs only under its own pre-registration; the item closes when the V2b confirmatory decision is made (either tier promotion or a recorded failure-to-replicate) and the composition-module question is answered or explicitly dropped.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "LAYERED-DECISION-LOOPS-PLAN.md",
+          "STRATEGY-LEDGER-V2-PREREGISTRATION.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md#the-strategy-ledger-scene-scoped-commitaudit-loops-help-repair-an-in-run-trialling-superstructure-costs",
+        "items": [
+          "layered-decision-loops",
+          "negative-register-effect-estimation-grid",
+          "blueprint-composition"
+        ],
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/80"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-ledger",
+        "outer-loop",
+        "followups"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -353,6 +359,33 @@
         "notes": "TODO.md"
       },
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "layered-decision-loops",
+      "title": "Strategy Ledger v1 — per-agent commit/audit loops at block/scene/act scope",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "Phases 0-2 implemented: npm run derivation:ledger-gates 22/22 zero-paid checks (proof fingerprints byte-identical on/off, both casts; row-schema symmetry); tests/dramaticDerivationStrategyLedger.test.js 13/13 (off-state invariance pinned); full npm test 4653/0. Phase 3 contrasts pre-registered before any paid run.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "LAYERED-DECISION-LOOPS-PLAN.md",
+        "items": [
+          "layered-task-session-adaptation",
+          "layered-taskloop-heldout-gate"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "strategy-ledger",
+        "symmetry"
+      ]
     },
     {
       "id": "register-taxonomy-negative-registers",
