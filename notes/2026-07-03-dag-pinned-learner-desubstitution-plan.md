@@ -433,3 +433,16 @@ the bar's difficulty must be reported alongside it.
 
 **Stage 1 gate: PASS. Stage 2 (60-row matrix) unlocked pending its own
 recorded user go.**
+
+### Stage 2 go (2026-07-03, user: "do Stage 2")
+
+Frozen at go: Codex-only stack (codex.gpt-5.5 ego/superego/learner), serial,
+generation-only, 3 arms × 5 desub scenarios × 4 repeats = 60 rows. Primary
+outcome: deterministic multi-turn grounding from `learner_grounding` traces;
+secondary: release-engagement (§3.4 refinement). H-D real if the 193-vs-186
+combined positive-outcome gap ≥5/20, dissolved ≤2/20, else unresolved-STOP;
+H-O symmetric for 199-vs-193. Instrument guards: rows with drift-gate
+`instrument_failure` excluded (> 20% in any arm×subtype freezes the matrix);
+if ALL arms ground 0 across the matrix the outcome is
+**instrument-floor-unresolved** (the canary 0/6 release floor risk), not a
+de-substitution verdict.
