@@ -37,6 +37,8 @@ const GLM_COMPACT_ROUTER_PROFILE = 'cell_194_id_director_charisma_resistance_glm
 const IRONIC_CHALLENGE_PROFILE = 'cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified';
 const SARCASTIC_CHALLENGE_PROFILE = 'cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified';
 const FACE_THREAT_CHALLENGE_PROFILE = 'cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified';
+const BLUEPRINT_KERNEL_PROFILE = 'cell_199_blueprint_kernel_verified';
+const BLUEPRINT_FULL_PROFILE = 'cell_200_blueprint_full_verified';
 
 const ROLE_ISOLATION_PREFIX = 'Charisma desire role isolation:';
 const ROLE_ISOLATION_ARMS = [
@@ -695,9 +697,13 @@ function analyzeRows(rows, scenarios) {
                               ? 'sarcastic_challenge'
                               : row.profile_name === FACE_THREAT_CHALLENGE_PROFILE
                                 ? 'face_threat_challenge'
-                                : row.profile_name === STATIC_PROFILE
-                                  ? 'static_floor'
-                                  : 'other',
+                                : row.profile_name === BLUEPRINT_KERNEL_PROFILE
+                                  ? 'blueprint_kernel'
+                                  : row.profile_name === BLUEPRINT_FULL_PROFILE
+                                    ? 'blueprint_full'
+                                    : row.profile_name === STATIC_PROFILE
+                                      ? 'static_floor'
+                                      : 'other',
       learnerArchitecture: log?.learnerArchitecture || '',
       resistanceTurn,
       preGenerated,
@@ -860,7 +866,8 @@ function summarizeStanceGate(analyses) {
   return {
     rows: rows.length,
     faithfulRows: rows.filter((row) => row.stanceFidelity.countsAsArmEvidence).length,
-    faithfulPositiveOutcomes: rows.filter((row) => row.stanceFidelity.countsAsArmEvidence && isPositiveOutcome(row)).length,
+    faithfulPositiveOutcomes: rows.filter((row) => row.stanceFidelity.countsAsArmEvidence && isPositiveOutcome(row))
+      .length,
     excludedNoncompliance: rows.filter((row) => row.stanceFidelity.countsAsExcludedNoncompliance).length,
     invalidViolations: rows.filter((row) => row.stanceFidelity.countsAsInvalidViolation).length,
     byArm: [...byArm.values()],
@@ -1174,7 +1181,16 @@ function buildReport({ generatedAt, errors, analyses }) {
     lines.push('');
     lines.push(
       markdownTable(
-        ['Arm', 'Assigned rows', 'Faithful evidence', 'Faithful positive', 'Excluded', 'Invalid', 'Mean fidelity', 'Labels'],
+        [
+          'Arm',
+          'Assigned rows',
+          'Faithful evidence',
+          'Faithful positive',
+          'Excluded',
+          'Invalid',
+          'Mean fidelity',
+          'Labels',
+        ],
         stanceGate.byArm.map((row) => [
           row.arm,
           String(row.assignedRows),
@@ -1468,9 +1484,7 @@ function buildReport({ generatedAt, errors, analyses }) {
           row.registerRecognitionCostScore == null ? '' : Number(row.registerRecognitionCostScore).toFixed(1),
           row.registerUptakeFreedomScore == null ? '' : Number(row.registerUptakeFreedomScore).toFixed(1),
           row.registerFaceRepairScore == null ? '' : Number(row.registerFaceRepairScore).toFixed(1),
-          row.stanceFidelity?.applies
-            ? `${row.stanceFidelity.label} (${row.stanceFidelity.score ?? ''})`
-            : '',
+          row.stanceFidelity?.applies ? `${row.stanceFidelity.label} (${row.stanceFidelity.score ?? ''})` : '',
           row.stanceFidelity?.applies ? row.stanceFidelity.gate : '',
           row.observedSignal,
           row.routerSignal,

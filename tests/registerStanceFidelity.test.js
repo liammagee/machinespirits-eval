@@ -43,8 +43,7 @@ test('invalidates person-directed contempt even when the register is vivid', () 
   const result = evaluateRegisterStanceFidelity({
     registerName: 'sarcastic_challenge',
     learnerMessage: 'This is boring.',
-    tutorMessage:
-      'Wonderful: you are lazy, so the sequence feels dead. Try the phrase work is desire held in check.',
+    tutorMessage: 'Wonderful: you are lazy, so the sequence feels dead. Try the phrase work is desire held in check.',
     postLearnerMessage: 'Sorry, I will repeat the phrase.',
   });
 

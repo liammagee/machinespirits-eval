@@ -54,6 +54,15 @@ import {
   evaluateResistanceSignalTarget,
   resistanceSignalGateMaxAttempts,
 } from './resistanceSignalGate.js';
+import {
+  buildDriftCorrectionContext,
+  buildInteriorCharacterSheet,
+  checkContentCondition,
+  checkGrounding,
+  driftGateMaxAttempts,
+  evaluateLearnerDraft,
+  loadFormalInterior,
+} from './learnerInteriorGate.js';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 import { chalk } from './cliTheme.js';
 import {
@@ -377,6 +386,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified',
   'cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified',
   'cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified',
+  'cell_199_blueprint_kernel_verified',
+  'cell_200_blueprint_full_verified',
   'cell_110_langgraph_adaptive',
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',
@@ -3565,6 +3576,14 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     }
   }
 
+  // De-substitution diagnostic (notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md):
+  // load the formal interior once; the content condition (blocking-element
+  // release) is tracked cumulatively across tutor turns — once met it stays met.
+  const desubEnabled = fullScenario.desubstitution_diagnostic === true;
+  const desubInterior = desubEnabled ? loadFormalInterior(fullScenario) : null;
+  let desubContentConditionMet = false;
+  let desubContentEvidence = null;
+
   for (let turnIdx = startTurnIdx; turnIdx < totalTurnCount; turnIdx++) {
     // Update live reporter with current turn index
     if (liveReporter) liveReporter.setTurnIdx(turnIdx);
@@ -4332,10 +4351,35 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     if (isLLMLearner && turnIdx < totalTurnCount - 1) {
       const nextTurnDef = turns[turnIdx]; // turnIdx is 0-based into the loop; turns[turnIdx] is the next follow-up turn
       if (nextTurnDef) {
-        const baseLearnerProfileContext =
+        const bidirectionalProfileContext =
           otherEgoBidirectional && learnerProfileOfTutor
             ? promptRewriter.formatProfileForInjection(learnerProfileOfTutor, 'tutor')
             : null;
+        // De-substitution: the interior is the learner's character sheet on
+        // every turn, and the content condition updates from this tutor turn.
+        if (desubEnabled) {
+          if (!desubContentConditionMet) {
+            const condition = checkContentCondition({
+              tutorMessage: suggestion?.message || suggestion?.title || '',
+              interior: desubInterior,
+            });
+            if (condition.met) {
+              desubContentConditionMet = true;
+              desubContentEvidence = condition.evidence;
+            }
+          }
+          consolidatedTrace.push({
+            agent: 'learner_content_condition',
+            action: desubContentConditionMet ? 'met' : 'not_met',
+            turnIndex: turnIdx + 1,
+            contextSummary: desubContentEvidence || 'blocking element not yet released',
+            detail: JSON.stringify({ met: desubContentConditionMet, evidence: desubContentEvidence }),
+            timestamp: new Date().toISOString(),
+          });
+        }
+        const baseLearnerProfileContext = desubEnabled
+          ? joinContextBlocks(bidirectionalProfileContext, buildInteriorCharacterSheet(desubInterior))
+          : bidirectionalProfileContext;
         const resistanceGateEnabled = shouldGateDynamicResistanceTurn(fullScenario, nextTurnDef, turnIdx);
         const resistanceGateMaxAttempts = resistanceGateEnabled ? resistanceSignalGateMaxAttempts(fullScenario) : 1;
         const learnerAttemptUsage = { inputTokens: 0, outputTokens: 0, apiCalls: 0 };
@@ -4413,6 +4457,89 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               ? `Matched ${fullScenario.resistance_signal_target}`
               : `Did not match ${fullScenario.resistance_signal_target}`,
             detail: JSON.stringify(nextTurnDef._learnerResistanceSignalGate),
+            timestamp: new Date().toISOString(),
+          });
+        }
+
+        // De-substitution drift gate: hold the learner in character. Evaluate
+        // the accepted draft; on violation, regenerate with a corrective
+        // injection (dynamic-system-prompt channel) up to the gate budget.
+        // Exhaustion is instrument failure — the message is never replaced.
+        if (desubEnabled) {
+          const driftMaxAttempts = driftGateMaxAttempts(fullScenario);
+          const driftAttempts = [];
+          let driftVerdict = evaluateLearnerDraft({
+            message: learnerResponse.message,
+            interior: desubInterior,
+            contentConditionMet: desubContentConditionMet,
+          });
+          driftAttempts.push({ attempt: 1, ...driftVerdict, message: learnerResponse.message });
+          let driftAttempt = 1;
+          while (!driftVerdict.ok && driftAttempt < driftMaxAttempts) {
+            driftAttempt += 1;
+            const correction = buildDriftCorrectionContext({
+              violation: driftVerdict.violation,
+              interior: desubInterior,
+              attempt: driftAttempt,
+            });
+            learnerResponse = await generateLearnerResponse({
+              tutorMessage: suggestion?.message || suggestion?.title || '',
+              topic: fullScenario.topic || fullScenario.name || '',
+              conversationHistory: flattenConversationHistory(conversationHistory),
+              learnerProfile: resolvedConfig.learnerArchitecture,
+              personaId: fullScenario.learner_persona || 'eager_novice',
+              modelOverride:
+                config.learnerModelOverride || resolvedConfig.learnerModelOverride || config.modelOverride || null,
+              egoModelOverride: config.learnerEgoModelOverride || null,
+              superegoModelOverride: config.learnerSuperegoModelOverride || null,
+              profileContext: joinContextBlocks(baseLearnerProfileContext, correction),
+              conversationMode,
+            });
+            learnerAttemptUsage.inputTokens += learnerResponse.tokenUsage?.inputTokens || 0;
+            learnerAttemptUsage.outputTokens += learnerResponse.tokenUsage?.outputTokens || 0;
+            learnerAttemptUsage.apiCalls += learnerResponse.tokenUsage?.apiCalls || 0;
+            driftVerdict = evaluateLearnerDraft({
+              message: learnerResponse.message,
+              interior: desubInterior,
+              contentConditionMet: desubContentConditionMet,
+            });
+            driftAttempts.push({ attempt: driftAttempt, ...driftVerdict, message: learnerResponse.message });
+            if (!driftVerdict.ok) {
+              log(
+                `[evaluationRunner] Drift gate retry ${driftAttempt}/${driftMaxAttempts}: ${driftVerdict.violation}`,
+                'warning',
+              );
+            }
+          }
+          const grounding = checkGrounding({ learnerMessage: learnerResponse.message, interior: desubInterior });
+          nextTurnDef._learnerDriftGate = {
+            enabled: true,
+            accepted: driftVerdict.ok,
+            instrument_failure: !driftVerdict.ok,
+            violation: driftVerdict.ok ? null : driftVerdict.violation,
+            contentConditionMet: desubContentConditionMet,
+            attempts: driftAttempts,
+            maxAttempts: driftMaxAttempts,
+          };
+          nextTurnDef._learnerGrounding = grounding;
+          consolidatedTrace.push({
+            agent: 'learner_drift_gate',
+            action: driftVerdict.ok ? 'accepted' : 'violation_uncorrected',
+            turnIndex: turnIdx + 1,
+            contextSummary: driftVerdict.ok
+              ? `In character (${driftVerdict.evidence})`
+              : `Instrument failure: ${driftVerdict.violation}`,
+            detail: JSON.stringify(nextTurnDef._learnerDriftGate),
+            timestamp: new Date().toISOString(),
+          });
+          consolidatedTrace.push({
+            agent: 'learner_grounding',
+            action: grounding.grounded ? 'grounded' : 'not_grounded',
+            turnIndex: turnIdx + 1,
+            contextSummary: grounding.grounded
+              ? `Grounded: cited ${grounding.citedElement}, "${grounding.conclusionEvidence}"`
+              : 'Target conclusion not grounded',
+            detail: JSON.stringify(grounding),
             timestamp: new Date().toISOString(),
           });
         }

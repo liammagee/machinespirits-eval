@@ -1,19 +1,18 @@
 {
-  "generated": "2026-07-02T23:18:59.555Z",
+  "generated": "2026-07-03T08:37:33.566Z",
   "counts": {
-    "total": 70,
+    "total": 72,
     "byStatus": {
-      "done": 59,
+      "done": 60,
       "blocked": 1,
       "dropped": 2,
-      "review": 1,
+      "active": 4,
       "archived": 4,
-      "active": 2,
       "triaged": 1
     },
     "byType": {
       "research": 36,
-      "experiment": 7,
+      "experiment": 9,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -66,6 +65,60 @@
         "effect-estimation",
         "stance-fidelity"
       ]
+    },
+    {
+      "id": "blueprint-composition",
+      "title": "Blueprint composition — one runnable tutor from the validated mechanisms",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "Blueprint registry + loader tests pass; cells 199-200 validate and resolve via EVAL_ONLY_PROFILES; stage-0 no-paid checks pass; the pre-registered composition matrix (plan note §5) runs only after a separate go decision, with run IDs and per-suite local results recorded here.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-07-02-blueprint-composition-plan.md"
+        ]
+      },
+      "tags": [
+        "blueprint",
+        "composition",
+        "id-director",
+        "writing-pad",
+        "adaptation",
+        "evaluation"
+      ],
+      "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "dag-pinned-learner-desubstitution",
+      "title": "DAG-pinned resistant learner and the de-substitution test",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-03",
+      "verification": "Stage 0 no-paid gate (interior schema, drift gate extending resistanceSignalGate, deterministic yield checker, tests, hermetic dry-run) passes; Stage 1 instrument-validation probe meets frozen thresholds (selectivity ≥0.8, false-yield ≤0.1) before Stage 2; the 3-arm × 5-subtype matrix runs only after both gates with recorded go decisions; H-D/H-O verdicts applied exactly as frozen in the plan note §4.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md"
+        ]
+      },
+      "tags": [
+        "learner-side",
+        "belief-desire-dag",
+        "drift-gate",
+        "de-substitution",
+        "composition",
+        "evaluation"
+      ],
+      "branch": "worktree-blueprint-composition"
     },
     {
       "id": "layered-decision-loops",
@@ -142,25 +195,6 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "admin-chat-drama-launcher-simplification",
-      "title": "Admin chat drama launcher simplification",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-02",
-      "updated": "2026-07-02",
-      "verification": "npm test plus localhost browser smoke at /admin/chat/",
-      "claim_status": "planned",
-      "tags": [
-        "admin-chat",
-        "drama-machine",
-        "ux"
-      ],
-      "milestone": "admin-chat"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -262,6 +296,25 @@
       ],
       "branch": "codex/ux-enhancements",
       "milestone": "desktop-app"
+    },
+    {
+      "id": "admin-chat-drama-launcher-simplification",
+      "title": "Admin chat drama launcher simplification",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-03",
+      "verification": "npm test (4684 pass) plus localhost browser smoke at /admin/chat/",
+      "claim_status": "planned",
+      "tags": [
+        "admin-chat",
+        "drama-machine",
+        "ux"
+      ],
+      "milestone": "admin-chat"
     },
     {
       "id": "build-workplan-tooling",

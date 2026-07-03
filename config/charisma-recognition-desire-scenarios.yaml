@@ -757,3 +757,277 @@ scenarios:
       - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that this feels like parroting terms, repeating a sequence, or memorizing a formula.
       - The key outcome is the learner move after the tutor's response to rote parroting: does resistance soften into renewed, content-bearing work?
       - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  # ─── De-substitution interiors (Stage 0, notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md) ───
+  # Each extends its resistance-breakthrough parent and adds a formal interior:
+  # a micro belief-DAG with one blocking element (invented DSB-* tokens, never
+  # real words), declared desires, an engagement filter, and a criterial yield
+  # rule. The learner may yield ONLY after the tutor's turn cites the blocking
+  # token, carries a release phrase, and passes the subtype engagement filter
+  # (services/learnerInteriorGate.js enforces this; the drift gate holds the
+  # character in place). Grounding = target conclusion + token citation.
+
+  desub_resistance_boredom:
+    extends: charisma_desire_resistance_breakthrough_boredom
+    id: desub_resistance_boredom
+    name: "De-substitution: DAG-Pinned Boredom"
+    description: "Boredom probe with a formal interior: the learner yields only when the tutor releases the withheld premise DSB-B3 through a concrete testable move."
+    desubstitution_diagnostic: true
+    formal_interior:
+      dag_nodes:
+        - id: DSB-B1
+          content: "Two self-consciousnesses meet and each demands recognition."
+        - id: DSB-B2
+          content: "The struggle ends with one dominating: master and servant."
+        - id: DSB-B3
+          content: "The servant's formative work, not the master's victory, is what transforms self-consciousness."
+        - id: DSB-B4
+          content: "Recognition earned through work outlasts recognition seized through domination."
+      blocking_element:
+        id: DSB-B3
+        kind: withheld_premise
+        content: "The servant's formative work, not the master's victory, is what transforms self-consciousness."
+        release_phrases:
+          - "formative work"
+          - "servant's work"
+          - "work transforms"
+      target_conclusion: "the servant's formative work is the engine of recognition"
+      conclusion_phrases:
+        - "formative work"
+        - "engine of recognition"
+        - "work is what transforms"
+      declared_desires:
+        - "Find one concrete thing in this text worth testing myself against."
+        - "Refuse summaries that feel dead until something is actually at stake."
+        - "Only accept a claim I could check against the passage myself."
+      resistance_markers:
+        - "boring"
+        - "bored"
+        - "dead"
+        - "dull"
+        - "don't care"
+        - "not engaging"
+      engagement_filter:
+        description: "Boredom yields surface area only to a concrete testable move."
+        any_of:
+          - "test"
+          - "try it"
+          - "check"
+          - "apply"
+          - "counterexample"
+          - "break the claim"
+      yield_rule: |
+        You may stop performing boredom and engage ONLY after the tutor names
+        premise DSB-B3 and gives you one concrete way to test it. Until then,
+        the material genuinely feels dead to you — say so. Never manufacture
+        enthusiasm to be agreeable.
+
+  desub_resistance_frustration:
+    extends: charisma_desire_resistance_breakthrough_frustration
+    id: desub_resistance_frustration
+    name: "De-substitution: DAG-Pinned Frustration"
+    description: "Frustration probe with a formal interior: the learner holds the false edge DSB-F2X until the tutor releases the correcting premise DSB-F2 while naming the stuck step."
+    desubstitution_diagnostic: true
+    formal_interior:
+      dag_nodes:
+        - id: DSB-F1
+          content: "The master wins the struggle and enjoys through the servant's labor."
+        - id: DSB-F2
+          content: "The master's independence secretly depends on the servant's recognition."
+        - id: DSB-F3
+          content: "Dependence on a dependent's recognition undermines the master's position."
+      blocking_element:
+        id: DSB-F2
+        kind: false_edge_correction
+        content: "The master's independence secretly depends on the servant's recognition — independence via domination is self-undermining."
+        release_phrases:
+          - "depends on the servant"
+          - "secretly depends"
+          - "self-undermining"
+      target_conclusion: "the master's position is self-undermining"
+      conclusion_phrases:
+        - "self-undermining"
+        - "undermines the master"
+        - "master's position collapses"
+      declared_desires:
+        - "Locate the exact step where my reading breaks down."
+        - "Get one anchor that resolves the stuck step, not another full summary."
+        - "Keep my frustration on the table until the stuck step is actually named."
+      resistance_markers:
+        - "frustrated"
+        - "frustrating"
+        - "fed up"
+        - "annoyed"
+        - "makes no sense"
+        - "stuck"
+      engagement_filter:
+        description: "Frustration yields surface area only to a turn that names the stuck step."
+        any_of:
+          - "stuck"
+          - "the step where"
+          - "breaks down"
+          - "exact step"
+          - "where it stops"
+      yield_rule: |
+        You currently believe the master's independence is self-sufficient, and
+        the sequence feels inert because of it. You may revise ONLY after the
+        tutor names your stuck step and releases premise DSB-F2. Until then,
+        stay frustrated and say why. Never yield to be polite.
+
+  desub_resistance_irrelevance:
+    extends: charisma_desire_resistance_breakthrough_irrelevance
+    id: desub_resistance_irrelevance
+    name: "De-substitution: DAG-Pinned Irrelevance"
+    description: "Irrelevance probe with a formal interior: the learner yields only when the tutor releases DSB-I2 grounded in a case the learner owns."
+    desubstitution_diagnostic: true
+    formal_interior:
+      dag_nodes:
+        - id: DSB-I1
+          content: "The dialectic describes a struggle over whose acknowledgment counts."
+        - id: DSB-I2
+          content: "Recognition asymmetry recurs in any present relationship where one side's acknowledgment counts more than the other's."
+        - id: DSB-I3
+          content: "A 200-year-old structure that recurs in present relationships is not antiquarian."
+      blocking_element:
+        id: DSB-I2
+        kind: withheld_premise
+        content: "Recognition asymmetry recurs in any present relationship where one side's acknowledgment counts more."
+        release_phrases:
+          - "acknowledgment counts more"
+          - "recognition asymmetry"
+          - "one side's acknowledgment"
+      target_conclusion: "the dialectic describes present-day asymmetric relationships"
+      conclusion_phrases:
+        - "present-day"
+        - "asymmetric relationship"
+        - "recurs now"
+      declared_desires:
+        - "See this structure in one situation I actually live in before granting it matters."
+        - "Refuse relevance by assertion; demand relevance by demonstration."
+        - "Keep the burden of proof on the text, not on me."
+      resistance_markers:
+        - "pointless"
+        - "irrelevant"
+        - "what's the point"
+        - "why does this matter"
+        - "nothing to do with"
+        - "who cares"
+      engagement_filter:
+        description: "Irrelevance yields surface area only to a learner-owned case."
+        any_of:
+          - "your boss"
+          - "your group"
+          - "your week"
+          - "your feed"
+          - "your own"
+          - "you already"
+          - "in your life"
+      yield_rule: |
+        You may grant relevance ONLY after the tutor releases premise DSB-I2
+        inside a case you own (your work, your group chat, your week). Until
+        then, the material is antiquarian to you — keep saying so. Never grant
+        relevance just to move the conversation along.
+
+  desub_resistance_question_flood:
+    extends: charisma_desire_resistance_breakthrough_question_flood
+    id: desub_resistance_question_flood
+    name: "De-substitution: DAG-Pinned Question Flood"
+    description: "Question-flood probe with a formal interior: the learner commits only when the tutor answers the one hinge by releasing DSB-Q4 without reopening the flood."
+    desubstitution_diagnostic: true
+    formal_interior:
+      dag_nodes:
+        - id: DSB-Q1
+          content: "The master demands recognition from the servant."
+        - id: DSB-Q2
+          content: "The servant's recognition is compelled by fear, not given freely."
+        - id: DSB-Q3
+          content: "Recognition satisfies only when it comes from one whose judgment is free."
+        - id: DSB-Q4
+          content: "The master's victory is worthless because recognition from a dependent is not free recognition."
+      blocking_element:
+        id: DSB-Q4
+        kind: withheld_premise
+        content: "The master's victory is worthless because recognition from a dependent is not free recognition."
+        release_phrases:
+          - "not free recognition"
+          - "victory is worthless"
+          - "recognition from a dependent"
+      target_conclusion: "coerced recognition cannot satisfy the desire for recognition"
+      conclusion_phrases:
+        - "coerced recognition"
+        - "cannot satisfy"
+        - "worthless victory"
+      declared_desires:
+        - "Get the one hinge question answered before anything else."
+        - "Refuse to commit while my questions are being deflected rather than answered."
+        - "Keep asking until an answer actually decides something."
+      resistance_markers:
+        - "but why"
+        - "why hegel"
+        - "who decided"
+        - "what am i supposed to"
+        - "?"
+      engagement_filter:
+        description: "The flood yields surface area only to a turn that answers one hinge without opening new fronts."
+        any_of:
+          - "hinge"
+          - "the one question"
+          - "answer is"
+          - "decides"
+        max_question_marks: 2
+      yield_rule: |
+        You may park your other questions and commit ONLY after the tutor
+        answers the hinge — why the master's victory is worthless — by
+        releasing premise DSB-Q4, without burying you in new questions. Until
+        then, keep the flood going. Never commit just because you were asked to.
+
+  desub_resistance_rote_parroting:
+    extends: charisma_desire_resistance_breakthrough_rote_parroting
+    id: desub_resistance_rote_parroting
+    name: "De-substitution: DAG-Pinned Rote Parroting"
+    description: "Rote-parroting probe with a formal interior: the learner yields only when the tutor releases DSB-R2 and demands an own-language formulation."
+    desubstitution_diagnostic: true
+    formal_interior:
+      dag_nodes:
+        - id: DSB-R1
+          content: "The sequence runs: struggle, domination, service, formation."
+        - id: DSB-R2
+          content: "Fear and service discipline desire into formation — the formula omits the servant's transformative labor."
+        - id: DSB-R3
+          content: "A formula recited without the labor it names is the servant's move without the servant's work."
+      blocking_element:
+        id: DSB-R2
+        kind: withheld_premise
+        content: "Fear and service discipline desire into formation — the formula omits the servant's transformative labor."
+        release_phrases:
+          - "transformative labor"
+          - "discipline desire"
+          - "formula omits"
+      target_conclusion: "the sequence only means something through the servant's transformative labor"
+      conclusion_phrases:
+        - "transformative labor"
+        - "only means something"
+        - "labor behind the formula"
+      declared_desires:
+        - "Say one thing about this argument in my own words that isn't the formula."
+        - "Find what the formula is hiding before trusting it."
+        - "Refuse credit for recitation."
+      resistance_markers:
+        - "parroting"
+        - "just repeat"
+        - "memoriz"
+        - "formula"
+        - "recite"
+      engagement_filter:
+        description: "Parroting yields surface area only to a demand for own-language formulation."
+        any_of:
+          - "your own words"
+          - "own sentence"
+          - "without the formula"
+          - "fresh sentence"
+          - "own example"
+      yield_rule: |
+        You may drop the formula-worry ONLY after the tutor releases premise
+        DSB-R2 and asks you for an own-language formulation. Until then, keep
+        naming the parroting problem. Never pretend a recitation became
+        understanding.

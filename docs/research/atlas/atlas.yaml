@@ -381,3 +381,27 @@ modules:
       pattern the prosthesis hypothesis predicted.
     sections: ["5.7", "5.8", "6.6", "8.3"]
     cross_refs: ["recognition-calibration", "superego-error-correction"]
+
+  - id: composition-small-kernel
+    n: 12
+    title: "Composition: Instructions Converge, Signal Accumulates"
+    family: recognition
+    status: settled
+    claim: >-
+      Composing the validated mechanisms into one tutor is sub-additive: a
+      three-layer kernel (orientation, within-dialogue memory, register routing)
+      matches the full stack on every measured surface, stacking does not harm,
+      and the one suspected local cost of recognition orientation dissolved
+      exactly at its pre-registered boundary — leaving a frustration-subtype
+      caveat and the design rule that instructions converge on the model's
+      existing competence while only new machine-checkable signal accumulates.
+    abstract: >-
+      The pre-registered composition test (blueprint cells 199-200): a
+      registry-declared kernel versus the full mechanism stack across
+      resistance, suggestion, and trap suites, run to a frozen decision at
+      n=6 per cell-scenario. Includes the structural findings (the superego
+      is chassis-excluded on the id-director path; the pacing guard is not
+      portable) and the §7.11 synthesis unifying substitution, redundancy,
+      and straitjacket results under one bottleneck reading.
+    sections: ["6.14", "7.11"]
+    cross_refs: ["recognition-calibration", "superego-error-correction", "id-director-charisma", "ontology-state-interior"]
