@@ -1,6 +1,6 @@
-# Plan-Mode Stock-Take — Pre-registration skeleton (DRAFT — freezes at the go that precedes the first paid run)
+# Plan-Mode Stock-Take — Pre-registration
 
-**Status:** drafted 2026-07-04 on `worktree-strategy-ledger-followups`; implementation landed and zero-paid-validated same day (gates 34/34 incl. L7; tests 21/21). NOT frozen; the paid contrast runs only on an explicit operator go, at which point this document freezes at that commit.
+**Status:** **FROZEN 2026-07-04 at this commit** (operator go received). Implementation gated 34/34 incl. L7; tests 21/21; the plan-mode analysis design entry and both matrix specs were added and zero-paid validated (24-run mock matrix, 0 guardrail failures) BEFORE this freeze. No design, endpoint, or analysis change past this point.
 **Line:** `workplan/items/plan-mode-stocktake.md` — a NEW hypothesis, mechanistically distinct from the closed strategy-ledger commitment line (see "What this is not," below).
 **Operator articulation being tested (2026-07-04):** the outer loop as a *stock-take* — an inner monologue between ego and superego with a different functional question than the turn-based exchange ("is the current course still the right one?"), asking for course correction and planning; the equivalent of a plan mode.
 
