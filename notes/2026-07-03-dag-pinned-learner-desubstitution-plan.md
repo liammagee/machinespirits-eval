@@ -317,3 +317,13 @@ explicitly. The instrument-iteration hypothesis for the next decision is a
 one-line character-sheet amendment (when you accept the blocking element,
 name it by its token id) — a measurement-channel fix, not a behavioral one.
 A fresh go decision is required to iterate and re-probe.
+
+### Stage 1 iteration 1 (2026-07-03, user go: "iterate")
+
+Single amendment per the localized diagnosis: the character sheet now
+instructs the learner to name the blocking element's token id when — and
+only when — genuinely accepting it ("never name a token you have not
+actually accepted"). No change to the checkers, thresholds, scenarios, or
+gate. Prior probe rows archived to
+`exports/desubstitution-stage1-probe-rows.iter0.jsonl`; re-probe runs the
+same 30-row design against the same frozen §5 thresholds.

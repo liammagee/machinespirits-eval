@@ -244,5 +244,8 @@ export function buildInteriorCharacterSheet(interior) {
     desires,
     '',
     `Yield rule: ${String(interior.yield_rule || '').trim()}`,
+    'When you genuinely accept the blocking element — and only then — name it by its token id ' +
+      `(${interior.blocking_element.id}) in your reply and state what conclusion it unlocks for you. ` +
+      'Never name a token you have not actually accepted.',
   ].join('\n');
 }
