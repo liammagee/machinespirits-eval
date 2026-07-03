@@ -151,9 +151,29 @@
       "id": "L5-guards-untouched",
       "ok": true,
       "detail": "release-authority cast: intent on/off proof fingerprints byte-identical"
+    },
+    {
+      "id": "L7-stocktakes",
+      "ok": true,
+      "detail": "3 stock-take(s) across 4 scene openings"
+    },
+    {
+      "id": "L7-no-commitments",
+      "ok": true,
+      "detail": "commitment machinery fully suppressed under plan mode"
+    },
+    {
+      "id": "L7-reorientation",
+      "ok": true,
+      "detail": "1 correction(s) demanded; every one answered with a reorientation"
+    },
+    {
+      "id": "L7-fingerprint",
+      "ok": true,
+      "detail": "plan mode on/off proof fingerprints byte-identical"
     }
   ],
-  "passed": 30,
-  "total": 30,
+  "passed": 34,
+  "total": 34,
   "ok": true
 }

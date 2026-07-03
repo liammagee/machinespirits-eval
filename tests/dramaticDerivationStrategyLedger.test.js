@@ -562,3 +562,71 @@ test('v2 requires v1: strategyLedgerV2 without strategyLedger fails at build', (
     /requires strategyLedger/,
   );
 });
+
+// ---------------------------------------------------------------------------
+// plan mode — the dialogic stock-take (course-changing, not course-holding)
+// ---------------------------------------------------------------------------
+
+test('plan-mode config: exclusive with trialling; bridge guards enforce prerequisites', () => {
+  assert.throws(() => normalizeStrategyLedgerConfig({ planMode: true, trialling: true }), /mutually exclusive/);
+  const cfg = normalizeStrategyLedgerConfig({ planMode: true });
+  assert.equal(cfg.planMode, true);
+  assert.throws(
+    () => makeLlmTutor(world, makeLlmClient({ mode: 'mock' }), { script: SCRIPT, strategyLedgerPlanMode: true }),
+    /requires strategyLedger/,
+  );
+  assert.throws(
+    () =>
+      makeLlmTutor(world, makeLlmClient({ mode: 'mock' }), {
+        script: SCRIPT,
+        strategyLedger: true,
+        strategyLedgerV2: true,
+        strategyLedgerPlanMode: true,
+      }),
+    /mutually exclusive/,
+  );
+});
+
+test('plan mode: stock-takes fire between scenes, reorientations answer corrections, no commitments', async () => {
+  const client = makeLlmClient({ mode: 'mock' });
+  const cast = {
+    director: makeLlmDirector(world, client, {}),
+    tutor: makeLlmTutor(world, client, {
+      script: SCRIPT,
+      didacticMode: true,
+      strategyLedger: true,
+      strategyLedgerPlanMode: true,
+      publicRegister: 'modern',
+    }),
+    learner: makeLlmLearner({
+      setting: world.setting,
+      voice: 'plain, careful, first person',
+      client,
+      publicRegister: 'modern',
+    }),
+  };
+  const result = await runDrama({
+    world,
+    roles: cast,
+    options: {
+      sceneMode: true,
+      publicRegister: 'modern',
+      strategyLedger: normalizeStrategyLedgerConfig({ planMode: true }),
+      maxTurns: 10,
+      stopOnStall: false,
+    },
+  });
+  const stocktakes = result.strategyLedger.stocktakes;
+  assert.ok(stocktakes.length >= 1, 'stock-takes fire at openings with a sealed scene');
+  for (const st of stocktakes) {
+    assert.ok(st.assessment, 'the second voice always assesses');
+    if (st.correction) {
+      assert.ok(st.reorientation, 'a demanded correction is answered');
+      assert.equal(st.orientationAfter, st.reorientation, 'the reorientation becomes the working orientation');
+    }
+  }
+  assert.ok(!result.events.some((e) => e.type === 'strategy_commit'), 'no commitment machinery under plan mode');
+  assert.ok(!result.events.some((e) => e.type === 'strategy_audit'), 'no conformance audits under plan mode');
+  assert.ok(result.events.some((e) => e.type === 'stocktake'));
+  assert.ok(!('history' in result.strategyLedger), 'no trialling history table under plan mode');
+});

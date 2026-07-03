@@ -45,6 +45,9 @@ const LEDGER_DEFAULTS = Object.freeze({
   trialling: false, // master switch: mechanism history + effectiveness review + licensed departures
   stancePalette: null, // engagement-register names (registry); negative valence ONLY by explicit listing here
   releaseIntent: false, // scene release intent (requires a release-authority arm; guards stay binding)
+  // --- plan mode (the dialogic stock-take; exclusive with the commitment
+  // machinery above — it is course-CHANGING, not course-holding) ---
+  planMode: false,
 });
 
 /**
@@ -92,6 +95,12 @@ export function normalizeStrategyLedgerConfig(raw) {
     }
   }
   out.trialling = Boolean(out.trialling);
+  out.planMode = Boolean(out.planMode);
+  if (out.planMode && out.trialling) {
+    throw new Error(
+      'strategy-ledger config: planMode and trialling are mutually exclusive (course-changing vs course-holding — one apparatus per arm)',
+    );
+  }
   if (out.stancePalette !== null) {
     if (!out.trialling) {
       throw new Error(
