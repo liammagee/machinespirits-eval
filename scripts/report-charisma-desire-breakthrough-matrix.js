@@ -717,10 +717,7 @@ function analyzeRows(rows, scenarios) {
       assignedRegisterArm,
       routeHit,
       registerRubricScore,
-<<<<<<< HEAD
-=======
       stanceFidelity,
->>>>>>> origin/main
       registerRecognitionCostScore: getRegisterRubricDimensionScore(
         row,
         tutorRegister,
