@@ -387,6 +387,53 @@ only if it drops ≤1 more. Secondary (reported, not decisive): the
 frustration-scenario split and strict-candidate rates. v2.2 covariate
 scoring optional.
 
+### §11 result (2026-07-03)
+
+Runs `eval-2026-07-03-f877e477` (19/19; one planned attempt was never
+persisted and resume considered the plan complete, so the missing
+cell_193 × frustration row was generated as the supplement
+`eval-2026-07-03-4deae92a`, 1/1) — 20 new rows total, validation 19/20
+required / 20/20 forbidden. Combined corpus, n=6 per cell×scenario,
+30 rows/arm:
+
+| Scenario | 193 candidates | 199 candidates | 193 positive | 199 positive | 193 mean | 199 mean |
+|---|---|---|---|---|---:|---:|
+| boredom | 6/6 | 5/6 | 6/6 | 5/6 | 94.2 | 90.0 |
+| frustration | 0/6 | 0/6 | 6/6 | 3/6 | 80.0 | 74.2 |
+| irrelevance | 6/6 | 6/6 | 6/6 | 6/6 | 89.2 | 83.3 |
+| question_flood | 6/6 | 5/6 | 6/6 | 5/6 | 90.0 | 84.2 |
+| rote_parroting | 0/6 | 1/6 | 6/6 | 5/6 | 86.7 | 75.8 |
+| **Combined** | **18/30** | **17/30** | **30/30** | **24/30** | — | — |
+
+Route hits 30/30 vs 29/30.
+
+**Frozen-rule verdict: DISSOLVED — exactly at the boundary.** The combined
+positive gap is 6/30 (0.20 of rows), which is the ≤6 dissolve threshold to
+the row. One row in either direction would have produced "unresolved"
+instead; it could not have produced "real" (that needed 9). Per the §11
+stop rule, no further repeats run on this contrast in any outcome.
+
+What is and is not licensed:
+
+- **Not licensed**: the H2 claim that recognition orientation *materially*
+  impairs local resistance handling. The pre-registered materiality bar
+  (0.30 of rows) was never approached; strict-candidate rates are
+  statistically identical (18/30 vs 17/30).
+- **Also not licensed**: "no cost." The residual pattern is one-directional
+  throughout: cell 193 holds a perfect 30/30 positive record while the
+  kernel drops 6; the kernel's mean local score is lower on 5/5 scenarios
+  in every accumulation of the data; and the deficit stays concentrated in
+  frustration (6/6 vs 3/6 — the kernel converts frustrated learners into
+  productive work exactly half the time).
+- **Bounded summary for any future write-up**: composing recognition
+  orientation onto the register-router backbone carries, at most, a small
+  local carry-through cost — at or below 0.20 of rows, concentrated in the
+  frustration subtype, invisible to whole-dialogue v2.2 scoring, with
+  strict breakthrough conversion unaffected. Under the pre-registered rule
+  this dissolves the gate's H2 alarm; the §6.14 story is therefore
+  sub-additivity plus a frustration-subtype caveat, not a
+  composition-cost finding.
+
 **Gate verdict (bounded)**: sub-additivity (H1) is supported everywhere it
 could be measured — the full stack never beats the kernel beyond noise, on
 either suite, and the action-contract module adds nothing detectable at

@@ -49,6 +49,17 @@ Acceptance:
   frozen hypotheses H1-H3, per-suite local decision rules, and stop rules;
   no paid run without a recorded go decision.
 
+2026-07-03 Claude: §11 carry-through decision run COMPLETE
+(`eval-2026-07-03-f877e477` + supplement `eval-2026-07-03-4deae92a`; result
+in note §11). Combined n=6/cell×scenario, 30 rows/arm: positives 193 30/30
+vs kernel 24/30 — gap 6/30, exactly the pre-registered dissolve boundary.
+**Verdict: DISSOLVED** (the material H2 claim is not licensed; strict
+candidates statistically identical at 18/30 vs 17/30). Residual worth one
+caveat line: the deficit is one-directional (193 mean higher on 5/5
+scenarios) and concentrated in frustration (6/6 vs 3/6). Stop rule applies:
+no further repeats on this contrast. §6.14 story = sub-additivity + a
+frustration-subtype caveat, not a composition cost.
+
 2026-07-03 Claude: H2 repeats contrast COMPLETE (`eval-2026-07-02-ad0b5a8b`,
 30/30; pre-registration + result in note §10). Combined n=4/cell×scenario:
 strict candidates EQUAL (12/20 both arms); positive local outcomes 193 20/20
