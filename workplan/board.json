@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-03T04:02:06.712Z",
+  "generated": "2026-07-03T04:24:20.817Z",
   "counts": {
-    "total": 69,
+    "total": 70,
     "byStatus": {
       "done": 60,
       "blocked": 1,
       "dropped": 2,
+      "active": 2,
       "archived": 4,
-      "active": 1,
       "triaged": 1
     },
     "byType": {
       "research": 35,
-      "experiment": 7,
+      "experiment": 8,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -65,6 +65,33 @@
         "effect-estimation",
         "stance-fidelity"
       ]
+    },
+    {
+      "id": "blueprint-composition",
+      "title": "Blueprint composition — one runnable tutor from the validated mechanisms",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "Blueprint registry + loader tests pass; cells 199-200 validate and resolve via EVAL_ONLY_PROFILES; stage-0 no-paid checks pass; the pre-registered composition matrix (plan note §5) runs only after a separate go decision, with run IDs and per-suite local results recorded here.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-07-02-blueprint-composition-plan.md"
+        ]
+      },
+      "tags": [
+        "blueprint",
+        "composition",
+        "id-director",
+        "writing-pad",
+        "adaptation",
+        "evaluation"
+      ],
+      "branch": "worktree-blueprint-composition"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",

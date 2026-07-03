@@ -28,6 +28,48 @@ import {
 } from './cliProviderBridge.js';
 import { extractEngagementModeHistory, routeEngagementMode } from './engagementModeRouter.js';
 import { getEngagementRegisterDefinition } from './engagementRegisterRegistry.js';
+import {
+  BLUEPRINT_CONTRACT_TRACE_ROLE,
+  buildContractTracePayload,
+  extractContractLedger,
+  finalizeBlueprintContractTurn,
+  prepareBlueprintContractTurn,
+} from './blueprintActionContracts.js';
+
+function countTutorTurns(history) {
+  return (Array.isArray(history) ? history : []).filter((m) =>
+    ['assistant', 'tutor'].includes(String(m?.role || '').toLowerCase()),
+  ).length;
+}
+
+function safePrepareContractTurn({ learnerMessage, history, traceLike, dialogueId }) {
+  try {
+    return prepareBlueprintContractTurn({
+      learnerMessage,
+      history,
+      priorLedger: extractContractLedger(traceLike),
+      turnIndex: countTutorTurns(history),
+      dialogueId,
+    });
+  } catch (err) {
+    console.warn(`[IdDirector] action-contract preparation failed (${err.message}); continuing without contract.`);
+    return null;
+  }
+}
+
+function safeFinalizeContractTurn(contractTurn, tutorText) {
+  if (!contractTurn) return null;
+  try {
+    return finalizeBlueprintContractTurn({
+      contract: contractTurn.contract,
+      ledger: contractTurn.ledger,
+      tutorText,
+    });
+  } catch (err) {
+    console.warn(`[IdDirector] action-contract finalization failed (${err.message}); contract not recorded.`);
+    return null;
+  }
+}
 
 // Drop-in wrapper that routes repo-local CLI providers through subscription
 // CLIs and everything else through tutor-core's metered callAI. Same return
@@ -335,6 +377,7 @@ function buildIdUserMessage({
   agencyReturnPrematureCertaintyGuard = false,
   engagementState = null,
   learnerRegister = null,
+  actionContractBlock = null,
 }) {
   const lines = [
     '<dialogue_history>',
@@ -464,6 +507,9 @@ function buildIdUserMessage({
   }
   if (learnerRegister && typeof learnerRegister === 'object') {
     lines.push('', '<learner_register>', JSON.stringify(learnerRegister, null, 2), '</learner_register>');
+  }
+  if (typeof actionContractBlock === 'string' && actionContractBlock.trim()) {
+    lines.push('', actionContractBlock);
   }
   return lines.join('\n');
 }
@@ -946,6 +992,7 @@ export async function runIdDirectedTurn({
     profile?.factors?.agency_return_charisma_floor === true || profile?.agency_return_charisma_floor === true;
   const engagementModeRouter =
     profile?.factors?.engagement_mode_router === true || profile?.engagement_mode_router === true;
+  const actionContracts = profile?.factors?.action_contracts === true || profile?.action_contracts === true;
   const engagementRegisterArm = normalizeEngagementRegisterArm(
     profile?.factors?.engagement_register_arm || profile?.engagement_register_arm,
   );
@@ -1009,6 +1056,9 @@ export async function runIdDirectedTurn({
       })
     : null;
   const engagementState = applyEngagementRegisterArm(routedEngagementState, engagementRegisterArm);
+  const contractTurn = actionContracts
+    ? safePrepareContractTurn({ learnerMessage, history, traceLike: trace, dialogueId: sessionId || 'blueprint' })
+    : null;
 
   const idUserMessage = buildIdUserMessage({
     conversationContext,
@@ -1037,6 +1087,7 @@ export async function runIdDirectedTurn({
     engagementRouterResistanceGlmCompact,
     agencyReturnPrematureCertaintyGuard,
     engagementState,
+    actionContractBlock: contractTurn?.promptBlock || null,
   });
 
   const idStaticPrompt = idConfig?.prompt || '';
@@ -1189,6 +1240,21 @@ export async function runIdDirectedTurn({
     internalDeliberation.push(
       buildAgencyReturnVerifierDeliberationEntry(verifierResponse, idConfig, agencyVerification),
     );
+  }
+
+  const contractFinal = safeFinalizeContractTurn(contractTurn, externalMessage);
+  if (contractFinal) {
+    const contractPayload = buildContractTracePayload({
+      contract: contractFinal.contract,
+      ledger: contractFinal.ledger,
+      closedRecord: contractTurn.closedRecord,
+      realization: contractFinal.realization,
+    });
+    internalDeliberation.push({
+      role: BLUEPRINT_CONTRACT_TRACE_ROLE,
+      state: contractPayload,
+      content: JSON.stringify(contractPayload),
+    });
   }
 
   return {
@@ -1440,6 +1506,7 @@ function buildIdRunnerUserMessage({
   learnerRegister = null,
   idTuning = null,
   witnessExemplars = false,
+  actionContractBlock = null,
 }) {
   const lines = [
     '<dialogue_history>',
@@ -1584,6 +1651,9 @@ function buildIdRunnerUserMessage({
     }
     lines.push('', '</witness_exemplars>');
   }
+  if (typeof actionContractBlock === 'string' && actionContractBlock.trim()) {
+    lines.push('', actionContractBlock);
+  }
   return lines.join('\n');
 }
 
@@ -1648,6 +1718,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const agencyReturnVerifier = evalCellProfile.factors?.agency_return_verifier === true;
   const agencyReturnCharismaFloor = evalCellProfile.factors?.agency_return_charisma_floor === true;
   const engagementModeRouter = evalCellProfile.factors?.engagement_mode_router === true;
+  const actionContracts = evalCellProfile.factors?.action_contracts === true;
   const engagementRegisterArm = normalizeEngagementRegisterArm(evalCellProfile.factors?.engagement_register_arm);
   const agencyReturnCharismaFloorMode = normalizeAgencyReturnCharismaFloorMode(
     evalCellProfile.factors?.agency_return_charisma_floor_mode,
@@ -1692,6 +1763,14 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       })
     : null;
   const engagementState = applyEngagementRegisterArm(routedEngagementState, engagementRegisterArm);
+  const contractTurn = actionContracts
+    ? safePrepareContractTurn({
+        learnerMessage,
+        history: messageHistory,
+        traceLike: consolidatedTrace,
+        dialogueId: resolvedConfig?.profileName || 'blueprint',
+      })
+    : null;
 
   // ── Optional Step 0: register classifier (cells 103, 104) ──
   // Reads the learner's most recent message and emits a structured register
@@ -1766,6 +1845,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     learnerRegister,
     idTuning,
     witnessExemplars,
+    actionContractBlock: contractTurn?.promptBlock || null,
   });
 
   let totalInputTokens = 0;
@@ -1946,6 +2026,8 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     agencyRepaired = verified.repaired;
   }
 
+  const contractFinal = safeFinalizeContractTurn(contractTurn, externalMessage);
+
   // ── Build a dialogue trace mirroring the existing convention so downstream
   //    analysers (turnComparisonAnalyzer, dialogueTraceAnalyzer) recognise it.
   const trace = [
@@ -1961,6 +2043,21 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       agent: 'engagement_router',
       action: 'route',
       detail: JSON.stringify(engagementState),
+      timestamp: new Date().toISOString(),
+    });
+  }
+  if (contractFinal) {
+    trace.push({
+      agent: BLUEPRINT_CONTRACT_TRACE_ROLE,
+      action: 'contract',
+      detail: JSON.stringify(
+        buildContractTracePayload({
+          contract: contractFinal.contract,
+          ledger: contractFinal.ledger,
+          closedRecord: contractTurn.closedRecord,
+          realization: contractFinal.realization,
+        }),
+      ),
       timestamp: new Date().toISOString(),
     });
   }
