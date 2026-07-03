@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-03T23:13:55.632Z",
+  "generated": "2026-07-03T23:28:16.137Z",
   "counts": {
-    "total": 74,
+    "total": 75,
     "byStatus": {
-      "done": 63,
+      "done": 64,
       "blocked": 1,
       "dropped": 2,
       "active": 3,
@@ -12,7 +12,7 @@
     },
     "byType": {
       "research": 38,
-      "experiment": 9,
+      "experiment": 10,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -1611,6 +1611,33 @@
         "strategy-ledger",
         "outer-loop",
         "followups"
+      ]
+    },
+    {
+      "id": "strategy-ledger-model-confound-smoke",
+      "title": "Model-confound smoke — is codex ceiling-ing the outer-loop effects? (GLM-5.2)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "4 canary-gated GLM-5.2 runs complete (or an instrument-limited stop is recorded); the pre-stated read-rules below produce a go/no-go on whether a powered cross-model contrast deserves a new pre-registration.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "PLAN-MODE-STOCKTAKE-PREREGISTRATION.md",
+        "items": [
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "model-confound",
+        "smoke"
       ]
     },
     {
