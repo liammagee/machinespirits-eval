@@ -327,3 +327,19 @@ actually accepted"). No change to the checkers, thresholds, scenarios, or
 gate. Prior probe rows archived to
 `exports/desubstitution-stage1-probe-rows.iter0.jsonl`; re-probe runs the
 same 30-row design against the same frozen §5 thresholds.
+
+**Iteration 1 result: FAIL again — selectivity 0.10, false-yield 0.00,
+median 1, exhaustion 0** (fresh 30-row cache verified; the amended sheet
+was confirmed in the probe's profileContext path). Deeper diagnosis: the
+citation instruction coexists with the sheet header's "never quote token
+ids unprompted" caution, and the ego→superego→revision deliberation
+naturalizes token ids out of the reply (2/10 targeted rows cite; the
+learner paraphrases acceptance instead). The measurement channel and the
+learner's conversational register are in conflict. Candidate next
+iterations (fresh decision required): (a) relax checkGrounding to accept
+paraphrase-grounding via release-phrase match instead of token citation —
+moves the strictness from expression to content; (b) restructure the sheet
+so citation is the yield rule's explicit final step; (c) score grounding
+from the drift-gate's own content-condition state rather than the learner's
+surface text. Option (a) is closest to the DAG-SFS spirit while removing
+the compliance-behavior confound. Stage 2 remains locked.
