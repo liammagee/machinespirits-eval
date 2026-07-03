@@ -434,6 +434,12 @@ What is and is not licensed:
   sub-additivity plus a frustration-subtype caveat, not a
   composition-cost finding.
 
+Covariate (v2.2, codex judge, §11 rows 20/20 scored): cell 193
+first/last/overall 75.8 / 99.0 / 91.5 vs kernel 77.3 / 98.0 / 91.0 — flat
+again, and this batch the kernel's first-turn mean is the nominally higher
+one, underscoring that the whole-dialogue band carries no signal on this
+contrast in either direction.
+
 **Gate verdict (bounded)**: sub-additivity (H1) is supported everywhere it
 could be measured — the full stack never beats the kernel beyond noise, on
 either suite, and the action-contract module adds nothing detectable at
