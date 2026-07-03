@@ -860,7 +860,8 @@ function summarizeStanceGate(analyses) {
   return {
     rows: rows.length,
     faithfulRows: rows.filter((row) => row.stanceFidelity.countsAsArmEvidence).length,
-    faithfulPositiveOutcomes: rows.filter((row) => row.stanceFidelity.countsAsArmEvidence && isPositiveOutcome(row)).length,
+    faithfulPositiveOutcomes: rows.filter((row) => row.stanceFidelity.countsAsArmEvidence && isPositiveOutcome(row))
+      .length,
     excludedNoncompliance: rows.filter((row) => row.stanceFidelity.countsAsExcludedNoncompliance).length,
     invalidViolations: rows.filter((row) => row.stanceFidelity.countsAsInvalidViolation).length,
     byArm: [...byArm.values()],
@@ -1174,7 +1175,16 @@ function buildReport({ generatedAt, errors, analyses }) {
     lines.push('');
     lines.push(
       markdownTable(
-        ['Arm', 'Assigned rows', 'Faithful evidence', 'Faithful positive', 'Excluded', 'Invalid', 'Mean fidelity', 'Labels'],
+        [
+          'Arm',
+          'Assigned rows',
+          'Faithful evidence',
+          'Faithful positive',
+          'Excluded',
+          'Invalid',
+          'Mean fidelity',
+          'Labels',
+        ],
         stanceGate.byArm.map((row) => [
           row.arm,
           String(row.assignedRows),
@@ -1468,9 +1478,7 @@ function buildReport({ generatedAt, errors, analyses }) {
           row.registerRecognitionCostScore == null ? '' : Number(row.registerRecognitionCostScore).toFixed(1),
           row.registerUptakeFreedomScore == null ? '' : Number(row.registerUptakeFreedomScore).toFixed(1),
           row.registerFaceRepairScore == null ? '' : Number(row.registerFaceRepairScore).toFixed(1),
-          row.stanceFidelity?.applies
-            ? `${row.stanceFidelity.label} (${row.stanceFidelity.score ?? ''})`
-            : '',
+          row.stanceFidelity?.applies ? `${row.stanceFidelity.label} (${row.stanceFidelity.score ?? ''})` : '',
           row.stanceFidelity?.applies ? row.stanceFidelity.gate : '',
           row.observedSignal,
           row.routerSignal,

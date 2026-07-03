@@ -596,12 +596,16 @@ section.fg::before {
   color: var(--brick);
   font-variation-settings: "opsz" 16;
 }
-.stage-block { margin-top: 9px; }
+.stage-block {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule-soft);
+}
 .stage-block__head {
   display: flex;
   align-items: baseline;
   gap: 0.45em;
-  margin: 0 0 4px;
+  margin: 0 0 7px;
   font-family: "JetBrains Mono", monospace;
   font-size: calc(var(--s-0) * 0.95);
   letter-spacing: 0.11em;
@@ -648,8 +652,17 @@ section.fg::before {
 .assist-strip {
   border: 1px solid color-mix(in oklab, var(--prussian) 34%, transparent);
   background: color-mix(in oklab, var(--prussian) 5%, transparent);
-  padding: 7px;
-  margin-bottom: 8px;
+  padding: 8px 9px;
+  margin-top: 16px;
+  margin-bottom: 10px;
+}
+.assist-kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.88);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--prussian);
+  margin-bottom: 4px;
 }
 .assist-strip.is-disabled {
   opacity: 0.72;
@@ -708,7 +721,16 @@ section.fg::before {
   letter-spacing: 0.04em;
   color: var(--ink-3);
 }
-.preflight-note { color: var(--brick); }
+.preflight-note {
+  color: var(--brick);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 8px;
+  margin-top: 8px;
+}
+.preflight-note__lead { flex-basis: 100%; letter-spacing: 0.02em; }
+.preflight-note__opts { display: inline-flex; flex-wrap: wrap; gap: 5px; }
 .assist-history {
   margin-top: 7px;
   display: grid;
@@ -762,6 +784,148 @@ section.fg::before {
   align-items: center;
   margin-top: 7px;
 }
+.stage-actions--secondary { margin-top: 5px; }
+.stage-actions--secondary .stage-btn {
+  font-size: calc(var(--s-0) * 0.86);
+  padding: 3px 7px;
+  min-height: 0;
+  opacity: 0.9;
+}
+
+/* playbill — every knob as a chip; overridden knobs light up */
+.playbill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed color-mix(in oklab, var(--ink) 16%, transparent);
+}
+.playbill__lbl {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brick);
+  margin-right: 0.4em;
+}
+.playbill__chip {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.35em;
+  align-items: baseline;
+  padding: 1px 6px 2px;
+  border: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.84);
+  letter-spacing: 0.03em;
+  color: var(--ink-3);
+  max-width: 100%;
+}
+.playbill__chip:hover { border-color: var(--ink); color: var(--ink); }
+.playbill__chip .k { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.9em; }
+.playbill__chip .v {
+  color: var(--ink-2);
+  font-style: italic;
+  font-family: "Fraunces", serif;
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 18ch;
+}
+.playbill__chip.is-set {
+  border-color: color-mix(in oklab, var(--moss-deep) 55%, transparent);
+  background: color-mix(in oklab, var(--moss-deep) 8%, transparent);
+}
+.playbill__chip.is-set .v { color: var(--moss-deep); font-weight: 500; }
+
+/* guided walkthrough */
+.guide-card {
+  border: 1px solid var(--sun);
+  background: color-mix(in oklab, var(--sun) 10%, transparent);
+  padding: 7px 9px;
+  margin-bottom: 8px;
+}
+.guide-card__step {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.84);
+  letter-spacing: 0.12em;
+  color: var(--ochre-d);
+  margin-bottom: 2px;
+}
+.guide-card__text {
+  margin: 0 0 6px;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.guide-card__actions { display: flex; gap: 6px; }
+.guide-hi {
+  outline: 2px solid var(--sun);
+  outline-offset: 3px;
+  transition: outline-color 0.3s var(--ease);
+}
+
+/* subject row + notes */
+.topic__row { display: flex; gap: 6px; align-items: center; }
+.topic__row .topic__input { flex: 1 1 auto; }
+.topic__shuffle { white-space: nowrap; flex: 0 0 auto; }
+.topic__lbl-hint {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  margin-left: 0.5em;
+}
+.topic__note {
+  margin: 4px 0 0;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: var(--s-0);
+  line-height: 1.35;
+  color: var(--ink-3);
+}
+
+/* the one dominant action on the page */
+.launch { margin-top: 12px; }
+.launch-btn {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+  width: 100%;
+  min-height: 46px;
+  background: var(--moss-deep);
+  color: var(--paper);
+  border: 1px solid var(--moss-deep);
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-1) * 1.05);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.launch-btn:hover:not(:disabled) { background: var(--brick); border-color: var(--brick); }
+.launch-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.launch-btn__sig { color: var(--sun); font-size: 0.9em; }
+.launch-what {
+  margin: 4px 0 0;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-variation-settings: "opsz" 16;
+  font-size: var(--s-0);
+  line-height: 1.35;
+  color: var(--ink-3);
+}
 .resolution-readout {
   all: unset;
   cursor: pointer;
@@ -803,6 +967,25 @@ section.fg::before {
   display: grid;
   gap: 3px;
 }
+.alternatives__head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-bottom: 1px;
+}
+.onboarding__cta {
+  display: inline-flex;
+  margin: 0.2em 0 0.8em;
+  font-family: "JetBrains Mono", monospace;
+}
+.onboarding__aside {
+  font-size: var(--s-1);
+  color: var(--ink-3);
+  font-style: italic;
+}
+.preflight-note .mini-btn { margin: 0 0.25em; }
 .alt-row {
   all: unset;
   cursor: pointer;
@@ -1611,6 +1794,71 @@ section.fg::before {
   gap: clamp(24px, 3vw, 44px);
 }
 
+/* curtain-raiser — the playbill page that opens every drama */
+.curtain {
+  margin: 6px 0 18px;
+  padding: 16px clamp(10px, 2vw, 26px) 12px;
+  border: 1px solid var(--rule);
+  border-top: 3px double var(--ink);
+  background: color-mix(in oklab, var(--paper-4) 80%, transparent);
+  text-align: center;
+}
+.curtain__kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.85);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brick);
+  margin-bottom: 6px;
+}
+.curtain__title {
+  font-family: "Fraunces", serif;
+  font-variation-settings: "opsz" 72;
+  font-weight: 360;
+  font-size: var(--s-3);
+  line-height: 1.15;
+  margin: 0 0 10px;
+  color: var(--ink);
+}
+.curtain__cast {
+  display: grid;
+  gap: 2px;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.95);
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+  margin-bottom: 8px;
+}
+.curtain__cast .role {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  font-size: 0.88em;
+  margin-right: 0.6em;
+}
+.curtain__cast .who { color: var(--ink); font-weight: 500; }
+.curtain__cast .via { color: var(--ink-3); margin-left: 0.5em; font-style: italic; font-family: "Fraunces", serif; letter-spacing: 0; }
+.curtain__setting {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: var(--s-1);
+  color: var(--ink-2);
+  margin-bottom: 6px;
+}
+.curtain__setting em { color: var(--brick); }
+.curtain__note {
+  max-width: 42ch;
+  margin: 0 auto 6px;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  font-style: italic;
+  color: var(--ink-2);
+  border-top: 1px dashed var(--rule);
+  padding-top: 6px;
+}
+.curtain__rule { color: var(--brick); letter-spacing: 0.6em; font-size: var(--s-0); margin-top: 4px; }
+
 /* empty / onboarding state */
 .onboarding {
   font-family: "Fraunces", serif;
@@ -2082,15 +2330,18 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 /* ══════ scene author toggle (inline, single-row) ══════ */
 .mode {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.5em;
+  gap: 6px 10px;
   padding: 0 0 4px;
   font-family: "JetBrains Mono", monospace;
   font-size: var(--s-0);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.mode__lbl { color: var(--brick); letter-spacing: 0.14em; font-weight: 500; }
+.mode__lbl { color: var(--brick); letter-spacing: 0.14em; font-weight: 500; flex-basis: 100%; }
+.mode__sub { color: var(--ink-3); letter-spacing: 0.1em; font-size: 0.9em; }
+.mode__toggle--sm .mode__btn { padding: 2px 8px 3px; font-size: calc(var(--s-0) * 0.86); }
 .mode__toggle { display: inline-flex; border: 1px solid var(--ink); }
 .mode__btn {
   all: unset;
@@ -2116,19 +2367,15 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   font-variation-settings: "opsz" 16;
 }
 
-/* persona — compact horizontal scroll row */
+/* persona — compact wrapping chip row (no inner scroll: an overflow box here
+   captures the wheel and traps page scrolling mid-column) */
 .persona-strip {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin: 4px 0 6px;
-  max-height: 112px;
-  overflow: auto;
-  scrollbar-width: thin;
   padding-bottom: 2px;
 }
-.persona-strip::-webkit-scrollbar { height: 4px; }
-.persona-strip::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--ink) 16%, transparent); }
 .persona-chip {
   all: unset;
   cursor: pointer;
@@ -2157,7 +2404,32 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   color: var(--ink-3);
   font-size: 1.02em;
   font-variation-settings: "opsz" 14;
+  max-width: 26ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* collapsed research-probe personas */
+.persona-more { margin: 0 0 6px; }
+.persona-more > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0.45em;
+  padding: 2px 0 3px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.92);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.persona-more > summary::-webkit-details-marker { display: none; }
+.persona-more > summary .chev { color: var(--brick); transition: transform 0.15s; display: inline-block; }
+.persona-more[open] > summary .chev { transform: rotate(90deg); }
+.persona-more > summary .count { color: var(--ink-3); letter-spacing: 0.04em; text-transform: none; }
+.persona-more > summary .active { color: var(--moss-deep); text-transform: none; letter-spacing: 0.02em; }
+.persona-strip--probes { margin-top: 4px; }
 .persona-chip.is-active {
   background: var(--ochre);
   color: var(--ink);
@@ -2202,87 +2474,529 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 .step-control__btn:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
 
 /* composer — boot line (tight) */
+/* ══════ composer — the action zone ══════ */
 .composer {
   flex-shrink: 0;
-  padding: 7px 0 10px;
-  border-top: 1px solid var(--rule);
+  padding: 11px 13px 12px;
+  margin-top: 8px;
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--ink);
+  background: color-mix(in oklab, var(--paper-4) 94%, transparent);
   position: relative;
 }
+/* a colored spine keyed to who is speaking */
 .composer::before {
   content: "";
   position: absolute;
-  top: -1px; left: 0;
-  width: 44px; height: 2px;
+  top: -3px; left: 0;
+  width: 64px; height: 3px;
   background: var(--brick);
 }
-.composer__pretext {
-  font-family: "JetBrains Mono", monospace;
-  font-size: var(--s-0);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-  margin: 0 0 4px;
-  display: flex; align-items: baseline; gap: 0.5em;
-}
-.composer__pretext .tag { color: var(--brick); font-weight: 500; letter-spacing: 0.14em; }
-.composer__pretext .rule {
-  flex: 1 1 auto;
-  height: 1px;
-  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 22%, transparent);
-  transform: translateY(-0.3em);
-}
-.composer__pretext .cell { color: var(--ink); letter-spacing: 0.04em; }
+.composer--learner::before { background: var(--ochre-d); }
+.composer--tutor::before { background: var(--moss-deep); }
+.composer--auto::before { background: var(--prussian); }
 
-.composer form {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  column-gap: 0.6em;
-  align-items: start;
-  padding: 0.35em 0.2em;
-  border-bottom: 1px solid var(--rule);
-}
-.composer__prompt {
+.composer__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6em;
+  margin-bottom: 7px;
   font-family: "JetBrains Mono", monospace;
   font-size: var(--s-0);
-  color: var(--brick);
+  letter-spacing: 0.06em;
+}
+.composer__seat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 500;
-  padding-top: 0.4em;
-  align-self: start;
+  color: var(--ink);
 }
-.composer textarea {
+.composer__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brick); flex: 0 0 auto; }
+.composer--learner .composer__dot { background: var(--ochre-d); }
+.composer--tutor .composer__dot { background: var(--moss-deep); }
+.composer--auto .composer__dot { background: var(--prussian); }
+.composer__reply {
+  color: var(--ink-3);
+  font-style: italic;
+  font-family: "Fraunces", serif;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: right;
+}
+
+.composer__form { display: block; }
+.composer__input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   font-family: "Fraunces", serif;
   font-size: var(--s-2);
   font-variation-settings: "opsz" 20;
   line-height: 1.42;
-  border: none;
-  background: transparent;
   color: var(--ink);
-  resize: none;
-  min-height: 2.2em;
-  max-height: 7em;
-  padding: 0.25em 0;
+  background: var(--paper);
+  border: 1px solid color-mix(in oklab, var(--ink) 22%, transparent);
+  resize: vertical;
+  min-height: 3.4em;
+  max-height: 11em;
+  padding: 9px 11px;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
 }
-.composer textarea:focus { outline: none; }
-.composer textarea::placeholder { color: var(--ink-3); font-style: italic; }
+.composer__input:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ochre) 18%, transparent);
+}
+.composer--tutor .composer__input:focus { box-shadow: 0 0 0 3px color-mix(in oklab, var(--moss) 18%, transparent); }
+.composer__input::placeholder { color: var(--ink-3); font-style: italic; }
 
-.composer button {
+.composer__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8em;
+  margin-top: 8px;
+}
+.composer__kbd {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  margin: 0;
+}
+.composer__send {
   all: unset;
-  align-self: start;
   cursor: pointer;
-  padding: 0.35em 0.9em 0.4em;
+  padding: 8px 18px;
   border: 1px solid var(--moss-deep);
   background: var(--moss-deep);
   color: var(--paper);
   font-family: "JetBrains Mono", monospace;
   font-size: var(--s-0);
-  font-weight: 500;
-  letter-spacing: 0.22em;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.composer__send:hover:not(:disabled) { background: var(--brick); border-color: var(--brick); }
+.composer__send:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
+.composer__warn {
+  margin: 6px 0 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  color: var(--brick);
+  letter-spacing: 0.02em;
+}
+
+.composer__advance {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--prussian);
+  background: var(--prussian);
+  color: var(--paper);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-1);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.composer__advance:hover:not(:disabled) { background: var(--brick); border-color: var(--brick); }
+.composer__advance:disabled { opacity: 0.45; cursor: not-allowed; }
+.composer__auto .composer__kbd { margin-top: 7px; text-align: center; font-style: normal; }
+
+/* ══════ script view toggle (plates · script · swimlanes) ══════ */
+.view-toggle { display: inline-flex; margin-right: 0.5em; }
+.vt-btn {
+  all: unset;
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--rule);
+  color: var(--ink-3);
+  padding: 3px 10px;
+}
+.vt-btn + .vt-btn { border-left: none; }
+.vt-btn:hover { color: var(--ink); }
+.vt-btn.is-active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ══════ playscript (dramatic) view ══════ */
+.playscript { padding: 4px 0 8px; max-width: 52rem; }
+.ps-line {
+  display: grid;
+  grid-template-columns: 8.5em 1fr;
+  gap: 0.4em 1.2em;
+  padding: 10px 0 12px;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.ps-cue { text-align: right; padding-top: 0.1em; }
+.ps-speaker {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.ps-line--tutor .ps-speaker { color: var(--moss-deep); }
+.ps-line--learner .ps-speaker { color: var(--ochre-d); }
+.ps-sub {
+  display: block;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: calc(var(--s-0) * 0.92);
+  color: var(--ink-3);
+  letter-spacing: 0;
+  margin-top: 2px;
+  word-break: break-word;
+}
+.ps-speech {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  font-variation-settings: "opsz" 26;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.ps-speech > :first-child { margin-top: 0; }
+.ps-speech > :last-child { margin-bottom: 0; }
+.ps-stage {
+  text-align: center;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  color: var(--brick);
+  padding: 8px 0;
+  margin: 0;
+}
+.ps-line .mini-trace { grid-column: 2 / 3; }
+
+/* ══════ swimlane view ══════ */
+.swim { max-width: 60rem; padding-bottom: 8px; }
+.swim-head {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: color-mix(in oklab, var(--paper) 92%, transparent);
+  backdrop-filter: blur(2px);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+.swim-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.9);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-bottom: 2px solid var(--rule);
+}
+.swim-label--tutor { color: var(--moss-deep); border-bottom-color: var(--moss-deep); }
+.swim-label--learner { color: var(--ochre-d); border-bottom-color: var(--ochre-d); text-align: right; }
+.swim-label--spine { border-bottom: 0; }
+.swim-row {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.swim-cell { min-width: 0; }
+.swim-card {
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  padding: 10px 13px;
+  margin-bottom: 6px;
+}
+.swim-card--tutor { border-left: 3px solid var(--moss-deep); }
+.swim-card--learner { border-right: 3px solid var(--ochre-d); }
+.swim-card__who {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.82);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+.swim-card--learner .swim-card__who { text-align: right; }
+.swim-card__text {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  font-variation-settings: "opsz" 20;
+  line-height: 1.46;
+  color: var(--ink);
+}
+.swim-card__text > :first-child { margin-top: 0; }
+.swim-card__text > :last-child { margin-bottom: 0; }
+.swim-spine { position: relative; min-height: 40px; }
+.swim-spine::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: -4px; bottom: -4px;
+  width: 2px;
+  transform: translateX(-50%);
+  background: var(--rule);
+}
+.swim-bead {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 26px; height: 26px;
+  margin: 2px auto 0;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1.5px solid var(--rule);
+  color: var(--ink-3);
+  font: 600 11px/24px "JetBrains Mono", monospace;
+  text-align: center;
+}
+.swim-row[data-side="tutor"] .swim-bead { border-color: var(--moss); color: var(--moss-deep); }
+.swim-row[data-side="learner"] .swim-bead { border-color: var(--ochre); color: var(--ochre-d); }
+
+/* ══════ compact deliberation trace (script + swimlane views) ══════ */
+.mini-trace { margin-top: 6px; }
+.mini-trace > summary {
+  cursor: pointer;
+  list-style: none;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.82);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+.mini-trace > summary::-webkit-details-marker { display: none; }
+.mini-trace > summary .chev { color: var(--brick); display: inline-block; transition: transform 0.15s; }
+.mini-trace[open] > summary .chev { transform: rotate(90deg); }
+.mini-step {
+  display: grid;
+  grid-template-columns: 7em 1fr;
+  gap: 0.6em;
+  padding: 5px 0;
+  border-top: 1px dashed var(--rule-soft);
+  margin-top: 5px;
+}
+.mini-step__lbl {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.82);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+.mini-step__lbl.step-superego, .mini-step__lbl.step-learner_superego { color: var(--prussian); }
+.mini-step__body {
+  font-family: "Fraunces", serif;
+  font-size: calc(var(--s-0) * 1.02);
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.mini-step__body > :first-child { margin-top: 0; }
+.mini-step__body > :last-child { margin-bottom: 0; }
+
+/* ══════ collapsible left panel ══════ */
+main.split.is-collapsed section.dialogue { grid-column: 3 / 60; }
+.config-rail {
+  all: unset;
+  cursor: pointer;
+  grid-column: 1 / 3;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  border-right: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--paper-2) 60%, transparent);
+  color: var(--ink-3);
+  transition: color 0.15s var(--ease), background 0.15s var(--ease);
+}
+.config-rail:hover { color: var(--ink); background: color-mix(in oklab, var(--paper-2) 90%, transparent); }
+.config-rail__chev { font-size: var(--s-2); color: var(--brick); }
+.config-rail__label {
+  writing-mode: vertical-rl;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.24em;
   text-transform: uppercase;
 }
-.composer button:hover { background: var(--brick); border-color: var(--brick); }
-.composer button:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
+
+/* ══════ glossary ══════ */
+.gloss {
+  border-bottom: 1px dotted color-mix(in oklab, var(--ink) 40%, transparent);
+  cursor: help;
+}
+.chip[data-gloss] .chip__name { border-bottom: 1px dotted color-mix(in oklab, currentColor 45%, transparent); }
+.gloss-strip {
+  position: fixed;
+  left: var(--margin);
+  bottom: 10px;
+  z-index: 30;
+  max-width: min(38ch, 40vw);
+  padding: 8px 11px;
+  background: var(--ink);
+  color: var(--paper);
+  border-left: 3px solid var(--sun);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+  font-family: "Fraunces", serif;
+  font-size: var(--s-0);
+  line-height: 1.4;
+}
+.gloss-strip__term {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--sun);
+  margin-bottom: 2px;
+}
+
+/* ══════ session metrics bar ══════ */
+.metrics-bar {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--prussian);
+  background: color-mix(in oklab, var(--prussian) 5%, transparent);
+  padding: 8px 11px 9px;
+  margin-bottom: 12px;
+}
+.metrics-bar__head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.86);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--prussian);
+  margin-bottom: 6px;
+}
+.metrics-bar__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 6px 16px;
+}
+.metric { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.metric__k {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.8);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.metric__v {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.98);
+  color: var(--ink);
+  word-break: break-word;
+}
+.ps-meta, .swim-card__meta {
+  margin: 4px 0 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.82);
+  letter-spacing: 0.03em;
+  color: var(--ink-3);
+}
+.swim-card--learner .swim-card__meta { text-align: right; }
+
+/* live cumulative meter in the toolbar */
+.live-meter {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  padding: 0.15em 0.6em;
+  border: 1px solid color-mix(in oklab, var(--prussian) 45%, transparent);
+  background: color-mix(in oklab, var(--prussian) 8%, transparent);
+  color: var(--ink);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.live-meter:hover { border-color: var(--prussian); }
+.live-meter[aria-pressed="true"] { background: var(--prussian); color: var(--paper); border-color: var(--prussian); }
+.live-meter__k { color: var(--prussian); font-size: 1.05em; }
+.live-meter[aria-pressed="true"] .live-meter__k { color: var(--sun); }
+.live-meter__cost { color: var(--brick); }
+.live-meter[aria-pressed="true"] .live-meter__cost { color: var(--sun); }
+.live-meter__t { color: var(--ink-3); }
+.live-meter[aria-pressed="true"] .live-meter__t { color: color-mix(in oklab, var(--paper) 72%, transparent); }
+.live-meter__pending { color: var(--brick); animation: meterPulse 1s var(--ease) infinite; }
+@keyframes meterPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+/* per-turn sparklines in the metrics bar */
+.sparks {
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px dashed color-mix(in oklab, var(--prussian) 30%, transparent);
+  display: grid;
+  gap: 6px;
+}
+.spark-row {
+  display: grid;
+  grid-template-columns: 8.5em 1fr auto;
+  align-items: end;
+  gap: 0.7em;
+}
+.spark-row__lbl {
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.82);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  align-self: center;
+}
+.spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 30px;
+  padding-bottom: 1px;
+  border-bottom: 1px solid var(--rule);
+}
+.spark__bar {
+  flex: 1 1 0;
+  min-width: 3px;
+  background: var(--ink-3);
+  opacity: 0.85;
+  transition: opacity 0.12s var(--ease);
+}
+.spark__bar:hover { opacity: 1; }
+.spark__bar--tutor { background: var(--moss-deep); }
+.spark__bar--learner { background: var(--ochre-d); }
+.spark-row__max {
+  align-self: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.8);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.spark-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em 1em;
+  margin-top: 2px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.8);
+  color: var(--ink-3);
+}
+.spark-legend__item { display: inline-flex; align-items: center; gap: 0.35em; }
+.spark-legend__dot { width: 9px; height: 9px; display: inline-block; }
+.spark-legend__dot--tutor { background: var(--moss-deep); }
+.spark-legend__dot--learner { background: var(--ochre-d); }
+.spark-legend__note { font-style: italic; font-family: "Fraunces", serif; letter-spacing: 0; margin-left: auto; }
 
 /* scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -2531,8 +3245,24 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       <li><a @click.prevent="scrollTo('dialogue')"><em>§V</em> <span class="chapter-label">Script</span></a></li>
     </ol>
     <div class="chat-toolbar__actions">
-      <button class="xray-btn cli-btn" @click="toggleCli" :aria-pressed="useClaudeCli" :title="useClaudeCli ? 'routing all tutor calls through local claude CLI · click to disable' : 'use local claude CLI (opus 4.7) instead of cell YAML models'">
-        <span aria-hidden="true">◇</span><span x-text="useClaudeCli ? 'substrate: local claude' : 'substrate: cell models'"></span>
+      <button class="live-meter" x-show="turns.length" @click="toggleMetrics" :aria-pressed="showMetrics"
+              title="running spend for this scene — tokens · cost · model time. Click to toggle the full metrics panel.">
+        <span class="live-meter__k" aria-hidden="true">∑</span>
+        <span x-text="fmtTok(sessionMetrics.totalTok) + ' tok'"></span>
+        <template x-if="sessionMetrics.costUsd">
+          <span class="live-meter__cost" x-text="'· ' + fmtCost(sessionMetrics.costUsd)"></span>
+        </template>
+        <span class="live-meter__t" x-text="'· ' + fmtDur(sessionMetrics.latencyMs)"></span>
+        <span class="live-meter__pending" x-show="pending" aria-hidden="true">·••</span>
+      </button>
+      <button class="xray-btn" @click="toggleConfigCollapsed" :aria-pressed="configCollapsed" :title="configCollapsed ? 'show the setup panel' : 'collapse the setup panel — give the script full width'">
+        <span aria-hidden="true" x-text="configCollapsed ? '⇥' : '⇤'"></span><span x-text="configCollapsed ? 'setup' : 'hide setup'"></span>
+      </button>
+      <button class="xray-btn" @click="toggleMetrics" :aria-pressed="showMetrics" title="show LLM metadata: model, tokens, timing, and cost per turn and for the whole session">
+        <span aria-hidden="true">◷</span><span>metrics</span>
+      </button>
+      <button class="xray-btn cli-btn" @click="toggleCli" :aria-pressed="useClaudeCli" :title="'click to cycle substrate: cell models → claude CLI → codex CLI. Model + effort in fine controls §05.'">
+        <span aria-hidden="true">◇</span><span x-text="substrateLabel"></span>
       </button>
       <button class="xray-btn" @click="toggleXray" :aria-pressed="xray">
         <span aria-hidden="true">⌗</span><span>grid</span>
@@ -2541,18 +3271,34 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   </header>
 
   <!-- ══════ MAIN SPLIT ══════ -->
-  <main class="split">
+  <main class="split" :class="{ 'is-collapsed': configCollapsed }">
+
+    <!-- re-open rail (visible only when collapsed) -->
+    <button class="config-rail" type="button" x-show="configCollapsed" @click="toggleConfigCollapsed()" title="show the setup panel">
+      <span class="config-rail__chev" aria-hidden="true">›</span>
+      <span class="config-rail__label">setup</span>
+    </button>
 
     <!-- ═══ LEFT: CONFIGURATOR ═══ -->
-    <aside class="config">
-      <div class="config__body">
+    <aside class="config" x-show="!configCollapsed">
+      <div class="config__body" @mouseover="glossHover($event)" @mouseleave="glossActive = null">
 
         <section class="stage-tier" id="stage">
           <div class="stage-title">
             <span class="sig">◦</span>
             <span>Stage <em>pedagogical drama</em></span>
             <span class="rule"></span>
+            <button class="mini-btn" type="button" @click="startGuide()" x-show="!guide.on">guide me</button>
             <span>launch desk</span>
+          </div>
+
+          <div class="guide-card" x-show="guide.on" x-transition.opacity>
+            <div class="guide-card__step" x-text="(guide.i + 1) + ' / ' + guideSteps.length"></div>
+            <p class="guide-card__text" x-text="guideSteps[guide.i]?.text || ''"></p>
+            <div class="guide-card__actions">
+              <button class="mini-btn" type="button" @click="nextGuide()" x-text="guide.i + 1 < guideSteps.length ? 'next →' : 'done'"></button>
+              <button class="mini-btn" type="button" @click="endGuide()" x-show="guide.i + 1 < guideSteps.length">skip</button>
+            </div>
           </div>
 
           <div class="restore-strip" x-show="restore.available && !restore.dismissed">
@@ -2561,76 +3307,27 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <button class="mini-btn" type="button" @click="dismissSavedSession()">dismiss</button>
           </div>
 
-          <div class="assist-strip" :class="{'is-disabled': assistDisabled}">
-            <div class="assist-line">
-              <input
-                class="assist-input"
-                type="text"
-                x-model="assist.input"
-                :disabled="assistDisabled || assist.pending"
-                @keydown.enter.prevent="sendAssist()"
-                placeholder="describe the drama you want to stage..."
-                aria-label="Drama concierge prompt"
-              />
-              <button class="assist-btn" type="button" @click="sendAssist()" :disabled="assistDisabled || assist.pending || !assist.input.trim()">
-                <span x-show="!assist.pending">ask</span>
-                <span x-show="assist.pending">...</span>
-              </button>
-              <button class="assist-btn" type="button" @click="assist.dryRun = !assist.dryRun" :aria-pressed="assist.dryRun">
-                <span x-text="assist.dryRun ? 'dry on' : 'dry off'"></span>
-              </button>
-              <button class="assist-btn" type="button" @click="assist.open = !assist.open" :aria-pressed="assist.open">
-                <span x-text="assist.open ? 'hide' : 'history'"></span>
-              </button>
-            </div>
-            <div class="assist-meta" x-show="assistHealth.provider === 'none' && !useClaudeCli">
-              Set OPENROUTER_API_KEY, enable substrate: local claude, or switch dry run on.
-            </div>
-            <div class="assist-history" x-show="assist.open">
-              <template x-for="(m, i) in assist.messages.slice(-4)" :key="'assist-' + i + '-' + m.role">
-                <div class="assist-msg">
-                  <span class="role" x-text="m.role"></span>
-                  <span x-html="md(m.content)"></span>
-                </div>
-              </template>
-              <template x-if="assist.proposal">
-                <div class="proposal-card">
-                  <template x-for="row in assistProposalRows" :key="row.field">
-                    <div class="proposal-row">
-                      <span class="field" x-text="row.field"></span>
-                      <span class="value" x-text="row.value"></span>
-                      <span class="why" x-show="row.rationale" x-text="row.rationale"></span>
-                    </div>
-                  </template>
-                  <div class="assist-meta" x-show="assist.proposalResolved?.name">
-                    resolves to <em x-text="assist.proposalResolved?.name"></em>
-                    · <span x-text="assist.proposalResolved?.matchQuality"></span>
-                    <span x-show="assist.proposalResolved?.score != null">
-                      · <span x-text="assist.proposalResolved?.score"></span>/<span x-text="assist.proposalResolved?.maxScore"></span>
-                    </span>
-                  </div>
-                  <div class="proposal-actions">
-                    <button class="mini-btn" type="button" @click="applyProposal(assist.proposal)">apply</button>
-                    <button class="mini-btn" type="button" @click="applyProposalAndStart(assist.proposal)">apply & start scene</button>
-                    <button class="mini-btn" type="button" x-show="assist.proposal?.action === 'open_batch_launcher'" @click="openProposalBatch(assist.proposal)">open batch launcher</button>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </div>
-
           <div class="topic">
           <label class="topic__lbl" for="chat-topic">
-            Topic
+            1 · Subject
+            <span class="topic__lbl-hint">type anything — the drama is improvised around it</span>
             <template x-if="activeSourceLabel">
-              <span class="topic__curriculum-pill" title="curriculum attached">◦ <em x-text="activeSourceLabel"></em> <button type="button" class="topic__clear" @click="clearCurriculum()">×</button></span>
+              <span class="topic__curriculum-pill" title="this source's text is injected as teaching context">◦ teaching from <em x-text="activeSourceLabel"></em> <button type="button" class="topic__clear" @click="clearCurriculum()" title="detach — back to freeform">×</button></span>
             </template>
           </label>
-          <input id="chat-topic" type="text" class="topic__input" x-model="topic" placeholder="e.g. Hegel's concept of recognition — a line is a dot that went for a walk" />
+          <div class="topic__row">
+            <input id="chat-topic" type="text" class="topic__input" x-model="topic" :placeholder="topicPlaceholder" />
+            <button class="mini-btn topic__shuffle" type="button" @click="shuffleSubject()"
+                    title="pick a random lecture or compiled scene source">⚄ surprise me</button>
+          </div>
+          <p class="topic__note" x-show="!activeSourceLabel">
+            Freeform: the tutor improvises from this line alone. Attach a source below and it teaches
+            from that actual text instead — the scene frame is seeded from it too.
+          </p>
           <details class="curriculum-drawer" x-ref="curriculumDrawer">
             <summary>
               <span class="chev">▸</span>
-              <span>pick from <em>curriculum</em></span>
+              <span>or teach from <em>curriculum</em> — lectures &amp; compiled scenes</span>
               <span class="count" x-show="curricula.length || sceneSources.length" x-text="sourceCountLabel"></span>
             </summary>
             <div class="curriculum-body">
@@ -2708,36 +3405,36 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <!-- §01 Approach -->
         <section class="stage-block" id="fg-01">
           <div class="stage-block__head">
-            <span>§01 Tutor style</span>
+            <span>2 · <span class="gloss" data-gloss="tutor style">Tutor style</span></span>
             <span class="hint">what the tutor has been told to be</span>
           </div>
           <div class="chips">
-            <button class="chip" :class="{'is-active': features.approach === 'standard'}" @click="setApproach('standard')">
+            <button class="chip" data-gloss="standard" :class="{'is-active': features.approach === 'standard'}" @click="setApproach('standard')">
               <span class="chip__letter">a</span>
               <span class="chip__name">Standard</span>
               <span class="chip__hint">default AI tutor</span>
             </button>
-            <button class="chip" :class="{'is-active': features.approach === 'polished'}" @click="setApproach('polished')">
+            <button class="chip" data-gloss="polished" :class="{'is-active': features.approach === 'polished'}" @click="setApproach('polished')">
               <span class="chip__letter">b</span>
               <span class="chip__name">Polished</span>
               <span class="chip__hint">best-practice pedagogy</span>
             </button>
-            <button class="chip accent" :class="{'is-active': features.approach === 'recognition'}" @click="setApproach('recognition')">
+            <button class="chip accent" data-gloss="recognition" :class="{'is-active': features.approach === 'recognition'}" @click="setApproach('recognition')">
               <span class="chip__letter">c</span>
               <span class="chip__name">Recognition</span>
               <span class="chip__hint">Hegelian theory</span>
             </button>
-            <button class="chip" :class="{'is-active': features.approach === 'placebo'}" @click="setApproach('placebo')">
+            <button class="chip" data-gloss="placebo" :class="{'is-active': features.approach === 'placebo'}" @click="setApproach('placebo')">
               <span class="chip__letter">d</span>
               <span class="chip__name">Placebo</span>
               <span class="chip__hint">length-matched control</span>
             </button>
-            <button class="chip" :class="{'is-active': features.approach === 'minimalist'}" @click="setApproach('minimalist')">
+            <button class="chip" data-gloss="minimalist" :class="{'is-active': features.approach === 'minimalist'}" @click="setApproach('minimalist')">
               <span class="chip__letter">e</span>
               <span class="chip__name">Minimalist</span>
               <span class="chip__hint">naive baseline</span>
             </button>
-            <button class="chip accent" :class="{'is-active': features.approach === 'charismatic'}" @click="setApproach('charismatic')">
+            <button class="chip accent" data-gloss="charismatic" :class="{'is-active': features.approach === 'charismatic'}" @click="setApproach('charismatic')">
               <span class="chip__letter">f</span>
               <span class="chip__name">Charismatic</span>
               <span class="chip__hint">Weberian id-director</span>
@@ -2747,7 +3444,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
         <section class="stage-block" id="fg-01b" x-show="features.approach === 'charismatic'" x-transition.opacity>
           <div class="stage-block__head">
-            <span>§01b Charisma frontier</span>
+            <span>2b · Charisma frontier</span>
             <span class="hint">Pareto design point</span>
           </div>
           <div class="chips">
@@ -2771,44 +3468,147 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
         <section class="stage-block">
           <div class="stage-block__head">
-            <span>Learner persona</span>
+            <span>3 · <span class="gloss" data-gloss="learner persona">Learner persona</span></span>
             <span class="hint" x-text="mode === 'human' ? 'used when AI writes learner lines' : personaName"></span>
           </div>
           <div class="persona-strip">
-            <template x-for="p in personas" :key="'stage-' + p.id">
+            <template x-for="p in curatedPersonas" :key="'stage-' + p.id">
               <button
                 class="persona-chip"
                 :class="{'is-active': personaId === p.id}"
                 @click="personaId = p.id"
+                :title="p.hint"
               >
                 <span class="name" x-text="p.name"></span>
                 <span class="hint" x-text="'· ' + p.hint"></span>
               </button>
             </template>
           </div>
+          <details class="persona-more" x-show="probePersonas.length">
+            <summary>
+              <span class="chev">▸</span>
+              <span>research probes</span>
+              <span class="count" x-text="probePersonas.length + ' scripted stress-test learners'"></span>
+              <template x-if="activeProbePersona">
+                <span class="active" x-text="'· active: ' + activeProbePersona.name"></span>
+              </template>
+            </summary>
+            <div class="persona-strip persona-strip--probes">
+              <template x-for="p in probePersonas" :key="'probe-' + p.id">
+                <button
+                  class="persona-chip"
+                  :class="{'is-active': personaId === p.id}"
+                  @click="personaId = p.id"
+                  :title="p.hint"
+                >
+                  <span class="name" x-text="p.name"></span>
+                </button>
+              </template>
+            </div>
+          </details>
         </section>
 
         <section class="stage-block">
           <div class="mode">
-            <span class="mode__lbl">◦ who writes the lines?</span>
+            <span class="mode__lbl">4 · who writes the lines?</span>
             <div class="mode__toggle">
-              <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')">human learner</button>
-              <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')">human teacher</button>
-              <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">AI learner</button>
+              <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')" title="the AI drafts both sides, one exchange at a time">AI plays both</button>
+              <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')" title="you type the learner's lines; the tutor cell answers">I play learner</button>
+              <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')" title="you type the tutor's lines; the simulated learner answers">I play tutor</button>
             </div>
           </div>
-          <div class="preflight-note" x-show="turnsNeedKeyWarning">
-            OPENROUTER_API_KEY is not set. Enable dry run, substrate: local claude, or set the key.
+          <!-- playbill — every knob that shapes the next turn, one chip each.
+               Clicking a chip opens the drawer that owns that control. -->
+          <div class="playbill">
+            <span class="playbill__lbl" title="the full configuration of the next turn — click any entry to edit it">playbill</span>
+            <template x-for="k in playbillKnobs" :key="k.key">
+              <button class="playbill__chip" :class="{'is-set': !k.isDefault}" :data-gloss="k.gloss || ''" type="button" @click="openKnob(k)" :title="k.title">
+                <span class="k" x-text="k.label"></span>
+                <span class="v" x-text="k.value"></span>
+              </button>
+            </template>
           </div>
-          <div class="stage-actions">
-            <button class="stage-btn stage-btn--primary" type="button" @click="startPrimary()" :disabled="pending || !resolved || (mode === 'auto' && turnsNeedKeyWarning)">
+
+          <div class="preflight-note" x-show="turnsNeedKeyWarning">
+            <span class="preflight-note__lead">no model yet — pick one to run live turns:</span>
+            <span class="preflight-note__opts">
+              <button class="mini-btn" type="button" @click="dryRunTurns = true">dry run · free</button>
+              <button class="mini-btn" type="button" @click="cliSub.provider = 'claude'">claude CLI</button>
+              <button class="mini-btn" type="button" @click="cliSub.provider = 'codex'">codex CLI</button>
+            </span>
+          </div>
+          <div class="launch">
+            <button class="launch-btn" type="button" @click="startPrimary()" :disabled="pending || !resolved || launchBlockedByKey">
+              <span class="launch-btn__sig" aria-hidden="true">▶</span>
               <span x-text="startActionLabel"></span>
             </button>
-            <a class="stage-btn" :href="runLauncherHref()">batch via launcher →</a>
-            <button class="stage-btn" type="button" @click="dryRunTurns = !dryRunTurns" :aria-pressed="dryRunTurns">
-              <span x-text="dryRunTurns ? 'dry run on' : 'dry run off'"></span>
+            <p class="launch-what" x-text="launchSublabel"></p>
+          </div>
+          <div class="stage-actions stage-actions--secondary">
+            <a class="stage-btn" :href="runLauncherHref()" title="send this cell through eval scenarios in the run launcher — produces batch scripts instead of one live scene">batch via launcher →</a>
+            <button class="stage-btn" type="button" @click="dryRunTurns = !dryRunTurns" :aria-pressed="dryRunTurns"
+                    title="dry run substitutes free canned output for real model calls — for trying the desk without spending">
+              <span x-text="dryRunTurns ? '✓ dry run · free' : '○ dry run · free'"></span>
             </button>
-            <button class="stage-btn" type="button" @click="exportTranscript()" :disabled="!turns.length">export transcript</button>
+            <button class="stage-btn" type="button" @click="exportTranscript()" :disabled="!turns.length"
+                    :title="turns.length ? 'download this scene as markdown' : 'no turns yet — start a scene first'">export transcript</button>
+          </div>
+
+          <div class="assist-strip" :class="{'is-disabled': assistDisabled}">
+            <div class="assist-kicker">✦ or describe it — the concierge fills in steps 1–4</div>
+            <div class="assist-line">
+              <input
+                class="assist-input"
+                type="text"
+                x-model="assist.input"
+                :disabled="assistDisabled || assist.pending"
+                @keydown.enter.prevent="sendAssist()"
+                placeholder="e.g. a recognition drama about fractions with an anxious learner"
+                aria-label="Drama concierge prompt"
+              />
+              <button class="assist-btn" type="button" @click="sendAssist()" :disabled="assistDisabled || assist.pending || !assist.input.trim()">
+                <span x-show="!assist.pending">ask</span>
+                <span x-show="assist.pending">...</span>
+              </button>
+              <button class="assist-btn" type="button" @click="assist.open = !assist.open" :aria-pressed="assist.open">
+                <span x-text="assist.open ? 'hide' : 'history'"></span>
+              </button>
+            </div>
+            <div class="assist-meta" x-show="assistDisabled">
+              concierge is offline — no model key.
+              <button class="mini-btn" type="button" @click="dryRunTurns = true">try it in dry run (free)</button>
+            </div>
+            <div class="assist-history" x-show="assist.open">
+              <template x-for="(m, i) in assist.messages.slice(-4)" :key="'assist-' + i + '-' + m.role">
+                <div class="assist-msg">
+                  <span class="role" x-text="m.role"></span>
+                  <span x-html="md(m.content)"></span>
+                </div>
+              </template>
+              <template x-if="assist.proposal">
+                <div class="proposal-card">
+                  <template x-for="row in assistProposalRows" :key="row.field">
+                    <div class="proposal-row">
+                      <span class="field" x-text="row.field"></span>
+                      <span class="value" x-text="row.value"></span>
+                      <span class="why" x-show="row.rationale" x-text="row.rationale"></span>
+                    </div>
+                  </template>
+                  <div class="assist-meta" x-show="assist.proposalResolved?.name">
+                    resolves to <em x-text="assist.proposalResolved?.name"></em>
+                    · <span x-text="assist.proposalResolved?.matchQuality"></span>
+                    <span x-show="assist.proposalResolved?.score != null">
+                      · <span x-text="assist.proposalResolved?.score"></span>/<span x-text="assist.proposalResolved?.maxScore"></span>
+                    </span>
+                  </div>
+                  <div class="proposal-actions">
+                    <button class="mini-btn" type="button" @click="applyProposal(assist.proposal)">apply</button>
+                    <button class="mini-btn" type="button" @click="applyProposalAndStart(assist.proposal)">apply & start scene</button>
+                    <button class="mini-btn" type="button" x-show="assist.proposal?.action === 'open_batch_launcher'" @click="openProposalBatch(assist.proposal)">open batch launcher</button>
+                  </div>
+                </div>
+              </template>
+            </div>
           </div>
         </section>
 
@@ -2830,10 +3630,11 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               </div>
             </template>
             <div class="alternatives" x-show="alternatives.length">
+              <div class="alternatives__head">≈ near matches · click to switch</div>
               <template x-for="alt in alternatives" :key="alt.name">
                 <button class="alt-row" type="button" @click="pickAlternative(alt)">
                   <span class="n" x-text="alt.name.replace('cell_','c')"></span>
-                  <span class="relaxed" x-text="alt.relaxed?.length ? 'relaxed: ' + alt.relaxed.join(', ') : 'exact aside from score'"></span>
+                  <span class="relaxed" x-text="alt.relaxed?.length ? 'gives up: ' + alt.relaxed.join(', ') : 'also an exact match'"></span>
                   <span x-text="alt.score + '/' + maxScore"></span>
                 </button>
               </template>
@@ -2850,7 +3651,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <section class="fg scene-frame" data-ghost="0" id="fg-00">
           <div class="fg-head">
             <span class="fg-head__no">§00</span>
-            <span class="fg-head__ttl">Director / <em>Scene</em></span>
+            <span class="fg-head__ttl gloss" data-gloss="director">Director / <em>Scene</em></span>
             <span class="fg-head__rule"></span>
             <span class="fg-head__hint">curriculum source, act, and beat before cell architecture</span>
           </div>
@@ -2912,7 +3713,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <section class="fg" data-ghost="II" id="fg-02">
           <div class="fg-head">
             <span class="fg-head__no">§02</span>
-            <span class="fg-head__ttl">Inner <em>critic</em></span>
+            <span class="fg-head__ttl gloss" data-gloss="inner critic">Inner <em>critic</em></span>
             <span class="fg-head__rule"></span>
             <span class="fg-head__hint">a <em>second voice</em>, or a single one</span>
           </div>
@@ -2922,22 +3723,22 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               <span class="chip__name">None</span>
               <span class="chip__hint">single voice</span>
             </button>
-            <button class="chip" :class="{'is-active': features.critic === 'pedagogical'}" @click="setCritic('pedagogical')">
+            <button class="chip" data-gloss="pedagogical" :class="{'is-active': features.critic === 'pedagogical'}" @click="setCritic('pedagogical')">
               <span class="chip__letter">b</span>
               <span class="chip__name">Pedagogical</span>
               <span class="chip__hint">standard critic</span>
             </button>
-            <button class="chip" :class="{'is-active': features.critic === 'dialectical'}" @click="setCritic('dialectical')">
+            <button class="chip" data-gloss="dialectical" :class="{'is-active': features.critic === 'dialectical'}" @click="setCritic('dialectical')">
               <span class="chip__letter">c</span>
               <span class="chip__name">Dialectical</span>
               <span class="chip__hint">engages the ego</span>
             </button>
-            <button class="chip" :class="{'is-active': features.critic === 'divergent'}" @click="setCritic('divergent')">
+            <button class="chip" data-gloss="divergent" :class="{'is-active': features.critic === 'divergent'}" @click="setCritic('divergent')">
               <span class="chip__letter">d</span>
               <span class="chip__name">Divergent</span>
               <span class="chip__hint">alternate stance</span>
             </button>
-            <button class="chip" :class="{'is-active': features.critic === 'hardwired'}" @click="setCritic('hardwired')">
+            <button class="chip" data-gloss="hardwired" :class="{'is-active': features.critic === 'hardwired'}" @click="setCritic('hardwired')">
               <span class="chip__letter">e</span>
               <span class="chip__name">Hardwired</span>
               <span class="chip__hint">rules baked in</span>
@@ -2954,17 +3755,17 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <span class="fg-head__hint">the critic's <em>posture</em></span>
           </div>
           <div class="chips">
-            <button class="chip" :class="{'is-active': features.stance === 'suspicious'}" @click="setStance('suspicious')">
+            <button class="chip" data-gloss="suspicious" :class="{'is-active': features.stance === 'suspicious'}" @click="setStance('suspicious')">
               <span class="chip__letter">a</span>
               <span class="chip__name">Suspicious</span>
               <span class="chip__hint">questions the draft</span>
             </button>
-            <button class="chip" :class="{'is-active': features.stance === 'adversary'}" @click="setStance('adversary')">
+            <button class="chip" data-gloss="adversary" :class="{'is-active': features.stance === 'adversary'}" @click="setStance('adversary')">
               <span class="chip__letter">b</span>
               <span class="chip__name">Adversary</span>
               <span class="chip__hint">challenges the draft</span>
             </button>
-            <button class="chip" :class="{'is-active': features.stance === 'advocate'}" @click="setStance('advocate')">
+            <button class="chip" data-gloss="advocate" :class="{'is-active': features.stance === 'advocate'}" @click="setStance('advocate')">
               <span class="chip__letter">c</span>
               <span class="chip__name">Advocate</span>
               <span class="chip__hint">supports the draft</span>
@@ -2976,21 +3777,107 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <section class="fg" data-ghost="IV" id="fg-04">
           <div class="fg-head">
             <span class="fg-head__no">§04</span>
-            <span class="fg-head__ttl">Simulated learner <em>mind</em></span>
+            <span class="fg-head__ttl gloss" data-gloss="learner mind">Simulated learner <em>mind</em></span>
             <span class="fg-head__rule"></span>
             <span class="fg-head__hint">evaluator's <em>simulation architecture</em></span>
           </div>
           <div class="chips">
-            <button class="chip" :class="{'is-active': features.learnerModel === 'surface'}" @click="setLearner('surface')">
+            <button class="chip" data-gloss="surface" :class="{'is-active': features.learnerModel === 'surface'}" @click="setLearner('surface')">
               <span class="chip__letter">a</span>
               <span class="chip__name">Surface</span>
               <span class="chip__hint">unified learner</span>
             </button>
-            <button class="chip" :class="{'is-active': features.learnerModel === 'reflective'}" @click="setLearner('reflective')">
+            <button class="chip" data-gloss="reflective" :class="{'is-active': features.learnerModel === 'reflective'}" @click="setLearner('reflective')">
               <span class="chip__letter">b</span>
               <span class="chip__name">Reflective</span>
               <span class="chip__hint">ego + superego</span>
             </button>
+          </div>
+        </section>
+
+        <!-- §05 Models & sampling — same overrides the dossier manifest binds,
+             surfaced here so every knob is reachable from fine controls. -->
+        <section class="fg" data-ghost="V" id="fg-05">
+          <div class="fg-head">
+            <span class="fg-head__no">§05</span>
+            <span class="fg-head__ttl gloss" data-gloss="substrate">Models &amp; <em>sampling</em></span>
+            <span class="fg-head__rule"></span>
+            <span class="fg-head__hint">blank = the cell's own YAML values</span>
+          </div>
+          <div class="model-controls" style="border-top: 0; margin-top: 0; padding-top: 0;">
+            <div class="model-control">
+              <label for="fc-substrate">substrate</label>
+              <select id="fc-substrate" class="model-select" x-model="cliSub.provider">
+                <option value="">cell models · openrouter</option>
+                <option value="claude">local claude CLI · subscription</option>
+                <option value="codex">local codex CLI · subscription</option>
+              </select>
+            </div>
+            <template x-if="cliSub.provider">
+              <div class="model-control">
+                <label for="fc-cli-model">cli model</label>
+                <input
+                  id="fc-cli-model"
+                  class="model-select"
+                  type="text"
+                  x-model="cliSub.model"
+                  :list="'cli-models-' + cliSub.provider"
+                  :placeholder="cliSub.provider === 'codex' ? 'default · from ~/.codex/config.toml' : 'default · claude-opus-4-7'"
+                />
+                <datalist id="cli-models-claude">
+                  <option value="sonnet"></option>
+                  <option value="opus"></option>
+                  <option value="haiku"></option>
+                  <option value="claude-sonnet-5"></option>
+                  <option value="claude-opus-4-8"></option>
+                  <option value="claude-haiku-4-5"></option>
+                </datalist>
+                <datalist id="cli-models-codex">
+                  <option value="gpt-5.5"></option>
+                  <option value="gpt-5.5-codex"></option>
+                </datalist>
+              </div>
+            </template>
+            <template x-if="cliSub.provider">
+              <div class="model-control">
+                <label for="fc-cli-effort">cli reasoning effort</label>
+                <select id="fc-cli-effort" class="model-select" x-model="cliSub.effort">
+                  <option value="">default</option>
+                  <option value="minimal">minimal</option>
+                  <option value="low">low</option>
+                  <option value="medium">medium</option>
+                  <option value="high">high</option>
+                  <option value="xhigh">xhigh</option>
+                </select>
+              </div>
+            </template>
+            <div class="model-control">
+              <label for="fc-ego-model">ego substrate</label>
+              <select id="fc-ego-model" class="model-select" x-model="modelOverrides.ego" :disabled="useClaudeCli || !modelOptions.length">
+                <option value="">cell default</option>
+                <template x-for="m in modelOptions" :key="'fc-ego-' + m.value">
+                  <option :value="m.value" x-text="m.alias"></option>
+                </template>
+              </select>
+            </div>
+            <div class="model-control">
+              <label for="fc-superego-model">superego substrate</label>
+              <select id="fc-superego-model" class="model-select" x-model="modelOverrides.superego" :disabled="useClaudeCli || !resolved?.superego || !modelOptions.length">
+                <option value="" x-text="resolved?.superego ? 'cell default' : 'none'"></option>
+                <template x-for="m in modelOptions" :key="'fc-superego-' + m.value">
+                  <option :value="m.value" x-text="m.alias"></option>
+                </template>
+              </select>
+            </div>
+            <div class="model-control">
+              <label for="fc-temp">tutor temperature <span style="text-transform: none;">(0–2 · ego only)</span></label>
+              <input id="fc-temp" class="model-select" type="number" min="0" max="2" step="0.1" x-model="sampling.temperature" :placeholder="'cell default · ' + (resolved?.ego?.hyperparameters?.temperature ?? '0.6')" />
+            </div>
+            <div class="model-control">
+              <label for="fc-maxtok">max tokens per turn</label>
+              <input id="fc-maxtok" class="model-select" type="number" min="64" max="8000" step="50" x-model="sampling.maxTokens" placeholder="cell default" />
+            </div>
+            <div class="model-note" x-text="useClaudeCli ? cliSub.provider + ' CLI substrate active — OpenRouter selectors and sampling are bypassed; CLI model + effort above apply instead.' : 'Overrides apply to live turns in this desk only; batch runs keep the cell YAML.'"></div>
           </div>
         </section>
           </div>
@@ -3265,6 +4152,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         </details>
     </aside>
 
+    <!-- glossary hover strip — fixed so it never clips inside the scroll panel -->
+    <div class="gloss-strip" x-show="glossActive && !configCollapsed" x-transition.opacity>
+      <span class="gloss-strip__term" x-text="glossActive?.term"></span>
+      <span class="gloss-strip__def" x-text="glossActive?.def"></span>
+    </div>
+
     <!-- ═══ RIGHT: DIALOGUE ═══ -->
     <section class="dialogue" id="dialogue">
       <div class="dialogue__head">
@@ -3272,27 +4165,135 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           <span class="fg-head__no">§V</span>
           <span class="fg-head__ttl"><em>Script</em></span>
           <span class="fg-head__rule"></span>
-          <span class="fg-head__hint">drafted scene, <em>deliberation</em> legible below</span>
+          <div class="view-toggle" role="tablist" aria-label="Script view" x-show="turns.length">
+            <button class="vt-btn" role="tab" :aria-selected="scriptView === 'plates'" :class="{'is-active': scriptView === 'plates'}" @click="setScriptView('plates')" title="editorial plates — each turn as an illustrated figure with its apparatus">plates</button>
+            <button class="vt-btn" role="tab" :aria-selected="scriptView === 'script'" :class="{'is-active': scriptView === 'script'}" @click="setScriptView('script')" title="playscript — a theatrical script, speaker then line">script</button>
+            <button class="vt-btn" role="tab" :aria-selected="scriptView === 'swimlane'" :class="{'is-active': scriptView === 'swimlane'}" @click="setScriptView('swimlane')" title="swimlanes — tutor and learner as parallel voices on a shared time-spine">swimlanes</button>
+          </div>
+          <button class="mini-btn" type="button" x-show="turns.length" @click="newScene()"
+                  title="clear this scene and stage another — the config stays">✕ new scene</button>
         </div>
       </div>
 
       <div class="chat-log" x-ref="chatLog">
 
+        <!-- curtain-raiser: the playbill page that opens every drama -->
+        <template x-if="bill && turns.length">
+          <div class="curtain">
+            <div class="curtain__kicker">— a pedagogical drama in one scene —</div>
+            <h2 class="curtain__title" x-text="bill.topic"></h2>
+            <div class="curtain__cast">
+              <div>
+                <span class="role">the tutor</span>
+                <span class="who" x-text="bill.tutorWho"></span>
+                <span class="via" x-text="bill.tutorVia"></span>
+              </div>
+              <div>
+                <span class="role">the learner</span>
+                <span class="who" x-text="bill.learnerWho"></span>
+              </div>
+            </div>
+            <div class="curtain__setting">
+              setting: <em x-text="bill.scene"></em> · act <em x-text="bill.act"></em> · beat
+              <em x-text="bill.beat"></em>
+              <template x-if="bill.source"><span> · teaching from <em x-text="bill.source"></em></span></template>
+              <template x-if="bill.dryRun"><span> · <em>dry-run rehearsal</em></span></template>
+            </div>
+            <template x-if="bill.note">
+              <p class="curtain__note">director's note — <em x-text="bill.note"></em></p>
+            </template>
+            <div class="curtain__rule">✦ ✦ ✦</div>
+          </div>
+        </template>
+
+        <!-- session LLM metrics (toggle: ◷ metrics) -->
+        <template x-if="showMetrics && turns.length">
+          <div class="metrics-bar">
+            <div class="metrics-bar__head">◷ session metrics</div>
+            <div class="metrics-bar__grid">
+              <div class="metric"><span class="metric__k">exchanges</span><span class="metric__v" x-text="sessionMetrics.tutorTurns + ' tutor · ' + sessionMetrics.learnerTurns + ' learner'"></span></div>
+              <div class="metric"><span class="metric__k">substrate</span><span class="metric__v" x-text="sessionMetrics.substrate + (sessionMetrics.effort ? ' · ' + sessionMetrics.effort : '')"></span></div>
+              <div class="metric"><span class="metric__k">models</span><span class="metric__v" x-text="sessionMetrics.models.length ? sessionMetrics.models.join(', ') : '—'"></span></div>
+              <div class="metric"><span class="metric__k">tokens in / out</span><span class="metric__v" x-text="fmtTok(sessionMetrics.inTok) + ' / ' + fmtTok(sessionMetrics.outTok)"></span></div>
+              <div class="metric"><span class="metric__k">tokens total</span><span class="metric__v" x-text="fmtTok(sessionMetrics.totalTok)"></span></div>
+              <div class="metric"><span class="metric__k">wall time</span><span class="metric__v" x-text="fmtDur(sessionMetrics.latencyMs)"></span></div>
+              <template x-if="sessionMetrics.costUsd">
+                <div class="metric"><span class="metric__k">est. cost</span><span class="metric__v" x-text="fmtCost(sessionMetrics.costUsd)"></span></div>
+              </template>
+            </div>
+
+            <div class="sparks" x-show="turnSeries.length">
+              <div class="spark-row">
+                <span class="spark-row__lbl">latency / turn</span>
+                <div class="spark" role="img" aria-label="latency per turn">
+                  <template x-for="p in turnSeries" :key="'lat-' + p.beat">
+                    <div class="spark__bar" :class="'spark__bar--' + p.side"
+                         :style="'height:' + sparkPct(p.latencyMs, seriesMax.latencyMs) + '%'"
+                         :title="'turn ' + p.beat + ' · ' + p.side + ' · ' + fmtDur(p.latencyMs)"></div>
+                  </template>
+                </div>
+                <span class="spark-row__max" x-text="'▲ ' + fmtDur(seriesMax.latencyMs)"></span>
+              </div>
+              <div class="spark-row">
+                <span class="spark-row__lbl">tokens / turn</span>
+                <div class="spark" role="img" aria-label="tokens per turn">
+                  <template x-for="p in turnSeries" :key="'tok-' + p.beat">
+                    <div class="spark__bar" :class="'spark__bar--' + p.side"
+                         :style="'height:' + sparkPct(p.tokens, seriesMax.tokens) + '%'"
+                         :title="'turn ' + p.beat + ' · ' + p.side + ' · ' + fmtTok(p.tokens) + ' tok'"></div>
+                  </template>
+                </div>
+                <span class="spark-row__max" x-text="'▲ ' + fmtTok(seriesMax.tokens)"></span>
+              </div>
+              <template x-if="hasCost">
+                <div class="spark-row">
+                  <span class="spark-row__lbl">cost / turn</span>
+                  <div class="spark" role="img" aria-label="cost per turn">
+                    <template x-for="p in turnSeries" :key="'cost-' + p.beat">
+                      <div class="spark__bar" :class="'spark__bar--' + p.side"
+                           :style="'height:' + sparkPct(p.costUsd, seriesMax.costUsd) + '%'"
+                           :title="'turn ' + p.beat + ' · ' + p.side + ' · ' + (fmtCost(p.costUsd) || '$0')"></div>
+                    </template>
+                  </div>
+                  <span class="spark-row__max" x-text="'▲ ' + (fmtCost(seriesMax.costUsd) || '$0')"></span>
+                </div>
+              </template>
+              <div class="spark-legend">
+                <span class="spark-legend__item"><span class="spark-legend__dot spark-legend__dot--tutor"></span>tutor</span>
+                <span class="spark-legend__item"><span class="spark-legend__dot spark-legend__dot--learner"></span>learner</span>
+                <span class="spark-legend__note">hover a bar for the turn value</span>
+              </div>
+            </div>
+          </div>
+        </template>
+
         <!-- onboarding -->
         <template x-if="turns.length === 0 && resolved">
           <div class="onboarding">
-            <p>This is a script desk for a <em>pedagogical drama</em>. Set the source and director frame in <em>§00</em>, pick a tutor architecture, then use the composer below to write the next line of the scene.</p>
-            <p>For a human-in-the-loop draft, choose <em>I write learner</em> or <em>I write tutor</em>. For a fully synthetic draft, choose <em>AI writes both</em> and press <em>Start scene</em>.</p>
+            <p>This desk stages a <em>pedagogical drama</em>. Everything needed to start is in the <em>Stage</em> panel on the left: a topic, a tutor style, a learner persona, and who writes the lines.</p>
+            <p x-show="mode === 'human'">You are playing the <em>learner</em>. Write the learner's opening line in the composer below — the tutor cell (<em x-text="resolved?.name"></em>) answers.</p>
+            <p x-show="mode === 'teacher'">You are playing the <em>tutor</em>. Write the tutor's opening line below — <em x-text="personaName"></em> replies.</p>
+            <p x-show="mode === 'auto'">The AI plays <em>both sides</em>: <em x-text="personaName"></em> opens, the tutor cell replies, one exchange per press.</p>
+            <button class="stage-btn stage-btn--primary onboarding__cta" type="button"
+                    @click="startPrimary()" :disabled="pending || launchBlockedByKey">
+              ▶ <span x-text="startActionLabel"></span>
+            </button>
+            <p class="onboarding__aside" x-show="launchBlockedByKey" style="color: var(--brick);">
+              No model configured — turn on <em>dry run</em>, pick a <em>CLI substrate</em>, or set the key to begin.
+            </p>
+            <p class="onboarding__aside">The director frame, inner critic, and model substrates live under <em>fine controls</em>; scores and research context under <em>dossier</em>.</p>
           </div>
         </template>
 
         <template x-if="!resolved">
           <div class="onboarding">
-            <p>Pick an <em>approach</em> and an <em>inner critic</em> on the left. Every combination resolves to a specific evaluation cell.</p>
+            <p>Pick a <em>tutor style</em> on the left. Every combination of stage choices resolves to a registered evaluation cell.</p>
           </div>
         </template>
 
-        <!-- turns -->
+        <!-- ═══ PLATES VIEW (editorial figures) ═══ -->
+        <template x-if="scriptView === 'plates' && turns.length">
+        <div class="plates-view">
         <template x-for="(turn, i) in turns" :key="i">
           <div>
 
@@ -3448,6 +4449,97 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             </template>
           </div>
         </template>
+        </div>
+        </template>
+
+        <!-- ═══ SCRIPT VIEW (playscript) ═══ -->
+        <template x-if="scriptView === 'script' && turns.length">
+          <div class="playscript">
+            <template x-for="row in scriptRows" :key="'sc-' + row.i">
+              <div>
+                <template x-if="row.kind !== 'error'">
+                  <div class="ps-line" :class="'ps-line--' + row.side">
+                    <div class="ps-cue">
+                      <span class="ps-speaker" x-text="row.speaker"></span>
+                      <span class="ps-sub" x-text="row.sub"></span>
+                    </div>
+                    <div class="ps-speech" x-html="md(row.text)"></div>
+                    <p class="ps-meta" x-show="showMetrics && turnMeta(row.turn)" x-text="turnMeta(row.turn)"></p>
+                    <template x-if="row.turn.deliberation && row.turn.deliberation.length">
+                      <details class="mini-trace">
+                        <summary><span class="chev">▸</span> <span x-text="row.turn.deliberation.length + ' deliberation step' + (row.turn.deliberation.length === 1 ? '' : 's')"></span></summary>
+                        <template x-for="(step, j) in row.turn.deliberation" :key="j">
+                          <div class="mini-step">
+                            <span class="mini-step__lbl" :class="'step-' + step.role" x-text="step.label"></span>
+                            <span class="mini-step__body" x-html="md(step.content)"></span>
+                          </div>
+                        </template>
+                      </details>
+                    </template>
+                  </div>
+                </template>
+                <template x-if="row.kind === 'error'">
+                  <p class="ps-stage" x-text="'✕ ' + row.text"></p>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- ═══ SWIMLANE VIEW (parallel voices) ═══ -->
+        <template x-if="scriptView === 'swimlane' && turns.length">
+          <div class="swim">
+            <div class="swim-head">
+              <span class="swim-label swim-label--tutor">tutor</span>
+              <span class="swim-label swim-label--spine" aria-hidden="true"></span>
+              <span class="swim-label swim-label--learner">learner</span>
+            </div>
+            <template x-for="row in scriptRows" :key="'sw-' + row.i">
+              <div>
+                <template x-if="row.kind !== 'error'">
+                  <div class="swim-row" :data-side="row.side">
+                    <div class="swim-cell swim-cell--tutor">
+                      <template x-if="row.side === 'tutor'">
+                        <div class="swim-card swim-card--tutor">
+                          <div class="swim-card__who" x-text="row.sub"></div>
+                          <div class="swim-card__text" x-html="md(row.text)"></div>
+                          <p class="swim-card__meta" x-show="showMetrics && turnMeta(row.turn)" x-text="turnMeta(row.turn)"></p>
+                          <template x-if="row.turn.deliberation && row.turn.deliberation.length > 1">
+                            <details class="mini-trace"><summary><span class="chev">▸</span> ego → superego</summary>
+                              <template x-for="(step, j) in row.turn.deliberation" :key="j">
+                                <div class="mini-step"><span class="mini-step__lbl" :class="'step-' + step.role" x-text="step.label"></span><span class="mini-step__body" x-html="md(step.content)"></span></div>
+                              </template>
+                            </details>
+                          </template>
+                        </div>
+                      </template>
+                    </div>
+                    <div class="swim-spine"><span class="swim-bead" x-text="row.beat"></span></div>
+                    <div class="swim-cell swim-cell--learner">
+                      <template x-if="row.side === 'learner'">
+                        <div class="swim-card swim-card--learner">
+                          <div class="swim-card__who" x-text="row.sub"></div>
+                          <div class="swim-card__text" x-html="md(row.text)"></div>
+                          <p class="swim-card__meta" x-show="showMetrics && turnMeta(row.turn)" x-text="turnMeta(row.turn)"></p>
+                          <template x-if="row.turn.deliberation && row.turn.deliberation.length > 1">
+                            <details class="mini-trace"><summary><span class="chev">▸</span> ego → superego</summary>
+                              <template x-for="(step, j) in row.turn.deliberation" :key="j">
+                                <div class="mini-step"><span class="mini-step__lbl" :class="'step-' + step.role" x-text="step.label"></span><span class="mini-step__body" x-html="md(step.content)"></span></div>
+                              </template>
+                            </details>
+                          </template>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+                <template x-if="row.kind === 'error'">
+                  <p class="ps-stage" x-text="'✕ ' + row.text"></p>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
 
         <!-- spinner -->
         <div class="spinner" x-show="pending" x-transition.opacity>
@@ -3456,92 +4548,56 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         </div>
       </div>
 
-      <!-- composer -->
-      <div class="composer" x-show="resolved">
+      <!-- composer — the action zone -->
+      <div class="composer" :class="'composer--' + (mode === 'teacher' ? 'tutor' : mode === 'human' ? 'learner' : 'auto')" x-show="resolved">
 
-        <!-- HUMAN MODE -->
-        <template x-if="mode === 'human'">
-          <div>
-            <p class="composer__pretext">
-              <span class="tag">◦ write learner line</span>
-              <span class="rule"></span>
-              <span class="cell">press send line to make the tutor answer</span>
-            </p>
-            <form @submit.prevent="send">
-              <span class="composer__prompt">learner line</span>
-              <textarea
-                aria-label="Learner message"
-                x-model="input"
-                @keydown.enter.prevent="$event.shiftKey ? input += '\n' : send()"
-                :disabled="pending"
-                rows="2"
-                placeholder="write the learner's opening line or next reply..."
-              ></textarea>
-              <button type="submit" :disabled="pending || !input.trim() || turnsNeedKeyWarning">
+        <!-- HUMAN / TEACHER: write a line -->
+        <template x-if="mode !== 'auto'">
+          <form class="composer__form" @submit.prevent="mode === 'teacher' ? sendAsTeacher() : send()">
+            <div class="composer__head">
+              <span class="composer__seat">
+                <span class="composer__dot" aria-hidden="true"></span>
+                <span x-text="mode === 'teacher' ? 'You speak — as the tutor' : 'You speak — as the learner'"></span>
+              </span>
+              <span class="composer__reply" x-text="mode === 'teacher' ? personaName + ' will answer' : (resolved?.name || 'the tutor') + ' will answer'"></span>
+            </div>
+            <textarea
+              class="composer__input"
+              :aria-label="mode === 'teacher' ? 'Tutor line' : 'Learner line'"
+              x-model="input"
+              @keydown.enter.prevent="$event.shiftKey ? (input += '\n') : (mode === 'teacher' ? sendAsTeacher() : send())"
+              :disabled="pending"
+              rows="3"
+              :placeholder="mode === 'teacher' ? 'write the tutor\'s line — a question, reframing, provocation, or explanation…' : 'write the learner\'s next line…'"
+            ></textarea>
+            <div class="composer__foot">
+              <span class="composer__kbd">Enter to send · Shift+Enter for a new line</span>
+              <button class="composer__send" type="submit" :disabled="pending || !input.trim() || turnsNeedKeyWarning">
                 <span x-show="!pending">Send line →</span>
-                <span x-show="pending">···</span>
-              </button>
-            </form>
-          </div>
-        </template>
-
-        <!-- AUTO MODE -->
-        <template x-if="mode === 'auto'">
-          <div>
-            <p class="composer__pretext">
-              <span class="tag">◦ AI cast</span>
-              <span class="rule"></span>
-              <span class="cell" x-show="resolved?.learnerArchitecture?.startsWith('ego_superego')">
-                bilateral · learner runs ego + superego
-              </span>
-              <span class="cell" x-show="!resolved?.learnerArchitecture?.startsWith('ego_superego')">
-                unified · learner is a single voice
-              </span>
-            </p>
-            <div class="step-control">
-              <div class="step-control__info">
-                <span x-show="turns.length === 0">Press <em>Start scene</em>; the <em x-text="personaName"></em> opens, then this tutor cell replies.</span>
-                <span x-show="turns.length > 0">Continue the script with another learner → tutor exchange.</span>
-              </div>
-              <button class="step-control__btn" @click="step()" :disabled="pending">
-                <span x-show="!pending && turns.length === 0">Start scene →</span>
-                <span x-show="!pending && turns.length > 0">Next exchange →</span>
-                <span x-show="pending && pendingStage.startsWith('learner')">learner ···</span>
-                <span x-show="pending && pendingStage.startsWith('tutor')">tutor ···</span>
-                <span x-show="pending && !pendingStage.startsWith('learner') && !pendingStage.startsWith('tutor')">···</span>
+                <span x-show="pending">sending ···</span>
               </button>
             </div>
-          </div>
+            <p class="composer__warn" x-show="turnsNeedKeyWarning">no model configured — turn on dry run or pick a CLI substrate to send</p>
+          </form>
         </template>
 
-        <!-- TEACHER MODE -->
-        <template x-if="mode === 'teacher'">
-          <div>
-            <p class="composer__pretext">
-              <span class="tag">◦ write tutor line</span>
-              <span class="rule"></span>
-              <span class="cell" x-show="resolved?.learnerArchitecture?.startsWith('ego_superego')">
-                replies from <em x-text="personaName"></em> · bilateral learner (ego + superego)
+        <!-- AUTO: advance the drama -->
+        <template x-if="mode === 'auto'">
+          <div class="composer__auto">
+            <div class="composer__head">
+              <span class="composer__seat">
+                <span class="composer__dot" aria-hidden="true"></span>
+                <span>The AI plays both parts</span>
               </span>
-              <span class="cell" x-show="!resolved?.learnerArchitecture?.startsWith('ego_superego')">
-                replies from <em x-text="personaName"></em> · unified learner
-              </span>
-            </p>
-            <form @submit.prevent="sendAsTeacher">
-              <span class="composer__prompt">tutor line</span>
-              <textarea
-                aria-label="Teacher message"
-                x-model="input"
-                @keydown.enter.prevent="$event.shiftKey ? input += '\n' : sendAsTeacher()"
-                :disabled="pending"
-                rows="2"
-                placeholder="write the tutor's line: a question, reframing, provocation, or explanation..."
-              ></textarea>
-              <button type="submit" :disabled="pending || !input.trim() || turnsNeedKeyWarning">
-                <span x-show="!pending">Send line →</span>
-                <span x-show="pending">···</span>
-              </button>
-            </form>
+              <span class="composer__reply" x-text="resolved?.learnerArchitecture?.startsWith('ego_superego') ? 'bilateral learner · ego + superego' : 'unified learner'"></span>
+            </div>
+            <button class="composer__advance" @click="startPrimary()" :disabled="pending || launchBlockedByKey">
+              <span x-show="!pending" x-text="'▶ ' + startActionLabel"></span>
+              <span x-show="pending && pendingStage.startsWith('learner')">learner speaking ···</span>
+              <span x-show="pending && pendingStage.startsWith('tutor')">tutor speaking ···</span>
+              <span x-show="pending && !pendingStage.startsWith('learner') && !pendingStage.startsWith('tutor')">···</span>
+            </button>
+            <p class="composer__kbd" x-text="turns.length ? 'each press drafts the next learner → tutor exchange' : launchSublabel"></p>
           </div>
         </template>
       </div>
@@ -3658,6 +4714,40 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
     document.addEventListener('visibilitychange', () => { if (document.hidden) last = performance.now(); });
   })();
 
+  // Plain-language definitions for the specialised vocabulary. Surfaced as a
+  // non-clipping hover strip (see glossHover) and as native titles.
+  const CHAT_GLOSSARY = {
+    'tutor style': 'The prompt the tutor is given — which pedagogical persona it plays. Each maps to a registered evaluation cell.',
+    standard: 'A plain, capable AI tutor with no special theory. The baseline everything else is measured against.',
+    polished: 'Best-practice pedagogy: scaffolding, worked examples, checks for understanding — but no recognition theory.',
+    recognition: 'Hegelian mutual recognition: the tutor treats the learner as an autonomous subject to be recognised, not a vessel to be filled.',
+    placebo: 'A length-matched control prompt — as long and elaborate as the recognition prompt but with the theory stripped out. Isolates whether it is the theory or just the extra words that matter.',
+    minimalist: 'A naïve, near-empty prompt. The floor: what you get with almost no instruction.',
+    charismatic: 'A Weberian "id-director" that constructs an explicit charismatic persona each turn. Scored on charisma as well as pedagogy.',
+    'inner critic': 'An optional second voice (a superego) that reviews the tutor’s draft before it is sent and can force a revision.',
+    superego: 'The critic agent. It reads the ego’s draft and either approves it or rewrites it — the Freudian over-I of the tutor.',
+    ego: 'The voice that writes the actual reply. With a superego present, the ego drafts, is critiqued, then revises.',
+    pedagogical: 'A standard teaching critic: is this sound, clear, well-scaffolded?',
+    dialectical: 'A critic that argues with the ego rather than just correcting it — the two voices genuinely contend.',
+    divergent: 'A critic that adopts a deliberately different stance from the ego, to stress-test the draft.',
+    hardwired: 'No separate critic agent — the critic’s rules are baked directly into the ego’s own prompt.',
+    suspicious: 'The critic distrusts the draft and looks for what it is getting wrong.',
+    adversary: 'The critic actively challenges and pushes against the draft.',
+    advocate: 'The critic supports and strengthens the draft rather than opposing it.',
+    'learner persona': 'The character the simulated learner plays when the AI writes the learner’s lines.',
+    'learner mind': 'How the simulated learner is built internally.',
+    surface: 'A unified learner — a single voice with no visible inner deliberation.',
+    reflective: 'A bilateral learner with its own ego + superego: it reacts, critiques its own reaction, then revises — mirroring the tutor.',
+    director: 'The dramaturgical frame: it sets the scene, act, and beat, steering the drama like a stage director rather than teaching content.',
+    act: 'Where in the dramatic arc this turn sits: setup, complication, peripeteia (reversal), recognition, or catharsis.',
+    beat: 'The specific move this turn makes within the act — an opening, a stock-take, a route-change, an action gate, a recognition press, or closure.',
+    peripeteia: 'Aristotle’s term for the reversal — the turning point where the situation flips.',
+    substrate: 'Which engine actually runs the model calls: the OpenRouter cell models, or a local Claude / Codex CLI on your own subscription.',
+    scene: 'The imagined setting the drama plays out in — e.g. an artifact-review desk with a visible object between tutor and learner.',
+    curriculum: 'Real lecture or compiled-scene text attached as teaching material. Unlike the freeform topic, the tutor teaches from this actual content.',
+    effort: 'Reasoning effort for a CLI substrate — how hard the model thinks before answering (minimal → xhigh).',
+  };
+
   function chatApp() {
     return {
       cells: [],
@@ -3688,14 +4778,65 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       // Default null → auto-pick a "natural opposite" via compareCell getter.
       compareCellName: null,
 
-      topic: "Hegel's concept of recognition",
+      // Empty by default: the placeholder rotates through examples so it is
+      // obviously a free-text field, not a fixed title.
+      topic: '',
+      // Live sampling overrides for tutor turns; blank = the cell's YAML values.
+      sampling: { temperature: '', maxTokens: '' },
+      // Who speaks first when the curtain rises.
+      opening: 'tutor',
+      // How the script is rendered: plates (editorial) · script (playscript) · swimlane.
+      scriptView: 'plates',
+      // Show LLM metadata (models, tokens, timing, cost) per turn + session total.
+      showMetrics: false,
+      // Collapse the left configuration panel to give the script full width.
+      configCollapsed: false,
+      // Active glossary definition (hover strip).
+      glossActive: null,
+      // The playbill captured at curtain-up — frozen so later knob changes
+      // don't rewrite the record of what this scene was staged with.
+      bill: null,
+      // Guided walkthrough state (client-side, no LLM needed).
+      guide: { on: false, i: 0 },
+      guideSteps: [
+        {
+          sel: '.topic',
+          text: 'Step 1 — Subject. Type anything here: the drama improvises around this line. Or open "teach from curriculum" to attach a real lecture or compiled scene — its text is injected as teaching context and the scene frame is seeded from it. "Surprise me" rolls a random source.',
+        },
+        {
+          sel: '#fg-01',
+          text: "Step 2 — Tutor style. Which experimental tutor architecture plays the part: plain baseline, best-practice, Hegelian recognition, a placebo control, or the Weberian charismatic id-director. This maps onto real evaluation cells.",
+        },
+        {
+          sel: '.persona-strip',
+          text: 'Step 3 — Learner persona. Who the simulated learner is when the AI writes their lines. Six curated temperaments; six scripted research probes behind the drawer.',
+        },
+        {
+          sel: '.mode',
+          text: 'Step 4 — Who writes the lines. AI plays both (watch a drama unfold one exchange per press), or take a seat yourself as learner or tutor.',
+        },
+        {
+          sel: '.playbill',
+          text: 'The playbill lists every knob shaping the next turn — critic, director frame, models, sampling. Click any entry to edit it; entries light up when you have overridden a default.',
+        },
+        {
+          sel: '.launch',
+          text: 'Then press Start. The line beneath the button always says exactly what will happen. Dry run (below) rehearses the whole desk for free with canned output.',
+        },
+        {
+          sel: '.assist-strip',
+          text: 'Or skip all of it: describe the drama you want in plain language and the concierge proposes a full configuration you can apply with one click.',
+        },
+      ],
       turns: [],
       input: '',
       pending: false,
       pendingStage: 'ego drafting',
 
-      // auto-learner mode
-      mode: 'human',
+      // scene-author mode — default to the fully synthetic drama so the
+      // launch button works with zero further decisions; saved sessions
+      // restore whatever mode they used.
+      mode: 'auto',
       personas: [],
       personaId: 'eager_novice',
 
@@ -3713,7 +4854,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       },
 
       // claude CLI override (local claude -p · opus 4.7)
-      useClaudeCli: false,
+      cliSub: { provider: '', model: '', effort: '' },
+      get useClaudeCli() {
+        return !!this.cliSub.provider;
+      },
       dryRunTurns: false,
       mountInfo: window.AH.chatMountInfo(window.location.pathname),
       assistHealth: { ok: false, provider: 'none', model: '' },
@@ -3724,7 +4868,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         pending: false,
         proposal: null,
         proposalResolved: null,
-        dryRun: false,
       },
       restore: {
         available: false,
@@ -3772,6 +4915,22 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
       get personaName() {
         return this.personas.find((p) => p.id === this.personaId)?.name || this.personaId;
+      },
+
+      // Curated personas get chips; scripted stress-test probes (long
+      // machine-authored hints, ids ending in _probe) collapse behind a
+      // drawer so the stage panel stays scannable.
+      isProbePersona(p) {
+        return /_probe$/.test(p.id) || (p.hint || '').length > 64;
+      },
+      get curatedPersonas() {
+        return this.personas.filter((p) => !this.isProbePersona(p));
+      },
+      get probePersonas() {
+        return this.personas.filter((p) => this.isProbePersona(p));
+      },
+      get activeProbePersona() {
+        return this.probePersonas.find((p) => p.id === this.personaId) || null;
       },
 
       get totalLectures() {
@@ -3823,14 +4982,470 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         return 'learner';
       },
 
+      // True when pressing the launch button will fire a model turn immediately
+      // (AI-both, or a tutor-opens curtain) — as opposed to just focusing the
+      // composer for a human line. Used to gate on the missing-key warning.
+      get needsLiveTurnToStart() {
+        if (this.turns.length) return this.mode === 'auto';
+        return this.mode === 'auto' || (this.opening === 'tutor' && this.mode !== 'teacher');
+      },
+
+      get launchBlockedByKey() {
+        return this.needsLiveTurnToStart && this.turnsNeedKeyWarning;
+      },
+
+      // Normalized spoken rows for the script + swimlane views. One entry per
+      // tutor/learner/error turn, with a running beat number and the side.
+      get scriptRows() {
+        const rows = [];
+        let beat = 0;
+        this.turns.forEach((turn, i) => {
+          if (turn.role === 'tutor') {
+            beat += 1;
+            rows.push({
+              i,
+              beat,
+              kind: 'tutor',
+              side: 'tutor',
+              speaker: turn.human ? 'TUTOR' : 'TUTOR',
+              sub: turn.human ? 'you · in role' : this.resolved?.name || 'tutor cell',
+              text: turn.finalMessage,
+              turn,
+            });
+          } else if (turn.role === 'learner') {
+            beat += 1;
+            const human = !turn.deliberation || !turn.deliberation.length;
+            rows.push({
+              i,
+              beat,
+              kind: 'learner',
+              side: 'learner',
+              speaker: 'LEARNER',
+              sub: human ? 'you · in role' : turn.personaId || this.personaName,
+              text: turn.content,
+              turn,
+            });
+          } else if (turn.role === 'error') {
+            rows.push({ i, beat, kind: 'error', side: 'stage', speaker: '✕', sub: '', text: turn.content, turn });
+          }
+        });
+        return rows;
+      },
+
+      setScriptView(v) {
+        if (['plates', 'script', 'swimlane'].includes(v)) this.scriptView = v;
+      },
+
+      toggleMetrics() {
+        this.showMetrics = !this.showMetrics;
+      },
+      toggleConfigCollapsed() {
+        this.configCollapsed = !this.configCollapsed;
+      },
+
+      // Delegated glossary hover: read the nearest [data-gloss] ancestor and
+      // surface its definition in the non-clipping strip below the panel.
+      glossHover(ev) {
+        let el = ev.target;
+        while (el && el !== ev.currentTarget && !el.dataset?.gloss) el = el.parentElement;
+        const key = el && el.dataset ? el.dataset.gloss : null;
+        this.glossActive = key && CHAT_GLOSSARY[key] ? { term: key, def: CHAT_GLOSSARY[key] } : null;
+      },
+      glossText(key) {
+        return CHAT_GLOSSARY[key] || '';
+      },
+
+      fmtDur(ms) {
+        if (!ms) return '0s';
+        return ms >= 10000 ? (ms / 1000).toFixed(0) + 's' : (ms / 1000).toFixed(1) + 's';
+      },
+      fmtTok(n) {
+        return (n || 0).toLocaleString();
+      },
+      fmtCost(usd) {
+        if (!usd) return null;
+        return usd < 0.01 ? '<$0.01' : '$' + usd.toFixed(2);
+      },
+
+      // Compact per-turn metadata for the script + swimlane views.
+      turnMeta(turn) {
+        if (!turn || turn.role === 'error') return '';
+        const t = turn.totals || {};
+        const model = turn.deliberation && turn.deliberation[0] ? turn.deliberation[0].model : null;
+        const parts = [];
+        if (model) parts.push(model);
+        if (t.latencyMs) parts.push(this.fmtDur(t.latencyMs));
+        const tok = (t.inputTokens || 0) + (t.outputTokens || 0);
+        if (tok) parts.push(this.fmtTok(tok) + ' tok');
+        const cost = this.fmtCost(t.costUsd);
+        if (cost) parts.push(cost);
+        return parts.join(' · ');
+      },
+
+      // Per-turn series for the sparklines: one point per spoken turn.
+      get turnSeries() {
+        const out = [];
+        let beat = 0;
+        for (const turn of this.turns) {
+          if (turn.role !== 'tutor' && turn.role !== 'learner') continue;
+          beat += 1;
+          const t = turn.totals || {};
+          out.push({
+            beat,
+            side: turn.role === 'tutor' ? 'tutor' : 'learner',
+            latencyMs: t.latencyMs || 0,
+            tokens: (t.inputTokens || 0) + (t.outputTokens || 0),
+            outTokens: t.outputTokens || 0,
+            costUsd: t.costUsd || 0,
+          });
+        }
+        return out;
+      },
+      get seriesMax() {
+        const s = this.turnSeries;
+        return {
+          latencyMs: Math.max(1, ...s.map((p) => p.latencyMs)),
+          tokens: Math.max(1, ...s.map((p) => p.tokens)),
+          costUsd: Math.max(0, ...s.map((p) => p.costUsd)),
+        };
+      },
+      get hasCost() {
+        return this.seriesMax.costUsd > 0;
+      },
+      // Bar height as a percentage of the series max; a floor keeps near-zero
+      // bars visible as a stub rather than vanishing.
+      sparkPct(v, max) {
+        return max > 0 ? Math.max(4, Math.round((v / max) * 100)) : 4;
+      },
+
+      // Session-wide LLM rollup across all spoken turns.
+      get sessionMetrics() {
+        let inTok = 0,
+          outTok = 0,
+          latencyMs = 0,
+          costUsd = 0,
+          tutorTurns = 0,
+          learnerTurns = 0;
+        const models = new Set();
+        for (const turn of this.turns) {
+          if (turn.role !== 'tutor' && turn.role !== 'learner') continue;
+          if (turn.role === 'tutor') tutorTurns += 1;
+          else learnerTurns += 1;
+          const t = turn.totals || {};
+          inTok += t.inputTokens || 0;
+          outTok += t.outputTokens || 0;
+          latencyMs += t.latencyMs || 0;
+          costUsd += t.costUsd || 0;
+          (turn.deliberation || []).forEach((d) => d.model && models.add(d.model));
+        }
+        return {
+          turns: tutorTurns + learnerTurns,
+          tutorTurns,
+          learnerTurns,
+          inTok,
+          outTok,
+          totalTok: inTok + outTok,
+          latencyMs,
+          costUsd,
+          models: [...models],
+          substrate: this.cliSub.provider ? this.cliSub.provider + ' cli' : 'cell models',
+          effort: this.cliSub.effort || null,
+        };
+      },
+
       get startActionLabel() {
-        if (this.mode === 'auto') return this.turns.length ? 'Next exchange →' : 'Start scene →';
-        if (this.mode === 'teacher') return 'Write tutor line →';
-        return 'Write learner line →';
+        if (this.mode === 'auto') {
+          if (this.turns.length) return 'Next exchange';
+          return this.opening === 'tutor' ? 'Raise the curtain' : 'Start the drama';
+        }
+        if (this.mode === 'teacher') return 'Start — write the tutor line';
+        if (!this.turns.length && this.opening === 'tutor') return 'Start — the tutor opens';
+        return 'Start — write the learner line';
+      },
+
+      // One sentence under the launch button saying exactly what pressing
+      // it will do, so the launch path never has to be inferred.
+      get launchSublabel() {
+        const cell = this.resolved?.name || 'the resolved cell';
+        const free = this.dryRunTurns ? ' Dry run: free canned output.' : '';
+        const src = this.activeSourceLabel ? ` (teaching from ${this.activeSourceLabel})` : '';
+        if (this.mode === 'auto') {
+          if (!this.turns.length && this.opening === 'tutor') {
+            return `${cell} raises the curtain on “${this.topic || 'general conversation'}”${src}; then ${this.personaName} replies, one exchange per press.${free}`;
+          }
+          return `${this.personaName} opens on “${this.topic || 'general conversation'}”${src}; ${cell} replies. One exchange per press.${free}`;
+        }
+        if (this.mode === 'teacher') {
+          return `You write the tutor's lines in the composer; ${this.personaName} answers.${free}`;
+        }
+        if (!this.turns.length && this.opening === 'tutor') {
+          return `${cell} opens the scene; then you write the learner's replies in the composer.${free}`;
+        }
+        return `You write the learner's lines in the composer; ${cell} answers${src}.${free}`;
+      },
+
+      // Freeze the playbill at curtain-up.
+      captureBill() {
+        if (this.bill) return;
+        const f = this.features;
+        this.bill = {
+          topic: this.topic || 'general conversation',
+          tutorWho: this.mode === 'teacher' ? 'you' : this.resolved?.name || 'tutor',
+          tutorVia:
+            this.mode === 'teacher'
+              ? '· human-authored'
+              : '· ' +
+                f.approach +
+                (f.critic !== 'none' ? ' · critic: ' + f.critic : '') +
+                ' · ' +
+                (this.cliSub.provider ? this.cliSub.provider + ' cli' : 'cell models'),
+          learnerWho: this.mode === 'human' ? 'you' : this.personaName,
+          scene: this.director.scene || 'unset',
+          act: this.director.act,
+          beat: this.director.beat,
+          note: this.director.note || '',
+          source: this.activeSourceLabel || null,
+          dryRun: this.dryRunTurns,
+        };
+      },
+
+      newScene() {
+        this.turns = [];
+        this.bill = null;
+        this.input = '';
+        this.pendingStage = '';
+      },
+
+      // Curtain-up tutor turn: the tutor speaks first, per the director frame.
+      async instigateTutor() {
+        if (this.pending || !this.resolved) return;
+        if (this.turnsNeedKeyWarning) {
+          this.turns.push({
+            role: 'error',
+            content:
+              'The tutor can\'t open the scene without a model: turn on dry run, pick a local CLI substrate, or set OPENROUTER_API_KEY.',
+          });
+          return;
+        }
+        this.captureBill();
+        this.pending = true;
+        this.pendingStage = 'tutor raising the curtain';
+        this.scrollChatToBottom();
+        try {
+          const res = await fetch(this.api('/turn'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cellName: this.resolved.name,
+              history: [],
+              instigate: true,
+              topic: this.topic || 'general conversation',
+              lectureRef: this.lectureRef || null,
+              curriculumRef: this.curriculumRef || null,
+              director: this.directorPayload(),
+              useClaudeCli: this.useClaudeCli,
+              cli: this.cliPayload(),
+              modelOverrides: this.tutorModelOverrides(),
+              sampling: this.samplingPayload(),
+              dryRun: this.dryRunTurns,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'request failed');
+          this.turns.push({
+            role: 'tutor',
+            finalMessage: data.finalMessage,
+            wasRevised: data.wasRevised,
+            deliberation: data.deliberation || [],
+            architecture: data.architecture || {},
+            totals: data.totals || { latencyMs: 0, inputTokens: 0, outputTokens: 0 },
+          });
+        } catch (err) {
+          this.turns.push({ role: 'error', content: `tutor opening: ${err.message}` });
+        } finally {
+          this.pending = false;
+          this.scrollChatToBottom();
+        }
+      },
+
+      get topicPlaceholder() {
+        return "e.g. Hegel's concept of recognition · why the sky is blue · proof by induction — or ⚄ surprise me";
+      },
+
+      // Attach a random lecture or compiled scene source — a one-click way to
+      // discover that the desk can teach from real curriculum text.
+      shuffleSubject() {
+        const lectures = [];
+        for (const pkg of this.curricula) {
+          for (const course of pkg.courses) {
+            for (const lec of course.lectures || []) lectures.push({ course, lec });
+          }
+        }
+        const total = this.sceneSources.length + lectures.length;
+        if (!total) return;
+        const i = Math.floor(Math.random() * total);
+        if (i < this.sceneSources.length) {
+          this.pickSceneSource(this.sceneSources[i]);
+        } else {
+          const pick = lectures[i - this.sceneSources.length];
+          this.pickLecture(pick.course, pick.lec);
+        }
+      },
+
+      // The playbill: one chip per knob shaping the next turn. isDefault
+      // dims untouched knobs; target names the drawer section that owns it.
+      get playbillKnobs() {
+        const f = this.features;
+        const d = this.director;
+        const knobs = [];
+        knobs.push({
+          key: 'substrate',
+          gloss: 'substrate',
+          label: 'substrate',
+          value: this.cliSub.provider ? this.cliSub.provider + ' cli' : 'cell models',
+          isDefault: !this.cliSub.provider,
+          target: 'fg-05',
+          title: 'which engine voices the tutor: OpenRouter cell models, or a local claude/codex CLI on your subscription',
+        });
+        knobs.push({
+          key: 'critic',
+          gloss: 'inner critic',
+          label: 'critic',
+          value: f.critic === 'none' ? 'none' : f.critic + (this.stanceVisible ? ' · ' + f.stance : ''),
+          isDefault: f.critic === 'none',
+          target: 'fg-02',
+          title: 'inner critic (superego) — a second voice reviewing each draft',
+        });
+        knobs.push({
+          key: 'learner-mind',
+          gloss: 'learner mind',
+          label: 'learner mind',
+          value: f.learnerModel === 'reflective' ? 'ego + superego' : 'unified',
+          isDefault: f.learnerModel === 'surface',
+          target: 'fg-04',
+          title: "the simulated learner's internal architecture",
+        });
+        knobs.push({
+          key: 'director',
+          gloss: 'director',
+          label: 'director',
+          value: d.mode === 'off' ? 'off' : `${d.mode} · ${d.act}/${d.beat}`,
+          isDefault: d.mode === 'scene-card' && d.act === 'setup' && d.beat === 'opening',
+          target: 'fg-00',
+          title: 'dramaturgical frame: directing mode, act, and beat for the next turn',
+        });
+        knobs.push({
+          key: 'scene',
+          gloss: 'scene',
+          label: 'scene',
+          value: d.scene || '—',
+          isDefault: d.scene === 'artifact review desk',
+          target: 'fg-00',
+          title: 'where the scene is set',
+        });
+        const egoValue = this.useClaudeCli
+          ? this.cliSub.provider + ' cli' + (this.cliSub.model ? ' · ' + this.cliSub.model : '')
+          : this.modelOverrides.ego
+            ? this.modelOption(this.modelOverrides.ego)?.alias || this.modelOverrides.ego
+            : 'cell default';
+        knobs.push({
+          key: 'ego-model',
+          gloss: 'ego',
+          label: 'ego model',
+          value: egoValue,
+          isDefault: !this.useClaudeCli && !this.modelOverrides.ego,
+          target: 'fg-05',
+          title: "the model voicing the tutor's ego",
+        });
+        if (this.resolved?.superego) {
+          knobs.push({
+            key: 'superego-model',
+            gloss: 'superego',
+            label: 'superego model',
+            value: this.useClaudeCli
+              ? this.cliSub.provider + ' cli'
+              : this.modelOverrides.superego
+                ? this.modelOption(this.modelOverrides.superego)?.alias || this.modelOverrides.superego
+                : 'cell default',
+            isDefault: !this.useClaudeCli && !this.modelOverrides.superego,
+            target: 'fg-05',
+            title: 'the model voicing the inner critic',
+          });
+        }
+        if (this.cliSub.provider) {
+          knobs.push({
+            key: 'cli-effort',
+            gloss: 'effort',
+            label: 'effort',
+            value: this.cliSub.effort || 'default',
+            isDefault: !this.cliSub.effort,
+            target: 'fg-05',
+            title: 'reasoning effort for the CLI substrate',
+          });
+        }
+        knobs.push({
+          key: 'temp',
+          label: 'temp',
+          value: this.sampling.temperature !== '' ? String(this.sampling.temperature) : 'default',
+          isDefault: this.sampling.temperature === '',
+          target: 'fg-05',
+          title: 'tutor ego sampling temperature (blank = cell YAML)',
+        });
+        knobs.push({
+          key: 'maxtok',
+          label: 'max tok',
+          value: this.sampling.maxTokens !== '' ? String(this.sampling.maxTokens) : 'default',
+          isDefault: this.sampling.maxTokens === '',
+          target: 'fg-05',
+          title: 'output cap per tutor turn (blank = cell YAML)',
+        });
+        return knobs;
+      },
+
+      openKnob(k) {
+        const drawer = document.getElementById('fine-controls');
+        if (drawer) drawer.open = true;
+        this.$nextTick(() => this.scrollTo(k.target));
+      },
+
+      samplingPayload() {
+        return {
+          temperature: this.sampling.temperature === '' ? null : Number(this.sampling.temperature),
+          maxTokens: this.sampling.maxTokens === '' ? null : Number(this.sampling.maxTokens),
+        };
+      },
+
+      // ── guided walkthrough (pure client, no LLM) ──
+      startGuide() {
+        this.guide.on = true;
+        this.guide.i = 0;
+        this._applyGuideHighlight();
+      },
+      nextGuide() {
+        if (this.guide.i + 1 >= this.guideSteps.length) return this.endGuide();
+        this.guide.i += 1;
+        this._applyGuideHighlight();
+        return null;
+      },
+      endGuide() {
+        this.guide.on = false;
+        this._clearGuideHighlight();
+      },
+      _clearGuideHighlight() {
+        document.querySelectorAll('.guide-hi').forEach((el) => el.classList.remove('guide-hi'));
+      },
+      _applyGuideHighlight() {
+        this._clearGuideHighlight();
+        const step = this.guideSteps[this.guide.i];
+        if (!step) return;
+        const el = document.querySelector(step.sel);
+        if (!el) return;
+        el.classList.add('guide-hi');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       },
 
       get assistDisabled() {
-        return this.assistHealth.provider === 'none' && !this.useClaudeCli && !this.assist.dryRun;
+        return this.assistHealth.provider === 'none' && !this.useClaudeCli && !this.dryRunTurns;
       },
 
       get turnsNeedKeyWarning() {
@@ -3905,8 +5520,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.$watch('mode', save);
         this.$watch('modelOverrides', save, { deep: true });
         this.$watch('turns', save, { deep: true });
-        this.$watch('useClaudeCli', save);
+        this.$watch('cliSub', save, { deep: true });
+        this.$watch('scriptView', save);
+        this.$watch('showMetrics', save);
+        this.$watch('configCollapsed', save);
         this.$watch('dryRunTurns', save);
+        this.$watch('sampling', save, { deep: true });
       },
 
       sessionSnapshot() {
@@ -3919,7 +5538,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           personaId: this.personaId,
           mode: this.mode,
           modelOverrides: { ...this.modelOverrides },
-          useClaudeCli: this.useClaudeCli,
+          sampling: { ...this.sampling },
+          cliSub: { ...this.cliSub },
+          opening: this.opening,
+          scriptView: this.scriptView,
+          showMetrics: this.showMetrics,
+          configCollapsed: this.configCollapsed,
+          bill: this.bill,
           dryRunTurns: this.dryRunTurns,
           turns: this.turns,
           savedAt: new Date().toISOString(),
@@ -3932,6 +5557,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       },
 
       saveSession() {
+        // Only scenes with turns are restorable, so only they are worth
+        // saving — and an idle page load must never clobber a restorable
+        // snapshot with an empty one.
+        if (!this.turns.length) return;
         try {
           localStorage.setItem('ms-chat-session-v1', JSON.stringify(this.sessionSnapshot()));
         } catch (err) {
@@ -3945,7 +5574,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           if (!raw) return;
           const snapshot = JSON.parse(raw);
           const turnCount = Array.isArray(snapshot.turns) ? snapshot.turns.length : 0;
-          if (!snapshot || (!turnCount && !snapshot.topic)) return;
+          // Only offer a restore when there is an actual scene to bring back —
+          // config alone (topic defaults etc.) is not worth a banner.
+          if (!snapshot || !turnCount) return;
           this.restore = { available: true, dismissed: false, turnCount, snapshot };
         } catch {
           localStorage.removeItem('ms-chat-session-v1');
@@ -3963,8 +5594,16 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.personaId = s.personaId || this.personaId;
         this.mode = ['human', 'teacher', 'auto'].includes(s.mode) ? s.mode : this.mode;
         this.modelOverrides = { ...this.modelOverrides, ...(s.modelOverrides || {}) };
-        this.useClaudeCli = !!s.useClaudeCli;
+        this.sampling = { temperature: '', maxTokens: '', ...(s.sampling || {}) };
+        this.cliSub = s.cliSub && typeof s.cliSub === 'object'
+          ? { provider: s.cliSub.provider || '', model: s.cliSub.model || '', effort: s.cliSub.effort || '' }
+          : { provider: s.useClaudeCli ? 'claude' : '', model: '', effort: '' };
         this.dryRunTurns = !!s.dryRunTurns;
+        this.opening = s.opening === 'learner' ? 'learner' : 'tutor';
+        this.scriptView = ['plates', 'script', 'swimlane'].includes(s.scriptView) ? s.scriptView : 'plates';
+        this.showMetrics = !!s.showMetrics;
+        this.configCollapsed = !!s.configCollapsed;
+        this.bill = s.bill && typeof s.bill === 'object' ? s.bill : null;
         this.turns = Array.isArray(s.turns) ? s.turns : [];
         this.restore.dismissed = true;
         await this.resolve();
@@ -4160,7 +5799,24 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         document.body.classList.toggle('xray-on', this.xray);
       },
 
-      toggleCli() { this.useClaudeCli = !this.useClaudeCli; },
+      toggleCli() {
+        const order = ['', 'claude', 'codex'];
+        const i = order.indexOf(this.cliSub.provider);
+        this.cliSub.provider = order[(i + 1) % order.length];
+      },
+      get substrateLabel() {
+        if (!this.cliSub.provider) return 'substrate: cell models';
+        const model = this.cliSub.model ? ' · ' + this.cliSub.model : '';
+        return 'substrate: ' + this.cliSub.provider + ' cli' + model;
+      },
+      cliPayload() {
+        if (!this.cliSub.provider) return null;
+        return {
+          provider: this.cliSub.provider,
+          model: this.cliSub.model || null,
+          effort: this.cliSub.effort || null,
+        };
+      },
 
       modelOption(value) {
         return this.modelOptions.find((m) => m.value === value) || null;
@@ -4172,7 +5828,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       },
 
       effectiveModelLabel(role) {
-        if (this.useClaudeCli) return 'claude-cli.opus-4.7';
+        if (this.useClaudeCli) return this.cliSub.provider + '-cli.' + (this.cliSub.model || 'default');
         const selected = role === 'superego' ? this.modelOverrides.superego : this.modelOverrides.ego;
         const option = selected ? this.modelOption(selected) : null;
         return option ? option.value : this.defaultModelLabel(role);
@@ -4246,7 +5902,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               messages: this.assist.messages,
               currentConfig: this.currentAssistConfig(),
               useClaudeCli: this.useClaudeCli,
-              dryRun: this.assist.dryRun,
+              cli: this.cliPayload(),
+              dryRun: this.dryRunTurns,
             }),
           });
           const data = await res.json();
@@ -4288,7 +5945,16 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       },
 
       startPrimary() {
-        if (this.mode === 'auto') return this.step();
+        if (this.mode === 'auto') {
+          if (!this.turns.length && this.opening === 'tutor') return this.instigateTutor();
+          return this.step();
+        }
+        if (this.mode === 'human' && this.opening === 'tutor' && !this.turns.length) {
+          return this.instigateTutor().then(() => {
+            const input = document.querySelector('.composer textarea');
+            if (input) input.focus();
+          });
+        }
         this.scrollTo('dialogue');
         this.$nextTick(() => {
           const input = document.querySelector('.composer textarea');
@@ -4395,6 +6061,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       // Auto-learner mode: run one full exchange (learner turn → tutor turn).
       async step() {
         if (this.pending || !this.resolved) return;
+        if (!this.turns.length) {
+          this.captureBill();
+          if (this.opening === 'tutor') return this.instigateTutor();
+        }
         this.pending = true;
         this.scrollChatToBottom();
 
@@ -4420,6 +6090,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           director: this.directorPayload(),
           personaId: this.personaId,
           useClaudeCli: this.useClaudeCli,
+          cli: this.cliPayload(),
           dryRun: this.dryRunTurns,
         };
         try {
@@ -4450,7 +6121,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           curriculumRef: this.curriculumRef || null,
           director: this.directorPayload(),
           useClaudeCli: this.useClaudeCli,
+          cli: this.cliPayload(),
           modelOverrides: this.tutorModelOverrides(),
+              sampling: this.samplingPayload(),
           dryRun: this.dryRunTurns,
         };
         try {
@@ -4471,6 +6144,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       async send() {
         const msg = this.input.trim();
         if (!msg || this.pending || !this.resolved) return;
+        this.captureBill();
         this.turns.push({ role: 'learner', content: msg });
         this.input = '';
         this.pending = true;
@@ -4491,7 +6165,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           curriculumRef: this.curriculumRef || null,
           director: this.directorPayload(),
           useClaudeCli: this.useClaudeCli,
+          cli: this.cliPayload(),
           modelOverrides: this.tutorModelOverrides(),
+              sampling: this.samplingPayload(),
           dryRun: this.dryRunTurns,
         };
 
@@ -4517,6 +6193,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       async sendAsTeacher() {
         const msg = this.input.trim();
         if (!msg || this.pending || !this.resolved) return;
+        this.captureBill();
         this.turns.push({
           role: 'tutor',
           finalMessage: msg,
@@ -4545,6 +6222,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           director: this.directorPayload(),
           personaId: this.personaId,
           useClaudeCli: this.useClaudeCli,
+          cli: this.cliPayload(),
           dryRun: this.dryRunTurns,
         };
 

@@ -1644,7 +1644,7 @@ router.post('/assist', async (req, res) => {
     const messages = sanitizeAssistMessages(req.body?.messages || []);
     const currentConfig =
       req.body?.currentConfig && typeof req.body.currentConfig === 'object' ? req.body.currentConfig : {};
-    const useClaudeCli = req.body?.useClaudeCli === true;
+    const cli = normalizeCli(req.body);
     const dryRun = req.body?.dryRun === true;
 
     if (!messages.length) {
@@ -1663,9 +1663,9 @@ router.post('/assist', async (req, res) => {
     }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!useClaudeCli && !apiKey) {
+    if (!cli.provider && !apiKey) {
       return res.status(503).json({
-        error: 'OPENROUTER_API_KEY is not set — either enable the Claude CLI toggle or use dry run.',
+        error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or use dry run.',
       });
     }
 
@@ -1696,7 +1696,7 @@ router.post('/assist', async (req, res) => {
     );
 
     const call = async (user) => {
-      if (useClaudeCli) return callClaudeCli({ system, user });
+      if (cli.provider) return callCli(cli, { system, user });
       const modelRef = resolveOpenRouterModelOverride(CHAT_ASSIST_MODEL);
       return callModel(apiKey, {
         modelId: modelRef.model,
@@ -1756,9 +1756,9 @@ router.post('/learner-turn', async (req, res) => {
     curriculumRef = null,
     director = null,
     personaId = 'eager_novice',
-    useClaudeCli = false,
     dryRun = false,
   } = req.body || {};
+  const cli = normalizeCli(req.body);
 
   if (!cellName) return res.status(400).json({ error: 'cellName is required' });
 
@@ -1776,24 +1776,24 @@ router.post('/learner-turn', async (req, res) => {
   }
 
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!useClaudeCli && !apiKey) {
+  if (!cli.provider && !apiKey) {
     return res.status(503).json({
-      error: 'OPENROUTER_API_KEY is not set — either enable the Claude CLI toggle or set the key.',
+      error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or set the key.',
     });
   }
 
   // Build an llmCall adapter the engine expects: (modelRef, systemPrompt, messages, options)
-  // When useClaudeCli is true, every call is routed through the local `claude` CLI
-  // (Opus 4.7) — same interface, different substrate. Otherwise: OpenRouter.
+  // When a CLI substrate is selected, every call routes through the local
+  // `claude` or `codex` CLI — same interface, different substrate. Otherwise: OpenRouter.
   const llmCall = async (modelRef, systemPrompt, messages, options = {}) => {
-    if (useClaudeCli) {
+    if (cli.provider) {
       const userPrompt = (messages || []).map((m) => m.content).join('\n\n');
-      const out = await callClaudeCli({ system: systemPrompt, user: userPrompt });
+      const out = await callCli(cli, { system: systemPrompt, user: userPrompt });
       return {
         content: out.content,
         usage: { inputTokens: out.inputTokens, outputTokens: out.outputTokens },
-        model: CLAUDE_CLI_MODEL,
-        provider: 'claude-cli',
+        model: cliModelLabel(cli),
+        provider: `${cli.provider}-cli`,
         latencyMs: out.latencyMs,
       };
     }
@@ -1932,6 +1932,23 @@ function dryRunMetrics(model = 'dry-run') {
     inputTokens: 0,
     outputTokens: 0,
   };
+}
+
+// Live-chat sampling overrides. Blank/absent fields fall through to the cell
+// YAML hyperparameters. Temperature applies to the tutor ego only (the
+// superego review keeps its own configured temperature); maxTokens caps both.
+function normalizeSampling(raw) {
+  const out = { temperature: null, maxTokens: null };
+  if (!raw || typeof raw !== 'object') return out;
+  if (raw.temperature != null && raw.temperature !== '') {
+    const t = Number(raw.temperature);
+    if (Number.isFinite(t)) out.temperature = Math.min(Math.max(t, 0), 2);
+  }
+  if (raw.maxTokens != null && raw.maxTokens !== '') {
+    const m = Number(raw.maxTokens);
+    if (Number.isFinite(m)) out.maxTokens = Math.min(Math.max(Math.round(m), 64), 8000);
+  }
+  return out;
 }
 
 function resolveOpenRouterModelOverride(raw) {
@@ -2081,6 +2098,8 @@ router.post('/turn', async (req, res) => {
   // override block below (cellName, lectureRef, history, topic, useClaudeCli).
   const { learnerMessage } = req.body || {};
   const dryRun = req.body?.dryRun || false;
+  // Curtain-up turn: the tutor speaks first, with no learner line yet.
+  const instigate = req.body?.instigate === true;
   let {
     cellName,
     history = [],
@@ -2091,10 +2110,12 @@ router.post('/turn', async (req, res) => {
     useClaudeCli = false,
   } = req.body || {};
   const { modelOverrides = null, egoModelOverride = null, superegoModelOverride = null } = req.body || {};
+  const sampling = normalizeSampling(req.body?.sampling);
+  let cli = normalizeCli(req.body);
   const sessionId = req.body?.sessionId || null;
 
-  if (!learnerMessage || !String(learnerMessage).trim()) {
-    return res.status(400).json({ error: 'learnerMessage is required' });
+  if ((!learnerMessage || !String(learnerMessage).trim()) && !instigate) {
+    return res.status(400).json({ error: 'learnerMessage is required (or set instigate: true)' });
   }
 
   // Pilot mode: the session record is authoritative for cellName, lectureRef,
@@ -2125,6 +2146,8 @@ router.post('/turn', async (req, res) => {
     curriculumRef = null;
     director = null;
     useClaudeCli = false; // pilot is locked to OpenRouter
+    cli = { provider: null, model: null, effort: null };
+    if (instigate) return res.status(400).json({ error: 'instigate is not allowed for pilot sessions' });
     // Authoritative server-side history — replay from DB rather than trust client
     const dbTurns = pilotStore.listTurns(sessionId);
     history = dbTurns.map((t) => ({ role: t.role, content: t.content }));
@@ -2142,7 +2165,7 @@ router.post('/turn', async (req, res) => {
 
   let egoOverrideRef = null;
   let superegoOverrideRef = null;
-  if (!pilotSession && !useClaudeCli) {
+  if (!pilotSession && !cli.provider) {
     try {
       const overrides = modelOverrides && typeof modelOverrides === 'object' ? modelOverrides : {};
       egoOverrideRef = resolveOpenRouterModelOverride(egoModelOverride ?? overrides.ego ?? overrides.tutorEgo);
@@ -2161,7 +2184,7 @@ router.post('/turn', async (req, res) => {
     return res.json(
       buildDryRunTutorTurn({
         profile,
-        learnerMessage: String(learnerMessage),
+        learnerMessage: instigate ? '(curtain rises — the tutor opens the scene)' : String(learnerMessage),
         topic: String(topic),
         egoModelOverride: egoOverrideRef,
         superegoModelOverride: superegoOverrideRef,
@@ -2170,9 +2193,9 @@ router.post('/turn', async (req, res) => {
   }
 
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!useClaudeCli && !apiKey) {
+  if (!cli.provider && !apiKey) {
     return res.status(503).json({
-      error: 'OPENROUTER_API_KEY is not set — either enable the Claude CLI toggle or set the key.',
+      error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or set the key.',
     });
   }
 
@@ -2181,7 +2204,7 @@ router.post('/turn', async (req, res) => {
   // superego review needs the complete ego output before it can begin.
   // Claude CLI substrate is also non-streaming (the CLI returns once).
   const wantsStream = req.query.stream === '1' || req.query.stream === 'true';
-  if (wantsStream && !profile.superego && !useClaudeCli) {
+  if (wantsStream && !profile.superego && !cli.provider) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -2201,6 +2224,8 @@ router.post('/turn', async (req, res) => {
         curriculum,
         directorPlan,
         egoModelOverride: egoOverrideRef,
+        temperature: sampling.temperature,
+        maxTokens: sampling.maxTokens,
         onDelta: (d) => send({ delta: d }),
       });
 
@@ -2282,13 +2307,17 @@ router.post('/turn', async (req, res) => {
       profile,
       apiKey,
       history,
-      learnerMessage: String(learnerMessage),
+      instigate,
+      learnerMessage: String(learnerMessage || ''),
       topic: String(topic),
       curriculum,
       directorPlan,
       useClaudeCli: !!useClaudeCli,
+      cli,
       egoModelOverride: egoOverrideRef,
       superegoModelOverride: superegoOverrideRef,
+      temperature: sampling.temperature,
+      maxTokens: sampling.maxTokens,
     });
 
     if (pilotSession) {
@@ -2372,8 +2401,43 @@ function recentContext(history) {
 const CLAUDE_CLI_BIN = process.env.CLAUDE_CLI_BIN || 'claude';
 const CLAUDE_CLI_MODEL = process.env.CHAT_CLI_MODEL || 'claude-opus-4-7';
 const CLAUDE_CLI_TIMEOUT_MS = Number(process.env.CHAT_CLI_TIMEOUT_MS) || 180_000;
+const CODEX_CLI_BIN = process.env.CODEX_CLI_BIN || 'codex';
+// No hardcoded codex default: ChatGPT-account codex rejects models outside its
+// entitlement, so unless the user (or CHAT_CODEX_MODEL) names one we omit -m
+// and let ~/.codex/config.toml decide.
+const CODEX_CLI_MODEL = process.env.CHAT_CODEX_MODEL || null;
+const CLI_PROVIDERS = ['claude', 'codex'];
+const CLI_EFFORTS = ['minimal', 'low', 'medium', 'high', 'xhigh'];
 
-async function callClaudeCli({ system, user }) {
+// Normalize the substrate request: new-style { cli: { provider, model, effort } }
+// with the legacy boolean useClaudeCli mapping to { provider: 'claude' }.
+// model is a free string (validated only for shape); effort must be a known level.
+function normalizeCli(body = {}) {
+  const raw = body.cli && typeof body.cli === 'object' ? body.cli : {};
+  let provider = CLI_PROVIDERS.includes(raw.provider) ? raw.provider : null;
+  if (!provider && body.useClaudeCli === true) provider = 'claude';
+  if (!provider) return { provider: null, model: null, effort: null };
+  const model =
+    typeof raw.model === 'string' && raw.model.trim() ? raw.model.trim().slice(0, 80).replace(/["\\]/g, '') : null;
+  const effort = CLI_EFFORTS.includes(raw.effort) ? raw.effort : null;
+  return { provider, model, effort };
+}
+
+function cliModelLabel(cli) {
+  if (!cli?.provider) return null;
+  if (cli.provider === 'codex') return cli.model || CODEX_CLI_MODEL || 'codex-config-default';
+  return cli.model || CLAUDE_CLI_MODEL;
+}
+
+// Dispatch a pure text-generation call to the requested local CLI substrate.
+function callCli(cli, { system, user }) {
+  if (cli?.provider === 'codex') {
+    return callCodexCli({ system, user, model: cli.model, effort: cli.effort });
+  }
+  return callClaudeCli({ system, user, model: cli?.model || null, effort: cli?.effort || null });
+}
+
+async function callClaudeCli({ system, user, model = null, effort = null }) {
   const fullPrompt = `${system}\n\n---\n\n${user}`;
   const start = Date.now();
   // Note: we do NOT pass --bare because that disables keychain auth (the user's
@@ -2384,13 +2448,14 @@ async function callClaudeCli({ system, user }) {
     '-p',
     fullPrompt,
     '--model',
-    CLAUDE_CLI_MODEL,
+    model || CLAUDE_CLI_MODEL,
     '--output-format',
     'json',
     '--no-session-persistence',
     '--disallowedTools',
     'Bash,Edit,Write,Read,Grep,Glob,WebFetch,WebSearch,Task,NotebookEdit,AskUserQuestion',
   ];
+  if (effort) args.push('--effort', effort);
   return new Promise((resolve, reject) => {
     const proc = spawn(CLAUDE_CLI_BIN, args, { stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = '';
@@ -2454,6 +2519,78 @@ async function callClaudeCli({ system, user }) {
   });
 }
 
+// Codex CLI substrate: `codex exec` as a pure text generator. read-only
+// sandbox + --skip-git-repo-check keep it from acting like an agent; the
+// final assistant message is written to a temp file via -o (stable across
+// codex versions, unlike the JSONL event stream). Token counts are estimated
+// (subscription-billed; codex does not report usage through -o).
+async function callCodexCli({ system, user, model = null, effort = null }) {
+  const fullPrompt = `${system}\n\n---\n\n${user}`;
+  const start = Date.now();
+  const outFile = path.join(
+    fs.mkdtempSync(path.join(process.env.TMPDIR || '/tmp', 'ms-chat-codex-')),
+    'last-message.txt',
+  );
+  const args = ['exec', '--sandbox', 'read-only', '--skip-git-repo-check', '--color', 'never', '-o', outFile];
+  const chosenModel = model || CODEX_CLI_MODEL;
+  if (chosenModel) args.push('-m', chosenModel);
+  if (effort) args.push('-c', `model_reasoning_effort="${effort}"`);
+  args.push(fullPrompt);
+  return new Promise((resolve, reject) => {
+    const proc = spawn(CODEX_CLI_BIN, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+    let stderr = '';
+    const cleanup = () => {
+      try {
+        fs.rmSync(path.dirname(outFile), { recursive: true, force: true });
+      } catch {
+        /* best effort */
+      }
+    };
+    const timer = setTimeout(() => {
+      try {
+        proc.kill('SIGKILL');
+      } catch {
+        /* already exited */
+      }
+      cleanup();
+      reject(new Error(`codex CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms`));
+    }, CLAUDE_CLI_TIMEOUT_MS);
+    proc.stdout.on('data', () => {});
+    proc.stderr.on('data', (d) => {
+      stderr += d.toString();
+    });
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      cleanup();
+      reject(err);
+    });
+    proc.on('close', (code) => {
+      clearTimeout(timer);
+      const latencyMs = Date.now() - start;
+      let content = '';
+      try {
+        content = fs.readFileSync(outFile, 'utf8').trim();
+      } catch {
+        content = '';
+      }
+      cleanup();
+      if (code !== 0) {
+        return reject(new Error(`codex CLI exited ${code}: ${stderr.slice(0, 400)}`));
+      }
+      if (!content) {
+        return reject(new Error(`codex CLI returned no output: ${stderr.slice(0, 400)}`));
+      }
+      resolve({
+        content,
+        latencyMs,
+        inputTokens: Math.ceil(fullPrompt.length / 4),
+        outputTokens: Math.ceil(content.length / 4),
+        costUsd: 0,
+      });
+    });
+  });
+}
+
 async function callModel(apiKey, { modelId, system, user, temperature, maxTokens }) {
   const start = Date.now();
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -2505,13 +2642,15 @@ async function streamSingleAgentTurn({
   curriculum = null,
   directorPlan = null,
   egoModelOverride = null,
+  temperature = null,
+  maxTokens = null,
   onDelta,
 }) {
   const conversationContext = recentContext(history);
   const egoModelRef = egoModelOverride || evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
-  const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
-  const egoMaxTokens = profile.ego.hyperparameters?.max_tokens ?? 2000;
+  const egoTemp = temperature ?? profile.ego.hyperparameters?.temperature ?? 0.6;
+  const egoMaxTokens = maxTokens ?? profile.ego.hyperparameters?.max_tokens ?? 2000;
 
   const curriculumBlock = buildCurriculumPromptBlock(curriculum);
   const directorBlock = buildDirectorPromptBlock(directorPlan);
@@ -2627,22 +2766,27 @@ async function runTutorTurn({
   curriculum = null,
   directorPlan = null,
   useClaudeCli = false,
+  cli = null,
+  instigate = false,
   // Optional, live-only knobs. Defaults preserve the scored instrument exactly:
   // styleDirective is appended to the ego draft + superego revision instructions
   // (e.g. a brevity / one-question-per-turn rule for the interactive sit-in), and
   // maxTokens caps the ego/superego output. Batch eval never sets either.
   styleDirective = '',
   maxTokens = null,
+  temperature = null,
   egoModelOverride = null,
   superegoModelOverride = null,
 }) {
   const conversationContext = recentContext(history);
   const deliberation = [];
   const styleLine = styleDirective ? `\n\n${styleDirective}` : '';
+  // CLI substrate config: explicit `cli` wins; legacy useClaudeCli maps to claude.
+  const cliCfg = cli?.provider ? cli : useClaudeCli ? { provider: 'claude', model: null, effort: null } : null;
 
   const egoModelRef = egoModelOverride || evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
-  const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
+  const egoTemp = temperature ?? profile.ego.hyperparameters?.temperature ?? 0.6;
   const egoMaxTokens = maxTokens ?? profile.ego.hyperparameters?.max_tokens ?? 2000;
 
   const curriculumBlock = buildCurriculumPromptBlock(curriculum);
@@ -2658,17 +2802,22 @@ Topic: ${topic}
 Recent conversation:
 ${conversationContext || '(none)'}
 
-The learner just said:
+${
+  instigate
+    ? `The curtain has just risen: there is no learner line yet. You speak first. Open the scene — set the stage per the director frame, welcome the learner in character, and pose one inviting opening move on the topic. Keep it short enough to answer.`
+    : `The learner just said:
 "${learnerMessage}"
 
-Draft your initial response as a tutor. Be warm but intellectually challenging. Don't be condescending. Build on their words.${styleLine} Provide ONLY the response text (no JSON, no meta-commentary).`;
+Draft your initial response as a tutor. Be warm but intellectually challenging. Don't be condescending. Build on their words.`
+}${styleLine} Provide ONLY the response text (no JSON, no meta-commentary).`;
 
-  const egoOut = useClaudeCli
-    ? await callClaudeCli({ system: egoSystem, user: learnerMessage })
+  const egoUser = instigate ? 'Open the scene now.' : learnerMessage;
+  const egoOut = cliCfg
+    ? await callCli(cliCfg, { system: egoSystem, user: egoUser })
     : await callModel(apiKey, {
         modelId: egoModelRef.model,
         system: egoSystem,
-        user: learnerMessage,
+        user: egoUser,
         temperature: egoTemp,
         maxTokens: egoMaxTokens,
       });
@@ -2678,12 +2827,13 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
     role: 'ego',
     label: 'Ego — initial draft',
     content: egoDraft,
-    model: useClaudeCli ? CLAUDE_CLI_MODEL : egoModelRef.model,
-    provider: useClaudeCli ? 'claude-cli' : egoModelRef.provider,
+    model: cliCfg ? cliModelLabel(cliCfg) : egoModelRef.model,
+    provider: cliCfg ? `${cliCfg.provider}-cli` : egoModelRef.provider,
     temperature: egoTemp,
     latencyMs: egoOut.latencyMs,
     inputTokens: egoOut.inputTokens,
     outputTokens: egoOut.outputTokens,
+    costUsd: egoOut.costUsd || 0,
   });
 
   let finalMessage = egoDraft;
@@ -2719,8 +2869,8 @@ Format strictly:
 CRITIQUE: [your analysis]
 IMPROVED: [refined response, or "APPROVED"]`;
 
-    const superOut = useClaudeCli
-      ? await callClaudeCli({ system: superSystem, user: egoDraft })
+    const superOut = cliCfg
+      ? await callCli(cliCfg, { system: superSystem, user: egoDraft })
       : await callModel(apiKey, {
           modelId: superModelRef.model,
           system: superSystem,
@@ -2734,12 +2884,13 @@ IMPROVED: [refined response, or "APPROVED"]`;
       role: 'superego',
       label: 'Superego — critique',
       content: superegoCritique,
-      model: useClaudeCli ? CLAUDE_CLI_MODEL : superModelRef.model,
-      provider: useClaudeCli ? 'claude-cli' : superModelRef.provider,
+      model: cliCfg ? cliModelLabel(cliCfg) : superModelRef.model,
+      provider: cliCfg ? `${cliCfg.provider}-cli` : superModelRef.provider,
       temperature: superTemp,
       latencyMs: superOut.latencyMs,
       inputTokens: superOut.inputTokens,
       outputTokens: superOut.outputTokens,
+      costUsd: superOut.costUsd || 0,
     });
 
     const improvedMatch = superegoCritique.match(/IMPROVED:\s*([\s\S]*?)$/i);
@@ -2778,6 +2929,7 @@ IMPROVED: [refined response, or "APPROVED"]`;
       inputTokens: deliberation.reduce((s, d) => s + (d.inputTokens || 0), 0),
       outputTokens: deliberation.reduce((s, d) => s + (d.outputTokens || 0), 0),
       latencyMs: deliberation.reduce((s, d) => s + (d.latencyMs || 0), 0),
+      costUsd: deliberation.reduce((s, d) => s + (d.costUsd || 0), 0),
     },
   };
 }

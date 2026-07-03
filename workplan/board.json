@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-02T23:05:54.750Z",
+  "generated": "2026-07-03T01:17:01.716Z",
   "counts": {
     "total": 69,
     "byStatus": {
@@ -125,8 +125,8 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-07-02",
-      "updated": "2026-07-02",
-      "verification": "npm test plus localhost browser smoke at /admin/chat/",
+      "updated": "2026-07-03",
+      "verification": "npm test (4703 pass) plus localhost browser smoke at /admin/chat/",
       "claim_status": "planned",
       "tags": [
         "admin-chat",

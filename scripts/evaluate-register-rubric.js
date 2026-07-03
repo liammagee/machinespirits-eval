@@ -17,10 +17,7 @@ import {
   parseJudgeResponse,
   resolveRubricYamlPath,
 } from '../services/rubricEvaluator.js';
-import {
-  getEngagementRegisterDefinition,
-  getRegisterRubricPath,
-} from '../services/engagementRegisterRegistry.js';
+import { getEngagementRegisterDefinition, getRegisterRubricPath } from '../services/engagementRegisterRegistry.js';
 import { applyNegativeRegisterScoreGuardrails } from '../services/registerStanceFidelity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
