@@ -229,4 +229,49 @@ repeats precedent):
 
 ## 7. Implementation log
 
-(appended as stages land; nothing has been built at freeze time)
+**Stage 0 (2026-07-03) — built, all no-paid gates green.**
+
+- **Scenarios**: `desub_resistance_{boredom,frustration,irrelevance,question_flood,rote_parroting}`
+  in `config/charisma-recognition-desire-scenarios.yaml`, each `extends` its
+  resistance-breakthrough parent and adds `desubstitution_diagnostic: true` +
+  a `formal_interior` (3–5 node micro belief-DAG with invented `DSB-*`
+  tokens, one blocking element with `release_phrases`, `target_conclusion` +
+  `conclusion_phrases`, `declared_desires`, `resistance_markers`, the
+  subtype `engagement_filter` as a deterministic spec, and the `yield_rule`).
+  17 globally unique tokens across the five interiors.
+- **Gate module**: `services/learnerInteriorGate.js` — `loadFormalInterior`,
+  `checkContentCondition` (token + release phrase + engagement filter, all
+  word-bounded), `evaluateLearnerDraft` (yield_without_key /
+  resistance_dropped / undeclared_desire_satisfaction),
+  `buildDriftCorrectionContext`, `checkGrounding` (conclusion + citation),
+  `driftGateMaxAttempts` (default 3), `buildInteriorCharacterSheet`, and the
+  frozen `DRIFT_GATE_CLASSIFIER_PROMPT` for Stage 1 (not called in Stage 0).
+- **Runner wiring**: `services/evaluationRunner.js` — for
+  `desubstitution_diagnostic` scenarios, the interior is loaded once, the
+  content condition updates cumulatively from each tutor turn
+  (`learner_content_condition` trace), the character sheet rides every
+  learner call's profileContext, the drift gate evaluates every dynamic
+  learner draft with corrective regeneration up to the budget
+  (`learner_drift_gate` trace; exhaustion recorded as
+  `instrument_failure: true`, message never replaced), and grounding is
+  checked on the accepted message (`learner_grounding` trace).
+- **Probe harness**: `scripts/run-desubstitution-probe.js` —
+  targeted/mismatched/generic scripted turns; `--check` passes: targeted
+  5/5 own-scenario, mismatched 0/5, generic 0/5, cross-scenario false
+  positives 0/20. `--live` refuses to run (Stage 1 gate).
+- **Stage-0 report**: `scripts/report-desubstitution-stage0.js --check` —
+  PASSED (5 scenarios resolve with inherited runner-visible fields, 17
+  unique tokens, 3 arm profiles registered, probe check green).
+- **Verification**: 64/64 focused tests (8 new gate tests +
+  charismaDesireRouterStage0 + idDirectorEngine), `validate-config` 0
+  errors under the scenarios override, eslint + prettier clean.
+- **Deviation from §3.1 (recorded)**: no new cells. The arms reuse
+  `cell_186_…`, `cell_193_…`, `cell_199_blueprint_kernel_verified`
+  directly — pinning is entirely scenario- and gate-driven
+  (`desubstitution_diagnostic` engages the machinery), so pinned-learner
+  variants would duplicate configs without changing behavior; arm identity
+  in analysis is (cell, desub-scenario-set), distinguishable by
+  `scenario_id`. This also keeps config hashes clean across the legacy
+  §6.14 control corpus and the pinned rows.
+
+Stage 1 (paid instrument validation) awaits its own recorded go decision.
