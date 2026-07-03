@@ -274,4 +274,17 @@ repeats precedent):
   `scenario_id`. This also keeps config hashes clean across the legacy
   §6.14 control corpus and the pinned rows.
 
-Stage 1 (paid instrument validation) awaits its own recorded go decision.
+**Stage 1 go decision (2026-07-03, user-authorized: "lets do Stage 1").**
+Frozen at go time: Codex-only learner stack (`codex.gpt-5.5` for the
+dynamic learner; canary tutor stack `codex.gpt-5.5` for ego/id/learner,
+matching every §6.14-family run); probe design per §3.5 at 2 repeats per
+scenario×condition (n = 10 per condition, meeting the n ≥ 10 bar);
+pass thresholds per §5 Stage 1 gate — in-dialogue selectivity ≥ 0.8,
+false-yield ≤ 0.1, drift-gate attempt median ≤ 2, and zero
+instrument-failure (gate exhaustion) rows in the 6-row canary
+(cells 186/193/199 × {boredom, question_flood} pinned scenarios).
+Probe rows cache to `exports/desubstitution-stage1-probe-rows.jsonl`
+(idempotent restart); verdict artifacts
+`exports/desubstitution-stage1-probe.{json,md}`. A FAIL on any threshold
+stops Stage 1 after recording — instrument iteration requires a fresh
+decision; Stage 2 is not authorized by this entry in any outcome.
