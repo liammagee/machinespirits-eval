@@ -51,3 +51,19 @@ Binding base (identical to the pilot, both arms): `--scene-mode --didactic-mode 
 - Runs: `exports/dramatic-derivation/matrix/ledger-v2b-confirm-<world>/<arm>/`
 - Report: `exports/dramatic-derivation/strategy-ledger/v2b-confirmatory-report.{json,md}` (frozen script, `--design v2`, `--out` stem noted in the addendum)
 - Zero-paid validation before the paid matrix: both specs run end-to-end in mock mode through the frozen analysis.
+
+---
+
+## Results addendum (2026-07-04; frozen analysis unmodified; report at `exports/dramatic-derivation/strategy-ledger/v2b-confirm/v2-contrasts-report.{json,md}` — the frozen script's fixed stem inside the pre-declared directory)
+
+**Execution.** 24/24 runs (two operator interruptions; both resumes used trimmed specs re-running only incomplete labels under their own names, per the retry rule — arms stayed seed-pair balanced throughout). Backend: codex CLI default, matching the pilot.
+
+**Promotion bar: NOT MET (bars 1–2 pass; bar 3 fails).**
+
+1. **Direction both worlds: PASS.** Repair latency lower in the ledger arm in each world's stratum ([-1, -1]).
+2. **Pooled one-sided Mann–Whitney: PASS.** U = 37.5 ≤ 42 (exact one-sided 0.05 criterion at 12/12); normal approximation z = (37.5 − 72)/√300 = −1.99, one-sided p ≈ 0.023. Point estimate 8.02 vs 9.24 turns (Δ ≈ −1.21; smaller than the pilot's −3.17, as regression toward the mean predicts).
+3. **Ledger-arm guardrails: FAIL.** `aporia-hethel-resistant-ledger-v1` (4 aporia-like verdicts vs baseline 2; limit baseline+1) and `releases-marrick-ledger-v1` (mean releases 7.00 vs 7.67; limit baseline−0.5).
+
+**The guardrail failure is not noise — the secondary endpoints give it three pre-registered-magnitude signals of its own, all consistent in both worlds:** grounded rate 0.25 vs 0.50 (halved), time-to-recognition 27.17 vs 25.58 (worse), aporia-like rate 0.75 vs 0.50 (worse). At n = 6 the pilot's guardrails were clean by small-n luck; at n = 12 the picture is a genuine trade: the commit/audit loop reliably speeds the repair of slipped premises *and* reliably costs dramatic outcomes — more stalls and disengagements, fewer grounded recognitions, slower ones when they come.
+
+**Recorded consequences (as pre-committed):** V2b is **not confirmed**; §6.13.16 records the replicated-mechanism-with-negative-transfer result with equal prominence; steps 2–4 of `strategy-ledger-followups` close permanently (no composition-module registration, no localization, no D2). The pilot signal stands as pilot-only. This is §6.13.15's promotion discipline reproducing its own precedent one layer up: a conduct overlay that is locally compliant — locally *helpful*, here — can still carry negative transfer, and the artifact pool again contains no strategy overlay that beats the kernel without it.

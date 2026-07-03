@@ -1,13 +1,13 @@
 ---
 id: strategy-ledger-followups
 title: Strategy Ledger follow-ups — confirm V2b, then compose; do not rebuild trialling
-status: active
+status: done
 type: research
 priority: P2
 owner: unassigned
 source: manual
 created: 2026-07-03
-updated: 2026-07-03
+updated: 2026-07-04
 branch: worktree-strategy-ledger-followups
 verification: "Each step below runs only under its own pre-registration; the item closes when the V2b confirmatory decision is made (either tier promotion or a recorded failure-to-replicate) and the composition-module question is answered or explicitly dropped."
 claim_status: future
@@ -89,3 +89,17 @@ zero-paid-validated end-to-end (24 mock runs, frozen analysis, 0 guardrail
 failures after two pre-paid applicability fixes). AWAITING GO for the paid
 matrix (~5h codex attended in two blocks); prereg freezes at the commit
 preceding the first paid run.
+
+2026-07-04 Claude: Step 1 executed to completion (24/24, two interruptions
+resumed label-exactly). VERDICT: NOT CONFIRMED at the frozen promotion bar —
+primary endpoint REPLICATES (repair latency 8.02 vs 9.24, both worlds,
+U=37.5/144, one-sided p≈0.023) but bar 3 fails on negative transfer now
+visible at n=12: grounded halves (0.25 vs 0.50), T* worsens (27.17 vs 25.58),
+aporia rises (0.75 vs 0.50), two per-world guardrail breaches. Faster repairs,
+worse dramas — §6.13.15's local-compliance-≠-promotable precedent one layer
+up. Per the pre-registration's recorded consequences: steps 2-4 CLOSED
+permanently (no composition registration, no localization, no D2); step 5
+(provocation probe) already folded into negative-register-effect-estimation-grid.
+Paper: §6.13.16 confirmatory paragraph + revised synthesis (v3.0.201). Item
+closed — the strategy-ledger line ends as validated research instrumentation,
+not a promotable overlay.

@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-03T11:39:30.421Z",
+  "generated": "2026-07-03T20:19:40.859Z",
   "counts": {
     "total": 73,
     "byStatus": {
-      "done": 61,
+      "done": 62,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 1
     },
@@ -143,40 +143,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "strategy-ledger-followups",
-      "title": "Strategy Ledger follow-ups — confirm V2b, then compose; do not rebuild trialling",
-      "status": "active",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-03",
-      "updated": "2026-07-03",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Each step below runs only under its own pre-registration; the item closes when the V2b confirmatory decision is made (either tier promotion or a recorded failure-to-replicate) and the composition-module question is answered or explicitly dropped.",
-      "claim_status": "future",
-      "links": {
-        "notes": [
-          "LAYERED-DECISION-LOOPS-PLAN.md",
-          "STRATEGY-LEDGER-V2-PREREGISTRATION.md"
-        ],
-        "paper": "docs/research/paper-full-2.0.md#the-strategy-ledger-scene-scoped-commitaudit-loops-help-repair-an-in-run-trialling-superstructure-costs",
-        "items": [
-          "layered-decision-loops",
-          "negative-register-effect-estimation-grid",
-          "blueprint-composition"
-        ],
-        "prs": "https://github.com/liammagee/machinespirits-eval/pull/80"
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "strategy-ledger",
-        "outer-loop",
-        "followups"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -1582,6 +1548,40 @@
       ],
       "milestone": "human-pilot-prep",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "strategy-ledger-followups",
+      "title": "Strategy Ledger follow-ups — confirm V2b, then compose; do not rebuild trialling",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Each step below runs only under its own pre-registration; the item closes when the V2b confirmatory decision is made (either tier promotion or a recorded failure-to-replicate) and the composition-module question is answered or explicitly dropped.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "LAYERED-DECISION-LOOPS-PLAN.md",
+          "STRATEGY-LEDGER-V2-PREREGISTRATION.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md#the-strategy-ledger-scene-scoped-commitaudit-loops-help-repair-an-in-run-trialling-superstructure-costs",
+        "items": [
+          "layered-decision-loops",
+          "negative-register-effect-estimation-grid",
+          "blueprint-composition"
+        ],
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/80"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-ledger",
+        "outer-loop",
+        "followups"
+      ]
     },
     {
       "id": "synthesize-theoretical-insights",
