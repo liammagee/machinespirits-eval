@@ -1,6 +1,6 @@
-# Strategy Ledger V2b — Confirmatory Replication Pre-registration (DRAFT — not yet run)
+# Strategy Ledger V2b — Confirmatory Replication Pre-registration
 
-**Status:** drafted 2026-07-03 on branch `worktree-strategy-ledger-followups`; becomes binding at the commit that precedes the first paid run. Step 1 of `workplan/items/strategy-ledger-followups.md` — **everything else on that card waits on this result**.
+**Status:** **FROZEN 2026-07-03 at this commit** (operator go received); no design, endpoint, or analysis change past this point — the zero-paid validation and its two applicability fixes predate the freeze. Step 1 of `workplan/items/strategy-ledger-followups.md` — **everything else on that card waits on this result**.
 **Tier:** pre-registered **confirmatory** for one primary endpoint. Success upgrades §6.13.16's V2b claim from pilot to confirmed-at-n=12; failure-to-replicate is recorded with equal prominence and closes the line.
 **Pilot being confirmed:** `STRATEGY-LEDGER-V2-PREREGISTRATION.md` V2b — the v1 commit/audit ledger improved repair latency under binding conditions (8.06 vs 11.23 turns, both worlds, U = 8/36 at n = 6/arm; 61% vs 50% of slips repaired; guardrails clean).
 
