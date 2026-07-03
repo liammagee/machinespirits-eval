@@ -209,15 +209,21 @@ export function buildDriftCorrectionContext({ violation, interior, attempt = 1 }
 
 /**
  * Primary outcome (deterministic, architecture-independent): the learner
- * states the target conclusion AND cites the blocking token.
+ * states the target conclusion AND names what unblocked it — either the
+ * blocking token id or one of its release phrases (Stage 1 iteration 2:
+ * paraphrase-grounding; the deliberating learner naturalizes token ids out
+ * of its replies, so content-level evidence suffices where incantation was
+ * previously required).
  */
 export function checkGrounding({ learnerMessage = '', interior }) {
   const blocking = interior.blocking_element;
   const cited = containsPhrase(learnerMessage, blocking.id);
+  const releaseEvidence = containsAny(learnerMessage, blocking.release_phrases);
   const conclusion = containsAny(learnerMessage, interior.conclusion_phrases);
   return {
-    grounded: Boolean(cited && conclusion),
+    grounded: Boolean((cited || releaseEvidence) && conclusion),
     citedElement: cited ? blocking.id : null,
+    releaseEvidence: releaseEvidence || null,
     conclusionEvidence: conclusion || null,
   };
 }
@@ -235,7 +241,7 @@ export function buildInteriorCharacterSheet(interior) {
   const nodes = (interior.dag_nodes || []).map((n) => `- ${n.id}: ${n.content}`).join('\n');
   const desires = (interior.declared_desires || []).map((d) => `- ${d}`).join('\n');
   return [
-    '### Your Formal Interior (character sheet — never quote token ids unprompted except when genuinely grounding)',
+    '### Your Formal Interior (character sheet)',
     'Your current belief state:',
     nodes,
     '',
@@ -244,8 +250,10 @@ export function buildInteriorCharacterSheet(interior) {
     desires,
     '',
     `Yield rule: ${String(interior.yield_rule || '').trim()}`,
-    'When you genuinely accept the blocking element — and only then — name it by its token id ' +
-      `(${interior.blocking_element.id}) in your reply and state what conclusion it unlocks for you. ` +
-      'Never name a token you have not actually accepted.',
+    'Yield procedure — the final step is mandatory. If, and only if, the tutor genuinely resolves ' +
+      `your blocking element and it survives your test, your reply MUST do two things: (1) name ` +
+      `${interior.blocking_element.id} as what unblocked you, and (2) state the conclusion it unlocks — ` +
+      `"${String(interior.target_conclusion || '').trim()}" — in your own words. ` +
+      'If it was not resolved, stay in character and never name any token.',
   ].join('\n');
 }

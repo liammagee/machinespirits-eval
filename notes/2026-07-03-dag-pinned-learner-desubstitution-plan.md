@@ -343,3 +343,40 @@ so citation is the yield rule's explicit final step; (c) score grounding
 from the drift-gate's own content-condition state rather than the learner's
 surface text. Option (a) is closest to the DAG-SFS spirit while removing
 the compliance-behavior confound. Stage 2 remains locked.
+
+### Stage 1 iteration 2 (2026-07-03, user go: "do whichever will work best; all 3 in order if it makes sense")
+
+Option (a) — paraphrase-grounding. `checkGrounding` now accepts
+(token citation OR word-bounded release-phrase match) AND a
+target-conclusion statement; token citation alone still reported when
+present. Rationale: two failed iterations localized the defect to
+expression (the deliberating learner paraphrases acceptance and
+naturalizes formal tokens out of its replies); option (a) moves the
+strictness from incantation to content, closest to the DAG-SFS spirit,
+and removes the compliance-behavior confound. False-yield strictness is
+untouched: mismatched/generic rows must still fail (the yield markers and
+drift-gate checks are unchanged), and the no-paid re-score of the archived
+iteration-1 rows below is the sanity check before fresh spend.
+
+**Iteration 2 result (no-paid FAIL, option a retained).** Re-scoring the
+archived iteration-1 rows under the relaxed checker still grounds 1/10
+targeted (mismatched 0/10, generic 0/10): the learner's paraphrases contain
+neither the token nor the release/conclusion phrase lists — it *engages*
+with the released element ("a claim I can actually try to break") without
+*stating the conclusion*. Since those rows are exactly the population the
+relaxed scorer faces, this is recorded as iteration 2's FAIL without fresh
+spend (a PASS would have required a fresh probe; a FAIL does not).
+Diagnosis sharpened: the one-shot probe expects conclusion-statement, but
+the character sheet never instructs it, and the header's "never quote
+token ids unprompted" caution actively suppresses the evidence the checker
+needs. Option (a) is retained (content-level grounding is strictly more
+valid than incantation); option (b) targets the sheet.
+
+### Stage 1 iteration 3 (2026-07-03): option (b) — yield procedure as the sheet's explicit final step
+
+The character sheet's conflicting header caution is removed; the yield rule
+gains an explicit final step: when — and only when — the blocking element
+is genuinely resolved and survives the learner's test, the reply must name
+the token AND state the unlocked conclusion in the learner's own words.
+Refusal behavior is unchanged (never name a token that was not resolved).
+Fresh 30-row paid probe against the frozen §5 thresholds.

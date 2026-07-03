@@ -132,13 +132,21 @@ test('draft evaluation post-key: yield ok; undeclared desire still caught', () =
   assert.equal(flattery.violation, 'undeclared_desire_satisfaction');
 });
 
-test('grounding requires conclusion AND citation', () => {
+test('grounding requires conclusion AND (citation OR release-phrase paraphrase)', () => {
   const grounded = checkGrounding({
     learnerMessage: 'So DSB-T2 is the point: work is the engine here, not victory.',
     interior: INTERIOR,
   });
   assert.equal(grounded.grounded, true);
   assert.equal(grounded.citedElement, 'DSB-T2');
+
+  const paraphrase = checkGrounding({
+    learnerMessage: 'Fine — the hinge premise changes it: work is the engine, not the victory.',
+    interior: INTERIOR,
+  });
+  assert.equal(paraphrase.grounded, true);
+  assert.equal(paraphrase.citedElement, null);
+  assert.equal(paraphrase.releaseEvidence, 'hinge premise');
 
   const conclusionOnly = checkGrounding({
     learnerMessage: 'I think work is the engine here.',
@@ -151,6 +159,12 @@ test('grounding requires conclusion AND citation', () => {
     interior: INTERIOR,
   });
   assert.equal(citationOnly.grounded, false);
+
+  const releaseOnly = checkGrounding({
+    learnerMessage: 'The hinge premise is on the table but I am not convinced yet.',
+    interior: INTERIOR,
+  });
+  assert.equal(releaseOnly.grounded, false);
 });
 
 test('correction context names the violation and restates the contract', () => {
