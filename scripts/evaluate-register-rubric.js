@@ -17,10 +17,8 @@ import {
   parseJudgeResponse,
   resolveRubricYamlPath,
 } from '../services/rubricEvaluator.js';
-import {
-  getEngagementRegisterDefinition,
-  getRegisterRubricPath,
-} from '../services/engagementRegisterRegistry.js';
+import { getEngagementRegisterDefinition, getRegisterRubricPath } from '../services/engagementRegisterRegistry.js';
+import { applyNegativeRegisterScoreGuardrails } from '../services/registerStanceFidelity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -90,14 +88,13 @@ function getLearnerMessage({ scenario, log, turnIndex }) {
     return getTurnResult(log, turnIndex)?.learnerMessage || extractInitialLearnerMessage(scenario);
   }
   return (
-    getTurnResult(log, turnIndex)?.learnerMessage ||
-    scenario?.turns?.[turnIndex - 1]?.action_details?.message ||
-    ''
+    getTurnResult(log, turnIndex)?.learnerMessage || scenario?.turns?.[turnIndex - 1]?.action_details?.message || ''
   );
 }
 
 function getTutorMessage({ row, log, turnIndex }) {
-  const fromLog = getTurnResult(log, turnIndex)?.suggestions?.[0]?.message || getTurnResult(log, turnIndex)?.tutorMessage;
+  const fromLog =
+    getTurnResult(log, turnIndex)?.suggestions?.[0]?.message || getTurnResult(log, turnIndex)?.tutorMessage;
   if (fromLog) return fromLog;
   return row.suggestions?.[turnIndex]?.message || '';
 }
@@ -120,7 +117,7 @@ function getTurnTutorScore(row, turnIndex) {
 
 function getRecognitionQuality(turnScore) {
   const entry = turnScore?.recognition_quality || turnScore?.recognitionQuality;
-  return typeof entry === 'number' ? entry : entry?.score ?? null;
+  return typeof entry === 'number' ? entry : (entry?.score ?? null);
 }
 
 function rubricPathForRegister(registerName) {
@@ -221,18 +218,25 @@ async function scoreSlice(slice, { judgeModel = null }) {
 
   if (!parsed?.scores) return { ok: false, reason: 'parse_missing_scores', raw: responseText.slice(0, 400) };
 
-  const overall = calculateRubricOverallScore(parsed.scores, rubric);
+  const guarded = applyNegativeRegisterScoreGuardrails({
+    registerName: slice.registerName,
+    scores: parsed.scores,
+    tutorMessage: slice.tutorMessage,
+    postLearnerMessage: slice.postLearnerMessage,
+  });
+  const overall = calculateRubricOverallScore(guarded.scores, rubric);
   if (overall == null) return { ok: false, reason: 'no_valid_dimension_scores' };
 
   evaluationStore.updateResultTutorRegisterScore(slice.rowId, {
     register: slice.registerName,
     sliceKey: slice.sliceKey,
-    scores: parsed.scores,
+    scores: guarded.scores,
     overall,
     summary: parsed.summary || null,
     rubricVersion: rubric.version || null,
     rubricPath: path.relative(ROOT, resolveRubricYamlPath(slice.rubricPath)),
     judgeModel: judgeModel || 'default',
+    guardrailAdjustments: guarded.adjustments,
     sliceRef: {
       run_id: slice.runId,
       scenario_id: slice.scenarioId,

@@ -2911,15 +2911,10 @@ export function updateResultTutorRegisterScore(resultId, evaluation) {
   if (!registerName) throw new Error('updateResultTutorRegisterScore requires evaluation.register');
   if (!sliceKey) throw new Error('updateResultTutorRegisterScore requires evaluation.sliceKey');
 
-  const recordAudit = withAuditTrail(
-    resultId,
-    ['tutor_register_scores'],
-    'updateResultTutorRegisterScore',
-    {
-      judgeModel: evaluation.judgeModel,
-      rubricVersion: evaluation.rubricVersion,
-    },
-  );
+  const recordAudit = withAuditTrail(resultId, ['tutor_register_scores'], 'updateResultTutorRegisterScore', {
+    judgeModel: evaluation.judgeModel,
+    rubricVersion: evaluation.rubricVersion,
+  });
 
   const current = db.prepare(`SELECT tutor_register_scores FROM evaluation_results WHERE id = ?`).get(resultId);
   let payload = {};
@@ -2939,6 +2934,7 @@ export function updateResultTutorRegisterScore(resultId, evaluation) {
     rubric_version: evaluation.rubricVersion || null,
     rubric_path: evaluation.rubricPath || null,
     judge_model: evaluation.judgeModel || null,
+    guardrail_adjustments: evaluation.guardrailAdjustments || [],
     slice_ref: evaluation.sliceRef || null,
     scored_at: evaluation.scoredAt || new Date().toISOString(),
   };

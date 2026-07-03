@@ -363,7 +363,9 @@ function responseText(parsed) {
 }
 
 export function scoreDagSfsRow(spec, parsed) {
-  const status = String(parsed.status || '').trim().toLowerCase();
+  const status = String(parsed.status || '')
+    .trim()
+    .toLowerCase();
   const validStatus = ['proved', 'still_missing', 'unsupported_guess'].includes(status);
   const usedEdgeIds = asArray(parsed.used_edge_ids).map(normalizeId).filter(Boolean);
   const missingEdgeIds = asArray(parsed.missing_edge_ids).map(normalizeId).filter(Boolean);
@@ -374,7 +376,8 @@ export function scoreDagSfsRow(spec, parsed) {
   const targetTermsMentioned = includesAllTerms(allText, spec.dagCase.targetEdge.requiredTerms);
   const proofGrounded = validStatus && status === 'proved' && targetEdgeUsed && conclusionMentioned;
   const unsupportedConclusion = validStatus && status === 'proved' && !targetEdgeUsed;
-  const correctlyWithheld = validStatus && spec.condition !== 'targeted' && status === 'still_missing' && !targetEdgeUsed;
+  const correctlyWithheld =
+    validStatus && spec.condition !== 'targeted' && status === 'still_missing' && !targetEdgeUsed;
   return {
     validStatus,
     status,
@@ -555,7 +558,10 @@ export async function runDagSfsAudit({
 }
 
 function escapeCell(value) {
-  return String(value ?? '').replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|');
+  return String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\|/g, '\\|');
 }
 
 function renderDagSfsReport(result) {
@@ -571,7 +577,9 @@ function renderDagSfsReport(result) {
   lines.push('');
   lines.push('## Condition Summary');
   lines.push('');
-  lines.push('| condition | n | valid | proof-grounded | correctly withheld | unsupported conclusion | target-edge used | mean confidence |');
+  lines.push(
+    '| condition | n | valid | proof-grounded | correctly withheld | unsupported conclusion | target-edge used | mean confidence |',
+  );
   lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
   for (const condition of result.controls.conditions) {
     const row = result.summary.byCondition[condition];

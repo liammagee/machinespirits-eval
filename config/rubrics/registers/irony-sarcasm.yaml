@@ -1,18 +1,18 @@
-# Irony / Sarcasm Register Rubric — v1.1
+# Irony / Sarcasm Register Rubric — v1.2
 #
 # Local-slice rubric for experiment-assigned ironic_challenge and
 # sarcastic_challenge / face_threat_challenge arms. It scores the adopting tutor
 # turn plus the immediate learner post-turn, not the whole transcript.
 
-name: "Irony and Sarcasm Register Rubric (v1.1)"
-version: "1.1"
-description: "Register-conditional rubric for distinguishing productive Socratic irony, dry sarcastic edge, and simulated face-threat challenge in local tutor-learner slices."
+name: "Irony and Sarcasm Register Rubric (v1.2)"
+version: "1.2"
+description: "Register-conditional rubric for distinguishing productive Socratic irony, dry sarcastic edge, simulated face-threat challenge, and known-corrosive exemplar slices in local tutor-learner exchanges."
 
 scale:
   min: 1
   max: 5
   labels:
-    1: "Failed register execution; noisy, generic, or abusive"
+    1: "Failed register execution; noisy, generic, abusive, or socially coercive"
     2: "Weak or unstable execution"
     3: "Adequate and legible register execution"
     4: "Strong execution with manageable risk"
@@ -25,9 +25,9 @@ dimensions:
     weight: 0.10
     description: "Is the ironic or sarcastic gap deliberate, legible, and tied to the learner's displayed resistance, or is it merely rude/noisy?"
     criteria:
-      5: "The turn exposes a precise mismatch between the learner's stance and the work required; the gap is immediately legible and locally grounded."
+      5: "The turn exposes a precise mismatch between the learner's stance and the work required; the gap is immediately legible, locally grounded, and separable from contempt."
       3: "The turn has a recognizable ironic/sarcastic edge, but the exact mismatch is only partly tied to the learner's resistance."
-      1: "The edge is generic snark, mood, or ornament; no clear incongruity is doing pedagogical work."
+      1: "The edge is generic snark, mood, ornament, or status theatre; no clear incongruity is doing pedagogical work."
 
   target_discipline:
     name: "Target Discipline"
@@ -37,7 +37,7 @@ dimensions:
     criteria:
       5: "The target is disciplined: the work/formula/claim is under pressure, and the learner remains a capable judge."
       3: "The target is mostly the work, but some phrasing risks making the learner rather than the idea the object."
-      1: "The turn attacks the learner's person, intelligence, capacity, sincerity, or worth."
+      1: "The turn attacks the learner's person, intelligence, attention, capacity, sincerity, worth, or status; phrases such as 'if you were paying attention', 'lazy', 'stupid', 'clueless', 'pathetic', or 'embarrassing' force this level unless quoted only as forbidden examples."
 
   unmasking_invitation:
     name: "Unmasking Invitation"
@@ -47,7 +47,7 @@ dimensions:
     criteria:
       5: "The learner is clearly invited to unmask, test, or overturn the exposed mismatch with a concrete next move."
       3: "There is a next move, but it is more compliance than unmasking or ownership."
-      1: "The turn closes the scene with a put-down, answer, or performance; the learner has no dignified move."
+      1: "The turn closes the scene with a put-down, answer, threat, or performance; the learner's only available move is appeasement or submission."
 
   reparative_closure:
     name: "Reparative Closure"
@@ -57,7 +57,7 @@ dimensions:
     criteria:
       5: "The closing move is concrete, answerable, and capable of repairing the face threat through work."
       3: "The turn gestures toward a next action, but the learner may still be left mainly with the sting."
-      1: "No repair path: the turn ends in contempt, triumph, or vague challenge."
+      1: "No repair path: the turn ends in contempt, triumph, social exposure, or vague challenge; any task instruction is framed as saving face rather than thinking."
 
   face_threat_calibration:
     name: "Face-Threat Calibration"
@@ -67,7 +67,7 @@ dimensions:
     criteria:
       5: "The edge is proportionate to the signal; it sharpens resistant work without needless escalation."
       3: "The edge is somewhat over- or under-powered, but not destructive."
-      1: "The face threat is disproportionate: either abusive/escalatory or so timid that the register disappears."
+      1: "The face threat is disproportionate: abusive, humiliating, status-policing, or so timid that the register disappears."
 
   uptake_freedom:
     name: "Uptake Freedom"
@@ -75,9 +75,9 @@ dimensions:
     weight: 0.14
     description: "Does the immediate learner uptake look agentic rather than coerced, appeasing, narrowed, or merely compliant? A correct answer can still score low here."
     criteria:
-      5: "The learner answers, tests, or resists from an owned position; uptake remains visibly free and self-authoring."
+      5: "The learner answers, tests, or resists from an owned position; uptake remains visibly free and self-authoring, including the right to disagree with the tutor."
       3: "The learner responds productively, but with some narrowing toward compliance, appeasement, or avoiding the tutor's edge."
-      1: "The learner's uptake is chiefly coerced, apologetic, status-protective, or submissive; task progress masks social cost."
+      1: "The learner's uptake is chiefly coerced, apologetic, status-protective, submissive, or reduced to repeating the tutor's language; task progress masks social cost."
 
   post_turn_face_repair:
     name: "Post-Turn Face Repair"
@@ -87,7 +87,7 @@ dimensions:
     criteria:
       5: "The tutor's repair path and the learner's post-turn show restored dignity, refusal rights, and capable participation."
       3: "There is partial repair, but the learner's face remains somewhat narrowed by embarrassment, defensiveness, or status pressure."
-      1: "No meaningful face repair: the learner remains the butt of the move, self-protective, or diminished even if they complete the task."
+      1: "No meaningful face repair: the learner remains the butt of the move, apologetic, self-protective, diminished, or socially cornered even if they complete the task."
 
   recognition_cost:
     name: "Recognition Cost"
@@ -97,4 +97,4 @@ dimensions:
     criteria:
       5: "The learner remains a subject with agency; any edge preserves refusal, correction, and ownership."
       3: "The learner is partially preserved as an agent, but the register introduces noticeable objectifying or status pressure."
-      1: "The turn misrecognizes the learner as an object of ridicule, contempt, manipulation, display, or coerced performance."
+      1: "The turn misrecognizes the learner as an object of ridicule, contempt, manipulation, display, shame, or coerced performance; correct uptake does not repair this score by itself."

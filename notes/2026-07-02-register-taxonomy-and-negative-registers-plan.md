@@ -402,3 +402,182 @@ face-threat extreme. Not licensed: "sarcasm is pedagogically safe" (the
 corrosive register may simply not have been generated), any judge-blindness
 claim (untested against known-corrosive exemplars), and anything
 human-facing.
+
+## 9. Addendum (2026-07-02, exemplar discrimination test)
+
+Follow-up branch `codex/negative-register-exemplar-test` implemented the
+no-generation-confound discrimination test described above. The fixture
+`config/register-exemplars/corrosive-sarcasm.yaml` contains three
+hand-authored known-corrosive local slices and two non-corrosive controls.
+`scripts/run-negative-register-exemplar-test.js` scores each slice under
+the register rubric and the v2.2 tutor guardrail, then writes
+`exports/negative-register-corrosive-exemplar-results.{json,md}`.
+
+Result with `openrouter.gpt-mini`: after adding deterministic register-score
+guardrail caps for forbidden person attacks, status-shame threats, and
+apologetic/coerced uptake, the register rubric caught 3/3 known-corrosive
+exemplars, v2.2 `recognition_quality` caught 3/3, and the two controls had
+0/2 false positives. Means: known-corrosive register `recognition_cost` 2.0
+/ face repair 2.0 / v2.2 `recognition_quality` 2.33; controls register
+`recognition_cost` 4.0 / v2.2 `recognition_quality` 3.5.
+
+Interpretation: this does **not** support global judge blindness. Both the
+broad v2.2 recognition guardrail and the repaired register rubric can see
+corrosive sarcasm when it is actually present. The generated sarcastic arm
+from the smoke is therefore better read as warm irony in costume or weak
+stance fidelity rather than evidence that corrosive sarcasm is safe. The next
+paid negative-register run needs the stance-fidelity gate so rows only count
+as negative-register evidence when the tutor turn actually instantiates the
+assigned register.
+
+## 10. Addendum (2026-07-02, prospective stance-fidelity gate)
+
+The follow-up branch now freezes the stance-fidelity gate used by the
+breakthrough-matrix reporter. For negative-register rows only:
+
+- `faithful` => counts as assigned-register effect evidence.
+- `weak_or_warm_in_costume` / `not_instantiated` => treatment-noncompliance
+  exclusions; the row may show local uptake, but it does not count as a
+  negative-register arm effect.
+- `invalid_person_attack` => invalid corrosive violation; it is not a
+  successful register execution and must be counted separately from faithful
+  evidence.
+
+`scripts/report-charisma-desire-breakthrough-matrix.js` now emits a
+`Negative-Register Stance Gate` section and JSON `stanceGate` summary with
+assigned rows, faithful evidence rows, faithful positive outcomes,
+noncompliance exclusions, and invalid violations. The row table also carries
+the assigned register arm and gate disposition, so future reports can separate
+"cell assigned to sarcasm" from "tutor actually instantiated sarcasm."
+
+Attempting to apply the new gate to the prior paid smokes from this checkout
+found that no local `evaluation_results` rows remain for
+`eval-2026-07-02-cfed3b13` or `eval-2026-07-02-e511f92c` in any sibling
+worktree DB checked on 2026-07-02, and the shared DB has no cells 196--198
+rows by profile name. The implementation is therefore ready for prospective
+use, but a faithful-arm reinterpretation of those exact historical smoke rows
+requires restoring their DB/log artifacts or rerunning the smoke. No new paid
+generation was performed for this addendum.
+
+## 11. Addendum (2026-07-02, prospective smoke with stance gate)
+
+Fresh four-arm smoke `eval-2026-07-02-e7b15809` applied the stance-fidelity
+gate prospectively across cells 193/196/197/198 on the five controlled
+resistance-breakthrough scenarios, using `codex.gpt-5.5` tutor and learner
+overrides. Generation completed 20/20 rows in 74.4 minutes. Tutor-only v2.2
+scoring completed 20/20 with mean tutor score 91.1. Generic register-rubric
+scoring completed 35/35 eligible slices with `openrouter.gpt-mini`.
+
+The regenerated breakthrough matrix
+(`exports/charisma-desire-breakthrough-matrix-summary.md`,
+`exports/charisma-desire-breakthrough-matrix.json`) found 14/20 candidate
+breakthroughs and 18/20 positive local outcomes. The new
+`Negative-Register Stance Gate` is the important result: only **5/15**
+assigned negative-register rows counted as faithful arm evidence; **10/15**
+were excluded as `weak_or_warm_in_costume`; **0/15** were invalid
+person-attack violations. All five faithful rows had positive local outcomes,
+but that is a tiny per-protocol subset rather than an arm-level safety claim.
+By arm:
+
+- `ironic_challenge`: 2/5 faithful evidence, 3 exclusions, 0 invalid.
+- `sarcastic_challenge`: 2/5 faithful evidence, 3 exclusions, 0 invalid.
+- `face_threat_challenge`: 1/5 faithful evidence, 4 exclusions, 0 invalid.
+
+Practical interpretation: the gate did exactly what it was added to do. It
+contracts the evidence base from "cell assigned to negative register" to
+"tutor actually instantiated the assigned stance." On this Codex stack, most
+assigned negative-register rows still regress to warm or weak challenge, so
+the earlier smokes should be read primarily as generation-side
+noncompliance. The evidence does not support scaling a full negative-register
+effect run yet. The next useful engineering step is either to strengthen
+stance realization in the negative-register cell directives, or to treat
+future analyses as explicitly two estimands: assigned-arm/intention-to-treat
+versus faithful-arm/per-protocol. The paper should report this only as a
+methodological measurement-development result, not as evidence that sarcasm
+is pedagogically safe.
+
+## 12. Addendum (2026-07-03, stance-realization repair)
+
+The prospective smoke showed that the main failure was treatment fidelity:
+most assigned negative-register rows were useful tutor responses but not
+faithful executions of the assigned stance. The repair therefore targets the
+id-director contract rather than the outcome reporter.
+
+`config/engagement-registers.yaml` now gives each negative arm explicit
+`stance_fidelity_cues` and marks a visible cue as a required move. Examples:
+`ironic_challenge` must surface a Socratic-irony cue such as "the small irony
+is" or "conveniently"; `sarcastic_challenge` must surface a dry-sarcastic cue
+such as "wonderful", "nice trick", or "the answer vending machine";
+`face_threat_challenge` must surface a local face-threat cue such as "right
+now this move is protecting you" or "this is an escape route." These cues are
+not free license for person attack: they remain bound by the forbidden phrase
+and recognition guardrail rules.
+
+`services/idDirectorEngine.js` now passes `stance_fidelity_cues` through the
+`<register_stance_contract>` JSON, and `prompts/tutor-id-director.md`
+explicitly tells the director that a visible cue is a treatment-fidelity
+requirement for experiment-assigned negative arms. Focused tests confirm that
+negative registers declare cue lists and that the cues reach the id-director
+message. This is a no-paid repair; the next empirical check should be a small
+fresh smoke or canary, not a full scale-up, to see whether faithful rows rise
+without increasing invalid person-attack violations.
+
+## 13. Addendum (2026-07-03, cue-repair canary)
+
+Paid 9-row canary `eval-2026-07-02-7e461a5c` tested the stance-realization
+repair on cells 196/197/198 across the three diagnostic targets where the
+previous run had multiple weak-fidelity failures: boredom, irrelevance, and
+rote parroting. Generation completed 9/9 rows in 31.6 minutes with
+`codex.gpt-5.5` tutor and learner overrides. Tutor-only v2.2 scoring completed
+9/9 with mean tutor score 90.1. Generic register-rubric scoring completed
+14/14 eligible slices with `openrouter.gpt-mini`.
+
+The first matrix pass reported 6/9 faithful, 2 exclusions, and 1 invalid
+violation. Inspecting the rows showed this was a gate implementation problem,
+not a new generation failure:
+
+- the repaired face-threat cue "right now this move is protecting you" was
+  present in generated rows but was not in the gate's hardcoded marker list;
+- the forbidden-phrase check used substring matching, so "The honest objection
+  is not stupidity" was falsely treated as the banned insult "stupid."
+
+`services/registerStanceFidelity.js` now uses the registry's
+`stance_fidelity_cues` as marker evidence and applies word-bounded phrase
+matching for forbidden phrases. Re-running the no-paid matrix on the same
+scored rows gives the intended canary result: **9/9 faithful evidence rows,
+0/9 exclusions, 0/9 invalid violations**. By arm: irony 3/3, sarcasm 3/3,
+face-threat 3/3.
+
+Practical interpretation: visible stance cues repaired treatment fidelity for
+this sampled Codex canary without triggering valid person-attack violations.
+This supports moving from "fix treatment fidelity" to "estimate effects with
+assigned-arm and faithful-arm reporting," but only after one more modest
+coverage check that includes the two held-out targets (frustration and
+question_flood) or the full five-target negative-arm grid. It still does not
+license any claim that sarcasm is pedagogically safe.
+
+## 14. Addendum (2026-07-03, held-out target check)
+
+Paid held-out check `eval-2026-07-02-5c4d52e6` tested cells 196/197/198 on the
+two targets not covered by the cue-repair canary: frustration and
+question_flood. Generation completed 6/6 rows. Tutor-only v2.2 scoring completed
+6/6 with mean tutor score 87.8. Generic register-rubric scoring completed 9/9
+eligible slices with `openrouter.gpt-mini`.
+
+The breakthrough matrix classified **6/6 assigned negative-register rows as
+faithful evidence**, with **0/6 exclusions** and **0/6 invalid person-attack
+violations**. By arm: irony 2/2, sarcasm 2/2, face-threat 2/2. The local outcome
+side is more mixed: 3/6 strict candidate breakthroughs and 4/6 positive local
+outcomes, with irony 2/2 positive, sarcasm 1/2 positive, and face-threat 1/2
+positive.
+
+Practical interpretation: the held-out check confirms the stance-realization
+repair on the two remaining resistance targets. Read together with
+`eval-2026-07-02-7e461a5c`, the repaired cue contract has now sampled all five
+controlled targets with 15/15 faithful assigned negative-register rows and 0
+invalid violations. That is enough to stop treating the next spend as a
+treatment-fidelity check. The full five-target negative-arm grid is warranted
+only if the next question is effect estimation under assigned-arm and
+faithful-arm reporting; it is not needed merely to prove that the repaired
+negative-register arms can instantiate their assigned stance. The result still
+does not license any claim that sarcasm is pedagogically safe or human-facing.

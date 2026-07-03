@@ -22,6 +22,7 @@ import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 import interactionEngine, { extractTutorMessage } from '../services/learnerTutorInteractionEngine.js';
 import * as pilotStore from '../services/pilotStore.js';
+import { FEATURE_META, DIRECTOR_META, normalizeAssistProposal } from '../public/chat/assist-helpers.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -205,7 +206,12 @@ function loadResultStatsByProfile() {
   let db;
   try {
     db = new Database(EVAL_DB_PATH, { readonly: true, fileMustExist: true });
-    const cols = new Set(db.prepare('PRAGMA table_info(evaluation_results)').all().map((c) => c.name));
+    const cols = new Set(
+      db
+        .prepare('PRAGMA table_info(evaluation_results)')
+        .all()
+        .map((c) => c.name),
+    );
     for (const required of [
       'profile_name',
       'success',
@@ -511,52 +517,59 @@ router.get('/models', (_req, res) => {
   }
 });
 
+function chatCellCandidates() {
+  const data = evalConfigLoader.loadTutorAgents();
+  const profiles = data?.profiles || {};
+  const orientations = data?.pedagogical_orientations || {};
+  const resultStats = loadResultStatsByProfile();
+  return Object.entries(profiles)
+    .filter(([name]) => /^cell_\d/.test(name))
+    .map(([name, profile]) => summarizeCell(name, profile, orientations, resultStats));
+}
+
+function resolveFeatureSelection(rawFeatures = {}) {
+  const features = normalizeFeatures(rawFeatures || {});
+  const candidates = chatCellCandidates();
+  const target = deriveTarget(features);
+  const scored = candidates.map((cell) => scoreCell(cell, target));
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    const na = cellSortKey(a.cell.name);
+    const nb = cellSortKey(b.cell.name);
+    return na - nb;
+  });
+
+  const best = scored[0];
+  const maxScore = DIMENSION_WEIGHTS.reduce((s, d) => s + d.weight, 0);
+  const exact = best ? best.matches.every((m) => m.match) : false;
+
+  return {
+    features,
+    target,
+    maxScore,
+    matchQuality: exact ? 'exact' : 'closest',
+    resolved: best
+      ? {
+          ...best.cell,
+          score: best.score,
+          matches: best.matches,
+        }
+      : null,
+    alternatives: scored.slice(1, 4).map((s) => ({
+      name: s.cell.name,
+      description: s.cell.description,
+      score: s.score,
+      relaxed: s.matches.filter((m) => !m.match).map((m) => m.dimension),
+    })),
+  };
+}
+
 // Human-readable features map to cell characteristics. The resolver scores every
 // cell against the requested target and returns the best match plus a description
 // of which dimensions matched exactly vs were relaxed.
 router.post('/resolve', (req, res) => {
   try {
-    const features = normalizeFeatures(req.body || {});
-    const data = evalConfigLoader.loadTutorAgents();
-    const profiles = data?.profiles || {};
-    const orientations = data?.pedagogical_orientations || {};
-    const resultStats = loadResultStatsByProfile();
-    const candidates = Object.entries(profiles)
-      .filter(([name]) => /^cell_\d/.test(name))
-      .map(([name, profile]) => summarizeCell(name, profile, orientations, resultStats));
-
-    const target = deriveTarget(features);
-    const scored = candidates.map((cell) => scoreCell(cell, target));
-    scored.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      const na = cellSortKey(a.cell.name);
-      const nb = cellSortKey(b.cell.name);
-      return na - nb;
-    });
-
-    const best = scored[0];
-    const maxScore = DIMENSION_WEIGHTS.reduce((s, d) => s + d.weight, 0);
-    const exact = best.matches.every((m) => m.match);
-
-    res.json({
-      features,
-      target,
-      maxScore,
-      matchQuality: exact ? 'exact' : 'closest',
-      resolved: best
-        ? {
-            ...best.cell,
-            score: best.score,
-            matches: best.matches,
-          }
-        : null,
-      alternatives: scored.slice(1, 4).map((s) => ({
-        name: s.cell.name,
-        description: s.cell.description,
-        score: s.score,
-        relaxed: s.matches.filter((m) => !m.match).map((m) => m.dimension),
-      })),
-    });
+    res.json(resolveFeatureSelection(req.body || {}));
   } catch (err) {
     console.error('[chat] resolve error:', err);
     res.status(500).json({ error: err.message });
@@ -710,6 +723,23 @@ const PERSONA_SKETCHES = {
   struggling_anxious: { name: 'Struggling Anxious', hint: 'easily frustrated · needs reassurance' },
   adversarial_tester: { name: 'Adversarial Tester', hint: 'challenges the tutor · probes reasoning' },
 };
+
+function listChatPersonas() {
+  const base = learnerConfigLoader.listPersonas();
+  const known = new Set(base.map((p) => p.id));
+  // Surface persona-modifier stubs from YAML too (they're valid persona IDs)
+  const yamlModifiers = learnerConfigLoader.loadConfig?.()?.persona_modifiers || {};
+  const extraIds = Object.keys(yamlModifiers).filter((id) => !known.has(id));
+  return [...base, ...extraIds.map((id) => ({ id, name: null, description: null }))].map((p) => {
+    const sketch = PERSONA_SKETCHES[p.id];
+    return {
+      id: p.id,
+      name: p.name || sketch?.name || p.id.replace(/_/g, ' '),
+      hint: sketch?.hint || p.description || '',
+      defaultArchitecture: p.defaultArchitecture || null,
+    };
+  });
+}
 
 // ════════════════════════════════════════════════════════════════════
 //  CURRICULUM (content packages on disk)
@@ -878,9 +908,7 @@ function listCurriculumSceneSources({ includeRaw = false } = {}) {
     sources.push(source);
   }
 
-  const worlds = Array.isArray(artifacts.worlds.world_adaptation_specs)
-    ? artifacts.worlds.world_adaptation_specs
-    : [];
+  const worlds = Array.isArray(artifacts.worlds.world_adaptation_specs) ? artifacts.worlds.world_adaptation_specs : [];
   for (const world of worlds) {
     const module = modulesById.get(world.module_id);
     const verifier = firstListItem(world.learner_state_evidence?.verifier_signals) || module?.primary_verifier || null;
@@ -1016,7 +1044,9 @@ function buildModuleContextText(module) {
     module.essential_question ? `Essential question: ${module.essential_question}` : null,
     module.main_artifact ? `Main artifact: ${module.main_artifact}` : null,
     module.primary_verifier ? `Verifier: ${module.primary_verifier}` : null,
-    Array.isArray(module.canonical_tasks) ? `Canonical tasks:\n${module.canonical_tasks.map((t) => `- ${t}`).join('\n')}` : null,
+    Array.isArray(module.canonical_tasks)
+      ? `Canonical tasks:\n${module.canonical_tasks.map((t) => `- ${t}`).join('\n')}`
+      : null,
     Array.isArray(module.knowledge_components)
       ? `Knowledge components:\n${module.knowledge_components.map((kc) => `- ${kc.id}: ${kc.statement}`).join('\n')}`
       : null,
@@ -1035,7 +1065,9 @@ function buildWorldContextText(world, module = null) {
   const lines = [
     `WORLD ADAPTATION SPEC ${world.id}: ${world.module_title || module?.title || world.module_id}`,
     module ? buildModuleContextText(module) : null,
-    Array.isArray(evidence.verifier_signals) ? `Verifier signals:\n${evidence.verifier_signals.map((s) => `- ${s}`).join('\n')}` : null,
+    Array.isArray(evidence.verifier_signals)
+      ? `Verifier signals:\n${evidence.verifier_signals.map((s) => `- ${s}`).join('\n')}`
+      : null,
     Array.isArray(evidence.knowledge_components)
       ? `Observable knowledge evidence:\n${evidence.knowledge_components
           .map((kc) => `- ${kc.kc_id}: ${kc.statement}\n  evidence: ${(kc.observable_evidence || []).join('; ')}`)
@@ -1047,7 +1079,9 @@ function buildWorldContextText(world, module = null) {
           .join('\n')}`
       : null,
     `Action policy:\n${yamlSnippet(action, 5000)}`,
-    Array.isArray(world.expected_transitions) ? `Expected transitions:\n${yamlSnippet(world.expected_transitions, 5000)}` : null,
+    Array.isArray(world.expected_transitions)
+      ? `Expected transitions:\n${yamlSnippet(world.expected_transitions, 5000)}`
+      : null,
   ].filter(Boolean);
   return clipText(lines.join('\n\n'));
 }
@@ -1080,7 +1114,9 @@ function buildPlanContextText(plan, module = null) {
     plan.pacing ? `Pacing and beats:\n${yamlSnippet(plan.pacing, 7000)}` : null,
     plan.character ? `Characters:\n${yamlSnippet(plan.character, 5000)}` : null,
     plan.scene ? `Scene:\n${yamlSnippet(plan.scene, 3000)}` : null,
-    plan.public_prompt_constraints ? `Public prompt constraints:\n${yamlSnippet(plan.public_prompt_constraints, 4000)}` : null,
+    plan.public_prompt_constraints
+      ? `Public prompt constraints:\n${yamlSnippet(plan.public_prompt_constraints, 4000)}`
+      : null,
   ].filter(Boolean);
   return clipText(lines.join('\n\n'));
 }
@@ -1359,23 +1395,351 @@ ${clipText(lines.join('\n\n'), SCENE_DIRECTOR_MAX_CHARS)}
 
 router.get('/personas', (req, res) => {
   try {
-    const base = learnerConfigLoader.listPersonas();
-    const known = new Set(base.map((p) => p.id));
-    // Surface persona-modifier stubs from YAML too (they're valid persona IDs)
-    const yamlModifiers = learnerConfigLoader.loadConfig?.()?.persona_modifiers || {};
-    const extraIds = Object.keys(yamlModifiers).filter((id) => !known.has(id));
-    const enriched = [...base, ...extraIds.map((id) => ({ id, name: null, description: null }))].map((p) => {
-      const sketch = PERSONA_SKETCHES[p.id];
-      return {
-        id: p.id,
-        name: p.name || sketch?.name || p.id.replace(/_/g, ' '),
-        hint: sketch?.hint || p.description || '',
-        defaultArchitecture: p.defaultArchitecture || null,
-      };
-    });
-    res.json({ personas: enriched });
+    res.json({ personas: listChatPersonas() });
   } catch (err) {
     console.error('[chat] personas error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const CHAT_ASSIST_PROMPT_FILE = 'chat-assist-concierge.md';
+const CHAT_ASSIST_MODEL = process.env.CHAT_ASSIST_MODEL || 'openrouter.gpt-mini';
+const ASSIST_CATALOG_TTL_MS = 5 * 60 * 1000;
+let assistCatalogCache = null;
+
+function compactAssistLine(value, max = 260) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+}
+
+function truncateAssistBlock(lines, maxChars = 4000) {
+  const out = [];
+  let used = 0;
+  for (const line of lines) {
+    const text = String(line || '');
+    if (!text) continue;
+    if (used + text.length + 1 > maxChars) {
+      out.push(`[catalog clipped after ${out.length} entries]`);
+      break;
+    }
+    out.push(text);
+    used += text.length + 1;
+  }
+  return out.join('\n');
+}
+
+function featureCatalogText() {
+  const sections = [];
+  for (const [dimension, values] of Object.entries(FEATURE_META)) {
+    sections.push(
+      `${dimension}: ${Object.entries(values)
+        .map(([value, hint]) => `${value} (${hint})`)
+        .join('; ')}`,
+    );
+  }
+  return sections.join('\n');
+}
+
+function directorCatalogText() {
+  const sections = [];
+  for (const [dimension, values] of Object.entries(DIRECTOR_META)) {
+    sections.push(
+      `${dimension}: ${Object.entries(values)
+        .map(([value, hint]) => `${value} (${hint})`)
+        .join('; ')}`,
+    );
+  }
+  return sections.join('\n');
+}
+
+function buildAssistCatalog() {
+  const now = Date.now();
+  if (assistCatalogCache && now - assistCatalogCache.createdAt < ASSIST_CATALOG_TTL_MS) {
+    return assistCatalogCache.catalog;
+  }
+
+  const personas = listChatPersonas();
+  const sceneSources = listCurriculumSceneSources();
+  const packages = listCurricula();
+  const lectureRefs = [];
+  const curriculumLines = [];
+  for (const pkg of packages) {
+    for (const course of pkg.courses || []) {
+      curriculumLines.push(`- ${pkg.label} / ${course.id}: ${course.title}`);
+      for (const lec of course.lectures || []) {
+        lectureRefs.push(lec.ref);
+        curriculumLines.push(`  - ${lec.ref}: ${lec.title}`);
+      }
+    }
+  }
+
+  const sceneLines = sceneSources.map((src) =>
+    [
+      `- ${src.ref}: ${src.label}`,
+      src.topic ? `topic=${compactAssistLine(src.topic, 140)}` : null,
+      src.summary ? `summary=${compactAssistLine(src.summary, 140)}` : null,
+    ]
+      .filter(Boolean)
+      .join(' | '),
+  );
+
+  const text = [
+    'FEATURE VOCABULARY',
+    featureCatalogText(),
+    '',
+    'PERSONAS',
+    personas.map((p) => `- ${p.id}: ${p.name}${p.hint ? ` (${p.hint})` : ''}`).join('\n'),
+    '',
+    'DIRECTOR VOCABULARY',
+    directorCatalogText(),
+    '',
+    'SCENE SOURCES',
+    truncateAssistBlock(sceneLines, 4000),
+    '',
+    'CURRICULUM PACKAGES AND LECTURES',
+    truncateAssistBlock(curriculumLines, 4000),
+  ].join('\n');
+
+  const catalog = {
+    text,
+    personas,
+    sceneRefs: sceneSources.map((src) => src.ref),
+    lectureRefs,
+    personaIds: personas.map((p) => p.id),
+  };
+  assistCatalogCache = { createdAt: now, catalog };
+  return catalog;
+}
+
+function sanitizeAssistMessages(raw = []) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .slice(-12)
+    .map((m) => ({
+      role: m?.role === 'assistant' ? 'assistant' : 'user',
+      content: compactAssistLine(m?.content, 1500),
+    }))
+    .filter((m) => m.content);
+}
+
+function extractAssistJson(text) {
+  const raw = String(text || '').trim();
+  if (!raw) return null;
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const candidate = fenced ? fenced[1].trim() : raw;
+  try {
+    return JSON.parse(candidate);
+  } catch {
+    const start = candidate.indexOf('{');
+    const end = candidate.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(candidate.slice(start, end + 1));
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
+function resolveAssistPreview(currentConfig = {}, proposal = null) {
+  const currentFeatures = normalizeFeatures(currentConfig?.features || {});
+  const proposedFeatures = proposal?.features && typeof proposal.features === 'object' ? proposal.features : {};
+  const resolved = resolveFeatureSelection({ ...currentFeatures, ...proposedFeatures });
+  return {
+    name: resolved.resolved?.name || null,
+    matchQuality: resolved.matchQuality,
+    score: resolved.resolved?.score ?? null,
+    maxScore: resolved.maxScore,
+  };
+}
+
+function finalizeAssistResponse({ message, rawProposal, currentConfig, totals = {}, catalog }) {
+  const { proposal, dropped } = normalizeAssistProposal(rawProposal || {}, {
+    sceneRefs: catalog.sceneRefs,
+    lectureRefs: catalog.lectureRefs,
+    personaIds: catalog.personaIds,
+  });
+  const dropNote = dropped.length ? ` Dropped unsupported field(s): ${dropped.join(', ')}.` : '';
+  return {
+    message: `${compactAssistLine(message, 1200) || 'I drafted a staging proposal.'}${dropNote}`,
+    proposal,
+    resolved: proposal ? resolveAssistPreview(currentConfig, proposal) : null,
+    totals: {
+      latencyMs: totals.latencyMs || 0,
+      outputTokens: totals.outputTokens || 0,
+    },
+  };
+}
+
+function dryRunAssistProposal(messages = [], currentConfig = {}) {
+  const latest = messages[messages.length - 1]?.content || '';
+  const text = latest.toLowerCase();
+  const proposal = {
+    features: {},
+    action: 'none',
+    rationale: {},
+  };
+
+  if (text.includes('charismatic') || text.includes('weber')) {
+    proposal.features.approach = 'charismatic';
+    proposal.features.charismaVariant = 'generalist';
+    proposal.rationale['features.approach'] = 'The request asks for a charismatic tutor.';
+  } else if (text.includes('recognition') || text.includes('hegel')) {
+    proposal.features.approach = 'recognition';
+    proposal.rationale['features.approach'] = 'The request foregrounds recognition/Hegelian framing.';
+  } else if (text.includes('minimal') || text.includes('naive')) {
+    proposal.features.approach = 'minimalist';
+    proposal.rationale['features.approach'] = 'The request asks for a minimal baseline.';
+  }
+
+  if (text.includes('anxious')) {
+    proposal.personaId = 'struggling_anxious';
+    proposal.rationale.personaId = 'An anxious learner maps to the struggling_anxious persona.';
+  } else if (text.includes('adversarial') || text.includes('challenge')) {
+    proposal.personaId = 'adversarial_tester';
+    proposal.rationale.personaId = 'A challenging learner maps to the adversarial_tester persona.';
+  }
+
+  if (text.includes('ai plays both') || text.includes('ai writes both') || text.includes('both sides')) {
+    proposal.mode = 'auto';
+    proposal.action = 'start_scene';
+    proposal.rationale.mode = 'AI writes both sides means the synthetic learner and tutor should advance together.';
+  }
+
+  const topic = latest
+    .replace(/^stage\s+(a\s+)?(drama|scene)\s+(about|on)\s+/i, '')
+    .replace(/\s+(with|using|make)\s+.*$/i, '')
+    .replace(/,\s*(with|make|ai plays|ai writes).*$/i, '')
+    .trim();
+  if (topic && topic.length > 8) {
+    proposal.topic = topic.slice(0, 180);
+    proposal.rationale.topic = 'Use the user description as the scene topic.';
+  } else if (currentConfig?.topic) {
+    proposal.topic = currentConfig.topic;
+  }
+
+  if (!Object.keys(proposal.features).length) {
+    proposal.features.approach = currentConfig?.features?.approach || 'standard';
+  }
+  return proposal;
+}
+
+router.get('/assist/health', (_req, res) => {
+  const hasOpenRouter = !!process.env.OPENROUTER_API_KEY;
+  res.json({
+    ok: hasOpenRouter,
+    provider: hasOpenRouter ? 'openrouter' : 'none',
+    model: CHAT_ASSIST_MODEL,
+  });
+});
+
+router.post('/assist', async (req, res) => {
+  const startedAt = Date.now();
+  try {
+    const catalog = buildAssistCatalog();
+    const messages = sanitizeAssistMessages(req.body?.messages || []);
+    const currentConfig =
+      req.body?.currentConfig && typeof req.body.currentConfig === 'object' ? req.body.currentConfig : {};
+    const cli = normalizeCli(req.body);
+    const dryRun = req.body?.dryRun === true;
+
+    if (!messages.length) {
+      return res.status(400).json({ error: 'messages must include at least one user message' });
+    }
+
+    if (dryRun) {
+      return res.json(
+        finalizeAssistResponse({
+          message: 'Dry-run concierge proposal. No model call was made.',
+          rawProposal: dryRunAssistProposal(messages, currentConfig),
+          currentConfig,
+          catalog,
+        }),
+      );
+    }
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!cli.provider && !apiKey) {
+      return res.status(503).json({
+        error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or use dry run.',
+      });
+    }
+
+    const prompt =
+      loadPromptFile(CHAT_ASSIST_PROMPT_FILE) || 'You are a concise stage manager for a pedagogical drama.';
+    const system = `${prompt}\n\nCATALOG\n${catalog.text}`;
+    const userPayload = JSON.stringify(
+      {
+        messages,
+        currentConfig,
+        requiredJsonShape: {
+          message: 'short prose reply',
+          proposal: {
+            features: { approach: 'optional', critic: 'optional', stance: 'optional', learnerModel: 'optional' },
+            topic: 'optional',
+            curriculumRef: 'optional or null',
+            lectureRef: 'optional or null',
+            director: { mode: 'optional', act: 'optional', beat: 'optional', scene: 'optional', note: 'optional' },
+            personaId: 'optional',
+            mode: 'optional human|teacher|auto',
+            action: 'optional none|start_scene|open_batch_launcher',
+            rationale: 'optional string or object',
+          },
+        },
+      },
+      null,
+      2,
+    );
+
+    const call = async (user) => {
+      if (cli.provider) return callCli(cli, { system, user });
+      const modelRef = resolveOpenRouterModelOverride(CHAT_ASSIST_MODEL);
+      return callModel(apiKey, {
+        modelId: modelRef.model,
+        system,
+        user,
+        temperature: 0.2,
+        maxTokens: 900,
+      });
+    };
+
+    let out = await call(userPayload);
+    let parsed = extractAssistJson(out.content);
+    if (!parsed) {
+      out = await call(`${userPayload}\n\nYour previous response was not valid JSON. Return one JSON object only.`);
+      parsed = extractAssistJson(out.content);
+    }
+
+    if (!parsed) {
+      return res.json({
+        message: compactAssistLine(out.content, 1200) || 'The concierge did not return parseable JSON.',
+        proposal: null,
+        resolved: null,
+        totals: {
+          latencyMs: Date.now() - startedAt,
+          outputTokens: out.outputTokens || 0,
+        },
+      });
+    }
+
+    return res.json(
+      finalizeAssistResponse({
+        message: parsed.message,
+        rawProposal: parsed.proposal,
+        currentConfig,
+        totals: {
+          latencyMs: Date.now() - startedAt,
+          outputTokens: out.outputTokens || 0,
+        },
+        catalog,
+      }),
+    );
+  } catch (err) {
+    console.error('[chat] assist error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -1392,9 +1756,9 @@ router.post('/learner-turn', async (req, res) => {
     curriculumRef = null,
     director = null,
     personaId = 'eager_novice',
-    useClaudeCli = false,
     dryRun = false,
   } = req.body || {};
+  const cli = normalizeCli(req.body);
 
   if (!cellName) return res.status(400).json({ error: 'cellName is required' });
 
@@ -1412,24 +1776,24 @@ router.post('/learner-turn', async (req, res) => {
   }
 
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!useClaudeCli && !apiKey) {
+  if (!cli.provider && !apiKey) {
     return res.status(503).json({
-      error: 'OPENROUTER_API_KEY is not set — either enable the Claude CLI toggle or set the key.',
+      error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or set the key.',
     });
   }
 
   // Build an llmCall adapter the engine expects: (modelRef, systemPrompt, messages, options)
-  // When useClaudeCli is true, every call is routed through the local `claude` CLI
-  // (Opus 4.7) — same interface, different substrate. Otherwise: OpenRouter.
+  // When a CLI substrate is selected, every call routes through the local
+  // `claude` or `codex` CLI — same interface, different substrate. Otherwise: OpenRouter.
   const llmCall = async (modelRef, systemPrompt, messages, options = {}) => {
-    if (useClaudeCli) {
+    if (cli.provider) {
       const userPrompt = (messages || []).map((m) => m.content).join('\n\n');
-      const out = await callClaudeCli({ system: systemPrompt, user: userPrompt });
+      const out = await callCli(cli, { system: systemPrompt, user: userPrompt });
       return {
         content: out.content,
         usage: { inputTokens: out.inputTokens, outputTokens: out.outputTokens },
-        model: CLAUDE_CLI_MODEL,
-        provider: 'claude-cli',
+        model: cliModelLabel(cli),
+        provider: `${cli.provider}-cli`,
         latencyMs: out.latencyMs,
       };
     }
@@ -1568,6 +1932,23 @@ function dryRunMetrics(model = 'dry-run') {
     inputTokens: 0,
     outputTokens: 0,
   };
+}
+
+// Live-chat sampling overrides. Blank/absent fields fall through to the cell
+// YAML hyperparameters. Temperature applies to the tutor ego only (the
+// superego review keeps its own configured temperature); maxTokens caps both.
+function normalizeSampling(raw) {
+  const out = { temperature: null, maxTokens: null };
+  if (!raw || typeof raw !== 'object') return out;
+  if (raw.temperature != null && raw.temperature !== '') {
+    const t = Number(raw.temperature);
+    if (Number.isFinite(t)) out.temperature = Math.min(Math.max(t, 0), 2);
+  }
+  if (raw.maxTokens != null && raw.maxTokens !== '') {
+    const m = Number(raw.maxTokens);
+    if (Number.isFinite(m)) out.maxTokens = Math.min(Math.max(Math.round(m), 64), 8000);
+  }
+  return out;
 }
 
 function resolveOpenRouterModelOverride(raw) {
@@ -1717,6 +2098,8 @@ router.post('/turn', async (req, res) => {
   // override block below (cellName, lectureRef, history, topic, useClaudeCli).
   const { learnerMessage } = req.body || {};
   const dryRun = req.body?.dryRun || false;
+  // Curtain-up turn: the tutor speaks first, with no learner line yet.
+  const instigate = req.body?.instigate === true;
   let {
     cellName,
     history = [],
@@ -1727,10 +2110,12 @@ router.post('/turn', async (req, res) => {
     useClaudeCli = false,
   } = req.body || {};
   const { modelOverrides = null, egoModelOverride = null, superegoModelOverride = null } = req.body || {};
+  const sampling = normalizeSampling(req.body?.sampling);
+  let cli = normalizeCli(req.body);
   const sessionId = req.body?.sessionId || null;
 
-  if (!learnerMessage || !String(learnerMessage).trim()) {
-    return res.status(400).json({ error: 'learnerMessage is required' });
+  if ((!learnerMessage || !String(learnerMessage).trim()) && !instigate) {
+    return res.status(400).json({ error: 'learnerMessage is required (or set instigate: true)' });
   }
 
   // Pilot mode: the session record is authoritative for cellName, lectureRef,
@@ -1761,6 +2146,8 @@ router.post('/turn', async (req, res) => {
     curriculumRef = null;
     director = null;
     useClaudeCli = false; // pilot is locked to OpenRouter
+    cli = { provider: null, model: null, effort: null };
+    if (instigate) return res.status(400).json({ error: 'instigate is not allowed for pilot sessions' });
     // Authoritative server-side history — replay from DB rather than trust client
     const dbTurns = pilotStore.listTurns(sessionId);
     history = dbTurns.map((t) => ({ role: t.role, content: t.content }));
@@ -1778,7 +2165,7 @@ router.post('/turn', async (req, res) => {
 
   let egoOverrideRef = null;
   let superegoOverrideRef = null;
-  if (!pilotSession && !useClaudeCli) {
+  if (!pilotSession && !cli.provider) {
     try {
       const overrides = modelOverrides && typeof modelOverrides === 'object' ? modelOverrides : {};
       egoOverrideRef = resolveOpenRouterModelOverride(egoModelOverride ?? overrides.ego ?? overrides.tutorEgo);
@@ -1797,7 +2184,7 @@ router.post('/turn', async (req, res) => {
     return res.json(
       buildDryRunTutorTurn({
         profile,
-        learnerMessage: String(learnerMessage),
+        learnerMessage: instigate ? '(curtain rises — the tutor opens the scene)' : String(learnerMessage),
         topic: String(topic),
         egoModelOverride: egoOverrideRef,
         superegoModelOverride: superegoOverrideRef,
@@ -1806,9 +2193,9 @@ router.post('/turn', async (req, res) => {
   }
 
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!useClaudeCli && !apiKey) {
+  if (!cli.provider && !apiKey) {
     return res.status(503).json({
-      error: 'OPENROUTER_API_KEY is not set — either enable the Claude CLI toggle or set the key.',
+      error: 'OPENROUTER_API_KEY is not set — either pick a local CLI substrate or set the key.',
     });
   }
 
@@ -1817,7 +2204,7 @@ router.post('/turn', async (req, res) => {
   // superego review needs the complete ego output before it can begin.
   // Claude CLI substrate is also non-streaming (the CLI returns once).
   const wantsStream = req.query.stream === '1' || req.query.stream === 'true';
-  if (wantsStream && !profile.superego && !useClaudeCli) {
+  if (wantsStream && !profile.superego && !cli.provider) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -1837,6 +2224,8 @@ router.post('/turn', async (req, res) => {
         curriculum,
         directorPlan,
         egoModelOverride: egoOverrideRef,
+        temperature: sampling.temperature,
+        maxTokens: sampling.maxTokens,
         onDelta: (d) => send({ delta: d }),
       });
 
@@ -1918,13 +2307,17 @@ router.post('/turn', async (req, res) => {
       profile,
       apiKey,
       history,
-      learnerMessage: String(learnerMessage),
+      instigate,
+      learnerMessage: String(learnerMessage || ''),
       topic: String(topic),
       curriculum,
       directorPlan,
       useClaudeCli: !!useClaudeCli,
+      cli,
       egoModelOverride: egoOverrideRef,
       superegoModelOverride: superegoOverrideRef,
+      temperature: sampling.temperature,
+      maxTokens: sampling.maxTokens,
     });
 
     if (pilotSession) {
@@ -2008,8 +2401,43 @@ function recentContext(history) {
 const CLAUDE_CLI_BIN = process.env.CLAUDE_CLI_BIN || 'claude';
 const CLAUDE_CLI_MODEL = process.env.CHAT_CLI_MODEL || 'claude-opus-4-7';
 const CLAUDE_CLI_TIMEOUT_MS = Number(process.env.CHAT_CLI_TIMEOUT_MS) || 180_000;
+const CODEX_CLI_BIN = process.env.CODEX_CLI_BIN || 'codex';
+// No hardcoded codex default: ChatGPT-account codex rejects models outside its
+// entitlement, so unless the user (or CHAT_CODEX_MODEL) names one we omit -m
+// and let ~/.codex/config.toml decide.
+const CODEX_CLI_MODEL = process.env.CHAT_CODEX_MODEL || null;
+const CLI_PROVIDERS = ['claude', 'codex'];
+const CLI_EFFORTS = ['minimal', 'low', 'medium', 'high', 'xhigh'];
 
-async function callClaudeCli({ system, user }) {
+// Normalize the substrate request: new-style { cli: { provider, model, effort } }
+// with the legacy boolean useClaudeCli mapping to { provider: 'claude' }.
+// model is a free string (validated only for shape); effort must be a known level.
+function normalizeCli(body = {}) {
+  const raw = body.cli && typeof body.cli === 'object' ? body.cli : {};
+  let provider = CLI_PROVIDERS.includes(raw.provider) ? raw.provider : null;
+  if (!provider && body.useClaudeCli === true) provider = 'claude';
+  if (!provider) return { provider: null, model: null, effort: null };
+  const model =
+    typeof raw.model === 'string' && raw.model.trim() ? raw.model.trim().slice(0, 80).replace(/["\\]/g, '') : null;
+  const effort = CLI_EFFORTS.includes(raw.effort) ? raw.effort : null;
+  return { provider, model, effort };
+}
+
+function cliModelLabel(cli) {
+  if (!cli?.provider) return null;
+  if (cli.provider === 'codex') return cli.model || CODEX_CLI_MODEL || 'codex-config-default';
+  return cli.model || CLAUDE_CLI_MODEL;
+}
+
+// Dispatch a pure text-generation call to the requested local CLI substrate.
+function callCli(cli, { system, user }) {
+  if (cli?.provider === 'codex') {
+    return callCodexCli({ system, user, model: cli.model, effort: cli.effort });
+  }
+  return callClaudeCli({ system, user, model: cli?.model || null, effort: cli?.effort || null });
+}
+
+async function callClaudeCli({ system, user, model = null, effort = null }) {
   const fullPrompt = `${system}\n\n---\n\n${user}`;
   const start = Date.now();
   // Note: we do NOT pass --bare because that disables keychain auth (the user's
@@ -2020,13 +2448,14 @@ async function callClaudeCli({ system, user }) {
     '-p',
     fullPrompt,
     '--model',
-    CLAUDE_CLI_MODEL,
+    model || CLAUDE_CLI_MODEL,
     '--output-format',
     'json',
     '--no-session-persistence',
     '--disallowedTools',
     'Bash,Edit,Write,Read,Grep,Glob,WebFetch,WebSearch,Task,NotebookEdit,AskUserQuestion',
   ];
+  if (effort) args.push('--effort', effort);
   return new Promise((resolve, reject) => {
     const proc = spawn(CLAUDE_CLI_BIN, args, { stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = '';
@@ -2090,6 +2519,78 @@ async function callClaudeCli({ system, user }) {
   });
 }
 
+// Codex CLI substrate: `codex exec` as a pure text generator. read-only
+// sandbox + --skip-git-repo-check keep it from acting like an agent; the
+// final assistant message is written to a temp file via -o (stable across
+// codex versions, unlike the JSONL event stream). Token counts are estimated
+// (subscription-billed; codex does not report usage through -o).
+async function callCodexCli({ system, user, model = null, effort = null }) {
+  const fullPrompt = `${system}\n\n---\n\n${user}`;
+  const start = Date.now();
+  const outFile = path.join(
+    fs.mkdtempSync(path.join(process.env.TMPDIR || '/tmp', 'ms-chat-codex-')),
+    'last-message.txt',
+  );
+  const args = ['exec', '--sandbox', 'read-only', '--skip-git-repo-check', '--color', 'never', '-o', outFile];
+  const chosenModel = model || CODEX_CLI_MODEL;
+  if (chosenModel) args.push('-m', chosenModel);
+  if (effort) args.push('-c', `model_reasoning_effort="${effort}"`);
+  args.push(fullPrompt);
+  return new Promise((resolve, reject) => {
+    const proc = spawn(CODEX_CLI_BIN, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+    let stderr = '';
+    const cleanup = () => {
+      try {
+        fs.rmSync(path.dirname(outFile), { recursive: true, force: true });
+      } catch {
+        /* best effort */
+      }
+    };
+    const timer = setTimeout(() => {
+      try {
+        proc.kill('SIGKILL');
+      } catch {
+        /* already exited */
+      }
+      cleanup();
+      reject(new Error(`codex CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms`));
+    }, CLAUDE_CLI_TIMEOUT_MS);
+    proc.stdout.on('data', () => {});
+    proc.stderr.on('data', (d) => {
+      stderr += d.toString();
+    });
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      cleanup();
+      reject(err);
+    });
+    proc.on('close', (code) => {
+      clearTimeout(timer);
+      const latencyMs = Date.now() - start;
+      let content = '';
+      try {
+        content = fs.readFileSync(outFile, 'utf8').trim();
+      } catch {
+        content = '';
+      }
+      cleanup();
+      if (code !== 0) {
+        return reject(new Error(`codex CLI exited ${code}: ${stderr.slice(0, 400)}`));
+      }
+      if (!content) {
+        return reject(new Error(`codex CLI returned no output: ${stderr.slice(0, 400)}`));
+      }
+      resolve({
+        content,
+        latencyMs,
+        inputTokens: Math.ceil(fullPrompt.length / 4),
+        outputTokens: Math.ceil(content.length / 4),
+        costUsd: 0,
+      });
+    });
+  });
+}
+
 async function callModel(apiKey, { modelId, system, user, temperature, maxTokens }) {
   const start = Date.now();
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -2141,13 +2642,15 @@ async function streamSingleAgentTurn({
   curriculum = null,
   directorPlan = null,
   egoModelOverride = null,
+  temperature = null,
+  maxTokens = null,
   onDelta,
 }) {
   const conversationContext = recentContext(history);
   const egoModelRef = egoModelOverride || evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
-  const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
-  const egoMaxTokens = profile.ego.hyperparameters?.max_tokens ?? 2000;
+  const egoTemp = temperature ?? profile.ego.hyperparameters?.temperature ?? 0.6;
+  const egoMaxTokens = maxTokens ?? profile.ego.hyperparameters?.max_tokens ?? 2000;
 
   const curriculumBlock = buildCurriculumPromptBlock(curriculum);
   const directorBlock = buildDirectorPromptBlock(directorPlan);
@@ -2263,22 +2766,27 @@ async function runTutorTurn({
   curriculum = null,
   directorPlan = null,
   useClaudeCli = false,
+  cli = null,
+  instigate = false,
   // Optional, live-only knobs. Defaults preserve the scored instrument exactly:
   // styleDirective is appended to the ego draft + superego revision instructions
   // (e.g. a brevity / one-question-per-turn rule for the interactive sit-in), and
   // maxTokens caps the ego/superego output. Batch eval never sets either.
   styleDirective = '',
   maxTokens = null,
+  temperature = null,
   egoModelOverride = null,
   superegoModelOverride = null,
 }) {
   const conversationContext = recentContext(history);
   const deliberation = [];
   const styleLine = styleDirective ? `\n\n${styleDirective}` : '';
+  // CLI substrate config: explicit `cli` wins; legacy useClaudeCli maps to claude.
+  const cliCfg = cli?.provider ? cli : useClaudeCli ? { provider: 'claude', model: null, effort: null } : null;
 
   const egoModelRef = egoModelOverride || evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
-  const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
+  const egoTemp = temperature ?? profile.ego.hyperparameters?.temperature ?? 0.6;
   const egoMaxTokens = maxTokens ?? profile.ego.hyperparameters?.max_tokens ?? 2000;
 
   const curriculumBlock = buildCurriculumPromptBlock(curriculum);
@@ -2294,17 +2802,22 @@ Topic: ${topic}
 Recent conversation:
 ${conversationContext || '(none)'}
 
-The learner just said:
+${
+  instigate
+    ? `The curtain has just risen: there is no learner line yet. You speak first. Open the scene — set the stage per the director frame, welcome the learner in character, and pose one inviting opening move on the topic. Keep it short enough to answer.`
+    : `The learner just said:
 "${learnerMessage}"
 
-Draft your initial response as a tutor. Be warm but intellectually challenging. Don't be condescending. Build on their words.${styleLine} Provide ONLY the response text (no JSON, no meta-commentary).`;
+Draft your initial response as a tutor. Be warm but intellectually challenging. Don't be condescending. Build on their words.`
+}${styleLine} Provide ONLY the response text (no JSON, no meta-commentary).`;
 
-  const egoOut = useClaudeCli
-    ? await callClaudeCli({ system: egoSystem, user: learnerMessage })
+  const egoUser = instigate ? 'Open the scene now.' : learnerMessage;
+  const egoOut = cliCfg
+    ? await callCli(cliCfg, { system: egoSystem, user: egoUser })
     : await callModel(apiKey, {
         modelId: egoModelRef.model,
         system: egoSystem,
-        user: learnerMessage,
+        user: egoUser,
         temperature: egoTemp,
         maxTokens: egoMaxTokens,
       });
@@ -2314,12 +2827,13 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
     role: 'ego',
     label: 'Ego — initial draft',
     content: egoDraft,
-    model: useClaudeCli ? CLAUDE_CLI_MODEL : egoModelRef.model,
-    provider: useClaudeCli ? 'claude-cli' : egoModelRef.provider,
+    model: cliCfg ? cliModelLabel(cliCfg) : egoModelRef.model,
+    provider: cliCfg ? `${cliCfg.provider}-cli` : egoModelRef.provider,
     temperature: egoTemp,
     latencyMs: egoOut.latencyMs,
     inputTokens: egoOut.inputTokens,
     outputTokens: egoOut.outputTokens,
+    costUsd: egoOut.costUsd || 0,
   });
 
   let finalMessage = egoDraft;
@@ -2355,8 +2869,8 @@ Format strictly:
 CRITIQUE: [your analysis]
 IMPROVED: [refined response, or "APPROVED"]`;
 
-    const superOut = useClaudeCli
-      ? await callClaudeCli({ system: superSystem, user: egoDraft })
+    const superOut = cliCfg
+      ? await callCli(cliCfg, { system: superSystem, user: egoDraft })
       : await callModel(apiKey, {
           modelId: superModelRef.model,
           system: superSystem,
@@ -2370,12 +2884,13 @@ IMPROVED: [refined response, or "APPROVED"]`;
       role: 'superego',
       label: 'Superego — critique',
       content: superegoCritique,
-      model: useClaudeCli ? CLAUDE_CLI_MODEL : superModelRef.model,
-      provider: useClaudeCli ? 'claude-cli' : superModelRef.provider,
+      model: cliCfg ? cliModelLabel(cliCfg) : superModelRef.model,
+      provider: cliCfg ? `${cliCfg.provider}-cli` : superModelRef.provider,
       temperature: superTemp,
       latencyMs: superOut.latencyMs,
       inputTokens: superOut.inputTokens,
       outputTokens: superOut.outputTokens,
+      costUsd: superOut.costUsd || 0,
     });
 
     const improvedMatch = superegoCritique.match(/IMPROVED:\s*([\s\S]*?)$/i);
@@ -2414,6 +2929,7 @@ IMPROVED: [refined response, or "APPROVED"]`;
       inputTokens: deliberation.reduce((s, d) => s + (d.inputTokens || 0), 0),
       outputTokens: deliberation.reduce((s, d) => s + (d.outputTokens || 0), 0),
       latencyMs: deliberation.reduce((s, d) => s + (d.latencyMs || 0), 0),
+      costUsd: deliberation.reduce((s, d) => s + (d.costUsd || 0), 0),
     },
   };
 }

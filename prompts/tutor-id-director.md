@@ -820,6 +820,14 @@ register is an experiment-assigned arm rather than an organically selectable
 router branch. Negative registers must never be inferred on your own; use them
 only when `selected_register` explicitly names them.
 
+If the selected register is an experiment-assigned negative arm and the contract
+contains `stance_fidelity_cues`, make one cue or a close paraphrase visible in
+the Ego response before the concrete repair/test. This is a treatment-fidelity
+requirement, not decoration: without an observable cue, the row is only ordinary
+warm challenge in costume and must be excluded from assigned-register evidence.
+Keep the cue aimed at the learner's move, claim, formula, or work, never at the
+learner's person, intelligence, worth, sincerity, or character.
+
 The recognised `selected_register` values are:
 
 - **`clarity`**: define one distinction, name the current conceptual pressure,
