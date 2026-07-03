@@ -69,3 +69,12 @@ mismatched 0/5, generic 0/5, cross 0/20; --live hard-gated on Stage 1 go),
 Recorded §3.1 deviation: no new cells — arms reuse 186/193/199; pinning is
 scenario+gate-driven, keeping config hashes clean against the legacy §6.14
 control corpus. Stage 1 (paid instrument validation) awaits go.
+
+2026-07-03 Claude: Stage 1 run (user go; full log in note §7). Probe 30/30
+rows: **FAIL** — selectivity 0.10 (vs ≥0.8) with false-yield 0.00, attempt
+median 1, exhaustion 0. Sycophancy fully repaired; failure localized to the
+grounding checker's token-citation requirement (learner yields appropriately
+but does not name the DSB token; the one grounded row does). Canary skipped
+and Stage 2 locked per pre-registration stop discipline. Next requires a
+fresh go: character-sheet citation amendment + re-probe.
+

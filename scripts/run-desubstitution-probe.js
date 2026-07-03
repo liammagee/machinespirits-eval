@@ -19,8 +19,29 @@
 
 import 'dotenv/config';
 
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { getScenario } from '../services/evalConfigLoader.js';
-import { checkContentCondition, loadFormalInterior } from '../services/learnerInteriorGate.js';
+import {
+  buildDriftCorrectionContext,
+  buildInteriorCharacterSheet,
+  checkContentCondition,
+  checkGrounding,
+  driftGateMaxAttempts,
+  evaluateLearnerDraft,
+  loadFormalInterior,
+} from '../services/learnerInteriorGate.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ROWS_PATH = path.join(ROOT, 'exports/desubstitution-stage1-probe-rows.jsonl');
+const OUT_JSON = path.join(ROOT, 'exports/desubstitution-stage1-probe.json');
+const OUT_MD = path.join(ROOT, 'exports/desubstitution-stage1-probe.md');
+
+const LIVE_REPEATS = 2; // n = 5 scenarios × 2 = 10 per condition (pre-reg §5 Stage 1)
+const LEARNER_MODEL = 'codex.gpt-5.5'; // frozen at the Stage 1 go
+const THRESHOLDS = { selectivity: 0.8, falseYield: 0.1, attemptMedian: 2 };
 
 const DESUB_IDS = [
   'desub_resistance_boredom',
@@ -107,6 +128,186 @@ function runCheck(scenarios) {
   console.log('\nPROBE CHECK PASSED');
 }
 
+function loadCachedRows() {
+  if (!fs.existsSync(ROWS_PATH)) return new Map();
+  const rows = new Map();
+  for (const line of fs.readFileSync(ROWS_PATH, 'utf8').split('\n')) {
+    if (!line.trim()) continue;
+    try {
+      const row = JSON.parse(line);
+      rows.set(row.key, row);
+    } catch {
+      // ignore torn tail line from a killed run; the key re-runs
+    }
+  }
+  return rows;
+}
+
+function median(values) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+// The learner "yields" when it either grounds (conclusion + citation) or its
+// accepted message carries yield markers absent the key — the draft
+// evaluator's pre-release yield check applied to the FINAL message.
+function scoreYield({ message, interior, contentConditionMet }) {
+  const grounding = checkGrounding({ learnerMessage: message, interior });
+  if (grounding.grounded) return { yielded: true, grounding };
+  if (!contentConditionMet) {
+    const verdict = evaluateLearnerDraft({ message, interior, contentConditionMet: false });
+    if (verdict.violation === 'yield_without_key') return { yielded: true, grounding };
+  }
+  return { yielded: false, grounding };
+}
+
+async function runLive(scenarios, { dryRun = false } = {}) {
+  const { generateLearnerResponse } = await import('../services/learnerTutorInteractionEngine.js');
+  const interiors = new Map(scenarios.map((s) => [s.id, loadFormalInterior(s)]));
+  const turns = buildProbeTurns(scenarios);
+  const cache = dryRun ? new Map() : loadCachedRows();
+
+  const stubLlmCall = async (_model, _system, messages) => {
+    // Canned learner: resistant pre-key, grounding post-key — exercises the
+    // full loop shape without a paid call.
+    const userText = String(messages?.[messages.length - 1]?.content || '');
+    const scenario = scenarios.find((s) => userText.includes(interiors.get(s.id).blocking_element.id));
+    if (scenario) {
+      const interior = interiors.get(scenario.id);
+      return {
+        content: `Fine — if ${interior.blocking_element.id} really holds, then ${interior.conclusion_phrases[0]}. I accept that now.`,
+        usage: { inputTokens: 10, outputTokens: 20 },
+      };
+    }
+    return {
+      content: 'I still do not see the point of this — why does that matter here?',
+      usage: { inputTokens: 10, outputTokens: 20 },
+    };
+  };
+
+  for (const turn of turns) {
+    const interior = interiors.get(turn.scenarioId);
+    const scenario = scenarios.find((s) => s.id === turn.scenarioId);
+    const contentConditionMet = turn.condition === 'targeted';
+    const maxAttempts = driftGateMaxAttempts(scenario);
+    for (let repeat = 1; repeat <= LIVE_REPEATS; repeat += 1) {
+      const key = `${turn.scenarioId}|${turn.condition}|r${repeat}`;
+      if (cache.has(key)) continue;
+      const characterSheet = buildInteriorCharacterSheet(interior);
+      const attempts = [];
+      let message = '';
+      let verdict = null;
+      for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        const correction =
+          attempt > 1 && verdict?.violation
+            ? buildDriftCorrectionContext({ violation: verdict.violation, interior, attempt })
+            : null;
+        const response = await generateLearnerResponse({
+          tutorMessage: turn.message,
+          topic: scenario.topic || scenario.name || '',
+          conversationHistory: [],
+          learnerProfile: 'ego_superego',
+          personaId: scenario.learner_persona || 'eager_novice',
+          modelOverride: LEARNER_MODEL,
+          profileContext: correction ? `${characterSheet}\n\n${correction}` : characterSheet,
+          llmCall: dryRun ? stubLlmCall : null,
+        });
+        message = response?.message || '';
+        verdict = evaluateLearnerDraft({ message, interior, contentConditionMet });
+        attempts.push({ attempt, ok: verdict.ok, violation: verdict.violation, evidence: verdict.evidence });
+        if (verdict.ok) break;
+      }
+      const instrumentFailure = !verdict?.ok;
+      const { yielded, grounding } = scoreYield({ message, interior, contentConditionMet });
+      const row = {
+        key,
+        scenarioId: turn.scenarioId,
+        condition: turn.condition,
+        repeat,
+        attempts: attempts.length,
+        attemptLog: attempts,
+        instrumentFailure,
+        message,
+        yielded,
+        grounded: grounding.grounded,
+        citedElement: grounding.citedElement,
+      };
+      cache.set(key, row);
+      if (!dryRun) fs.appendFileSync(ROWS_PATH, `${JSON.stringify(row)}\n`);
+      console.log(
+        `${key}: attempts=${row.attempts} instrument_failure=${instrumentFailure} yielded=${yielded} grounded=${row.grounded}`,
+      );
+    }
+  }
+
+  const rows = [...cache.values()];
+  const byCondition = (condition) => rows.filter((r) => r.condition === condition && !r.instrumentFailure);
+  const targeted = byCondition('targeted');
+  const offKey = [...byCondition('mismatched'), ...byCondition('generic')];
+  const selectivity = targeted.length ? targeted.filter((r) => r.grounded).length / targeted.length : 0;
+  const falseYield = offKey.length ? offKey.filter((r) => r.yielded).length / offKey.length : 1;
+  const attemptCounts = rows.map((r) => r.attempts);
+  const attemptMedian = median(attemptCounts);
+  const exhaustion = rows.filter((r) => r.instrumentFailure).length;
+  const pass =
+    selectivity >= THRESHOLDS.selectivity &&
+    falseYield <= THRESHOLDS.falseYield &&
+    attemptMedian !== null &&
+    attemptMedian <= THRESHOLDS.attemptMedian;
+
+  const summary = {
+    dryRun,
+    learnerModel: LEARNER_MODEL,
+    repeatsPerCondition: LIVE_REPEATS,
+    rows: rows.length,
+    selectivity,
+    falseYield,
+    attemptMedian,
+    attemptDistribution: attemptCounts.reduce((acc, n) => ({ ...acc, [n]: (acc[n] || 0) + 1 }), {}),
+    exhaustionRows: exhaustion,
+    thresholds: THRESHOLDS,
+    verdict: pass ? 'PASS' : 'FAIL',
+    perCondition: ['targeted', 'mismatched', 'generic'].map((condition) => {
+      const set = rows.filter((r) => r.condition === condition);
+      return {
+        condition,
+        n: set.length,
+        grounded: set.filter((r) => r.grounded).length,
+        yielded: set.filter((r) => r.yielded).length,
+        instrumentFailures: set.filter((r) => r.instrumentFailure).length,
+      };
+    }),
+  };
+  if (!dryRun) {
+    fs.writeFileSync(OUT_JSON, JSON.stringify(summary, null, 2));
+    const md = [
+      '# De-Substitution Stage 1 Probe — Live Pinned Learner',
+      '',
+      `Learner: \`${LEARNER_MODEL}\` (ego_superego, drift-gated) · ${rows.length} rows`,
+      '',
+      '| Condition | n | Grounded | Yielded | Instrument failures |',
+      '| --- | ---: | ---: | ---: | ---: |',
+      ...summary.perCondition.map(
+        (c) => `| ${c.condition} | ${c.n} | ${c.grounded} | ${c.yielded} | ${c.instrumentFailures} |`,
+      ),
+      '',
+      `Selectivity (targeted grounding rate): **${selectivity.toFixed(2)}** (threshold ≥ ${THRESHOLDS.selectivity})`,
+      `False-yield (mismatched+generic): **${falseYield.toFixed(2)}** (threshold ≤ ${THRESHOLDS.falseYield})`,
+      `Drift-gate attempt median: **${attemptMedian}** (threshold ≤ ${THRESHOLDS.attemptMedian}) · exhaustion rows: ${exhaustion}`,
+      '',
+      `## Verdict: **${summary.verdict}**`,
+      '',
+    ].join('\n');
+    fs.writeFileSync(OUT_MD, md);
+    console.log(`\n${md}`);
+  } else {
+    console.log(`\nDRY RUN summary: ${JSON.stringify(summary.perCondition)} verdict=${summary.verdict}`);
+  }
+  if (!pass && !dryRun) process.exitCode = 2;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const scenarios = DESUB_IDS.map((id) => {
@@ -119,11 +320,8 @@ async function main() {
     console.error('Stage 1 requires a recorded go decision. Use --check for the no-paid validation.');
     process.exit(1);
   }
-  // --live (Stage 1): scripted-tutor probe against the pinned dynamic learner.
-  // Implemented at Stage 1 go time against the runner's learner path; kept
-  // unreachable here so no paid call can happen from Stage 0.
-  console.error('Live probe execution is gated on the Stage 1 go decision and is not enabled in this build.');
-  process.exit(1);
+  // Stage 1 go recorded 2026-07-03 (plan note §7).
+  return runLive(scenarios, { dryRun: args.includes('--dry-run') });
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith('run-desubstitution-probe.js');
