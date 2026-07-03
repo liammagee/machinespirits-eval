@@ -1,0 +1,70 @@
+# Strategy Ledger v2 — Pre-registration (mechanism trialling under binding conditions)
+
+**Status:** pre-registered 2026-07-03, BEFORE any paid run of this design. Implementation under test: Strategy Ledger v2 (`LAYERED-DECISION-LOOPS-PLAN.md` Part 6 + implementation status note; gates 30/30, tests 19/19 at commit `cad94eed`).
+**Tier:** pre-registered **pilot**. Results land in `docs/research/paper-full-2.0.md` as a bounded pilot claim regardless of direction; no stronger claim without a scaled confirmatory run.
+**Prior null this design answers:** Phase 3 (`STRATEGY-LEDGER-PHASE3-PREREGISTRATION.md`) — null with unexercised levers on schedule-solvable worlds with a compliant learner. v2 therefore runs ONLY under binding conditions, behind a headroom precondition gate.
+
+## Question
+
+When strategy is a **choice among adaptive mechanisms, revised by reviewing the history of what was actually tried** (the v2 trialling loop: mechanism menu, treatment-fidelity gate, effectiveness review, licensed departures), does tutor conduct or dialogue outcome improve over (a) no ledger and (b) the v1 conformance-only ledger — under conditions where the levers can bind?
+
+## Binding conditions (constant across all arms)
+
+`--scene-mode --didactic-mode --register modern --release-authority --pacing-guard --decay '{"seed":11,"rate":0.25}'` — the §6.13-proven stack that gives outcomes headroom: the tutor owns release timing inside guard windows, and seeded decay makes the learner's board lossy (repair work exists; the drama can move backward). Superego OFF, critic OFF, no acts. Decay visibility stays the default `told`.
+
+## Arms (single-delta ladder; staged)
+
+| Arm | Label | Delta on top of the binding base |
+|---|---|---|
+| A2 | `baseline` | — |
+| B2 | `ledger-v1` | `--strategy-ledger '{"registerPalette":["modern"]}'` (conformance loop only) |
+| C2 | `trialling` | `--strategy-ledger '{"trialling":true,"stancePalette":["charismatic_challenge","ironic_challenge"],"releaseIntent":true,"registerPalette":["modern"]}'` |
+| D2 | `trialling-learner` | C2 + `--learner-ledger` — **staged: runs only if C2 vs B2 shows any signal** (the learner machinery is v1-unchanged and was null in Phase 3; it earns a re-test only under a live tutor-side effect) |
+
+Contrasts: **V2a** (trialling) = C2 − B2 (the v2 delta proper). **V2b** (any ledger at all under binding conditions) = B2 − A2 (re-tests Phase 3's E1 where levers bind). D2 − C2 only if staged in.
+
+Stance palette discipline: one positive (`charismatic_challenge`) + one negative (`ironic_challenge`, explicitly listed — never organically selectable); `sarcastic_challenge` and `face_threat_challenge` excluded from this pilot. Release intent runs under the tutor's existing release authority; the pacing guard keeps final authority (gate `L5-guards-untouched` pins this).
+
+## Worlds and repeats
+
+- `world-006-hethel` (cap 26, t_min 18) with `tutor-scripts/hethel-v001.md` — the decay/repair arc's canonical world.
+- `world-005-marrick` (cap 28, t_min 20) with `tutor-scripts/marrick-v001.md` — AND-join depth past the forcing turn.
+
+3 repeats per arm per world, interleaved (r1 all arms, r2 …) → 18 runs for A2/B2/C2 (n=6/arm pooled); +6 if D2 stages in.
+
+## Backend (operator-directed: codex CLI)
+
+`DERIVATION_PROVIDER=codex` for all drama roles (model: the CLI's configured default, recorded from the first run's diagnosis; `DERIVATION_CODEX_REASONING` unset). Constant across arms and worlds. Probed latency ≈ 6 s/call → ≈ 8–12 min/run; the matrix runs serialized as two attended world-blocks (≈ 1.5 h each), pausable between blocks (Max-plan-style quota is meterless — human checkpoints between blocks apply quota knowledge). A run hanging > 40 min is killed and re-run once under the same label; two failures exclude the label (reported).
+
+## Headroom precondition gate (H0 — runs BEFORE the matrix; failure stops everything)
+
+1. **Zero-paid:** every arm config runs end-to-end on the mock backend (pipeline validity).
+2. **Paid probe:** 2 × A2 runs on hethel (codex). REQUIRE: (a) T\* varies across the two runs, or at least one run does not ground at the first post-forcing turn; AND (b) ≥ 1 decay event with the repair channel exercised (a repair or re-adoption on the record). If flat → stop, redesign worlds/conditions, no matrix. H0 runs are design probes and never enter the contrast data.
+
+## Endpoints (programmatic only; frozen analysis extended from Phase 3's script)
+
+Per run: `T*` = `assertedGroundedTurn` (imputed cap+1 when absent).
+
+- **Primary (V2a and V2b):**
+  1. `T*` (lower better)
+  2. Grounded rate (higher better)
+  3. **Repair latency** (lower better): mean turns from each decay event to the first repair/re-adoption of that premise (cap-end imputed when never repaired)
+  4. Stall/aporia rate (lower better)
+- **Conduct endpoints (descriptive for V2b, primary for V2a):** mechanism-switch-after-failure rate in C2 (do reviews answer failed trials?); faithful-rate on negative-stance scenes (assigned vs faithful); mode-flap rate.
+- **Estimands (C2):** reported BOTH as assigned-arm (every C2 run) and faithful-arm (C2 restricted to scenes whose fidelity gate returned `faithful` or `not_applicable`) — the landed register-arc vocabulary.
+- **Guardrails (violation blocks any positive reading):** leaks = 0; `invalid_person_attack` = 0; pacing-guard override count = 0; missed-release/discipline stats in ledger arms not worse than A2 per world; aporia-like verdicts ≤ A2 + 1 per world; commitment coverage ≥ 80%; review coverage ≥ 80% of openings-with-history (C2).
+
+## Decision rules
+
+Pilot tier: a **signal** = same direction in both worlds AND pooled |Δ| ≥ 0.5 pooled SD. Mann-Whitney U descriptive; no significance claims at n=6/arm. Nulls reported with equal prominence. The Phase-3 lesson stands pre-committed: if C2's levers again go unexercised (no faithful negative-stance scene, no switch decisions, no repair pressure), that is an instrument finding to report, not a reason to re-roll.
+
+## Exclusions / retries
+
+Transport/CLI failures: one re-run under the same label; two failures exclude the label (reported). Parse-misses are data (coverage). No outcome-driven rerolls (§5.12.6).
+
+## Artifacts
+
+- Specs: `config/drama-derivation/matrix-specs/ledger-v2-{hethel,marrick}.yaml`
+- H0 probe runs: `exports/dramatic-derivation/strategy-ledger/h0-probe/`
+- Matrix runs: `exports/dramatic-derivation/matrix/ledger-v2-<world>/<arm>/`
+- Analysis: `scripts/analyze-strategy-ledger-contrasts.js` extended (arm map + repair-latency + faithful-arm split) BEFORE the paid matrix and frozen thereafter → `exports/dramatic-derivation/strategy-ledger/v2-contrasts-report.{json,md}`

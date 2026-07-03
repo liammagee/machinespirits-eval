@@ -24,18 +24,75 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT_SCHEMA = 'dramatic-derivation.strategy-ledger-phase3.v0';
-const ARMS = ['baseline', 'ledger', 'ledger-palette', 'ledger-learner'];
-const CONTRASTS = [
-  { id: 'E1', name: 'persistence', treat: 'ledger', control: 'baseline' },
-  { id: 'E2', name: 'register-as-decision', treat: 'ledger-palette', control: 'ledger' },
-  { id: 'E3', name: 'learner-mirror', treat: 'ledger-learner', control: 'ledger' },
-];
+const DESIGNS = {
+  phase3: {
+    arms: ['baseline', 'ledger', 'ledger-palette', 'ledger-learner'],
+    armPattern: /^(baseline|ledger-palette|ledger-learner|ledger)-r(\d+)$/,
+    contrasts: [
+      { id: 'E1', name: 'persistence', treat: 'ledger', control: 'baseline' },
+      { id: 'E2', name: 'register-as-decision', treat: 'ledger-palette', control: 'ledger' },
+      { id: 'E3', name: 'learner-mirror', treat: 'ledger-learner', control: 'ledger' },
+    ],
+    endpoints: {
+      E1: [
+        ['modeFlapRate', 'lower'],
+        ['timeToRecognition', 'lower'],
+        ['grounded', 'higher'],
+      ],
+      E2: [
+        ['modeFlapRate', 'lower'],
+        ['timeToRecognition', 'lower'],
+        ['grounded', 'higher'],
+      ],
+      E3: [
+        ['timeToRecognition', 'lower'],
+        ['voicedCount', 'higher'],
+        ['overreachCount', 'lower'],
+        ['hypothesisCount', 'higher'],
+      ],
+    },
+  },
+  // STRATEGY-LEDGER-V2-PREREGISTRATION.md — frozen before the paid matrix.
+  v2: {
+    arms: ['baseline', 'ledger-v1', 'trialling', 'trialling-learner'],
+    armPattern: /^(baseline|ledger-v1|trialling-learner|trialling)-r(\d+)$/,
+    contrasts: [
+      { id: 'V2a', name: 'trialling', treat: 'trialling', control: 'ledger-v1' },
+      { id: 'V2b', name: 'ledger-under-binding', treat: 'ledger-v1', control: 'baseline' },
+      { id: 'V2c', name: 'learner-mirror-staged', treat: 'trialling-learner', control: 'trialling' },
+    ],
+    endpoints: {
+      V2a: [
+        ['timeToRecognition', 'lower'],
+        ['grounded', 'higher'],
+        ['repairLatency', 'lower'],
+        ['aporiaLike', 'lower'],
+      ],
+      V2b: [
+        ['timeToRecognition', 'lower'],
+        ['grounded', 'higher'],
+        ['repairLatency', 'lower'],
+        ['aporiaLike', 'lower'],
+      ],
+      V2c: [
+        ['timeToRecognition', 'lower'],
+        ['voicedCount', 'higher'],
+        ['overreachCount', 'lower'],
+        ['hypothesisCount', 'higher'],
+      ],
+    },
+  },
+};
+let DESIGN = DESIGNS.phase3;
+let ARMS = DESIGN.arms;
+let CONTRASTS = DESIGN.contrasts;
 
 function parseArgs(argv) {
-  const opts = { runs: [], out: path.join(ROOT, 'exports/dramatic-derivation/strategy-ledger') };
+  const opts = { runs: [], out: path.join(ROOT, 'exports/dramatic-derivation/strategy-ledger'), design: 'phase3' };
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === '--runs') opts.runs.push(path.resolve(ROOT, argv[++i]));
     else if (argv[i] === '--out') opts.out = path.resolve(ROOT, argv[++i]);
+    else if (argv[i] === '--design') opts.design = argv[++i];
     else if (argv[i] === '--help' || argv[i] === '-h') opts.help = true;
     else throw new Error(`unknown argument ${argv[i]}`);
   }
@@ -44,7 +101,7 @@ function parseArgs(argv) {
 }
 
 function armOf(label) {
-  const m = label.match(/^(baseline|ledger-palette|ledger-learner|ledger)-r(\d+)$/);
+  const m = label.match(DESIGN.armPattern);
   return m ? { arm: m[1], repeat: Number(m[2]) } : null;
 }
 
@@ -58,6 +115,41 @@ function modeFlapRate(result) {
     if (rows[i].recommendedMode !== rows[i - 1].recommendedMode) flips += 1;
   }
   return flips / (rows.length - 1);
+}
+
+const NEGATIVE_STANCES = new Set(['ironic_challenge', 'sarcastic_challenge', 'face_threat_challenge']);
+
+// v2: mean turns from each decay slip to its first repair/re-adoption
+// (cap-end imputed when never repaired); null when the decay condition is off.
+function repairLatency(result) {
+  const rows = result.corruption?.ledger || [];
+  if (!rows.length) return null;
+  const decays = rows.filter((e) => e.type === 'decay');
+  if (!decays.length) return null;
+  const latencies = decays.map((d) => {
+    const repair = rows.find((e) => e.type === 'repair' && e.premiseId === d.premiseId && e.turn >= d.turn);
+    return (repair ? repair.turn : result.turnsPlayed + 1) - d.turn;
+  });
+  return latencies.reduce((a, b) => a + b, 0) / latencies.length;
+}
+
+// v2: of the openings whose PREVIOUS scene visibly failed (exit condition not
+// cleared, or an unfaithful negative stance), how often did the review say
+// switch or adjust? null when no such openings exist.
+function switchAfterFailure(result) {
+  const history = result.strategyLedger?.history || [];
+  let failures = 0;
+  let answered = 0;
+  for (let i = 0; i < history.length; i += 1) {
+    const prev = history[i];
+    const failed =
+      prev.outcome?.exitConditionCleared === false ||
+      (NEGATIVE_STANCES.has(prev.strategy?.stance) && prev.fidelity?.label !== 'faithful');
+    if (!failed || !prev.review) continue;
+    failures += 1;
+    if (prev.review.decision === 'switch' || prev.review.decision === 'adjust') answered += 1;
+  }
+  return failures ? answered / failures : null;
 }
 
 function extractRun(world, label, dir) {
@@ -102,6 +194,31 @@ function extractRun(world, label, dir) {
     registerSwitches: (result.publicRegisters || []).filter((r) => r.scope === 'scene' && r.register !== 'modern')
       .length,
     registerDriftClauses: registerClauses.filter((c) => c.verdict === 'drift').length,
+    // --- v2 endpoints (null-safe on phase3/v1 artifacts) ---
+    repairLatency: repairLatency(result),
+    decayCount: (result.corruption?.ledger || []).filter((e) => e.type === 'decay').length,
+    repairCount: (result.corruption?.ledger || []).filter((e) => e.type === 'repair').length,
+    guardOverrides: (result.transcript || []).filter(
+      (l) =>
+        l.role === 'tutor' &&
+        l.meta?.releaseDecision?.pacingGuard?.blocked === true &&
+        l.meta.releaseDecision.played &&
+        l.meta.releaseDecision.played === l.meta.releaseDecision.pacingGuard.candidate,
+    ).length,
+    invalidStanceViolations: (result.strategyLedger?.history || []).filter(
+      (h) => h.fidelity?.label === 'invalid_person_attack',
+    ).length,
+    reviewEvents: count('strategy_review'),
+    reviewCoverage: sceneOpenings > 1 ? Math.min(1, count('strategy_review') / Math.max(1, sceneOpenings - 1)) : null,
+    switchAfterFailure: switchAfterFailure(result),
+    negativeStanceScenes: (result.strategyLedger?.history || []).filter((h) => NEGATIVE_STANCES.has(h.strategy?.stance))
+      .length,
+    faithfulNegativeScenes: (result.strategyLedger?.history || []).filter(
+      (h) => NEGATIVE_STANCES.has(h.strategy?.stance) && h.fidelity?.label === 'faithful',
+    ).length,
+    runFaithful: (result.strategyLedger?.history || [])
+      .filter((h) => NEGATIVE_STANCES.has(h.strategy?.stance))
+      .every((h) => h.fidelity?.label === 'faithful'),
     blockRows: result.strategyLedger?.blocks?.length ?? null,
     blocksCleared: result.strategyLedger?.blocks?.filter((b) => b.status === 'cleared').length ?? null,
     auditKept: tutorSceneRows
@@ -189,9 +306,14 @@ function main() {
     console.log('see file header for usage');
     return;
   }
+  if (!DESIGNS[opts.design])
+    throw new Error(`unknown --design ${opts.design} (known: ${Object.keys(DESIGNS).join(', ')})`);
+  DESIGN = DESIGNS[opts.design];
+  ARMS = DESIGN.arms;
+  CONTRASTS = DESIGN.contrasts;
   const runs = [];
   for (const matrixDir of opts.runs) {
-    const world = path.basename(matrixDir).replace(/^ledger-phase3-/, '');
+    const world = path.basename(matrixDir).replace(/^ledger-(phase3|v2)-/, '');
     for (const entry of fs.readdirSync(matrixDir, { withFileTypes: true })) {
       if (!entry.isDirectory() || entry.name === 'logs') continue;
       const parsed = armOf(entry.name);
@@ -216,8 +338,9 @@ function main() {
   for (const world of worlds) {
     const base = runs.filter((r) => r.world === world && r.arm === 'baseline');
     const baseAporia = base.reduce((s, r) => s + r.aporiaLike, 0);
-    for (const arm of ['ledger', 'ledger-palette', 'ledger-learner']) {
+    for (const arm of ARMS.filter((a) => a !== 'baseline')) {
       const armRuns = runs.filter((r) => r.world === world && r.arm === arm);
+      if (!armRuns.length) continue; // staged-out arm (e.g. D2 before it earns its runs)
       const armAporia = armRuns.reduce((s, r) => s + r.aporiaLike, 0);
       g(
         `aporia-${world}-${arm}`,
@@ -240,39 +363,66 @@ function main() {
     coverage.length && mean(coverage) >= 0.8,
     `mean commitment coverage ${fmt(mean(coverage))} across ledger arms`,
   );
+  const learnerArm = opts.design === 'v2' ? 'trialling-learner' : 'ledger-learner';
   const intentCov = runs
-    .filter((r) => r.arm === 'ledger-learner')
+    .filter((r) => r.arm === learnerArm)
     .map((r) => r.intentCoverage)
     .filter((v) => v !== null);
-  g(
-    'intent-coverage',
-    intentCov.length && mean(intentCov) >= 0.8,
-    `mean learner intent coverage ${fmt(mean(intentCov))} in ledger-learner`,
-  );
+  if (runs.some((r) => r.arm === learnerArm)) {
+    g(
+      'intent-coverage',
+      intentCov.length && mean(intentCov) >= 0.8,
+      `mean learner intent coverage ${fmt(mean(intentCov))} in ${learnerArm}`,
+    );
+  }
+  if (opts.design === 'v2') {
+    g(
+      'guard-overrides',
+      runs.every((r) => r.guardOverrides === 0),
+      `${runs.filter((r) => r.guardOverrides > 0).length} run(s) with pacing-guard overrides`,
+    );
+    g(
+      'invalid-person-attack',
+      runs.every((r) => r.invalidStanceViolations === 0),
+      `${runs.filter((r) => r.invalidStanceViolations > 0).length} run(s) with invalid corrosive violations`,
+    );
+    const reviewCov = runs
+      .filter((r) => r.arm === 'trialling' || r.arm === 'trialling-learner')
+      .map((r) => r.reviewCoverage)
+      .filter((v) => v !== null);
+    g(
+      'review-coverage',
+      reviewCov.length && mean(reviewCov) >= 0.8,
+      `mean review coverage ${fmt(mean(reviewCov))} on openings-with-history`,
+    );
+  }
 
-  // contrasts
-  const ENDPOINTS = {
-    E1: [
-      ['modeFlapRate', 'lower'],
-      ['timeToRecognition', 'lower'],
-      ['grounded', 'higher'],
-    ],
-    E2: [
-      ['modeFlapRate', 'lower'],
-      ['timeToRecognition', 'lower'],
-      ['grounded', 'higher'],
-    ],
-    E3: [
-      ['timeToRecognition', 'lower'],
-      ['voicedCount', 'higher'],
-      ['overreachCount', 'lower'],
-      ['hypothesisCount', 'higher'],
-    ],
-  };
+  // contrasts (endpoint tables live on the DESIGN — frozen per pre-registration)
+  const ENDPOINTS = DESIGN.endpoints;
   const contrasts = CONTRASTS.map((c) => ({
     ...c,
     endpoints: ENDPOINTS[c.id].map(([key, direction]) => contrastEndpoint(runs, c, key, { direction })),
   }));
+
+  // v2 estimands: the assigned-arm C2 endpoints re-computed on the
+  // faithful-arm subset (runs whose negative-stance scenes were all
+  // faithful; runs without negative-stance scenes qualify).
+  const faithfulArm =
+    opts.design === 'v2'
+      ? (() => {
+          const treat = runs.filter((r) => r.arm === 'trialling' && r.runFaithful);
+          const all = runs.filter((r) => r.arm === 'trialling');
+          const keys = ['timeToRecognition', 'grounded', 'repairLatency', 'aporiaLike'];
+          const row = (set) =>
+            Object.fromEntries(keys.map((k) => [k, mean(set.map((r) => r[k]).filter((v) => v !== null))]));
+          return {
+            assignedRuns: all.length,
+            faithfulRuns: treat.length,
+            assigned: row(all),
+            faithful: row(treat),
+          };
+        })()
+      : null;
 
   // descriptives
   const descriptives = {
@@ -298,6 +448,29 @@ function main() {
         },
       ]),
     ),
+    ...(opts.design === 'v2'
+      ? {
+          decayRepair: Object.fromEntries(
+            ARMS.map((a) => [
+              a,
+              {
+                decays: runs.filter((r) => r.arm === a).reduce((s, r) => s + (r.decayCount || 0), 0),
+                repairs: runs.filter((r) => r.arm === a).reduce((s, r) => s + (r.repairCount || 0), 0),
+              },
+            ]),
+          ),
+          switchAfterFailure: mean(
+            runs
+              .filter((r) => r.arm === 'trialling' || r.arm === 'trialling-learner')
+              .map((r) => r.switchAfterFailure)
+              .filter((v) => v !== null),
+          ),
+          negativeStance: {
+            scenes: runs.reduce((s, r) => s + (r.negativeStanceScenes || 0), 0),
+            faithful: runs.reduce((s, r) => s + (r.faithfulNegativeScenes || 0), 0),
+          },
+        }
+      : {}),
   };
 
   const report = {
@@ -309,10 +482,13 @@ function main() {
     guardrails,
     contrasts,
     descriptives,
+    ...(faithfulArm ? { faithfulArm } : {}),
   };
 
   const lines = [
-    '# Strategy Ledger Phase 3 — pre-registered pilot contrasts',
+    opts.design === 'v2'
+      ? '# Strategy Ledger v2 — pre-registered pilot contrasts (binding conditions)'
+      : '# Strategy Ledger Phase 3 — pre-registered pilot contrasts',
     '',
     `Worlds: ${worlds.join(', ')}. Arm counts: ${ARMS.map((a) => `${a}=${armCounts[a]}`).join(', ')}.`,
     'All endpoints programmatic (no LLM judge). Pilot tier: signals are directional, not significance claims.',
@@ -351,10 +527,21 @@ function main() {
     '',
   );
   fs.mkdirSync(opts.out, { recursive: true });
-  fs.writeFileSync(path.join(opts.out, 'phase3-contrasts-report.json'), `${JSON.stringify(report, null, 2)}\n`);
-  fs.writeFileSync(path.join(opts.out, 'phase3-contrasts-report.md'), `${lines.join('\n')}\n`);
+  if (faithfulArm) {
+    lines.push(
+      '## v2 estimands: assigned-arm vs faithful-arm (trialling)',
+      '',
+      `Assigned runs: ${faithfulArm.assignedRuns}; faithful-arm runs: ${faithfulArm.faithfulRuns}.`,
+      `Assigned means: ${JSON.stringify(faithfulArm.assigned)}`,
+      `Faithful means: ${JSON.stringify(faithfulArm.faithful)}`,
+      '',
+    );
+  }
+  const stem = opts.design === 'v2' ? 'v2-contrasts-report' : 'phase3-contrasts-report';
+  fs.writeFileSync(path.join(opts.out, `${stem}.json`), `${JSON.stringify(report, null, 2)}\n`);
+  fs.writeFileSync(path.join(opts.out, `${stem}.md`), `${lines.join('\n')}\n`);
   console.log(lines.join('\n'));
-  console.log(`\nreport at ${path.relative(ROOT, opts.out)}/phase3-contrasts-report.{json,md}`);
+  console.log(`\nreport at ${path.relative(ROOT, opts.out)}/${stem}.{json,md}`);
 }
 
 main();
