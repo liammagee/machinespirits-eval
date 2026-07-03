@@ -363,9 +363,9 @@ the positive-rate gap, but the equal strict-candidate rates already narrow
 what a "real" verdict could claim. v2.2 covariate scoring of the repeats is
 recorded separately when complete; it is not part of this decision.
 
-Covariate (v2.2, codex judge, repeats run): cell 193 first/last/overall
-77.1 / 99.2 / 91.9 vs kernel 73.7 / 99.7 / 90.8 — the same flat
-near-ceiling band as the gate, confirming again that the local
+Covariate (v2.2, codex judge, repeats run, 30/30 scored): cell 193
+first/last/overall 77.9 / 99.3 / 92.2 vs kernel 73.7 / 99.7 / 90.8 — the
+same flat near-ceiling band as the gate, confirming again that the local
 carry-through gap is invisible to whole-dialogue scoring.
 
 **Gate verdict (bounded)**: sub-additivity (H1) is supported everywhere it
