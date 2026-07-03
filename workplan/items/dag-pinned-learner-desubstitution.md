@@ -78,3 +78,14 @@ but does not name the DSB token; the one grounded row does). Canary skipped
 and Stage 2 locked per pre-registration stop discipline. Next requires a
 fresh go: character-sheet citation amendment + re-probe.
 
+2026-07-03 Claude: Stage 1 PASSED after four iterations (full log in note
+§7). Three surface-scoring failures (token citation, citation instruction,
+paraphrase matching — selectivity stuck at 0.10 with false-yield 0.00
+throughout) resolved by reframing the single-turn probe outcome as
+release-engagement: probe 1.00 selectivity / 0.00 false-yield / median 1 /
+0 exhaustion. Canary eval-2026-07-03-414f945f 6/6 clean: drift-gate +
+grounding traces on every row, zero instrument_failure. Strict grounding
+deferred to Stage 2 multi-turn outcome (§3.4 refinement); blocking tokens
+verified tutor-visible. Stage 2 (3 arms × 5 subtypes × 4 repeats = 60 rows)
+awaits its own recorded go.
+

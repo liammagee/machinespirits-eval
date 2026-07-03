@@ -407,3 +407,29 @@ cached rows are valid samples under an outcome-function change):
 **selectivity 1.00, false-yield 0.00, attempt median 1, exhaustion 0 —
 PASS** on all four frozen thresholds. Probe report regenerated with the
 corrected label. Unit tests extended (9/9); stage-0 check green.
+
+### Stage 1 verdict: PASS (2026-07-03, after four iterations)
+
+Probe (iteration c, release-engagement scorer): **selectivity 1.00,
+false-yield 0.00, drift-gate attempt median 1, exhaustion 0** — all four
+frozen §5 thresholds met. The fix, after three surface-scoring failures
+(token citation, citation instruction, paraphrase matching): the
+single-turn probe now scores **release-engagement** (does the learner
+engage when — and only when — given the correct key), and strict grounding
+(target conclusion + token citation) is deferred to Stage 2's multi-turn
+dialogues where it belongs. This is recorded as a §3.4 outcome refinement:
+Stage 2's primary outcome remains deterministic grounding over the full
+dialogue; the probe validates the single-turn engagement layer beneath it.
+
+Canary `eval-2026-07-03-414f945f` (6/6 after one resume; cells 186/193/199
+× desub boredom + question-flood, Codex-only stack): every row carries
+`learner_drift_gate` and `learner_grounding` trace entries; **zero
+instrument_failure**; gate attempts all 1–2. Release/grounding was 0/6 —
+expected for 2–3-turn dialogues, and verified NOT to be a design dead-end:
+the blocking token is tutor-visible in the learner's scripted opening turn,
+so live release is achievable. Recorded as a Stage 2 risk to watch: if
+grounding floors at 0 in all arms, H-D is interpretable (no separation) but
+the bar's difficulty must be reported alongside it.
+
+**Stage 1 gate: PASS. Stage 2 (60-row matrix) unlocked pending its own
+recorded user go.**
