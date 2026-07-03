@@ -54,3 +54,18 @@ Acceptance:
 
 2026-07-03 Claude: Pre-registration frozen and committed. Nothing built;
 Stage 0 awaits a go decision.
+
+2026-07-03 Claude: Stage 0 COMPLETE (user go; full log in note §7). Built:
+five `desub_resistance_*` scenarios with formal interiors (17 unique DSB-*
+tokens), `services/learnerInteriorGate.js` (content condition, drift-gate
+verdicts, correction injection, deterministic grounding checker, frozen
+Stage-1 classifier prompt), runner wiring (character sheet + cumulative
+content condition + drift-gate retry loop + grounding trace; exhaustion =
+instrument_failure, message never replaced),
+`scripts/run-desubstitution-probe.js` (--check green: targeted 5/5,
+mismatched 0/5, generic 0/5, cross 0/20; --live hard-gated on Stage 1 go),
+`scripts/report-desubstitution-stage0.js` (--check PASSED). Verification:
+64/64 focused tests, validate-config 0 errors, lint/prettier clean.
+Recorded §3.1 deviation: no new cells — arms reuse 186/193/199; pinning is
+scenario+gate-driven, keeping config hashes clean against the legacy §6.14
+control corpus. Stage 1 (paid instrument validation) awaits go.
