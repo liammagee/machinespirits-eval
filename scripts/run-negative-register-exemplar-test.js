@@ -186,14 +186,20 @@ async function scoreExemplar(exemplar, { rubric, judgeModel }) {
     scenarioDescription: [
       exemplar.scenario_description || '',
       definition?.stance_contract ? `Register contract: ${definition.stance_contract}` : '',
-      exemplar.expected?.corrosive ? 'Fixture label: known corrosive adversarial exemplar.' : 'Fixture label: non-corrosive control.',
+      exemplar.expected?.corrosive
+        ? 'Fixture label: known corrosive adversarial exemplar.'
+        : 'Fixture label: non-corrosive control.',
     ]
       .filter(Boolean)
       .join('\n\n'),
   });
-  const registerParsed = parseJudgeResponse(await callJudgeModel(registerPrompt, { judgeOverride: { model: judgeModel } }));
+  const registerParsed = parseJudgeResponse(
+    await callJudgeModel(registerPrompt, { judgeOverride: { model: judgeModel } }),
+  );
 
-  const v22Parsed = parseJudgeResponse(await callJudgeModel(buildV22Prompt(exemplar), { judgeOverride: { model: judgeModel } }));
+  const v22Parsed = parseJudgeResponse(
+    await callJudgeModel(buildV22Prompt(exemplar), { judgeOverride: { model: judgeModel } }),
+  );
 
   return {
     id: exemplar.id,
@@ -227,7 +233,9 @@ function classifyOutcome(results, fixture) {
   const controlFalsePositive = controls.filter((result) => {
     const recognitionCost = result.registerRubric?.recognitionCost;
     const v22Recognition = result.v22?.recognitionQuality;
-    return Number.isFinite(recognitionCost) && Number.isFinite(v22Recognition) && recognitionCost <= 2 && v22Recognition <= 3;
+    return (
+      Number.isFinite(recognitionCost) && Number.isFinite(v22Recognition) && recognitionCost <= 2 && v22Recognition <= 3
+    );
   });
 
   let status = 'JUDGE_GULLIBILITY_MORE_LIKELY';
@@ -285,7 +293,9 @@ function buildMarkdownReport({ fixturePath, results, outcome, generatedAt, judge
       '- The v2.2 recognition guardrail caught known-corrosive exemplars, but the register rubric stayed compressed. Read the earlier smoke as generation-side warmth plus register-rubric weakness, not global judge blindness.',
     );
   } else {
-    lines.push('- The judges caught some but not all fixed corrosive exemplars. Treat the instrument as partially sensitive.');
+    lines.push(
+      '- The judges caught some but not all fixed corrosive exemplars. Treat the instrument as partially sensitive.',
+    );
   }
   lines.push('');
   lines.push('## Aggregate Means');
@@ -404,7 +414,14 @@ async function main() {
     fs.writeFileSync(jsonPath, `${JSON.stringify(payload, null, 2)}\n`);
     fs.writeFileSync(
       mdPath,
-      buildMarkdownReport({ fixture, fixturePath, results, outcome, generatedAt, judgeModel: prior.judgeModel || judgeModel }),
+      buildMarkdownReport({
+        fixture,
+        fixturePath,
+        results,
+        outcome,
+        generatedAt,
+        judgeModel: prior.judgeModel || judgeModel,
+      }),
     );
     console.log(`Outcome: ${outcome.status}`);
     console.log(`JSON: ${path.relative(ROOT, jsonPath)}`);

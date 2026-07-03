@@ -201,19 +201,16 @@ export function classifyRegisterStanceEvidence(stanceFidelity) {
   );
 }
 
-export function applyNegativeRegisterScoreGuardrails({
-  registerName,
-  scores,
-  tutorMessage,
-  postLearnerMessage = '',
-}) {
+export function applyNegativeRegisterScoreGuardrails({ registerName, scores, tutorMessage, postLearnerMessage = '' }) {
   if (!NEGATIVE_REGISTER_NAMES.has(registerName)) {
     return { scores, adjustments: [] };
   }
 
   const guarded = cloneScores(scores);
   const adjustments = [];
-  const forbiddenFound = [...new Set([...findForbiddenPhrases(registerName, tutorMessage), ...personAttackMatches(tutorMessage)])];
+  const forbiddenFound = [
+    ...new Set([...findForbiddenPhrases(registerName, tutorMessage), ...personAttackMatches(tutorMessage)]),
+  ];
   const statusShameFound = statusShameMatches(tutorMessage);
   const appeasingUptakeFound = appeasingUptakeMatches(postLearnerMessage);
 
@@ -242,7 +239,12 @@ export function applyNegativeRegisterScoreGuardrails({
   return { scores: guarded, adjustments };
 }
 
-export function evaluateRegisterStanceFidelity({ registerName, tutorMessage, learnerMessage = '', postLearnerMessage = '' }) {
+export function evaluateRegisterStanceFidelity({
+  registerName,
+  tutorMessage,
+  learnerMessage = '',
+  postLearnerMessage = '',
+}) {
   if (!NEGATIVE_REGISTER_NAMES.has(registerName)) {
     return {
       applies: false,
@@ -264,7 +266,9 @@ export function evaluateRegisterStanceFidelity({ registerName, tutorMessage, lea
   const targetHits = findMatches(tutorMessage, TARGET_DISCIPLINE_PATTERNS);
   const nextMoveHits = findMatches(tutorMessage, NEXT_MOVE_PATTERNS);
   const repairHits = findMatches(`${tutorMessage}\n${postLearnerMessage}`, REPAIR_PATH_PATTERNS);
-  const forbiddenFound = [...new Set([...findForbiddenPhrases(registerName, tutorMessage), ...personAttackMatches(tutorMessage)])];
+  const forbiddenFound = [
+    ...new Set([...findForbiddenPhrases(registerName, tutorMessage), ...personAttackMatches(tutorMessage)]),
+  ];
   const learnerResistanceVisible = /\b(?:bored|dead|frustrat|point|why|parrot|repeat|formula|memor)/i.test(
     normalize(learnerMessage),
   );
