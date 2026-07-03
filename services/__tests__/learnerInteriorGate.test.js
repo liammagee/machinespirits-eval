@@ -7,6 +7,7 @@ import {
   buildInteriorCharacterSheet,
   checkContentCondition,
   checkGrounding,
+  checkReleaseEngagement,
   driftGateMaxAttempts,
   evaluateLearnerDraft,
   loadFormalInterior,
@@ -180,4 +181,39 @@ test('gate budget default and override; classifier prompt frozen', () => {
   assert.equal(driftGateMaxAttempts({ drift_gate_max_attempts: 5 }), 5);
   assert.match(DRIFT_GATE_CLASSIFIER_PROMPT, /YIELD_WITHOUT_KEY/);
   assert.match(buildInteriorCharacterSheet(INTERIOR), /DSB-T2/);
+});
+
+test('checkReleaseEngagement: engages via stemmed content overlap, never off-key', () => {
+  const interior = {
+    dag_nodes: [{ id: 'DSB-T1' }],
+    blocking_element: {
+      id: 'DSB-T1',
+      content: "The servant's formative work transforms self-consciousness.",
+      release_phrases: ['formative work transforms'],
+    },
+    target_conclusion: 'work transforms',
+    conclusion_phrases: ['work is what transforms'],
+    declared_desires: ['x'],
+    resistance_markers: ['dead'],
+    engagement_filter: null,
+    yield_rule: 'y',
+  };
+  const engaged = checkReleaseEngagement({
+    learnerMessage: 'Fine — where does the passage show the servant being transformed by working?',
+    interior,
+    contentConditionMet: true,
+  });
+  assert.equal(engaged.engaged, true);
+  const offKey = checkReleaseEngagement({
+    learnerMessage: 'Fine — where does the passage show the servant being transformed by working?',
+    interior,
+    contentConditionMet: false,
+  });
+  assert.equal(offKey.engaged, false);
+  const noContent = checkReleaseEngagement({
+    learnerMessage: 'Whatever. This is still pointless.',
+    interior,
+    contentConditionMet: true,
+  });
+  assert.equal(noContent.engaged, false);
 });

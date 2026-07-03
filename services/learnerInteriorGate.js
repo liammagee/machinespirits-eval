@@ -228,6 +228,55 @@ export function checkGrounding({ learnerMessage = '', interior }) {
   };
 }
 
+// Iteration (c): single-turn release-engagement scorer. The interiors' own
+// yield rule mandates verification BEFORE acceptance, so a single-turn probe
+// structurally cannot witness strict grounding (conclusion stated) — that
+// remains the multi-turn Stage-2 primary outcome via checkGrounding above.
+// This scorer asks the single-turn question the probe can answer: after a
+// true release (contentConditionMet), does the learner ENGAGE the released
+// content as a testable claim rather than continue refusing? Deterministic:
+// stemmed content-word overlap with the blocking element (or any surface
+// grounding evidence), gated on contentConditionMet so mismatched/generic
+// rows can never score. Evidential weakening vs strict grounding is
+// deliberate and recorded in the plan note.
+const ENGAGEMENT_STOPWORDS = new Set(
+  'the a an of to and in is are that this it for with by on as be from or its their his her not what into'.split(' '),
+);
+
+function stemWord(word) {
+  const w = word.toLowerCase().replace(/'s$/u, '');
+  for (const suffix of ['ings', 'ing', 'ives', 'ive', 'ions', 'ion', 'ed', 'es', 's']) {
+    if (w.length > 4 && w.endsWith(suffix)) return w.slice(0, -suffix.length);
+  }
+  return w;
+}
+
+function contentStems(text) {
+  return new Set(
+    String(text || '')
+      .toLowerCase()
+      .match(/[a-z][a-z'-]+/gu)
+      ?.filter((w) => w.length > 3 && !ENGAGEMENT_STOPWORDS.has(w))
+      .map(stemWord) || [],
+  );
+}
+
+export function checkReleaseEngagement({ learnerMessage = '', interior, contentConditionMet = false }) {
+  if (!contentConditionMet) return { engaged: false, evidence: 'content condition not met' };
+  const surface = checkGrounding({ learnerMessage, interior });
+  if (surface.grounded || surface.citedElement || surface.releaseEvidence || surface.conclusionEvidence) {
+    return {
+      engaged: true,
+      evidence: surface.citedElement || surface.releaseEvidence || surface.conclusionEvidence || 'surface grounding',
+    };
+  }
+  const blockingStems = contentStems(interior.blocking_element.content);
+  const messageStems = contentStems(learnerMessage);
+  const overlap = [...blockingStems].filter((s) => messageStems.has(s));
+  if (overlap.length >= 1) return { engaged: true, evidence: `content overlap: ${overlap.join(', ')}` };
+  return { engaged: false, evidence: 'no engagement with released content' };
+}
+
 export function driftGateMaxAttempts(scenario) {
   const value = Number(scenario?.drift_gate_max_attempts);
   return Number.isFinite(value) && value >= 1 ? Math.floor(value) : DEFAULT_DRIFT_GATE_MAX_ATTEMPTS;

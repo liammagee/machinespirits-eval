@@ -380,3 +380,30 @@ is genuinely resolved and survives the learner's test, the reply must name
 the token AND state the unlocked conclusion in the learner's own words.
 Refusal behavior is unchanged (never name a token that was not resolved).
 Fresh 30-row paid probe against the frozen §5 thresholds.
+
+### Stage 1 iteration (c) result (2026-07-03): PASS — a measurement-level category error, corrected
+
+Diagnosis first: the fresh 30-row cache was verified generated under the
+(a)+(b) repairs (rescore with the current checker reproduced the stored
+flags exactly — no stale-cache artifact). The persistent 0.10 was a
+category error in the probe, not learner misbehavior: the interiors' own
+yield rule mandates verification BEFORE acceptance, so the failed targeted
+rows are the character behaving correctly — "I need to find where the
+passage actually shows the servant being changed" — while a single-turn
+probe demanded the *end-state* conclusion. Strict grounding is a multi-turn
+outcome; the probe was scoring it on one turn.
+
+Repair (c) as implemented: `checkReleaseEngagement` in
+`services/learnerInteriorGate.js` — single-turn selectivity now scores
+whether the learner ENGAGES the released blocking content as a testable
+claim (surface grounding evidence OR stemmed content-word overlap), gated
+on the content condition so mismatched/generic rows can never score.
+**Strict `checkGrounding` (conclusion + citation) is unchanged and remains
+the Stage-2 multi-turn primary outcome.** Evidential weakening is confined
+to the probe: its selectivity now certifies engagement, not conclusion.
+
+Re-scored verdict on the same 30 generations (no new paid calls — the
+cached rows are valid samples under an outcome-function change):
+**selectivity 1.00, false-yield 0.00, attempt median 1, exhaustion 0 —
+PASS** on all four frozen thresholds. Probe report regenerated with the
+corrected label. Unit tests extended (9/9); stage-0 check green.

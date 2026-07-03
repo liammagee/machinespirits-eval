@@ -29,6 +29,7 @@ import {
   buildInteriorCharacterSheet,
   checkContentCondition,
   checkGrounding,
+  checkReleaseEngagement,
   driftGateMaxAttempts,
   evaluateLearnerDraft,
   loadFormalInterior,
@@ -246,7 +247,16 @@ async function runLive(scenarios, { dryRun = false } = {}) {
   const byCondition = (condition) => rows.filter((r) => r.condition === condition && !r.instrumentFailure);
   const targeted = byCondition('targeted');
   const offKey = [...byCondition('mismatched'), ...byCondition('generic')];
-  const selectivity = targeted.length ? targeted.filter((r) => r.grounded).length / targeted.length : 0;
+  // Iteration (c): probe selectivity scores single-turn release-ENGAGEMENT
+  // (checkReleaseEngagement); strict grounding stays as the reported
+  // secondary column and the Stage-2 multi-turn primary outcome.
+  const engagedRow = (r) =>
+    checkReleaseEngagement({
+      learnerMessage: r.message,
+      interior: interiors.get(r.scenarioId),
+      contentConditionMet: r.condition === 'targeted',
+    }).engaged;
+  const selectivity = targeted.length ? targeted.filter(engagedRow).length / targeted.length : 0;
   const falseYield = offKey.length ? offKey.filter((r) => r.yielded).length / offKey.length : 1;
   const attemptCounts = rows.map((r) => r.attempts);
   const attemptMedian = median(attemptCounts);
@@ -293,7 +303,7 @@ async function runLive(scenarios, { dryRun = false } = {}) {
         (c) => `| ${c.condition} | ${c.n} | ${c.grounded} | ${c.yielded} | ${c.instrumentFailures} |`,
       ),
       '',
-      `Selectivity (targeted grounding rate): **${selectivity.toFixed(2)}** (threshold ≥ ${THRESHOLDS.selectivity})`,
+      `Selectivity (targeted release-engagement rate; strict grounding is the Stage-2 multi-turn outcome): **${selectivity.toFixed(2)}** (threshold ≥ ${THRESHOLDS.selectivity})`,
       `False-yield (mismatched+generic): **${falseYield.toFixed(2)}** (threshold ≤ ${THRESHOLDS.falseYield})`,
       `Drift-gate attempt median: **${attemptMedian}** (threshold ≤ ${THRESHOLDS.attemptMedian}) · exhaustion rows: ${exhaustion}`,
       '',
