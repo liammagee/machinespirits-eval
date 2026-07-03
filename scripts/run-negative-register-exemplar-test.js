@@ -257,7 +257,7 @@ function classifyOutcome(results, fixture) {
   };
 }
 
-function buildMarkdownReport({ fixture, fixturePath, results, outcome, generatedAt, judgeModel }) {
+function buildMarkdownReport({ fixturePath, results, outcome, generatedAt, judgeModel }) {
   const lines = [];
   lines.push('# Negative Register Corrosive-Exemplar Test');
   lines.push('');
