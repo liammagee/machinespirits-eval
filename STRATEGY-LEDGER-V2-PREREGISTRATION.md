@@ -92,3 +92,23 @@ H0/H0′ probe runs are design probes; none enter the contrast data.
 - `h0prime-marrick-r1`: grounded at T\*=28 (= cap; zero slack); 9 decays (1 mutation), 8 repairs, 1 false-form retraction.
 
 Criterion (a) PASS — T\* now varies over {never, never, 28} and the baseline can fail outright; criterion (b) PASS — decay heavy and the repair channel exercised in every run. Note recorded for the reading: on the resistant world the contrast measures **rescue capacity** (baseline fails; can strategy machinery recover the drama?), and a floor is possible (if no arm grounds there, grounded-rate is uninformative on that world and T\*/repair-latency/aporia-rate carry the contrast). Conformance fix applied at this point, before any matrix run: T\* and repair-latency imputation corrected from `turnsPlayed+1` to the pre-registered `cap+1` (stall-stopped runs end early and must not impute better than grounded-at-cap runs); world caps pinned in the analysis.
+
+---
+
+## Results addendum (2026-07-03, same day; frozen analysis unmodified after the matrix)
+
+**Execution.** 18/18 runs (hethel-resistant + marrick × baseline/ledger-v1/trialling × 3 interleaved repeats), codex CLI, two attended blocks, zero API dollars. Report: `exports/dramatic-derivation/strategy-ledger/v2-contrasts-report.{json,md}`.
+
+**Guardrails: 12/13.** One FAIL: `releases-marrick-trialling` (mean releases 7.33 vs baseline 8.67) — driven by early-terminating trialling runs on marrick (one aporia at t8; two runs ending in ungrounded assertions). Per the pre-registration this **blocks any positive reading of the trialling arm** (none exists). All V2b arms passed every guardrail.
+
+**V2b (ledger-v1 vs baseline) — one clean pre-registered SIGNAL, improving.** Repair latency 8.06 vs 11.23 turns (Δ −3.17, direction consistent in BOTH worlds, U = 8/36); repairs covered 61% of slips vs baseline's 50%. Other endpoints null. This is Phase 3's E1 re-tested where the levers bind, and the persistence machinery now helps on exactly the endpoint the binding conditions made live: a held, audited scene commitment gets slipped premises re-staged faster. Pilot tier: n=6/arm, no significance claim.
+
+**V2a (trialling vs ledger-v1) — no improvement; one SIGNAL in the WRONG direction.** Repair latency worsens (+4.23 turns, both worlds, U = 29.5/36), grounded rate dips (0.50 vs 0.67), block engagement halves (20 vs 43 block rows), D-AUC worsens (3.53 vs 3.05). The v2 machinery itself functioned exactly as designed — review coverage 1.00, switch-after-failure 1.00, 27 negative-stance scenes with 19 faithful (70%), zero invalid person attacks, zero guard overrides — so this is not instrument failure. Two mechanisms are visible in the artifacts: (1) **opportunity cost** — strategy work (history review, stance performance, intent planning) competes with repair work at a fixed turn budget, and the repair benefit v1 buys is spent back; (2) **provocation side-effect** — on marrick, two of three trialling runs ended in `lucky_leap_only`: the ironic-challenge stance, faithfully performed against a resistant learner, provoked ungrounded assertions of S. The stance was instantiated correctly and its measurable consequence was premature closure.
+
+**D2 (trialling-learner): not staged in.** The pre-registered gate ("only if C2 vs B2 shows any signal") is a permission gate, not a mandate; the only V2a signal is a worsening, and extending a net-negative arm answers no pre-registered question cleanly. Recorded as a decision, reversible by the operator.
+
+**Bounded conclusions (pilot tier, single model family, simulated learner):**
+
+1. Under binding conditions (resistant learner or mutation-decay, release authority + pacing guard), the **v1 commit/audit ledger improves repair latency** — the arc's first positive strategy-ledger signal, on the endpoint the conditions made live.
+2. The **full trialling superstructure adds no measurable value over v1 and plausibly costs**: repair slows back past baseline, engagement with pressing episodes halves, and a faithfully-performed negative stance can provoke premature closure in a resistant learner. The house adaptivity finding extends by one clause: held commitments with audits are new signal that helps; an elaborate in-run review-and-trial apparatus on top re-encodes deliberation the model already does, and at fixed turn budget it **crowds out** the work that was helping.
+3. The two-gate discipline (fidelity before effectiveness) worked end-to-end on live data and is worth keeping wherever mechanism menus exist.

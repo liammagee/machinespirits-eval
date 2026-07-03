@@ -115,3 +115,17 @@ needs the full cue+target+move+repair+resistance battery). Gates 30/30 incl.
 guards-untouched fingerprint; tests 19/19; full suite 4714/0; lint+format
 clean. Remaining: v2 pre-registration + headroom precondition probe before
 any paid contrast.
+
+2026-07-03 Claude: v2 pilot executed per STRATEGY-LEDGER-V2-PREREGISTRATION.md.
+H0 failed on hethel (T* pinned to calendar), recorded redesign
+(hethel-resistant + mutation decay) passed H0', 18-run codex matrix ran clean.
+RESULT: V2b positive — v1 commit/audit ledger improves repair latency under
+binding conditions (8.06 vs 11.23, both worlds, U=8/36, guardrails clean) —
+first positive ledger signal in the arc. V2a negative — trialling
+superstructure erases the benefit (latency past baseline, blocks halved, two
+lucky-leap endings from faithfully-performed ironic stance, one release
+guardrail FAIL blocking positive trialling readings). Machinery itself
+flawless (coverage/switch-after-failure 1.00, fidelity 19/27). D2 staged out
+(permission gate; only signal is a worsening). Report:
+exports/dramatic-derivation/strategy-ledger/v2-contrasts-report.{json,md}.
+Next: fold both pilots into paper-full-2.0.md as one bounded subsection.
