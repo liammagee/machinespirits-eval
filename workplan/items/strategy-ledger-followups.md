@@ -8,6 +8,7 @@ owner: unassigned
 source: manual
 created: 2026-07-03
 updated: 2026-07-03
+branch: worktree-strategy-ledger-followups
 verification: "Each step below runs only under its own pre-registration; the item closes when the V2b confirmatory decision is made (either tier promotion or a recorded failure-to-replicate) and the composition-module question is answered or explicitly dropped."
 claim_status: future
 links:
@@ -76,3 +77,15 @@ no D2 before a confirmed positive base arm. If trialling is ever revisited,
 the redesign must move deliberation OFF the dialogue's turn budget
 (between-scene, not in-scene) — and only after step 1 establishes what the
 budget is being spent on.
+
+2026-07-03 Claude: Follow-up worktree opened (`worktree-strategy-ledger-followups`
+from post-merge main; old arc worktree removed, all commits reachable via
+2e54476a). Step 1 seeded: `STRATEGY-LEDGER-V2B-CONFIRMATORY-PREREGISTRATION.md`
+drafted (two arms, n=12/arm, per-repeat shared decay seeds 11-29 as the one
+design improvement, sole primary endpoint = repair latency, promotion bar =
+both-worlds direction + one-sided MW-U p<0.05 + clean guardrails; no new
+headroom gate — the pilot's variance stands). Confirmatory specs written and
+zero-paid-validated end-to-end (24 mock runs, frozen analysis, 0 guardrail
+failures after two pre-paid applicability fixes). AWAITING GO for the paid
+matrix (~5h codex attended in two blocks); prereg freezes at the commit
+preceding the first paid run.

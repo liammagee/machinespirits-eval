@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-03T10:59:42.455Z",
+  "generated": "2026-07-03T11:39:30.421Z",
   "counts": {
     "total": 73,
     "byStatus": {
@@ -154,6 +154,7 @@
       "source": "manual",
       "created": "2026-07-03",
       "updated": "2026-07-03",
+      "branch": "worktree-strategy-ledger-followups",
       "verification": "Each step below runs only under its own pre-registration; the item closes when the V2b confirmatory decision is made (either tier promotion or a recorded failure-to-replicate) and the composition-module question is answered or explicitly dropped.",
       "claim_status": "future",
       "links": {

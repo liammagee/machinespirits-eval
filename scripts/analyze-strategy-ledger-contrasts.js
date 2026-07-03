@@ -329,7 +329,7 @@ function main() {
   CONTRASTS = DESIGN.contrasts;
   const runs = [];
   for (const matrixDir of opts.runs) {
-    const world = path.basename(matrixDir).replace(/^ledger-(phase3|v2)-/, '');
+    const world = path.basename(matrixDir).replace(/^ledger-(phase3|v2b-confirm|v2)-/, '');
     for (const entry of fs.readdirSync(matrixDir, { withFileTypes: true })) {
       if (!entry.isDirectory() || entry.name === 'logs') continue;
       const parsed = armOf(entry.name);
@@ -402,15 +402,15 @@ function main() {
       runs.every((r) => r.invalidStanceViolations === 0),
       `${runs.filter((r) => r.invalidStanceViolations > 0).length} run(s) with invalid corrosive violations`,
     );
-    const reviewCov = runs
-      .filter((r) => r.arm === 'trialling' || r.arm === 'trialling-learner')
-      .map((r) => r.reviewCoverage)
-      .filter((v) => v !== null);
-    g(
-      'review-coverage',
-      reviewCov.length && mean(reviewCov) >= 0.8,
-      `mean review coverage ${fmt(mean(reviewCov))} on openings-with-history`,
-    );
+    const triallingRuns = runs.filter((r) => r.arm === 'trialling' || r.arm === 'trialling-learner');
+    if (triallingRuns.length) {
+      const reviewCov = triallingRuns.map((r) => r.reviewCoverage).filter((v) => v !== null);
+      g(
+        'review-coverage',
+        reviewCov.length && mean(reviewCov) >= 0.8,
+        `mean review coverage ${fmt(mean(reviewCov))} on openings-with-history`,
+      );
+    }
   }
 
   // contrasts (endpoint tables live on the DESIGN — frozen per pre-registration)
