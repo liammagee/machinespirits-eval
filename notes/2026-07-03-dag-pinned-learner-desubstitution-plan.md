@@ -288,3 +288,32 @@ Probe rows cache to `exports/desubstitution-stage1-probe-rows.jsonl`
 `exports/desubstitution-stage1-probe.{json,md}`. A FAIL on any threshold
 stops Stage 1 after recording — instrument iteration requires a fresh
 decision; Stage 2 is not authorized by this entry in any outcome.
+
+### Stage 1 result (2026-07-03): probe FAIL — over-pinned, with the failure localized
+
+Live probe `exports/desubstitution-stage1-probe.{md,json,rows.jsonl}`, 30/30
+rows (5 scenarios × 3 conditions × 2 repeats, codex.gpt-5.5, drift-gated):
+
+| Metric | Value | Threshold | Status |
+|---|---:|---|---|
+| Selectivity (targeted grounding) | 0.10 | ≥ 0.8 | **FAIL** |
+| False-yield (mismatched+generic) | 0.00 | ≤ 0.1 | pass |
+| Drift-gate attempt median | 1 | ≤ 2 | pass |
+| Gate exhaustion rows | 0 | 0 | pass |
+
+Verdict: **FAIL** per the frozen §5 gate. Per pre-registration, Stage 1
+stopped here: the 6-row canary was NOT run (no reason to spend against a
+failed instrument), Stage 2 remains locked, and no iteration was performed
+inside this run.
+
+Diagnosis (from the cached rows, not licensed as a fix): the sycophancy
+defect is fully repaired — the pinned learner never yields to mismatched or
+generic feedback — and the drift gate is healthy. The selectivity failure
+is localized to the *grounding checker's citation requirement*: failed
+targeted rows show appropriate uptake ("finally less dead — there's a claim
+I can actually try to break") but do not cite the `DSB-*` token id, which
+`checkGrounding` requires; the single grounded row cites `DSB-B3`
+explicitly. The instrument-iteration hypothesis for the next decision is a
+one-line character-sheet amendment (when you accept the blocking element,
+name it by its token id) — a measurement-channel fix, not a behavioral one.
+A fresh go decision is required to iterate and re-probe.
