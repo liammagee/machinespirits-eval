@@ -104,3 +104,14 @@ warm-in-costume lesson, 10/15 pre-repair vs 15/15 post-repair faithful);
 negative registers palette-only, face_threat simulated-only;
 blueprint-composition downgraded from blocking to watch. v2 pre-registration
 now unblocked.
+
+2026-07-03 Claude: v2 IMPLEMENTED (same branch): trialling/stancePalette/
+releaseIntent config keys on the existing --strategy-ledger JSON; stance +
+release-intent commitment fields; mechanism-history table + persist/adjust/
+switch review at openings; licensed departures (justified_deviation, stance
+exempt); engine-side two-gate close via the landed evaluateRegisterStanceFidelity
+(negative registers only — positive stances pass as not_applicable; faithful
+needs the full cue+target+move+repair+resistance battery). Gates 30/30 incl.
+guards-untouched fingerprint; tests 19/19; full suite 4714/0; lint+format
+clean. Remaining: v2 pre-registration + headroom precondition probe before
+any paid contrast.

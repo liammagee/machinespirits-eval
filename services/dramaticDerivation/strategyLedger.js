@@ -17,10 +17,15 @@
  */
 
 import { DIDACTIC_MODE_FAMILIES } from './didacticMode.js';
+import { getEngagementRegisterDefinition } from '../engagementRegisterRegistry.js';
+import { evaluateRegisterStanceFidelity } from '../registerStanceFidelity.js';
 
 export const STRATEGY_LEDGER_SCHEMA = 'dramatic-derivation.strategy-ledger.v0';
 export const LEDGER_ROW_SCHEMA = 'dramatic-derivation.strategy-ledger-row.v0';
 export const LEDGER_BLOCK_SCHEMA = 'dramatic-derivation.strategy-ledger-block.v0';
+export const LEDGER_HISTORY_SCHEMA = 'dramatic-derivation.strategy-ledger-history.v0';
+
+export const STRATEGY_REVIEW_DECISIONS = Object.freeze(['persist', 'adjust', 'switch']);
 
 export const LEDGER_SCOPES = Object.freeze(['block', 'scene', 'act', 'run']);
 export const RELEASE_POSTURES = Object.freeze(['eager', 'hold', 'consolidate']);
@@ -36,6 +41,10 @@ const REGISTER_SET = new Set(REGISTER_PALETTE_VALUES);
 const LEDGER_DEFAULTS = Object.freeze({
   maxBlockTurns: 3,
   registerPalette: null, // null = no register choice offered (palette of one: the running register)
+  // --- v2 (Part 6, mechanism trialling; all default OFF = v1 exactly) ---
+  trialling: false, // master switch: mechanism history + effectiveness review + licensed departures
+  stancePalette: null, // engagement-register names (registry); negative valence ONLY by explicit listing here
+  releaseIntent: false, // scene release intent (requires a release-authority arm; guards stay binding)
 });
 
 /**
@@ -81,6 +90,27 @@ export function normalizeStrategyLedgerConfig(raw) {
         );
       }
     }
+  }
+  out.trialling = Boolean(out.trialling);
+  if (out.stancePalette !== null) {
+    if (!out.trialling) {
+      throw new Error(
+        'strategy-ledger config: stancePalette requires trialling (the v2 review loop owns stance choice)',
+      );
+    }
+    if (!Array.isArray(out.stancePalette) || out.stancePalette.length < 1) {
+      throw new Error('strategy-ledger config: stancePalette must be a non-empty array or null');
+    }
+    out.stancePalette = out.stancePalette.map((name) => String(name).trim());
+    for (const name of out.stancePalette) {
+      const def = getEngagementRegisterDefinition(name);
+      if (!def) {
+        throw new Error(`strategy-ledger config: unknown engagement register "${name}" (not in the merged registry)`);
+      }
+    }
+  }
+  if (out.releaseIntent && !out.trialling) {
+    throw new Error('strategy-ledger config: releaseIntent requires trialling (intent is audited by the review loop)');
   }
   return out;
 }
@@ -283,14 +313,150 @@ export function normalizeSceneCommitment(raw, { registerPalette = null, currentR
       : null;
   const rationale = cleanText(raw.rationale, 180);
   const exitCondition = cleanText(raw.exit_condition, 180);
-  if (!register && !didacticDefault && !releasePosture && recognitionBudget === null && !exitCondition) return null;
-  return {
+  return finishSceneCommitment({
     register,
     didacticDefault,
     releasePosture,
     recognitionBudget,
     rationale,
     exitCondition,
+  });
+}
+
+/**
+ * v2 fields (Part 6): an engagement-STANCE choice from the operator's stance
+ * palette (interpersonal-stance axis — distinct from the surface register
+ * above; negative valence only enters by explicit palette listing), and a
+ * scene release INTENT (release-authority arms only; up to four exhibit ids
+ * the tutor means to play this scene — advisory to the turn, guards binding).
+ */
+export function normalizeSceneCommitmentV2(raw, { stancePalette = null, premiseIds = null, ...v1opts } = {}) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const base = normalizeSceneCommitment(raw, v1opts) || {};
+  const stanceRaw = typeof raw.stance === 'string' ? raw.stance.trim() : null;
+  const stance = stanceRaw && Array.isArray(stancePalette) && stancePalette.includes(stanceRaw) ? stanceRaw : null;
+  const idSet = premiseIds instanceof Set ? premiseIds : new Set(premiseIds || []);
+  const releaseIntent = Array.isArray(raw.release_intent)
+    ? [...new Set(raw.release_intent.map((x) => String(x).trim()).filter((id) => idSet.has(id)))].slice(0, 4)
+    : [];
+  const merged = {
+    register: base.register ?? null,
+    didacticDefault: base.didacticDefault ?? null,
+    releasePosture: base.releasePosture ?? null,
+    recognitionBudget: base.recognitionBudget ?? null,
+    rationale: base.rationale ?? cleanText(raw.rationale, 180),
+    exitCondition: base.exitCondition ?? cleanText(raw.exit_condition, 180),
+    stance,
+    releaseIntent: releaseIntent.length ? releaseIntent : null,
+  };
+  if (
+    !merged.register &&
+    !merged.didacticDefault &&
+    !merged.releasePosture &&
+    merged.recognitionBudget === null &&
+    !merged.exitCondition &&
+    !merged.stance &&
+    !merged.releaseIntent
+  ) {
+    return null;
+  }
+  return merged;
+}
+
+function finishSceneCommitment(fields) {
+  const { register, didacticDefault, releasePosture, recognitionBudget, exitCondition } = fields;
+  if (!register && !didacticDefault && !releasePosture && recognitionBudget === null && !exitCondition) return null;
+  return fields;
+}
+
+/** v2: the persist / adjust / switch decision demanded at openings once a
+ * mechanism history exists. Shape-gated like every commitment. */
+export function normalizeStrategyReview(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const decision = STRATEGY_REVIEW_DECISIONS.includes(raw.decision) ? raw.decision : null;
+  const reason = cleanText(raw.reason, 180);
+  if (!decision) return null;
+  return { decision, reason };
+}
+
+/**
+ * v2 two-gate structure, gate one: was the assigned stance actually
+ * INSTANTIATED this scene? Wraps the landed registerStanceFidelity gate
+ * (deterministic, cue-based) over each tutor line in the scene span.
+ * Aggregation: any invalid_person_attack dominates; else any faithful turn
+ * makes the scene faithful; else the weakest non-instantiated label stands.
+ * The warm-in-costume lesson (10/15 pre-repair) is why this precedes the
+ * effectiveness review — outcomes only attribute to mechanisms actually
+ * deployed.
+ */
+export function sceneStanceFidelity({ stance, tutorLines = [], learnerLines = [] }) {
+  if (!stance) return null;
+  const perTurn = [];
+  for (let i = 0; i < tutorLines.length; i += 1) {
+    const verdict = evaluateRegisterStanceFidelity({
+      registerName: stance,
+      tutorMessage: tutorLines[i] || '',
+      learnerMessage: learnerLines[i] || '',
+    });
+    // The landed gate is a NEGATIVE-register discipline: positive-valence
+    // stances return applies:false and are not deterministically gateable —
+    // they pass through as not_applicable rather than being scored.
+    if (verdict.applies === false) {
+      return { schema: LEDGER_HISTORY_SCHEMA, stance, label: 'not_applicable', perTurn: [] };
+    }
+    perTurn.push({ label: verdict.label, score: verdict.score ?? null });
+  }
+  if (!perTurn.length) return { schema: LEDGER_HISTORY_SCHEMA, stance, label: 'not_instantiated', perTurn };
+  let label = 'not_instantiated';
+  if (perTurn.some((t) => t.label === 'invalid_person_attack')) label = 'invalid_person_attack';
+  else if (perTurn.some((t) => t.label === 'faithful')) label = 'faithful';
+  else if (perTurn.some((t) => t.label === 'weak_or_warm_in_costume')) label = 'weak_or_warm_in_costume';
+  return { schema: LEDGER_HISTORY_SCHEMA, stance, label, perTurn };
+}
+
+/**
+ * v2 mechanism-history entry, built at scene close from PUBLIC material only
+ * (no D, no proof state — the table is rendered into prompts). The audit and
+ * review attach later, at the next opening, like the row audit does.
+ */
+export function buildMechanismHistoryEntry({ sceneRecord, commitment, fidelity = null }) {
+  if (!sceneRecord || !commitment) return null;
+  const exchanges = sceneRecord.exchanges || [];
+  const pressing = exchanges.filter((e) => ['confusion', 'repair_request', 'resistance'].includes(e.type)).length;
+  const working = exchanges.filter((e) => (e.formalActions || 0) > 0 || e.type === 'hypothesis').length;
+  const exitCheck = commitment.exitCondition
+    ? checkBlockClearance({
+        mode: commitment.didacticDefault,
+        blockType: null,
+        learnerText: sceneRecord.lastLearnerText || '',
+        exchangeType: sceneRecord.lastExchangeType || null,
+      })
+    : null;
+  return {
+    schema: LEDGER_HISTORY_SCHEMA,
+    sceneIndex: sceneRecord.index,
+    turns: [sceneRecord.startTurn, sceneRecord.endTurn],
+    strategy: {
+      stance: commitment.stance || null,
+      register: commitment.register || null,
+      didacticDefault: commitment.didacticDefault || null,
+      releasePosture: commitment.releasePosture || null,
+      releaseIntent: commitment.releaseIntent || null,
+    },
+    fidelity: fidelity ? { label: fidelity.label } : null,
+    outcome: {
+      closeStatus: sceneRecord.status,
+      exitConditionCleared: exitCheck ? exitCheck.cleared : null,
+      pressingExchanges: pressing,
+      workingExchanges: working,
+      phatic: sceneRecord.counts?.phatic ?? 0,
+      releasesPlayed: (sceneRecord.releases || []).length,
+      intendedPlayed: commitment.releaseIntent
+        ? commitment.releaseIntent.filter((id) => (sceneRecord.releases || []).some((r) => r.premiseId === id)).length
+        : null,
+    },
+    audit: null, // attached at the next opening
+    review: null, // the persist/adjust/switch decision that answered this entry
   };
 }
 
@@ -327,7 +493,7 @@ function clause(name, verdict, evidence) {
  * endTurn, counts, exchanges, lastLearnerText, releases, scheduled,
  * didacticModes, registerHeld}.
  */
-export function auditTutorSceneCommitment(commitment, sceneRecord) {
+export function auditTutorSceneCommitment(commitment, sceneRecord, opts = {}) {
   if (!commitment || !sceneRecord) return null;
   const clauses = [];
   if (commitment.register) {
@@ -420,13 +586,68 @@ export function auditTutorSceneCommitment(commitment, sceneRecord) {
         : clause('exit condition', 'drift', check.evidence),
     );
   }
+  // --- v2 clauses ---
+  if (commitment.stance) {
+    const label = opts.fidelity?.label || null;
+    clauses.push(
+      label === 'not_applicable'
+        ? clause(
+            `stance ${commitment.stance}`,
+            'unscored',
+            'positive-valence stance — no deterministic instantiation gate',
+          )
+        : label === 'faithful'
+          ? clause(`stance ${commitment.stance}`, 'kept', 'stance cues visible (fidelity gate: faithful)')
+          : label === 'invalid_person_attack'
+            ? clause(
+                `stance ${commitment.stance}`,
+                'drift',
+                'invalid corrosive violation — not successful register execution',
+              )
+            : clause(
+                `stance ${commitment.stance}`,
+                'drift',
+                `assigned stance not instantiated (fidelity gate: ${label || 'unchecked'})`,
+              ),
+    );
+  }
+  if (commitment.releaseIntent) {
+    const releases = Array.isArray(sceneRecord.releases) ? sceneRecord.releases : [];
+    const played = commitment.releaseIntent.filter((id) => releases.some((r) => r.premiseId === id));
+    clauses.push(
+      played.length === commitment.releaseIntent.length
+        ? clause('release intent', 'kept', `all ${played.length} intended exhibit(s) played`)
+        : clause(
+            'release intent',
+            'drift',
+            `${played.length}/${commitment.releaseIntent.length} intended exhibits played`,
+          ),
+    );
+  }
   if (!clauses.length) return null;
-  const drift = clauses.filter((c) => c.verdict === 'drift').length;
+  // --- v2 licensed departures: a declared departure converts drift into
+  // justified_deviation (coarse and deterministic: the declaration is the
+  // license; the text of the declaration travels on the row for the reader).
+  // The stance clause is exempt — fidelity is a treatment gate, not a style
+  // choice a departure can license.
+  const departures = Number(opts.departures) || 0;
+  const adjudicated =
+    departures > 0
+      ? clauses.map((c) =>
+          c.verdict === 'drift' && !c.clause.startsWith('stance ')
+            ? { ...c, verdict: 'justified_deviation', evidence: `${c.evidence}; departure declared during the scene` }
+            : c,
+        )
+      : clauses;
+  const drift = adjudicated.filter((c) => c.verdict === 'drift').length;
+  const justified = adjudicated.filter((c) => c.verdict === 'justified_deviation').length;
   return {
-    clauses,
+    clauses: adjudicated,
     summary: drift
-      ? `${drift} of ${clauses.length} commitment clause(s) drifted`
-      : `all ${clauses.length} commitment clause(s) kept`,
+      ? `${drift} of ${adjudicated.length} commitment clause(s) drifted${justified ? `; ${justified} justified` : ''}`
+      : justified
+        ? `${justified} justified deviation(s); the rest kept`
+        : `all ${adjudicated.length} commitment clause(s) kept`,
   };
 }
 

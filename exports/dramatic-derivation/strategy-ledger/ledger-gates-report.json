@@ -111,9 +111,49 @@
       "id": "L4-intent-audits",
       "ok": true,
       "detail": "2/4 learner intents audited (act-bounded + final-scene lapses expected)"
+    },
+    {
+      "id": "L5-history",
+      "ok": true,
+      "detail": "4 history entries for 4 scenes"
+    },
+    {
+      "id": "L5-stance-committed",
+      "ok": true,
+      "detail": "4/4 commitments carry a stance"
+    },
+    {
+      "id": "L5-fidelity-gate",
+      "ok": true,
+      "detail": "fidelity labels: not_instantiated, not_applicable (mock lines carry no cues — non-faithful expected)"
+    },
+    {
+      "id": "L5-review-loop",
+      "ok": true,
+      "detail": "3 review event(s); 3 history entr(ies) answered"
+    },
+    {
+      "id": "L5-stance-audited",
+      "ok": true,
+      "detail": "3 stance clause(s) adjudicated"
+    },
+    {
+      "id": "L5-intent-recorded",
+      "ok": true,
+      "detail": "4 commitment(s) carry a release intent"
+    },
+    {
+      "id": "L5-intent-audited",
+      "ok": true,
+      "detail": "3 release-intent clause(s) adjudicated"
+    },
+    {
+      "id": "L5-guards-untouched",
+      "ok": true,
+      "detail": "release-authority cast: intent on/off proof fingerprints byte-identical"
     }
   ],
-  "passed": 22,
-  "total": 22,
+  "passed": 30,
+  "total": 30,
   "ok": true
 }

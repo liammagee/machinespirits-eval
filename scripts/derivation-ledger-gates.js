@@ -417,6 +417,7 @@ async function main() {
   await gateCommitments(rows, world, script);
   await gateFingerprint(rows, world, script);
   await gateLearnerMirror(rows, world, script);
+  await gateTriallingV2(rows, world, script);
 
   const passed = rows.filter((r) => r.ok).length;
   const ok = passed === rows.length;
@@ -456,4 +457,142 @@ if (isMain) {
     console.error(err.stack || String(err));
     process.exit(1);
   });
+}
+
+// --- L5: v2 mechanism trialling (stance two-gate, history, review, intent) ---
+export async function gateTriallingV2(rows, world, script) {
+  const client = makeLlmClient({ mode: 'mock' });
+  const cast = {
+    director: makeLlmDirector(world, client, {}),
+    tutor: makeLlmTutor(world, client, {
+      script,
+      didacticMode: true,
+      strategyLedger: true,
+      strategyLedgerV2: true,
+      publicRegister: 'modern',
+    }),
+    learner: makeLlmLearner({
+      setting: world.setting,
+      voice: 'plain, careful, first person',
+      client,
+      publicRegister: 'modern',
+    }),
+  };
+  const result = await runDrama({
+    world,
+    roles: cast,
+    options: {
+      sceneMode: true,
+      publicRegister: 'modern',
+      strategyLedger: normalizeStrategyLedgerConfig({
+        trialling: true,
+        stancePalette: ['charismatic_challenge', 'ironic_challenge'],
+      }),
+      maxTurns: 10,
+      stopOnStall: false,
+    },
+  });
+  const history = result.strategyLedger?.history || [];
+  const openings = result.events.filter((e) => e.type === 'scene_open').length;
+  check(rows, 'L5-history', history.length >= openings - 1, `${history.length} history entries for ${openings} scenes`);
+  const stanceCommits = result.events.filter((e) => e.type === 'strategy_commit' && e.detail.includes('stance')).length;
+  check(
+    rows,
+    'L5-stance-committed',
+    stanceCommits === openings,
+    `${stanceCommits}/${openings} commitments carry a stance`,
+  );
+  const fidelityLabels = history.map((h) => h.fidelity?.label).filter(Boolean);
+  const validLabels = [
+    'faithful',
+    'weak_or_warm_in_costume',
+    'not_instantiated',
+    'invalid_person_attack',
+    'not_applicable',
+  ];
+  check(
+    rows,
+    'L5-fidelity-gate',
+    fidelityLabels.length === history.length && fidelityLabels.every((l) => validLabels.includes(l)),
+    `fidelity labels: ${[...new Set(fidelityLabels)].join(', ') || 'none'} (mock lines carry no cues — non-faithful expected)`,
+  );
+  const reviews = result.events.filter((e) => e.type === 'strategy_review').length;
+  const reviewed = history.filter((h) => h.review).length;
+  check(
+    rows,
+    'L5-review-loop',
+    reviews >= 1 && reviewed >= 1,
+    `${reviews} review event(s); ${reviewed} history entr(ies) answered`,
+  );
+  const stanceClauses = (result.strategyLedger?.rows || [])
+    .filter((r) => r.agent === 'tutor' && r.audit)
+    .flatMap((r) => r.audit.clauses.filter((c) => c.clause.startsWith('stance ')));
+  check(
+    rows,
+    'L5-stance-audited',
+    stanceClauses.length >= 1 && stanceClauses.every((c) => ['kept', 'drift', 'unscored'].includes(c.verdict)),
+    `${stanceClauses.length} stance clause(s) adjudicated`,
+  );
+
+  // release intent under authority: intents recorded + audited, guards
+  // untouched (fingerprint vs the same authority cast without the ledger).
+  const mkAuthorityCast = (ledgerOn) => {
+    const c = makeLlmClient({ mode: 'mock' });
+    return {
+      director: makeLlmDirector(world, c, {}),
+      tutor: makeLlmTutor(world, c, {
+        script,
+        didacticMode: true,
+        releaseAuthority: true,
+        ...(ledgerOn ? { strategyLedger: true, strategyLedgerV2: true } : {}),
+        publicRegister: 'modern',
+      }),
+      learner: makeLlmLearner({
+        setting: world.setting,
+        voice: 'plain, careful, first person',
+        client: c,
+        publicRegister: 'modern',
+      }),
+    };
+  };
+  const intentRun = await runDrama({
+    world,
+    roles: mkAuthorityCast(true),
+    options: {
+      sceneMode: true,
+      publicRegister: 'modern',
+      strategyLedger: normalizeStrategyLedgerConfig({ trialling: true, releaseIntent: true }),
+      maxTurns: 10,
+      stopOnStall: false,
+    },
+  });
+  const intentRows = (intentRun.strategyLedger?.rows || []).filter(
+    (r) => r.agent === 'tutor' && r.commitment.releaseIntent,
+  );
+  check(
+    rows,
+    'L5-intent-recorded',
+    intentRows.length >= 1,
+    `${intentRows.length} commitment(s) carry a release intent`,
+  );
+  const intentClauses = (intentRun.strategyLedger?.rows || [])
+    .filter((r) => r.agent === 'tutor' && r.audit)
+    .flatMap((r) => r.audit.clauses.filter((c) => c.clause === 'release intent'));
+  check(
+    rows,
+    'L5-intent-audited',
+    intentClauses.length >= 1,
+    `${intentClauses.length} release-intent clause(s) adjudicated`,
+  );
+  const plainAuthority = await runDrama({
+    world,
+    roles: mkAuthorityCast(false),
+    options: { sceneMode: true, publicRegister: 'modern', maxTurns: 10, stopOnStall: false },
+  });
+  check(
+    rows,
+    'L5-guards-untouched',
+    fingerprint(plainAuthority) === fingerprint(intentRun),
+    'release-authority cast: intent on/off proof fingerprints byte-identical',
+  );
 }

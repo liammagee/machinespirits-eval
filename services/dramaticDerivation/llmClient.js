@@ -300,8 +300,12 @@ function mockResponse(role, meta = {}) {
     const throughlineBits = meta.throughlineHint ? { throughline: meta.throughlineHint } : {};
     // Strategy ledger: the bridge's sceneCommitmentHint is the deterministic
     // scene-opening commitment; echoed on every reply shape (like the plot)
-    // so intervened openings re-commit. The real backend ignores meta.
-    const ledgerBits = meta.sceneCommitmentHint ? { scene_commitment: meta.sceneCommitmentHint } : {};
+    // so intervened openings re-commit. v2 rides the same channel: the
+    // review hint answers the history table. The real backend ignores meta.
+    const ledgerBits = {
+      ...(meta.sceneCommitmentHint ? { scene_commitment: meta.sceneCommitmentHint } : {}),
+      ...(meta.strategyReviewHint ? { strategy_review: meta.strategyReviewHint } : {}),
+    };
     // Proof-debt hygiene: when the bridge says an already-staged,
     // proof-critical exhibit must be restored, the mock obeys so zero-cost
     // runs exercise the same parser/repair path as real runs.

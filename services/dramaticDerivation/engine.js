@@ -104,9 +104,11 @@ import { derivationDistance, detectStall } from './slope.js';
 import { deriveOpportunityCostBudget, nextOpportunityCostBudget, auditOpportunityCost } from './opportunityCost.js';
 import {
   blockTypeForExchange,
+  buildMechanismHistoryEntry,
   ledgerRow,
   normalizeStrategyLedgerConfig,
   openBlock,
+  sceneStanceFidelity,
   updateBlockLedger,
 } from './strategyLedger.js';
 
@@ -342,6 +344,11 @@ export async function runDrama({ world, roles, options = {} }) {
         budget: deriveOpportunityCostBudget({ scope: 'dialogue_block' }),
         appliedCommitment: null,
         rows: [],
+        // v2 (trialling): the mechanism history table + this scene's declared
+        // departures. History is PUBLIC-ONLY by construction — it renders
+        // into prompts, so no D, no proof state, ever.
+        history: [],
+        departuresThisScene: 0,
       }
     : null;
   const learnerLedgerRows = []; // learner-authored rows (learnerLedger dial)
@@ -844,7 +851,18 @@ export async function runDrama({ world, roles, options = {} }) {
     config: {
       maxBlockTurns: ledgerState.config.maxBlockTurns,
       registerPalette: ledgerState.config.registerPalette,
+      trialling: ledgerState.config.trialling,
+      stancePalette: ledgerState.config.stancePalette,
+      releaseIntent: ledgerState.config.releaseIntent,
     },
+    // v2: the mechanism history table (public-only), most recent last,
+    // capped so the prompt block stays bounded.
+    ...(ledgerState.config.trialling
+      ? {
+          history: ledgerState.history.slice(-6).map((entry) => ({ ...entry })),
+          departuresThisScene: ledgerState.departuresThisScene,
+        }
+      : {}),
   });
 
   // Stage v2 bounding (header): in acts mode the learner's context is (a) its
@@ -1260,6 +1278,8 @@ export async function runDrama({ world, roles, options = {} }) {
             didacticDefault: commitment.didacticDefault || null,
             releasePosture: commitment.releasePosture || null,
             recognitionBudget: commitment.recognitionBudget ?? null,
+            ...(commitment.stance ? { stance: commitment.stance } : {}),
+            ...(commitment.releaseIntent ? { releaseIntent: [...commitment.releaseIntent] } : {}),
           },
           committedTurn: turn,
           expires: `scene_${sceneState.index}_close`,
@@ -1273,8 +1293,10 @@ export async function runDrama({ world, roles, options = {} }) {
         detail: `scene ${sceneState.index}: ${
           [
             commitment.register ? `register ${commitment.register}` : null,
+            commitment.stance ? `stance ${commitment.stance}` : null,
             commitment.didacticDefault ? `didactic ${commitment.didacticDefault}` : null,
             commitment.releasePosture ? `releases ${commitment.releasePosture}` : null,
+            commitment.releaseIntent ? `intends ${commitment.releaseIntent.join('+')}` : null,
             commitment.recognitionBudget !== null && commitment.recognitionBudget !== undefined
               ? `recognition budget ${commitment.recognitionBudget}`
               : null,
@@ -1301,11 +1323,29 @@ export async function runDrama({ world, roles, options = {} }) {
             r.agent === 'tutor' && r.scope === 'scene' && r.expires === `scene_${audit.sceneIndex}_close` && !r.audit,
         );
       if (row) row.audit = { clauses: audit.clauses, summary: audit.summary };
+      const historyEntry = ledgerState.history.find((h) => h.sceneIndex === audit.sceneIndex && !h.audit);
+      if (historyEntry) historyEntry.audit = { summary: audit.summary };
       events.push({
         turn,
         type: 'strategy_audit',
         detail: `scene ${audit.sceneIndex} commitment audited: ${audit.summary}`,
       });
+    }
+    // v2 (trialling): the persist/adjust/switch review answers the newest
+    // history entry; a declared departure licenses off-commitment conduct
+    // this scene and is adjudicated at the close.
+    if (ledgerState?.config.trialling && tutorOut.strategyReview) {
+      const pending = [...ledgerState.history].reverse().find((h) => !h.review);
+      if (pending) pending.review = { ...tutorOut.strategyReview, turn };
+      events.push({
+        turn,
+        type: 'strategy_review',
+        detail: `${tutorOut.strategyReview.decision}${tutorOut.strategyReview.reason ? `: ${tutorOut.strategyReview.reason}` : ''}`,
+      });
+    }
+    if (ledgerState?.config.trialling && tutorOut.departure) {
+      ledgerState.departuresThisScene += 1;
+      events.push({ turn, type: 'strategy_departure', detail: tutorOut.departure });
     }
     // Phase-0d hold: an open block adopts the tutor's first non-minimal
     // didactic recommendation as its held mode; the bridge holds it steady
@@ -1795,7 +1835,42 @@ export async function runDrama({ world, roles, options = {} }) {
               .map((entry) => ({ turn: entry.turn, premise: entry.premise })),
             didacticModes: didacticModeRows.filter(span).map((row) => row.recommendedMode),
             registerHeld: true,
+            ...(ledgerState?.config.trialling ? { departures: ledgerState.departuresThisScene } : {}),
           };
+        }
+        // v2 (trialling): the two-gate close. Gate one — was the assigned
+        // stance actually instantiated (the landed registerStanceFidelity
+        // gate, per tutor line in the span)? Then the public-only mechanism
+        // history entry; the audit and review attach at the next opening.
+        if (ledgerState?.config.trialling && ledgerState.appliedCommitment) {
+          const span = (row) => row.turn >= closedScene.startTurn && row.turn <= closedScene.endTurn;
+          const tutorLines = transcript
+            .filter((entry) => entry.role === 'tutor' && span(entry))
+            .map((entry) => entry.text || '');
+          const learnerLinesInSpan = transcript
+            .filter((entry) => entry.role === 'learner' && span(entry))
+            .map((entry) => entry.text || '');
+          const fidelity = ledgerState.appliedCommitment.stance
+            ? sceneStanceFidelity({
+                stance: ledgerState.appliedCommitment.stance,
+                tutorLines,
+                learnerLines: learnerLinesInSpan,
+              })
+            : null;
+          if (fidelity) {
+            lastClosedSceneSummary = { ...lastClosedSceneSummary, stanceFidelity: { label: fidelity.label } };
+            events.push({
+              turn,
+              type: 'stance_fidelity',
+              detail: `scene ${closedScene.index} stance ${ledgerState.appliedCommitment.stance}: ${fidelity.label}`,
+            });
+          }
+          const historyEntry = buildMechanismHistoryEntry({
+            sceneRecord: lastClosedSceneSummary,
+            commitment: ledgerState.appliedCommitment,
+            fidelity,
+          });
+          if (historyEntry) ledgerState.history.push(historyEntry);
         }
         // Scene exit under the strategy ledger: revert a scene-committed
         // register to the run baseline, clear the applied commitment, and
@@ -1808,6 +1883,7 @@ export async function runDrama({ world, roles, options = {} }) {
           }
           ledgerState.appliedCommitment = null;
           ledgerState.budget = deriveOpportunityCostBudget({ scope: 'dialogue_block' });
+          ledgerState.departuresThisScene = 0;
         }
       }
     }
@@ -2145,6 +2221,13 @@ export async function runDrama({ world, roles, options = {} }) {
                   config: {
                     maxBlockTurns: ledgerState.config.maxBlockTurns,
                     registerPalette: ledgerState.config.registerPalette,
+                    ...(ledgerState.config.trialling
+                      ? {
+                          trialling: true,
+                          stancePalette: ledgerState.config.stancePalette,
+                          releaseIntent: ledgerState.config.releaseIntent,
+                        }
+                      : {}),
                   },
                   blocks: ledgerState.blockRows,
                   budgetFinal: {
@@ -2152,6 +2235,7 @@ export async function runDrama({ world, roles, options = {} }) {
                     currentProofNeutralTutorTurns: ledgerState.budget.currentProofNeutralTutorTurns,
                     currentProofNeutralLearnerTurns: ledgerState.budget.currentProofNeutralLearnerTurns,
                   },
+                  ...(ledgerState.config.trialling ? { history: ledgerState.history } : {}),
                 }
               : {}),
             rows: [...(ledgerState?.rows || []), ...learnerLedgerRows],

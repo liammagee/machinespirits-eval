@@ -645,6 +645,12 @@ async function main() {
     console.error('--learner-ledger requires --scene-mode (scene intents bind at scene boundaries)');
     process.exit(1);
   }
+  if (strategyLedger?.releaseIntent && !flag('release-authority')) {
+    console.error(
+      '--strategy-ledger releaseIntent requires --release-authority (intent is planning over the authority the tutor already holds; guards stay binding)',
+    );
+    process.exit(1);
+  }
   const reconstruct = flag('reconstruct');
   if (reconstruct && !acts) {
     console.error(
@@ -1245,6 +1251,7 @@ async function main() {
       ownershipTransferGate,
       publicRegister,
       strategyLedger: Boolean(strategyLedger),
+      strategyLedgerV2: Boolean(strategyLedger?.trialling),
     }),
     learner: makeLlmLearner({
       setting: world.setting,

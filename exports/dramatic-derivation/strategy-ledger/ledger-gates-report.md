@@ -26,8 +26,16 @@ World: `config/drama-derivation/world-000-smoke.yaml` — mock roles / mock LLM 
 | L4-carries | PASS | 3 act carry-forward row(s) recorded |
 | L4-symmetry | PASS | tutor and learner ledger rows share the identical field set |
 | L4-intent-audits | PASS | 2/4 learner intents audited (act-bounded + final-scene lapses expected) |
+| L5-history | PASS | 4 history entries for 4 scenes |
+| L5-stance-committed | PASS | 4/4 commitments carry a stance |
+| L5-fidelity-gate | PASS | fidelity labels: not_instantiated, not_applicable (mock lines carry no cues — non-faithful expected) |
+| L5-review-loop | PASS | 3 review event(s); 3 history entr(ies) answered |
+| L5-stance-audited | PASS | 3 stance clause(s) adjudicated |
+| L5-intent-recorded | PASS | 4 commitment(s) carry a release intent |
+| L5-intent-audited | PASS | 3 release-intent clause(s) adjudicated |
+| L5-guards-untouched | PASS | release-authority cast: intent on/off proof fingerprints byte-identical |
 
-**22/22 checks passed.**
+**30/30 checks passed.**
 
 Scope: wiring gates only — no empirical claim. Proof control and the
 release calendar are asserted untouched (L3); everything else is conduct.

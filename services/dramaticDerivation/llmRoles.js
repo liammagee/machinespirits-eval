@@ -45,7 +45,10 @@ import {
   normalizeLearnerActCarry,
   normalizeLearnerSceneIntent,
   normalizeSceneCommitment,
+  normalizeSceneCommitmentV2,
+  normalizeStrategyReview,
 } from './strategyLedger.js';
+import { getEngagementRegisterDefinition } from '../engagementRegisterRegistry.js';
 import { deriveEntitlementState, entitlementNeedsConduct } from './learnerEntitlement.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
@@ -1064,6 +1067,7 @@ function tutorSystem(
     ownershipTransferGate = false,
     publicRegister = 'default',
     strategyLedger = false,
+    strategyLedgerV2 = false,
   } = {},
 ) {
   const recognition = clampDial(dials.recognition);
@@ -1392,7 +1396,15 @@ function tutorSystem(
         : ''
     }${
       strategyLedger
-        ? ', "scene_commitment": {"register": "<from the offered palette>", "didactic_default": "<mode family>", "release_posture": "eager" | "hold" | "consolidate", "recognition_budget": <0-4>, "rationale": "<one line>", "exit_condition": "<what the learner does when this scene has worked>"}'
+        ? `, "scene_commitment": {"register": "<from the offered palette>", "didactic_default": "<mode family>", "release_posture": "eager" | "hold" | "consolidate", "recognition_budget": <0-4>, "rationale": "<one line>", "exit_condition": "<what the learner does when this scene has worked>"${
+            strategyLedgerV2
+              ? ', "stance": "<from the offered stance palette, or null>", "release_intent": ["<exhibit id you intend to play this scene>", ...] (release-authority runs only; omit otherwise)'
+              : ''
+          }}`
+        : ''
+    }${
+      strategyLedgerV2
+        ? ', "strategy_review": {"decision": "persist" | "adjust" | "switch", "reason": "<one line>"} (scene-opening turns with a history table only; omit otherwise), "departure": "<one line when this turn deliberately departs from your scene commitment, else null>"'
         : ''
     }}`,
     ...(plot ? ['("plot" belongs to act-opening turns ONLY — the harness marks them; omit the key mid-act.)'] : []),
@@ -1407,6 +1419,16 @@ function tutorSystem(
           'The commitment is CONDUCT strategy for the scene — register, explanatory default, pacing posture, recognition budget.',
           'It never names, gates, or reorders a release, a repair, a proof target, or the concealed answer;',
           'the release calendar and proof-control obligations outrank it everywhere they speak.)',
+        ]
+      : []),
+    ...(strategyLedgerV2
+      ? [
+          '(v2 trialling: your scene strategy is an EXPERIMENT. The history table shows what you tried and how it',
+          'landed — review it at each opening and persist, adjust, or switch with a reason. Your commitment GUIDES',
+          "rather than binds the turn: when the learner's behavior warrants acting off-commitment, do it and declare",
+          'it in "departure" — declared departures are adjudicated as justified deviation, undeclared ones as drift.',
+          'An assigned stance counts only when its cues are VISIBLE in your lines; warm challenge in costume is',
+          'treatment noncompliance, not evidence. A release intent never widens a pacing window — guards rule.)',
         ]
       : []),
   ].join('\n');
@@ -2117,10 +2139,14 @@ export function makeLlmTutor(
     ownershipProof = false,
     ownershipTransferGate = false,
     strategyLedger = false,
+    strategyLedgerV2 = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
     throw new Error('derivation.llmRoles: makeLlmTutor requires a role-script (the iteration target)');
+  }
+  if (strategyLedgerV2 && !strategyLedger) {
+    throw new Error('derivation.llmRoles: strategyLedgerV2 requires strategyLedger (v2 rides the v1 commitment loop)');
   }
   if (stallWatch && !superego) {
     throw new Error(
@@ -2268,6 +2294,7 @@ export function makeLlmTutor(
     ownershipTransferGate,
     publicRegister,
     strategyLedger,
+    strategyLedgerV2,
   });
   const superegoSystem = superego
     ? tutorSuperegoSystem(world, {
@@ -2736,6 +2763,7 @@ export function makeLlmTutor(
     // goes unaudited at run end — the missing row is the ledger of that
     // lapse. ---
     const ledgerInfo = strategyLedger ? view.strategyLedger || null : null;
+    const trialling = Boolean(strategyLedgerV2 && ledgerInfo?.config?.trialling);
     const sceneOpening = Boolean(strategyLedger && view.scene && view.scene.startTurn === view.turn);
     let sceneCommitmentAudit = null;
     if (
@@ -2745,10 +2773,22 @@ export function makeLlmTutor(
       ledgerInfo?.lastClosedScene &&
       ledgerBridgeState.sceneIndex === ledgerInfo.lastClosedScene.index
     ) {
-      const audit = auditTutorSceneCommitment(ledgerBridgeState.commitment, {
-        ...ledgerInfo.lastClosedScene,
-        didacticModes: didacticMode ? ledgerInfo.lastClosedScene.didacticModes : null,
-      });
+      const audit = auditTutorSceneCommitment(
+        ledgerBridgeState.commitment,
+        {
+          ...ledgerInfo.lastClosedScene,
+          didacticModes: didacticMode ? ledgerInfo.lastClosedScene.didacticModes : null,
+        },
+        // v2 adjudication inputs: declared departures license drift down to
+        // justified_deviation (stance exempt); the engine's fidelity gate
+        // verdict feeds the stance clause.
+        trialling
+          ? {
+              departures: ledgerInfo.lastClosedScene.departures || 0,
+              fidelity: ledgerInfo.lastClosedScene.stanceFidelity || null,
+            }
+          : {},
+      );
       if (audit) sceneCommitmentAudit = { sceneIndex: ledgerInfo.lastClosedScene.index, ...audit };
       ledgerBridgeState.commitment = null;
       ledgerBridgeState.sceneIndex = null;
@@ -3058,6 +3098,40 @@ export function makeLlmTutor(
           'THE AUDIT BINDS: the commitment you now make must answer every drifted clause — carry it forward, revise it, or change course with a stated reason.',
         );
       }
+      // v2: the mechanism history table renders before the fresh demand —
+      // the review decision must answer the record, not intuition.
+      if (trialling && sceneOpening && ledgerInfo?.history?.length) {
+        lines.push('', 'YOUR MECHANISM HISTORY (what you tried, whether it was really tried, how it landed):');
+        for (const h of ledgerInfo.history) {
+          const strat = [
+            h.strategy.stance ? `stance ${h.strategy.stance}` : null,
+            h.strategy.didacticDefault ? `didactic ${h.strategy.didacticDefault}` : null,
+            h.strategy.releasePosture ? `releases ${h.strategy.releasePosture}` : null,
+            h.strategy.releaseIntent ? `intended ${h.strategy.releaseIntent.join('+')}` : null,
+          ]
+            .filter(Boolean)
+            .join(', ');
+          const outcome = [
+            h.fidelity ? `fidelity ${h.fidelity.label}` : null,
+            h.outcome.exitConditionCleared === null
+              ? null
+              : `exit ${h.outcome.exitConditionCleared ? 'cleared' : 'NOT cleared'}`,
+            h.outcome.pressingExchanges ? `${h.outcome.pressingExchanges} pressing exchange(s)` : null,
+            h.outcome.intendedPlayed !== null
+              ? `${h.outcome.intendedPlayed}/${h.strategy.releaseIntent?.length ?? 0} intended played`
+              : null,
+            h.audit ? h.audit.summary : null,
+            h.review ? `you chose: ${h.review.decision}` : null,
+          ]
+            .filter(Boolean)
+            .join('; ');
+          lines.push(`- scene ${h.sceneIndex} [${strat || 'no strategy'}] -> ${outcome || 'no outcome recorded'}`);
+        }
+        lines.push(
+          'REVIEW THE RECORD and decide in "strategy_review": persist (same strategy), adjust (same mechanism, new settings), or switch (a different mechanism) — with a one-line reason.',
+          'Outcomes only count for a mechanism that was actually deployed (fidelity: faithful); warm-in-costume trials teach you nothing.',
+        );
+      }
       if (sceneOpening && view.scene) {
         const palette = ledgerInfo?.config?.registerPalette?.length
           ? ledgerInfo.config.registerPalette
@@ -3072,19 +3146,50 @@ export function makeLlmTutor(
           '- exit_condition: what the learner will visibly do when this scene has worked.',
           'Conduct only: the release calendar and proof-control obligations outrank this everywhere they speak.',
         );
+        if (trialling && ledgerInfo?.config?.stancePalette?.length) {
+          const stanceLines = ledgerInfo.config.stancePalette.map((name) => {
+            const def = getEngagementRegisterDefinition(name) || {};
+            const cues = Array.isArray(def.stance_fidelity_cues) ? def.stance_fidelity_cues.slice(0, 4) : [];
+            return `  · ${name} (${def.valence || 'unknown'} valence)${
+              cues.length ? ` — cues that MUST be visible in your lines: ${cues.map((c) => `"${c}"`).join(', ')}` : ''
+            }`;
+          });
+          lines.push(
+            '- stance: choose your interpersonal stance for this scene from the palette (or null to stay plain):',
+            ...stanceLines,
+            '  A stance counts only when its cues are visible — an assigned stance without visible cues is treatment noncompliance, not style.',
+          );
+        }
+        if (trialling && releaseAuthority && ledgerInfo?.config?.releaseIntent) {
+          lines.push(
+            '- release_intent: name the exhibit ids (up to 4, from your window) you INTEND to play this scene. Advisory to each turn; the pacing guard and hold limits rule as ever.',
+          );
+        }
       } else if (ledgerBridgeState?.commitment) {
         const c = ledgerBridgeState.commitment;
         lines.push(
           '',
           `YOUR SCENE COMMITMENT (scene ${ledgerBridgeState.sceneIndex}, standing since its opening):`,
           ...(c.register ? [`- register: ${c.register} (held by the harness)`] : []),
+          ...(c.stance
+            ? (() => {
+                const def = getEngagementRegisterDefinition(c.stance) || {};
+                const cues = Array.isArray(def.stance_fidelity_cues) ? def.stance_fidelity_cues.slice(0, 4) : [];
+                return [
+                  `- stance: ${c.stance}${cues.length ? ` — keep its cues visible: ${cues.map((x) => `"${x}"`).join(', ')}` : ''}`,
+                ];
+              })()
+            : []),
           ...(c.didacticDefault ? [`- didactic default: ${c.didacticDefault}`] : []),
           ...(c.releasePosture ? [`- release posture: ${c.releasePosture}`] : []),
+          ...(c.releaseIntent ? [`- release intent: ${c.releaseIntent.join(', ')} (guards rule)`] : []),
           ...(c.recognitionBudget !== null && c.recognitionBudget !== undefined
             ? [`- recognition budget: ${c.recognitionBudget}`]
             : []),
           ...(c.exitCondition ? [`- exit: ${c.exitCondition}`] : []),
-          'Play under it; the audit at the scene close distinguishes kept from drift.',
+          trialling
+            ? 'It GUIDES rather than binds: depart when the learner warrants it and declare it in "departure" — declared departures adjudicate as justified deviation, undeclared drift as drift.'
+            : 'Play under it; the audit at the scene close distinguishes kept from drift.',
         );
       }
       if (heldDidacticNote) lines.push('', heldDidacticNote);
@@ -3282,7 +3387,11 @@ export function makeLlmTutor(
         : {}),
       // mock determinism (strategy ledger): a scene-opening commitment —
       // second palette register when one is offered, schedule-aware posture.
-      // The real backend ignores meta.
+      // Under v2 trialling the hint also cycles the stance palette by scene
+      // index, names an intent from the unreleased schedule, and answers the
+      // history with persist (switch when the last trial was unfaithful) —
+      // so zero-paid runs traverse the review/two-gate path. The real
+      // backend ignores meta.
       ...(strategyLedger && sceneOpening
         ? {
             sceneCommitmentHint: {
@@ -3293,6 +3402,34 @@ export function makeLlmTutor(
               recognition_budget: 1,
               rationale: 'open the scene on its stated goal',
               exit_condition: 'the learner advances the scene goal in their own words',
+              ...(trialling && ledgerInfo?.config?.stancePalette?.length
+                ? {
+                    stance:
+                      ledgerInfo.config.stancePalette[
+                        (view.scene?.index ?? 1) % ledgerInfo.config.stancePalette.length
+                      ],
+                  }
+                : {}),
+              ...(trialling && releaseAuthority && ledgerInfo?.config?.releaseIntent
+                ? {
+                    release_intent: world.releaseSchedule
+                      .filter((e) => !view.ledger.some((l) => l.premiseId === e.premise))
+                      .slice(0, 2)
+                      .map((e) => e.premise),
+                  }
+                : {}),
+            },
+          }
+        : {}),
+      ...(trialling && sceneOpening && ledgerInfo?.history?.length
+        ? {
+            strategyReviewHint: {
+              decision:
+                ledgerInfo.history[ledgerInfo.history.length - 1]?.fidelity &&
+                ledgerInfo.history[ledgerInfo.history.length - 1].fidelity.label !== 'faithful'
+                  ? 'switch'
+                  : 'persist',
+              reason: 'answering the mechanism history table',
             },
           }
         : {}),
@@ -3567,13 +3704,21 @@ export function makeLlmTutor(
     // The scene commitment parses only on a scene-opening turn (the standing
     // commitment is the mid-scene contract); a parse-miss leaves the scene
     // uncommitted — the missing row stays visible to the scorer.
-    const parseSceneCommitment = (out) =>
-      strategyLedger && sceneOpening
-        ? normalizeSceneCommitment(out.scene_commitment, {
-            registerPalette: ledgerInfo?.config?.registerPalette || null,
-            currentRegister: activeRegisterName,
-          })
-        : null;
+    const parseSceneCommitment = (out) => {
+      if (!strategyLedger || !sceneOpening) return null;
+      const v1opts = {
+        registerPalette: ledgerInfo?.config?.registerPalette || null,
+        currentRegister: activeRegisterName,
+      };
+      if (!trialling) return normalizeSceneCommitment(out.scene_commitment, v1opts);
+      return normalizeSceneCommitmentV2(out.scene_commitment, {
+        ...v1opts,
+        stancePalette: ledgerInfo?.config?.stancePalette || null,
+        // release intent only in release-authority arms with the dial on;
+        // ids validate against the world's premise ledger.
+        premiseIds: releaseAuthority && ledgerInfo?.config?.releaseIntent ? world.premises.map((p) => p.id) : [],
+      });
+    };
     const commitScene = (commitment) => {
       if (!commitment) return;
       ledgerBridgeState.commitment = commitment;
@@ -3581,9 +3726,21 @@ export function makeLlmTutor(
     };
     const draftSceneCommitment = parseSceneCommitment(draftOut);
     commitScene(draftSceneCommitment);
-    const sceneLedgerBits = (commitment) => ({
+    // v2: the review answers the history table (opening turns); a departure
+    // may be declared on ANY turn. Both shape-gated; absence stays visible.
+    const parseReview = (out) =>
+      trialling && sceneOpening && ledgerInfo?.history?.length ? normalizeStrategyReview(out.strategy_review) : null;
+    const parseDeparture = (out) =>
+      trialling && typeof out.departure === 'string' && out.departure.trim()
+        ? out.departure.replace(/\s+/gu, ' ').trim().slice(0, 180)
+        : null;
+    const draftReview = parseReview(draftOut);
+    const draftDeparture = parseDeparture(draftOut);
+    const sceneLedgerBits = (commitment, review = null, departure = null) => ({
       ...(commitment ? { sceneCommitment: commitment } : {}),
       ...(sceneCommitmentAudit ? { sceneCommitmentAudit } : {}),
+      ...(review ? { strategyReview: review } : {}),
+      ...(departure ? { departure } : {}),
     });
     const releaseBits = normalizeRelease(draftOut);
     const plotBits = (finalPlot) => ({
@@ -3666,7 +3823,7 @@ export function makeLlmTutor(
       ...(draftTheory ? { theory: draftTheory } : {}),
       ...plotBits(draftPlot),
       ...throughlineBits(draftThroughline),
-      ...sceneLedgerBits(draftSceneCommitment),
+      ...sceneLedgerBits(draftSceneCommitment, draftReview, draftDeparture),
     };
     const draftGuard = applyProofDebtGuard(draft, 'draft');
     draft = draftGuard.out;
@@ -4055,6 +4212,8 @@ export function makeLlmTutor(
     const revisedSceneCommitment =
       strategyLedger && sceneOpening ? parseSceneCommitment(revisedOut) || draftSceneCommitment : null;
     commitScene(revisedSceneCommitment);
+    const revisedReview = trialling ? parseReview(revisedOut) || draftReview : null;
+    const revisedDeparture = trialling ? parseDeparture(revisedOut) || draftDeparture : null;
     let revised = {
       dialogue,
       move: normalizeMove(revisedOut) || draft.move,
@@ -4067,7 +4226,7 @@ export function makeLlmTutor(
       ...(revisedTheory ? { theory: revisedTheory } : {}),
       ...plotBits(revisedPlot),
       ...throughlineBits(revisedThroughline),
-      ...sceneLedgerBits(revisedSceneCommitment),
+      ...sceneLedgerBits(revisedSceneCommitment, revisedReview, revisedDeparture),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),

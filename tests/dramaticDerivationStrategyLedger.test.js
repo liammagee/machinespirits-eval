@@ -28,6 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  auditTutorSceneCommitment,
   checkBlockClearance,
   escalateDidacticMode,
   ledgerRow,
@@ -42,7 +43,10 @@ import {
   normalizeLearnerActCarry,
   normalizeLearnerSceneIntent,
   normalizeSceneCommitment,
+  normalizeSceneCommitmentV2,
   normalizeStrategyLedgerConfig,
+  normalizeStrategyReview,
+  sceneStanceFidelity,
   openBlock,
   runDrama,
   updateBlockLedger,
@@ -385,4 +389,176 @@ test('learner mirror: scene intents + act carries recorded, rows field-identical
   for (const line of result.transcript.filter((l) => l.role === 'tutor')) {
     assert.ok(!('sceneIntent' in (line.meta || {})));
   }
+});
+
+// ---------------------------------------------------------------------------
+// v2 — mechanism trialling (Part 6)
+// ---------------------------------------------------------------------------
+
+test('v2 config: stancePalette/releaseIntent require trialling; unknown stances fail loudly', () => {
+  assert.throws(() => normalizeStrategyLedgerConfig({ stancePalette: ['ironic_challenge'] }), /requires trialling/);
+  assert.throws(() => normalizeStrategyLedgerConfig({ releaseIntent: true }), /requires trialling/);
+  assert.throws(
+    () => normalizeStrategyLedgerConfig({ trialling: true, stancePalette: ['not_a_register'] }),
+    /unknown engagement register/,
+  );
+  const cfg = normalizeStrategyLedgerConfig({ trialling: true, stancePalette: ['charismatic_challenge'] });
+  assert.equal(cfg.trialling, true);
+  assert.deepEqual(cfg.stancePalette, ['charismatic_challenge']);
+});
+
+test('v2 commitment shape gate: stance palette-bound, intent id-validated, stance-only is real', () => {
+  const opts = {
+    registerPalette: ['modern'],
+    currentRegister: 'modern',
+    stancePalette: ['ironic_challenge'],
+    premiseIds: ['p1', 'p2'],
+  };
+  const full = normalizeSceneCommitmentV2(
+    { stance: 'ironic_challenge', release_intent: ['p1', 'p9', 'p1'], rationale: 'r' },
+    opts,
+  );
+  assert.equal(full.stance, 'ironic_challenge');
+  assert.deepEqual(full.releaseIntent, ['p1']);
+  assert.equal(full.rationale, 'r');
+  assert.equal(normalizeSceneCommitmentV2({ stance: 'sarcastic_challenge' }, opts), null, 'off-palette stance drops');
+  assert.equal(normalizeStrategyReview({ decision: 'switch', reason: 'x' }).decision, 'switch');
+  assert.equal(normalizeStrategyReview({ decision: 'panic' }), null);
+});
+
+test('v2 stance fidelity: cues make faithful, person attack dominates, bare warmth does not count', () => {
+  const faithful = sceneStanceFidelity({
+    stance: 'ironic_challenge',
+    tutorLines: [
+      'Hold what you have.',
+      'The small irony is that your answer conveniently repeats the formula - test it against one case and show me where it breaks.',
+    ],
+    learnerLines: ['', 'I am bored, why do we keep repeating this formula?'],
+  });
+  assert.equal(faithful.label, 'faithful');
+  const positive = sceneStanceFidelity({
+    stance: 'charismatic_challenge',
+    tutorLines: ['Anything at all.'],
+  });
+  assert.equal(positive.label, 'not_applicable', 'the gate is a negative-register discipline');
+  const warm = sceneStanceFidelity({
+    stance: 'ironic_challenge',
+    tutorLines: ['Wonderful work, let us look together at the next step.'],
+  });
+  assert.notEqual(warm.label, 'faithful');
+  assert.equal(sceneStanceFidelity({ stance: null, tutorLines: ['x'] }), null);
+});
+
+test('v2 audit: stance clause follows the fidelity gate; departures license drift except stance', () => {
+  const sceneRecord = {
+    index: 2,
+    startTurn: 3,
+    endTurn: 5,
+    status: 'budget',
+    counts: { phatic: 3 },
+    exchanges: [{ turn: 4, type: 'substantive', formalActions: 1 }],
+    lastLearnerText: 'I see.',
+    lastExchangeType: 'phatic_ack',
+    releases: [],
+    scheduled: [],
+    didacticModes: null,
+    registerHeld: true,
+  };
+  const commitment = {
+    register: null,
+    didacticDefault: null,
+    releasePosture: null,
+    recognitionBudget: 1,
+    rationale: null,
+    exitCondition: null,
+    stance: 'ironic_challenge',
+    releaseIntent: ['p1'],
+  };
+  const noDeparture = auditTutorSceneCommitment(commitment, sceneRecord, {
+    departures: 0,
+    fidelity: { label: 'weak_or_warm_in_costume' },
+  });
+  const budgetClause = noDeparture.clauses.find((c) => c.clause.startsWith('recognition budget'));
+  const stanceClause = noDeparture.clauses.find((c) => c.clause.startsWith('stance '));
+  const intentClause = noDeparture.clauses.find((c) => c.clause === 'release intent');
+  assert.equal(budgetClause.verdict, 'drift');
+  assert.equal(stanceClause.verdict, 'drift');
+  assert.equal(intentClause.verdict, 'drift');
+  const withDeparture = auditTutorSceneCommitment(commitment, sceneRecord, {
+    departures: 1,
+    fidelity: { label: 'weak_or_warm_in_costume' },
+  });
+  assert.equal(
+    withDeparture.clauses.find((c) => c.clause.startsWith('recognition budget')).verdict,
+    'justified_deviation',
+  );
+  assert.equal(
+    withDeparture.clauses.find((c) => c.clause.startsWith('stance ')).verdict,
+    'drift',
+    'a departure never licenses treatment noncompliance',
+  );
+});
+
+test('v2 full mock run: history + reviews accumulate; v1 runs carry no history field', async () => {
+  const client = makeLlmClient({ mode: 'mock' });
+  const cast = {
+    director: makeLlmDirector(world, client, {}),
+    tutor: makeLlmTutor(world, client, {
+      script: SCRIPT,
+      didacticMode: true,
+      strategyLedger: true,
+      strategyLedgerV2: true,
+      publicRegister: 'modern',
+    }),
+    learner: makeLlmLearner({
+      setting: world.setting,
+      voice: 'plain, careful, first person',
+      client,
+      publicRegister: 'modern',
+    }),
+  };
+  const result = await runDrama({
+    world,
+    roles: cast,
+    options: {
+      sceneMode: true,
+      publicRegister: 'modern',
+      strategyLedger: normalizeStrategyLedgerConfig({
+        trialling: true,
+        stancePalette: ['charismatic_challenge', 'ironic_challenge'],
+      }),
+      maxTurns: 10,
+      stopOnStall: false,
+    },
+  });
+  const history = result.strategyLedger.history;
+  assert.ok(history.length >= 2);
+  for (const entry of history) {
+    assert.ok(entry.strategy.stance, 'every trial names its stance');
+    assert.ok(entry.fidelity?.label, 'gate one always runs');
+    assert.ok(!('D' in (entry.outcome || {})), 'history is public-only');
+  }
+  assert.ok(result.events.some((e) => e.type === 'strategy_review'));
+  assert.ok(result.events.some((e) => e.type === 'stance_fidelity'));
+
+  const v1 = await runDrama({
+    world,
+    roles: llmCast(makeLlmClient({ mode: 'mock' }), { strategyLedger: true }),
+    options: {
+      sceneMode: true,
+      publicRegister: 'modern',
+      strategyLedger: normalizeStrategyLedgerConfig({ registerPalette: ['modern', 'period'] }),
+      maxTurns: 8,
+      stopOnStall: false,
+    },
+  });
+  assert.ok(!('history' in v1.strategyLedger), 'v1 result shape unchanged (no history field)');
+  assert.ok(!v1.events.some((e) => e.type === 'strategy_review'));
+});
+
+test('v2 requires v1: strategyLedgerV2 without strategyLedger fails at build', () => {
+  assert.throws(
+    () => makeLlmTutor(world, makeLlmClient({ mode: 'mock' }), { script: SCRIPT, strategyLedgerV2: true }),
+    /requires strategyLedger/,
+  );
 });

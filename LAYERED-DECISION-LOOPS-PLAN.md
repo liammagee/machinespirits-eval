@@ -155,7 +155,7 @@ Open questions: whether scene-register choice should be constrained to a world-a
 
 ---
 
-## Part 6 — Strategy Ledger v2: mechanism trialling (design, 2026-07-03; not yet implemented)
+## Part 6 — Strategy Ledger v2: mechanism trialling (design 2026-07-03; **IMPLEMENTED same day** — see the implementation status note at the end of this part)
 
 **Motivation.** The operator's articulation after the Phase-3 null: the outer loop should act at the level of **strategy — a choice among adaptive mechanisms** ("go charismatic", "go sarcastic", "try a different pedagogical instrument") **made by reviewing the history to date**, which then **guides but does not determine** turn-by-turn conduct; and it should be **multiple layers of adjudication over one instrument** (e.g. "release a, b, c this scene, with a livelier register" → per-turn calibration → binding guards), not a second instrument stacked on the first. v1 has the skeleton (boundary cadence, held commitments, audits binding the next opening) but three narrowings block the articulation, and they jointly explain the Phase-3 lever idleness from the design side:
 
@@ -193,3 +193,11 @@ The negative-register exemplar arc landed on main and was merged into this branc
 **3. The negative-register discipline transfers verbatim.** Negative-valence registers are never organically selectable — in v2 they can appear in a scene menu ONLY when the operator's palette explicitly includes them (the registry's own arm-assigned discipline, and the same palette-bound rule v1 already enforces for surface registers). `face_threat_challenge` remains simulated-only per the arc's bounded conclusion (measurable recognition-cost/face-repair cost, v2.2 last-turn recognition 4.4 vs 4.8–5.0).
 
 **4. Action ordering updated.** Register-taxonomy dependency: **landed and merged**. Branch: **refreshed from main** with gates re-verified. Blueprint-composition (cells 199–200): not yet landed, downgraded from blocking to watch — its registry middleware was speculative for v2, and the load-bearing register registry is in. The remaining gate before implementation is finalizing the v2 pre-registration itself (now unblocked), including the binding-conditions precondition probe from Part 6.
+
+### Part 6 implementation status (2026-07-03)
+
+v2 is implemented on the branch, riding the v1 machinery as designed, all opt-in through the existing `--strategy-ledger` JSON (no new CLI flags): config keys `trialling` (master switch), `stancePalette` (registry-validated engagement registers; negative valence only by explicit listing), `releaseIntent` (requires `--release-authority`; runner-guarded). The scene commitment gains `stance` and `release_intent`; openings with a history render the mechanism-history table and demand `strategy_review` (persist/adjust/switch + reason); any turn may declare a one-line `departure`, adjudicated at the close as justified_deviation (stance exempt — fidelity is a treatment gate, not a style choice). The two-gate close runs engine-side: the landed `evaluateRegisterStanceFidelity` per tutor line (negative registers only; positive stances pass as `not_applicable` — the gate is a negative-register discipline, discovered in integration: `faithful` requires the full battery of cue + target discipline + next move + repair path + visible resistance, not a bare cue), then the public-only history entry (no D, no proof state — it renders into prompts).
+
+Validation: gates extended to **30/30** (`npm run derivation:ledger-gates`), including `L5-guards-untouched` — release-authority proof fingerprints byte-identical with intent on vs off — and an honest fidelity gate (cue-less mock dialogue labels `not_instantiated`). Tests **19/19** (v2 config/shape/fidelity/adjudication/full-run/off-state: v1 results carry no history field, no review events). Full suite **4714 pass / 0 fail**; lint and format clean.
+
+Not yet done: the v2 pre-registration (arms A2/B2/C2/D2, binding-conditions worlds, assigned-vs-faithful estimands) and its headroom precondition probe — next steps before any paid run.
