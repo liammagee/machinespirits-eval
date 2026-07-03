@@ -1,17 +1,17 @@
 {
-  "generated": "2026-07-03T06:55:24.704Z",
+  "generated": "2026-07-03T08:37:33.566Z",
   "counts": {
-    "total": 71,
+    "total": 72,
     "byStatus": {
       "done": 60,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 4,
       "archived": 4,
       "triaged": 1
     },
     "byType": {
-      "research": 35,
+      "research": 36,
       "experiment": 9,
       "infra": 10,
       "content": 2,
@@ -119,6 +119,33 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "layered-decision-loops",
+      "title": "Strategy Ledger v1 — per-agent commit/audit loops at block/scene/act scope",
+      "status": "active",
+      "type": "research",
+      "priority": "P1",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "Phases 0-2 implemented: npm run derivation:ledger-gates 22/22 zero-paid checks (proof fingerprints byte-identical on/off, both casts; row-schema symmetry); tests/dramaticDerivationStrategyLedger.test.js 13/13 (off-state invariance pinned); full npm test 4653/0. Phase 3 contrasts pre-registered before any paid run.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "LAYERED-DECISION-LOOPS-PLAN.md",
+        "items": [
+          "layered-task-session-adaptation",
+          "layered-taskloop-heldout-gate"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "strategy-ledger",
+        "symmetry"
+      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
