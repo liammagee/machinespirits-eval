@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-03T21:06:30.146Z",
+  "generated": "2026-07-03T23:13:55.632Z",
   "counts": {
     "total": 74,
     "byStatus": {
-      "done": 62,
+      "done": 63,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 1
     },
@@ -119,36 +119,6 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "plan-mode-stocktake",
-      "title": "Plan-mode stock-take — dialogic between-scene reorientation (course-changing outer loop)",
-      "status": "active",
-      "type": "research",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-04",
-      "updated": "2026-07-04",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Implementation gated (34/34 incl. L7: stock-takes fire, corrections answered, commitment machinery suppressed, proof fingerprints byte-identical on/off) and tested (21/21). Item closes when the pre-registered plan-mode contrast is run and its verdict recorded — or the line is explicitly dropped.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "PLAN-MODE-STOCKTAKE-PREREGISTRATION.md",
-          "LAYERED-DECISION-LOOPS-PLAN.md"
-        ],
-        "items": [
-          "strategy-ledger-followups"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "outer-loop",
-        "plan-mode",
-        "ego-superego"
-      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -382,6 +352,36 @@
         "outer-loop",
         "strategy-ledger",
         "symmetry"
+      ]
+    },
+    {
+      "id": "plan-mode-stocktake",
+      "title": "Plan-mode stock-take — dialogic between-scene reorientation (course-changing outer loop)",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Implementation gated (34/34 incl. L7: stock-takes fire, corrections answered, commitment machinery suppressed, proof fingerprints byte-identical on/off) and tested (21/21). Item closes when the pre-registered plan-mode contrast is run and its verdict recorded — or the line is explicitly dropped.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "PLAN-MODE-STOCKTAKE-PREREGISTRATION.md",
+          "LAYERED-DECISION-LOOPS-PLAN.md"
+        ],
+        "items": [
+          "strategy-ledger-followups"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "plan-mode",
+        "ego-superego"
       ]
     },
     {

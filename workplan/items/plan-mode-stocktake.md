@@ -1,7 +1,7 @@
 ---
 id: plan-mode-stocktake
 title: Plan-mode stock-take — dialogic between-scene reorientation (course-changing outer loop)
-status: active
+status: done
 type: research
 priority: P1
 owner: unassigned
@@ -62,3 +62,18 @@ AWAITING GO for the paid contrast (parallelized 2026-07-04, pre-freeze: concurre
 pre-registration freezes at the commit preceding the first paid run; the
 analysis gains its plan-mode design entry and is zero-paid validated before
 that freeze.
+
+2026-07-04 Claude: Contrast executed per the frozen pre-registration (24/24,
+concurrency 3, two interruptions resumed label-exactly). VERDICT: NOT
+CONFIRMED — on power alone. Bar 1 PASS (T* 25.42 vs 26.92, lower both
+worlds); bar 2 FAIL (U=55.5/144, one-sided p≈0.17 vs the ≤42 criterion);
+bar 3 PASS with 0/6 guardrail failures — the arc's first apparatus with NO
+negative transfer. Descriptive: grounded 0.42 vs 0.17 (both worlds, the
+endpoint the commitment line damaged), 15/15 corrections answered, repair
+latency WORSENED (10.95 vs 8.71) — the exact inverse trade of the
+commitment ledger. Per the frozen consequences the outer-loop line closes
+whole: both variants non-promotable; endpoint swaps forbidden; any
+reopening (e.g. grounded-primary, properly powered) is an operator-level
+decision under a new pre-registration. Paper §6.13.16 closed (v3.0.202).
+Line legacy: at a fixed turn budget, strategy layers do not add capacity —
+they reallocate it.

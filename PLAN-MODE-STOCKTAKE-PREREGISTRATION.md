@@ -61,3 +61,24 @@ Per run: `T*` = `assertedGroundedTurn`, cap+1 imputed (the frozen extractor).
 ## Artifacts
 
 Specs `config/drama-derivation/matrix-specs/plan-mode-{hethel-resistant,marrick}.yaml` (written at freeze); runs under `exports/dramatic-derivation/matrix/plan-mode-<world>/`; report `exports/dramatic-derivation/strategy-ledger/plan-mode/`; zero-paid mock matrix through the frozen analysis before any paid run.
+
+---
+
+## Results addendum (2026-07-04; frozen analysis unmodified; report at `exports/dramatic-derivation/strategy-ledger/plan-mode/plan-mode-contrast-report.{json,md}`)
+
+**Execution.** 24/24 runs, codex CLI, concurrency 3 with pair-interleaved arms (two interruptions; both resumed via trimmed same-label specs; the second stop landed exactly at the block checkpoint). Parallel wall-clock behaved as projected.
+
+**Promotion bar: NOT MET (bar 1 passes; bar 2 fails; bar 3 passes).**
+
+1. **Direction both worlds: PASS.** T\* 25.42 vs 26.92 (Δ = −1.50), lower in each world's stratum ([-1, -1]).
+2. **Pooled one-sided Mann–Whitney: FAIL.** U = 55.5 > 42 (the exact one-sided 0.05 criterion at 12/12); z = (55.5 − 72)/√300 = −0.95, one-sided p ≈ 0.17. Directionally consistent, statistically underpowered at this n.
+3. **Guardrails: PASS, 0 of 6 failed** — the first strategic apparatus in this arc with **no negative transfer on any channel**: aporia-like verdicts improved directionally (0.58 vs 0.75, both worlds), release discipline at parity, zero guard overrides, stock-take coverage 1.00.
+
+**Recorded verdict (as pre-committed): NOT CONFIRMED — and the outer-loop line in this stack closes whole.** Both variants are now recorded as non-promotable: the course-holding commitment machinery (replicated local gain, consistent outcome cost) and the course-changing stock-take (consistent outcome direction, insufficient evidence at the pre-registered bar). Per the frozen consequences clause, no third variant runs without stepping back from the engine itself — an operator-level decision outside this line, requiring its own pre-registration.
+
+**Descriptive record (equal prominence, no promotion weight — the pre-registration forbids endpoint swaps and this addendum honors that):**
+
+- **Grounded rate 0.42 vs 0.17** (5/12 vs 2/12), higher in both worlds, meeting the descriptive signal rule — on precisely the endpoint the commitment machinery damaged. This seed draw was substantially harsher than the confirmatory's (baseline grounded 2/12 vs 6/12 there).
+- **Repair latency worsens with signal** (10.95 vs 8.71, both worlds) — the exact **inverse trade** of the commitment ledger: course-holding sped the local repair channel and lost outcomes; course-changing spends the repair channel and gains outcome direction. The two variants are mirror images around the same fixed budget.
+- The mechanism itself was flawless: 69 stock-takes, 15 corrections demanded, **15/15 answered** with reorientations; commitment machinery fully absent.
+- What this licenses: a *descriptive* statement that the dialogic/diagnostic/off-clock/reorienting cell behaves differently in kind from the monologic/conformance/on-clock cell (no negative transfer; outcome-directional), available to any future operator decision to reopen with a properly powered, grounded-rate-primary design — outside this line, under a new pre-registration.
