@@ -368,6 +368,25 @@ first/last/overall 77.9 / 99.3 / 92.2 vs kernel 73.7 / 99.7 / 90.8 — the
 same flat near-ceiling band as the gate, confirming again that the local
 carry-through gap is invisible to whole-dialogue scoring.
 
+## 11. Carry-through decision run (pre-registration, 2026-07-03, user-authorized)
+
+Frozen before launch. Purpose: resolve §10's middle zone. Design: +2
+repeats per cell × scenario across **all five** scenarios (not just the gap
+scenarios — post-hoc scenario selection would bias the combined rate), i.e.
+{cell_193, cell_199} × 5 × 2 = 20 rows, same Codex-only stack, serial,
+generation-only. Decision metric: combined positive-local-outcome gap (193
+minus 199) over the full n=6 per cell×scenario corpus (30 rows/arm,
+gate + §10 repeats + this run), scored by the judge-free breakthrough
+reporter. Thresholds rescaled proportionally from §10 (0.30 / 0.20 of
+rows-per-arm): **gap ≥9/30 → the carry-through cost is real; gap ≤6/30 →
+dissolved; 7–8 → unresolved and STOP** — no further repeats will be run on
+this contrast either way; an unresolved outcome is reported as such.
+Current gap entering this run: 5/20; the new 10 rows/arm move the verdict
+to real only if the kernel drops ≥4 more rows than 193, and to dissolved
+only if it drops ≤1 more. Secondary (reported, not decisive): the
+frustration-scenario split and strict-candidate rates. v2.2 covariate
+scoring optional.
+
 **Gate verdict (bounded)**: sub-additivity (H1) is supported everywhere it
 could be measured — the full stack never beats the kernel beyond noise, on
 either suite, and the action-contract module adds nothing detectable at
