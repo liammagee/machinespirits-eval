@@ -25,7 +25,8 @@
  * Stage 0.
  */
 
-const DEFAULT_DRIFT_GATE_MAX_ATTEMPTS = 3;
+const DEFAULT_DRIFT_GATE_MAX_ATTEMPTS = 4;
+const DEFAULT_WARM_AFTER_TURN = 2;
 
 // Learner-side yield/agreement markers: accepting the tutor's frame or
 // declaring resolution. Word-bounded phrase matching.
@@ -163,23 +164,96 @@ export function checkContentCondition({ tutorMessage = '', interior }) {
  * Character-fidelity check on a draft learner turn. Deterministic Stage-0
  * checks only; the Stage-1 classifier handles behavioral subtlety.
  */
-export function evaluateLearnerDraft({ message = '', interior, contentConditionMet = false }) {
+export function evaluateLearnerDraft({
+  message = '',
+  interior,
+  contentConditionMet = false,
+  turnIndex = 0,
+  tutorWorkCount = 0,
+}) {
   const undeclared = containsAny(message, UNDECLARED_DESIRE_MARKERS);
   if (undeclared) {
     return { ok: false, violation: 'undeclared_desire_satisfaction', evidence: undeclared };
   }
   if (contentConditionMet) return { ok: true, violation: null, evidence: 'post-release' };
 
+  // Turn-decaying contract (Stage 2 iteration 1): the per-turn gate fought
+  // the model's accumulated pull and exhausted on 38% of full dialogues.
+  // Early turns stay strict; from warm_after_turn onward the learner may
+  // warm — but only if the tutor has actually done engagement-filter work.
+  const warmAfter = Number.isFinite(interior?.decay?.warm_after_turn)
+    ? interior.decay.warm_after_turn
+    : DEFAULT_WARM_AFTER_TURN;
+  const warmingPermitted = turnIndex >= warmAfter && tutorWorkCount >= 1;
+
   const yielded = containsAny(message, YIELD_MARKERS);
-  if (yielded) {
+  if (yielded && !warmingPermitted) {
     return { ok: false, violation: 'yield_without_key', evidence: yielded };
+  }
+  if (yielded && warmingPermitted) {
+    return {
+      ok: true,
+      violation: null,
+      evidence: `warming permitted (turn ${turnIndex}, tutor work ${tutorWorkCount})`,
+    };
   }
   const resistance = containsAny(message, interior.resistance_markers);
   const question = /\?/.test(String(message || ''));
-  if (!resistance && !question) {
+  if (!resistance && !question && !warmingPermitted) {
     return { ok: false, violation: 'resistance_dropped', evidence: 'no resistance marker or question pre-release' };
   }
-  return { ok: true, violation: null, evidence: resistance || 'question sustained' };
+  return { ok: true, violation: null, evidence: resistance || (question ? 'question sustained' : 'decayed contract') };
+}
+
+/**
+ * Cumulative tutor work: how many tutor turns so far pass the subtype's
+ * engagement filter. Feeds the decayed contract's warming condition.
+ */
+export function countTutorWork({ tutorMessages = [], interior }) {
+  let count = 0;
+  for (const message of tutorMessages) {
+    if (engagementFilterPass(message, interior.engagement_filter).pass) count += 1;
+  }
+  return count;
+}
+
+/**
+ * Sonnet-class drift classifier (Stage 2 iteration 1): consulted when the
+ * lexical fast-path passes (subtle-drift catch) or on the final gate
+ * attempt. Fail-open: any classifier error defers to the lexical verdict.
+ */
+export async function classifyLearnerDraft({ message, interior, contentConditionMet, callJudge, judgeModel }) {
+  try {
+    const payload = [
+      `Interior: ${JSON.stringify({
+        blocking_element: interior.blocking_element.id,
+        declared_desires: interior.declared_desires,
+        resistance_markers: interior.resistance_markers,
+        yield_rule: interior.yield_rule,
+      })}`,
+      `Content condition met: ${contentConditionMet}`,
+      `Draft learner turn: ${message}`,
+    ].join('\n\n');
+    const response = await callJudge(`${DRIFT_GATE_CLASSIFIER_PROMPT}\n\n${payload}`, {
+      judgeOverride: { model: judgeModel },
+    });
+    const match = String(response || '').match(/\{[\s\S]*\}/);
+    const parsed = match ? JSON.parse(match[0]) : null;
+    const verdict = parsed?.verdict;
+    if (verdict === 'OK')
+      return { ok: true, violation: null, evidence: parsed.evidence || 'classifier ok', source: 'classifier' };
+    if (['YIELD_WITHOUT_KEY', 'RESISTANCE_DROPPED', 'UNDECLARED_DESIRE_SATISFACTION'].includes(verdict)) {
+      return {
+        ok: false,
+        violation: verdict.toLowerCase(),
+        evidence: parsed.evidence || 'classifier',
+        source: 'classifier',
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 /**

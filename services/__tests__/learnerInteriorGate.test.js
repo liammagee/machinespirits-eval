@@ -177,7 +177,7 @@ test('correction context names the violation and restates the contract', () => {
 });
 
 test('gate budget default and override; classifier prompt frozen', () => {
-  assert.equal(driftGateMaxAttempts({}), 3);
+  assert.equal(driftGateMaxAttempts({}), 4);
   assert.equal(driftGateMaxAttempts({ drift_gate_max_attempts: 5 }), 5);
   assert.match(DRIFT_GATE_CLASSIFIER_PROMPT, /YIELD_WITHOUT_KEY/);
   assert.match(buildInteriorCharacterSheet(INTERIOR), /DSB-T2/);
@@ -216,4 +216,36 @@ test('checkReleaseEngagement: engages via stemmed content overlap, never off-key
     contentConditionMet: true,
   });
   assert.equal(noContent.engaged, false);
+});
+
+test('decayed contract: warming permitted after warm_after_turn with tutor work', async () => {
+  const { evaluateLearnerDraft, countTutorWork, loadFormalInterior } = await import('../learnerInteriorGate.js');
+  const { getScenario } = await import('../evalConfigLoader.js');
+  const interior = loadFormalInterior(getScenario('desub_resistance_boredom'));
+  const warm = 'Fair enough, that actually gives me a way in.';
+  const early = evaluateLearnerDraft({
+    message: warm,
+    interior,
+    contentConditionMet: false,
+    turnIndex: 1,
+    tutorWorkCount: 2,
+  });
+  assert.equal(early.ok, false, 'turn 1 stays strict even with tutor work');
+  const lateNoWork = evaluateLearnerDraft({
+    message: warm,
+    interior,
+    contentConditionMet: false,
+    turnIndex: 3,
+    tutorWorkCount: 0,
+  });
+  assert.equal(lateNoWork.ok, false, 'no warming without tutor work');
+  const lateWork = evaluateLearnerDraft({
+    message: warm,
+    interior,
+    contentConditionMet: false,
+    turnIndex: 3,
+    tutorWorkCount: 1,
+  });
+  assert.equal(lateWork.ok, true, 'warming permitted late with tutor work');
+  assert.ok(countTutorWork({ tutorMessages: ['no filter hit here'], interior }) === 0);
 });

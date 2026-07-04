@@ -59,10 +59,15 @@ import {
   buildInteriorCharacterSheet,
   checkContentCondition,
   checkGrounding,
+  classifyLearnerDraft,
+  countTutorWork,
   driftGateMaxAttempts,
   evaluateLearnerDraft,
   loadFormalInterior,
 } from './learnerInteriorGate.js';
+import { callJudgeModel as callDriftClassifierJudge } from './rubricEvaluator.js';
+
+const DESUB_DRIFT_CLASSIFIER_MODEL = process.env.DESUB_DRIFT_CLASSIFIER_MODEL || 'openrouter.sonnet-5';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 import { chalk } from './cliTheme.js';
 import {
@@ -3581,7 +3586,23 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   // release) is tracked cumulatively across tutor turns — once met it stays met.
   const desubEnabled = fullScenario.desubstitution_diagnostic === true;
   const desubInterior = desubEnabled ? loadFormalInterior(fullScenario) : null;
+  // Iteration 1 (tutor-visible key): Stage 2 found the release floor absolute
+  // (0/60 — tutors cannot cite a token they are never shown). Surface the
+  // withheld premise in the tutor-visible learner context as course material.
+  if (desubEnabled) {
+    const blocking = desubInterior.blocking_element;
+    fullScenario = {
+      ...fullScenario,
+      learner_context: [
+        fullScenario.learner_context || '',
+        '### Course Reference Sheet (instructor copy)',
+        `- The lecture's withheld premise ${blocking.id}: "${blocking.content}"`,
+        `- Pedagogical note: this learner will not move until ${blocking.id} is released explicitly — cite ${blocking.id} and ${blocking.release_phrases[0]} when the dialogue has earned it.`,
+      ].join('\n'),
+    };
+  }
   let desubContentConditionMet = false;
+  let desubTutorWork = 0;
   let desubContentEvidence = null;
 
   for (let turnIdx = startTurnIdx; turnIdx < totalTurnCount; turnIdx++) {
@@ -4358,6 +4379,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         // De-substitution: the interior is the learner's character sheet on
         // every turn, and the content condition updates from this tutor turn.
         if (desubEnabled) {
+          desubTutorWork += countTutorWork({
+            tutorMessages: [suggestion?.message || suggestion?.title || ''],
+            interior: desubInterior,
+          });
           if (!desubContentConditionMet) {
             const condition = checkContentCondition({
               tutorMessage: suggestion?.message || suggestion?.title || '',
@@ -4472,7 +4497,21 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
             message: learnerResponse.message,
             interior: desubInterior,
             contentConditionMet: desubContentConditionMet,
+            turnIndex: turnIdx + 1,
+            tutorWorkCount: desubTutorWork,
           });
+          // Iteration 1: sonnet-class subtle-drift check when the lexical
+          // fast-path passes on a later turn (the drift the word lists miss).
+          if (driftVerdict.ok && turnIdx >= 1) {
+            const classified = await classifyLearnerDraft({
+              message: learnerResponse.message,
+              interior: desubInterior,
+              contentConditionMet: desubContentConditionMet,
+              callJudge: callDriftClassifierJudge,
+              judgeModel: DESUB_DRIFT_CLASSIFIER_MODEL,
+            });
+            if (classified && !classified.ok) driftVerdict = classified;
+          }
           driftAttempts.push({ attempt: 1, ...driftVerdict, message: learnerResponse.message });
           let driftAttempt = 1;
           while (!driftVerdict.ok && driftAttempt < driftMaxAttempts) {
@@ -4502,7 +4541,22 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               message: learnerResponse.message,
               interior: desubInterior,
               contentConditionMet: desubContentConditionMet,
+              turnIndex: turnIdx + 1,
+              tutorWorkCount: desubTutorWork,
             });
+            // Iteration 1: on the final attempt a lexical violation can be
+            // rescued by the classifier (arbiter of last resort) — fewer
+            // false-positive exhaustions from brittle word lists.
+            if (!driftVerdict.ok && driftAttempt >= driftMaxAttempts) {
+              const classified = await classifyLearnerDraft({
+                message: learnerResponse.message,
+                interior: desubInterior,
+                contentConditionMet: desubContentConditionMet,
+                callJudge: callDriftClassifierJudge,
+                judgeModel: DESUB_DRIFT_CLASSIFIER_MODEL,
+              });
+              if (classified?.ok) driftVerdict = classified;
+            }
             driftAttempts.push({ attempt: driftAttempt, ...driftVerdict, message: learnerResponse.message });
             if (!driftVerdict.ok) {
               log(

@@ -496,3 +496,28 @@ turn-decaying contract; make the blocking element salient to the tutor
 replace lexical drift checks with the frozen sonnet-class classifier for
 long-dialogue subtlety. Arc cost: Codex subscription quota throughout;
 OpenRouter spend ≈ $0.
+
+### Stage 2 iteration 1 (2026-07-04, user go: "do all three fixes and re-run the matrix")
+
+All three closeout repairs implemented before any paid call:
+
+1. **Turn-decaying character contract**: pre-release strictness now relaxes
+   from `warm_after_turn` (default 2, per-interior override) onward — but
+   only when cumulative tutor engagement-filter work ≥ 1. Gate budget raised
+   3 → 4 attempts. Exhaustion remains instrument failure.
+2. **Tutor-visible key**: the runner appends a "Course Reference Sheet
+   (instructor copy)" to the tutor-visible learner context for desub
+   scenarios — the withheld premise's token, content, and first release
+   phrase — so release is reachable (Stage 2 found the floor absolute at
+   0/60).
+3. **Classifier drift check**: the frozen sonnet-class classifier is now
+   live at two consult points — subtle-drift check when the lexical
+   fast-path passes on turn ≥ 2, and arbiter-of-last-resort rescue on the
+   final attempt (fewer false exhaustions from brittle word lists).
+   Fail-open to the lexical verdict on classifier error. Model:
+   `openrouter.sonnet-5` (credits probed: $4.76 remaining ≥ the $3 bar).
+
+No-paid gate: 10/10 gate tests, stage-0 check, probe --check all green.
+Validation plan: 6-row mini-probe + 3-row canary with gates (false-yield
+≤0.1, exhaustion ≤1/9, release reachable in ≥1 canary row), then the 60-row
+matrix re-run under the unchanged frozen H-D/H-O rules and guards.
