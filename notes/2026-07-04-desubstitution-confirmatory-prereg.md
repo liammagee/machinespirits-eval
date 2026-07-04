@@ -115,3 +115,15 @@ errors. PR #88.
 **C1 + C2 go recorded (2026-07-04, user "go" via coordinator)**: paid
 canary and matrix authorized under the frozen design above. Stack and
 thresholds as frozen; no changes since freeze.
+
+### C1 canary result (2026-07-04): PASS
+
+Run `eval-2026-07-04-fc5383e5`, 6/6 rows (3 arms × boredom + rote-parroting,
+the two v2.1-repaired subtypes). Gates: **exhaustion 0/6** (two rows ran to
+4 and 5 drift-gate attempts and recovered — the raised ceiling + earlier
+decay working as designed); **semantic release fired** (kernel × boredom,
+2 turns); no instrument regressions (all drift-gate entries well-formed;
+one grounding already recorded on 193 × rote — grounding without a
+tutor-side release registration is possible by design since the grounding
+checker reads the learner's own citation + conclusion, noted for the
+scorer). C2 launch authorized under the recorded go.
