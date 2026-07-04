@@ -130,3 +130,23 @@ spec): 3 verdicts in 3 runs — disengagement t18 / UNSTAGED_RECOGNITION t28
 marrick-resistant; remaining before the paid 36-run contrast: update the
 prereg's worlds section + write lemma-marrick-resistant.yaml spec, fresh
 FREEZE commit = launch (operator gate).
+
+**2026-07-04 Claude — CONTRAST RUN (36/36, frozen bar applied): NOT
+CONFIRMED on the promotion contrast; the display arm produced the arc's
+first large positive signal.** LB (bound-vs-baseline): direction PASS
+[-1,-1] but U=61/144 vs ≤42 and 2 guardrail failures (marrick release
+deficit = early deaths, 0 blocks; frontier-choice coverage 0.00). VERDICT
+recorded per the frozen consequences: binding cell non-promotable, no
+fourth design cell without fresh operator decision. INSTRUMENT FINDING:
+codex never reproduced a lemma label verbatim → all 95 choices fell back
+to harness default; the formal-choice channel went unexercised; re-tests
+of binding need predicate-prefix label matching. DESCRIPTIVE (declared at
+freeze, no promotion claimed): lemma-display vs baseline — T* 26.33 vs
+28.58 both worlds, U=40.5 (inside the frozen ≤42 criterion); grounded 6/12
+vs 1/12; aporia 0.42 vs 0.92 (U=36); zero binding events (pure prompt
+state). LX: binding TAXES the information benefit (T* +1.83 [1,1]). Arc
+law refined: constraint layers reallocate; an information layer that
+externalizes closure bookkeeping ADDED outcome headroom at zero turn
+cost. AWAITING OPERATOR: proposed confirmatory prereg — 2 arms
+(baseline vs display), display-primary, fresh primes, same worlds,
+n=12/arm.

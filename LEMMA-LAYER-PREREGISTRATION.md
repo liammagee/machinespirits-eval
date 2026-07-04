@@ -72,3 +72,29 @@ Per run: `T*` = `assertedGroundedTurn`, cap+1 imputed (29 for both worlds — ca
 ## Artifacts
 
 Implementation in `services/dramaticDerivation/` (lemma module + engine wiring) gated by the extended gate suite; specs `config/drama-derivation/matrix-specs/lemma-{marrick,marrick-resistant}.yaml`; probe/screen specs `lemma-probe-{fengate,sealhouse,edmund,marrick-resistant}.yaml`; runs `exports/dramatic-derivation/matrix/lemma-<world>/`; analysis via the frozen contrasts script gaining a `lemma` design entry (zero-paid validated pre-freeze); report `exports/dramatic-derivation/lemma-layer/lemma-contrast-report.{json,md}`.
+
+---
+
+## Results addendum (2026-07-04; frozen analysis unmodified; report at `exports/dramatic-derivation/lemma-layer/phase3-contrasts-report.{json,md}`)
+
+**Execution.** 36/36 runs, codex, world blocks sequential at concurrency 3 (~2 h total wall-clock), zero interruptions, zero stalls, zero parse failures, leaks 0 everywhere.
+
+**Promotion bar (LB, bound-vs-baseline): NOT MET — bar 1 passes, bars 2 and 3 fail.**
+
+1. **Direction both worlds: PASS.** T\* 28.17 vs 28.58 pooled, lower in each stratum ([-1, -1]).
+2. **Pooled one-sided Mann–Whitney: FAIL.** U = 61/144 against the ≤ 42 criterion.
+3. **Guardrails: FAIL, 2 of 13.** (a) marrick bound mean releases 6.33 vs baseline 8.33 — attributable to EARLY DEATHS (bound marrick dramas averaged 14.7 turns vs baseline 23.0), NOT to withheld evidence: **zero lemma_block events across all 12 bound runs**; the 6 out-of-support claims that occurred were all properly tagged departures, 17 harness forcings passed through logged. (b) frontier-choice coverage 0.00 — see the instrument finding.
+
+**Recorded verdict (as pre-committed): NOT CONFIRMED.** The binding cell is non-promotable at this bar; per the frozen consequences, no fourth design cell runs without a fresh operator decision. The Gate-0 audit, world-019, and the implementation stand as reusable instruments.
+
+**Instrument finding (bound arm, disclosed):** the real backend never reproduced a frontier label verbatim in `active_lemma`, so every scene-opening choice fell back to the harness default (first frontier element) — coverage 0.00, all 95 choice events fallback/auto-attributed. The bound arm therefore tested *binding-to-harness-default*, not binding-to-tutor-chosen lemma, and the formal-choice channel was never exercised by the model. Any re-test of binding must first make label matching tolerant (predicate-prefix match). Note the asymmetric turn effect: bound dramas died early on marrick (14.7 vs 23.0 mean turns) but survived LONGER than baseline on the resistant world (23.8 vs 16.7).
+
+**Descriptive record — the display arm (LD; declared descriptive at freeze; endpoint promotion forbidden and not claimed):** the redundancy prediction FAILED, and by the largest positive margins any apparatus has produced in this arc. On the same frozen numeric criteria the bound arm failed:
+
+- **T\*: 26.33 vs 28.58 (Δ = −2.25), lower in BOTH worlds, U = 40.5/144 — inside the ≤ 42 criterion** that was frozen for the bound arm's primary endpoint.
+- **Grounded: 6/12 vs 1/12** (0.50 vs 0.08), higher in both worlds (marrick 2/6 vs 0/6; resistant 4/6 vs 1/6).
+- **Aporia-like: 0.42 vs 0.92**, better in both worlds, U = 36/144.
+- Display guardrails all pass; the arm carries zero binding events — the effect is pure prompt-state (the chainer-computed, learner-board-anchored lemma map), with no choice machinery and no constraint.
+- **LX (binding net of information): binding WORSENS T\*** (Δ = +1.83, [1, 1]) **and grounded** (−0.25, [-1, -1]) — the constraint taxes the information benefit.
+
+**What this licenses within the freeze:** (i) the descriptive statement above; (ii) a refinement of the arc's law — *constraint layers reallocate capacity; an information layer that externalizes closure bookkeeping added outcome headroom at zero turn cost*; (iii) a PROPOSAL, for operator decision under a new pre-registration: a confirmatory two-arm contrast (baseline vs lemma-display), display-vs-baseline as the PRIMARY endpoint family (T\* primary, grounded/aporia secondary), fresh prime seeds, same two worlds, n = 12/arm — the effect size observed here (Δ ≈ −2.25 on T\*, U = 40.5) would clear the same bar if it replicates. No binding arm, so the label-matching instrument finding is moot for that design.
