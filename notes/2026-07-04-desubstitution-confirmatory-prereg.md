@@ -106,4 +106,12 @@ grounding-floor guard.
 
 ## 6. Implementation log
 
-(appended as stages land; nothing built at freeze time)
+**C0 complete (2026-07-04)**: prereg committed before build (ce4e7250);
+instrument v2.1 landed (attempts 4→5 uniform; boredom + rote
+warm_after_turn 2→1; LEARNER_INTERIOR_GATE_VERSION="2.1"); gate tests
+11/11, probe --check PASSED, stage-0 check PASSED, validate-config 0
+errors. PR #88.
+
+**C1 + C2 go recorded (2026-07-04, user "go" via coordinator)**: paid
+canary and matrix authorized under the frozen design above. Stack and
+thresholds as frozen; no changes since freeze.
