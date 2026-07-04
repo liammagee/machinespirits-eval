@@ -1,7 +1,7 @@
 ---
 id: proof-lemma-layer
 title: Lemma layer — a maintained higher-level proof structure (plan as data structure, not prose)
-status: active
+status: done
 type: research
 priority: P2
 owner: unassigned
@@ -10,7 +10,7 @@ created: 2026-07-04
 updated: 2026-07-04
 branch: worktree-strategy-ledger-followups
 verification: "Gate 0 (free depth audit) recorded below. Line advances only by operator decision: design doc + own pre-registration before any engine code or paid run."
-claim_status: exploratory
+claim_status: settled
 links:
   notes: exports/dramatic-derivation/lemma-layer/gate0-depth-audit.md
   items:
@@ -82,3 +82,91 @@ all-fail → back to operator as an authoring decision. Contrast seeds
 codex, blocks sequential at concurrency 3. REMAINING before freeze, in
 order: implement + gate, analysis design entry + specs, zero-paid
 validation, probe — then the freeze commit launches the contrast.
+
+**2026-07-04 Claude — world-slot probe, candidate 1 (fengate): FAIL.** 3/3
+baseline runs grounded at exactly T\*=22 (seeds 83/89/97, spread 0, all 9
+releases played, one interruption resumed label-exactly). Fengate is
+schedule-solvable AND decay-robust under the binding stack — three different
+decay schedules produced byte-similar outcomes — so the primary endpoint
+would have no variance there. Per the pre-registered order the probe moves
+to candidate 2 (sealhouse, same seeds/rule). Side-note for the catalog:
+fengate's decay-robustness contrasts with marrick/hethel-resistant, where
+the same decay grid produces failures — release-schedule slack, not world
+depth, seems to set decay sensitivity.
+
+**2026-07-04 Claude — world-slot probe, candidate 2 (sealhouse): FAIL,
+byte-identical signature.** 3/3 grounded at exactly T\*=22 (seeds 83/89/97,
+spread 0; one interruption, r2 resumed label-exactly). Two candidates, six
+runs, six identical outcomes — the generalization-arc 28-cap worlds are
+uniformly schedule-generous under the decay grid that reliably breaks
+marrick. Proceeding to candidate 3 (edmund, cap 18 / t_min 10 — the one
+genuinely different geometry). If edmund also fails, the frozen consequence
+fires: no contrast; the line returns to the operator as a world-authoring
+decision (resistant variant of a RICH world).
+
+**2026-07-04 Claude — world-slot probe EXHAUSTED; the frozen consequence
+fires.** Candidate 3 (edmund) is INELIGIBLE: no derivation tutor role-script
+exists (world authored for the character-development arc; all three arms died
+at import in 0.2s). With fengate and sealhouse both failed on identical
+T\*=22 signatures, the pre-registered procedure ends without filling slot W —
+so the 36-run contrast does NOT run under this pre-registration. What the
+probes taught: headroom under this decay grid comes from schedule slack, not
+proof depth — marrick is the only world that is both RICH (lemma-orderable)
+and decay-sensitive. NEXT (operator decision, pre-registered consequence):
+world authoring — the natural move is a marrick-resistant variant
+(hethel→hethel-resistant recipe on marrick's width-2 geometry), then its own
+headroom probe, then a fresh freeze. All implementation/gates/analysis/
+zero-paid work stands and carries over.
+
+**2026-07-04 Claude — world-019-marrick-resistant AUTHORED + screen PASS
+(decisive).** The 006→010 recipe on marrick: only the public learner framing
+changed (verdict pre-entered in the trial-book margin; correction = threat to
+standing; reluctant concession); proof geometry/schedule/tokens/script
+byte-identical; lemma audit RICH identical to marrick; all 6 catalog
+invariants pass. Headroom screen (seeds 83/89/97, rule pre-stated in the
+spec): 3 verdicts in 3 runs — disengagement t18 / UNSTAGED_RECOGNITION t28
+(forced, never asserted — the resistant signature) / grounded T*=23. Variance
++ not-a-floor both met. The lemma contrast pair is now marrick +
+marrick-resistant; remaining before the paid 36-run contrast: update the
+prereg's worlds section + write lemma-marrick-resistant.yaml spec, fresh
+FREEZE commit = launch (operator gate).
+
+**2026-07-04 Claude — CONTRAST RUN (36/36, frozen bar applied): NOT
+CONFIRMED on the promotion contrast; the display arm produced the arc's
+first large positive signal.** LB (bound-vs-baseline): direction PASS
+[-1,-1] but U=61/144 vs ≤42 and 2 guardrail failures (marrick release
+deficit = early deaths, 0 blocks; frontier-choice coverage 0.00). VERDICT
+recorded per the frozen consequences: binding cell non-promotable, no
+fourth design cell without fresh operator decision. INSTRUMENT FINDING:
+codex never reproduced a lemma label verbatim → all 95 choices fell back
+to harness default; the formal-choice channel went unexercised; re-tests
+of binding need predicate-prefix label matching. DESCRIPTIVE (declared at
+freeze, no promotion claimed): lemma-display vs baseline — T* 26.33 vs
+28.58 both worlds, U=40.5 (inside the frozen ≤42 criterion); grounded 6/12
+vs 1/12; aporia 0.42 vs 0.92 (U=36); zero binding events (pure prompt
+state). LX: binding TAXES the information benefit (T* +1.83 [1,1]). Arc
+law refined: constraint layers reallocate; an information layer that
+externalizes closure bookkeeping ADDED outcome headroom at zero turn
+cost. AWAITING OPERATOR: proposed confirmatory prereg — 2 arms
+(baseline vs display), display-primary, fresh primes, same worlds,
+n=12/arm.
+
+2026-07-04 Claude: DISPLAY CONFIRMATORY RUN (24/24, frozen 4a278831,
+fresh primes 101-127): **NOT CONFIRMED — the line closes whole.** Bar 1
+FAIL (direction split [-1,+1]: marrick 28.00 vs 28.67, resistant 27.33
+vs 27.17 — the exploratory stronghold flipped to a wash); bar 2 FAIL
+(U=67/144 vs <=42; pooled T* delta shrank -2.25 -> -0.25); bar 3 PASS
+9/9 (zero binding events, no negative transfer, aporia improved both
+worlds — the one replicating channel: 0.50 vs 0.75 here, 0.42 vs 0.92
+in the parent draw). Key decomposition: the BASELINE moved more than
+the treatment across draws (1/12 grounded w/ no fast wins -> 3/12 with
+23/24-turn wins); display was comparatively stable (6/12 -> 4/12).
+Recorded per the frozen consequences: display = unreplicated
+exploratory observation; binding non-promotable (parent); no third
+draw without fresh operator decision. Toolbox retained: lemmaLayer.js
++ 22/22 gates, Gate-0 audit, world-019, analysis designs. The
+operator predicted the shrinkage mid-run; this pair is the cleanest
+specimen for exploratory-confirmatory-shrinkage-audit (triaged), which
+now triggers. Residual narrow hypothesis (unclaimed): the map may
+specifically reduce stall-clock deaths (aporia channel replicated
+twice).

@@ -1,0 +1,51 @@
+# Lemma-layer contrast — marrick-resistant block (LEMMA-LAYER-PREREGISTRATION.md;
+# triple-interleaved arms, fresh prime seeds 59-79 shared within triples,
+# concurrency 3; promotion rides on lemma-bound vs baseline only).
+base:
+  world: config/drama-derivation/world-019-marrick-resistant.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: baseline-r1
+    flags: { decay: '{"seed":59,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r1
+    flags: { decay: '{"seed":59,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: lemma-bound-r1
+    flags: { decay: '{"seed":59,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"bind":true}' }
+  - label: baseline-r2
+    flags: { decay: '{"seed":61,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r2
+    flags: { decay: '{"seed":61,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: lemma-bound-r2
+    flags: { decay: '{"seed":61,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"bind":true}' }
+  - label: baseline-r3
+    flags: { decay: '{"seed":67,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r3
+    flags: { decay: '{"seed":67,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: lemma-bound-r3
+    flags: { decay: '{"seed":67,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"bind":true}' }
+  - label: baseline-r4
+    flags: { decay: '{"seed":71,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r4
+    flags: { decay: '{"seed":71,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: lemma-bound-r4
+    flags: { decay: '{"seed":71,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"bind":true}' }
+  - label: baseline-r5
+    flags: { decay: '{"seed":73,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r5
+    flags: { decay: '{"seed":73,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: lemma-bound-r5
+    flags: { decay: '{"seed":73,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"bind":true}' }
+  - label: baseline-r6
+    flags: { decay: '{"seed":79,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r6
+    flags: { decay: '{"seed":79,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: lemma-bound-r6
+    flags: { decay: '{"seed":79,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"bind":true}' }

@@ -1,5 +1,14 @@
 export { factKey, matchPattern, closure, entails, proofTree } from './chainer.js';
 export { loadWorld, validateWorld, plotLint, worldClosure } from './world.js';
+export {
+  normalizeLemmaConfig,
+  buildLemmaDag,
+  computeLemmaState,
+  supportRemaining,
+  classifyRelease,
+  renderTutorLemmaLines,
+  renderLearnerLemmaLines,
+} from './lemmaLayer.js';
 export { derivationDistance, detectStall } from './slope.js';
 export { simulateReleaseTempo, releaseSolvency, safeReleaseTurns, pacingGuardDecision } from './pacing.js';
 export { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
