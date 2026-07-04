@@ -70,3 +70,17 @@ already ran the full Phase-3 matrix at 100% commitment coverage, making it
 the zero-adapter candidate for the same question; haiku/gpt-mini untested.
 Note the instrument result itself bears on the confound hypothesis: part of
 what 'a strong model' buys this stack is bare protocol compliance.
+
+2026-07-04 Claude: RE-RUN ON GEMINI-FLASH per operator direction (same
+design, seeds, gates). Instrument gate PASS (8/8 releases all runs; stock-take
+fully live). RESULT — GO SIGNAL under the pre-stated rules: (b) plan-mode
+2/2 grounded (T*=21,21) vs baseline 1/2 on flash, where codex same-seeds gave
+plan-mode 0/2 vs baseline 1/2 — direction far more favorable on the weaker
+model; (a) per-seed outcome INVERSIONS on both seeds (codex grounded where
+flash disengaged and vice versa) = the model matters to individual
+trajectories, though aggregate floors match (1/2 each). Mechanism color:
+flash demanded 5-6 corrections/run (all answered) vs codex's sparse rate —
+the weaker inner loop uses the second voice more. n=2/arm = directional
+only (rule 4): licenses PROPOSING a powered cross-model contrast
+(model × arm, interaction-primary: does plan-mode help the weak inner loop
+more?), a new pre-registration awaiting operator sanction. Cost ~$0.30.
