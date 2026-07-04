@@ -294,6 +294,14 @@ function mockResponse(role, meta = {}) {
     // a plot each act (revision calls inherit the hint and re-emit — the
     // re-commit path). The real backend ignores meta.
     const plotBits = meta.plotHint ? { plot: meta.plotHint } : {};
+    // Lemma layer: the bridge's lemmaHint carries the deterministic frontier
+    // choice and (when the claim leaves the active lemma) the departure line.
+    const lemmaBits = meta.lemmaHint
+      ? {
+          ...(meta.lemmaHint.choose ? { active_lemma: meta.lemmaHint.choose } : {}),
+          ...(meta.lemmaHint.departure ? { lemma_departure: meta.lemmaHint.departure } : {}),
+        }
+      : {};
     // Two-layer planning: the bridge's throughlineHint is the schedule-derived
     // whole-play plan on the turns the harness demands one; echoed on every
     // reply shape, like the plot, so revision calls re-commit it.
@@ -319,6 +327,7 @@ function mockResponse(role, meta = {}) {
         ...plotBits,
         ...throughlineBits,
         ...ledgerBits,
+        ...lemmaBits,
       });
     }
     // A revision call (the ego rewriting under its superego's note): a figure
@@ -341,6 +350,7 @@ function mockResponse(role, meta = {}) {
           ...plotBits,
           ...throughlineBits,
           ...ledgerBits,
+          ...lemmaBits,
         });
       }
       if (meta.revision.jurisdiction === 'unconfronted_reentry') {
@@ -356,6 +366,7 @@ function mockResponse(role, meta = {}) {
           ...plotBits,
           ...throughlineBits,
           ...ledgerBits,
+          ...lemmaBits,
         });
       }
       return JSON.stringify({
@@ -371,6 +382,7 @@ function mockResponse(role, meta = {}) {
         ...plotBits,
         ...throughlineBits,
         ...ledgerBits,
+        ...lemmaBits,
       });
     }
     // C5 mock choreography: on a cue-less turn with an exhibit already staged,
@@ -387,6 +399,7 @@ function mockResponse(role, meta = {}) {
         ...plotBits,
         ...throughlineBits,
         ...ledgerBits,
+        ...lemmaBits,
       });
     }
     if (meta.sceneTempo?.beat && !meta.releaseSurface) {
@@ -409,6 +422,7 @@ function mockResponse(role, meta = {}) {
           ...plotBits,
           ...throughlineBits,
           ...ledgerBits,
+          ...lemmaBits,
         });
       }
     }
@@ -468,6 +482,7 @@ function mockResponse(role, meta = {}) {
         ...plotBits,
         ...throughlineBits,
         ...ledgerBits,
+        ...lemmaBits,
       });
     }
     return JSON.stringify({
@@ -484,6 +499,7 @@ function mockResponse(role, meta = {}) {
       ...plotBits,
       ...throughlineBits,
       ...ledgerBits,
+      ...lemmaBits,
     });
   }
   if (role === 'tutor_superego') {

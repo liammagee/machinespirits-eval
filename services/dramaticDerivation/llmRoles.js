@@ -1069,6 +1069,7 @@ function tutorSystem(
     strategyLedger = false,
     strategyLedgerV2 = false,
     strategyLedgerPlanMode = false,
+    lemmaLayer = false,
   } = {},
 ) {
   const recognition = clampDial(dials.recognition);
@@ -1411,7 +1412,33 @@ function tutorSystem(
       strategyLedgerPlanMode
         ? ', "reorientation": "<your revised WORKING ORIENTATION (2-4 sentences) — scene-opening turns after a stock-take only; null keeps the current one>"'
         : ''
+    }${
+      lemmaLayer && lemmaLayer.bind
+        ? ', "active_lemma": "<scene-opening turns: one lemma label from the FRONTIER CHOICE list, else null>", "lemma_departure": "<one line ONLY when playing a proof exhibit outside the active lemma, else null>"'
+        : ''
     }}`,
+    ...(lemmaLayer
+      ? [
+          '',
+          '# The lemma map (the proof one level up)',
+          '',
+          "The harness maintains a LEMMA MAP over the inquiry's intermediate conclusions,",
+          "computed each turn from the learner's own grounded facts — it moves only when",
+          'their board does, and under decay it can move backward. It arrives in your',
+          'turn context.',
+          ...(lemmaLayer.bind
+            ? [
+                'At each scene opening you pick the scene\'s ACTIVE lemma in "active_lemma"',
+                'from the offered FRONTIER. Your voluntary releases of proof exhibits are',
+                "bound to the active lemma's unplayed support; playing outside it requires a",
+                'one-line "lemma_departure" (untagged departures are held by the harness).',
+                'Colour exhibits that feed no lemma are unrestricted; harness-forced plays',
+                'override the binding. The map never names, and never changes, WHAT is true —',
+                'only the order in which you stage it.',
+              ]
+            : ['It is information about where the proof stands — nothing about it binds you.']),
+        ]
+      : []),
     ...(strategyLedgerPlanMode
       ? [
           '(Plan mode: between scenes your own second voice takes stock — course, not conformance. Its note arrives at',
@@ -2184,6 +2211,7 @@ export function makeLlmTutor(
     strategyLedger = false,
     strategyLedgerV2 = false,
     strategyLedgerPlanMode = false,
+    lemmaLayer = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -2350,6 +2378,7 @@ export function makeLlmTutor(
     strategyLedger,
     strategyLedgerV2,
     strategyLedgerPlanMode,
+    lemmaLayer,
   });
   const superegoSystem = superego
     ? tutorSuperegoSystem(world, {
@@ -2709,7 +2738,13 @@ export function makeLlmTutor(
                 pacing.current?.endTurn || '?'
               }); safe turns {${pacing.safeTurns.map((t) => `t${t}`).join(', ') || 'none'}}`
           : '';
-      return `- ${e.premise}: ${status}${pacingStatus}`;
+      const lemmaStatus =
+        view.lemmaLayer?.config?.bind && view.lemmaLayer.proofPremiseIds.includes(e.premise)
+          ? view.lemmaLayer.activeKey && view.lemmaLayer.activeSupportRemaining.includes(e.premise)
+            ? ' — [active-lemma support]'
+            : ' — [OUTSIDE the active lemma: playing it needs "lemma_departure"]'
+          : '';
+      return `- ${e.premise}: ${status}${pacingStatus}${lemmaStatus}`;
     });
     const task = releaseAuthority
       ? [
@@ -3322,6 +3357,20 @@ export function makeLlmTutor(
             : 'Play under it; the audit at the scene close distinguishes kept from drift.',
         );
       }
+      if (view.lemmaLayer?.tutorLines) {
+        lines.push('', ...view.lemmaLayer.tutorLines);
+        const lemmaOpening = Boolean(view.lemmaLayer.config?.bind && view.scene && view.scene.startTurn === view.turn);
+        if (lemmaOpening && view.lemmaLayer.frontier.length) {
+          lines.push(
+            '',
+            'FRONTIER CHOICE (this turn opens a scene): pick the scene\'s ACTIVE lemma in "active_lemma" — one of:',
+            ...view.lemmaLayer.frontier.map(
+              (f) =>
+                `- "${f.label}" (unplayed support: ${f.supportRemaining.join(', ') || 'none — grounds from the played board'})`,
+            ),
+          );
+        }
+      }
       if (heldDidacticNote) lines.push('', heldDidacticNote);
       if (ledgerInfo?.budget?.exhausted) {
         lines.push(
@@ -3440,6 +3489,34 @@ export function makeLlmTutor(
           : null,
       cuePremise: releaseAuthority ? mockRelease : entry ? entry.premise : null,
       ...(releaseAuthority ? { releaseChoice: mockRelease } : {}),
+      // mock determinism (lemma layer): the frontier choice is the first
+      // offered label; a mock claim outside the active lemma's support is
+      // tagged with a departure line unless the test knob mockUntagged asks
+      // for the block path. The real backend ignores meta.
+      ...(view.lemmaLayer?.config?.bind
+        ? {
+            lemmaHint: (() => {
+              const ll = view.lemmaLayer;
+              const opening = Boolean(view.scene && view.scene.startTurn === view.turn);
+              const hint = {};
+              if (opening && ll.frontier.length) hint.choose = ll.frontier[0].label;
+              const activeSupport =
+                opening && ll.frontier.length
+                  ? ll.frontier[0].support
+                  : ll.frontier.find((f) => f.key === ll.activeKey)?.support || [];
+              if (
+                mockRelease &&
+                ll.proofPremiseIds.includes(mockRelease) &&
+                activeSupport.length &&
+                !activeSupport.includes(mockRelease) &&
+                !ll.config.mockUntagged
+              ) {
+                hint.departure = `mock: scheduled exhibit ${mockRelease} lies outside the active lemma`;
+              }
+              return hint;
+            })(),
+          }
+        : {}),
       ...(releaseAuthority && pacingGuard
         ? {
             pacingGuard: {
@@ -3688,7 +3765,61 @@ export function makeLlmTutor(
           reason: `${proofClosingFallback.premise} closes the proof at t${view.turn}`,
         };
       }
-      const candidatePlayed = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
+      let candidatePlayed = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
+      // LEMMA BINDING (bind mode; LEMMA-LAYER-PREREGISTRATION.md): the scene-
+      // opening frontier choice is adjudicated first (the same call may claim
+      // a release under the NEW choice); then the tutor's VOLUNTARY
+      // out-of-support proof claims need a "lemma_departure" tag — untagged
+      // ones drop to a hold. Harness-forced plays (hold limits, guard
+      // rescues) pass through binding and are logged, never blocked.
+      const lemmaInfo = view.lemmaLayer || null;
+      const lemmaBind = Boolean(lemmaInfo?.config?.bind);
+      let lemmaMeta = null;
+      let lemmaGate = null;
+      if (lemmaBind) {
+        lemmaMeta = {};
+        const lemmaOpening = Boolean(view.scene && view.scene.startTurn === view.turn);
+        if (lemmaOpening && lemmaInfo.frontier.length) {
+          const claimedLemma = typeof out.active_lemma === 'string' ? out.active_lemma.trim() : null;
+          const match = claimedLemma ? lemmaInfo.frontier.find((f) => f.label === claimedLemma) : null;
+          const pick = match || lemmaInfo.frontier[0];
+          lemmaMeta.choice = {
+            key: pick.key,
+            label: pick.label,
+            by: match ? 'tutor' : lemmaInfo.frontier.length === 1 ? 'auto' : 'fallback',
+          };
+        }
+        const activeLemmaKeyNow = lemmaMeta.choice?.key || lemmaInfo.activeKey || null;
+        const activeNode = activeLemmaKeyNow
+          ? lemmaInfo.frontier.find((f) => f.key === activeLemmaKeyNow) || null
+          : null;
+        if (candidatePlayed && lemmaInfo.proofPremiseIds.includes(candidatePlayed) && activeNode) {
+          const inSupport = activeNode.support.includes(candidatePlayed);
+          if (!inSupport) {
+            const harnessForced = Boolean(
+              activeGuard?.forcedSafe || (forcedPlay && candidatePlayed === forcedPlay.premise),
+            );
+            const departureReason =
+              typeof out.lemma_departure === 'string' && out.lemma_departure.trim() ? out.lemma_departure.trim() : null;
+            if (harnessForced) {
+              lemmaMeta.forcedPassthrough = {
+                premise: candidatePlayed,
+                by: activeGuard?.forcedSafe ? 'guard' : 'hold_limit',
+              };
+            } else if (departureReason) {
+              lemmaMeta.departure = { premise: candidatePlayed, reason: departureReason };
+            } else {
+              lemmaGate = {
+                held: true,
+                premise: candidatePlayed,
+                reason: `${candidatePlayed} is outside the active lemma ${activeNode.label} and carries no lemma_departure`,
+              };
+              lemmaMeta.blocked = { premise: candidatePlayed };
+              candidatePlayed = null;
+            }
+          }
+        }
+      }
       const candidateSched = candidatePlayed ? world.releaseSchedule.find((e) => e.premise === candidatePlayed) : null;
       const candidateOffset = candidateSched ? view.turn - candidateSched.turn : null;
       const candidateSolvency =
@@ -3797,7 +3928,11 @@ export function makeLlmTutor(
           ...(hybridGuard ? { hybridGuard } : {}),
           ...(consolidationGuard ? { consolidationGuard } : {}),
           ...(discursiveReleaseGate ? { discursiveReleaseGate } : {}),
+          ...(lemmaGate ? { lemmaGate } : {}),
         },
+        ...(lemmaMeta && (lemmaMeta.choice || lemmaMeta.departure || lemmaMeta.blocked || lemmaMeta.forcedPassthrough)
+          ? { lemma: lemmaMeta }
+          : {}),
       };
     };
     const draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
@@ -4936,6 +5071,7 @@ export function makeLlmLearner({
       `PRIVATE CONCLUSION CHECKLIST (index. conclusion your ${terms.record} may now support; choose indices only when you also say the conclusion aloud in ordinary words):`,
       privateConclusions,
       ...learnerProxyDagMemoryLines(view.proxyDagMemory, terms),
+      ...(view.lemmaLayer?.mirrorLines ? ['', ...view.lemmaLayer.mirrorLines] : []),
       '',
       'Your hypotheses so far:',
       hyps,

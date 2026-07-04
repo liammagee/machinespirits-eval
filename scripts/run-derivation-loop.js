@@ -368,6 +368,7 @@ import {
   normalizeDirectorCadence,
   normalizeRhetoricalPolicyConfig,
   normalizeStrategyLedgerConfig,
+  normalizeLemmaConfig,
   normalizePublicRegister,
   describePublicRegister,
   makeLlmClient,
@@ -635,6 +636,25 @@ async function main() {
     }
   }
   const learnerLedger = flag('learner-ledger');
+  // Lemma layer (LEMMA-LAYER-PREREGISTRATION.md): a maintained proof
+  // structure one level above the premise grain. display = map as prompt
+  // signal; bind = frontier choice at scene openings + voluntary proof
+  // releases gated to the active lemma (tagged departures). Needs the scene
+  // overlay; malformed JSON dies here.
+  const lemmaLayerArg = arg('lemma-layer', null);
+  let lemmaLayer = null;
+  if (flag('lemma-layer') && lemmaLayerArg !== 'off') {
+    try {
+      lemmaLayer = normalizeLemmaConfig(lemmaLayerArg && lemmaLayerArg !== 'on' ? lemmaLayerArg : true);
+    } catch (err) {
+      console.error(`--lemma-layer ${err.message}`);
+      process.exit(1);
+    }
+  }
+  if (lemmaLayer && !sceneMode) {
+    console.error('--lemma-layer requires --scene-mode (the frontier choice is a scene-opening decision)');
+    process.exit(1);
+  }
   if (strategyLedger && !sceneMode) {
     console.error(
       '--strategy-ledger requires --scene-mode (blocks segment scene exchanges; commitments bind at scene boundaries)',
@@ -1253,6 +1273,7 @@ async function main() {
       strategyLedger: Boolean(strategyLedger),
       strategyLedgerV2: Boolean(strategyLedger?.trialling),
       strategyLedgerPlanMode: Boolean(strategyLedger?.planMode),
+      lemmaLayer: lemmaLayer || false,
     }),
     learner: makeLlmLearner({
       setting: world.setting,
@@ -1348,6 +1369,7 @@ async function main() {
         ...(decay ? { decay } : {}),
         ...(acts ? { acts } : {}),
         ...(strategyLedger ? { strategyLedger } : {}),
+        ...(lemmaLayer ? { lemmaLayer } : {}),
         ...(learnerLedger ? { learnerLedger } : {}),
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
         ...(conductPolicy ? { conductPolicy } : {}),
@@ -1387,6 +1409,8 @@ async function main() {
     // Strategy ledger dials (LAYERED-DECISION-LOOPS-PLAN.md) — null/false off.
     strategyLedger: strategyLedger || null,
     learnerLedger,
+    // Lemma layer (LEMMA-LAYER-PREREGISTRATION.md) — null off.
+    lemmaLayer: lemmaLayer || null,
     directorCadence,
     stagePrologue,
     publicRegister,

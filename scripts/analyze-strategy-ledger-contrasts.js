@@ -96,6 +96,50 @@ const DESIGNS = {
       ],
     },
   },
+
+  // LEMMA-LAYER-PREREGISTRATION.md — frozen at the contrast-launch commit.
+  // Promotion rides on LB alone; LD is the stall-watcher redundancy
+  // prediction (display ~ baseline expected) and LX the binding-net-of-
+  // information read — both descriptive.
+  lemma: {
+    arms: ['baseline', 'lemma-display', 'lemma-bound'],
+    armPattern: /^(baseline|lemma-display|lemma-bound)-r(\d+)$/,
+    contrasts: [
+      { id: 'LB', name: 'lemma-bound-vs-baseline (promotion)', treat: 'lemma-bound', control: 'baseline' },
+      {
+        id: 'LD',
+        name: 'lemma-display-vs-baseline (redundancy prediction)',
+        treat: 'lemma-display',
+        control: 'baseline',
+      },
+      {
+        id: 'LX',
+        name: 'bound-vs-display (binding net of information)',
+        treat: 'lemma-bound',
+        control: 'lemma-display',
+      },
+    ],
+    endpoints: {
+      LB: [
+        ['timeToRecognition', 'lower'],
+        ['grounded', 'higher'],
+        ['aporiaLike', 'lower'],
+        ['repairLatency', 'lower'],
+      ],
+      LD: [
+        ['timeToRecognition', 'lower'],
+        ['grounded', 'higher'],
+        ['aporiaLike', 'lower'],
+        ['repairLatency', 'lower'],
+      ],
+      LX: [
+        ['timeToRecognition', 'lower'],
+        ['grounded', 'higher'],
+        ['aporiaLike', 'lower'],
+        ['repairLatency', 'lower'],
+      ],
+    },
+  },
 };
 let DESIGN = DESIGNS.phase3;
 let ARMS = DESIGN.arms;
@@ -239,6 +283,25 @@ function extractRun(world, label, dir) {
       (h) => h.fidelity?.label === 'invalid_person_attack',
     ).length,
     reviewEvents: count('strategy_review'),
+    // --- lemma-layer endpoints (null-safe on non-lemma artifacts) ---
+    lemmaChoices: result.lemmaLayer?.choices?.length ?? null,
+    lemmaDepartures: result.lemmaLayer?.departures?.length ?? null,
+    lemmaBlocks: result.lemmaLayer?.blocks?.length ?? null,
+    lemmaPassthroughs: result.lemmaLayer?.passthroughs?.length ?? null,
+    lemmaRegressions: result.lemmaLayer?.regressions?.length ?? null,
+    // an untagged out-of-support release that REACHED the stage would be a
+    // block row and a same-turn ledger row for the same premise — engine-
+    // impossible by construction; the guardrail verifies exactly that.
+    lemmaUntaggedOnStage: result.lemmaLayer
+      ? result.lemmaLayer.blocks.filter((b) =>
+          (result.ledger || []).some((row) => row.premiseId === b.premise && row.turn === b.turn),
+        ).length
+      : null,
+    lemmaFrontierCoverage: result.lemmaLayer
+      ? result.lemmaLayer.frontierCoverage.multiFrontierOpenings
+        ? result.lemmaLayer.frontierCoverage.tutorChoices / result.lemmaLayer.frontierCoverage.multiFrontierOpenings
+        : null
+      : null,
     stocktakes: result.strategyLedger?.stocktakes?.length ?? null,
     correctionsDemanded: (result.strategyLedger?.stocktakes || []).filter((st) => st.correction).length,
     correctionsAnswered: (result.strategyLedger?.stocktakes || []).filter((st) => st.correction && st.reorientation)
@@ -395,7 +458,32 @@ function main() {
     }
   }
   const ledgerArms = runs.filter((r) => r.arm !== 'baseline');
-  if (opts.design !== 'plan-mode') {
+  if (opts.design === 'lemma') {
+    g(
+      'guard-overrides',
+      runs.every((r) => r.guardOverrides === 0),
+      `${runs.filter((r) => r.guardOverrides > 0).length} run(s) with pacing-guard overrides`,
+    );
+    const bound = runs.filter((r) => r.arm === 'lemma-bound');
+    g(
+      'untagged-departures',
+      bound.every((r) => (r.lemmaUntaggedOnStage ?? 0) === 0),
+      `${bound.filter((r) => (r.lemmaUntaggedOnStage ?? 0) > 0).length} bound run(s) with an untagged out-of-support release on stage`,
+    );
+    const covs = bound.map((r) => r.lemmaFrontierCoverage).filter((v) => v !== null);
+    g(
+      'frontier-choice-coverage',
+      !covs.length || mean(covs) >= 0.8,
+      `mean frontier-choice coverage ${fmt(mean(covs))} on multi-frontier openings`,
+    );
+    g(
+      'display-unbound',
+      runs
+        .filter((r) => r.arm === 'lemma-display')
+        .every((r) => (r.lemmaChoices ?? 0) === 0 && (r.lemmaBlocks ?? 0) === 0 && (r.lemmaDepartures ?? 0) === 0),
+      'display arm carries no binding events',
+    );
+  } else if (opts.design !== 'plan-mode') {
     const coverage = ledgerArms.map((r) => r.commitCoverage).filter((v) => v !== null);
     g(
       'commit-coverage',
