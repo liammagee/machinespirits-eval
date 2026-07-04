@@ -1,7 +1,7 @@
 ---
 id: lemma-sonnet-contrast
 title: Lemma-map Sonnet contrast — does the bookkeeping artifact help a mid-tier inner loop at tier?
-status: active
+status: done
 type: experiment
 priority: P1
 owner: unassigned
@@ -10,7 +10,7 @@ created: 2026-07-04
 updated: 2026-07-04
 branch: worktree-strategy-ledger-followups
 verification: "24 Sonnet runs complete under the frozen pre-registration (or a voiding condition fires); the frozen bar produces a recorded verdict either way."
-claim_status: planned
+claim_status: scope-bound
 links:
   notes: LEMMA-SONNET-CONTRAST-PREREGISTRATION.md
   items:
@@ -38,3 +38,16 @@ Consequences: confirmed = model-scoped mechanism + §6.13.17 coda (the
 bookkeeping law gains its capability threshold); not confirmed = the
 mid-tier question closes, the smoke joins the flash smoke as an
 unreplicated directional observation.
+
+2026-07-04 Claude: RUN 24/24 (claude CLI sonnet, ~85 min, zero parse
+failures; block-2 launch corrected: stray &-launch killed pre-data,
+relaunched tracked). **VERDICT: MATRIX VOID — FLOOR-BLIND per the frozen
+rule.** All 24 runs, both arms, both worlds, at T*=29 imputed; U=72/144
+(exact null midpoint, degenerate); guardrails 9/9 clean. READING: the
+capability threshold sits BELOW this world pair — Sonnet cannot finish
+these dramas under this decay grid map-or-no-map; the mid-tier question
+is UNMEASURED, not answered. The smoke's seed-101 grounding did not
+recur at 6 fresh seeds (third smoke-tier signal to dissolve this arc).
+Retry requires Sonnet-calibrated worlds (baseline ~30-50% grounded) —
+an authoring decision under a fresh prereg. Shrinkage audit gains its
+cleanest specimen (smoke 1/2 vs powered 0/12).

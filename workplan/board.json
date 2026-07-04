@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-04T11:11:15.203Z",
+  "generated": "2026-07-04T12:36:55.624Z",
   "counts": {
     "total": 80,
     "byStatus": {
-      "done": 67,
+      "done": 68,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 2
     },
@@ -144,34 +144,6 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "lemma-sonnet-contrast",
-      "title": "Lemma-map Sonnet contrast — does the bookkeeping artifact help a mid-tier inner loop at tier?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-04",
-      "updated": "2026-07-04",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "24 Sonnet runs complete under the frozen pre-registration (or a voiding condition fires); the frozen bar produces a recorded verdict either way.",
-      "claim_status": "planned",
-      "links": {
-        "notes": "LEMMA-SONNET-CONTRAST-PREREGISTRATION.md",
-        "items": [
-          "lemma-map-sonnet-smoke",
-          "proof-lemma-layer",
-          "exploratory-confirmatory-shrinkage-audit"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "lemma-layer",
-        "model-confound"
-      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -433,6 +405,34 @@
         "outer-loop",
         "strategy-ledger",
         "symmetry"
+      ]
+    },
+    {
+      "id": "lemma-sonnet-contrast",
+      "title": "Lemma-map Sonnet contrast — does the bookkeeping artifact help a mid-tier inner loop at tier?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs complete under the frozen pre-registration (or a voiding condition fires); the frozen bar produces a recorded verdict either way.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "LEMMA-SONNET-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-map-sonnet-smoke",
+          "proof-lemma-layer",
+          "exploratory-confirmatory-shrinkage-audit"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-confound"
       ]
     },
     {

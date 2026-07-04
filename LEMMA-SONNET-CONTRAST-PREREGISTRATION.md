@@ -46,3 +46,19 @@ Per run: `T*` = `assertedGroundedTurn`, cap+1 = 29 imputed (both caps 28; the fr
 ## Artifacts
 
 Specs `config/drama-derivation/matrix-specs/sonnet-display-{marrick,marrick-resistant}.yaml`; fresh mock-validation spec + run pre-freeze; runs `exports/dramatic-derivation/matrix/sonnet-display-<world>/`; analysis via the frozen contrasts script's existing `lemma-display` design (zero-paid validated this morning and re-validated pre-freeze); report `exports/dramatic-derivation/lemma-layer/sonnet-contrast/`.
+
+---
+
+## Results addendum (2026-07-04; frozen analysis unmodified; report at `exports/dramatic-derivation/lemma-layer/sonnet-contrast/phase3-contrasts-report.{json,md}`)
+
+**Execution.** 24/24 runs, claude CLI (sonnet), blocks sequential at concurrency 3 (~85 min), zero parse failures across ~1,600 role calls — the instrument held completely. One process-handling correction disclosed: block 2 was first launched untracked (a stray shell background), killed before any run completed, artifacts removed, and relaunched tracked; zero runs lost, zero data touched.
+
+**Verdict (per the frozen floor rule): MATRIX VOID — FLOOR-BLIND.** Every one of the 24 runs, both arms, both worlds, imputed at T\* = 29 (marrick: 12/12 at cap; marrick-resistant: 12/12 at cap). Both strata floored; the pre-registered bar is not evaluable (pooled U = 72/144, the exact null midpoint, degenerate by construction). Guardrails, for the record, 9/9 clean — the display arm stayed pure information and even staged slightly more evidence (releases 7.67 vs 7.17 and 8.00 vs 6.67).
+
+**What the void teaches (recorded, not spun):**
+
+- **The capability threshold sits below this world pair, not within it.** Sonnet cannot bring these dramas to grounded recognition under this decay grid at all — with or without the map. The lemma map cannot rescue a drama the model cannot finish; a bookkeeping artifact moves capacity around a threshold, it does not cross one. The mid-tier question is NOT answered negative — it is unmeasurable on these worlds.
+- **The smoke's seed-101 grounding did not recur** at six fresh seeds — it now looks like a favorable-draw outlier, the third smoke-tier signal this arc has watched dissolve (flash plan-mode, codex display, Sonnet display). The shrinkage file gains its cleanest specimen yet: a 1-in-2 smoke success against a 0-in-12 powered draw.
+- **A real mid-tier test needs easier worlds** — a decay grid or schedule slack calibrated to put Sonnet's baseline near 30-50% grounded (the headroom band marrick occupies for codex). That is a world-authoring/calibration decision (an operator gate), and the floor-blind rule written into this document did exactly its job: no verdict was manufactured from ties.
+
+**Consequences (per the freeze, floor-blind branch):** no confirmation and no closure of the mid-tier question — it records as UNMEASURED on this stack's current worlds; the Sonnet smoke records as an unreplicated directional observation; any retry requires Sonnet-calibrated worlds under a fresh pre-registration; the shrinkage audit proceeds with this specimen added.
