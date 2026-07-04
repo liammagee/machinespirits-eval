@@ -25,7 +25,13 @@
  * Stage 0.
  */
 
-const DEFAULT_DRIFT_GATE_MAX_ATTEMPTS = 4;
+// Instrument v2.1 (confirmatory pre-registration, notes/2026-07-04-
+// desubstitution-confirmatory-prereg.md §3): max attempts 4→5 uniformly;
+// boredom + rote-parroting scenarios additionally set decay.warm_after_turn
+// 2→1 in their formal interiors. All other machinery unchanged.
+export const LEARNER_INTERIOR_GATE_VERSION = '2.1';
+
+const DEFAULT_DRIFT_GATE_MAX_ATTEMPTS = 5;
 const DEFAULT_WARM_AFTER_TURN = 2;
 
 // Learner-side yield/agreement markers: accepting the tutor's frame or
