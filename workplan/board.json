@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-04T08:40:10.365Z",
+  "generated": "2026-07-04T09:42:26.078Z",
   "counts": {
-    "total": 78,
+    "total": 79,
     "byStatus": {
       "done": 66,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 4,
       "archived": 4,
       "triaged": 2
     },
     "byType": {
       "research": 40,
-      "experiment": 11,
+      "experiment": 12,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -168,6 +168,34 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "lemma-map-sonnet-smoke",
+      "title": "Lemma-map Sonnet smoke — does the bookkeeping artifact help a mid-tier inner loop?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "4 canary-gated Sonnet runs complete (or an instrument-limited stop is recorded); the pre-stated read rules below produce a propose/no-go, never a claim.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-DISPLAY-CONFIRMATORY-PREREGISTRATION.md",
+        "items": [
+          "proof-lemma-layer",
+          "strategy-ledger-model-confound-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-confound",
+        "smoke"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
