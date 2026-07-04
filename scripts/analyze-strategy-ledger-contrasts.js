@@ -188,6 +188,7 @@ const WORLD_CAPS = {
   world_005_marrick: 28,
   world_006_hethel: 26,
   world_010_hethel_resistant: 26,
+  world_019_marrick_resistant: 28,
 };
 function turnCapFor(result) {
   return WORLD_CAPS[result.worldId] ?? result.turnsPlayed;
