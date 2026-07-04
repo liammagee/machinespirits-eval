@@ -160,6 +160,51 @@ export function checkContentCondition({ tutorMessage = '', interior }) {
   return { met: true, evidence: `released ${blocking.id} via "${phrase}"; ${filter.evidence}` };
 }
 
+// Stage 2 iteration 2: the literal-match release check failed 0/3 at the
+// iteration-1 canary because tutors paraphrase the premise rather than quote
+// tokens (the same naturalization the learner showed in Stage 1). The
+// semantic release classifier judges CONTENT, not incantation. Frozen prompt;
+// sonnet-class only (gpt-mini is numerically gullible per the register arc);
+// mismatched/generic probe conditions remain the standing false-positive
+// control. Fail-CLOSED: a classifier error never grants release.
+export const SEMANTIC_RELEASE_CLASSIFIER_PROMPT = `You judge whether a tutor's turn substantively supplies a specific withheld premise to a learner. You receive the premise (its content, not just its id) and the tutor's turn.
+
+Answer YES only if the tutor's turn actually states, explains, or demonstrates the premise's content — paraphrase counts, a vague gesture toward the topic does not, naming the id without the content does not, and supplying a DIFFERENT premise does not.
+
+Respond with JSON only: {"released": true|false, "quote": "<the shortest tutor fragment that supplies the premise, or empty>"}.`;
+
+/**
+ * Semantic release check (iteration 2). Literal match is the fast path; the
+ * subtype engagement filter stays deterministic and mandatory; the classifier
+ * decides content-supply for paraphrased releases. Fail-closed on error.
+ */
+export async function checkContentConditionSemantic({ tutorMessage = '', interior, callJudge, judgeModel }) {
+  const literal = checkContentCondition({ tutorMessage, interior });
+  if (literal.met) return { ...literal, source: 'literal' };
+  const filter = engagementFilterPass(tutorMessage, interior.engagement_filter);
+  if (!filter.pass) return { met: false, evidence: filter.evidence, source: 'filter' };
+  if (typeof callJudge !== 'function') return { met: false, evidence: 'no classifier available', source: 'none' };
+  try {
+    const blocking = interior.blocking_element;
+    const payload = `Withheld premise (${blocking.id}): "${blocking.content}"\n\nTutor turn: ${tutorMessage}`;
+    const response = await callJudge(`${SEMANTIC_RELEASE_CLASSIFIER_PROMPT}\n\n${payload}`, {
+      judgeOverride: { model: judgeModel },
+    });
+    const match = String(response || '').match(/\{[\s\S]*\}/);
+    const parsed = match ? JSON.parse(match[0]) : null;
+    if (parsed?.released === true) {
+      return {
+        met: true,
+        evidence: `semantic release of ${blocking.id}: "${String(parsed.quote || '').slice(0, 160)}"`,
+        source: 'semantic',
+      };
+    }
+    return { met: false, evidence: 'classifier: premise not supplied', source: 'semantic' };
+  } catch (err) {
+    return { met: false, evidence: `classifier_error: ${err.message}`, source: 'error' };
+  }
+}
+
 /**
  * Character-fidelity check on a draft learner turn. Deterministic Stage-0
  * checks only; the Stage-1 classifier handles behavioral subtlety.

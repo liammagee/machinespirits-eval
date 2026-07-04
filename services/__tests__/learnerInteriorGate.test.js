@@ -249,3 +249,37 @@ test('decayed contract: warming permitted after warm_after_turn with tutor work'
   assert.equal(lateWork.ok, true, 'warming permitted late with tutor work');
   assert.ok(countTutorWork({ tutorMessages: ['no filter hit here'], interior }) === 0);
 });
+
+test('semantic release: paraphrase releases via classifier, mismatch and errors fail closed', async () => {
+  const { checkContentConditionSemantic, loadFormalInterior } = await import('../learnerInteriorGate.js');
+  const { getScenario } = await import('../evalConfigLoader.js');
+  const interior = loadFormalInterior(getScenario('desub_resistance_boredom'));
+  const paraphrase =
+    'Here is one concrete test you can run: the lecture quietly assumes the servant recognizes change in themselves through the work itself — try breaking that with the mirror passage.';
+  const yes = await checkContentConditionSemantic({
+    tutorMessage: paraphrase,
+    interior,
+    callJudge: async () => '{"released": true, "quote": "the servant recognizes change in themselves through the work"}',
+    judgeModel: 'stub',
+  });
+  assert.equal(yes.met, true);
+  assert.equal(yes.source, 'semantic');
+  const no = await checkContentConditionSemantic({
+    tutorMessage: paraphrase,
+    interior,
+    callJudge: async () => '{"released": false, "quote": ""}',
+    judgeModel: 'stub',
+  });
+  assert.equal(no.met, false);
+  const err = await checkContentConditionSemantic({
+    tutorMessage: paraphrase,
+    interior,
+    callJudge: async () => {
+      throw new Error('judge down');
+    },
+    judgeModel: 'stub',
+  });
+  assert.equal(err.met, false, 'fail-closed on classifier error');
+  const noJudge = await checkContentConditionSemantic({ tutorMessage: paraphrase, interior });
+  assert.equal(noJudge.met, false, 'fail-closed with no classifier');
+});

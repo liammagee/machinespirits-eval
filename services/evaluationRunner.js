@@ -57,7 +57,7 @@ import {
 import {
   buildDriftCorrectionContext,
   buildInteriorCharacterSheet,
-  checkContentCondition,
+  checkContentConditionSemantic,
   checkGrounding,
   classifyLearnerDraft,
   countTutorWork,
@@ -68,6 +68,9 @@ import {
 import { callJudgeModel as callDriftClassifierJudge } from './rubricEvaluator.js';
 
 const DESUB_DRIFT_CLASSIFIER_MODEL = process.env.DESUB_DRIFT_CLASSIFIER_MODEL || 'openrouter.sonnet-5';
+// Stage 2 iteration 2: sonnet-class semantic release judge (frozen; credit
+// probed $11.68 at go — openrouter.sonnet-5 per the recorded choice).
+const DESUB_SEMANTIC_RELEASE_JUDGE = process.env.DESUB_SEMANTIC_RELEASE_JUDGE || 'openrouter.sonnet-5';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 import { chalk } from './cliTheme.js';
 import {
@@ -3597,7 +3600,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         fullScenario.learner_context || '',
         '### Course Reference Sheet (instructor copy)',
         `- The lecture's withheld premise ${blocking.id}: "${blocking.content}"`,
-        `- Pedagogical note: this learner will not move until ${blocking.id} is released explicitly — cite ${blocking.id} and ${blocking.release_phrases[0]} when the dialogue has earned it.`,
+        `- Pedagogical note: this learner will not move until you actually supply this premise's content in the dialogue. When you do, quote its code ${blocking.id} verbatim alongside the substance (e.g. "${blocking.release_phrases[0]}") — the code is part of the course material, not jargon to smooth away.`,
       ].join('\n'),
     };
   }
@@ -4384,13 +4387,15 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
             interior: desubInterior,
           });
           if (!desubContentConditionMet) {
-            const condition = checkContentCondition({
+            const condition = await checkContentConditionSemantic({
               tutorMessage: suggestion?.message || suggestion?.title || '',
               interior: desubInterior,
+              callJudge: callDriftClassifierJudge,
+              judgeModel: DESUB_SEMANTIC_RELEASE_JUDGE,
             });
             if (condition.met) {
               desubContentConditionMet = true;
-              desubContentEvidence = condition.evidence;
+              desubContentEvidence = `[${condition.source}] ${condition.evidence}`;
             }
           }
           consolidatedTrace.push({

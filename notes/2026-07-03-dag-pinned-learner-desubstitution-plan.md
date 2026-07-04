@@ -541,3 +541,21 @@ semantic release check (sonnet-class classifier judging whether the tutor
 turn substantively supplies the withheld premise), or (iii) both. Per the
 frozen protocol the 60-row matrix was not launched and no further paid
 generation ran.
+
+### Stage 2 iteration 2 go (2026-07-04, user: "do iteration 2")
+
+Frozen at go: the literal-match release check is replaced by a **semantic
+release classifier** as the content-condition instrument
+(`SEMANTIC_RELEASE_CLASSIFIER_PROMPT` in `services/learnerInteriorGate.js`,
+judging "does this tutor turn substantively supply the withheld premise?" —
+paraphrase counts, gestures and mismatched premises do not). Judge:
+`openrouter.sonnet-5` (credit probed $11.68 at go; sonnet-class mandatory
+per the register-arc gullibility result). Deterministic layers retained:
+literal token+phrase match as fast path, subtype engagement filter as a
+mandatory deterministic gate, fail-CLOSED on classifier error. The
+mismatched/generic probe conditions remain the standing false-positive
+control now that a judge sits in the release path. Repair (i)
+belt-and-braces: instructor-sheet line strengthened to demand verbatim
+citation of the premise code alongside the substance. Validation gates
+before the matrix: false-yield ≤0.1 with the semantic checker ACTIVE on
+mismatched/generic, exhaustion ≤1/9, release fires on ≥1 canary row.
