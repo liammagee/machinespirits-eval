@@ -89,3 +89,18 @@ deferred to Stage 2 multi-turn outcome (§3.4 refinement); blocking tokens
 verified tutor-visible. Stage 2 (3 arms × 5 subtypes × 4 repeats = 60 rows)
 awaits its own recorded go.
 
+2026-07-04 Claude: Stage 2 matrix COMPLETE (`eval-2026-07-03-a3cfbe14`,
+60/60 rows; parallelism-3 deviation recorded). **Both H-D and H-O verdicts
+FROZEN_INSTRUMENT_FAILURE**: drift-gate exhaustion hit 23/60 rows (38%),
+tripping the frozen >20% guard in 13/15 cells; release floor absolute
+(0/60 tutor token-releases; grounding 1/37 usable). No §7.11 update in
+either direction — the de-substitution question remains OPEN, bounded by
+instrument capacity: the drift gate holds character for one turn (Stage 1
+probe 1.00/0.00) but exhausts across full dialogues, and tutors never find
+the DSB key unprompted. Candidate repairs recorded in note §7 (attempt
+ceiling + turn-decaying contract; tutor-visible key salience; sonnet-class
+classifier), each needing a fresh go. PAPER FLAG: a later paper pass may
+add the instrument-scaling finding (per-turn characterological gating does
+not compound to dialogue-scale character) as a §8.1/§6.14-adjacent
+limitation note.
+
