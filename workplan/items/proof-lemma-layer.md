@@ -93,3 +93,27 @@ to candidate 2 (sealhouse, same seeds/rule). Side-note for the catalog:
 fengate's decay-robustness contrasts with marrick/hethel-resistant, where
 the same decay grid produces failures — release-schedule slack, not world
 depth, seems to set decay sensitivity.
+
+**2026-07-04 Claude — world-slot probe, candidate 2 (sealhouse): FAIL,
+byte-identical signature.** 3/3 grounded at exactly T\*=22 (seeds 83/89/97,
+spread 0; one interruption, r2 resumed label-exactly). Two candidates, six
+runs, six identical outcomes — the generalization-arc 28-cap worlds are
+uniformly schedule-generous under the decay grid that reliably breaks
+marrick. Proceeding to candidate 3 (edmund, cap 18 / t_min 10 — the one
+genuinely different geometry). If edmund also fails, the frozen consequence
+fires: no contrast; the line returns to the operator as a world-authoring
+decision (resistant variant of a RICH world).
+
+**2026-07-04 Claude — world-slot probe EXHAUSTED; the frozen consequence
+fires.** Candidate 3 (edmund) is INELIGIBLE: no derivation tutor role-script
+exists (world authored for the character-development arc; all three arms died
+at import in 0.2s). With fengate and sealhouse both failed on identical
+T\*=22 signatures, the pre-registered procedure ends without filling slot W —
+so the 36-run contrast does NOT run under this pre-registration. What the
+probes taught: headroom under this decay grid comes from schedule slack, not
+proof depth — marrick is the only world that is both RICH (lemma-orderable)
+and decay-sensitive. NEXT (operator decision, pre-registered consequence):
+world authoring — the natural move is a marrick-resistant variant
+(hethel→hethel-resistant recipe on marrick's width-2 geometry), then its own
+headroom probe, then a fresh freeze. All implementation/gates/analysis/
+zero-paid work stands and carries over.
