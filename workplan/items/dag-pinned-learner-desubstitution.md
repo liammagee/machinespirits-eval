@@ -111,3 +111,13 @@ canonical phrases even with the key visible in their instructor sheet.
 Matrix not launched. Next fresh go: tutor-side citation instruction and/or
 semantic release classifier (note §7).
 
+2026-07-04 Claude: Stage 2 iteration 2 COMPLETE (`eval-2026-07-04-c689cf3a`,
+60/60; note §7). Instrument HEALTHY: exhaustion 3.3% (vs 38% iter 0),
+semantic release fires 8/58, grounding floor broken (6 rows). Frozen
+verdicts: **H-D UNRESOLVED_STOP at gap 4** (193-arm grounded 4/20, 186-arm
+0/20; bar was ≥5) — hard stop, no further repeats without a new prereg;
+**H-O FROZEN** (kernel exhaustion >20% in boredom + rote cells). §7.11
+unchanged. Directional lead recorded: all 6 groundings came from router
+arms, fixed-strategy floor 0/20. Any confirmatory follow-up needs a fresh
+pre-registration (higher n, kernel exhaustion repair).
+

@@ -571,3 +571,41 @@ exactly the naturalization case the literal check missed in iteration 1.
 Cells 186 and 199 did not release in this single draw (not evidence at
 n=1). All three frozen gates met; the 60-row matrix is authorized under the
 recorded iteration-2 go.
+
+### Stage 2 iteration 2 result (2026-07-04): instrument healthy; H-D UNRESOLVED_STOP at gap 4
+
+Matrix `eval-2026-07-04-c689cf3a`, 60/60 rows, scored judge-free from gate
+traces (`exports/desubstitution-stage2-iter2-matrix.{md,json}`; scorer gains
+`--out-base` + semantic-release column, semantic verdicts read from cached
+traces, never re-judged).
+
+**Instrument health across iterations**: exhaustion 38% (iter 0) → 0/3
+canary (iter 1) → **2/60 rows (3.3%)** here, with only two cells frozen
+(199_kernel|boredom, 199_kernel|rote_parroting at 1/4 each) vs 13/15 in
+iteration 0. Release 0/60 (iter 0) → 0/3 (iter 1) → **8/58 usable rows**,
+all via the semantic classifier. Grounding floor broken: 6 grounded rows
+vs 1 in iteration 0. The three repairs did their jobs.
+
+**Frozen verdicts**:
+
+| Comparison | Gap (grounded, 20 rows/arm) | Verdict |
+|---|---:|---|
+| H-D: 193_multi − 186_fixed | 4 − 0 = **4** | **UNRESOLVED_STOP** (real ≥5, dissolved ≤2) |
+| H-O: 199_kernel − 193_multi | 2 − 4 = −2 | **FROZEN_INSTRUMENT_FAILURE** (kernel exhaustion >20% in 2 subtype cells) |
+
+Per the frozen rule, H-D landing in the 3–4 band is a hard STOP: no further
+repeats on this contrast without a new pre-registration. **§7.11 receives
+no update in either direction.**
+
+**Directional pattern recorded (not a claim)**: every grounding in the
+matrix came from a router arm (193: 4, including both question-flood
+groundings; 199: 2) and the fixed-strategy floor grounded zero of twenty —
+the first corpus in the arc where strategy repertoire visibly tracks the
+primary outcome against a discriminating learner. One more grounded
+193-row would have crossed the pre-registered bar. A future confirmatory
+design (fresh pre-registration required) would need higher per-cell n, the
+kernel's boredom/rote exhaustion repaired, and no mid-run changes.
+
+Bounded summary: the de-substitution question remains formally open; the
+instrument is now fit for purpose; the evidence leans toward de-substitution
+without licensing it.

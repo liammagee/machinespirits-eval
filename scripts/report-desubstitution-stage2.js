@@ -20,6 +20,9 @@ const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
 const RUN_ID = process.argv.includes('--run-id')
   ? process.argv[process.argv.indexOf('--run-id') + 1]
   : 'eval-2026-07-03-a3cfbe14';
+const OUT_BASE = process.argv.includes('--out-base')
+  ? process.argv[process.argv.indexOf('--out-base') + 1]
+  : 'desubstitution-stage2-matrix';
 const DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT, 'data/evaluations.db');
 const LOG_DIRS = [
   process.env.EVAL_LOGS_DIR ? path.join(process.env.EVAL_LOGS_DIR, 'tutor-dialogues') : null,
@@ -70,7 +73,10 @@ function scoreRow(log) {
   for (const entry of trace) {
     const detail = parseDetail(entry.detail);
     if (entry.agent === 'learner_grounding' && detail?.grounded === true) out.grounded = true;
-    if (entry.agent === 'learner_content_condition' && detail?.met === true) out.release = true;
+    if (entry.agent === 'learner_content_condition' && detail?.met === true) {
+      out.release = true;
+      if (String(detail.evidence || '').startsWith('[semantic]')) out.semanticRelease = true;
+    }
     if (entry.agent === 'learner_drift_gate' && detail) {
       out.gateEntries += 1;
       out.attempts.push(Array.isArray(detail.attempts) ? detail.attempts.length : 1);
@@ -118,6 +124,7 @@ function agg(filter) {
     instrument_failures: set.length - n,
     grounded: sum((r) => r.grounded),
     release: sum((r) => r.release),
+    semantic_release: sum((r) => r.semanticRelease),
     engagement: sum((r) => r.engagement),
     mean_gate_attempts: attempts.length
       ? Number((attempts.reduce((a, b) => a + b, 0) / attempts.length).toFixed(2))
@@ -175,18 +182,18 @@ const result = {
 };
 
 fs.mkdirSync(path.join(ROOT, 'exports'), { recursive: true });
-fs.writeFileSync(path.join(ROOT, 'exports/desubstitution-stage2-matrix.json'), JSON.stringify(result, null, 2));
+fs.writeFileSync(path.join(ROOT, `exports/${OUT_BASE}.json`), JSON.stringify(result, null, 2));
 
 const lines = [
   '# De-Substitution Stage 2 Matrix — DAG-Pinned Learner',
   '',
   `Run \`${RUN_ID}\` · ${scored.length} rows scored (${missingLogs} missing logs) · outcomes judge-free (gate traces only)`,
   '',
-  '| Arm | Usable | Grounded | Release | Engagement | Mean gate attempts | Instrument failures |',
+  '| Arm | Usable | Grounded | Release (semantic) | Engagement | Mean gate attempts | Instrument failures |',
   '| --- | ---: | ---: | ---: | ---: | ---: | ---: |',
   ...ARMS.map((a) => {
     const s = perArm[a.key];
-    return `| ${a.key} | ${s.usable} | ${s.grounded} | ${s.release} | ${s.engagement} | ${s.mean_gate_attempts} | ${s.instrument_failures} |`;
+    return `| ${a.key} | ${s.usable} | ${s.grounded} | ${s.release} (${s.semantic_release}) | ${s.engagement} | ${s.mean_gate_attempts} | ${s.instrument_failures} |`;
   }),
   '',
   '## Per arm × subtype (grounded / release / engagement, usable n)',
@@ -211,5 +218,5 @@ const lines = [
   result.legacy_control_line,
   '',
 ];
-fs.writeFileSync(path.join(ROOT, 'exports/desubstitution-stage2-matrix.md'), lines.join('\n'));
+fs.writeFileSync(path.join(ROOT, `exports/${OUT_BASE}.md`), lines.join('\n'));
 console.log(lines.join('\n'));
