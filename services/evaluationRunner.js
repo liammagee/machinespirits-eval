@@ -57,12 +57,20 @@ import {
 import {
   buildDriftCorrectionContext,
   buildInteriorCharacterSheet,
-  checkContentCondition,
+  checkContentConditionSemantic,
   checkGrounding,
+  classifyLearnerDraft,
+  countTutorWork,
   driftGateMaxAttempts,
   evaluateLearnerDraft,
   loadFormalInterior,
 } from './learnerInteriorGate.js';
+import { callJudgeModel as callDriftClassifierJudge } from './rubricEvaluator.js';
+
+const DESUB_DRIFT_CLASSIFIER_MODEL = process.env.DESUB_DRIFT_CLASSIFIER_MODEL || 'openrouter.sonnet-5';
+// Stage 2 iteration 2: sonnet-class semantic release judge (frozen; credit
+// probed $11.68 at go — openrouter.sonnet-5 per the recorded choice).
+const DESUB_SEMANTIC_RELEASE_JUDGE = process.env.DESUB_SEMANTIC_RELEASE_JUDGE || 'openrouter.sonnet-5';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 import { chalk } from './cliTheme.js';
 import {
@@ -3581,7 +3589,23 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   // release) is tracked cumulatively across tutor turns — once met it stays met.
   const desubEnabled = fullScenario.desubstitution_diagnostic === true;
   const desubInterior = desubEnabled ? loadFormalInterior(fullScenario) : null;
+  // Iteration 1 (tutor-visible key): Stage 2 found the release floor absolute
+  // (0/60 — tutors cannot cite a token they are never shown). Surface the
+  // withheld premise in the tutor-visible learner context as course material.
+  if (desubEnabled) {
+    const blocking = desubInterior.blocking_element;
+    fullScenario = {
+      ...fullScenario,
+      learner_context: [
+        fullScenario.learner_context || '',
+        '### Course Reference Sheet (instructor copy)',
+        `- The lecture's withheld premise ${blocking.id}: "${blocking.content}"`,
+        `- Pedagogical note: this learner will not move until you actually supply this premise's content in the dialogue. When you do, quote its code ${blocking.id} verbatim alongside the substance (e.g. "${blocking.release_phrases[0]}") — the code is part of the course material, not jargon to smooth away.`,
+      ].join('\n'),
+    };
+  }
   let desubContentConditionMet = false;
+  let desubTutorWork = 0;
   let desubContentEvidence = null;
 
   for (let turnIdx = startTurnIdx; turnIdx < totalTurnCount; turnIdx++) {
@@ -4358,14 +4382,20 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         // De-substitution: the interior is the learner's character sheet on
         // every turn, and the content condition updates from this tutor turn.
         if (desubEnabled) {
+          desubTutorWork += countTutorWork({
+            tutorMessages: [suggestion?.message || suggestion?.title || ''],
+            interior: desubInterior,
+          });
           if (!desubContentConditionMet) {
-            const condition = checkContentCondition({
+            const condition = await checkContentConditionSemantic({
               tutorMessage: suggestion?.message || suggestion?.title || '',
               interior: desubInterior,
+              callJudge: callDriftClassifierJudge,
+              judgeModel: DESUB_SEMANTIC_RELEASE_JUDGE,
             });
             if (condition.met) {
               desubContentConditionMet = true;
-              desubContentEvidence = condition.evidence;
+              desubContentEvidence = `[${condition.source}] ${condition.evidence}`;
             }
           }
           consolidatedTrace.push({
@@ -4472,7 +4502,21 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
             message: learnerResponse.message,
             interior: desubInterior,
             contentConditionMet: desubContentConditionMet,
+            turnIndex: turnIdx + 1,
+            tutorWorkCount: desubTutorWork,
           });
+          // Iteration 1: sonnet-class subtle-drift check when the lexical
+          // fast-path passes on a later turn (the drift the word lists miss).
+          if (driftVerdict.ok && turnIdx >= 1) {
+            const classified = await classifyLearnerDraft({
+              message: learnerResponse.message,
+              interior: desubInterior,
+              contentConditionMet: desubContentConditionMet,
+              callJudge: callDriftClassifierJudge,
+              judgeModel: DESUB_DRIFT_CLASSIFIER_MODEL,
+            });
+            if (classified && !classified.ok) driftVerdict = classified;
+          }
           driftAttempts.push({ attempt: 1, ...driftVerdict, message: learnerResponse.message });
           let driftAttempt = 1;
           while (!driftVerdict.ok && driftAttempt < driftMaxAttempts) {
@@ -4502,7 +4546,22 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               message: learnerResponse.message,
               interior: desubInterior,
               contentConditionMet: desubContentConditionMet,
+              turnIndex: turnIdx + 1,
+              tutorWorkCount: desubTutorWork,
             });
+            // Iteration 1: on the final attempt a lexical violation can be
+            // rescued by the classifier (arbiter of last resort) — fewer
+            // false-positive exhaustions from brittle word lists.
+            if (!driftVerdict.ok && driftAttempt >= driftMaxAttempts) {
+              const classified = await classifyLearnerDraft({
+                message: learnerResponse.message,
+                interior: desubInterior,
+                contentConditionMet: desubContentConditionMet,
+                callJudge: callDriftClassifierJudge,
+                judgeModel: DESUB_DRIFT_CLASSIFIER_MODEL,
+              });
+              if (classified?.ok) driftVerdict = classified;
+            }
             driftAttempts.push({ attempt: driftAttempt, ...driftVerdict, message: learnerResponse.message });
             if (!driftVerdict.ok) {
               log(

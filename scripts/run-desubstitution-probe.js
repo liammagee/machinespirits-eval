@@ -320,7 +320,9 @@ async function runLive(scenarios, { dryRun = false } = {}) {
 
 async function main() {
   const args = process.argv.slice(2);
-  const scenarios = DESUB_IDS.map((id) => {
+  const scenarioFlag = args.find((a) => a.startsWith('--scenarios='));
+  const selectedIds = scenarioFlag ? scenarioFlag.slice('--scenarios='.length).split(',') : DESUB_IDS;
+  const scenarios = selectedIds.map((id) => {
     const scenario = getScenario(id);
     if (!scenario) throw new Error(`scenario ${id} not found (EVAL_SCENARIOS_FILE set?)`);
     return scenario;
