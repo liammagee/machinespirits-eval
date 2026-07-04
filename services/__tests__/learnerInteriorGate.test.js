@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+// The desub_resistance_* scenarios live in the charisma scenarios file; the
+// two decayed-contract/semantic tests below load them via getScenario, which
+// honours this env override at call time. Set before any evalConfigLoader
+// import so plain `npm test` (CI) resolves them like the eval runs do.
+process.env.EVAL_SCENARIOS_FILE =
+  process.env.EVAL_SCENARIOS_FILE || 'config/charisma-recognition-desire-scenarios.yaml';
+
 import {
   DRIFT_GATE_CLASSIFIER_PROMPT,
   buildDriftCorrectionContext,
