@@ -1068,6 +1068,7 @@ function tutorSystem(
     publicRegister = 'default',
     strategyLedger = false,
     strategyLedgerV2 = false,
+    strategyLedgerPlanMode = false,
   } = {},
 ) {
   const recognition = clampDial(dials.recognition);
@@ -1406,7 +1407,19 @@ function tutorSystem(
       strategyLedgerV2
         ? ', "strategy_review": {"decision": "persist" | "adjust" | "switch", "reason": "<one line>"} (scene-opening turns with a history table only; omit otherwise), "departure": "<one line when this turn deliberately departs from your scene commitment, else null>"'
         : ''
+    }${
+      strategyLedgerPlanMode
+        ? ', "reorientation": "<your revised WORKING ORIENTATION (2-4 sentences) — scene-opening turns after a stock-take only; null keeps the current one>"'
+        : ''
     }}`,
+    ...(strategyLedgerPlanMode
+      ? [
+          '(Plan mode: between scenes your own second voice takes stock — course, not conformance. Its note arrives at',
+          'each scene opening; answer it in "reorientation" when a correction is demanded or you yourself judge the',
+          'course has failed. The orientation is YOURS: no one grades you against it, and it never names, gates, or',
+          'reorders a release, a repair, a proof target, or the concealed answer.)',
+        ]
+      : []),
     ...(plot ? ['("plot" belongs to act-opening turns ONLY — the harness marks them; omit the key mid-act.)'] : []),
     ...(throughline
       ? [
@@ -2060,6 +2073,36 @@ function conductRuntimeLog(args) {
  * learner's board — and its verdict is read by the ego alone: intra-mind,
  * no new evidence channel onto the stage.
  */
+/**
+ * Plan mode (strategy-ledger planMode): the between-scene STOCK-TAKE charter.
+ * A second voice with a DIAGNOSTIC question — "is the current course still
+ * the right one?" — not a conformance grader (there is no plan to grade) and
+ * not the turn-watch (no figure/stall jurisdiction). Sees public material
+ * only; its correction, when it demands one, is answered by the ego as a
+ * revised working orientation. It never touches evidence, releases, repairs,
+ * proof targets, or the concealed answer.
+ */
+function stockTakeSystem(world) {
+  return [
+    "You are the tutor's OWN SECOND VOICE, taking stock between scenes of a staged inquiry.",
+    `The public question of the inquiry: ${world.question}`,
+    '',
+    'Your question is COURSE, not conformance: given how the last scene actually went,',
+    "is the tutor's current way of working still the right one? You are adversarial",
+    'toward drift and comfort: a scene that closed badly demands a named correction;',
+    'a course that is working should be said to be working in one line.',
+    '',
+    'You speak only to the tutor, never to the stage. You never add, remove, or',
+    'reweight evidence; never name exhibits, schedules, or the concealed answer;',
+    'never grade the tutor against any plan. Diagnose the SITUATION and, when it',
+    'is warranted, demand a correction of course.',
+    '',
+    'Reply with ONLY a JSON object:',
+    '{"assessment": "<one or two sentences: what the last scene\'s record actually shows>",',
+    ' "correction": "<the course correction you demand, one or two sentences — or null if the course holds>"}',
+  ].join('\n');
+}
+
 function plotAuditSystem(world, { throughline = false } = {}) {
   return [
     "You are the tutor's SUPEREGO in a staged derivation drama, sitting as the",
@@ -2140,6 +2183,7 @@ export function makeLlmTutor(
     ownershipTransferGate = false,
     strategyLedger = false,
     strategyLedgerV2 = false,
+    strategyLedgerPlanMode = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -2147,6 +2191,16 @@ export function makeLlmTutor(
   }
   if (strategyLedgerV2 && !strategyLedger) {
     throw new Error('derivation.llmRoles: strategyLedgerV2 requires strategyLedger (v2 rides the v1 commitment loop)');
+  }
+  if (strategyLedgerPlanMode && !strategyLedger) {
+    throw new Error(
+      'derivation.llmRoles: strategyLedgerPlanMode requires strategyLedger (the stock-take reads its bookkeeping)',
+    );
+  }
+  if (strategyLedgerPlanMode && strategyLedgerV2) {
+    throw new Error(
+      'derivation.llmRoles: strategyLedgerPlanMode and strategyLedgerV2 are mutually exclusive (one apparatus per arm)',
+    );
   }
   if (stallWatch && !superego) {
     throw new Error(
@@ -2295,6 +2349,7 @@ export function makeLlmTutor(
     publicRegister,
     strategyLedger,
     strategyLedgerV2,
+    strategyLedgerPlanMode,
   });
   const superegoSystem = superego
     ? tutorSuperegoSystem(world, {
@@ -2344,7 +2399,9 @@ export function makeLlmTutor(
   // Strategy-ledger bridge state (the plot pattern one scope down): the
   // scene commitment lives here between its opening and its audit at the
   // next opening; the engine records rows and applies the register.
-  const ledgerBridgeState = strategyLedger ? { commitment: null, sceneIndex: null } : null;
+  const ledgerBridgeState = strategyLedger
+    ? { commitment: null, sceneIndex: null, orientation: null, lastStocktakeScene: null }
+    : null;
   // Plot shape gate: a plot is real only when at least one field is
   // non-empty — a malformed or empty plot drops to null, which keeps the
   // engine's recording gate closed for that act (absence is visible to the
@@ -2764,10 +2821,12 @@ export function makeLlmTutor(
     // lapse. ---
     const ledgerInfo = strategyLedger ? view.strategyLedger || null : null;
     const trialling = Boolean(strategyLedgerV2 && ledgerInfo?.config?.trialling);
+    const planMode = Boolean(strategyLedgerPlanMode && ledgerInfo?.config?.planMode);
     const sceneOpening = Boolean(strategyLedger && view.scene && view.scene.startTurn === view.turn);
     let sceneCommitmentAudit = null;
     if (
       strategyLedger &&
+      !planMode &&
       sceneOpening &&
       ledgerBridgeState.commitment &&
       ledgerInfo?.lastClosedScene &&
@@ -2792,6 +2851,58 @@ export function makeLlmTutor(
       if (audit) sceneCommitmentAudit = { sceneIndex: ledgerInfo.lastClosedScene.index, ...audit };
       ledgerBridgeState.commitment = null;
       ledgerBridgeState.sceneIndex = null;
+    }
+    // --- Plan mode: the between-scene STOCK-TAKE (dialogic, off the stage
+    // clock — one extra superego-side call per boundary, no stage turns).
+    // The second voice diagnoses the sealed scene; the ego answers in this
+    // same opening turn's "reorientation", which REPLACES its working
+    // orientation. No commitment, no conformance audit, no drift grading.
+    let stocktakeNote = null;
+    if (
+      planMode &&
+      sceneOpening &&
+      ledgerInfo?.lastClosedScene &&
+      ledgerBridgeState.lastStocktakeScene !== ledgerInfo.lastClosedScene.index
+    ) {
+      ledgerBridgeState.lastStocktakeScene = ledgerInfo.lastClosedScene.index;
+      const sc = ledgerInfo.lastClosedScene;
+      const clip = (v, n = 300) =>
+        typeof v === 'string' && v.trim() ? v.replace(/\s+/gu, ' ').trim().slice(0, n) : null;
+      const stockUser = [
+        `Scene ${sc.index} has closed (turns ${sc.startTurn}-${sc.endTurn}): ${sc.status} (${sc.closeReason}).`,
+        `Its record: ${sc.exchanges.map((e) => e.type).join(', ') || 'no exchanges'};`,
+        `${sc.counts?.phatic ?? 0} phatic, ${(sc.exchanges || []).filter((e) => ['confusion', 'repair_request', 'resistance'].includes(e.type)).length} pressing, last learner line: "${sc.lastLearnerText || ''}"`,
+        ledgerInfo.budget
+          ? `Proof-neutral counters: tutor ${ledgerInfo.budget.currentProofNeutralTutorTurns}, learner ${ledgerInfo.budget.currentProofNeutralLearnerTurns}.`
+          : null,
+        '',
+        'The dialogue so far (public lines only):',
+        renderTranscriptTail(view.transcript, 14),
+        '',
+        ledgerBridgeState.orientation
+          ? `The tutor's current working orientation: "${ledgerBridgeState.orientation}"`
+          : 'The tutor has no revised orientation yet; it is working from its base script alone.',
+        '',
+        'Take stock. Reply with ONLY the JSON object.',
+      ]
+        .filter((line) => line !== null)
+        .join('\n');
+      const failedScene = !['progressed', 'clarified'].includes(sc.status);
+      const stockOut = await callJson(client, 'tutor_superego', view.turn, {
+        system: stockTakeSystem(world),
+        user: stockUser,
+        meta: {
+          stocktakeHint: {
+            assessment: `scene ${sc.index} closed ${sc.status}`,
+            correction: failedScene
+              ? 'change course: slow down, re-anchor on what the learner still holds, and rebuild from there'
+              : null,
+          },
+        },
+      });
+      const assessment = clip(stockOut.assessment);
+      const correction = clip(stockOut.correction);
+      if (assessment || correction) stocktakeNote = { sceneIndex: sc.index, assessment, correction };
     }
     const didacticModeStateBase = didacticMode
       ? deriveDidacticModeState({
@@ -3132,7 +3243,26 @@ export function makeLlmTutor(
           'Outcomes only count for a mechanism that was actually deployed (fidelity: faithful); warm-in-costume trials teach you nothing.',
         );
       }
-      if (sceneOpening && view.scene) {
+      if (planMode) {
+        if (stocktakeNote) {
+          lines.push(
+            '',
+            `STOCK-TAKE on scene ${stocktakeNote.sceneIndex} (your own second voice, between scenes — course, not conformance):`,
+            ...(stocktakeNote.assessment ? [`- assessment: ${stocktakeNote.assessment}`] : []),
+            stocktakeNote.correction
+              ? `- CORRECTION DEMANDED: ${stocktakeNote.correction}`
+              : '- no correction demanded — the course holds.',
+            'Answer it in "reorientation": your revised WORKING ORIENTATION (2-4 sentences) when a correction is demanded or you yourself judge the course has failed; null keeps your current orientation.',
+          );
+        }
+        if (ledgerBridgeState?.orientation) {
+          lines.push(
+            '',
+            'YOUR WORKING ORIENTATION (yours alone; revised at your last stock-take — no one grades you against it):',
+            ledgerBridgeState.orientation,
+          );
+        }
+      } else if (sceneOpening && view.scene) {
         const palette = ledgerInfo?.config?.registerPalette?.length
           ? ledgerInfo.config.registerPalette
           : [activeRegisterName];
@@ -3421,6 +3551,13 @@ export function makeLlmTutor(
             },
           }
         : {}),
+      ...(planMode && sceneOpening && stocktakeNote
+        ? {
+            reorientationHint: stocktakeNote.correction
+              ? 'Slow the pace, re-anchor each step on what the learner still holds, and let the learner carry the joins; no new pressure until the record steadies.'
+              : null,
+          }
+        : {}),
       ...(trialling && sceneOpening && ledgerInfo?.history?.length
         ? {
             strategyReviewHint: {
@@ -3705,7 +3842,7 @@ export function makeLlmTutor(
     // commitment is the mid-scene contract); a parse-miss leaves the scene
     // uncommitted — the missing row stays visible to the scorer.
     const parseSceneCommitment = (out) => {
-      if (!strategyLedger || !sceneOpening) return null;
+      if (!strategyLedger || !sceneOpening || planMode) return null;
       const v1opts = {
         registerPalette: ledgerInfo?.config?.registerPalette || null,
         currentRegister: activeRegisterName,
@@ -3736,6 +3873,25 @@ export function makeLlmTutor(
         : null;
     const draftReview = parseReview(draftOut);
     const draftDeparture = parseDeparture(draftOut);
+    // Plan mode: the reorientation answers the stock-take; it REPLACES the
+    // working orientation (no audit ever). Parse-miss keeps the old one.
+    const parseReorientation = (out) =>
+      planMode && sceneOpening && stocktakeNote && typeof out.reorientation === 'string' && out.reorientation.trim()
+        ? out.reorientation.replace(/\s+/gu, ' ').trim().slice(0, 500)
+        : null;
+    const draftReorientation = parseReorientation(draftOut);
+    if (draftReorientation) ledgerBridgeState.orientation = draftReorientation;
+    const planModeBits = (reorientation) => ({
+      ...(stocktakeNote
+        ? {
+            stocktake: {
+              ...stocktakeNote,
+              reorientation: reorientation || null,
+              orientationAfter: ledgerBridgeState?.orientation || null,
+            },
+          }
+        : {}),
+    });
     const sceneLedgerBits = (commitment, review = null, departure = null) => ({
       ...(commitment ? { sceneCommitment: commitment } : {}),
       ...(sceneCommitmentAudit ? { sceneCommitmentAudit } : {}),
@@ -3824,6 +3980,7 @@ export function makeLlmTutor(
       ...plotBits(draftPlot),
       ...throughlineBits(draftThroughline),
       ...sceneLedgerBits(draftSceneCommitment, draftReview, draftDeparture),
+      ...planModeBits(draftReorientation),
     };
     const draftGuard = applyProofDebtGuard(draft, 'draft');
     draft = draftGuard.out;
@@ -4214,6 +4371,8 @@ export function makeLlmTutor(
     commitScene(revisedSceneCommitment);
     const revisedReview = trialling ? parseReview(revisedOut) || draftReview : null;
     const revisedDeparture = trialling ? parseDeparture(revisedOut) || draftDeparture : null;
+    const revisedReorientation = planMode ? parseReorientation(revisedOut) || draftReorientation : null;
+    if (revisedReorientation) ledgerBridgeState.orientation = revisedReorientation;
     let revised = {
       dialogue,
       move: normalizeMove(revisedOut) || draft.move,
@@ -4227,6 +4386,7 @@ export function makeLlmTutor(
       ...plotBits(revisedPlot),
       ...throughlineBits(revisedThroughline),
       ...sceneLedgerBits(revisedSceneCommitment, revisedReview, revisedDeparture),
+      ...planModeBits(revisedReorientation),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),

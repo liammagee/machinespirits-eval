@@ -344,6 +344,7 @@ export async function runDrama({ world, roles, options = {} }) {
         budget: deriveOpportunityCostBudget({ scope: 'dialogue_block' }),
         appliedCommitment: null,
         rows: [],
+        stocktakes: [], // plan-mode stock-take records (planMode dial only)
         // v2 (trialling): the mechanism history table + this scene's declared
         // departures. History is PUBLIC-ONLY by construction — it renders
         // into prompts, so no D, no proof state, ever.
@@ -854,6 +855,7 @@ export async function runDrama({ world, roles, options = {} }) {
       trialling: ledgerState.config.trialling,
       stancePalette: ledgerState.config.stancePalette,
       releaseIntent: ledgerState.config.releaseIntent,
+      planMode: ledgerState.config.planMode,
     },
     // v2: the mechanism history table (public-only), most recent last,
     // capped so the prompt block stays bounded.
@@ -1341,6 +1343,20 @@ export async function runDrama({ world, roles, options = {} }) {
         turn,
         type: 'strategy_review',
         detail: `${tutorOut.strategyReview.decision}${tutorOut.strategyReview.reason ? `: ${tutorOut.strategyReview.reason}` : ''}`,
+      });
+    }
+    // Plan mode: record the stock-take exchange (note + the reorientation
+    // that answered it). Conduct-only; nothing here feeds back into control.
+    if (ledgerState?.config.planMode && tutorOut.stocktake) {
+      ledgerState.stocktakes.push({ turn, ...tutorOut.stocktake });
+      events.push({
+        turn,
+        type: 'stocktake',
+        detail: `scene ${tutorOut.stocktake.sceneIndex}: ${
+          tutorOut.stocktake.correction
+            ? `correction demanded${tutorOut.stocktake.reorientation ? '; reoriented' : '; unanswered'}`
+            : 'course holds'
+        }`,
       });
     }
     if (ledgerState?.config.trialling && tutorOut.departure) {
@@ -2236,6 +2252,7 @@ export async function runDrama({ world, roles, options = {} }) {
                     currentProofNeutralLearnerTurns: ledgerState.budget.currentProofNeutralLearnerTurns,
                   },
                   ...(ledgerState.config.trialling ? { history: ledgerState.history } : {}),
+                  ...(ledgerState.config.planMode ? { stocktakes: ledgerState.stocktakes } : {}),
                 }
               : {}),
             rows: [...(ledgerState?.rows || []), ...learnerLedgerRows],
