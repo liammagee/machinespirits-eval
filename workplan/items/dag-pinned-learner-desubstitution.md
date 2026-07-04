@@ -121,3 +121,15 @@ unchanged. Directional lead recorded: all 6 groundings came from router
 arms, fixed-strategy floor 0/20. Any confirmatory follow-up needs a fresh
 pre-registration (higher n, kernel exhaustion repair).
 
+2026-07-04 Claude: Confirmatory pre-registration FROZEN
+(`notes/2026-07-04-desubstitution-confirmatory-prereg.md`, committed before
+build) and Stage C0 COMPLETE. Design: fresh 186-vs-193 contrast at 40
+rows/arm (iteration-2 rows never pooled); frozen thresholds gap ≥7/40 REAL /
+≤3/40 dissolved / 4-6 UNRESOLVED-FINAL (no third bite); cell_199 rides as
+optional H-Oc only. Instrument v2.1: drift_gate_max_attempts 4→5 uniform;
+decay.warm_after_turn 2→1 for boredom + rote-parroting interiors;
+LEARNER_INTERIOR_GATE_VERSION="2.1"; all else unchanged. C0 verification:
+gate tests 11/11, probe --check PASSED (5/5, 0/5, 0/5, 0/20 cross), stage-0
+check PASSED, validate-config 0 errors, lint/prettier clean. C1 paid canary
+(6 rows, exhaustion ≤1/6 + release ≥1 gates) awaits its own recorded go.
+

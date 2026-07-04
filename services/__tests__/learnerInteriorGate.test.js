@@ -184,8 +184,9 @@ test('correction context names the violation and restates the contract', () => {
 });
 
 test('gate budget default and override; classifier prompt frozen', () => {
-  assert.equal(driftGateMaxAttempts({}), 4);
-  assert.equal(driftGateMaxAttempts({ drift_gate_max_attempts: 5 }), 5);
+  // Instrument v2.1 (confirmatory prereg §3): default raised 4 → 5.
+  assert.equal(driftGateMaxAttempts({}), 5);
+  assert.equal(driftGateMaxAttempts({ drift_gate_max_attempts: 3 }), 3);
   assert.match(DRIFT_GATE_CLASSIFIER_PROMPT, /YIELD_WITHOUT_KEY/);
   assert.match(buildInteriorCharacterSheet(INTERIOR), /DSB-T2/);
 });
@@ -230,14 +231,17 @@ test('decayed contract: warming permitted after warm_after_turn with tutor work'
   const { getScenario } = await import('../evalConfigLoader.js');
   const interior = loadFormalInterior(getScenario('desub_resistance_boredom'));
   const warm = 'Fair enough, that actually gives me a way in.';
+  // Instrument v2.1: boredom's warm_after_turn is 1 (prereg §3), so turn 0
+  // is the strict window and turn 1 with tutor work may warm.
+  assert.equal(interior.decay.warm_after_turn, 1);
   const early = evaluateLearnerDraft({
     message: warm,
     interior,
     contentConditionMet: false,
-    turnIndex: 1,
+    turnIndex: 0,
     tutorWorkCount: 2,
   });
-  assert.equal(early.ok, false, 'turn 1 stays strict even with tutor work');
+  assert.equal(early.ok, false, 'turn 0 stays strict even with tutor work');
   const lateNoWork = evaluateLearnerDraft({
     message: warm,
     interior,
