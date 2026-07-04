@@ -140,6 +140,24 @@ const DESIGNS = {
       ],
     },
   },
+
+  // LEMMA-DISPLAY-CONFIRMATORY-PREREGISTRATION.md — frozen at its launch
+  // commit. Two arms; promotion on LDC.
+  'lemma-display': {
+    arms: ['baseline', 'lemma-display'],
+    armPattern: /^(baseline|lemma-display)-r(\d+)$/,
+    contrasts: [
+      { id: 'LDC', name: 'lemma-display-confirmatory (promotion)', treat: 'lemma-display', control: 'baseline' },
+    ],
+    endpoints: {
+      LDC: [
+        ['timeToRecognition', 'lower'],
+        ['grounded', 'higher'],
+        ['aporiaLike', 'lower'],
+        ['repairLatency', 'lower'],
+      ],
+    },
+  },
 };
 let DESIGN = DESIGNS.phase3;
 let ARMS = DESIGN.arms;
@@ -459,7 +477,7 @@ function main() {
     }
   }
   const ledgerArms = runs.filter((r) => r.arm !== 'baseline');
-  if (opts.design === 'lemma') {
+  if (opts.design === 'lemma' || opts.design === 'lemma-display') {
     g(
       'guard-overrides',
       runs.every((r) => r.guardOverrides === 0),
