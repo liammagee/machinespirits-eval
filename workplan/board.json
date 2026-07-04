@@ -1,17 +1,17 @@
 {
-  "generated": "2026-07-04T00:45:57.571Z",
+  "generated": "2026-07-04T01:25:09.676Z",
   "counts": {
-    "total": 76,
+    "total": 77,
     "byStatus": {
       "done": 65,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 4,
       "archived": 4,
       "triaged": 1
     },
     "byType": {
-      "research": 38,
+      "research": 39,
       "experiment": 11,
       "infra": 10,
       "content": 2,
@@ -143,6 +143,34 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "proof-lemma-layer",
+      "title": "Lemma layer — a maintained higher-level proof structure (plan as data structure, not prose)",
+      "status": "active",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Gate 0 (free depth audit) recorded below. Line advances only by operator decision: design doc + own pre-registration before any engine code or paid run.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "exports/dramatic-derivation/lemma-layer/gate0-depth-audit.md",
+        "items": [
+          "cross-model-plan-mode-interaction",
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "proof-structure",
+        "lemma-layer"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
