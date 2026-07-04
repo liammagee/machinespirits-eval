@@ -1,7 +1,7 @@
 ---
 id: proof-lemma-layer
 title: Lemma layer — a maintained higher-level proof structure (plan as data structure, not prose)
-status: active
+status: done
 type: research
 priority: P2
 owner: unassigned
@@ -10,7 +10,7 @@ created: 2026-07-04
 updated: 2026-07-04
 branch: worktree-strategy-ledger-followups
 verification: "Gate 0 (free depth audit) recorded below. Line advances only by operator decision: design doc + own pre-registration before any engine code or paid run."
-claim_status: exploratory
+claim_status: settled
 links:
   notes: exports/dramatic-derivation/lemma-layer/gate0-depth-audit.md
   items:
@@ -150,3 +150,23 @@ externalizes closure bookkeeping ADDED outcome headroom at zero turn
 cost. AWAITING OPERATOR: proposed confirmatory prereg — 2 arms
 (baseline vs display), display-primary, fresh primes, same worlds,
 n=12/arm.
+
+2026-07-04 Claude: DISPLAY CONFIRMATORY RUN (24/24, frozen 4a278831,
+fresh primes 101-127): **NOT CONFIRMED — the line closes whole.** Bar 1
+FAIL (direction split [-1,+1]: marrick 28.00 vs 28.67, resistant 27.33
+vs 27.17 — the exploratory stronghold flipped to a wash); bar 2 FAIL
+(U=67/144 vs <=42; pooled T* delta shrank -2.25 -> -0.25); bar 3 PASS
+9/9 (zero binding events, no negative transfer, aporia improved both
+worlds — the one replicating channel: 0.50 vs 0.75 here, 0.42 vs 0.92
+in the parent draw). Key decomposition: the BASELINE moved more than
+the treatment across draws (1/12 grounded w/ no fast wins -> 3/12 with
+23/24-turn wins); display was comparatively stable (6/12 -> 4/12).
+Recorded per the frozen consequences: display = unreplicated
+exploratory observation; binding non-promotable (parent); no third
+draw without fresh operator decision. Toolbox retained: lemmaLayer.js
++ 22/22 gates, Gate-0 audit, world-019, analysis designs. The
+operator predicted the shrinkage mid-run; this pair is the cleanest
+specimen for exploratory-confirmatory-shrinkage-audit (triaged), which
+now triggers. Residual narrow hypothesis (unclaimed): the map may
+specifically reduce stall-clock deaths (aporia channel replicated
+twice).
