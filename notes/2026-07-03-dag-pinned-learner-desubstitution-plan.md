@@ -559,3 +559,15 @@ belt-and-braces: instructor-sheet line strengthened to demand verbatim
 citation of the premise code alongside the substance. Validation gates
 before the matrix: false-yield ≤0.1 with the semantic checker ACTIVE on
 mismatched/generic, exhaustion ≤1/9, release fires on ≥1 canary row.
+
+**Iteration 2 Phase B: PASS (2026-07-04).** Mini-probe with the semantic
+classifier live on mismatched/generic: selectivity 1.00, false-yield 0.00,
+median 1, zero exhaustion. Canary `eval-2026-07-04-f5845ce7` (3 arms ×
+frustration): zero exhaustion, and the semantic release check fired on 1/3
+rows — cell 193's tutor substantively supplied the withheld premise
+(classifier evidence: "A compelled yes cannot do the same work as a free
+yes" accepted as release of DSB-F2) without quoting the token, which is
+exactly the naturalization case the literal check missed in iteration 1.
+Cells 186 and 199 did not release in this single draw (not evidence at
+n=1). All three frozen gates met; the 60-row matrix is authorized under the
+recorded iteration-2 go.
