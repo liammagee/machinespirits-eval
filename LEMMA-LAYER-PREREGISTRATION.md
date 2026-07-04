@@ -1,6 +1,6 @@
 # Lemma Layer — Pre-registration
 
-**Status:** DRAFT 2026-07-04 (operator instructed the pre-registration after Gate 0). **Freezes at the commit that launches the paid contrast.** Between draft and freeze, in order: (1) implementation landed and gated, (2) analysis design entry + matrix specs written, (3) zero-paid mock validation of the full pipeline, (4) the pre-registered world-slot probe. Any design/endpoint/analysis change past the freeze commit is forbidden.
+**Status:** **FROZEN 2026-07-04 at this commit** (operator go received; this commit launches the paid contrast). Pre-freeze sequence completed in order and disclosed below: (1) implementation landed and gated 22/22, (2) analysis design entry + matrix specs written, (3) zero-paid mock validation (all deltas 0.00 on the mock null, 9/9 guardrails computing), (4) the pre-registered world-slot probe — which EXHAUSTED, firing the recorded authoring consequence; the operator sanctioned the authoring path, world-019-marrick-resistant was written under the 006→010 recipe and passed its own pre-stated headroom screen (details below). No design, endpoint, or analysis change past this commit.
 **Line:** `workplan/items/proof-lemma-layer.md`. Gate 0 (free depth audit, `exports/dramatic-derivation/lemma-layer/gate0-depth-audit.md`): 7/19 worlds RICH; the hethel family is width-1 linear — the trusted binding pair splits, so the second world slot is filled by pre-registered procedure (below), not by choice after seeing data.
 **Operator articulation being tested (2026-07-04):** maintain a **separate proof structure at a higher level than the per-turn one** — lemma-grain sub-goals with their own dependency DAG, kept live like the premise-grain state. The outer loop then operates on a formal object (the lemma frontier), not prose: "where are we" = frontier state; "change course" = re-pick the frontier path. Plan as data structure, not plan as prose.
 
@@ -35,6 +35,8 @@ Candidate order fixed now, by Gate-0 richness then catalog order: **fengate → 
 
 **Probe outcome (2026-07-04, pre-freeze): the procedure EXHAUSTED without filling the slot.** Fengate FAIL (3/3 grounded at exactly T\*=22, spread 0, seeds 83/89/97); sealhouse FAIL (3/3 grounded T\*=22 — byte-identical signature); edmund INELIGIBLE (no derivation tutor role-script exists — it was authored for the character-development arc; probing it would require new authoring, the very decision this procedure defers). Six runs, two worlds, six identical outcomes: the generalization-arc 28-cap worlds are uniformly schedule-generous under the decay grid that reliably breaks marrick. **The recorded consequence fires: the 36-run contrast does NOT run under this pre-registration.** The line returns to the operator as a world-authoring decision; the natural candidate is a resistant variant of marrick itself (the hethel→hethel-resistant recipe applied to the one world that is both RICH and decay-sensitive), which would require its own headroom probe and a fresh freeze. Implementation, gates, analysis design, and the zero-paid validation all stand and carry over unchanged.
 
+**Slot resolution (2026-07-04, operator-sanctioned authoring path):** `world-019-marrick-resistant` — the 006→010 recipe applied to marrick: ONLY the public learner framing changed (verdict pre-entered in the trial-book margin; correction treated as a threat to standing; reluctant concession); proof geometry, schedule, concealed tokens, slope, and tutor script (marrick-v001.md) byte-identical to world-005. Lemma audit: RICH, structure identical to marrick. All six catalog invariants pass. Headroom screen (seeds 83/89/97, rule pre-stated in the spec: variance AND not-a-floor): **PASS, decisive** — disengagement t18 / unstaged_recognition t28 (forced, never asserted) / grounded T\*=23. **W = world-019-marrick-resistant.**
+
 ## Arms (three; promotion rides on A-vs-C only)
 
 | Arm | Label | Delta |
@@ -47,11 +49,11 @@ Binding base (identical, all arms): `--scene-mode --didactic-mode --register mod
 
 ## Worlds, repeats, seeds, backend
 
-`world-005-marrick` + world W. 6 repeats per arm per world, **triple-interleaved** (`baseline-rN`, `lemma-display-rN`, `lemma-bound-rN`), decay seeds **59, 61, 67, 71, 73, 79** shared within triples (fresh primes; disjoint from every prior matrix in the arc). 36 contrast runs, n = 12/arm pooled. Backend `DERIVATION_PROVIDER=codex` (the claim targets strong inner loops — the cross-model result put weak-model rescue out of scope), concurrency 3 within world blocks, blocks sequential with a checkpoint (the plan-mode execution pattern; interruptions resume via trimmed same-label specs; hang > 40 min → kill, one same-label retry, two failures exclude the triple and report).
+`world-005-marrick` + `world-019-marrick-resistant`. 6 repeats per arm per world, **triple-interleaved** (`baseline-rN`, `lemma-display-rN`, `lemma-bound-rN`), decay seeds **59, 61, 67, 71, 73, 79** shared within triples (fresh primes; disjoint from every prior matrix in the arc). 36 contrast runs, n = 12/arm pooled. Backend `DERIVATION_PROVIDER=codex` (the claim targets strong inner loops — the cross-model result put weak-model rescue out of scope), concurrency 3 within world blocks, blocks sequential with a checkpoint (the plan-mode execution pattern; interruptions resume via trimmed same-label specs; hang > 40 min → kill, one same-label retry, two failures exclude the triple and report).
 
 ## Endpoints and promotion bar
 
-Per run: `T*` = `assertedGroundedTurn`, cap+1 imputed (marrick 29; W per its cap; the frozen extractor).
+Per run: `T*` = `assertedGroundedTurn`, cap+1 imputed (29 for both worlds — caps 28; the frozen extractor).
 
 **Promotion bar (all three, on A-vs-C pooled 12v12):**
 
@@ -69,4 +71,4 @@ Per run: `T*` = `assertedGroundedTurn`, cap+1 imputed (marrick 29; W per its cap
 
 ## Artifacts
 
-Implementation in `services/dramaticDerivation/` (lemma module + engine wiring) gated by the extended gate suite; specs `config/drama-derivation/matrix-specs/lemma-{marrick,<W>}.yaml`; probe spec `lemma-probe-<candidate>.yaml`; runs `exports/dramatic-derivation/matrix/lemma-<world>/`; analysis via the frozen contrasts script gaining a `lemma` design entry (zero-paid validated pre-freeze); report `exports/dramatic-derivation/lemma-layer/lemma-contrast-report.{json,md}`.
+Implementation in `services/dramaticDerivation/` (lemma module + engine wiring) gated by the extended gate suite; specs `config/drama-derivation/matrix-specs/lemma-{marrick,marrick-resistant}.yaml`; probe/screen specs `lemma-probe-{fengate,sealhouse,edmund,marrick-resistant}.yaml`; runs `exports/dramatic-derivation/matrix/lemma-<world>/`; analysis via the frozen contrasts script gaining a `lemma` design entry (zero-paid validated pre-freeze); report `exports/dramatic-derivation/lemma-layer/lemma-contrast-report.{json,md}`.
