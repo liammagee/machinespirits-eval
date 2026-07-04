@@ -1,0 +1,17 @@
+# Trimmed resume of the fengate world-slot probe (baseline-r3 only; the
+# interrupted job completed r1/r2 — same label + out dir per the standing
+# interruption discipline).
+base:
+  world: config/drama-derivation/world-007-fengate.yaml
+  script: config/drama-derivation/tutor-scripts/fengate-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 1
+arms:
+  - label: baseline-r3
+    flags: { decay: '{"seed":97,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }

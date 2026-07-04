@@ -82,3 +82,14 @@ all-fail → back to operator as an authoring decision. Contrast seeds
 codex, blocks sequential at concurrency 3. REMAINING before freeze, in
 order: implement + gate, analysis design entry + specs, zero-paid
 validation, probe — then the freeze commit launches the contrast.
+
+**2026-07-04 Claude — world-slot probe, candidate 1 (fengate): FAIL.** 3/3
+baseline runs grounded at exactly T\*=22 (seeds 83/89/97, spread 0, all 9
+releases played, one interruption resumed label-exactly). Fengate is
+schedule-solvable AND decay-robust under the binding stack — three different
+decay schedules produced byte-similar outcomes — so the primary endpoint
+would have no variance there. Per the pre-registered order the probe moves
+to candidate 2 (sealhouse, same seeds/rule). Side-note for the catalog:
+fengate's decay-robustness contrasts with marrick/hethel-resistant, where
+the same decay grid produces failures — release-schedule slack, not world
+depth, seems to set decay sensitivity.
