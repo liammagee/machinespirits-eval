@@ -117,3 +117,16 @@ world authoring — the natural move is a marrick-resistant variant
 (hethel→hethel-resistant recipe on marrick's width-2 geometry), then its own
 headroom probe, then a fresh freeze. All implementation/gates/analysis/
 zero-paid work stands and carries over.
+
+**2026-07-04 Claude — world-019-marrick-resistant AUTHORED + screen PASS
+(decisive).** The 006→010 recipe on marrick: only the public learner framing
+changed (verdict pre-entered in the trial-book margin; correction = threat to
+standing; reluctant concession); proof geometry/schedule/tokens/script
+byte-identical; lemma audit RICH identical to marrick; all 6 catalog
+invariants pass. Headroom screen (seeds 83/89/97, rule pre-stated in the
+spec): 3 verdicts in 3 runs — disengagement t18 / UNSTAGED_RECOGNITION t28
+(forced, never asserted — the resistant signature) / grounded T*=23. Variance
++ not-a-floor both met. The lemma contrast pair is now marrick +
+marrick-resistant; remaining before the paid 36-run contrast: update the
+prereg's worlds section + write lemma-marrick-resistant.yaml spec, fresh
+FREEZE commit = launch (operator gate).
