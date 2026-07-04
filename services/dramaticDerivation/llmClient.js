@@ -305,6 +305,7 @@ function mockResponse(role, meta = {}) {
     const ledgerBits = {
       ...(meta.sceneCommitmentHint ? { scene_commitment: meta.sceneCommitmentHint } : {}),
       ...(meta.strategyReviewHint ? { strategy_review: meta.strategyReviewHint } : {}),
+      ...(meta.reorientationHint !== undefined ? { reorientation: meta.reorientationHint } : {}),
     };
     // Proof-debt hygiene: when the bridge says an already-staged,
     // proof-critical exhibit must be restored, the mock obeys so zero-cost
@@ -486,6 +487,15 @@ function mockResponse(role, meta = {}) {
     });
   }
   if (role === 'tutor_superego') {
+    // Plan mode: the stock-take charter's deterministic echo — the bridge's
+    // hint carries the sealed scene's status arithmetic. Checked FIRST: the
+    // stock-take is its own charter, not the turn watch or the plot audit.
+    if (meta.stocktakeHint) {
+      return JSON.stringify({
+        assessment: meta.stocktakeHint.assessment,
+        correction: meta.stocktakeHint.correction ?? null,
+      });
+    }
     // C1 (plot audit): an act-close audit call carries the bridge's
     // precomputed deterministic verdicts; echo them. This check comes FIRST —
     // the audit sits under its own charter, not the turn watch's.

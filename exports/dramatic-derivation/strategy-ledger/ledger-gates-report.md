@@ -34,8 +34,12 @@ World: `config/drama-derivation/world-000-smoke.yaml` — mock roles / mock LLM 
 | L5-intent-recorded | PASS | 4 commitment(s) carry a release intent |
 | L5-intent-audited | PASS | 3 release-intent clause(s) adjudicated |
 | L5-guards-untouched | PASS | release-authority cast: intent on/off proof fingerprints byte-identical |
+| L7-stocktakes | PASS | 3 stock-take(s) across 4 scene openings |
+| L7-no-commitments | PASS | commitment machinery fully suppressed under plan mode |
+| L7-reorientation | PASS | 1 correction(s) demanded; every one answered with a reorientation |
+| L7-fingerprint | PASS | plan mode on/off proof fingerprints byte-identical |
 
-**30/30 checks passed.**
+**34/34 checks passed.**
 
 Scope: wiring gates only — no empirical claim. Proof control and the
 release calendar are asserted untouched (L3); everything else is conduct.

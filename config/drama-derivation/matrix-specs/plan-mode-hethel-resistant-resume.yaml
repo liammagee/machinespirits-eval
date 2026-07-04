@@ -1,0 +1,20 @@
+# Resume spec for the stopped hethel-resistant block (9/12 complete): the
+# three remaining labels, same base/out dir, same per-repeat seeds.
+base:
+  world: config/drama-derivation/world-010-hethel-resistant.yaml
+  script: config/drama-derivation/tutor-scripts/hethel-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: plan-mode-r5
+    flags: { decay: '{"seed":47,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', strategy-ledger: '{"planMode":true}' }
+  - label: baseline-r6
+    flags: { decay: '{"seed":53,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: plan-mode-r6
+    flags: { decay: '{"seed":53,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', strategy-ledger: '{"planMode":true}' }

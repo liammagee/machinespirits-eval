@@ -82,6 +82,20 @@ const DESIGNS = {
       ],
     },
   },
+  // PLAN-MODE-STOCKTAKE-PREREGISTRATION.md — added before the freeze.
+  'plan-mode': {
+    arms: ['baseline', 'plan-mode'],
+    armPattern: /^(baseline|plan-mode)-r(\d+)$/,
+    contrasts: [{ id: 'PM', name: 'plan-mode-stocktake', treat: 'plan-mode', control: 'baseline' }],
+    endpoints: {
+      PM: [
+        ['timeToRecognition', 'lower'],
+        ['grounded', 'higher'],
+        ['repairLatency', 'lower'],
+        ['aporiaLike', 'lower'],
+      ],
+    },
+  },
 };
 let DESIGN = DESIGNS.phase3;
 let ARMS = DESIGN.arms;
@@ -225,6 +239,14 @@ function extractRun(world, label, dir) {
       (h) => h.fidelity?.label === 'invalid_person_attack',
     ).length,
     reviewEvents: count('strategy_review'),
+    stocktakes: result.strategyLedger?.stocktakes?.length ?? null,
+    correctionsDemanded: (result.strategyLedger?.stocktakes || []).filter((st) => st.correction).length,
+    correctionsAnswered: (result.strategyLedger?.stocktakes || []).filter((st) => st.correction && st.reorientation)
+      .length,
+    stocktakeCoverage:
+      result.strategyLedger?.stocktakes != null && sceneOpenings > 1
+        ? Math.min(1, result.strategyLedger.stocktakes.length / Math.max(1, sceneOpenings - 1))
+        : null,
     reviewCoverage: sceneOpenings > 1 ? Math.min(1, count('strategy_review') / Math.max(1, sceneOpenings - 1)) : null,
     switchAfterFailure: switchAfterFailure(result),
     negativeStanceScenes: (result.strategyLedger?.history || []).filter((h) => NEGATIVE_STANCES.has(h.strategy?.stance))
@@ -329,7 +351,7 @@ function main() {
   CONTRASTS = DESIGN.contrasts;
   const runs = [];
   for (const matrixDir of opts.runs) {
-    const world = path.basename(matrixDir).replace(/^ledger-(phase3|v2)-/, '');
+    const world = path.basename(matrixDir).replace(/^ledger-(phase3|v2b-confirm|v2|plan-mode)-/, '');
     for (const entry of fs.readdirSync(matrixDir, { withFileTypes: true })) {
       if (!entry.isDirectory() || entry.name === 'logs') continue;
       const parsed = armOf(entry.name);
@@ -373,12 +395,24 @@ function main() {
     }
   }
   const ledgerArms = runs.filter((r) => r.arm !== 'baseline');
-  const coverage = ledgerArms.map((r) => r.commitCoverage).filter((v) => v !== null);
-  g(
-    'commit-coverage',
-    coverage.length && mean(coverage) >= 0.8,
-    `mean commitment coverage ${fmt(mean(coverage))} across ledger arms`,
-  );
+  if (opts.design !== 'plan-mode') {
+    const coverage = ledgerArms.map((r) => r.commitCoverage).filter((v) => v !== null);
+    g(
+      'commit-coverage',
+      coverage.length && mean(coverage) >= 0.8,
+      `mean commitment coverage ${fmt(mean(coverage))} across ledger arms`,
+    );
+  } else {
+    const stCov = runs
+      .filter((r) => r.arm === 'plan-mode')
+      .map((r) => r.stocktakeCoverage)
+      .filter((v) => v !== null);
+    g(
+      'stocktake-coverage',
+      stCov.length && mean(stCov) >= 0.8,
+      `mean stock-take coverage ${fmt(mean(stCov))} of eligible openings`,
+    );
+  }
   const learnerArm = opts.design === 'v2' ? 'trialling-learner' : 'ledger-learner';
   const intentCov = runs
     .filter((r) => r.arm === learnerArm)
@@ -402,15 +436,15 @@ function main() {
       runs.every((r) => r.invalidStanceViolations === 0),
       `${runs.filter((r) => r.invalidStanceViolations > 0).length} run(s) with invalid corrosive violations`,
     );
-    const reviewCov = runs
-      .filter((r) => r.arm === 'trialling' || r.arm === 'trialling-learner')
-      .map((r) => r.reviewCoverage)
-      .filter((v) => v !== null);
-    g(
-      'review-coverage',
-      reviewCov.length && mean(reviewCov) >= 0.8,
-      `mean review coverage ${fmt(mean(reviewCov))} on openings-with-history`,
-    );
+    const triallingRuns = runs.filter((r) => r.arm === 'trialling' || r.arm === 'trialling-learner');
+    if (triallingRuns.length) {
+      const reviewCov = triallingRuns.map((r) => r.reviewCoverage).filter((v) => v !== null);
+      g(
+        'review-coverage',
+        reviewCov.length && mean(reviewCov) >= 0.8,
+        `mean review coverage ${fmt(mean(reviewCov))} on openings-with-history`,
+      );
+    }
   }
 
   // contrasts (endpoint tables live on the DESIGN — frozen per pre-registration)
@@ -464,6 +498,15 @@ function main() {
         },
       ]),
     ),
+    ...(opts.design === 'plan-mode'
+      ? {
+          stocktake: {
+            total: runs.reduce((s2, r) => s2 + (r.stocktakes || 0), 0),
+            correctionsDemanded: runs.reduce((s2, r) => s2 + (r.correctionsDemanded || 0), 0),
+            correctionsAnswered: runs.reduce((s2, r) => s2 + (r.correctionsAnswered || 0), 0),
+          },
+        }
+      : {}),
     ...(opts.design === 'v2'
       ? {
           decayRepair: Object.fromEntries(
@@ -502,9 +545,11 @@ function main() {
   };
 
   const lines = [
-    opts.design === 'v2'
-      ? '# Strategy Ledger v2 — pre-registered pilot contrasts (binding conditions)'
-      : '# Strategy Ledger Phase 3 — pre-registered pilot contrasts',
+    opts.design === 'plan-mode'
+      ? '# Plan-Mode Stock-Take — pre-registered contrast (binding conditions)'
+      : opts.design === 'v2'
+        ? '# Strategy Ledger v2 — pre-registered pilot contrasts (binding conditions)'
+        : '# Strategy Ledger Phase 3 — pre-registered pilot contrasts',
     '',
     `Worlds: ${worlds.join(', ')}. Arm counts: ${ARMS.map((a) => `${a}=${armCounts[a]}`).join(', ')}.`,
     'All endpoints programmatic (no LLM judge). Pilot tier: signals are directional, not significance claims.',
@@ -553,7 +598,12 @@ function main() {
       '',
     );
   }
-  const stem = opts.design === 'v2' ? 'v2-contrasts-report' : 'phase3-contrasts-report';
+  const stem =
+    opts.design === 'plan-mode'
+      ? 'plan-mode-contrast-report'
+      : opts.design === 'v2'
+        ? 'v2-contrasts-report'
+        : 'phase3-contrasts-report';
   fs.writeFileSync(path.join(opts.out, `${stem}.json`), `${JSON.stringify(report, null, 2)}\n`);
   fs.writeFileSync(path.join(opts.out, `${stem}.md`), `${lines.join('\n')}\n`);
   console.log(lines.join('\n'));

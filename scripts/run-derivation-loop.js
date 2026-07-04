@@ -1252,6 +1252,7 @@ async function main() {
       publicRegister,
       strategyLedger: Boolean(strategyLedger),
       strategyLedgerV2: Boolean(strategyLedger?.trialling),
+      strategyLedgerPlanMode: Boolean(strategyLedger?.planMode),
     }),
     learner: makeLlmLearner({
       setting: world.setting,

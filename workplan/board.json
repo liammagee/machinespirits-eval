@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-03T10:59:42.455Z",
+  "generated": "2026-07-04T01:25:09.676Z",
   "counts": {
-    "total": 73,
+    "total": 77,
     "byStatus": {
-      "done": 61,
+      "done": 65,
       "blocked": 1,
       "dropped": 2,
       "active": 4,
@@ -11,8 +11,8 @@
       "triaged": 1
     },
     "byType": {
-      "research": 37,
-      "experiment": 9,
+      "research": 39,
+      "experiment": 11,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -145,36 +145,31 @@
       "milestone": "poetics-followups"
     },
     {
-      "id": "strategy-ledger-followups",
-      "title": "Strategy Ledger follow-ups — confirm V2b, then compose; do not rebuild trialling",
+      "id": "proof-lemma-layer",
+      "title": "Lemma layer — a maintained higher-level proof structure (plan as data structure, not prose)",
       "status": "active",
       "type": "research",
       "priority": "P2",
       "owner": "unassigned",
       "source": "manual",
-      "created": "2026-07-03",
-      "updated": "2026-07-03",
-      "verification": "Each step below runs only under its own pre-registration; the item closes when the V2b confirmatory decision is made (either tier promotion or a recorded failure-to-replicate) and the composition-module question is answered or explicitly dropped.",
-      "claim_status": "future",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Gate 0 (free depth audit) recorded below. Line advances only by operator decision: design doc + own pre-registration before any engine code or paid run.",
+      "claim_status": "exploratory",
       "links": {
-        "notes": [
-          "LAYERED-DECISION-LOOPS-PLAN.md",
-          "STRATEGY-LEDGER-V2-PREREGISTRATION.md"
-        ],
-        "paper": "docs/research/paper-full-2.0.md#the-strategy-ledger-scene-scoped-commitaudit-loops-help-repair-an-in-run-trialling-superstructure-costs",
+        "notes": "exports/dramatic-derivation/lemma-layer/gate0-depth-audit.md",
         "items": [
-          "layered-decision-loops",
-          "negative-register-effect-estimation-grid",
-          "blueprint-composition"
-        ],
-        "prs": "https://github.com/liammagee/machinespirits-eval/pull/80"
+          "cross-model-plan-mode-interaction",
+          "plan-mode-stocktake"
+        ]
       },
       "tags": [
         "adaptive-tutor",
         "derivation",
-        "strategy-ledger",
         "outer-loop",
-        "followups"
+        "proof-structure",
+        "lemma-layer"
       ]
     },
     {
@@ -345,6 +340,34 @@
       "milestone": "board-pm"
     },
     {
+      "id": "cross-model-plan-mode-interaction",
+      "title": "Cross-model plan-mode interaction — does the stock-take help weaker inner loops more?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 flash runs complete (or instrument-voided per the >2-exclusion rule); the frozen interaction analysis and three-part bar produce a recorded verdict either way.",
+      "claim_status": "settled",
+      "links": {
+        "notes": "CROSS-MODEL-PLAN-MODE-PREREGISTRATION.md",
+        "items": [
+          "strategy-ledger-model-confound-smoke",
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "model-confound",
+        "cross-model"
+      ]
+    },
+    {
       "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",
       "title": "G5. § H2 per-session slope p=0.032 is a wrong p-value",
       "status": "done",
@@ -385,6 +408,36 @@
         "outer-loop",
         "strategy-ledger",
         "symmetry"
+      ]
+    },
+    {
+      "id": "plan-mode-stocktake",
+      "title": "Plan-mode stock-take — dialogic between-scene reorientation (course-changing outer loop)",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Implementation gated (34/34 incl. L7: stock-takes fire, corrections answered, commitment machinery suppressed, proof fingerprints byte-identical on/off) and tested (21/21). Item closes when the pre-registered plan-mode contrast is run and its verdict recorded — or the line is explicitly dropped.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "PLAN-MODE-STOCKTAKE-PREREGISTRATION.md",
+          "LAYERED-DECISION-LOOPS-PLAN.md"
+        ],
+        "items": [
+          "strategy-ledger-followups"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "plan-mode",
+        "ego-superego"
       ]
     },
     {
@@ -1581,6 +1634,67 @@
       ],
       "milestone": "human-pilot-prep",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "strategy-ledger-followups",
+      "title": "Strategy Ledger follow-ups — confirm V2b, then compose; do not rebuild trialling",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Each step below runs only under its own pre-registration; the item closes when the V2b confirmatory decision is made (either tier promotion or a recorded failure-to-replicate) and the composition-module question is answered or explicitly dropped.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "LAYERED-DECISION-LOOPS-PLAN.md",
+          "STRATEGY-LEDGER-V2-PREREGISTRATION.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md#the-strategy-ledger-scene-scoped-commitaudit-loops-help-repair-an-in-run-trialling-superstructure-costs",
+        "items": [
+          "layered-decision-loops",
+          "negative-register-effect-estimation-grid",
+          "blueprint-composition"
+        ],
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/80"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-ledger",
+        "outer-loop",
+        "followups"
+      ]
+    },
+    {
+      "id": "strategy-ledger-model-confound-smoke",
+      "title": "Model-confound smoke — is codex ceiling-ing the outer-loop effects? (GLM-5.2)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "4 canary-gated GLM-5.2 runs complete (or an instrument-limited stop is recorded); the pre-stated read-rules below produce a go/no-go on whether a powered cross-model contrast deserves a new pre-registration.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "PLAN-MODE-STOCKTAKE-PREREGISTRATION.md",
+        "items": [
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "model-confound",
+        "smoke"
+      ]
     },
     {
       "id": "synthesize-theoretical-insights",

@@ -403,6 +403,71 @@ async function gateLearnerMirror(rows, world, script) {
   );
 }
 
+// --- L7: plan mode (dialogic stock-take; course-changing, not course-holding) ---
+export async function gatePlanMode(rows, world, script) {
+  const mkCast = (planOn) => {
+    const c = makeLlmClient({ mode: 'mock' });
+    return {
+      director: makeLlmDirector(world, c, {}),
+      tutor: makeLlmTutor(world, c, {
+        script,
+        didacticMode: true,
+        ...(planOn ? { strategyLedger: true, strategyLedgerPlanMode: true } : {}),
+        publicRegister: 'modern',
+      }),
+      learner: makeLlmLearner({
+        setting: world.setting,
+        voice: 'plain, careful, first person',
+        client: c,
+        publicRegister: 'modern',
+      }),
+    };
+  };
+  const result = await runDrama({
+    world,
+    roles: mkCast(true),
+    options: {
+      sceneMode: true,
+      publicRegister: 'modern',
+      strategyLedger: normalizeStrategyLedgerConfig({ planMode: true }),
+      maxTurns: 10,
+      stopOnStall: false,
+    },
+  });
+  const openings = result.events.filter((e) => e.type === 'scene_open').length;
+  const stocktakes = result.strategyLedger?.stocktakes || [];
+  check(
+    rows,
+    'L7-stocktakes',
+    stocktakes.length >= 1 && stocktakes.length <= openings,
+    `${stocktakes.length} stock-take(s) across ${openings} scene openings`,
+  );
+  check(
+    rows,
+    'L7-no-commitments',
+    !result.events.some((e) => e.type === 'strategy_commit' || e.type === 'strategy_audit'),
+    'commitment machinery fully suppressed under plan mode',
+  );
+  const corrections = stocktakes.filter((st) => st.correction);
+  check(
+    rows,
+    'L7-reorientation',
+    corrections.every((st) => st.reorientation && st.orientationAfter),
+    `${corrections.length} correction(s) demanded; every one answered with a reorientation`,
+  );
+  const off = await runDrama({
+    world,
+    roles: mkCast(false),
+    options: { sceneMode: true, publicRegister: 'modern', maxTurns: 10, stopOnStall: false },
+  });
+  check(
+    rows,
+    'L7-fingerprint',
+    fingerprint(off) === fingerprint(result),
+    'plan mode on/off proof fingerprints byte-identical',
+  );
+}
+
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
@@ -418,6 +483,7 @@ async function main() {
   await gateFingerprint(rows, world, script);
   await gateLearnerMirror(rows, world, script);
   await gateTriallingV2(rows, world, script);
+  await gatePlanMode(rows, world, script);
 
   const passed = rows.filter((r) => r.ok).length;
   const ok = passed === rows.length;
