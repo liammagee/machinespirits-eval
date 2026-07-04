@@ -521,3 +521,23 @@ No-paid gate: 10/10 gate tests, stage-0 check, probe --check all green.
 Validation plan: 6-row mini-probe + 3-row canary with gates (false-yield
 ≤0.1, exhaustion ≤1/9, release reachable in ≥1 canary row), then the 60-row
 matrix re-run under the unchanged frozen H-D/H-O rules and guards.
+
+**Iteration 1 Phase B canary: release gate FAIL — matrix NOT launched.**
+Canary `eval-2026-07-04-31a3de16` (3/3 rows, one per arm, question-flood
+scenario): drift-gate traces present, exhaustion 0/3 (the decayed contract
+is healthy), and the mini-probe had passed (1.00/0.00/1/0, n=4/condition).
+But the frozen release gate failed 0/3: no tutor-authored message cites a
+`DSB-*` token, and none uses any canonical release phrase either — even
+though the key is verifiably delivered in the tutor-visible context
+("Course Reference Sheet (instructor copy)" naming the withheld premise and
+its token; delivery confirmed in the logs). Diagnosis: the same
+naturalization behavior the learner showed in Stage 1 now appears on the
+tutor side — models paraphrase; they do not spontaneously quote formal ids
+or canonical phrasings. The bottleneck is `checkContentCondition`'s lexical
+strictness (token + exact phrase), not key visibility. Candidate repairs
+for a fresh go: (i) tutor-side instruction mirroring the learner's citation
+amendment ("when you give the withheld premise, name its id"), (ii) a
+semantic release check (sonnet-class classifier judging whether the tutor
+turn substantively supplies the withheld premise), or (iii) both. Per the
+frozen protocol the 60-row matrix was not launched and no further paid
+generation ran.

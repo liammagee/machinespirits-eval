@@ -104,3 +104,10 @@ add the instrument-scaling finding (per-turn characterological gating does
 not compound to dialogue-scale character) as a §8.1/§6.14-adjacent
 limitation note.
 
+2026-07-04 Claude: Iteration 1 Phase B: mini-probe PASS (1.00/0.00/1/0) and
+canary exhaustion 0/3 (decayed contract works), but the release gate FAILED
+0/3 — tutors paraphrase the withheld premise; they never quote DSB tokens or
+canonical phrases even with the key visible in their instructor sheet.
+Matrix not launched. Next fresh go: tutor-side citation instruction and/or
+semantic release classifier (note §7).
+
