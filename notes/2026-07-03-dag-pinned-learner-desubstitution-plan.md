@@ -452,3 +452,47 @@ raised from the frozen serial to 3 at 30/60 rows for wall-clock (projected
 18h → ~6h). Rows are independent; workers interleave arms from one queue so
 quota pressure lands roughly evenly across arms (the quota-bound
 between-arm-contrast concern), and generation config is unchanged.
+
+### Stage 2 result (2026-07-04): matrix complete — verdict FROZEN by the exhaustion guard
+
+Run `eval-2026-07-03-a3cfbe14`: 60/60 successful generation rows (3 arms ×
+5 subtypes × 4 repeats; serial then parallelism-3 per the recorded
+deviation; 3 failed rows cleaned and regenerated per protocol). Scored
+judge-free from the gate traces by
+`scripts/report-desubstitution-stage2.js`
+(`exports/desubstitution-stage2-matrix.{md,json}`).
+
+| Arm | Usable | Grounded | Release | Engagement | Mean gate attempts | Instrument failures |
+|---|---:|---:|---:|---:|---:|---:|
+| 186_fixed | 14 | 1 | 0 | 0 | 1.57 | 6/20 |
+| 193_multi | 10 | 0 | 0 | 0 | 1.55 | 10/20 |
+| 199_kernel | 13 | 0 | 0 | 0 | 1.42 | 7/20 |
+
+**Both pre-registered comparisons are FROZEN_INSTRUMENT_FAILURE**: 23/60
+rows (38%) hit drift-gate exhaustion, putting 13 of 15 arm×subtype cells
+over the frozen >20% freeze threshold — the guard fires, so H-D and H-O
+return no verdict in either direction, and §7.11 is NOT updated. The
+nominal gaps (H-D −1, H-O 0) are reported for completeness only.
+
+Two instrument findings stand:
+
+1. **The drift gate does not scale from probe to dialogue.** Stage 1's
+   single-turn probe and 2–3-turn canary showed zero exhaustion; full
+   multi-turn dialogues exhaust 38% of rows at k=3 attempts. The RLHF
+   drift the gate suppresses per-turn compounds across turns — exactly the
+   turn-indexed temporal pull the pre-registration §2.2 anticipated, now
+   measured.
+2. **The release floor is absolute at scale**: 0/60 rows saw any tutor
+   cite the blocking token in live dialogue (canary 0/6 confirmed at
+   60/60). Tutors never find the key unprompted, so grounding (1/37
+   usable rows) never had a path regardless of arm.
+
+Per the interpretation map: no §7.11 scope condition, no strengthening —
+the de-substitution question remains OPEN, bounded by instrument capacity,
+not answered against the tutor arms. Candidate instrument repairs for any
+future decision (none run): raise `drift_gate_max_attempts` with a
+turn-decaying contract; make the blocking element salient to the tutor
+(scenario-level hint or curriculum injection) so release is reachable;
+replace lexical drift checks with the frozen sonnet-class classifier for
+long-dialogue subtlety. Arc cost: Codex subscription quota throughout;
+OpenRouter spend ≈ $0.
