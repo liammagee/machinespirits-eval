@@ -62,3 +62,23 @@ worlds (nocturne/lantern/bitterwell, 4 paths each) add path CHOICE as a
 second, coarser frontier decision — bitterwell has path choice with zero
 within-path order freedom (4 paths, linExt 1). NEXT (operator gate): design
 doc + pre-registration; no engine code before that.
+
+**2026-07-04 Claude — PRE-REGISTRATION DRAFTED per operator instruction**
+(`LEMMA-LAYER-PREREGISTRATION.md`, doubles as the design doc; freezes at the
+commit that launches the paid contrast). Mechanism pinned: lemma DAG
+auto-derived from the authored proof path (chainer-exact, no authoring bias);
+clearance criterial against the learner's own grounded set (regresses
+natively under decay); scene-opening frontier choice = one enum field;
+BINDING = active-lemma support gates proof releases (mirror/background
+exempt) with tagged licensed departures; learner mirror from the learner's
+own groundings. THREE arms — baseline / lemma-display / lemma-bound — so the
+stall-watcher redundancy prediction (display ≈ baseline) is tested inside the
+design; promotion rides on bound-vs-baseline only (T* primary, direction both
+worlds + U ≤ 42 at 12/12 + guardrails incl. 0 untagged departures). World
+slot W by pre-registered probe procedure: fengate → sealhouse → edmund, 3
+baseline runs each (seeds 83/89/97), first to show headroom fills it;
+all-fail → back to operator as an authoring decision. Contrast seeds
+59/61/67/71/73/79 (verified disjoint from all prior matrices). 36 runs,
+codex, blocks sequential at concurrency 3. REMAINING before freeze, in
+order: implement + gate, analysis design entry + specs, zero-paid
+validation, probe — then the freeze commit launches the contrast.
