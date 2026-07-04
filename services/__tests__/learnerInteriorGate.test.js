@@ -259,7 +259,8 @@ test('semantic release: paraphrase releases via classifier, mismatch and errors 
   const yes = await checkContentConditionSemantic({
     tutorMessage: paraphrase,
     interior,
-    callJudge: async () => '{"released": true, "quote": "the servant recognizes change in themselves through the work"}',
+    callJudge: async () =>
+      '{"released": true, "quote": "the servant recognizes change in themselves through the work"}',
     judgeModel: 'stub',
   });
   assert.equal(yes.met, true);
