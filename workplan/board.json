@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-04T00:29:57.891Z",
+  "generated": "2026-07-04T00:45:57.571Z",
   "counts": {
     "total": 76,
     "byStatus": {
-      "done": 64,
+      "done": 65,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 1
     },
@@ -92,34 +92,6 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "cross-model-plan-mode-interaction",
-      "title": "Cross-model plan-mode interaction — does the stock-take help weaker inner loops more?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-04",
-      "updated": "2026-07-04",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "24 flash runs complete (or instrument-voided per the >2-exclusion rule); the frozen interaction analysis and three-part bar produce a recorded verdict either way.",
-      "claim_status": "planned",
-      "links": {
-        "notes": "CROSS-MODEL-PLAN-MODE-PREREGISTRATION.md",
-        "items": [
-          "strategy-ledger-model-confound-smoke",
-          "plan-mode-stocktake"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "outer-loop",
-        "model-confound",
-        "cross-model"
-      ]
     },
     {
       "id": "dag-pinned-learner-desubstitution",
@@ -338,6 +310,34 @@
         "meta"
       ],
       "milestone": "board-pm"
+    },
+    {
+      "id": "cross-model-plan-mode-interaction",
+      "title": "Cross-model plan-mode interaction — does the stock-take help weaker inner loops more?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 flash runs complete (or instrument-voided per the >2-exclusion rule); the frozen interaction analysis and three-part bar produce a recorded verdict either way.",
+      "claim_status": "settled",
+      "links": {
+        "notes": "CROSS-MODEL-PLAN-MODE-PREREGISTRATION.md",
+        "items": [
+          "strategy-ledger-model-confound-smoke",
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "model-confound",
+        "cross-model"
+      ]
     },
     {
       "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",

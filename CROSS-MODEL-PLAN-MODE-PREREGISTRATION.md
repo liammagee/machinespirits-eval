@@ -39,3 +39,25 @@ Flash is dollar-metered, not quota-windowed, so **both world blocks run simultan
 ## Artifacts
 
 Flash specs `config/drama-derivation/matrix-specs/flash-plan-mode-{hethel-resistant,marrick}.yaml`; runs `exports/dramatic-derivation/matrix/flash-plan-mode-<world>/`; report `exports/dramatic-derivation/strategy-ledger/cross-model/cross-model-interaction-report.{json,md}`.
+
+---
+
+## Results addendum (2026-07-04; frozen analysis unmodified; report at `exports/dramatic-derivation/strategy-ledger/cross-model/cross-model-interaction-report.{json,md}`)
+
+**Execution.** 24/24 flash runs, both world blocks genuinely parallel at concurrency 3 (six concurrent dramas), zero interruptions, ~9 min wall-clock, ≈ $3.12 total (hethel ≈ $1.72, marrick ≈ $1.40 — within the $3.30 projection). Codex arm reused whole as declared, zero compute.
+
+**Promotion bar: NOT MET — all three components fail, and the interaction points the OPPOSITE way from the ceiling hypothesis.**
+
+1. **Interaction direction: FAIL in both worlds.** Mean Δ(flash) is *higher* (worse) than mean Δ(codex) in each stratum: hethel-resistant +2.17 vs −1.00; marrick 0.00 vs −2.00. Plan-mode helped the strong inner loop directionally and *hurt* the weak one.
+2. **Pooled Mann–Whitney: FAIL.** U_low = 96/144 against the ≤ 42 criterion — not merely underpowered but on the wrong side of the null (72).
+3. **Flash-arm validity: FAIL on one guardrail.** Instrument gate clean (24/24 parseable — flash is format-proven), leaks 0, overrides 0, releases at parity, stock-take coverage 1.00; but hethel plan-mode aporia-like 5 vs baseline 3 exceeds the +1 allowance — **negative transfer on flash**, the very channel the codex plan-mode arm kept clean (0/6 there).
+
+**Recorded verdict (as pre-committed): NOT CONFIRMED — the model-confound question closes for this stack.** The flash smoke stands recorded as an unreplicated directional anomaly, and §6.13.16's closure reads unchanged. Worse for the hypothesis than a mere null: on this stack the outer loop's marginal value *decreases* as the inner loop weakens.
+
+**Descriptive record (no promotion weight):**
+
+- **The smoke inverted on fresh samples at its own seeds.** The 4-run smoke's plan-mode 2/2 grounded (seeds 31/37, hethel) came back 0/2 in the matrix at the same seeds — same decay schedules (seed-pinned), new model samples. Pure sampling variance at n=2/arm; the read-rule that licensed only *proposing* this test (never claiming from it) did its job.
+- **Grounded-rate interaction, same reversal:** flash ΔGrounded −0.17 (plan-mode grounds less: hethel 1/6 vs 3/6) vs codex +0.25. Flash never grounds marrick in either arm (0/12) — marrick pair-deltas are ties at cap+1, so the hethel stratum carries the test, as the pooled-U design absorbs.
+- **The weak model uses the second voice heavily and it does not help:** flash demanded 5.25 corrections/run (5.08 answered) vs codex's 1.25 — a 4× reorientation rate coinciding with directionally worse outcomes. The stock-take mechanism itself stayed flawless on both models (coverage 1.00); the *answers* it elicits from a weaker ego appear to be churn, not course-correction.
+- Sensitivity read excluding previewed seeds 31/37 (pre-registered): flash +0.88 vs codex −3.13 — the reversal is not an artifact of the previewed pairs.
+- What this licenses: the §6.13.16 line-closure now carries a **two-model** scope note instead of a one-model caveat — the outer-loop nulls are not an artifact of a too-strong inner loop; if anything, outer-loop machinery *presupposes* a competent inner loop rather than compensating for a weak one (consistent with the arc's scaffolds-reallocate-not-add lesson and with the GLM instrument result: protocol compliance itself is capacity).
