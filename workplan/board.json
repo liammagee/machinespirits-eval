@@ -1,17 +1,17 @@
 {
-  "generated": "2026-07-04T01:25:09.676Z",
+  "generated": "2026-07-04T08:30:13.634Z",
   "counts": {
-    "total": 77,
+    "total": 78,
     "byStatus": {
       "done": 65,
       "blocked": 1,
       "dropped": 2,
       "active": 4,
       "archived": 4,
-      "triaged": 1
+      "triaged": 2
     },
     "byType": {
-      "research": 39,
+      "research": 40,
       "experiment": 11,
       "infra": 10,
       "content": 2,
@@ -21,6 +21,31 @@
     }
   },
   "items": [
+    {
+      "id": "exploratory-confirmatory-shrinkage-audit",
+      "title": "Shrinkage audit — why do good exploratory results shrink on confirmation?",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Pure-computation audit over existing matrix artifacts produces per-pair observed-vs-selection-predicted shrinkage; lands as a §5 methodology subsection; no new paid runs required.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "proof-lemma-layer",
+          "strategy-ledger-followups"
+        ]
+      },
+      "tags": [
+        "methodology",
+        "statistics",
+        "meta"
+      ]
+    },
     {
       "id": "negative-register-effect-estimation-grid",
       "title": "Estimate negative-register effects with stance-fidelity gating",
