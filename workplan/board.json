@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-05T07:19:04.773Z",
+  "generated": "2026-07-05T10:55:50.442Z",
   "counts": {
-    "total": 85,
+    "total": 86,
     "byStatus": {
-      "done": 73,
+      "done": 76,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 2,
       "archived": 4,
       "triaged": 1
     },
     "byType": {
       "research": 40,
-      "experiment": 18,
+      "experiment": 19,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -92,60 +92,6 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "dag-pinned-learner-desubstitution",
-      "title": "DAG-pinned resistant learner and the de-substitution test",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-03",
-      "updated": "2026-07-03",
-      "verification": "Stage 0 no-paid gate (interior schema, drift gate extending resistanceSignalGate, deterministic yield checker, tests, hermetic dry-run) passes; Stage 1 instrument-validation probe meets frozen thresholds (selectivity ≥0.8, false-yield ≤0.1) before Stage 2; the 3-arm × 5-subtype matrix runs only after both gates with recorded go decisions; H-D/H-O verdicts applied exactly as frozen in the plan note §4.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md"
-        ]
-      },
-      "tags": [
-        "learner-side",
-        "belief-desire-dag",
-        "drift-gate",
-        "de-substitution",
-        "composition",
-        "evaluation"
-      ],
-      "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "strategy-refusal-smoke",
-      "title": "Content-compulsion smoke — refuse the incumbent strategy, demand defend-or-switch",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Implementation gated (refusal gate deterministic, mock paths exercised), 6-run smoke complete, pre-stated reads recorded either way. Preceded by paper §6.13.18 (interpretive close) + auditor + PR of the whole branch.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "lemma-forced-choice-smoke",
-          "proof-lemma-layer"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "lemma-layer",
-        "strategy-refusal",
-        "smoke"
-      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -339,6 +285,32 @@
       "milestone": "board-pm"
     },
     {
+      "id": "content-compulsion-contrast",
+      "title": "Content-compulsion contrast — the refusal stack at pre-registered tier",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs under the frozen prereg; the frozen LB bar produces a recorded verdict (or a voiding condition fires).",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "CONTENT-COMPULSION-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "strategy-refusal-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal"
+      ]
+    },
+    {
       "id": "cross-model-plan-mode-interaction",
       "title": "Cross-model plan-mode interaction — does the stock-take help weaker inner loops more?",
       "status": "done",
@@ -365,6 +337,33 @@
         "model-confound",
         "cross-model"
       ]
+    },
+    {
+      "id": "dag-pinned-learner-desubstitution",
+      "title": "DAG-pinned resistant learner and the de-substitution test",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-05",
+      "verification": "Stage 0 no-paid gate (interior schema, drift gate extending resistanceSignalGate, deterministic yield checker, tests, hermetic dry-run) passes; Stage 1 instrument-validation probe meets frozen thresholds (selectivity ≥0.8, false-yield ≤0.1) before Stage 2; the 3-arm × 5-subtype matrix runs only after both gates with recorded go decisions; H-D/H-O verdicts applied exactly as frozen in the plan note §4. CLOSED 2026-07-05 — confirmatory C-series (notes/2026-07-04-desubstitution-confirmatory-prereg.md) ran the 3-arm × 5-scenario × 8-repeat matrix (120 rows, eval-2026-07-04-0d59e4c8) at 2x the generating n; H-Dc and H-Oc both DISSOLVED under clean guards (no exhaustion freeze, no grounding floor).",
+      "claim_status": "settled",
+      "links": {
+        "notes": [
+          "notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md"
+        ]
+      },
+      "tags": [
+        "learner-side",
+        "belief-desire-dag",
+        "drift-gate",
+        "de-substitution",
+        "composition",
+        "evaluation"
+      ],
+      "branch": "worktree-blueprint-composition"
     },
     {
       "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",
@@ -627,6 +626,33 @@
       ],
       "branch": "codex/ux-enhancements",
       "milestone": "desktop-app"
+    },
+    {
+      "id": "strategy-refusal-smoke",
+      "title": "Content-compulsion smoke — refuse the incumbent strategy, demand defend-or-switch",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Implementation gated (refusal gate deterministic, mock paths exercised), 6-run smoke complete, pre-stated reads recorded either way. Preceded by paper §6.13.18 (interpretive close) + auditor + PR of the whole branch.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "lemma-forced-choice-smoke",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal",
+        "smoke"
+      ]
     },
     {
       "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",

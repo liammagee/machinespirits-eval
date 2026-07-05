@@ -1432,7 +1432,7 @@ function tutorSystem(
         : ''
     }${
       lemmaLayer && lemmaLayer.bind
-        ? ', "active_lemma": "<scene-opening turns: one lemma label from the FRONTIER CHOICE list, else null>", "lemma_departure": "<one line ONLY when playing a proof exhibit outside the active lemma, else null>"'
+        ? ', "active_lemma": "<scene-opening turns: one lemma label from the FRONTIER CHOICE list, else null>", "lemma_departure": "<one line ONLY when playing a proof exhibit outside the active lemma, else null>", "strategy_defense": "<one line ONLY when the harness refuses your repeated choice and you keep it, else null>"'
         : ''
     }}`,
     ...(lemmaLayer
@@ -3822,6 +3822,18 @@ export function makeLlmTutor(
                   : 'fallback',
             raw: claimedLemma ?? null,
             ...(out._lemmaRetried ? { firstRaw: out._lemmaFirstRaw ?? null, retried: true } : {}),
+            ...(out._lemmaRefused
+              ? {
+                  refused: true,
+                  refusalPriorPick: out._lemmaRefused.priorPick,
+                  regressionsCited: out._lemmaRefused.regressions,
+                  refusalOutcome: match && match.label === out._lemmaRefused.priorPick ? 'defended' : 'switched',
+                  defense:
+                    typeof out.strategy_defense === 'string' && out.strategy_defense.trim()
+                      ? out.strategy_defense.trim()
+                      : null,
+                }
+              : {}),
           };
         }
         const activeLemmaKeyNow = lemmaMeta.choice?.key || lemmaInfo.activeKey || null;
@@ -3995,6 +4007,47 @@ export function makeLlmTutor(
         retryOut._lemmaFirstRaw = claimed0;
         retryOut._lemmaRetried = true;
         draftOut = retryOut;
+      }
+      // STRATEGY REFUSAL (content compulsion; workplan/items/
+      // strategy-refusal-smoke.md): when the (forced) pick REPEATS the
+      // incumbent AND criterial regressions have occurred since it was
+      // chosen, refuse the strategy itself ONCE — defend in one line or
+      // switch. Mock knob relaxes the trigger so gates exercise both paths.
+      const claimedNow = typeof draftOut.active_lemma === 'string' ? draftOut.active_lemma.trim() : null;
+      const pickNow =
+        claimedNow && claimedNow.toLowerCase() !== 'default'
+          ? matchFrontierClaim(lemmaForcedInfo.frontier, claimedNow)
+          : null;
+      const regSince = lemmaForcedInfo.regressionsSinceActive || [];
+      const mockRefusal = lemmaForcedInfo.config.mockRefusal;
+      const repeatsIncumbent = Boolean(pickNow && lemmaForcedInfo.activeLabel === pickNow.label);
+      const realTrigger = repeatsIncumbent && regSince.length > 0;
+      const mockTrigger = Boolean(
+        mockRefusal && pickNow && (mockRefusal === 'defend' || lemmaForcedInfo.frontier.length > 1),
+      );
+      if (pickNow && (realTrigger || mockTrigger)) {
+        const short = (x) => x.split('(')[0];
+        const others = lemmaForcedInfo.frontier.filter((f) => f.label !== pickNow.label).map((f) => short(f.label));
+        const regNames = regSince.map((r) => short(r.label)).join(', ') || 'established ground';
+        const refuse = `\n\nHARNESS STRATEGY REFUSAL — you have chosen ${short(pickNow.label)} again, but since you last chose it the following established ground has REGRESSED: ${regNames} (${regSince.length} regression${
+          regSince.length === 1 ? '' : 's'
+        }). Criterial evidence says the incumbent strategy is failing. Reply again with the SAME JSON shape and EITHER (a) keep "active_lemma" as ${short(pickNow.label)} and DEFEND the choice in one line in "strategy_defense" (it will then stand), OR (b) SWITCH "active_lemma" to a different frontier chapter${
+          others.length ? ` (${others.join(', ')})` : ''
+        }.`;
+        const refuseOut = await callJson(client, 'tutor', view.turn, {
+          system,
+          user: user + refuse,
+          meta: {
+            ...meta,
+            ...(mockRefusal
+              ? { lemmaRefusalHint: { mode: mockRefusal, keep: short(pickNow.label), other: others[0] || null } }
+              : {}),
+          },
+        });
+        refuseOut._lemmaRefused = { priorPick: pickNow.label, priorRaw: claimedNow, regressions: regSince.length };
+        refuseOut._lemmaFirstRaw = draftOut._lemmaFirstRaw;
+        refuseOut._lemmaRetried = draftOut._lemmaRetried;
+        draftOut = refuseOut;
       }
     }
     const draftTheory = reconstruct ? normalizeTheory(draftOut.theory) : null;
