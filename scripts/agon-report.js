@@ -51,7 +51,11 @@ export function loadEpisodes(runDirs) {
 // divergence rather than reporting unreliable numbers.
 export function computeMechanismMetrics(ep, config) {
   if (!Array.isArray(ep.turnRecords) || ep.turnRecords.length === 0) return null;
-  const state = createEpisode(config, { arm: ep.arm, episodeId: `replay-${ep.episodeId}` });
+  const state = createEpisode(config, {
+    arm: ep.arm,
+    episodeId: `replay-${ep.episodeId}`,
+    variantSeed: ep.episodeId, // same variants as the recorded episode
+  });
   let oppMisses = 0;
   let probesInSet = 0;
   let offSetProbes = 0;
@@ -62,7 +66,7 @@ export function computeMechanismMetrics(ep, config) {
       const actionSet = wellPosedProbesNow(state).map((p) => p.itemId);
       if (actionSet.length > 0) setNonemptyTurns += 1;
       const classified = classifyTutorMove(state, r.finalEnvelope || {});
-      applyTutorMove(state, classified);
+      applyTutorMove(state, classified, { visibleText: r.tutorVisible || '' });
       if (classified.legal && classified.move === 'probe') {
         if (actionSet.includes(classified.itemId)) probesInSet += 1;
         else offSetProbes += 1;

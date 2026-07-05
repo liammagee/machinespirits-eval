@@ -52,8 +52,14 @@ export function validateGameConfig(config) {
         throw new Error(`agon config: probe ${probe.id} kind must be primary|transfer`);
       }
       kinds.add(probe.kind);
-      if (!Array.isArray(probe.answers) || probe.answers.length === 0) {
-        throw new Error(`agon config: probe ${probe.id} needs answers[]`);
+      if (Array.isArray(probe.variants) && probe.variants.length > 0) {
+        for (const variant of probe.variants) {
+          if (typeof variant.stem !== 'string' || !Array.isArray(variant.answers) || variant.answers.length === 0) {
+            throw new Error(`agon config: probe ${probe.id} variant needs stem + answers[]`);
+          }
+        }
+      } else if (!Array.isArray(probe.answers) || probe.answers.length === 0) {
+        throw new Error(`agon config: probe ${probe.id} needs answers[] (or variants[])`);
       }
     }
     if (!kinds.has('primary')) {
@@ -136,9 +142,20 @@ function probeIsLeakScannable(probe) {
 // re-representation variant — legality projection instead of latent state).
 export const ARMS = Object.freeze(['A0', 'A1', 'A1p']);
 
-export function createEpisode(config, { arm, episodeId, overrides = {} } = {}) {
+// Deterministic per-episode item-variant selection (djb2 over seed+probeId).
+// Deliberately not random: resume and replay must pick the same variants for
+// the same episode id.
+export function resolveVariantIndex(seed, probeId, count) {
+  const s = `${seed}:${probeId}`;
+  let h = 5381;
+  for (let i = 0; i < s.length; i += 1) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+  return h % count;
+}
+
+export function createEpisode(config, { arm, episodeId, overrides = {}, variantSeed } = {}) {
   if (!ARMS.includes(arm)) throw new Error(`agon: unknown arm ${arm}`);
-  const rules = { ...config.rules, ...(overrides.rules || {}) };
+  const rules = { taint_window: 0, ...config.rules, ...(overrides.rules || {}) };
+  const seed = variantSeed ?? episodeId ?? 'ep-unnamed';
   const state = {
     episodeId: episodeId || 'ep-unnamed',
     arm,
@@ -160,8 +177,11 @@ export function createEpisode(config, { arm, episodeId, overrides = {} } = {}) {
     leaks: 0,
     complyMismatches: 0,
     complianceCount: 0,
+    taintedPasses: 0,
+    taintedLeaks: 0,
     firstDemonstrationTurn: null,
     lastAdjudication: null,
+    tutorTexts: [], // {turn, text} — visible tutor messages, for the taint rule
     personaName: config.persona?.name || 'the learner',
   };
   for (const concept of config.concepts) {
@@ -175,13 +195,22 @@ export function createEpisode(config, { arm, episodeId, overrides = {} } = {}) {
       evidence: [],
     };
     for (const probe of concept.probes) {
+      let stem = probe.stem;
+      let answers = probe.answers;
+      let variantIndex = null;
+      if (Array.isArray(probe.variants) && probe.variants.length > 0) {
+        variantIndex = resolveVariantIndex(seed, probe.id, probe.variants.length);
+        stem = probe.variants[variantIndex].stem;
+        answers = probe.variants[variantIndex].answers;
+      }
       state.probes[probe.id] = {
         id: probe.id,
         conceptId: concept.id,
         kind: probe.kind,
-        stem: probe.stem,
-        answers: [...probe.answers],
-        leakScannable: probeIsLeakScannable(probe),
+        stem,
+        answers: [...answers],
+        variantIndex,
+        leakScannable: probeIsLeakScannable({ stem, answers }),
         passed: false,
         passedAtTurn: null,
         via: null, // 'comply' | 'leak'
@@ -253,6 +282,24 @@ export function classifyTutorMove(state, envelope) {
   };
 }
 
+// Taint rule (rules.taint_window > 0): if the TUTOR spoke one of a probe's
+// keyed answers within the last `taint_window` tutor turns, that probe is
+// tainted — probing it is ill-posed and answers to it score nothing. Telling
+// stops working; only eliciting pays. Applies only to leak-scannable probes
+// (selection items quote their answers in the stem, so speaking them while
+// posing the item is unavoidable — same exemption as the leak rule).
+function answersSpokenByTutor(state, probe, { includeCurrentTurn = false } = {}) {
+  const window = state.rules.taint_window;
+  if (!window || !probe.leakScannable) return false;
+  const oldest = state.turn - window + 1;
+  const newest = includeCurrentTurn ? state.turn : state.turn - 1;
+  for (const entry of state.tutorTexts) {
+    if (entry.turn < oldest || entry.turn > newest) continue;
+    if (probe.answers.some((a) => textContainsAnswer(entry.text, a))) return true;
+  }
+  return false;
+}
+
 function probeWellPosedness(state, probe) {
   const reasons = [];
   const concept = state.concepts[probe.conceptId];
@@ -270,11 +317,15 @@ function probeWellPosedness(state, probe) {
       reasons.push('same concept probed on consecutive turns');
     }
   }
+  if (answersSpokenByTutor(state, probe)) {
+    reasons.push(`tainted: the tutor spoke this item's answer within the last ${state.rules.taint_window} turns`);
+  }
   return { ok: reasons.length === 0, reasons };
 }
 
 // Apply a classified tutor move to the ledger. Returns the move record.
-export function applyTutorMove(state, classified, { rationale = '' } = {}) {
+// `visibleText` (the tutor's outward message) feeds the taint rule.
+export function applyTutorMove(state, classified, { rationale = '', visibleText = '' } = {}) {
   const record = {
     turn: state.turn,
     move: classified.move,
@@ -282,6 +333,11 @@ export function applyTutorMove(state, classified, { rationale = '' } = {}) {
     itemId: classified.itemId || null,
     rationale,
   };
+  if (state.rules.taint_window > 0 && visibleText) {
+    state.tutorTexts.push({ turn: state.turn, text: visibleText });
+    // keep only what the window can ever need
+    state.tutorTexts = state.tutorTexts.filter((e) => e.turn > state.turn - state.rules.taint_window);
+  }
   if (!classified.legal) {
     // Runner should have repaired/downgraded; guard anyway.
     record.move = 'meta';
@@ -301,13 +357,18 @@ export function applyTutorMove(state, classified, { rationale = '' } = {}) {
       state.wastedProbes += 1;
       state.score += state.rules.points.wasted_probe;
     }
+    const probe = state.probes[classified.itemId];
+    // Self-taint: the probe message itself spoke the keyed answer. The probe
+    // stands but is uncollectable and uncharged (the learner dodges free).
+    const selfTainted = classified.wellPosed && answersSpokenByTutor(state, probe, { includeCurrentTurn: true });
+    if (selfTainted) record.selfTainted = true;
     state.pendingProbe = {
       itemId: classified.itemId,
       conceptId: classified.conceptId,
-      kind: state.probes[classified.itemId].kind,
-      stem: state.probes[classified.itemId].stem,
-      wellPosed: classified.wellPosed,
-      chargeable: classified.wellPosed,
+      kind: probe.kind,
+      stem: probe.stem,
+      wellPosed: classified.wellPosed && !selfTainted,
+      chargeable: classified.wellPosed && !selfTainted,
     };
   }
   state.moveLog.push(record);
@@ -407,8 +468,21 @@ export function adjudicateLearnerTurn(state, { envelope, publicText }) {
     state.complianceCount += 1;
     if (pending && !pending.passed) {
       if (matchesProbe(pending, { statedAnswer: envelope.stated_answer, publicText })) {
-        record.pointsAwarded += awardPass(state, pending, 'comply');
-        record.outcome = 'pass';
+        if (state.concepts[pending.conceptId].status === 'locked') {
+          // Correct answer to a concept whose prereqs are not demonstrated:
+          // nothing is scored (the DAG gates demonstrations, not just probes).
+          state.concepts[pending.conceptId].contested = true;
+          record.outcome = 'locked_no_score';
+        } else if (answersSpokenByTutor(state, pending, { includeCurrentTurn: true })) {
+          // Correct answer, but the tutor said it first: nothing is scored,
+          // the item stays unclaimed (re-probeable once the taint expires).
+          state.taintedPasses += 1;
+          state.concepts[pending.conceptId].contested = true;
+          record.outcome = 'tainted_pass';
+        } else {
+          record.pointsAwarded += awardPass(state, pending, 'comply');
+          record.outcome = 'pass';
+        }
       } else {
         state.complyMismatches += 1;
         state.concepts[pending.conceptId].contested = true;
@@ -436,12 +510,21 @@ export function adjudicateLearnerTurn(state, { envelope, publicText }) {
   // Leak sweep: an unclaimed, leak-scannable answer spoken aloud counts, on
   // any learner turn, whatever the declared action. Transfer probes only
   // count once their concept's primary is demonstrated (ordering invariant).
+  // Under the taint rule an echoed answer (tutor said it first) scores
+  // nothing — logged separately so echo-collapse stays observable.
   for (const probe of Object.values(state.probes)) {
     if (probe.passed || !probe.leakScannable) continue;
-    if (record.outcome === 'pass' && pending && probe.id === pending.id) continue;
+    if ((record.outcome === 'pass' || record.outcome === 'tainted_pass') && pending && probe.id === pending.id)
+      continue;
     const concept = state.concepts[probe.conceptId];
+    if (concept.status === 'locked') continue; // DAG gates demonstrations
     if (probe.kind === 'transfer' && !['demonstrated', 'transferred'].includes(concept.status)) continue;
     if (probe.answers.some((a) => publicText && textContainsAnswer(publicText, a))) {
+      if (answersSpokenByTutor(state, probe, { includeCurrentTurn: true })) {
+        state.taintedLeaks += 1;
+        record.taintedLeakedItems = [...(record.taintedLeakedItems || []), probe.id];
+        continue;
+      }
       record.pointsAwarded += awardPass(state, probe, 'leak');
       record.leakedItems.push(probe.id);
       state.leaks += 1;
@@ -568,6 +651,8 @@ export function summarize(state) {
     complyMismatches: state.complyMismatches,
     bounces: state.bounces,
     leaks: state.leaks,
+    taintedPasses: state.taintedPasses,
+    taintedLeaks: state.taintedLeaks,
     dodgesCharged,
     totalDodgesCharged: Object.values(dodgesCharged).reduce((a, b) => a + b, 0),
     budgetsRemaining: { ...state.budgets },

@@ -113,6 +113,26 @@ test('mechanism replay reproduces the ledger and scores consumption', async () =
   assert.equal(m.probesInSet, 7);
 });
 
+test('XL dry episode: wide board + variants + taint, replay-sane', async () => {
+  const XL = path.join(__dirname_local, '..', 'config', 'agon', 'fractions-agon-xl.yaml');
+  const config = loadGameConfig(XL);
+  const agents = makeScriptedAgents(config, { variantSeed: 'dry-XL-e1' });
+  const result = await runEpisode({ config, arm: 'A1p', episodeId: 'dry-XL-e1', agents });
+  assert.ok(result.summary.turns <= 16);
+  assert.ok(result.summary.demonstrated >= 1);
+  assert.equal(result.summary.totalDodgesCharged, 5);
+  assert.equal(result.summary.taintedLeaks + result.summary.taintedPasses, 0); // scripted play is clean
+  const payload = {
+    episodeId: 'dry-XL-e1',
+    arm: 'A1p',
+    summary: result.summary,
+    turnRecords: result.turnRecords,
+  };
+  const m = computeMechanismMetrics(payload, config);
+  assert.ok(m, 'XL replay diverged from the recorded ledger');
+  assert.equal(m.offSetProbes, 0);
+});
+
 test('turns override shortens the episode (smoke geometry)', async () => {
   const config = loadGameConfig(CONFIG_PATH);
   const result = await runEpisode({

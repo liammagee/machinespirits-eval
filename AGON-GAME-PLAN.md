@@ -295,7 +295,53 @@ inference — the claim is about the FORMAT boundary (state vs action
 projection), not about the tutor getting smarter. No confirmatory bar is
 set at these estimates (§5.12.7).
 
-## 8. File map
+## 9. XL board (v0.3) — pre-registration (frozen 2026-07-06, before any real episode)
+
+Operator: "Make the game bigger." Config `config/agon/fractions-agon-xl.yaml`
+(the v0 board stays frozen for pilot-01/02 provenance). Changes:
+
+- **Board:** 6 concepts on a branching DAG (c1 → c2 → {c3, c4}; c4 → c5;
+  c1 → c6), 12 items, 16 turns. Dodge taxonomy, budgets (5 × 1), points, and
+  discipline rules unchanged — the attrition phase stays comparable to v0.
+- **Item variants:** every probe has 3 equivalent forms; one is selected per
+  episode by a deterministic hash of episodeId + itemId (resume- and
+  replay-stable). The tutor's item list, briefs, and leak scanning all use
+  the selected variant.
+- **TAINT RULE (`taint_window: 3`):** if the tutor spoke an item's keyed
+  answer within the last 3 turns, the item is tainted — probing it is
+  ill-posed, and correct learner answers to it (comply or leak) score
+  NOTHING while the taint lasts. Selection-type items whose stems quote
+  their answers are exempt (as with leak scanning). This mechanizes the
+  discipline the pilot-01 superego improvised ("do not give the keyed
+  answer while teaching") and makes telling-vs-eliciting a scored
+  distinction: saying the answer yourself is now worthless; leading the
+  learner to produce it still pays.
+- **Locked-concept gate:** demonstrations (comply or leak) only count on
+  concepts whose prereqs are demonstrated — required on the wide board
+  where keys collide across variants (7/12 appears in c1/c4/c5 forms) and
+  c6 keys are bare integers.
+
+**Run plan:** one full-length real smoke episode (A1p), then pilot-03:
+A0 vs A1p, 4 episodes per arm, interleaved, codex medium / Sonnet 5 — the
+raw-state A1 arm is retired (its story is told; the informative pair is
+blind vs action-brief).
+
+**Predictions (directional, descriptive at pilot n):**
+- **P8 (apparatus):** protocol stability holds on the wide board — parse
+  repairs ≈ 0, all episodes terminate, ≤ ~12 min/episode.
+- **P9 (headroom):** the single-attractor pattern of v0 breaks: episode
+  scores spread (not one common value), and at least one episode reaches
+  ≥ 9 points.
+- **P10 (taint binds):** tainted events occur (taintedLeaks +
+  taintedPasses > 0 pooled) — i.e., part of the v0 leak-collapse economy
+  was echo of tutor-spoken answers, now priced at zero.
+- **P11 (consumption persists):** A1p stays at ≤ 1 opportunity miss TOTAL
+  across its 4 episodes, with zero off-set probes, despite the bigger
+  action sets.
+- **P12 (direction):** A1p ≥ A0 on mean score. Directional only — no
+  magnitude promise, no confirmatory bar at pilot estimates (§5.12.7).
+
+## 10. File map
 
 - `config/agon/fractions-agon.yaml` — rules, concepts, keyed probes, dodges
 - `services/agon/referee.js` — deterministic ledger + adjudication

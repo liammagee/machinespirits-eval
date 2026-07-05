@@ -284,6 +284,123 @@ test('A1p disclosure: action-set projection with clean goal labels', () => {
   assert.ok(!('winThreshold' in d1)); // pilot-01 label bug fixed
 });
 
+const XL_CONFIG_PATH = path.join(__dirname_local, '..', 'config', 'agon', 'fractions-agon-xl.yaml');
+
+function xlState(seed) {
+  const config = loadGameConfig(XL_CONFIG_PATH);
+  return createEpisode(config, { arm: 'A0', episodeId: seed, variantSeed: seed });
+}
+
+test('XL config: variants resolve deterministically per seed', () => {
+  const a = xlState('seed-a');
+  const b = xlState('seed-a');
+  const c = xlState('seed-b');
+  assert.equal(a.probes.c1_primary.stem, b.probes.c1_primary.stem);
+  assert.deepEqual(a.probes.c1_primary.answers, b.probes.c1_primary.answers);
+  const anyDiffers = Object.keys(a.probes).some((id) => a.probes[id].stem !== c.probes[id].stem);
+  assert.ok(anyDiffers, 'different seeds should select at least one different variant');
+});
+
+test('taint: tutor-spoken answer voids leaks and blocks probes while fresh', () => {
+  const state = xlState('taint-test');
+  const live = state.probes.c1_primary.answers[0];
+
+  tutorTurnStart(state); // t1: teach, speaking the answer
+  applyTutorMove(state, classifyTutorMove(state, { move: 'teach', concept: 'c1_meaning' }), {
+    visibleText: `So the answer here is ${live}, see?`,
+  });
+  const echo = adjudicateLearnerTurn(state, {
+    envelope: { action: 'dodge', dodge_type: 'false_confusion' },
+    publicText: `whatever, ${live}, who cares`,
+  });
+  assert.equal(state.taintedLeaks, 1);
+  assert.equal(state.leaks, 0);
+  assert.equal(state.score, 0);
+  assert.equal(state.concepts.c1_meaning.status, 'open');
+  assert.deepEqual(echo.leakedItems, []);
+
+  tutorTurnStart(state); // t2: probing the tainted item is ill-posed
+  const classified = classifyTutorMove(state, { move: 'probe', item_id: 'c1_primary' });
+  assert.equal(classified.wellPosed, false);
+  assert.ok(classified.wellPosednessReasons.some((r) => r.includes('tainted')));
+});
+
+test('taint: self-tainting probe message makes a comply-pass score nothing', () => {
+  const state = xlState('self-taint');
+  const live = state.probes.c1_primary.answers[0];
+  tutorTurnStart(state);
+  applyTutorMove(state, classifyTutorMove(state, { move: 'teach', concept: 'c1_meaning' }), {
+    visibleText: 'clean teach: the top counts parts, the bottom counts the total.',
+  });
+  adjudicateLearnerTurn(state, {
+    envelope: { action: 'dodge', dodge_type: 'answer_seeking' },
+    publicText: 'just tell me',
+  });
+  tutorTurnStart(state);
+  const cls = classifyTutorMove(state, { move: 'probe', item_id: 'c1_primary' });
+  assert.equal(cls.wellPosed, true); // clean at classification time
+  const rec = applyTutorMove(state, cls, { visibleText: `Quick check — it's ${live}, right?` });
+  assert.equal(rec.selfTainted, true);
+  assert.equal(state.pendingProbe.chargeable, false);
+  const adj = adjudicateLearnerTurn(state, {
+    envelope: { action: 'comply', stated_answer: live },
+    publicText: `fine, ${live}`,
+  });
+  assert.equal(adj.outcome, 'tainted_pass');
+  assert.equal(state.taintedPasses, 1);
+  assert.equal(state.score, 0);
+  assert.equal(state.probes.c1_primary.passed, false); // re-probeable once clean
+});
+
+test('taint expires after the window; clean elicited pass scores normally', () => {
+  const state = xlState('taint-expiry');
+  const live = state.probes.c1_primary.answers[0];
+  tutorTurnStart(state); // t1: dirty teach (taints t1-3)
+  applyTutorMove(state, classifyTutorMove(state, { move: 'teach', concept: 'c1_meaning' }), {
+    visibleText: `it's ${live}`,
+  });
+  adjudicateLearnerTurn(state, { envelope: { action: 'dodge', dodge_type: 'false_confusion' }, publicText: 'nah' });
+  for (let i = 0; i < 2; i += 1) {
+    tutorTurnStart(state); // t2, t3: clean meta
+    applyTutorMove(state, classifyTutorMove(state, { move: 'meta' }), { visibleText: 'ok.' });
+    adjudicateLearnerTurn(state, {
+      envelope: { action: 'dodge', dodge_type: 'epistemic_resistance' },
+      publicText: 'why though',
+    });
+  }
+  tutorTurnStart(state); // t4: clean re-teach (recency) — t1 text now outside the window
+  applyTutorMove(state, classifyTutorMove(state, { move: 'teach', concept: 'c1_meaning' }), {
+    visibleText: 'top counts the parts, bottom counts the total pieces.',
+  });
+  adjudicateLearnerTurn(state, { envelope: { action: 'dodge', dodge_type: 'affective_shutdown' }, publicText: 'ugh' });
+  tutorTurnStart(state); // t5: clean well-posed probe
+  const cls = classifyTutorMove(state, { move: 'probe', item_id: 'c1_primary' });
+  assert.equal(cls.wellPosed, true);
+  applyTutorMove(state, cls, { visibleText: state.probes.c1_primary.stem });
+  const adj = adjudicateLearnerTurn(state, {
+    envelope: { action: 'comply', stated_answer: live },
+    publicText: `fine. ${live}`,
+  });
+  assert.equal(adj.outcome, 'pass');
+  assert.equal(state.score, 3);
+});
+
+test('locked concepts cannot be demonstrated, by comply or by leak', () => {
+  const state = xlState('locked-gate');
+  const c6Live = state.probes.c6_primary.answers[0]; // c6 needs c1; locked at start
+  tutorTurnStart(state);
+  applyTutorMove(state, classifyTutorMove(state, { move: 'teach', concept: 'c6_quantity' }), {
+    visibleText: 'fractions of amounts: divide by the bottom, times the top.',
+  });
+  const adj = adjudicateLearnerTurn(state, {
+    envelope: { action: 'dodge', dodge_type: 'epistemic_resistance' },
+    publicText: `my cousin is ${c6Live} and even he wouldn't care`,
+  });
+  assert.deepEqual(adj.leakedItems, []);
+  assert.equal(state.concepts.c6_quantity.status, 'locked');
+  assert.equal(state.score, 0);
+});
+
 test('parseAgentOutput: fence form, bare form, garbage', () => {
   const fence = parseAgentOutput('```json\n{"move":"teach","concept":"c1_meaning"}\n```\n---\nHello Jesse.');
   assert.equal(fence.parseMode, 'fence');

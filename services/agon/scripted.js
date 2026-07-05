@@ -4,17 +4,29 @@
 // learner dodges in repertoire order while budget lasts and complies (with
 // the true keyed answer) when directed. Deterministic; no network.
 
+import { resolveVariantIndex } from './referee.js';
+
 function envelopeBlock(envelope, visible) {
   return '```json\n' + JSON.stringify(envelope) + '\n```\n---\n' + visible;
 }
 
-export function makeScriptedAgents(config) {
+export function makeScriptedAgents(config, { variantSeed = null } = {}) {
   const conceptOrder = config.concepts.map((c) => c.id);
   const probesByConcept = Object.fromEntries(config.concepts.map((c) => [c.id, c.probes]));
-  const answersByItem = {};
+  // Variant-aware answer/stem resolution — must match createEpisode's
+  // selection, so XL dry tests pass the episodeId as variantSeed.
+  const resolved = {};
   for (const c of config.concepts) {
-    for (const p of c.probes) answersByItem[p.id] = p.answers[0];
+    for (const p of c.probes) {
+      if (Array.isArray(p.variants) && p.variants.length > 0) {
+        const idx = resolveVariantIndex(variantSeed ?? 'ep-unnamed', p.id, p.variants.length);
+        resolved[p.id] = { stem: p.variants[idx].stem, answer: p.variants[idx].answers[0] };
+      } else {
+        resolved[p.id] = { stem: p.stem, answer: p.answers[0] };
+      }
+    }
   }
+  const answersByItem = Object.fromEntries(Object.entries(resolved).map(([id, r]) => [id, r.answer]));
 
   // Tutor policy state (closed over between calls).
   let lastTaught = null;
@@ -40,7 +52,7 @@ export function makeScriptedAgents(config) {
     } else {
       const probe = probesByConcept[target].find((p) => p.kind === 'primary');
       envelope = { move: 'probe', concept: null, item_id: probe.id, rationale: 'scripted probe' };
-      visible = `Quick check then: ${probe.stem}`;
+      visible = `Quick check then: ${resolved[probe.id].stem}`;
       phase = 'teach';
     }
     return Promise.resolve({ text: envelopeBlock(envelope, visible), latencyMs: 0, model: 'scripted' });

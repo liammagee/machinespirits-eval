@@ -62,9 +62,9 @@ export async function runEpisode({
   const state = createEpisode(config, { arm, episodeId, overrides });
   const transcript = []; // visible messages only: {role, text}
   const turnRecords = [];
-  const tutorSystem = buildTutorSystemPrompt(config, { arm });
-  const superegoSystem = buildSuperegoSystemPrompt(config, { arm });
-  const learnerSystem = buildLearnerSystemPrompt(config);
+  const tutorSystem = buildTutorSystemPrompt(config, { arm, state });
+  const superegoSystem = buildSuperegoSystemPrompt(config, { arm, state });
+  const learnerSystem = buildLearnerSystemPrompt(config, { state });
 
   async function callAndParse(agentFn, { system, user }, label, flags) {
     const started = Date.now();
@@ -162,7 +162,10 @@ export async function runEpisode({
       }
     }
 
-    const moveRecord = applyTutorMove(state, classified, { rationale: finalEnvelope.rationale || '' });
+    const moveRecord = applyTutorMove(state, classified, {
+      rationale: finalEnvelope.rationale || '',
+      visibleText: finalVisible,
+    });
     transcript.push({ role: 'tutor', text: finalVisible });
 
     // --- Learner turn (with referee bounce loop) ---------------------------
