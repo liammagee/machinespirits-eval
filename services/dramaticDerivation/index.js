@@ -1,5 +1,14 @@
 export { factKey, matchPattern, closure, entails, proofTree } from './chainer.js';
 export { loadWorld, validateWorld, plotLint, worldClosure } from './world.js';
+export {
+  normalizeLemmaConfig,
+  buildLemmaDag,
+  computeLemmaState,
+  supportRemaining,
+  classifyRelease,
+  renderTutorLemmaLines,
+  renderLearnerLemmaLines,
+} from './lemmaLayer.js';
 export { derivationDistance, detectStall } from './slope.js';
 export { simulateReleaseTempo, releaseSolvency, safeReleaseTurns, pacingGuardDecision } from './pacing.js';
 export { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
@@ -36,6 +45,34 @@ export {
   DISCURSIVE_MODES,
   deriveDiscursiveAdaptationState,
 } from './discursiveAdaptation.js';
+export {
+  BLOCK_TYPES,
+  LEARNER_IF_LOST_POLICIES,
+  LEDGER_BLOCK_SCHEMA,
+  LEDGER_HISTORY_SCHEMA,
+  LEDGER_ROW_SCHEMA,
+  LEDGER_SCOPES,
+  REGISTER_PALETTE_VALUES,
+  RELEASE_POSTURES,
+  STRATEGY_LEDGER_SCHEMA,
+  STRATEGY_REVIEW_DECISIONS,
+  auditLearnerSceneIntent,
+  auditTutorSceneCommitment,
+  blockTypeForExchange,
+  buildMechanismHistoryEntry,
+  checkBlockClearance,
+  escalateDidacticMode,
+  ledgerRow,
+  normalizeLearnerActCarry,
+  normalizeLearnerSceneIntent,
+  normalizeSceneCommitment,
+  normalizeSceneCommitmentV2,
+  normalizeStrategyLedgerConfig,
+  normalizeStrategyReview,
+  openBlock,
+  sceneStanceFidelity,
+  updateBlockLedger,
+} from './strategyLedger.js';
 export {
   ADAPTATION_ARBITER_SCHEMA,
   ADAPTATION_TRACE_SCHEMA,

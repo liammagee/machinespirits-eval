@@ -1,0 +1,21 @@
+# Sonnet calibration screen D1 (workplan/items/sonnet-calibrated-worlds.md):
+# marrick, mild decay (rate 0.15 / mutateShare 0.25 / maxConcurrent 2),
+# 3 baselines. D0 (no decay) was 3/3 grounded 22/22/23 — too easy.
+base:
+  world: config/drama-derivation/world-005-marrick.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: baseline-r1
+    flags: { decay: '{"seed":163,"rate":0.15,"mutateShare":0.25,"maxConcurrent":2}' }
+  - label: baseline-r2
+    flags: { decay: '{"seed":167,"rate":0.15,"mutateShare":0.25,"maxConcurrent":2}' }
+  - label: baseline-r3
+    flags: { decay: '{"seed":173,"rate":0.15,"mutateShare":0.25,"maxConcurrent":2}' }

@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-03T06:55:24.704Z",
+  "generated": "2026-07-05T10:55:50.442Z",
   "counts": {
-    "total": 71,
+    "total": 86,
     "byStatus": {
-      "done": 60,
+      "done": 76,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 2,
       "archived": 4,
       "triaged": 1
     },
     "byType": {
-      "research": 35,
-      "experiment": 9,
+      "research": 40,
+      "experiment": 19,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -89,33 +89,6 @@
         "id-director",
         "writing-pad",
         "adaptation",
-        "evaluation"
-      ],
-      "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "dag-pinned-learner-desubstitution",
-      "title": "DAG-pinned resistant learner and the de-substitution test",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-03",
-      "updated": "2026-07-03",
-      "verification": "Stage 0 no-paid gate (interior schema, drift gate extending resistanceSignalGate, deterministic yield checker, tests, hermetic dry-run) passes; Stage 1 instrument-validation probe meets frozen thresholds (selectivity ≥0.8, false-yield ≤0.1) before Stage 2; the 3-arm × 5-subtype matrix runs only after both gates with recorded go decisions; H-D/H-O verdicts applied exactly as frozen in the plan note §4.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md"
-        ]
-      },
-      "tags": [
-        "learner-side",
-        "belief-desire-dag",
-        "drift-gate",
-        "de-substitution",
-        "composition",
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
@@ -312,6 +285,87 @@
       "milestone": "board-pm"
     },
     {
+      "id": "content-compulsion-contrast",
+      "title": "Content-compulsion contrast — the refusal stack at pre-registered tier",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs under the frozen prereg; the frozen LB bar produces a recorded verdict (or a voiding condition fires).",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "CONTENT-COMPULSION-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "strategy-refusal-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal"
+      ]
+    },
+    {
+      "id": "cross-model-plan-mode-interaction",
+      "title": "Cross-model plan-mode interaction — does the stock-take help weaker inner loops more?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 flash runs complete (or instrument-voided per the >2-exclusion rule); the frozen interaction analysis and three-part bar produce a recorded verdict either way.",
+      "claim_status": "settled",
+      "links": {
+        "notes": "CROSS-MODEL-PLAN-MODE-PREREGISTRATION.md",
+        "items": [
+          "strategy-ledger-model-confound-smoke",
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "model-confound",
+        "cross-model"
+      ]
+    },
+    {
+      "id": "dag-pinned-learner-desubstitution",
+      "title": "DAG-pinned resistant learner and the de-substitution test",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-05",
+      "verification": "Stage 0 no-paid gate (interior schema, drift gate extending resistanceSignalGate, deterministic yield checker, tests, hermetic dry-run) passes; Stage 1 instrument-validation probe meets frozen thresholds (selectivity ≥0.8, false-yield ≤0.1) before Stage 2; the 3-arm × 5-subtype matrix runs only after both gates with recorded go decisions; H-D/H-O verdicts applied exactly as frozen in the plan note §4. CLOSED 2026-07-05 — confirmatory C-series (notes/2026-07-04-desubstitution-confirmatory-prereg.md) ran the 3-arm × 5-scenario × 8-repeat matrix (120 rows, eval-2026-07-04-0d59e4c8) at 2x the generating n; H-Dc and H-Oc both DISSOLVED under clean guards (no exhaustion freeze, no grounding floor).",
+      "claim_status": "settled",
+      "links": {
+        "notes": [
+          "notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md"
+        ]
+      },
+      "tags": [
+        "learner-side",
+        "belief-desire-dag",
+        "drift-gate",
+        "de-substitution",
+        "composition",
+        "evaluation"
+      ],
+      "branch": "worktree-blueprint-composition"
+    },
+    {
       "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",
       "title": "G5. § H2 per-session slope p=0.032 is a wrong p-value",
       "status": "done",
@@ -326,6 +380,118 @@
         "notes": "TODO.md"
       },
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "layered-decision-loops",
+      "title": "Strategy Ledger v1 — per-agent commit/audit loops at block/scene/act scope",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "Phases 0-2 implemented: npm run derivation:ledger-gates 22/22 zero-paid checks (proof fingerprints byte-identical on/off, both casts; row-schema symmetry); tests/dramaticDerivationStrategyLedger.test.js 13/13 (off-state invariance pinned); full npm test 4653/0. Phase 3 contrasts pre-registered before any paid run.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "LAYERED-DECISION-LOOPS-PLAN.md",
+        "items": [
+          "layered-task-session-adaptation",
+          "layered-taskloop-heldout-gate"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "strategy-ledger",
+        "symmetry"
+      ]
+    },
+    {
+      "id": "lemma-sonnet-calibrated-contrast",
+      "title": "Lemma-map Sonnet contrast at the calibrated dose — the measurable mid-tier test",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs at dose 0.08 under the frozen pre-registration; the frozen bar produces a recorded verdict (or a voiding condition fires).",
+      "claim_status": "settled",
+      "links": {
+        "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "sonnet-calibrated-worlds",
+          "lemma-sonnet-contrast"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-tiers"
+      ]
+    },
+    {
+      "id": "lemma-sonnet-contrast",
+      "title": "Lemma-map Sonnet contrast — does the bookkeeping artifact help a mid-tier inner loop at tier?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs complete under the frozen pre-registration (or a voiding condition fires); the frozen bar produces a recorded verdict either way.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "LEMMA-SONNET-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-map-sonnet-smoke",
+          "proof-lemma-layer",
+          "exploratory-confirmatory-shrinkage-audit"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-confound"
+      ]
+    },
+    {
+      "id": "plan-mode-stocktake",
+      "title": "Plan-mode stock-take — dialogic between-scene reorientation (course-changing outer loop)",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Implementation gated (34/34 incl. L7: stock-takes fire, corrections answered, commitment machinery suppressed, proof fingerprints byte-identical on/off) and tested (21/21). Item closes when the pre-registered plan-mode contrast is run and its verdict recorded — or the line is explicitly dropped.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "PLAN-MODE-STOCKTAKE-PREREGISTRATION.md",
+          "LAYERED-DECISION-LOOPS-PLAN.md"
+        ],
+        "items": [
+          "strategy-ledger-followups"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "plan-mode",
+        "ego-superego"
+      ]
     },
     {
       "id": "register-taxonomy-negative-registers",
@@ -460,6 +626,33 @@
       ],
       "branch": "codex/ux-enhancements",
       "milestone": "desktop-app"
+    },
+    {
+      "id": "strategy-refusal-smoke",
+      "title": "Content-compulsion smoke — refuse the incumbent strategy, demand defend-or-switch",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Implementation gated (refusal gate deterministic, mock paths exercised), 6-run smoke complete, pre-stated reads recorded either way. Preceded by paper §6.13.18 (interpretive close) + auditor + PR of the whole branch.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "lemma-forced-choice-smoke",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal",
+        "smoke"
+      ]
     },
     {
       "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",
@@ -1111,6 +1304,31 @@
       "claim_status": "future"
     },
     {
+      "id": "exploratory-confirmatory-shrinkage-audit",
+      "title": "Shrinkage audit — why do good exploratory results shrink on confirmation?",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Pure-computation audit over existing matrix artifacts produces per-pair observed-vs-selection-predicted shrinkage; lands as a §5 methodology subsection; no new paid runs required.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "proof-lemma-layer",
+          "strategy-ledger-followups"
+        ]
+      },
+      "tags": [
+        "methodology",
+        "statistics",
+        "meta"
+      ]
+    },
+    {
       "id": "from-holistic-evaluation-to-structured-criteria-rubrics-acro",
       "title": "From Holistic Evaluation to Structured Criteria: Rubrics Across the Evolving LLM Landscape",
       "status": "done",
@@ -1251,6 +1469,89 @@
         "token-budget"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "lemma-bind-sonnet-smoke",
+      "title": "Binding smoke on Sonnet at the calibrated dose — the first fair test of tutor-chosen binding",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "6 canary-gated runs complete (or an instrument stop is recorded); the pre-stated read rules produce propose/no-go, never a claim.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-sonnet-calibrated-contrast",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "binding",
+        "smoke"
+      ]
+    },
+    {
+      "id": "lemma-forced-choice-smoke",
+      "title": "Forced-choice binding smoke — does the model have a chapter preference when non-answering costs a retry?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "6 runs complete; the pre-stated reads (exercise, preference-vs-parrot diagnosis, conduct, capped color) recorded either way.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "lemma-bind-sonnet-smoke",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "binding",
+        "smoke"
+      ]
+    },
+    {
+      "id": "lemma-map-sonnet-smoke",
+      "title": "Lemma-map Sonnet smoke — does the bookkeeping artifact help a mid-tier inner loop?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "4 canary-gated Sonnet runs complete (or an instrument-limited stop is recorded); the pre-stated read rules below produce a propose/no-go, never a claim.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-DISPLAY-CONFIRMATORY-PREREGISTRATION.md",
+        "items": [
+          "proof-lemma-layer",
+          "strategy-ledger-model-confound-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-confound",
+        "smoke"
+      ]
     },
     {
       "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
@@ -1400,6 +1701,34 @@
       "milestone": "poetics-followups"
     },
     {
+      "id": "proof-lemma-layer",
+      "title": "Lemma layer — a maintained higher-level proof structure (plan as data structure, not prose)",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Gate 0 (free depth audit) recorded below. Line advances only by operator decision: design doc + own pre-registration before any engine code or paid run.",
+      "claim_status": "settled",
+      "links": {
+        "notes": "exports/dramatic-derivation/lemma-layer/gate0-depth-audit.md",
+        "items": [
+          "cross-model-plan-mode-interaction",
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "proof-structure",
+        "lemma-layer"
+      ]
+    },
+    {
       "id": "refresh-weber-id-charisma-recognition-thread",
       "title": "Refresh Weber/id-charisma thread around being recognized",
       "status": "done",
@@ -1521,6 +1850,94 @@
       ],
       "milestone": "human-pilot-prep",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "sonnet-calibrated-worlds",
+      "title": "Sonnet-calibrated worlds — find the dose/world where a mid-tier baseline has headroom",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "The dose ladder (rules pre-stated below) either finds a calibrated condition set (Sonnet baseline in the target band, 3-run screens) or exhausts with a recorded structural-floor verdict; either way the outcome is recorded before any contrast prereg.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-SONNET-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-sonnet-contrast",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "calibration",
+        "model-tiers"
+      ]
+    },
+    {
+      "id": "strategy-ledger-followups",
+      "title": "Strategy Ledger follow-ups — confirm V2b, then compose; do not rebuild trialling",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Each step below runs only under its own pre-registration; the item closes when the V2b confirmatory decision is made (either tier promotion or a recorded failure-to-replicate) and the composition-module question is answered or explicitly dropped.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "LAYERED-DECISION-LOOPS-PLAN.md",
+          "STRATEGY-LEDGER-V2-PREREGISTRATION.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md#the-strategy-ledger-scene-scoped-commitaudit-loops-help-repair-an-in-run-trialling-superstructure-costs",
+        "items": [
+          "layered-decision-loops",
+          "negative-register-effect-estimation-grid",
+          "blueprint-composition"
+        ],
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/80"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-ledger",
+        "outer-loop",
+        "followups"
+      ]
+    },
+    {
+      "id": "strategy-ledger-model-confound-smoke",
+      "title": "Model-confound smoke — is codex ceiling-ing the outer-loop effects? (GLM-5.2)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "4 canary-gated GLM-5.2 runs complete (or an instrument-limited stop is recorded); the pre-stated read-rules below produce a go/no-go on whether a powered cross-model contrast deserves a new pre-registration.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "PLAN-MODE-STOCKTAKE-PREREGISTRATION.md",
+        "items": [
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "model-confound",
+        "smoke"
+      ]
     },
     {
       "id": "synthesize-theoretical-insights",

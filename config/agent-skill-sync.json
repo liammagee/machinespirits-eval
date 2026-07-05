@@ -10,6 +10,12 @@
       "source": "claude",
       "targets": ["agents", "codex"],
       "reason": "Workplan board commands should be visible to Claude, Codex, and shared agent contexts."
+    },
+    {
+      "name": "ms-build-research-artifacts",
+      "source": "claude",
+      "targets": ["agents", "codex"],
+      "reason": "Research artifact build commands should stay identical across Claude, Codex, and shared agent contexts."
     }
   ]
 }

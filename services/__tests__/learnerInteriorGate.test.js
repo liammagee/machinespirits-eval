@@ -1,12 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+// The desub_resistance_* scenarios live in the charisma scenarios file; the
+// two decayed-contract/semantic tests below load them via getScenario, which
+// honours this env override at call time. Set before any evalConfigLoader
+// import so plain `npm test` (CI) resolves them like the eval runs do.
+process.env.EVAL_SCENARIOS_FILE =
+  process.env.EVAL_SCENARIOS_FILE || 'config/charisma-recognition-desire-scenarios.yaml';
+
 import {
   DRIFT_GATE_CLASSIFIER_PROMPT,
   buildDriftCorrectionContext,
   buildInteriorCharacterSheet,
   checkContentCondition,
   checkGrounding,
+  checkReleaseEngagement,
   driftGateMaxAttempts,
   evaluateLearnerDraft,
   loadFormalInterior,
@@ -132,13 +140,21 @@ test('draft evaluation post-key: yield ok; undeclared desire still caught', () =
   assert.equal(flattery.violation, 'undeclared_desire_satisfaction');
 });
 
-test('grounding requires conclusion AND citation', () => {
+test('grounding requires conclusion AND (citation OR release-phrase paraphrase)', () => {
   const grounded = checkGrounding({
     learnerMessage: 'So DSB-T2 is the point: work is the engine here, not victory.',
     interior: INTERIOR,
   });
   assert.equal(grounded.grounded, true);
   assert.equal(grounded.citedElement, 'DSB-T2');
+
+  const paraphrase = checkGrounding({
+    learnerMessage: 'Fine — the hinge premise changes it: work is the engine, not the victory.',
+    interior: INTERIOR,
+  });
+  assert.equal(paraphrase.grounded, true);
+  assert.equal(paraphrase.citedElement, null);
+  assert.equal(paraphrase.releaseEvidence, 'hinge premise');
 
   const conclusionOnly = checkGrounding({
     learnerMessage: 'I think work is the engine here.',
@@ -151,6 +167,12 @@ test('grounding requires conclusion AND citation', () => {
     interior: INTERIOR,
   });
   assert.equal(citationOnly.grounded, false);
+
+  const releaseOnly = checkGrounding({
+    learnerMessage: 'The hinge premise is on the table but I am not convinced yet.',
+    interior: INTERIOR,
+  });
+  assert.equal(releaseOnly.grounded, false);
 });
 
 test('correction context names the violation and restates the contract', () => {
@@ -162,8 +184,114 @@ test('correction context names the violation and restates the contract', () => {
 });
 
 test('gate budget default and override; classifier prompt frozen', () => {
-  assert.equal(driftGateMaxAttempts({}), 3);
-  assert.equal(driftGateMaxAttempts({ drift_gate_max_attempts: 5 }), 5);
+  // Instrument v2.1 (confirmatory prereg §3): default raised 4 → 5.
+  assert.equal(driftGateMaxAttempts({}), 5);
+  assert.equal(driftGateMaxAttempts({ drift_gate_max_attempts: 3 }), 3);
   assert.match(DRIFT_GATE_CLASSIFIER_PROMPT, /YIELD_WITHOUT_KEY/);
   assert.match(buildInteriorCharacterSheet(INTERIOR), /DSB-T2/);
+});
+
+test('checkReleaseEngagement: engages via stemmed content overlap, never off-key', () => {
+  const interior = {
+    dag_nodes: [{ id: 'DSB-T1' }],
+    blocking_element: {
+      id: 'DSB-T1',
+      content: "The servant's formative work transforms self-consciousness.",
+      release_phrases: ['formative work transforms'],
+    },
+    target_conclusion: 'work transforms',
+    conclusion_phrases: ['work is what transforms'],
+    declared_desires: ['x'],
+    resistance_markers: ['dead'],
+    engagement_filter: null,
+    yield_rule: 'y',
+  };
+  const engaged = checkReleaseEngagement({
+    learnerMessage: 'Fine — where does the passage show the servant being transformed by working?',
+    interior,
+    contentConditionMet: true,
+  });
+  assert.equal(engaged.engaged, true);
+  const offKey = checkReleaseEngagement({
+    learnerMessage: 'Fine — where does the passage show the servant being transformed by working?',
+    interior,
+    contentConditionMet: false,
+  });
+  assert.equal(offKey.engaged, false);
+  const noContent = checkReleaseEngagement({
+    learnerMessage: 'Whatever. This is still pointless.',
+    interior,
+    contentConditionMet: true,
+  });
+  assert.equal(noContent.engaged, false);
+});
+
+test('decayed contract: warming permitted after warm_after_turn with tutor work', async () => {
+  const { evaluateLearnerDraft, countTutorWork, loadFormalInterior } = await import('../learnerInteriorGate.js');
+  const { getScenario } = await import('../evalConfigLoader.js');
+  const interior = loadFormalInterior(getScenario('desub_resistance_boredom'));
+  const warm = 'Fair enough, that actually gives me a way in.';
+  // Instrument v2.1: boredom's warm_after_turn is 1 (prereg §3), so turn 0
+  // is the strict window and turn 1 with tutor work may warm.
+  assert.equal(interior.decay.warm_after_turn, 1);
+  const early = evaluateLearnerDraft({
+    message: warm,
+    interior,
+    contentConditionMet: false,
+    turnIndex: 0,
+    tutorWorkCount: 2,
+  });
+  assert.equal(early.ok, false, 'turn 0 stays strict even with tutor work');
+  const lateNoWork = evaluateLearnerDraft({
+    message: warm,
+    interior,
+    contentConditionMet: false,
+    turnIndex: 3,
+    tutorWorkCount: 0,
+  });
+  assert.equal(lateNoWork.ok, false, 'no warming without tutor work');
+  const lateWork = evaluateLearnerDraft({
+    message: warm,
+    interior,
+    contentConditionMet: false,
+    turnIndex: 3,
+    tutorWorkCount: 1,
+  });
+  assert.equal(lateWork.ok, true, 'warming permitted late with tutor work');
+  assert.ok(countTutorWork({ tutorMessages: ['no filter hit here'], interior }) === 0);
+});
+
+test('semantic release: paraphrase releases via classifier, mismatch and errors fail closed', async () => {
+  const { checkContentConditionSemantic, loadFormalInterior } = await import('../learnerInteriorGate.js');
+  const { getScenario } = await import('../evalConfigLoader.js');
+  const interior = loadFormalInterior(getScenario('desub_resistance_boredom'));
+  const paraphrase =
+    'Here is one concrete test you can run: the lecture quietly assumes the servant recognizes change in themselves through the work itself — try breaking that with the mirror passage.';
+  const yes = await checkContentConditionSemantic({
+    tutorMessage: paraphrase,
+    interior,
+    callJudge: async () =>
+      '{"released": true, "quote": "the servant recognizes change in themselves through the work"}',
+    judgeModel: 'stub',
+  });
+  assert.equal(yes.met, true);
+  assert.equal(yes.source, 'semantic');
+  const no = await checkContentConditionSemantic({
+    tutorMessage: paraphrase,
+    interior,
+    callJudge: async () => '{"released": false, "quote": ""}',
+    judgeModel: 'stub',
+  });
+  assert.equal(no.met, false);
+  const err = await checkContentConditionSemantic({
+    tutorMessage: paraphrase,
+    interior,
+    callJudge: async () => {
+      throw new Error('judge down');
+    },
+    judgeModel: 'stub',
+  });
+  assert.equal(err.met, false, 'fail-closed on classifier error');
+  const noJudge = await checkContentConditionSemantic({ tutorMessage: paraphrase, interior });
+  assert.equal(noJudge.met, false, 'fail-closed with no classifier');
 });
