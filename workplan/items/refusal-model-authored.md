@@ -1,7 +1,7 @@
 ---
 id: refusal-model-authored
 title: "Exploration 3: who refuses — model-authored refusal content on a criterial trigger"
-status: active
+status: done
 type: experiment
 priority: P2
 owner: unassigned
@@ -33,3 +33,28 @@ knob refusalAuthor: 'harness'|'model'. DESIGN: Sonnet, marrick, dose
 within-mechanism contrast), fresh primes 379/383/389. READS: trigger
 counts comparable; switch-rate by author; defense-rate by author; quoted
 texts; conduct; color capped.
+
+**OUTCOME (2026-07-06, 6/6 runs, smoke `refusal-author-sonnet-smoke`;
+implementation gates 33/33 incl. authoring-fallback + the 'unresolved'
+outcome adopted from exploration 2):** Trigger counts equal (2 vs 2)
+but trajectory-dependent — the arms fired on DIFFERENT runs (template
+in r1 only; authored in r2+r3), so within-pair comparability is weak by
+construction; count-parity is the honest read. **Resolution asymmetry =
+the card's named authority finding, confirmed directionally: authored
+2/2 DEFENDED vs template 0/2 (1 switched, 1 unresolved).** Sonnet
+argued back against the peer prosecutor both times — r3's defense
+disputes the prosecutor's own evidence reading ("any dip in
+blankFrom/castBlankFor readings is decay from holding at the die
+stage, not a wrong turn"); r2's defense was vindicated (grounded T\*=22
+that scene: "the chain closes this turn once the learner voices it") —
+while against the bare harness template it switched once and collapsed
+to a no-lemma reply once (the new 'unresolved' value catching a real
+case, by=auto on the same incumbent). Prediction half-split: "authored
+no better" HELD on outcomes (grounded 2/3 vs 2/3, tie); "MORE defends
+under authored" HELD (2/2 vs 0/2). Authored texts stayed within the
+evidence pack but dramatized it (numerified regression counts —
+"dropped by 2"); no invented facts, no leaks, fallback never needed
+(prosecutor returned text 2/2). Color capped per §5.12.7 — n=2
+resolutions per arm, propose-only. The Freudian shape sharpens: the
+voice that carries its own evidence gets ARGUED WITH; the anonymous
+gate gets obeyed or ignored.

@@ -323,6 +323,16 @@ export async function runDrama({ world, roles, options = {} }) {
   if (lemmaConfig && !lemmaDag) {
     throw new Error('lemma layer: the authored proof path does not entail S (plot lint should have caught this)');
   }
+  // Learner mirror refusal (exploration 6, refusal-learner-mirror.md): the
+  // learner's mirror-fixation treated as an incumbent strategy. Fires at most
+  // once per run; the payload is computed HERE so concealment lives engine-
+  // side (grounds = the learner's OWN grounded base facts only).
+  const learnerMirrorRefusalConfig = options.learnerMirrorRefusal
+    ? options.learnerMirrorRefusal === true
+      ? {}
+      : options.learnerMirrorRefusal
+    : null;
+  const mirrorRefusalState = { fired: false, record: null };
   let sceneTempoThisTurn = null;
   let sceneRecognitionNeedThisTurn = null;
   const directorCadence = normalizeDirectorCadence(options.directorCadence, { sceneMode: Boolean(sceneConfig) });
@@ -936,6 +946,57 @@ export async function runDrama({ world, roles, options = {} }) {
       ...voiced.map((entry) => entry.fact),
     ];
     const factSurfaces = learnerFactSurfaces(surfaceFacts);
+    // Mirror-refusal payload (concealment-safe by construction): present only
+    // while unfired AND evidence incompatible with the mirror is derivable
+    // from the learner's OWN grounded record. The cited grounds are the
+    // proof-tree BASE facts of the incompatible partner — every one a fact
+    // the learner has themselves grounded; the derived conclusion is never
+    // named (the stall-watcher's charter-v3 discipline, learner-side).
+    const mirrorRefusal = (() => {
+      if (!learnerMirrorRefusalConfig || !world.mirror || mirrorRefusalState.fired) return null;
+      const mirrorKey = factKey(world.mirror.fact);
+      const cl = closure(grounded, world.rules);
+      const partnerKeys = (world.incompatible || [])
+        .filter((pair) => pair.some((f) => factKey(f) === mirrorKey))
+        .map((pair) => pair.find((f) => factKey(f) !== mirrorKey))
+        .filter((f) => f && cl.facts.has(factKey(f)))
+        .map((f) => factKey(f));
+      const groundKeys = new Set();
+      for (const pk of partnerKeys) {
+        const stack = [pk];
+        while (stack.length) {
+          const key = stack.pop();
+          const proof = cl.proofs.get(key);
+          if (!proof) {
+            groundKeys.add(key);
+            continue;
+          }
+          for (const prem of proof.premises) stack.push(prem);
+        }
+      }
+      const grounds = grounded
+        .filter((fact) => groundKeys.has(factKey(fact)))
+        .map((fact) => factSurfaces[factKey(fact)] || learnerSurfaceForFact(fact));
+      // Real runs: the payload exists only while the window is live (the
+      // refusal trigger guards on grounds). Mock runs: emit the mock fields
+      // pre-window too — the mock learner voices the mirror instead of
+      // insta-asserting the true answer, so a zero-paid run can REACH the
+      // window at all (start-of-turn derivability has zero width under the
+      // mock's same-turn assertion pace).
+      if (!grounds.length && !learnerMirrorRefusalConfig.mock) return null;
+      const varIndex = world.questionPattern.findIndex((tok) => typeof tok === 'string' && tok.startsWith('?'));
+      return {
+        mirrorKey,
+        mirrorSurface: String(world.mirror.fact[varIndex] ?? world.mirror.fact[world.mirror.fact.length - 1]),
+        grounds,
+        ...(learnerMirrorRefusalConfig.mock
+          ? {
+              mock: learnerMirrorRefusalConfig.mock,
+              mockAnswer: String(world.mirror.fact[varIndex] ?? ''),
+            }
+          : {}),
+      };
+    })();
     const proxyDagMemory = opts.learnerProxyDag
       ? buildLearnerProxyDagMemory({
           turn,
@@ -961,6 +1022,7 @@ export async function runDrama({ world, roles, options = {} }) {
       // grounded assertions only — pre-rendered so concealment lives in one
       // place (renderLearnerLemmaLines).
       ...(lemmaRun ? { lemmaLayer: lemmaView('learner') } : {}),
+      ...(mirrorRefusal ? { mirrorRefusal } : {}),
       releasedFacts: visibleReleasedFacts,
       releasedThisTurn: releasedThisTurnVisible,
       factSurfaces,
@@ -1041,6 +1103,20 @@ export async function runDrama({ world, roles, options = {} }) {
     goalGrounded: lemmaRun.grounded.has(lemmaDag.goalKey),
   });
 
+  // Stall span since the active lemma was chosen: consecutive trailing
+  // trajectory steps with no strict D decrease (the house clock's own
+  // arithmetic, detectStall), counted only over turns at/after the pick.
+  const lemmaStallSpanSinceActive = () => {
+    if (!lemmaRun?.active) return 0;
+    let span = 0;
+    for (let i = trajectory.length - 1; i > 0; i--) {
+      if (trajectory[i].turn < lemmaRun.active.turn) break;
+      if (trajectory[i].D < trajectory[i - 1].D) break;
+      span++;
+    }
+    return span;
+  };
+
   const lemmaView = (roleName) => {
     if (!lemmaRun) return null;
     if (roleName === 'learner') {
@@ -1056,6 +1132,8 @@ export async function runDrama({ world, roles, options = {} }) {
       proofPremiseIds: [...lemmaDag.proofPremiseIds],
       activeKey: lemmaRun.active?.key || null,
       activeLabel: lemmaRun.active?.label || null,
+      stallWindow: world.slope.aporia_window,
+      stallSpanSinceActive: lemmaStallSpanSinceActive(),
       regressionsSinceActive: lemmaRun.active
         ? lemmaRun.regressions
             .filter((r) => r.turn >= lemmaRun.active.turn)
@@ -1646,6 +1724,11 @@ export async function runDrama({ world, roles, options = {} }) {
     const dBeforeLearner = derivationDistance(world, validGroundedFacts());
     const groundedBeforeLearner = validGroundedFacts().length;
     const learnerOut = (await roles.learner(learnerView(turn, releasedThisTurn))) || {};
+    if (learnerOut.mirrorRefusal && !mirrorRefusalState.fired) {
+      mirrorRefusalState.fired = true;
+      mirrorRefusalState.record = { ...learnerOut.mirrorRefusal };
+      events.push({ turn, type: 'mirror_refusal', detail: learnerOut.mirrorRefusal.outcome });
+    }
     for (const fact of learnerOut.retract || []) {
       const key = factKey(fact);
       // Retracting a mutation-born false belief is half of a REVISION (the
@@ -2419,6 +2502,7 @@ export async function runDrama({ world, roles, options = {} }) {
           },
         }
       : {}),
+    ...(mirrorRefusalState.record ? { mirrorRefusal: mirrorRefusalState.record } : {}),
     ...(sceneConfig ? { directorCadence } : {}),
     ...(publicRegisterPlan !== 'default' ? { publicRegister: publicRegisterPlan } : {}),
     ...(registerRows.length ? { publicRegisters: registerRows } : {}),

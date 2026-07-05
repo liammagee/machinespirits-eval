@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-05T14:01:35.422Z",
+  "generated": "2026-07-05T21:01:23.529Z",
   "counts": {
     "total": 92,
     "byStatus": {
-      "done": 77,
+      "done": 80,
       "blocked": 1,
       "dropped": 2,
-      "active": 5,
+      "active": 2,
       "archived": 4,
       "triaged": 3
     },
@@ -144,32 +144,6 @@
       "branch": "worktree-blueprint-composition"
     },
     {
-      "id": "refusal-stall-trigger-codex",
-      "title": "Exploration 2: stall-triggered refusal at the frontier tier (codex)",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Trigger implemented + gated (deterministic stall arithmetic, both mock paths), 6-run codex smoke complete, pre-stated reads recorded.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "content-compulsion-promotion",
-          "strategy-refusal-smoke"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "strategy-refusal",
-        "frontier"
-      ]
-    },
-    {
       "id": "lean-semantic-web-proof-dag-validation",
       "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
       "status": "active",
@@ -192,57 +166,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "refusal-learner-mirror",
-      "title": "Exploration 6: the learner's mirror — refusing the learner's incumbent fixation",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Learner-side trigger implemented + gated (symmetric to the tutor side per the house rule), 6-run smoke complete, pre-stated reads recorded.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "content-compulsion-promotion"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "strategy-refusal",
-        "learner",
-        "symmetry"
-      ]
-    },
-    {
-      "id": "refusal-model-authored",
-      "title": "Exploration 3: who refuses — model-authored refusal content on a criterial trigger",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Variant implemented + gated, 6-run smoke complete, pre-stated reads recorded.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "content-compulsion-promotion"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "strategy-refusal",
-        "superego"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -645,6 +568,32 @@
         "outer-loop",
         "plan-mode",
         "ego-superego"
+      ]
+    },
+    {
+      "id": "refusal-stall-trigger-codex",
+      "title": "Exploration 2: stall-triggered refusal at the frontier tier (codex)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Trigger implemented + gated (deterministic stall arithmetic, both mock paths), 6-run codex smoke complete, pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion",
+          "strategy-refusal-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal",
+        "frontier"
       ]
     },
     {
@@ -1914,6 +1863,57 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "refusal-learner-mirror",
+      "title": "Exploration 6: the learner's mirror — refusing the learner's incumbent fixation",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Learner-side trigger implemented + gated (symmetric to the tutor side per the house rule), 6-run smoke complete, pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal",
+        "learner",
+        "symmetry"
+      ]
+    },
+    {
+      "id": "refusal-model-authored",
+      "title": "Exploration 3: who refuses — model-authored refusal content on a criterial trigger",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Variant implemented + gated, 6-run smoke complete, pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal",
+        "superego"
+      ]
     },
     {
       "id": "review-ego-superego-internal-history-window",

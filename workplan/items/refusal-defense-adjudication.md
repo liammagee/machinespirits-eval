@@ -29,3 +29,13 @@ base-rate is >= ~20% of refusals (at 1/7 the dial has almost nothing to
 act on). If gated in: implement criterial defense-check (lexical
 mechanism/evidence test, deterministic), gates, 6-run smoke, pre-stated
 reads mirroring the refusal smoke.
+
+**GATE RESOLVED (2026-07-06): NOT EXECUTED — condition (i) failed.**
+The promotion run recorded NOT CONFIRMED (question closed at this
+dose/model pair), so the gate is unmet regardless of (ii) — which,
+for the record, WOULD now clear: defense base-rates ran 3/6 (promotion),
+3/3 valid (codex stall-trigger), 2/2 (model-authored). The dial has
+plenty to act on but nothing it could improve toward: with no confirmed
+outcome value, adjudicating defenses is escalation without a target.
+Stays unbuilt; the design above remains executable under a future
+operator decision if a variant ever confirms.

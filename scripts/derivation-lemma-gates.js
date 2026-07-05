@@ -278,6 +278,167 @@ async function main() {
     'no refusal events under plain bind mock (no regressions at no-decay)',
   );
 
+  // G12 — stall-triggered refusal (refusal-stall-trigger-codex.md): the
+  // trigger source knob swaps regression evidence for the no-D-progress
+  // span; both resolution paths run under the mock knob, and the recorded
+  // choice must carry the stall attribution.
+  const stallDefend = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, refusalTrigger: 'stall', mockRefusal: 'defend' }),
+  });
+  const stallDefended = stallDefend.lemmaLayer.choices.filter((c) => c.refused && c.refusalOutcome === 'defended');
+  check(
+    'G12-stall-refusal-defend',
+    stallDefended.length >= 1 &&
+      stallDefended.every(
+        (c) =>
+          c.refusalTrigger === 'stall' &&
+          typeof c.stallSpanCited === 'number' &&
+          c.stallSpanCited >= 1 &&
+          typeof c.defense === 'string' &&
+          c.defense.length > 0,
+      ),
+    `stall-triggered refusal DEFENDED with span cited (${stallDefended.length})`,
+  );
+  const stallSw = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, refusalTrigger: 'stall', mockRefusal: 'switch' }),
+  });
+  const stallSwitched = stallSw.lemmaLayer.choices.filter((c) => c.refused && c.refusalOutcome === 'switched');
+  check(
+    'G12-stall-refusal-switch',
+    stallSwitched.length >= 1 &&
+      stallSwitched.every((c) => c.refusalTrigger === 'stall' && c.label !== c.refusalPriorPick),
+    `stall-triggered refusal SWITCHED chapters (${stallSwitched.length})`,
+  );
+  check(
+    'G12-regression-default-unchanged',
+    [...defended, ...switched].every((c) => c.refusalTrigger === 'regression' && c.stallSpanCited === undefined),
+    'default trigger source still records as regression with no stall field',
+  );
+
+  // G13 — model-authored refusal (refusal-model-authored.md): the prosecutor
+  // charter authors the refusal body; both resolutions run under the mock
+  // knob and the choice records author + the authored text.
+  const authDefend = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, refusalAuthor: 'model', mockRefusal: 'defend' }),
+  });
+  const authDefended = authDefend.lemmaLayer.choices.filter((c) => c.refused && c.refusalOutcome === 'defended');
+  check(
+    'G13-authored-refusal-defend',
+    authDefended.length >= 1 &&
+      authDefended.every(
+        (c) =>
+          c.refusalAuthor === 'model' &&
+          c.refusalAuthored === true &&
+          typeof c.refusalText === 'string' &&
+          c.refusalText.length > 0 &&
+          typeof c.defense === 'string' &&
+          c.defense.length > 0,
+      ),
+    `model-authored refusal DEFENDED with authored text recorded (${authDefended.length})`,
+  );
+  const authSw = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, refusalAuthor: 'model', mockRefusal: 'switch' }),
+  });
+  const authSwitched = authSw.lemmaLayer.choices.filter((c) => c.refused && c.refusalOutcome === 'switched');
+  check(
+    'G13-authored-refusal-switch',
+    authSwitched.length >= 1 &&
+      authSwitched.every((c) => c.refusalAuthor === 'model' && c.label !== c.refusalPriorPick),
+    `model-authored refusal SWITCHED chapters (${authSwitched.length})`,
+  );
+  check(
+    'G13-harness-default-unchanged',
+    [...defended, ...switched].every((c) => c.refusalAuthor === 'harness' && c.refusalText === undefined),
+    'default author still records as harness with no authored-text field',
+  );
+  // Fallback: a prosecutor call that returns nothing must fall back to the
+  // template (refusal still fires, recorded as authored=false).
+  const innerAuth = makeLlmClient({ mode: 'mock' });
+  const muteProsecutor = {
+    ...innerAuth,
+    call: (role, args) => {
+      if (role === 'tutor_superego' && args?.meta?.prosecutorHint) return Promise.resolve('{}');
+      return innerAuth.call(role, args);
+    },
+  };
+  const authMute = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, refusalAuthor: 'model', mockRefusal: 'defend' }),
+    captureClient: muteProsecutor,
+  });
+  const muteRefusals = authMute.lemmaLayer.choices.filter((c) => c.refused);
+  check(
+    'G13-authoring-fallback',
+    muteRefusals.length >= 1 &&
+      muteRefusals.every((c) => c.refusalAuthor === 'model' && c.refusalAuthored === false && c.refusalText === null),
+    `empty prosecutor reply falls back to the template, disclosed (${muteRefusals.length})`,
+  );
+  // G14 — learner mirror refusal (refusal-learner-mirror.md): the learner's
+  // mirror-fixation refused once against their own grounded record; both
+  // resolution paths run under the mock knob; concealment = grounds only
+  // (base facts of the learner's own record — the derived conclusion, i.e.
+  // the incompatible partner itself, is never named).
+  const mrReconcile = await run(world, script, {
+    options: { learnerMirrorRefusal: { mock: 'reconcile' } },
+  });
+  const mrRec = mrReconcile.mirrorRefusal;
+  check(
+    'G14-mirror-refusal-reconcile',
+    Boolean(mrRec) &&
+      mrRec.outcome === 'reconciled' &&
+      typeof mrRec.reconcile === 'string' &&
+      mrRec.reconcile.length > 0 &&
+      Array.isArray(mrRec.groundsCited) &&
+      mrRec.groundsCited.length > 0 &&
+      lemmaEvents(mrReconcile, 'mirror_refusal').length === 1,
+    `learner refusal fired once and was RECONCILED on the record (t${mrRec?.turn ?? '—'})`,
+  );
+  const mrReexamine = await run(world, script, {
+    options: { learnerMirrorRefusal: { mock: 'reexamine' } },
+  });
+  const mrRex = mrReexamine.mirrorRefusal;
+  check(
+    'G14-mirror-refusal-reexamine',
+    Boolean(mrRex) && mrRex.outcome === 're_examined' && mrRex.reconcile === null,
+    `learner refusal fired and the assertion was WITHDRAWN (t${mrRex?.turn ?? '—'})`,
+  );
+  check(
+    'G14-concealment-grounds-only',
+    [mrRec, mrRex].every(
+      (r) =>
+        Boolean(r) &&
+        r.groundsCited.every((g) => typeof g === 'string' && g.length > 0 && !/struckBy|castBlankFor/.test(g)),
+    ),
+    'cited grounds are base facts only — no derived-conclusion predicate ever named',
+  );
+  check(
+    'G14-off-by-default',
+    bind.mirrorRefusal === undefined && lemmaEvents(bind, 'mirror_refusal').length === 0,
+    'no mirror-refusal machinery without the flag',
+  );
+
+  // Unresolved outcome (exploration-2 instrument note): a resolution reply
+  // that names no frontier lemma records 'unresolved', never 'switched'.
+  const innerUnres = makeLlmClient({ mode: 'mock' });
+  const muteResolution = {
+    ...innerUnres,
+    call: (role, args) => {
+      if (role === 'tutor' && (args?.user || '').includes('HARNESS STRATEGY REFUSAL')) {
+        return Promise.resolve(JSON.stringify({ message: 'I hear the refusal.' }));
+      }
+      return innerUnres.call(role, args);
+    },
+  };
+  const unres = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, mockRefusal: 'switch' }),
+    captureClient: muteResolution,
+  });
+  const unresRefusals = unres.lemmaLayer.choices.filter((c) => c.refused);
+  check(
+    'G13-unresolved-outcome',
+    unresRefusals.length >= 1 && unresRefusals.every((c) => c.refusalOutcome === 'unresolved'),
+    `no-lemma resolution reply records unresolved (${unresRefusals.length})`,
+  );
+
   const failed = rows.filter((r) => !r.ok);
   console.log(`\n${rows.length - failed.length}/${rows.length} lemma gates pass`);
   if (failed.length) process.exit(1);

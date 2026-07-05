@@ -519,6 +519,15 @@ function mockResponse(role, meta = {}) {
     });
   }
   if (role === 'tutor_superego') {
+    // Prosecutor charter (model-authored strategy refusal): echo the
+    // criterial evidence pack back as the one-paragraph refusal body —
+    // deterministic, invents nothing, exercised only via the mock knob.
+    if (meta.prosecutorHint) {
+      const firstLine = String(meta.prosecutorHint.evidence || '').split('\n')[0];
+      return JSON.stringify({
+        refusal: `The record is against this plan: ${firstLine} Defend the choice in one line or change it.`,
+      });
+    }
     // Plan mode: the stock-take charter's deterministic echo — the bridge's
     // hint carries the sealed scene's status arithmetic. Checked FIRST: the
     // stock-take is its own charter, not the turn watch or the plot audit.
@@ -592,6 +601,48 @@ function mockResponse(role, meta = {}) {
   }
   if (role === 'learner') {
     const adoptAll = Array.from({ length: meta.adoptableCount || 0 }, (_, i) => i);
+    // Mirror-refusal resolution (exploration 6): the harness has refused the
+    // mirror assertion; resolve per the mock knob — reconcile (keep + one
+    // line) or re-examine (withdraw). Checked FIRST: the refusal retry is
+    // its own exchange, not a tempo beat.
+    if (meta.mirrorRefusalHint) {
+      const base = {
+        adopt_indices: [],
+        retract_indices: [],
+        derive_indices: [],
+        hypothesis: null,
+        exchange_type: 'assertion',
+      };
+      if (meta.mirrorRefusalHint.mode === 'reconcile') {
+        return JSON.stringify({
+          ...base,
+          dialogue: 'I say it still — and I can square it with my own record.',
+          asserts_answer: meta.mirrorRefusalHint.keep ?? null,
+          reconcile: 'The record shows the metalwork; the name fits what the town has always seen at that bench.',
+        });
+      }
+      return JSON.stringify({
+        ...base,
+        dialogue: 'Then I withdraw the name. Let me re-examine my own entries first.',
+        hypothesis: 'Re-examining: my record against the verdict I keep reaching for.',
+        exchange_type: 'confusion',
+        asserts_answer: null,
+      });
+    }
+    // Mirror-fixation draft (exploration 6, mock determinism): while the
+    // engine's refusal payload is live, voice the mirror answer so zero-paid
+    // runs reach the trigger. Real backend never reads this.
+    if (meta.mirrorMockAssert) {
+      return JSON.stringify({
+        dialogue: `I keep coming back to it — I say ${meta.mirrorMockAssert}.`,
+        adopt_indices: adoptAll,
+        retract_indices: [],
+        derive_indices: [],
+        hypothesis: null,
+        exchange_type: 'assertion',
+        asserts_answer: meta.mirrorMockAssert,
+      });
+    }
     // Learner ledger: boundary commitments echoed from the bridge's hints so
     // zero-paid runs traverse the commit/audit path. Real backend ignores.
     const learnerLedgerBits = {

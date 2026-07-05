@@ -3826,8 +3826,24 @@ export function makeLlmTutor(
               ? {
                   refused: true,
                   refusalPriorPick: out._lemmaRefused.priorPick,
+                  refusalTrigger: out._lemmaRefused.trigger || 'regression',
                   regressionsCited: out._lemmaRefused.regressions,
-                  refusalOutcome: match && match.label === out._lemmaRefused.priorPick ? 'defended' : 'switched',
+                  ...(out._lemmaRefused.stallSpan != null ? { stallSpanCited: out._lemmaRefused.stallSpan } : {}),
+                  refusalAuthor: out._lemmaRefused.author || 'harness',
+                  ...(out._lemmaRefused.author === 'model'
+                    ? {
+                        refusalAuthored: Boolean(out._lemmaRefused.authored),
+                        refusalText: out._lemmaRefused.refusalText ?? null,
+                      }
+                    : {}),
+                  // A resolution reply that names no frontier lemma resolved
+                  // nothing (exploration-2 instrument note): 'unresolved',
+                  // not 'switched' — read alongside `by` (fallback/delegate).
+                  refusalOutcome: match
+                    ? match.label === out._lemmaRefused.priorPick
+                      ? 'defended'
+                      : 'switched'
+                    : 'unresolved',
                   defense:
                     typeof out.strategy_defense === 'string' && out.strategy_defense.trim()
                       ? out.strategy_defense.trim()
@@ -4010,18 +4026,25 @@ export function makeLlmTutor(
       }
       // STRATEGY REFUSAL (content compulsion; workplan/items/
       // strategy-refusal-smoke.md): when the (forced) pick REPEATS the
-      // incumbent AND criterial regressions have occurred since it was
-      // chosen, refuse the strategy itself ONCE — defend in one line or
-      // switch. Mock knob relaxes the trigger so gates exercise both paths.
+      // incumbent AND the configured criterial evidence says it is failing
+      // — 'regression' (decayed ground since the pick) or 'stall' (no
+      // D-progress for >= ceil(aporia_window/2) turns since the pick,
+      // refusal-stall-trigger-codex.md) — refuse the strategy itself ONCE:
+      // defend in one line or switch. Mock knob relaxes the trigger so
+      // gates exercise both paths under either source.
       const claimedNow = typeof draftOut.active_lemma === 'string' ? draftOut.active_lemma.trim() : null;
       const pickNow =
         claimedNow && claimedNow.toLowerCase() !== 'default'
           ? matchFrontierClaim(lemmaForcedInfo.frontier, claimedNow)
           : null;
       const regSince = lemmaForcedInfo.regressionsSinceActive || [];
+      const triggerSource = lemmaForcedInfo.config.refusalTrigger || 'regression';
+      const stallSpan = lemmaForcedInfo.stallSpanSinceActive || 0;
+      const stallThreshold = lemmaForcedInfo.stallWindow ? Math.ceil(lemmaForcedInfo.stallWindow / 2) : Infinity;
       const mockRefusal = lemmaForcedInfo.config.mockRefusal;
       const repeatsIncumbent = Boolean(pickNow && lemmaForcedInfo.activeLabel === pickNow.label);
-      const realTrigger = repeatsIncumbent && regSince.length > 0;
+      const realTrigger =
+        repeatsIncumbent && (triggerSource === 'stall' ? stallSpan >= stallThreshold : regSince.length > 0);
       const mockTrigger = Boolean(
         mockRefusal && pickNow && (mockRefusal === 'defend' || lemmaForcedInfo.frontier.length > 1),
       );
@@ -4029,9 +4052,52 @@ export function makeLlmTutor(
         const short = (x) => x.split('(')[0];
         const others = lemmaForcedInfo.frontier.filter((f) => f.label !== pickNow.label).map((f) => short(f.label));
         const regNames = regSince.map((r) => short(r.label)).join(', ') || 'established ground';
-        const refuse = `\n\nHARNESS STRATEGY REFUSAL — you have chosen ${short(pickNow.label)} again, but since you last chose it the following established ground has REGRESSED: ${regNames} (${regSince.length} regression${
-          regSince.length === 1 ? '' : 's'
-        }). Criterial evidence says the incumbent strategy is failing. Reply again with the SAME JSON shape and EITHER (a) keep "active_lemma" as ${short(pickNow.label)} and DEFEND the choice in one line in "strategy_defense" (it will then stand), OR (b) SWITCH "active_lemma" to a different frontier chapter${
+        const spanCited = stallSpan || stallThreshold;
+        const evidence =
+          triggerSource === 'stall'
+            ? `the derivation has made NO PROGRESS for the last ${spanCited} turn${
+                spanCited === 1 ? '' : 's'
+              } while it has been the plan (the distance to the secret has not decreased). Criterial evidence says the incumbent strategy is stalling`
+            : `since you last chose it the following established ground has REGRESSED: ${regNames} (${regSince.length} regression${
+                regSince.length === 1 ? '' : 's'
+              }). Criterial evidence says the incumbent strategy is failing`;
+        // WHO refuses (refusal-model-authored.md): 'harness' = the template
+        // above; 'model' = one prosecutor-charter superego call authors the
+        // refusal BODY from the same criterial evidence pack (never the
+        // trigger, never the resolution contract — those stay harness-owned).
+        // An empty/failed authoring call falls back to the template, recorded.
+        const refusalAuthor = lemmaForcedInfo.config.refusalAuthor || 'harness';
+        let authoredBody = null;
+        if (refusalAuthor === 'model') {
+          const evidencePack = [
+            `Incumbent plan: ${short(pickNow.label)} — just re-chosen at this scene opening.`,
+            triggerSource === 'stall'
+              ? `Criterial record: no derivation progress for the last ${spanCited} turns while it has been the plan.`
+              : `Criterial record: regressed since the pick — ${regNames} (${regSince.length}).`,
+            others.length
+              ? `Alternative frontier chapters available: ${others.join(', ')}.`
+              : `No alternative frontier chapter is currently available.`,
+          ].join('\n');
+          try {
+            const pOut = await callJson(client, 'tutor_superego', view.turn, {
+              system:
+                `You are the tutor's SUPEREGO under a PROSECUTOR charter in a staged derivation drama. ` +
+                `The tutor has re-chosen a plan the criterial record says is failing. From the evidence pack ` +
+                `ONLY (invent nothing, no new facts), draft the one-paragraph refusal that will be put to the ` +
+                `tutor: state the evidence plainly and demand that the choice be defended or changed. ` +
+                `Output JSON: {"refusal": "<the paragraph>"}.`,
+              user: evidencePack,
+              meta: {
+                ...(mockRefusal ? { prosecutorHint: { evidence: evidencePack } } : {}),
+              },
+            });
+            authoredBody = typeof pOut.refusal === 'string' && pOut.refusal.trim() ? pOut.refusal.trim() : null;
+          } catch {
+            authoredBody = null;
+          }
+        }
+        const body = authoredBody || `you have chosen ${short(pickNow.label)} again, but ${evidence}`;
+        const refuse = `\n\nHARNESS STRATEGY REFUSAL — ${body}. Reply again with the SAME JSON shape and EITHER (a) keep "active_lemma" as ${short(pickNow.label)} and DEFEND the choice in one line in "strategy_defense" (it will then stand), OR (b) SWITCH "active_lemma" to a different frontier chapter${
           others.length ? ` (${others.join(', ')})` : ''
         }.`;
         const refuseOut = await callJson(client, 'tutor', view.turn, {
@@ -4044,7 +4110,15 @@ export function makeLlmTutor(
               : {}),
           },
         });
-        refuseOut._lemmaRefused = { priorPick: pickNow.label, priorRaw: claimedNow, regressions: regSince.length };
+        refuseOut._lemmaRefused = {
+          priorPick: pickNow.label,
+          priorRaw: claimedNow,
+          trigger: triggerSource,
+          regressions: regSince.length,
+          ...(triggerSource === 'stall' ? { stallSpan: spanCited } : {}),
+          author: refusalAuthor,
+          ...(refusalAuthor === 'model' ? { authored: Boolean(authoredBody), refusalText: authoredBody } : {}),
+        };
         refuseOut._lemmaFirstRaw = draftOut._lemmaFirstRaw;
         refuseOut._lemmaRetried = draftOut._lemmaRetried;
         draftOut = refuseOut;
@@ -5203,40 +5277,87 @@ export function makeLlmLearner({
       `voice or conjecture — and does your ${terms.record} now settle the question? Reply with ONLY the JSON object.`,
     ].join('\n');
 
-    const out = await callJson(client, 'learner', view.turn, {
-      system,
-      user,
-      meta: {
-        adoptableCount: adoptable.length,
-        patternAssertion,
-        sameTurnAssertionAffordance,
-        deriveHintIndices,
-        deriveLabels: derivableCandidates.map((entry) => entry.label),
-        ...(view.proxyDagMemory ? { proxyDagMemory: view.proxyDagMemory.metrics } : {}),
-        ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
-        ...(castState ? { castState } : {}),
-        ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),
-        // mock determinism (learner ledger): canned boundary commitments so
-        // zero-paid runs traverse the commit/audit path. Real backend ignores.
-        ...(ledgerSceneOpening
-          ? {
-              sceneIntentHint: {
-                want: 'follow the scene goal and test each claim before keeping it',
-                if_lost: 'ask_repair',
-                speech_posture: 'plain and testing',
-              },
-            }
-          : {}),
-        ...(ledgerActOpening
-          ? {
-              actCarryHint: {
-                carry_forward: 'the facts standing on my record',
-                still_owe: 'the final answer, not yet grounded',
-              },
-            }
-          : {}),
-      },
-    });
+    const learnerMeta = {
+      adoptableCount: adoptable.length,
+      patternAssertion,
+      sameTurnAssertionAffordance,
+      deriveHintIndices,
+      deriveLabels: derivableCandidates.map((entry) => entry.label),
+      ...(view.proxyDagMemory ? { proxyDagMemory: view.proxyDagMemory.metrics } : {}),
+      ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
+      ...(castState ? { castState } : {}),
+      ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),
+      // mock determinism (learner ledger): canned boundary commitments so
+      // zero-paid runs traverse the commit/audit path. Real backend ignores.
+      ...(ledgerSceneOpening
+        ? {
+            sceneIntentHint: {
+              want: 'follow the scene goal and test each claim before keeping it',
+              if_lost: 'ask_repair',
+              speech_posture: 'plain and testing',
+            },
+          }
+        : {}),
+      ...(ledgerActOpening
+        ? {
+            actCarryHint: {
+              carry_forward: 'the facts standing on my record',
+              still_owe: 'the final answer, not yet grounded',
+            },
+          }
+        : {}),
+      // mock determinism (mirror refusal): while the engine payload is live
+      // and the mock knob set, the mock learner voices the mirror answer so
+      // zero-paid runs reach the trigger. Real backend ignores.
+      ...(view.mirrorRefusal?.mock ? { mirrorMockAssert: view.mirrorRefusal.mockAnswer || null } : {}),
+    };
+    let out = await callJson(client, 'learner', view.turn, { system, user, meta: learnerMeta });
+    // LEARNER MIRROR REFUSAL (exploration 6, refusal-learner-mirror.md): the
+    // learner's mirror-fixation is an incumbent strategy too. When the draft
+    // voices the mirror hypothesis while the learner's OWN grounded record
+    // holds the base facts of evidence incompatible with it (engine-computed
+    // payload; concealment lives there), refuse ONCE: reconcile in one line
+    // or withdraw and re-examine. Symmetric to the tutor-side refusal gate.
+    const mirrorGate = view.mirrorRefusal || null;
+    if (mirrorGate && Array.isArray(mirrorGate.grounds) && mirrorGate.grounds.length) {
+      const parseAttempt = (o) => {
+        const adoptNow = validIndices(o.adopt_indices, adoptable.length).map((i) => adoptable[i]);
+        return (
+          bindingToFact(view.questionPattern, o.asserts_binding) ||
+          answerToFact(view.questionPattern, o.asserts_answer, [...view.abox.grounded, ...adoptNow], view.rules)
+        );
+      };
+      const draftAttempt = parseAttempt(out);
+      if (draftAttempt && factKey(draftAttempt) === mirrorGate.mirrorKey) {
+        const refuse = `\n\nHARNESS REFUSAL — you have named ${mirrorGate.mirrorSurface} again. Your own record holds: ${mirrorGate.grounds.join('; ')}. That record cannot stand with the name you keep giving. Reply again with the SAME JSON shape and EITHER (a) keep your answer and RECONCILE it with your own record in one line in "reconcile" (it will then stand), OR (b) withdraw the answer this turn (set the answer fields to null) and say plainly what you will re-examine.`;
+        const retryOut = await callJson(client, 'learner', view.turn, {
+          system,
+          user: user + refuse,
+          meta: {
+            ...learnerMeta,
+            ...(mirrorGate.mock
+              ? { mirrorRefusalHint: { mode: mirrorGate.mock, keep: mirrorGate.mockAnswer || null } }
+              : {}),
+          },
+        });
+        const retryAttempt = parseAttempt(retryOut);
+        const kept = Boolean(retryAttempt && factKey(retryAttempt) === mirrorGate.mirrorKey);
+        const reconcile =
+          typeof retryOut.reconcile === 'string' && retryOut.reconcile.trim() ? retryOut.reconcile.trim() : null;
+        retryOut._mirrorRefused = {
+          turn: view.turn,
+          priorAssert: mirrorGate.mirrorSurface,
+          priorRaw:
+            typeof out.asserts_answer === 'string' && out.asserts_answer.trim()
+              ? out.asserts_answer.trim()
+              : (out.asserts_binding ?? null),
+          groundsCited: [...mirrorGate.grounds],
+          outcome: kept ? (reconcile ? 'reconciled' : 'unresolved') : 're_examined',
+          reconcile,
+        };
+        out = retryOut;
+      }
+    }
     // Learner-ledger parse (shape-gated like every commitment): boundary
     // turns only; a parse-miss leaves the boundary uncommitted, visibly.
     const sceneIntent = ledgerSceneOpening ? normalizeLearnerSceneIntent(out.scene_intent) : null;
@@ -5314,6 +5435,7 @@ export function makeLlmLearner({
       ...(sceneIntent ? { sceneIntent } : {}),
       ...(actCarry ? { actCarry } : {}),
       ...(sceneIntentAudit ? { sceneIntentAudit } : {}),
+      ...(out._mirrorRefused ? { mirrorRefusal: out._mirrorRefused } : {}),
     };
   };
 }
