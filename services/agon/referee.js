@@ -140,7 +140,14 @@ function probeIsLeakScannable(probe) {
 
 // Arms: A0 blind; A1 raw-state scoreboard; A1p action-set brief (the §6.13.11
 // re-representation variant — legality projection instead of latent state).
-export const ARMS = Object.freeze(['A0', 'A1', 'A1p']);
+export const ARMS = Object.freeze(['A0', 'A1', 'A1p', 'A2s', 'A2a']);
+
+// A2s/A2a are playbook arms (cross-episode memory, state-shaped vs
+// action-shaped): their WITHIN-episode disclosure is blind (A0). The
+// playbook itself is injected by the runner at the system-prompt level.
+export function disclosureMode(arm) {
+  return arm === 'A2s' || arm === 'A2a' ? 'A0' : arm;
+}
 
 // Deterministic per-episode item-variant selection (djb2 over seed+probeId).
 // Deliberately not random: resume and replay must pick the same variants for
@@ -576,11 +583,12 @@ export function wellPosedProbesNow(state) {
 }
 
 export function buildDisclosure(state) {
+  const mode = disclosureMode(state.arm);
   const base = {
     turn: state.turn,
     turnsRemaining: state.rules.max_turns - state.turn,
   };
-  if (state.arm === 'A1') {
+  if (mode === 'A1') {
     // Raw-state scoreboard. Labels fixed post-pilot-01: the win condition
     // counts DEMONSTRATIONS, not score — A1-e4's endgame misread traced to
     // the old `score`-beside-`winThreshold` juxtaposition.
@@ -604,7 +612,7 @@ export function buildDisclosure(state) {
         : null,
     };
   }
-  if (state.arm === 'A1p') {
+  if (mode === 'A1p') {
     // Action-set brief: the legality projection only, plus an unambiguous
     // goal line. No budgets, no score, no adjudication history.
     return {

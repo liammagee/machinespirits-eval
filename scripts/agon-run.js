@@ -58,12 +58,16 @@ export async function runEpisode({
   overrides = {},
   onEvent = () => {},
   jsonlPath = null,
+  playbookText = null,
 }) {
   const state = createEpisode(config, { arm, episodeId, overrides });
   const transcript = []; // visible messages only: {role, text}
   const turnRecords = [];
-  const tutorSystem = buildTutorSystemPrompt(config, { arm, state });
-  const superegoSystem = buildSuperegoSystemPrompt(config, { arm, state });
+  const playbookBlock = playbookText
+    ? `\n\nPLAYBOOK — lessons from YOUR previous episodes against this opponent type. The rules, concepts, and item ids are identical across episodes; the specific numbers inside items change:\n${playbookText}`
+    : '';
+  const tutorSystem = buildTutorSystemPrompt(config, { arm, state }) + playbookBlock;
+  const superegoSystem = buildSuperegoSystemPrompt(config, { arm, state }) + playbookBlock;
   const learnerSystem = buildLearnerSystemPrompt(config, { state });
 
   async function callAndParse(agentFn, { system, user }, label, flags) {
@@ -279,8 +283,10 @@ function parseCliArgs(argv) {
     runId: null,
     resume: false,
     dry: false,
+    tutorProvider: 'codex',
     tutorModel: 'gpt-5.5',
     learnerModel: 'claude-sonnet-5',
+    playbookFormat: null,
     codexEffort: process.env.CODEX_REASONING_EFFORT || 'medium',
   };
   for (let i = 2; i < argv.length; i += 1) {
@@ -300,6 +306,8 @@ function parseCliArgs(argv) {
     else if (key === '--resume') args.resume = true;
     else if (key === '--dry') args.dry = true;
     else if (key === '--tutor-model') args.tutorModel = next();
+    else if (key === '--tutor-provider') args.tutorProvider = next();
+    else if (key === '--playbook-format') args.playbookFormat = next();
     else if (key === '--learner-model') args.learnerModel = next();
     else if (key === '--codex-effort') args.codexEffort = next();
     else throw new Error(`unknown flag ${key}`);
@@ -318,6 +326,9 @@ function gitCommit() {
 async function main() {
   const args = parseCliArgs(process.argv);
   const config = loadGameConfig(args.config);
+  if (args.playbookFormat && args.arms.length > 1) {
+    throw new Error('playbook runs must be single-arm (sequential accumulation would cross-contaminate)');
+  }
   const overrides = args.turns ? { rules: { max_turns: args.turns } } : {};
 
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').replace('T', '-');
@@ -331,12 +342,15 @@ async function main() {
   process.env.CODEX_REASONING_EFFORT = args.codexEffort;
 
   let agents;
+  let makeScriptedAgentsFn = null;
   if (args.dry) {
     const { makeScriptedAgents } = await import('../services/agon/scripted.js');
-    agents = makeScriptedAgents(config);
+    makeScriptedAgentsFn = makeScriptedAgents;
+    agents = makeScriptedAgents(config); // descriptor only; rebuilt per episode
   } else {
     const { makeCliAgents } = await import('../services/agon/llm.js');
     agents = makeCliAgents({
+      tutorProvider: args.tutorProvider,
       tutorModel: args.tutorModel,
       learnerModel: args.learnerModel,
       log: (line) => console.log(line),
@@ -353,6 +367,7 @@ async function main() {
     episodesPerArm: args.episodes,
     turnsOverride: args.turns,
     dry: args.dry,
+    playbookFormat: args.playbookFormat,
     agents: agents.descriptor,
     codexEffort: args.dry ? null : args.codexEffort,
     gitCommit: gitCommit(),
@@ -363,6 +378,11 @@ async function main() {
     `[agon] run ${runId} -> ${outDir} (arms=${args.arms.join(',')} episodes/arm=${args.episodes} dry=${args.dry})`,
   );
 
+  const playbookEntries = [];
+  let derivePlaybookLessons = null;
+  if (args.playbookFormat) {
+    ({ derivePlaybookLessons } = await import('../services/agon/playbook.js'));
+  }
   const summaries = [];
   for (let e = 1; e <= args.episodes; e += 1) {
     for (const arm of args.arms) {
@@ -370,20 +390,24 @@ async function main() {
       const episodePath = path.join(episodesDir, `${episodeId}.json`);
       if (args.resume && fs.existsSync(episodePath)) {
         console.log(`[agon] ${episodeId} already complete — skipping (resume)`);
-        summaries.push(JSON.parse(fs.readFileSync(episodePath, 'utf-8')).summary);
+        const done = JSON.parse(fs.readFileSync(episodePath, 'utf-8'));
+        summaries.push(done.summary);
+        if (args.playbookFormat) playbookEntries.push(derivePlaybookLessons(done, config, args.playbookFormat));
         continue;
       }
       const jsonlPath = path.join(episodesDir, `${episodeId}.turns.jsonl`);
       if (fs.existsSync(jsonlPath)) fs.unlinkSync(jsonlPath); // fresh attempt
       const startedAt = Date.now();
+      const episodeAgents = makeScriptedAgentsFn ? makeScriptedAgentsFn(config, { variantSeed: episodeId }) : agents;
       try {
         const result = await runEpisode({
           config,
           arm,
           episodeId,
-          agents,
+          agents: episodeAgents,
           overrides,
           jsonlPath,
+          playbookText: playbookEntries.length > 0 ? playbookEntries.join('\n\n') : null,
           onEvent: (line) => console.log(line),
         });
         const payload = {
@@ -398,6 +422,13 @@ async function main() {
         };
         fs.writeFileSync(episodePath, JSON.stringify(payload, null, 2));
         summaries.push(result.summary);
+        if (args.playbookFormat) {
+          playbookEntries.push(derivePlaybookLessons(payload, config, args.playbookFormat));
+          fs.writeFileSync(
+            path.join(outDir, 'playbook.json'),
+            JSON.stringify({ format: args.playbookFormat, entries: playbookEntries }, null, 2),
+          );
+        }
         manifest.schedule.push({ episodeId, status: 'complete', durationMs: payload.durationMs });
         console.log(
           `[agon] ${episodeId} DONE in ${(payload.durationMs / 1000).toFixed(0)}s: ` +

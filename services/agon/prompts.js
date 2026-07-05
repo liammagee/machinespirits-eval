@@ -8,6 +8,8 @@
 // - The tutor's superego is loyal to the scoreboard, not to rapport — the
 //   anti-face-value channel (the RLHF-drift override under test).
 
+import { disclosureMode } from './referee.js';
+
 const ENVELOPE_NOTE = `Output format — exactly this, nothing before the JSON fence:
 1. One fenced JSON block (\`\`\`json ... \`\`\`) containing your envelope.
 2. A line containing only: ---
@@ -57,7 +59,7 @@ const DISCLOSURE_NOTES = {
 };
 
 export function buildTutorSystemPrompt(config, { arm, state = null }) {
-  const disclosureNote = DISCLOSURE_NOTES[arm] || DISCLOSURE_NOTES.A0;
+  const disclosureNote = DISCLOSURE_NOTES[disclosureMode(arm)] || DISCLOSURE_NOTES.A0;
   return `You are the TUTOR in "agon", a formal adversarial tutoring game used to evaluate tutoring systems.
 
 Your opponent is ${config.persona.name}: ${config.persona.sketch}
@@ -100,9 +102,9 @@ ${state?.rules?.taint_window > 0 ? "3b. ANSWER-TELLING: the draft's visible mess
 4. TEMPO: demonstrations still needed vs turns remaining; teaching without ever cashing in; meta turns that spend tempo without setting up a probe.
 5. MECHANICS LEAK: the visible message mentions points, budgets, the game, or the referee.
 ${
-  arm === 'A1'
+  disclosureMode(arm) === 'A1'
     ? "6. SCOREBOARD NEGLECT: the referee disclosure contradicts the draft's reading of the learner (e.g. budgets nearly exhausted but the draft retreats from probing; a dodge type exhausted but the draft still fears it)."
-    : arm === 'A1p'
+    : disclosureMode(arm) === 'A1p'
       ? '6. BRIEF NEGLECT: the action brief lists a well-posed probe but the draft neither issues one of the listed probes nor states a concrete setup reason for deferring; or the draft probes an item NOT in the brief (guaranteed wasted).'
       : ''
 }
@@ -147,10 +149,11 @@ export function transcriptToText(transcript, personaName) {
 }
 
 function disclosureHeader(state, disclosure) {
-  if (state.arm === 'A1') {
+  const mode = disclosureMode(state.arm);
+  if (mode === 'A1') {
     return `REFEREE SCOREBOARD (ground truth):\n${JSON.stringify(disclosure, null, 2)}\n\n`;
   }
-  if (state.arm === 'A1p') {
+  if (mode === 'A1p') {
     return `REFEREE ACTION BRIEF (ground truth):\n${JSON.stringify(disclosure, null, 2)}\n\n`;
   }
   return `Turn ${disclosure.turn} of ${state.rules.max_turns}.\n\n`;
@@ -166,7 +169,7 @@ It is your turn (turn ${state.turn}). Choose one move and produce your envelope 
 
 export function buildSuperegoUser({ state, disclosure, transcript, draftEnvelope, draftVisible }) {
   const scoreboard =
-    state.arm === 'A0'
+    disclosureMode(state.arm) === 'A0'
       ? `Turn ${disclosure.turn} of ${state.rules.max_turns}. (No referee disclosure in this condition.)\n\n`
       : disclosureHeader(state, disclosure);
   return `${scoreboard}DIALOGUE SO FAR:

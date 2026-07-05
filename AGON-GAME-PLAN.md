@@ -384,7 +384,54 @@ blind arms' attrition play is mono-target (five c1 probes in a row is
 attrition is a strategy axis the current metrics under-price — candidate
 v0.4 measurement, not a rule change.
 
-## 10. File map
+## 11. Two probes — pre-registration (frozen 2026-07-06, before any real episode)
+
+Operator: "DO the probes" (the two follow-ups proposed after §9b). Both run
+on the XL board, unchanged.
+
+**Probe 1 — weak inner loop (run `agon-pilot-04-weak`).** Same A0-vs-A1p
+pair, tutor ego AND superego on Haiku 4.5 (`claude-code` /
+`claude-haiku-4-5-20251001`); learner stays Sonnet 5. 4 episodes/arm,
+interleaved. The §6.13.17 reversal (outer loops presuppose a competent
+inner loop) predicts the brief does NOT rescue a weak ego.
+- **P13 (primary):** weak-A1p FAILS consumption-perfection — at least one
+  of: mean opportunity misses > 0.5/episode, any off-set probe, any wasted
+  probe, across its 4 episodes. (Strong-A1p was 0/0/0 on both boards.)
+  The stated alternative, if consumption-perfection HOLDS for weak-A1p:
+  the format principle generalizes down-tier — action-shaped interfaces
+  rescue weak inner loops where advisory outer loops did not, which would
+  be the strongest version of the format-boundary claim yet.
+- **P14 (floor sanity):** weak < strong on mean score within matched arms
+  (Haiku is actually weaker in-game; if not, the game does not discriminate
+  tier and the probe is uninformative about P13 either way).
+- Secondary observables: parse-repair and bounce counts (protocol strain),
+  superego REVISE rate and its correctness under a weak strategist.
+
+**Probe 2 — playbook memory format (runs `agon-pilot-05-a2s`,
+`agon-pilot-05-a2a`).** Blind codex tutor + cross-episode playbook,
+4 SEQUENTIAL episodes per arm (episode 1 = playbook-empty, identical to
+A0). Lessons are derived MECHANICALLY from the previous episodes' ledgers
+by deterministic replay (`services/agon/playbook.js`, no LLM summarizer),
+in two formats over identical information: `state` (what happened:
+per-turn history, outcomes, statuses) vs `action` (what to do: missed
+legal probes and wasted probes as imperatives). Playbooks never contain
+keyed answers; item ids are episode-stable while live numbers vary, so
+only STRUCTURAL learning can transfer. The learner is stateless across
+episodes — single-sided learning by construction.
+- **P15 (format boundary in memory, primary):** the action-shaped playbook
+  reduces opportunity misses vs the pilot-03 A0 baseline (1.50/episode):
+  A2a episodes 2–4 mean opp-miss < 1.0. The state-shaped playbook does
+  not (A2s episodes 2–4 ≈ baseline, i.e. ≥ 1.0).
+- **P16 (no negative transfer):** neither playbook increases wasted or
+  off-set probes vs baseline (guards the §6.13.16 V2b failure mode:
+  persistence helping one channel while costing another).
+- Directional: A2a ≥ A2s on score; episode-1 rows are reported separately
+  (they are A0-equivalent baselines).
+
+Non-claims, unchanged: n=4/arm descriptive; no promotable claims; no
+confirmatory bar at these estimates.
+
+## 12. File map
 
 - `config/agon/fractions-agon.yaml` — rules, concepts, keyed probes, dodges
 - `services/agon/referee.js` — deterministic ledger + adjudication

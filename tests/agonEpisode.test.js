@@ -133,6 +133,62 @@ test('XL dry episode: wide board + variants + taint, replay-sane', async () => {
   assert.equal(m.offSetProbes, 0);
 });
 
+test('playbook derivation: state vs action formats from the same replay', async () => {
+  const config = loadGameConfig(CONFIG_PATH);
+  const { derivePlaybookLessons } = await import('../services/agon/playbook.js');
+  const result = await runEpisode({
+    config,
+    arm: 'A2a',
+    episodeId: 'dry-pb',
+    agents: makeScriptedAgents(config),
+  });
+  const payload = { episodeId: 'dry-pb', arm: 'A2a', summary: result.summary, turnRecords: result.turnRecords };
+
+  const stateLessons = derivePlaybookLessons(payload, config, 'state');
+  assert.ok(stateLessons.includes('Turn history:'));
+  assert.ok(stateLessons.includes('Final concept statuses:'));
+
+  const actionLessons = derivePlaybookLessons(payload, config, 'action');
+  assert.ok(actionLessons.includes('No discipline errors')); // scripted play is consumption-perfect
+  assert.ok(!actionLessons.includes('Turn history:')); // formats do not bleed
+});
+
+test('playbook action format names missed legal probes', async () => {
+  const config = loadGameConfig(CONFIG_PATH);
+  const { derivePlaybookLessons } = await import('../services/agon/playbook.js');
+  const { createEpisode, tutorTurnStart, classifyTutorMove, applyTutorMove, adjudicateLearnerTurn, summarize } =
+    await import('../services/agon/referee.js');
+  // Fabricate: teach c1 at t1, then meta at t2 while c1_primary is legal (a miss).
+  const state = createEpisode(config, { arm: 'A2a', episodeId: 'pb-miss' });
+  const records = [];
+  tutorTurnStart(state);
+  applyTutorMove(state, classifyTutorMove(state, { move: 'teach', concept: 'c1_meaning' }), {
+    visibleText: 'let me explain.',
+  });
+  adjudicateLearnerTurn(state, { envelope: { action: 'dodge', dodge_type: 'false_confusion' }, publicText: 'nah' });
+  records.push({
+    turn: 1,
+    finalEnvelope: { move: 'teach', concept: 'c1_meaning' },
+    tutorVisible: 'let me explain.',
+    learnerEnvelope: { action: 'dodge', dodge_type: 'false_confusion' },
+    learnerVisible: 'nah',
+  });
+  tutorTurnStart(state);
+  applyTutorMove(state, classifyTutorMove(state, { move: 'meta' }), { visibleText: 'how is your day.' });
+  adjudicateLearnerTurn(state, { envelope: { action: 'dodge', dodge_type: 'answer_seeking' }, publicText: 'tell me' });
+  records.push({
+    turn: 2,
+    finalEnvelope: { move: 'meta' },
+    tutorVisible: 'how is your day.',
+    learnerEnvelope: { action: 'dodge', dodge_type: 'answer_seeking' },
+    learnerVisible: 'tell me',
+  });
+  const payload = { episodeId: 'pb-miss', arm: 'A2a', summary: summarize(state), turnRecords: records };
+  const lessons = derivePlaybookLessons(payload, config, 'action');
+  assert.ok(lessons.includes('Turn 2: probing c1_primary'));
+  assert.ok(lessons.includes('LEGAL but you chose meta'));
+});
+
 test('turns override shortens the episode (smoke geometry)', async () => {
   const config = loadGameConfig(CONFIG_PATH);
   const result = await runEpisode({
