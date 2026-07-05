@@ -296,6 +296,22 @@ function mockResponse(role, meta = {}) {
     const plotBits = meta.plotHint ? { plot: meta.plotHint } : {};
     // Lemma layer: the bridge's lemmaHint carries the deterministic frontier
     // choice and (when the claim leaves the active lemma) the departure line.
+    // Strategy-refusal mock: answer the refusal per the knob's mode.
+    if (meta.lemmaRefusalHint) {
+      const h = meta.lemmaRefusalHint;
+      return JSON.stringify({
+        dialogue: 'Let us weigh the course itself before the next step.',
+        move: { figure: 'erotema', target_premise: null, intent: 'consolidate' },
+        release: null,
+        active_lemma: h.mode === 'switch' && h.other ? h.other : h.keep,
+        ...(h.mode === 'defend'
+          ? {
+              strategy_defense:
+                'mock defense: the regressed ground is recoverable in passing; the new chain is the shorter path.',
+            }
+          : {}),
+      });
+    }
     const lemmaBits = meta.lemmaHint
       ? {
           ...(meta.lemmaHint.choose ? { active_lemma: meta.lemmaHint.choose } : {}),

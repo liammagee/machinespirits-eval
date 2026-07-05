@@ -19,7 +19,13 @@
  */
 import { closure, factKey } from './chainer.js';
 
-export const LEMMA_DEFAULTS = Object.freeze({ display: false, bind: false, mockUntagged: false, mockBadChoice: false });
+export const LEMMA_DEFAULTS = Object.freeze({
+  display: false,
+  bind: false,
+  mockUntagged: false,
+  mockBadChoice: false,
+  mockRefusal: false,
+});
 
 export function normalizeLemmaConfig(raw) {
   if (!raw) return null;
@@ -31,6 +37,7 @@ export function normalizeLemmaConfig(raw) {
   // exercise the block path; the real backend never reads it.
   if (typeof src.mockUntagged === 'boolean') config.mockUntagged = src.mockUntagged;
   if (typeof src.mockBadChoice === 'boolean') config.mockBadChoice = src.mockBadChoice;
+  if (src.mockRefusal === 'defend' || src.mockRefusal === 'switch') config.mockRefusal = src.mockRefusal;
   if (config.bind) config.display = true; // binding always carries the map signal
   if (!config.display && !config.bind) return null;
   return config;
