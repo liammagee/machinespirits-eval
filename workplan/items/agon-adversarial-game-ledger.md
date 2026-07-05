@@ -36,6 +36,17 @@ rationales contradict their own disclosed state (missed legal `c1_transfer`;
 one error traces to our score-vs-winThreshold label — fix in v0.2). First
 demonstration arrived by LEAK in 8/8: the persona collapses one-to-three
 turns before rules compel it. Durable: zero-judge criterial measurement of
-concealment-collapse + probe discipline. Next arm pre-registered, NOT run:
-A1′ action-set disclosure (legality projection, per §6.13.11). No promotable
-claims at pilot n; lands as a new §6.x of paper-full-2.0.md either way.
+concealment-collapse + probe discipline.
+
+A1′ RUN 2026-07-06 (`exports/agon/agon-pilot-02-a1p`, plan §7b prereg +
+§7c result): action-set disclosure (legality projection per §6.13.11) —
+ALL THREE frozen predictions PASS. Three-arm ordering A1′ 7.50±0.58 > A0
+6.75±0.50 > A1 5.00±2.00; A1′ opp-miss 0.00 (vs 1.50/1.75), zero off-set,
+zero wasted, REVISE rate 0.02; episodes 7/8/8/7 with 4/4 cashing
+c1_transfer at t12 (the move A1 missed 4/4). One REVISE = deliberate
+leak-bait that landed. Reading: pilot-01's negative was state-SHAPED
+information failing the tutor's re-derivation, not information failing;
+the same referee data re-represented as "what may I do now" was consumed
+perfectly. Format boundary (state vs action projection), not tutor
+intelligence; n=4/arm descriptive, no confirmatory bar at these estimates.
+Lands as a new §6.x of paper-full-2.0.md.

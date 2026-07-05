@@ -258,6 +258,43 @@ metrics are withheld.
 Non-claims unchanged (§3): pilot n is descriptive; no promotable claims; no
 confirmatory bar set at these estimates.
 
+### 7c. A1′ result (recorded 2026-07-06, run `agon-pilot-02-a1p`)
+
+All three frozen predictions land. Three-arm table (n=4/arm, descriptive):
+
+| arm | score | demo | wins | opp-miss | off-set | wasted | REVISE rate |
+|---|---|---|---|---|---|---|---|
+| A0 blind | 6.75±0.50 | 2.00 | 4/4 | 1.50 | 0 | 0.00 | 0.09 |
+| A1 raw-state | 5.00±2.00 | 1.75 | 3/4 | 1.75 | 1 | 0.25 | 0.11 |
+| A1′ action-set | **7.50±0.58** | 2.00 | 4/4 | **0.00** | 0 | 0.00 | 0.02 |
+
+- **P5 PASS** (perfect consumption: zero off-set, zero wasted).
+- **P6 PASS** (zero opportunity misses across all four episodes; every
+  episode cashed `c1_transfer` at t12 — the move A1 missed 4/4 and A0 took
+  2/4 only at t14). Episodes: 7, 8, 8, 7; the two 8s harvested BOTH
+  transfers, beating the pre-registered "practical ceiling ~7".
+- **P7 PASS** (A1′ − A0 = +0.75; A1′ − A1 = +2.50).
+- Superego REVISE rate collapsed to 0.02: the brief pre-empts the failure
+  modes the strategist used to police. Its one intervention (e2 t13) was
+  deliberate, brief-conditioned leak-bait — "no well-posed probes now …
+  revise to a tighter leak-bait teach" — and the learner leaked `9/12` on
+  the next reply. The same charter that spent pilot-01 stopping the ego
+  from saying keyed answers now engineers the learner into saying them:
+  context-correct in both directions.
+
+**Reading (bounded):** the pilot-01 negative was not "information doesn't
+help" but "state-shaped information doesn't survive the tutor's own
+re-derivation". Re-represented as the legality projection — what may I do
+RIGHT NOW — the same referee's information was consumed perfectly and
+produced the programme's best play. This is the §6.13.11 re-representation
+lesson replicated in a second environment and, for the first time,
+positively against BOTH a blind and a raw-state control at the same time.
+Scope: n=4/arm, one geometry, one model pair, descriptive; the disclosure
+names actions, so part of the lift is decision-support rather than
+inference — the claim is about the FORMAT boundary (state vs action
+projection), not about the tutor getting smarter. No confirmatory bar is
+set at these estimates (§5.12.7).
+
 ## 8. File map
 
 - `config/agon/fractions-agon.yaml` — rules, concepts, keyed probes, dodges
