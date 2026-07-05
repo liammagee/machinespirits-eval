@@ -1,7 +1,7 @@
 ---
 id: sonnet-calibrated-worlds
 title: Sonnet-calibrated worlds — find the dose/world where a mid-tier baseline has headroom
-status: active
+status: done
 type: experiment
 priority: P2
 owner: unassigned
@@ -80,3 +80,19 @@ after all, recorded as such.
 recorded. Full dose-response: none = 3/3; 0.08 = 1/3; 0.15 = 0/3; 0.35 =
 0/12 — Sonnet's decay tolerance is a narrow shelf around ~0.1, not a
 slope. Partner screen launched: world-019 at the same dose, same seeds.
+
+2026-07-05 Claude — PARTNER (world-019 at the D05 dose): **BAND HIT — 2/3
+grounded (22, 22) + disengagement 29.** CALIBRATION COMPLETE, both strata
+qualify. **Calibrated condition set (recorded): worlds marrick +
+marrick-resistant; decay {"rate":0.08,"mutateShare":0.25,"maxConcurrent":1};
+binding stack otherwise unchanged (scene/didactic/register-modern/
+release-authority/pacing-guard).** Screen seeds 163/167/173 are EXCLUDED
+from any future contrast (previewed). Dose-response recorded: none = 3/3;
+0.08 = band (1/3 marrick, 2/3 resistant); 0.15 = 0/3; 0.35 = 0/12 —
+Sonnet's decay tolerance is a narrow shelf near ~0.1, and its failure
+mode is decay-repair collapse, close to binary. Side-note: at the low
+dose the RESISTANT world screens easier than plain marrick for Sonnet
+(2/3 vs 1/3) — resistance framing costs less than decay here (n=3, color
+only). NEXT (operator gate): the fresh mid-tier lemma-map contrast prereg
+is now PROPOSABLE on this calibrated set (2 arms x 2 worlds x 6 fresh
+seeds, the standard bar with the power statement); not launched.

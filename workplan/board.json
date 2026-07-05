@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-05T00:01:56.910Z",
+  "generated": "2026-07-05T00:54:24.241Z",
   "counts": {
     "total": 81,
     "byStatus": {
-      "done": 68,
+      "done": 69,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 2
     },
@@ -168,33 +168,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "sonnet-calibrated-worlds",
-      "title": "Sonnet-calibrated worlds — find the dose/world where a mid-tier baseline has headroom",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "The dose ladder (rules pre-stated below) either finds a calibrated condition set (Sonnet baseline in the target band, 3-run screens) or exhausts with a recorded structural-floor verdict; either way the outcome is recorded before any contrast prereg.",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": "LEMMA-SONNET-CONTRAST-PREREGISTRATION.md",
-        "items": [
-          "lemma-sonnet-contrast",
-          "proof-lemma-layer"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "calibration",
-        "model-tiers"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -1742,6 +1715,33 @@
       ],
       "milestone": "human-pilot-prep",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "sonnet-calibrated-worlds",
+      "title": "Sonnet-calibrated worlds — find the dose/world where a mid-tier baseline has headroom",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "The dose ladder (rules pre-stated below) either finds a calibrated condition set (Sonnet baseline in the target band, 3-run screens) or exhausts with a recorded structural-floor verdict; either way the outcome is recorded before any contrast prereg.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-SONNET-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-sonnet-contrast",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "calibration",
+        "model-tiers"
+      ]
     },
     {
       "id": "strategy-ledger-followups",
