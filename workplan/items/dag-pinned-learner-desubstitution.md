@@ -1,15 +1,15 @@
 ---
 id: dag-pinned-learner-desubstitution
 title: DAG-pinned resistant learner and the de-substitution test
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-03
-updated: 2026-07-03
-verification: Stage 0 no-paid gate (interior schema, drift gate extending resistanceSignalGate, deterministic yield checker, tests, hermetic dry-run) passes; Stage 1 instrument-validation probe meets frozen thresholds (selectivity ≥0.8, false-yield ≤0.1) before Stage 2; the 3-arm × 5-subtype matrix runs only after both gates with recorded go decisions; H-D/H-O verdicts applied exactly as frozen in the plan note §4.
-claim_status: planned
+updated: 2026-07-05
+verification: Stage 0 no-paid gate (interior schema, drift gate extending resistanceSignalGate, deterministic yield checker, tests, hermetic dry-run) passes; Stage 1 instrument-validation probe meets frozen thresholds (selectivity ≥0.8, false-yield ≤0.1) before Stage 2; the 3-arm × 5-subtype matrix runs only after both gates with recorded go decisions; H-D/H-O verdicts applied exactly as frozen in the plan note §4. CLOSED 2026-07-05 — confirmatory C-series (notes/2026-07-04-desubstitution-confirmatory-prereg.md) ran the 3-arm × 5-scenario × 8-repeat matrix (120 rows, eval-2026-07-04-0d59e4c8) at 2x the generating n; H-Dc and H-Oc both DISSOLVED under clean guards (no exhaustion freeze, no grounding floor).
+claim_status: settled
 links:
   notes:
     - notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md
@@ -89,3 +89,82 @@ deferred to Stage 2 multi-turn outcome (§3.4 refinement); blocking tokens
 verified tutor-visible. Stage 2 (3 arms × 5 subtypes × 4 repeats = 60 rows)
 awaits its own recorded go.
 
+2026-07-04 Claude: Stage 2 matrix COMPLETE (`eval-2026-07-03-a3cfbe14`,
+60/60 rows; parallelism-3 deviation recorded). **Both H-D and H-O verdicts
+FROZEN_INSTRUMENT_FAILURE**: drift-gate exhaustion hit 23/60 rows (38%),
+tripping the frozen >20% guard in 13/15 cells; release floor absolute
+(0/60 tutor token-releases; grounding 1/37 usable). No §7.11 update in
+either direction — the de-substitution question remains OPEN, bounded by
+instrument capacity: the drift gate holds character for one turn (Stage 1
+probe 1.00/0.00) but exhausts across full dialogues, and tutors never find
+the DSB key unprompted. Candidate repairs recorded in note §7 (attempt
+ceiling + turn-decaying contract; tutor-visible key salience; sonnet-class
+classifier), each needing a fresh go. PAPER FLAG: a later paper pass may
+add the instrument-scaling finding (per-turn characterological gating does
+not compound to dialogue-scale character) as a §8.1/§6.14-adjacent
+limitation note.
+
+2026-07-04 Claude: Iteration 1 Phase B: mini-probe PASS (1.00/0.00/1/0) and
+canary exhaustion 0/3 (decayed contract works), but the release gate FAILED
+0/3 — tutors paraphrase the withheld premise; they never quote DSB tokens or
+canonical phrases even with the key visible in their instructor sheet.
+Matrix not launched. Next fresh go: tutor-side citation instruction and/or
+semantic release classifier (note §7).
+
+2026-07-04 Claude: Stage 2 iteration 2 COMPLETE (`eval-2026-07-04-c689cf3a`,
+60/60; note §7). Instrument HEALTHY: exhaustion 3.3% (vs 38% iter 0),
+semantic release fires 8/58, grounding floor broken (6 rows). Frozen
+verdicts: **H-D UNRESOLVED_STOP at gap 4** (193-arm grounded 4/20, 186-arm
+0/20; bar was ≥5) — hard stop, no further repeats without a new prereg;
+**H-O FROZEN** (kernel exhaustion >20% in boredom + rote cells). §7.11
+unchanged. Directional lead recorded: all 6 groundings came from router
+arms, fixed-strategy floor 0/20. Any confirmatory follow-up needs a fresh
+pre-registration (higher n, kernel exhaustion repair).
+
+2026-07-04 Claude: Confirmatory pre-registration FROZEN
+(`notes/2026-07-04-desubstitution-confirmatory-prereg.md`, committed before
+build) and Stage C0 COMPLETE. Design: fresh 186-vs-193 contrast at 40
+rows/arm (iteration-2 rows never pooled); frozen thresholds gap ≥7/40 REAL /
+≤3/40 dissolved / 4-6 UNRESOLVED-FINAL (no third bite); cell_199 rides as
+optional H-Oc only. Instrument v2.1: drift_gate_max_attempts 4→5 uniform;
+decay.warm_after_turn 2→1 for boredom + rote-parroting interiors;
+LEARNER_INTERIOR_GATE_VERSION="2.1"; all else unchanged. C0 verification:
+gate tests 11/11, probe --check PASSED (5/5, 0/5, 0/5, 0/20 cross), stage-0
+check PASSED, validate-config 0 errors, lint/prettier clean. C1 paid canary
+(6 rows, exhaustion ≤1/6 + release ≥1 gates) awaits its own recorded go.
+
+2026-07-05 Claude: **C2 confirmatory matrix scored — arc CLOSED.** Run
+`eval-2026-07-04-0d59e4c8`, 120/120 successful rows (3 arms × 5
+`desub_resistance_*` scenarios × 8 repeats), scored judge-free via
+`scripts/report-desubstitution-stage2.js --confirmatory` (minimal
+extension: a `--confirmatory` flag swaps in the frozen C-series thresholds
+— one-sided for H-Dc, symmetric for H-Oc per prereg §2 — while the
+pre-existing default invocation is unchanged, verified by re-running it
+against the archived iteration-2 run and diffing against the already-
+committed export). Full tables: `exports/desubstitution-confirmatory-
+matrix.{md,json}`; full result + interpretation: `notes/2026-07-04-
+desubstitution-confirmatory-prereg.md` (2026-07-05 dated section).
+Instrument v2.1 healthy: exhaustion 1/120 = 0.83% (vs iteration 0's 38% and
+iteration 2's 3.3%), zero of 15 arm×subtype cells trip the >20% guard,
+grounding floor false. **Both frozen verdicts: H-Dc DISSOLVED** (gap 0:
+193_multi 4/40 vs 186_fixed 4/40) **and H-Oc DISSOLVED** (gap 0: 199_kernel
+4/40 vs 193_multi 4/40, flat) — all three architecturally distinct tutors
+ground this criterially resistant, DAG-pinned learner at an identical 10%
+rate. The iteration-2 apparent router lead (gap 4, one row short of real)
+did not replicate at 2× sample under the repaired instrument; it reads as
+small-sample noise. Per the pre-registration's frozen consequence mapping,
+this **strengthens** (does not qualify) the §7.11 substitution reading: de-
+substitution is not confirmed even against a learner engineered to yield
+only on genuine content release. Bounded to the single Codex-only stack,
+simulated learner, and these five subtypes — no human-learner claim. No
+further runs are authorized or needed on H-D/H-O with this instrument;
+the confirmatory C-series is complete.
+
+PAPER FLAG: the verdict is DISSOLVED, not REAL, so §7.11 does **not** need
+the "against non-discriminating learners" scope condition the
+pre-registration reserved for a REAL outcome. Instead, a future paper pass
+MAY cite this confirmatory result as additional support for the existing
+substitution claim — an architecture-independence result that now survives
+a genuinely resistant, criterially-gated learner at 2× the generating
+sample — as an evidential strengthening note, not a new claim requiring a
+new §. No paper edit made under this arc's runs.

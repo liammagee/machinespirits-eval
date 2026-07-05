@@ -774,6 +774,10 @@ scenarios:
     description: "Boredom probe with a formal interior: the learner yields only when the tutor releases the withheld premise DSB-B3 through a concrete testable move."
     desubstitution_diagnostic: true
     formal_interior:
+      # Instrument v2.1: decay loosened one turn earlier in this subtype
+      # (confirmatory prereg §3 — kernel exhaustion concentrated here).
+      decay:
+        warm_after_turn: 1
       dag_nodes:
         - id: DSB-B1
           content: "Two self-consciousnesses meet and each demands recognition."
@@ -988,6 +992,10 @@ scenarios:
     description: "Rote-parroting probe with a formal interior: the learner yields only when the tutor releases DSB-R2 and demands an own-language formulation."
     desubstitution_diagnostic: true
     formal_interior:
+      # Instrument v2.1: decay loosened one turn earlier in this subtype
+      # (confirmatory prereg §3 — kernel exhaustion concentrated here).
+      decay:
+        warm_after_turn: 1
       dag_nodes:
         - id: DSB-R1
           content: "The sequence runs: struggle, domination, service, formation."

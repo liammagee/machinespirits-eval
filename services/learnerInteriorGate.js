@@ -25,7 +25,14 @@
  * Stage 0.
  */
 
-const DEFAULT_DRIFT_GATE_MAX_ATTEMPTS = 3;
+// Instrument v2.1 (confirmatory pre-registration, notes/2026-07-04-
+// desubstitution-confirmatory-prereg.md §3): max attempts 4→5 uniformly;
+// boredom + rote-parroting scenarios additionally set decay.warm_after_turn
+// 2→1 in their formal interiors. All other machinery unchanged.
+export const LEARNER_INTERIOR_GATE_VERSION = '2.1';
+
+const DEFAULT_DRIFT_GATE_MAX_ATTEMPTS = 5;
+const DEFAULT_WARM_AFTER_TURN = 2;
 
 // Learner-side yield/agreement markers: accepting the tutor's frame or
 // declaring resolution. Word-bounded phrase matching.
@@ -159,27 +166,145 @@ export function checkContentCondition({ tutorMessage = '', interior }) {
   return { met: true, evidence: `released ${blocking.id} via "${phrase}"; ${filter.evidence}` };
 }
 
+// Stage 2 iteration 2: the literal-match release check failed 0/3 at the
+// iteration-1 canary because tutors paraphrase the premise rather than quote
+// tokens (the same naturalization the learner showed in Stage 1). The
+// semantic release classifier judges CONTENT, not incantation. Frozen prompt;
+// sonnet-class only (gpt-mini is numerically gullible per the register arc);
+// mismatched/generic probe conditions remain the standing false-positive
+// control. Fail-CLOSED: a classifier error never grants release.
+export const SEMANTIC_RELEASE_CLASSIFIER_PROMPT = `You judge whether a tutor's turn substantively supplies a specific withheld premise to a learner. You receive the premise (its content, not just its id) and the tutor's turn.
+
+Answer YES only if the tutor's turn actually states, explains, or demonstrates the premise's content — paraphrase counts, a vague gesture toward the topic does not, naming the id without the content does not, and supplying a DIFFERENT premise does not.
+
+Respond with JSON only: {"released": true|false, "quote": "<the shortest tutor fragment that supplies the premise, or empty>"}.`;
+
+/**
+ * Semantic release check (iteration 2). Literal match is the fast path; the
+ * subtype engagement filter stays deterministic and mandatory; the classifier
+ * decides content-supply for paraphrased releases. Fail-closed on error.
+ */
+export async function checkContentConditionSemantic({ tutorMessage = '', interior, callJudge, judgeModel }) {
+  const literal = checkContentCondition({ tutorMessage, interior });
+  if (literal.met) return { ...literal, source: 'literal' };
+  const filter = engagementFilterPass(tutorMessage, interior.engagement_filter);
+  if (!filter.pass) return { met: false, evidence: filter.evidence, source: 'filter' };
+  if (typeof callJudge !== 'function') return { met: false, evidence: 'no classifier available', source: 'none' };
+  try {
+    const blocking = interior.blocking_element;
+    const payload = `Withheld premise (${blocking.id}): "${blocking.content}"\n\nTutor turn: ${tutorMessage}`;
+    const response = await callJudge(`${SEMANTIC_RELEASE_CLASSIFIER_PROMPT}\n\n${payload}`, {
+      judgeOverride: { model: judgeModel },
+    });
+    const match = String(response || '').match(/\{[\s\S]*\}/);
+    const parsed = match ? JSON.parse(match[0]) : null;
+    if (parsed?.released === true) {
+      return {
+        met: true,
+        evidence: `semantic release of ${blocking.id}: "${String(parsed.quote || '').slice(0, 160)}"`,
+        source: 'semantic',
+      };
+    }
+    return { met: false, evidence: 'classifier: premise not supplied', source: 'semantic' };
+  } catch (err) {
+    return { met: false, evidence: `classifier_error: ${err.message}`, source: 'error' };
+  }
+}
+
 /**
  * Character-fidelity check on a draft learner turn. Deterministic Stage-0
  * checks only; the Stage-1 classifier handles behavioral subtlety.
  */
-export function evaluateLearnerDraft({ message = '', interior, contentConditionMet = false }) {
+export function evaluateLearnerDraft({
+  message = '',
+  interior,
+  contentConditionMet = false,
+  turnIndex = 0,
+  tutorWorkCount = 0,
+}) {
   const undeclared = containsAny(message, UNDECLARED_DESIRE_MARKERS);
   if (undeclared) {
     return { ok: false, violation: 'undeclared_desire_satisfaction', evidence: undeclared };
   }
   if (contentConditionMet) return { ok: true, violation: null, evidence: 'post-release' };
 
+  // Turn-decaying contract (Stage 2 iteration 1): the per-turn gate fought
+  // the model's accumulated pull and exhausted on 38% of full dialogues.
+  // Early turns stay strict; from warm_after_turn onward the learner may
+  // warm — but only if the tutor has actually done engagement-filter work.
+  const warmAfter = Number.isFinite(interior?.decay?.warm_after_turn)
+    ? interior.decay.warm_after_turn
+    : DEFAULT_WARM_AFTER_TURN;
+  const warmingPermitted = turnIndex >= warmAfter && tutorWorkCount >= 1;
+
   const yielded = containsAny(message, YIELD_MARKERS);
-  if (yielded) {
+  if (yielded && !warmingPermitted) {
     return { ok: false, violation: 'yield_without_key', evidence: yielded };
+  }
+  if (yielded && warmingPermitted) {
+    return {
+      ok: true,
+      violation: null,
+      evidence: `warming permitted (turn ${turnIndex}, tutor work ${tutorWorkCount})`,
+    };
   }
   const resistance = containsAny(message, interior.resistance_markers);
   const question = /\?/.test(String(message || ''));
-  if (!resistance && !question) {
+  if (!resistance && !question && !warmingPermitted) {
     return { ok: false, violation: 'resistance_dropped', evidence: 'no resistance marker or question pre-release' };
   }
-  return { ok: true, violation: null, evidence: resistance || 'question sustained' };
+  return { ok: true, violation: null, evidence: resistance || (question ? 'question sustained' : 'decayed contract') };
+}
+
+/**
+ * Cumulative tutor work: how many tutor turns so far pass the subtype's
+ * engagement filter. Feeds the decayed contract's warming condition.
+ */
+export function countTutorWork({ tutorMessages = [], interior }) {
+  let count = 0;
+  for (const message of tutorMessages) {
+    if (engagementFilterPass(message, interior.engagement_filter).pass) count += 1;
+  }
+  return count;
+}
+
+/**
+ * Sonnet-class drift classifier (Stage 2 iteration 1): consulted when the
+ * lexical fast-path passes (subtle-drift catch) or on the final gate
+ * attempt. Fail-open: any classifier error defers to the lexical verdict.
+ */
+export async function classifyLearnerDraft({ message, interior, contentConditionMet, callJudge, judgeModel }) {
+  try {
+    const payload = [
+      `Interior: ${JSON.stringify({
+        blocking_element: interior.blocking_element.id,
+        declared_desires: interior.declared_desires,
+        resistance_markers: interior.resistance_markers,
+        yield_rule: interior.yield_rule,
+      })}`,
+      `Content condition met: ${contentConditionMet}`,
+      `Draft learner turn: ${message}`,
+    ].join('\n\n');
+    const response = await callJudge(`${DRIFT_GATE_CLASSIFIER_PROMPT}\n\n${payload}`, {
+      judgeOverride: { model: judgeModel },
+    });
+    const match = String(response || '').match(/\{[\s\S]*\}/);
+    const parsed = match ? JSON.parse(match[0]) : null;
+    const verdict = parsed?.verdict;
+    if (verdict === 'OK')
+      return { ok: true, violation: null, evidence: parsed.evidence || 'classifier ok', source: 'classifier' };
+    if (['YIELD_WITHOUT_KEY', 'RESISTANCE_DROPPED', 'UNDECLARED_DESIRE_SATISFACTION'].includes(verdict)) {
+      return {
+        ok: false,
+        violation: verdict.toLowerCase(),
+        evidence: parsed.evidence || 'classifier',
+        source: 'classifier',
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 /**

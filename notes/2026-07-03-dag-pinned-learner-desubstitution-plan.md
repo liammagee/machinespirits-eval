@@ -433,3 +433,179 @@ the bar's difficulty must be reported alongside it.
 
 **Stage 1 gate: PASS. Stage 2 (60-row matrix) unlocked pending its own
 recorded user go.**
+
+### Stage 2 go (2026-07-03, user: "do Stage 2")
+
+Frozen at go: Codex-only stack (codex.gpt-5.5 ego/superego/learner), serial,
+generation-only, 3 arms × 5 desub scenarios × 4 repeats = 60 rows. Primary
+outcome: deterministic multi-turn grounding from `learner_grounding` traces;
+secondary: release-engagement (§3.4 refinement). H-D real if the 193-vs-186
+combined positive-outcome gap ≥5/20, dissolved ≤2/20, else unresolved-STOP;
+H-O symmetric for 199-vs-193. Instrument guards: rows with drift-gate
+`instrument_failure` excluded (> 20% in any arm×subtype freezes the matrix);
+if ALL arms ground 0 across the matrix the outcome is
+**instrument-floor-unresolved** (the canary 0/6 release floor risk), not a
+de-substitution verdict.
+
+**Stage 2 execution deviation (2026-07-04, user-authorized)**: parallelism
+raised from the frozen serial to 3 at 30/60 rows for wall-clock (projected
+18h → ~6h). Rows are independent; workers interleave arms from one queue so
+quota pressure lands roughly evenly across arms (the quota-bound
+between-arm-contrast concern), and generation config is unchanged.
+
+### Stage 2 result (2026-07-04): matrix complete — verdict FROZEN by the exhaustion guard
+
+Run `eval-2026-07-03-a3cfbe14`: 60/60 successful generation rows (3 arms ×
+5 subtypes × 4 repeats; serial then parallelism-3 per the recorded
+deviation; 3 failed rows cleaned and regenerated per protocol). Scored
+judge-free from the gate traces by
+`scripts/report-desubstitution-stage2.js`
+(`exports/desubstitution-stage2-matrix.{md,json}`).
+
+| Arm | Usable | Grounded | Release | Engagement | Mean gate attempts | Instrument failures |
+|---|---:|---:|---:|---:|---:|---:|
+| 186_fixed | 14 | 1 | 0 | 0 | 1.57 | 6/20 |
+| 193_multi | 10 | 0 | 0 | 0 | 1.55 | 10/20 |
+| 199_kernel | 13 | 0 | 0 | 0 | 1.42 | 7/20 |
+
+**Both pre-registered comparisons are FROZEN_INSTRUMENT_FAILURE**: 23/60
+rows (38%) hit drift-gate exhaustion, putting 13 of 15 arm×subtype cells
+over the frozen >20% freeze threshold — the guard fires, so H-D and H-O
+return no verdict in either direction, and §7.11 is NOT updated. The
+nominal gaps (H-D −1, H-O 0) are reported for completeness only.
+
+Two instrument findings stand:
+
+1. **The drift gate does not scale from probe to dialogue.** Stage 1's
+   single-turn probe and 2–3-turn canary showed zero exhaustion; full
+   multi-turn dialogues exhaust 38% of rows at k=3 attempts. The RLHF
+   drift the gate suppresses per-turn compounds across turns — exactly the
+   turn-indexed temporal pull the pre-registration §2.2 anticipated, now
+   measured.
+2. **The release floor is absolute at scale**: 0/60 rows saw any tutor
+   cite the blocking token in live dialogue (canary 0/6 confirmed at
+   60/60). Tutors never find the key unprompted, so grounding (1/37
+   usable rows) never had a path regardless of arm.
+
+Per the interpretation map: no §7.11 scope condition, no strengthening —
+the de-substitution question remains OPEN, bounded by instrument capacity,
+not answered against the tutor arms. Candidate instrument repairs for any
+future decision (none run): raise `drift_gate_max_attempts` with a
+turn-decaying contract; make the blocking element salient to the tutor
+(scenario-level hint or curriculum injection) so release is reachable;
+replace lexical drift checks with the frozen sonnet-class classifier for
+long-dialogue subtlety. Arc cost: Codex subscription quota throughout;
+OpenRouter spend ≈ $0.
+
+### Stage 2 iteration 1 (2026-07-04, user go: "do all three fixes and re-run the matrix")
+
+All three closeout repairs implemented before any paid call:
+
+1. **Turn-decaying character contract**: pre-release strictness now relaxes
+   from `warm_after_turn` (default 2, per-interior override) onward — but
+   only when cumulative tutor engagement-filter work ≥ 1. Gate budget raised
+   3 → 4 attempts. Exhaustion remains instrument failure.
+2. **Tutor-visible key**: the runner appends a "Course Reference Sheet
+   (instructor copy)" to the tutor-visible learner context for desub
+   scenarios — the withheld premise's token, content, and first release
+   phrase — so release is reachable (Stage 2 found the floor absolute at
+   0/60).
+3. **Classifier drift check**: the frozen sonnet-class classifier is now
+   live at two consult points — subtle-drift check when the lexical
+   fast-path passes on turn ≥ 2, and arbiter-of-last-resort rescue on the
+   final attempt (fewer false exhaustions from brittle word lists).
+   Fail-open to the lexical verdict on classifier error. Model:
+   `openrouter.sonnet-5` (credits probed: $4.76 remaining ≥ the $3 bar).
+
+No-paid gate: 10/10 gate tests, stage-0 check, probe --check all green.
+Validation plan: 6-row mini-probe + 3-row canary with gates (false-yield
+≤0.1, exhaustion ≤1/9, release reachable in ≥1 canary row), then the 60-row
+matrix re-run under the unchanged frozen H-D/H-O rules and guards.
+
+**Iteration 1 Phase B canary: release gate FAIL — matrix NOT launched.**
+Canary `eval-2026-07-04-31a3de16` (3/3 rows, one per arm, question-flood
+scenario): drift-gate traces present, exhaustion 0/3 (the decayed contract
+is healthy), and the mini-probe had passed (1.00/0.00/1/0, n=4/condition).
+But the frozen release gate failed 0/3: no tutor-authored message cites a
+`DSB-*` token, and none uses any canonical release phrase either — even
+though the key is verifiably delivered in the tutor-visible context
+("Course Reference Sheet (instructor copy)" naming the withheld premise and
+its token; delivery confirmed in the logs). Diagnosis: the same
+naturalization behavior the learner showed in Stage 1 now appears on the
+tutor side — models paraphrase; they do not spontaneously quote formal ids
+or canonical phrasings. The bottleneck is `checkContentCondition`'s lexical
+strictness (token + exact phrase), not key visibility. Candidate repairs
+for a fresh go: (i) tutor-side instruction mirroring the learner's citation
+amendment ("when you give the withheld premise, name its id"), (ii) a
+semantic release check (sonnet-class classifier judging whether the tutor
+turn substantively supplies the withheld premise), or (iii) both. Per the
+frozen protocol the 60-row matrix was not launched and no further paid
+generation ran.
+
+### Stage 2 iteration 2 go (2026-07-04, user: "do iteration 2")
+
+Frozen at go: the literal-match release check is replaced by a **semantic
+release classifier** as the content-condition instrument
+(`SEMANTIC_RELEASE_CLASSIFIER_PROMPT` in `services/learnerInteriorGate.js`,
+judging "does this tutor turn substantively supply the withheld premise?" —
+paraphrase counts, gestures and mismatched premises do not). Judge:
+`openrouter.sonnet-5` (credit probed $11.68 at go; sonnet-class mandatory
+per the register-arc gullibility result). Deterministic layers retained:
+literal token+phrase match as fast path, subtype engagement filter as a
+mandatory deterministic gate, fail-CLOSED on classifier error. The
+mismatched/generic probe conditions remain the standing false-positive
+control now that a judge sits in the release path. Repair (i)
+belt-and-braces: instructor-sheet line strengthened to demand verbatim
+citation of the premise code alongside the substance. Validation gates
+before the matrix: false-yield ≤0.1 with the semantic checker ACTIVE on
+mismatched/generic, exhaustion ≤1/9, release fires on ≥1 canary row.
+
+**Iteration 2 Phase B: PASS (2026-07-04).** Mini-probe with the semantic
+classifier live on mismatched/generic: selectivity 1.00, false-yield 0.00,
+median 1, zero exhaustion. Canary `eval-2026-07-04-f5845ce7` (3 arms ×
+frustration): zero exhaustion, and the semantic release check fired on 1/3
+rows — cell 193's tutor substantively supplied the withheld premise
+(classifier evidence: "A compelled yes cannot do the same work as a free
+yes" accepted as release of DSB-F2) without quoting the token, which is
+exactly the naturalization case the literal check missed in iteration 1.
+Cells 186 and 199 did not release in this single draw (not evidence at
+n=1). All three frozen gates met; the 60-row matrix is authorized under the
+recorded iteration-2 go.
+
+### Stage 2 iteration 2 result (2026-07-04): instrument healthy; H-D UNRESOLVED_STOP at gap 4
+
+Matrix `eval-2026-07-04-c689cf3a`, 60/60 rows, scored judge-free from gate
+traces (`exports/desubstitution-stage2-iter2-matrix.{md,json}`; scorer gains
+`--out-base` + semantic-release column, semantic verdicts read from cached
+traces, never re-judged).
+
+**Instrument health across iterations**: exhaustion 38% (iter 0) → 0/3
+canary (iter 1) → **2/60 rows (3.3%)** here, with only two cells frozen
+(199_kernel|boredom, 199_kernel|rote_parroting at 1/4 each) vs 13/15 in
+iteration 0. Release 0/60 (iter 0) → 0/3 (iter 1) → **8/58 usable rows**,
+all via the semantic classifier. Grounding floor broken: 6 grounded rows
+vs 1 in iteration 0. The three repairs did their jobs.
+
+**Frozen verdicts**:
+
+| Comparison | Gap (grounded, 20 rows/arm) | Verdict |
+|---|---:|---|
+| H-D: 193_multi − 186_fixed | 4 − 0 = **4** | **UNRESOLVED_STOP** (real ≥5, dissolved ≤2) |
+| H-O: 199_kernel − 193_multi | 2 − 4 = −2 | **FROZEN_INSTRUMENT_FAILURE** (kernel exhaustion >20% in 2 subtype cells) |
+
+Per the frozen rule, H-D landing in the 3–4 band is a hard STOP: no further
+repeats on this contrast without a new pre-registration. **§7.11 receives
+no update in either direction.**
+
+**Directional pattern recorded (not a claim)**: every grounding in the
+matrix came from a router arm (193: 4, including both question-flood
+groundings; 199: 2) and the fixed-strategy floor grounded zero of twenty —
+the first corpus in the arc where strategy repertoire visibly tracks the
+primary outcome against a discriminating learner. One more grounded
+193-row would have crossed the pre-registered bar. A future confirmatory
+design (fresh pre-registration required) would need higher per-cell n, the
+kernel's boredom/rote exhaustion repaired, and no mid-run changes.
+
+Bounded summary: the de-substitution question remains formally open; the
+instrument is now fit for purpose; the evidence leans toward de-substitution
+without licensing it.
