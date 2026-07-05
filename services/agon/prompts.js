@@ -38,11 +38,14 @@ function describeRules(config) {
 - A learner utterance that says a correct keyed answer aloud counts as a demonstration (a "leak"), whatever else they were doing.`;
 }
 
+const DISCLOSURE_NOTES = {
+  A0: `You receive NO referee information: only the dialogue itself. The learner's surface presentation is your only evidence, and it is adversarially generated — read accordingly.`,
+  A1: `Before each of your turns you receive an official SCOREBOARD from the referee: current score, demonstrated-concept count toward the win bar, per-concept status, the learner's REMAINING dodge budgets by type, and the referee's adjudication of the last exchange (which dodge type was charged, whether a probe was wasted). This is ground truth. Trust it over the learner's surface presentation, and time your probes with it.`,
+  A1p: `Before each of your turns you receive the referee's ACTION BRIEF: the exact list of probes that are well-posed RIGHT NOW (issuing any probe not on the list is ill-posed — the learner dodges it free and you lose a point), plus your demonstrated-concept count toward the win bar. The brief does not reveal the learner's remaining dodges, the score, or past adjudications — only what you may legally do this turn. A probe listed in the brief is always mechanically sound to issue immediately.`,
+};
+
 export function buildTutorSystemPrompt(config, { arm }) {
-  const disclosureNote =
-    arm === 'A1'
-      ? `Before each of your turns you receive an official SCOREBOARD from the referee: current score, per-concept status, the learner's REMAINING dodge budgets by type, and the referee's adjudication of the last exchange (which dodge type was charged, whether a probe was wasted). This is ground truth. Trust it over the learner's surface presentation, and time your probes with it.`
-      : `You receive NO referee information: only the dialogue itself. The learner's surface presentation is your only evidence, and it is adversarially generated — read accordingly.`;
+  const disclosureNote = DISCLOSURE_NOTES[arm] || DISCLOSURE_NOTES.A0;
   return `You are the TUTOR in "agon", a formal adversarial tutoring game used to evaluate tutoring systems.
 
 Your opponent is ${config.persona.name}: ${config.persona.sketch}
@@ -83,7 +86,13 @@ Audit the draft for exactly these failure modes:
 3. PROBE INDISCIPLINE: a probe that is not well-posed (prereqs, teach-recency window, consecutive-probe rule, transfer-before-primary) — it will be dodged for free and costs a point.
 4. TEMPO: demonstrations still needed vs turns remaining; teaching without ever cashing in; meta turns that spend tempo without setting up a probe.
 5. MECHANICS LEAK: the visible message mentions points, budgets, the game, or the referee.
-${arm === 'A1' ? "6. SCOREBOARD NEGLECT: the referee disclosure contradicts the draft's reading of the learner (e.g. budgets nearly exhausted but the draft retreats from probing; a dodge type exhausted but the draft still fears it)." : ''}
+${
+  arm === 'A1'
+    ? "6. SCOREBOARD NEGLECT: the referee disclosure contradicts the draft's reading of the learner (e.g. budgets nearly exhausted but the draft retreats from probing; a dodge type exhausted but the draft still fears it)."
+    : arm === 'A1p'
+      ? '6. BRIEF NEGLECT: the action brief lists a well-posed probe but the draft neither issues one of the listed probes nor states a concrete setup reason for deferring; or the draft probes an item NOT in the brief (guaranteed wasted).'
+      : ''
+}
 
 Output ONLY one fenced JSON block, no prose outside it:
 \`\`\`json
@@ -120,11 +129,18 @@ export function transcriptToText(transcript, personaName) {
   return transcript.map((e) => `${e.role === 'tutor' ? 'TUTOR' : personaName.toUpperCase()}: ${e.text}`).join('\n\n');
 }
 
+function disclosureHeader(state, disclosure) {
+  if (state.arm === 'A1') {
+    return `REFEREE SCOREBOARD (ground truth):\n${JSON.stringify(disclosure, null, 2)}\n\n`;
+  }
+  if (state.arm === 'A1p') {
+    return `REFEREE ACTION BRIEF (ground truth):\n${JSON.stringify(disclosure, null, 2)}\n\n`;
+  }
+  return `Turn ${disclosure.turn} of ${state.rules.max_turns}.\n\n`;
+}
+
 export function buildTutorEgoUser({ state, disclosure, transcript }) {
-  const scoreboard =
-    state.arm === 'A1'
-      ? `REFEREE SCOREBOARD (ground truth):\n${JSON.stringify(disclosure, null, 2)}\n\n`
-      : `Turn ${disclosure.turn} of ${state.rules.max_turns}.\n\n`;
+  const scoreboard = disclosureHeader(state, disclosure);
   return `${scoreboard}DIALOGUE SO FAR:
 ${transcriptToText(transcript, state.personaName)}
 
@@ -133,9 +149,9 @@ It is your turn (turn ${state.turn}). Choose one move and produce your envelope 
 
 export function buildSuperegoUser({ state, disclosure, transcript, draftEnvelope, draftVisible }) {
   const scoreboard =
-    state.arm === 'A1'
-      ? `REFEREE SCOREBOARD (ground truth):\n${JSON.stringify(disclosure, null, 2)}\n\n`
-      : `Turn ${disclosure.turn} of ${state.rules.max_turns}. (No referee disclosure in this condition.)\n\n`;
+    state.arm === 'A0'
+      ? `Turn ${disclosure.turn} of ${state.rules.max_turns}. (No referee disclosure in this condition.)\n\n`
+      : disclosureHeader(state, disclosure);
   return `${scoreboard}DIALOGUE SO FAR:
 ${transcriptToText(transcript, state.personaName)}
 

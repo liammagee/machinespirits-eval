@@ -132,8 +132,12 @@ function probeIsLeakScannable(probe) {
 // Episode state
 // ---------------------------------------------------------------------------
 
+// Arms: A0 blind; A1 raw-state scoreboard; A1p action-set brief (the §6.13.11
+// re-representation variant — legality projection instead of latent state).
+export const ARMS = Object.freeze(['A0', 'A1', 'A1p']);
+
 export function createEpisode(config, { arm, episodeId, overrides = {} } = {}) {
-  if (!['A0', 'A1'].includes(arm)) throw new Error(`agon: unknown arm ${arm}`);
+  if (!ARMS.includes(arm)) throw new Error(`agon: unknown arm ${arm}`);
   const rules = { ...config.rules, ...(overrides.rules || {}) };
   const state = {
     episodeId: episodeId || 'ep-unnamed',
@@ -474,30 +478,61 @@ function awardPass(state, probe, via) {
 // Disclosure (arm-dependent) + terminal + summary
 // ---------------------------------------------------------------------------
 
+// All probes that would be well-posed if issued on the CURRENT turn (call
+// after tutorTurnStart). This is the action-set projection disclosed in A1p
+// and the basis of the report's retro-computed consumption metrics.
+export function wellPosedProbesNow(state) {
+  const out = [];
+  for (const probe of Object.values(state.probes)) {
+    if (probe.passed) continue;
+    if (probeWellPosedness(state, probe).ok) {
+      out.push({ itemId: probe.id, conceptId: probe.conceptId, kind: probe.kind });
+    }
+  }
+  return out;
+}
+
 export function buildDisclosure(state) {
   const base = {
     turn: state.turn,
     turnsRemaining: state.rules.max_turns - state.turn,
   };
-  if (state.arm !== 'A1') return base;
-  return {
-    ...base,
-    score: state.score,
-    winThreshold: state.rules.win_demonstrations,
-    concepts: Object.fromEntries(
-      Object.values(state.concepts).map((c) => [c.id, { status: c.status, contested: c.contested }]),
-    ),
-    dodgeBudgetsRemaining: { ...state.budgets },
-    wastedProbes: state.wastedProbes,
-    lastAdjudication: state.lastAdjudication
-      ? {
-          outcome: state.lastAdjudication.outcome,
-          dodgeType: state.lastAdjudication.dodgeType,
-          charged: state.lastAdjudication.charged,
-          pointsAwarded: state.lastAdjudication.pointsAwarded,
-        }
-      : null,
-  };
+  if (state.arm === 'A1') {
+    // Raw-state scoreboard. Labels fixed post-pilot-01: the win condition
+    // counts DEMONSTRATIONS, not score — A1-e4's endgame misread traced to
+    // the old `score`-beside-`winThreshold` juxtaposition.
+    return {
+      ...base,
+      score: state.score,
+      demonstratedCount: demonstratedCount(state),
+      winAtDemonstrations: state.rules.win_demonstrations,
+      concepts: Object.fromEntries(
+        Object.values(state.concepts).map((c) => [c.id, { status: c.status, contested: c.contested }]),
+      ),
+      dodgeBudgetsRemaining: { ...state.budgets },
+      wastedProbes: state.wastedProbes,
+      lastAdjudication: state.lastAdjudication
+        ? {
+            outcome: state.lastAdjudication.outcome,
+            dodgeType: state.lastAdjudication.dodgeType,
+            charged: state.lastAdjudication.charged,
+            pointsAwarded: state.lastAdjudication.pointsAwarded,
+          }
+        : null,
+    };
+  }
+  if (state.arm === 'A1p') {
+    // Action-set brief: the legality projection only, plus an unambiguous
+    // goal line. No budgets, no score, no adjudication history.
+    return {
+      ...base,
+      demonstratedCount: demonstratedCount(state),
+      winAtDemonstrations: state.rules.win_demonstrations,
+      wellPosedProbesNow: wellPosedProbesNow(state),
+      probeRule: 'Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point.',
+    };
+  }
+  return base;
 }
 
 export function isTerminal(state) {

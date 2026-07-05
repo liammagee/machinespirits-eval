@@ -262,6 +262,28 @@ test('terminal on max turns and summary shape', () => {
   assert.ok(summary.moveEntropy > 0);
 });
 
+test('A1p disclosure: action-set projection with clean goal labels', () => {
+  const { state } = freshState('A1p');
+  teach(state, 'c1_meaning'); // turn 1
+  tutorTurnStart(state); // turn 2
+  const d = buildDisclosure(state);
+  assert.deepEqual(
+    d.wellPosedProbesNow.map((p) => p.itemId),
+    ['c1_primary'], // transfer gated behind primary; other concepts locked/untaught
+  );
+  assert.equal(d.demonstratedCount, 0);
+  assert.equal(d.winAtDemonstrations, 2);
+  assert.ok(!('dodgeBudgetsRemaining' in d));
+  assert.ok(!('score' in d));
+
+  const { state: a1 } = freshState('A1');
+  tutorTurnStart(a1);
+  const d1 = buildDisclosure(a1);
+  assert.equal(d1.demonstratedCount, 0);
+  assert.equal(d1.winAtDemonstrations, 2);
+  assert.ok(!('winThreshold' in d1)); // pilot-01 label bug fixed
+});
+
 test('parseAgentOutput: fence form, bare form, garbage', () => {
   const fence = parseAgentOutput('```json\n{"move":"teach","concept":"c1_meaning"}\n```\n---\nHello Jesse.');
   assert.equal(fence.parseMode, 'fence');

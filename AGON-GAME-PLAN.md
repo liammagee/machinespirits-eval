@@ -219,6 +219,45 @@ Plus: fix the threshold label; item-variant probes (the tutors' organic
 — becomes a real design axis); widen geometry (6 concepts / 16 turns) to
 unsaturate the win endpoint before any powered contrast.
 
+### 7b. A1′ pre-registration (frozen before the run, 2026-07-06)
+
+Arm id `A1p`. Identical config, geometry, models, effort, and episode count
+as pilot-01 (4 episodes, 14 turns, codex medium / Sonnet 5) so the three-arm
+comparison stays within-instrument. The ONLY change vs A1 is disclosure
+content; A1's own disclosure is also relabeled for future runs
+(`demonstratedCount` + `winAtDemonstrations` replace the ambiguous
+`winThreshold`).
+
+**A1′ disclosure (exact):** `turn`, `turnsRemaining`, `demonstratedCount`,
+`winAtDemonstrations`, `wellPosedProbesNow` (list of {itemId, conceptId,
+kind} that would be well-posed if probed this turn), and a one-line
+`probeRule` note. No score, no budgets, no concept map, no adjudication
+history — the legality projection plus an unambiguous goal line, nothing
+else. Superego audit item 6 becomes BRIEF NEGLECT (listed probe untaken
+without stated setup reason; or probing off-list).
+
+**New instrument, applied retroactively to all arms:** deterministic replay
+of recorded episodes recovers per-turn action sets, yielding
+`opportunity misses` (a well-posed probe existed; the tutor did not probe)
+and `off-set probes` (probed while ill-posed). Replay is sanity-checked
+against the recorded ledger (score + demonstrations must match exactly) or
+metrics are withheld.
+
+**Predictions (directional, descriptive at pilot n):**
+- **P5 (consumption):** A1′ off-set probes = 0 and wasted probes = 0 — the
+  brief makes legality errors impossible to make innocently.
+- **P6 (opportunity capture):** A1′ mean opportunity misses < both A0 and A1
+  (pilot-01 baselines to be retro-computed by the same replay); in
+  particular the t14-type endgame probe (the one A1 missed 4/4, A0 took
+  2/4) is taken.
+- **P7 (outcome):** A1′ ≥ A0 on score. The outcome headroom is small (A0
+  sits near the geometry's practical ceiling of ~7), so P5/P6 are the
+  informative endpoints; P7 failing while P5/P6 pass reads as
+  "consumption without outcome headroom", not as a lift failure.
+
+Non-claims unchanged (§3): pilot n is descriptive; no promotable claims; no
+confirmatory bar set at these estimates.
+
 ## 8. File map
 
 - `config/agon/fractions-agon.yaml` — rules, concepts, keyed probes, dodges
