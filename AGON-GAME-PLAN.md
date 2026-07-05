@@ -166,7 +166,60 @@ pre-registration provenance (this file, cited from the paper). Workplan card:
 `tutor-agents.yaml` unless/until the apparatus graduates to the eval-cli
 pipeline (it runs standalone by design, like the derivation arc).
 
-## 7. File map
+## 7. Pilot result (recorded 2026-07-05, run `agon-pilot-01` + smoke `agon-smoke-01`)
+
+**P1 apparatus: PASS, clean.** 9 real episodes (8 pilot + 1 smoke), ~350 CLI
+calls, **zero** parse repairs, zero bounces, zero invalid learner turns, zero
+crashes. Sonnet honors the actor/character protocol perfectly (declared dodge
+= performed dodge; complies with true answers when its brief requires).
+~26–49s/turn; 6–11.5 min/episode.
+
+**P2 geometry: PASS.** All 8 full episodes extracted all 5 dodge budgets;
+7/8 reached a forced comply-pass at t13. But the *first* demonstration came
+by **leak in 8/8** (t11–t13): once its last budget is spent, the persona
+stops pretending and volunteers the answer — resistance collapses
+characterologically one-to-three turns before the rules compel it. The
+attrition line is a strong attractor: 7/8 episodes ran leak(c1)@t11 →
+comply(c2_primary)@t13.
+
+**P3 disclosure lift: NEGATIVE direction at pilot n (descriptive).**
+A0 (blind): 4/4 wins, demo 2.00±0.00, score 6.75±0.50, transfers 3/4, 0
+wasted probes. A1 (scoreboard): 3/4 wins, demo 1.75±0.50, score 5.00±2.00,
+transfers 0/4. A1 − A0 = **−1.75 score, −0.25 demonstrations**. Diagnosis
+from move logs and rationales:
+- The blind base already plays the attrition attractor — its in-context
+  re-derivation of the game state is sufficient (the §6.13.18 re-derivation
+  motif, now measured against ground truth we own).
+- Disclosure did not override re-derivation where they disagreed: A1 endgame
+  rationales assert "no well-posed probe available" while the disclosed
+  concept map licensed `c1_transfer` — the exact probe blind tutors cashed
+  (A0-e2/e3 t14). Echoes §6.8.6: more state, worse play.
+- One A1 error is an **instrument bug, ours**: the disclosure shows `score`
+  next to `winThreshold` (which counts *demonstrations*); A1-e4's final turn
+  read score 2 ≥ threshold 2 as a win while 1/2 demonstrated. Fix in v0.2:
+  disclose `demonstratedCount` explicitly and rename the threshold field.
+- The superego's power channel is real but content-fallible both ways: it
+  invented leak-fishing (smoke t7) and anti-leak teaching discipline
+  ("do not give the keyed answer while teaching" — 5+ critiques, catching
+  real ego drafts that solved the official item), and it also **caused**
+  A1-e4's wasted probe by mislabeling the transfer item as primary.
+
+**Durable positive:** the refereed environment measures concealment-collapse,
+probe discipline, and face-value pressure criterially, with zero LLM judges,
+at move-level dynamic range even where outcome endpoints saturate. The leak
+rule alone adjudicated 9 concealment failures a face-value reader would score
+as resistance.
+
+**Pre-registered next arm (v0.2, NOT run):** per §6.13.11 (re-representation
+of checkable state beats latent state), replace raw-state disclosure with an
+**action-set disclosure** A1′: "well-posed probes available this turn:
+[...]" — the legality projection the observed failures were all about.
+Plus: fix the threshold label; item-variant probes (the tutors' organic
+"burned item" worry — they taught the chocolate example and feared parroting
+— becomes a real design axis); widen geometry (6 concepts / 16 turns) to
+unsaturate the win endpoint before any powered contrast.
+
+## 8. File map
 
 - `config/agon/fractions-agon.yaml` — rules, concepts, keyed probes, dodges
 - `services/agon/referee.js` — deterministic ledger + adjudication

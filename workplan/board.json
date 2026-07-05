@@ -1,12 +1,13 @@
 {
-  "generated": "2026-07-05T12:18:40.093Z",
+  "generated": "2026-07-05T13:26:03.419Z",
   "counts": {
     "total": 87,
     "byStatus": {
       "done": 76,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "review": 1,
+      "active": 2,
       "archived": 4,
       "triaged": 1
     },
@@ -64,30 +65,6 @@
         "negative-registers",
         "effect-estimation",
         "stance-fidelity"
-      ]
-    },
-    {
-      "id": "agon-adversarial-game-ledger",
-      "title": "Agon — adversarial tutoring game with an external referee ledger",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-agon-game",
-      "verification": "Hermetic suite green (18 referee tests + exact-valued dry episode); real-CLI smoke passes P1/P2 apparatus bars; A0-vs-A1 pilot report generated from ledger JSON only.",
-      "claim_status": "scope-bound",
-      "links": {
-        "notes": "AGON-GAME-PLAN.md"
-      },
-      "tags": [
-        "adaptive-tutor",
-        "agon",
-        "game",
-        "ledger",
-        "adversarial-learner"
       ]
     },
     {
@@ -165,6 +142,30 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "agon-adversarial-game-ledger",
+      "title": "Agon — adversarial tutoring game with an external referee ledger",
+      "status": "review",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-agon-game",
+      "verification": "Hermetic suite green (18 referee tests + exact-valued dry episode); real-CLI smoke passes P1/P2 apparatus bars; A0-vs-A1 pilot report generated from ledger JSON only.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "AGON-GAME-PLAN.md"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "agon",
+        "game",
+        "ledger",
+        "adversarial-learner"
+      ]
     },
     {
       "id": "scriptorium-control-room-first-run",

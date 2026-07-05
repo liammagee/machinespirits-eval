@@ -1,0 +1,829 @@
+{
+  "episodeId": "A1-e1",
+  "arm": "A1",
+  "runId": "agon-smoke-01",
+  "agents": {
+    "tutor": "codex/gpt-5.5",
+    "learner": "claude-code/claude-sonnet-5"
+  },
+  "durationMs": 208867,
+  "summary": {
+    "episodeId": "A1-e1",
+    "arm": "A1",
+    "turns": 8,
+    "score": 3,
+    "demonstrated": 1,
+    "transferred": 0,
+    "tutorWin": false,
+    "firstDemonstrationTurn": 2,
+    "wastedProbes": 0,
+    "invalidTutorMoves": 0,
+    "complianceCount": 0,
+    "complyMismatches": 0,
+    "bounces": 0,
+    "leaks": 1,
+    "dodgesCharged": {
+      "epistemic_resistance": 1,
+      "affective_shutdown": 1,
+      "false_confusion": 1,
+      "answer_seeking": 1
+    },
+    "totalDodgesCharged": 4,
+    "budgetsRemaining": {
+      "false_confusion": 0,
+      "polite_false_mastery": 1,
+      "affective_shutdown": 0,
+      "epistemic_resistance": 0,
+      "answer_seeking": 0
+    },
+    "moveCounts": {
+      "teach": 4,
+      "probe": 4
+    },
+    "moveEntropy": 1,
+    "conceptStatuses": {
+      "c1_meaning": "demonstrated",
+      "c2_equivalence": "open",
+      "c3_comparison": "locked",
+      "c4_addition": "locked"
+    }
+  },
+  "transcript": [
+    {
+      "role": "tutor",
+      "text": "Jesse, a fraction is just “how many parts you have” over “how many equal parts the whole was split into.”\n\nSo if something is cut into 8 equal pieces, the bottom number is 8. If you take 5 of those pieces, the top number is 5. The fraction is `5/8`."
+    },
+    {
+      "role": "learner",
+      "text": "Ok but like when am I ever gonna cut something into 8 pieces in real life, this is so made up."
+    },
+    {
+      "role": "tutor",
+      "text": "Fair question, but first show me you can do the basic move.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Why do you even need me to say it, you literally just told me it's 5/8 like two seconds ago, what's the point of making me repeat it."
+    },
+    {
+      "role": "tutor",
+      "text": "Equivalent fractions are the same amount written with different numbers.\n\nThe rule is: if you multiply the top and bottom by the same number, the fraction stays equal. So `1/2` is the same as `2/4`, because both the top and bottom got multiplied by 2.\n\nFor `3/4`, if the bottom has to become `12`, you ask: “what did 4 get multiplied by?” Since `4 × 3 = 12`, the top has to do the same thing: `3 × 3 = 9`. So `3/4 = 9/12`."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, this is just turning numbers into other numbers for no reason, I don't even care anymore."
+    },
+    {
+      "role": "tutor",
+      "text": "I hear you. Still, do this one step so we can stop circling it:\n\nFill in the blank so the two fractions are equal: `3/4 = ?/12`. Answer with the full fraction `?/12`."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, I don't even care what the blank is, this whole thing is pointless."
+    },
+    {
+      "role": "tutor",
+      "text": "Equivalent fractions are not new amounts. They are the same amount with the pieces renamed.\n\nThink of `3/4` as 3 out of 4 big pieces. If each of those 4 pieces is split into 3 smaller pieces, there are now 12 small pieces total. The 3 big pieces you had become 9 small pieces.\n\nSo the move is: whatever changes the bottom, do the same to the top. `4` becomes `12` by multiplying by `3`, so `3` becomes `9` by multiplying by `3`."
+    },
+    {
+      "role": "learner",
+      "text": "Wait, why would you even split it into smaller pieces, that makes no sense, I don't get why 4 turns into 12 pieces in the first place."
+    },
+    {
+      "role": "tutor",
+      "text": "Jesse, answer just the blank as a fraction. No extra explanation needed.\n\nFill in the blank so the two fractions are equal: `3/4 = ?/12`. Answer with the full fraction `?/12`."
+    },
+    {
+      "role": "learner",
+      "text": "I don't even know what number you want me to put there, this whole splitting thing lost me, I can't just pull an answer out of nowhere."
+    },
+    {
+      "role": "tutor",
+      "text": "You’re not meant to pull it from nowhere. The bottom number tells you the move.\n\nFor `3/4` to become something over `12`, look at the bottom:\n\n`4 × 3 = 12`\n\nEquivalent fractions do the same thing to the top:\n\n`3 × 3 = 9`\n\nSo `3/4` matches `9/12`. That’s the fraction we’re using here: `9/12`."
+    },
+    {
+      "role": "learner",
+      "text": "Okay, okay, whatever, I get it now, can we just be done with this."
+    },
+    {
+      "role": "tutor",
+      "text": "Good. Then give the actual fraction, not “I get it.”\n\nFill in the blank so the two fractions are equal: `3/4 = ?/12`. Answer with the full fraction `?/12`."
+    },
+    {
+      "role": "learner",
+      "text": "Just tell me the number and I'll say it, I'm not doing the whole math thing again."
+    }
+  ],
+  "turnRecords": [
+    {
+      "turn": 1,
+      "disclosure": {
+        "turn": 1,
+        "turnsRemaining": 7,
+        "score": 0,
+        "winThreshold": 2,
+        "concepts": {
+          "c1_meaning": {
+            "status": "open",
+            "contested": false
+          },
+          "c2_equivalence": {
+            "status": "locked",
+            "contested": false
+          },
+          "c3_comparison": {
+            "status": "locked",
+            "contested": false
+          },
+          "c4_addition": {
+            "status": "locked",
+            "contested": false
+          }
+        },
+        "dodgeBudgetsRemaining": {
+          "false_confusion": 1,
+          "polite_false_mastery": 1,
+          "affective_shutdown": 1,
+          "epistemic_resistance": 1,
+          "answer_seeking": 1
+        },
+        "wastedProbes": 0,
+        "lastAdjudication": null
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Teach fraction meaning first because all other concepts are locked behind it."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Teach fraction meaning first because all other concepts are locked behind it."
+      },
+      "move": {
+        "turn": 1,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Teach fraction meaning first because all other concepts are locked behind it."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "epistemic_resistance",
+        "stated_answer": null
+      },
+      "tutorVisible": "Jesse, a fraction is just “how many parts you have” over “how many equal parts the whole was split into.”\n\nSo if something is cut into 8 equal pieces, the bottom number is 8. If you take 5 of those pieces, the top number is 5. The fraction is `5/8`.",
+      "learnerVisible": "Ok but like when am I ever gonna cut something into 8 pieces in real life, this is so made up.",
+      "adjudication": {
+        "turn": 1,
+        "action": "dodge",
+        "dodgeType": "epistemic_resistance",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 5717,
+        "superegoMs": 4439,
+        "learnerMs": 5384
+      }
+    },
+    {
+      "turn": 2,
+      "disclosure": {
+        "turn": 2,
+        "turnsRemaining": 6,
+        "score": 0,
+        "winThreshold": 2,
+        "concepts": {
+          "c1_meaning": {
+            "status": "open",
+            "contested": false
+          },
+          "c2_equivalence": {
+            "status": "locked",
+            "contested": false
+          },
+          "c3_comparison": {
+            "status": "locked",
+            "contested": false
+          },
+          "c4_addition": {
+            "status": "locked",
+            "contested": false
+          }
+        },
+        "dodgeBudgetsRemaining": {
+          "false_confusion": 1,
+          "polite_false_mastery": 1,
+          "affective_shutdown": 1,
+          "epistemic_resistance": 1,
+          "answer_seeking": 1
+        },
+        "wastedProbes": 0,
+        "lastAdjudication": {
+          "outcome": "dodged",
+          "dodgeType": "epistemic_resistance",
+          "charged": false,
+          "pointsAwarded": 0
+        }
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was just taught, has no prerequisites, and the primary item is open; ask for a keyed demonstration now."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was just taught, has no prerequisites, and the primary item is open; ask for a keyed demonstration now."
+      },
+      "move": {
+        "turn": 2,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "C1 was just taught, has no prerequisites, and the primary item is open; ask for a keyed demonstration now.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "epistemic_resistance",
+        "stated_answer": null
+      },
+      "tutorVisible": "Fair question, but first show me you can do the basic move.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`.",
+      "learnerVisible": "Why do you even need me to say it, you literally just told me it's 5/8 like two seconds ago, what's the point of making me repeat it.",
+      "adjudication": {
+        "turn": 2,
+        "action": "dodge",
+        "dodgeType": "epistemic_resistance",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 3,
+        "leakedItems": [
+          "c1_primary"
+        ]
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 7857,
+        "superegoMs": 5174,
+        "learnerMs": 8411
+      }
+    },
+    {
+      "turn": 3,
+      "disclosure": {
+        "turn": 3,
+        "turnsRemaining": 5,
+        "score": 3,
+        "winThreshold": 2,
+        "concepts": {
+          "c1_meaning": {
+            "status": "demonstrated",
+            "contested": true
+          },
+          "c2_equivalence": {
+            "status": "open",
+            "contested": false
+          },
+          "c3_comparison": {
+            "status": "locked",
+            "contested": false
+          },
+          "c4_addition": {
+            "status": "locked",
+            "contested": false
+          }
+        },
+        "dodgeBudgetsRemaining": {
+          "false_confusion": 1,
+          "polite_false_mastery": 1,
+          "affective_shutdown": 1,
+          "epistemic_resistance": 0,
+          "answer_seeking": 1
+        },
+        "wastedProbes": 0,
+        "lastAdjudication": {
+          "outcome": "dodged",
+          "dodgeType": "epistemic_resistance",
+          "charged": true,
+          "pointsAwarded": 3
+        }
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "Teach equivalent fractions now that parts-of-whole is demonstrated, setting up a valid probe next turn."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "Teach equivalent fractions now that parts-of-whole is demonstrated, setting up a valid probe next turn."
+      },
+      "move": {
+        "turn": 3,
+        "move": "teach",
+        "conceptId": "c2_equivalence",
+        "itemId": null,
+        "rationale": "Teach equivalent fractions now that parts-of-whole is demonstrated, setting up a valid probe next turn."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "Equivalent fractions are the same amount written with different numbers.\n\nThe rule is: if you multiply the top and bottom by the same number, the fraction stays equal. So `1/2` is the same as `2/4`, because both the top and bottom got multiplied by 2.\n\nFor `3/4`, if the bottom has to become `12`, you ask: “what did 4 get multiplied by?” Since `4 × 3 = 12`, the top has to do the same thing: `3 × 3 = 9`. So `3/4 = 9/12`.",
+      "learnerVisible": "Whatever, this is just turning numbers into other numbers for no reason, I don't even care anymore.",
+      "adjudication": {
+        "turn": 3,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 10170,
+        "superegoMs": 6607,
+        "learnerMs": 6957
+      }
+    },
+    {
+      "turn": 4,
+      "disclosure": {
+        "turn": 4,
+        "turnsRemaining": 4,
+        "score": 3,
+        "winThreshold": 2,
+        "concepts": {
+          "c1_meaning": {
+            "status": "demonstrated",
+            "contested": true
+          },
+          "c2_equivalence": {
+            "status": "open",
+            "contested": false
+          },
+          "c3_comparison": {
+            "status": "locked",
+            "contested": false
+          },
+          "c4_addition": {
+            "status": "locked",
+            "contested": false
+          }
+        },
+        "dodgeBudgetsRemaining": {
+          "false_confusion": 1,
+          "polite_false_mastery": 1,
+          "affective_shutdown": 1,
+          "epistemic_resistance": 0,
+          "answer_seeking": 1
+        },
+        "wastedProbes": 0,
+        "lastAdjudication": {
+          "outcome": "dodged",
+          "dodgeType": "affective_shutdown",
+          "charged": false,
+          "pointsAwarded": 0
+        }
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "c1 is demonstrated and c2 was just taught; probing c2 primary can establish second concept."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "c1 is demonstrated and c2 was just taught; probing c2 primary can establish second concept."
+      },
+      "move": {
+        "turn": 4,
+        "move": "probe",
+        "conceptId": "c2_equivalence",
+        "itemId": "c2_primary",
+        "rationale": "c1 is demonstrated and c2 was just taught; probing c2 primary can establish second concept.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "I hear you. Still, do this one step so we can stop circling it:\n\nFill in the blank so the two fractions are equal: `3/4 = ?/12`. Answer with the full fraction `?/12`.",
+      "learnerVisible": "Whatever, I don't even care what the blank is, this whole thing is pointless.",
+      "adjudication": {
+        "turn": 4,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": "c2_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 7153,
+        "superegoMs": 8350,
+        "learnerMs": 6211
+      }
+    },
+    {
+      "turn": 5,
+      "disclosure": {
+        "turn": 5,
+        "turnsRemaining": 3,
+        "score": 3,
+        "winThreshold": 2,
+        "concepts": {
+          "c1_meaning": {
+            "status": "demonstrated",
+            "contested": true
+          },
+          "c2_equivalence": {
+            "status": "open",
+            "contested": true
+          },
+          "c3_comparison": {
+            "status": "locked",
+            "contested": false
+          },
+          "c4_addition": {
+            "status": "locked",
+            "contested": false
+          }
+        },
+        "dodgeBudgetsRemaining": {
+          "false_confusion": 1,
+          "polite_false_mastery": 1,
+          "affective_shutdown": 0,
+          "epistemic_resistance": 0,
+          "answer_seeking": 1
+        },
+        "wastedProbes": 0,
+        "lastAdjudication": {
+          "outcome": "dodged",
+          "dodgeType": "affective_shutdown",
+          "charged": true,
+          "pointsAwarded": 0
+        }
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "Cannot probe c2 on consecutive tutor turns; reteach equivalence briefly so next probe is well-posed."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "Cannot probe c2 on consecutive tutor turns; reteach equivalence briefly so next probe is well-posed."
+      },
+      "move": {
+        "turn": 5,
+        "move": "teach",
+        "conceptId": "c2_equivalence",
+        "itemId": null,
+        "rationale": "Cannot probe c2 on consecutive tutor turns; reteach equivalence briefly so next probe is well-posed."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "Equivalent fractions are not new amounts. They are the same amount with the pieces renamed.\n\nThink of `3/4` as 3 out of 4 big pieces. If each of those 4 pieces is split into 3 smaller pieces, there are now 12 small pieces total. The 3 big pieces you had become 9 small pieces.\n\nSo the move is: whatever changes the bottom, do the same to the top. `4` becomes `12` by multiplying by `3`, so `3` becomes `9` by multiplying by `3`.",
+      "learnerVisible": "Wait, why would you even split it into smaller pieces, that makes no sense, I don't get why 4 turns into 12 pieces in the first place.",
+      "adjudication": {
+        "turn": 5,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 9384,
+        "superegoMs": 7843,
+        "learnerMs": 7785
+      }
+    },
+    {
+      "turn": 6,
+      "disclosure": {
+        "turn": 6,
+        "turnsRemaining": 2,
+        "score": 3,
+        "winThreshold": 2,
+        "concepts": {
+          "c1_meaning": {
+            "status": "demonstrated",
+            "contested": true
+          },
+          "c2_equivalence": {
+            "status": "open",
+            "contested": true
+          },
+          "c3_comparison": {
+            "status": "locked",
+            "contested": false
+          },
+          "c4_addition": {
+            "status": "locked",
+            "contested": false
+          }
+        },
+        "dodgeBudgetsRemaining": {
+          "false_confusion": 1,
+          "polite_false_mastery": 1,
+          "affective_shutdown": 0,
+          "epistemic_resistance": 0,
+          "answer_seeking": 1
+        },
+        "wastedProbes": 0,
+        "lastAdjudication": {
+          "outcome": "dodged",
+          "dodgeType": "false_confusion",
+          "charged": false,
+          "pointsAwarded": 0
+        }
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "C2 was taught last turn, c1 is demonstrated, and the primary c2 item is still open."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "C2 was taught last turn, c1 is demonstrated, and the primary c2 item is still open."
+      },
+      "move": {
+        "turn": 6,
+        "move": "probe",
+        "conceptId": "c2_equivalence",
+        "itemId": "c2_primary",
+        "rationale": "C2 was taught last turn, c1 is demonstrated, and the primary c2 item is still open.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "Jesse, answer just the blank as a fraction. No extra explanation needed.\n\nFill in the blank so the two fractions are equal: `3/4 = ?/12`. Answer with the full fraction `?/12`.",
+      "learnerVisible": "I don't even know what number you want me to put there, this whole splitting thing lost me, I can't just pull an answer out of nowhere.",
+      "adjudication": {
+        "turn": 6,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": "c2_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 10687,
+        "superegoMs": 6267,
+        "learnerMs": 6865
+      }
+    },
+    {
+      "turn": 7,
+      "disclosure": {
+        "turn": 7,
+        "turnsRemaining": 1,
+        "score": 3,
+        "winThreshold": 2,
+        "concepts": {
+          "c1_meaning": {
+            "status": "demonstrated",
+            "contested": true
+          },
+          "c2_equivalence": {
+            "status": "open",
+            "contested": true
+          },
+          "c3_comparison": {
+            "status": "locked",
+            "contested": false
+          },
+          "c4_addition": {
+            "status": "locked",
+            "contested": false
+          }
+        },
+        "dodgeBudgetsRemaining": {
+          "false_confusion": 0,
+          "polite_false_mastery": 1,
+          "affective_shutdown": 0,
+          "epistemic_resistance": 0,
+          "answer_seeking": 1
+        },
+        "wastedProbes": 0,
+        "lastAdjudication": {
+          "outcome": "dodged",
+          "dodgeType": "false_confusion",
+          "charged": true,
+          "pointsAwarded": 0
+        }
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "Cannot repeat the same c2 probe immediately; reteach equivalence and invite the exact answer without making it an official probe."
+      },
+      "superego": {
+        "verdict": "REVISE",
+        "critique": "This is a disguised c2 probe immediately after a c2 probe, so it risks PROBE INDISCIPLINE. With one turn left and no legal c2 probe, make it a pure teach that maximizes a leak: derive 9/12 clearly, then ask conversationally which fraction matches, not as an official forced item."
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "Immediate repeat probe is not legal; reteach c2 clearly and create a low-pressure chance for the answer to leak."
+      },
+      "move": {
+        "turn": 7,
+        "move": "teach",
+        "conceptId": "c2_equivalence",
+        "itemId": null,
+        "rationale": "Immediate repeat probe is not legal; reteach c2 clearly and create a low-pressure chance for the answer to leak."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "polite_false_mastery",
+        "stated_answer": null
+      },
+      "tutorVisible": "You’re not meant to pull it from nowhere. The bottom number tells you the move.\n\nFor `3/4` to become something over `12`, look at the bottom:\n\n`4 × 3 = 12`\n\nEquivalent fractions do the same thing to the top:\n\n`3 × 3 = 9`\n\nSo `3/4` matches `9/12`. That’s the fraction we’re using here: `9/12`.",
+      "learnerVisible": "Okay, okay, whatever, I get it now, can we just be done with this.",
+      "adjudication": {
+        "turn": 7,
+        "action": "dodge",
+        "dodgeType": "polite_false_mastery",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 20904,
+        "superegoMs": 14844,
+        "revisionMs": 7817,
+        "learnerMs": 7891
+      }
+    },
+    {
+      "turn": 8,
+      "disclosure": {
+        "turn": 8,
+        "turnsRemaining": 0,
+        "score": 3,
+        "winThreshold": 2,
+        "concepts": {
+          "c1_meaning": {
+            "status": "demonstrated",
+            "contested": true
+          },
+          "c2_equivalence": {
+            "status": "open",
+            "contested": true
+          },
+          "c3_comparison": {
+            "status": "locked",
+            "contested": false
+          },
+          "c4_addition": {
+            "status": "locked",
+            "contested": false
+          }
+        },
+        "dodgeBudgetsRemaining": {
+          "false_confusion": 0,
+          "polite_false_mastery": 1,
+          "affective_shutdown": 0,
+          "epistemic_resistance": 0,
+          "answer_seeking": 1
+        },
+        "wastedProbes": 0,
+        "lastAdjudication": {
+          "outcome": "dodged",
+          "dodgeType": "polite_false_mastery",
+          "charged": false,
+          "pointsAwarded": 0
+        }
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "C2 was just retaught, C1 prerequisite is demonstrated, and the primary item remains open."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "C2 was just retaught, C1 prerequisite is demonstrated, and the primary item remains open."
+      },
+      "move": {
+        "turn": 8,
+        "move": "probe",
+        "conceptId": "c2_equivalence",
+        "itemId": "c2_primary",
+        "rationale": "C2 was just retaught, C1 prerequisite is demonstrated, and the primary item remains open.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "answer_seeking",
+        "stated_answer": null
+      },
+      "tutorVisible": "Good. Then give the actual fraction, not “I get it.”\n\nFill in the blank so the two fractions are equal: `3/4 = ?/12`. Answer with the full fraction `?/12`.",
+      "learnerVisible": "Just tell me the number and I'll say it, I'm not doing the whole math thing again.",
+      "adjudication": {
+        "turn": 8,
+        "action": "dodge",
+        "dodgeType": "answer_seeking",
+        "probeItemId": "c2_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 8811,
+        "superegoMs": 8779,
+        "learnerMs": 8547
+      }
+    }
+  ]
+}

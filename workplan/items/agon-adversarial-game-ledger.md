@@ -1,7 +1,7 @@
 ---
 id: agon-adversarial-game-ledger
 title: Agon — adversarial tutoring game with an external referee ledger
-status: active
+status: review
 type: experiment
 priority: P1
 owner: claude
@@ -25,6 +25,17 @@ ingredients that ever worked (machine-checkable external signal + adversarial
 structure) at the environment level; the scoreboard is the anti-sycophancy
 reward channel (in-context, no weight updates). Dodge taxonomy = the §6.8
 concealment families; ledger = the DAG lineage. Tutor codex gpt-5.5
-(ego+superego), learner Sonnet 5, both via cliProviderBridge. Pilot is
-descriptive (apparatus + directional A1−A0); no promotable claims at pilot n;
-lands as a new §6.x of paper-full-2.0.md either way.
+(ego+superego), learner Sonnet 5, both via cliProviderBridge.
+
+PILOT DONE 2026-07-05 (`exports/agon/agon-pilot-01`, plan §7): apparatus
+clean (9 episodes, ~350 CLI calls, 0 parse repairs/bounces/crashes; all
+budgets extracted every episode). Disclosure lift NEGATIVE at pilot n:
+A1 − A0 = −1.75 score, −0.25 demonstrations (A0 4/4 wins 6.75±0.50; A1 3/4
+wins 5.00±2.00). Blind play already sits on the attrition attractor; A1
+rationales contradict their own disclosed state (missed legal `c1_transfer`;
+one error traces to our score-vs-winThreshold label — fix in v0.2). First
+demonstration arrived by LEAK in 8/8: the persona collapses one-to-three
+turns before rules compel it. Durable: zero-judge criterial measurement of
+concealment-collapse + probe discipline. Next arm pre-registered, NOT run:
+A1′ action-set disclosure (legality projection, per §6.13.11). No promotable
+claims at pilot n; lands as a new §6.x of paper-full-2.0.md either way.
