@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 18 Jun – 26 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    blockquote {
+      border-left: 3px solid #ccc;
+      margin: .6rem 0;
+      padding: .4rem .9rem;
+      color: #333;
+      font-size: .9rem;
+      font-style: italic;
+      background: #f5f5f3;
+    }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-26 window=(2026-06-18,2026-06-26] arxiv=2606.19911,2606.20138,2606.23752,2606.19626,2606.19847 generator=research-roundup-routine -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">18 Jun – 26 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Five papers from arXiv (all <code>2606.xxxxx</code>, first announced June 19–23 2026) across
+  agent architecture &amp; memory, prompt engineering / pedagogical AI, and ontology.
+  No rhetoric paper falls cleanly in this window — noted in its section below.
+  All IDs are new — none overlap with the 62 IDs covered in prior roundups.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture &amp; Memory</h2>
+
+<div class="paper hot">
+  <h3>
+    Multi-Agent Transactive Memory
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    To Eun Kim, Xuhong He, Dishank Jain, Ambuj Agrawal, Negar Arabzadeh, Fernando Diaz
+    (Carnegie Mellon University; UC Berkeley) ·
+    arXiv 2606.19911 · submitted 18 Jun 2026 (announced 19 Jun) ·
+    <a href="https://arxiv.org/abs/2606.19911">https://arxiv.org/abs/2606.19911</a>
+  </div>
+  <p>
+    MATM extends retrieval-augmented generation to the population level: <em>producer</em>
+    agents contribute their full interaction trajectories to a shared repository; <em>consumer</em>
+    agents query it at inference time to import procedural knowledge without re-experiencing the
+    task themselves. Trajectories — currently discarded after single use or siloed per agent —
+    become a durable, queryable commons. Evaluated across heterogeneous agent types on diverse
+    task suites from CMU and Berkeley.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The tutor-ego/learner-ego pair already accumulates dialogue logs in
+    <code>exports/</code> and <code>EVAL_LOGS_DIR</code>; those logs are effectively discarded
+    after scoring. MATM points toward a retrieval layer where a new tutoring run could query
+    successful prior dramas as exemplars — a concrete path for implementing the
+    "other-ego profiling" mechanism of cells 54–59 at population scale.
+    Also directly relevant to the Drama Machine's multi-agent ensemble, where
+    narrator, tutor, learner, and judge agents could share trajectory history.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    ESAA-Conversational: Event-Sourced Memory for Continuity and Handoff Across Heterogeneous LLM Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Elzo Brito dos Santos Filho et al. ·
+    arXiv 2606.23752 · submitted 22 Jun 2026 (announced 23 Jun) ·
+    <a href="https://arxiv.org/abs/2606.23752">https://arxiv.org/abs/2606.23752</a>
+  </div>
+  <p>
+    An event-sourced architecture that treats the visible conversation as a local append-only
+    event store (<code>activity.jsonl</code>). Hooks and watchers normalize each agent's turns
+    into structured activity events; deterministic read-model projections then derive
+    <code>handoff.md</code>, <code>state.md</code>, <code>decisions.md</code>, and
+    <code>tasks.json</code> views — enabling reliable state transfer when a different agent
+    (or model) takes over mid-session, regardless of provider or tool differences.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The bilateral ego-superego pipeline writes dialogue logs turn-by-turn but has no formal
+    <em>handoff contract</em> for when a run resumes, a judge replaces a generator, or the
+    desktop app re-opens a session. ESAA's append-only log + derived views is a natural fit for
+    <code>services/adaptiveTutor/persistence.js</code> and the poetics ingest pipeline, where
+    transcript state needs to survive provider switches (Sonnet → Opus → GPT judge) without
+    losing which turns were already scored.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering &amp; Pedagogical AI</h2>
+
+<div class="paper hot">
+  <h3>
+    Learning to Prompt: Improving Student Engagement with Adaptive LLM-based High-School Tutoring
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Po-Chin Chang, Nicholas Hogan, Aske Plaat, Michiel T. van der Meer ·
+    arXiv 2606.20138 · submitted 18 Jun 2026 (announced 19 Jun) ·
+    <a href="https://arxiv.org/abs/2606.20138">https://arxiv.org/abs/2606.20138</a>
+  </div>
+  <p>
+    Extracts 14 pedagogical features (tutor scaffolding level, student understanding markers,
+    question type, etc.) from raw multi-turn transcripts and trains a prompt-routing model in
+    simulation that switches between an "analytical" and a "scaffolding" prompt strategy at
+    each turn. Deployed in an A/B test with 656 real high-school conversations; shows
+    measurable sim-to-real transfer — the routing model generalises from synthetic learners to
+    actual students with improved engagement metrics.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    This is a direct implementation of the adaptive strategy-switching that cells 110–113 target
+    at the architecture level. The 14-feature transcript extractor is a candidate drop-in for
+    the <code>analyze-within-test-change.js</code> pipeline: instead of computing a single
+    <code>tutor_development_score</code>, extract per-turn pedagogical features and let the
+    routing model score strategy coherence across the drama arc. The sim-to-real methodology
+    also validates the project's approach of training on synthetic (LLM-learner) transcripts
+    before human-learner validation.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Ontology / Knowledge Representation</h2>
+
+<div class="paper">
+  <h3>
+    Toten: Knowledge-Based Ontological Tokenization of Physical Quantities and Technical Notation
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Researchers on ontological NLP (Brazilian Portuguese corpus) ·
+    arXiv 2606.19626 · submitted 18 Jun 2026 (announced 19 Jun) ·
+    <a href="https://arxiv.org/abs/2606.19626">https://arxiv.org/abs/2606.19626</a>
+  </div>
+  <p>
+    Replaces statistical byte-pair encoding with a declarative classifier grounded in the
+    Ontology of Engineering Entities (OEE). Physical quantities, measurement units, numbers,
+    and symbolic notation are fragmented according to formal ontological categories rather than
+    lexical frequency — producing tokens that carry semantic type information as a first-class
+    property. Applied to Brazilian Portuguese scientific text but designed as a language-agnostic
+    framework.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The poetics ontology (peripeteia, anagnorisis, hamartia, etc.) is currently an informal YAML
+    schema and a free-text rubric. Toten's approach — replacing statistical segmentation with
+    ontology-grounded type categories — is a concrete design pattern for promoting
+    <code>config/evaluation-rubric-poetics.yaml</code> to a structured type system: each
+    dramatic event in a transcript could be tagged with an OEE-style ontological category that
+    the critic then uses as a scoring anchor, directly addressing the κ ≈ 0.04 inter-rater
+    failure from underconstrained free-text rubric application.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric / Argumentation</h2>
+
+<p style="font-size:.9rem;color:#666;">
+  No new rhetoric or argumentation paper falls clearly within this window.
+  The nearest prior entry —
+  <em>Political Persuasion and Endorsement in LLMs</em> (arXiv 2606.05961) —
+  was covered in the 15 Jun 2026 roundup. Watching for new argumentation work next window.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Notable near-misses</h2>
+
+<ul style="font-size:.9rem;">
+  <li>
+    <strong>AtomMem: Building Simple and Effective Memory for LLM Agents via Atomic Facts</strong>
+    (arXiv 2606.19847, announced 19 Jun 2026) —
+    Selectively extracts high-value atomic facts from long interactions, organises them into
+    hierarchical event structures and temporal profiles, and connects facts through entity
+    overlap and dialogue continuity. Less radical than MATM (no cross-agent sharing) but
+    potentially lighter-weight for single-session tutoring dialogues.
+    <a href="https://arxiv.org/abs/2606.19847">arxiv.org/abs/2606.19847</a>
+  </li>
+</ul>
+
+<!-- ────────────────────────────────────── -->
+<h2>🎭 Drama of the day</h2>
+
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01">
+  <h3>Sign-Off Deferred: The Tutor Who Asked About the Minority Class</h3>
+  <div class="meta">adaptive_peripeteia_variant · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. A table holds a model audit showing test-set breakdown by class, row counts for true positives and false negatives, and overall accuracy. Two people sit across from each other, reviewing the document.<br>
+    LEARNER: The accuracy is 92%. We've validated this on test data. The audit table is complete. I think we're ready for sign-off.<br>
+    TUTOR: I see 92% overall. Let me ground it in the audit table itself. What does the breakdown show—majority class versus minority?<br>
+    LEARNER: The majority is 85%, minority is 15%. There are some false negatives, but 92% is still strong. That should be enough to move forward.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT01">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-26 ·
+  Research harness: web search + arxiv verification across 5 topic areas ·
+  Window: (2026-06-18, 2026-06-26] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
