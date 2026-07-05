@@ -1,15 +1,28 @@
-// Stage 2 de-substitution matrix scorer (plan note §7 go record).
-//
-// Reads run eval-2026-07-03-a3cfbe14's rows, locates each dialogue log, and
-// extracts the judge-free outcomes written by the learner-interior gate:
+// Stage 2 / confirmatory de-substitution matrix scorer (plan note §7,
+// confirmatory pre-registration notes/2026-07-04-desubstitution-confirmatory-
+// prereg.md). Reads a run's rows, locates each dialogue log, and extracts the
+// judge-free outcomes written by the learner-interior gate:
 //   grounded   — any learner_grounding trace entry with grounded:true (primary)
 //   release    — any learner_content_condition entry with met:true
 //   engagement — any accepted learner_drift_gate entry with contentConditionMet:true
 //   attempts   — drift-gate attempt counts; instrument_failure rows excluded
-// Applies the frozen H-D/H-O rules with the grounding-floor and >20%
-// exhaustion guards. No judge anywhere in the decision path.
+// Applies the frozen H-D/H-O (or H-Dc/H-Oc) rules with the grounding-floor and
+// >20% exhaustion guards. No judge anywhere in the decision path — semantic
+// release verdicts are read from the already-cached trace, never re-called.
 //
 // Usage: node scripts/report-desubstitution-stage2.js [--run-id <id>]
+//          [--out-base <name>] [--confirmatory]
+//
+// Default (no --confirmatory): iteration-2 thresholds (n=20/arm) — H-D/H-O
+// real >=5, dissolved |gap|<=2, else UNRESOLVED_STOP. H-O is scored with the
+// same one-sided function as H-D (as iteration 2 recorded it).
+//
+// --confirmatory: the frozen C-series thresholds (n=40/arm, notes/2026-07-04-
+// desubstitution-confirmatory-prereg.md §1-2) — H-Dc is one-sided (193 > 186
+// is the declared expectation): gap >=7 REAL, <=3 DISSOLVED, else
+// UNRESOLVED-FINAL (arc closes permanently). H-Oc is symmetric (either arm
+// may lead): |gap| >=7 REAL, <=3 DISSOLVED, else UNRESOLVED-FINAL, with a
+// reported direction (kernel-favoring / 193-favoring).
 
 import fs from 'node:fs';
 import os from 'node:os';
@@ -23,6 +36,7 @@ const RUN_ID = process.argv.includes('--run-id')
 const OUT_BASE = process.argv.includes('--out-base')
   ? process.argv[process.argv.indexOf('--out-base') + 1]
   : 'desubstitution-stage2-matrix';
+const CONFIRMATORY = process.argv.includes('--confirmatory');
 const DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT, 'data/evaluations.db');
 const LOG_DIRS = [
   process.env.EVAL_LOGS_DIR ? path.join(process.env.EVAL_LOGS_DIR, 'tutor-dialogues') : null,
@@ -150,15 +164,44 @@ const groundingFloor = ARMS.every((a) => perArm[a.key].grounded === 0);
 const primary = (arm) => perArm[arm].grounded;
 const gapHD = primary('193_multi') - primary('186_fixed');
 const gapHO = primary('199_kernel') - primary('193_multi');
-function verdict(gap) {
+
+// One-sided verdict for H-D/H-Dc: 193 > 186 is the declared expectation, so a
+// negative or small gap is evidence against the hypothesis, not a separate
+// "other direction real" case. Iteration-2 thresholds (n=20/arm, legacy
+// default): real >=5, dissolved |gap|<=2, else UNRESOLVED_STOP. Confirmatory
+// thresholds (n=40/arm, notes/2026-07-04-desubstitution-confirmatory-
+// prereg.md §1): real >=7, dissolved <=3, else UNRESOLVED-FINAL (arc closes
+// permanently — no third bite).
+function verdictOneSided(gap) {
+  if (CONFIRMATORY) {
+    if (gap >= 7) return 'REAL';
+    if (gap <= 3) return 'DISSOLVED';
+    return 'UNRESOLVED-FINAL';
+  }
   if (gap >= 5) return 'REAL';
   if (Math.abs(gap) <= 2) return 'DISSOLVED';
   return 'UNRESOLVED_STOP';
 }
+
+// Symmetric verdict for H-Oc only (prereg §3.2 [sic §2]: "kernel-favoring or
+// 193-favoring" — two-sided, unlike H-Dc's one-sided expectation). Legacy
+// (non-confirmatory) H-O scoring is unchanged: it delegates to the same
+// one-sided function iteration 2 used, preserving prior behavior exactly.
+function verdictSymmetric(gap) {
+  const direction = gap > 0 ? 'kernel-favoring' : gap < 0 ? '193-favoring' : 'flat';
+  if (!CONFIRMATORY) return { verdict: verdictOneSided(gap), direction };
+  const abs = Math.abs(gap);
+  if (abs >= 7) return { verdict: 'REAL', direction };
+  if (abs <= 3) return { verdict: 'DISSOLVED', direction };
+  return { verdict: 'UNRESOLVED-FINAL', direction };
+}
+
 const frozenArms = new Set(exhaustionFreeze.map((c) => c.split('|')[0]));
 const comparisonFrozen = (a, b) => frozenArms.has(a) || frozenArms.has(b);
+const hoScored = verdictSymmetric(gapHO);
 const result = {
   runId: RUN_ID,
+  confirmatory: CONFIRMATORY,
   rowsScored: scored.length,
   missingLogs,
   perArm,
@@ -171,21 +214,30 @@ const result = {
     ? { verdict: 'FROZEN_INSTRUMENT_FAILURE', gap: gapHD }
     : groundingFloor
       ? { verdict: 'INSTRUMENT_FLOOR_UNRESOLVED', gap: gapHD }
-      : { verdict: verdict(gapHD), gap: gapHD },
+      : { verdict: verdictOneSided(gapHD), gap: gapHD },
   ho: comparisonFrozen('199_kernel', '193_multi')
-    ? { verdict: 'FROZEN_INSTRUMENT_FAILURE', gap: gapHO }
+    ? { verdict: 'FROZEN_INSTRUMENT_FAILURE', gap: gapHO, direction: hoScored.direction }
     : groundingFloor
-      ? { verdict: 'INSTRUMENT_FLOOR_UNRESOLVED', gap: gapHO }
-      : { verdict: verdict(gapHO), gap: gapHO },
+      ? { verdict: 'INSTRUMENT_FLOOR_UNRESOLVED', gap: gapHO, direction: hoScored.direction }
+      : { verdict: hoScored.verdict, gap: gapHO, direction: hoScored.direction },
   legacy_control_line:
     'Legacy §6.14 control (non-pinned learner, same arms/subtypes, n=6/cell): positives 193-arm 30/30 vs 199-arm 24/30; 186-floor not directly comparable (different outcome).',
 };
+if (CONFIRMATORY) {
+  result.iteration2_comparison_line =
+    'Iteration 2 generating observation (`eval-2026-07-04-c689cf3a`, n=20/arm, never pooled into this confirmatory estimate): grounded 186_fixed=0/20, 193_multi=4/20, 199_kernel=2/20 (H-D gap 4 → UNRESOLVED_STOP; H-O FROZEN on kernel exhaustion in boredom + rote_parroting).';
+}
 
 fs.mkdirSync(path.join(ROOT, 'exports'), { recursive: true });
 fs.writeFileSync(path.join(ROOT, `exports/${OUT_BASE}.json`), JSON.stringify(result, null, 2));
 
+const hdLabel = CONFIRMATORY ? 'H-Dc' : 'H-D';
+const hoLabel = CONFIRMATORY ? 'H-Oc' : 'H-O';
+const fmtAttempts = (v) => (v === null || v === undefined ? 'n/a' : v);
 const lines = [
-  '# De-Substitution Stage 2 Matrix — DAG-Pinned Learner',
+  CONFIRMATORY
+    ? '# De-Substitution Confirmatory Matrix (C2) — DAG-Pinned Learner'
+    : '# De-Substitution Stage 2 Matrix — DAG-Pinned Learner',
   '',
   `Run \`${RUN_ID}\` · ${scored.length} rows scored (${missingLogs} missing logs) · outcomes judge-free (gate traces only)`,
   '',
@@ -193,29 +245,31 @@ const lines = [
   '| --- | ---: | ---: | ---: | ---: | ---: | ---: |',
   ...ARMS.map((a) => {
     const s = perArm[a.key];
-    return `| ${a.key} | ${s.usable} | ${s.grounded} | ${s.release} (${s.semantic_release}) | ${s.engagement} | ${s.mean_gate_attempts} | ${s.instrument_failures} |`;
+    return `| ${a.key} | ${s.usable} | ${s.grounded} | ${s.release} (${s.semantic_release}) | ${s.engagement} | ${fmtAttempts(s.mean_gate_attempts)} | ${s.instrument_failures} |`;
   }),
   '',
-  '## Per arm × subtype (grounded / release / engagement, usable n)',
+  '## Per arm × subtype (usable rows; instrument-failure rows excluded)',
   '',
-  '| Subtype | 186_fixed | 193_multi | 199_kernel |',
-  '| --- | --- | --- | --- |',
-  ...SUBTYPES.map((sub) => {
-    const cells = ARMS.map((a) => {
+  '| Subtype | Arm | Usable | Grounded | Release (semantic) | Engagement | Mean gate attempts | Instrument failures |',
+  '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+  ...SUBTYPES.flatMap((sub) =>
+    ARMS.map((a) => {
       const c = perCell[`${a.key}|${sub}`];
-      return `${c.grounded}/${c.release}/${c.engagement} (n=${c.usable})`;
-    });
-    return `| ${sub} | ${cells.join(' | ')} |`;
-  }),
+      return `| ${sub} | ${a.key} | ${c.usable} | ${c.grounded} | ${c.release} (${c.semantic_release}) | ${c.engagement} | ${fmtAttempts(c.mean_gate_attempts)} | ${c.instrument_failures} |`;
+    }),
+  ),
   '',
   `Guards: grounding floor (all arms zero) = **${groundingFloor}**; exhaustion-freeze cells: ${
     exhaustionFreeze.length ? exhaustionFreeze.join(', ') : 'none'
   }.`,
   '',
-  `**H-D (193 vs 186)**: gap ${gapHD} → **${result.hd.verdict}**`,
-  `**H-O (199 vs 193)**: gap ${gapHO} → **${result.ho.verdict}**`,
+  `**${hdLabel} (193 vs 186)**: gap ${gapHD} → **${result.hd.verdict}**`,
+  `**${hoLabel} (199 vs 193)**: gap ${gapHO} → **${result.ho.verdict}**${
+    result.ho.direction && result.ho.direction !== 'flat' ? ` (${result.ho.direction})` : ''
+  }`,
   '',
   result.legacy_control_line,
+  ...(result.iteration2_comparison_line ? ['', result.iteration2_comparison_line] : []),
   '',
 ];
 fs.writeFileSync(path.join(ROOT, `exports/${OUT_BASE}.md`), lines.join('\n'));

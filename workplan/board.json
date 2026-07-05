@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-04T01:25:09.676Z",
+  "generated": "2026-07-05T10:06:07.917Z",
   "counts": {
     "total": 77,
     "byStatus": {
-      "done": 65,
+      "done": 66,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 1
     },
@@ -89,33 +89,6 @@
         "id-director",
         "writing-pad",
         "adaptation",
-        "evaluation"
-      ],
-      "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "dag-pinned-learner-desubstitution",
-      "title": "DAG-pinned resistant learner and the de-substitution test",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-03",
-      "updated": "2026-07-03",
-      "verification": "Stage 0 no-paid gate (interior schema, drift gate extending resistanceSignalGate, deterministic yield checker, tests, hermetic dry-run) passes; Stage 1 instrument-validation probe meets frozen thresholds (selectivity ≥0.8, false-yield ≤0.1) before Stage 2; the 3-arm × 5-subtype matrix runs only after both gates with recorded go decisions; H-D/H-O verdicts applied exactly as frozen in the plan note §4.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md"
-        ]
-      },
-      "tags": [
-        "learner-side",
-        "belief-desire-dag",
-        "drift-gate",
-        "de-substitution",
-        "composition",
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
@@ -366,6 +339,33 @@
         "model-confound",
         "cross-model"
       ]
+    },
+    {
+      "id": "dag-pinned-learner-desubstitution",
+      "title": "DAG-pinned resistant learner and the de-substitution test",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-05",
+      "verification": "Stage 0 no-paid gate (interior schema, drift gate extending resistanceSignalGate, deterministic yield checker, tests, hermetic dry-run) passes; Stage 1 instrument-validation probe meets frozen thresholds (selectivity ≥0.8, false-yield ≤0.1) before Stage 2; the 3-arm × 5-subtype matrix runs only after both gates with recorded go decisions; H-D/H-O verdicts applied exactly as frozen in the plan note §4. CLOSED 2026-07-05 — confirmatory C-series (notes/2026-07-04-desubstitution-confirmatory-prereg.md) ran the 3-arm × 5-scenario × 8-repeat matrix (120 rows, eval-2026-07-04-0d59e4c8) at 2x the generating n; H-Dc and H-Oc both DISSOLVED under clean guards (no exhaustion freeze, no grounding floor).",
+      "claim_status": "settled",
+      "links": {
+        "notes": [
+          "notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md"
+        ]
+      },
+      "tags": [
+        "learner-side",
+        "belief-desire-dag",
+        "drift-gate",
+        "de-substitution",
+        "composition",
+        "evaluation"
+      ],
+      "branch": "worktree-blueprint-composition"
     },
     {
       "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",
