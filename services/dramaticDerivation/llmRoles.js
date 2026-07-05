@@ -5277,40 +5277,87 @@ export function makeLlmLearner({
       `voice or conjecture — and does your ${terms.record} now settle the question? Reply with ONLY the JSON object.`,
     ].join('\n');
 
-    const out = await callJson(client, 'learner', view.turn, {
-      system,
-      user,
-      meta: {
-        adoptableCount: adoptable.length,
-        patternAssertion,
-        sameTurnAssertionAffordance,
-        deriveHintIndices,
-        deriveLabels: derivableCandidates.map((entry) => entry.label),
-        ...(view.proxyDagMemory ? { proxyDagMemory: view.proxyDagMemory.metrics } : {}),
-        ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
-        ...(castState ? { castState } : {}),
-        ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),
-        // mock determinism (learner ledger): canned boundary commitments so
-        // zero-paid runs traverse the commit/audit path. Real backend ignores.
-        ...(ledgerSceneOpening
-          ? {
-              sceneIntentHint: {
-                want: 'follow the scene goal and test each claim before keeping it',
-                if_lost: 'ask_repair',
-                speech_posture: 'plain and testing',
-              },
-            }
-          : {}),
-        ...(ledgerActOpening
-          ? {
-              actCarryHint: {
-                carry_forward: 'the facts standing on my record',
-                still_owe: 'the final answer, not yet grounded',
-              },
-            }
-          : {}),
-      },
-    });
+    const learnerMeta = {
+      adoptableCount: adoptable.length,
+      patternAssertion,
+      sameTurnAssertionAffordance,
+      deriveHintIndices,
+      deriveLabels: derivableCandidates.map((entry) => entry.label),
+      ...(view.proxyDagMemory ? { proxyDagMemory: view.proxyDagMemory.metrics } : {}),
+      ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
+      ...(castState ? { castState } : {}),
+      ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),
+      // mock determinism (learner ledger): canned boundary commitments so
+      // zero-paid runs traverse the commit/audit path. Real backend ignores.
+      ...(ledgerSceneOpening
+        ? {
+            sceneIntentHint: {
+              want: 'follow the scene goal and test each claim before keeping it',
+              if_lost: 'ask_repair',
+              speech_posture: 'plain and testing',
+            },
+          }
+        : {}),
+      ...(ledgerActOpening
+        ? {
+            actCarryHint: {
+              carry_forward: 'the facts standing on my record',
+              still_owe: 'the final answer, not yet grounded',
+            },
+          }
+        : {}),
+      // mock determinism (mirror refusal): while the engine payload is live
+      // and the mock knob set, the mock learner voices the mirror answer so
+      // zero-paid runs reach the trigger. Real backend ignores.
+      ...(view.mirrorRefusal?.mock ? { mirrorMockAssert: view.mirrorRefusal.mockAnswer || null } : {}),
+    };
+    let out = await callJson(client, 'learner', view.turn, { system, user, meta: learnerMeta });
+    // LEARNER MIRROR REFUSAL (exploration 6, refusal-learner-mirror.md): the
+    // learner's mirror-fixation is an incumbent strategy too. When the draft
+    // voices the mirror hypothesis while the learner's OWN grounded record
+    // holds the base facts of evidence incompatible with it (engine-computed
+    // payload; concealment lives there), refuse ONCE: reconcile in one line
+    // or withdraw and re-examine. Symmetric to the tutor-side refusal gate.
+    const mirrorGate = view.mirrorRefusal || null;
+    if (mirrorGate && Array.isArray(mirrorGate.grounds) && mirrorGate.grounds.length) {
+      const parseAttempt = (o) => {
+        const adoptNow = validIndices(o.adopt_indices, adoptable.length).map((i) => adoptable[i]);
+        return (
+          bindingToFact(view.questionPattern, o.asserts_binding) ||
+          answerToFact(view.questionPattern, o.asserts_answer, [...view.abox.grounded, ...adoptNow], view.rules)
+        );
+      };
+      const draftAttempt = parseAttempt(out);
+      if (draftAttempt && factKey(draftAttempt) === mirrorGate.mirrorKey) {
+        const refuse = `\n\nHARNESS REFUSAL — you have named ${mirrorGate.mirrorSurface} again. Your own record holds: ${mirrorGate.grounds.join('; ')}. That record cannot stand with the name you keep giving. Reply again with the SAME JSON shape and EITHER (a) keep your answer and RECONCILE it with your own record in one line in "reconcile" (it will then stand), OR (b) withdraw the answer this turn (set the answer fields to null) and say plainly what you will re-examine.`;
+        const retryOut = await callJson(client, 'learner', view.turn, {
+          system,
+          user: user + refuse,
+          meta: {
+            ...learnerMeta,
+            ...(mirrorGate.mock
+              ? { mirrorRefusalHint: { mode: mirrorGate.mock, keep: mirrorGate.mockAnswer || null } }
+              : {}),
+          },
+        });
+        const retryAttempt = parseAttempt(retryOut);
+        const kept = Boolean(retryAttempt && factKey(retryAttempt) === mirrorGate.mirrorKey);
+        const reconcile =
+          typeof retryOut.reconcile === 'string' && retryOut.reconcile.trim() ? retryOut.reconcile.trim() : null;
+        retryOut._mirrorRefused = {
+          turn: view.turn,
+          priorAssert: mirrorGate.mirrorSurface,
+          priorRaw:
+            typeof out.asserts_answer === 'string' && out.asserts_answer.trim()
+              ? out.asserts_answer.trim()
+              : (out.asserts_binding ?? null),
+          groundsCited: [...mirrorGate.grounds],
+          outcome: kept ? (reconcile ? 'reconciled' : 'unresolved') : 're_examined',
+          reconcile,
+        };
+        out = retryOut;
+      }
+    }
     // Learner-ledger parse (shape-gated like every commitment): boundary
     // turns only; a parse-miss leaves the boundary uncommitted, visibly.
     const sceneIntent = ledgerSceneOpening ? normalizeLearnerSceneIntent(out.scene_intent) : null;
@@ -5388,6 +5435,7 @@ export function makeLlmLearner({
       ...(sceneIntent ? { sceneIntent } : {}),
       ...(actCarry ? { actCarry } : {}),
       ...(sceneIntentAudit ? { sceneIntentAudit } : {}),
+      ...(out._mirrorRefused ? { mirrorRefusal: out._mirrorRefused } : {}),
     };
   };
 }

@@ -372,6 +372,50 @@ async function main() {
       muteRefusals.every((c) => c.refusalAuthor === 'model' && c.refusalAuthored === false && c.refusalText === null),
     `empty prosecutor reply falls back to the template, disclosed (${muteRefusals.length})`,
   );
+  // G14 — learner mirror refusal (refusal-learner-mirror.md): the learner's
+  // mirror-fixation refused once against their own grounded record; both
+  // resolution paths run under the mock knob; concealment = grounds only
+  // (base facts of the learner's own record — the derived conclusion, i.e.
+  // the incompatible partner itself, is never named).
+  const mrReconcile = await run(world, script, {
+    options: { learnerMirrorRefusal: { mock: 'reconcile' } },
+  });
+  const mrRec = mrReconcile.mirrorRefusal;
+  check(
+    'G14-mirror-refusal-reconcile',
+    Boolean(mrRec) &&
+      mrRec.outcome === 'reconciled' &&
+      typeof mrRec.reconcile === 'string' &&
+      mrRec.reconcile.length > 0 &&
+      Array.isArray(mrRec.groundsCited) &&
+      mrRec.groundsCited.length > 0 &&
+      lemmaEvents(mrReconcile, 'mirror_refusal').length === 1,
+    `learner refusal fired once and was RECONCILED on the record (t${mrRec?.turn ?? '—'})`,
+  );
+  const mrReexamine = await run(world, script, {
+    options: { learnerMirrorRefusal: { mock: 'reexamine' } },
+  });
+  const mrRex = mrReexamine.mirrorRefusal;
+  check(
+    'G14-mirror-refusal-reexamine',
+    Boolean(mrRex) && mrRex.outcome === 're_examined' && mrRex.reconcile === null,
+    `learner refusal fired and the assertion was WITHDRAWN (t${mrRex?.turn ?? '—'})`,
+  );
+  check(
+    'G14-concealment-grounds-only',
+    [mrRec, mrRex].every(
+      (r) =>
+        Boolean(r) &&
+        r.groundsCited.every((g) => typeof g === 'string' && g.length > 0 && !/struckBy|castBlankFor/.test(g)),
+    ),
+    'cited grounds are base facts only — no derived-conclusion predicate ever named',
+  );
+  check(
+    'G14-off-by-default',
+    bind.mirrorRefusal === undefined && lemmaEvents(bind, 'mirror_refusal').length === 0,
+    'no mirror-refusal machinery without the flag',
+  );
+
   // Unresolved outcome (exploration-2 instrument note): a resolution reply
   // that names no frontier lemma records 'unresolved', never 'switched'.
   const innerUnres = makeLlmClient({ mode: 'mock' });

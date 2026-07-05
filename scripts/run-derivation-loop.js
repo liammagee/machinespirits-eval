@@ -655,6 +655,20 @@ async function main() {
     console.error('--lemma-layer requires --scene-mode (the frontier choice is a scene-opening decision)');
     process.exit(1);
   }
+  // Learner mirror refusal (exploration 6): one criterial refusal retry to
+  // the LEARNER when they re-voice the mirror hypothesis against their own
+  // grounded record. Value 'on' (bare) or JSON {"mock":"reconcile"|"reexamine"}.
+  const learnerMirrorRefusalArg = arg('learner-mirror-refusal', null);
+  let learnerMirrorRefusal = null;
+  if (flag('learner-mirror-refusal') && learnerMirrorRefusalArg !== 'off') {
+    try {
+      learnerMirrorRefusal =
+        learnerMirrorRefusalArg && learnerMirrorRefusalArg !== 'on' ? JSON.parse(learnerMirrorRefusalArg) : true;
+    } catch (err) {
+      console.error(`--learner-mirror-refusal ${err.message}`);
+      process.exit(1);
+    }
+  }
   if (strategyLedger && !sceneMode) {
     console.error(
       '--strategy-ledger requires --scene-mode (blocks segment scene exchanges; commitments bind at scene boundaries)',
@@ -1370,6 +1384,7 @@ async function main() {
         ...(acts ? { acts } : {}),
         ...(strategyLedger ? { strategyLedger } : {}),
         ...(lemmaLayer ? { lemmaLayer } : {}),
+        ...(learnerMirrorRefusal ? { learnerMirrorRefusal } : {}),
         ...(learnerLedger ? { learnerLedger } : {}),
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
         ...(conductPolicy ? { conductPolicy } : {}),
