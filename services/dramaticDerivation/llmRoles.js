@@ -3829,7 +3829,21 @@ export function makeLlmTutor(
                   refusalTrigger: out._lemmaRefused.trigger || 'regression',
                   regressionsCited: out._lemmaRefused.regressions,
                   ...(out._lemmaRefused.stallSpan != null ? { stallSpanCited: out._lemmaRefused.stallSpan } : {}),
-                  refusalOutcome: match && match.label === out._lemmaRefused.priorPick ? 'defended' : 'switched',
+                  refusalAuthor: out._lemmaRefused.author || 'harness',
+                  ...(out._lemmaRefused.author === 'model'
+                    ? {
+                        refusalAuthored: Boolean(out._lemmaRefused.authored),
+                        refusalText: out._lemmaRefused.refusalText ?? null,
+                      }
+                    : {}),
+                  // A resolution reply that names no frontier lemma resolved
+                  // nothing (exploration-2 instrument note): 'unresolved',
+                  // not 'switched' — read alongside `by` (fallback/delegate).
+                  refusalOutcome: match
+                    ? match.label === out._lemmaRefused.priorPick
+                      ? 'defended'
+                      : 'switched'
+                    : 'unresolved',
                   defense:
                     typeof out.strategy_defense === 'string' && out.strategy_defense.trim()
                       ? out.strategy_defense.trim()
@@ -4047,7 +4061,43 @@ export function makeLlmTutor(
             : `since you last chose it the following established ground has REGRESSED: ${regNames} (${regSince.length} regression${
                 regSince.length === 1 ? '' : 's'
               }). Criterial evidence says the incumbent strategy is failing`;
-        const refuse = `\n\nHARNESS STRATEGY REFUSAL — you have chosen ${short(pickNow.label)} again, but ${evidence}. Reply again with the SAME JSON shape and EITHER (a) keep "active_lemma" as ${short(pickNow.label)} and DEFEND the choice in one line in "strategy_defense" (it will then stand), OR (b) SWITCH "active_lemma" to a different frontier chapter${
+        // WHO refuses (refusal-model-authored.md): 'harness' = the template
+        // above; 'model' = one prosecutor-charter superego call authors the
+        // refusal BODY from the same criterial evidence pack (never the
+        // trigger, never the resolution contract — those stay harness-owned).
+        // An empty/failed authoring call falls back to the template, recorded.
+        const refusalAuthor = lemmaForcedInfo.config.refusalAuthor || 'harness';
+        let authoredBody = null;
+        if (refusalAuthor === 'model') {
+          const evidencePack = [
+            `Incumbent plan: ${short(pickNow.label)} — just re-chosen at this scene opening.`,
+            triggerSource === 'stall'
+              ? `Criterial record: no derivation progress for the last ${spanCited} turns while it has been the plan.`
+              : `Criterial record: regressed since the pick — ${regNames} (${regSince.length}).`,
+            others.length
+              ? `Alternative frontier chapters available: ${others.join(', ')}.`
+              : `No alternative frontier chapter is currently available.`,
+          ].join('\n');
+          try {
+            const pOut = await callJson(client, 'tutor_superego', view.turn, {
+              system:
+                `You are the tutor's SUPEREGO under a PROSECUTOR charter in a staged derivation drama. ` +
+                `The tutor has re-chosen a plan the criterial record says is failing. From the evidence pack ` +
+                `ONLY (invent nothing, no new facts), draft the one-paragraph refusal that will be put to the ` +
+                `tutor: state the evidence plainly and demand that the choice be defended or changed. ` +
+                `Output JSON: {"refusal": "<the paragraph>"}.`,
+              user: evidencePack,
+              meta: {
+                ...(mockRefusal ? { prosecutorHint: { evidence: evidencePack } } : {}),
+              },
+            });
+            authoredBody = typeof pOut.refusal === 'string' && pOut.refusal.trim() ? pOut.refusal.trim() : null;
+          } catch {
+            authoredBody = null;
+          }
+        }
+        const body = authoredBody || `you have chosen ${short(pickNow.label)} again, but ${evidence}`;
+        const refuse = `\n\nHARNESS STRATEGY REFUSAL — ${body}. Reply again with the SAME JSON shape and EITHER (a) keep "active_lemma" as ${short(pickNow.label)} and DEFEND the choice in one line in "strategy_defense" (it will then stand), OR (b) SWITCH "active_lemma" to a different frontier chapter${
           others.length ? ` (${others.join(', ')})` : ''
         }.`;
         const refuseOut = await callJson(client, 'tutor', view.turn, {
@@ -4066,6 +4116,8 @@ export function makeLlmTutor(
           trigger: triggerSource,
           regressions: regSince.length,
           ...(triggerSource === 'stall' ? { stallSpan: spanCited } : {}),
+          author: refusalAuthor,
+          ...(refusalAuthor === 'model' ? { authored: Boolean(authoredBody), refusalText: authoredBody } : {}),
         };
         refuseOut._lemmaFirstRaw = draftOut._lemmaFirstRaw;
         refuseOut._lemmaRetried = draftOut._lemmaRetried;

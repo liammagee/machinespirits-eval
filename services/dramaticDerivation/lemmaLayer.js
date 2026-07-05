@@ -23,6 +23,7 @@ export const LEMMA_DEFAULTS = Object.freeze({
   display: false,
   bind: false,
   refusalTrigger: 'regression',
+  refusalAuthor: 'harness',
   mockUntagged: false,
   mockBadChoice: false,
   mockRefusal: false,
@@ -39,6 +40,13 @@ export function normalizeLemmaConfig(raw) {
   // variant, refusal-stall-trigger-codex.md).
   if (src.refusalTrigger === 'regression' || src.refusalTrigger === 'stall') {
     config.refusalTrigger = src.refusalTrigger;
+  }
+  // Refusal author: 'harness' (template, default) or 'model' (a prosecutor-
+  // charter superego call authors the refusal body from the same criterial
+  // evidence — refusal-model-authored.md; trigger and resolution contract
+  // stay harness-owned either way).
+  if (src.refusalAuthor === 'harness' || src.refusalAuthor === 'model') {
+    config.refusalAuthor = src.refusalAuthor;
   }
   // test-only knob: the MOCK backend omits the departure tag so gates can
   // exercise the block path; the real backend never reads it.

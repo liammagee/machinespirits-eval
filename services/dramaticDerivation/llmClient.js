@@ -519,6 +519,15 @@ function mockResponse(role, meta = {}) {
     });
   }
   if (role === 'tutor_superego') {
+    // Prosecutor charter (model-authored strategy refusal): echo the
+    // criterial evidence pack back as the one-paragraph refusal body —
+    // deterministic, invents nothing, exercised only via the mock knob.
+    if (meta.prosecutorHint) {
+      const firstLine = String(meta.prosecutorHint.evidence || '').split('\n')[0];
+      return JSON.stringify({
+        refusal: `The record is against this plan: ${firstLine} Defend the choice in one line or change it.`,
+      });
+    }
     // Plan mode: the stock-take charter's deterministic echo — the bridge's
     // hint carries the sealed scene's status arithmetic. Checked FIRST: the
     // stock-take is its own charter, not the turn watch or the plot audit.

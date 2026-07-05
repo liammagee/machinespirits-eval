@@ -315,6 +315,86 @@ async function main() {
     'default trigger source still records as regression with no stall field',
   );
 
+  // G13 — model-authored refusal (refusal-model-authored.md): the prosecutor
+  // charter authors the refusal body; both resolutions run under the mock
+  // knob and the choice records author + the authored text.
+  const authDefend = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, refusalAuthor: 'model', mockRefusal: 'defend' }),
+  });
+  const authDefended = authDefend.lemmaLayer.choices.filter((c) => c.refused && c.refusalOutcome === 'defended');
+  check(
+    'G13-authored-refusal-defend',
+    authDefended.length >= 1 &&
+      authDefended.every(
+        (c) =>
+          c.refusalAuthor === 'model' &&
+          c.refusalAuthored === true &&
+          typeof c.refusalText === 'string' &&
+          c.refusalText.length > 0 &&
+          typeof c.defense === 'string' &&
+          c.defense.length > 0,
+      ),
+    `model-authored refusal DEFENDED with authored text recorded (${authDefended.length})`,
+  );
+  const authSw = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, refusalAuthor: 'model', mockRefusal: 'switch' }),
+  });
+  const authSwitched = authSw.lemmaLayer.choices.filter((c) => c.refused && c.refusalOutcome === 'switched');
+  check(
+    'G13-authored-refusal-switch',
+    authSwitched.length >= 1 &&
+      authSwitched.every((c) => c.refusalAuthor === 'model' && c.label !== c.refusalPriorPick),
+    `model-authored refusal SWITCHED chapters (${authSwitched.length})`,
+  );
+  check(
+    'G13-harness-default-unchanged',
+    [...defended, ...switched].every((c) => c.refusalAuthor === 'harness' && c.refusalText === undefined),
+    'default author still records as harness with no authored-text field',
+  );
+  // Fallback: a prosecutor call that returns nothing must fall back to the
+  // template (refusal still fires, recorded as authored=false).
+  const innerAuth = makeLlmClient({ mode: 'mock' });
+  const muteProsecutor = {
+    ...innerAuth,
+    call: (role, args) => {
+      if (role === 'tutor_superego' && args?.meta?.prosecutorHint) return Promise.resolve('{}');
+      return innerAuth.call(role, args);
+    },
+  };
+  const authMute = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, refusalAuthor: 'model', mockRefusal: 'defend' }),
+    captureClient: muteProsecutor,
+  });
+  const muteRefusals = authMute.lemmaLayer.choices.filter((c) => c.refused);
+  check(
+    'G13-authoring-fallback',
+    muteRefusals.length >= 1 &&
+      muteRefusals.every((c) => c.refusalAuthor === 'model' && c.refusalAuthored === false && c.refusalText === null),
+    `empty prosecutor reply falls back to the template, disclosed (${muteRefusals.length})`,
+  );
+  // Unresolved outcome (exploration-2 instrument note): a resolution reply
+  // that names no frontier lemma records 'unresolved', never 'switched'.
+  const innerUnres = makeLlmClient({ mode: 'mock' });
+  const muteResolution = {
+    ...innerUnres,
+    call: (role, args) => {
+      if (role === 'tutor' && (args?.user || '').includes('HARNESS STRATEGY REFUSAL')) {
+        return Promise.resolve(JSON.stringify({ message: 'I hear the refusal.' }));
+      }
+      return innerUnres.call(role, args);
+    },
+  };
+  const unres = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, mockRefusal: 'switch' }),
+    captureClient: muteResolution,
+  });
+  const unresRefusals = unres.lemmaLayer.choices.filter((c) => c.refused);
+  check(
+    'G13-unresolved-outcome',
+    unresRefusals.length >= 1 && unresRefusals.every((c) => c.refusalOutcome === 'unresolved'),
+    `no-lemma resolution reply records unresolved (${unresRefusals.length})`,
+  );
+
   const failed = rows.filter((r) => !r.ok);
   console.log(`\n${rows.length - failed.length}/${rows.length} lemma gates pass`);
   if (failed.length) process.exit(1);

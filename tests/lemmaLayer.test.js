@@ -34,6 +34,7 @@ test('config: bind implies display; off-shapes normalize to null', () => {
     display: true,
     bind: false,
     refusalTrigger: 'regression',
+    refusalAuthor: 'harness',
     mockUntagged: false,
     mockBadChoice: false,
     mockRefusal: false,
@@ -42,12 +43,15 @@ test('config: bind implies display; off-shapes normalize to null', () => {
     display: true,
     bind: true,
     refusalTrigger: 'regression',
+    refusalAuthor: 'harness',
     mockUntagged: false,
     mockBadChoice: false,
     mockRefusal: false,
   });
   assert.equal(normalizeLemmaConfig({ bind: true, refusalTrigger: 'stall' }).refusalTrigger, 'stall');
   assert.equal(normalizeLemmaConfig({ bind: true, refusalTrigger: 'bogus' }).refusalTrigger, 'regression');
+  assert.equal(normalizeLemmaConfig({ bind: true, refusalAuthor: 'model' }).refusalAuthor, 'model');
+  assert.equal(normalizeLemmaConfig({ bind: true, refusalAuthor: 'bogus' }).refusalAuthor, 'harness');
 });
 
 test('marrick lemma DAG: 4 intermediates + goal, the authored AND-join', () => {
