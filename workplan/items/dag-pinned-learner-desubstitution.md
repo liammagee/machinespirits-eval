@@ -168,4 +168,3 @@ substitution claim — an architecture-independence result that now survives
 a genuinely resistant, criterially-gated learner at 2× the generating
 sample — as an evidential strengthening note, not a new claim requiring a
 new §. No paper edit made under this arc's runs.
-

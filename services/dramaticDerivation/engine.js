@@ -111,6 +111,15 @@ import {
   sceneStanceFidelity,
   updateBlockLedger,
 } from './strategyLedger.js';
+import {
+  buildLemmaDag,
+  classifyRelease as classifyLemmaRelease,
+  computeLemmaState,
+  normalizeLemmaConfig,
+  renderLearnerLemmaLines,
+  renderTutorLemmaLines,
+  supportRemaining as lemmaSupportRemaining,
+} from './lemmaLayer.js';
 
 function renderFact(fact) {
   return fact.join(' ');
@@ -300,6 +309,20 @@ export async function runDrama({ world, roles, options = {} }) {
   if (learnerLedgerActive && !sceneConfig) {
     throw new Error('learner ledger requires scene mode (scene intents bind at scene boundaries)');
   }
+  // Lemma layer (opt-in; LEMMA-LAYER-PREREGISTRATION.md): a maintained proof
+  // structure one level above the premise grain. display = the map as prompt
+  // signal only; bind = the map also gates the tutor's VOLUNTARY proof
+  // releases and takes a formal frontier choice at scene openings. Harness
+  // forcings (hold limits, guard rescues) and director releases pass through
+  // binding and are logged, never blocked.
+  const lemmaConfig = options.lemmaLayer ? normalizeLemmaConfig(options.lemmaLayer) : null;
+  if (lemmaConfig && !sceneConfig) {
+    throw new Error('lemma layer requires scene mode (the frontier choice is a scene-opening decision)');
+  }
+  const lemmaDag = lemmaConfig ? buildLemmaDag(world) : null;
+  if (lemmaConfig && !lemmaDag) {
+    throw new Error('lemma layer: the authored proof path does not entail S (plot lint should have caught this)');
+  }
   let sceneTempoThisTurn = null;
   let sceneRecognitionNeedThisTurn = null;
   const directorCadence = normalizeDirectorCadence(options.directorCadence, { sceneMode: Boolean(sceneConfig) });
@@ -391,6 +414,25 @@ export async function runDrama({ world, roles, options = {} }) {
   let firstForcedTurn = null;
   let assertedGroundedTurn = null;
   let endedBy = null;
+
+  // Lemma-layer runtime state: clearance recomputed each turn from the valid
+  // grounded board; the active lemma persists within a scene.
+  const lemmaRun = lemmaDag
+    ? {
+        grounded: new Set(),
+        frontier: [],
+        active: null, // {key, label, by, sceneIndex, turn}
+        clearedAt: new Map(), // label -> first turn grounded
+        choices: [],
+        departures: [],
+        blocks: [],
+        passthroughs: [],
+        regressions: [],
+        openings: 0,
+        multiFrontierOpenings: 0,
+        tutorChoices: 0,
+      }
+    : null;
 
   const validGroundedFacts = () =>
     [...grounded.values()].filter((entry) => entry.valid && !entry.decayed).map((entry) => entry.fact);
@@ -915,6 +957,10 @@ export async function runDrama({ world, roles, options = {} }) {
       questionPattern: world.questionPattern,
       rules: world.rules,
       background,
+      // Lemma mirror (symmetry): the learner's own map, computed from their
+      // grounded assertions only — pre-rendered so concealment lives in one
+      // place (renderLearnerLemmaLines).
+      ...(lemmaRun ? { lemmaLayer: lemmaView('learner') } : {}),
       releasedFacts: visibleReleasedFacts,
       releasedThisTurn: releasedThisTurnVisible,
       factSurfaces,
@@ -953,6 +999,81 @@ export async function runDrama({ world, roles, options = {} }) {
     closed: actState.history.map((a) => ({ ...a })),
   });
 
+  // Lemma-layer per-turn clearance (criterial: the chainer over the valid
+  // grounded board; under decay a lemma can UN-ground and the frontier moves
+  // backward — recorded, never judged).
+  const refreshLemmaState = (turn) => {
+    if (!lemmaRun) return;
+    const state = computeLemmaState(lemmaDag, validGroundedFacts(), world.rules);
+    for (const node of lemmaDag.nodes) {
+      const now = state.groundedKeys.has(node.key);
+      const before = lemmaRun.grounded.has(node.key);
+      if (now && !before) {
+        if (!lemmaRun.clearedAt.has(node.label)) lemmaRun.clearedAt.set(node.label, turn);
+        events.push({ turn, type: 'lemma_grounded', detail: node.label });
+        if (lemmaRun.active?.key === node.key) {
+          events.push({ turn, type: 'lemma_cleared', detail: `active lemma ${node.label} grounded` });
+        }
+      } else if (!now && before) {
+        lemmaRun.regressions.push({ turn, label: node.label });
+        events.push({ turn, type: 'lemma_regressed', detail: node.label });
+      }
+    }
+    lemmaRun.grounded = state.groundedKeys;
+    lemmaRun.frontier = state.frontier;
+    // A grounded active lemma binds nothing sensible: advance to the sole
+    // frontier element, or unbind until the next scene-opening choice.
+    if (lemmaRun.active && lemmaRun.grounded.has(lemmaRun.active.key)) {
+      const next = lemmaRun.frontier.length === 1 ? lemmaDag.byKey.get(lemmaRun.frontier[0]) : null;
+      lemmaRun.active = next
+        ? { key: next.key, label: next.label, by: 'auto_advance', sceneIndex: sceneState?.index ?? null, turn }
+        : null;
+      if (next) {
+        lemmaRun.choices.push({ turn, label: next.label, by: 'auto_advance' });
+        events.push({ turn, type: 'lemma_choice', detail: `${next.label} (auto_advance)` });
+      }
+    }
+  };
+
+  const lemmaStateShape = () => ({
+    groundedKeys: lemmaRun.grounded,
+    frontier: lemmaRun.frontier,
+    goalGrounded: lemmaRun.grounded.has(lemmaDag.goalKey),
+  });
+
+  const lemmaView = (roleName) => {
+    if (!lemmaRun) return null;
+    if (roleName === 'learner') {
+      return { mirrorLines: renderLearnerLemmaLines(lemmaDag, lemmaStateShape()) };
+    }
+    if (roleName !== 'tutor') return null;
+    const releasedIds = new Set(ledger.map((row) => row.premiseId));
+    return {
+      config: { ...lemmaConfig },
+      tutorLines: renderTutorLemmaLines(lemmaDag, lemmaStateShape(), lemmaRun.active?.key || null, {
+        bind: lemmaConfig.bind,
+      }),
+      proofPremiseIds: [...lemmaDag.proofPremiseIds],
+      activeKey: lemmaRun.active?.key || null,
+      activeLabel: lemmaRun.active?.label || null,
+      regressionsSinceActive: lemmaRun.active
+        ? lemmaRun.regressions
+            .filter((r) => r.turn >= lemmaRun.active.turn)
+            .map((r) => ({ turn: r.turn, label: r.label }))
+        : [],
+      activeSupportRemaining: lemmaRun.active ? lemmaSupportRemaining(lemmaDag, lemmaRun.active.key, releasedIds) : [],
+      frontier: lemmaRun.frontier.map((key) => {
+        const node = lemmaDag.byKey.get(key);
+        return {
+          key,
+          label: node.label,
+          support: [...node.support],
+          supportRemaining: lemmaSupportRemaining(lemmaDag, key, releasedIds),
+        };
+      }),
+    };
+  };
+
   const omniscientView = (turn, roleName) => {
     const proofDebt = roleName === 'tutor' && proofDebtViewActive ? currentProofDebt(turn) : null;
     const proxyDagPacing =
@@ -986,6 +1107,7 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(conductEntitlement ? { conductEntitlement } : {}),
       ...(conductTriggerOverride ? { conductTriggerOverride } : {}),
       ...(ledgerState && roleName === 'tutor' ? { strategyLedger: strategyLedgerView() } : {}),
+      ...(lemmaRun && roleName === 'tutor' ? { lemmaLayer: lemmaView('tutor') } : {}),
       ...(proofDebt
         ? { proofDebt: runtimeMonitor ? runtimeMonitor.proofDebtTutorView(proofDebt) : tutorProofDebtView(proofDebt) }
         : {}),
@@ -1073,6 +1195,11 @@ export async function runDrama({ world, roles, options = {} }) {
     turn += 1;
     const releasedThisTurn = [];
     const openedScene = openSceneForTurn(turn, turn === 1 ? 'opening' : 'continuation');
+    refreshLemmaState(turn);
+    if (lemmaRun && lemmaConfig.bind && openedScene) {
+      lemmaRun.openings += 1;
+      if (lemmaRun.frontier.length > 1) lemmaRun.multiFrontierOpenings += 1;
+    }
     sceneRecognitionNeedThisTurn = selectSceneRecognitionNeedForTurn();
     sceneTempoThisTurn = selectSceneTempoForTurn(turn);
     const sceneMetaThisTurn = currentSceneMeta();
@@ -1084,6 +1211,16 @@ export async function runDrama({ world, roles, options = {} }) {
     const directorOut = callDirector ? (await roles.director(directorView)) || {} : {};
     const directorRelease = applyRelease(turn, directorOut.release, 'director');
     if (directorRelease) releasedThisTurn.push(directorRelease);
+    if (directorRelease && lemmaRun && lemmaConfig.bind) {
+      // Director releases are the Big Other's calendar, never the tutor's
+      // choice: binding does not touch them, but out-of-support ones are on
+      // the record.
+      const cls = classifyLemmaRelease(lemmaDag, lemmaRun.active?.key || null, directorOut.release);
+      if (cls === 'out_of_support') {
+        lemmaRun.passthroughs.push({ turn, premise: directorOut.release, by: 'director' });
+        events.push({ turn, type: 'lemma_passthrough', detail: `${directorOut.release} (director)` });
+      }
+    }
     if (actState) {
       // The act verdict (stage v2, header). Turn 1's direction is Act 1's
       // brief; afterwards {act:'end', direction} closes the act at turn-1 and
@@ -1178,6 +1315,40 @@ export async function runDrama({ world, roles, options = {} }) {
         : null,
     );
     if (tutorRelease) releasedThisTurn.push(tutorRelease);
+    if (lemmaRun && tutorOut.lemma) {
+      // The bridge adjudicated (choice validation, departure tagging, blocks);
+      // the engine records and applies — the plot pattern.
+      const lm = tutorOut.lemma;
+      if (lm.choice) {
+        lemmaRun.active = {
+          key: lm.choice.key,
+          label: lm.choice.label,
+          by: lm.choice.by,
+          sceneIndex: sceneState?.index ?? null,
+          turn,
+        };
+        lemmaRun.choices.push({ turn, ...lm.choice });
+        if (['tutor', 'tutor_retry', 'delegate'].includes(lm.choice.by) && lemmaRun.frontier.length > 1)
+          lemmaRun.tutorChoices += 1;
+        events.push({ turn, type: 'lemma_choice', detail: `${lm.choice.label} (${lm.choice.by})` });
+      }
+      if (lm.departure) {
+        lemmaRun.departures.push({ turn, premise: lm.departure.premise, reason: lm.departure.reason });
+        events.push({ turn, type: 'lemma_departure', detail: `${lm.departure.premise}: ${lm.departure.reason}` });
+      }
+      if (lm.blocked) {
+        lemmaRun.blocks.push({ turn, premise: lm.blocked.premise });
+        events.push({ turn, type: 'lemma_block', detail: `${lm.blocked.premise} held (untagged departure)` });
+      }
+      if (lm.forcedPassthrough) {
+        lemmaRun.passthroughs.push({ turn, premise: lm.forcedPassthrough.premise, by: lm.forcedPassthrough.by });
+        events.push({
+          turn,
+          type: 'lemma_passthrough',
+          detail: `${lm.forcedPassthrough.premise} (${lm.forcedPassthrough.by})`,
+        });
+      }
+    }
     const tutorPhaticRecognition = detectPhaticRecognition(tutorOut.dialogue || '', {
       role: 'tutor',
       tempo: sceneTempoThisTurn,
@@ -2203,6 +2374,9 @@ export async function runDrama({ world, roles, options = {} }) {
       })
     : null;
   const learnerDag = buildLearnerDag(learnerDagSnapshots, world);
+  // Final lemma refresh: clearances that land on the closing turn (the goal
+  // itself, most of all) happen after that turn's start-of-turn refresh.
+  if (lemmaRun) refreshLemmaState(turn);
 
   return {
     worldId: world.id,
@@ -2225,6 +2399,26 @@ export async function runDrama({ world, roles, options = {} }) {
       frontierFinal: computeFrontier(turn),
     },
     ...(sceneRows.length ? { scenes: sceneRows } : {}),
+    ...(lemmaRun
+      ? {
+          lemmaLayer: {
+            config: { ...lemmaConfig },
+            nodes: lemmaDag.nodes.map((n) => ({ label: n.label, isGoal: n.isGoal, support: [...n.support] })),
+            clearedAt: Object.fromEntries(lemmaRun.clearedAt),
+            groundedFinal: lemmaDag.nodes.filter((n) => lemmaRun.grounded.has(n.key)).map((n) => n.label),
+            choices: lemmaRun.choices,
+            departures: lemmaRun.departures,
+            blocks: lemmaRun.blocks,
+            passthroughs: lemmaRun.passthroughs,
+            regressions: lemmaRun.regressions,
+            frontierCoverage: {
+              openings: lemmaRun.openings,
+              multiFrontierOpenings: lemmaRun.multiFrontierOpenings,
+              tutorChoices: lemmaRun.tutorChoices,
+            },
+          },
+        }
+      : {}),
     ...(sceneConfig ? { directorCadence } : {}),
     ...(publicRegisterPlan !== 'default' ? { publicRegister: publicRegisterPlan } : {}),
     ...(registerRows.length ? { publicRegisters: registerRows } : {}),

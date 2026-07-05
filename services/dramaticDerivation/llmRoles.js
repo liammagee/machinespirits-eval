@@ -375,6 +375,24 @@ function parseJsonLoose(text) {
 }
 
 /** One call + one repair attempt, with role/turn context on failure. */
+/**
+ * Tolerant frontier-claim matcher (LEMMA instrument): exact label, then
+ * normalized label, then UNIQUE predicate-name match. Returns the frontier
+ * entry or null. "default" is handled by callers (explicit delegation).
+ */
+function matchFrontierClaim(frontier, claimed) {
+  if (!claimed) return null;
+  const norm = (x) => x.toLowerCase().replace(/\s+/g, '');
+  const predOf = (x) => x.split('(')[0];
+  let match =
+    frontier.find((f) => f.label === claimed) || frontier.find((f) => norm(f.label) === norm(claimed)) || null;
+  if (!match) {
+    const byPred = frontier.filter((f) => norm(predOf(f.label)) === norm(predOf(claimed)));
+    if (byPred.length === 1) match = byPred[0];
+  }
+  return match;
+}
+
 async function callJson(client, role, turn, { system, user, meta }) {
   const first = await client.call(role, { system, user, meta });
   try {
@@ -1069,6 +1087,7 @@ function tutorSystem(
     strategyLedger = false,
     strategyLedgerV2 = false,
     strategyLedgerPlanMode = false,
+    lemmaLayer = false,
   } = {},
 ) {
   const recognition = clampDial(dials.recognition);
@@ -1411,7 +1430,33 @@ function tutorSystem(
       strategyLedgerPlanMode
         ? ', "reorientation": "<your revised WORKING ORIENTATION (2-4 sentences) — scene-opening turns after a stock-take only; null keeps the current one>"'
         : ''
+    }${
+      lemmaLayer && lemmaLayer.bind
+        ? ', "active_lemma": "<scene-opening turns: one lemma label from the FRONTIER CHOICE list, else null>", "lemma_departure": "<one line ONLY when playing a proof exhibit outside the active lemma, else null>", "strategy_defense": "<one line ONLY when the harness refuses your repeated choice and you keep it, else null>"'
+        : ''
     }}`,
+    ...(lemmaLayer
+      ? [
+          '',
+          '# The lemma map (the proof one level up)',
+          '',
+          "The harness maintains a LEMMA MAP over the inquiry's intermediate conclusions,",
+          "computed each turn from the learner's own grounded facts — it moves only when",
+          'their board does, and under decay it can move backward. It arrives in your',
+          'turn context.',
+          ...(lemmaLayer.bind
+            ? [
+                'At each scene opening you pick the scene\'s ACTIVE lemma in "active_lemma"',
+                'from the offered FRONTIER. Your voluntary releases of proof exhibits are',
+                "bound to the active lemma's unplayed support; playing outside it requires a",
+                'one-line "lemma_departure" (untagged departures are held by the harness).',
+                'Colour exhibits that feed no lemma are unrestricted; harness-forced plays',
+                'override the binding. The map never names, and never changes, WHAT is true —',
+                'only the order in which you stage it.',
+              ]
+            : ['It is information about where the proof stands — nothing about it binds you.']),
+        ]
+      : []),
     ...(strategyLedgerPlanMode
       ? [
           '(Plan mode: between scenes your own second voice takes stock — course, not conformance. Its note arrives at',
@@ -2184,6 +2229,7 @@ export function makeLlmTutor(
     strategyLedger = false,
     strategyLedgerV2 = false,
     strategyLedgerPlanMode = false,
+    lemmaLayer = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
@@ -2350,6 +2396,7 @@ export function makeLlmTutor(
     strategyLedger,
     strategyLedgerV2,
     strategyLedgerPlanMode,
+    lemmaLayer,
   });
   const superegoSystem = superego
     ? tutorSuperegoSystem(world, {
@@ -2709,7 +2756,13 @@ export function makeLlmTutor(
                 pacing.current?.endTurn || '?'
               }); safe turns {${pacing.safeTurns.map((t) => `t${t}`).join(', ') || 'none'}}`
           : '';
-      return `- ${e.premise}: ${status}${pacingStatus}`;
+      const lemmaStatus =
+        view.lemmaLayer?.config?.bind && view.lemmaLayer.proofPremiseIds.includes(e.premise)
+          ? view.lemmaLayer.activeKey && view.lemmaLayer.activeSupportRemaining.includes(e.premise)
+            ? ' — [active-lemma support]'
+            : ' — [OUTSIDE the active lemma: playing it needs "lemma_departure"]'
+          : '';
+      return `- ${e.premise}: ${status}${pacingStatus}${lemmaStatus}`;
     });
     const task = releaseAuthority
       ? [
@@ -3322,6 +3375,20 @@ export function makeLlmTutor(
             : 'Play under it; the audit at the scene close distinguishes kept from drift.',
         );
       }
+      if (view.lemmaLayer?.tutorLines) {
+        lines.push('', ...view.lemmaLayer.tutorLines);
+        const lemmaOpening = Boolean(view.lemmaLayer.config?.bind && view.scene && view.scene.startTurn === view.turn);
+        if (lemmaOpening && view.lemmaLayer.frontier.length) {
+          lines.push(
+            '',
+            'FRONTIER CHOICE (this turn opens a scene): pick the scene\'s ACTIVE lemma in "active_lemma" — the predicate name alone suffices (e.g. "blankFrom"). One of:',
+            ...view.lemmaLayer.frontier.map(
+              (f) =>
+                `- "${f.label}" (unplayed support: ${f.supportRemaining.join(', ') || 'none — grounds from the played board'})`,
+            ),
+          );
+        }
+      }
       if (heldDidacticNote) lines.push('', heldDidacticNote);
       if (ledgerInfo?.budget?.exhausted) {
         lines.push(
@@ -3440,6 +3507,40 @@ export function makeLlmTutor(
           : null,
       cuePremise: releaseAuthority ? mockRelease : entry ? entry.premise : null,
       ...(releaseAuthority ? { releaseChoice: mockRelease } : {}),
+      // mock determinism (lemma layer): the frontier choice is the first
+      // offered label; a mock claim outside the active lemma's support is
+      // tagged with a departure line unless the test knob mockUntagged asks
+      // for the block path. The real backend ignores meta.
+      ...(view.lemmaLayer?.config?.bind
+        ? {
+            lemmaHint: (() => {
+              const ll = view.lemmaLayer;
+              const opening = Boolean(view.scene && view.scene.startTurn === view.turn);
+              const hint = {};
+              if (opening && ll.frontier.length) {
+                hint.choose = ll.config.mockBadChoice
+                  ? 'zzz_nonsense'
+                  : ll.frontier.length > 1
+                    ? ll.frontier[0].label.split('(')[0]
+                    : 'default';
+              }
+              const activeSupport =
+                opening && ll.frontier.length
+                  ? ll.frontier[0].support
+                  : ll.frontier.find((f) => f.key === ll.activeKey)?.support || [];
+              if (
+                mockRelease &&
+                ll.proofPremiseIds.includes(mockRelease) &&
+                activeSupport.length &&
+                !activeSupport.includes(mockRelease) &&
+                !ll.config.mockUntagged
+              ) {
+                hint.departure = `mock: scheduled exhibit ${mockRelease} lies outside the active lemma`;
+              }
+              return hint;
+            })(),
+          }
+        : {}),
       ...(releaseAuthority && pacingGuard
         ? {
             pacingGuard: {
@@ -3688,7 +3789,84 @@ export function makeLlmTutor(
           reason: `${proofClosingFallback.premise} closes the proof at t${view.turn}`,
         };
       }
-      const candidatePlayed = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
+      let candidatePlayed = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
+      // LEMMA BINDING (bind mode; LEMMA-LAYER-PREREGISTRATION.md): the scene-
+      // opening frontier choice is adjudicated first (the same call may claim
+      // a release under the NEW choice); then the tutor's VOLUNTARY
+      // out-of-support proof claims need a "lemma_departure" tag — untagged
+      // ones drop to a hold. Harness-forced plays (hold limits, guard
+      // rescues) pass through binding and are logged, never blocked.
+      const lemmaInfo = view.lemmaLayer || null;
+      const lemmaBind = Boolean(lemmaInfo?.config?.bind);
+      let lemmaMeta = null;
+      let lemmaGate = null;
+      if (lemmaBind) {
+        lemmaMeta = {};
+        const lemmaOpening = Boolean(view.scene && view.scene.startTurn === view.turn);
+        if (lemmaOpening && lemmaInfo.frontier.length) {
+          const claimedLemma = typeof out.active_lemma === 'string' ? out.active_lemma.trim() : null;
+          const delegated = Boolean(claimedLemma && claimedLemma.toLowerCase() === 'default');
+          const match = delegated ? null : matchFrontierClaim(lemmaInfo.frontier, claimedLemma);
+          const pick = match || lemmaInfo.frontier[0];
+          lemmaMeta.choice = {
+            key: pick.key,
+            label: pick.label,
+            by: match
+              ? out._lemmaRetried
+                ? 'tutor_retry'
+                : 'tutor'
+              : delegated
+                ? 'delegate'
+                : lemmaInfo.frontier.length === 1
+                  ? 'auto'
+                  : 'fallback',
+            raw: claimedLemma ?? null,
+            ...(out._lemmaRetried ? { firstRaw: out._lemmaFirstRaw ?? null, retried: true } : {}),
+            ...(out._lemmaRefused
+              ? {
+                  refused: true,
+                  refusalPriorPick: out._lemmaRefused.priorPick,
+                  regressionsCited: out._lemmaRefused.regressions,
+                  refusalOutcome: match && match.label === out._lemmaRefused.priorPick ? 'defended' : 'switched',
+                  defense:
+                    typeof out.strategy_defense === 'string' && out.strategy_defense.trim()
+                      ? out.strategy_defense.trim()
+                      : null,
+                }
+              : {}),
+          };
+        }
+        const activeLemmaKeyNow = lemmaMeta.choice?.key || lemmaInfo.activeKey || null;
+        const activeNode = activeLemmaKeyNow
+          ? lemmaInfo.frontier.find((f) => f.key === activeLemmaKeyNow) || null
+          : null;
+        if (candidatePlayed && lemmaInfo.proofPremiseIds.includes(candidatePlayed) && activeNode) {
+          const inSupport = activeNode.support.includes(candidatePlayed);
+          if (!inSupport) {
+            const harnessForced = Boolean(
+              activeGuard?.forcedSafe || (forcedPlay && candidatePlayed === forcedPlay.premise),
+            );
+            const departureReason =
+              typeof out.lemma_departure === 'string' && out.lemma_departure.trim() ? out.lemma_departure.trim() : null;
+            if (harnessForced) {
+              lemmaMeta.forcedPassthrough = {
+                premise: candidatePlayed,
+                by: activeGuard?.forcedSafe ? 'guard' : 'hold_limit',
+              };
+            } else if (departureReason) {
+              lemmaMeta.departure = { premise: candidatePlayed, reason: departureReason };
+            } else {
+              lemmaGate = {
+                held: true,
+                premise: candidatePlayed,
+                reason: `${candidatePlayed} is outside the active lemma ${activeNode.label} and carries no lemma_departure`,
+              };
+              lemmaMeta.blocked = { premise: candidatePlayed };
+              candidatePlayed = null;
+            }
+          }
+        }
+      }
       const candidateSched = candidatePlayed ? world.releaseSchedule.find((e) => e.premise === candidatePlayed) : null;
       const candidateOffset = candidateSched ? view.turn - candidateSched.turn : null;
       const candidateSolvency =
@@ -3797,10 +3975,81 @@ export function makeLlmTutor(
           ...(hybridGuard ? { hybridGuard } : {}),
           ...(consolidationGuard ? { consolidationGuard } : {}),
           ...(discursiveReleaseGate ? { discursiveReleaseGate } : {}),
+          ...(lemmaGate ? { lemmaGate } : {}),
         },
+        ...(lemmaMeta && (lemmaMeta.choice || lemmaMeta.departure || lemmaMeta.blocked || lemmaMeta.forcedPassthrough)
+          ? { lemma: lemmaMeta }
+          : {}),
       };
     };
-    const draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
+    let draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
+    // FORCED CHOICE (lemma bind, scene openings): a missing/unmatched
+    // "active_lemma" is bounced ONCE with a pointed demand — non-answering
+    // must not be free, and even delegation must be said ("default"). Raw
+    // claims are recorded either way (the earlier smokes' diagnostic gap).
+    const lemmaForcedInfo = view.lemmaLayer;
+    const lemmaForcedOpening = Boolean(
+      lemmaForcedInfo?.config?.bind &&
+      view.scene &&
+      view.scene.startTurn === view.turn &&
+      lemmaForcedInfo.frontier.length,
+    );
+    if (lemmaForcedOpening) {
+      const claimed0 = typeof draftOut.active_lemma === 'string' ? draftOut.active_lemma.trim() : null;
+      const ok0 =
+        (claimed0 && claimed0.toLowerCase() === 'default') || matchFrontierClaim(lemmaForcedInfo.frontier, claimed0);
+      if (!ok0) {
+        const options = lemmaForcedInfo.frontier.map((f) => f.label.split('(')[0]).join(', ');
+        const demand = `\n\nHARNESS RETRY — your reply was received but "active_lemma" was ${
+          claimed0 ? `"${claimed0}", which names no frontier lemma` : 'missing'
+        }. This scene-opening turn REQUIRES an active choice. Reply again with the SAME JSON shape and set "active_lemma" to exactly one of: ${options} — or the word "default" to explicitly delegate the choice to the harness.`;
+        const retryOut = await callJson(client, 'tutor', view.turn, { system, user: user + demand, meta });
+        retryOut._lemmaFirstRaw = claimed0;
+        retryOut._lemmaRetried = true;
+        draftOut = retryOut;
+      }
+      // STRATEGY REFUSAL (content compulsion; workplan/items/
+      // strategy-refusal-smoke.md): when the (forced) pick REPEATS the
+      // incumbent AND criterial regressions have occurred since it was
+      // chosen, refuse the strategy itself ONCE — defend in one line or
+      // switch. Mock knob relaxes the trigger so gates exercise both paths.
+      const claimedNow = typeof draftOut.active_lemma === 'string' ? draftOut.active_lemma.trim() : null;
+      const pickNow =
+        claimedNow && claimedNow.toLowerCase() !== 'default'
+          ? matchFrontierClaim(lemmaForcedInfo.frontier, claimedNow)
+          : null;
+      const regSince = lemmaForcedInfo.regressionsSinceActive || [];
+      const mockRefusal = lemmaForcedInfo.config.mockRefusal;
+      const repeatsIncumbent = Boolean(pickNow && lemmaForcedInfo.activeLabel === pickNow.label);
+      const realTrigger = repeatsIncumbent && regSince.length > 0;
+      const mockTrigger = Boolean(
+        mockRefusal && pickNow && (mockRefusal === 'defend' || lemmaForcedInfo.frontier.length > 1),
+      );
+      if (pickNow && (realTrigger || mockTrigger)) {
+        const short = (x) => x.split('(')[0];
+        const others = lemmaForcedInfo.frontier.filter((f) => f.label !== pickNow.label).map((f) => short(f.label));
+        const regNames = regSince.map((r) => short(r.label)).join(', ') || 'established ground';
+        const refuse = `\n\nHARNESS STRATEGY REFUSAL — you have chosen ${short(pickNow.label)} again, but since you last chose it the following established ground has REGRESSED: ${regNames} (${regSince.length} regression${
+          regSince.length === 1 ? '' : 's'
+        }). Criterial evidence says the incumbent strategy is failing. Reply again with the SAME JSON shape and EITHER (a) keep "active_lemma" as ${short(pickNow.label)} and DEFEND the choice in one line in "strategy_defense" (it will then stand), OR (b) SWITCH "active_lemma" to a different frontier chapter${
+          others.length ? ` (${others.join(', ')})` : ''
+        }.`;
+        const refuseOut = await callJson(client, 'tutor', view.turn, {
+          system,
+          user: user + refuse,
+          meta: {
+            ...meta,
+            ...(mockRefusal
+              ? { lemmaRefusalHint: { mode: mockRefusal, keep: short(pickNow.label), other: others[0] || null } }
+              : {}),
+          },
+        });
+        refuseOut._lemmaRefused = { priorPick: pickNow.label, priorRaw: claimedNow, regressions: regSince.length };
+        refuseOut._lemmaFirstRaw = draftOut._lemmaFirstRaw;
+        refuseOut._lemmaRetried = draftOut._lemmaRetried;
+        draftOut = refuseOut;
+      }
+    }
     const draftTheory = reconstruct ? normalizeTheory(draftOut.theory) : null;
     // The plot parses only on an opening turn (mid-act re-commitments are
     // ignored — the standing plot is the commitment); a parse-miss leaves
@@ -4936,6 +5185,7 @@ export function makeLlmLearner({
       `PRIVATE CONCLUSION CHECKLIST (index. conclusion your ${terms.record} may now support; choose indices only when you also say the conclusion aloud in ordinary words):`,
       privateConclusions,
       ...learnerProxyDagMemoryLines(view.proxyDagMemory, terms),
+      ...(view.lemmaLayer?.mirrorLines ? ['', ...view.lemmaLayer.mirrorLines] : []),
       '',
       'Your hypotheses so far:',
       hyps,
