@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-04T09:42:26.078Z",
+  "generated": "2026-07-05T03:11:39.308Z",
   "counts": {
-    "total": 79,
+    "total": 82,
     "byStatus": {
-      "done": 66,
+      "done": 70,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 2
     },
     "byType": {
       "research": 40,
-      "experiment": 12,
+      "experiment": 15,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -168,34 +168,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "lemma-map-sonnet-smoke",
-      "title": "Lemma-map Sonnet smoke — does the bookkeeping artifact help a mid-tier inner loop?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-04",
-      "updated": "2026-07-04",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "4 canary-gated Sonnet runs complete (or an instrument-limited stop is recorded); the pre-stated read rules below produce a propose/no-go, never a claim.",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": "LEMMA-DISPLAY-CONFIRMATORY-PREREGISTRATION.md",
-        "items": [
-          "proof-lemma-layer",
-          "strategy-ledger-model-confound-smoke"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "lemma-layer",
-        "model-confound",
-        "smoke"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -433,6 +405,61 @@
         "outer-loop",
         "strategy-ledger",
         "symmetry"
+      ]
+    },
+    {
+      "id": "lemma-sonnet-calibrated-contrast",
+      "title": "Lemma-map Sonnet contrast at the calibrated dose — the measurable mid-tier test",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs at dose 0.08 under the frozen pre-registration; the frozen bar produces a recorded verdict (or a voiding condition fires).",
+      "claim_status": "settled",
+      "links": {
+        "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "sonnet-calibrated-worlds",
+          "lemma-sonnet-contrast"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-tiers"
+      ]
+    },
+    {
+      "id": "lemma-sonnet-contrast",
+      "title": "Lemma-map Sonnet contrast — does the bookkeeping artifact help a mid-tier inner loop at tier?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs complete under the frozen pre-registration (or a voiding condition fires); the frozen bar produces a recorded verdict either way.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "LEMMA-SONNET-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-map-sonnet-smoke",
+          "proof-lemma-layer",
+          "exploratory-confirmatory-shrinkage-audit"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-confound"
       ]
     },
     {
@@ -1391,6 +1418,34 @@
       "milestone": "paper-2-evidence-cleanup"
     },
     {
+      "id": "lemma-map-sonnet-smoke",
+      "title": "Lemma-map Sonnet smoke — does the bookkeeping artifact help a mid-tier inner loop?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "4 canary-gated Sonnet runs complete (or an instrument-limited stop is recorded); the pre-stated read rules below produce a propose/no-go, never a claim.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-DISPLAY-CONFIRMATORY-PREREGISTRATION.md",
+        "items": [
+          "proof-lemma-layer",
+          "strategy-ledger-model-confound-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-confound",
+        "smoke"
+      ]
+    },
+    {
       "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
       "title": "Measuring Whether LLM Tutors Teach or Solve: A Diagnostic for Educational Impact",
       "status": "done",
@@ -1687,6 +1742,33 @@
       ],
       "milestone": "human-pilot-prep",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "sonnet-calibrated-worlds",
+      "title": "Sonnet-calibrated worlds — find the dose/world where a mid-tier baseline has headroom",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "The dose ladder (rules pre-stated below) either finds a calibrated condition set (Sonnet baseline in the target band, 3-run screens) or exhausts with a recorded structural-floor verdict; either way the outcome is recorded before any contrast prereg.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-SONNET-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-sonnet-contrast",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "calibration",
+        "model-tiers"
+      ]
     },
     {
       "id": "strategy-ledger-followups",

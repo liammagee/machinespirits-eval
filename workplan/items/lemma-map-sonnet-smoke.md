@@ -1,7 +1,7 @@
 ---
 id: lemma-map-sonnet-smoke
 title: Lemma-map Sonnet smoke — does the bookkeeping artifact help a mid-tier inner loop?
-status: active
+status: done
 type: experiment
 priority: P2
 owner: unassigned
@@ -54,3 +54,21 @@ disengagement 29). Four runs, concurrency 1, canary-gated.
 4. n=2/arm is directional color ONLY (the flash smoke's 2/2 -> 0/2
    inversion is the standing warning). No claims from this smoke under
    any outcome; the lemma line stays closed per its frozen consequences.
+
+2026-07-04 Claude: SMOKE COMPLETE (4/4, CLI quota, ~80 min sequential, zero
+parse failures — Sonnet holds every role contract). Table (seed | Sonnet
+base/display | codex base/display): 101 | aporia 29 / **GROUNDED 23** |
+aporia 29 / aporia 29; 103 | disengagement 29 / disengagement 29 |
+grounded 23 / disengagement 29. READ (per the pre-stated rules): (1)
+instrument PASS; (2) floor read YES — Sonnet baseline 0/2 where codex went
+1/2, opposite textures per seed; (3) map read FAVORABLE — Sonnet
+display-minus-baseline = one grounded win + one tie (mean T* delta −3.0)
+at seeds where codex's map delta was flat-to-negative (+3.0). Both rules
+met → **PROPOSE-GO recorded**: a powered mid-tier display-primary
+contrast is licensed for proposal (new prereg, operator decision). NOT A
+CLAIM: n=2/arm; the flash smoke inverted from this exact posture, and
+today's display confirmatory flattened a U=40.5 exploratory to U=67 —
+the winner's-curse warning applies at full strength. RECOMMENDATION
+recorded with the go: run the exploratory-confirmatory-shrinkage-audit
+FIRST and size any Sonnet contrast against a shrunken effect estimate
+(bar not set at the smoke's point estimate), per the audit card.
