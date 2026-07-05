@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-05T20:24:05.431Z",
+  "generated": "2026-07-05T21:01:23.529Z",
   "counts": {
     "total": 92,
     "byStatus": {
-      "done": 79,
+      "done": 80,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 2,
       "archived": 4,
       "triaged": 3
     },
@@ -166,32 +166,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "refusal-learner-mirror",
-      "title": "Exploration 6: the learner's mirror — refusing the learner's incumbent fixation",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Learner-side trigger implemented + gated (symmetric to the tutor side per the house rule), 6-run smoke complete, pre-stated reads recorded.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "content-compulsion-promotion"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "strategy-refusal",
-        "learner",
-        "symmetry"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -1889,6 +1863,32 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "refusal-learner-mirror",
+      "title": "Exploration 6: the learner's mirror — refusing the learner's incumbent fixation",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Learner-side trigger implemented + gated (symmetric to the tutor side per the house rule), 6-run smoke complete, pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal",
+        "learner",
+        "symmetry"
+      ]
     },
     {
       "id": "refusal-model-authored",

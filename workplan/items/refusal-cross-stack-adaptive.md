@@ -31,3 +31,16 @@ suite, 3 scenarios paired, strategy_shift_correctness as the read.
 COST: the biggest engineering item of the six (new stack); execute after
 options 2/3/6 unless the operator reprioritizes. The §6.8 corrected
 baseline (~1.4x cross-suite) is the comparison context.
+
+**SCOPING NOTE (2026-07-06): NOT EXECUTED this cycle — propose-only, as
+planned.** Options 2/3/6 completed as mechanism studies (defend-rate
+rises with model tier and with an evidence-bearing peer voice; the
+learner-side trigger is vacuous at the assertion channel); the promotion
+run closed the outcome question NOT CONFIRMED, so this cross-stack port
+would now be a pure mechanism-generalization study on a new stack — the
+biggest build of the six for a bounded payoff. Executes only on a fresh
+operator decision. Standing traps if picked up: use the smoke scripts
+with ADAPTIVE_TUTOR_LLM=mock for zero-DB validation (eval-cli --dry-run
+WRITES the prod DB), and expect the refusal analogue to need the
+runner's own trap-fire events as its criterial signal, not the
+derivation stack's regressions.
