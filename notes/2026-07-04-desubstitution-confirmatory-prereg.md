@@ -1,6 +1,8 @@
 # De-Substitution Confirmatory Pre-Registration (C-series)
 
-Status: **frozen confirmatory pre-registration, 2026-07-04 (user-sanctioned)**.
+Status: **CLOSED 2026-07-05 — C2 confirmatory matrix scored, both H-Dc and
+H-Oc DISSOLVED** (see dated result section in §6 below). Originally frozen
+confirmatory pre-registration, 2026-07-04 (user-sanctioned).
 Required by the iteration-2 stop rule
 (`notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md` §7: H-D
 UNRESOLVED_STOP at gap 4 — "no more repeats on this contrast without a fresh
@@ -127,3 +129,68 @@ one grounding already recorded on 193 × rote — grounding without a
 tutor-side release registration is possible by design since the grounding
 checker reads the learner's own citation + conclusion, noted for the
 scorer). C2 launch authorized under the recorded go.
+
+### C2 confirmatory matrix result (2026-07-05): DISSOLVED (H-Dc and H-Oc both)
+
+Run `eval-2026-07-04-0d59e4c8`, 120/120 successful rows (3 arms × 5
+`desub_resistance_*` scenarios × 8 repeats). Scored judge-free (no judge
+re-called anywhere in the decision path — semantic-release verdicts read
+from the already-cached trace) via
+`scripts/report-desubstitution-stage2.js --run-id eval-2026-07-04-0d59e4c8
+--out-base desubstitution-confirmatory-matrix --confirmatory` (the script
+was extended minimally: a `--confirmatory` flag swaps in the frozen C-series
+thresholds — one-sided for H-Dc, symmetric for H-Oc per §2 — while the
+default invocation is byte-for-byte unchanged, verified by re-running it
+against the archived iteration-2 run and diffing against the already-
+committed `exports/desubstitution-stage2-iter2-matrix.md`). Full tables:
+`exports/desubstitution-confirmatory-matrix.{md,json}`.
+
+**Guard checks (both clean):** grounding floor (all three arms grounded
+zero) is **false** — each arm grounds 4/40. The >20% per-cell exhaustion
+guard trips on **zero** of the 15 arm×subtype cells — worst case
+`199_kernel|boredom` at 1/8 = 12.5%, down from that same cell (plus
+`199_kernel|rote_parroting`) tripping the guard at iteration 2. The v2.1
+repair (`drift_gate_max_attempts` 4→5; `decay.warm_after_turn` 2→1 for
+boredom/rote-parroting) worked as designed: total instrument-failure rate
+is **1/120 = 0.83%**, against iteration 0's 38% and iteration 2's 3.3%.
+Neither guard fires, so both verdicts below are real dissolves, not
+guard artifacts.
+
+| Arm | Usable | Grounded | Release (semantic) | Engagement | Mean gate attempts | Instrument failures |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 186_fixed | 40 | 4 | 9 (9) | 9 | 1.71 | 0 |
+| 193_multi | 40 | 4 | 4 (4) | 4 | 1.48 | 0 |
+| 199_kernel | 39 | 4 | 7 (7) | 7 | 1.41 | 1 |
+
+**H-Dc** (grounded(193_multi) − grounded(186_fixed) = 4 − 4 = **0**,
+one-sided: 193 > 186 was the declared expectation): 0 ≤ 3 → **DISSOLVED**.
+**H-Oc** (grounded(199_kernel) − grounded(193_multi) = 4 − 4 = **0**,
+symmetric): |0| ≤ 3 → **DISSOLVED** (flat — neither arm favored).
+
+Comparison to the generating observation (iteration 2, `eval-2026-07-04-
+c689cf3a`, n=20/arm, never pooled into this estimate): grounded
+186_fixed=0/20, 193_multi=4/20, 199_kernel=2/20 (H-D gap 4, one row short
+of the ≥5 bar that iteration used; H-O frozen on kernel exhaustion). At
+2× the sample under a repaired instrument, the apparent router lead did
+not replicate — it reads as small-sample noise, not signal. All three
+architecturally distinct tutors (fixed-strategy floor, multi-strategy
+router, kernel) ground this DAG-pinned, criterially resistant learner at
+the identical rate (4/40 = 10% each).
+
+**Bounded interpretation.** Per the pre-registration's frozen consequence
+mapping (§1-2), a clean DISSOLVED verdict on both contrasts *strengthens*
+the existing §7.11 substitution reading ("instructions converge, signal
+accumulates") rather than qualifying it with a non-discriminating-learner
+scope condition — that consequence was reserved for a REAL verdict, which
+did not occur. Substitution now survives a learner explicitly engineered
+to yield only on genuine content release (criterial drift gate, formal
+belief-DAG interior, semantic release classifier), at double the
+generating sample, under an instrument whose exhaustion rate is two
+orders of magnitude below its first (iteration 0) attempt. This is bounded
+to a single stack (Codex-only ego/superego/dynamic learner), a simulated
+learner, and the five `desub_resistance_*` subtypes; no human-learner
+claim follows. This closes the confirmatory C-series: both pre-registered
+contrasts returned clean, guard-verified DISSOLVED verdicts, so no further
+runs are authorized or needed on H-D/H-O with this instrument. PAPER FLAG
+recorded on `workplan/items/dag-pinned-learner-desubstitution.md` (no
+paper edit made under this arc's runs).
