@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-05T10:55:50.442Z",
+  "generated": "2026-07-05T11:10:46.574Z",
   "counts": {
-    "total": 86,
+    "total": 87,
     "byStatus": {
       "done": 76,
       "blocked": 1,
       "dropped": 2,
-      "active": 2,
+      "active": 3,
       "archived": 4,
       "triaged": 1
     },
     "byType": {
       "research": 40,
-      "experiment": 19,
+      "experiment": 20,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -92,6 +92,33 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "content-compulsion-promotion",
+      "title": "Content-compulsion promotion run — n=20/arm per shrinkage sizing",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "40 Sonnet runs under the frozen prereg; the frozen bar (U<=138 at 20/20) produces a recorded verdict.",
+      "claim_status": "planned",
+      "links": {
+        "notes": "CONTENT-COMPULSION-PROMOTION-PREREGISTRATION.md",
+        "items": [
+          "content-compulsion-contrast"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal",
+        "promotion"
+      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
