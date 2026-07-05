@@ -169,7 +169,9 @@ async function main() {
   );
   check(
     'G4-attributed',
-    bind.lemmaLayer.choices.every((c) => ['tutor', 'auto', 'fallback', 'auto_advance'].includes(c.by)),
+    bind.lemmaLayer.choices.every((c) =>
+      ['tutor', 'tutor_retry', 'delegate', 'auto', 'fallback', 'auto_advance'].includes(c.by),
+    ),
     'every choice carries its attribution',
   );
 

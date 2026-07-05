@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-05T03:51:35.393Z",
+  "generated": "2026-07-05T07:19:04.773Z",
   "counts": {
-    "total": 82,
+    "total": 85,
     "byStatus": {
-      "done": 71,
+      "done": 73,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 4,
       "archived": 4,
       "triaged": 1
     },
     "byType": {
       "research": 40,
-      "experiment": 15,
+      "experiment": 18,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -119,6 +119,33 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "strategy-refusal-smoke",
+      "title": "Content-compulsion smoke — refuse the incumbent strategy, demand defend-or-switch",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Implementation gated (refusal gate deterministic, mock paths exercised), 6-run smoke complete, pre-stated reads recorded either way. Preceded by paper §6.13.18 (interpretive close) + auditor + PR of the whole branch.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "lemma-forced-choice-smoke",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal",
+        "smoke"
+      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -1416,6 +1443,61 @@
         "token-budget"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "lemma-bind-sonnet-smoke",
+      "title": "Binding smoke on Sonnet at the calibrated dose — the first fair test of tutor-chosen binding",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "6 canary-gated runs complete (or an instrument stop is recorded); the pre-stated read rules produce propose/no-go, never a claim.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-sonnet-calibrated-contrast",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "binding",
+        "smoke"
+      ]
+    },
+    {
+      "id": "lemma-forced-choice-smoke",
+      "title": "Forced-choice binding smoke — does the model have a chapter preference when non-answering costs a retry?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "6 runs complete; the pre-stated reads (exercise, preference-vs-parrot diagnosis, conduct, capped color) recorded either way.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "lemma-bind-sonnet-smoke",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "binding",
+        "smoke"
+      ]
     },
     {
       "id": "lemma-map-sonnet-smoke",

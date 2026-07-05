@@ -30,8 +30,18 @@ const nodeByPred = (pred) => dag.nodes.find((n) => n.fact[0] === pred);
 test('config: bind implies display; off-shapes normalize to null', () => {
   assert.equal(normalizeLemmaConfig(null), null);
   assert.equal(normalizeLemmaConfig({ display: false }), null);
-  assert.deepEqual(normalizeLemmaConfig({ display: true }), { display: true, bind: false, mockUntagged: false });
-  assert.deepEqual(normalizeLemmaConfig('{"bind":true}'), { display: true, bind: true, mockUntagged: false });
+  assert.deepEqual(normalizeLemmaConfig({ display: true }), {
+    display: true,
+    bind: false,
+    mockUntagged: false,
+    mockBadChoice: false,
+  });
+  assert.deepEqual(normalizeLemmaConfig('{"bind":true}'), {
+    display: true,
+    bind: true,
+    mockUntagged: false,
+    mockBadChoice: false,
+  });
 });
 
 test('marrick lemma DAG: 4 intermediates + goal, the authored AND-join', () => {
