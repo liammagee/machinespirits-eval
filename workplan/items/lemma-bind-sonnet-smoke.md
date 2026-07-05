@@ -1,7 +1,7 @@
 ---
 id: lemma-bind-sonnet-smoke
 title: Binding smoke on Sonnet at the calibrated dose — the first fair test of tutor-chosen binding
-status: active
+status: done
 type: experiment
 priority: P2
 owner: unassigned
@@ -52,3 +52,27 @@ lemma-bound), fresh primes 211/223/227. Six runs, concurrency 3.
    bound contrast (new prereg, operator gate) — never a claim. The
    shrinkage audit's numbers (§5.12.7) apply to this smoke with full
    force and are cited in advance.
+
+2026-07-05 Claude: SMOKE COMPLETE (6/6, ~35 min, zero parse failures).
+**READ 1 — INSTRUMENT GATE: FAIL, 0/12.** Across twelve multi-frontier
+scene openings in three bound runs, Sonnet answered the active_lemma
+field ZERO times — with tolerant matching live and the prompt saying the
+predicate name suffices. All choices fell back (fallback 12, auto 11,
+auto_advance 4). Combined with codex's 0/95, the finding SHARPENS: this
+was never label-echo fragility — two models under two prompt
+formulations simply do not answer a dedicated planning field while
+composing a turn. The formal-choice channel is behaviorally inert;
+"models act, they do not fill in plan fields." (Diagnostic gap recorded:
+raw claims are not logged, so omitted-key vs unmatched-string is
+indistinguishable — instrument improvement required before any retry.)
+**READ 2 — CONDUCT: PASS.** 0 untagged departures, 0 blocks, 1 logged
+forced passthrough per run, 0 leaks/overrides. **READ 3 — DIRECTIONAL
+COLOR (capped by the gate fail; this is binding-to-DEFAULT again):**
+bound 3/3 grounded (22, 24, 22) vs baseline 2/3 (22, 22, disengagement
+29) — mildly favorable, and notably default-binding did NOT hurt Sonnet
+at the calibrated dose (contrast codex at 0.35, where bound died early
+on marrick). n=3, §5.12.7 odds cited: color only, no proposal — the
+gate fail means tutor-chosen binding remains untested and untestable
+without a redesigned choice mechanism (e.g. choice-by-separate-call,
+which the plan-mode stock-take arc already showed carries its own
+costs).

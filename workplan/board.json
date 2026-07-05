@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-05T04:17:13.640Z",
+  "generated": "2026-07-05T04:41:34.370Z",
   "counts": {
     "total": 83,
     "byStatus": {
-      "done": 71,
+      "done": 72,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 1
     },
@@ -143,34 +143,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "lemma-bind-sonnet-smoke",
-      "title": "Binding smoke on Sonnet at the calibrated dose — the first fair test of tutor-chosen binding",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "6 canary-gated runs complete (or an instrument stop is recorded); the pre-stated read rules produce propose/no-go, never a claim.",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
-        "items": [
-          "lemma-sonnet-calibrated-contrast",
-          "proof-lemma-layer"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "lemma-layer",
-        "binding",
-        "smoke"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -1444,6 +1416,34 @@
         "token-budget"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "lemma-bind-sonnet-smoke",
+      "title": "Binding smoke on Sonnet at the calibrated dose — the first fair test of tutor-chosen binding",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "6 canary-gated runs complete (or an instrument stop is recorded); the pre-stated read rules produce propose/no-go, never a claim.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-sonnet-calibrated-contrast",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "binding",
+        "smoke"
+      ]
     },
     {
       "id": "lemma-map-sonnet-smoke",
