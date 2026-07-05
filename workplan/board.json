@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-05T10:15:09.240Z",
+  "generated": "2026-07-05T10:55:50.442Z",
   "counts": {
-    "total": 85,
+    "total": 86,
     "byStatus": {
-      "done": 75,
+      "done": 76,
       "blocked": 1,
       "dropped": 2,
       "active": 2,
@@ -12,7 +12,7 @@
     },
     "byType": {
       "research": 40,
-      "experiment": 18,
+      "experiment": 19,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -283,6 +283,32 @@
         "meta"
       ],
       "milestone": "board-pm"
+    },
+    {
+      "id": "content-compulsion-contrast",
+      "title": "Content-compulsion contrast — the refusal stack at pre-registered tier",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs under the frozen prereg; the frozen LB bar produces a recorded verdict (or a voiding condition fires).",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "CONTENT-COMPULSION-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "strategy-refusal-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal"
+      ]
     },
     {
       "id": "cross-model-plan-mode-interaction",
