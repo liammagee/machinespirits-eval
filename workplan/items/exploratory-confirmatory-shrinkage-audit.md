@@ -1,7 +1,7 @@
 ---
 id: exploratory-confirmatory-shrinkage-audit
 title: Shrinkage audit — why do good exploratory results shrink on confirmation?
-status: triaged
+status: done
 type: research
 priority: P2
 owner: unassigned
@@ -53,3 +53,21 @@ the world screens.
 Deliverable: shrinkage audit script + report; interpretation lands in
 paper §5 (methodology) beside the closed-loop-tells discipline. Zero paid
 runs. Trigger: after the lemma-display confirmatory verdict is recorded.
+
+2026-07-05 Claude: AUDIT RUN (scripts/audit-exploratory-confirmatory-
+shrinkage.js, deterministic bootstrap 20k iters, seed 20260705; report
+exports/dramatic-derivation/strategy-ledger/shrinkage-audit/). **VERDICT:
+the observation is real and fully explained by selection + power — no
+extra mechanism needed.** (1) Winner's curse quantified on the cleanest
+pair: pooled two-draw truth gives mean U 53.3, sampling SD 12.7;
+E[U|advanced]=36.0 vs independent repeat 53.2 — a 17-point selection gap;
+the observed 40.5->67 sits within 2 sampling SDs of pooled truth. (2) Bar
+calibration: P(confirm | exploratory estimate exactly true) = 0.615 — a
+weighted coin; V2b analogue 0.786 (large pilot effect) and it DID
+replicate. (3) Between-draw variance: identical cells swing 4/6->2/6 and
+0/6->1/6 at n=6 — effects below that swing are unresolvable at house n.
+(4) Base rate: 1 of 4 advanced signals survived its primary; nulls never
+re-run (asymmetry recorded). (5) Backend drift untestable by design
+(fresh-prime discipline). DESIGN RULES adopted going forward: size
+confirmatories against a SHRUNKEN estimate or state the coin-flip odds at
+freeze; treat n=6 grounded-rate cells as +-2 swings. Paper: §5.12.7.
