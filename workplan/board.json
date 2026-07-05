@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-05T05:36:51.781Z",
+  "generated": "2026-07-05T06:01:17.779Z",
   "counts": {
     "total": 84,
     "byStatus": {
-      "done": 72,
+      "done": 73,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 1
     },
@@ -143,33 +143,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "lemma-forced-choice-smoke",
-      "title": "Forced-choice binding smoke — does the model have a chapter preference when non-answering costs a retry?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "6 runs complete; the pre-stated reads (exercise, preference-vs-parrot diagnosis, conduct, capped color) recorded either way.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "lemma-bind-sonnet-smoke",
-          "proof-lemma-layer"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "lemma-layer",
-        "binding",
-        "smoke"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -1461,6 +1434,33 @@
         "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
         "items": [
           "lemma-sonnet-calibrated-contrast",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "binding",
+        "smoke"
+      ]
+    },
+    {
+      "id": "lemma-forced-choice-smoke",
+      "title": "Forced-choice binding smoke — does the model have a chapter preference when non-answering costs a retry?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "6 runs complete; the pre-stated reads (exercise, preference-vs-parrot diagnosis, conduct, capped color) recorded either way.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "lemma-bind-sonnet-smoke",
           "proof-lemma-layer"
         ]
       },
