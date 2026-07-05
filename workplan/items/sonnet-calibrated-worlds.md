@@ -73,3 +73,10 @@ D05 (rate 0.08 / maxConcurrent 1). If D05 also floors, the dose dial has
 no stable Sonnet band on marrick and calibration needs a different lever
 (shorter worlds / post-forcing grace / gentler schedule) — i.e. authoring
 after all, recorded as such.
+
+2026-07-05 Claude — D05 (marrick, rate 0.08/mutateShare 0.25/maxConcurrent
+1): **BAND HIT — 1/3 grounded (T*=23) + disengagement 29 + unstaged 29**
+(winnable with variance; spread 6 >= 3). Marrick's Sonnet-calibrated dose
+recorded. Full dose-response: none = 3/3; 0.08 = 1/3; 0.15 = 0/3; 0.35 =
+0/12 — Sonnet's decay tolerance is a narrow shelf around ~0.1, not a
+slope. Partner screen launched: world-019 at the same dose, same seeds.
