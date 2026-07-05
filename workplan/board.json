@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-05T14:01:35.422Z",
+  "generated": "2026-07-05T14:31:58.666Z",
   "counts": {
     "total": 92,
     "byStatus": {
-      "done": 77,
+      "done": 78,
       "blocked": 1,
       "dropped": 2,
-      "active": 5,
+      "active": 4,
       "archived": 4,
       "triaged": 3
     },
@@ -142,32 +142,6 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "refusal-stall-trigger-codex",
-      "title": "Exploration 2: stall-triggered refusal at the frontier tier (codex)",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Trigger implemented + gated (deterministic stall arithmetic, both mock paths), 6-run codex smoke complete, pre-stated reads recorded.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "content-compulsion-promotion",
-          "strategy-refusal-smoke"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "strategy-refusal",
-        "frontier"
-      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -645,6 +619,32 @@
         "outer-loop",
         "plan-mode",
         "ego-superego"
+      ]
+    },
+    {
+      "id": "refusal-stall-trigger-codex",
+      "title": "Exploration 2: stall-triggered refusal at the frontier tier (codex)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Trigger implemented + gated (deterministic stall arithmetic, both mock paths), 6-run codex smoke complete, pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion",
+          "strategy-refusal-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal",
+        "frontier"
       ]
     },
     {
