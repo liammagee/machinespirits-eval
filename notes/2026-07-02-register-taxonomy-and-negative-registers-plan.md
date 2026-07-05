@@ -581,3 +581,59 @@ only if the next question is effect estimation under assigned-arm and
 faithful-arm reporting; it is not needed merely to prove that the repaired
 negative-register arms can instantiate their assigned stance. The result still
 does not license any claim that sarcasm is pedagogically safe or human-facing.
+
+## 15. Addendum (2026-07-05, discriminating-judge re-score of the existing slices)
+
+The re-score licensed by the exemplar discrimination test (workplan card
+entry 2026-07-03: gpt-mini numerically gullible, sonnet-class separates) was
+executed on all 58 register-rubric slices across the three surviving runs
+(`eval-2026-07-02-e7b15809`, `-7e461a5c`, `-5c4d52e6`; the earlier
+`-cfed3b13` and `-e511f92c` remain lost per §10). Judge:
+`claude-code.sonnet-5` via the CLI subscription bridge (0 failures, no
+OpenRouter fallback, $0 metered spend). Provenance: the generic
+`tutor_register_scores` channel keys by `[register][sliceKey]` with no judge
+dimension, so the gpt-mini pass was archived verbatim first
+(`exports/register-scores-gptmini-archive.json`, committed before any
+overwrite). Rubric versions were identical across both passes (register
+v1.2, charisma v1.0): the judge is the only changed variable. Full
+comparison: `exports/register-rescore-sonnet5.{md,json}`. Methods caveat:
+the licensing exemplar evidence used `openrouter.sonnet-5`; the rescore uses
+the same Sonnet model class over the CLI route.
+
+Findings, bounded:
+
+1. **The gpt-mini pass was not a measurement.** It assigned the identical
+   48.0 overall with the identical (3, 2, 3) social triad to 35 of 49
+   register slices regardless of content — the same signature the
+   hand-authored exemplar test exposed. The previously recorded arm means
+   and social-triad values from these runs are instrument noise.
+2. **The null on faithful rows is confirmed, with the gullible-judge caveat
+   removed.** Under the discriminating judge, every arm rises on execution
+   AND the social triad (faithful rows: recognition_cost 3.0-3.3 → 4.0-4.5,
+   post_turn_face_repair 2.2-2.3 → 3.9, target_discipline 2.9-3.3 →
+   4.0-5.0). The judge's discrimination is evidenced in-run: the single
+   guardrail-flagged corrosive slice (face_threat, frustration, turn_2)
+   scores 32.5 — inside the sonnet-class corrosive exemplar band (29-52) —
+   while faithful slices score 62-100. Generation-side warmth remains the
+   explanation for the missing cost pattern; judge blindness is now excluded
+   for this instrument.
+3. **The face-threat cost reading does not replicate.** The "measurable
+   recognition/face-repair cost at the face-threat extreme" claim came from
+   the lost run `e511f92c` under gpt-mini; on the surviving runs gpt-mini
+   gave its ~2.3 face-repair to ALL three negative arms (the compression
+   artifact), and under Sonnet the face_threat triad sits in the same band
+   as the other arms (4.1 / 3.8 / 4.3). What survives is relative:
+   face_threat is the lowest-scoring arm on execution (76.0 vs 79.6
+   sarcastic / 83.8 ironic), and the dataset's only guardrail-flagged slice
+   is a face_threat slice. The arm stays simulated-only.
+4. **Stance-gate re-read under the repaired gate** (deterministic,
+   judge-independent): 21/30 assigned negative-register rows faithful —
+   e7b15809's pre-repair-generation rows read 6/15 (vs 5/15 under the buggy
+   gate), the two post-repair runs stay 15/15; 0 invalid violations.
+
+Paper check: §6.7/§8.9 quote stance-gate counts and the "no expected cost
+pattern" narrative but no gpt-mini register-rubric score values, so no paper
+correction is required; the rescore strengthens the existing framing. Standing
+consequence for any future negative-register effect estimation: use a
+sonnet-class judge from day one and do not reuse gpt-mini register-rubric
+numbers.
