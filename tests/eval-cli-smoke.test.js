@@ -76,6 +76,15 @@ describe('eval-cli smoke — read-only commands', () => {
 // ---------------------------------------------------------------------------
 
 describe('eval-cli smoke — usage / error handling', () => {
+  it('run --help: prints usage without starting an evaluation', async () => {
+    const { stdout, stderr, code } = await runCli(['run', '--help']);
+    assert.strictEqual(code, 0);
+    assert.ok(stdout.includes('Usage:'), 'should show usage');
+    assert.ok(stdout.includes('node scripts/eval-cli.js run'), 'should include run examples');
+    assert.equal(stdout.includes('Starting evaluation run'), false, 'should not start an evaluation');
+    assert.equal(stderr.includes('Starting evaluation run'), false, 'should not start an evaluation');
+  });
+
   it('report: shows usage when no runId', async () => {
     const { stderr, code } = await runCli(['report']);
     assert.strictEqual(code, 1);

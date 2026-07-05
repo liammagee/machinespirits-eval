@@ -221,6 +221,89 @@ test('online-score: missing mode throws', () => {
   assert.throws(() => planJob({ kind: 'online-score', params: { runId: 'R' } }), /mode must be one of/u);
 });
 
+// ── planJob: eval-cell ─────────────────────────────────────────────────────────
+
+test('eval-cell: dry-run launches eval-cli run with cell profile and overrides', () => {
+  const plan = planJob({
+    kind: 'eval-cell',
+    params: {
+      cell: 'cell_7_recog_multi_unified',
+      scenario: 'new_user_first_visit',
+      runs: 2,
+      parallelism: 3,
+      dryRun: true,
+      skipRubric: true,
+      egoModel: 'openrouter.gpt',
+      superegoModel: 'openrouter.kimi-k2.5',
+      learnerModel: 'openrouter.nemotron',
+      maxTokens: 1500,
+      description: 'admin chat smoke',
+    },
+  });
+  assert.equal(plan.costClass, COST_CLASSES.FREE);
+  assert.match(plan.script, /eval-cli\.js$/u);
+  assert.deepEqual(plan.argv, [
+    'run',
+    '--profiles',
+    'cell_7_recog_multi_unified',
+    '--runs',
+    '2',
+    '--scenario',
+    'new_user_first_visit',
+    '--parallelism',
+    '3',
+    '--description',
+    'admin chat smoke',
+    '--ego-model',
+    'openrouter.gpt',
+    '--superego-model',
+    'openrouter.kimi-k2.5',
+    '--learner-model',
+    'openrouter.nemotron',
+    '--max-tokens',
+    '1500',
+    '--dry-run',
+    '--skip-rubric',
+  ]);
+});
+
+test('eval-cell: real runs are metered and can use cluster plus CLI judge', () => {
+  const plan = planJob({
+    kind: 'eval-cell',
+    params: {
+      cell: 'cell_1_base_single_unified',
+      cluster: 'multi-turn,recognition',
+      judgeCli: 'codex',
+      judgeCliModel: 'gpt-5-codex',
+      live: true,
+    },
+  });
+  assert.equal(plan.costClass, COST_CLASSES.METERED);
+  assert.ok(plan.argv.includes('--cluster'));
+  assert.ok(plan.argv.includes('multi-turn,recognition'));
+  assert.ok(plan.argv.includes('--judge-cli'));
+  assert.ok(plan.argv.includes('codex'));
+  assert.ok(plan.argv.includes('--judge-cli-model'));
+  assert.ok(plan.argv.includes('gpt-5-codex'));
+  assert.ok(plan.argv.includes('--live'));
+});
+
+test('eval-cell: validates selectors and mutually exclusive scenario/cluster', () => {
+  assert.throws(() => planJob({ kind: 'eval-cell', params: { cell: '../cell_1' } }), /cell has invalid characters/u);
+  assert.throws(
+    () =>
+      planJob({
+        kind: 'eval-cell',
+        params: { cell: 'cell_1_base_single_unified', scenario: 'new_user_first_visit', cluster: 'core' },
+      }),
+    /scenario and cluster are mutually exclusive/u,
+  );
+  assert.throws(
+    () => planJob({ kind: 'eval-cell', params: { cell: 'cell_1_base_single_unified', egoModel: 'bad model' } }),
+    /egoModel has invalid characters/u,
+  );
+});
+
 test('planJob: unknown kind throws', () => {
   assert.throws(() => planJob({ kind: 'nope', params: {} }), /unknown job kind/u);
 });
@@ -231,12 +314,13 @@ test('describeKinds lists all whitelisted kinds', () => {
     'adversarial-score',
     'derivation',
     'derivation-assessment',
+    'eval-cell',
     'generate',
     'online-score',
     'pedagogical-drama',
     'replay',
   ]);
-  assert.equal(Object.keys(JOB_KINDS).length, 7);
+  assert.equal(Object.keys(JOB_KINDS).length, 8);
 });
 
 // ── planJob: derivation (proof-DAG drama via run-derivation-loop.js) ───────────

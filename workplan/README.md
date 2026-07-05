@@ -109,10 +109,12 @@ The body is free markdown: context, acceptance criteria, and a running log
 The board renders as a live web UI (the same surface in the browser dev server and
 the Scriptorium desktop app), backed by the **same write path as the CLI**:
 
-- **`/board`** — a kanban by status. Drag a card between lanes to change its status;
-  click a card to edit every field (including **milestone** and **depends on**); the
-  lane **+** adds an item; **Delete** removes one. Writes land in `items/` and
-  re-render `board.json`.
+- **`/board`** — a kanban by status. It defaults to an open-work focus so old
+  `done` / `archived` / `dropped` cards do not dominate the working surface;
+  use the focus controls or `?focus=all` / `?focus=settled` for history. Drag a
+  card between lanes to change its status; click a card to edit every field
+  (including **milestone** and **depends on**); the lane **+** adds an item;
+  **Delete** removes one. Writes land in `items/` and re-render `board.json`.
 - **`/timeline`** — milestones from `milestones.yaml` (id, title, target date, status,
   optional git `tag`) with a progress bar over each milestone's items, plus a live
   **GitHub** panel (open PRs, releases/tags, recent commits) for the `origin` repo via

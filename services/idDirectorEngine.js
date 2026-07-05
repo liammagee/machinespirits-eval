@@ -15,98 +15,70 @@
 
 import path from 'node:path';
 import fs from 'node:fs';
-import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { jsonrepair } from 'jsonrepair';
 
 import { tutorConfigLoader as defaultTutorConfig, tutorDialogueEngine } from '../tutor-core/index.js';
 import * as defaultTutorWritingPad from './memory/tutorWritingPad.js';
+import {
+  callAIWithCliBridge as callWithCliBridge,
+  cliAwareProviderConfig,
+  isProviderConfigured,
+} from './cliProviderBridge.js';
+import { extractEngagementModeHistory, routeEngagementMode } from './engagementModeRouter.js';
+import { getEngagementRegisterDefinition } from './engagementRegisterRegistry.js';
+import {
+  BLUEPRINT_CONTRACT_TRACE_ROLE,
+  buildContractTracePayload,
+  extractContractLedger,
+  finalizeBlueprintContractTurn,
+  prepareBlueprintContractTurn,
+} from './blueprintActionContracts.js';
 
-// claude-code subscription bridge. Mirrors services/adaptiveTutor/realLLM.js::callClaudeCli
-// — see the longer comment there for why scrubbing ANTHROPIC_API_KEY from the
-// child env is critical (without it the CLI silently routes via metered API
-// mode and bills per-call). tutor-core's callAI does NOT recognise
-// `claude-code` as a provider; bridging here keeps cell_106 (id-director +
-// CLI) working without a tutor-core release.
-const CLAUDE_CLI_TIMEOUT_MS = 180_000;
-
-async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHistory }) {
-  // System prompt goes via --system-prompt (replaces the CLI's default,
-  // suppressing ambient output-style additions like the "★ Insight" block
-  // the explanatory style appends after responses). User content + inlined
-  // multi-turn history goes to stdin.
-  let userText = '';
-  if (Array.isArray(messageHistory) && messageHistory.length > 0) {
-    const transcript = messageHistory.map((m) => `${m.role || 'user'}: ${m.content || ''}`).join('\n\n');
-    userText += `Conversation so far:\n${transcript}\n\n`;
-  }
-  userText += `Latest message:\n${userPrompt}`;
-  const start = Date.now();
-  return await new Promise((resolve, reject) => {
-    const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
-    if (model) args.push('--model', model);
-    const env = { ...process.env };
-    delete env.CLAUDE_CODE;
-    delete env.CLAUDECODE;
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '';
-    let err = '';
-    const cliTimeout = setTimeout(() => {
-      try {
-        child.kill('SIGKILL');
-      } catch (_) {
-        /* already gone */
-      }
-      reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role})`));
-    }, CLAUDE_CLI_TIMEOUT_MS);
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', (e) => {
-      clearTimeout(cliTimeout);
-      reject(e);
-    });
-    child.on('close', (code) => {
-      clearTimeout(cliTimeout);
-      if (code !== 0) {
-        reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
-      } else {
-        resolve({
-          text: out.trim(),
-          model: model || 'claude-cli',
-          provider: 'claude-code',
-          latencyMs: Date.now() - start,
-          inputTokens: 0,
-          outputTokens: 0,
-          cost: 0,
-        });
-      }
-    });
-    child.stdin.write(userText);
-    child.stdin.end();
-  });
+function countTutorTurns(history) {
+  return (Array.isArray(history) ? history : []).filter((m) =>
+    ['assistant', 'tutor'].includes(String(m?.role || '').toLowerCase()),
+  ).length;
 }
 
-// Drop-in wrapper that routes claude-code through the local CLI and everything
-// else through tutor-core's metered callAI. Same return shape as
-// tutorDialogueEngine.callAI so call sites swap in unchanged.
-async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role, opts = {}) {
-  if (agentConfig?.provider === 'claude-code') {
-    return await callClaudeCli({
-      systemPrompt,
-      userPrompt,
-      model: agentConfig.model,
-      role,
-      messageHistory: opts?.messageHistory,
+function safePrepareContractTurn({ learnerMessage, history, traceLike, dialogueId }) {
+  try {
+    return prepareBlueprintContractTurn({
+      learnerMessage,
+      history,
+      priorLedger: extractContractLedger(traceLike),
+      turnIndex: countTutorTurns(history),
+      dialogueId,
     });
+  } catch (err) {
+    console.warn(`[IdDirector] action-contract preparation failed (${err.message}); continuing without contract.`);
+    return null;
   }
-  return await tutorDialogueEngine.callAI(agentConfig, systemPrompt, userPrompt, role, opts);
+}
+
+function safeFinalizeContractTurn(contractTurn, tutorText) {
+  if (!contractTurn) return null;
+  try {
+    return finalizeBlueprintContractTurn({
+      contract: contractTurn.contract,
+      ledger: contractTurn.ledger,
+      tutorText,
+    });
+  } catch (err) {
+    console.warn(`[IdDirector] action-contract finalization failed (${err.message}); contract not recorded.`);
+    return null;
+  }
+}
+
+// Drop-in wrapper that routes repo-local CLI providers through subscription
+// CLIs and everything else through tutor-core's metered callAI. Same return
+// shape as tutorDialogueEngine.callAI so call sites swap in unchanged.
+async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role, opts = {}) {
+  return await callWithCliBridge(agentConfig, systemPrompt, userPrompt, role, {
+    ...opts,
+    fallbackCallAI: tutorDialogueEngine.callAI,
+  });
 }
 
 const __engineFile = fileURLToPath(import.meta.url);
@@ -117,6 +89,54 @@ const _deps = {
   tutorConfig: defaultTutorConfig,
   tutorWritingPad: defaultTutorWritingPad,
 };
+
+function normalizeEngagementRegisterArm(value) {
+  const arm = typeof value === 'string' ? value.trim() : '';
+  if (!arm) return null;
+  return getEngagementRegisterDefinition(arm) ? arm : null;
+}
+
+function applyEngagementRegisterArm(engagementState, assignedRegisterArm) {
+  if (!engagementState || !assignedRegisterArm) return engagementState;
+  const selectedRegister = engagementState.selected_register || engagementState.selected_mode;
+  if (selectedRegister !== 'charismatic_challenge') return engagementState;
+  const definition = getEngagementRegisterDefinition(assignedRegisterArm);
+  if (!definition) return engagementState;
+  const baseReason = engagementState.register_reason || engagementState.mode_reason || '';
+  const assignedReason =
+    `${baseReason} Experiment arm assigns ${assignedRegisterArm} under the same resistant precondition.`.trim();
+  return {
+    ...engagementState,
+    router_selected_register: selectedRegister,
+    router_selected_mode: engagementState.selected_mode || selectedRegister,
+    selected_register: assignedRegisterArm,
+    selected_mode: assignedRegisterArm,
+    assigned_register_arm: assignedRegisterArm,
+    register_assignment_source: 'experiment_arm',
+    register_valence: definition.valence || null,
+    router_selectable: definition.router_selectable === true,
+    register_reason: assignedReason,
+    mode_reason: assignedReason,
+  };
+}
+
+function buildRegisterStanceContract(engagementState) {
+  const registerName = engagementState?.selected_register || engagementState?.selected_mode;
+  const definition = getEngagementRegisterDefinition(registerName);
+  if (!registerName || !definition) return null;
+  return {
+    selected_register: registerName,
+    valence: definition.valence || null,
+    router_selectable: definition.router_selectable === true,
+    simulated_only: definition.simulated_only === true,
+    stance_contract: definition.stance_contract || '',
+    stance_fidelity_cues: definition.stance_fidelity_cues || [],
+    forbidden_phrases: definition.forbidden_phrases || [],
+    required_moves: definition.required_moves || [],
+    risk_flags: definition.risk_flags || [],
+    recognition_guardrail: definition.recognition_guardrail || '',
+  };
+}
 
 export function __setDeps(overrides = {}) {
   if (overrides.tutorConfig) _deps.tutorConfig = overrides.tutorConfig;
@@ -135,6 +155,139 @@ const FALLBACK_GENERATED_PROMPT =
   'question that asks the learner to take a position rather than seek more information.';
 
 const MIN_GENERATED_PROMPT_CHARS = 100;
+const EGO_EMPTY_RETRY_SUFFIX =
+  'Return only the tutor response the learner should see, as plain text. ' +
+  'Do not explain your reasoning, describe the prompt, or output JSON.';
+const AGENCY_RETURN_VERIFIER_MAX_TOKENS = 4000;
+const AGENCY_RETURN_VERIFIER_RETRY_SUFFIX =
+  'Return only the required JSON object now. Do not include analysis, headings, markdown, or prose outside the JSON.';
+const AGENCY_RETURN_VERIFIER_MODE_STRICT = 'strict';
+const AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING = 'warmth_preserving';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD = 'standard';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_COMPACT = 'compact';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ARC = 'arc';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_GUARDED_ARC = 'guarded_arc';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_AFFECTIVE_SCENE = 'affective_scene';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID = 'accountable_bid';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_CLEAN = 'accountable_bid_clean';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN = 'accountable_bid_transfer_plain';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_PRESENCE =
+  'accountable_bid_transfer_plain_presence';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT = 'accountable_bid_transfer_plain_split';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK =
+  'accountable_bid_transfer_plain_split_check';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR =
+  'accountable_bid_transfer_plain_split_check_anchor';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE =
+  'accountable_bid_transfer_plain_split_check_anchor_live';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_PERSIST =
+  'accountable_bid_transfer_plain_split_check_anchor_live_persist';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED =
+  'accountable_bid_transfer_plain_split_check_anchor_live_lived';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_COMPRESS =
+  'accountable_bid_transfer_plain_split_check_anchor_live_lived_compress';
+const AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_CHARGED_CHECK =
+  'accountable_bid_transfer_plain_split_check_anchor_live_lived_charged_check';
+const ID_OUTPUT_CONTRACT_STANDARD = 'standard';
+const ID_OUTPUT_CONTRACT_STRICT_COMPACT_JSON = 'strict_compact_json';
+const AGENCY_RETURN_VERIFIER_PROMPT = `You are an agency-return verifier for a charismatic tutor.
+
+Read the learner message, curriculum context, and drafted tutor response. Decide whether the response contains at least one concrete agency-return move:
+- "test": asks the learner to test the tutor's claim, image, or phrase against a passage, case, objection, or example.
+- "resay": asks the learner to restate, translate, flatten, reject, or correct the idea in their own words.
+- "anchor": ties an admired phrase or tutor claim to a named content feature, then asks the learner to decide whether that anchor supports it.
+
+Do not reward generic follow-up questions, requests for admiration, requests to continue, vague "does that make sense" checks, or purely rhetorical endings.
+
+Return only one JSON object:
+{
+  "passes": true | false,
+  "move_type": "test" | "resay" | "anchor" | "missing",
+  "reason": "one short sentence",
+  "repaired_response": ""
+}
+
+If passes is false, repaired_response must be a complete learner-facing tutor response. Preserve the original response's best content and voice, but add one agency-return move. Do not add meta-commentary. If passes is true, repaired_response must be an empty string.`;
+
+const AGENCY_RETURN_VERIFIER_WARMTH_PRESERVING_PROMPT = `You are a warmth-preserving agency-return verifier for a charismatic tutor.
+
+Read the learner message, curriculum context, and drafted tutor response. Decide whether the response contains at least one concrete agency-return move:
+- "test": asks the learner to test the tutor's claim, image, or phrase against a passage, case, objection, or example.
+- "resay": asks the learner to restate, translate, flatten, reject, or correct the idea in their own words.
+- "anchor": ties an admired phrase or tutor claim to a named content feature, then asks the learner to decide whether that anchor supports it.
+
+This verifier is for partial uptake: the learner has felt the tutor's phrase or presence, but does not yet fully own it. Protect the draft's charisma, warmth, address, rhythm, and earned status. Do not cool the response into generic pedagogy.
+
+Do not reward generic follow-up questions, requests for admiration, requests to continue, vague "does that make sense" checks, or purely rhetorical endings. Also reject premature-certainty praise: if the drafted tutor response uses "exactly" or "excellent" for the learner's partial uptake, passes must be false even when an agency-return move is present.
+
+Return only one JSON object:
+{
+  "passes": true | false,
+  "move_type": "test" | "resay" | "anchor" | "missing",
+  "reason": "one short sentence",
+  "agency_return_append": "",
+  "repaired_response": ""
+}
+
+If passes is false only because the response lacks an agency-return move, prefer agency_return_append: write one short learner-facing sentence or question that can be appended to the original response without replacing it. The append must ask the learner to test, re-say, reject, correct, or anchor the idea in course content. If passes is false because the draft uses "exactly" or "excellent", use repaired_response instead: preserve the best image and handback, but remove the forbidden premature-certainty word. If you must replace the whole response for any other reason, put the complete replacement in repaired_response and leave agency_return_append empty. If passes is true, agency_return_append and repaired_response must both be empty strings.`;
+
+function normalizeAgencyReturnVerifierMode(mode) {
+  return mode === AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING
+    ? AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING
+    : AGENCY_RETURN_VERIFIER_MODE_STRICT;
+}
+
+function getAgencyReturnVerifierPrompt(mode) {
+  return mode === AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING
+    ? AGENCY_RETURN_VERIFIER_WARMTH_PRESERVING_PROMPT
+    : AGENCY_RETURN_VERIFIER_PROMPT;
+}
+
+function getAgencyReturnRepairMode(mode) {
+  return mode === AGENCY_RETURN_VERIFIER_MODE_WARMTH_PRESERVING ? 'append' : 'replace';
+}
+
+function normalizeAgencyReturnCharismaFloorMode(mode) {
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_COMPACT) return AGENCY_RETURN_CHARISMA_FLOOR_MODE_COMPACT;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ARC) return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ARC;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_GUARDED_ARC) return AGENCY_RETURN_CHARISMA_FLOOR_MODE_GUARDED_ARC;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_AFFECTIVE_SCENE)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_AFFECTIVE_SCENE;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_CLEAN)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_CLEAN;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_PRESENCE)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_PRESENCE;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_PERSIST)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_PERSIST;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED;
+  if (mode === AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_COMPRESS)
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_COMPRESS;
+  if (
+    mode ===
+    AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_CHARGED_CHECK
+  )
+    return AGENCY_RETURN_CHARISMA_FLOOR_MODE_ACCOUNTABLE_BID_TRANSFER_PLAIN_SPLIT_CHECK_ANCHOR_LIVE_LIVED_CHARGED_CHECK;
+  return AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD;
+}
+
+function normalizeIdOutputContract(mode) {
+  return mode === ID_OUTPUT_CONTRACT_STRICT_COMPACT_JSON
+    ? ID_OUTPUT_CONTRACT_STRICT_COMPACT_JSON
+    : ID_OUTPUT_CONTRACT_STANDARD;
+}
 
 function getRequiredTemperature(config, configName) {
   const t = config?.hyperparameters?.temperature;
@@ -160,6 +313,42 @@ function buildConversationContext(history) {
     .join('\n\n');
 }
 
+function buildEgoRetryPrompt(learnerMessage) {
+  return `${learnerMessage}\n\n${EGO_EMPTY_RETRY_SUFFIX}`;
+}
+
+function buildAgencyReturnVerifierUserMessage({ learnerMessage, curriculumContext, tutorResponse }) {
+  return [
+    '<current_learner_message>',
+    learnerMessage || '',
+    '</current_learner_message>',
+    '',
+    '<curriculum_context>',
+    curriculumContext || '(no curriculum context provided)',
+    '</curriculum_context>',
+    '',
+    '<draft_tutor_response>',
+    tutorResponse || '',
+    '</draft_tutor_response>',
+  ].join('\n');
+}
+
+function buildAgencyReturnVerifierRetryUserMessage(userMessage) {
+  return `${userMessage}\n\n${AGENCY_RETURN_VERIFIER_RETRY_SUFFIX}`;
+}
+
+function fallbackAgencyReturnVerification(reason, rawText = '') {
+  return {
+    passes: true,
+    move_type: 'unknown',
+    reason: `Verifier parse failed (${reason}); leaving response unchanged.`,
+    repaired_response: '',
+    parse_status: 'fallback',
+    parse_failure_reason: reason,
+    raw_head: rawText ? rawText.slice(0, 200) : '',
+  };
+}
+
 function buildIdUserMessage({
   conversationContext,
   learnerMessage,
@@ -167,7 +356,28 @@ function buildIdUserMessage({
   tutorMemory,
   previousPersona,
   recognitionMode,
+  recognitionDesire = false,
+  agencyReturn = false,
+  agencyReturnVerifierMode = AGENCY_RETURN_VERIFIER_MODE_STRICT,
+  agencyReturnCharismaFloor = false,
+  agencyReturnCharismaFloorMode = AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD,
+  idOutputContract = ID_OUTPUT_CONTRACT_STANDARD,
+  engagementRouterCharismaRepair = false,
+  engagementRouterSplitRepair = false,
+  engagementRouterTransferStakeRepair = false,
+  engagementRouterTransferCompressionRepair = false,
+  engagementRouterResistanceTuning = false,
+  engagementRouterResistanceOwnedTest = false,
+  engagementRouterResistancePrecisionRepair = false,
+  engagementRouterResistanceGenerationRepair = false,
+  engagementRouterResistanceQuestionLock = false,
+  engagementRouterResistanceCommitmentProbe = false,
+  engagementRouterResistanceBoredomStake = false,
+  engagementRouterResistanceGlmCompact = false,
+  agencyReturnPrematureCertaintyGuard = false,
+  engagementState = null,
   learnerRegister = null,
+  actionContractBlock = null,
 }) {
   const lines = [
     '<dialogue_history>',
@@ -192,9 +402,114 @@ function buildIdUserMessage({
     '<recognition_mode>',
     recognitionMode ? 'true' : 'false',
     '</recognition_mode>',
+    '',
+    '<recognition_desire>',
+    recognitionDesire ? 'true' : 'false',
+    '</recognition_desire>',
+    '',
+    '<agency_return>',
+    agencyReturn ? 'true' : 'false',
+    '</agency_return>',
+    '',
+    '<agency_return_verifier_mode>',
+    normalizeAgencyReturnVerifierMode(agencyReturnVerifierMode),
+    '</agency_return_verifier_mode>',
+    '',
+    '<agency_return_charisma_floor>',
+    agencyReturnCharismaFloor ? 'true' : 'false',
+    '</agency_return_charisma_floor>',
+    '',
+    '<agency_return_charisma_floor_mode>',
+    normalizeAgencyReturnCharismaFloorMode(agencyReturnCharismaFloorMode),
+    '</agency_return_charisma_floor_mode>',
+    '',
+    '<id_output_contract>',
+    normalizeIdOutputContract(idOutputContract),
+    '</id_output_contract>',
+    '',
+    '<engagement_router_charisma_repair>',
+    engagementRouterCharismaRepair ? 'true' : 'false',
+    '</engagement_router_charisma_repair>',
+    '',
+    '<engagement_router_split_repair>',
+    engagementRouterSplitRepair ? 'true' : 'false',
+    '</engagement_router_split_repair>',
+    '',
+    '<engagement_router_transfer_stake_repair>',
+    engagementRouterTransferStakeRepair ? 'true' : 'false',
+    '</engagement_router_transfer_stake_repair>',
+    '',
+    '<engagement_router_transfer_compression_repair>',
+    engagementRouterTransferCompressionRepair ? 'true' : 'false',
+    '</engagement_router_transfer_compression_repair>',
+    '',
+    '<engagement_router_resistance_tuning>',
+    engagementRouterResistanceTuning ? 'true' : 'false',
+    '</engagement_router_resistance_tuning>',
+    '',
+    '<engagement_router_resistance_owned_test>',
+    engagementRouterResistanceOwnedTest ? 'true' : 'false',
+    '</engagement_router_resistance_owned_test>',
+    '',
+    '<engagement_router_resistance_precision_repair>',
+    engagementRouterResistancePrecisionRepair ? 'true' : 'false',
+    '</engagement_router_resistance_precision_repair>',
+    '',
+    '<engagement_router_resistance_generation_repair>',
+    engagementRouterResistanceGenerationRepair ? 'true' : 'false',
+    '</engagement_router_resistance_generation_repair>',
+    '',
+    '<engagement_router_resistance_question_lock>',
+    engagementRouterResistanceQuestionLock ? 'true' : 'false',
+    '</engagement_router_resistance_question_lock>',
+    '',
+    '<engagement_router_resistance_commitment_probe>',
+    engagementRouterResistanceCommitmentProbe ? 'true' : 'false',
+    '</engagement_router_resistance_commitment_probe>',
+    '',
+    '<engagement_router_resistance_boredom_stake>',
+    engagementRouterResistanceBoredomStake ? 'true' : 'false',
+    '</engagement_router_resistance_boredom_stake>',
+    '',
+    '<engagement_router_resistance_glm_compact>',
+    engagementRouterResistanceGlmCompact ? 'true' : 'false',
+    '</engagement_router_resistance_glm_compact>',
+    '',
+    '<agency_return_premature_certainty_guard>',
+    agencyReturnPrematureCertaintyGuard ? 'true' : 'false',
+    '</agency_return_premature_certainty_guard>',
   ];
+  if (engagementState && typeof engagementState === 'object') {
+    const idVisibleEngagementState = { ...engagementState };
+    if (
+      !engagementRouterResistanceTuning &&
+      !engagementRouterResistanceOwnedTest &&
+      !engagementRouterResistancePrecisionRepair &&
+      !engagementRouterResistanceGenerationRepair &&
+      !engagementRouterResistanceQuestionLock &&
+      !engagementRouterResistanceCommitmentProbe &&
+      !engagementRouterResistanceBoredomStake &&
+      !engagementRouterResistanceGlmCompact
+    ) {
+      delete idVisibleEngagementState.resistance_strategy;
+      delete idVisibleEngagementState.resistance_move;
+    }
+    lines.push('', '<engagement_state>', JSON.stringify(idVisibleEngagementState, null, 2), '</engagement_state>');
+    const registerContract = buildRegisterStanceContract(engagementState);
+    if (registerContract) {
+      lines.push(
+        '',
+        '<register_stance_contract>',
+        JSON.stringify(registerContract, null, 2),
+        '</register_stance_contract>',
+      );
+    }
+  }
   if (learnerRegister && typeof learnerRegister === 'object') {
     lines.push('', '<learner_register>', JSON.stringify(learnerRegister, null, 2), '</learner_register>');
+  }
+  if (typeof actionContractBlock === 'string' && actionContractBlock.trim()) {
+    lines.push('', actionContractBlock);
   }
   return lines.join('\n');
 }
@@ -206,6 +521,68 @@ function fallbackConstruction(reason, rawText = '') {
     stage_directions: `id-director output failed parsing (${reason}); using minimal fallback persona`,
     reasoning: `Parse failure: ${reason}.${rawText ? ` Raw head: ${rawText.slice(0, 200)}` : ''}`,
     parse_status: 'fallback',
+    parse_failure_reason: reason,
+  };
+}
+
+function stripLooseFieldValue(value) {
+  if (!value || typeof value !== 'string') return '';
+  let out = value.trim();
+  out = out.replace(/^[`'"]/, '');
+  out = out.replace(/,\s*$/, '').trim();
+  out = out.replace(/[`'"]\s*$/, '').trim();
+  out = out.replace(/\\n/g, ' ').replace(/\\r/g, ' ').replace(/\\t/g, ' ');
+  out = out.replace(/\s+/g, ' ').trim();
+  return out;
+}
+
+function extractLooseJsonField(rawText, fieldName, followingFieldNames = []) {
+  if (!rawText || typeof rawText !== 'string') return '';
+  const fieldPattern = new RegExp(`["']?${fieldName}["']?\\s*:`);
+  const match = fieldPattern.exec(rawText);
+  if (!match) return '';
+
+  const start = match.index + match[0].length;
+  let end = rawText.length;
+  for (const nextField of followingFieldNames) {
+    const nextPattern = new RegExp(`[,\\s]*["']?${nextField}["']?\\s*:`);
+    const nextMatch = nextPattern.exec(rawText.slice(start));
+    if (nextMatch) {
+      end = Math.min(end, start + nextMatch.index);
+    }
+  }
+
+  return stripLooseFieldValue(rawText.slice(start, end));
+}
+
+function cleanLooseTraceField(value) {
+  return String(value || '')
+    .replace(/["'`].*$/, '')
+    .trim();
+}
+
+function salvageIdConstruction(rawText, reason) {
+  const generatedPrompt = extractLooseJsonField(rawText, 'generated_prompt', [
+    'persona_delta',
+    'stage_directions',
+    'reasoning',
+  ]);
+  if (generatedPrompt.length < MIN_GENERATED_PROMPT_CHARS) {
+    return fallbackConstruction(reason, rawText);
+  }
+
+  const personaDelta = cleanLooseTraceField(
+    extractLooseJsonField(rawText, 'persona_delta', ['stage_directions', 'reasoning']),
+  );
+  const stageDirections = cleanLooseTraceField(extractLooseJsonField(rawText, 'stage_directions', ['reasoning']));
+  const reasoning = cleanLooseTraceField(extractLooseJsonField(rawText, 'reasoning'));
+
+  return {
+    generated_prompt: generatedPrompt,
+    persona_delta: personaDelta || 'SALVAGED',
+    stage_directions: stageDirections,
+    reasoning: reasoning || `Salvaged generated_prompt from malformed id JSON after parse failure: ${reason}`,
+    parse_status: 'salvaged_from_malformed_json',
     parse_failure_reason: reason,
   };
 }
@@ -314,7 +691,7 @@ export async function classifyLearnerRegister({ learnerMessage, recentHistory, c
   };
 }
 
-export function parseIdConstruction(rawText) {
+export function parseIdConstruction(rawText, options = {}) {
   if (!rawText || typeof rawText !== 'string') {
     return fallbackConstruction('empty_or_non_string_response', String(rawText || ''));
   }
@@ -352,10 +729,11 @@ export function parseIdConstruction(rawText) {
       parsed = JSON.parse(repaired);
       usedRepair = true;
     } catch (repairErr) {
-      return fallbackConstruction(
-        `json_parse_error: ${firstErr.message} (jsonrepair also failed: ${repairErr.message})`,
-        rawText,
-      );
+      const reason = `json_parse_error: ${firstErr.message} (jsonrepair also failed: ${repairErr.message})`;
+      if (options.salvageMalformedJson === true) {
+        return salvageIdConstruction(rawText, reason);
+      }
+      return fallbackConstruction(reason, rawText);
     }
   }
 
@@ -373,6 +751,125 @@ export function parseIdConstruction(rawText) {
     stage_directions: typeof parsed.stage_directions === 'string' ? parsed.stage_directions : '',
     reasoning: typeof parsed.reasoning === 'string' ? parsed.reasoning : '',
     parse_status: usedRepair ? 'ok_via_jsonrepair' : 'ok',
+  };
+}
+
+export function parseAgencyReturnVerification(rawText) {
+  if (!rawText || typeof rawText !== 'string') {
+    return fallbackAgencyReturnVerification('empty_or_non_string_response', String(rawText || ''));
+  }
+
+  let text = rawText.trim();
+  const openFence = text.match(/^```(?:json)?\s*/);
+  if (openFence) {
+    text = text.slice(openFence[0].length);
+    const closeFence = text.lastIndexOf('```');
+    if (closeFence !== -1) text = text.slice(0, closeFence).trim();
+  }
+
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    text = text.slice(firstBrace, lastBrace + 1);
+  } else if (firstBrace !== -1) {
+    text = text.slice(firstBrace);
+  }
+
+  let parsed;
+  let usedRepair = false;
+  try {
+    parsed = JSON.parse(text);
+  } catch (firstErr) {
+    try {
+      const repaired = jsonrepair(text);
+      parsed = JSON.parse(repaired);
+      usedRepair = true;
+    } catch (repairErr) {
+      return fallbackAgencyReturnVerification(
+        `json_parse_error: ${firstErr.message} (jsonrepair also failed: ${repairErr.message})`,
+        rawText,
+      );
+    }
+  }
+
+  const passes = parsed?.passes === true;
+  const moveType = ['test', 'resay', 'anchor', 'missing'].includes(parsed?.move_type)
+    ? parsed.move_type
+    : passes
+      ? 'test'
+      : 'missing';
+  const repairedResponse = typeof parsed?.repaired_response === 'string' ? parsed.repaired_response.trim() : '';
+  const agencyReturnAppend = typeof parsed?.agency_return_append === 'string' ? parsed.agency_return_append.trim() : '';
+
+  if (!passes && !repairedResponse && !agencyReturnAppend) {
+    return fallbackAgencyReturnVerification('missing_repaired_response_for_failed_verification', rawText);
+  }
+
+  return {
+    passes,
+    move_type: moveType,
+    reason: typeof parsed?.reason === 'string' ? parsed.reason : '',
+    repaired_response: passes ? '' : repairedResponse,
+    agency_return_append: passes ? '' : agencyReturnAppend,
+    parse_status: usedRepair ? 'ok_via_jsonrepair' : 'ok',
+  };
+}
+
+function applyAgencyReturnVerification(tutorResponse, verification, options = {}) {
+  if (!verification || verification.passes) {
+    return { message: tutorResponse, repaired: false };
+  }
+  if (options.repairMode === 'append' && verification.agency_return_append) {
+    return {
+      message: `${String(tutorResponse || '').trim()}\n\n${verification.agency_return_append}`.trim(),
+      repaired: true,
+    };
+  }
+  if (verification.repaired_response) {
+    return { message: verification.repaired_response, repaired: true };
+  }
+  if (verification.agency_return_append) {
+    return {
+      message: `${String(tutorResponse || '').trim()}\n\n${verification.agency_return_append}`.trim(),
+      repaired: true,
+    };
+  }
+  return { message: tutorResponse, repaired: false };
+}
+
+function applyPrematureCertaintyGuard(tutorResponse, options = {}) {
+  const selectedRegister = options?.engagementState?.selected_register || options?.engagementState?.selected_mode || '';
+
+  let message = String(tutorResponse || '');
+  const replacements = [];
+  const rules = [
+    { pattern: /\bThat is exactly\b/g, replacement: 'That starts to name' },
+    { pattern: /\bthat is exactly\b/g, replacement: 'that starts to name' },
+    { pattern: /\bThat's exactly\b/g, replacement: 'That starts to name' },
+    { pattern: /\bthat's exactly\b/g, replacement: 'that starts to name' },
+    { pattern: /\bYou are exactly right\b/g, replacement: 'You have a real foothold' },
+    { pattern: /\byou are exactly right\b/g, replacement: 'you have a real foothold' },
+    { pattern: /\bexactly right\b/g, replacement: 'partly right' },
+    { pattern: /\bExcellent\b/g, replacement: 'Useful' },
+    { pattern: /\bexcellent\b/g, replacement: 'useful' },
+  ];
+
+  for (const rule of rules) {
+    rule.pattern.lastIndex = 0;
+    if (rule.pattern.test(message)) {
+      replacements.push(rule.pattern.source);
+      rule.pattern.lastIndex = 0;
+      message = message.replace(rule.pattern, rule.replacement);
+    }
+  }
+
+  return {
+    message,
+    repaired: message !== String(tutorResponse || ''),
+    reason: replacements.length
+      ? `premature_certainty_wording_removed${selectedRegister ? `_in_${selectedRegister}` : ''}`
+      : 'no_premature_certainty_wording_found',
+    replacements,
   };
 }
 
@@ -437,6 +934,23 @@ function buildEgoDeliberationEntry(egoResponse, egoConfig, renderedSystemPrompt)
   };
 }
 
+function buildAgencyReturnVerifierDeliberationEntry(verifierResponse, idConfig, verification) {
+  return {
+    role: 'agency_return_verifier',
+    content: verifierResponse?.content || '',
+    metrics: {
+      model: verifierResponse?.model || idConfig?.model || null,
+      provider: verifierResponse?.provider || idConfig?.provider || null,
+      latencyMs: verifierResponse?.latencyMs ?? null,
+      inputTokens: verifierResponse?.usage?.inputTokens ?? 0,
+      outputTokens: verifierResponse?.usage?.outputTokens ?? 0,
+      generationId: verifierResponse?.generationId || null,
+    },
+    verification,
+    apiPayload: verifierResponse?.apiPayload || null,
+  };
+}
+
 /**
  * Run a single id-directed tutor turn.
  *
@@ -470,9 +984,81 @@ export async function runIdDirectedTurn({
   }
 
   const recognitionMode = profile?.recognition_mode === true;
+  const recognitionDesire = profile?.factors?.recognition_desire === true || profile?.recognition_desire === true;
+  const agencyReturn = profile?.factors?.agency_return === true || profile?.agency_return === true;
+  const agencyReturnVerifier =
+    profile?.factors?.agency_return_verifier === true || profile?.agency_return_verifier === true;
+  const agencyReturnCharismaFloor =
+    profile?.factors?.agency_return_charisma_floor === true || profile?.agency_return_charisma_floor === true;
+  const engagementModeRouter =
+    profile?.factors?.engagement_mode_router === true || profile?.engagement_mode_router === true;
+  const actionContracts = profile?.factors?.action_contracts === true || profile?.action_contracts === true;
+  const engagementRegisterArm = normalizeEngagementRegisterArm(
+    profile?.factors?.engagement_register_arm || profile?.engagement_register_arm,
+  );
+  const idOutputContract = normalizeIdOutputContract(
+    profile?.factors?.id_output_contract || profile?.id_output_contract,
+  );
+  const engagementRouterCharismaRepair =
+    profile?.factors?.engagement_router_charisma_repair === true || profile?.engagement_router_charisma_repair === true;
+  const engagementRouterSplitRepair =
+    profile?.factors?.engagement_router_split_repair === true || profile?.engagement_router_split_repair === true;
+  const engagementRouterTransferStakeRepair =
+    profile?.factors?.engagement_router_transfer_stake_repair === true ||
+    profile?.engagement_router_transfer_stake_repair === true;
+  const engagementRouterTransferCompressionRepair =
+    profile?.factors?.engagement_router_transfer_compression_repair === true ||
+    profile?.engagement_router_transfer_compression_repair === true;
+  const engagementRouterResistanceTuning =
+    profile?.factors?.engagement_router_resistance_tuning === true ||
+    profile?.engagement_router_resistance_tuning === true;
+  const engagementRouterResistanceOwnedTest =
+    profile?.factors?.engagement_router_resistance_owned_test === true ||
+    profile?.engagement_router_resistance_owned_test === true;
+  const engagementRouterResistancePrecisionRepair =
+    profile?.factors?.engagement_router_resistance_precision_repair === true ||
+    profile?.engagement_router_resistance_precision_repair === true;
+  const engagementRouterResistanceGenerationRepair =
+    profile?.factors?.engagement_router_resistance_generation_repair === true ||
+    profile?.engagement_router_resistance_generation_repair === true;
+  const engagementRouterResistanceQuestionLock =
+    profile?.factors?.engagement_router_resistance_question_lock === true ||
+    profile?.engagement_router_resistance_question_lock === true;
+  const engagementRouterResistanceCommitmentProbe =
+    profile?.factors?.engagement_router_resistance_commitment_probe === true ||
+    profile?.engagement_router_resistance_commitment_probe === true;
+  const engagementRouterResistanceBoredomStake =
+    profile?.factors?.engagement_router_resistance_boredom_stake === true ||
+    profile?.engagement_router_resistance_boredom_stake === true;
+  const engagementRouterResistanceGlmCompact =
+    profile?.factors?.engagement_router_resistance_glm_compact === true ||
+    profile?.engagement_router_resistance_glm_compact === true;
+  const agencyReturnPrematureCertaintyGuard =
+    profile?.factors?.agency_return_premature_certainty_guard === true ||
+    profile?.agency_return_premature_certainty_guard === true;
+  const agencyReturnCharismaFloorMode = normalizeAgencyReturnCharismaFloorMode(
+    profile?.factors?.agency_return_charisma_floor_mode || profile?.agency_return_charisma_floor_mode,
+  );
+  const agencyReturnVerifierMode = normalizeAgencyReturnVerifierMode(
+    profile?.factors?.agency_return_verifier_mode || profile?.agency_return_verifier_mode,
+  );
+  const agencyReturnVerifierPrompt = getAgencyReturnVerifierPrompt(agencyReturnVerifierMode);
+  const agencyReturnRepairMode = getAgencyReturnRepairMode(agencyReturnVerifierMode);
   const tutorMemory = _deps.tutorWritingPad.buildNarrativeSummary(learnerId, sessionId);
   const conversationContext = buildConversationContext(history);
   const previousPersona = extractPreviousPersona(trace);
+  const routedEngagementState = engagementModeRouter
+    ? routeEngagementMode({
+        learnerMessage,
+        recentHistory: conversationContext,
+        curriculumContext: topic,
+        modeHistory: extractEngagementModeHistory(trace),
+      })
+    : null;
+  const engagementState = applyEngagementRegisterArm(routedEngagementState, engagementRegisterArm);
+  const contractTurn = actionContracts
+    ? safePrepareContractTurn({ learnerMessage, history, traceLike: trace, dialogueId: sessionId || 'blueprint' })
+    : null;
 
   const idUserMessage = buildIdUserMessage({
     conversationContext,
@@ -481,6 +1067,27 @@ export async function runIdDirectedTurn({
     tutorMemory,
     previousPersona,
     recognitionMode,
+    recognitionDesire,
+    agencyReturn,
+    agencyReturnVerifierMode,
+    agencyReturnCharismaFloor,
+    agencyReturnCharismaFloorMode,
+    idOutputContract,
+    engagementRouterCharismaRepair,
+    engagementRouterSplitRepair,
+    engagementRouterTransferStakeRepair,
+    engagementRouterTransferCompressionRepair,
+    engagementRouterResistanceTuning,
+    engagementRouterResistanceOwnedTest,
+    engagementRouterResistancePrecisionRepair,
+    engagementRouterResistanceGenerationRepair,
+    engagementRouterResistanceQuestionLock,
+    engagementRouterResistanceCommitmentProbe,
+    engagementRouterResistanceBoredomStake,
+    engagementRouterResistanceGlmCompact,
+    agencyReturnPrematureCertaintyGuard,
+    engagementState,
+    actionContractBlock: contractTurn?.promptBlock || null,
   });
 
   const idStaticPrompt = idConfig?.prompt || '';
@@ -496,18 +1103,29 @@ export async function runIdDirectedTurn({
     trace.metrics.tutorOutputTokens = (trace.metrics.tutorOutputTokens || 0) + (idResponse?.usage?.outputTokens || 0);
   }
 
-  const construction = parseIdConstruction(idResponse?.content || '');
+  const construction = parseIdConstruction(idResponse?.content || '', {
+    salvageMalformedJson: idOutputContract === ID_OUTPUT_CONTRACT_STRICT_COMPACT_JSON,
+  });
 
   if (construction.parse_status === 'fallback') {
     console.warn(`[IdDirector] ${construction.parse_failure_reason} — falling back to minimal persona.`);
+  } else if (construction.parse_status === 'salvaged_from_malformed_json') {
+    console.warn(`[IdDirector] ${construction.parse_failure_reason} — salvaged generated_prompt from malformed JSON.`);
   }
 
   const internalDeliberation = [];
+  if (engagementState) {
+    internalDeliberation.push({
+      role: 'engagement_router',
+      state: engagementState,
+      content: JSON.stringify(engagementState),
+    });
+  }
   internalDeliberation.push(buildIdDeliberationEntry(idResponse, idConfig, construction));
 
   const egoSystemPrompt = construction.generated_prompt;
   const egoModel = egoConfig?.model || _deps.tutorConfig.getProviderConfig?.('openrouter')?.default_model;
-  const egoResponse = await llmCall(egoModel, egoSystemPrompt, [{ role: 'user', content: learnerMessage }], {
+  let egoResponse = await llmCall(egoModel, egoSystemPrompt, [{ role: 'user', content: learnerMessage }], {
     temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
     maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
     agentRole: 'tutor_ego',
@@ -518,12 +1136,125 @@ export async function runIdDirectedTurn({
     trace.metrics.tutorOutputTokens = (trace.metrics.tutorOutputTokens || 0) + (egoResponse?.usage?.outputTokens || 0);
   }
 
+  let egoRetried = false;
+  if (!(egoResponse?.content || '').trim()) {
+    console.warn('[IdDirector] Empty ego output, retrying with learner-facing output reminder.');
+    egoRetried = true;
+    egoResponse = await llmCall(
+      egoModel,
+      egoSystemPrompt,
+      [{ role: 'user', content: buildEgoRetryPrompt(learnerMessage) }],
+      {
+        temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
+        maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
+        agentRole: 'tutor_ego_retry',
+      },
+    );
+    if (trace?.metrics) {
+      trace.metrics.tutorInputTokens = (trace.metrics.tutorInputTokens || 0) + (egoResponse?.usage?.inputTokens || 0);
+      trace.metrics.tutorOutputTokens =
+        (trace.metrics.tutorOutputTokens || 0) + (egoResponse?.usage?.outputTokens || 0);
+    }
+  }
+
   internalDeliberation.push(buildEgoDeliberationEntry(egoResponse, egoConfig, egoSystemPrompt));
+  if (egoRetried) {
+    internalDeliberation[internalDeliberation.length - 1].retry_reason = 'empty_ego_output';
+  }
 
   let externalMessage = (egoResponse?.content || '').trim();
   if (!externalMessage) {
-    console.warn('[IdDirector] Empty ego output, using fallback message.');
+    console.warn('[IdDirector] Empty ego output after retry, using fallback message.');
     externalMessage = "Let me try that again — could you say a little more about what you're working through?";
+  }
+
+  let prematureCertaintyGuard = null;
+  if (agencyReturnPrematureCertaintyGuard) {
+    prematureCertaintyGuard = applyPrematureCertaintyGuard(externalMessage, { engagementState });
+    externalMessage = prematureCertaintyGuard.message;
+  }
+
+  let agencyVerification = null;
+  let agencyRepaired = false;
+  if (agencyReturnVerifier) {
+    const verifierUserMessage = buildAgencyReturnVerifierUserMessage({
+      learnerMessage,
+      curriculumContext: topic,
+      tutorResponse: externalMessage,
+    });
+    let verifierResponse = await llmCall(
+      idModel,
+      agencyReturnVerifierPrompt,
+      [
+        {
+          role: 'user',
+          content: verifierUserMessage,
+        },
+      ],
+      {
+        temperature: 0.2,
+        maxTokens: AGENCY_RETURN_VERIFIER_MAX_TOKENS,
+        agentRole: 'agency_return_verifier',
+      },
+    );
+    if (trace?.metrics) {
+      trace.metrics.tutorInputTokens =
+        (trace.metrics.tutorInputTokens || 0) + (verifierResponse?.usage?.inputTokens || 0);
+      trace.metrics.tutorOutputTokens =
+        (trace.metrics.tutorOutputTokens || 0) + (verifierResponse?.usage?.outputTokens || 0);
+    }
+    let verifierRetried = false;
+    if (!(verifierResponse?.content || '').trim()) {
+      verifierRetried = true;
+      verifierResponse = await llmCall(
+        idModel,
+        agencyReturnVerifierPrompt,
+        [
+          {
+            role: 'user',
+            content: buildAgencyReturnVerifierRetryUserMessage(verifierUserMessage),
+          },
+        ],
+        {
+          temperature: 0.2,
+          maxTokens: AGENCY_RETURN_VERIFIER_MAX_TOKENS,
+          agentRole: 'agency_return_verifier_retry',
+        },
+      );
+      if (trace?.metrics) {
+        trace.metrics.tutorInputTokens =
+          (trace.metrics.tutorInputTokens || 0) + (verifierResponse?.usage?.inputTokens || 0);
+        trace.metrics.tutorOutputTokens =
+          (trace.metrics.tutorOutputTokens || 0) + (verifierResponse?.usage?.outputTokens || 0);
+      }
+    }
+    agencyVerification = parseAgencyReturnVerification(verifierResponse?.content || '');
+    agencyVerification.retried = verifierRetried;
+    agencyVerification.mode = agencyReturnVerifierMode;
+    agencyVerification.repair_mode = agencyReturnRepairMode;
+    const verified = applyAgencyReturnVerification(externalMessage, agencyVerification, {
+      repairMode: agencyReturnRepairMode,
+    });
+    externalMessage = verified.message;
+    agencyRepaired = verified.repaired;
+    internalDeliberation.push(
+      buildAgencyReturnVerifierDeliberationEntry(verifierResponse, idConfig, agencyVerification),
+    );
+  }
+
+  const contractFinal = safeFinalizeContractTurn(contractTurn, externalMessage);
+  if (contractFinal) {
+    const contractPayload = buildContractTracePayload({
+      contract: contractFinal.contract,
+      ledger: contractFinal.ledger,
+      closedRecord: contractTurn.closedRecord,
+      realization: contractFinal.realization,
+    });
+    internalDeliberation.push({
+      role: BLUEPRINT_CONTRACT_TRACE_ROLE,
+      state: contractPayload,
+      content: JSON.stringify(contractPayload),
+    });
   }
 
   return {
@@ -532,6 +1263,28 @@ export async function runIdDirectedTurn({
     internalDeliberation,
     strategy: 'id_directed',
     suggestsEnding: false,
+    agencyReturnVerification: agencyVerification,
+    agencyReturnRepaired: agencyRepaired,
+    agencyReturnCharismaFloor,
+    agencyReturnCharismaFloorMode,
+    idOutputContract,
+    engagementRouterCharismaRepair,
+    engagementRouterSplitRepair,
+    engagementRouterTransferStakeRepair,
+    engagementRouterTransferCompressionRepair,
+    engagementRouterResistanceTuning,
+    engagementRouterResistanceOwnedTest,
+    engagementRouterResistancePrecisionRepair,
+    engagementRouterResistanceGenerationRepair,
+    engagementRouterResistanceQuestionLock,
+    engagementRouterResistanceCommitmentProbe,
+    engagementRouterResistanceBoredomStake,
+    engagementRouterResistanceGlmCompact,
+    agencyReturnPrematureCertaintyGuard,
+    prematureCertaintyGuard,
+    engagementModeRouter,
+    engagementRegisterArm,
+    engagementState,
   };
 }
 
@@ -730,9 +1483,30 @@ function buildIdRunnerUserMessage({
   curriculumContext,
   previousPersona,
   recognitionMode,
+  recognitionDesire = false,
+  agencyReturn = false,
+  agencyReturnVerifierMode = AGENCY_RETURN_VERIFIER_MODE_STRICT,
+  agencyReturnCharismaFloor = false,
+  agencyReturnCharismaFloorMode = AGENCY_RETURN_CHARISMA_FLOOR_MODE_STANDARD,
+  idOutputContract = ID_OUTPUT_CONTRACT_STANDARD,
+  engagementRouterCharismaRepair = false,
+  engagementRouterSplitRepair = false,
+  engagementRouterTransferStakeRepair = false,
+  engagementRouterTransferCompressionRepair = false,
+  engagementRouterResistanceTuning = false,
+  engagementRouterResistanceOwnedTest = false,
+  engagementRouterResistancePrecisionRepair = false,
+  engagementRouterResistanceGenerationRepair = false,
+  engagementRouterResistanceQuestionLock = false,
+  engagementRouterResistanceCommitmentProbe = false,
+  engagementRouterResistanceBoredomStake = false,
+  engagementRouterResistanceGlmCompact = false,
+  agencyReturnPrematureCertaintyGuard = false,
+  engagementState = null,
   learnerRegister = null,
   idTuning = null,
   witnessExemplars = false,
+  actionContractBlock = null,
 }) {
   const lines = [
     '<dialogue_history>',
@@ -754,7 +1528,109 @@ function buildIdRunnerUserMessage({
     '<recognition_mode>',
     recognitionMode ? 'true' : 'false',
     '</recognition_mode>',
+    '',
+    '<recognition_desire>',
+    recognitionDesire ? 'true' : 'false',
+    '</recognition_desire>',
+    '',
+    '<agency_return>',
+    agencyReturn ? 'true' : 'false',
+    '</agency_return>',
+    '',
+    '<agency_return_verifier_mode>',
+    normalizeAgencyReturnVerifierMode(agencyReturnVerifierMode),
+    '</agency_return_verifier_mode>',
+    '',
+    '<agency_return_charisma_floor>',
+    agencyReturnCharismaFloor ? 'true' : 'false',
+    '</agency_return_charisma_floor>',
+    '',
+    '<agency_return_charisma_floor_mode>',
+    normalizeAgencyReturnCharismaFloorMode(agencyReturnCharismaFloorMode),
+    '</agency_return_charisma_floor_mode>',
+    '',
+    '<id_output_contract>',
+    normalizeIdOutputContract(idOutputContract),
+    '</id_output_contract>',
+    '',
+    '<engagement_router_charisma_repair>',
+    engagementRouterCharismaRepair ? 'true' : 'false',
+    '</engagement_router_charisma_repair>',
+    '',
+    '<engagement_router_split_repair>',
+    engagementRouterSplitRepair ? 'true' : 'false',
+    '</engagement_router_split_repair>',
+    '',
+    '<engagement_router_transfer_stake_repair>',
+    engagementRouterTransferStakeRepair ? 'true' : 'false',
+    '</engagement_router_transfer_stake_repair>',
+    '',
+    '<engagement_router_transfer_compression_repair>',
+    engagementRouterTransferCompressionRepair ? 'true' : 'false',
+    '</engagement_router_transfer_compression_repair>',
+    '',
+    '<engagement_router_resistance_tuning>',
+    engagementRouterResistanceTuning ? 'true' : 'false',
+    '</engagement_router_resistance_tuning>',
+    '',
+    '<engagement_router_resistance_owned_test>',
+    engagementRouterResistanceOwnedTest ? 'true' : 'false',
+    '</engagement_router_resistance_owned_test>',
+    '',
+    '<engagement_router_resistance_precision_repair>',
+    engagementRouterResistancePrecisionRepair ? 'true' : 'false',
+    '</engagement_router_resistance_precision_repair>',
+    '',
+    '<engagement_router_resistance_generation_repair>',
+    engagementRouterResistanceGenerationRepair ? 'true' : 'false',
+    '</engagement_router_resistance_generation_repair>',
+    '',
+    '<engagement_router_resistance_question_lock>',
+    engagementRouterResistanceQuestionLock ? 'true' : 'false',
+    '</engagement_router_resistance_question_lock>',
+    '',
+    '<engagement_router_resistance_commitment_probe>',
+    engagementRouterResistanceCommitmentProbe ? 'true' : 'false',
+    '</engagement_router_resistance_commitment_probe>',
+    '',
+    '<engagement_router_resistance_boredom_stake>',
+    engagementRouterResistanceBoredomStake ? 'true' : 'false',
+    '</engagement_router_resistance_boredom_stake>',
+    '',
+    '<engagement_router_resistance_glm_compact>',
+    engagementRouterResistanceGlmCompact ? 'true' : 'false',
+    '</engagement_router_resistance_glm_compact>',
+    '',
+    '<agency_return_premature_certainty_guard>',
+    agencyReturnPrematureCertaintyGuard ? 'true' : 'false',
+    '</agency_return_premature_certainty_guard>',
   ];
+  if (engagementState && typeof engagementState === 'object') {
+    const idVisibleEngagementState = { ...engagementState };
+    if (
+      !engagementRouterResistanceTuning &&
+      !engagementRouterResistanceOwnedTest &&
+      !engagementRouterResistancePrecisionRepair &&
+      !engagementRouterResistanceGenerationRepair &&
+      !engagementRouterResistanceQuestionLock &&
+      !engagementRouterResistanceCommitmentProbe &&
+      !engagementRouterResistanceBoredomStake &&
+      !engagementRouterResistanceGlmCompact
+    ) {
+      delete idVisibleEngagementState.resistance_strategy;
+      delete idVisibleEngagementState.resistance_move;
+    }
+    lines.push('', '<engagement_state>', JSON.stringify(idVisibleEngagementState, null, 2), '</engagement_state>');
+    const registerContract = buildRegisterStanceContract(engagementState);
+    if (registerContract) {
+      lines.push(
+        '',
+        '<register_stance_contract>',
+        JSON.stringify(registerContract, null, 2),
+        '</register_stance_contract>',
+      );
+    }
+  }
   if (learnerRegister && typeof learnerRegister === 'object' && learnerRegister.register !== 'unknown') {
     const { register, confidence, evidence, shift_from_previous } = learnerRegister;
     lines.push(
@@ -774,6 +1650,9 @@ function buildIdRunnerUserMessage({
       lines.push('', `EXEMPLAR ${i + 1} (${ex.source}):`, ex.text);
     }
     lines.push('', '</witness_exemplars>');
+  }
+  if (typeof actionContractBlock === 'string' && actionContractBlock.trim()) {
+    lines.push('', actionContractBlock);
   }
   return lines.join('\n');
 }
@@ -795,7 +1674,7 @@ function buildIdRunnerUserMessage({
  */
 export async function generateIdDirectedSuggestion(context, resolvedConfig, evalCellProfile, options = {}) {
   const startTime = Date.now();
-  const { previousPersona = 'FIRST_TURN' } = options;
+  const { previousPersona = 'FIRST_TURN', consolidatedTrace = null, engagementModeHistory = null } = options;
 
   if (!evalCellProfile || evalCellProfile.factors?.id_director !== true) {
     throw new Error(
@@ -834,11 +1713,64 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   }
 
   const recognitionMode = evalCellProfile.recognition_mode === true;
+  const recognitionDesire = evalCellProfile.factors?.recognition_desire === true;
+  const agencyReturn = evalCellProfile.factors?.agency_return === true;
+  const agencyReturnVerifier = evalCellProfile.factors?.agency_return_verifier === true;
+  const agencyReturnCharismaFloor = evalCellProfile.factors?.agency_return_charisma_floor === true;
+  const engagementModeRouter = evalCellProfile.factors?.engagement_mode_router === true;
+  const actionContracts = evalCellProfile.factors?.action_contracts === true;
+  const engagementRegisterArm = normalizeEngagementRegisterArm(evalCellProfile.factors?.engagement_register_arm);
+  const agencyReturnCharismaFloorMode = normalizeAgencyReturnCharismaFloorMode(
+    evalCellProfile.factors?.agency_return_charisma_floor_mode,
+  );
+  const agencyReturnVerifierMode = normalizeAgencyReturnVerifierMode(
+    evalCellProfile.factors?.agency_return_verifier_mode,
+  );
+  const idOutputContract = normalizeIdOutputContract(evalCellProfile.factors?.id_output_contract);
+  const engagementRouterCharismaRepair = evalCellProfile.factors?.engagement_router_charisma_repair === true;
+  const engagementRouterSplitRepair = evalCellProfile.factors?.engagement_router_split_repair === true;
+  const engagementRouterTransferStakeRepair = evalCellProfile.factors?.engagement_router_transfer_stake_repair === true;
+  const engagementRouterTransferCompressionRepair =
+    evalCellProfile.factors?.engagement_router_transfer_compression_repair === true;
+  const engagementRouterResistanceTuning = evalCellProfile.factors?.engagement_router_resistance_tuning === true;
+  const engagementRouterResistanceOwnedTest = evalCellProfile.factors?.engagement_router_resistance_owned_test === true;
+  const engagementRouterResistancePrecisionRepair =
+    evalCellProfile.factors?.engagement_router_resistance_precision_repair === true;
+  const engagementRouterResistanceGenerationRepair =
+    evalCellProfile.factors?.engagement_router_resistance_generation_repair === true;
+  const engagementRouterResistanceQuestionLock =
+    evalCellProfile.factors?.engagement_router_resistance_question_lock === true;
+  const engagementRouterResistanceCommitmentProbe =
+    evalCellProfile.factors?.engagement_router_resistance_commitment_probe === true;
+  const engagementRouterResistanceBoredomStake =
+    evalCellProfile.factors?.engagement_router_resistance_boredom_stake === true;
+  const engagementRouterResistanceGlmCompact =
+    evalCellProfile.factors?.engagement_router_resistance_glm_compact === true;
+  const agencyReturnPrematureCertaintyGuard = evalCellProfile.factors?.agency_return_premature_certainty_guard === true;
+  const agencyReturnVerifierPrompt = getAgencyReturnVerifierPrompt(agencyReturnVerifierMode);
+  const agencyReturnRepairMode = getAgencyReturnRepairMode(agencyReturnVerifierMode);
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
   const idTuning = typeof evalCellProfile.factors?.id_tuning === 'string' ? evalCellProfile.factors.id_tuning : null;
   const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
+  const routedEngagementState = engagementModeRouter
+    ? routeEngagementMode({
+        learnerMessage,
+        recentHistory: historyExcerpt,
+        curriculumContext,
+        modeHistory: engagementModeHistory || extractEngagementModeHistory(consolidatedTrace),
+      })
+    : null;
+  const engagementState = applyEngagementRegisterArm(routedEngagementState, engagementRegisterArm);
+  const contractTurn = actionContracts
+    ? safePrepareContractTurn({
+        learnerMessage,
+        history: messageHistory,
+        traceLike: consolidatedTrace,
+        dialogueId: resolvedConfig?.profileName || 'blueprint',
+      })
+    : null;
 
   // ── Optional Step 0: register classifier (cells 103, 104) ──
   // Reads the learner's most recent message and emits a structured register
@@ -854,7 +1786,10 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       );
     } else {
       const classifierProvider = idCell.classifier_provider || idCell.provider;
-      const classifierProviderConfig = _deps.tutorConfig.getProviderConfig(classifierProvider);
+      const classifierProviderConfig = cliAwareProviderConfig(
+        classifierProvider,
+        _deps.tutorConfig.getProviderConfig(classifierProvider),
+      );
       const classifierConfig = {
         provider: classifierProvider,
         providerConfig: classifierProviderConfig,
@@ -887,9 +1822,30 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     curriculumContext,
     previousPersona,
     recognitionMode,
+    recognitionDesire,
+    agencyReturn,
+    agencyReturnVerifierMode,
+    agencyReturnCharismaFloor,
+    agencyReturnCharismaFloorMode,
+    idOutputContract,
+    engagementRouterCharismaRepair,
+    engagementRouterSplitRepair,
+    engagementRouterTransferStakeRepair,
+    engagementRouterTransferCompressionRepair,
+    engagementRouterResistanceTuning,
+    engagementRouterResistanceOwnedTest,
+    engagementRouterResistancePrecisionRepair,
+    engagementRouterResistanceGenerationRepair,
+    engagementRouterResistanceQuestionLock,
+    engagementRouterResistanceCommitmentProbe,
+    engagementRouterResistanceBoredomStake,
+    engagementRouterResistanceGlmCompact,
+    agencyReturnPrematureCertaintyGuard,
+    engagementState,
     learnerRegister,
     idTuning,
     witnessExemplars,
+    actionContractBlock: contractTurn?.promptBlock || null,
   });
 
   let totalInputTokens = 0;
@@ -903,8 +1859,11 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // tutor-core's getAgentConfig assembles this for registered profiles; we
   // assemble it manually here because cell 101/102 aren't in tutor-core's
   // registry.
-  const idProviderConfig = _deps.tutorConfig.getProviderConfig(idCell.provider);
-  if (!idProviderConfig?.isConfigured) {
+  const idProviderConfig = cliAwareProviderConfig(
+    idCell.provider,
+    _deps.tutorConfig.getProviderConfig(idCell.provider),
+  );
+  if (!isProviderConfigured(idCell.provider, idProviderConfig)) {
     return {
       success: false,
       error: `Provider ${idCell.provider} not configured (missing API key) — id agent`,
@@ -929,17 +1888,26 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   totalCost += idResponse?.cost || 0;
   apiCalls += 1;
 
-  const construction = parseIdConstruction(idResponse?.text || '');
+  const construction = parseIdConstruction(idResponse?.text || '', {
+    salvageMalformedJson: idOutputContract === ID_OUTPUT_CONTRACT_STRICT_COMPACT_JSON,
+  });
   if (construction.parse_status === 'fallback') {
     console.warn(
       `[idDirectorEngine.runnerAdapter] ${construction.parse_failure_reason} — falling back to minimal persona.`,
+    );
+  } else if (construction.parse_status === 'salvaged_from_malformed_json') {
+    console.warn(
+      `[idDirectorEngine.runnerAdapter] ${construction.parse_failure_reason} — salvaged generated_prompt from malformed JSON.`,
     );
   }
 
   // ── Step 2: ego executes against the constructed prompt ──
   const egoSystemPrompt = construction.generated_prompt;
-  const egoProviderConfig = _deps.tutorConfig.getProviderConfig(egoCell.provider);
-  if (!egoProviderConfig?.isConfigured) {
+  const egoProviderConfig = cliAwareProviderConfig(
+    egoCell.provider,
+    _deps.tutorConfig.getProviderConfig(egoCell.provider),
+  );
+  if (!isProviderConfigured(egoCell.provider, egoProviderConfig)) {
     return {
       success: false,
       error: `Provider ${egoCell.provider} not configured (missing API key) — ego agent`,
@@ -959,7 +1927,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // For multi-turn cells, pass messageHistory so the ego sees the conversation
   // context. The ego's *system prompt* is the id's authored prompt; the user
   // turn is the most recent learner message.
-  const egoResponse = await callAIWithCliBridge(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
+  let egoResponse = await callAIWithCliBridge(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
     messageHistory: messageHistory.length > 0 ? messageHistory : null,
   });
   totalInputTokens += egoResponse?.inputTokens || 0;
@@ -967,7 +1935,27 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   totalCost += egoResponse?.cost || 0;
   apiCalls += 1;
 
-  const externalMessage = (egoResponse?.text || '').trim();
+  let egoRetried = false;
+  let externalMessage = (egoResponse?.text || '').trim();
+  if (!externalMessage) {
+    console.warn('[idDirectorEngine.runnerAdapter] Empty ego output, retrying with learner-facing output reminder.');
+    egoRetried = true;
+    egoResponse = await callAIWithCliBridge(
+      egoAgentConfig,
+      egoSystemPrompt,
+      buildEgoRetryPrompt(learnerMessage),
+      'tutor_ego_retry',
+      {
+        messageHistory: messageHistory.length > 0 ? messageHistory : null,
+      },
+    );
+    totalInputTokens += egoResponse?.inputTokens || 0;
+    totalOutputTokens += egoResponse?.outputTokens || 0;
+    totalCost += egoResponse?.cost || 0;
+    apiCalls += 1;
+    externalMessage = (egoResponse?.text || '').trim();
+  }
+
   if (!externalMessage) {
     return {
       success: false,
@@ -976,6 +1964,69 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       metadata: { latencyMs: Date.now() - startTime, profileName: resolvedConfig?.profileName },
     };
   }
+
+  let prematureCertaintyGuard = null;
+  if (agencyReturnPrematureCertaintyGuard) {
+    prematureCertaintyGuard = applyPrematureCertaintyGuard(externalMessage, { engagementState });
+    externalMessage = prematureCertaintyGuard.message;
+  }
+
+  let agencyVerification = null;
+  let agencyRepaired = false;
+  if (agencyReturnVerifier) {
+    const verifierAgentConfig = {
+      ...idAgentConfig,
+      hyperparameters: { temperature: 0.2, max_tokens: AGENCY_RETURN_VERIFIER_MAX_TOKENS },
+    };
+    const verifierUserMessage = buildAgencyReturnVerifierUserMessage({
+      learnerMessage,
+      curriculumContext,
+      tutorResponse: externalMessage,
+    });
+    let verifierResponse = await callAIWithCliBridge(
+      verifierAgentConfig,
+      agencyReturnVerifierPrompt,
+      verifierUserMessage,
+      'agency_return_verifier',
+      {},
+    );
+    totalInputTokens += verifierResponse?.inputTokens || 0;
+    totalOutputTokens += verifierResponse?.outputTokens || 0;
+    totalCost += verifierResponse?.cost || 0;
+    apiCalls += 1;
+    let verifierRetried = false;
+    if (!(verifierResponse?.text || '').trim()) {
+      verifierRetried = true;
+      verifierResponse = await callAIWithCliBridge(
+        verifierAgentConfig,
+        agencyReturnVerifierPrompt,
+        buildAgencyReturnVerifierRetryUserMessage(verifierUserMessage),
+        'agency_return_verifier_retry',
+        {},
+      );
+      totalInputTokens += verifierResponse?.inputTokens || 0;
+      totalOutputTokens += verifierResponse?.outputTokens || 0;
+      totalCost += verifierResponse?.cost || 0;
+      apiCalls += 1;
+    }
+    agencyVerification = parseAgencyReturnVerification(verifierResponse?.text || '');
+    agencyVerification.retried = verifierRetried;
+    agencyVerification.metrics = {
+      provider: idCell.provider,
+      model: idCell.resolvedModel || idCell.model,
+      inputTokens: verifierResponse?.inputTokens || 0,
+      outputTokens: verifierResponse?.outputTokens || 0,
+    };
+    agencyVerification.mode = agencyReturnVerifierMode;
+    agencyVerification.repair_mode = agencyReturnRepairMode;
+    const verified = applyAgencyReturnVerification(externalMessage, agencyVerification, {
+      repairMode: agencyReturnRepairMode,
+    });
+    externalMessage = verified.message;
+    agencyRepaired = verified.repaired;
+  }
+
+  const contractFinal = safeFinalizeContractTurn(contractTurn, externalMessage);
 
   // ── Build a dialogue trace mirroring the existing convention so downstream
   //    analysers (turnComparisonAnalyzer, dialogueTraceAnalyzer) recognise it.
@@ -987,6 +2038,29 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       timestamp: new Date().toISOString(),
     },
   ];
+  if (engagementState) {
+    trace.push({
+      agent: 'engagement_router',
+      action: 'route',
+      detail: JSON.stringify(engagementState),
+      timestamp: new Date().toISOString(),
+    });
+  }
+  if (contractFinal) {
+    trace.push({
+      agent: BLUEPRINT_CONTRACT_TRACE_ROLE,
+      action: 'contract',
+      detail: JSON.stringify(
+        buildContractTracePayload({
+          contract: contractFinal.contract,
+          ledger: contractFinal.ledger,
+          closedRecord: contractTurn.closedRecord,
+          realization: contractFinal.realization,
+        }),
+      ),
+      timestamp: new Date().toISOString(),
+    });
+  }
   if (learnerRegister) {
     trace.push({
       agent: 'register_classifier',
@@ -1013,8 +2087,32 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         persona_delta: construction.persona_delta,
         stage_directions: construction.stage_directions,
         reasoning: construction.reasoning,
+        recognition_desire: recognitionDesire,
+        agency_return: agencyReturn,
+        agency_return_verifier: agencyReturnVerifier,
+        agency_return_verifier_mode: agencyReturnVerifierMode,
+        agency_return_charisma_floor: agencyReturnCharismaFloor,
+        agency_return_charisma_floor_mode: agencyReturnCharismaFloorMode,
+        id_output_contract: idOutputContract,
+        engagement_router_charisma_repair: engagementRouterCharismaRepair,
+        engagement_router_split_repair: engagementRouterSplitRepair,
+        engagement_router_transfer_stake_repair: engagementRouterTransferStakeRepair,
+        engagement_router_transfer_compression_repair: engagementRouterTransferCompressionRepair,
+        engagement_router_resistance_tuning: engagementRouterResistanceTuning,
+        engagement_router_resistance_owned_test: engagementRouterResistanceOwnedTest,
+        engagement_router_resistance_precision_repair: engagementRouterResistancePrecisionRepair,
+        engagement_router_resistance_generation_repair: engagementRouterResistanceGenerationRepair,
+        engagement_router_resistance_question_lock: engagementRouterResistanceQuestionLock,
+        engagement_router_resistance_commitment_probe: engagementRouterResistanceCommitmentProbe,
+        engagement_router_resistance_boredom_stake: engagementRouterResistanceBoredomStake,
+        engagement_router_resistance_glm_compact: engagementRouterResistanceGlmCompact,
+        agency_return_premature_certainty_guard: agencyReturnPrematureCertaintyGuard,
+        premature_certainty_guard: prematureCertaintyGuard,
+        engagement_mode_router: engagementModeRouter,
+        engagement_state: engagementState,
         generated_prompt_head: egoSystemPrompt.slice(0, 320),
         parse_status: construction.parse_status,
+        parse_failure_reason: construction.parse_failure_reason || null,
       }),
       metrics: {
         provider: idCell.provider,
@@ -1028,6 +2126,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       agent: 'ego',
       action: 'execute',
       detail: `(generated_prompt: ${egoSystemPrompt.length} chars)`,
+      retry_reason: egoRetried ? 'empty_ego_output' : null,
       metrics: {
         provider: egoCell.provider,
         model: egoCell.resolvedModel || egoCell.model,
@@ -1037,6 +2136,25 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       timestamp: new Date().toISOString(),
     },
   );
+
+  if (agencyVerification) {
+    trace.push({
+      agent: 'agency_return_verifier',
+      action: agencyRepaired ? 'repair' : 'verify',
+      detail: JSON.stringify({
+        passes: agencyVerification.passes,
+        move_type: agencyVerification.move_type,
+        reason: agencyVerification.reason,
+        parse_status: agencyVerification.parse_status,
+        mode: agencyVerification.mode,
+        repair_mode: agencyVerification.repair_mode,
+        retried: agencyVerification.retried === true,
+        repaired: agencyRepaired,
+      }),
+      metrics: agencyVerification.metrics || null,
+      timestamp: new Date().toISOString(),
+    });
+  }
 
   return {
     success: true,
@@ -1053,6 +2171,31 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       converged: true,
       apiCalls,
       totalCost,
+      egoRetried,
+      agencyReturnVerified: agencyVerification?.passes === true,
+      agencyReturnRepaired: agencyRepaired,
+      agencyReturnVerifierMode,
+      agencyReturnCharismaFloor,
+      agencyReturnCharismaFloorMode,
+      idOutputContract,
+      engagementRouterCharismaRepair,
+      engagementRouterSplitRepair,
+      engagementRouterTransferStakeRepair,
+      engagementRouterTransferCompressionRepair,
+      engagementRouterResistanceTuning,
+      engagementRouterResistanceOwnedTest,
+      engagementRouterResistancePrecisionRepair,
+      engagementRouterResistanceGenerationRepair,
+      engagementRouterResistanceQuestionLock,
+      engagementRouterResistanceCommitmentProbe,
+      engagementRouterResistanceBoredomStake,
+      engagementRouterResistanceGlmCompact,
+      agencyReturnPrematureCertaintyGuard,
+      prematureCertaintyGuard,
+      agencyReturnVerification: agencyVerification,
+      engagementModeRouter,
+      engagementRegisterArm,
+      engagementState,
       idConstruction: construction, // bonus: surface for trace logging downstream
     },
     dialogueTrace: trace,

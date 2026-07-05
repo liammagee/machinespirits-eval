@@ -50,6 +50,8 @@ export default [
       'exports/',
       'docs/',
       'content/',
+      '.claude/worktrees/',
+      'public/chat/vendor/',
       '.test-tmp/',
       '.codex-tmp/',
       '.venv/',

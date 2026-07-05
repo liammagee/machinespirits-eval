@@ -3,7 +3,8 @@
  *
  * The poetics dashboard (scripts/browse-poetics-scripts.js) server-renders its
  * rail from railHtml(). The folded-in static surfaces (/chat, /adjudication,
- * /pilot-admin) are plain files served by services/evalSurfaces.js, so they
+ * /pilot-admin, /human-coding-admin) are plain files served by
+ * services/evalSurfaces.js, so they
  * can't call railHtml() — instead they fetch it from the /_nav.html endpoint
  * (railHtml's `bare` mode: rail markup + .rail* CSS, the command palette, but no
  * shader canvas, x-ray overlay, grid/theme toggles, or dashboard display scripts)

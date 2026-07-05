@@ -1,0 +1,16 @@
+# Final resume for the marrick block: the seed-29 pair only.
+base:
+  world: config/drama-derivation/world-005-marrick.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+arms:
+  - label: baseline-r6
+    flags: { decay: '{"seed":29,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: ledger-v1-r6
+    flags: { decay: '{"seed":29,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', strategy-ledger: '{"registerPalette":["modern"]}' }

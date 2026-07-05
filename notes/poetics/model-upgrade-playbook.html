@@ -1,0 +1,456 @@
+<!doctype html>
+<!--
+  model-upgrade-playbook.html — bounded advice for making weaker / cheaper models
+  tutor effectively.
+
+  This is a techne doc: the .html is the source. It originates no paper claims.
+  It synthesizes paper-full-2.0.md, local engineering notes, and an OpenRouter
+  model-price snapshot fetched 2026-06-28.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>How to upgrade weaker models into tutors · bounded playbook</title>
+<meta name="description" content="An evidence-bounded playbook for using prompts, critics, proof guards, and model routing to make weaker or cheaper models tutor more effectively." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<link rel="stylesheet" href="assets/techne.css" />
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">model upgrade playbook</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#read">Read first</a>
+      <a href="#ladder">Upgrade ladder</a>
+      <a href="#price">Cost proxy</a>
+      <a href="#calibrate">Calibrate</a>
+      <a href="#critic">Critic</a>
+      <a href="#fit">Fit</a>
+      <a href="#guards">Guards</a>
+      <a href="#routing">Routing</a>
+      <a href="#skip">Skip</a>
+      <a href="#ship">Ship gate</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> Tutor model upgrade playbook · refreshed 2026-06-28 · price snapshot from OpenRouter API</div>
+    <h1 class="hero__h1">How to <span class="em">upgrade</span> weaker models into tutors</h1>
+    <p class="hero__subtitle">Evidence-bounded advice for spending prompts, critics, guards, and stronger models only where they buy real tutoring reliability.</p>
+    <div class="hero__lede">
+      <div>
+        <p>The current answer is not that a cheap model becomes a frontier tutor by adding mechanisms. The stronger, safer claim is narrower: a weaker or cheaper model can often be moved up one useful tier if the tutor's stance is calibrated, its brittle decisions are moved into a critic or a proof guard, and its prompts are fitted to the model rather than copied from a stronger one. The mechanisms substitute for raw capability in specific channels: orientation, error correction, release timing, and role governance. They do not substitute for all capability everywhere.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <section class="s" id="read">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">00<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">How to read this</p>
+          <h2 class="s__h">This is a practical recipe, not a deployment guarantee.</h2>
+          <p>Every recommendation below is tagged by evidential weight. The strongest claims inherit from <code>docs/research/paper-full-2.0.md</code>; the cost-aware routing claims inherit from a single local engineering diagnostic; the proof-DAG claims inherit from formal derivation worlds rather than LLM-judge tutoring scores.</p>
+
+          <div class="claim">
+            <span class="claim__no">!</span>
+            <h3 class="claim__h">Bound the claim before using the playbook <span class="chip chip--ink"><span class="chip__dot"></span> important</span></h3>
+            <div class="claim__body">
+              <p>Say: <strong>mechanisms can reduce dependence on raw model capability in bounded tutoring channels.</strong> Do not say: <strong>a cheap model becomes equivalent to an expensive model.</strong> The evidence supports approximation only relative to unassisted baselines or to stronger-model baselines with fewer mechanisms. It does not show that cheap+mechanisms matches strong+mechanisms.</p>
+            </div>
+          </div>
+
+          <div class="spec">
+            <div class="spec-box">
+              <h4>Strongest evidence</h4>
+              <ul>
+                <li>Intersubjective-pedagogy calibration lifts tutor output across three generation models and three judges.</li>
+                <li>A critic helps when the base model still leaves corrigible failures.</li>
+                <li>Prompt complexity must be model-stratified.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Bounded evidence</h4>
+              <ul>
+                <li>Proof-DAG guards improve derivation conduct where task geometry matches the guard channel.</li>
+                <li>Mixed model routing can reduce metered API use in one diagnostic run.</li>
+                <li>Selector rules are low-regret, not solved adaptivity.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Not shown</h4>
+              <ul>
+                <li>No human-learner outcome validation yet.</li>
+                <li>No broad cost-per-learning curve.</li>
+                <li>No proof that very weak models recover from recognition alone.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">discipline</span> The page is advice from evidence, not new evidence. Re-check the source runs before turning any line into a paper claim.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="ladder">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Upgrade ladder</p>
+          <h2 class="s__h">Spend mechanisms in this order.</h2>
+
+          <div class="ladder">
+            <div class="ladder-step">
+              <strong>1. Calibrate the stance.</strong>
+              <span>Use an intersubjective / constructivist tutor prompt first. This is the cheapest and most replicated lift.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>2. Add a critic only if failures remain.</strong>
+              <span>For weaker models, an ego → superego → ego-revision loop can be worth the token tax. For stronger calibrated models, it is often redundant.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>3. Fit prompt weight to model capability.</strong>
+              <span>Weak models may need explicit diagnostic rules and examples. Strong models need light permission, not a cage of instructions.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>4. Use proof guards for formal derivation tasks.</strong>
+              <span>Move release timing and proof debt into a runtime guard when correctness depends on an authored reasoning path.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>5. Route roles by risk.</strong>
+              <span>Cheap models can carry fluent ego roles; spend stronger models or non-metered routes on director, critic, and guard-sensitive choices.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>6. Measure before promoting.</strong>
+              <span>Use the same scenarios, judges, rubrics, and cost accounting. A nice transcript is not evidence of interchangeability.</span>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">rule</span> Spend the cheapest mechanism that targets the failure channel you can actually observe.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="price">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Cost as a proxy for strength</p>
+          <h2 class="s__h">The cheap models move, but the ceiling does not disappear.</h2>
+          <p>The snapshot below uses OpenRouter list pricing fetched from <a href="https://openrouter.ai/api/v1/models">the OpenRouter models API</a> on 2026-06-28. Price is only a proxy: it tracks deployment cost and often rough capability tier, but it is not a psychometric measure of tutoring strength.</p>
+
+          <div class="spec">
+            <div class="spec-box">
+              <h4>Generation models in the core comparison</h4>
+              <ul>
+                <li><strong>DeepSeek V3.2</strong>: $0.2288/M input, $0.3432/M output.</li>
+                <li><strong>Gemini 3 Flash Preview</strong>: $0.50/M input, $3.00/M output, $3.00/M reasoning.</li>
+                <li><strong>Claude Haiku 4.5</strong>: $1.00/M input, $5.00/M output.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Routing / judging reference points</h4>
+              <ul>
+                <li><strong>GLM 5.2</strong>: $0.95/M input, $3.00/M output.</li>
+                <li><strong>Claude Sonnet 4.6</strong>: $3.00/M input, $15.00/M output.</li>
+                <li><strong>GPT-5.4</strong>: $2.50/M input, $15.00/M output.</li>
+              </ul>
+            </div>
+          </div>
+
+          <figure class="chart-fig">
+            <svg class="chart" viewBox="0 0 720 280" preserveAspectRatio="xMidYMid meet" id="chartTutorUpgrade" aria-label="Tutor score by model and upgrade arm"></svg>
+            <figcaption>
+              <span class="cap-title">Mechanisms can move cheap models into stronger-model baseline territory.</span>
+              Mean <code>tutor_overall_score</code>, cells 80/84/86, three judges, n=54 per plotted cell.
+              <span class="legend"><span><i class="lg-none"></i>base single</span><span><i class="lg-routine"></i>recognition single</span><span><i class="lg-perip"></i>recognition + critic</span></span>
+            </figcaption>
+          </figure>
+
+          <div class="claim">
+            <span class="claim__no">≈</span>
+            <h3 class="claim__h">What the chart supports <span class="chip chip--ochre"><span class="chip__dot"></span> bounded approximation</span></h3>
+            <div class="claim__body">
+              <p>Gemini Flash with recognition + critic reaches <code>69.6</code>, nearly matching Haiku base + critic at <code>70.8</code>. DeepSeek recognition single reaches <code>54.6</code>, near Haiku base single at <code>56.3</code>. But Haiku with recognition still sits around <code>80-82</code>. The upgrade gets a weaker model into stronger <em>baseline</em> territory; it does not erase the gap once the stronger model receives the same help.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">source rows</span> Runs <code>eval-2026-03-01-aea2abfb</code>, <code>eval-2026-03-02-18027efc</code>, <code>eval-2026-03-02-45163390</code>; judges <code>claude-code/sonnet</code>, <code>gemini-3.1-pro-preview</code>, <code>gpt-5.4</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="calibrate">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">First mechanism: calibration</p>
+          <h2 class="s__h">Upgrade the model's <em>stance</em> before its architecture.</h2>
+          <p>Start with a system prompt that treats the learner as an active thinking subject: notice what is valid in the learner's attempt, preserve productive difficulty, ask diagnostic questions, and repair rupture before proceeding. The active ingredient is the intersubjective-pedagogy orientation; matched constructivist prompts reproduce the effect, while behaviorist specificity backfires.</p>
+
+          <div class="claim">
+            <span class="claim__no">1</span>
+            <h3 class="claim__h">Use calibration as the default cheap-model upgrade <span class="chip chip--moss"><span class="chip__dot"></span> supported</span></h3>
+            <div class="claim__body">
+              <p>The recognition / constructivist orientation effect is the most replicated finding: directionally unanimous across the three generation models and three judges, with pooled effect around <code>d ≈ 1.63</code>. It lifts floors, especially on weak baseline behavior. For deployment, this means the first dollar should go into a well-authored tutor prompt, not a second agent.</p>
+            </div>
+          </div>
+
+          <div class="callout"><strong>Implementation test</strong> A calibrated weak-model tutor should stop lecturing by default. It should ask content-bearing questions, use the learner's exact contribution, and make correction feel like a continuation of the learner's thought rather than a reset.</div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">paper</span> §6.1, §6.4, §7.9; active ingredient is orientation family, not Hegelian keywords by themselves.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="critic">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Second mechanism: critic</p>
+          <h2 class="s__h">Use a critic as a safety net, not as decoration.</h2>
+          <p>The critic pattern is ego draft → superego review → ego revision, with the ego retaining final authorship. It is worth paying for when it catches failures the base model cannot self-correct. It is wasteful when the calibrated model already avoids those failures.</p>
+
+          <div class="claim">
+            <span class="claim__no">2</span>
+            <h3 class="claim__h">Keep the critic for weak calibrated models with residual failures <span class="chip chip--ochre"><span class="chip__dot"></span> model-dependent</span></h3>
+            <div class="claim__body">
+              <p>Under base prompts, the critic adds large gains; under recognition prompts, its residual value collapses on stronger models and persists on Gemini Flash. In the messages-mode comparison, recognition + critic takes Gemini Flash to <code>69.6</code>, while recognition single is <code>53.5</code>. For DeepSeek and Haiku, recognition + critic is flat or lower than recognition single in the same aggregate. Use the critic where residual failures remain, not because a two-agent diagram looks safer.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">$</span>
+            <h3 class="claim__h">Budget implication <span class="chip chip--ink"><span class="chip__dot"></span> operational</span></h3>
+            <div class="claim__body">
+              <p>A 10-turn multi-agent dialogue is expensive because every public turn hides multiple draft, critique, and revision calls. If recognition single gets the weak model above the quality floor, stop there. If it still produces lecture dumps, premature closure, or affect-blind correction, pay for the critic on those turns or those domains.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">paper</span> §6.2 and §6.4: error correction is real, but partly substituted by calibration.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="fit">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Model fit</p>
+          <h2 class="s__h">Weak models need scaffolds; strong models need permission.</h2>
+          <p>The prompt-lab evidence is small-N but practically sharp. A weak local Qwen model improved when the prompt added explicit diagnostic probes, anti-patterns, examples, and superego intervention rules. Haiku degraded under similarly heavy treatment and improved only after a light, permission-oriented edit.</p>
+
+          <div class="claim">
+            <span class="claim__no">3</span>
+            <h3 class="claim__h">Maintain separate prompt tiers by capability <span class="chip chip--ochre"><span class="chip__dot"></span> bounded but actionable</span></h3>
+            <div class="claim__body">
+              <p>On the targeted prompt-optimization scenario, Qwen 3.5 9B moved from <code>35.0</code> target-dimension score to <code>75.0</code> with heavy scaffolding. Haiku started at <code>90.0</code>, was harmed by heavy rule additions (<code>73-85</code>), and reached <code>95.0</code> only with a light prompt. Cross-transfer was destructive: Qwen's heavy prompt on Haiku scored <code>62.2</code>, below Haiku's own baseline.</p>
+            </div>
+          </div>
+
+          <div class="spec">
+            <div class="spec-box">
+              <h4>Weak / cheap tier</h4>
+              <ul>
+                <li>Explicit diagnostic probes.</li>
+                <li>Concrete anti-patterns.</li>
+                <li>Worked examples.</li>
+                <li>Superego checks tied to known failure modes.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Stronger tier</h4>
+              <ul>
+                <li>Short identity and stance.</li>
+                <li>Light tracking heuristic.</li>
+                <li>Permission to vary strategy.</li>
+                <li>No bulky transferred rulebook.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">paper</span> §7.8.1-§7.8.4; the result is model-specific and single-scenario, but the transfer failure is exactly the warning builders need.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="guards">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Formal tasks</p>
+          <h2 class="s__h">For derivation tutoring, upgrade conduct with a proof-DAG guard.</h2>
+          <p>If the target lesson has a checkable reasoning path, do not rely on a weak model's spontaneous pacing. Externalize the proof state, maintain proof debt, and let a runtime guard decide whether to withhold, repair, or advance. This upgrades the conduct channel: timing, premise release, and proof continuity.</p>
+
+          <div class="claim">
+            <span class="claim__no">4</span>
+            <h3 class="claim__h">Use hidden proof-state guards when the page is not enough <span class="chip chip--ochre"><span class="chip__dot"></span> geometry-bounded</span></h3>
+            <div class="claim__body">
+              <p>In linear worlds, visible page-only pacing can match proof-state pacing. In forked / AND-join worlds, page-only pacing fails where hidden proof-state succeeds. In distractor worlds, the reverse can happen. The robust practical default is hidden proof debt for production derivation runs, with visible-only guards reserved for worlds where visible uptake faithfully projects the hidden task state.</p>
+            </div>
+          </div>
+
+          <figure class="chart-fig">
+            <svg class="chart" viewBox="0 0 720 280" preserveAspectRatio="xMidYMid meet" id="chartGuards" aria-label="Proof guard grounding by world geometry"></svg>
+            <figcaption>
+              <span class="cap-title">Proof guards upgrade conduct, not general prose ability.</span>
+              Grounding rates by guard channel in representative derivation geometries.
+              <span class="legend"><span><i class="lg-none"></i>no guard</span><span><i class="lg-routine"></i>visible/page guard</span><span><i class="lg-perip"></i>hidden proof-state guard</span></span>
+            </figcaption>
+          </figure>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">paper</span> §6.13.11-§6.13.15; hidden+proofDebt is the production derivation arm, overlays remain research instrumentation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="routing">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Role routing</p>
+          <h2 class="s__h">Put the cheap model where fluency is enough.</h2>
+          <p>Role routing is the practical bridge from "mechanisms help" to "spend less." The current diagnostic split put GLM 5.2 in tutor and learner ego roles while Codex carried director and superego roles. It reduced metered API use compared with all-GLM and did not collapse one scored transcript, but it was slower than Codex-only and remains n=1.</p>
+
+          <div class="claim">
+            <span class="claim__no">5</span>
+            <h3 class="claim__h">Route by responsibility <span class="chip chip--ochre"><span class="chip__dot"></span> diagnostic</span></h3>
+            <div class="claim__body">
+              <p>Use cheaper models for high-volume ego drafting when the prompt is slim enough and failures are catchable. Use stronger or non-metered routes for director, critic, and proof-state decisions. In the AF1 diagnostic, mixed GLM ego + Codex governance used <code>26</code> API calls plus <code>14</code> Codex calls and cost <code>$0.389746</code> in metered API use, versus all-GLM <code>40</code> API calls and <code>$0.598107</code>. Both Codex-only and mixed-role outputs received the same overall quality score in that one transcript. Treat this as a routing smoke, not a result.</p>
+            </div>
+          </div>
+
+          <div class="callout"><strong>Practical next test</strong> Repeat the three-way comparison after prompt slimming: Codex-only, all-GLM, and GLM ego + Codex governance. Hold lesson, seed, scorer, max turns, and prompt mode fixed; record retries and tail latency.</div>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">local note</span> <code>notes/poetics/2026-06-20-curriculum-drama-model-routing-runs.md</code>; ancillary engineering evidence only.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="skip">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What not to build</p>
+          <h2 class="s__h">Do not mistake more machinery for an upgrade.</h2>
+
+          <div class="claim">
+            <span class="claim__no">×</span>
+            <h3 class="claim__h">Skip bidirectional learner-profiling prostheses <span class="chip chip--brick"><span class="chip__dot"></span> not supported</span></h3>
+            <div class="claim__body">
+              <p>The cognitive-prosthesis hypothesis predicted that explicit learner profiling would compensate for weak ego reasoning. The A3 threshold report does not support that: five of six models showed significant harm, one showed null effect, and none showed significant benefit. Prompt-level scaffolding can help weak models; superego-routed bidirectional profiling is a different mechanism and currently a bad default.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">×</span>
+            <h3 class="claim__h">Do not transfer the weak-model prompt upward <span class="chip chip--brick"><span class="chip__dot"></span> harmful transfer</span></h3>
+            <div class="claim__body">
+              <p>A heavy prompt that functions as a prosthesis for a weak model can become a straitjacket for a stronger one. Keep the model tier attached to the prompt artifact. If the routing layer swaps the model, it should swap the prompt tier too.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--brick"><span class="note__lbl">failure class</span> The common error is to add state, memory, and profiling when the actual failure is poor orientation or missing proof-control.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="ship">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">09<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Promotion gate</p>
+          <h2 class="s__h">A weak-model tutor is promoted only when the evidence moves with it.</h2>
+
+          <div class="timeline">
+            <div class="timeline-row">
+              <div class="when">Gate 1</div>
+              <div><h3>Same-row quality</h3><p>Compare the candidate to the stronger baseline on the same scenarios, same scorer panel, and same rubric version.</p></div>
+            </div>
+            <div class="timeline-row">
+              <div class="when">Gate 2</div>
+              <div><h3>Failure channel audit</h3><p>Check lecture dumps, premature closure, affect-blind correction, hallucinated derivation steps, and prompt leaks. Do not accept mean-score parity with worse tails.</p></div>
+            </div>
+            <div class="timeline-row">
+              <div class="when">Gate 3</div>
+              <div><h3>Cost and latency accounting</h3><p>Count all hidden calls: ego, critic, retries, judge, and guard overhead. A cheaper model plus many hidden repair calls can lose the cost advantage.</p></div>
+            </div>
+            <div class="timeline-row">
+              <div class="when">Gate 4</div>
+              <div><h3>Scope statement</h3><p>Name what the upgrade proves: tutor-output quality, derivation conduct, role-routing feasibility, or learner outcome. Only the first two have meaningful support here.</p></div>
+            </div>
+          </div>
+
+          <p class="pq">The target is not "cheap model equals expensive model." The target is: every expensive capability is either removed, routed, guarded, or paid for deliberately.<cite>practical reading of Paper 2.0 and the derivation/routing notes</cite></p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">ship wording</span> "Upgraded weak-model tutor under bounded conditions" is defensible. "Equivalent to the stronger model" is not.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="colophon">
+    <p><span class="label">Colophon</span> &nbsp; Evidence inherits from <code>docs/research/paper-full-2.0.md</code>, <code>exports/a3-capability-threshold.md</code>, <code>exports/dramatic-derivation/selector-v1-report.md</code>, <code>exports/dramatic-derivation/boundary/conduct-parameters.md</code>, and <code>notes/poetics/2026-06-20-curriculum-drama-model-routing-runs.md</code>. Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.</p>
+  </footer>
+
+</main>
+
+<script type="application/json" class="techne-chart" data-target="chartTutorUpgrade">
+{
+  "metrics": [
+    { "label": "DeepSeek V3.2" },
+    { "label": "Gemini Flash 3.0" },
+    { "label": "Haiku 4.5" }
+  ],
+  "arms": [
+    { "key": "none", "label": "base single", "values": [20.1, 23.8, 56.3] },
+    { "key": "routine", "label": "recognition single", "values": [54.6, 53.5, 81.8] },
+    { "key": "peripeteia-only", "label": "recognition + critic", "values": [46.2, 69.6, 80.3] }
+  ]
+}
+</script>
+
+<script type="application/json" class="techne-chart" data-target="chartGuards">
+{
+  "metrics": [
+    { "label": "Lantern linear" },
+    { "label": "Marrick fork" },
+    { "label": "Hethel decoy" }
+  ],
+  "arms": [
+    { "key": "none", "label": "no guard", "values": [40, 0, 80] },
+    { "key": "routine", "label": "visible/page guard", "values": [100, 0, 100] },
+    { "key": "peripeteia-only", "label": "hidden proof-state guard", "values": [100, 100, 20] }
+  ]
+}
+</script>
+<script src="assets/techne.js"></script>
+</body>
+</html>

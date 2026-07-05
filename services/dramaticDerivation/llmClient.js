@@ -294,10 +294,43 @@ function mockResponse(role, meta = {}) {
     // a plot each act (revision calls inherit the hint and re-emit — the
     // re-commit path). The real backend ignores meta.
     const plotBits = meta.plotHint ? { plot: meta.plotHint } : {};
+    // Lemma layer: the bridge's lemmaHint carries the deterministic frontier
+    // choice and (when the claim leaves the active lemma) the departure line.
+    // Strategy-refusal mock: answer the refusal per the knob's mode.
+    if (meta.lemmaRefusalHint) {
+      const h = meta.lemmaRefusalHint;
+      return JSON.stringify({
+        dialogue: 'Let us weigh the course itself before the next step.',
+        move: { figure: 'erotema', target_premise: null, intent: 'consolidate' },
+        release: null,
+        active_lemma: h.mode === 'switch' && h.other ? h.other : h.keep,
+        ...(h.mode === 'defend'
+          ? {
+              strategy_defense:
+                'mock defense: the regressed ground is recoverable in passing; the new chain is the shorter path.',
+            }
+          : {}),
+      });
+    }
+    const lemmaBits = meta.lemmaHint
+      ? {
+          ...(meta.lemmaHint.choose ? { active_lemma: meta.lemmaHint.choose } : {}),
+          ...(meta.lemmaHint.departure ? { lemma_departure: meta.lemmaHint.departure } : {}),
+        }
+      : {};
     // Two-layer planning: the bridge's throughlineHint is the schedule-derived
     // whole-play plan on the turns the harness demands one; echoed on every
     // reply shape, like the plot, so revision calls re-commit it.
     const throughlineBits = meta.throughlineHint ? { throughline: meta.throughlineHint } : {};
+    // Strategy ledger: the bridge's sceneCommitmentHint is the deterministic
+    // scene-opening commitment; echoed on every reply shape (like the plot)
+    // so intervened openings re-commit. v2 rides the same channel: the
+    // review hint answers the history table. The real backend ignores meta.
+    const ledgerBits = {
+      ...(meta.sceneCommitmentHint ? { scene_commitment: meta.sceneCommitmentHint } : {}),
+      ...(meta.strategyReviewHint ? { strategy_review: meta.strategyReviewHint } : {}),
+      ...(meta.reorientationHint !== undefined ? { reorientation: meta.reorientationHint } : {}),
+    };
     // Proof-debt hygiene: when the bridge says an already-staged,
     // proof-critical exhibit must be restored, the mock obeys so zero-cost
     // runs exercise the same parser/repair path as real runs.
@@ -309,6 +342,8 @@ function mockResponse(role, meta = {}) {
         ...theory,
         ...plotBits,
         ...throughlineBits,
+        ...ledgerBits,
+        ...lemmaBits,
       });
     }
     // A revision call (the ego rewriting under its superego's note): a figure
@@ -330,6 +365,8 @@ function mockResponse(role, meta = {}) {
           ...theory,
           ...plotBits,
           ...throughlineBits,
+          ...ledgerBits,
+          ...lemmaBits,
         });
       }
       if (meta.revision.jurisdiction === 'unconfronted_reentry') {
@@ -344,6 +381,8 @@ function mockResponse(role, meta = {}) {
           ...theory,
           ...plotBits,
           ...throughlineBits,
+          ...ledgerBits,
+          ...lemmaBits,
         });
       }
       return JSON.stringify({
@@ -358,6 +397,8 @@ function mockResponse(role, meta = {}) {
         ...theory,
         ...plotBits,
         ...throughlineBits,
+        ...ledgerBits,
+        ...lemmaBits,
       });
     }
     // C5 mock choreography: on a cue-less turn with an exhibit already staged,
@@ -373,6 +414,8 @@ function mockResponse(role, meta = {}) {
         ...theory,
         ...plotBits,
         ...throughlineBits,
+        ...ledgerBits,
+        ...lemmaBits,
       });
     }
     if (meta.sceneTempo?.beat && !meta.releaseSurface) {
@@ -394,6 +437,8 @@ function mockResponse(role, meta = {}) {
           ...theory,
           ...plotBits,
           ...throughlineBits,
+          ...ledgerBits,
+          ...lemmaBits,
         });
       }
     }
@@ -452,6 +497,8 @@ function mockResponse(role, meta = {}) {
         ...theory,
         ...plotBits,
         ...throughlineBits,
+        ...ledgerBits,
+        ...lemmaBits,
       });
     }
     return JSON.stringify({
@@ -467,9 +514,20 @@ function mockResponse(role, meta = {}) {
       ...theory,
       ...plotBits,
       ...throughlineBits,
+      ...ledgerBits,
+      ...lemmaBits,
     });
   }
   if (role === 'tutor_superego') {
+    // Plan mode: the stock-take charter's deterministic echo — the bridge's
+    // hint carries the sealed scene's status arithmetic. Checked FIRST: the
+    // stock-take is its own charter, not the turn watch or the plot audit.
+    if (meta.stocktakeHint) {
+      return JSON.stringify({
+        assessment: meta.stocktakeHint.assessment,
+        correction: meta.stocktakeHint.correction ?? null,
+      });
+    }
     // C1 (plot audit): an act-close audit call carries the bridge's
     // precomputed deterministic verdicts; echo them. This check comes FIRST —
     // the audit sits under its own charter, not the turn watch's.
@@ -534,6 +592,12 @@ function mockResponse(role, meta = {}) {
   }
   if (role === 'learner') {
     const adoptAll = Array.from({ length: meta.adoptableCount || 0 }, (_, i) => i);
+    // Learner ledger: boundary commitments echoed from the bridge's hints so
+    // zero-paid runs traverse the commit/audit path. Real backend ignores.
+    const learnerLedgerBits = {
+      ...(meta.sceneIntentHint ? { scene_intent: meta.sceneIntentHint } : {}),
+      ...(meta.actCarryHint ? { act_carry: meta.actCarryHint } : {}),
+    };
     // The bridge's derive clock hints aged derivable facts (seen-age >= 3 =
     // engine age 4, one turn after the mock stall watcher fires at 3) — so a
     // mock run exercises voicing, the voiced ledger, and post-fire uptake
@@ -562,6 +626,7 @@ function mockResponse(role, meta = {}) {
           hypothesis: null,
           exchange_type: tempo.exchange_type,
           asserts_answer: null,
+          ...learnerLedgerBits,
         });
       }
     }
@@ -580,6 +645,7 @@ function mockResponse(role, meta = {}) {
       derive_indices: deriveIndices,
       hypothesis: meta.patternAssertion ? null : adoptAll.length ? 'weighing what this changes' : null,
       asserts_answer: meta.patternAssertion ? meta.patternAssertion.answer : null,
+      ...learnerLedgerBits,
     });
   }
   throw new Error(`derivation.llmClient: unknown mock role '${role}'`);

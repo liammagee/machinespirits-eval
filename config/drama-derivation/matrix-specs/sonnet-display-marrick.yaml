@@ -1,0 +1,38 @@
+# Sonnet lemma-map contrast — marrick block (LEMMA-SONNET-CONTRAST-
+# PREREGISTRATION.md; fresh primes 131-157, pair-interleaved).
+base:
+  world: config/drama-derivation/world-005-marrick.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: baseline-r1
+    flags: { decay: '{"seed":131,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r1
+    flags: { decay: '{"seed":131,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: baseline-r2
+    flags: { decay: '{"seed":137,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r2
+    flags: { decay: '{"seed":137,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: baseline-r3
+    flags: { decay: '{"seed":139,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r3
+    flags: { decay: '{"seed":139,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: baseline-r4
+    flags: { decay: '{"seed":149,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r4
+    flags: { decay: '{"seed":149,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: baseline-r5
+    flags: { decay: '{"seed":151,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r5
+    flags: { decay: '{"seed":151,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: baseline-r6
+    flags: { decay: '{"seed":157,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r6
+    flags: { decay: '{"seed":157,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }

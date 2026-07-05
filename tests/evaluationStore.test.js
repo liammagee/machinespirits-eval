@@ -244,6 +244,44 @@ describe('storeResult', () => {
     assert.ok(rowId > 0);
   });
 
+  it('stores and parses id-director construction trace', () => {
+    const run = createRun({ description: 'id trace store test' });
+    testRunIds.push(run.id);
+
+    const idConstructionTrace = [
+      {
+        turn: 0,
+        construction: {
+          persona_delta: 'recognition-desire witness',
+          parse_status: 'ok',
+        },
+        tutorText: 'Try saying it in your own words.',
+        agencyReturnVerification: {
+          passes: false,
+          move_type: 'missing',
+          repaired_response: 'Try saying it in your own words against paragraph 158.',
+          parse_status: 'ok',
+        },
+        agencyReturnRepaired: true,
+      },
+    ];
+
+    const rowId = storeResult(run.id, {
+      scenarioId: 'test-id-trace',
+      scenarioName: 'ID Trace Test',
+      provider: 'test-provider',
+      model: 'test-model',
+      profileName: 'cell_161_id_director_charisma_agency_return_verified',
+      suggestions: [{ message: 'Try saying it in your own words against paragraph 158.' }],
+      success: true,
+      idConstructionTrace,
+    });
+
+    assert.ok(rowId > 0);
+    const result = getResults(run.id).find((r) => r.id === rowId);
+    assert.deepStrictEqual(result.idConstructionTrace, idConstructionTrace);
+  });
+
   it('stores result with factor tags', () => {
     const run = createRun({ description: 'factor tags test' });
     testRunIds.push(run.id);

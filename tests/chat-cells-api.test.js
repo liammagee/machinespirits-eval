@@ -157,4 +157,43 @@ describe('GET /api/chat/cells', () => {
       );
     }
   });
+
+  it('GET /api/chat/models returns OpenRouter model choices for the chat UI', async () => {
+    const { status, body } = await get(baseUrl, '/api/chat/models');
+    assert.equal(status, 200);
+    assert.equal(body.defaultValue, '');
+    assert.ok(Array.isArray(body.models));
+    assert.ok(body.models.some((m) => m.value === 'openrouter.gpt-mini' && m.model === 'openai/gpt-5-mini'));
+    assert.ok(body.models.every((m) => m.provider === 'openrouter'));
+  });
+
+  it('GET /api/chat/curricula returns legacy lectures plus compiled scene sources', async () => {
+    const { status, body } = await get(baseUrl, '/api/chat/curricula');
+    assert.equal(status, 200);
+    assert.ok(Array.isArray(body.packages), 'packages must remain available for lecture picker');
+    assert.ok(Array.isArray(body.sceneSources), 'sceneSources must be available for director composer');
+    assert.ok(body.sceneSources.length >= 30, 'expected compiled modules/worlds/dramas/plans in sceneSources');
+
+    const kinds = new Set(body.sceneSources.map((s) => s.kind));
+    for (const kind of ['module', 'world', 'rhetorical_drama', 'mvp_drama', 'generated_drama', 'dramatic_plan']) {
+      assert.ok(kinds.has(kind), `missing scene source kind: ${kind}`);
+    }
+
+    const af1Drama = body.sceneSources.find((s) => s.ref === 'drama:rhetorical#D_AF1_CURRICULUM_ADAPTIVE');
+    assert.ok(af1Drama, 'AF1 rhetorical drama must be selectable');
+    assert.equal(af1Drama.moduleId, 'AF1');
+    assert.equal(typeof af1Drama.label, 'string');
+    assert.equal(typeof af1Drama.topic, 'string');
+    assert.equal(typeof af1Drama.dramaticShape, 'string');
+  });
+
+  it('includes an existing-results note for each cell', async () => {
+    const { status, body } = await get(baseUrl, '/api/chat/cells');
+    assert.equal(status, 200);
+    const cell1 = body.cells.find((c) => c.name === 'cell_1_base_single_unified');
+    assert.ok(cell1?.resultSummary, 'cell_1 resultSummary missing');
+    assert.equal(typeof cell1.resultSummary.status, 'string');
+    assert.equal(typeof cell1.resultSummary.note, 'string');
+    assert.ok(Array.isArray(cell1.resultSummary.metrics));
+  });
 });

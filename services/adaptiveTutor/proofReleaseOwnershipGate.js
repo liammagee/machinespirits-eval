@@ -100,6 +100,11 @@ const ACTIONABLE_UNDER_UNCERTAINTY = new Set([
   'tutor_misread',
   'sophistication_upgrade',
   'false_mastery',
+  'resistance_boredom',
+  'resistance_frustration',
+  'resistance_irrelevance',
+  'resistance_question_flood',
+  'resistance_rote_parroting',
 ]);
 
 function actionCompatibleWithDominant(action, dominant) {
