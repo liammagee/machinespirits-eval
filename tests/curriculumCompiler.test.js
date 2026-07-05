@@ -174,10 +174,7 @@ test('rhetorical dramatic plan compilation requires the matching world spec', ()
   const module1World = worlds.world_adaptation_specs.find((world) => world.module_id === 'AF1');
 
   assert.throws(() => rhetoricalDramaticPlanForModule(module6, null), /without world_adaptation_spec/u);
-  assert.throws(
-    () => rhetoricalDramaticPlanForModule(module6, module1World),
-    /world_adaptation_spec for AF1/u,
-  );
+  assert.throws(() => rhetoricalDramaticPlanForModule(module6, module1World), /world_adaptation_spec for AF1/u);
 });
 
 test('AF6 lowers from the same world source into adaptive and dogmatic drama variants', () => {
@@ -191,10 +188,7 @@ test('AF6 lowers from the same world source into adaptive and dogmatic drama var
 
   assert.equal(spec.meta.source, 'rhetorical_dramatic_plan');
   assert.equal(module6Dramas.length, 2);
-  assert.deepEqual(
-    module6Dramas.map((drama) => drama.tutor_adaptation_policy).sort(),
-    ['peripeteia', 'routine'],
-  );
+  assert.deepEqual(module6Dramas.map((drama) => drama.tutor_adaptation_policy).sort(), ['peripeteia', 'routine']);
   assert.deepEqual(
     [...new Set(module6Dramas.map((drama) => drama.affective_adaptation_policy))],
     ['procedural_sensitive'],
@@ -233,15 +227,9 @@ test('runnable world compilation requires verifier and misconception evidence', 
   const missingVerifier = clone(loadCurriculum());
   missingVerifier.modules.find((module) => module.id === 'AF1').primary_verifier = null;
   missingVerifier.modules.find((module) => module.id === 'AF1').verifiers = [];
-  assert.throws(
-    () => compileCurriculumToWorldAdaptationSpec(missingVerifier),
-    /without verifier evidence/u,
-  );
+  assert.throws(() => compileCurriculumToWorldAdaptationSpec(missingVerifier), /without verifier evidence/u);
 
   const missingMisconception = clone(loadCurriculum());
   missingMisconception.modules.find((module) => module.id === 'AF1').misconception_signatures = [];
-  assert.throws(
-    () => compileCurriculumToWorldAdaptationSpec(missingMisconception),
-    /without misconception evidence/u,
-  );
+  assert.throws(() => compileCurriculumToWorldAdaptationSpec(missingMisconception), /without misconception evidence/u);
 });

@@ -152,7 +152,9 @@ function a21ReleaseAfterDiagnosticBudget(state) {
 }
 
 function dependencyRepairNeeded(state) {
-  return state.triggerType === 'dependency_repair_needed' || state.needsDependencyRepair === true || proofDebtActive(state);
+  return (
+    state.triggerType === 'dependency_repair_needed' || state.needsDependencyRepair === true || proofDebtActive(state)
+  );
 }
 
 function entitlementState(state) {
@@ -395,7 +397,8 @@ function buildTutorView(state, classification, spec) {
   }
   const learnerExcerpt = state.evidence?.learnerExcerpt || state.learnerExcerpt || null;
   if (learnerExcerpt) view.learnerExcerpt = learnerExcerpt;
-  const visibleReason = state.evidence?.intervention?.reason || state.visibleReason || entitlement?.visible?.reason || null;
+  const visibleReason =
+    state.evidence?.intervention?.reason || state.visibleReason || entitlement?.visible?.reason || null;
   if (visibleReason && spec.permittedTutorFields.includes('visibleReason')) view.visibleReason = visibleReason;
   if (state.recognitionNeed && spec.permittedTutorFields.includes('recognitionNeed')) {
     view.recognitionNeed = {

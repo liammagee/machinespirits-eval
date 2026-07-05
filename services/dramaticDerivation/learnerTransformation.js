@@ -84,7 +84,10 @@ function cleanText(value, fallback = null, max = 220) {
 
 function cleanList(value, maxItems = 8, maxChars = 90) {
   if (!Array.isArray(value)) return [];
-  return value.map((item) => cleanText(item, null, maxChars)).filter(Boolean).slice(0, maxItems);
+  return value
+    .map((item) => cleanText(item, null, maxChars))
+    .filter(Boolean)
+    .slice(0, maxItems);
 }
 
 function publicTranscript(transcript = []) {
@@ -156,7 +159,9 @@ function needsLateOwnershipCheck(missing = [], finalAssertionAvailable = false) 
 }
 
 function needsTransferGate(missing = [], finalAssertionAvailable = false, transferGate = false) {
-  return transferGate === true && finalAssertionAvailable === true && missing.length === 1 && missing[0] === 'near_transfer';
+  return (
+    transferGate === true && finalAssertionAvailable === true && missing.length === 1 && missing[0] === 'near_transfer'
+  );
 }
 
 function nextTutorConduct(missing = [], target = {}, { finalAssertionAvailable = false, transferGate = false } = {}) {
@@ -223,7 +228,6 @@ export function deriveLearnerTransformationState(input = {}) {
     target = null,
     transcript = [],
     learnerText = null,
-    turn = null,
     enabled = true,
     finalAssertionAvailable = false,
     transferGate = false,
@@ -300,7 +304,12 @@ export function deriveLearnerTransformationState(input = {}) {
 }
 
 export function learnerTransformationLines(state) {
-  if (!state || state.publicOnly !== true || state.mayOverrideProofControl !== false || state.inputAudit?.ok === false) {
+  if (
+    !state ||
+    state.publicOnly !== true ||
+    state.mayOverrideProofControl !== false ||
+    state.inputAudit?.ok === false
+  ) {
     return [];
   }
   if (!state.enabled) return [];
@@ -318,12 +327,16 @@ export function learnerTransformationLines(state) {
       ? ['- late ownership check: proof closure may be available; request learner ownership before inviting closure.']
       : []),
     ...(state.transferGateActive
-      ? ['- transfer gate: proof closure may be available; ask for one compact nearby parallel before inviting final assertion.']
+      ? [
+          '- transfer gate: proof closure may be available; ask for one compact nearby parallel before inviting final assertion.',
+        ]
       : []),
     `- required public ownership evidence: ${state.requiredFamilies.join(', ')}`,
     `- missing now: ${missing}`,
     ...(state.nearTransferRequired && state.missingFamilies?.includes('near_transfer')
-      ? ['- near transfer is still missing: do not treat final-answer fluency as durable ownership until the learner tries a nearby parallel.']
+      ? [
+          '- near transfer is still missing: do not treat final-answer fluency as durable ownership until the learner tries a nearby parallel.',
+        ]
       : []),
     ...(state.nextTutorConduct?.length ? [`- next tutor conduct: ${state.nextTutorConduct.join(' ')}`] : []),
     ...(state.evidence?.length ? [`- public evidence: ${state.evidence.slice(0, 2).join('; ')}`] : []),

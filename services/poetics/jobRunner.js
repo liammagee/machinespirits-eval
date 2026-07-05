@@ -5,12 +5,12 @@ import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 // ============================================================================
-// Poetics job launcher — guarded spawner for the four poetics run types.
+// Poetics job launcher — guarded spawner for local browser-launched run types.
 //
-// The browser can kick off (1) new generative drama runs, (2) discursive
-// replays (counterfactual revisions), (3) adversarial CLI structure scores, and
-// (4) online OpenRouter-METERED Sonnet scores. Each kind maps to exactly one
-// whitelisted script; user input is turned into an argv ARRAY by a per-kind
+// The browser can kick off generative drama runs, discursive replays
+// (counterfactual revisions), evaluation-cell runs, adversarial CLI structure
+// scores, and online OpenRouter-METERED Sonnet scores. Each kind maps to
+// exactly one whitelisted script; user input is turned into an argv ARRAY by a per-kind
 // builder (never a shell string), and the resolved cost class drives the UI's
 // confirm gate + a serial lock.
 //
@@ -82,6 +82,16 @@ function bool(v) {
 // (codex/claude/agy/gemini) routes through the plan → quota, not metered.
 function looksMetered(model) {
   return typeof model === 'string' && model.includes('/');
+}
+
+function validateToken(value, key, pattern, help) {
+  if (!pattern.test(value)) throw new Error(`${key} has invalid characters${help ? ` (${help})` : ''}`);
+  return value;
+}
+
+function optSafeToken(params, key, pattern, help) {
+  const value = optString(params, key);
+  return value ? validateToken(value, key, pattern, help) : null;
 }
 
 // ── Per-kind argv builders ────────────────────────────────────────────────────
@@ -297,6 +307,56 @@ function buildDerivation(params) {
   return { argv, costClass, label: label2, costNote };
 }
 
+const DERIVATION_ASSESSMENT_JUDGES = ['none', 'claude', 'codex', 'gemini'];
+
+function parseDerivationLabels(params) {
+  const labels = reqString(params, 'labels')
+    .split(',')
+    .map((label) => label.trim())
+    .filter(Boolean);
+  if (!labels.length) throw new Error('labels is required');
+  for (const label of labels) {
+    if (!/^[\w.-]+$/.test(label)) throw new Error(`invalid derivation label: ${label}`);
+  }
+  return labels;
+}
+
+function defaultDerivationAssessmentOutDir(labels) {
+  const first = labels[0].replace(/[^\w.-]+/gu, '-');
+  return `exports/dramatic-derivation/derivation-assessments/${first}${labels.length > 1 ? `-plus-${labels.length - 1}` : ''}`;
+}
+
+function buildDerivationAssessmentJob(params) {
+  const labels = parseDerivationLabels(params);
+  const judgeCli = enumValue(params, 'judgeCli', DERIVATION_ASSESSMENT_JUDGES, 'none');
+  const runDir = optString(params, 'runDir') || 'exports/dramatic-derivation/loop';
+  const outDir = optString(params, 'outDir') || defaultDerivationAssessmentOutDir(labels);
+  const argv = ['--labels', labels.join(','), '--run-dir', runDir, '--out-dir', outDir, '--judge-cli', judgeCli];
+
+  const rubrics = optString(params, 'rubrics');
+  if (rubrics) argv.push('--rubrics', rubrics);
+  const model = optString(params, 'model');
+  if (model) argv.push('--model', model);
+  const judgeEffort = enumValue(params, 'judgeEffort', ['low', 'medium', 'high', 'xhigh', 'max'], null);
+  if (judgeEffort) argv.push('--judge-effort', judgeEffort);
+  const timeoutMs = optPosInt(params, 'timeoutMs');
+  if (timeoutMs) argv.push('--timeout-ms', String(timeoutMs));
+  const maxTranscriptChars = optPosInt(params, 'maxTranscriptChars');
+  if (maxTranscriptChars) argv.push('--max-transcript-chars', String(maxTranscriptChars));
+  const scoreConcurrency = optPosInt(params, 'scoreConcurrency');
+  if (scoreConcurrency) argv.push('--score-concurrency', String(scoreConcurrency));
+  if (bool(params.resumeExisting)) argv.push('--resume-existing');
+  if (bool(params.force)) argv.push('--force');
+
+  const costClass = judgeCli === 'none' ? COST_CLASSES.FREE : COST_CLASSES.QUOTA;
+  const label = `derivation-assessment · ${labels.length} run${labels.length === 1 ? '' : 's'} · judge=${judgeCli}`;
+  const costNote =
+    judgeCli === 'none'
+      ? 'No external judge — writes mechanical proof gates, human-readable DAG profiles, prompts, manifest, and report.'
+      : `External judge "${judgeCli}" routes through the CLI/Max plan (quota drain); proof gate remains mechanical.`;
+  return { argv, costClass, label, costNote };
+}
+
 const STRUCTURE_CRITICS = ['rules', 'codex', 'claude', 'claude-code'];
 
 function buildAdversarialScore(params) {
@@ -358,6 +418,71 @@ function buildOnlineScore(params) {
   return { argv, costClass, label, costNote };
 }
 
+const EVAL_JUDGE_CLIS = ['none', 'claude', 'gemini', 'codex'];
+const EVAL_TOKEN_RE = /^[\w./:-]+$/u;
+const EVAL_CSV_TOKEN_RE = /^[\w./:-]+(?:,[\w./:-]+)*$/u;
+const EVAL_CLUSTER_RE = /^[\w-]+(?:,[\w-]+)*$/u;
+
+function buildEvalCell(params) {
+  const cell = validateToken(reqString(params, 'cell'), 'cell', /^cell_\d+[\w-]*$/u, 'expected cell_<n>...');
+  const runs = optPosInt(params, 'runs') || 1;
+  const parallelism = optPosInt(params, 'parallelism');
+  const dryRun = bool(params.dryRun);
+  const skipRubric = bool(params.skipRubric);
+  const live = bool(params.live);
+  const transcript = bool(params.transcript);
+  const allowModelMix = bool(params.allowModelMix);
+
+  const scenario = optSafeToken(params, 'scenario', EVAL_CSV_TOKEN_RE, 'comma-separated scenario ids');
+  const cluster = optSafeToken(params, 'cluster', EVAL_CLUSTER_RE, 'comma-separated cluster names');
+  if (scenario && cluster) throw new Error('scenario and cluster are mutually exclusive');
+
+  const argv = ['run', '--profiles', cell, '--runs', String(runs)];
+  if (scenario) argv.push('--scenario', scenario);
+  if (cluster) argv.push('--cluster', cluster);
+  if (parallelism) argv.push('--parallelism', String(parallelism));
+
+  const description =
+    optString(params, 'description') || `Pedagogical drama batch: ${cell}${scenario ? ` / ${scenario}` : ''}`;
+  argv.push('--description', description.slice(0, 240));
+
+  const addModelFlag = (flag, key) => {
+    const value = optSafeToken(params, key, EVAL_TOKEN_RE, 'model alias or provider/model slug');
+    if (value) argv.push(flag, value);
+  };
+  addModelFlag('--model', 'model');
+  addModelFlag('--tutor-model', 'tutorModel');
+  addModelFlag('--ego-model', 'egoModel');
+  addModelFlag('--superego-model', 'superegoModel');
+  addModelFlag('--learner-model', 'learnerModel');
+  addModelFlag('--learner-ego-model', 'learnerEgoModel');
+  addModelFlag('--learner-superego-model', 'learnerSuperegoModel');
+
+  const judge = enumValue(params, 'judgeCli', EVAL_JUDGE_CLIS, 'none');
+  if (judge !== 'none') {
+    argv.push('--judge-cli', judge);
+    const judgeCliModel = optSafeToken(params, 'judgeCliModel', EVAL_TOKEN_RE, 'CLI model alias');
+    if (judgeCliModel) argv.push('--judge-cli-model', judgeCliModel);
+  }
+
+  const maxTokens = optPosInt(params, 'maxTokens');
+  if (maxTokens) argv.push('--max-tokens', String(maxTokens));
+  if (dryRun) argv.push('--dry-run');
+  if (skipRubric) argv.push('--skip-rubric');
+  if (live) argv.push('--live');
+  if (transcript) argv.push('--transcript');
+  if (allowModelMix) argv.push('--allow-model-mix');
+
+  const costClass = dryRun ? COST_CLASSES.FREE : COST_CLASSES.METERED;
+  const label = `script-batch · ${cell} · runs=${runs}${scenario ? ` · ${scenario}` : cluster ? ` · ${cluster}` : ''}${
+    dryRun ? ' · dry-run' : ''
+  }`;
+  const costNote = dryRun
+    ? 'Dry-run script batch uses mock tutor/learner/judge paths — no API spend.'
+    : 'Real script batches call the configured tutor and learner models; treat as OpenRouter/API metered spend.';
+  return { argv, costClass, label, costNote };
+}
+
 // ── Whitelisted job kinds ─────────────────────────────────────────────────────
 
 export const JOB_KINDS = Object.freeze({
@@ -385,6 +510,12 @@ export const JOB_KINDS = Object.freeze({
     title: 'Derivation — proof-DAG drama (watch live)',
     build: buildDerivation,
   },
+  'derivation-assessment': {
+    kind: 'derivation-assessment',
+    script: 'scripts/score-derivation-transcript-rubric-suite.js',
+    title: 'Derivation assessment — proof gate + readable DAG',
+    build: buildDerivationAssessmentJob,
+  },
   'adversarial-score': {
     kind: 'adversarial-score',
     script: 'scripts/critic-poetics-structure.js',
@@ -396,6 +527,12 @@ export const JOB_KINDS = Object.freeze({
     script: 'scripts/score-poetics-missing-sonnet.js',
     title: 'Online score — Sonnet (OpenRouter, metered $)',
     build: buildOnlineScore,
+  },
+  'eval-cell': {
+    kind: 'eval-cell',
+    script: 'scripts/eval-cli.js',
+    title: 'Script batch — tutor cell + AI learner',
+    build: buildEvalCell,
   },
 });
 
@@ -424,6 +561,17 @@ function resultLinks(kind, params = {}) {
     if (params.label) links.push({ label: 'open target run', href: `/derivation/${encodeURIComponent(params.label)}` });
     return links;
   }
+  if (kind === 'derivation-assessment') {
+    const labels = String(params.labels || '')
+      .split(',')
+      .map((label) => label.trim())
+      .filter(Boolean);
+    const links = [{ label: 'open proof runs', href: '/derivation' }];
+    if (labels.length === 1) {
+      links.unshift({ label: 'open assessed run', href: `/derivation/${encodeURIComponent(labels[0])}` });
+    }
+    return links;
+  }
   if (kind === 'replay') return [{ label: 'open replays', href: '/replays' }];
   if (kind === 'generate') return [{ label: 'open scripts', href: '/browse' }];
   if (kind === 'pedagogical-drama') {
@@ -434,7 +582,18 @@ function resultLinks(kind, params = {}) {
   }
   if (kind === 'adversarial-score') return [{ label: 'open scores', href: '/browse?tab=scores' }];
   if (kind === 'online-score') {
-    return [{ label: 'open scored scripts', href: `/browse${q({ runId: params.mode === 'run' ? params.runId : '', tab: 'scores' })}` }];
+    return [
+      {
+        label: 'open scored scripts',
+        href: `/browse${q({ runId: params.mode === 'run' ? params.runId : '', tab: 'scores' })}`,
+      },
+    ];
+  }
+  if (kind === 'eval-cell') {
+    return [
+      { label: 'open eval notes', href: '/eval' },
+      { label: 'launch another', href: `/admin/runs${q({ kind: 'eval-cell', cell: params.cell })}` },
+    ];
   }
   return [];
 }
@@ -466,9 +625,10 @@ function planChecks(plan, params = {}) {
     {
       label: 'Result surface',
       state: resultLinks(plan.kind, params).length ? 'ok' : 'warn',
-      detail: resultLinks(plan.kind, params)
-        .map((l) => l.label)
-        .join(', ') || 'no dedicated result route',
+      detail:
+        resultLinks(plan.kind, params)
+          .map((l) => l.label)
+          .join(', ') || 'no dedicated result route',
     },
   ];
 }

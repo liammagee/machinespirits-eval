@@ -34,6 +34,7 @@
  */
 
 import fs from 'fs';
+import os from 'os';
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -53,10 +54,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
-// Logs root is overridable via EVAL_LOGS_DIR for sandboxed/CI runs that
-// can't write through the symlinked logs/ → ../machinespirits-eval-private
-// tree. Default preserves the existing behaviour.
-const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(ROOT_DIR, 'logs');
+// Data home: the canonical archive holding the DB and the dialogue logs, co-located
+// (workplan item: consolidate-logs-db-private-archive). Override with MS_DATA_HOME.
+const DATA_HOME = process.env.MS_DATA_HOME || path.join(os.homedir(), '.machinespirits-data');
+// Logs root, in precedence order:
+//   1. EVAL_LOGS_DIR — explicit override (sandboxed/CI tmp; the packaged desktop).
+//   2. <DATA_HOME>/logs — co-located beside the DB, so ANY worktree finds the
+//      canonical logs without a per-worktree `logs/` symlink (the recurrence the
+//      symlink approach kept hitting; this is what fixes the provenance
+//      `log_file_missing` from fresh checkouts).
+//   3. <repo>/logs — fallback for hosts without the archive (e.g. the website
+//      shallow clone that mounts /poetics from the DB and never reads logs).
+const LOGS_ROOT =
+  process.env.EVAL_LOGS_DIR || (fs.existsSync(DATA_HOME) ? path.join(DATA_HOME, 'logs') : path.join(ROOT_DIR, 'logs'));
 
 // Initialize database — override with EVAL_DB_PATH env var for test isolation
 const dbPath = process.env.EVAL_DB_PATH || path.join(DATA_DIR, 'evaluations.db');
@@ -325,6 +335,7 @@ migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN tutor_charisma_judge_model TEXT`,
   'tutor_charisma_judge_model',
 );
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_register_scores TEXT`, 'tutor_register_scores');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN id_construction_trace TEXT`, 'id_construction_trace');
 
 // Adaptive grader (cells with runner: adaptive — 110, 111-113, 118-120).
@@ -717,6 +728,7 @@ export function storeResult(runId, result) {
       learner_prompt_version,
       prompt_content_hash,
       learner_id,
+      id_construction_trace,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -735,6 +747,7 @@ export function storeResult(runId, result) {
       ?,
       ?,
       ?, ?, ?, ?,
+      ?,
       ?,
       ?
     )
@@ -794,6 +807,7 @@ export function storeResult(runId, result) {
     result.learnerPromptVersion || null,
     result.promptContentHash || null,
     result.learnerId || null,
+    result.idConstructionTrace == null ? null : JSON.stringify(result.idConstructionTrace),
     new Date().toISOString(),
   );
 
@@ -2026,11 +2040,18 @@ function parseResultRow(row) {
     tutorHolisticOverallScore: row.tutor_holistic_overall_score != null ? row.tutor_holistic_overall_score : null,
     tutorHolisticSummary: row.tutor_holistic_summary || null,
     tutorHolisticJudgeModel: row.tutor_holistic_judge_model || null,
+    tutorCharismaScores: row.tutor_charisma_scores ? JSON.parse(row.tutor_charisma_scores) : null,
+    tutorCharismaOverallScore: row.tutor_charisma_overall_score != null ? row.tutor_charisma_overall_score : null,
+    tutorCharismaSummary: row.tutor_charisma_summary || null,
+    tutorCharismaRubricVersion: row.tutor_charisma_rubric_version || null,
+    tutorCharismaJudgeModel: row.tutor_charisma_judge_model || null,
+    tutorRegisterScores: row.tutor_register_scores ? JSON.parse(row.tutor_register_scores) : null,
     // Prompt versioning
     tutorEgoPromptVersion: row.tutor_ego_prompt_version || null,
     tutorSuperegoPromptVersion: row.tutor_superego_prompt_version || null,
     learnerPromptVersion: row.learner_prompt_version || null,
     promptContentHash: row.prompt_content_hash || null,
+    idConstructionTrace: row.id_construction_trace ? JSON.parse(row.id_construction_trace) : null,
   };
 }
 
@@ -2880,6 +2901,46 @@ export function updateResultTutorCharismaScores(resultId, evaluation) {
     evaluation.charismaJudgeModel || null,
     resultId,
   );
+
+  recordAudit();
+}
+
+export function updateResultTutorRegisterScore(resultId, evaluation) {
+  const registerName = String(evaluation.register || '').trim();
+  const sliceKey = String(evaluation.sliceKey || '').trim();
+  if (!registerName) throw new Error('updateResultTutorRegisterScore requires evaluation.register');
+  if (!sliceKey) throw new Error('updateResultTutorRegisterScore requires evaluation.sliceKey');
+
+  const recordAudit = withAuditTrail(resultId, ['tutor_register_scores'], 'updateResultTutorRegisterScore', {
+    judgeModel: evaluation.judgeModel,
+    rubricVersion: evaluation.rubricVersion,
+  });
+
+  const current = db.prepare(`SELECT tutor_register_scores FROM evaluation_results WHERE id = ?`).get(resultId);
+  let payload = {};
+  if (current?.tutor_register_scores) {
+    try {
+      payload = JSON.parse(current.tutor_register_scores) || {};
+    } catch {
+      payload = {};
+    }
+  }
+
+  payload[registerName] = payload[registerName] || {};
+  payload[registerName][sliceKey] = {
+    scores: evaluation.scores || null,
+    overall: evaluation.overall ?? null,
+    summary: evaluation.summary || null,
+    rubric_version: evaluation.rubricVersion || null,
+    rubric_path: evaluation.rubricPath || null,
+    judge_model: evaluation.judgeModel || null,
+    guardrail_adjustments: evaluation.guardrailAdjustments || [],
+    slice_ref: evaluation.sliceRef || null,
+    scored_at: evaluation.scoredAt || new Date().toISOString(),
+  };
+
+  const stmt = db.prepare(`UPDATE evaluation_results SET tutor_register_scores = ? WHERE id = ?`);
+  stmt.run(JSON.stringify(payload), resultId);
 
   recordAudit();
 }

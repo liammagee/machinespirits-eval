@@ -102,9 +102,9 @@ function playedReleaseSafety(world, result, diagnosis) {
         verdict: solvency?.verdict || null,
         guardIntervention: Boolean(
           decision.pacingGuard?.blocked ||
-            decision.pacingGuard?.forcedSafe ||
-            decision.visibleGuard?.blocked ||
-            decision.visibleGuard?.forcedSafe,
+          decision.pacingGuard?.forcedSafe ||
+          decision.visibleGuard?.blocked ||
+          decision.visibleGuard?.forcedSafe,
         ),
       };
     });
@@ -214,10 +214,10 @@ function proofDebtReplayRows(world, arms, loopDir) {
     const pass = isProofDebtArm
       ? Boolean(
           proofDebt?.debtsDetected > 0 &&
-            proofDebt?.restoredMoves > 0 &&
-            proofDebt?.repairedTargets > 0 &&
-            tutorView.pass &&
-            ledgerCarriesArithmetic,
+          proofDebt?.restoredMoves > 0 &&
+          proofDebt?.repairedTargets > 0 &&
+          tutorView.pass &&
+          ledgerCarriesArithmetic,
         )
       : null;
 
@@ -322,7 +322,9 @@ function renderContingencyTable(rows) {
   lines.push(`| guard state | ${modes.join(' | ')} | n |`);
   lines.push(`|---|${modes.map(() => '---:').join('|')}|---:|`);
   for (const guard of guardStates) {
-    const counts = modes.map((mode) => classified.filter((row) => row.guardState === guard && row.failureMode === mode).length);
+    const counts = modes.map(
+      (mode) => classified.filter((row) => row.guardState === guard && row.failureMode === mode).length,
+    );
     lines.push(`| \`${guard}\` | ${counts.join(' | ')} | ${counts.reduce((a, b) => a + b, 0)} |`);
   }
   return lines;
@@ -346,7 +348,8 @@ function renderVisibleAgreementTable(rows) {
   lines.push('| arm | decision points | agreement | false releases | false holds | catastrophic false releases |');
   lines.push('|---|---:|---:|---:|---:|---:|');
   for (const row of visibleRows) {
-    const agreement = row.visibleAgreement.agreementRate == null ? 'n/a' : row.visibleAgreement.agreementRate.toFixed(3);
+    const agreement =
+      row.visibleAgreement.agreementRate == null ? 'n/a' : row.visibleAgreement.agreementRate.toFixed(3);
     lines.push(
       `| \`${row.arm}\` | ${row.visibleAgreement.decisionPoints} | ${agreement} | ${row.visibleAgreement.falseReleases} | ${row.visibleAgreement.falseHolds} | ${row.visibleAgreement.catastrophicFalseReleases} |`,
     );
@@ -357,7 +360,9 @@ function renderVisibleAgreementTable(rows) {
 
 function renderProofDebtTable(rows) {
   const lines = [];
-  lines.push('| arm | guard | verdict | failure mode | detected | restored | targets | tutor view | ledger ctrl | pass |');
+  lines.push(
+    '| arm | guard | verdict | failure mode | detected | restored | targets | tutor view | ledger ctrl | pass |',
+  );
   lines.push('|---|---|---|---|---:|---:|---|---|---|---|');
   for (const row of rows) {
     if (row.missing) {
@@ -378,7 +383,9 @@ function renderWorldReport({ world, worldIR, guardSpec, rows, proofDebtRows }) {
   const lines = [];
   lines.push(`# Guard compiler replay report: ${world.title}`);
   lines.push('');
-  lines.push('Static P1 slice only: WorldIR + GuardSpec compilation and dry replay over archived arms. No live runtime behavior, model calls, database writes, or new k-fans.');
+  lines.push(
+    'Static P1 slice only: WorldIR + GuardSpec compilation and dry replay over archived arms. No live runtime behavior, model calls, database writes, or new k-fans.',
+  );
   lines.push('');
   lines.push('## WorldIR summary');
   lines.push('');
@@ -410,7 +417,9 @@ function renderWorldReport({ world, worldIR, guardSpec, rows, proofDebtRows }) {
   lines.push('|---|---:|---|---|');
   for (const row of guardSpec.guards.hidden_pacing.releaseCorridors) {
     const unsafe = row.unsafeTurns.map((entry) => `t${entry.turn}:${entry.verdict}`).join(', ') || 'none';
-    lines.push(`| \`${row.premise}\` | t${row.scheduledTurn} | ${row.safeTurns.map((turn) => `t${turn}`).join(', ') || 'none'} | ${unsafe} |`);
+    lines.push(
+      `| \`${row.premise}\` | t${row.scheduledTurn} | ${row.safeTurns.map((turn) => `t${turn}`).join(', ') || 'none'} | ${unsafe} |`,
+    );
   }
   lines.push('');
   lines.push('## Archived replay');
@@ -500,7 +509,10 @@ function generateArtifacts(outDir, { loopDir = LOOP_DIR, worldPaths = WORLD_PATH
 
     writeJson(path.join(outDir, summary.worldIR), worldIR);
     writeJson(path.join(outDir, summary.guardSpec), guardSpec);
-    writeFileSync(path.join(outDir, summary.report), renderWorldReport({ world, worldIR, guardSpec, rows, proofDebtRows }));
+    writeFileSync(
+      path.join(outDir, summary.report),
+      renderWorldReport({ world, worldIR, guardSpec, rows, proofDebtRows }),
+    );
     index.worlds.push(summary);
   }
 

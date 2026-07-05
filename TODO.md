@@ -1,8 +1,10 @@
-# Future Development TODO
+# Future Development TODO Archive
 
-> **NOTE:** Current Paper 2.0 / poetics work in this fork lives in dated notes under [`notes/poetics/`](notes/poetics/) and [`notes/`](notes/) more broadly, with [`DRAMATIC-RECOGNITION-PLAN.md`](DRAMATIC-RECOGNITION-PLAN.md) as the poetics closeout ledger. There is no separate `notes/paper-2-0/BOARD.md` in this checkout. This TODO file contains older general experimental extensions and repository sweep items.
+> **CURRENT TODO SOURCE OF TRUTH:** live work is tracked in [`workplan/`](workplan/). Edit or add one card under [`workplan/items/`](workplan/items/), then regenerate [`workplan/BOARD.md`](workplan/BOARD.md) and [`workplan/board.json`](workplan/board.json) with `node scripts/workplan.js render && node scripts/workplan.js validate`. `workplan/BOARD.md` is the canonical human-readable board view.
 >
-> **Task tracking (2026-04-16):** Open items from this file have been migrated into the in-session task list (TaskList) — see tasks #1-#12. Use `TaskList` / `TaskGet <id>` to view current status. This document remains the canonical design reference; the task list is the working board.
+> **ARCHIVE STATUS:** this file is no longer the working board. It remains historical design context for older A/B/C/D/E/F roadmap entries. Do not append new live todos here; create or update a workplan item and link back to this file only as provenance.
+
+> Current Paper 2.0 / poetics work in this fork lives in dated notes under [`notes/poetics/`](notes/poetics/) and [`notes/`](notes/) more broadly, with [`DRAMATIC-RECOGNITION-PLAN.md`](DRAMATIC-RECOGNITION-PLAN.md) as the poetics closeout ledger. There is no separate `notes/paper-2-0/BOARD.md` in this checkout.
 
 Generated 2026-02-19 from comprehensive repository sweep.
 Organized by theme, roughly priority-ordered within each section.

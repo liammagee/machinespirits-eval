@@ -39,12 +39,10 @@ function stubClient(replies) {
 }
 
 test('learner transformation exposes the compact ownership proof family set', () => {
-  assert.deepEqual([...LEARNER_TRANSFORMATION_REQUIRED_FAMILIES], [
-    'own_words',
-    'use_in_path',
-    'discriminate_wrong_route',
-    'purpose_link',
-  ]);
+  assert.deepEqual(
+    [...LEARNER_TRANSFORMATION_REQUIRED_FAMILIES],
+    ['own_words', 'use_in_path', 'discriminate_wrong_route', 'purpose_link'],
+  );
 });
 
 test('learner transformation audit rejects hidden proof-state inputs recursively', () => {
@@ -56,10 +54,7 @@ test('learner transformation audit rejects hidden proof-state inputs recursively
   });
 
   assert.equal(audit.ok, false);
-  assert.deepEqual(
-    audit.leaks.map((leak) => leak.key).sort(),
-    ['D', 'hiddenBoard', 'predicateName', 'proofPath'],
-  );
+  assert.deepEqual(audit.leaks.map((leak) => leak.key).sort(), ['D', 'hiddenBoard', 'predicateName', 'proofPath']);
 
   const state = deriveLearnerTransformationState({
     target: WORLD.ownershipTarget,

@@ -153,7 +153,8 @@ function slug(value) {
 function modelFamily(modelRef) {
   const ref = String(modelRef || '').toLowerCase();
   if (ref.includes('codex') || ref.includes('openai') || ref.includes('gpt')) return 'openai';
-  if (ref.includes('claude') || ref.includes('anthropic') || ref.includes('sonnet') || ref.includes('opus')) return 'anthropic';
+  if (ref.includes('claude') || ref.includes('anthropic') || ref.includes('sonnet') || ref.includes('opus'))
+    return 'anthropic';
   if (ref.includes('gemini') || ref.includes('google')) return 'google';
   if (ref.includes('deepseek')) return 'deepseek';
   return ref || 'unknown';
@@ -198,7 +199,12 @@ function renderTurn(role, text) {
 }
 
 function renderTranscript(turns) {
-  return turns.map((turn) => renderTurn(turn.role, turn.text)).join('\n\n').trim() + '\n';
+  return (
+    turns
+      .map((turn) => renderTurn(turn.role, turn.text))
+      .join('\n\n')
+      .trim() + '\n'
+  );
 }
 
 function stripOuterQuote(text) {
@@ -274,8 +280,14 @@ function mockLearnerContinuation(branchKey, branch, design = {}) {
   const move = String(branch?.intended_tutor_move || '').toLowerCase();
   if (key.includes('adaptive') || move.includes('gate') || move.includes('route_change')) {
     const profile = design.numeric_profile || branch.numeric_profile || {};
-    const gateA = profile.gate_a_answer || profile.gateA_answer || profile.gate_a_floor || profile.gateA_floor || 'the first gate';
-    const gateB = profile.gate_b_answer || profile.gateB_answer || profile.gate_b_recall || profile.gateB_recall || 'the second gate';
+    const gateA =
+      profile.gate_a_answer || profile.gateA_answer || profile.gate_a_floor || profile.gateA_floor || 'the first gate';
+    const gateB =
+      profile.gate_b_answer ||
+      profile.gateB_answer ||
+      profile.gate_b_recall ||
+      profile.gateB_recall ||
+      'the second gate';
     const replacement =
       profile.replacement_claim ||
       'this model is not deployable from the headline route alone; the replacement claim must report the visible failure mode.';
@@ -542,7 +554,9 @@ async function main() {
         persona: opts.persona || sourceItem?.persona || 'adversarial_tester',
       };
 
-  const branchEntries = Object.entries(design.branches).filter(([key]) => !opts.branches || opts.branches.includes(key));
+  const branchEntries = Object.entries(design.branches).filter(
+    ([key]) => !opts.branches || opts.branches.includes(key),
+  );
   if (!branchEntries.length) throw new Error('No selected branches to replay');
 
   prepareOutDir(opts.outDir, opts.force);
@@ -554,7 +568,9 @@ async function main() {
   const scorePaths = opts.scoreMock
     ? { mock: path.join(opts.outDir, 'poetics-phase2-mock.json') }
     : opts.score
-      ? Object.fromEntries(scoreModels.map((model) => [model, path.join(opts.outDir, `poetics-phase2-${slug(model)}.json`)]))
+      ? Object.fromEntries(
+          scoreModels.map((model) => [model, path.join(opts.outDir, `poetics-phase2-${slug(model)}.json`)]),
+        )
       : null;
   const controlBranchKeys = inferControlBranchKeys(design);
   const forbiddenTerms = design.forbidden_in_control_public_speech || [];
@@ -568,7 +584,8 @@ async function main() {
       ? { text: mockLearnerContinuation(branchKey, branch, design), trace: null }
       : await liveLearnerContinuation({ branch, design, opts, prefixTurns, sourceItem });
     const learnerResponse = continuation.text;
-    if (!String(learnerResponse || '').trim()) throw new Error(`Branch ${branchKey} produced an empty learner response`);
+    if (!String(learnerResponse || '').trim())
+      throw new Error(`Branch ${branchKey} produced an empty learner response`);
     const suffixTurns = [
       { role: 'TUTOR', text: tutorResponse },
       { role: 'LEARNER', text: learnerResponse },

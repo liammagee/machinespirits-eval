@@ -189,7 +189,7 @@ function releaseEntitlement({ releaseDecision, turn, playable, forcedPlay }) {
     releaseDecision?.visibleGuard?.candidate ||
     null;
   const scheduledTurn = candidate
-    ? playableEntry(playable, candidate)?.turn ?? (played === candidate ? releaseDecision?.scheduledTurn : null)
+    ? (playableEntry(playable, candidate)?.turn ?? (played === candidate ? releaseDecision?.scheduledTurn : null))
     : null;
   const currentAuthorized = candidate
     ? isCurrentAuthorizedRelease(candidate, { turn, playable, forcedPlay, releaseDecision })
@@ -219,10 +219,12 @@ function releaseEntitlement({ releaseDecision, turn, playable, forcedPlay }) {
 function visibleEntitlement({ view, releaseDecision, visibleConsolidation, release, conductProgressPolicy }) {
   const active = Boolean(
     releaseDecision?.hybridGuard?.accepted === false ||
-      releaseDecision?.consolidationGuard?.visiblePushIgnored ||
-      (releaseDecision?.visibleGuard?.blocked && releaseDecision?.pacingGuard && !releaseDecision.consolidationGuard?.held) ||
-      visibleConsolidation?.features?.stalling ||
-      visibleConsolidation?.features?.priorEchoed === false,
+    releaseDecision?.consolidationGuard?.visiblePushIgnored ||
+    (releaseDecision?.visibleGuard?.blocked &&
+      releaseDecision?.pacingGuard &&
+      !releaseDecision.consolidationGuard?.held) ||
+    visibleConsolidation?.features?.stalling ||
+    visibleConsolidation?.features?.priorEchoed === false,
   );
   const premiseId =
     releaseDecision?.visibleGuard?.candidate ||

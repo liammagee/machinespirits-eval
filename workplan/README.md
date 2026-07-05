@@ -1,6 +1,6 @@
 # Workplan — the project's single working board
 
-This folder is the **one place** where work is tracked across the whole project:
+This folder is the **single source of truth for todos** across the whole project:
 TODO items, daily-routine ideas, experiments, infra, paper tasks, maintenance.
 It is meant to be read and written by every surface that touches the project —
 humans, Claude Code, Codex, skills, the daily routine, the CLI, and the
@@ -13,18 +13,20 @@ without re-deriving the design history those other files hold.
 
 ## The one rule
 
-**`items/` is the source of truth. Everything else is either a derived view or a
-cross-link.** Concretely:
+**`workplan/` is the todo system; `items/` is the write source;
+`BOARD.md` is the generated readable board.** Everything else is either a
+derived view, historical context, or a cross-link. Concretely:
 
 - One work item = one markdown file in `items/` with YAML frontmatter.
   Merge-friendly (two agents can add items on two branches without conflict),
   diffable, greppable.
-- `BOARD.md` and `board.json` are **generated** from `items/` (by
-  `scripts/workplan.js render`). Never hand-edit them.
+- `BOARD.md` is the canonical human-readable board and `board.json` is the
+  dashboard/machine view. Both are **generated** from `items/` by
+  `scripts/workplan.js render`. Never hand-edit them.
 - We **link, never copy.** An item points at the paper §, the `notes/` design
   doc, the `exports/` report, the run IDs, the atlas module, the PR. It does not
-  restate them. `TODO.md` and `notes/` stay the design history; this folder is
-  the working board.
+  restate them. `TODO.md` and `notes/` stay design history and rationale; they
+  are not live todo boards.
 
 If you find yourself pasting content that already lives in the paper, a note, or
 an export, stop and link to it instead.
@@ -107,10 +109,12 @@ The body is free markdown: context, acceptance criteria, and a running log
 The board renders as a live web UI (the same surface in the browser dev server and
 the Scriptorium desktop app), backed by the **same write path as the CLI**:
 
-- **`/board`** — a kanban by status. Drag a card between lanes to change its status;
-  click a card to edit every field (including **milestone** and **depends on**); the
-  lane **+** adds an item; **Delete** removes one. Writes land in `items/` and
-  re-render `board.json`.
+- **`/board`** — a kanban by status. It defaults to an open-work focus so old
+  `done` / `archived` / `dropped` cards do not dominate the working surface;
+  use the focus controls or `?focus=all` / `?focus=settled` for history. Drag a
+  card between lanes to change its status; click a card to edit every field
+  (including **milestone** and **depends on**); the lane **+** adds an item;
+  **Delete** removes one. Writes land in `items/` and re-render `board.json`.
 - **`/timeline`** — milestones from `milestones.yaml` (id, title, target date, status,
   optional git `tag`) with a progress bar over each milestone's items, plus a live
   **GitHub** panel (open PRs, releases/tags, recent commits) for the `origin` repo via
@@ -120,7 +124,7 @@ the Scriptorium desktop app), backed by the **same write path as the CLI**:
 hand). All web writes need the repo on disk — a packaged desktop app's board is
 read-only.
 
-## The five surfaces (the contract)
+## The surfaces (the contract)
 
 Everyone reads this README first, then:
 
@@ -132,14 +136,17 @@ Everyone reads this README first, then:
 
 2. **CLI (`scripts/workplan.js`).** The programmatic surface:
    `list`, `show <id>`, `add`, `triage <inbox-file>`, `set <id> <field> <value>`,
-   `validate` (frontmatter ⇄ schema), `render` (regenerate `BOARD.md` +
+   `validate` (frontmatter ⇄ schema), `check` (validate items and prove the
+   generated board files are current), `render` (regenerate `BOARD.md` +
    `board.json`), `ingest` (pull from `TODO.md` + `notes/daily-notes/`). Wired
    into `npm run wp:*`.
 
 3. **Skill (`/ms-workplan`).** The conversational entry. Routes a request
    ("what's active?", "capture this", "what's blocked on budget?") to the right
    CLI command and explains the conventions. Definition:
-   `.claude/skills/ms-workplan/SKILL.md`.
+   `.claude/skills/ms-workplan/SKILL.md`, mirrored to
+   `.agents/skills/ms-workplan/SKILL.md` and `.codex/skills/ms-workplan/SKILL.md`
+   by `npm run skills:sync` (`config/agent-skill-sync.json` is the mirror list).
 
 4. **Routines (daily research roundup).** Each paper's "Project relevance" note
    is dropped into `inbox/` as `<date>-arxiv-<id>.md`, de-duped by arXiv id the
@@ -149,18 +156,29 @@ Everyone reads this README first, then:
    until a human or agent triages them into `items/` — the routine never writes
    straight to `items/`, so capture and commitment stay separate on purpose.
 
-5. **Scriptorium dashboard.** Reads the generated `board.json` and shows a
-   read-only board panel at the canonical poetics server (`:3466`). Display
-   only — mutations go through the CLI or item files, so the metered server stays
-   simple and safe.
+5. **GitHub.** GitHub is an integration surface, not the source of truth.
+   `.github/workflows/workplan-validate.yml` runs `npm run wp:check`,
+   `npm run wp:test`, and the PR workplan-link check. The PR template requires
+   `Workplan item: <id or N/A>`, validated by
+   `scripts/check-pr-workplan-link.js`. `.github/workflows/workplan-github-mirror.yml`
+   can manually mirror selected statuses (default: `active,blocked`) to GitHub
+   Issues through `scripts/workplan-github-mirror.js`; it dry-runs unless the
+   workflow input or local command passes `--apply`. Those issues carry a
+   `<!-- workplan-id: ... -->` marker and point back to the item file.
+
+6. **Scriptorium dashboard.** Reads the generated `board.json` and serves the
+   editable `/board` plus the GitHub-aware `/timeline` when running from a repo
+   checkout. Mutations still go through the same item-file write path as the CLI,
+   so the dashboard, generated board, and item files stay aligned.
 
 ## How this relates to what already exists
 
-This folder **does not replace** these — it points at them:
+This folder **replaces scattered todo tracking** while still pointing at the
+older context:
 
-- **`TODO.md`** — the design reference / sweep history. Open items get ingested
-  here as `items/` with `source: todo` and a link back. New work is captured
-  here, not appended there.
+- **`TODO.md`** — archived design reference / sweep history. Open items from it
+  have been ported into `items/` with `source: todo` and a link back. New work
+  is captured in `workplan/items/`, not appended to `TODO.md`.
 - **`notes/` and `notes/poetics/`** — dated design notes and arc ledgers. Items
   link to the relevant note; the note keeps the reasoning.
 - **`notes/daily-notes/`** — the research roundups. Their actions flow into

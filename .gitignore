@@ -40,6 +40,9 @@ dist/
 build/
 dist-desktop/
 
+# Lean/Lake local build output for optional proof-DAG certificates
+tools/proof-dag-lean/.lake/
+
 # IDE
 .idea/
 .vscode/

@@ -291,10 +291,7 @@ test('conduct tutor-view audit catches forbidden hidden fields', () => {
     rawBoard: [['hidden']],
   });
   assert.equal(audit.ok, false);
-  assert.deepEqual(
-    audit.leaks.map((leak) => leak.key).sort(),
-    ['dNow', 'proofPath', 'rawBoard'],
-  );
+  assert.deepEqual(audit.leaks.map((leak) => leak.key).sort(), ['dNow', 'proofPath', 'rawBoard']);
 });
 
 test('generator compliance audit checks realized move family and target', () => {
@@ -312,10 +309,7 @@ test('generator compliance audit checks realized move family and target', () => 
   );
   assert.equal(bad.checked, true);
   assert.equal(bad.ok, false);
-  assert.deepEqual(
-    bad.failures.map((f) => f.code).sort(),
-    ['intent_mismatch', 'target_mismatch'],
-  );
+  assert.deepEqual(bad.failures.map((f) => f.code).sort(), ['intent_mismatch', 'target_mismatch']);
 
   const release = auditConductGeneratorCompliance(
     { active: true, selectedMoveFamily: 'release_next_evidence', targetPremise: 'p2' },
@@ -392,10 +386,10 @@ test('runtime conduct policy flags generator noncompliance without constraining 
   assert.equal(out.conductPolicy.selectedMoveFamily, 'repair_dependency');
   assert.equal(out.conductPolicy.generatorCompliance.checked, true);
   assert.equal(out.conductPolicy.generatorCompliance.ok, false);
-  assert.deepEqual(
-    out.conductPolicy.generatorCompliance.failures.map((f) => f.code).sort(),
-    ['intent_mismatch', 'target_mismatch'],
-  );
+  assert.deepEqual(out.conductPolicy.generatorCompliance.failures.map((f) => f.code).sort(), [
+    'intent_mismatch',
+    'target_mismatch',
+  ]);
 });
 
 test('runtime conduct policy enforcement repairs noncompliant proof-debt moves without proof-debt guard', async () => {
@@ -446,11 +440,7 @@ test('runtime conduct trigger-only mode suppresses general proof-debt conduct ex
       },
     ],
   });
-  const tutor = makeLlmTutor(
-    smokeWorld,
-    client,
-    actsOpts({ conductPolicyEnforce: true, conductTriggerOnly: true }),
-  );
+  const tutor = makeLlmTutor(smokeWorld, client, actsOpts({ conductPolicyEnforce: true, conductTriggerOnly: true }));
   const noTrigger = await tutor(actsView(7, { proofDebt }));
   assert.equal(noTrigger.conductPolicy.active, false);
   assert.equal(noTrigger.conductPolicy.reasonCode, 'no_policy_trigger');

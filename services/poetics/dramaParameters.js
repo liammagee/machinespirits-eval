@@ -43,7 +43,8 @@ export const DRAMA_PARAMETER_COMPONENTS = deepFreeze([
     id: 'cast',
     label: 'Cast',
     shortLabel: 'cast',
-    summary: 'Which human, LLM backend, model, or mock plays each role.',
+    summary:
+      'Which human, LLM backend, model, or mock plays each role; cast.director is the scene-author/staging compatibility key.',
   },
   {
     id: 'audience',
@@ -66,7 +67,8 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'recognition',
     label: 'Recognition',
     shortLabel: 'recognition',
-    summary: 'Recognition-theory stance, recognition targets, anagnorisis/catharsis pressure, and recognition-sensitive scoring.',
+    summary:
+      'Recognition-theory stance, recognition targets, anagnorisis/catharsis pressure, and recognition-sensitive scoring.',
     parameterComponents: ['agents', 'form', 'scene', 'audience'],
     fieldPaths: [
       'drama.targets',
@@ -84,7 +86,8 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'superego_critic',
     label: 'Superego critic',
     shortLabel: 'superego',
-    summary: 'Tutor and learner ego/superego deliberation, critic dispositions, structure critics, and stall-watch self-monitoring.',
+    summary:
+      'Tutor and learner ego/superego deliberation, critic dispositions, structure critics, and stall-watch self-monitoring.',
     parameterComponents: ['agents', 'audience', 'cast', 'runtime'],
     fieldPaths: [
       'drama.tutor.architecture',
@@ -100,7 +103,8 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'adaptation',
     label: 'Adaptation',
     shortLabel: 'adaptation',
-    summary: 'Continuation policies, tutor adaptation policies, turn-plan moves, triggers, and dramaturgical route changes.',
+    summary:
+      'Continuation policies, tutor adaptation policies, turn-plan moves, triggers, and dramaturgical route changes.',
     parameterComponents: ['form', 'agents', 'scene'],
     fieldPaths: [
       'drama.targets',
@@ -123,7 +127,8 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'proof_dag',
     label: 'Proof DAG',
     shortLabel: 'proof DAG',
-    summary: 'Worlds, tutor scripts, hidden facts, premise ledgers, proof progress, and fixed-rule derivation outcomes.',
+    summary:
+      'Worlds, tutor scripts, hidden facts, premise ledgers, proof progress, and fixed-rule derivation outcomes.',
     parameterComponents: ['matter', 'form', 'runtime'],
     fieldPaths: [
       'drama.secret',
@@ -132,13 +137,13 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
       'drama.secret.symbolic',
       'drama.act_structure',
     ],
-    runParams: ['world', 'script', 'answers'],
+    runParams: ['world', 'script', 'answers', 'labels', 'runDir'],
   },
   {
     id: 'cast_layer',
     label: 'Cast layer',
     shortLabel: 'cast',
-    summary: 'Human, LLM, model, backend, role-map, and mock bindings for the roles in a scene or run.',
+    summary: 'Human, LLM, model, backend, role-map, and mock bindings, including the scene-author/director role.',
     parameterComponents: ['cast', 'agents', 'runtime'],
     fieldPaths: [
       'cast.director',
@@ -174,6 +179,9 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
       'key',
       'sampleDir',
       'rootDir',
+      'rubrics',
+      'judgeCli',
+      'judgeEffort',
       'scoreConcurrency',
       'allowQualityWarnings',
       'failOnViolation',
@@ -183,9 +191,20 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
     id: 'run_orchestration',
     label: 'Run orchestration',
     shortLabel: 'runtime',
-    summary: 'IDs, specs, limits, output paths, dry-run/force controls, concurrency, cost gates, and process launch state.',
+    summary:
+      'IDs, specs, limits, output paths, dry-run/force controls, concurrency, cost gates, and process launch state.',
     parameterComponents: ['matter', 'runtime'],
-    fieldPaths: ['drama.id', 'drama.max_turns', 'run.kind', 'run.mock', 'run.dry_run', 'run.force', 'run.cost_class', 'run.output', 'run.concurrency'],
+    fieldPaths: [
+      'drama.id',
+      'drama.max_turns',
+      'run.kind',
+      'run.mock',
+      'run.dry_run',
+      'run.force',
+      'run.cost_class',
+      'run.output',
+      'run.concurrency',
+    ],
     runParams: [
       'id',
       'spec',
@@ -198,6 +217,8 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
       'outDir',
       'outRoot',
       'outBase',
+      'timeoutMs',
+      'maxTranscriptChars',
       'concurrency',
       'batchSize',
       'dryRun',
@@ -208,6 +229,7 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
       'claudePersistentWorkers',
       'label',
       'effort',
+      'resumeExisting',
     ],
   },
 ]);
@@ -306,12 +328,28 @@ export const DRAMA_PARAMETER_FIELDS = deepFreeze([
 ]);
 
 export const COMPOSER_BASE_VOCAB = deepFreeze({
-  forms: ['peripeteia', 'anagnorisis', 'catharsis', 'surprise_inevitability', 'unity_of_action', 'hamartia_integration'],
+  forms: [
+    'peripeteia',
+    'anagnorisis',
+    'catharsis',
+    'surprise_inevitability',
+    'unity_of_action',
+    'hamartia_integration',
+  ],
   promptTypes: ['recognition', 'base', 'placebo', 'naive', 'dialectical_suspicious', 'matched_recognition'],
   tutorArch: ['ego_superego', 'ego_only', 'id_director'],
   superego: ['suspicious', 'standard', 'adversary', 'advocate', 'strict', 'coupling'],
   continuationPolicy: ['none', 'anchor', 'revoice', 'reconsider', 'reframe'],
-  adaptationPolicy: ['none', 'routine', 'uptake', 'peripeteia', 'uptake+peripeteia', 'socratic_discovery', 'reveal_secret'],
+  adaptationPolicy: [
+    'none',
+    'routine',
+    'uptake',
+    'peripeteia',
+    'uptake+peripeteia',
+    'socratic_discovery',
+    'reveal_secret',
+    'withhold_secret',
+  ],
   speakers: ['learner', 'tutor', 'director'],
   stagePolicy: ['sparse', 'none', 'none_except_required_cue', 'short', 'interventionist', 'rich'],
   stageStyle: [
@@ -327,6 +365,7 @@ export const COMPOSER_BASE_VOCAB = deepFreeze({
   grading: ['graded', 'binary'],
   blinding: ['arm-blind', 'omniscient', 'fully-blind'],
   roles: ['tutor', 'learner', 'director'],
+  roleLabels: { tutor: 'Tutor', learner: 'Learner', director: 'Scene author / director' },
   movesByRole: {
     tutor: [
       'stock_take',
@@ -359,6 +398,8 @@ export const RUN_PARAM_COMPONENT_BY_NAME = deepFreeze({
   only: 'matter',
   world: 'matter',
   script: 'matter',
+  labels: 'matter',
+  runDir: 'matter',
   sampleDir: 'matter',
   rootDir: 'matter',
   title: 'matter',
@@ -381,6 +422,9 @@ export const RUN_PARAM_COMPONENT_BY_NAME = deepFreeze({
   checker: 'audience',
   critic: 'audience',
   key: 'audience',
+  rubrics: 'audience',
+  judgeCli: 'audience',
+  judgeEffort: 'audience',
   allowQualityWarnings: 'audience',
   failOnViolation: 'audience',
 
@@ -396,6 +440,8 @@ export const RUN_PARAM_COMPONENT_BY_NAME = deepFreeze({
   outBase: 'runtime',
   concurrency: 'runtime',
   batchSize: 'runtime',
+  timeoutMs: 'runtime',
+  maxTranscriptChars: 'runtime',
   scoreConcurrency: 'runtime',
   mock: 'runtime',
   dryRun: 'runtime',
@@ -405,6 +451,7 @@ export const RUN_PARAM_COMPONENT_BY_NAME = deepFreeze({
   stallWatch: 'runtime',
   claudePersistentWorkers: 'runtime',
   label: 'runtime',
+  resumeExisting: 'runtime',
 });
 
 const COMPONENT_BY_ID = new Map(DRAMA_PARAMETER_COMPONENTS.map((component) => [component.id, component]));
@@ -420,9 +467,7 @@ function addMapValue(map, key, value) {
 
 function mapEntriesToFrozenObject(map) {
   return deepFreeze(
-    Object.fromEntries(
-      Array.from(map.entries()).map(([key, values]) => [key, Array.from(new Set(values))]),
-    ),
+    Object.fromEntries(Array.from(map.entries()).map(([key, values]) => [key, Array.from(new Set(values))])),
   );
 }
 

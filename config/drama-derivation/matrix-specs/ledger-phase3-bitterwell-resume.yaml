@@ -1,0 +1,21 @@
+# Resume spec for the killed bitterwell block (7/12 complete): the five
+# remaining labels, same base, same out dir — completed arm dirs untouched.
+# ledger-learner-r2 re-runs under its own label (the pre-registered retry).
+base:
+  world: config/drama-derivation/world-003-bitterwell.yaml
+  script: config/drama-derivation/tutor-scripts/bitterwell-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+arms:
+  - label: ledger-learner-r2
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}', learner-ledger: true }
+  - label: baseline-r3
+  - label: ledger-r3
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: ledger-palette-r3
+    flags: { strategy-ledger: '{"registerPalette":["modern","period"]}' }
+  - label: ledger-learner-r3
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}', learner-ledger: true }

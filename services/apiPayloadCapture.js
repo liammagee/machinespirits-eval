@@ -154,6 +154,30 @@ async function snapshotResponse(response, maxChars = MAX_CHARS) {
   return base;
 }
 
+async function snapshotAndReplayResponse(response, maxChars = MAX_CHARS) {
+  const base = {
+    status: response?.status ?? null,
+    ok: Boolean(response?.ok),
+    headers: sanitizeHeaders(response?.headers),
+    json: null,
+    text: null,
+  };
+  try {
+    const text = await response.text();
+    const parsed = safeJsonParse(text);
+    if (parsed) base.json = truncateValue(parsed, maxChars);
+    else base.text = clip(text, maxChars);
+    const replay = new Response(text, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+    return { snapshot: base, response: replay };
+  } catch {
+    return { snapshot: await snapshotResponse(response, maxChars), response };
+  }
+}
+
 function ensureInstalled() {
   if (installed) return;
   if (typeof globalThis.fetch !== 'function') return;
@@ -179,8 +203,9 @@ function ensureInstalled() {
     let error = null;
     try {
       response = await originalFetch(input, init);
-      responseSnapshot = await snapshotResponse(response, maxChars);
-      return response;
+      const replayed = await snapshotAndReplayResponse(response, maxChars);
+      responseSnapshot = replayed.snapshot;
+      return replayed.response;
     } catch (err) {
       error = err;
       throw err;

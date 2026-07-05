@@ -1,365 +1,121 @@
 {
-  "generated": "2026-06-23T06:06:54.257Z",
+  "generated": "2026-07-05T10:55:50.442Z",
   "counts": {
-    "total": 34,
+    "total": 86,
     "byStatus": {
-      "triaged": 22,
+      "done": 76,
       "blocked": 1,
-      "done": 11
+      "dropped": 2,
+      "active": 2,
+      "archived": 4,
+      "triaged": 1
     },
     "byType": {
-      "research": 17,
-      "experiment": 2,
-      "infra": 8,
-      "paper": 2,
-      "ops": 5
+      "research": 40,
+      "experiment": 19,
+      "infra": 10,
+      "content": 2,
+      "maintenance": 5,
+      "paper": 4,
+      "ops": 6
     }
   },
   "items": [
     {
-      "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",
-      "title": "A Model of Multi-turn Human Persuadability Using Probabilistic Belief Tracing",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
-      }
-    },
-    {
-      "id": "a17-one-side-replay-replication-across-scenes",
-      "title": "A17. One-Side Replay Replication Across Scenes",
+      "id": "negative-register-effect-estimation-grid",
+      "title": "Estimate negative-register effects with stance-fidelity gating",
       "status": "triaged",
       "type": "experiment",
       "priority": "P2",
       "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated or closed in the paper.",
-      "links": {
-        "notes": "TODO.md"
-      }
-    },
-    {
-      "id": "arcane-do-role-playing-language-agents-stay-in-character-at",
-      "title": "ArcANE: Do Role-Playing Language Agents Stay in Character at the Right Time?",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
-      }
-    },
-    {
-      "id": "consolidate-logs-db-private-archive",
-      "title": "Consolidate dialogue logs + DB into the private archive repo",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
       "source": "manual",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Dialogue logs are co-located with the DB under the private archive; npm run provenance:validate finds the logs; the dramatic fork's sibling-path log_dir stopgap is removed.",
-      "links": {
-        "items": "build-workplan-tooling"
-      },
-      "tags": [
-        "infra",
-        "provenance",
-        "logs",
-        "archive"
-      ]
-    },
-    {
-      "id": "d5-rubric-v3-0-pca-informed-consolidation",
-      "title": "D5. Rubric v3.0 PCA-Informed Consolidation",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Rubric v3.0 PCA-informed consolidation drafted in config/rubrics/v3.0/; calibration run; decision recorded in the paper or shelved with a reason.",
-      "links": {
-        "notes": "TODO.md"
-      }
-    },
-    {
-      "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
-      "title": "Environment-Grounded Automated Prompt Optimization for LLM Game Agents",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
-      }
-    },
-    {
-      "id": "from-holistic-evaluation-to-structured-criteria-rubrics-acro",
-      "title": "From Holistic Evaluation to Structured Criteria: Rubrics Across the Evolving LLM Landscape",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-14-research-roundup.html"
-      }
-    },
-    {
-      "id": "from-prompts-to-context-an-ontology-driven-framework-for-hum",
-      "title": "From Prompts to Context: An Ontology-Driven Framework for Human-Generative AI Collaboration",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
-      }
-    },
-    {
-      "id": "from-solver-to-tutor-evaluating-the-pedagogical-intelligence",
-      "title": "From Solver to Tutor: Evaluating the Pedagogical Intelligence of LLMs with KMP-Bench",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-15-research-roundup.html"
-      }
-    },
-    {
-      "id": "g2-6-4-recognition-effect-sizes-reproducible-once-the-column",
-      "title": "G2. §6.4 recognition effect sizes — reproducible once the column/judge/run are stated",
-      "status": "triaged",
-      "type": "paper",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "§6.4 recognition effect sizes reproduce from the DB via a script; numbers match the paper or the paper is corrected.",
-      "links": {
-        "notes": "TODO.md"
-      }
-    },
-    {
-      "id": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
-      "title": "Geist in the Machine: Simulating Recognition and Inner Dialogue in AI-Mediated Teaching and Research",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-15-research-roundup.html"
-      }
-    },
-    {
-      "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
-      "title": "Measuring Whether LLM Tutors Teach or Solve: A Diagnostic for Educational Impact",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
-      }
-    },
-    {
-      "id": "not-all-flips-are-conformity-decomposing-stance-convergence",
-      "title": "Not All Flips Are Conformity: Decomposing Stance Convergence in Multi-Agent LLM Debate",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
-      }
-    },
-    {
-      "id": "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro",
-      "title": "PerspectiveGap: A Benchmark for Multi-Agent Orchestration Prompting",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
-      }
-    },
-    {
-      "id": "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
-      "title": "SePO: Self-Evolving Prompt Agent for System Prompt Optimization",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-17-research-roundup.html"
-      }
-    },
-    {
-      "id": "socialcoach-personalized-social-skill-learning-with-rl-based",
-      "title": "SocialCoach: Personalized Social Skill Learning with RL-based Agentic Tutoring and Practice",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-14-research-roundup.html"
-      }
-    },
-    {
-      "id": "socratic-structured-tutoring-readings",
-      "title": "Assess structured-Socratic tutoring papers for the A1 pilot design",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Each paper read; a short note in notes/ records whether its design (knowledge-graph sequencing, student-state inference, withhold-and-derive) should change the A1 pilot instrument; the decision is logged on the a1-human-learner-validation item.",
+      "created": "2026-07-03",
+      "updated": "2026-07-03",
+      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
       "claim_status": "future",
       "links": {
-        "notes": "notes/daily-notes/2026-06-13-research-roundup.html",
-        "paper": "§2.1",
-        "items": "a1-human-learner-validation"
+        "notes": [
+          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
+          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
+        ],
+        "exports": [
+          "exports/charisma-desire-breakthrough-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-matrix.json",
+          "exports/negative-register-corrosive-exemplar-results.md"
+        ],
+        "runs": [
+          "eval-2026-07-02-e7b15809",
+          "eval-2026-07-02-7e461a5c",
+          "eval-2026-07-02-5c4d52e6"
+        ],
+        "items": [
+          "register-taxonomy-negative-registers"
+        ]
       },
+      "depends_on": [
+        "register-taxonomy-negative-registers"
+      ],
       "tags": [
-        "reading",
-        "socratic",
-        "pilot"
+        "registers",
+        "negative-registers",
+        "effect-estimation",
+        "stance-fidelity"
       ]
     },
     {
-      "id": "the-confident-liar-diagnosing-multi-agent-debate-with-log-pr",
-      "title": "The Confident Liar: Diagnosing Multi-Agent Debate with Log-Probabilities and LLM-as-Judge",
-      "status": "triaged",
+      "id": "blueprint-composition",
+      "title": "Blueprint composition — one runnable tutor from the validated mechanisms",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "Blueprint registry + loader tests pass; cells 199-200 validate and resolve via EVAL_ONLY_PROFILES; stage-0 no-paid checks pass; the pre-registered composition matrix (plan note §5) runs only after a separate go decision, with run IDs and per-suite local results recorded here.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-07-02-blueprint-composition-plan.md"
+        ]
+      },
+      "tags": [
+        "blueprint",
+        "composition",
+        "id-director",
+        "writing-pad",
+        "adaptation",
+        "evaluation"
+      ],
+      "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "lean-semantic-web-proof-dag-validation",
+      "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
+      "status": "active",
       "type": "research",
       "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-07-02",
+      "verification": "A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.",
+      "claim_status": "future",
       "links": {
-        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
-      }
-    },
-    {
-      "id": "the-self-correction-illusion-llms-correct-others-but-not-the",
-      "title": "The Self-Correction Illusion: LLMs Correct Others but Not Themselves",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Paper read; a one-line note records whether it changes our rubric, prompts, architecture or eval design; this item is then closed or spawns a concrete task.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
-      }
-    },
-    {
-      "id": "adapt-the-argument-uniqueness-metric-as-a-tutor-response-col",
-      "title": "Adapt the argument-uniqueness metric as a tutor-response-collapse diagnostic",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Decide whether a tutor-response-collapse diagnostic is distinct from §6.11; if yes spec a script, if no close as covered.",
-      "links": {
-        "notes": "notes/daily-notes/2026-06-09-research-roundup.html",
-        "paper": "§6.11"
-      }
-    },
-    {
-      "id": "b7-split-structural-critic-peripeteia-rule-into-earned-vs-na",
-      "title": "B7. Split structural-critic peripeteia rule into earned vs named reorientation",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Change implemented; covered by a passing test; lint clean.",
-      "links": {
-        "notes": "TODO.md"
-      }
-    },
-    {
-      "id": "b8-lower-recognitionorigin-js-tutoradaptivemechanism-cut-or",
-      "title": "B8. Lower `recognitionOrigin.js` `tutorAdaptiveMechanism` CUT or recalibrate critic panel",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "todo",
-      "created": "2026-06-22",
-      "updated": "2026-06-22",
-      "verification": "Change implemented; covered by a passing test; lint clean.",
-      "links": {
-        "notes": "TODO.md"
-      }
+        "notes": "notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md"
+      },
+      "tags": [
+        "proof-dag",
+        "lean",
+        "semantic-web",
+        "provenance",
+        "shacl"
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "a1-human-learner-validation",
@@ -370,7 +126,7 @@
       "owner": "human",
       "source": "todo",
       "created": "2026-06-22",
-      "updated": "2026-06-22",
+      "updated": "2026-06-24",
       "verification": "Phased N≈90 pilot runs end-to-end across 3 arms; pre/post MCQ + immediate transfer + coded free-text explanation + 1-week retention scored; the tutor-quality → learning-gains path is estimated (or shown null) in exports/.",
       "blocked_by": "IRB approval + real consent text + real item content (content/legal track, not engineering)",
       "claim_status": "future",
@@ -383,7 +139,8 @@
         "pilot",
         "human-learner",
         "critical"
-      ]
+      ],
+      "milestone": "human-pilot-prep"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -394,7 +151,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "The dashboard front door clearly identifies Scriptorium, shows role-based next actions, distinguishes DB-backed script corpus from file-backed proof runs, and gives a no-spend path out of an empty script corpus.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -409,7 +166,8 @@
         "onboarding",
         "data-health"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "scriptorium-creation-flows",
@@ -420,7 +178,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Mock generation, mock derivation, replay dry-run, and score dry-run are launchable from guided UI flows with visible cost class, command preview, validation checklist, and job records.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -435,7 +193,8 @@
         "jobs",
         "launcher"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "scriptorium-responsive-shell-navigation",
@@ -446,7 +205,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Core Scriptorium and injected static routes have no horizontal overflow at 390x844 or 768x1024, the mobile shell uses a compact app bar/drawer, and route parity/browser tests still pass.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -458,7 +217,8 @@
         "navigation",
         "mobile"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "scriptorium-ux-safety-net",
@@ -469,7 +229,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "A no-spend Scriptorium UX smoke command checks core routes at desktop and mobile widths for HTTP render, console errors, horizontal overflow, unlabeled controls, duplicate landmarks, touch-target risks, and emits a compact report/screenshots.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md"
@@ -480,7 +240,27 @@
         "qa",
         "dashboard"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
+    },
+    {
+      "id": "admin-chat-drama-launcher-simplification",
+      "title": "Admin chat drama launcher simplification",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-03",
+      "verification": "npm test (4684 pass) plus localhost browser smoke at /admin/chat/",
+      "claim_status": "planned",
+      "tags": [
+        "admin-chat",
+        "drama-machine",
+        "ux"
+      ],
+      "milestone": "admin-chat"
     },
     {
       "id": "build-workplan-tooling",
@@ -491,7 +271,7 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-06-22",
-      "updated": "2026-06-22",
+      "updated": "2026-06-24",
       "branch": "claude/derivation-fast-iteration",
       "verification": "scripts/workplan.js list/show/add/triage/set/validate/render/ingest all run green; tests/workplan.test.js passes under npm run test:hermetic; board.json renders a panel in the scriptorium (:3466); npm run wp:* wired in package.json.",
       "links": {
@@ -501,7 +281,89 @@
         "workplan",
         "tooling",
         "meta"
+      ],
+      "milestone": "board-pm"
+    },
+    {
+      "id": "content-compulsion-contrast",
+      "title": "Content-compulsion contrast — the refusal stack at pre-registered tier",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs under the frozen prereg; the frozen LB bar produces a recorded verdict (or a voiding condition fires).",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "CONTENT-COMPULSION-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "strategy-refusal-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal"
       ]
+    },
+    {
+      "id": "cross-model-plan-mode-interaction",
+      "title": "Cross-model plan-mode interaction — does the stock-take help weaker inner loops more?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 flash runs complete (or instrument-voided per the >2-exclusion rule); the frozen interaction analysis and three-part bar produce a recorded verdict either way.",
+      "claim_status": "settled",
+      "links": {
+        "notes": "CROSS-MODEL-PLAN-MODE-PREREGISTRATION.md",
+        "items": [
+          "strategy-ledger-model-confound-smoke",
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "model-confound",
+        "cross-model"
+      ]
+    },
+    {
+      "id": "dag-pinned-learner-desubstitution",
+      "title": "DAG-pinned resistant learner and the de-substitution test",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-05",
+      "verification": "Stage 0 no-paid gate (interior schema, drift gate extending resistanceSignalGate, deterministic yield checker, tests, hermetic dry-run) passes; Stage 1 instrument-validation probe meets frozen thresholds (selectivity ≥0.8, false-yield ≤0.1) before Stage 2; the 3-arm × 5-subtype matrix runs only after both gates with recorded go decisions; H-D/H-O verdicts applied exactly as frozen in the plan note §4. CLOSED 2026-07-05 — confirmatory C-series (notes/2026-07-04-desubstitution-confirmatory-prereg.md) ran the 3-arm × 5-scenario × 8-repeat matrix (120 rows, eval-2026-07-04-0d59e4c8) at 2x the generating n; H-Dc and H-Oc both DISSOLVED under clean guards (no exhaustion freeze, no grounding floor).",
+      "claim_status": "settled",
+      "links": {
+        "notes": [
+          "notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md"
+        ]
+      },
+      "tags": [
+        "learner-side",
+        "belief-desire-dag",
+        "drift-gate",
+        "de-substitution",
+        "composition",
+        "evaluation"
+      ],
+      "branch": "worktree-blueprint-composition"
     },
     {
       "id": "g5-h2-per-session-slope-p-0-032-is-a-wrong-p-value",
@@ -512,11 +374,150 @@
       "owner": "unassigned",
       "source": "todo",
       "created": "2026-06-22",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "The per-session slope p-value is recomputed correctly; the paper text is fixed and provable-discourse re-checks the claim.",
       "links": {
         "notes": "TODO.md"
-      }
+      },
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "layered-decision-loops",
+      "title": "Strategy Ledger v1 — per-agent commit/audit loops at block/scene/act scope",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-02",
+      "verification": "Phases 0-2 implemented: npm run derivation:ledger-gates 22/22 zero-paid checks (proof fingerprints byte-identical on/off, both casts; row-schema symmetry); tests/dramaticDerivationStrategyLedger.test.js 13/13 (off-state invariance pinned); full npm test 4653/0. Phase 3 contrasts pre-registered before any paid run.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "LAYERED-DECISION-LOOPS-PLAN.md",
+        "items": [
+          "layered-task-session-adaptation",
+          "layered-taskloop-heldout-gate"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "strategy-ledger",
+        "symmetry"
+      ]
+    },
+    {
+      "id": "lemma-sonnet-calibrated-contrast",
+      "title": "Lemma-map Sonnet contrast at the calibrated dose — the measurable mid-tier test",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs at dose 0.08 under the frozen pre-registration; the frozen bar produces a recorded verdict (or a voiding condition fires).",
+      "claim_status": "settled",
+      "links": {
+        "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "sonnet-calibrated-worlds",
+          "lemma-sonnet-contrast"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-tiers"
+      ]
+    },
+    {
+      "id": "lemma-sonnet-contrast",
+      "title": "Lemma-map Sonnet contrast — does the bookkeeping artifact help a mid-tier inner loop at tier?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs complete under the frozen pre-registration (or a voiding condition fires); the frozen bar produces a recorded verdict either way.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "LEMMA-SONNET-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-map-sonnet-smoke",
+          "proof-lemma-layer",
+          "exploratory-confirmatory-shrinkage-audit"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-confound"
+      ]
+    },
+    {
+      "id": "plan-mode-stocktake",
+      "title": "Plan-mode stock-take — dialogic between-scene reorientation (course-changing outer loop)",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Implementation gated (34/34 incl. L7: stock-takes fire, corrections answered, commitment machinery suppressed, proof fingerprints byte-identical on/off) and tested (21/21). Item closes when the pre-registered plan-mode contrast is run and its verdict recorded — or the line is explicitly dropped.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "PLAN-MODE-STOCKTAKE-PREREGISTRATION.md",
+          "LAYERED-DECISION-LOOPS-PLAN.md"
+        ],
+        "items": [
+          "strategy-ledger-followups"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "plan-mode",
+        "ego-superego"
+      ]
+    },
+    {
+      "id": "register-taxonomy-negative-registers",
+      "title": "Implement register taxonomy and negative-register evaluation",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-02",
+      "updated": "2026-07-03",
+      "verification": "Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, paid smoke/full run IDs are recorded with register-specific results, and the hand-authored corrosive-exemplar test separates v2.2 guardrail sensitivity from register-rubric compression.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ]
+      },
+      "tags": [
+        "registers",
+        "id-director",
+        "charisma",
+        "negative-registers",
+        "evaluation"
+      ],
+      "branch": "codex/negative-register-exemplar-test"
     },
     {
       "id": "scriptorium-evidence-workbenches",
@@ -527,7 +528,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "A reviewer can find, inspect, compare, flag, and label scripts/proof runs/replays from first-class evidence workbench views without route guessing.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -542,7 +543,8 @@
         "evidence",
         "review"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "scriptorium-p2-best-of-breed-cockpit-features",
@@ -553,7 +555,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Command palette, job-center links, evidence graph, comparison workbench permalinks, and saved-view restoration pass targeted tests plus the Scriptorium UX smoke.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -569,7 +571,8 @@
         "cockpit",
         "evidence"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
     },
     {
       "id": "scriptorium-review-workplan-loop",
@@ -580,7 +583,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "A flagged case can be found, reviewed, connected to a workplan item, and resolved through the existing workplan source-of-truth workflow without creating a second board.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -594,7 +597,8 @@
         "workplan",
         "review"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "board-pm"
     },
     {
       "id": "scriptorium-static-tools-desktop-quality",
@@ -605,7 +609,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-06-23",
-      "updated": "2026-06-23",
+      "updated": "2026-06-24",
       "verification": "Chat, adjudication, pilot-admin, and Electron desktop parity pass the same shell, responsive, accessibility, and no-console gates as the server-rendered Scriptorium routes.",
       "links": {
         "notes": "notes/poetics/2026-06-23-scriptorium-dashboard-ux-audit-plan.md",
@@ -620,7 +624,137 @@
         "desktop",
         "static-surfaces"
       ],
-      "branch": "codex/ux-enhancements"
+      "branch": "codex/ux-enhancements",
+      "milestone": "desktop-app"
+    },
+    {
+      "id": "strategy-refusal-smoke",
+      "title": "Content-compulsion smoke — refuse the incumbent strategy, demand defend-or-switch",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Implementation gated (refusal gate deterministic, mock paths exercised), 6-run smoke complete, pre-stated reads recorded either way. Preceded by paper §6.13.18 (interpretive close) + auditor + PR of the whole branch.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "lemma-forced-choice-smoke",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal",
+        "smoke"
+      ]
+    },
+    {
+      "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",
+      "title": "A Model of Multi-turn Human Persuadability Using Probabilistic Belief Tracing",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no immediate code or paper change required.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
+      },
+      "milestone": "human-pilot-prep",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "a17-one-side-replay-replication-across-scenes",
+      "title": "A17. One-Side Replay Replication Across Scenes",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Replication across scenes run; results in exports/; the one-side-replay claim updated in the paper with matched-prefix D4/D5 closeout.",
+      "branch": "codex/a17-replay-replication",
+      "links": {
+        "notes": [
+          "TODO.md#A17",
+          "notes/poetics/2026-06-24-a17-replay-replication-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-run2-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-control-gate-run3-qa-stop.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-tooling.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-run4-gate.md",
+          "notes/poetics/2026-06-24-a17-d5-redacted-control-run5-rescue.md",
+          "notes/poetics/2026-06-24-a17-d5-matched-branches-and-redraw.md",
+          "notes/poetics/2026-06-24-a17-replay-replication-result.md"
+        ],
+        "paper": "§7.9",
+        "exports": "exports/a17-one-side-replay-replication/"
+      },
+      "claim_status": "exploratory",
+      "tags": [
+        "replay",
+        "poetics",
+        "learner-variance"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
+      "id": "arcane-do-role-playing-language-agents-stay-in-character-at",
+      "title": "ArcANE: Do Role-Playing Language Agents Stay in Character at the Right Time?",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no immediate poetics-rubric change required.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html"
+      },
+      "milestone": "poetics-followups",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "audit-dramatic-metaphor-role-vocabulary",
+      "title": "Audit dramatic metaphor and rename director role toward author",
+      "status": "done",
+      "type": "content",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Dramatic-machine docs, derivation notes, config names, UI labels, and any runtime-facing role names use a coherent metaphor set; the director/author distinction is either renamed safely or documented with a compatibility path.",
+      "branch": "codex/dramatic-vocabulary-audit",
+      "links": {
+        "notes": [
+          "notes/poetics/drama-machine/SPEC.md",
+          "notes/poetics/drama-machine/TAXONOMY.md",
+          "notes/poetics/drama-machine/DIRECTOR-TERMINOLOGY-AUDIT.md",
+          "notes/poetics/2026-06-09-free-dramaturgy-and-register-dials.md",
+          "notes/2026-06-09-dramatic-derivation-plan.md"
+        ],
+        "items": "refresh-weber-id-charisma-recognition-thread"
+      },
+      "tags": [
+        "poetics",
+        "dramatic-derivation",
+        "terminology",
+        "author",
+        "director"
+      ],
+      "milestone": "poetics-followups"
     },
     {
       "id": "auto-drop-daily-routine",
@@ -631,7 +765,7 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-06-22",
-      "updated": "2026-06-22",
+      "updated": "2026-06-24",
       "branch": "claude/derivation-fast-iteration",
       "verification": ".github/workflows/workplan-ingest.yml runs `wp:ingest --daily` on a research-roundup PR and commits per-paper captures (deduped by arXiv id) to the PR branch; ingestDaily parses <div class=\"paper\"> entries; the historical backfill produced 40 captures locally; workplan.js is lint-clean and wp:test is green.",
       "links": {
@@ -642,7 +776,1692 @@
         "workplan",
         "ci",
         "daily-routine"
+      ],
+      "milestone": "board-pm"
+    },
+    {
+      "id": "character-dag-drama-framework-synthetic-contrast",
+      "title": "Character-DAG drama framework synthetic contrast",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-30",
+      "updated": "2026-07-01",
+      "verification": "Focused tests, mock strict robustness, real seeds-3 strict robustness, and real expanded-family state_dependent_transfer robustness pass; Paper 2.0 §6.8.9 records the exploratory synthetic-only boundary.",
+      "branch": "codex/dag-resistance-adaptation-framework",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#689-postscript-from-local-repair-to-longitudinal-character-state-routing",
+        "notes": [
+          "docs/next-steps/character-dag-drama-framework-plan.md"
+        ],
+        "exports": [
+          "exports/character-dag-drama-framework/report.md",
+          "exports/character-dag-drama-framework-llm-mock/report.md",
+          "exports/character-dag-drama-framework-llm-real/report.md",
+          "exports/character-dag-drama-framework-robustness-policy-repair-mock/robustness-report.md",
+          "exports/character-dag-drama-framework-robustness-policy-repair-real/robustness-report.md",
+          "exports/character-dag-drama-framework-family-controls-mock-v2/robustness-report.md",
+          "exports/character-dag-drama-framework-family-controls-mock-v2/claim-audit.md",
+          "exports/character-dag-drama-framework-family-controls-mock-v2/human-pilot-hypotheses.md",
+          "exports/character-dag-drama-framework-family-controls-real-v2-base/robustness-report.md",
+          "exports/character-dag-drama-framework-family-controls-real-v2-base/claim-audit.md",
+          "exports/character-dag-drama-framework-family-controls-real-v2-base/human-pilot-hypotheses.md",
+          "exports/character-dag-drama-framework-transfer-specificity-mock/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-base/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-summary.json",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/claim-audit.md"
+        ],
+        "items": [
+          "dag-resistance-character-state-longitudinal",
+          "character-dag-drama-transfer-specificity-controls"
+        ]
+      },
+      "tags": [
+        "dag-resistance",
+        "character-state",
+        "drama-machine",
+        "peripeteia",
+        "synthetic-learner",
+        "adaptive-runner"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "character-dag-drama-transfer-specificity-controls",
+      "title": "Tighten Character-DAG transfer specificity controls",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-30",
+      "updated": "2026-07-01",
+      "verification": "Focused framework tests pass; expanded mock family/control screen passes; bounded real base/state_dependent_transfer screen passes; expanded real family state_dependent_transfer matrix passes with full above policy/shuffled/compressed transfer controls and zero label/process leaks.",
+      "branch": "codex/dag-resistance-adaptation-framework",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "docs/next-steps/character-dag-drama-framework-plan.md"
+        ],
+        "exports": [
+          "exports/character-dag-drama-framework-family-controls-real-v2-base/robustness-report.md",
+          "exports/character-dag-drama-framework-family-controls-real-v2-base/claim-audit.md",
+          "exports/character-dag-drama-framework-transfer-specificity-mock/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-mock/claim-audit.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-base/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-base/claim-audit.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-report.md",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/robustness-summary.json",
+          "exports/character-dag-drama-framework-transfer-specificity-real-family/claim-audit.md"
+        ],
+        "items": [
+          "character-dag-drama-framework-synthetic-contrast"
+        ]
+      },
+      "tags": [
+        "dag-resistance",
+        "character-state",
+        "transfer",
+        "negative-control",
+        "synthetic-learner"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "character-development-capacity",
+      "title": "Character-development capacity (learner + tutor) — instrument + run",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-27",
+      "updated": "2026-07-01",
+      "branch": "worktree-character-development",
+      "claim_status": "scope-bound",
+      "verification": "2026-07-01 closeout: characterArc test 5/5; world-018 plotLint PASS and Oedipus screen scoped out of accepted evidence; lint/format pass; paper manifest, atlas, provable-discourse, integrity, and workplan validators have 0 failures; Appendix E.7 claim passes against tracked evidence manifest.",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#e7-character-desire-the-script-outline-as-a-source-of-desire",
+        "notes": [
+          "CHARACTER-DESIRE.md"
+        ],
+        "evidence": "config/character-development/evidence-manifest-2026-06-28.md"
+      },
+      "tags": [
+        "character-desire",
+        "dramatic-derivation",
+        "rubric",
+        "poetics"
       ]
+    },
+    {
+      "id": "charisma-desire-generalizability-matrix",
+      "title": "Route charisma/desire by engagement register",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-25",
+      "updated": "2026-07-02",
+      "verification": "Engagement router cell 180, contract/repair cell 181, split-repair cell 182, failed transfer-stake cell 183 smoke, clean-but-insufficient transfer-compression cell 184 smoke, adaptation-slice audit disconfirming the current register-change-specific charisma claim, register-effect decomposition narrowing the visible signal to process/register correctness plus exploratory agency-return discipline, Codex-only dynamic-learner resistance-breakthrough smoke, a controlled 5-signal router-vs-static dynamic matrix, paid cell 187 resistance-tuning matrix, paid cell 188 owned-test smoke, failed cell 189 precision smoke, dynamic resistance-signal gate implementation, full gated 5-signal cell188-vs-static matrix, paid cell 190 rote generation repair smoke, cell 190 non-rote regression check, 30-row stability-repeat matrix, irrelevance-vs-question-flood boundary confirmation, paid cell 191 question-lock confirmation, paid cell 191-vs-190 repeat demoting question-lock as a promotion branch, no-paid cell 192 commitment-probe design plus reporter commitment taxonomy and frozen Question-Flood Gate, paid cell 192-vs-190-vs-188 gate promoting commitment-probe for question-flood, paid cell 192 five-signal composite stability pass with refined carry-through measurement showing question-flood/irrelevance/rote-owned strength but not general five-signal breakthrough, no-paid cell 193 boredom-live-stake design/registration/reporter plumbing, paid cell 193 boredom gate showing local cleanliness but not displacement of cell 188, paid cell 193 non-boredom regression showing clean validation plus 8/8 positive local outcomes but only 4/8 strict breakthroughs, paid cell 193 five-signal stability showing clean validation plus 14/15 positive local outcomes and a combined 25/26 positive local mechanism pass, GLM 5.2 OpenRouter generation robustness failing the model-stack pass, GLM 5.2 independent v2.2/charisma judging completing on the Codex stability rows, cell 194 GLM-compact partial repair showing stronger local action shape on completed rows but failing full GLM robustness, and full cell 193 GLM 5.2 provider/runtime-control run completing 5/5 clean DB validation but failing the local breakthrough criterion, and no-paid role-isolation gate design adding the cell 195 scripted-learner control, and completed six-arm role-isolation matrix with arm-level report scoping the GLM boundary to dynamic-learner completion/target drift rather than tutor/id register production, and fresh Codex-learner question-flood commitment-probe closeout run promoting cell 192 for the question-flood subtype after a reporter commitment-wording regression fix; register-switch/breakthrough scenarios, router service/tests, no-paid Stage 0/router sanity reports, paid smokes/matrices, config validation, workplan render/validate, and focused id-director/learner/gate tests pass.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "notes/2026-06-25-charisma-desire-generalizability-plan.md",
+          "notes/2026-06-24-weber-id-charisma-recognition-thread.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
+          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
+        ],
+        "runs": [
+          "eval-2026-06-25-b9608606",
+          "eval-2026-06-25-428ccd8f",
+          "eval-2026-06-25-19ee106a",
+          "eval-2026-06-25-63e98149",
+          "eval-2026-06-25-0acee3fb",
+          "eval-2026-06-25-5ee5dd6d",
+          "eval-2026-06-25-dbae041a",
+          "eval-2026-06-25-dea673e5",
+          "eval-2026-06-25-629e5746",
+          "eval-2026-06-25-38dba521",
+          "eval-2026-06-25-b26eac76",
+          "eval-2026-06-25-041733c8",
+          "eval-2026-06-25-7df4d845",
+          "eval-2026-06-26-086cbfdc",
+          "eval-2026-06-26-da19680e",
+          "eval-2026-06-26-8579fd96",
+          "eval-2026-06-26-597cf16e",
+          "eval-2026-06-26-6ab49861",
+          "eval-2026-06-27-bf8bc904",
+          "eval-2026-06-27-a9e8e0ed",
+          "eval-2026-06-27-1ecb6a90",
+          "eval-2026-06-27-a9a4c920",
+          "eval-2026-06-27-e3fb5eb2",
+          "eval-2026-06-27-a07768fe",
+          "eval-2026-06-27-49aeaa2c",
+          "eval-2026-06-27-eb5f4244",
+          "eval-2026-06-27-c299ef0c",
+          "eval-2026-06-27-900c1435",
+          "eval-2026-06-27-4bb10da5",
+          "eval-2026-06-28-e0530961",
+          "eval-2026-06-28-31600860",
+          "eval-2026-06-28-179effc6",
+          "eval-2026-06-28-0df6b0db",
+          "eval-2026-06-28-80265ec3",
+          "eval-2026-06-28-d4abadae",
+          "eval-2026-06-28-906f3947",
+          "eval-2026-06-28-ee0d51a1",
+          "eval-2026-06-28-dea2ad1a",
+          "eval-2026-06-28-5fa837b5",
+          "eval-2026-06-28-c9fd95c2",
+          "eval-2026-06-28-74da095f",
+          "eval-2026-06-28-b7a9ce7d",
+          "eval-2026-06-28-ffd7f724",
+          "eval-2026-06-28-a6eb2819",
+          "eval-2026-06-28-7fbbb160",
+          "eval-2026-06-28-daf80863",
+          "eval-2026-06-28-f18df068",
+          "eval-2026-06-28-f857f51f",
+          "eval-2026-07-01-5dad2e60",
+          "eval-2026-07-01-dff9f159",
+          "eval-2026-07-01-ed9f7288",
+          "eval-2026-07-01-02c8aa86",
+          "eval-2026-07-01-7ec37d3c",
+          "eval-2026-07-01-69bb7f83",
+          "eval-2026-07-01-2e3dfced",
+          "eval-2026-07-01-58193750",
+          "eval-2026-07-01-02e8712f",
+          "eval-2026-07-01-a09281f7",
+          "eval-2026-07-01-9066df81",
+          "eval-2026-07-01-9f4eecf2",
+          "eval-2026-07-02-67be317c"
+        ],
+        "exports": [
+          "exports/charisma-desire-stage0-matrix-sanity.md",
+          "exports/charisma-desire-router-stage0-sanity.md",
+          "exports/charisma-desire-stage1-pilot-summary.md",
+          "exports/charisma-desire-stage2-smoke-summary.md",
+          "exports/charisma-desire-stage3-smoke-summary.md",
+          "exports/charisma-desire-router-comparator-summary.md",
+          "exports/charisma-desire-cell181-repair-smoke-summary.md",
+          "exports/charisma-desire-cell181-repeat-matrix-summary.md",
+          "exports/charisma-desire-cell182-smoke-summary.md",
+          "exports/charisma-desire-cell183-smoke-summary.md",
+          "exports/charisma-desire-cell184-smoke-summary.md",
+          "exports/charisma-desire-adaptation-slices-summary.md",
+          "exports/charisma-desire-adaptation-slices.json",
+          "exports/charisma-desire-register-effects-summary.md",
+          "exports/charisma-desire-register-effects.json",
+          "exports/charisma-desire-breakthrough-probe-summary.md",
+          "exports/charisma-desire-breakthrough-probe.json",
+          "exports/charisma-desire-breakthrough-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-matrix.json",
+          "exports/charisma-desire-breakthrough-stability-summary.md",
+          "exports/charisma-desire-breakthrough-stability-summary.json",
+          "exports/charisma-desire-breakthrough-boundary-confirmation-summary.md",
+          "exports/charisma-desire-breakthrough-boundary-confirmation-summary.json",
+          "exports/charisma-desire-breakthrough-question-lock-summary.md",
+          "exports/charisma-desire-breakthrough-question-lock-summary.json",
+          "exports/charisma-desire-breakthrough-question-lock-repeat-summary.md",
+          "exports/charisma-desire-breakthrough-question-lock-repeat-summary.json",
+          "exports/charisma-desire-breakthrough-commitment-probe-gate-summary.md",
+          "exports/charisma-desire-breakthrough-commitment-probe-gate-summary.json",
+          "exports/charisma-desire-breakthrough-composite-stability-summary.md",
+          "exports/charisma-desire-breakthrough-composite-stability-summary.json",
+          "exports/charisma-desire-breakthrough-boredom-stake-gate-summary.md",
+          "exports/charisma-desire-breakthrough-boredom-stake-gate-summary.json",
+          "exports/charisma-desire-breakthrough-cell193-nonboredom-regression-summary.md",
+          "exports/charisma-desire-breakthrough-cell193-nonboredom-regression-summary.json",
+          "exports/charisma-desire-breakthrough-cell193-five-signal-stability-summary.md",
+          "exports/charisma-desire-breakthrough-cell193-five-signal-stability-summary.json",
+          "exports/charisma-desire-breakthrough-cell193-glm52-openrouter-robustness-summary.md",
+          "exports/charisma-desire-breakthrough-cell193-glm52-openrouter-robustness-summary.json",
+          "exports/charisma-desire-breakthrough-cell194-glm52-compact-repair-smoke-summary.md",
+          "exports/charisma-desire-breakthrough-cell194-glm52-compact-repair-smoke-summary.json",
+          "exports/charisma-desire-breakthrough-cell193-glm52-runtime-control-summary.md",
+          "exports/charisma-desire-breakthrough-cell193-glm52-runtime-control-summary.json",
+          "exports/charisma-desire-role-isolation-gate-summary.md",
+          "exports/charisma-desire-role-isolation-gate.json"
+        ],
+        "items": [
+          "refresh-weber-id-charisma-recognition-thread"
+        ]
+      },
+      "tags": [
+        "id-director",
+        "charisma",
+        "recognition",
+        "engagement-routing",
+        "registers",
+        "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "consolidate-logs-db-private-archive",
+      "title": "Consolidate dialogue logs + DB into one canonical archive",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-22",
+      "updated": "2026-06-28",
+      "verification": "From a fresh worktree, evaluationStore resolves LOGS_ROOT to ~/.machinespirits-data/logs (now a materialized real dir, not a symlink) and the paper2.provenance.dialogue_hashes gate scores value=1.0 (1937 passed, 0 failed, 54 waived) against the canonical DB + archive. The two named follow-ups (non-git decoupling + orphan quarantine) are DONE; only minor/maintainer items remain.",
+      "links": {
+        "items": [
+          "build-workplan-tooling",
+          "normalize-provenance-validator-data-paths",
+          "colocate-runner-secondary-artifacts",
+          "debloat-private-log-archive"
+        ]
+      },
+      "tags": [
+        "infra",
+        "provenance",
+        "logs",
+        "archive"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "d1-mechanistic-feature-ols-and-multiturn-replication",
+      "title": "D1. Mechanistic feature OLS and multi-turn replication",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Reran D1 Pass 6 OLS, Pass 7 multi-turn scope replication, and cross-judge checks; exports and notes/d1-paper-integration.md are present.",
+      "branch": "codex/d1-mechanistic-feature-ols",
+      "claim_status": "settled",
+      "links": {
+        "notes": [
+          "TODO.md#D1",
+          "notes/d1-paper-integration.md"
+        ],
+        "exports": [
+          "exports/d1-structural-features.md",
+          "exports/d1-structural-features-v2.md",
+          "exports/d1-structural-features-v3.md",
+          "exports/d1-cross-judge-replication.md",
+          "exports/d1-multifeature-ols.md",
+          "exports/d1-ends-question-replication.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md §7.10.1",
+        "atlas": "recognition-calibration",
+        "runs": [
+          "eval-2026-04-24-e9a785c0",
+          "eval-2026-04-23-42e7acbe",
+          "eval-2026-04-17-c92ad6c7",
+          "eval-2026-04-17-6766015b",
+          "eval-2026-02-20-0fbca69e",
+          "eval-2026-03-01-aea2abfb"
+        ]
+      },
+      "tags": [
+        "d1",
+        "mechanism",
+        "structural-features",
+        "ols",
+        "multi-turn"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "d2-cross-application-role-reframed-study",
+      "title": "D2. True cross-application role-reframed study",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "D2 sidecar generated 36 rows, scored 108 three-judge observations, analyzed exports/d2-role-transfer-v1-scored.jsonl, and folded the scope-bound result into docs/research/paper-full-2.0.md §6.6.7.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "TODO.md#D2",
+          "notes/design-d2-path2-cross-application.md",
+          "notes/d2-cross-application-role-reframed-gate.md",
+          "notes/d2-role-transfer-scaffold.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md §6.6.7",
+        "exports": [
+          "exports/d2-role-transfer-v1-report.md"
+        ],
+        "runs": [
+          "d2_role_transfer_v1-real-2026-06-24T22:30:10.460Z"
+        ]
+      },
+      "tags": [
+        "d2",
+        "cross-application",
+        "separate-study"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/d2-d6-followups"
+    },
+    {
+      "id": "d2-d6-followup-arc",
+      "title": "D2-D6 follow-up arc: transfer, bridges, replication, rubric, taxonomy",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "branch": "codex/d2-d6-followups",
+      "verification": "Completion audit records D5/D6 as locally complete, D2 and D4 as completed scope-bound empirical results, and D3 as gated for future empirical work; workplan render/check/test and git diff check pass.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "notes/d2-d6-followup-arc-plan.md",
+          "notes/d5-measurement-gate-for-d2-d6.md",
+          "notes/d6-orientation-family-matrix.md",
+          "notes/d2-cross-application-role-reframed-gate.md",
+          "notes/d2-role-transfer-scaffold.md",
+          "notes/d4-sel-disposition-gradient-gate.md",
+          "notes/d3-heavy-bridge-followup-gate.md",
+          "notes/d2-d6-completion-audit.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md sections 6.3.9, 6.6.7, 6.6.8, 7.9, 8.2, 8.6"
+        ],
+        "items": [
+          "d2-cross-application-role-reframed-study",
+          "d3-insight-action-gap-heavy-bridge-followups",
+          "d4-disposition-gradient-architecture-matched-sel-replication",
+          "d5-rubric-v3-0-pca-informed-consolidation",
+          "d6-orientation-family-taxonomy-extensions"
+        ]
+      },
+      "tags": [
+        "d2",
+        "d3",
+        "d4",
+        "d5",
+        "d6",
+        "followup",
+        "paper-3"
+      ]
+    },
+    {
+      "id": "d5-rubric-v3-0-pca-informed-consolidation",
+      "title": "D5. Rubric v3.0 PCA-Informed Consolidation",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Missing D5 note recovered; 2026-06-24 decision addendum shelves v3.0 implementation for future Paper 3.0/methods work.",
+      "branch": "codex/d5-rubric-v3-decision",
+      "links": {
+        "notes": [
+          "TODO.md#D5",
+          "notes/design-d5-rubric-v3-pca-consolidation.md",
+          "notes/d5-measurement-gate-for-d2-d6.md"
+        ],
+        "paper": "§8.6"
+      },
+      "claim_status": "future",
+      "tags": [
+        "rubric",
+        "pca",
+        "methods"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "dag-resistance-character-state-longitudinal",
+      "title": "DAG/resistance longitudinal character-state experiment",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-30",
+      "updated": "2026-06-30",
+      "verification": "Focused tests pass; mock and real generated-learner artifacts are written under exports/adaptive-dag-resistance-character-development*; Paper 2.0 §6.8.9 records the bounded synthetic-learner claim.",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": "§6.8.9",
+        "exports": [
+          "exports/adaptive-dag-resistance-character-development/report.md",
+          "exports/adaptive-dag-resistance-character-development-llm-mock/report.md",
+          "exports/adaptive-dag-resistance-character-development-llm-real/report.md"
+        ],
+        "prs": [
+          "codex/dag-resistance-adaptation-framework"
+        ]
+      },
+      "tags": [
+        "dag-resistance",
+        "character-state",
+        "adaptive-runner",
+        "synthetic-learner",
+        "longitudinal"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/dag-resistance-adaptation-framework"
+    },
+    {
+      "id": "daily-roundup-self-work-exclusion",
+      "title": "Exclude own papers from daily research roundup captures",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "scripts/workplan.js ingest --daily skips arXiv 2603.10450 via a regression fixture; npm run wp:test and npm run wp:check pass.",
+      "links": {
+        "notes": [
+          "notes/research-plans/2026-06-20-research-plan.html",
+          "notes/daily-notes/2026-06-15-research-roundup.html"
+        ],
+        "items": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
+        "arxiv": "https://arxiv.org/abs/2603.10450"
+      },
+      "tags": [
+        "daily-routine",
+        "self-citation",
+        "workplan-ingest"
+      ],
+      "branch": "codex/geist-positioning",
+      "milestone": "board-pm"
+    },
+    {
+      "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
+      "title": "Environment-Grounded Automated Prompt Optimization for LLM Game Agents",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no prompt-lab/autotune task spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "exploratory-confirmatory-shrinkage-audit",
+      "title": "Shrinkage audit — why do good exploratory results shrink on confirmation?",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Pure-computation audit over existing matrix artifacts produces per-pair observed-vs-selection-predicted shrinkage; lands as a §5 methodology subsection; no new paid runs required.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "proof-lemma-layer",
+          "strategy-ledger-followups"
+        ]
+      },
+      "tags": [
+        "methodology",
+        "statistics",
+        "meta"
+      ]
+    },
+    {
+      "id": "from-holistic-evaluation-to-structured-criteria-rubrics-acro",
+      "title": "From Holistic Evaluation to Structured Criteria: Rubrics Across the Evolving LLM Landscape",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; methodological relevance routed to D5 rather than a standalone task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "methods"
+    },
+    {
+      "id": "from-prompts-to-context-an-ontology-driven-framework-for-hum",
+      "title": "From Prompts to Context: An Ontology-Driven Framework for Human-Generative AI Collaboration",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no provenance-ontology implementation task spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "methods"
+    },
+    {
+      "id": "from-solver-to-tutor-evaluating-the-pedagogical-intelligence",
+      "title": "From Solver to Tutor: Evaluating the Pedagogical Intelligence of LLMs with KMP-Bench",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; A1/pilot relevance noted without spawning a benchmark-port task.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-15-research-roundup.html"
+      },
+      "milestone": "human-pilot-prep",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "g2-6-4-recognition-effect-sizes-reproducible-once-the-column",
+      "title": "G2. §6.4 recognition effect sizes — reproducible once the column/judge/run are stated",
+      "status": "done",
+      "type": "paper",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "TODO's G-arc status records G2 closed; the paper now names the tutor_overall_score/Sonnet/run-bound basis for the effect-size claim and the optional analyzer is not a live blocker.",
+      "links": {
+        "notes": [
+          "TODO.md#G2",
+          "notes/status/2026-06-21-repository-todo-status-audit.md"
+        ],
+        "paper": "§6.4"
+      },
+      "claim_status": "settled",
+      "tags": [
+        "paper",
+        "provenance",
+        "claim-audit"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "geist-in-the-machine-simulating-recognition-and-inner-dialog",
+      "title": "Geist in the Machine: Simulating Recognition and Inner Dialogue in AI-Mediated Teaching and Research",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Confirmed arXiv 2603.10450 is authored by Liam Magee; Paper 2.0 already cites the companion study via @magee2026geist, so no manuscript edit is required.",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-15-research-roundup.html",
+          "notes/research-plans/2026-06-20-research-plan.html"
+        ],
+        "paper": "docs/research/paper-full-2.0.md",
+        "atlas": "docs/research/references.bib",
+        "arxiv": "https://arxiv.org/abs/2603.10450",
+        "items": "daily-roundup-self-work-exclusion"
+      },
+      "branch": "codex/geist-positioning",
+      "tags": [
+        "paper-positioning",
+        "self-citation",
+        "roundup"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
+      "id": "implement-messages-style-internal-history-probe",
+      "title": "Implement messages-style ego/superego history probe",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Opt-in messages-style internal-history config is implemented with defaults unchanged; mock/hermetic tests pass; a small token-limited comparison reports latency/tokens/convergence/revision behavior before any wider run.",
+      "claim_status": "exploratory",
+      "branch": "codex/internal-history-messages",
+      "links": {
+        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
+        "items": "review-ego-superego-internal-history-window",
+        "code": [
+          "tutor-core/services/tutorDialogueEngine.js",
+          "tutor-core/services/tutorApiService.js",
+          "services/evaluationRunner.js",
+          "scripts/probe-internal-history-messages.js",
+          "scripts/compare-internal-history-quality.js",
+          "tests/internalHistoryMessages.test.js"
+        ]
+      },
+      "tags": [
+        "ego-superego",
+        "messages-api",
+        "performance",
+        "token-budget"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "lemma-bind-sonnet-smoke",
+      "title": "Binding smoke on Sonnet at the calibrated dose — the first fair test of tutor-chosen binding",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "6 canary-gated runs complete (or an instrument stop is recorded); the pre-stated read rules produce propose/no-go, never a claim.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-sonnet-calibrated-contrast",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "binding",
+        "smoke"
+      ]
+    },
+    {
+      "id": "lemma-forced-choice-smoke",
+      "title": "Forced-choice binding smoke — does the model have a chapter preference when non-answering costs a retry?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "6 runs complete; the pre-stated reads (exercise, preference-vs-parrot diagnosis, conduct, capped color) recorded either way.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "lemma-bind-sonnet-smoke",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "binding",
+        "smoke"
+      ]
+    },
+    {
+      "id": "lemma-map-sonnet-smoke",
+      "title": "Lemma-map Sonnet smoke — does the bookkeeping artifact help a mid-tier inner loop?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "4 canary-gated Sonnet runs complete (or an instrument-limited stop is recorded); the pre-stated read rules below produce a propose/no-go, never a claim.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-DISPLAY-CONFIRMATORY-PREREGISTRATION.md",
+        "items": [
+          "proof-lemma-layer",
+          "strategy-ledger-model-confound-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-confound",
+        "smoke"
+      ]
+    },
+    {
+      "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
+      "title": "Measuring Whether LLM Tutors Teach or Solve: A Diagnostic for Educational Impact",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no immediate MathTutorBench cross-validation task spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-18-research-roundup.html"
+      },
+      "milestone": "human-pilot-prep",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "methods"
+    },
+    {
+      "id": "normalize-provenance-validator-data-paths",
+      "title": "Honor canonical data-home paths in provenance validators",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-07-01",
+      "verification": "`npm run provenance:validate`, `npm run paper:provable-discourse -- --epoch 2.0 --strict --no-color`, and `npm run wp:check` pass from a fresh worktree without repo-local DB/log symlinks.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive"
+      },
+      "tags": [
+        "provenance",
+        "logs",
+        "data-home",
+        "validators"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/normalize-provenance-validator-data-paths"
+    },
+    {
+      "id": "not-all-flips-are-conformity-decomposing-stance-convergence",
+      "title": "Not All Flips Are Conformity: Decomposing Stance Convergence in Multi-Agent LLM Debate",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Paper 2.0 §6.12 already folds this in as a killed Stage 0 measurement gate; adaptation-conformity scripts compile, while missing local exports and the rushed human anchor are tracked by the follow-up item.",
+      "claim_status": "killed",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-09-research-roundup.html",
+          "notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md",
+        "scripts": [
+          "scripts/adaptation-conformity-harvest.py",
+          "scripts/adaptation-conformity-classifier.py",
+          "scripts/adaptation-conformity-score-human.py"
+        ],
+        "items": "revisit-adaptation-conformity-human-anchor"
+      },
+      "branch": "codex/not-all-flips-conformity",
+      "tags": [
+        "adaptation-null",
+        "conformity",
+        "superego"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "paper-workplan-closure-audit-2026-06-24",
+      "title": "Paper/workplan closure audit for current main",
+      "status": "done",
+      "type": "paper",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "branch": "codex/paper-workplan-closure-audit-layout",
+      "verification": "`npm run paper:provable-discourse -- --epoch 2.0 --strict --no-color`, `npm run paper:provable-discourse:test`, `npm run wp:check`, and `npm run atlas:validate` passed after refreshing the snapshot.",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md",
+        "notes": "notes/provable-discourse.snapshot.json",
+        "items": [
+          "workplan-governance-checks-and-github-mirror"
+        ]
+      },
+      "tags": [
+        "paper",
+        "provenance",
+        "workplan",
+        "closure-loop"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro",
+      "title": "PerspectiveGap: A Benchmark for Multi-Agent Orchestration Prompting",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no superego prompt-leakage audit spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-11-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "proof-dag-dramatic-derivation-assessment",
+      "title": "Proof-DAG dramatic-derivation formalism and external learner-DAG assessment",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "Proof-DAG / dramatic-derivation arc merged to main on codex/proof-dag-assessment: services/dramaticDerivation/{learnerDag, proxyDagMemory,assessment,conceptSchema}.js plus the derivationLearnerDag / dramaticDerivation test suite are green, and the learner-proxy-DAG A/B is closed out.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-06-24-proof-dag-formalism-plan.md"
+        ],
+        "prs": [
+          "codex/proof-dag-assessment"
+        ]
+      },
+      "tags": [
+        "proof-dag",
+        "dramatic-derivation",
+        "learner-dag",
+        "assessment"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
+      "id": "proof-lemma-layer",
+      "title": "Lemma layer — a maintained higher-level proof structure (plan as data structure, not prose)",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Gate 0 (free depth audit) recorded below. Line advances only by operator decision: design doc + own pre-registration before any engine code or paid run.",
+      "claim_status": "settled",
+      "links": {
+        "notes": "exports/dramatic-derivation/lemma-layer/gate0-depth-audit.md",
+        "items": [
+          "cross-model-plan-mode-interaction",
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "proof-structure",
+        "lemma-layer"
+      ]
+    },
+    {
+      "id": "refresh-weber-id-charisma-recognition-thread",
+      "title": "Refresh Weber/id-charisma thread around being recognized",
+      "status": "done",
+      "type": "paper",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Bounded note clarifies the Weber/Hegel distinction; no Paper 2.0 edit needed; learner uptake remains future human/learner-instrument scope.",
+      "claim_status": "scope-bound",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#67-id-director-charisma-family",
+        "notes": [
+          "docs/cell-100-charisma-full-n-update.md",
+          "docs/cell-100-followups.md",
+          "notes/2026-06-09-adaptation-exploration-plan.md",
+          "notes/poetics/2026-06-09-free-dramaturgy-and-register-dials.md",
+          "notes/rhetoric/2026-06-08-deep-research-report-2.md",
+          "notes/2026-06-24-weber-id-charisma-recognition-thread.md"
+        ]
+      },
+      "tags": [
+        "id-director",
+        "charisma",
+        "weber",
+        "recognition",
+        "paper-framing"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "review-ego-superego-internal-history-window",
+      "title": "Review configurable ego/superego internal history windows",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Closeout audit completed; no-spend tests cover default opt-out, explicit opt-in message history, and Phase-2 prompt-only behavior; result is retained as opt-in instrumentation only, not a default or Paper 2.0 finding.",
+      "claim_status": "killed",
+      "branch": "codex/internal-history-closeout",
+      "links": {
+        "notes": "notes/2026-06-23-ego-superego-history-window-review.md",
+        "items": "implement-messages-style-internal-history-probe",
+        "code": [
+          "tutor-core/services/tutorDialogueEngine.js",
+          "tutor-core/services/dialecticalEngine.js"
+        ]
+      },
+      "tags": [
+        "ego-superego",
+        "message-history",
+        "prompt-assembly",
+        "mechanism-test"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
+      "title": "SePO: Self-Evolving Prompt Agent for System Prompt Optimization",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no prompt-optimization pilot spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-17-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "socialcoach-personalized-social-skill-learning-with-rl-based",
+      "title": "SocialCoach: Personalized Social Skill Learning with RL-based Agentic Tutoring and Practice",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no learner-growth metric refactor spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html"
+      },
+      "milestone": "human-pilot-prep",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "socratic-structured-tutoring-readings",
+      "title": "Assess structured-Socratic tutoring papers for the A1 pilot design",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Three arXiv source records reviewed; decision logged here and on A1; no pilot instrument change is required before the existing content/legal gates clear.",
+      "claim_status": "future",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-13-research-roundup.html",
+        "paper": "§2.1",
+        "items": "a1-human-learner-validation"
+      },
+      "tags": [
+        "reading",
+        "socratic",
+        "pilot"
+      ],
+      "milestone": "human-pilot-prep",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "sonnet-calibrated-worlds",
+      "title": "Sonnet-calibrated worlds — find the dose/world where a mid-tier baseline has headroom",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "The dose ladder (rules pre-stated below) either finds a calibrated condition set (Sonnet baseline in the target band, 3-run screens) or exhausts with a recorded structural-floor verdict; either way the outcome is recorded before any contrast prereg.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-SONNET-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-sonnet-contrast",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "calibration",
+        "model-tiers"
+      ]
+    },
+    {
+      "id": "strategy-ledger-followups",
+      "title": "Strategy Ledger follow-ups — confirm V2b, then compose; do not rebuild trialling",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Each step below runs only under its own pre-registration; the item closes when the V2b confirmatory decision is made (either tier promotion or a recorded failure-to-replicate) and the composition-module question is answered or explicitly dropped.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "LAYERED-DECISION-LOOPS-PLAN.md",
+          "STRATEGY-LEDGER-V2-PREREGISTRATION.md"
+        ],
+        "paper": "docs/research/paper-full-2.0.md#the-strategy-ledger-scene-scoped-commitaudit-loops-help-repair-an-in-run-trialling-superstructure-costs",
+        "items": [
+          "layered-decision-loops",
+          "negative-register-effect-estimation-grid",
+          "blueprint-composition"
+        ],
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/80"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-ledger",
+        "outer-loop",
+        "followups"
+      ]
+    },
+    {
+      "id": "strategy-ledger-model-confound-smoke",
+      "title": "Model-confound smoke — is codex ceiling-ing the outer-loop effects? (GLM-5.2)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "4 canary-gated GLM-5.2 runs complete (or an instrument-limited stop is recorded); the pre-stated read-rules below produce a go/no-go on whether a powered cross-model contrast deserves a new pre-registration.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "PLAN-MODE-STOCKTAKE-PREREGISTRATION.md",
+        "items": [
+          "plan-mode-stocktake"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "outer-loop",
+        "model-confound",
+        "smoke"
+      ]
+    },
+    {
+      "id": "synthesize-theoretical-insights",
+      "title": "Synthesize the theory↔project relationship (Hegel/Freud/Weber/Aristotle) into a refreshable reference surface",
+      "status": "done",
+      "type": "content",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "A theory-synthesis surface renders in the web app and (by construction) the Electron desktop; a regeneration script + npm alias refreshes it from the paper + codebase; the doc introduces no new empirical claims (inherits docs/research/paper-full-2.0.md).",
+      "claim_status": "methods",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md"
+      },
+      "tags": [
+        "theory",
+        "synthesis",
+        "hegel",
+        "freud",
+        "weber",
+        "aristotle",
+        "web-surface",
+        "reference"
+      ]
+    },
+    {
+      "id": "the-confident-liar-diagnosing-multi-agent-debate-with-log-pr",
+      "title": "The Confident Liar: Diagnosing Multi-Agent Debate with Log-Probabilities and LLM-as-Judge",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "ArXiv source record and roundup note reviewed; decision appended; no log-probability instrumentation task spawned.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-12-research-roundup.html"
+      },
+      "milestone": "literature-triage",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "methods"
+    },
+    {
+      "id": "the-self-correction-illusion-llms-correct-others-but-not-the",
+      "title": "The Self-Correction Illusion: LLMs Correct Others but Not Themselves",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Paper 2.0 §6.1.3 already cites @chen2026selfcorrectionillusion and records the bounded cross-judge result; reproduction path is scripts/analyze-correction-source.sh.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-12-research-roundup.html",
+        "paper": "docs/research/paper-full-2.0.md",
+        "atlas": "docs/research/references.bib",
+        "scripts": "scripts/analyze-correction-source.sh"
+      },
+      "branch": "codex/self-correction-illusion",
+      "tags": [
+        "superego",
+        "self-correction",
+        "paper-positioning"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "workplan-board-focus-policy",
+      "title": "Add open-work focus policy to the board",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-01",
+      "branch": "codex/docs-board-consolidation",
+      "verification": "`node --test --test-force-exit tests/workplanBoardFocus.test.js`, `node --test tests/workplan.test.js tests/workplanSetField.test.js`, `node --check scripts/browse-poetics-scripts.js tests/workplanBoardFocus.test.js`, `node scripts/workplan.js render`, `node scripts/workplan.js validate`, and `npm run wp:check` pass.",
+      "links": {
+        "notes": [
+          "workplan/README.md",
+          "desktop/README.md",
+          "desktop/ARCHITECTURE.md"
+        ],
+        "items": [
+          "docs-board-plan-consolidation",
+          "workplan-governance-checks-and-github-mirror"
+        ]
+      },
+      "tags": [
+        "workplan",
+        "dashboard",
+        "documentation"
+      ]
+    },
+    {
+      "id": "workplan-governance-checks-and-github-mirror",
+      "title": "Workplan governance checks and GitHub mirror",
+      "status": "done",
+      "type": "ops",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "branch": "codex/ops-board-items",
+      "verification": "`npm run wp:check`, `npm run wp:test`, GitHub mirror dry-run, and `/board` Scriptorium smoke all passed before the branch was merged to main.",
+      "links": {
+        "items": [
+          "build-workplan-tooling",
+          "auto-drop-daily-routine"
+        ],
+        "notes": "workplan/README.md"
+      },
+      "tags": [
+        "workplan",
+        "ci",
+        "github",
+        "governance"
+      ],
+      "milestone": "board-pm"
+    },
+    {
+      "id": "adapt-the-argument-uniqueness-metric-as-a-tutor-response-col",
+      "title": "Adapt the argument-uniqueness metric as a tutor-response-collapse diagnostic",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: no separate tutor-response-collapse diagnostic for the current paper; §6.11 remains the active repertoire-collapse surface.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-09-research-roundup.html",
+        "paper": "§6.11"
+      },
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage",
+      "claim_status": "future"
+    },
+    {
+      "id": "b8-lower-recognitionorigin-js-tutoradaptivemechanism-cut-or",
+      "title": "B8. Lower `recognitionOrigin.js` `tutorAdaptiveMechanism` CUT or recalibrate critic panel",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: any future gated arc must pre-register the CUT/panel composition; no paid generation is approved solely to repair a scorer-side classifier issue.",
+      "links": {
+        "notes": "TODO.md#B8",
+        "exports": [
+          "exports/recognition-origin-cut-sweep.md",
+          "exports/recognition-origin-panel-recompose.md"
+        ],
+        "paper": "§7.9"
+      },
+      "claim_status": "planned",
+      "tags": [
+        "poetics",
+        "scorer-calibration",
+        "gated-rerun"
+      ],
+      "milestone": "poetics-followups",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "colocate-runner-secondary-artifacts",
+      "title": "Co-locate runner transcripts and checkpoints with canonical logs",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-07-01",
+      "verification": "A smoke run writes dialogue logs, transcripts, and checkpoints under the same canonical data-home logs root unless an explicit test override is set; `npm test` and `npm run wp:check` pass.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive"
+      },
+      "tags": [
+        "logs",
+        "runner",
+        "data-home",
+        "artifacts"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "d3-insight-action-gap-heavy-bridge-followups",
+      "title": "D3. Insight-action gap heavy bridge follow-ups",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Decision and 2026-06-24 gate logged: heavy bridge follow-ups require a frozen endpoint independent of the optimized metric before any paid escalation.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "TODO.md#D3",
+          "notes/design-d3-architectural-bridges.md",
+          "notes/d3-heavy-bridge-followup-gate.md",
+          "notes/d3-independent-endpoint-and-fixture-explainer.md"
+        ],
+        "paper": "§6.3.9"
+      },
+      "tags": [
+        "d3",
+        "insight-action-gap",
+        "bridge"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "d4-disposition-gradient-architecture-matched-sel-replication",
+      "title": "D4. Architecture-matched SEL disposition-gradient replication",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "DB audit shows eval-2026-06-24-250c6251 has 144/144 successful rows and 144/144 Sonnet-scored first turns; report and Paper 2.0 §6.6.8 record the scope-bound verdict.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "TODO.md#D4",
+          "notes/d4-sel-disposition-gradient-gate.md"
+        ],
+        "paper": "§6.6.8",
+        "exports": [
+          "exports/d4-sel-disposition-gradient-eval-2026-06-24-250c6251.md"
+        ],
+        "runs": [
+          "eval-2026-06-24-250c6251"
+        ]
+      },
+      "tags": [
+        "d4",
+        "disposition",
+        "sel"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/d2-d6-followups"
+    },
+    {
+      "id": "d6-orientation-family-taxonomy-extensions",
+      "title": "D6. Orientation-family taxonomy extensions",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: orientation-family extensions remain future scope; no new cells/prompts/tests are needed for the current board pass.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "TODO.md#D6",
+          "docs/pedagogical-taxonomy.md",
+          "notes/d6-orientation-family-matrix.md"
+        ],
+        "paper": "§7.9"
+      },
+      "tags": [
+        "d6",
+        "taxonomy",
+        "orientation-family"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "debloat-private-log-archive",
+      "title": "De-bloat the private dialogue-log archive",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-28",
+      "updated": "2026-07-02",
+      "verification": "docs/archive-replication.md documents the chosen policy: freeze machinespirits-eval-private as a historical/read-only mirror, keep ~/.machinespirits-data as the canonical logs + snapshot archive, and reopen Git LFS/history rewrite only as a separate explicit maintenance project.",
+      "links": {
+        "items": "consolidate-logs-db-private-archive",
+        "notes": "docs/archive-replication.md"
+      },
+      "tags": [
+        "logs",
+        "archive",
+        "private-repo",
+        "git-history"
+      ],
+      "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "grouptom-bench-benchmarking-group-theory-of-mind-nonlinear",
+      "title": "GroupToM-Bench: Benchmarking Group Theory of Mind and Nonlinear Social Emergence",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-06-24",
+      "updated": "2026-06-24",
+      "verification": "Cross-walk landed as citation-only positioning in §6.8.8 (paper v3.0.171, ref @tang2026grouptombench) with derivation in exports/grouptom-bench-crosswalk-2026-06-24.md; claim_status methods; no paid runs.",
+      "links": {
+        "notes": "notes/daily-notes/2026-06-14-research-roundup.html",
+        "plan": "notes/research-plans/2026-06-20-research-plan.html",
+        "paper": "docs/research/paper-full-2.0.md",
+        "exports": "exports/grouptom-bench-crosswalk-2026-06-24.md"
+      },
+      "tags": [
+        "theory-of-mind",
+        "paper-positioning"
+      ],
+      "claim_status": "methods"
+    },
+    {
+      "id": "revisit-adaptation-conformity-human-anchor",
+      "title": "Revisit adaptation-conformity human anchor and artifact availability",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Decision logged: no paper claim changes without recovered artifacts and a deliberate human-annotation protocol; current pass only records the future gate.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md",
+          "notes/daily-notes/2026-06-09-research-roundup.html"
+        ],
+        "paper": "docs/research/paper-full-2.0.md",
+        "scripts": [
+          "scripts/adaptation-conformity-harvest.py",
+          "scripts/adaptation-conformity-classifier.py",
+          "scripts/adaptation-conformity-score-human.py"
+        ],
+        "items": "not-all-flips-are-conformity-decomposing-stance-convergence"
+      },
+      "tags": [
+        "human-anchor",
+        "artifact-recovery",
+        "conformity"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "layered-human-handoff-probe",
+      "title": "Layered adaptive tutor human/hybrid handoff probe",
+      "status": "archived",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-02",
+      "branch": "codex/layered-human-handoff-probe",
+      "verification": "PR #73 merged; focused handoff tests and zero-paid human handoff probe passed with 8/8 controls, 0 public-only failures, 0 non-advisory rows, no proof-control behavior change, and no runtime routing or human-learning claim.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/human-handoff-probe-report.md",
+        "items": "layered-taskloop-heldout-gate",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/73"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "handoff",
+        "outer-loop",
+        "deployment-risk"
+      ]
+    },
+    {
+      "id": "layered-task-session-adaptation",
+      "title": "Layered adaptive tutor task/session adaptation prototype",
+      "status": "archived",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-02",
+      "branch": "codex/task-session-adaptation",
+      "verification": "PR #71 merged; TaskMasteryState remains public-only/advisory; zero-paid taskloop benchmark, focused tests, workplan check, lint, format check, git diff check, and full npm test passed.",
+      "claim_status": "methods",
+      "links": {
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-benchmark-report.md",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/71"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "task-loop",
+        "outer-loop"
+      ]
+    },
+    {
+      "id": "layered-taskloop-heldout-gate",
+      "title": "Layered adaptive tutor held-out task-loop artifact gate",
+      "status": "archived",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-02",
+      "branch": "codex/taskloop-heldout-gate",
+      "verification": "PR #72 merged; paper/spec folded in bounded advisory sequencing claim; held-out task-loop gate passed 12/12 adaptive vs 2/12 fixed with 0 public-only failures and 0 proof-control drift rows.",
+      "claim_status": "scope-bound",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md#selector-trajectory-v0-v4-and-a20a21-closeout-the-selector-fails-the-adaptive-claim-and-proofdebt-becomes-the-reliability-baseline",
+        "notes": "PLAN_2_0/layered_adaptive_tutor_technical_spec.md",
+        "exports": "exports/dramatic-derivation/layered-adaptation/taskloop-heldout-gate-report.md",
+        "items": "layered-task-session-adaptation",
+        "prs": "https://github.com/liammagee/machinespirits-eval/pull/72"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "task-loop",
+        "heldout",
+        "outer-loop"
+      ]
+    },
+    {
+      "id": "docs-board-plan-consolidation",
+      "title": "Consolidate Plan 2.x docs and board routing",
+      "status": "archived",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-01",
+      "updated": "2026-07-02",
+      "branch": "codex/docs-board-consolidation",
+      "verification": "`node scripts/workplan.js render`, `node scripts/workplan.js validate`, `npm run wp:check`, and `npm run wp:test` pass after adding the Plan 2.x documentation map and board-routing notes.",
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md",
+        "notes": [
+          "PLAN_2_0/README.md",
+          "PLAN_2_0/latest_paper_status_next_steps.md",
+          "ADAPTIVE-TUTOR-ACTIVE-PLAN.md",
+          "docs/research/A21-action-value-tutoring-microbench.md"
+        ],
+        "items": [
+          "workplan-governance-checks-and-github-mirror",
+          "paper-workplan-closure-audit-2026-06-24"
+        ]
+      },
+      "tags": [
+        "documentation",
+        "planning",
+        "workplan",
+        "plan-2"
+      ]
+    },
+    {
+      "id": "a18-38-teacher-as-learner-ml-fine-tuning-ladder",
+      "title": "A18.38 Teacher-as-learner ML/fine-tuning ladder",
+      "status": "dropped",
+      "type": "research",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-23",
+      "updated": "2026-06-24",
+      "verification": "Captured as not greenlit; no weight-update or further widening work proceeds unless a new trusted signal changes the A18/A15 decision basis and a fresh item is opened.",
+      "claim_status": "killed",
+      "links": {
+        "notes": [
+          "TODO.md#A18",
+          "notes/poetics/2026-06-06-teacher-as-learner-reframe-ml-ladder.md"
+        ],
+        "paper": "§7.9"
+      },
+      "tags": [
+        "a18",
+        "fine-tuning",
+        "not-greenlit"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
+      "id": "b7-split-structural-critic-peripeteia-rule-into-earned-vs-na",
+      "title": "B7. Split structural-critic peripeteia rule into earned vs named reorientation",
+      "status": "dropped",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "todo",
+      "created": "2026-06-22",
+      "updated": "2026-06-24",
+      "verification": "Dropped because the 2026-05-28 prompt-side surgery made earned and named reorientation co-occur reliably; no critic split is needed unless that evidence changes.",
+      "links": {
+        "notes": "TODO.md#B7"
+      },
+      "claim_status": "killed",
+      "tags": [
+        "poetics",
+        "critic",
+        "dropped"
+      ],
+      "milestone": "poetics-followups"
     }
   ]
 }

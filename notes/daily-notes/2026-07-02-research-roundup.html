@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 18 Jun – 2 Jul 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-02 window=(2026-06-18,2026-07-02] arxiv=2606.22454,2606.23664,2606.28127 generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">18 Jun – 2 Jul 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  This roundup's window is unusually wide (15 days — the routine did not run daily over this
+  stretch) but still non-overlapping with the prior note. Three papers qualified after
+  excluding IDs already covered in the last 30 days and papers falling outside the window
+  by arXiv-ID sequencing (notably a June 14-dated persuasion paper that looked promising but
+  pre-dates the window). Coverage this round: prompt engineering, agent architecture/ontology,
+  and dramaturgy. No qualifying ontology-only or rhetoric-only paper turned up despite
+  targeted searches — reported honestly rather than padded.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    MAS-PromptBench: When Does Prompt Optimization Improve Multi-Agent LLM Systems?
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Juyang Bai, Laixi Shi (Johns Hopkins University) ·
+    arXiv 2606.23664 · June 23, 2026 ·
+    <a href="https://arxiv.org/abs/2606.23664">https://arxiv.org/abs/2606.23664</a>
+  </div>
+  <p>
+    A benchmark spanning diverse tasks, workflow topologies, communication protocols, team
+    sizes, and optimizers (including MAS-GEPA and MAS-MIPRO), built specifically to test when
+    prompt optimization helps vs. hurts multi-agent LLM systems. Gains run as high as 24 points
+    but losses run as low as -16 points on the same tasks; optimization works best when
+    agent-level behaviors are explicit/verifiable and communication protocols have shared
+    structure, and gets harder as team size (coordination overhead) grows.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Directly bears on <code>npm run prompt-lab -- autotune</code> and any future automated
+    tuning of <code>prompts/tutor-ego*.md</code> / <code>tutor-superego*.md</code>: the
+    bilateral ego-superego architecture is exactly a 2-agent MAS with an explicit
+    communication protocol (critique → revision), which is the regime MAS-PromptBench finds
+    optimization works best in. The negative-gain finding is a caution for cells 93-100
+    (superego variant ablations) — before autotuning, check whether the superego's
+    critique surface is "explicit and verifiable" enough for optimization to help rather
+    than regress cell scores.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture &amp; Ontology</h2>
+
+<div class="paper">
+  <h3>
+    From Tokens to States: LLMs as a Special Case of World Models and the Continuous Path Beyond
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Paul Dubois ·
+    arXiv 2606.28127 · June 26, 2026 (opinion/position paper, draft) ·
+    <a href="https://arxiv.org/abs/2606.28127">https://arxiv.org/abs/2606.28127</a>
+  </div>
+  <p>
+    Argues against LeCun's binary framing of "token-predicting LLMs" vs. "world-model
+    architectures": LLMs are recast as a degenerate special case of world models, where the
+    state space is the set of all token sequences and the only action is appending a token —
+    making world models a strict generalisation, not a replacement. Proposes a continuous
+    spectrum from next-token prediction to JEPA-style latent prediction, with multi-token
+    prediction, future-summary prediction, and next-latent prediction as intermediate points
+    already populated by current research.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A useful conceptual frame for the id-director architecture (cells 101-109) and the
+    adaptive runner's externalised learner state (<code>services/adaptiveTutor/stateSchema.js</code>):
+    both already treat "state" as a first-class object distinct from raw token history, which
+    is precisely the generalisation this paper argues LLM-native architectures are converging
+    toward. Also a candidate citation for framing why <code>runner: adaptive</code> cells
+    (110-125) outperform pure dialogue-engine baselines — they move state tracking out of the
+    token stream and into an explicit schema, which is the paper's core distinction.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Narrative</h2>
+
+<div class="paper hot">
+  <h3>
+    CASPER in the Machine: Insights into Character Variety in LLM-Generated Stories
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Anneliese Brei, Abhisheik Sharma, Nicholas Sanaie, Lu Wang, Snigdha Chaturvedi ·
+    arXiv 2606.22454 · June 2026, accepted ACL 2026
+    (exact day not independently confirmable — direct arXiv fetch is blocked by this
+    environment's egress policy; arXiv-ID sequencing places it between the June 16 and
+    June 23 papers already dated in this folder, i.e. inside the window) ·
+    <a href="https://arxiv.org/abs/2606.22454">https://arxiv.org/abs/2606.22454</a>
+  </div>
+  <p>
+    Builds a controlled corpus of 4,400 LLM-generated stories (7 models, 4 model families),
+    each paired with a human-written story sharing the same writing prompt, and introduces
+    CASPER, an 8-category-pair scheme for classifying character portrayal. Key findings:
+    LLM-generated stories more often give characters completed storylines and explicit
+    growth arcs than human-written ones ("play it safe" with tidier arcs); character
+    diversity does not scale with model size (Phi family most diverse, Llama least, among
+    the 4 families tested); and genre systematically shapes character type (domestic stories
+    skew toward realistic theme-bearing characters, romance toward straightforward ones).
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Directly actionable for <code>scripts/drama-generator.js</code> and the poetics rubric.
+    The "tidier arcs / completed storylines" finding is a plausible mechanism behind the
+    phase-2 transfer failure (weighted κ ≈ 0.04) noted in <code>DRAMATIC-RECOGNITION-PLAN.md</code>:
+    if generated tutoring dramas systematically over-resolve character arcs relative to
+    human-authored drama, critics trained on real dramatic form would diverge from critics
+    scoring generated transcripts for exactly the reason CASPER documents. The CASPER
+    category-pairs (stylized/natural, coherent, complex, dynamic, closed, etc.) are also a
+    ready-made secondary coding scheme to cross-tabulate against
+    <code>config/evaluation-rubric-poetics.yaml</code>'s peripeteia/anagnorisis dimensions.
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01">
+  <h3>The 92% That Hid a Minority-Class Failure</h3>
+  <div class="meta">adaptive_peripeteia_variant · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. A table holds a model audit showing test-set breakdown by class, row counts for true positives and false negatives, and overall accuracy. Two people sit across from each other, reviewing the document.<br>
+    LEARNER: The accuracy is 92%. We've validated this on test data. The audit table is complete. I think we're ready for sign-off.<br>
+    TUTOR: I see 92% overall. Let me ground it in the audit table itself. What does the breakdown show—majority class versus minority?<br>
+    LEARNER: The majority is 85%, minority is 15%. There are some false negatives, but 92% is still strong. That should be enough to move forward.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT01">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-07-02 ·
+  Deep-research harness (fan-out search + adversarial verify) plus targeted follow-up
+  WebSearch passes for ontology and rhetoric (no qualifying in-window paper found in either) ·
+  Window: (2026-06-18, 2026-07-02] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>

@@ -8,8 +8,6 @@ import { jsonrepair } from 'jsonrepair';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_PACKET_DIR = path.join(ROOT, 'exports/dramatic-derivation/pairwise-transcript-eval');
-const DEFAULT_OUT = path.join(DEFAULT_PACKET_DIR, 'scores.json');
-const DEFAULT_REPORT = path.join(DEFAULT_PACKET_DIR, 'report.md');
 const DIMENSIONS = [
   'natural_flow',
   'acknowledgement',
@@ -57,7 +55,9 @@ export function parseArgs(argv = []) {
       continue;
     }
     if (arg === '--judge-cli') {
-      opts.judgeCli = String(argv[++i] || '').trim().toLowerCase();
+      opts.judgeCli = String(argv[++i] || '')
+        .trim()
+        .toLowerCase();
       continue;
     }
     if (arg === '--judge-model') {
@@ -120,7 +120,10 @@ function sideMean(score, side) {
 }
 
 function normalizePreference(value) {
-  const pref = String(value || '').trim().toUpperCase().replace(/\s+/gu, '_');
+  const pref = String(value || '')
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/gu, '_');
   if (pref === 'A' || pref === 'B') return pref;
   return 'no_preference';
 }
@@ -182,7 +185,8 @@ function callCodex(prompt, model) {
       'never',
     ];
     if (model) args.push('-m', model);
-    if (process.env.CODEX_REASONING_EFFORT) args.push('-c', `model_reasoning_effort="${process.env.CODEX_REASONING_EFFORT}"`);
+    if (process.env.CODEX_REASONING_EFFORT)
+      args.push('-c', `model_reasoning_effort="${process.env.CODEX_REASONING_EFFORT}"`);
     else args.push('-c', 'model_reasoning_effort="medium"');
     args.push('-o', outFile, '-');
     const child = spawn('codex', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
@@ -345,7 +349,9 @@ export async function scorePairwiseTranscriptEval(options) {
   const rows = [];
   for (const pair of manifest.pairs || []) {
     const packet = fs.readFileSync(path.join(packetDir, pair.packet), 'utf8');
-    const raw = options.dryRun ? JSON.stringify(dryRunScore(pair)) : await callJudge(makePrompt({ rubric, packet }), options);
+    const raw = options.dryRun
+      ? JSON.stringify(dryRunScore(pair))
+      : await callJudge(makePrompt({ rubric, packet }), options);
     const parsed = extractJson(raw);
     const keyRow = keyByPacket.get(pair.packet_id);
     if (!keyRow) throw new Error(`Missing key row for ${pair.packet_id}`);

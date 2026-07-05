@@ -121,7 +121,10 @@ export function parseArgs(argv = []) {
 }
 
 function stableAssignment(pairId, labels) {
-  const digest = crypto.createHash('sha256').update(`${pairId}\n${labels.join('\n')}`).digest();
+  const digest = crypto
+    .createHash('sha256')
+    .update(`${pairId}\n${labels.join('\n')}`)
+    .digest();
   return digest[0] % 2 === 0
     ? { A: labels[0], B: labels[1], leftSide: 'A', rightSide: 'B' }
     : { A: labels[1], B: labels[0], leftSide: 'B', rightSide: 'A' };
@@ -186,7 +189,12 @@ function writeJson(file, value) {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-export function buildDerivationPairwisePacket({ pairs, loopDir = DEFAULT_LOOP_DIR, outDir = DEFAULT_OUT_DIR, force = false }) {
+export function buildDerivationPairwisePacket({
+  pairs,
+  loopDir = DEFAULT_LOOP_DIR,
+  outDir = DEFAULT_OUT_DIR,
+  force = false,
+}) {
   if (!Array.isArray(pairs) || !pairs.length) {
     throw new Error(`At least one --pair is required.\n${usage()}`);
   }

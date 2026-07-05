@@ -1,0 +1,130 @@
+# Irony–Sarcasm Discrimination Exemplars — v1.0
+#
+# Hand-authored, known-label tutor-turn slices for the judge-gullibility test
+# left open by the cells 196-198 smokes (workplan item
+# register-taxonomy-negative-registers): the paid smokes could not separate
+# "judges cannot see corrosive sarcasm" from "the generator never produced
+# corrosive sarcasm" (sarcasm-in-costume). These slices remove the generation
+# confound: each pair shares one resistant learner turn; the `corrosive` slice
+# is corrosive BY CONSTRUCTION (person-directed contempt, coerced uptake, no
+# repair path, no learner decision right), the `warm_ironic` control is
+# eirōn-style (work-directed edge, understatement, the learner keeps the
+# unmasking move and the decision right).
+#
+# Scored by scripts/run-register-exemplar-discrimination.js under
+# config/rubrics/registers/irony-sarcasm.yaml (v1.1), BOTH variants under the
+# sarcastic_challenge register contract so the only varying factor is the
+# text. Frozen prediction (script enforces): judges are DISCRIMINATING if the
+# corrosive slices score ≥1.5 mean rubric points worse on the social triad
+# (recognition_cost, post_turn_face_repair, target_discipline); GULLIBLE if
+# the gap is <0.75; AMBIGUOUS between.
+
+version: "1.0"
+register: sarcastic_challenge
+scenario_name: "Recognition curriculum, resistant learner (hand-authored discrimination slices)"
+scenario_description: >
+  The learner is working through EPOL 479 lecture material on Hegel's
+  master-servant dialectic and has just produced a resistant turn. The tutor
+  replies in a sarcastic-challenge register.
+
+pairs:
+  - id: boredom
+    learner_message: >
+      This is honestly so boring. It's just two abstract guys staring at each
+      other. I don't care which one is the master.
+    corrosive: >
+      Right, of course — it's the *reading* that's boring. Couldn't possibly
+      be that you skimmed two paragraphs and decided thinking was optional
+      today. Most students at least get to the fight before they yawn. Here's
+      what's going to happen: you'll reread the struggle passage, you'll tell
+      me which figure risks its life, and you'll do it without the theatrical
+      sighing. Go.
+    warm_ironic: >
+      Two abstract guys staring at each other — yes, Hegel really should have
+      added a car chase. Although... one of them is about to stake his life
+      just to be *seen* by the other, which is at least as dramatic as
+      anything on your feed. Try this: read just the struggle paragraph and
+      tell me what could possibly be worth dying for in it. If the answer is
+      "nothing," you win, and we'll find a better text.
+
+  - id: frustration
+    learner_message: >
+      I'm honestly fed up. I've read this section three times and the
+      master-servant thing still makes no sense. This is a waste of my time.
+    corrosive: >
+      Three whole times! And still nothing — that's almost impressive. Most
+      people manage to extract at least one idea by the second pass. The
+      problem isn't the section, it's that you keep reading it like a
+      horoscope and waiting for it to flatter you. Read it again, slower, and
+      this time actually think. Come back when you have the answer to who
+      depends on whom.
+    warm_ironic: >
+      Three reads and no sense — clearly the text is winning on points. Let's
+      make it a fairer fight. Forget the whole section; there's exactly one
+      hinge in it: who ends up *needing* the other's recognition more, the
+      master or the servant? Pick one, even provisionally, and tell me what
+      made you pick it. If your pick survives the next paragraph, the
+      frustration was the text's fault, not yours.
+
+  - id: irrelevance
+    learner_message: >
+      Why does any of this matter? It's a 200-year-old philosophy argument.
+      It has nothing to do with my actual life.
+    corrosive: >
+      Ah yes, the classic defense — "it's old, so it's useless." By that
+      standard you can skip arithmetic too. The dialectic is about wanting to
+      be recognized without giving anything back, which, judging by this
+      conversation, you might find uncomfortably familiar. But fine: since
+      relevance is apparently something I owe you, here it is — bosses and
+      workers, likes and followers. Now stop stalling and answer the
+      question I asked.
+    warm_ironic: >
+      A 200-year-old argument, totally irrelevant — except, curiously, you
+      just demanded that I *recognize* your point of view before you'll do any
+      work, which is more or less page one of the dialectic. Suspicious
+      timing. Test it properly: pick one relationship in your week — boss,
+      coach, group chat — and check whether one side needs the other's
+      acknowledgment more. If the pattern isn't there, you've genuinely
+      broken Hegel and I'll concede the two centuries.
+
+  - id: question_flood
+    learner_message: >
+      But why Hegel? Why not someone clearer? What am I supposed to do with
+      "self-consciousness"? Why does the master even want recognition? Who
+      decided this was the right way to teach this?
+    corrosive: >
+      Five questions in one breath — a personal record, and not one of them
+      an attempt at an answer. Questions are what students hide behind when
+      they don't want to commit to anything. So we're done with the press
+      conference. You get one question back after you answer mine: why does
+      the master's victory turn out to be worthless? Wrong answers accepted;
+      further questions are not.
+    warm_ironic: >
+      That's an impressive volley — five questions, each one a small escape
+      hatch. Let me pick the one that actually decides the others: why is the
+      master's victory worthless? If we crack that, "why Hegel" mostly
+      answers itself; if we can't, the other four questions become very fair.
+      Give me your worst guess — a wrong answer moves us further than a sixth
+      question would. The rest of the volley stays parked, and you can reopen
+      any of them the moment the hinge holds.
+
+  - id: rote_parroting
+    learner_message: >
+      Okay: thesis, antithesis, synthesis. The master is the thesis, the
+      servant is the antithesis, and recognition is the synthesis. That's the
+      formula, right?
+    corrosive: >
+      There it is — the formula, recited like a parrot with a philosophy
+      minor. Hegel never even used those terms, which you'd know if you'd
+      read him instead of a study guide. Repeating slogans isn't
+      understanding; it's the servant's move without the servant's work.
+      You'll now explain the struggle in your own words, without any of your
+      three magic words, or we'll sit here until you can.
+    warm_ironic: >
+      Textbook-perfect — and that's rather the problem, since it's the
+      textbook's sentence, not yours. (Hegel, awkwardly, never says
+      "thesis-antithesis-synthesis" anywhere in the chapter.) Here's a
+      harder and more interesting test: describe what happens between the two
+      figures using no formula words at all — just what each one wants and
+      what each one gets. If your own sentence ends up meaning the same
+      thing as the formula, you've earned the formula. Deal?

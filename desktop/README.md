@@ -2,7 +2,7 @@
 
 A native desktop wrapper around the Machine Spirits web UX. It runs the entire
 stack locally (the poetics scriptorium, tutor playground, eval API, human-learner
-pilot, A19 adjudication) in one window — no server to deploy, no browser tab. It is
+pilot, A19 adjudication, and the superego-taxonomy human-coding admin) in one window — no server to deploy, no browser tab. It is
 the **same** UI as the web app by construction (it embeds the unchanged Express app
 and points a window at it), so the two never drift. See
 [`ARCHITECTURE.md`](./ARCHITECTURE.md) for how that works and how to change the UX.
@@ -11,9 +11,25 @@ and points a window at it), so the two never drift. See
 
 ## Quick start
 
-You are in the `machinespirits-eval-electron` git worktree (the desktop build lives
-in its own worktree on the `claude/electron-desktop-app` branch — see the caveat at
-the bottom).
+The desktop build lives in its own git worktree — **`ms-electron/`**, on the
+**`desktop-dev`** branch — so its `node_modules` can hold the Electron-ABI native
+modules without clobbering the main checkout's Node-ABI build (the one `npm test`
+and `eval-cli` use). `desktop-dev` is not a divergent branch; it mirrors `main`.
+
+**Already set up?** One command — run it from anywhere in the repo — fast-forwards
+the `desktop-dev` worktree to `main` and launches the app:
+
+```bash
+npm run desktop:latest
+```
+
+Add `-- --no-launch` to sync the worktree without starting the app. If a dev window
+is **already open**, append `-- --restart` — Electron's single-instance lock means a
+plain relaunch just refocuses the running window without picking up the new code, so
+`--restart` quits it first (without it, the command says so and leaves the old window
+in place rather than silently leaving you on stale code).
+
+**First-time setup** (run these once, inside the `ms-electron` worktree):
 
 ```bash
 # 1. install deps (includes electron + electron-builder)
@@ -35,6 +51,7 @@ background process on an ephemeral loopback port; you never manage a port.
 
 | Command | What it does |
 |---|---|
+| `npm run desktop:latest` | Fast-forward the `desktop-dev` worktree to `main`, then launch. Run from anywhere in the repo. |
 | `npm run desktop:dev` | Launch the app window. |
 | `npm run desktop:smoke` | Headless self-test: boots the app, hits every surface + SSE + CSP, prints PASS/FAIL, exits. No window. |
 | `npm run desktop:test` | Run the desktop test suite (route-parity, sync-contract, paths, security, menu, window-state, credentials). |
@@ -47,18 +64,22 @@ background process on an ephemeral loopback port; you never manage a port.
 ## Using the app
 
 - **Surfaces.** Everything the web app exposes: `/browse` (scriptorium), `/compose`
-  and `/compose/live` (authoring + live sit-in), `/ontology`, `/rubric`, `/runs`,
-  `/board`, `/derivation`, the tutor playground (`/chat`), the participant pilot
-  (`/pilot`), and A19 adjudication (`/adjudication`). Navigate via the in-page nav
+  and `/admin/compose/live` (authoring + live sit-in), `/ontology`, `/rubric`,
+  `/admin/runs`, `/board`, `/derivation`, the tutor playground (`/chat`), the
+  participant pilot (`/pilot`), A19 adjudication (`/adjudication`), and the
+  superego-taxonomy coding admin (`/human-coding-admin`). Navigate via the in-page nav
   rail (**Board** is a primary, always-visible item), the native **Go** menu
   (⌘1–⌘9 for the first nine destinations, plus a dedicated **⌘B** for Board), or
   **View → Home** (⇧⌘H).
-- **The board.** `/board` is a live, editable kanban of the workplan: **drag a card
-  between lanes** to change its status, **click a card to edit** it (including its
+- **The board.** `/board` is a live, editable kanban of the workplan. It opens
+  in an open-work focus by default; use the focus controls or `?focus=all` /
+  `?focus=settled` for completed and dropped history. **Drag a card between
+  lanes** to change its status, **click a card to edit** it (including its
   **milestone** and **dependencies**), the lane **+** to **add** an item, and
   **Delete** to remove one. Cards flag unmet dependencies. Every write goes to
-  `workplan/items/` and re-renders. Editing needs the repo on disk (dev + the browser
-  dev server); a packaged app's bundled board is read-only (writes revert).
+  `workplan/items/` and re-renders. Editing needs the repo on disk (dev + the
+  browser dev server); a packaged app's bundled board is read-only (writes
+  revert).
 - **The timeline.** `/timeline` shows project **milestones** (from
   `workplan/milestones.yaml`) with target dates and progress, alongside a live
   **GitHub** panel — open PRs, releases/tags, and recent commits for the `origin`

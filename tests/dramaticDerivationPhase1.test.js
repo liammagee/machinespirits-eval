@@ -63,7 +63,11 @@ const firstLawfulTurn = (token) => {
   }
   return first;
 };
-const normalizedText = (text) => String(text || '').toLowerCase().replace(/\s+/g, ' ').trim();
+const normalizedText = (text) =>
+  String(text || '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
 const naturalFact = (fact) =>
   fact
     .map((token) =>
@@ -75,7 +79,9 @@ const naturalFact = (fact) =>
     .join(', ');
 const premiseSurface = (premise) => normalizedText(premise.surface || naturalFact(premise.fact));
 const concealedPremises = CONCEALED_TOKENS.flatMap((token) =>
-  world.premises.filter((premise) => normalizedText(`${premise.fact.join(' ')} ${premise.surface || ''}`).includes(token)),
+  world.premises.filter((premise) =>
+    normalizedText(`${premise.fact.join(' ')} ${premise.surface || ''}`).includes(token),
+  ),
 ).filter((premise, i, all) => all.findIndex((p) => p.id === premise.id) === i);
 
 /** Wraps the mock client, recording every prompt the learner role receives. */

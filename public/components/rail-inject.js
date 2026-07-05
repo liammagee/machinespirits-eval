@@ -3,7 +3,8 @@
  *
  * The poetics dashboard (scripts/browse-poetics-scripts.js) server-renders its
  * rail from railHtml(). The folded-in static surfaces (/chat, /adjudication,
- * /pilot-admin) are plain files served by services/evalSurfaces.js, so they
+ * /pilot-admin, /human-coding-admin) are plain files served by
+ * services/evalSurfaces.js, so they
  * can't call railHtml() — instead they fetch it from the /_nav.html endpoint
  * (railHtml's `bare` mode: rail markup + .rail* CSS, the command palette, but no
  * shader canvas, x-ray overlay, grid/theme toggles, or dashboard display scripts)
@@ -21,6 +22,18 @@
  *                   chrome already carries a brand mark, e.g. /chat)
  */
 (function () {
+  // Pick up the dashboard's persisted skin + theme so the injected rail (and any
+  // token-driven chrome) matches what was chosen on the server-rendered pages.
+  // Skin defaults to stark when never set, mirroring the rail's early-apply.
+  try {
+    const de = document.documentElement;
+    if (localStorage.getItem('poetics-theme') === 'dark') de.setAttribute('data-theme', 'dark');
+    let sk = localStorage.getItem('poetics-skin');
+    if (sk === null) sk = 'stark';
+    if (sk === 'stark') de.setAttribute('data-skin', 'stark');
+  } catch (_e) {
+    /* localStorage blocked — fall through to defaults */
+  }
   // Capture the script's data-* synchronously — document.currentScript is null
   // by the time the fetch().then() callbacks run.
   const script = document.currentScript;

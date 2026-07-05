@@ -24,11 +24,32 @@ test('didactic mode exposes exactly the compact initial mode family set', () => 
     'concrete_example',
     'contrast_case',
     'decompose_subtask',
+    'minimal_presence',
     'purpose_bridge',
     'repair_vocabulary',
     'slow_recap',
     'teach_back',
   ]);
+});
+
+test('learner already doing reasoning maps to minimal_presence', () => {
+  const state = deriveDidacticModeState({
+    currentObject: 'the cause liability split',
+    transcript: [
+      {
+        turn: 8,
+        role: 'learner',
+        text: 'I would say the bond line answers who pays, so the cause line still has to answer what brought the arch down.',
+      },
+    ],
+  });
+
+  assert.equal(state.learningSignal, 'ready_self_work');
+  assert.equal(state.recommendedMode, 'minimal_presence');
+  assert.equal(state.scope, 'turn');
+  assert.match(state.exitCondition, /continues/u);
+  assert.equal(state.opportunityCost.maxProofNeutralTurns, 0);
+  assert.equal(state.nonLeakAudit.ok, true);
 });
 
 test('didactic mode audit rejects forbidden proof-state inputs recursively', () => {
@@ -42,10 +63,7 @@ test('didactic mode audit rejects forbidden proof-state inputs recursively', () 
   });
 
   assert.equal(audit.ok, false);
-  assert.deepEqual(
-    audit.leaks.map((leak) => leak.key).sort(),
-    ['D', 'corruptionLedger', 'hiddenBoard', 'proofPath'],
-  );
+  assert.deepEqual(audit.leaks.map((leak) => leak.key).sort(), ['D', 'corruptionLedger', 'hiddenBoard', 'proofPath']);
 
   const state = deriveDidacticModeState({
     currentObject: 'the public exhibit',
@@ -92,8 +110,18 @@ test('repeated confusion maps to slow_recap', () => {
   const state = deriveDidacticModeState({
     currentObject: 'the crown bed evidence',
     transcript: [
-      { turn: 4, role: 'learner', text: 'I am lost on what the crown bed proves.', meta: { exchange: { type: 'confusion' } } },
-      { turn: 5, role: 'learner', text: 'Sorry, I still do not follow the link.', meta: { exchange: { type: 'repair_request' } } },
+      {
+        turn: 4,
+        role: 'learner',
+        text: 'I am lost on what the crown bed proves.',
+        meta: { exchange: { type: 'confusion' } },
+      },
+      {
+        turn: 5,
+        role: 'learner',
+        text: 'Sorry, I still do not follow the link.',
+        meta: { exchange: { type: 'repair_request' } },
+      },
     ],
     scene: { closeStatus: 'needs_repair' },
   });
@@ -160,10 +188,40 @@ test('overload and repeated same-object repairs map to decompose_subtask', () =>
 
   assert.equal(state.learningSignal, 'overloaded');
   assert.equal(state.recommendedMode, 'decompose_subtask');
-  assert.equal(state.scope, 'next_act');
+  assert.equal(state.scope, 'act');
   assert.match(state.exitCondition, /subtask/u);
   assert.equal(state.nonLeakAudit.ok, true);
   assert.deepEqual(state.nonLeakAudit.leaks, []);
+});
+
+test('minimal_presence biases rhetoric without changing proof release target', () => {
+  const didacticMode = deriveDidacticModeState({
+    currentObject: 'the bond cause split',
+    transcript: [
+      {
+        turn: 9,
+        role: 'learner',
+        text: 'I would say the bond line answers who pays, so the cause line still has to answer what happened.',
+      },
+    ],
+  });
+  const advice = recommendRhetoricalMove(
+    { id: 'world-minimal-presence-test' },
+    { turn: 9, transcript: [], trajectory: [], inference: { frontier: [] } },
+    {
+      proofStep: { moveFamily: 'release_next_evidence', targetPremise: 'p_cause' },
+      releaseCue: true,
+      cuePremise: 'p_cause',
+      didacticMode,
+    },
+    { mode: 'deterministic', seed: 1, temperature: 1 },
+  );
+
+  assert.equal(advice.didacticMode.recommendedMode, 'minimal_presence');
+  assert.equal(advice.selected.figure, 'aposiopesis');
+  assert.equal(advice.selected.intent, 'release');
+  assert.equal(advice.selected.targetPremise, 'p_cause');
+  assert.equal(advice.selected.stance, 'didactic_minimal_presence');
 });
 
 test('vocabulary or context confusion maps to repair_vocabulary', () => {

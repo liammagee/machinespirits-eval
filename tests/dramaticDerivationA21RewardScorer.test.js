@@ -22,10 +22,19 @@ const actionSet = defaultHethelActionSet();
 
 function outcomeFor(actionId, extra = {}) {
   const action = getA21Action(actionSet, actionId);
-  const execution = executeA21Action(action, { assignmentProbability: 0.25, trialId: actionId, turn: fixture.trigger.turn });
+  const execution = executeA21Action(action, {
+    assignmentProbability: 0.25,
+    trialId: actionId,
+    turn: fixture.trigger.turn,
+  });
   const releaseInfo = { ...execution.releaseInfo, ...(extra.releaseInfo || {}) };
   const before = initialHethelLearnerState(fixture);
-  const simulation = applyTutorActionToLearnerState(before, action, extra.tutorText ?? execution.tutorText, releaseInfo);
+  const simulation = applyTutorActionToLearnerState(
+    before,
+    action,
+    extra.tutorText ?? execution.tutorText,
+    releaseInfo,
+  );
   return auditTransition({
     trialId: actionId,
     fixture,

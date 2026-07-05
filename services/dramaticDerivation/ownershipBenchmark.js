@@ -1,7 +1,4 @@
-import {
-  deriveObjectOwnershipState,
-  summarizeOwnershipStates,
-} from './objectOwnership.js';
+import { deriveObjectOwnershipState, summarizeOwnershipStates } from './objectOwnership.js';
 
 export const OWNERSHIP_BENCHMARK_SCHEMA = 'dramatic-derivation.ownership-benchmark.v0';
 
@@ -27,7 +24,12 @@ function runFixture({
 } = {}) {
   return {
     verdict,
-    trajectory: [{ turn: 1, D: 4 }, { turn: 2, D: 3 }, { turn: 3, D: 2 }, { turn: 4, D: finalD }],
+    trajectory: [
+      { turn: 1, D: 4 },
+      { turn: 2, D: 3 },
+      { turn: 3, D: 2 },
+      { turn: 4, D: finalD },
+    ],
     ledger: [{ premiseId, turn: releaseTurn }],
     transcript,
   };
@@ -87,10 +89,7 @@ export const OWNERSHIP_BENCHMARK_CASES = Object.freeze([
     s1: runFixture({
       transcript: [
         tutor(4, 'The crowsfoot mark ties the beam to the north yard.'),
-        learner(
-          4,
-          'I read the crowsfoot mark as the yard trace, because it proves where the beam came from.',
-        ),
+        learner(4, 'I read the crowsfoot mark as the yard trace, because it proves where the beam came from.'),
       ],
     }),
   }),
@@ -108,10 +107,7 @@ export const OWNERSHIP_BENCHMARK_CASES = Object.freeze([
     s1: runFixture({
       transcript: [
         tutor(4, 'The sealed pass names the witness, not the porter.'),
-        learner(
-          4,
-          'I would say the sealed pass is not about the porter but the witness, so the signed name matters.',
-        ),
+        learner(4, 'I would say the sealed pass is not about the porter but the witness, so the signed name matters.'),
       ],
     }),
   }),
@@ -240,10 +236,7 @@ export const OWNERSHIP_BENCHMARK_CASES = Object.freeze([
       finalD: 2,
       transcript: [
         tutor(4, 'The south tally fixes the missing cart.'),
-        learner(
-          4,
-          'I read the south tally as the cart trace, because it proves which cart is missing.',
-        ),
+        learner(4, 'I read the south tally as the cart trace, because it proves which cart is missing.'),
       ],
     }),
   }),
@@ -263,10 +256,7 @@ export const OWNERSHIP_BENCHMARK_CASES = Object.freeze([
       verdict: 'aporia',
       transcript: [
         tutor(4, 'The torn receipt connects the buyer to the stall.'),
-        learner(
-          4,
-          'I would say the torn receipt matters because it proves the buyer reached the stall.',
-        ),
+        learner(4, 'I would say the torn receipt matters because it proves the buyer reached the stall.'),
       ],
     }),
   }),
@@ -285,10 +275,7 @@ export const OWNERSHIP_BENCHMARK_CASES = Object.freeze([
       ...runFixture({
         transcript: [
           tutor(4, 'The glass token identifies the third clerk.'),
-          learner(
-            4,
-            'I take it the glass token identifies the third clerk, so that clerk becomes the next witness.',
-          ),
+          learner(4, 'I take it the glass token identifies the third clerk, so that clerk becomes the next witness.'),
         ],
       }),
       ledger: [
@@ -300,7 +287,10 @@ export const OWNERSHIP_BENCHMARK_CASES = Object.freeze([
 ]);
 
 function cleanText(text, limit = 220) {
-  return String(text || '').replace(/\s+/g, ' ').trim().slice(0, limit);
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, limit);
 }
 
 function finalD(run) {
@@ -309,9 +299,7 @@ function finalD(run) {
 }
 
 function releaseSignature(run) {
-  return (Array.isArray(run?.ledger) ? run.ledger : [])
-    .map((entry) => `${entry.premiseId}@t${entry.turn}`)
-    .join('|');
+  return (Array.isArray(run?.ledger) ? run.ledger : []).map((entry) => `${entry.premiseId}@t${entry.turn}`).join('|');
 }
 
 function publicTranscriptLines(run) {

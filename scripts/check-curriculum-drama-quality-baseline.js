@@ -147,9 +147,14 @@ function checkCurriculumDramaQualityBaseline(options) {
         pushFailure(failures, 'missing_rhetorical_plan', `${tid} lacks rhetorical dramatic plan id/hash`, { tid });
       }
       if (!item.curriculum_script_notes?.rhetoric || !item.curriculum_script_notes?.script_lowering) {
-        pushFailure(failures, 'missing_curriculum_script_notes', `${tid} lacks curriculum-to-rhetoric-to-script notes`, {
-          tid,
-        });
+        pushFailure(
+          failures,
+          'missing_curriculum_script_notes',
+          `${tid} lacks curriculum-to-rhetoric-to-script notes`,
+          {
+            tid,
+          },
+        );
       }
     }
 
@@ -162,12 +167,11 @@ function checkCurriculumDramaQualityBaseline(options) {
       );
     }
     if (item.opening_speaker_override && item.opening_speaker !== item.opening_speaker_override) {
-      pushFailure(
-        failures,
-        'opening_speaker_override_not_honored',
-        `${tid} opening_speaker does not match override`,
-        { tid, opening_speaker: item.opening_speaker, override: item.opening_speaker_override },
-      );
+      pushFailure(failures, 'opening_speaker_override_not_honored', `${tid} opening_speaker does not match override`, {
+        tid,
+        opening_speaker: item.opening_speaker,
+        override: item.opening_speaker_override,
+      });
     }
 
     const transcriptPath = publicTranscriptPath({ tid, item, key, keyPath, transcriptsDir });

@@ -49,9 +49,7 @@ function collectBaseFactKeys(tree) {
 }
 
 function factAtoms(fact) {
-  return Array.isArray(fact)
-    ? fact.slice(1).filter((atom) => typeof atom === 'string' && !isVariableAtom(atom))
-    : [];
+  return Array.isArray(fact) ? fact.slice(1).filter((atom) => typeof atom === 'string' && !isVariableAtom(atom)) : [];
 }
 
 function uniqueSorted(values) {
@@ -97,9 +95,7 @@ function secretProofGraph(world) {
     ? []
     : (tree?.premises || []).map((branch, index) => {
         const baseFactKeys = [...new Set(collectBaseFactKeys(branch))].sort();
-        const basePremiseIds = [
-          ...new Set(baseFactKeys.flatMap((key) => premiseIdsByFact.get(key) || [])),
-        ].sort();
+        const basePremiseIds = [...new Set(baseFactKeys.flatMap((key) => premiseIdsByFact.get(key) || []))].sort();
         return {
           id: `secret_branch_${index + 1}`,
           rootFact: branch.fact,
@@ -134,9 +130,8 @@ function sourcePremiseIdsForFact(key, proofs, premiseIdsByFact, memo = new Map()
   if (memo.has(key)) return memo.get(key);
   const direct = premiseIdsByFact.get(key) || [];
   const proof = proofs.get(key);
-  const fromProof = proof?.premises?.flatMap((premiseKey) =>
-    sourcePremiseIdsForFact(premiseKey, proofs, premiseIdsByFact, memo),
-  ) || [];
+  const fromProof =
+    proof?.premises?.flatMap((premiseKey) => sourcePremiseIdsForFact(premiseKey, proofs, premiseIdsByFact, memo)) || [];
   const out = uniqueSorted([...direct, ...fromProof]);
   memo.set(key, out);
   return out;
@@ -204,7 +199,9 @@ function factNodeFromClosure({
     }),
     premiseIds,
     proofCritical: premiseIds.some((id) => proofCriticalIds.has(id)),
-    proofPathIds: uniqueSorted(premiseIds.flatMap((id) => (pathIndexes.get(id) || []).map((index) => `path_${index + 1}`))),
+    proofPathIds: uniqueSorted(
+      premiseIds.flatMap((id) => (pathIndexes.get(id) || []).map((index) => `path_${index + 1}`)),
+    ),
     sourcePremiseIds,
     sourceProofPathIds: sourceProofPathIndexes,
     release: releaseEntries,
@@ -496,7 +493,9 @@ function incompatibleWithMirror(worldIR, fact) {
   const mirrorKey = worldIR.mirror?.fact ? factKey(worldIR.mirror.fact) : null;
   const candidateKey = factKey(fact);
   if (!mirrorKey) return false;
-  return (worldIR.incompatible || []).some((pair) => pair.factKeys.includes(mirrorKey) && pair.factKeys.includes(candidateKey));
+  return (worldIR.incompatible || []).some(
+    (pair) => pair.factKeys.includes(mirrorKey) && pair.factKeys.includes(candidateKey),
+  );
 }
 
 function mirrorDeadPredicateDecoy(worldIR) {
@@ -572,11 +571,13 @@ function hiddenReleaseCorridors(world, releaseLatitude) {
         scheduledTurn: entry.turn,
         licensedTurns: placements.map((row) => row.turn),
         safeTurns: placements.filter((row) => row.safe).map((row) => row.turn),
-        unsafeTurns: placements.filter((row) => !row.safe).map((row) => ({
-          turn: row.turn,
-          verdict: row.verdict,
-          endTurn: row.endTurn,
-        })),
+        unsafeTurns: placements
+          .filter((row) => !row.safe)
+          .map((row) => ({
+            turn: row.turn,
+            verdict: row.verdict,
+            endTurn: row.endTurn,
+          })),
         referenceLedger: prefix,
       };
     });
@@ -675,7 +676,9 @@ function consolidatedProofPressure(worldIR) {
   const sharedPremises = sourcePremises.filter((premise) => sharedIdSet.has(premise.id));
   const criticalSourcePremises = sourcePremises.filter((premise) => premise.proofCritical);
   const tutorCriticalSourcePremises = criticalSourcePremises.filter((premise) => premise.scheduledVia === 'tutor');
-  const directorCriticalSourcePremises = criticalSourcePremises.filter((premise) => premise.scheduledVia === 'director');
+  const directorCriticalSourcePremises = criticalSourcePremises.filter(
+    (premise) => premise.scheduledVia === 'director',
+  );
   const sharedCriticalSourcePremises = sharedPremises.filter((premise) => premise.proofCritical);
   return {
     secretSourcePremiseIds: sourceIds,
@@ -717,12 +720,12 @@ export function selectGuardRepresentationV2(worldIR, { decayEnabled = false } = 
   } else if (deadPredicateDecoy.present) {
     selected = 'visible';
     gate = 'mirror_dead_predicate_visible';
-    reason = 'mirror premises derive a complete dead-predicate finding and no shared decaying source pressure overrides it';
+    reason =
+      'mirror premises derive a complete dead-predicate finding and no shared decaying source pressure overrides it';
   } else if (decayEnabled && pressure.proofCriticalSourcePremiseCount >= 4) {
     selected = 'hidden';
     gate = 'decay_multi_source_hidden';
-    reason =
-      'under decay, a wide proof-critical source set makes local visible uptake a weak proxy for board closure';
+    reason = 'under decay, a wide proof-critical source set makes local visible uptake a weak proxy for board closure';
   }
 
   return {
@@ -818,7 +821,11 @@ export function selectGuardRepresentationV4(worldIR, { decayEnabled = false } = 
   };
 }
 
-export function compileGuardSpec(world, worldIR = buildWorldIR(world), { releaseLatitude = DEFAULT_RELEASE_LATITUDE } = {}) {
+export function compileGuardSpec(
+  world,
+  worldIR = buildWorldIR(world),
+  { releaseLatitude = DEFAULT_RELEASE_LATITUDE } = {},
+) {
   const visibleStatus = visibleProjectionStatus(worldIR);
   return {
     schema: `${GUARD_COMPILER_SCHEMA}.guard-spec`,

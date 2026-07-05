@@ -67,12 +67,6 @@ function mean(values) {
   return nums.reduce((sum, v) => sum + v, 0) / nums.length;
 }
 
-function round(value, digits = 3) {
-  if (!Number.isFinite(value)) return null;
-  const scale = 10 ** digits;
-  return Math.round(value * scale) / scale;
-}
-
 function parseJson(value, fallback = null) {
   if (value == null) return fallback;
   if (typeof value !== 'string') return value;
@@ -140,7 +134,10 @@ function loadRows({ dbPath, runIds, profile = null, judgeModel = null }) {
     params.push(judgeModel);
   }
   sql += ' ORDER BY profile_name, scenario_id, id';
-  const rows = db.prepare(sql).all(...params).map(rowFromDb);
+  const rows = db
+    .prepare(sql)
+    .all(...params)
+    .map(rowFromDb);
   db.close();
   return rows;
 }
@@ -252,7 +249,10 @@ function aggregateProfile(rows) {
   };
 }
 
-export function aggregateQualityRows(rows, { baseline = 'cell_135_plan2_closed_loop', minShiftRate = 0.875, minQualityDelta = 0 } = {}) {
+export function aggregateQualityRows(
+  rows,
+  { baseline = 'cell_135_plan2_closed_loop', minShiftRate = 0.875, minQualityDelta = 0 } = {},
+) {
   const grouped = new Map();
   for (const row of rows) {
     const key = row.profileName || 'unknown';
@@ -318,7 +318,9 @@ function renderMarkdown(report) {
     );
     lines.push('');
   }
-  lines.push('| Profile | N | Quality N | Strict shift | Quality | Delta vs baseline | Tutor last | Tutor holistic | Learner | Dialogue | Dev |');
+  lines.push(
+    '| Profile | N | Quality N | Strict shift | Quality | Delta vs baseline | Tutor last | Tutor holistic | Learner | Dialogue | Dev |',
+  );
   lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
   for (const row of report.ranked) {
     lines.push(
@@ -328,7 +330,9 @@ function renderMarkdown(report) {
   lines.push('');
   lines.push('## Dimension Means');
   lines.push('');
-  lines.push('| Profile | perception | elicitation | adaptive_resp | recognition | productive_diff | epistemic | accuracy |');
+  lines.push(
+    '| Profile | perception | elicitation | adaptive_resp | recognition | productive_diff | epistemic | accuracy |',
+  );
   lines.push('|---|---:|---:|---:|---:|---:|---:|---:|');
   for (const row of report.ranked) {
     lines.push(
@@ -345,7 +349,9 @@ function printSummary(report) {
   console.log(`  baseline=${report.options.baseline}`);
   console.log(`  shift gate=${fmtPct(report.options.minShiftRate)}`);
   console.log('');
-  console.log('  profile                                      n  qn  shift       quality  delta   last  holistic  learner  dialogue');
+  console.log(
+    '  profile                                      n  qn  shift       quality  delta   last  holistic  learner  dialogue',
+  );
   for (const row of report.ranked) {
     console.log(
       `  ${row.profileName.padEnd(44)} ${String(row.n).padStart(2)}  ${String(row.completeQualityN).padStart(2)}  ${fmtPct(row.strictShiftRate).padStart(8)}  ${fmt(row.qualityCompositeMean).padStart(7)}  ${fmt(row.qualityDeltaVsBaseline).padStart(6)}  ${fmt(row.tutorLastTurnMean).padStart(5)}  ${fmt(row.tutorHolisticMean).padStart(8)}  ${fmt(row.learnerMean).padStart(7)}  ${fmt(row.dialogueQualityMean).padStart(8)}`,

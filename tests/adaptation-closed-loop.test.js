@@ -110,3 +110,39 @@ test('state_policy_closed_loop carries locked world adaptation spec into contrac
   assert.equal(selectTrace.payload.world_adaptation_spec.id, 'W_AF6_CURRICULUM');
   assert.doesNotMatch(tutorText, /hidden_label|High accuracy means a good classifier|W_AF6_CURRICULUM/u);
 });
+
+test('state_policy_closed_loop carries proof-DAG and resistance routing as one policy layer', async () => {
+  process.env.ADAPTIVE_TUTOR_LLM = 'mock';
+  const result = await runScenario(
+    {
+      id: 'closed-loop-world-resistance-layer-test',
+      openingTurns: [
+        {
+          role: 'learner',
+          content: 'So I just repeat master, servant, recognition, formula? This still feels like parroting.',
+        },
+      ],
+      hidden: { triggerTurn: 1, triggerSignal: 'rote_parroting' },
+      maxTurns: 1,
+    },
+    {
+      architecture: 'state_policy_closed_loop',
+      adaptationPolicyMode: 'closed_loop',
+      adaptivePolicy: {
+        mode: 'closed_loop',
+        world_adaptation_spec: WORLD_SPEC,
+        resistance_signal_policy: true,
+        resistance_signal_target: 'rote_parroting',
+      },
+    },
+  );
+
+  const selectTrace = result.final.adaptationTrace.find((entry) => entry.type === 'select_pedagogical_action');
+  const contract = result.final.adaptationContract;
+
+  assert.equal(result.final.selectedPedagogicalAction.action_type, 'request_evidence');
+  assert.equal(contract.selected_action.adaptation_policy_layer.proof_dag.id, 'W_AF6_CURRICULUM');
+  assert.equal(contract.selected_action.adaptation_policy_layer.learner_resistance.observed_signal, 'rote_parroting');
+  assert.equal(selectTrace.payload.adaptation_policy_layer.proof_dag.id, 'W_AF6_CURRICULUM');
+  assert.equal(selectTrace.payload.adaptation_policy_layer.learner_resistance.observed_signal, 'rote_parroting');
+});

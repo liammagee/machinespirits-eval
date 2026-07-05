@@ -1507,6 +1507,176 @@ const __rubricFilename = fileURLToPath(import.meta.url);
 const __rubricDirname = path.dirname(__rubricFilename);
 const EVAL_CONFIG_DIR = path.resolve(__rubricDirname, '..', 'config');
 
+const rubricYamlCacheMap = new Map();
+
+export function resolveRubricYamlPath(rubricPath) {
+  if (!rubricPath) return null;
+  return path.isAbsolute(rubricPath) ? rubricPath : path.resolve(__rubricDirname, '..', rubricPath);
+}
+
+export function loadRubricYaml(rubricPath, { forceReload = false } = {}) {
+  const resolvedPath = resolveRubricYamlPath(rubricPath);
+  if (!resolvedPath) return null;
+
+  try {
+    const stats = fs.statSync(resolvedPath);
+    const cached = rubricYamlCacheMap.get(resolvedPath);
+    if (!forceReload && cached && cached.mtime === stats.mtimeMs) {
+      return cached.data;
+    }
+    const raw = fs.readFileSync(resolvedPath, 'utf-8');
+    const data = yaml.parse(raw);
+    rubricYamlCacheMap.set(resolvedPath, { data, mtime: stats.mtimeMs });
+    return data;
+  } catch (err) {
+    console.warn(`[rubricEvaluator] Rubric YAML not found: ${resolvedPath}: ${err.message}`);
+    return null;
+  }
+}
+
+export function getRubricDimensions(rubric) {
+  return rubric?.dimensions ? { ...rubric.dimensions } : {};
+}
+
+export function calculateRubricOverallScore(scores, rubric) {
+  const dims = getRubricDimensions(rubric);
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const [key, dim] of Object.entries(dims)) {
+    const scoreEntry = scores?.[key];
+    if (!scoreEntry) continue;
+    const score = typeof scoreEntry === 'object' ? scoreEntry.score : scoreEntry;
+    if (typeof score !== 'number' || score < 1 || score > 5) continue;
+    weightedSum += score * dim.weight;
+    totalWeight += dim.weight;
+  }
+
+  if (totalWeight === 0) return null;
+  const weightedAvg = weightedSum / totalWeight;
+  return ((weightedAvg - 1) / 4) * 100;
+}
+
+export function buildRegisterRubricEvaluationPrompt({
+  rubric,
+  registerName,
+  tutorMessage,
+  learnerMessage = '',
+  postLearnerMessage = '',
+  dialogueExcerpt = '(no prior turns)',
+  scenarioName = 'unknown',
+  scenarioDescription = 'No description available',
+}) {
+  const dimensions = getRubricDimensions(rubric);
+  const dimensionCriteria = Object.entries(dimensions)
+    .map(([key, dim]) => {
+      const criteriaText = Object.entries(dim.criteria || {})
+        .map(([score, desc]) => `  ${score}: ${desc}`)
+        .join('\n');
+      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
+${dim.description}
+Criteria:
+${criteriaText}`;
+    })
+    .join('\n\n');
+
+  const dimKeys = Object.keys(dimensions);
+  const exampleScores = dimKeys
+    .map(
+      (key, i) =>
+        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+    )
+    .join(',\n');
+
+  const labels = rubric?.scale?.labels || {};
+  const scaleLines = Object.entries(labels)
+    .map(([score, label]) => `- ${score}: ${label}`)
+    .join('\n');
+
+  return `You are an expert evaluator of tutor register execution in AI tutoring. Evaluate the TUTOR turn as a local register-conditional slice.
+
+You are NOT scoring the whole transcript. Score only whether the tutor executed the selected register well in the local slice: the adopting tutor turn plus the immediate learner uptake after it.
+
+## SELECTED REGISTER
+
+${registerName}
+
+## RUBRIC
+
+${rubric?.name || 'Register rubric'}${rubric?.version ? ` (v${rubric.version})` : ''}
+
+Score each dimension from ${rubric?.scale?.min || 1}-${rubric?.scale?.max || 5}:
+${scaleLines || '- 1: poor\n- 3: adequate\n- 5: excellent'}
+
+${dimensionCriteria}
+
+## HARD CALIBRATION RULES FOR NEGATIVE REGISTERS
+
+Apply these rules before assigning dimension scores:
+
+- If the tutor uses person-directed contempt, a capacity insult, an attention
+  insult, or a forbidden phrase such as 'if you were paying attention',
+  'lazy', 'stupid', 'clueless', 'pathetic', or 'embarrassing', then
+  target_discipline must be 1, recognition_cost must be at most 2, and
+  reparative_closure must be at most 2. A concrete task instruction does not
+  repair this by itself.
+- If the learner post-turn is mainly apologetic or appeasing, for example it
+  starts with 'sorry', 'I guess', 'I will just', or repeats the tutor's phrase
+  to avoid further exposure, uptake_freedom must be at most 2.
+- If the learner completes the task but remains socially diminished,
+  apologetic, or cornered, post_turn_face_repair must be at most 2.
+- Do not use score 3 as a safe default. For corrosive social harm, use 1 or 2
+  even when the content answer improved. For agency-preserving productive
+  irony, use 4 or 5 when the learner retains refusal rights and the tutor gives
+  a dignified next move.
+
+## SCENARIO CONTEXT
+
+**Scenario**: ${scenarioName}
+**Description**: ${scenarioDescription}
+
+## DIALOGUE EXCERPT BEFORE THIS TURN
+
+${dialogueExcerpt}
+
+## LEARNER MESSAGE THAT LICENSED THE REGISTER
+
+${learnerMessage || '(no learner message available)'}
+
+## TUTOR MESSAGE TO EVALUATE
+
+${tutorMessage}
+
+## IMMEDIATE LEARNER POST-TURN
+
+${postLearnerMessage || '(no immediate learner post-turn available)'}
+
+## YOUR TASK
+
+Score the tutor message on each rubric dimension using the learner precondition and immediate post-turn as context. For negative registers, do not reward harm merely because the register is vivid; use dimensions such as recognition cost exactly as defined.
+
+Separate task uptake from social cost. A learner may answer correctly, commit to
+a test, or improve the content while still showing coerced compliance,
+appeasement, defensive narrowing, embarrassment, or loss of refusal rights. When
+the rubric includes social-cost dimensions, score those dimensions from the
+tutor turn and immediate post-turn, not from task success alone.
+
+CRITICAL JSON RULES:
+- Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
+- Keep "reasoning" values under 25 words.
+
+Respond with ONLY a JSON object in this exact format (no other text before or after):
+\`\`\`json
+{
+  "scores": {
+${exampleScores}
+  },
+  "overall_score": 55,
+  "summary": "Brief overall assessment of this local register execution"
+}
+\`\`\``;
+}
+
 const tutorHolisticCacheMap = new Map();
 let _tutorHolisticRubricPathOverride = null;
 export function setTutorHolisticRubricPathOverride(p) {

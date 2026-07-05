@@ -64,6 +64,25 @@
     --rule-soft: rgba(244, 238, 221, 0.08);
   }
 
+  /* Stark skin (A/B) — shared with the dashboard so a framed note re-skins when
+     the tweaks panel flips data-skin (mirrored into the iframe by the wrapper). */
+  :root[data-skin="stark"] {
+    --paper:#FFFFFF; --paper-2:#F4F4F5; --paper-3:#FAFAFA; --paper-4:#FFFFFF;
+    --ink:#0A0A0A; --ink-2:#262626; --ink-3:#525252; --ink-4:#8A8A8A;
+    --linen:#D4D4D8; --moss:#171717; --moss-deep:#000000;
+    --brick:#E63946; --brick-d:#C1121F; --ochre:#737373; --ochre-d:#525252;
+    --rule:rgba(10,10,10,0.16); --rule-soft:rgba(10,10,10,0.07);
+  }
+  :root[data-skin="stark"][data-theme="dark"] {
+    --paper:#0A0A0B; --paper-2:#141416; --paper-3:#161618; --paper-4:#1C1C1F;
+    --ink:#FAFAFA; --ink-2:#E4E4E7; --ink-3:#A1A1AA; --ink-4:#6F6F76;
+    --linen:#2A2A2E; --moss:#F5F5F5; --moss-deep:#FFFFFF;
+    --brick:#E63946; --brick-d:#F4606C; --ochre:#A1A1AA; --ochre-d:#C4C4CC;
+    --rule:rgba(250,250,250,0.16); --rule-soft:rgba(250,250,250,0.08);
+  }
+  /* Stark is flat: drop the note's parchment grain / dark wash. */
+  :root[data-skin="stark"] body::before, :root[data-skin="stark"] body::after { display:none; }
+
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   html { -webkit-text-size-adjust: 100%; background: var(--paper); scroll-behavior: smooth; }

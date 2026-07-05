@@ -8,7 +8,10 @@ import {
 
 test('hidden proofDebt audit includes only the static hidden reliability substrate', () => {
   assert.equal(isHiddenProofDebtDiagnosis({ pacingGuard: true, proofDebtGuard: true }), true);
-  assert.equal(isHiddenProofDebtDiagnosis({ pacingGuard: true, proofDebtGuard: true, pacingGuardVisible: true }), false);
+  assert.equal(
+    isHiddenProofDebtDiagnosis({ pacingGuard: true, proofDebtGuard: true, pacingGuardVisible: true }),
+    false,
+  );
   assert.equal(
     isHiddenProofDebtDiagnosis({ pacingGuard: true, proofDebtGuard: true, pacingGuardSelectiveV4: true }),
     false,
@@ -71,8 +74,18 @@ test('hidden proofDebt audit keeps true current stalls as replay candidates', ()
 test('hidden proofDebt audit summary selects no replay candidate when all failures are stale or bounded', () => {
   const summary = summarizeAudit([
     { archivedVerdict: 'grounded_anagnorisis', currentClass: 'grounded', worldId: 'w1', cleanCurrentFailure: false },
-    { archivedVerdict: 'disengagement', currentClass: 'stale_detector_artifact', worldId: 'w2', cleanCurrentFailure: false },
-    { archivedVerdict: 'cap_reached', currentClass: 'bounded_window_nonterminal', worldId: 'w3', cleanCurrentFailure: false },
+    {
+      archivedVerdict: 'disengagement',
+      currentClass: 'stale_detector_artifact',
+      worldId: 'w2',
+      cleanCurrentFailure: false,
+    },
+    {
+      archivedVerdict: 'cap_reached',
+      currentClass: 'bounded_window_nonterminal',
+      worldId: 'w3',
+      cleanCurrentFailure: false,
+    },
   ]);
   assert.equal(summary.cleanCurrentFailures, 0);
   assert.equal(summary.replayCandidate, null);

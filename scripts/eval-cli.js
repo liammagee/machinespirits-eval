@@ -140,6 +140,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
 const RUBRICS_DIR = path.resolve(__dirname, '..', 'config', 'rubrics');
 
+function positiveIntEnv(name, fallback) {
+  const raw = process.env[name];
+  if (raw == null || raw === '') return fallback;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
+const CLI_JUDGE_TIMEOUT_MS = positiveIntEnv('EVAL_CLI_JUDGE_TIMEOUT_MS', 600_000);
+
 function isAdaptiveTraceLog(log) {
   return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));
 }
@@ -149,7 +158,10 @@ function adaptiveTraceScenarioContext(trace, result) {
   const hidden = trace?.scenario?.hidden || {};
   const expected = trace?.scenario?.expectedStrategyShift;
   const expectedLabel = Array.isArray(expected) ? expected.join(', ') : expected || 'adaptive response';
-  const hiddenSummary = [hidden.actual_misconception, hidden.actual_sophistication && `sophistication: ${hidden.actual_sophistication}`]
+  const hiddenSummary = [
+    hidden.actual_misconception,
+    hidden.actual_sophistication && `sophistication: ${hidden.actual_sophistication}`,
+  ]
     .filter(Boolean)
     .join('; ');
   return {
@@ -292,6 +304,28 @@ function clearAllRubricOverrides() {
 
 const args = process.argv.slice(2);
 const command = args.find((a) => !a.startsWith('--')) || 'list';
+const HELP_TEXT = `Usage:
+  node scripts/eval-cli.js [command] [options]
+
+Commands:
+  list, quick, test, run, runs, report, status, watch, transcript, export,
+  cleanup, delete-runs, resume, revert, rejudge, evaluate, backfill-first-turn,
+  evaluate-learner, evaluate-dialogue, validate-config, chat, play
+
+Run examples:
+  node scripts/eval-cli.js run --profiles cell_169_id_director_charisma_accountable_bid_clean_floor_verified --scenario charisma_desire_authority_withheld --runs 1 --skip-rubric
+  node scripts/eval-cli.js run --profiles cell_169_id_director_charisma_accountable_bid_clean_floor_verified --scenario charisma_desire_authority_withheld --runs 1 --judge-cli codex
+
+Options:
+  --scenario <id>        Scenario ID or comma-separated IDs
+  --profile <name>       Profile(s), comma-separated
+  --profiles <names>     Alias for --profile
+  --runs <n>             Replications per cell
+  --skip-rubric          Generate without AI rubric judging
+  --judge-cli <name>     CLI rubric judge: claude, gemini, codex
+  --dry-run              Use mock data instead of API calls
+  --help                 Print this help and exit
+`;
 const FACTORIAL_2X2X2_PROFILES = [
   'cell_1_base_single_unified',
   'cell_2_base_single_psycho',
@@ -306,6 +340,14 @@ const FACTORIAL_2X2X2_PROFILE_SET = new Set(FACTORIAL_2X2X2_PROFILES);
 
 function getFlag(name) {
   return args.includes(`--${name}`);
+}
+
+function wantsHelp() {
+  return getFlag('help') || args.includes('-h');
+}
+
+function printHelp() {
+  console.log(HELP_TEXT);
 }
 
 function getOption(name, defaultValue = undefined) {
@@ -1547,6 +1589,11 @@ To see available test scenarios and profiles, use list_options.`,
 
 async function main() {
   try {
+    if (wantsHelp()) {
+      printHelp();
+      return;
+    }
+
     switch (command) {
       case 'list': {
         const options = evaluationRunner.listOptions();
@@ -1653,6 +1700,9 @@ async function main() {
         // A7 Longitudinal: when supplied, ALL dialogues in this invocation share
         // the Writing Pad keyed by this ID. Omit for per-dialogue synthetic IDs.
         const learnerIdOpt = getOption('learner-id');
+        // #3 cross-session memory: opt-in ego prompt extension supplied via a file
+        // (a file avoids CLI quoting for the narrative); threads to runEvaluation's hook.
+        const externalEgoExtensionFile = getOption('external-ego-extension-file');
 
         // --show-messages or --show-messages=full
         const showMessagesRaw = args.find((a) => a === '--show-messages' || a.startsWith('--show-messages='));
@@ -1859,6 +1909,10 @@ async function main() {
           showMessages,
           liveApi,
           learnerId: learnerIdOpt || null,
+          externalEgoExtension:
+            externalEgoExtensionFile && fs.existsSync(externalEgoExtensionFile)
+              ? fs.readFileSync(externalEgoExtensionFile, 'utf8')
+              : null,
         });
         // Extract unique model aliases used across all configs (ego + superego)
         const extractAlias = (raw) => {
@@ -3138,14 +3192,33 @@ async function main() {
             });
             let out = '';
             let err = '';
+            let settled = false;
+            const cliTimeout = setTimeout(() => {
+              if (settled) return;
+              settled = true;
+              try {
+                child.kill('SIGKILL');
+              } catch {
+                // Child may have exited between timer firing and kill.
+              }
+              reject(new Error(`${cliBinary} CLI judge timed out after ${CLI_JUDGE_TIMEOUT_MS}ms`));
+            }, CLI_JUDGE_TIMEOUT_MS);
             child.stdout.on('data', (d) => {
               out += d;
             });
             child.stderr.on('data', (d) => {
               err += d;
             });
-            child.on('error', reject);
+            child.on('error', (error) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
+              reject(error);
+            });
             child.on('close', (code) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
               if (code !== 0) reject(new Error(err || out || `${cliBinary} exited with code ${code}`));
               else resolve(out);
             });
@@ -3285,14 +3358,33 @@ async function main() {
             const child = spawn(cliBin, cliJudgeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env: cliJudgeEnv });
             let out = '';
             let err = '';
+            let settled = false;
+            const cliTimeout = setTimeout(() => {
+              if (settled) return;
+              settled = true;
+              try {
+                child.kill('SIGKILL');
+              } catch {
+                // Child may have exited between timer firing and kill.
+              }
+              reject(new Error(`${cliBin} CLI judge timed out after ${CLI_JUDGE_TIMEOUT_MS}ms`));
+            }, CLI_JUDGE_TIMEOUT_MS);
             child.stdout.on('data', (d) => {
               out += d;
             });
             child.stderr.on('data', (d) => {
               err += d;
             });
-            child.on('error', reject);
+            child.on('error', (error) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
+              reject(error);
+            });
             child.on('close', (code) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
               if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
               else resolve(out);
             });
@@ -4293,7 +4385,6 @@ async function main() {
 
         // Helper: run dialogue quality scoring for a multi-turn result
         async function _scoreDialogueQuality(result, tag) {
-          const scenarioId = result.scenarioId;
           const _profileName = result.profileName || `${result.provider}/${result.model}`;
           const judgeModel = judgeModelLabel;
 
@@ -6435,32 +6526,18 @@ async function main() {
         }
 
         // ── 8. Prompt file existence ──────────────────────────────────
-        // Prompt files live in tutor-core's prompts/ directory (npm-linked)
-        let tutorCorePromptsDir = null;
-        // In-housed: prefer this repo's vendored tutor-core/prompts/
-        // (from @machinespirits/tutor-core — see TUTOR-CORE-INHOUSING.md).
+        // Prompt files live in this repo's in-housed tutor-core/prompts/
+        // (vendored from the former @machinespirits/tutor-core — see TUTOR-CORE-INHOUSING.md).
         const vendoredPromptsDir = path.resolve(__dirname, '..', 'tutor-core', 'prompts');
-        if (fs.existsSync(vendoredPromptsDir)) {
-          tutorCorePromptsDir = vendoredPromptsDir;
-        } else {
-          try {
-            const tutorCorePath = path.dirname(
-              (await import('module'))
-                .createRequire(import.meta.url)
-                .resolve('@machinespirits/tutor-core/package.json'),
-            );
-            tutorCorePromptsDir = path.join(tutorCorePath, 'prompts');
-          } catch {
-            const localPath = path.resolve(__dirname, '..', '..', 'machinespirits-tutor-core', 'prompts');
-            if (fs.existsSync(localPath)) tutorCorePromptsDir = localPath;
-          }
-        }
+        const tutorCorePromptsDir = fs.existsSync(vendoredPromptsDir) ? vendoredPromptsDir : null;
 
         const promptDirs = [path.resolve(__dirname, '..', 'prompts')];
         if (tutorCorePromptsDir && fs.existsSync(tutorCorePromptsDir)) {
           promptDirs.push(tutorCorePromptsDir);
         }
-        const existingPromptDirs = promptDirs.filter((dir, index) => fs.existsSync(dir) && promptDirs.indexOf(dir) === index);
+        const existingPromptDirs = promptDirs.filter(
+          (dir, index) => fs.existsSync(dir) && promptDirs.indexOf(dir) === index,
+        );
 
         if (existingPromptDirs.length > 0) {
           const promptErrors = [];

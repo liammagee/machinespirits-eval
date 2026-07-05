@@ -929,8 +929,7 @@ describe('learner output sanitization', () => {
       { content: 'I said the decimal settled it.' },
       { content: 'Keep the learner public and concrete.' },
       {
-        content:
-          'FINAL:\nI said the decimal settled it. The framing problem is that I made evidence do proof work.',
+        content: 'FINAL:\nI said the decimal settled it. The framing problem is that I made evidence do proof work.',
       },
     ];
     let callIndex = 0;
@@ -1179,6 +1178,7 @@ describe('tutorMovesToPolicy', () => {
     assert.equal(tutorMovesToPolicy(['meter', 'recognition_press']), 'socratic_discovery');
     assert.equal(tutorMovesToPolicy(['hold']), 'routine');
     assert.equal(tutorMovesToPolicy(['reveal']), 'reveal_secret');
+    assert.equal(tutorMovesToPolicy(['withhold']), 'withhold_secret');
   });
 
   it('returns none for empty or unknown move-sets', () => {

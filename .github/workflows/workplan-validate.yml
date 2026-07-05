@@ -1,0 +1,44 @@
+name: Workplan validation
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - '.github/pull_request_template.md'
+      - '.github/workflows/workplan-*.yml'
+      - 'package.json'
+      - 'scripts/check-pr-workplan-link.js'
+      - 'scripts/workplan-github-mirror.js'
+      - 'scripts/workplan.js'
+      - 'tests/workplan.test.js'
+      - 'workplan/**'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  workplan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Workplan tooling only imports yaml; avoid building native deps here.
+      - name: Install yaml
+        run: npm install --no-save yaml
+
+      - name: Validate items and generated board views
+        run: npm run wp:check
+
+      - name: Workplan unit tests
+        run: npm run wp:test
+
+      - name: PR links back to workplan
+        if: github.event_name == 'pull_request'
+        run: npm run wp:pr-link

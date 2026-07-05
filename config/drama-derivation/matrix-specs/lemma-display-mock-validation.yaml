@@ -1,0 +1,22 @@
+# Zero-paid validation for the lemma-display design (pre-freeze): 2 arms x 2
+# repeats on marrick in MOCK mode through --design lemma-display.
+base:
+  world: config/drama-derivation/world-005-marrick.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: mock
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: baseline-r1
+    flags: { decay: '{"seed":101,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r1
+    flags: { decay: '{"seed":101,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }
+  - label: baseline-r2
+    flags: { decay: '{"seed":103,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: lemma-display-r2
+    flags: { decay: '{"seed":103,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', lemma-layer: '{"display":true}' }

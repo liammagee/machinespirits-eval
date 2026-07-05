@@ -6,7 +6,7 @@ This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` speci
 
 ## Desktop app (Electron)
 
-There is an Electron desktop app that is the **exact equivalent of the web UX and stays in sync by construction** — it embeds the unchanged Express stack and loads the web UI over loopback, so there is ONE UI codebase. It lives under `desktop/` on branch `claude/electron-desktop-app` (worktree `../machinespirits-eval-electron`).
+There is an Electron desktop app that is the **exact equivalent of the web UX and stays in sync by construction** — it embeds the unchanged Express stack and loads the web UI over loopback, so there is ONE UI codebase. The desktop code lives under `desktop/` on `main` (merged from the now-removed `claude/electron-desktop-app` branch). Active dev happens in a dedicated Electron-ABI worktree — `../ms-electron` on branch `desktop-dev` — launched with `npm run desktop:dev`.
 
 **To change the UX (web AND desktop), edit the web stack** — `public/**`, the route renderers in `scripts/browse-poetics-scripts.js`, `routes/**`, `services/**`, or the shared mounter `services/evalSurfaces.js`. The desktop updates automatically; **never fork UI into `desktop/`.** Full rules + file map: `desktop/ARCHITECTURE.md`. Run/build/use docs: `desktop/README.md`.
 
@@ -53,7 +53,7 @@ Pilot infrastructure for human-learner validation lives at:
 - `services/pilotItemBank.js` + `config/pilot/fractions-items.yaml` — form-counterbalanced item bank with server-side scoring
 - `scripts/ingest-pilot-sessions.js` — completed pilot sessions → `evaluation_results` rows + dialogue logs (idempotent), so `eval-cli evaluate <runId>` can score real-learner transcripts under v2.2 alongside simulated ones
 
-Recruitment is gated on IRB approval / real consent text / real item content (see `TODO.md` §A1).
+Recruitment is gated on IRB approval / real consent text / real item content (tracked in `workplan/items/a1-human-learner-validation.md`; historical design detail remains in `TODO.md` §A1).
 
 ### Tutor-Learner Symmetry (Design Principle)
 
@@ -262,7 +262,7 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 - **Rubric version columns**: `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version` — auto-resolved from YAML `version:` fields at write time. `"1.0"` = original rubric (14 tutor dimensions). `"2.0"` = v2 rubric overhaul (Feb 26). `"2.1"` = public-only output scoring + deliberation rubric (Feb 27). `"2.2"` = literature-informed redesign (Feb 28): consolidates 14 → 8 tutor dimensions using GuideEval P→O→E decomposition, adds `content_accuracy`, removes `learner_growth`. Versioned rubrics live in `config/rubrics/v{X.Y}/`; active rubrics are in `config/`. **Do NOT retroactively score historical data under a newer rubric version** — this creates cross-version contamination that invalidates within-run comparisons.
 - **Charisma rubric** (`config/evaluation-rubric-charisma.yaml` v1.0) is independent of v2.2 — used only by id-director cells (101-109). Stored in `tutor_charisma_*` columns and can be cross-correlated with the v2.2 tutor rubric.
 - **Provenance hashes**: `config_hash`, `dialogue_content_hash`, `prompt_content_hash` enable cross-run reproducibility checks. `services/evalSignature.js` validates consistency (e.g. detects `config_hash_drift` when the same profile+scenario produces rows with different hashes).
-- **Boards**: `TODO.md` (root) is the long-horizon experimental/infrastructure list (A* experiments, B* code quality, C* maintenance, D* research). Paper 2.0 working notes live as dated files under `notes/poetics/` (active arc) and `notes/` more broadly — there is no separate `BOARD.md` in this fork. Automated research roundups land in `notes/daily-notes/` and MUST follow the cadence/dedup convention in `notes/daily-notes/README.md` (non-overlapping windows, one arxiv ID per note).
+- **Todo / board source of truth**: all live todos, experiments, paper tasks, infra tasks, and maintenance work are tracked in `workplan/`. The write source is one markdown file per item in `workplan/items/`; `workplan/BOARD.md` and `workplan/board.json` are generated views from those items. Do not add new live work to `TODO.md`, old techne board snapshots, or dated notes without also creating/updating a `workplan/items/` card. `TODO.md` is now historical design context only. After changing item files, run `node scripts/workplan.js render && node scripts/workplan.js validate`. Automated research roundups land in `notes/daily-notes/` and MUST follow the cadence/dedup convention in `notes/daily-notes/README.md` before workplan ingestion.
 
 ### Test Directory Convention
 

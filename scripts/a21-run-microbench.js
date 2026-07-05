@@ -40,7 +40,10 @@ function main() {
   const smoke = flag('smoke');
   const fixturePath = path.resolve(ROOT, arg('fixture', DEFAULT_FIXTURE));
   const actionsPath = path.resolve(ROOT, arg('actions', DEFAULT_ACTIONS));
-  const outPath = path.resolve(ROOT, arg('out', smoke ? path.join(OUT_DIR, 'microbench-trials-smoke.jsonl') : DEFAULT_OUT));
+  const outPath = path.resolve(
+    ROOT,
+    arg('out', smoke ? path.join(OUT_DIR, 'microbench-trials-smoke.jsonl') : DEFAULT_OUT),
+  );
   const mode = arg('mode', 'deterministic');
   const k = Number(arg('k', '1'));
   const seed = Number(arg('seed', '20260616'));

@@ -42,9 +42,7 @@ export function scoreReward(outcome, weights = DEFAULT_A21_REWARD_WEIGHTS) {
         ? weights.targetDependencyOwned
         : 0,
     learnerUsesReleasedEvidence: observed.learnerUsesReleasedEvidence ? weights.learnerUsesReleasedEvidence : 0,
-    engagementMaintained: ['engaged', 'strained'].includes(observed.engagementAfter)
-      ? weights.engagementMaintained
-      : 0,
+    engagementMaintained: ['engaged', 'strained'].includes(observed.engagementAfter) ? weights.engagementMaintained : 0,
     noLeak: observed.nonLeakPassed ? weights.noLeak : 0,
     generatorCompliance: observed.generatorCompliant ? weights.generatorCompliance : 0,
     releaseOnSchedule: observed.releaseOnSchedule ? weights.releaseOnSchedule : 0,

@@ -18,6 +18,7 @@
  *   node scripts/validate-bug-claims.js --include-all-runs
  *   node scripts/validate-bug-claims.js --skip-command-checks
  *   node scripts/validate-bug-claims.js --skip-claims-suite
+ *   node scripts/validate-bug-claims.js --db <path> --logs <logs-root-or-tutor-dialogues-dir>
  *   node scripts/validate-bug-claims.js --claim-report notes/paper-claim-audit.json
  *   node scripts/validate-bug-claims.js --color
  *   node scripts/validate-bug-claims.js --no-color
@@ -29,20 +30,22 @@ import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
 import Database from 'better-sqlite3';
 import YAML from 'yaml';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
+const CLI_ARGS = process.argv.slice(2);
 
 const MANIFEST_PATH = path.join(ROOT, 'config', 'paper-manifest.json');
 const PAPER_PATH = (() => {
   // Default: Paper 1.0 (legacy). Override with --paper <path> to audit the canonical Paper 2.0.
   // getArgValue is a hoisted function declaration, so it is callable here.
-  const arg = getArgValue(process.argv.slice(2), '--paper');
+  const arg = getArgValue(CLI_ARGS, '--paper');
   if (!arg) return path.join(ROOT, 'docs', 'research', 'paper-full.md');
   return path.isAbsolute(arg) ? arg : path.join(ROOT, arg);
 })();
-const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
-const LOG_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
+const DB_PATH = resolveEvaluationDbPath(ROOT, getArgValue(CLI_ARGS, '--db'));
+const LOG_DIR = resolveTutorDialoguesDir(ROOT, getArgValue(CLI_ARGS, '--logs') || getArgValue(CLI_ARGS, '--logs-dir'));
 const TODO_PATH = path.join(ROOT, 'TODO.md');
 const GITIGNORE_PATH = path.join(ROOT, '.gitignore');
 const NOTES_DIR = path.join(ROOT, 'notes');
@@ -67,7 +70,7 @@ function getArgValue(argv, flag) {
   return null;
 }
 
-const cliArgs = process.argv.slice(2);
+const cliArgs = CLI_ARGS;
 const args = new Set(cliArgs);
 const strictMode = args.has('--strict');
 const jsonMode = args.has('--json');
@@ -464,7 +467,7 @@ function runManifestValidator() {
     return;
   }
 
-  const result = spawnSync(process.execPath, [MANIFEST_VALIDATOR_PATH, '--deep'], {
+  const result = spawnSync(process.execPath, [MANIFEST_VALIDATOR_PATH, '--deep', '--db', DB_PATH], {
     cwd: ROOT,
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,

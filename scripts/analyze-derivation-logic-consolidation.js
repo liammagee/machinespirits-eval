@@ -68,12 +68,7 @@ function escapeRegExp(s) {
 function globToRegExp(glob) {
   const parts = String(glob)
     .split('*')
-    .map((part) =>
-      part
-        .split('?')
-        .map(escapeRegExp)
-        .join('.'),
-    );
+    .map((part) => part.split('?').map(escapeRegExp).join('.'));
   return new RegExp(`^${parts.join('.*')}$`);
 }
 
@@ -157,7 +152,9 @@ function reconstructLogicSnapshots(result, world) {
   const worldIR = buildWorldIR(world);
   const { premiseById, idByFactKey } = mapWorldFacts(world);
   const backgroundKeys = new Set((world.background || []).map(factKey));
-  const grounded = new Map((world.background || []).map((fact) => [factKey(fact), { fact, valid: true, decayed: false }]));
+  const grounded = new Map(
+    (world.background || []).map((fact) => [factKey(fact), { fact, valid: true, decayed: false }]),
+  );
   const releasedKeys = new Set();
   const releasedPremiseIds = [];
   const voicedLedger = [];
@@ -298,7 +295,9 @@ function summarizeRun({ label, loopDir }) {
     ...parsed,
     verdict: diagnosis.verdict,
     grounded: diagnosis.verdict === 'grounded_anagnorisis',
-    selected: diagnosis.pacingGuardSelector?.selected || (diagnosis.visibleGuard ? 'visible' : diagnosis.pacingGuard ? 'hidden' : 'none'),
+    selected:
+      diagnosis.pacingGuardSelector?.selected ||
+      (diagnosis.visibleGuard ? 'visible' : diagnosis.pacingGuard ? 'hidden' : 'none'),
     gate: diagnosis.pacingGuardSelector?.gate || null,
     turns: diagnosis.turnsPlayed,
     finalD: final?.trajectoryD ?? null,
@@ -307,8 +306,7 @@ function summarizeRun({ label, loopDir }) {
     assertedGroundedTurn: diagnosis.assertedGroundedTurn ?? null,
     forcedToAssertedGap: diagnosis.forcedToAssertedGap ?? null,
     overreach: diagnosis.learnerInference?.overreachCount ?? 0,
-    lucky:
-      (diagnosis.eventsByType?.lucky_leap || 0) + (diagnosis.eventsByType?.lucky_leap_only || 0),
+    lucky: (diagnosis.eventsByType?.lucky_leap || 0) + (diagnosis.eventsByType?.lucky_leap_only || 0),
     logic: {
       reconstructed: !Array.isArray(result.logicSnapshots),
       turns: projection.summary.turns,
@@ -347,14 +345,19 @@ function renderTable(rows) {
     const [world, version, arm] = key.split('\t');
     const grounded = group.filter((row) => row.grounded).length;
     const classes = {};
-    for (const row of group.filter((r) => !r.grounded)) classes[row.failureClass] = (classes[row.failureClass] || 0) + 1;
+    for (const row of group.filter((r) => !r.grounded))
+      classes[row.failureClass] = (classes[row.failureClass] || 0) + 1;
     const finalMissing = unique(group.flatMap((row) => row.logic.finalSecretMissing));
     const decayed = unique(group.flatMap((row) => row.logic.decayedCriticalTurns.flatMap((t) => t.premises)));
     const secretDerived = group.filter((row) => row.logic.firstSecretDerivedTurn !== null).length;
     const mirrorDerived = group.filter((row) => row.logic.firstMirrorDerivedTurn !== null).length;
     lines.push(
       `| ${world} | ${version} | ${arm} | ${group.length} | ${grounded}/${group.length} | ${
-        Object.keys(classes).length ? Object.entries(classes).map(([k, v]) => `${k} x${v}`).join('; ') : '-'
+        Object.keys(classes).length
+          ? Object.entries(classes)
+              .map(([k, v]) => `${k} x${v}`)
+              .join('; ')
+          : '-'
       } | ${finalMissing.join(', ') || '-'} | ${decayed.join(', ') || '-'} | ${secretDerived}/${group.length} | ${mirrorDerived}/${group.length} |`,
     );
   }
@@ -445,7 +448,9 @@ function renderReport({ rows, loopDir, outDir }) {
 
 async function main() {
   if (has('help')) {
-    console.log(`Usage: node scripts/analyze-derivation-logic-consolidation.js [--worlds a,b,c] [--patterns glob,glob] [--loop-dir dir] [--out dir] [--json]`);
+    console.log(
+      `Usage: node scripts/analyze-derivation-logic-consolidation.js [--worlds a,b,c] [--patterns glob,glob] [--loop-dir dir] [--out dir] [--json]`,
+    );
     return;
   }
   const loopDir = resolveFromRoot(arg('loop-dir', DEFAULT_LOOP_DIR));

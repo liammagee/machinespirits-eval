@@ -116,8 +116,7 @@ function shuffleBlocks(blocks, seed) {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
-  const unchanged =
-    shuffled.length > 1 && shuffled.every((entry, index) => entry.index === index);
+  const unchanged = shuffled.length > 1 && shuffled.every((entry, index) => entry.index === index);
   if (unchanged) shuffled.push(shuffled.shift());
 
   return [...stage, ...shuffled.map((entry) => entry.block)];

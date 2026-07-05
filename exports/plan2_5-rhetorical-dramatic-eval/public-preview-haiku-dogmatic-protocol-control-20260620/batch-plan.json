@@ -1,0 +1,12 @@
+{
+  "batchId": "public-preview-haiku-dogmatic-protocol-control-20260620",
+  "note": "Synthesized so scripts/ingest-poetics-artifacts.js can register this plan2_5 public-preview run in the poetics scriptorium (it ships only key.yaml + sample/, not the poetics-calibration batch layout). One unit over the committed key + sample dir; no transcripts/ or scores/ on disk.",
+  "units": [
+    {
+      "id": "af6-comparison-haiku",
+      "keyPath": "exports/plan2_5-rhetorical-dramatic-eval/public-preview-haiku-dogmatic-protocol-control-20260620/key.yaml",
+      "outDir": "exports/plan2_5-rhetorical-dramatic-eval/public-preview-haiku-dogmatic-protocol-control-20260620/sample",
+      "transcriptsDir": "exports/plan2_5-rhetorical-dramatic-eval/public-preview-haiku-dogmatic-protocol-control-20260620/transcripts"
+    }
+  ]
+}

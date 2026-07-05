@@ -79,9 +79,9 @@ function generatorCompliant({ before, action, releaseInfo, target, tutorText }) 
     case 'repair_dependency':
       return Boolean(
         target &&
-          held.has(target) &&
-          released.size === 0 &&
-          (before?.evidenceSeen?.[target] === true || /restage|public point|own words/iu.test(String(tutorText || ''))),
+        held.has(target) &&
+        released.size === 0 &&
+        (before?.evidenceSeen?.[target] === true || /restage|public point|own words/iu.test(String(tutorText || ''))),
       );
     case 'consolidate_subproof':
       return released.size === 0;

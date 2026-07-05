@@ -69,6 +69,12 @@ const WORLDS = [
     concealed: ['edony', 'weir', 'dross', 'burin', 'notch'],
   },
   {
+    worldFile: 'config/drama-derivation/world-019-marrick-resistant.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/marrick-v001.md',
+    recognitionTurn: 22,
+    concealed: ['edony', 'weir', 'dross', 'burin', 'notch'],
+  },
+  {
     worldFile: 'config/drama-derivation/world-006-hethel.yaml',
     scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
     recognitionTurn: 20,
@@ -178,7 +184,11 @@ for (const spec of WORLDS) {
     }
     return first;
   };
-  const normalizedText = (text) => String(text || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const normalizedText = (text) =>
+    String(text || '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
   const naturalFact = (fact) =>
     fact
       .map((token) =>
@@ -191,7 +201,9 @@ for (const spec of WORLDS) {
   const premiseSurface = (premise) => normalizedText(premise.surface || naturalFact(premise.fact));
   const concealedPremises = spec.concealed
     .flatMap((token) =>
-      world.premises.filter((premise) => normalizedText(`${premise.fact.join(' ')} ${premise.surface || ''}`).includes(token)),
+      world.premises.filter((premise) =>
+        normalizedText(`${premise.fact.join(' ')} ${premise.surface || ''}`).includes(token),
+      ),
     )
     .filter((premise, i, all) => all.findIndex((p) => p.id === premise.id) === i);
 

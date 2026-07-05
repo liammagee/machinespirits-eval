@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import { renderPublicTranscript } from './build-derivation-transcript-pairwise-eval.js';
 import { parseJudgeResponse } from '../services/rubricEvaluator.js';
+import { buildDerivationAssessment } from '../services/dramaticDerivation/assessment.js';
+import { loadWorld } from '../services/dramaticDerivation/world.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_RUN_DIR = path.join(ROOT, 'exports/dramatic-derivation/cast-layer-paired-transcript-comparison/runs');
@@ -59,8 +61,6 @@ const RUBRICS = Object.freeze({
 
 const RUBRIC_ORDER = Object.freeze(Object.keys(RUBRICS));
 const CLI_JUDGES = new Set(['none', 'claude', 'codex', 'gemini']);
-const PUBLIC_FORMALISM_RE =
-  /\b[a-z]+[A-Z][A-Za-z0-9]*\b|\?[a-zA-Z_][a-zA-Z0-9_]*|[a-zA-Z_][a-zA-Z0-9_]*\s*\([^)]*\)|\bD\s*=\s*\d/u;
 
 function usage() {
   return `Usage:
@@ -234,103 +234,6 @@ ${criteria ? `Criteria:\n${criteria}` : ''}`.trim();
     .join('\n\n');
 }
 
-function publicLines(live) {
-  const out = [];
-  for (const turn of Array.isArray(live?.turns) ? live.turns : []) {
-    for (const line of Array.isArray(turn.lines) ? turn.lines : []) {
-      if (!['stage', 'director', 'tutor', 'learner'].includes(line.role)) continue;
-      const text = String(line.text || '').replace(/\s+/gu, ' ').trim();
-      if (!text) continue;
-      out.push({
-        turn: turn.turn,
-        role: line.role === 'director' ? 'stage' : line.role,
-        text,
-        exchangeType: turn.exchange?.type || line.meta?.exchange?.type || null,
-      });
-    }
-  }
-  return out;
-}
-
-function countBy(values) {
-  return values.reduce((acc, value) => {
-    const key = value || 'unknown';
-    acc[key] = (acc[key] || 0) + 1;
-    return acc;
-  }, {});
-}
-
-function releaseDeviationCount(releaseAdherence = {}) {
-  return (
-    (releaseAdherence.deviations?.length || 0) +
-    (releaseAdherence.missed?.length || 0) +
-    (releaseAdherence.unscheduled?.length || 0)
-  );
-}
-
-function deriveProofGate({ live, result, diagnosis, label }) {
-  const finalTurn = Array.isArray(live.turns) ? live.turns.at(-1) : null;
-  const releaseAdherence = diagnosis.releaseAdherence || {};
-  const finalD = finalTurn?.D ?? null;
-  const verdict = result.verdict || live.verdict || diagnosis.verdict || null;
-  const forcedTurn = result.firstForcedTurn ?? live.firstForcedTurn ?? diagnosis.firstForcedTurn ?? null;
-  const assertedTurn =
-    result.assertedGroundedTurn ?? live.assertedGroundedTurn ?? diagnosis.assertedGroundedTurn ?? null;
-  const forcedAssertedGap =
-    Number.isFinite(forcedTurn) && Number.isFinite(assertedTurn) ? assertedTurn - forcedTurn : null;
-  const lines = publicLines(live);
-  const formalismLeaks = lines.filter((line) => PUBLIC_FORMALISM_RE.test(line.text));
-  const releaseDeviations = releaseDeviationCount(releaseAdherence);
-  const grounded = verdict === 'grounded_anagnorisis';
-  const gatePass = grounded && finalD === 0 && releaseDeviations === 0 && formalismLeaks.length === 0;
-  return {
-    schema: 'machinespirits.derivation.problem-solving-gate.v1',
-    label,
-    status: gatePass ? 'pass' : 'fail',
-    verdict,
-    turnsPlayed: result.turnsPlayed ?? live.turnsPlayed ?? diagnosis.turnsPlayed ?? live.turns?.length ?? null,
-    finalD,
-    firstForcedTurn: forcedTurn,
-    assertedGroundedTurn: assertedTurn,
-    forcedAssertedGap,
-    releaseAdherence: {
-      onCue: releaseAdherence.onCue ?? null,
-      deviations: releaseAdherence.deviations || [],
-      missed: releaseAdherence.missed || [],
-      unscheduled: releaseAdherence.unscheduled || [],
-      deviationCount: releaseDeviations,
-    },
-    publicFormalismLeakCount: formalismLeaks.length,
-    publicFormalismLeaks: formalismLeaks.slice(0, 10),
-    overreach: diagnosis.fabricatedFacts?.count ?? diagnosis.overreach ?? null,
-    luckyLeap: diagnosis.luckyLeap ?? null,
-    interpretation:
-      'This gate measures problem-solving ability of the public derivation discourse: grounded assertion under proof/release constraints. Rubric scores below are secondary quality measures.',
-  };
-}
-
-function summarizeDialogue(live, diagnosis = {}) {
-  const lines = publicLines(live);
-  const tutor = lines.filter((line) => line.role === 'tutor');
-  const learner = lines.filter((line) => line.role === 'learner');
-  const words = (text) => String(text || '').split(/\s+/u).filter(Boolean).length;
-  const avg = (values) => (values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0);
-  return {
-    publicLineCount: lines.length,
-    tutorLines: tutor.length,
-    learnerLines: learner.length,
-    avgTutorWords: Number(avg(tutor.map((line) => words(line.text))).toFixed(1)),
-    avgLearnerWords: Number(avg(learner.map((line) => words(line.text))).toFixed(1)),
-    exchangeTypes:
-      diagnosis.scenes?.exchangeTypes ||
-      countBy((live.turns || []).map((turn) => turn.exchange?.type || 'unknown')),
-    sceneCount: diagnosis.scenes?.count ?? null,
-    avgSceneExchanges: diagnosis.scenes?.avgExchanges ?? null,
-    recognitionNeed: diagnosis.scenes?.recognitionNeed || null,
-    phaticRecognition: diagnosis.scenes?.phaticRecognition || null,
-  };
-}
-
 function truncateTranscript(transcript, maxChars) {
   if (transcript.length <= maxChars) return transcript;
   return `${transcript.slice(0, maxChars)}\n\n[TRUNCATED at ${maxChars} characters for judging prompt]`;
@@ -339,10 +242,7 @@ function truncateTranscript(transcript, maxChars) {
 function buildRubricPrompt({ artifact, rubric, transcript }) {
   const dimKeys = Object.keys(rubric.dimensions);
   const exampleScores = dimKeys
-    .map(
-      (key) =>
-        `    "${key}": {"score": 3, "reasoning": "brief reason grounded in public transcript evidence"}`,
-    )
+    .map((key) => `    "${key}": {"score": 3, "reasoning": "brief reason grounded in public transcript evidence"}`)
     .join(',\n');
   return `You are evaluating a public dramatic-derivation tutoring transcript using a rubric from the main Machine Spirits evaluation line.
 
@@ -505,22 +405,70 @@ async function mapWithConcurrency(items, limit, worker) {
   return results;
 }
 
+function loadArtifactWorld(diagnosis = {}) {
+  if (!diagnosis.worldPath) return null;
+  try {
+    return loadWorld(path.resolve(ROOT, diagnosis.worldPath));
+  } catch {
+    return null;
+  }
+}
+
+function liveFromResult(result = {}, label) {
+  const dByTurn = new Map((result.trajectory || []).map((point) => [point.turn, point.D]));
+  const byTurn = new Map();
+  for (const line of result.transcript || []) {
+    if (!Number.isFinite(line.turn)) continue;
+    if (!byTurn.has(line.turn)) byTurn.set(line.turn, []);
+    byTurn.get(line.turn).push({
+      role: line.role,
+      text: line.text,
+      meta: line.meta || {},
+    });
+  }
+  const turns = [...byTurn.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([turn, lines]) => ({
+      turn,
+      D: dByTurn.get(turn) ?? null,
+      lines,
+    }));
+  return {
+    label,
+    worldId: result.worldId || null,
+    verdict: result.verdict || null,
+    turnsPlayed: result.turnsPlayed ?? turns.length,
+    firstForcedTurn: result.firstForcedTurn ?? null,
+    assertedGroundedTurn: result.assertedGroundedTurn ?? null,
+    turns,
+  };
+}
+
+function normalizeArtifactLive(live, result, label) {
+  if (Array.isArray(live?.turns) && live.turns.length) return live;
+  return liveFromResult(result, label);
+}
+
 function readArtifact({ runDir, label, maxTranscriptChars }) {
   const dir = path.join(runDir, label);
-  const live = readJson(path.join(dir, 'live.json'));
   const result = readJson(path.join(dir, 'result.json'));
+  const live = normalizeArtifactLive(readJson(path.join(dir, 'live.json'), {}), result, label);
   const diagnosis = readJson(path.join(dir, 'diagnosis.json'), {});
+  const world = loadArtifactWorld(diagnosis);
   const publicTranscript = truncateTranscript(renderPublicTranscript(live), maxTranscriptChars);
-  const proofGate = deriveProofGate({ live, result, diagnosis, label });
+  const assessment = buildDerivationAssessment({ label, live, result, diagnosis, world });
   return {
     label,
     dir,
     live,
     result,
     diagnosis,
+    world,
     publicTranscript,
-    proofGate,
-    dialogueSummary: summarizeDialogue(live, diagnosis),
+    assessment,
+    proofGate: assessment.proofGate,
+    dagProfile: assessment.dagProfile,
+    dialogueSummary: assessment.dialogueSummary,
   };
 }
 
@@ -535,7 +483,65 @@ function reportTableRows(results, selectedRubrics) {
   });
 }
 
-function renderReport({ results, selectedRubrics, judgeCli, model, judgeEffort, outDir, runDir, scoreConcurrency, resumeExisting }) {
+function appendDagReport(lines, profile) {
+  if (!profile) {
+    lines.push('Authored proof DAG: not available (world file was not present when this assessment ran).', '');
+    return;
+  }
+  lines.push(`Authored proof DAG: ${profile.summary}`, '');
+  lines.push(
+    `- Earliest complete path turn: ${profile.metrics.earliestCompleteTurn ?? 'n/a'}; t_min ${
+      profile.metrics.tMin ?? 'n/a'
+    }; turn cap ${profile.metrics.turnCap ?? 'n/a'}.`,
+  );
+  for (const pathProfile of profile.paths) {
+    const premiseList = pathProfile.premises
+      .map((premise) => `${premise.id}${premise.scheduled ? `@t${premise.releaseTurn}` : '@unscheduled'}`)
+      .join(' -> ');
+    lines.push(`- ${pathProfile.id}: ${premiseList}`);
+  }
+  lines.push('');
+}
+
+function appendLearnerDagReport(lines, learnerDagAssessment) {
+  if (!learnerDagAssessment || learnerDagAssessment.status !== 'available') {
+    lines.push('Learner DAG: not available for this artifact.', '');
+    return;
+  }
+  const missingPremises = learnerDagAssessment.missingPremises || [];
+  const missingDetail = missingPremises.length
+    ? missingPremises
+        .map((row) => `${row.premiseId}:${row.bucket}${row.releaseTurn ? `@t${row.releaseTurn}` : ''}`)
+        .join(', ')
+    : 'none';
+  lines.push(
+    `Learner DAG: source \`${learnerDagAssessment.source}\`; best authored-path coverage ${Math.round(
+      learnerDagAssessment.bestPathCoverage * 100,
+    )}% (${learnerDagAssessment.bestPathId || 'n/a'}); final secret entailed \`${learnerDagAssessment.finalSecretEntailed}\`; asserted secret \`${learnerDagAssessment.assertedSecret}\`; asserted mirror \`${learnerDagAssessment.assertedMirror}\`.`,
+    '',
+  );
+  lines.push(
+    `- First complete path turn: ${learnerDagAssessment.firstCompletePathTurn ?? 'n/a'}; first secret-entailed turn: ${
+      learnerDagAssessment.firstSecretEntailedTurn ?? 'n/a'
+    }; missing on best path: ${
+      learnerDagAssessment.missingOnBestPath?.length ? learnerDagAssessment.missingOnBestPath.join(', ') : 'none'
+    }.`,
+    `- Bottleneck: ${learnerDagAssessment.bottleneck || 'n/a'}; missing premise buckets: ${missingDetail}.`,
+    '',
+  );
+}
+
+function renderReport({
+  results,
+  selectedRubrics,
+  judgeCli,
+  model,
+  judgeEffort,
+  outDir,
+  runDir,
+  scoreConcurrency,
+  resumeExisting,
+}) {
   const headers = selectedRubrics.map((key) => RUBRICS[key].label);
   const lines = [
     '# Derivation Transcript Rubric Suite',
@@ -570,6 +576,8 @@ function renderReport({ results, selectedRubrics, judgeCli, model, judgeEffort, 
       `Dialogue surface: ${result.dialogueSummary.sceneCount ?? 'n/a'} scenes; ${result.dialogueSummary.tutorLines} tutor lines; ${result.dialogueSummary.learnerLines} learner lines; avg tutor words ${result.dialogueSummary.avgTutorWords}; avg learner words ${result.dialogueSummary.avgLearnerWords}.`,
       '',
     );
+    appendDagReport(lines, result.dagProfile);
+    appendLearnerDagReport(lines, result.learnerDagAssessment);
     for (const key of selectedRubrics) {
       const row = result.rubrics[key];
       lines.push(`- **${RUBRICS[key].label}:** ${row.overall == null ? row.status : row.overall}`);
@@ -582,7 +590,9 @@ function renderReport({ results, selectedRubrics, judgeCli, model, judgeEffort, 
   lines.push(
     `node scripts/score-derivation-transcript-rubric-suite.js --labels ${results
       .map((result) => result.label)
-      .join(',')} --run-dir ${path.relative(ROOT, runDir)} --out-dir ${path.relative(ROOT, outDir)} --judge-cli ${judgeCli}${
+      .join(
+        ',',
+      )} --run-dir ${path.relative(ROOT, runDir)} --out-dir ${path.relative(ROOT, outDir)} --judge-cli ${judgeCli}${
       model ? ` --model ${model}` : ''
     }${judgeEffort ? ` --judge-effort ${judgeEffort}` : ''}`,
   );
@@ -625,7 +635,15 @@ export async function scoreDerivationRubricSuite({
     const result = {
       label,
       sourceDir: path.relative(ROOT, artifact.dir),
+      assessment: {
+        schema: artifact.assessment.schema,
+        authority: artifact.assessment.authority,
+        interpretation: artifact.assessment.interpretation,
+      },
       proofGate: artifact.proofGate,
+      dagProfile: artifact.dagProfile,
+      learnerDagAssessment: artifact.assessment.learnerDagAssessment,
+      learnerDag: artifact.assessment.learnerDag,
       dialogueSummary: artifact.dialogueSummary,
       rubrics: {},
     };

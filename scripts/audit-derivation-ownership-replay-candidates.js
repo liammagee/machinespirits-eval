@@ -131,7 +131,9 @@ function isMockArtifact({ file, label }) {
 
 function leakAuditOk(finalPost) {
   if (!finalPost) return null;
-  const values = [finalPost.inputAuditOk, finalPost.nonLeakAuditOk].filter((value) => value !== undefined && value !== null);
+  const values = [finalPost.inputAuditOk, finalPost.nonLeakAuditOk].filter(
+    (value) => value !== undefined && value !== null,
+  );
   if (!values.length) return null;
   return values.every((value) => value === true);
 }
@@ -145,7 +147,9 @@ function proofOrAssertionAvailable(result = {}, finalPost = null) {
 }
 
 function recommendedReplayTurn(result = {}, finalPost = null) {
-  return finiteTurn(result.firstForcedTurn) ?? finiteTurn(result.assertedGroundedTurn) ?? finiteTurn(finalPost?.turn) ?? 1;
+  return (
+    finiteTurn(result.firstForcedTurn) ?? finiteTurn(result.assertedGroundedTurn) ?? finiteTurn(finalPost?.turn) ?? 1
+  );
 }
 
 function replayLabel(label, turn) {
@@ -165,7 +169,7 @@ function replayCommand({ dir, label, turn }) {
   ].join(' \\\n');
 }
 
-export function analyzeArtifact(resultFile, { root = ROOT } = {}) {
+export function analyzeArtifact(resultFile, { root: _root = ROOT } = {}) {
   const dir = path.dirname(resultFile);
   const diagnosisFile = path.join(dir, 'diagnosis.json');
   const result = safeReadJson(resultFile);
@@ -313,8 +317,12 @@ export function renderMarkdown(audit) {
   lines.push('');
   lines.push('- Read-only scan of completed artifacts.');
   lines.push('- No replay or paid run launched by this script.');
-  lines.push('- Path 3 trigger requires first-pass, non-mock, complete `result.json` plus `diagnosis.json`, proof grounded or final assertion available, incomplete ownership, and exactly one missing ownership family.');
-  lines.push('- `actionableGateCandidates` further require the sole missing family to be `near_transfer` and the source run not already to have `--ownership-transfer-gate` enabled.');
+  lines.push(
+    '- Path 3 trigger requires first-pass, non-mock, complete `result.json` plus `diagnosis.json`, proof grounded or final assertion available, incomplete ownership, and exactly one missing ownership family.',
+  );
+  lines.push(
+    '- `actionableGateCandidates` further require the sole missing family to be `near_transfer` and the source run not already to have `--ownership-transfer-gate` enabled.',
+  );
   lines.push('');
   lines.push('## Summary');
   lines.push('');
@@ -357,7 +365,9 @@ export function renderMarkdown(audit) {
         'Every actionable source already has at least one recorded ownership-transfer-gate replay. Do not launch a duplicate replay unless the existing replay is invalid or deliberately superseded.',
       );
     } else {
-      lines.push('At least one actionable source lacks a recorded ownership-transfer-gate replay. Run only the first command above, then compare proof verdict, ownership, forced/asserted gap, prefix integrity, and leak audit.');
+      lines.push(
+        'At least one actionable source lacks a recorded ownership-transfer-gate replay. Run only the first command above, then compare proof verdict, ownership, forced/asserted gap, prefix integrity, and leak audit.',
+      );
     }
   } else {
     lines.push('No source currently justifies Path 3 replay.');

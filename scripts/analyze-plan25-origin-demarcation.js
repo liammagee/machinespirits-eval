@@ -15,10 +15,7 @@ import { recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
-const DESIGN_ROOT = path.join(
-  ROOT,
-  'exports/plan2_5-rhetorical-dramatic-eval/counterfactual-replay-design-20260621',
-);
+const DESIGN_ROOT = path.join(ROOT, 'exports/plan2_5-rhetorical-dramatic-eval/counterfactual-replay-design-20260621');
 
 const DEFAULT_CASES = [
   {

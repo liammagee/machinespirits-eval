@@ -24,7 +24,10 @@ describe('state-ledger context (Slice 7)', () => {
     // and it must NOT be in the last-2 verbatim window (that is the whole point)
     const recent = buildConversationContext(HISTORY, { contextMode: 'ledger-recent', recentTurns: 2 });
     const recentTail = recent.split('Most recent turns:')[1] || '';
-    assert.ok(!/98% accuracy/.test(recentTail), 'the early commitment should live in the ledger, not the recent window');
+    assert.ok(
+      !/98% accuracy/.test(recentTail),
+      'the early commitment should live in the ledger, not the recent window',
+    );
   });
 
   it('redacts hidden provenance even if a public turn echoes it', () => {

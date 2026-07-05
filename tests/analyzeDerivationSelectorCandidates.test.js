@@ -2,7 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { analyzeSelectorCandidates } from '../scripts/analyze-derivation-selector-candidates.js';
 
-function arm({ grounded, verdict = grounded ? 'grounded_anagnorisis' : 'aporia', turns = grounded ? 20 : 8, finalD = grounded ? 0 : 5 } = {}) {
+function arm({
+  grounded,
+  verdict = grounded ? 'grounded_anagnorisis' : 'aporia',
+  turns = grounded ? 20 : 8,
+  finalD = grounded ? 0 : 5,
+} = {}) {
   return {
     verdict,
     grounded,
@@ -79,4 +84,3 @@ test('candidate analysis can rank a runtime uptake probe above static Hethel-vis
   assert.equal(report.criticalCases.length, 2);
   assert.equal(report.criticalCases[0].worldFeatures.deadPredicatePresent, true);
 });
-

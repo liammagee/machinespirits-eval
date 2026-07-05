@@ -21,7 +21,10 @@ function result(overrides = {}) {
     turnsPlayed: 8,
     firstForcedTurn: 7,
     assertedGroundedTurn: 8,
-    trajectory: [{ turn: 1, D: 3 }, { turn: 8, D: 0 }],
+    trajectory: [
+      { turn: 1, D: 3 },
+      { turn: 8, D: 0 },
+    ],
     ...overrides,
   };
 }
@@ -96,7 +99,10 @@ test('finalD reads the latest numeric trajectory value', () => {
 test('classifyOutcome distinguishes missing instrumentation, partial ownership, transformed ownership, and proof failure', () => {
   assert.equal(classifyOutcome({ result: result(), finalPost: null }), 'not_instrumented');
   assert.equal(
-    classifyOutcome({ result: result(), finalPost: transformedRow({ complete: false, missingFamilies: ['near_transfer'] }) }),
+    classifyOutcome({
+      result: result(),
+      finalPost: transformedRow({ complete: false, missingFamilies: ['near_transfer'] }),
+    }),
     'proof_grounded_ownership_partial',
   );
   assert.equal(classifyOutcome({ result: result(), finalPost: transformedRow() }), 'proof_and_ownership_grounded');

@@ -19,6 +19,8 @@ import {
   noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
+  effectiveBranchTutorAdaptationPolicy,
+  effectiveBranchTutorAdaptationPolicyForOrder,
   parseArgs,
   qualityWarningsFor,
   reframeMatchStats,
@@ -67,7 +69,7 @@ describe('generate-pedagogical-dramas', () => {
   it('prints CLI help without validating generation inputs', () => {
     assert.equal(parseArgs(['--help']).help, true);
     assert.equal(parseArgs(['-h', '--role-map', 'not-a-valid-map']).help, true);
-    assert.match(usage(), /Usage:\n  node scripts\/generate-pedagogical-dramas\.js \[options\]/);
+    assert.match(usage(), /Usage:\n {2}node scripts\/generate-pedagogical-dramas\.js \[options\]/);
     assert.match(usage(), /--role-map MAP/);
     assert.match(usage(), /api:<alias-or-slug>/);
 
@@ -99,24 +101,12 @@ describe('generate-pedagogical-dramas', () => {
     });
     assert.equal(resolveApiModel('glm5_2'), 'z-ai/glm-5.2');
     assert.equal(resolveApiModel('openrouter.glm5_2'), 'z-ai/glm-5.2');
-    assert.equal(
-      resolveRoleRoute('tutor_ego', args.roleMap, 'codex', 'sonnet').apiModelKey,
-      'glm5_2',
-    );
-    assert.equal(
-      resolveRoleRoute('learner_superego', args.roleMap, 'codex', 'sonnet').apiModelKey,
-      'z-ai/glm-5.2',
-    );
+    assert.equal(resolveRoleRoute('tutor_ego', args.roleMap, 'codex', 'sonnet').apiModelKey, 'glm5_2');
+    assert.equal(resolveRoleRoute('learner_superego', args.roleMap, 'codex', 'sonnet').apiModelKey, 'z-ai/glm-5.2');
     assert.equal(resolveRoleRoute('director', args.roleMap, 'codex', 'sonnet').backend, 'codex');
 
-    assert.throws(
-      () => parseArgs(['--role-map', 'tutor_ego=api:not-a-known-alias']),
-      /not a known OpenRouter alias/,
-    );
-    assert.throws(
-      () => parseArgs(['--role-map', 'tutor_ego=codex:z-ai/glm-5.2']),
-      /only include a model suffix/,
-    );
+    assert.throws(() => parseArgs(['--role-map', 'tutor_ego=api:not-a-known-alias']), /not a known OpenRouter alias/);
+    assert.throws(() => parseArgs(['--role-map', 'tutor_ego=codex:z-ai/glm-5.2']), /only include a model suffix/);
   });
 
   it('parses control-ending and call-telemetry output paths', () => {
@@ -661,14 +651,57 @@ describe('generate-pedagogical-dramas', () => {
     });
 
     assert.deepEqual(branches, [
-      { key: 'routine', revisitPolicy: 'none', tutorAdaptationPolicy: 'routine' },
-      { key: 'none', revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
-      { key: 'reframe-only', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
-      { key: 'tutor-uptake-only', revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
-      { key: 'reframe+tutor-uptake', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake' },
-      { key: 'peripeteia-only', revisitPolicy: 'none', tutorAdaptationPolicy: 'peripeteia' },
-      { key: 'reframe+peripeteia', revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake+peripeteia' },
+      { key: 'routine', revisitPolicy: 'none', tutorAdaptationPolicy: 'routine', secretTutorAdaptationPolicy: null },
+      {
+        key: 'none',
+        revisitPolicy: 'none',
+        tutorAdaptationPolicy: 'none',
+        secretTutorAdaptationPolicy: 'withhold_secret',
+      },
+      {
+        key: 'reframe-only',
+        revisitPolicy: 'reframe',
+        tutorAdaptationPolicy: 'none',
+        secretTutorAdaptationPolicy: null,
+      },
+      {
+        key: 'tutor-uptake-only',
+        revisitPolicy: 'none',
+        tutorAdaptationPolicy: 'uptake',
+        secretTutorAdaptationPolicy: null,
+      },
+      {
+        key: 'reframe+tutor-uptake',
+        revisitPolicy: 'reframe',
+        tutorAdaptationPolicy: 'uptake',
+        secretTutorAdaptationPolicy: null,
+      },
+      {
+        key: 'peripeteia-only',
+        revisitPolicy: 'none',
+        tutorAdaptationPolicy: 'peripeteia',
+        secretTutorAdaptationPolicy: null,
+      },
+      {
+        key: 'reframe+peripeteia',
+        revisitPolicy: 'reframe',
+        tutorAdaptationPolicy: 'uptake+peripeteia',
+        secretTutorAdaptationPolicy: null,
+      },
     ]);
+  });
+
+  it('upgrades the none arm to redacted withhold only for secret-bearing Oedipus scenes', () => {
+    const [noneBranch] = pairedBranchDefinitions({ pairedAdaptationArms: ['none'] });
+    assert.equal(effectiveBranchTutorAdaptationPolicy(noneBranch, { id: 'D1' }), 'none');
+    assert.equal(
+      effectiveBranchTutorAdaptationPolicy(noneBranch, { id: 'D_OED5', secret: { fact: 'hidden S' } }),
+      'withhold_secret',
+    );
+    assert.equal(
+      effectiveBranchTutorAdaptationPolicyForOrder(noneBranch, [{ id: 'D_OED5', secret: { fact: 'hidden S' } }]),
+      'withhold_secret',
+    );
   });
 
   it('adds a routine negative-control tutor policy that strips branch pressure cues', () => {

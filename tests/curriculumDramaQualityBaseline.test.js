@@ -9,10 +9,7 @@ import {
   initialStageLineCount,
   publicLeakFindings,
 } from '../scripts/check-curriculum-drama-quality-baseline.js';
-import {
-  makeCallTelemetryRecorder,
-  wrapLlmCallWithTelemetry,
-} from '../scripts/generate-pedagogical-dramas.js';
+import { makeCallTelemetryRecorder, wrapLlmCallWithTelemetry } from '../scripts/generate-pedagogical-dramas.js';
 
 function writeBaselineFixture({ publicText, itemPatch = {}, keyPatch = {} } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'curriculum-drama-quality-'));

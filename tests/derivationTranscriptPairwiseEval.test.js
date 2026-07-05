@@ -76,7 +76,12 @@ test('buildDerivationPairwisePacket blinds packets and writes a private key', ()
   const left = 'probe-s0-hidden-r1';
   const right = 'probe-s1-dialogue-r1';
   writeLive(loopDir, left, 'Let the seal sit beside the letter before you decide.', 'Yes, I follow that much.');
-  writeLive(loopDir, right, 'Pause with the seal. What does the letter let you say?', 'I think the seal matters first.');
+  writeLive(
+    loopDir,
+    right,
+    'Pause with the seal. What does the letter let you say?',
+    'I think the seal matters first.',
+  );
 
   const result = buildDerivationPairwisePacket({
     pairs: [{ pairId: 'probe', labels: [left, right] }],

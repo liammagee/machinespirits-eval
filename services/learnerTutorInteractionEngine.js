@@ -19,6 +19,7 @@ import { stripThinkBlocks } from './evaluationTextSanitizer.js';
 import { runIdDirectedTurn } from './idDirectorEngine.js';
 import { getTutorProfile as getEvalTutorProfile } from './evalConfigLoader.js';
 import { analyzePseudoCatharsis } from './pseudoCatharsisDetector.js';
+import { callAIWithCliBridge } from './cliProviderBridge.js';
 
 // ============================================================================
 // Interaction Engine Configuration
@@ -190,6 +191,17 @@ function buildDirectorContext(plan, cue = null, side = null) {
 // are inert when no secret is set, so every existing scenario is unaffected.
 function buildSecretContext(secret, policy = 'none') {
   if (!secret || !secret.fact) return '';
+  const mode = String(policy || 'none');
+  if (mode.includes('withhold_secret')) {
+    return [
+      'OEDIPUS WITHHELD-CONTROL — TUTOR PRIVATE (the learner does NOT know this and cannot see it):',
+      '- THIS ARM (withhold_secret): the hidden answer S and the premise ledger are intentionally REDACTED from this tutor context. That redaction is the control condition.',
+      '- Your task is not to solve the discrepancy for the learner. Keep the dialogue on the learner-visible critique, burden of proof, and limits of their current accusation.',
+      '- Forbidden clue channels: do NOT ask about, request, compare, confirm, deny, or interpret source/origin/provenance, download path, local copy, benchmark identity, test-set identity, split name, split membership, version/date, item count, item contents, paper-vs-local artifact comparisons, codebook/changelog/record metadata, or whether one label/name maps to two things.',
+      '- If the learner raises one of those channels, do not establish it for them. You may ask what evidence they already have, require a narrower claim, or say that the missing evidence is theirs to substantiate.',
+      '- Withhold without misleading: do not steer toward a wrong conclusion, and do not secretly smuggle the hidden answer through hints, questions, or examples.',
+    ].join('\n');
+  }
   const lines = [
     'DRAMATIC IRONY — DIRECTOR/TUTOR PRIVATE (the learner does NOT know this and cannot see it):',
     `- Withheld truth (S): ${secret.fact}`,
@@ -199,7 +211,6 @@ function buildSecretContext(secret, policy = 'none') {
     lines.push('- Premises you privately hold:');
     premises.forEach((p, i) => lines.push(`  ${i + 1}. ${p}`));
   }
-  const mode = String(policy || 'none');
   if (mode.includes('reveal_secret')) {
     lines.push(
       '- THIS ARM (reveal): state S to the learner plainly and directly in this scene; do not make them infer it. This is the revelation ceiling, not guided discovery.',
@@ -813,12 +824,13 @@ const TUTOR_MOVE_TO_POLICY_FACET = Object.freeze({
   recognition_press: 'socratic_discovery',
   hold: 'routine',
   reveal: 'reveal_secret',
-  withhold: 'none',
+  withhold: 'withhold_secret',
   // policy-name passthroughs: a facet name used directly as a "move" is accepted.
   peripeteia: 'peripeteia',
   routine: 'routine',
   socratic_discovery: 'socratic_discovery',
   reveal_secret: 'reveal_secret',
+  withhold_secret: 'withhold_secret',
   none: 'none',
 });
 
@@ -836,7 +848,7 @@ function tutorMovesToPolicy(moves = []) {
     if (facet && facet !== 'none') facets.add(facet);
   }
   if (!facets.size) return 'none';
-  return ['uptake', 'peripeteia', 'socratic_discovery', 'reveal_secret', 'routine']
+  return ['uptake', 'peripeteia', 'socratic_discovery', 'reveal_secret', 'routine', 'withhold_secret']
     .filter((facet) => facets.has(facet))
     .join('+');
 }
@@ -2731,11 +2743,13 @@ function calculateMemoryDelta(before, after) {
  * @returns {Promise<Object>} Learner result shape
  */
 async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 'learner', messageHistory = null) {
-  // Delegate all retry and fetch logic to tutor-core
-  const raw = await callAI(agentConfig, systemPrompt, userPrompt, agentRole, {
+  // Delegate metered providers to tutor-core, while allowing repo-local CLI
+  // providers for dynamic learners in high-powered, non-OpenRouter evals.
+  const raw = await callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, agentRole, {
     messageHistory,
     // Add providerConfig for API key/base URL resolution if needed by tutor-core
     ...agentConfig.providerConfig,
+    fallbackCallAI: callAI,
   });
 
   // Map tutor-core result shape back to learner result shape

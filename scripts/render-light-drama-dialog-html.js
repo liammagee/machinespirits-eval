@@ -80,7 +80,9 @@ function cleanPublicText(value) {
 }
 
 function stripBracketAside(value) {
-  return cleanPublicText(value).replace(/^\[(.*)\]$/u, '$1').trim();
+  return cleanPublicText(value)
+    .replace(/^\[(.*)\]$/u, '$1')
+    .trim();
 }
 
 function personaLabel(value) {
@@ -97,9 +99,7 @@ function learnerTraitLine({ item, sceneCard }) {
   if (learnerMode) parts.push(cleanPublicText(learnerMode));
   const openingShape = cleanPublicText(item?.dramatic_shape).split('->')[0]?.trim();
   if (openingShape) parts.push(`initial stance: ${openingShape}`);
-  return parts.length
-    ? `Learner: ${parts.join('; ')}.`
-    : null;
+  return parts.length ? `Learner: ${parts.join('; ')}.` : null;
 }
 
 function characterText(value) {
@@ -173,7 +173,9 @@ function renderTurns(turns) {
       return `
         <article class="turn turn--${role}">
           <div class="turn__role">${escapeHtml(label)}</div>
-          <div class="turn__body">${escapeHtml(turn.text).replace(/\n{2,}/g, '\n\n').replace(/\n/g, '<br>')}</div>
+          <div class="turn__body">${escapeHtml(turn.text)
+            .replace(/\n{2,}/g, '\n\n')
+            .replace(/\n/g, '<br>')}</div>
           <div class="turn__no">${String(index + 1).padStart(2, '0')}</div>
         </article>`;
     })

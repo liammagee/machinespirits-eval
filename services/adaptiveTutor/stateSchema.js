@@ -230,6 +230,15 @@ export const AdaptiveTutorState = new StateSchema({
     // hiddenLearnerState so persisted traces fully describe deterministic
     // mock closure behavior.
     scriptedResponses: z.record(z.string(), z.string()).default(() => ({})),
+    // Optional public learner-generation context. Unlike actualMisconception,
+    // this is safe to pass into the synthetic learner role: it carries
+    // character-state summaries and prior outcomes, not target evidence
+    // labels or answer keys.
+    publicLearnerContext: z.record(z.string(), z.unknown()).default(() => ({})),
+    characterState: z.record(z.string(), z.unknown()).default(() => ({})),
+    learnerMode: z.enum(['scripted', 'llm']).default('scripted'),
+    responseMode: z.string().default(''),
+    seedIndex: z.number().int().default(0),
   }),
 
   turn: z.number().int().default(0),

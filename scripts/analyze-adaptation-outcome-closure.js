@@ -99,20 +99,20 @@ function actionFromTurn(turn) {
 function contractComplete(contract) {
   return Boolean(
     contract &&
-      contract.state_belief &&
-      contract.selected_action?.action_type &&
-      Array.isArray(contract.candidate_actions) &&
-      contract.gate_result &&
-      contract.realization_checks,
+    contract.state_belief &&
+    contract.selected_action?.action_type &&
+    Array.isArray(contract.candidate_actions) &&
+    contract.gate_result &&
+    contract.realization_checks,
   );
 }
 
 function hasObservedTransition(record) {
   return Boolean(
     record?.expected_transition &&
-      record?.observed_transition &&
-      Array.isArray(record?.evidence) &&
-      record.evidence.length > 0,
+    record?.observed_transition &&
+    Array.isArray(record?.evidence) &&
+    record.evidence.length > 0,
   );
 }
 
@@ -182,7 +182,9 @@ function reobserveClosedLedger(trace, finalLedger = []) {
 }
 
 export function analyzeTraceOutcomeClosure(trace, options = {}) {
-  const perTurn = Array.isArray(trace?.original?.perTurn) ? [...trace.original.perTurn].sort((a, b) => a.turn - b.turn) : [];
+  const perTurn = Array.isArray(trace?.original?.perTurn)
+    ? [...trace.original.perTurn].sort((a, b) => a.turn - b.turn)
+    : [];
   const storedFinalLedger = Array.isArray(trace?.original?.finalInterventionLedger)
     ? trace.original.finalInterventionLedger
     : [];
@@ -395,11 +397,15 @@ function renderMarkdown(report) {
   if (report.options.judgeModel) lines.push(`Judge model: ${report.options.judgeModel}`);
   if (report.options.reobserve) lines.push('Closure mode: reobserved from stored dialogue text');
   lines.push('');
-  lines.push('| Profile | Contract complete | Intervention closure | Transition observable | Observed success/failure | Success | Failure | Inconclusive | Inconclusive w/evidence | False success agreement | Failure update | No repeat after non-success | Gate repaired | Families |');
+  lines.push(
+    '| Profile | Contract complete | Intervention closure | Transition observable | Observed success/failure | Success | Failure | Inconclusive | Inconclusive w/evidence | False success agreement | Failure update | No repeat after non-success | Gate repaired | Families |',
+  );
   lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|');
   for (const row of report.profiles) {
     lines.push(
-      `| ${row.profileName} | ${row.completeContractN}/${row.actionN} (${fmtPct(row.contractCompletenessRate)}) | ${row.nonFinalPendingClosedN}/${row.nonFinalPendingN} (${fmtPct(row.interventionClosureRate)}) | ${row.observableTransitionN}/${row.closedInterventionN} (${fmtPct(row.predictedTransitionObservabilityRate)}) | ${row.evidenceBearingOutcomeN}/${row.closedInterventionN} (${fmtPct(row.evidenceBearingOutcomeRate)}) | ${row.successN} | ${row.failureN} | ${row.inconclusiveN} | ${row.inconclusiveWithEvidenceN}/${row.closedInterventionN} (${fmtPct(row.inconclusiveWithEvidenceRate)}) | ${row.falseSuccessFromAgreementN} | ${row.policyUpdatedAfterNonSuccess}/${row.nonSuccessRecords} (${fmtPct(row.failureUpdateRate)}) | ${row.nonSuccessRecords - row.repeatedAfterNonSuccess}/${row.nonSuccessRecords} (${fmtPct(row.noUnreasonedRepeatRate)}) | ${row.gateRepaired} | ${Object.entries(row.actionFamilyCounts)
+      `| ${row.profileName} | ${row.completeContractN}/${row.actionN} (${fmtPct(row.contractCompletenessRate)}) | ${row.nonFinalPendingClosedN}/${row.nonFinalPendingN} (${fmtPct(row.interventionClosureRate)}) | ${row.observableTransitionN}/${row.closedInterventionN} (${fmtPct(row.predictedTransitionObservabilityRate)}) | ${row.evidenceBearingOutcomeN}/${row.closedInterventionN} (${fmtPct(row.evidenceBearingOutcomeRate)}) | ${row.successN} | ${row.failureN} | ${row.inconclusiveN} | ${row.inconclusiveWithEvidenceN}/${row.closedInterventionN} (${fmtPct(row.inconclusiveWithEvidenceRate)}) | ${row.falseSuccessFromAgreementN} | ${row.policyUpdatedAfterNonSuccess}/${row.nonSuccessRecords} (${fmtPct(row.failureUpdateRate)}) | ${row.nonSuccessRecords - row.repeatedAfterNonSuccess}/${row.nonSuccessRecords} (${fmtPct(row.noUnreasonedRepeatRate)}) | ${row.gateRepaired} | ${Object.entries(
+        row.actionFamilyCounts,
+      )
         .map(([family, count]) => `${family}=${count}`)
         .join(', ')} |`,
     );
@@ -413,7 +419,9 @@ function printSummary(report) {
   if (report.options.judgeModel) console.log(`  judgeModel=${report.options.judgeModel}`);
   if (report.options.reobserve) console.log('  closureMode=reobserved');
   console.log('');
-  console.log('  profile                                      contract  closed  observable  obs-outcome  succ fail inconc  fail-update  no-repeat  repairs');
+  console.log(
+    '  profile                                      contract  closed  observable  obs-outcome  succ fail inconc  fail-update  no-repeat  repairs',
+  );
   for (const row of report.profiles) {
     console.log(
       `  ${row.profileName.padEnd(44)} ${fmtPct(row.contractCompletenessRate).padStart(8)} ${fmtPct(row.interventionClosureRate).padStart(7)} ${fmtPct(row.predictedTransitionObservabilityRate).padStart(10)} ${fmtPct(row.evidenceBearingOutcomeRate).padStart(11)} ${String(row.successN).padStart(4)} ${String(row.failureN).padStart(4)} ${String(row.inconclusiveN).padStart(6)} ${fmtPct(row.failureUpdateRate).padStart(12)} ${fmtPct(row.noUnreasonedRepeatRate).padStart(10)} ${String(row.gateRepaired).padStart(7)}`,

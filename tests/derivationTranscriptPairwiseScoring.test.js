@@ -3,10 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import {
-  parseArgs,
-  scorePairwiseTranscriptEval,
-} from '../scripts/score-derivation-transcript-pairwise-eval.js';
+import { parseArgs, scorePairwiseTranscriptEval } from '../scripts/score-derivation-transcript-pairwise-eval.js';
 
 function writeJson(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true });

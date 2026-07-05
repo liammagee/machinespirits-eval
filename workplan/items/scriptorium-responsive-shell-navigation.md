@@ -7,7 +7,7 @@ priority: P0
 owner: codex
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Core Scriptorium and injected static routes have no horizontal
   overflow at 390x844 or 768x1024, the mobile shell uses a compact app
   bar/drawer, and route parity/browser tests still pass.
@@ -20,6 +20,7 @@ tags:
   - navigation
   - mobile
 branch: codex/ux-enhancements
+milestone: desktop-app
 ---
 
 Context: the audit measured 1,000-1,350px document widths on mobile routes. The

@@ -7,14 +7,7 @@
  * no replay execution, and no runtime behavior changes.
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  statSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -113,10 +106,6 @@ function collectResultFiles(root) {
   };
   visit(root);
   return out.sort();
-}
-
-function lineAt(result, role, turn) {
-  return (result.transcript || []).find((line) => line.role === role && line.turn === turn) || null;
 }
 
 function firstLineAtOrAfter(result, role, turn, maxAhead = 2) {
@@ -261,7 +250,9 @@ function collectAssertionGapTriggers(result, run) {
     });
   }
 
-  const blocked = (result.transcript || []).find((line) => line.role === 'learner' && line.meta?.assertionGate?.blocked);
+  const blocked = (result.transcript || []).find(
+    (line) => line.role === 'learner' && line.meta?.assertionGate?.blocked,
+  );
   if (blocked) {
     addTrigger(triggers, run, {
       triggerType: 'unsupported_assertion_blocked',
@@ -307,7 +298,8 @@ function collectVisibleConflictTriggers(result, run) {
     status: 'candidate_conflict',
     failureClass: 'visible_projection_failure',
     blockedActions: ['trust_visible_signal_without_hidden_check'],
-    localUptakeExpectation: 'policy should either follow certified hidden safety or ask a diagnostic when projection conflicts',
+    localUptakeExpectation:
+      'policy should either follow certified hidden safety or ask a diagnostic when projection conflicts',
     evidence: {
       visibleGuard: d?.visibleGuard ?? null,
       pacingGuard: d?.pacingGuard ?? null,
@@ -364,7 +356,8 @@ export function collectSelectorSummaryTriggers(selectorSummaryPath = DEFAULT_SEL
   const triggers = [];
   for (const comparison of summary.comparisons || []) {
     if (!comparison || !['strict_v_positive', 'visible_route_failure'].includes(comparison.classification)) continue;
-    const intervention = comparison.firstSelectedGuardIntervention || comparison.selected?.guardInterventions?.[0] || null;
+    const intervention =
+      comparison.firstSelectedGuardIntervention || comparison.selected?.guardInterventions?.[0] || null;
     const selected = comparison.selected || {};
     const hidden = comparison.arms?.hidden || null;
     const source = rel(selectorSummaryPath);
@@ -374,7 +367,7 @@ export function collectSelectorSummaryTriggers(selectorSummaryPath = DEFAULT_SEL
       sourceKind: 'selector_comparison',
       worldId: comparison.worldId ?? null,
       currentArm: selected.arm || 'selective',
-      verdict: selected.grounded ? 'grounded_anagnorisis' : selected.verdict ?? null,
+      verdict: selected.grounded ? 'grounded_anagnorisis' : (selected.verdict ?? null),
       finalD: selected.finalD ?? null,
       firstForcedTurn: null,
       assertedGroundedTurn: null,
@@ -388,8 +381,7 @@ export function collectSelectorSummaryTriggers(selectorSummaryPath = DEFAULT_SEL
       turn: intervention?.turn ?? comparison.divergence?.turn ?? null,
       premiseId: intervention?.premise ?? null,
       comparisonKey: comparison.key ?? null,
-      expectedMoveFamily:
-        comparison.classification === 'strict_v_positive' ? 'ask_diagnostic' : 'repair_dependency',
+      expectedMoveFamily: comparison.classification === 'strict_v_positive' ? 'ask_diagnostic' : 'repair_dependency',
       actualMoveFamily: intervention ? `${intervention.guard}_${intervention.kind}` : null,
       status:
         comparison.classification === 'strict_v_positive'
@@ -435,7 +427,9 @@ function triggerScoreForDependencyFixture(trigger) {
 export function chooseFirstPolicyFixtures(triggers) {
   const dependency = [...triggers]
     .filter((t) => t.triggerType === 'dependency_repair_needed' && t.status === 'reference_success')
-    .sort((a, b) => triggerScoreForDependencyFixture(b) - triggerScoreForDependencyFixture(a) || a.id.localeCompare(b.id))[0];
+    .sort(
+      (a, b) => triggerScoreForDependencyFixture(b) - triggerScoreForDependencyFixture(a) || a.id.localeCompare(b.id),
+    )[0];
   const hiddenHurts = [...triggers]
     .filter((t) => t.triggerType === 'valid_alternative_route_candidate')
     .sort((a, b) => (a.worldId === 'world_006_hethel' ? -1 : 1) || a.id.localeCompare(b.id))[0];
@@ -458,7 +452,8 @@ export function chooseFirstPolicyFixtures(triggers) {
       worldId: hiddenHurts.worldId,
       turn: hiddenHurts.turn,
       expectedMoveFamily: hiddenHurts.expectedMoveFamily,
-      reason: 'Use this as the first counterweight against turning hidden + proofDebt into an implicit always-H policy.',
+      reason:
+        'Use this as the first counterweight against turning hidden + proofDebt into an implicit always-H policy.',
     },
   ].filter(Boolean);
 }
@@ -621,7 +616,9 @@ export function renderMarkdown(summary) {
   lines.push('## Caveats');
   lines.push('');
   lines.push('- Trigger labels are pre-policy fixture candidates, not outcome claims.');
-  lines.push('- Selector-comparison triggers import report-level classifications and should be treated as candidates for replay/fresh validation.');
+  lines.push(
+    '- Selector-comparison triggers import report-level classifications and should be treated as candidates for replay/fresh validation.',
+  );
   lines.push('- Episode-derived triggers preserve their original prefix and are debugging evidence only.');
   lines.push('- A conduct policy should be implemented only after fixtures are frozen from this corpus.');
   lines.push('');

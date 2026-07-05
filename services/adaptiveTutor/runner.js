@@ -34,10 +34,7 @@ const ARCHITECTURES_WITH_PROFILE_UPDATE = new Set([
 const baseInitialState = (scenario, graphOptions = {}) => {
   const adaptivePolicyConfig = graphOptions.adaptivePolicy || {};
   const adaptationPolicyMode =
-    graphOptions.adaptationPolicyMode ||
-    adaptivePolicyConfig.mode ||
-    process.env.ADAPTIVE_POLICY_MODE ||
-    'legacy';
+    graphOptions.adaptationPolicyMode || adaptivePolicyConfig.mode || process.env.ADAPTIVE_POLICY_MODE || 'legacy';
   return {
     scenarioId: scenario.id,
     dialogue: scenario.openingTurns ?? [],

@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Command palette, job-center links, evidence graph, comparison
   workbench permalinks, and saved-view restoration pass targeted tests plus the
   Scriptorium UX smoke.
@@ -23,6 +23,7 @@ tags:
   - cockpit
   - evidence
 branch: codex/ux-enhancements
+milestone: desktop-app
 ---
 
 Context: the first Scriptorium UX slice made the shell, creation flows, and

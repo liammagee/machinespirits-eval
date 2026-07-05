@@ -124,12 +124,16 @@ function renderMarkdown(report) {
   lines.push('');
   lines.push(`Generated: ${report.generatedAt}`);
   lines.push('');
-  lines.push('Zero-cost mock episode panel. These are prefix-controlled debugging artifacts, not held-out paid evidence.');
+  lines.push(
+    'Zero-cost mock episode panel. These are prefix-controlled debugging artifacts, not held-out paid evidence.',
+  );
   lines.push('');
   lines.push(`- Fixtures: \`${report.fixturePath}\``);
   lines.push(`- Passed: ${report.passed}/${report.fixtureCount}`);
   lines.push('');
-  lines.push('| fixture | episode | source | turn | expected | selected | compliance | prefix | release | verdict | pass |');
+  lines.push(
+    '| fixture | episode | source | turn | expected | selected | compliance | prefix | release | verdict | pass |',
+  );
   lines.push('|---|---|---|---:|---|---|---|---|---|---|---|');
   for (const row of report.results) {
     lines.push(

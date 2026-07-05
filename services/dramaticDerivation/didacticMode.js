@@ -3,6 +3,7 @@ export const DIDACTIC_ACT_FALLBACK_SCHEMA = 'dramatic-derivation.didactic-act-fa
 export const DIDACTIC_OPPORTUNITY_BUDGET_SCHEMA = 'dramatic-derivation.didactic-opportunity-budget.v0';
 
 export const DIDACTIC_MODE_FAMILIES = Object.freeze([
+  'minimal_presence',
   'teach_back',
   'concrete_example',
   'analogy_bridge',
@@ -39,6 +40,7 @@ const FORBIDDEN_KEYS = new Set([
 ]);
 
 const MODE_EXIT_CONDITIONS = Object.freeze({
+  minimal_presence: 'learner continues the current reasoning line without displaced proof work',
   teach_back: 'learner gives a usable own words account of the current object',
   concrete_example: 'learner maps the example back to the current object',
   analogy_bridge: 'learner names the shared structure between the analogy and the current object',
@@ -50,6 +52,7 @@ const MODE_EXIT_CONDITIONS = Object.freeze({
 });
 
 const MODE_PROOF_NEUTRAL_BUDGETS = Object.freeze({
+  minimal_presence: 0,
   teach_back: 1,
   concrete_example: 1,
   analogy_bridge: 1,
@@ -136,7 +139,9 @@ function publicRepairSignals(repairSignals = []) {
 }
 
 function publicEvidenceLine(text) {
-  return String(text || '').trim().slice(0, 180);
+  return String(text || '')
+    .trim()
+    .slice(0, 180);
 }
 
 function makeState({
@@ -157,7 +162,7 @@ function makeState({
     currentObject,
     learningSignal,
     recommendedMode: mode,
-    scope,
+    scope: scope === 'next_act' ? 'act' : scope,
     evidence: cleanEvidence.length ? cleanEvidence : ['no public didactic pressure detected'],
     exitCondition: MODE_EXIT_CONDITIONS[mode],
     opportunityCost: deriveDidacticOpportunityBudget(mode),
@@ -210,10 +215,23 @@ function signalFromInput(input = {}) {
   const evidence = [];
 
   if (
+    input.learnerAlreadyReasoning ||
+    input.shouldAvoidIntervention ||
+    uptake.readySelfWork ||
+    learnerState.readySelfWork ||
+    /\b(i would say|i can write|let me finish|so the next step|therefore|which means|that means)\b/u.test(text)
+  ) {
+    evidence.push('public learner text is already doing productive reasoning work');
+    return { learningSignal: 'ready_self_work', recommendedMode: 'minimal_presence', scope: 'turn', evidence };
+  }
+
+  if (
     uptake.vocabularyConfusion ||
     learnerState.vocabularyConfusion ||
     exchangeType === 'vocabulary_confusion' ||
-    /\b(what does .* mean|what is .* supposed to mean|what does .* mean here|i don't know what .* means|i do not know what .* means)\b/u.test(text)
+    /\b(what does .* mean|what is .* supposed to mean|what does .* mean here|i don't know what .* means|i do not know what .* means)\b/u.test(
+      text,
+    )
   ) {
     evidence.push('public learner text asks for vocabulary or context repair');
     return { learningSignal: 'stalled', recommendedMode: 'repair_vocabulary', scope: 'scene', evidence };
@@ -232,7 +250,7 @@ function signalFromInput(input = {}) {
       evidence.push('public learner state indicates overload');
     }
     if (act.audit?.outcome === 'fallback_failed') evidence.push('act audit reports fallback failed');
-    return { learningSignal: 'overloaded', recommendedMode: 'decompose_subtask', scope: 'next_act', evidence };
+    return { learningSignal: 'overloaded', recommendedMode: 'decompose_subtask', scope: 'act', evidence };
   }
 
   if (

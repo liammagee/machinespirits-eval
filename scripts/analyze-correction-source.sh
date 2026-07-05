@@ -17,6 +17,11 @@
 set -euo pipefail
 DB="${EVAL_DB_PATH:-data/evaluations.db}"
 [ -e "$DB" ] || { echo "DB not found: $DB (set EVAL_DB_PATH)"; exit 1; }
+HAS_RESULTS_TABLE="$(sqlite3 "$DB" "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='evaluation_results';")"
+[ "$HAS_RESULTS_TABLE" = "1" ] || {
+  echo "DB has no evaluation_results table: $DB (set EVAL_DB_PATH to a populated evaluation DB)"
+  exit 1
+}
 
 # Default to the judge with the most rubric-2.2 rows so we never mix judges.
 JUDGE="${1:-$(sqlite3 "$DB" "SELECT judge_model FROM evaluation_results

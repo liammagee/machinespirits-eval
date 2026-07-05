@@ -13,7 +13,8 @@ const CONDITIONS = Object.freeze([
   { id: 'S2', label: 'cast-layer-local-s2-reinvention', name: 'cast + reinvention' },
 ]);
 
-const FORMALISM_RE = /\b[a-z]+[A-Z][A-Za-z0-9]*\b|\?[a-zA-Z_][a-zA-Z0-9_]*|[a-zA-Z_][a-zA-Z0-9_]*\s*\([^)]*\)|\bD\s*=\s*\d/u;
+const FORMALISM_RE =
+  /\b[a-z]+[A-Z][A-Za-z0-9]*\b|\?[a-zA-Z_][a-zA-Z0-9_]*|[a-zA-Z_][a-zA-Z0-9_]*\s*\([^)]*\)|\bD\s*=\s*\d/u;
 const ACK_RE = /\b(i see|yes|i am listening|i follow|i take|no,? sorry|that much|nothing new)\b/iu;
 const QUESTION_RE = /\?/u;
 
@@ -77,7 +78,9 @@ function flattenPublicLines(live) {
   for (const turn of Array.isArray(live?.turns) ? live.turns : []) {
     for (const line of Array.isArray(turn.lines) ? turn.lines : []) {
       if (!['stage', 'director', 'tutor', 'learner'].includes(line.role)) continue;
-      const text = String(line.text || '').replace(/\s+/gu, ' ').trim();
+      const text = String(line.text || '')
+        .replace(/\s+/gu, ' ')
+        .trim();
       if (!text) continue;
       out.push({
         turn: turn.turn,
@@ -101,9 +104,10 @@ function textStats(live) {
   const stageLines = lines.filter((line) => line.role === 'stage');
   const formalismLeaks = lines.filter((line) => FORMALISM_RE.test(line.text));
   const acknowledgements = learnerLines.filter((line) => ACK_RE.test(line.text));
-  const substantiveLearner = learnerLines.filter((line) =>
-    ['hypothesis', 'substantive', 'assertion'].includes(line.exchangeType) ||
-    /\b(settles|shown|shown:|take what has been shown|adopts?|asserts?)\b/iu.test(line.text),
+  const substantiveLearner = learnerLines.filter(
+    (line) =>
+      ['hypothesis', 'substantive', 'assertion'].includes(line.exchangeType) ||
+      /\b(settles|shown|shown:|take what has been shown|adopts?|asserts?)\b/iu.test(line.text),
   );
   const uniqueTutorTexts = countUnique(tutorLines.map((line) => line.text.toLowerCase()));
   const uniqueLearnerTexts = countUnique(learnerLines.map((line) => line.text.toLowerCase()));
@@ -170,7 +174,9 @@ function summarizeArtifact(condition, matrixDir) {
         mayOverrideProofControl: entry.reinvention.mayOverrideProofControl,
       })),
       allCastAuditsOk: castEntries.every((entry) => entry.inputAuditOk && entry.nonLeakAuditOk),
-      anyProofOverride: castEntries.some((entry) => entry.mayOverrideProofControl || entry.reinvention?.mayOverrideProofControl),
+      anyProofOverride: castEntries.some(
+        (entry) => entry.mayOverrideProofControl || entry.reinvention?.mayOverrideProofControl,
+      ),
       learnerPostures: [...new Set(castEntries.map((entry) => entry.learnerPosture).filter(Boolean))],
       tutorStances: [...new Set(castEntries.map((entry) => entry.tutorStance).filter(Boolean))],
     },
@@ -199,13 +205,14 @@ function scoreV22Proxy(artifact) {
   const hasReinvention = artifact.summary.reinventionTurns.length > 0;
   const hasCast = artifact.summary.castEnabled;
   const formalismClean = stats.formalismLeaks.length === 0;
-  const phaticRatio = stats.learnerLineCount ? stats.phaticLearnerCount / stats.learnerLineCount : 0;
   const substantiveRatio = stats.learnerLineCount ? stats.substantiveLearnerCount / stats.learnerLineCount : 0;
   return {
     perception_quality: {
       weight: 0.15,
       score: hasCast ? 3 : 2.5,
-      evidence: hasCast ? `Learner posture tracked as ${artifact.summary.learnerPostures.join(', ') || 'ordinary'}.` : 'No cast-state learner posture is available.',
+      evidence: hasCast
+        ? `Learner posture tracked as ${artifact.summary.learnerPostures.join(', ') || 'ordinary'}.`
+        : 'No cast-state learner posture is available.',
     },
     pedagogical_craft: {
       weight: 0.2,
@@ -239,7 +246,9 @@ function scoreV22Proxy(artifact) {
     epistemic_integrity: {
       weight: 0.05,
       score: formalismClean ? 4 : 2,
-      evidence: formalismClean ? 'No raw formalism detected in public tutor/learner/stage lines.' : `${stats.formalismLeaks.length} formalism-like public line(s) detected.`,
+      evidence: formalismClean
+        ? 'No raw formalism detected in public tutor/learner/stage lines.'
+        : `${stats.formalismLeaks.length} formalism-like public line(s) detected.`,
     },
     content_accuracy: {
       weight: 0.05,
@@ -272,7 +281,11 @@ function scoreDialogueProxy(artifact) {
     },
     productive_tension_management: {
       weight: 0.15,
-      score: artifact.summary.learnerPostures.includes('defensive_after_correction') && artifact.summary.reinventionTurns.length ? 3.5 : 3,
+      score:
+        artifact.summary.learnerPostures.includes('defensive_after_correction') &&
+        artifact.summary.reinventionTurns.length
+          ? 3.5
+          : 3,
       evidence: artifact.summary.reinventionTurns.length
         ? 'Defensive posture is met by a bounded stance change.'
         : 'Defensive posture is present but no stance change is active.',
@@ -298,12 +311,16 @@ function scorePoeticsProxy(artifact) {
     peripeteia: {
       weight: 0.2,
       score: hasFinalAssertion ? 3 : 2,
-      evidence: hasFinalAssertion ? `The close changes from inquiry to assertion: "${stats.finalLearnerLine}".` : 'No asserted turn is visible.',
+      evidence: hasFinalAssertion
+        ? `The close changes from inquiry to assertion: "${stats.finalLearnerLine}".`
+        : 'No asserted turn is visible.',
     },
     anagnorisis: {
       weight: 0.2,
       score: hasFinalAssertion ? 3 : 2,
-      evidence: hasFinalAssertion ? `The learner names the answer in public: "${stats.finalLearnerLine}".` : 'No learner-owned recognition event is visible.',
+      evidence: hasFinalAssertion
+        ? `The learner names the answer in public: "${stats.finalLearnerLine}".`
+        : 'No learner-owned recognition event is visible.',
     },
     surprise_and_inevitability: {
       weight: 0.15,
@@ -323,7 +340,9 @@ function scorePoeticsProxy(artifact) {
     cathartic_closure: {
       weight: 0.15,
       score: hasFinalAssertion ? 3 : 2,
-      evidence: hasFinalAssertion ? `Closure lands as a grounded but terse assertion: "${stats.finalLearnerLine}".` : 'No closure line found.',
+      evidence: hasFinalAssertion
+        ? `Closure lands as a grounded but terse assertion: "${stats.finalLearnerLine}".`
+        : 'No closure line found.',
     },
   };
 }
@@ -334,7 +353,8 @@ function scoreDerivativeCriteria(artifact, baseline) {
   const hasReinvention = artifact.summary.reinventionEnabled;
   const reinventions = artifact.summary.reinventionTurns;
   const proofScore = proofInvariantScore(artifact, baseline);
-  const nonLeakScore = stats.formalismLeaks.length === 0 && !artifact.summary.anyProofOverride && artifact.summary.allCastAuditsOk ? 5 : 2;
+  const nonLeakScore =
+    stats.formalismLeaks.length === 0 && !artifact.summary.anyProofOverride && artifact.summary.allCastAuditsOk ? 5 : 2;
   const boundedReinventionScore = !hasReinvention
     ? null
     : reinventions.length === 1 && reinventions.every((turn) => turn.mayOverrideProofControl === false)
@@ -351,12 +371,17 @@ function scoreDerivativeCriteria(artifact, baseline) {
     public_nonleak_safety: {
       weight: 0.18,
       score: nonLeakScore,
-      evidence: stats.formalismLeaks.length === 0 ? 'No public formalism leaks detected and cast audits remain clean.' : `${stats.formalismLeaks.length} public formalism-like line(s) detected.`,
+      evidence:
+        stats.formalismLeaks.length === 0
+          ? 'No public formalism leaks detected and cast audits remain clean.'
+          : `${stats.formalismLeaks.length} public formalism-like line(s) detected.`,
     },
     cast_visibility: {
       weight: 0.16,
       score: hasCast ? 4 : 1,
-      evidence: hasCast ? `${artifact.summary.castTurns} cast-state rows with tutor/learner/relation projections.` : 'No cast state is emitted.',
+      evidence: hasCast
+        ? `${artifact.summary.castTurns} cast-state rows with tutor/learner/relation projections.`
+        : 'No cast state is emitted.',
     },
     character_coherence: {
       weight: 0.14,
@@ -369,13 +394,16 @@ function scoreDerivativeCriteria(artifact, baseline) {
       weight: 0.15,
       score: boundedReinventionScore,
       evidence: hasReinvention
-        ? reinventions.map((turn) => `t${turn.turn}: ${turn.fromStance} -> ${turn.toStance} (${turn.trigger})`).join('; ') || 'Reinvention enabled but no event fired.'
+        ? reinventions
+            .map((turn) => `t${turn.turn}: ${turn.fromStance} -> ${turn.toStance} (${turn.trigger})`)
+            .join('; ') || 'Reinvention enabled but no event fired.'
         : 'Not applicable: reinvention disabled.',
     },
     reader_quality_delta: {
       weight: 0.15,
       score: hasCast ? 2.5 : 2,
-      evidence: 'Mock public prose is effectively unchanged across arms, so reader-quality improvement is not established.',
+      evidence:
+        'Mock public prose is effectively unchanged across arms, so reader-quality improvement is not established.',
     },
   };
 }
@@ -454,14 +482,18 @@ function renderReport(scores, outDir, matrixDir) {
   const methodTable = table(rows, [
     { title: 'Condition', render: (row) => `${row.id}` },
     { title: 'Cast rows', render: (row) => String(row.summary.castTurns) },
-    { title: 'Reinvention turns', render: (row) => row.summary.reinventionTurns.map((turn) => `t${turn.turn}`).join(', ') || 'none' },
+    {
+      title: 'Reinvention turns',
+      render: (row) => row.summary.reinventionTurns.map((turn) => `t${turn.turn}`).join(', ') || 'none',
+    },
     { title: 'Formalism leaks', render: (row) => String(row.stats.formalismLeaks.length) },
     { title: 'Question ratio', render: (row) => String(row.stats.questionRatio) },
     { title: 'Unique learner lines', render: (row) => `${row.stats.uniqueLearnerTexts}/${row.stats.learnerLineCount}` },
   ]);
 
   const details = scores
-    .map((score) => `### ${score.id} ${score.name}
+    .map(
+      (score) => `### ${score.id} ${score.name}
 
 **v2.2 proxy dimensions**
 ${renderScoreList(score.rubrics.tutor_v2_2_proxy.dimensions)}
@@ -474,7 +506,8 @@ ${renderScoreList(score.rubrics.poetics_proxy.dimensions)}
 
 **Derivative branch criteria**
 ${renderScoreList(score.rubrics.derivative_branch_criteria.dimensions)}
-`)
+`,
+    )
     .join('\n');
 
   return `# Cast Layer Reader-Quality Evaluation
@@ -534,7 +567,10 @@ export function evaluateCastLayerReaderQuality({ matrixDir = DEFAULT_MATRIX_DIR,
   const baseline = artifacts[0];
   const scores = artifacts.map((artifact) => scoreArtifact(artifact, baseline));
   fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, 'scores.json'), `${JSON.stringify({ generatedAt: new Date().toISOString(), matrixDir, scores }, null, 2)}\n`);
+  fs.writeFileSync(
+    path.join(outDir, 'scores.json'),
+    `${JSON.stringify({ generatedAt: new Date().toISOString(), matrixDir, scores }, null, 2)}\n`,
+  );
   fs.writeFileSync(path.join(outDir, 'report.md'), renderReport(scores, outDir, matrixDir));
   return { outDir, scores };
 }

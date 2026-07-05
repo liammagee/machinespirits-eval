@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-06-22
-updated: 2026-06-22
+updated: 2026-06-24
 branch: claude/derivation-fast-iteration
 verification: scripts/workplan.js
   list/show/add/triage/set/validate/render/ingest all run green;
@@ -19,6 +19,7 @@ tags:
   - workplan
   - tooling
   - meta
+milestone: board-pm
 ---
 
 The backbone (this folder, schema, playbook, skill) exists. This item tracks the

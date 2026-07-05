@@ -7,7 +7,7 @@ priority: P0
 owner: codex
 source: manual
 created: 2026-06-23
-updated: 2026-06-23
+updated: 2026-06-24
 verification: Mock generation, mock derivation, replay dry-run, and score
   dry-run are launchable from guided UI flows with visible cost class, command
   preview, validation checklist, and job records.
@@ -22,6 +22,7 @@ tags:
   - jobs
   - launcher
 branch: codex/ux-enhancements
+milestone: desktop-app
 ---
 
 Context: `/runs` is safe and well-tested, but command-oriented; `/compose/live`

@@ -209,7 +209,14 @@ async function releaseTurn({ turn, reply, ledger = [] }) {
   return tutor(actsView(turn, { ledger }));
 }
 
-async function discursiveReleaseTurn({ turn, reply, ledger = [], transcript = [], world = smokeWorld, pacingGuard = false }) {
+async function discursiveReleaseTurn({
+  turn,
+  reply,
+  ledger = [],
+  transcript = [],
+  world = smokeWorld,
+  pacingGuard = false,
+}) {
   const { client } = stubClient({ tutor: [reply] });
   const tutor = makeLlmTutor(
     world,
@@ -746,6 +753,49 @@ test('same-turn assertion affordance prompts post-adoption answer and keeps grou
   assert.match(learnerCall.user, /Same-turn answer check/);
   assert.equal(learnerCall.meta.sameTurnAssertionAffordance, true);
   assert.equal(learnerCall.meta.patternAssertion.answer, 'marin');
+  assert.deepEqual(out.asserts, ['heir', 'marin']);
+  assert.equal(out.assertionGate.supported, true);
+  assert.equal(out.assertionGate.blocked, false);
+});
+
+test('same-turn assertion affordance prompts already-held board answer', async () => {
+  const proofFacts = ['p1', 'p2', 'p3'].map((id) => smokeWorld.premiseById.get(id).fact);
+  const { client, calls } = stubClient({
+    learner: [
+      {
+        dialogue: 'Then it is Marin.',
+        adopt_indices: [],
+        retract_indices: [],
+        derive_indices: [],
+        hypothesis: null,
+        asserts_answer: 'marin',
+      },
+    ],
+  });
+  const learner = makeLlmLearner({
+    setting: smokeWorld.setting,
+    voice: smokeWorld.learnerVoice,
+    client,
+    sameTurnAssertionAffordance: true,
+  });
+  const out = await learner({
+    turn: 9,
+    question: smokeWorld.question,
+    questionPattern: smokeWorld.questionPattern,
+    rules: smokeWorld.rules,
+    background: [],
+    releasedFacts: [],
+    releasedThisTurn: [],
+    abox: { grounded: proofFacts, hypotheses: [] },
+    voiced: [],
+    transcript: [],
+    factSurfaces: {},
+  });
+
+  const learnerCall = calls.find((c) => c.role === 'learner');
+  assert.match(learnerCall.system, /re-check your current board and any NEW exhibits/);
+  assert.match(learnerCall.user, /private answer "marin"/);
+  assert.match(learnerCall.user, /set "asserts_answer" to exactly "marin"/);
   assert.deepEqual(out.asserts, ['heir', 'marin']);
   assert.equal(out.assertionGate.supported, true);
   assert.equal(out.assertionGate.blocked, false);

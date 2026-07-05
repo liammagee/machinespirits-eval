@@ -1,0 +1,136 @@
+{
+  "schema": "yoked_contingency_model_invariance_matrix_v0_1",
+  "generatedAt": "2026-06-25T00:42:23.383Z",
+  "startedAt": "2026-06-25T00:23:46.901Z",
+  "status": "pass_model_invariance_matrix",
+  "boundary": "model-invariance follow-up only; failures are boundary evidence until replicated at scaled N and integrated into paper-full-2.0.md",
+  "plan": "PLAN_2_0/yoked-contingency-model-invariance-plan.md",
+  "controls": {
+    "learnerProtocol": "rule-transfer-novice",
+    "posttestProfile": "hard-transfer",
+    "sessionLimit": 9,
+    "maxCallsPerRun": 27,
+    "maxPlanCalls": 27,
+    "planTurns": 4,
+    "includeFrozen": true
+  },
+  "planArtifacts": [
+    {
+      "label": "frozen_g1",
+      "kind": "frozen",
+      "backend": null,
+      "backendDetail": null,
+      "jsonPath": "exports/yoked-contingency-g1-scaled.json"
+    },
+    {
+      "label": "regenerated_codex",
+      "kind": "regenerated",
+      "backend": "codex",
+      "backendDetail": {
+        "kind": "codex",
+        "label": "codex"
+      },
+      "jsonPath": "exports/yoked-contingency-model-invariance-codex-planner-scaled/g1-plans/codex.json",
+      "summary": {
+        "sessionCount": 9,
+        "armsPerSession": 3,
+        "planTurns": 4,
+        "modelCalls": {
+          "total": 27,
+          "learner_prose": 0,
+          "prose_classifier": 0,
+          "tutor_plan": 27
+        },
+        "meanGainByArm": {
+          "contingent": 0.258,
+          "same_seed_yoked": 0.16,
+          "different_seed_yoked": 0.008
+        },
+        "delta1_responsiveness": 0.098,
+        "delta2_diagnosis": 0.152,
+        "sameSeedActiveTargets": 3.333,
+        "differentSeedActiveTargets": 0.333,
+        "sameGreaterSessionCount": 9,
+        "sourceBehaviorExactCount": 27,
+        "invalidPlanCount": 0
+      },
+      "status": "pass_g1_paid_smoke"
+    }
+  ],
+  "rows": [
+    {
+      "planLabel": "frozen_g1",
+      "planKind": "frozen",
+      "planBackend": null,
+      "planBackendDetail": null,
+      "planJson": "exports/yoked-contingency-g1-scaled.json",
+      "learnerBackend": "codex",
+      "learnerBackendDetail": {
+        "kind": "codex",
+        "label": "codex"
+      },
+      "artifactJson": "exports/yoked-contingency-model-invariance-codex-planner-scaled/g2-runs/frozen-g1__codex.json",
+      "artifactMd": "exports/yoked-contingency-model-invariance-codex-planner-scaled/g2-runs/frozen-g1__codex.md",
+      "summary": {
+        "status": "pass_g2_independent_outcome",
+        "boundaryClass": "supports_invariance_endpoint",
+        "sessionCount": 9,
+        "sourceSessionCount": 9,
+        "modelCalls": 27,
+        "delta1_responsiveness": 0.044,
+        "delta2_diagnosis": 0.378,
+        "sameGreaterSessionCount": 9,
+        "signTestOneSidedP": 0.002,
+        "invalidAnswerCount": 0,
+        "promptFamilyLabelLeakCount": 0
+      }
+    },
+    {
+      "planLabel": "regenerated_codex",
+      "planKind": "regenerated",
+      "planBackend": "codex",
+      "planBackendDetail": {
+        "kind": "codex",
+        "label": "codex"
+      },
+      "planJson": "exports/yoked-contingency-model-invariance-codex-planner-scaled/g1-plans/codex.json",
+      "learnerBackend": "codex",
+      "learnerBackendDetail": {
+        "kind": "codex",
+        "label": "codex"
+      },
+      "artifactJson": "exports/yoked-contingency-model-invariance-codex-planner-scaled/g2-runs/regenerated-codex__codex.json",
+      "artifactMd": "exports/yoked-contingency-model-invariance-codex-planner-scaled/g2-runs/regenerated-codex__codex.md",
+      "summary": {
+        "status": "pass_g2_independent_outcome",
+        "boundaryClass": "supports_invariance_endpoint",
+        "sessionCount": 9,
+        "sourceSessionCount": 9,
+        "modelCalls": 27,
+        "delta1_responsiveness": 0.034,
+        "delta2_diagnosis": 0.366,
+        "sameGreaterSessionCount": 9,
+        "signTestOneSidedP": 0.002,
+        "invalidAnswerCount": 0,
+        "promptFamilyLabelLeakCount": 0
+      }
+    }
+  ],
+  "summary": {
+    "rowCount": 2,
+    "supportCount": 2,
+    "boundaryCount": 0,
+    "learnerBackends": [
+      {
+        "kind": "codex",
+        "label": "codex"
+      }
+    ],
+    "plannerBackends": [
+      {
+        "kind": "codex",
+        "label": "codex"
+      }
+    ]
+  }
+}

@@ -301,9 +301,7 @@ async function main() {
   atomicWrite(path.join(opts.out, 'ownership-eval-report.md'), renderMarkdown(report));
   console.log(`ownership eval wrote ${path.relative(ROOT, opts.out)}/ownership-eval-report.{json,md}`);
   for (const pair of report.pairs) {
-    console.log(
-      `${pair.pairId}: ${pair.comparison.decision} delta=${pair.comparison.meanOwnershipDelta.toFixed(2)}`,
-    );
+    console.log(`${pair.pairId}: ${pair.comparison.decision} delta=${pair.comparison.meanOwnershipDelta.toFixed(2)}`);
   }
 }
 

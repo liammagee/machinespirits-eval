@@ -12,8 +12,8 @@ const DEFAULT_ROUTES = [
   '/browse',
   '/derivation',
   '/replays',
-  '/compose/live',
-  '/runs',
+  '/admin/compose/live',
+  '/admin/runs',
   '/board',
   '/chat/',
   '/adjudication/',
@@ -40,7 +40,11 @@ function parseArgs(argv) {
     else if (token === '--port') args.port = Number(argv[++i] || args.port);
     else if (token === '--out') args.out = path.resolve(argv[++i] || args.out);
     else if (token === '--no-start') args.start = false;
-    else if (token === '--routes') args.routes = String(argv[++i] || '').split(',').map((s) => s.trim()).filter(Boolean);
+    else if (token === '--routes')
+      args.routes = String(argv[++i] || '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
     else if (token === '--help' || token === '-h') args.help = true;
     else throw new Error(`unknown arg: ${token}`);
   }
@@ -91,21 +95,26 @@ function slug(route, viewport) {
 }
 
 function htmlReport(results) {
-  const rows = results.map((r) => {
-    const issues = [
-      ...r.consoleErrors.map((x) => `console: ${x}`),
-      ...r.unlabeled.map((x) => `unlabeled: ${x}`),
-      ...r.smallTargets.map((x) => `small target: ${x}`),
-      ...(r.overflow ? [`overflow: document ${r.docWidth}px > viewport ${r.viewport.width}px`] : []),
-      ...r.duplicateLandmarks.map((x) => `duplicate landmark: ${x}`),
-    ];
-    return `<tr class="${issues.length ? 'bad' : 'ok'}"><td>${r.route}</td><td>${r.viewport.name}</td><td>${r.status}</td><td>${issues.length ? issues.map((x) => `<div>${escapeHtml(x)}</div>`).join('') : 'pass'}</td><td><a href="${path.basename(r.screenshot)}">screenshot</a></td></tr>`;
-  }).join('\n');
+  const rows = results
+    .map((r) => {
+      const issues = [
+        ...r.consoleErrors.map((x) => `console: ${x}`),
+        ...r.unlabeled.map((x) => `unlabeled: ${x}`),
+        ...r.smallTargets.map((x) => `small target: ${x}`),
+        ...(r.overflow ? [`overflow: document ${r.docWidth}px > viewport ${r.viewport.width}px`] : []),
+        ...r.duplicateLandmarks.map((x) => `duplicate landmark: ${x}`),
+      ];
+      return `<tr class="${issues.length ? 'bad' : 'ok'}"><td>${r.route}</td><td>${r.viewport.name}</td><td>${r.status}</td><td>${issues.length ? issues.map((x) => `<div>${escapeHtml(x)}</div>`).join('') : 'pass'}</td><td><a href="${path.basename(r.screenshot)}">screenshot</a></td></tr>`;
+    })
+    .join('\n');
   return `<!doctype html><meta charset="utf-8"><title>Scriptorium UX smoke</title><style>body{font:14px system-ui;margin:24px}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}.bad{background:#fff1ee}.ok{background:#f3fbf0}code{font-family:ui-monospace,monospace}</style><h1>Scriptorium UX smoke</h1><table><thead><tr><th>route</th><th>viewport</th><th>HTTP</th><th>issues</th><th>shot</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  return String(value ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+  );
 }
 
 async function pageStatus(url) {
@@ -236,21 +245,31 @@ async function main() {
     fs.writeFileSync(jsonPath, JSON.stringify({ base: args.base, results }, null, 2));
     fs.writeFileSync(htmlPath, htmlReport(results));
     const failures = results.filter(
-      (r) => r.status >= 400 || r.consoleErrors.length || r.overflow || r.unlabeled.length || r.smallTargets.length || r.duplicateLandmarks.length,
+      (r) =>
+        r.status >= 400 ||
+        r.consoleErrors.length ||
+        r.overflow ||
+        r.unlabeled.length ||
+        r.smallTargets.length ||
+        r.duplicateLandmarks.length,
     );
     console.log(`scriptorium ux smoke: ${results.length - failures.length}/${results.length} checks passed`);
     console.log(`report: ${htmlPath}`);
     if (failures.length) {
       failed = true;
       for (const f of failures) {
-        console.error(`${f.route} ${f.viewport.name}: ${[
-          f.status >= 400 ? `HTTP ${f.status}` : '',
-          f.consoleErrors.length ? `${f.consoleErrors.length} console errors` : '',
-          f.overflow ? `overflow ${f.docWidth}px` : '',
-          f.unlabeled.length ? `${f.unlabeled.length} unlabeled controls` : '',
-          f.smallTargets.length ? `${f.smallTargets.length} small targets` : '',
-          f.duplicateLandmarks.length ? `${f.duplicateLandmarks.length} duplicate landmarks` : '',
-        ].filter(Boolean).join(', ')}`);
+        console.error(
+          `${f.route} ${f.viewport.name}: ${[
+            f.status >= 400 ? `HTTP ${f.status}` : '',
+            f.consoleErrors.length ? `${f.consoleErrors.length} console errors` : '',
+            f.overflow ? `overflow ${f.docWidth}px` : '',
+            f.unlabeled.length ? `${f.unlabeled.length} unlabeled controls` : '',
+            f.smallTargets.length ? `${f.smallTargets.length} small targets` : '',
+            f.duplicateLandmarks.length ? `${f.duplicateLandmarks.length} duplicate landmarks` : '',
+          ]
+            .filter(Boolean)
+            .join(', ')}`,
+        );
       }
       process.exitCode = 1;
     }

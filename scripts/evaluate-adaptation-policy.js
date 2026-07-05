@@ -40,7 +40,13 @@ const CLOSED_MODES = new Set(['closed_loop', 'closed_loop_counterfactual']);
 
 const IDEAL_ACTIONS = Object.freeze({
   productive_progress: ['observe_no_intervention', 'ask_strategy_choice', 'request_evidence'],
-  missing_prerequisite: ['minimal_hint', 'request_evidence', 'ask_strategy_choice', 'model_worked_example', 'explain_principle'],
+  missing_prerequisite: [
+    'minimal_hint',
+    'request_evidence',
+    'ask_strategy_choice',
+    'model_worked_example',
+    'explain_principle',
+  ],
   low_confidence: ['elicit_prediction', 'ask_strategy_choice', 'fade_hint'],
   approval_dependency: ['ask_strategy_choice', 'request_evidence', 'elicit_prediction'],
   task_misread: ['reanchor_goal', 'ask_strategy_choice', 'diagnose_with_discriminating_question'],
@@ -332,11 +338,7 @@ function runScenarioMode(scenario, mode) {
       action_state_fit: isIdealAction(scenario.hiddenState, actionType, turnIndex),
       counterfactual_regret: isIdealAction(scenario.hiddenState, actionType, turnIndex) ? 0 : 0.75,
     });
-    dialogue = [
-      ...dialogue,
-      { role: 'tutor', content: actionType },
-      { role: 'learner', content: learnerTurn },
-    ];
+    dialogue = [...dialogue, { role: 'tutor', content: actionType }, { role: 'learner', content: learnerTurn }];
 
     if (mode !== 'legacy') {
       finalBelief = estimateLearnerStateBelief({
@@ -360,7 +362,10 @@ function runScenarioMode(scenario, mode) {
     ledger = closed.ledger;
   }
 
-  const observed = dialogue.filter((m) => m.role === 'learner').slice(1).map((m) => m.content);
+  const observed = dialogue
+    .filter((m) => m.role === 'learner')
+    .slice(1)
+    .map((m) => m.content);
   const finalEvidence = observed.map((text) => detectOutcomeEvidence(text).categories);
   const proofReleaseMismatch = turnRows.some((row) => {
     if (row.action_type === 'diagnose_with_discriminating_question') return false;
@@ -387,8 +392,11 @@ function runScenarioMode(scenario, mode) {
         })),
     strict_joint_success: turnRows.some((row) => row.strict_joint_success),
     proof_release_mismatch: proofReleaseMismatch,
-    action_state_fit: turnRows.every((row) => row.action_state_fit || row.action_type === 'diagnose_with_discriminating_question'),
-    counterfactual_regret: turnRows.reduce((sum, row) => sum + row.counterfactual_regret, 0) / Math.max(1, turnRows.length),
+    action_state_fit: turnRows.every(
+      (row) => row.action_state_fit || row.action_type === 'diagnose_with_discriminating_question',
+    ),
+    counterfactual_regret:
+      turnRows.reduce((sum, row) => sum + row.counterfactual_regret, 0) / Math.max(1, turnRows.length),
     turns: turnRows,
     evidence_categories: finalEvidence,
     top_hypothesis: topHypothesisId(finalBelief),
@@ -433,7 +441,9 @@ function renderMarkdown(report) {
   }
   lines.push('', '## Paired bootstrap intervals', '');
   for (const [metric, ci] of Object.entries(report.pairedBootstrapIntervals || {})) {
-    lines.push(`- **${metricLabel(metric)}:** mean difference ${fmt(ci.mean)}, 95% bootstrap CI [${fmt(ci.lower)}, ${fmt(ci.upper)}]`);
+    lines.push(
+      `- **${metricLabel(metric)}:** mean difference ${fmt(ci.mean)}, 95% bootstrap CI [${fmt(ci.lower)}, ${fmt(ci.upper)}]`,
+    );
   }
   lines.push('', '## Scenario traces', '');
   lines.push('| Scenario | Hidden state | ' + report.conditions.map((c) => `${c} actions`).join(' | ') + ' |');
@@ -456,19 +466,21 @@ function renderMarkdown(report) {
 }
 
 function labelForAggregate(metric) {
-  return {
-    strictJointSuccess: 'Strict joint proof/release/ownership success',
-    stateTop1Accuracy: 'State top-1 accuracy',
-    stateBrierScore: 'State Brier score (lower is better)',
-    interventionSuccessRate: 'Intervention success rate',
-    actionStateFitRate: 'Action-state fit rate',
-    tutorControlCost: 'Tutor control cost',
-    proofReleaseMismatchRate: 'Proof/release mismatch rate',
-    counterfactualRegret: 'Counterfactual regret',
-    finalProof: 'Final proof',
-    finalRelease: 'Final release',
-    finalOwnership: 'Final ownership',
-  }[metric] || metric;
+  return (
+    {
+      strictJointSuccess: 'Strict joint proof/release/ownership success',
+      stateTop1Accuracy: 'State top-1 accuracy',
+      stateBrierScore: 'State Brier score (lower is better)',
+      interventionSuccessRate: 'Intervention success rate',
+      actionStateFitRate: 'Action-state fit rate',
+      tutorControlCost: 'Tutor control cost',
+      proofReleaseMismatchRate: 'Proof/release mismatch rate',
+      counterfactualRegret: 'Counterfactual regret',
+      finalProof: 'Final proof',
+      finalRelease: 'Final release',
+      finalOwnership: 'Final ownership',
+    }[metric] || metric
+  );
 }
 
 function fmt(value) {

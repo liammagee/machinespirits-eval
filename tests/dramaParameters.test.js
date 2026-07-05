@@ -57,7 +57,10 @@ test('drama functional components name the architecture-facing subsystems', () =
 
   for (const component of DRAMA_FUNCTIONAL_COMPONENTS) {
     for (const parameterComponent of component.parameterComponents) {
-      assert.ok(COMPONENT_IDS.includes(parameterComponent), `${component.id} references unknown facet ${parameterComponent}`);
+      assert.ok(
+        COMPONENT_IDS.includes(parameterComponent),
+        `${component.id} references unknown facet ${parameterComponent}`,
+      );
     }
     for (const path of component.fieldPaths) {
       assert.ok(FIELD_PATHS.has(path), `${component.id} references unknown field ${path}`);
@@ -76,6 +79,7 @@ test('composer vocab composes fixed drama vocab with live learner vocab', () => 
   assert.deepEqual(vocab.learnerArch, ['test_architecture']);
   assert.ok(vocab.forms.includes('peripeteia'));
   assert.ok(vocab.adaptationPolicy.includes('socratic_discovery'));
+  assert.ok(vocab.adaptationPolicy.includes('withhold_secret'));
   assert.equal(vocab.components.length, DRAMA_PARAMETER_COMPONENTS.length);
   assert.equal(vocab.functionalComponents.length, DRAMA_FUNCTIONAL_COMPONENTS.length);
   assert.deepEqual(vocab.functionalComponentOrder, DRAMA_FUNCTIONAL_COMPONENT_ORDER);
@@ -97,13 +101,18 @@ test('run launcher parameter names resolve to stable components', () => {
 
 test('run launcher parameter names resolve to stable functional components', () => {
   assert.deepEqual(functionalComponentsForRunParam('world'), ['proof_dag']);
+  assert.deepEqual(functionalComponentsForRunParam('labels'), ['proof_dag']);
+  assert.deepEqual(functionalComponentsForRunParam('rubrics'), ['audience_critic']);
+  assert.deepEqual(functionalComponentsForRunParam('judgeCli'), ['audience_critic']);
   assert.deepEqual(functionalComponentsForRunParam('superego'), ['superego_critic']);
   assert.deepEqual(functionalComponentsForRunParam('generator'), ['cast_layer']);
   assert.deepEqual(functionalComponentsForRunParam('critic'), ['audience_critic']);
   assert.deepEqual(functionalComponentsForRunParam('unknown_future_toggle'), ['run_orchestration']);
 
   assert.equal(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME.world, 'proof_dag');
+  assert.equal(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME.labels, 'proof_dag');
   assert.equal(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME.critic, 'audience_critic');
+  assert.equal(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME.judgeCli, 'audience_critic');
 
   for (const [name, component] of Object.entries(RUN_PARAM_FUNCTIONAL_COMPONENT_BY_NAME)) {
     assert.ok(FUNCTIONAL_COMPONENT_IDS.includes(component), `${name} maps to an unknown functional component`);
@@ -124,7 +133,5 @@ test('functional lookup exposes related fields without guessing from labels', ()
       (field) => field.path === 'drama.tutor.recognition_mode',
     ),
   );
-  assert.ok(
-    fieldsForFunctionalComponent('proof_dag').some((field) => field.path === 'drama.secret.premise_ledger'),
-  );
+  assert.ok(fieldsForFunctionalComponent('proof_dag').some((field) => field.path === 'drama.secret.premise_ledger'));
 });

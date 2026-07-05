@@ -332,7 +332,11 @@ function parseModule(block, moduleId) {
     canonical_tasks: canonicalTasks.length ? canonicalTasks : capstoneTasks,
     verifiers: verifiersText ? [stripMarkdown(verifiersText)] : capstoneVerifiers,
     misconception_signatures: misconceptionSignatures.length ? misconceptionSignatures : capstoneMisconceptions,
-    mastery_gate: masteryGate ? stripMarkdown(masteryGate) : capstoneCompletion ? stripMarkdown(capstoneCompletion) : null,
+    mastery_gate: masteryGate
+      ? stripMarkdown(masteryGate)
+      : capstoneCompletion
+        ? stripMarkdown(capstoneCompletion)
+        : null,
     transfer_challenge: transferChallenge ? stripMarkdown(transferChallenge) : null,
   };
 }
@@ -705,7 +709,9 @@ function expectedTransitionsForModule(module) {
       action_type: 'minimal_hint',
       success_evidence: ['learner-authored next step'],
       failure_evidence: ['evidence of deeper gap', 'undifferentiated help request'],
-      world_success_observables: [`Learner uses the hint to advance ${sentenceFragment(module.main_artifact || module.title)}.`],
+      world_success_observables: [
+        `Learner uses the hint to advance ${sentenceFragment(module.main_artifact || module.title)}.`,
+      ],
     },
   ];
 }
@@ -798,7 +804,9 @@ function rhetoricForWorldSpec(module, worldSpec) {
     return {
       dialogue_approach: 'courtroom_cross_examination',
       burden: 'claim_evidence_alignment',
-      pressure_style: preferred.includes('repair_overconfidence') ? 'technical_signoff_pressure' : 'admissible_evidence',
+      pressure_style: preferred.includes('repair_overconfidence')
+        ? 'technical_signoff_pressure'
+        : 'admissible_evidence',
       tutor_argument_habit: 'press_for_scope_and_evidence',
       learner_argument_habit: 'defend_too_broad_a_claim_then_narrow_it',
       allowed_public_posture: 'audit-table questioning without naming hidden labels',
@@ -992,7 +1000,10 @@ function characterForRhetoricalPlan(module, rhetoric) {
       argument_habit: rhetoric.learner_argument_habit,
     },
     tutor: {
-      ethos: rhetoric.pressure_style === 'technical_signoff_pressure' ? 'dogmatic_protocol_gatekeeper' : 'evidence_gatekeeper',
+      ethos:
+        rhetoric.pressure_style === 'technical_signoff_pressure'
+          ? 'dogmatic_protocol_gatekeeper'
+          : 'evidence_gatekeeper',
       habit: rhetoric.tutor_argument_habit,
       prohibited_habits: [
         'warm validation as substitute for evidence',
@@ -1012,7 +1023,10 @@ function characterForRhetoricalPlan(module, rhetoric) {
 }
 
 function sceneForRhetoricalPlan(module, rhetoric) {
-  const setting = rhetoric.pressure_style === 'technical_signoff_pressure' ? 'technical review room before panel sign-off' : 'artifact review desk';
+  const setting =
+    rhetoric.pressure_style === 'technical_signoff_pressure'
+      ? 'technical review room before panel sign-off'
+      : 'artifact review desk';
   return {
     setting,
     object: module.main_artifact || module.title,
@@ -1027,9 +1041,11 @@ function publicPromptConstraintsForRhetoricalPlan(plan) {
     public_evidence_standard: plan.curriculum_spine.verifier,
     allowed_rhetorical_form: plan.rhetoric.allowed_public_posture,
     scene: `${plan.scene.setting}; visible object: ${plan.scene.object}; stakes: ${plan.scene.stakes}`,
-    action_gate: plan.pacing.beats.find((beat) => beat.startsWith('action_gate:'))?.replace(/^action_gate:\s*/u, '') || null,
+    action_gate:
+      plan.pacing.beats.find((beat) => beat.startsWith('action_gate:'))?.replace(/^action_gate:\s*/u, '') || null,
     forbidden_public_exposure: [...plan.curriculum_spine.forbidden_public_exposure],
-    boundary: 'Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier internals are excluded.',
+    boundary:
+      'Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier internals are excluded.',
   };
 }
 
@@ -1085,7 +1101,10 @@ export function validateRhetoricalDramaticPlan(plan, source = '<inline>') {
 }
 
 export function rhetoricalDramaticPlanForModule(module, worldSpec, options = {}) {
-  if (!worldSpec) throw new Error(`module ${module?.id || '<unknown>'} cannot compile rhetorical_dramatic_plan without world_adaptation_spec`);
+  if (!worldSpec)
+    throw new Error(
+      `module ${module?.id || '<unknown>'} cannot compile rhetorical_dramatic_plan without world_adaptation_spec`,
+    );
   validateWorldAdaptationSpec(worldSpec, worldSpec.id || '<inline>');
   if (worldSpec.module_id !== module.id) {
     throw new Error(

@@ -10,14 +10,7 @@
  * It reads completed loop/episode artifacts only. No model calls, no rerolls.
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  statSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -76,12 +69,7 @@ function escapeRegExp(s) {
 export function globToRegExp(glob) {
   const parts = String(glob)
     .split('*')
-    .map((part) =>
-      part
-        .split('?')
-        .map(escapeRegExp)
-        .join('.'),
-    );
+    .map((part) => part.split('?').map(escapeRegExp).join('.'));
   return new RegExp(`^${parts.join('.*')}$`);
 }
 
@@ -90,9 +78,7 @@ function labelMatches(label, patterns) {
 }
 
 export function parseSelectorLabel(label) {
-  const match = String(label).match(
-    /^(?<root>.+)-(?<arm>baseline|hidden|visible|selective(?:-v\d+)?)\-r(?<run>\d+)$/,
-  );
+  const match = String(label).match(/^(?<root>.+)-(?<arm>baseline|hidden|visible|selective(?:-v\d+)?)-r(?<run>\d+)$/);
   if (!match) return null;
   return {
     label,
@@ -239,7 +225,9 @@ function firstFiredPredicateTurn(diagnosis, predicate) {
 
 function firstVoicedPredicateTurn(diagnosis, predicate) {
   if (!predicate) return null;
-  const node = (diagnosis?.learnerInference?.nodes || []).find((row) => Array.isArray(row.fact) && row.fact[0] === predicate);
+  const node = (diagnosis?.learnerInference?.nodes || []).find(
+    (row) => Array.isArray(row.fact) && row.fact[0] === predicate,
+  );
   return node?.firstVoiced ?? null;
 }
 
@@ -519,23 +507,15 @@ export function renderMarkdown(summary) {
   if (!Object.keys(summary.counts).length) lines.push('- no completed comparisons found');
   lines.push('', '## Comparisons', '');
   lines.push(
-    tableLine([
-      'group',
-      'run',
-      'world',
-      'classification',
-      'selected',
-      'baseline',
-      'hidden',
-      'visible',
-      'selective',
-    ]),
+    tableLine(['group', 'run', 'world', 'classification', 'selected', 'baseline', 'hidden', 'visible', 'selective']),
   );
   lines.push(tableLine(['---', '---:', '---', '---', '---', '---', '---', '---', '---']));
   for (const c of summary.comparisons) {
     const arm = (name) => c.arms[name];
     const compact = (row) => (row ? `${row.verdict} t${row.turns} D${row.finalD}` : '-');
-    const sel = c.selected ? `${c.selected.arm}/${c.selected.selected}${c.selected.gate ? ` (${c.selected.gate})` : ''}` : '-';
+    const sel = c.selected
+      ? `${c.selected.arm}/${c.selected.selected}${c.selected.gate ? ` (${c.selected.gate})` : ''}`
+      : '-';
     const selective =
       arm('selective-v4') || arm('selective-v3') || arm('selective-v2') || arm('selective-v1') || arm('selective');
     lines.push(
