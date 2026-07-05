@@ -9,25 +9,39 @@
  * Catches N-count drift, broken cross-references, orphaned run IDs, and
  * Table 2 structural issues.
  *
- * Usage: node scripts/validate-paper-manifest.js [--fix-status] [--deep]
+ * Usage: node scripts/validate-paper-manifest.js [--fix-status] [--deep] [--db <path>]
  *   --fix-status  Mark stalled "running" runs as completed
  *   --deep        Run deep paper-internal consistency checks (passes A–E)
+ *   --db <path>   Override evaluation DB path (otherwise EVAL_DB_PATH or canonical data home)
  */
 
 import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+const CLI_ARGS = process.argv.slice(2);
 
 const MANIFEST_PATH = join(ROOT, 'config', 'paper-manifest.json');
-const DB_PATH = join(ROOT, 'data', 'evaluations.db');
+const DB_PATH = resolveEvaluationDbPath(ROOT, getArgValue(CLI_ARGS, '--db'));
 const PAPER_PATH = join(ROOT, 'docs', 'research', 'paper-full.md');
 
-const fixStatus = process.argv.includes('--fix-status');
-const deepMode = process.argv.includes('--deep');
+const fixStatus = CLI_ARGS.includes('--fix-status');
+const deepMode = CLI_ARGS.includes('--deep');
+
+function getArgValue(argv, flag) {
+  for (let i = 0; i < argv.length; i++) {
+    const token = argv[i];
+    if (token === flag) {
+      return i + 1 < argv.length ? argv[i + 1] : null;
+    }
+    if (token.startsWith(`${flag}=`)) return token.slice(flag.length + 1);
+  }
+  return null;
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

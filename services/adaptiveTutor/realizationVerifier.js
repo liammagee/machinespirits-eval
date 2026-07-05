@@ -1,4 +1,4 @@
-export const REALIZATION_VERIFIER_VERSION = 'adaptation-realization-verifier.v1.1';
+export const REALIZATION_VERIFIER_VERSION = 'adaptation-realization-verifier.v1.2';
 
 const TEMPLATES = Object.freeze({
   observe_no_intervention:
@@ -124,6 +124,45 @@ function textForAction(actionType) {
   return TEMPLATES[actionType] || 'What is the next task-relevant move you can justify in your own words?';
 }
 
+const RESISTANCE_REQUEST_EVIDENCE_TEMPLATES = Object.freeze({
+  boredom:
+    'Make this live with one concrete test case: what evidence from that case justifies your next step in your own words?',
+  frustration:
+    'Make it one small try, not the whole sequence: what evidence justifies that step, and where does it still feel stuck?',
+  irrelevance:
+    'Connect the proof to the task: what would this step help decide, and what evidence justifies taking it?',
+  question_flood:
+    'Collapse the flood to one main question: what single question does your next step answer, and what evidence supports it?',
+  rote_parroting:
+    'Do not repeat the formula. Make a prediction in your own words, then give the evidence for why it should hold.',
+});
+
+const MISSING_EVIDENCE_FOLLOWUPS = Object.freeze({
+  'learner-authored rationale': 'give the reason in your own words and point to the evidence that justifies it',
+  'renewed content-bearing work': 'make one content-bearing move instead of only describing the work',
+  'learner-owned test case': 'use one concrete test case and say what it shows',
+  'renewed attempt after affective repair': 'try the step again after lowering the load',
+  'smaller learner-owned move': 'make one smaller move you can own',
+  'learner-owned relevance test': 'state how this step would matter for the task',
+  'task reorientation': 'restate what the task is asking this step to decide',
+  'collapsed question set': 'collapse the question flood to one main question',
+  'state-disambiguating response': 'name which uncertainty is still live',
+  'learner-authored prediction': 'make a prediction before repeating the formula',
+  'non-formulaic learner rationale': 'explain the reason without just repeating the formula words',
+  'learner-authored choice': 'choose one route and say why',
+});
+
+const MISSING_EVIDENCE_AXIS_FOLLOWUPS = Object.freeze({
+  proof_rationale: 'Give only the proof reason now: what evidence justifies the step in your own words?',
+  relevance: 'Answer only the relevance part now: what does this step help decide for the actual task?',
+  smaller_move: 'Make only the smallest executable move now: what one step can you try and own?',
+  prediction: 'Make only the prediction now: what do you expect will hold or break if the case changes?',
+  collapsed_question: 'Collapse the question set now: what single question does your next step answer?',
+  test_case: 'Use only one concrete test case now: what does that case show?',
+  learner_choice: 'Choose only one route now and say why that route is enough to test.',
+  evidence: 'Add only the missing evidence in your own words.',
+});
+
 function dominantHypothesis(stateBelief) {
   return stateBelief?.hypotheses?.[0]?.id || 'unknown';
 }
@@ -149,12 +188,87 @@ function contextualTextForAction(actionType, stateBelief, interventionLedger = [
   return variants[dominant] || variants.default || textForAction(actionType);
 }
 
+function resistanceSignalForAction(selectedAction, stateBelief) {
+  return (
+    selectedAction?.adaptation_policy_layer?.learner_resistance?.observed_signal ||
+    stateBelief?.policy_signals?.learner_resistance?.observed_signal ||
+    null
+  );
+}
+
+function requestEvidenceTextForAction(selectedAction, stateBelief, interventionLedger = [], config = {}) {
+  const dramaPrompt = characterDagDramaRequestEvidencePrompt(config);
+  if (dramaPrompt) return dramaPrompt;
+  const signal = resistanceSignalForAction(selectedAction, stateBelief);
+  if (signal && RESISTANCE_REQUEST_EVIDENCE_TEMPLATES[signal]) {
+    return RESISTANCE_REQUEST_EVIDENCE_TEMPLATES[signal];
+  }
+  return contextualTextForAction('request_evidence', stateBelief, interventionLedger, config);
+}
+
+function characterDagDramaRequestEvidencePrompt(config = {}) {
+  const hint = config.characterDagDramaRealization || config.character_dag_drama_realization;
+  if (!hint?.enabled) return null;
+  const signal = hint.resistance_signal || hint.resistanceSignal || '';
+  if (hint.transfer === true) {
+    return 'Use the earlier public work carefully: what carries over, what condition might fail here, and what check or evidence decides whether the old move is valid for this task?';
+  }
+  if (hint.requires_peripeteia === true || hint.requiresPeripeteia === true) {
+    return 'Do not stop at the old pattern check: what does the new check help decide for the actual task, and what evidence justifies replacing the old check?';
+  }
+  if (signal === 'rote_parroting') {
+    return 'Make a prediction in your own words: if the case changes, what do you expect will hold or break, and what evidence justifies that expectation?';
+  }
+  if (signal === 'question_flood') {
+    return 'Choose one question only: what single question does your next step answer, and what evidence justifies using that question now?';
+  }
+  if (signal === 'boredom') {
+    return 'Use one concrete case: what does the case show, and why is that evidence for the next step rather than just worksheet filling?';
+  }
+  return null;
+}
+
 export function realizeTutorUtterance({ selectedAction, stateBelief, interventionLedger = [], config = {} } = {}) {
-  const text = contextualTextForAction(selectedAction?.action_type, stateBelief, interventionLedger, config);
+  const text =
+    selectedAction?.action_type === 'request_evidence'
+      ? requestEvidenceTextForAction(selectedAction, stateBelief, interventionLedger, config)
+      : contextualTextForAction(selectedAction?.action_type, stateBelief, interventionLedger, config);
   return {
     version: REALIZATION_VERIFIER_VERSION,
     action_type: selectedAction?.action_type || null,
     text,
+  };
+}
+
+function typedStagedFollowupEnabled(config = {}) {
+  return config.typedStagedFollowup === true || config.typed_staged_followup === true;
+}
+
+export function realizeStagedFollowup({ pendingIntervention, config = {} } = {}) {
+  const missing = pendingIntervention?.staged_closure?.missing_required_evidence || [];
+  const axes = pendingIntervention?.staged_closure?.missing_evidence_axes || [];
+  const axisPrompt = typedStagedFollowupEnabled(config)
+    ? axes.map((axis) => MISSING_EVIDENCE_AXIS_FOLLOWUPS[axis]).find(Boolean)
+    : null;
+  if (axisPrompt) {
+    return {
+      version: REALIZATION_VERIFIER_VERSION,
+      action_type: pendingIntervention?.action_type || null,
+      text: axisPrompt,
+      missing_required_evidence: missing,
+      missing_evidence_axes: axes,
+    };
+  }
+  const targets = missing.map((label) => MISSING_EVIDENCE_FOLLOWUPS[label] || label).slice(0, 2);
+  const prompt = targets.length
+    ? `One part is still missing: ${targets.join(' and ')}. What is your answer to that missing piece?`
+    : 'One part is still missing. What evidence can you add in your own words?';
+  return {
+    version: REALIZATION_VERIFIER_VERSION,
+    action_type: pendingIntervention?.action_type || null,
+    text: prompt,
+    missing_required_evidence: missing,
+    missing_evidence_axes: axes,
   };
 }
 

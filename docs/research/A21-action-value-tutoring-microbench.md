@@ -1,6 +1,6 @@
 # A21 Action-Value Tutoring Microbench: Detailed Implementation Plan
 
-**Status:** proposed next active arc
+**Status:** proposed next active arc; canonical repository copy after docs-board cleanup
 **Date:** 2026-06-16
 **Predecessor:** A20 Conduct-Policy Compiler
 **Primary baseline:** `hidden + proofDebt`
@@ -457,7 +457,7 @@ Prevent A21 from becoming another A20 promotion patch.
 
 ### Codex tasks
 
-1. Create `docs/research/A21-action-value-tutoring-microbench.md` from this plan.
+1. Keep `docs/research/A21-action-value-tutoring-microbench.md` as the canonical repository copy.
 2. Add a short status note to `ADAPTIVE-TUTOR-ACTIVE-PLAN.md`:
    - A20 is frozen as conduct-policy infrastructure.
    - Hethel Phase 5g/6 is a valid negative against conduct/progress/entitlement overlay promotion.
@@ -1097,8 +1097,8 @@ A clean negative is a successful A21 outcome if it explains why hidden+proofDebt
 
 ### Work packet A — planning and freeze
 
-- [ ] Add `docs/research/A21-action-value-tutoring-microbench.md`.
-- [ ] Add A21 status note to `ADAPTIVE-TUTOR-ACTIVE-PLAN.md`.
+- [x] Add `docs/research/A21-action-value-tutoring-microbench.md`.
+- [x] Add A21 status note to `ADAPTIVE-TUTOR-ACTIVE-PLAN.md`.
 - [ ] Confirm selector-v4 does not imply conduct enforcement by default.
 - [ ] Confirm hidden+proofDebt remains the baseline.
 

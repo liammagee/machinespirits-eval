@@ -1,5 +1,14 @@
 export { factKey, matchPattern, closure, entails, proofTree } from './chainer.js';
 export { loadWorld, validateWorld, plotLint, worldClosure } from './world.js';
+export {
+  normalizeLemmaConfig,
+  buildLemmaDag,
+  computeLemmaState,
+  supportRemaining,
+  classifyRelease,
+  renderTutorLemmaLines,
+  renderLearnerLemmaLines,
+} from './lemmaLayer.js';
 export { derivationDistance, detectStall } from './slope.js';
 export { simulateReleaseTempo, releaseSolvency, safeReleaseTurns, pacingGuardDecision } from './pacing.js';
 export { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
@@ -12,6 +21,117 @@ export {
   releaseSafeAtCurrentTurn,
   visibleConflictDiagnosticBudget,
 } from './learnerEntitlement.js';
+export {
+  ADAPTATION_SCOPES,
+  PROOF_PRIVATE_KEYS,
+  PUBLIC_EVIDENCE_SCHEMA,
+  PUBLIC_EVIDENCE_STANCES,
+  auditPublicOnlyInput,
+  cleanPublicText,
+  derivePublicLearnerEvidence,
+  publicDialogueLines,
+} from './publicEvidence.js';
+export {
+  OPPORTUNITY_COST_AUDIT_SCHEMA,
+  OPPORTUNITY_COST_SCHEMA,
+  auditOpportunityCost,
+  deriveOpportunityCostBudget,
+  isProofNeutralTutorMove,
+  nextOpportunityCostBudget,
+  opportunityCostContext,
+} from './opportunityCost.js';
+export {
+  DISCURSIVE_ADAPTATION_SCHEMA,
+  DISCURSIVE_MODES,
+  deriveDiscursiveAdaptationState,
+} from './discursiveAdaptation.js';
+export {
+  BLOCK_TYPES,
+  LEARNER_IF_LOST_POLICIES,
+  LEDGER_BLOCK_SCHEMA,
+  LEDGER_HISTORY_SCHEMA,
+  LEDGER_ROW_SCHEMA,
+  LEDGER_SCOPES,
+  REGISTER_PALETTE_VALUES,
+  RELEASE_POSTURES,
+  STRATEGY_LEDGER_SCHEMA,
+  STRATEGY_REVIEW_DECISIONS,
+  auditLearnerSceneIntent,
+  auditTutorSceneCommitment,
+  blockTypeForExchange,
+  buildMechanismHistoryEntry,
+  checkBlockClearance,
+  escalateDidacticMode,
+  ledgerRow,
+  normalizeLearnerActCarry,
+  normalizeLearnerSceneIntent,
+  normalizeSceneCommitment,
+  normalizeSceneCommitmentV2,
+  normalizeStrategyLedgerConfig,
+  normalizeStrategyReview,
+  openBlock,
+  sceneStanceFidelity,
+  updateBlockLedger,
+} from './strategyLedger.js';
+export {
+  ADAPTATION_ARBITER_SCHEMA,
+  ADAPTATION_TRACE_SCHEMA,
+  arbitrateAdaptation,
+  normalizeProofControlDecision,
+} from './adaptationArbiter.js';
+export {
+  UPTAKE_BENCHMARK_CASES,
+  UPTAKE_BENCHMARK_SCHEMA,
+  UPTAKE_NEGOTIATION_SCHEMA,
+  UPTAKE_STATUSES,
+  deriveUptakeNegotiationState,
+  evaluateUptakeBenchmark,
+  renderUptakeBenchmarkMarkdown,
+} from './uptakeNegotiation.js';
+export {
+  SELF_REGULATION_BENCHMARK_CASES,
+  SELF_REGULATION_BENCHMARK_SCHEMA,
+  SELF_REGULATION_SCHEMA,
+  deriveSelfRegulationState,
+  evaluateSelfRegulationBenchmark,
+  renderSelfRegulationBenchmarkMarkdown,
+} from './selfRegulation.js';
+export {
+  NEXT_TASK_ACTIONS,
+  TASK_LOOP_BENCHMARK_CASES,
+  TASK_LOOP_BENCHMARK_SCHEMA,
+  TASK_MASTERY_SCHEMA,
+  TASK_MASTERY_SIGNAL_TYPES,
+  assertTaskRecommendation,
+  deriveTaskMasteryState,
+  evaluateTaskLoopBenchmark,
+  fixedProgressionRecommendation,
+  renderTaskLoopBenchmarkMarkdown,
+} from './taskMastery.js';
+export {
+  TASK_LOOP_HELDOUT_GATE_SCHEMA,
+  evaluateTaskLoopHeldoutArtifact,
+  evaluateTaskLoopHeldoutGate,
+  renderTaskLoopHeldoutGateMarkdown,
+} from './taskLoopHeldoutGate.js';
+export {
+  HUMAN_HANDOFF_PROBE_CASES,
+  HUMAN_HANDOFF_PROBE_SCHEMA,
+  HUMAN_HANDOFF_RECOMMENDATIONS,
+  HUMAN_HANDOFF_SCHEMA,
+  assertHumanHandoffRecommendation,
+  deriveHumanHandoffState,
+  evaluateHumanHandoffProbe,
+  renderHumanHandoffProbeMarkdown,
+} from './humanHandoff.js';
+export {
+  QUALITY_PAIR_CASES,
+  QUALITY_PAIR_REPORT_SCHEMA,
+  QUALITY_PAIR_SCHEMA,
+  evaluateQualityPair,
+  evaluateQualityPairs,
+  renderQualityPairMarkdown,
+} from './qualityPairs.js';
 export {
   auditDiscursiveCalibrationPublicInput,
   deriveDiscursiveCalibrationState,
@@ -203,4 +323,5 @@ export {
   learnerBindingAtTurn,
   driftedDynamics,
   learnerVoiceForWorld,
+  buildLearnerCharacterArcView,
 } from './characterDesire.js';

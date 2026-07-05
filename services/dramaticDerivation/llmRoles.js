@@ -37,7 +37,18 @@ import { deriveCastState, projectCastStateForRole } from './castLayer.js';
 import { deriveLearnerDriftState, learnerDriftLines } from './learnerDrift.js';
 import { deriveLearnerTransformationState, learnerTransformationLines } from './learnerTransformation.js';
 import { deriveDiscursiveCalibrationState } from './discursiveCalibration.js';
-import { deriveDidacticModeState } from './didacticMode.js';
+import { deriveDidacticModeState, DIDACTIC_MODE_FAMILIES } from './didacticMode.js';
+import {
+  auditLearnerSceneIntent,
+  auditTutorSceneCommitment,
+  escalateDidacticMode,
+  normalizeLearnerActCarry,
+  normalizeLearnerSceneIntent,
+  normalizeSceneCommitment,
+  normalizeSceneCommitmentV2,
+  normalizeStrategyReview,
+} from './strategyLedger.js';
+import { getEngagementRegisterDefinition } from '../engagementRegisterRegistry.js';
 import { deriveEntitlementState, entitlementNeedsConduct } from './learnerEntitlement.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
@@ -364,6 +375,24 @@ function parseJsonLoose(text) {
 }
 
 /** One call + one repair attempt, with role/turn context on failure. */
+/**
+ * Tolerant frontier-claim matcher (LEMMA instrument): exact label, then
+ * normalized label, then UNIQUE predicate-name match. Returns the frontier
+ * entry or null. "default" is handled by callers (explicit delegation).
+ */
+function matchFrontierClaim(frontier, claimed) {
+  if (!claimed) return null;
+  const norm = (x) => x.toLowerCase().replace(/\s+/g, '');
+  const predOf = (x) => x.split('(')[0];
+  let match =
+    frontier.find((f) => f.label === claimed) || frontier.find((f) => norm(f.label) === norm(claimed)) || null;
+  if (!match) {
+    const byPred = frontier.filter((f) => norm(predOf(f.label)) === norm(predOf(claimed)));
+    if (byPred.length === 1) match = byPred[0];
+  }
+  return match;
+}
+
 async function callJson(client, role, turn, { system, user, meta }) {
   const first = await client.call(role, { system, user, meta });
   try {
@@ -1055,6 +1084,10 @@ function tutorSystem(
     ownershipProof = false,
     ownershipTransferGate = false,
     publicRegister = 'default',
+    strategyLedger = false,
+    strategyLedgerV2 = false,
+    strategyLedgerPlanMode = false,
+    lemmaLayer = false,
   } = {},
 ) {
   const recognition = clampDial(dials.recognition);
@@ -1381,11 +1414,79 @@ function tutorSystem(
       throughline
         ? ', "throughline": {"arc": ["<waypoint>", ...], "hold_to_end": "...", "risk": "...", "salvage": "..."}, "throughline_reason": "<one line when revising voluntarily, else null>"'
         : ''
+    }${
+      strategyLedger
+        ? `, "scene_commitment": {"register": "<from the offered palette>", "didactic_default": "<mode family>", "release_posture": "eager" | "hold" | "consolidate", "recognition_budget": <0-4>, "rationale": "<one line>", "exit_condition": "<what the learner does when this scene has worked>"${
+            strategyLedgerV2
+              ? ', "stance": "<from the offered stance palette, or null>", "release_intent": ["<exhibit id you intend to play this scene>", ...] (release-authority runs only; omit otherwise)'
+              : ''
+          }}`
+        : ''
+    }${
+      strategyLedgerV2
+        ? ', "strategy_review": {"decision": "persist" | "adjust" | "switch", "reason": "<one line>"} (scene-opening turns with a history table only; omit otherwise), "departure": "<one line when this turn deliberately departs from your scene commitment, else null>"'
+        : ''
+    }${
+      strategyLedgerPlanMode
+        ? ', "reorientation": "<your revised WORKING ORIENTATION (2-4 sentences) — scene-opening turns after a stock-take only; null keeps the current one>"'
+        : ''
+    }${
+      lemmaLayer && lemmaLayer.bind
+        ? ', "active_lemma": "<scene-opening turns: one lemma label from the FRONTIER CHOICE list, else null>", "lemma_departure": "<one line ONLY when playing a proof exhibit outside the active lemma, else null>", "strategy_defense": "<one line ONLY when the harness refuses your repeated choice and you keep it, else null>"'
+        : ''
     }}`,
+    ...(lemmaLayer
+      ? [
+          '',
+          '# The lemma map (the proof one level up)',
+          '',
+          "The harness maintains a LEMMA MAP over the inquiry's intermediate conclusions,",
+          "computed each turn from the learner's own grounded facts — it moves only when",
+          'their board does, and under decay it can move backward. It arrives in your',
+          'turn context.',
+          ...(lemmaLayer.bind
+            ? [
+                'At each scene opening you pick the scene\'s ACTIVE lemma in "active_lemma"',
+                'from the offered FRONTIER. Your voluntary releases of proof exhibits are',
+                "bound to the active lemma's unplayed support; playing outside it requires a",
+                'one-line "lemma_departure" (untagged departures are held by the harness).',
+                'Colour exhibits that feed no lemma are unrestricted; harness-forced plays',
+                'override the binding. The map never names, and never changes, WHAT is true —',
+                'only the order in which you stage it.',
+              ]
+            : ['It is information about where the proof stands — nothing about it binds you.']),
+        ]
+      : []),
+    ...(strategyLedgerPlanMode
+      ? [
+          '(Plan mode: between scenes your own second voice takes stock — course, not conformance. Its note arrives at',
+          'each scene opening; answer it in "reorientation" when a correction is demanded or you yourself judge the',
+          'course has failed. The orientation is YOURS: no one grades you against it, and it never names, gates, or',
+          'reorders a release, a repair, a proof target, or the concealed answer.)',
+        ]
+      : []),
     ...(plot ? ['("plot" belongs to act-opening turns ONLY — the harness marks them; omit the key mid-act.)'] : []),
     ...(throughline
       ? [
           '("throughline" belongs to the FIRST turn and to act-opening revisions — the harness marks when it is due; omit the key otherwise.)',
+        ]
+      : []),
+    ...(strategyLedger
+      ? [
+          '("scene_commitment" belongs to scene-opening turns ONLY — the harness marks them; omit the key mid-scene.',
+          'The commitment is CONDUCT strategy for the scene — register, explanatory default, pacing posture, recognition budget.',
+          'It never names, gates, or reorders a release, a repair, a proof target, or the concealed answer;',
+          'the release calendar and proof-control obligations outrank it everywhere they speak.)',
+        ]
+      : []),
+    ...(strategyLedgerV2
+      ? [
+          '(v2 trialling: your scene strategy is an EXPERIMENT. The history table shows what you tried and how it',
+          'landed — review it at each opening and persist, adjust, or switch with a reason. Your commitment GUIDES',
+          "rather than binds the turn: when the learner's behavior warrants acting off-commitment, do it and declare",
+          'it in "departure" — declared departures are adjudicated as justified deviation, undeclared ones as drift.',
+          'An assigned stance counts only when its cues are VISIBLE in your lines; warm challenge in costume is',
+          'treatment noncompliance, not evidence. A release intent never widens a pacing window — guards rule.)',
         ]
       : []),
   ].join('\n');
@@ -2017,6 +2118,36 @@ function conductRuntimeLog(args) {
  * learner's board — and its verdict is read by the ego alone: intra-mind,
  * no new evidence channel onto the stage.
  */
+/**
+ * Plan mode (strategy-ledger planMode): the between-scene STOCK-TAKE charter.
+ * A second voice with a DIAGNOSTIC question — "is the current course still
+ * the right one?" — not a conformance grader (there is no plan to grade) and
+ * not the turn-watch (no figure/stall jurisdiction). Sees public material
+ * only; its correction, when it demands one, is answered by the ego as a
+ * revised working orientation. It never touches evidence, releases, repairs,
+ * proof targets, or the concealed answer.
+ */
+function stockTakeSystem(world) {
+  return [
+    "You are the tutor's OWN SECOND VOICE, taking stock between scenes of a staged inquiry.",
+    `The public question of the inquiry: ${world.question}`,
+    '',
+    'Your question is COURSE, not conformance: given how the last scene actually went,',
+    "is the tutor's current way of working still the right one? You are adversarial",
+    'toward drift and comfort: a scene that closed badly demands a named correction;',
+    'a course that is working should be said to be working in one line.',
+    '',
+    'You speak only to the tutor, never to the stage. You never add, remove, or',
+    'reweight evidence; never name exhibits, schedules, or the concealed answer;',
+    'never grade the tutor against any plan. Diagnose the SITUATION and, when it',
+    'is warranted, demand a correction of course.',
+    '',
+    'Reply with ONLY a JSON object:',
+    '{"assessment": "<one or two sentences: what the last scene\'s record actually shows>",',
+    ' "correction": "<the course correction you demand, one or two sentences — or null if the course holds>"}',
+  ].join('\n');
+}
+
 function plotAuditSystem(world, { throughline = false } = {}) {
   return [
     "You are the tutor's SUPEREGO in a staged derivation drama, sitting as the",
@@ -2095,10 +2226,27 @@ export function makeLlmTutor(
     ownershipTarget = null,
     ownershipProof = false,
     ownershipTransferGate = false,
+    strategyLedger = false,
+    strategyLedgerV2 = false,
+    strategyLedgerPlanMode = false,
+    lemmaLayer = false,
   } = {},
 ) {
   if (!script || !script.trim()) {
     throw new Error('derivation.llmRoles: makeLlmTutor requires a role-script (the iteration target)');
+  }
+  if (strategyLedgerV2 && !strategyLedger) {
+    throw new Error('derivation.llmRoles: strategyLedgerV2 requires strategyLedger (v2 rides the v1 commitment loop)');
+  }
+  if (strategyLedgerPlanMode && !strategyLedger) {
+    throw new Error(
+      'derivation.llmRoles: strategyLedgerPlanMode requires strategyLedger (the stock-take reads its bookkeeping)',
+    );
+  }
+  if (strategyLedgerPlanMode && strategyLedgerV2) {
+    throw new Error(
+      'derivation.llmRoles: strategyLedgerPlanMode and strategyLedgerV2 are mutually exclusive (one apparatus per arm)',
+    );
   }
   if (stallWatch && !superego) {
     throw new Error(
@@ -2245,6 +2393,10 @@ export function makeLlmTutor(
     ownershipProof,
     ownershipTransferGate,
     publicRegister,
+    strategyLedger,
+    strategyLedgerV2,
+    strategyLedgerPlanMode,
+    lemmaLayer,
   });
   const superegoSystem = superego
     ? tutorSuperegoSystem(world, {
@@ -2291,6 +2443,12 @@ export function makeLlmTutor(
   // the next opening's revision demand.
   const throughlineState = throughline ? { current: null, committedTurn: null, revisedTurns: [], lastArc: null } : null;
   const castRuntimeState = castLayer ? { activeReinvention: null, sceneIndex: null, actIndex: null } : null;
+  // Strategy-ledger bridge state (the plot pattern one scope down): the
+  // scene commitment lives here between its opening and its audit at the
+  // next opening; the engine records rows and applies the register.
+  const ledgerBridgeState = strategyLedger
+    ? { commitment: null, sceneIndex: null, orientation: null, lastStocktakeScene: null }
+    : null;
   // Plot shape gate: a plot is real only when at least one field is
   // non-empty — a malformed or empty plot drops to null, which keeps the
   // engine's recording gate closed for that act (absence is visible to the
@@ -2598,7 +2756,13 @@ export function makeLlmTutor(
                 pacing.current?.endTurn || '?'
               }); safe turns {${pacing.safeTurns.map((t) => `t${t}`).join(', ') || 'none'}}`
           : '';
-      return `- ${e.premise}: ${status}${pacingStatus}`;
+      const lemmaStatus =
+        view.lemmaLayer?.config?.bind && view.lemmaLayer.proofPremiseIds.includes(e.premise)
+          ? view.lemmaLayer.activeKey && view.lemmaLayer.activeSupportRemaining.includes(e.premise)
+            ? ' — [active-lemma support]'
+            : ' — [OUTSIDE the active lemma: playing it needs "lemma_departure"]'
+          : '';
+      return `- ${e.premise}: ${status}${pacingStatus}${lemmaStatus}`;
     });
     const task = releaseAuthority
       ? [
@@ -2701,7 +2865,99 @@ export function makeLlmTutor(
       (discursiveProofStep?.moveFamily === 'release_next_evidence' ? 'the next exhibit entering the scene' : null) ||
       (discursiveProofStep?.moveFamily === 'invite_final_assertion' ? "the learner's final public answer" : null) ||
       (view.scene?.goal ? 'the current scene object' : null);
-    const didacticModeState = didacticMode
+    // --- Strategy-ledger scene lifecycle (the plot lifecycle one scope
+    // down): on a scene-opening turn the bridge FIRST audits the commitment
+    // for the scene just sealed (deterministically — the harness can check
+    // everything a commitment binds), THEN demands a fresh one; mid-scene
+    // turns read the standing commitment back. The final scene's commitment
+    // goes unaudited at run end — the missing row is the ledger of that
+    // lapse. ---
+    const ledgerInfo = strategyLedger ? view.strategyLedger || null : null;
+    const trialling = Boolean(strategyLedgerV2 && ledgerInfo?.config?.trialling);
+    const planMode = Boolean(strategyLedgerPlanMode && ledgerInfo?.config?.planMode);
+    const sceneOpening = Boolean(strategyLedger && view.scene && view.scene.startTurn === view.turn);
+    let sceneCommitmentAudit = null;
+    if (
+      strategyLedger &&
+      !planMode &&
+      sceneOpening &&
+      ledgerBridgeState.commitment &&
+      ledgerInfo?.lastClosedScene &&
+      ledgerBridgeState.sceneIndex === ledgerInfo.lastClosedScene.index
+    ) {
+      const audit = auditTutorSceneCommitment(
+        ledgerBridgeState.commitment,
+        {
+          ...ledgerInfo.lastClosedScene,
+          didacticModes: didacticMode ? ledgerInfo.lastClosedScene.didacticModes : null,
+        },
+        // v2 adjudication inputs: declared departures license drift down to
+        // justified_deviation (stance exempt); the engine's fidelity gate
+        // verdict feeds the stance clause.
+        trialling
+          ? {
+              departures: ledgerInfo.lastClosedScene.departures || 0,
+              fidelity: ledgerInfo.lastClosedScene.stanceFidelity || null,
+            }
+          : {},
+      );
+      if (audit) sceneCommitmentAudit = { sceneIndex: ledgerInfo.lastClosedScene.index, ...audit };
+      ledgerBridgeState.commitment = null;
+      ledgerBridgeState.sceneIndex = null;
+    }
+    // --- Plan mode: the between-scene STOCK-TAKE (dialogic, off the stage
+    // clock — one extra superego-side call per boundary, no stage turns).
+    // The second voice diagnoses the sealed scene; the ego answers in this
+    // same opening turn's "reorientation", which REPLACES its working
+    // orientation. No commitment, no conformance audit, no drift grading.
+    let stocktakeNote = null;
+    if (
+      planMode &&
+      sceneOpening &&
+      ledgerInfo?.lastClosedScene &&
+      ledgerBridgeState.lastStocktakeScene !== ledgerInfo.lastClosedScene.index
+    ) {
+      ledgerBridgeState.lastStocktakeScene = ledgerInfo.lastClosedScene.index;
+      const sc = ledgerInfo.lastClosedScene;
+      const clip = (v, n = 300) =>
+        typeof v === 'string' && v.trim() ? v.replace(/\s+/gu, ' ').trim().slice(0, n) : null;
+      const stockUser = [
+        `Scene ${sc.index} has closed (turns ${sc.startTurn}-${sc.endTurn}): ${sc.status} (${sc.closeReason}).`,
+        `Its record: ${sc.exchanges.map((e) => e.type).join(', ') || 'no exchanges'};`,
+        `${sc.counts?.phatic ?? 0} phatic, ${(sc.exchanges || []).filter((e) => ['confusion', 'repair_request', 'resistance'].includes(e.type)).length} pressing, last learner line: "${sc.lastLearnerText || ''}"`,
+        ledgerInfo.budget
+          ? `Proof-neutral counters: tutor ${ledgerInfo.budget.currentProofNeutralTutorTurns}, learner ${ledgerInfo.budget.currentProofNeutralLearnerTurns}.`
+          : null,
+        '',
+        'The dialogue so far (public lines only):',
+        renderTranscriptTail(view.transcript, 14),
+        '',
+        ledgerBridgeState.orientation
+          ? `The tutor's current working orientation: "${ledgerBridgeState.orientation}"`
+          : 'The tutor has no revised orientation yet; it is working from its base script alone.',
+        '',
+        'Take stock. Reply with ONLY the JSON object.',
+      ]
+        .filter((line) => line !== null)
+        .join('\n');
+      const failedScene = !['progressed', 'clarified'].includes(sc.status);
+      const stockOut = await callJson(client, 'tutor_superego', view.turn, {
+        system: stockTakeSystem(world),
+        user: stockUser,
+        meta: {
+          stocktakeHint: {
+            assessment: `scene ${sc.index} closed ${sc.status}`,
+            correction: failedScene
+              ? 'change course: slow down, re-anchor on what the learner still holds, and rebuild from there'
+              : null,
+          },
+        },
+      });
+      const assessment = clip(stockOut.assessment);
+      const correction = clip(stockOut.correction);
+      if (assessment || correction) stocktakeNote = { sceneIndex: sc.index, assessment, correction };
+    }
+    const didacticModeStateBase = didacticMode
       ? deriveDidacticModeState({
           currentObject: didacticCurrentObject,
           transcript: publicTranscriptForCalibration,
@@ -2733,6 +2989,39 @@ export function makeLlmTutor(
             : null,
         })
       : null;
+    // Phase-0d hold / Phase-1c escalation (strategy ledger): an open block
+    // holds its adopted mode steady — the per-turn classifier proposes, the
+    // block disposes; a mode that failed its exit condition last block is
+    // not re-selectable and remaps one step up the intervention ladder.
+    let didacticModeState = didacticModeStateBase;
+    let heldDidacticNote = null;
+    if (strategyLedger && didacticModeState) {
+      const heldMode = ledgerInfo?.block?.heldMode || null;
+      if (heldMode && didacticModeState.recommendedMode !== heldMode) {
+        didacticModeState = {
+          ...didacticModeState,
+          recommendedMode: heldMode,
+          ...(ledgerInfo.block.exitCondition ? { exitCondition: ledgerInfo.block.exitCondition } : {}),
+          evidence: [...(didacticModeState.evidence || []).slice(0, 3), 'mode held for the open block'],
+        };
+        heldDidacticNote = `DIDACTIC HOLD: the open block holds mode ${heldMode} until its exit condition clears or its budget runs out.`;
+      } else if (
+        ledgerInfo?.blockedModes?.length &&
+        ledgerInfo.blockedModes.includes(didacticModeState.recommendedMode)
+      ) {
+        const failedMode = didacticModeState.recommendedMode;
+        const escalated = escalateDidacticMode(failedMode);
+        didacticModeState = {
+          ...didacticModeState,
+          recommendedMode: escalated,
+          evidence: [
+            ...(didacticModeState.evidence || []).slice(0, 3),
+            `${failedMode} failed its exit condition last block; escalated`,
+          ],
+        };
+        heldDidacticNote = `DIDACTIC ESCALATION: ${failedMode} failed its exit condition last block — use ${escalated} instead (do not repeat ${failedMode} without new grounds).`;
+      }
+    }
     const learnerTransformationState = ownershipProof
       ? deriveLearnerTransformationState({
           target: ownershipTarget || world.ownershipTarget || null,
@@ -2956,6 +3245,159 @@ export function makeLlmTutor(
               'Play under it; the audit at the act close distinguishes justified deviation from drift.',
             ]
           : [];
+    // Strategy-ledger prompt block (the plot section one scope down): the
+    // audit of the sealed scene binds at the opening, the standing commitment
+    // reads back mid-scene, and hold/escalation/budget notes ride along.
+    const strategyLedgerSection = (() => {
+      if (!strategyLedger) return [];
+      const lines = [];
+      if (sceneCommitmentAudit) {
+        lines.push(
+          '',
+          `THE AUDIT of your scene ${sceneCommitmentAudit.sceneIndex} commitment (deterministic, clause by clause):`,
+          ...sceneCommitmentAudit.clauses.map(
+            (c) => `- [${c.verdict}] ${c.clause}${c.evidence ? ` — ${c.evidence}` : ''}`,
+          ),
+          `Summary: ${sceneCommitmentAudit.summary}.`,
+          'THE AUDIT BINDS: the commitment you now make must answer every drifted clause — carry it forward, revise it, or change course with a stated reason.',
+        );
+      }
+      // v2: the mechanism history table renders before the fresh demand —
+      // the review decision must answer the record, not intuition.
+      if (trialling && sceneOpening && ledgerInfo?.history?.length) {
+        lines.push('', 'YOUR MECHANISM HISTORY (what you tried, whether it was really tried, how it landed):');
+        for (const h of ledgerInfo.history) {
+          const strat = [
+            h.strategy.stance ? `stance ${h.strategy.stance}` : null,
+            h.strategy.didacticDefault ? `didactic ${h.strategy.didacticDefault}` : null,
+            h.strategy.releasePosture ? `releases ${h.strategy.releasePosture}` : null,
+            h.strategy.releaseIntent ? `intended ${h.strategy.releaseIntent.join('+')}` : null,
+          ]
+            .filter(Boolean)
+            .join(', ');
+          const outcome = [
+            h.fidelity ? `fidelity ${h.fidelity.label}` : null,
+            h.outcome.exitConditionCleared === null
+              ? null
+              : `exit ${h.outcome.exitConditionCleared ? 'cleared' : 'NOT cleared'}`,
+            h.outcome.pressingExchanges ? `${h.outcome.pressingExchanges} pressing exchange(s)` : null,
+            h.outcome.intendedPlayed !== null
+              ? `${h.outcome.intendedPlayed}/${h.strategy.releaseIntent?.length ?? 0} intended played`
+              : null,
+            h.audit ? h.audit.summary : null,
+            h.review ? `you chose: ${h.review.decision}` : null,
+          ]
+            .filter(Boolean)
+            .join('; ');
+          lines.push(`- scene ${h.sceneIndex} [${strat || 'no strategy'}] -> ${outcome || 'no outcome recorded'}`);
+        }
+        lines.push(
+          'REVIEW THE RECORD and decide in "strategy_review": persist (same strategy), adjust (same mechanism, new settings), or switch (a different mechanism) — with a one-line reason.',
+          'Outcomes only count for a mechanism that was actually deployed (fidelity: faithful); warm-in-costume trials teach you nothing.',
+        );
+      }
+      if (planMode) {
+        if (stocktakeNote) {
+          lines.push(
+            '',
+            `STOCK-TAKE on scene ${stocktakeNote.sceneIndex} (your own second voice, between scenes — course, not conformance):`,
+            ...(stocktakeNote.assessment ? [`- assessment: ${stocktakeNote.assessment}`] : []),
+            stocktakeNote.correction
+              ? `- CORRECTION DEMANDED: ${stocktakeNote.correction}`
+              : '- no correction demanded — the course holds.',
+            'Answer it in "reorientation": your revised WORKING ORIENTATION (2-4 sentences) when a correction is demanded or you yourself judge the course has failed; null keeps your current orientation.',
+          );
+        }
+        if (ledgerBridgeState?.orientation) {
+          lines.push(
+            '',
+            'YOUR WORKING ORIENTATION (yours alone; revised at your last stock-take — no one grades you against it):',
+            ledgerBridgeState.orientation,
+          );
+        }
+      } else if (sceneOpening && view.scene) {
+        const palette = ledgerInfo?.config?.registerPalette?.length
+          ? ledgerInfo.config.registerPalette
+          : [activeRegisterName];
+        lines.push(
+          '',
+          `THIS TURN OPENS SCENE ${view.scene.index} — COMMIT YOUR SCENE STRATEGY in "scene_commitment", alongside your dialogue:`,
+          `- register: choose from [${palette.join(', ')}] — the harness holds your choice for the whole scene.`,
+          `- didactic_default: your explanatory mode of first resort this scene (${DIDACTIC_MODE_FAMILIES.join(', ')}).`,
+          '- release_posture: eager (play exhibits on their cue), hold (never ahead of schedule), consolidate (at most one release this scene).',
+          '- recognition_budget: how many phatic/uptake exchanges this scene can afford (0-4).',
+          '- exit_condition: what the learner will visibly do when this scene has worked.',
+          'Conduct only: the release calendar and proof-control obligations outrank this everywhere they speak.',
+        );
+        if (trialling && ledgerInfo?.config?.stancePalette?.length) {
+          const stanceLines = ledgerInfo.config.stancePalette.map((name) => {
+            const def = getEngagementRegisterDefinition(name) || {};
+            const cues = Array.isArray(def.stance_fidelity_cues) ? def.stance_fidelity_cues.slice(0, 4) : [];
+            return `  · ${name} (${def.valence || 'unknown'} valence)${
+              cues.length ? ` — cues that MUST be visible in your lines: ${cues.map((c) => `"${c}"`).join(', ')}` : ''
+            }`;
+          });
+          lines.push(
+            '- stance: choose your interpersonal stance for this scene from the palette (or null to stay plain):',
+            ...stanceLines,
+            '  A stance counts only when its cues are visible — an assigned stance without visible cues is treatment noncompliance, not style.',
+          );
+        }
+        if (trialling && releaseAuthority && ledgerInfo?.config?.releaseIntent) {
+          lines.push(
+            '- release_intent: name the exhibit ids (up to 4, from your window) you INTEND to play this scene. Advisory to each turn; the pacing guard and hold limits rule as ever.',
+          );
+        }
+      } else if (ledgerBridgeState?.commitment) {
+        const c = ledgerBridgeState.commitment;
+        lines.push(
+          '',
+          `YOUR SCENE COMMITMENT (scene ${ledgerBridgeState.sceneIndex}, standing since its opening):`,
+          ...(c.register ? [`- register: ${c.register} (held by the harness)`] : []),
+          ...(c.stance
+            ? (() => {
+                const def = getEngagementRegisterDefinition(c.stance) || {};
+                const cues = Array.isArray(def.stance_fidelity_cues) ? def.stance_fidelity_cues.slice(0, 4) : [];
+                return [
+                  `- stance: ${c.stance}${cues.length ? ` — keep its cues visible: ${cues.map((x) => `"${x}"`).join(', ')}` : ''}`,
+                ];
+              })()
+            : []),
+          ...(c.didacticDefault ? [`- didactic default: ${c.didacticDefault}`] : []),
+          ...(c.releasePosture ? [`- release posture: ${c.releasePosture}`] : []),
+          ...(c.releaseIntent ? [`- release intent: ${c.releaseIntent.join(', ')} (guards rule)`] : []),
+          ...(c.recognitionBudget !== null && c.recognitionBudget !== undefined
+            ? [`- recognition budget: ${c.recognitionBudget}`]
+            : []),
+          ...(c.exitCondition ? [`- exit: ${c.exitCondition}`] : []),
+          trialling
+            ? 'It GUIDES rather than binds: depart when the learner warrants it and declare it in "departure" — declared departures adjudicate as justified deviation, undeclared drift as drift.'
+            : 'Play under it; the audit at the scene close distinguishes kept from drift.',
+        );
+      }
+      if (view.lemmaLayer?.tutorLines) {
+        lines.push('', ...view.lemmaLayer.tutorLines);
+        const lemmaOpening = Boolean(view.lemmaLayer.config?.bind && view.scene && view.scene.startTurn === view.turn);
+        if (lemmaOpening && view.lemmaLayer.frontier.length) {
+          lines.push(
+            '',
+            'FRONTIER CHOICE (this turn opens a scene): pick the scene\'s ACTIVE lemma in "active_lemma" — the predicate name alone suffices (e.g. "blankFrom"). One of:',
+            ...view.lemmaLayer.frontier.map(
+              (f) =>
+                `- "${f.label}" (unplayed support: ${f.supportRemaining.join(', ') || 'none — grounds from the played board'})`,
+            ),
+          );
+        }
+      }
+      if (heldDidacticNote) lines.push('', heldDidacticNote);
+      if (ledgerInfo?.budget?.exhausted) {
+        lines.push(
+          '',
+          'OPPORTUNITY BUDGET EXHAUSTED: proof-neutral turns have run past the block budget — return to the proof obligation this turn (advisory; hard obligations already outrank).',
+        );
+      }
+      return lines;
+    })();
     // The tutor sees no staging state (movements are the director's diagnostic
     // dramaturgy, 2026-06-10): any rhythm-watching happens inside this bridge.
     let user;
@@ -2982,9 +3424,11 @@ export function makeLlmTutor(
         ...learnerTransformationSection,
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         // The two frames, course above lesson: the whole-play throughline
-        // reads back first, the act plot under it.
+        // reads back first, the act plot under it, the scene commitment under
+        // both.
         ...throughlineSection,
         ...plotSection,
+        ...strategyLedgerSection,
         ...rhetoricalPolicySection,
         ...proofDebtSection,
         ...tutorLearnerDagModelSection,
@@ -3033,6 +3477,7 @@ export function makeLlmTutor(
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         ...didacticModeSection,
         ...learnerTransformationSection,
+        ...strategyLedgerSection,
         '',
         ...(forcedNote ? [forcedNote, ''] : []),
         ...rhetoricalPolicySection,
@@ -3062,6 +3507,40 @@ export function makeLlmTutor(
           : null,
       cuePremise: releaseAuthority ? mockRelease : entry ? entry.premise : null,
       ...(releaseAuthority ? { releaseChoice: mockRelease } : {}),
+      // mock determinism (lemma layer): the frontier choice is the first
+      // offered label; a mock claim outside the active lemma's support is
+      // tagged with a departure line unless the test knob mockUntagged asks
+      // for the block path. The real backend ignores meta.
+      ...(view.lemmaLayer?.config?.bind
+        ? {
+            lemmaHint: (() => {
+              const ll = view.lemmaLayer;
+              const opening = Boolean(view.scene && view.scene.startTurn === view.turn);
+              const hint = {};
+              if (opening && ll.frontier.length) {
+                hint.choose = ll.config.mockBadChoice
+                  ? 'zzz_nonsense'
+                  : ll.frontier.length > 1
+                    ? ll.frontier[0].label.split('(')[0]
+                    : 'default';
+              }
+              const activeSupport =
+                opening && ll.frontier.length
+                  ? ll.frontier[0].support
+                  : ll.frontier.find((f) => f.key === ll.activeKey)?.support || [];
+              if (
+                mockRelease &&
+                ll.proofPremiseIds.includes(mockRelease) &&
+                activeSupport.length &&
+                !activeSupport.includes(mockRelease) &&
+                !ll.config.mockUntagged
+              ) {
+                hint.departure = `mock: scheduled exhibit ${mockRelease} lies outside the active lemma`;
+              }
+              return hint;
+            })(),
+          }
+        : {}),
       ...(releaseAuthority && pacingGuard
         ? {
             pacingGuard: {
@@ -3135,6 +3614,61 @@ export function makeLlmTutor(
                 salvage: 'fall back to the smallest two-fact join the board affords and build from there',
               };
             })(),
+          }
+        : {}),
+      // mock determinism (strategy ledger): a scene-opening commitment —
+      // second palette register when one is offered, schedule-aware posture.
+      // Under v2 trialling the hint also cycles the stance palette by scene
+      // index, names an intent from the unreleased schedule, and answers the
+      // history with persist (switch when the last trial was unfaithful) —
+      // so zero-paid runs traverse the review/two-gate path. The real
+      // backend ignores meta.
+      ...(strategyLedger && sceneOpening
+        ? {
+            sceneCommitmentHint: {
+              register:
+                (ledgerInfo?.config?.registerPalette || []).find((r) => r !== activeRegisterName) || activeRegisterName,
+              didactic_default: 'slow_recap',
+              release_posture: view.scene?.targetPremise ? 'eager' : 'hold',
+              recognition_budget: 1,
+              rationale: 'open the scene on its stated goal',
+              exit_condition: 'the learner advances the scene goal in their own words',
+              ...(trialling && ledgerInfo?.config?.stancePalette?.length
+                ? {
+                    stance:
+                      ledgerInfo.config.stancePalette[
+                        (view.scene?.index ?? 1) % ledgerInfo.config.stancePalette.length
+                      ],
+                  }
+                : {}),
+              ...(trialling && releaseAuthority && ledgerInfo?.config?.releaseIntent
+                ? {
+                    release_intent: world.releaseSchedule
+                      .filter((e) => !view.ledger.some((l) => l.premiseId === e.premise))
+                      .slice(0, 2)
+                      .map((e) => e.premise),
+                  }
+                : {}),
+            },
+          }
+        : {}),
+      ...(planMode && sceneOpening && stocktakeNote
+        ? {
+            reorientationHint: stocktakeNote.correction
+              ? 'Slow the pace, re-anchor each step on what the learner still holds, and let the learner carry the joins; no new pressure until the record steadies.'
+              : null,
+          }
+        : {}),
+      ...(trialling && sceneOpening && ledgerInfo?.history?.length
+        ? {
+            strategyReviewHint: {
+              decision:
+                ledgerInfo.history[ledgerInfo.history.length - 1]?.fidelity &&
+                ledgerInfo.history[ledgerInfo.history.length - 1].fidelity.label !== 'faithful'
+                  ? 'switch'
+                  : 'persist',
+              reason: 'answering the mechanism history table',
+            },
           }
         : {}),
     };
@@ -3255,7 +3789,84 @@ export function makeLlmTutor(
           reason: `${proofClosingFallback.premise} closes the proof at t${view.turn}`,
         };
       }
-      const candidatePlayed = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
+      let candidatePlayed = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
+      // LEMMA BINDING (bind mode; LEMMA-LAYER-PREREGISTRATION.md): the scene-
+      // opening frontier choice is adjudicated first (the same call may claim
+      // a release under the NEW choice); then the tutor's VOLUNTARY
+      // out-of-support proof claims need a "lemma_departure" tag — untagged
+      // ones drop to a hold. Harness-forced plays (hold limits, guard
+      // rescues) pass through binding and are logged, never blocked.
+      const lemmaInfo = view.lemmaLayer || null;
+      const lemmaBind = Boolean(lemmaInfo?.config?.bind);
+      let lemmaMeta = null;
+      let lemmaGate = null;
+      if (lemmaBind) {
+        lemmaMeta = {};
+        const lemmaOpening = Boolean(view.scene && view.scene.startTurn === view.turn);
+        if (lemmaOpening && lemmaInfo.frontier.length) {
+          const claimedLemma = typeof out.active_lemma === 'string' ? out.active_lemma.trim() : null;
+          const delegated = Boolean(claimedLemma && claimedLemma.toLowerCase() === 'default');
+          const match = delegated ? null : matchFrontierClaim(lemmaInfo.frontier, claimedLemma);
+          const pick = match || lemmaInfo.frontier[0];
+          lemmaMeta.choice = {
+            key: pick.key,
+            label: pick.label,
+            by: match
+              ? out._lemmaRetried
+                ? 'tutor_retry'
+                : 'tutor'
+              : delegated
+                ? 'delegate'
+                : lemmaInfo.frontier.length === 1
+                  ? 'auto'
+                  : 'fallback',
+            raw: claimedLemma ?? null,
+            ...(out._lemmaRetried ? { firstRaw: out._lemmaFirstRaw ?? null, retried: true } : {}),
+            ...(out._lemmaRefused
+              ? {
+                  refused: true,
+                  refusalPriorPick: out._lemmaRefused.priorPick,
+                  regressionsCited: out._lemmaRefused.regressions,
+                  refusalOutcome: match && match.label === out._lemmaRefused.priorPick ? 'defended' : 'switched',
+                  defense:
+                    typeof out.strategy_defense === 'string' && out.strategy_defense.trim()
+                      ? out.strategy_defense.trim()
+                      : null,
+                }
+              : {}),
+          };
+        }
+        const activeLemmaKeyNow = lemmaMeta.choice?.key || lemmaInfo.activeKey || null;
+        const activeNode = activeLemmaKeyNow
+          ? lemmaInfo.frontier.find((f) => f.key === activeLemmaKeyNow) || null
+          : null;
+        if (candidatePlayed && lemmaInfo.proofPremiseIds.includes(candidatePlayed) && activeNode) {
+          const inSupport = activeNode.support.includes(candidatePlayed);
+          if (!inSupport) {
+            const harnessForced = Boolean(
+              activeGuard?.forcedSafe || (forcedPlay && candidatePlayed === forcedPlay.premise),
+            );
+            const departureReason =
+              typeof out.lemma_departure === 'string' && out.lemma_departure.trim() ? out.lemma_departure.trim() : null;
+            if (harnessForced) {
+              lemmaMeta.forcedPassthrough = {
+                premise: candidatePlayed,
+                by: activeGuard?.forcedSafe ? 'guard' : 'hold_limit',
+              };
+            } else if (departureReason) {
+              lemmaMeta.departure = { premise: candidatePlayed, reason: departureReason };
+            } else {
+              lemmaGate = {
+                held: true,
+                premise: candidatePlayed,
+                reason: `${candidatePlayed} is outside the active lemma ${activeNode.label} and carries no lemma_departure`,
+              };
+              lemmaMeta.blocked = { premise: candidatePlayed };
+              candidatePlayed = null;
+            }
+          }
+        }
+      }
       const candidateSched = candidatePlayed ? world.releaseSchedule.find((e) => e.premise === candidatePlayed) : null;
       const candidateOffset = candidateSched ? view.turn - candidateSched.turn : null;
       const candidateSolvency =
@@ -3364,10 +3975,81 @@ export function makeLlmTutor(
           ...(hybridGuard ? { hybridGuard } : {}),
           ...(consolidationGuard ? { consolidationGuard } : {}),
           ...(discursiveReleaseGate ? { discursiveReleaseGate } : {}),
+          ...(lemmaGate ? { lemmaGate } : {}),
         },
+        ...(lemmaMeta && (lemmaMeta.choice || lemmaMeta.departure || lemmaMeta.blocked || lemmaMeta.forcedPassthrough)
+          ? { lemma: lemmaMeta }
+          : {}),
       };
     };
-    const draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
+    let draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
+    // FORCED CHOICE (lemma bind, scene openings): a missing/unmatched
+    // "active_lemma" is bounced ONCE with a pointed demand — non-answering
+    // must not be free, and even delegation must be said ("default"). Raw
+    // claims are recorded either way (the earlier smokes' diagnostic gap).
+    const lemmaForcedInfo = view.lemmaLayer;
+    const lemmaForcedOpening = Boolean(
+      lemmaForcedInfo?.config?.bind &&
+      view.scene &&
+      view.scene.startTurn === view.turn &&
+      lemmaForcedInfo.frontier.length,
+    );
+    if (lemmaForcedOpening) {
+      const claimed0 = typeof draftOut.active_lemma === 'string' ? draftOut.active_lemma.trim() : null;
+      const ok0 =
+        (claimed0 && claimed0.toLowerCase() === 'default') || matchFrontierClaim(lemmaForcedInfo.frontier, claimed0);
+      if (!ok0) {
+        const options = lemmaForcedInfo.frontier.map((f) => f.label.split('(')[0]).join(', ');
+        const demand = `\n\nHARNESS RETRY — your reply was received but "active_lemma" was ${
+          claimed0 ? `"${claimed0}", which names no frontier lemma` : 'missing'
+        }. This scene-opening turn REQUIRES an active choice. Reply again with the SAME JSON shape and set "active_lemma" to exactly one of: ${options} — or the word "default" to explicitly delegate the choice to the harness.`;
+        const retryOut = await callJson(client, 'tutor', view.turn, { system, user: user + demand, meta });
+        retryOut._lemmaFirstRaw = claimed0;
+        retryOut._lemmaRetried = true;
+        draftOut = retryOut;
+      }
+      // STRATEGY REFUSAL (content compulsion; workplan/items/
+      // strategy-refusal-smoke.md): when the (forced) pick REPEATS the
+      // incumbent AND criterial regressions have occurred since it was
+      // chosen, refuse the strategy itself ONCE — defend in one line or
+      // switch. Mock knob relaxes the trigger so gates exercise both paths.
+      const claimedNow = typeof draftOut.active_lemma === 'string' ? draftOut.active_lemma.trim() : null;
+      const pickNow =
+        claimedNow && claimedNow.toLowerCase() !== 'default'
+          ? matchFrontierClaim(lemmaForcedInfo.frontier, claimedNow)
+          : null;
+      const regSince = lemmaForcedInfo.regressionsSinceActive || [];
+      const mockRefusal = lemmaForcedInfo.config.mockRefusal;
+      const repeatsIncumbent = Boolean(pickNow && lemmaForcedInfo.activeLabel === pickNow.label);
+      const realTrigger = repeatsIncumbent && regSince.length > 0;
+      const mockTrigger = Boolean(
+        mockRefusal && pickNow && (mockRefusal === 'defend' || lemmaForcedInfo.frontier.length > 1),
+      );
+      if (pickNow && (realTrigger || mockTrigger)) {
+        const short = (x) => x.split('(')[0];
+        const others = lemmaForcedInfo.frontier.filter((f) => f.label !== pickNow.label).map((f) => short(f.label));
+        const regNames = regSince.map((r) => short(r.label)).join(', ') || 'established ground';
+        const refuse = `\n\nHARNESS STRATEGY REFUSAL — you have chosen ${short(pickNow.label)} again, but since you last chose it the following established ground has REGRESSED: ${regNames} (${regSince.length} regression${
+          regSince.length === 1 ? '' : 's'
+        }). Criterial evidence says the incumbent strategy is failing. Reply again with the SAME JSON shape and EITHER (a) keep "active_lemma" as ${short(pickNow.label)} and DEFEND the choice in one line in "strategy_defense" (it will then stand), OR (b) SWITCH "active_lemma" to a different frontier chapter${
+          others.length ? ` (${others.join(', ')})` : ''
+        }.`;
+        const refuseOut = await callJson(client, 'tutor', view.turn, {
+          system,
+          user: user + refuse,
+          meta: {
+            ...meta,
+            ...(mockRefusal
+              ? { lemmaRefusalHint: { mode: mockRefusal, keep: short(pickNow.label), other: others[0] || null } }
+              : {}),
+          },
+        });
+        refuseOut._lemmaRefused = { priorPick: pickNow.label, priorRaw: claimedNow, regressions: regSince.length };
+        refuseOut._lemmaFirstRaw = draftOut._lemmaFirstRaw;
+        refuseOut._lemmaRetried = draftOut._lemmaRetried;
+        draftOut = refuseOut;
+      }
+    }
     const draftTheory = reconstruct ? normalizeTheory(draftOut.theory) : null;
     // The plot parses only on an opening turn (mid-act re-commitments are
     // ignored — the standing plot is the commitment); a parse-miss leaves
@@ -3405,6 +4087,66 @@ export function makeLlmTutor(
     };
     const draftThroughline = parseThroughlineOut(draftOut);
     commitThroughline(draftThroughline);
+    // The scene commitment parses only on a scene-opening turn (the standing
+    // commitment is the mid-scene contract); a parse-miss leaves the scene
+    // uncommitted — the missing row stays visible to the scorer.
+    const parseSceneCommitment = (out) => {
+      if (!strategyLedger || !sceneOpening || planMode) return null;
+      const v1opts = {
+        registerPalette: ledgerInfo?.config?.registerPalette || null,
+        currentRegister: activeRegisterName,
+      };
+      if (!trialling) return normalizeSceneCommitment(out.scene_commitment, v1opts);
+      return normalizeSceneCommitmentV2(out.scene_commitment, {
+        ...v1opts,
+        stancePalette: ledgerInfo?.config?.stancePalette || null,
+        // release intent only in release-authority arms with the dial on;
+        // ids validate against the world's premise ledger.
+        premiseIds: releaseAuthority && ledgerInfo?.config?.releaseIntent ? world.premises.map((p) => p.id) : [],
+      });
+    };
+    const commitScene = (commitment) => {
+      if (!commitment) return;
+      ledgerBridgeState.commitment = commitment;
+      ledgerBridgeState.sceneIndex = view.scene.index;
+    };
+    const draftSceneCommitment = parseSceneCommitment(draftOut);
+    commitScene(draftSceneCommitment);
+    // v2: the review answers the history table (opening turns); a departure
+    // may be declared on ANY turn. Both shape-gated; absence stays visible.
+    const parseReview = (out) =>
+      trialling && sceneOpening && ledgerInfo?.history?.length ? normalizeStrategyReview(out.strategy_review) : null;
+    const parseDeparture = (out) =>
+      trialling && typeof out.departure === 'string' && out.departure.trim()
+        ? out.departure.replace(/\s+/gu, ' ').trim().slice(0, 180)
+        : null;
+    const draftReview = parseReview(draftOut);
+    const draftDeparture = parseDeparture(draftOut);
+    // Plan mode: the reorientation answers the stock-take; it REPLACES the
+    // working orientation (no audit ever). Parse-miss keeps the old one.
+    const parseReorientation = (out) =>
+      planMode && sceneOpening && stocktakeNote && typeof out.reorientation === 'string' && out.reorientation.trim()
+        ? out.reorientation.replace(/\s+/gu, ' ').trim().slice(0, 500)
+        : null;
+    const draftReorientation = parseReorientation(draftOut);
+    if (draftReorientation) ledgerBridgeState.orientation = draftReorientation;
+    const planModeBits = (reorientation) => ({
+      ...(stocktakeNote
+        ? {
+            stocktake: {
+              ...stocktakeNote,
+              reorientation: reorientation || null,
+              orientationAfter: ledgerBridgeState?.orientation || null,
+            },
+          }
+        : {}),
+    });
+    const sceneLedgerBits = (commitment, review = null, departure = null) => ({
+      ...(commitment ? { sceneCommitment: commitment } : {}),
+      ...(sceneCommitmentAudit ? { sceneCommitmentAudit } : {}),
+      ...(review ? { strategyReview: review } : {}),
+      ...(departure ? { departure } : {}),
+    });
     const releaseBits = normalizeRelease(draftOut);
     const plotBits = (finalPlot) => ({
       ...(finalPlot ? { plot: { act: view.acts?.index, turn: view.turn, ...finalPlot } } : {}),
@@ -3486,6 +4228,8 @@ export function makeLlmTutor(
       ...(draftTheory ? { theory: draftTheory } : {}),
       ...plotBits(draftPlot),
       ...throughlineBits(draftThroughline),
+      ...sceneLedgerBits(draftSceneCommitment, draftReview, draftDeparture),
+      ...planModeBits(draftReorientation),
     };
     const draftGuard = applyProofDebtGuard(draft, 'draft');
     draft = draftGuard.out;
@@ -3869,6 +4613,15 @@ export function makeLlmTutor(
     // loses the standing frame.
     const revisedThroughline = throughline && plotOpening ? parseThroughlineOut(revisedOut) || draftThroughline : null;
     commitThroughline(revisedThroughline);
+    // Same fallback contract for the scene commitment: an intervened opening
+    // may rewrite it; a parse-miss keeps the draft's.
+    const revisedSceneCommitment =
+      strategyLedger && sceneOpening ? parseSceneCommitment(revisedOut) || draftSceneCommitment : null;
+    commitScene(revisedSceneCommitment);
+    const revisedReview = trialling ? parseReview(revisedOut) || draftReview : null;
+    const revisedDeparture = trialling ? parseDeparture(revisedOut) || draftDeparture : null;
+    const revisedReorientation = planMode ? parseReorientation(revisedOut) || draftReorientation : null;
+    if (revisedReorientation) ledgerBridgeState.orientation = revisedReorientation;
     let revised = {
       dialogue,
       move: normalizeMove(revisedOut) || draft.move,
@@ -3881,6 +4634,8 @@ export function makeLlmTutor(
       ...(revisedTheory ? { theory: revisedTheory } : {}),
       ...plotBits(revisedPlot),
       ...throughlineBits(revisedThroughline),
+      ...sceneLedgerBits(revisedSceneCommitment, revisedReview, revisedDeparture),
+      ...planModeBits(revisedReorientation),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
@@ -3945,6 +4700,13 @@ function learnerSystem(setting, voice, view, publicRegister = 'default', opts = 
     ...stagePrologueLines(view.stagePrologue, 'learner'),
     ...castLayerLines(castState, 'learner'),
     ...learnerDriftLines(learnerDriftState),
+    ...(view.characterArc?.lines?.length
+      ? [
+          '',
+          'Where your wanting stands right now (let this colour your voice — do not quote it back):',
+          ...view.characterArc.lines.map((l) => `- ${l}`),
+        ]
+      : []),
     ...publicRegisterPolicy(publicRegister),
     ...(view.act
       ? [
@@ -4017,7 +4779,18 @@ function learnerSystem(setting, voice, view, publicRegister = 'default', opts = 
           ' "exchange_type": "substantive" | "phatic_ack" | "confusion" | "repair_request" | "resistance" | "hypothesis" | "assertion",',
         ]
       : []),
+    ...(opts.learnerLedger
+      ? [
+          ' "scene_intent": {"want": "<what you want from this scene>", "if_lost": "ask_repair" | "resist" | "try_own_derivation", "speech_posture": "<the voice you mean to keep>"} — SCENE-OPENING turns only; omit the key otherwise,',
+          ' "act_carry": {"carry_forward": "<what you carry on your record>", "still_owe": "<what you still owe the question>"} — the FIRST turn of a NEW act only; omit the key otherwise,',
+        ]
+      : []),
     ' "asserts_answer": "<the name that answers the public question, or null>"}',
+    ...(opts.learnerLedger
+      ? [
+          '(Your scene_intent and act_carry are YOURS — private commitments the tutor never sees. They shape how you conduct yourself; they never add facts to your record.)',
+        ]
+      : []),
   ].join('\n');
 }
 
@@ -4215,9 +4988,14 @@ export function makeLlmLearner({
   castLayer = false,
   learnerDrift = null,
   learnerDriftLayer = false,
+  learnerLedger = false,
 }) {
   if (!client) throw new Error('derivation.llmRoles: makeLlmLearner requires a client');
   const effectiveAssertionGroundingGate = assertionGroundingGate || sameTurnAssertionAffordance;
+  // Learner-ledger bridge state (Phase 2 — the tutor's scene-commitment
+  // machinery mirrored): the learner's own scene intent and act carry live
+  // here between boundaries; the engine records rows.
+  const learnerLedgerState = learnerLedger ? { intent: null, sceneIndex: null, carry: null, actIndex: null } : null;
   // Mock-determinism clock for the derive channel, view-visible material only:
   // a derivable non-pattern fact first SEEN at turn t (from the learner's own
   // board — one turn after the engine's firstAvailable, since the view shows
@@ -4274,6 +5052,81 @@ export function makeLlmLearner({
       : '(none yet)';
 
     const patternAssertion = computePatternAssertion(view, adoptable);
+    // --- Learner-ledger scene/act lifecycle (Phase 2): audit the sealed
+    // scene's intent at the next opening (conformance only — did I do what I
+    // said I would do when lost), then demand a fresh intent; the act carry
+    // expires when its act ends and is re-demanded on the new act's first
+    // turn. All learner-private: none of this enters a tutor view. ---
+    const ledgerSceneOpening = Boolean(learnerLedger && view.scene && view.scene.startTurn === view.turn);
+    const ledgerActOpening = Boolean(
+      learnerLedger &&
+      view.act &&
+      view.act.startTurn === view.turn &&
+      view.act.index > 1 &&
+      learnerLedgerState.actIndex !== view.act.index,
+    );
+    let sceneIntentAudit = null;
+    if (
+      learnerLedger &&
+      ledgerSceneOpening &&
+      learnerLedgerState.intent &&
+      view.lastClosedScene &&
+      learnerLedgerState.sceneIndex === view.lastClosedScene.index
+    ) {
+      const audit = auditLearnerSceneIntent(learnerLedgerState.intent, view.lastClosedScene);
+      if (audit) sceneIntentAudit = { sceneIndex: view.lastClosedScene.index, ...audit };
+      learnerLedgerState.intent = null;
+      learnerLedgerState.sceneIndex = null;
+    }
+    if (learnerLedger && view.act && learnerLedgerState.carry && learnerLedgerState.actIndex !== view.act.index) {
+      learnerLedgerState.carry = null; // its act has ended; the boundary already cleared the stage
+    }
+    const learnerLedgerLines = (() => {
+      if (!learnerLedger) return [];
+      const lines = [];
+      if (sceneIntentAudit) {
+        lines.push(
+          '',
+          `Your intention for the last scene, checked against the record: ${sceneIntentAudit.summary}.`,
+          ...sceneIntentAudit.clauses.map((c) => `- [${c.verdict}] ${c.clause}${c.evidence ? ` — ${c.evidence}` : ''}`),
+        );
+      }
+      if (ledgerSceneOpening) {
+        lines.push(
+          '',
+          'A new scene opens. COMMIT YOUR OWN INTENTION for it in "scene_intent" —',
+          'what you want from this scene ("want"), what you will do if you get lost',
+          '("if_lost": "ask_repair" | "resist" | "try_own_derivation"), and the speech',
+          'posture you mean to keep ("speech_posture"). This is yours alone; hold',
+          'yourself to it, or notice aloud when you cannot.',
+        );
+      } else if (learnerLedgerState.intent) {
+        const intent = learnerLedgerState.intent;
+        lines.push(
+          '',
+          `YOUR OWN INTENTION for this scene (you committed this at its opening):`,
+          ...(intent.want ? [`- want: ${intent.want}`] : []),
+          ...(intent.ifLost ? [`- if lost: ${intent.ifLost.replace(/_/g, ' ')}`] : []),
+          ...(intent.speechPosture ? [`- speech posture: ${intent.speechPosture}`] : []),
+          'Hold yourself to it, or notice aloud when you cannot.',
+        );
+      }
+      if (ledgerActOpening) {
+        lines.push(
+          '',
+          'The act has turned and the stage is cleared. COMMIT in "act_carry": what you',
+          'carry forward on your record ("carry_forward") and what you still owe the',
+          'question ("still_owe").',
+        );
+      } else if (learnerLedgerState.carry) {
+        const carry = learnerLedgerState.carry;
+        lines.push(
+          '',
+          `What you carried into this act: ${carry.carryForward || '(nothing named)'}. What you still owe: ${carry.stillOwe || '(nothing named)'}.`,
+        );
+      }
+      return lines;
+    })();
     const castState = castLayer
       ? deriveCastState({
           worldCast: cast,
@@ -4300,6 +5153,7 @@ export function makeLlmLearner({
       sameTurnAssertionAffordance,
       castState,
       learnerDriftState,
+      learnerLedger,
     });
     const user = [
       `Turn ${view.turn}.${
@@ -4314,6 +5168,7 @@ export function makeLlmLearner({
             ...sceneRecognitionNeedLines(view.scene, 'learner'),
           ]
         : []),
+      ...learnerLedgerLines,
       '',
       'The last lines spoken:',
       renderTranscriptTail(view.transcript),
@@ -4330,6 +5185,7 @@ export function makeLlmLearner({
       `PRIVATE CONCLUSION CHECKLIST (index. conclusion your ${terms.record} may now support; choose indices only when you also say the conclusion aloud in ordinary words):`,
       privateConclusions,
       ...learnerProxyDagMemoryLines(view.proxyDagMemory, terms),
+      ...(view.lemmaLayer?.mirrorLines ? ['', ...view.lemmaLayer.mirrorLines] : []),
       '',
       'Your hypotheses so far:',
       hyps,
@@ -4360,8 +5216,39 @@ export function makeLlmLearner({
         ...(view.scene?.tempo ? { sceneTempo: view.scene.tempo } : {}),
         ...(castState ? { castState } : {}),
         ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),
+        // mock determinism (learner ledger): canned boundary commitments so
+        // zero-paid runs traverse the commit/audit path. Real backend ignores.
+        ...(ledgerSceneOpening
+          ? {
+              sceneIntentHint: {
+                want: 'follow the scene goal and test each claim before keeping it',
+                if_lost: 'ask_repair',
+                speech_posture: 'plain and testing',
+              },
+            }
+          : {}),
+        ...(ledgerActOpening
+          ? {
+              actCarryHint: {
+                carry_forward: 'the facts standing on my record',
+                still_owe: 'the final answer, not yet grounded',
+              },
+            }
+          : {}),
       },
     });
+    // Learner-ledger parse (shape-gated like every commitment): boundary
+    // turns only; a parse-miss leaves the boundary uncommitted, visibly.
+    const sceneIntent = ledgerSceneOpening ? normalizeLearnerSceneIntent(out.scene_intent) : null;
+    if (sceneIntent) {
+      learnerLedgerState.intent = sceneIntent;
+      learnerLedgerState.sceneIndex = view.scene.index;
+    }
+    const actCarry = ledgerActOpening ? normalizeLearnerActCarry(out.act_carry) : null;
+    if (actCarry) {
+      learnerLedgerState.carry = actCarry;
+      learnerLedgerState.actIndex = view.act.index;
+    }
 
     const adopt = validIndices(out.adopt_indices, adoptable.length).map((i) => adoptable[i]);
     const rawRetract = validIndices(out.retract_indices, view.abox.grounded.length).map((i) => view.abox.grounded[i]);
@@ -4424,6 +5311,9 @@ export function makeLlmLearner({
           }
         : {}),
       ...(learnerDriftState ? { learnerDrift: learnerDriftState } : {}),
+      ...(sceneIntent ? { sceneIntent } : {}),
+      ...(actCarry ? { actCarry } : {}),
+      ...(sceneIntentAudit ? { sceneIntentAudit } : {}),
     };
   };
 }

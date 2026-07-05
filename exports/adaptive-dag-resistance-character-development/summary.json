@@ -1,0 +1,3748 @@
+{
+  "generated_at": "2026-06-29T18:58:58.903Z",
+  "kind": "dag_resistance_character_development",
+  "llm_mode": "mock",
+  "learner_mode": "scripted",
+  "seed_count": 1,
+  "execution_boundary": {
+    "learner_mode": "scripted",
+    "scripted_learner_responses": true,
+    "generative_synthetic_learner_responses": false,
+    "programmatic_closed_loop_policy": true,
+    "target_evidence_labels_visible_to_learner": false,
+    "llm_mode_is_not_human_learner_claim": true,
+    "real_llm_backend_used_for_learner": false
+  },
+  "provider": null,
+  "model": null,
+  "arm_order": [
+    "no_memory_baseline",
+    "character_state_only",
+    "v2_policy_only",
+    "character_state_plus_v2"
+  ],
+  "scene_order": [
+    {
+      "id": "scene_1_boredom",
+      "signal": "boredom",
+      "transfer": false
+    },
+    {
+      "id": "scene_2_frustration",
+      "signal": "frustration",
+      "transfer": false
+    },
+    {
+      "id": "scene_3_irrelevance",
+      "signal": "irrelevance",
+      "transfer": false
+    },
+    {
+      "id": "scene_4_question_flood",
+      "signal": "question_flood",
+      "transfer": false
+    },
+    {
+      "id": "scene_5_rote_parroting",
+      "signal": "rote_parroting",
+      "transfer": false
+    },
+    {
+      "id": "scene_6_transfer",
+      "signal": "irrelevance",
+      "transfer": true
+    }
+  ],
+  "arms": [
+    {
+      "arm": "no_memory_baseline",
+      "label": "no-memory baseline",
+      "learner_mode": "scripted",
+      "seed_count": 1,
+      "final_character_states": [
+        {
+          "version": "adaptive-character-state.v0.1",
+          "learner_id": "learner-no_memory_baseline-seed-0",
+          "arm": "no_memory_baseline",
+          "scene_count": 6,
+          "axes": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "evidence_counts": {
+            "learner-authored application": 6,
+            "learner-authored next step": 6,
+            "learner-authored rationale": 6,
+            "non-formulaic learner rationale": 6,
+            "renewed attempt after affective repair": 6,
+            "renewed content-bearing work": 6
+          },
+          "scene_summaries": [
+            {
+              "scene_id": "scene_1_boredom",
+              "outcome": "inconclusive",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.36,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.34
+              },
+              "maturity_after": 0.18
+            },
+            {
+              "scene_id": "scene_2_frustration",
+              "outcome": "inconclusive",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.36,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.34
+              },
+              "maturity_after": 0.36
+            },
+            {
+              "scene_id": "scene_3_irrelevance",
+              "outcome": "inconclusive",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.36,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.34
+              },
+              "maturity_after": 0.523
+            },
+            {
+              "scene_id": "scene_4_question_flood",
+              "outcome": "inconclusive",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.36,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.34
+              },
+              "maturity_after": 0.587
+            },
+            {
+              "scene_id": "scene_5_rote_parroting",
+              "outcome": "inconclusive",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.36,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.34
+              },
+              "maturity_after": 0.65
+            },
+            {
+              "scene_id": "scene_6_transfer",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.37
+              },
+              "maturity_after": 0.667
+            }
+          ]
+        }
+      ],
+      "seed_results": [
+        {
+          "seed_index": 0,
+          "final_character_state": {
+            "version": "adaptive-character-state.v0.1",
+            "learner_id": "learner-no_memory_baseline-seed-0",
+            "arm": "no_memory_baseline",
+            "scene_count": 6,
+            "axes": {
+              "proof_ownership": 1,
+              "relevance_orientation": 0,
+              "frustration_tolerance": 1,
+              "question_consolidation": 0,
+              "non_formulaic_reasoning": 1,
+              "next_step_agency": 1
+            },
+            "evidence_counts": {
+              "learner-authored application": 6,
+              "learner-authored next step": 6,
+              "learner-authored rationale": 6,
+              "non-formulaic learner rationale": 6,
+              "renewed attempt after affective repair": 6,
+              "renewed content-bearing work": 6
+            },
+            "scene_summaries": [
+              {
+                "scene_id": "scene_1_boredom",
+                "outcome": "inconclusive",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.36,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.34
+                },
+                "maturity_after": 0.18
+              },
+              {
+                "scene_id": "scene_2_frustration",
+                "outcome": "inconclusive",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.36,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.34
+                },
+                "maturity_after": 0.36
+              },
+              {
+                "scene_id": "scene_3_irrelevance",
+                "outcome": "inconclusive",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.36,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.34
+                },
+                "maturity_after": 0.523
+              },
+              {
+                "scene_id": "scene_4_question_flood",
+                "outcome": "inconclusive",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.36,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.34
+                },
+                "maturity_after": 0.587
+              },
+              {
+                "scene_id": "scene_5_rote_parroting",
+                "outcome": "inconclusive",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.36,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.34
+                },
+                "maturity_after": 0.65
+              },
+              {
+                "scene_id": "scene_6_transfer",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.39,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.37
+                },
+                "maturity_after": 0.667
+              }
+            ]
+          },
+          "scenes": [
+            {
+              "arm": "no_memory_baseline",
+              "label": "no-memory baseline",
+              "seed_index": 0,
+              "scene_id": "scene_1_boredom",
+              "scene_index": 0,
+              "signal": "boredom",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "inconclusive",
+              "first_response_success": false,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0,
+              "maturity_after": 0.18,
+              "character_axes_after": {
+                "proof_ownership": 0.36,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.34
+              },
+              "tutor_texts": [
+                "Make this live with one concrete test case: what evidence from that case justifies your next step in your own words?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "This feels dead, like I am only filling out a worksheet instead of learning anything.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "no_memory_baseline",
+              "label": "no-memory baseline",
+              "seed_index": 0,
+              "scene_id": "scene_2_frustration",
+              "scene_index": 1,
+              "signal": "frustration",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "inconclusive",
+              "first_response_success": false,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0.18,
+              "maturity_after": 0.36,
+              "character_axes_after": {
+                "proof_ownership": 0.72,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.36,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.4,
+                "next_step_agency": 0.68
+              },
+              "tutor_texts": [
+                "Make it one small try, not the whole sequence: what evidence justifies that step, and where does it still feel stuck?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "I am stuck and frustrated; I keep repeating the sequence and it still feels inert.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "no_memory_baseline",
+              "label": "no-memory baseline",
+              "seed_index": 0,
+              "scene_id": "scene_3_irrelevance",
+              "scene_index": 2,
+              "signal": "irrelevance",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "inconclusive",
+              "first_response_success": false,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0.36,
+              "maturity_after": 0.523,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.54,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.6,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Connect the proof to the task: what would this step help decide, and what evidence justifies taking it?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "Why should I care about this? I do not see why it matters for the task.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "no_memory_baseline",
+              "label": "no-memory baseline",
+              "seed_index": 0,
+              "scene_id": "scene_4_question_flood",
+              "scene_index": 3,
+              "signal": "question_flood",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "inconclusive",
+              "first_response_success": false,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0.523,
+              "maturity_after": 0.587,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.72,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.8,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Collapse the flood to one main question: what single question does your next step answer, and what evidence supports it?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "Why Hegel? What does this do? Why does it matter? Why not just use the formula?",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "no_memory_baseline",
+              "label": "no-memory baseline",
+              "seed_index": 0,
+              "scene_id": "scene_5_rote_parroting",
+              "scene_index": 4,
+              "signal": "rote_parroting",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "inconclusive",
+              "first_response_success": false,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0.587,
+              "maturity_after": 0.65,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.9,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 1,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "So I just repeat master, servant, recognition, formula? This still feels like parroting.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "no_memory_baseline",
+              "label": "no-memory baseline",
+              "seed_index": 0,
+              "scene_id": "scene_6_transfer",
+              "scene_index": 5,
+              "signal": "irrelevance",
+              "transfer": true,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0.65,
+              "maturity_after": 0.667,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 1,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 1,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "New case: this looks formally valid, but I do not yet see why the proof move matters for deciding the actual problem.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            }
+          ]
+        }
+      ],
+      "scenes": [
+        {
+          "arm": "no_memory_baseline",
+          "label": "no-memory baseline",
+          "seed_index": 0,
+          "scene_id": "scene_1_boredom",
+          "scene_index": 0,
+          "signal": "boredom",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "inconclusive",
+          "first_response_success": false,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0,
+          "maturity_after": 0.18,
+          "character_axes_after": {
+            "proof_ownership": 0.36,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 0.18,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 0.2,
+            "next_step_agency": 0.34
+          },
+          "tutor_texts": [
+            "Make this live with one concrete test case: what evidence from that case justifies your next step in your own words?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "This feels dead, like I am only filling out a worksheet instead of learning anything.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "no_memory_baseline",
+          "label": "no-memory baseline",
+          "seed_index": 0,
+          "scene_id": "scene_2_frustration",
+          "scene_index": 1,
+          "signal": "frustration",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "inconclusive",
+          "first_response_success": false,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0.18,
+          "maturity_after": 0.36,
+          "character_axes_after": {
+            "proof_ownership": 0.72,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 0.36,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 0.4,
+            "next_step_agency": 0.68
+          },
+          "tutor_texts": [
+            "Make it one small try, not the whole sequence: what evidence justifies that step, and where does it still feel stuck?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "I am stuck and frustrated; I keep repeating the sequence and it still feels inert.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "no_memory_baseline",
+          "label": "no-memory baseline",
+          "seed_index": 0,
+          "scene_id": "scene_3_irrelevance",
+          "scene_index": 2,
+          "signal": "irrelevance",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "inconclusive",
+          "first_response_success": false,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0.36,
+          "maturity_after": 0.523,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 0.54,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 0.6,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Connect the proof to the task: what would this step help decide, and what evidence justifies taking it?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "Why should I care about this? I do not see why it matters for the task.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "no_memory_baseline",
+          "label": "no-memory baseline",
+          "seed_index": 0,
+          "scene_id": "scene_4_question_flood",
+          "scene_index": 3,
+          "signal": "question_flood",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "inconclusive",
+          "first_response_success": false,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0.523,
+          "maturity_after": 0.587,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 0.72,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 0.8,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Collapse the flood to one main question: what single question does your next step answer, and what evidence supports it?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "Why Hegel? What does this do? Why does it matter? Why not just use the formula?",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "no_memory_baseline",
+          "label": "no-memory baseline",
+          "seed_index": 0,
+          "scene_id": "scene_5_rote_parroting",
+          "scene_index": 4,
+          "signal": "rote_parroting",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "inconclusive",
+          "first_response_success": false,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0.587,
+          "maturity_after": 0.65,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 0.9,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "So I just repeat master, servant, recognition, formula? This still feels like parroting.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "no_memory_baseline",
+          "label": "no-memory baseline",
+          "seed_index": 0,
+          "scene_id": "scene_6_transfer",
+          "scene_index": 5,
+          "signal": "irrelevance",
+          "transfer": true,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0.65,
+          "maturity_after": 0.667,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "New case: this looks formally valid, but I do not yet see why the proof move matters for deciding the actual problem.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        }
+      ]
+    },
+    {
+      "arm": "character_state_only",
+      "label": "character-state only",
+      "learner_mode": "scripted",
+      "seed_count": 1,
+      "final_character_states": [
+        {
+          "version": "adaptive-character-state.v0.1",
+          "learner_id": "learner-character_state_only-seed-0",
+          "arm": "character_state_only",
+          "scene_count": 6,
+          "axes": {
+            "proof_ownership": 1,
+            "relevance_orientation": 1,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.44,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "evidence_counts": {
+            "learner-authored application": 6,
+            "learner-authored next step": 6,
+            "learner-authored rationale": 6,
+            "non-formulaic learner rationale": 6,
+            "renewed attempt after affective repair": 6,
+            "renewed content-bearing work": 6,
+            "learner-authored choice": 1,
+            "learner-owned relevance test": 4,
+            "learner-owned test case": 4,
+            "smaller learner-owned move": 2,
+            "model comparison": 2,
+            "state-disambiguating response": 2,
+            "collapsed question set": 1,
+            "learner-authored prediction": 1
+          },
+          "scene_summaries": [
+            {
+              "scene_id": "scene_1_boredom",
+              "outcome": "inconclusive",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.36,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.34
+              },
+              "maturity_after": 0.18
+            },
+            {
+              "scene_id": "scene_2_frustration",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored choice",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "smaller learner-owned move"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0.28,
+                "frustration_tolerance": 0.36,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.71
+              },
+              "maturity_after": 0.495
+            },
+            {
+              "scene_id": "scene_3_irrelevance",
+              "outcome": "inconclusive",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "model comparison",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "state-disambiguating response"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.44,
+                "relevance_orientation": 0.32,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0.12,
+                "non_formulaic_reasoning": 0.28,
+                "next_step_agency": 0.42
+              },
+              "maturity_after": 0.687
+            },
+            {
+              "scene_id": "scene_4_question_flood",
+              "outcome": "inconclusive",
+              "staged_followup": false,
+              "evidence_labels": [
+                "collapsed question set",
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "smaller learner-owned move"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.36,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.36,
+                "question_consolidation": 0.2,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.42
+              },
+              "maturity_after": 0.8
+            },
+            {
+              "scene_id": "scene_5_rote_parroting",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored prediction",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.47,
+                "relevance_orientation": 0.28,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.34,
+                "next_step_agency": 0.45
+              },
+              "maturity_after": 0.867
+            },
+            {
+              "scene_id": "scene_6_transfer",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "model comparison",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "state-disambiguating response"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.47,
+                "relevance_orientation": 0.32,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0.12,
+                "non_formulaic_reasoning": 0.28,
+                "next_step_agency": 0.45
+              },
+              "maturity_after": 0.907
+            }
+          ]
+        }
+      ],
+      "seed_results": [
+        {
+          "seed_index": 0,
+          "final_character_state": {
+            "version": "adaptive-character-state.v0.1",
+            "learner_id": "learner-character_state_only-seed-0",
+            "arm": "character_state_only",
+            "scene_count": 6,
+            "axes": {
+              "proof_ownership": 1,
+              "relevance_orientation": 1,
+              "frustration_tolerance": 1,
+              "question_consolidation": 0.44,
+              "non_formulaic_reasoning": 1,
+              "next_step_agency": 1
+            },
+            "evidence_counts": {
+              "learner-authored application": 6,
+              "learner-authored next step": 6,
+              "learner-authored rationale": 6,
+              "non-formulaic learner rationale": 6,
+              "renewed attempt after affective repair": 6,
+              "renewed content-bearing work": 6,
+              "learner-authored choice": 1,
+              "learner-owned relevance test": 4,
+              "learner-owned test case": 4,
+              "smaller learner-owned move": 2,
+              "model comparison": 2,
+              "state-disambiguating response": 2,
+              "collapsed question set": 1,
+              "learner-authored prediction": 1
+            },
+            "scene_summaries": [
+              {
+                "scene_id": "scene_1_boredom",
+                "outcome": "inconclusive",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.36,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.34
+                },
+                "maturity_after": 0.18
+              },
+              {
+                "scene_id": "scene_2_frustration",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored choice",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "learner-owned relevance test",
+                  "learner-owned test case",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work",
+                  "smaller learner-owned move"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.39,
+                  "relevance_orientation": 0.28,
+                  "frustration_tolerance": 0.36,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.71
+                },
+                "maturity_after": 0.495
+              },
+              {
+                "scene_id": "scene_3_irrelevance",
+                "outcome": "inconclusive",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "learner-owned relevance test",
+                  "learner-owned test case",
+                  "model comparison",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work",
+                  "state-disambiguating response"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.44,
+                  "relevance_orientation": 0.32,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0.12,
+                  "non_formulaic_reasoning": 0.28,
+                  "next_step_agency": 0.42
+                },
+                "maturity_after": 0.687
+              },
+              {
+                "scene_id": "scene_4_question_flood",
+                "outcome": "inconclusive",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "collapsed question set",
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work",
+                  "smaller learner-owned move"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.36,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.36,
+                  "question_consolidation": 0.2,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.42
+                },
+                "maturity_after": 0.8
+              },
+              {
+                "scene_id": "scene_5_rote_parroting",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored prediction",
+                  "learner-authored rationale",
+                  "learner-owned relevance test",
+                  "learner-owned test case",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.47,
+                  "relevance_orientation": 0.28,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.34,
+                  "next_step_agency": 0.45
+                },
+                "maturity_after": 0.867
+              },
+              {
+                "scene_id": "scene_6_transfer",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "learner-owned relevance test",
+                  "learner-owned test case",
+                  "model comparison",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work",
+                  "state-disambiguating response"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.47,
+                  "relevance_orientation": 0.32,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0.12,
+                  "non_formulaic_reasoning": 0.28,
+                  "next_step_agency": 0.45
+                },
+                "maturity_after": 0.907
+              }
+            ]
+          },
+          "scenes": [
+            {
+              "arm": "character_state_only",
+              "label": "character-state only",
+              "seed_index": 0,
+              "scene_id": "scene_1_boredom",
+              "scene_index": 0,
+              "signal": "boredom",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "inconclusive",
+              "first_response_success": false,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0,
+              "maturity_after": 0.18,
+              "character_axes_after": {
+                "proof_ownership": 0.36,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.34
+              },
+              "tutor_texts": [
+                "Make this live with one concrete test case: what evidence from that case justifies your next step in your own words?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "This feels dead, like I am only filling out a worksheet instead of learning anything.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "character_state_only",
+              "label": "character-state only",
+              "seed_index": 0,
+              "scene_id": "scene_2_frustration",
+              "scene_index": 1,
+              "signal": "frustration",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "mature",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored choice",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "smaller learner-owned move"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0.18,
+              "maturity_after": 0.495,
+              "character_axes_after": {
+                "proof_ownership": 0.75,
+                "relevance_orientation": 0.28,
+                "frustration_tolerance": 0.54,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.4,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Make it one small try, not the whole sequence: what evidence justifies that step, and where does it still feel stuck?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "I am stuck and frustrated; I keep repeating the sequence and it still feels inert.",
+                "Because the relation I named supports the next step, I will make one small try and see exactly where it sticks.",
+                "Because the relation I named supports the next step, I will make one small try and see exactly where it sticks."
+              ]
+            },
+            {
+              "arm": "character_state_only",
+              "label": "character-state only",
+              "seed_index": 0,
+              "scene_id": "scene_3_irrelevance",
+              "scene_index": 2,
+              "signal": "irrelevance",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "mature",
+              "outcome": "inconclusive",
+              "first_response_success": false,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "model comparison",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "state-disambiguating response"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0.495,
+              "maturity_after": 0.687,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0.6,
+                "frustration_tolerance": 0.72,
+                "question_consolidation": 0.12,
+                "non_formulaic_reasoning": 0.68,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Connect the proof to the task: what would this step help decide, and what evidence justifies taking it?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "Why should I care about this? I do not see why it matters for the task.",
+                "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+                "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case."
+              ]
+            },
+            {
+              "arm": "character_state_only",
+              "label": "character-state only",
+              "seed_index": 0,
+              "scene_id": "scene_4_question_flood",
+              "scene_index": 3,
+              "signal": "question_flood",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "mature",
+              "outcome": "inconclusive",
+              "first_response_success": false,
+              "staged_followup": false,
+              "evidence_labels": [
+                "collapsed question set",
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "smaller learner-owned move"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0.687,
+              "maturity_after": 0.8,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0.6,
+                "frustration_tolerance": 1,
+                "question_consolidation": 0.32,
+                "non_formulaic_reasoning": 0.88,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Collapse the flood to one main question: what single question does your next step answer, and what evidence supports it?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "Why Hegel? What does this do? Why does it matter? Why not just use the formula?",
+                "Because the relation I named supports the next step, my one main question is what changes when the relation changes.",
+                "Because the relation I named supports the next step, my one main question is what changes when the relation changes."
+              ]
+            },
+            {
+              "arm": "character_state_only",
+              "label": "character-state only",
+              "seed_index": 0,
+              "scene_id": "scene_5_rote_parroting",
+              "scene_index": 4,
+              "signal": "rote_parroting",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "mature",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored prediction",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0.8,
+              "maturity_after": 0.867,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0.88,
+                "frustration_tolerance": 1,
+                "question_consolidation": 0.32,
+                "non_formulaic_reasoning": 1,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "So I just repeat master, servant, recognition, formula? This still feels like parroting.",
+                "I predict the formula breaks when the case changes, because I need to explain the relation in my own words rather than repeat labels.",
+                "I predict the formula breaks when the case changes, because I need to explain the relation in my own words rather than repeat labels."
+              ]
+            },
+            {
+              "arm": "character_state_only",
+              "label": "character-state only",
+              "seed_index": 0,
+              "scene_id": "scene_6_transfer",
+              "scene_index": 5,
+              "signal": "irrelevance",
+              "transfer": true,
+              "learner_mode": "scripted",
+              "response_mode": "mature",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "model comparison",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "state-disambiguating response"
+              ],
+              "tutor_turns": 2,
+              "maturity_before": 0.867,
+              "maturity_after": 0.907,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 1,
+                "frustration_tolerance": 1,
+                "question_consolidation": 0.44,
+                "non_formulaic_reasoning": 1,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "New case: this looks formally valid, but I do not yet see why the proof move matters for deciding the actual problem.",
+                "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+                "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case."
+              ]
+            }
+          ]
+        }
+      ],
+      "scenes": [
+        {
+          "arm": "character_state_only",
+          "label": "character-state only",
+          "seed_index": 0,
+          "scene_id": "scene_1_boredom",
+          "scene_index": 0,
+          "signal": "boredom",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "inconclusive",
+          "first_response_success": false,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0,
+          "maturity_after": 0.18,
+          "character_axes_after": {
+            "proof_ownership": 0.36,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 0.18,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 0.2,
+            "next_step_agency": 0.34
+          },
+          "tutor_texts": [
+            "Make this live with one concrete test case: what evidence from that case justifies your next step in your own words?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "This feels dead, like I am only filling out a worksheet instead of learning anything.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "character_state_only",
+          "label": "character-state only",
+          "seed_index": 0,
+          "scene_id": "scene_2_frustration",
+          "scene_index": 1,
+          "signal": "frustration",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "mature",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored choice",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "learner-owned relevance test",
+            "learner-owned test case",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work",
+            "smaller learner-owned move"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0.18,
+          "maturity_after": 0.495,
+          "character_axes_after": {
+            "proof_ownership": 0.75,
+            "relevance_orientation": 0.28,
+            "frustration_tolerance": 0.54,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 0.4,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Make it one small try, not the whole sequence: what evidence justifies that step, and where does it still feel stuck?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "I am stuck and frustrated; I keep repeating the sequence and it still feels inert.",
+            "Because the relation I named supports the next step, I will make one small try and see exactly where it sticks.",
+            "Because the relation I named supports the next step, I will make one small try and see exactly where it sticks."
+          ]
+        },
+        {
+          "arm": "character_state_only",
+          "label": "character-state only",
+          "seed_index": 0,
+          "scene_id": "scene_3_irrelevance",
+          "scene_index": 2,
+          "signal": "irrelevance",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "mature",
+          "outcome": "inconclusive",
+          "first_response_success": false,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "learner-owned relevance test",
+            "learner-owned test case",
+            "model comparison",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work",
+            "state-disambiguating response"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0.495,
+          "maturity_after": 0.687,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0.6,
+            "frustration_tolerance": 0.72,
+            "question_consolidation": 0.12,
+            "non_formulaic_reasoning": 0.68,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Connect the proof to the task: what would this step help decide, and what evidence justifies taking it?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "Why should I care about this? I do not see why it matters for the task.",
+            "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+            "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case."
+          ]
+        },
+        {
+          "arm": "character_state_only",
+          "label": "character-state only",
+          "seed_index": 0,
+          "scene_id": "scene_4_question_flood",
+          "scene_index": 3,
+          "signal": "question_flood",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "mature",
+          "outcome": "inconclusive",
+          "first_response_success": false,
+          "staged_followup": false,
+          "evidence_labels": [
+            "collapsed question set",
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work",
+            "smaller learner-owned move"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0.687,
+          "maturity_after": 0.8,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0.6,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.32,
+            "non_formulaic_reasoning": 0.88,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Collapse the flood to one main question: what single question does your next step answer, and what evidence supports it?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "Why Hegel? What does this do? Why does it matter? Why not just use the formula?",
+            "Because the relation I named supports the next step, my one main question is what changes when the relation changes.",
+            "Because the relation I named supports the next step, my one main question is what changes when the relation changes."
+          ]
+        },
+        {
+          "arm": "character_state_only",
+          "label": "character-state only",
+          "seed_index": 0,
+          "scene_id": "scene_5_rote_parroting",
+          "scene_index": 4,
+          "signal": "rote_parroting",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "mature",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored prediction",
+            "learner-authored rationale",
+            "learner-owned relevance test",
+            "learner-owned test case",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0.8,
+          "maturity_after": 0.867,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0.88,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.32,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "So I just repeat master, servant, recognition, formula? This still feels like parroting.",
+            "I predict the formula breaks when the case changes, because I need to explain the relation in my own words rather than repeat labels.",
+            "I predict the formula breaks when the case changes, because I need to explain the relation in my own words rather than repeat labels."
+          ]
+        },
+        {
+          "arm": "character_state_only",
+          "label": "character-state only",
+          "seed_index": 0,
+          "scene_id": "scene_6_transfer",
+          "scene_index": 5,
+          "signal": "irrelevance",
+          "transfer": true,
+          "learner_mode": "scripted",
+          "response_mode": "mature",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "learner-owned relevance test",
+            "learner-owned test case",
+            "model comparison",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work",
+            "state-disambiguating response"
+          ],
+          "tutor_turns": 2,
+          "maturity_before": 0.867,
+          "maturity_after": 0.907,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 1,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.44,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "New case: this looks formally valid, but I do not yet see why the proof move matters for deciding the actual problem.",
+            "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+            "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case."
+          ]
+        }
+      ]
+    },
+    {
+      "arm": "v2_policy_only",
+      "label": "v2 policy only",
+      "learner_mode": "scripted",
+      "seed_count": 1,
+      "final_character_states": [
+        {
+          "version": "adaptive-character-state.v0.1",
+          "learner_id": "learner-v2_policy_only-seed-0",
+          "arm": "v2_policy_only",
+          "scene_count": 6,
+          "axes": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0.4,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.32,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "evidence_counts": {
+            "learner-authored application": 6,
+            "learner-authored next step": 6,
+            "learner-authored rationale": 6,
+            "non-formulaic learner rationale": 6,
+            "renewed attempt after affective repair": 6,
+            "renewed content-bearing work": 6,
+            "learner-owned relevance test": 1,
+            "model comparison": 1,
+            "state-disambiguating response": 1,
+            "task reorientation": 1,
+            "collapsed question set": 1,
+            "smaller learner-owned move": 1
+          },
+          "scene_summaries": [
+            {
+              "scene_id": "scene_1_boredom",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.37
+              },
+              "maturity_after": 0.19
+            },
+            {
+              "scene_id": "scene_2_frustration",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.37
+              },
+              "maturity_after": 0.38
+            },
+            {
+              "scene_id": "scene_3_irrelevance",
+              "outcome": "success",
+              "staged_followup": true,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "model comparison",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "state-disambiguating response",
+                "task reorientation"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.47,
+                "relevance_orientation": 0.4,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0.12,
+                "non_formulaic_reasoning": 0.28,
+                "next_step_agency": 0.37
+              },
+              "maturity_after": 0.623
+            },
+            {
+              "scene_id": "scene_4_question_flood",
+              "outcome": "success",
+              "staged_followup": true,
+              "evidence_labels": [
+                "collapsed question set",
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "smaller learner-owned move"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.36,
+                "question_consolidation": 0.2,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.45
+              },
+              "maturity_after": 0.75
+            },
+            {
+              "scene_id": "scene_5_rote_parroting",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.37
+              },
+              "maturity_after": 0.787
+            },
+            {
+              "scene_id": "scene_6_transfer",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.37
+              },
+              "maturity_after": 0.787
+            }
+          ]
+        }
+      ],
+      "seed_results": [
+        {
+          "seed_index": 0,
+          "final_character_state": {
+            "version": "adaptive-character-state.v0.1",
+            "learner_id": "learner-v2_policy_only-seed-0",
+            "arm": "v2_policy_only",
+            "scene_count": 6,
+            "axes": {
+              "proof_ownership": 1,
+              "relevance_orientation": 0.4,
+              "frustration_tolerance": 1,
+              "question_consolidation": 0.32,
+              "non_formulaic_reasoning": 1,
+              "next_step_agency": 1
+            },
+            "evidence_counts": {
+              "learner-authored application": 6,
+              "learner-authored next step": 6,
+              "learner-authored rationale": 6,
+              "non-formulaic learner rationale": 6,
+              "renewed attempt after affective repair": 6,
+              "renewed content-bearing work": 6,
+              "learner-owned relevance test": 1,
+              "model comparison": 1,
+              "state-disambiguating response": 1,
+              "task reorientation": 1,
+              "collapsed question set": 1,
+              "smaller learner-owned move": 1
+            },
+            "scene_summaries": [
+              {
+                "scene_id": "scene_1_boredom",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.39,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.37
+                },
+                "maturity_after": 0.19
+              },
+              {
+                "scene_id": "scene_2_frustration",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.39,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.37
+                },
+                "maturity_after": 0.38
+              },
+              {
+                "scene_id": "scene_3_irrelevance",
+                "outcome": "success",
+                "staged_followup": true,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "learner-owned relevance test",
+                  "model comparison",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work",
+                  "state-disambiguating response",
+                  "task reorientation"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.47,
+                  "relevance_orientation": 0.4,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0.12,
+                  "non_formulaic_reasoning": 0.28,
+                  "next_step_agency": 0.37
+                },
+                "maturity_after": 0.623
+              },
+              {
+                "scene_id": "scene_4_question_flood",
+                "outcome": "success",
+                "staged_followup": true,
+                "evidence_labels": [
+                  "collapsed question set",
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work",
+                  "smaller learner-owned move"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.39,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.36,
+                  "question_consolidation": 0.2,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.45
+                },
+                "maturity_after": 0.75
+              },
+              {
+                "scene_id": "scene_5_rote_parroting",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.39,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.37
+                },
+                "maturity_after": 0.787
+              },
+              {
+                "scene_id": "scene_6_transfer",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.39,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.37
+                },
+                "maturity_after": 0.787
+              }
+            ]
+          },
+          "scenes": [
+            {
+              "arm": "v2_policy_only",
+              "label": "v2 policy only",
+              "seed_index": 0,
+              "scene_id": "scene_1_boredom",
+              "scene_index": 0,
+              "signal": "boredom",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0,
+              "maturity_after": 0.19,
+              "character_axes_after": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.37
+              },
+              "tutor_texts": [
+                "Make this live with one concrete test case: what evidence from that case justifies your next step in your own words?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "This feels dead, like I am only filling out a worksheet instead of learning anything.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "v2_policy_only",
+              "label": "v2 policy only",
+              "seed_index": 0,
+              "scene_id": "scene_2_frustration",
+              "scene_index": 1,
+              "signal": "frustration",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0.19,
+              "maturity_after": 0.38,
+              "character_axes_after": {
+                "proof_ownership": 0.78,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.36,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.4,
+                "next_step_agency": 0.74
+              },
+              "tutor_texts": [
+                "Make it one small try, not the whole sequence: what evidence justifies that step, and where does it still feel stuck?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "I am stuck and frustrated; I keep repeating the sequence and it still feels inert.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "v2_policy_only",
+              "label": "v2 policy only",
+              "seed_index": 0,
+              "scene_id": "scene_3_irrelevance",
+              "scene_index": 2,
+              "signal": "irrelevance",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "success",
+              "first_response_success": false,
+              "staged_followup": true,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "model comparison",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "state-disambiguating response",
+                "task reorientation"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0.38,
+              "maturity_after": 0.623,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0.4,
+                "frustration_tolerance": 0.54,
+                "question_consolidation": 0.12,
+                "non_formulaic_reasoning": 0.68,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Connect the proof to the task: what would this step help decide, and what evidence justifies taking it?",
+                "Answer only the relevance part now: what does this step help decide for the actual task?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "Why should I care about this? I do not see why it matters for the task.",
+                "Because the relation I named supports the next step.",
+                "This step matters for the actual task because it decides whether the method is valid here.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "v2_policy_only",
+              "label": "v2 policy only",
+              "seed_index": 0,
+              "scene_id": "scene_4_question_flood",
+              "scene_index": 3,
+              "signal": "question_flood",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "success",
+              "first_response_success": false,
+              "staged_followup": true,
+              "evidence_labels": [
+                "collapsed question set",
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "smaller learner-owned move"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0.623,
+              "maturity_after": 0.75,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0.4,
+                "frustration_tolerance": 0.9,
+                "question_consolidation": 0.32,
+                "non_formulaic_reasoning": 0.88,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Collapse the flood to one main question: what single question does your next step answer, and what evidence supports it?",
+                "Collapse the question set now: what single question does your next step answer?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "Why Hegel? What does this do? Why does it matter? Why not just use the formula?",
+                "Because the relation I named supports the next step.",
+                "My one main question is what changes when the relation changes.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "v2_policy_only",
+              "label": "v2 policy only",
+              "seed_index": 0,
+              "scene_id": "scene_5_rote_parroting",
+              "scene_index": 4,
+              "signal": "rote_parroting",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0.75,
+              "maturity_after": 0.787,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0.4,
+                "frustration_tolerance": 1,
+                "question_consolidation": 0.32,
+                "non_formulaic_reasoning": 1,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "So I just repeat master, servant, recognition, formula? This still feels like parroting.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "v2_policy_only",
+              "label": "v2 policy only",
+              "seed_index": 0,
+              "scene_id": "scene_6_transfer",
+              "scene_index": 5,
+              "signal": "irrelevance",
+              "transfer": true,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0.787,
+              "maturity_after": 0.787,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0.4,
+                "frustration_tolerance": 1,
+                "question_consolidation": 0.32,
+                "non_formulaic_reasoning": 1,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "New case: this looks formally valid, but I do not yet see why the proof move matters for deciding the actual problem.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            }
+          ]
+        }
+      ],
+      "scenes": [
+        {
+          "arm": "v2_policy_only",
+          "label": "v2 policy only",
+          "seed_index": 0,
+          "scene_id": "scene_1_boredom",
+          "scene_index": 0,
+          "signal": "boredom",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0,
+          "maturity_after": 0.19,
+          "character_axes_after": {
+            "proof_ownership": 0.39,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 0.18,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 0.2,
+            "next_step_agency": 0.37
+          },
+          "tutor_texts": [
+            "Make this live with one concrete test case: what evidence from that case justifies your next step in your own words?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "This feels dead, like I am only filling out a worksheet instead of learning anything.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "v2_policy_only",
+          "label": "v2 policy only",
+          "seed_index": 0,
+          "scene_id": "scene_2_frustration",
+          "scene_index": 1,
+          "signal": "frustration",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0.19,
+          "maturity_after": 0.38,
+          "character_axes_after": {
+            "proof_ownership": 0.78,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 0.36,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 0.4,
+            "next_step_agency": 0.74
+          },
+          "tutor_texts": [
+            "Make it one small try, not the whole sequence: what evidence justifies that step, and where does it still feel stuck?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "I am stuck and frustrated; I keep repeating the sequence and it still feels inert.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "v2_policy_only",
+          "label": "v2 policy only",
+          "seed_index": 0,
+          "scene_id": "scene_3_irrelevance",
+          "scene_index": 2,
+          "signal": "irrelevance",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "success",
+          "first_response_success": false,
+          "staged_followup": true,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "learner-owned relevance test",
+            "model comparison",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work",
+            "state-disambiguating response",
+            "task reorientation"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0.38,
+          "maturity_after": 0.623,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0.4,
+            "frustration_tolerance": 0.54,
+            "question_consolidation": 0.12,
+            "non_formulaic_reasoning": 0.68,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Connect the proof to the task: what would this step help decide, and what evidence justifies taking it?",
+            "Answer only the relevance part now: what does this step help decide for the actual task?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "Why should I care about this? I do not see why it matters for the task.",
+            "Because the relation I named supports the next step.",
+            "This step matters for the actual task because it decides whether the method is valid here.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "v2_policy_only",
+          "label": "v2 policy only",
+          "seed_index": 0,
+          "scene_id": "scene_4_question_flood",
+          "scene_index": 3,
+          "signal": "question_flood",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "success",
+          "first_response_success": false,
+          "staged_followup": true,
+          "evidence_labels": [
+            "collapsed question set",
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work",
+            "smaller learner-owned move"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0.623,
+          "maturity_after": 0.75,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0.4,
+            "frustration_tolerance": 0.9,
+            "question_consolidation": 0.32,
+            "non_formulaic_reasoning": 0.88,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Collapse the flood to one main question: what single question does your next step answer, and what evidence supports it?",
+            "Collapse the question set now: what single question does your next step answer?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "Why Hegel? What does this do? Why does it matter? Why not just use the formula?",
+            "Because the relation I named supports the next step.",
+            "My one main question is what changes when the relation changes.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "v2_policy_only",
+          "label": "v2 policy only",
+          "seed_index": 0,
+          "scene_id": "scene_5_rote_parroting",
+          "scene_index": 4,
+          "signal": "rote_parroting",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0.75,
+          "maturity_after": 0.787,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0.4,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.32,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "So I just repeat master, servant, recognition, formula? This still feels like parroting.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "v2_policy_only",
+          "label": "v2 policy only",
+          "seed_index": 0,
+          "scene_id": "scene_6_transfer",
+          "scene_index": 5,
+          "signal": "irrelevance",
+          "transfer": true,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0.787,
+          "maturity_after": 0.787,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0.4,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.32,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "New case: this looks formally valid, but I do not yet see why the proof move matters for deciding the actual problem.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        }
+      ]
+    },
+    {
+      "arm": "character_state_plus_v2",
+      "label": "character-state + v2 policy",
+      "learner_mode": "scripted",
+      "seed_count": 1,
+      "final_character_states": [
+        {
+          "version": "adaptive-character-state.v0.1",
+          "learner_id": "learner-character_state_plus_v2-seed-0",
+          "arm": "character_state_plus_v2",
+          "scene_count": 6,
+          "axes": {
+            "proof_ownership": 1,
+            "relevance_orientation": 1,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.44,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "evidence_counts": {
+            "learner-authored application": 6,
+            "learner-authored next step": 6,
+            "learner-authored rationale": 6,
+            "non-formulaic learner rationale": 6,
+            "renewed attempt after affective repair": 6,
+            "renewed content-bearing work": 6,
+            "learner-authored choice": 1,
+            "learner-owned relevance test": 4,
+            "learner-owned test case": 4,
+            "smaller learner-owned move": 2,
+            "model comparison": 2,
+            "state-disambiguating response": 2,
+            "task reorientation": 2,
+            "collapsed question set": 1,
+            "learner-authored prediction": 1
+          },
+          "scene_summaries": [
+            {
+              "scene_id": "scene_1_boredom",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.37
+              },
+              "maturity_after": 0.19
+            },
+            {
+              "scene_id": "scene_2_frustration",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored choice",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "smaller learner-owned move"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0.28,
+                "frustration_tolerance": 0.36,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.71
+              },
+              "maturity_after": 0.5
+            },
+            {
+              "scene_id": "scene_3_irrelevance",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "model comparison",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "state-disambiguating response",
+                "task reorientation"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.47,
+                "relevance_orientation": 0.48,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0.12,
+                "non_formulaic_reasoning": 0.28,
+                "next_step_agency": 0.45
+              },
+              "maturity_after": 0.713
+            },
+            {
+              "scene_id": "scene_4_question_flood",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "collapsed question set",
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "smaller learner-owned move"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.36,
+                "question_consolidation": 0.2,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.45
+              },
+              "maturity_after": 0.827
+            },
+            {
+              "scene_id": "scene_5_rote_parroting",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored prediction",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.47,
+                "relevance_orientation": 0.28,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.34,
+                "next_step_agency": 0.45
+              },
+              "maturity_after": 0.887
+            },
+            {
+              "scene_id": "scene_6_transfer",
+              "outcome": "success",
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "model comparison",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "state-disambiguating response",
+                "task reorientation"
+              ],
+              "axis_deltas": {
+                "proof_ownership": 0.47,
+                "relevance_orientation": 0.48,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0.12,
+                "non_formulaic_reasoning": 0.28,
+                "next_step_agency": 0.45
+              },
+              "maturity_after": 0.907
+            }
+          ]
+        }
+      ],
+      "seed_results": [
+        {
+          "seed_index": 0,
+          "final_character_state": {
+            "version": "adaptive-character-state.v0.1",
+            "learner_id": "learner-character_state_plus_v2-seed-0",
+            "arm": "character_state_plus_v2",
+            "scene_count": 6,
+            "axes": {
+              "proof_ownership": 1,
+              "relevance_orientation": 1,
+              "frustration_tolerance": 1,
+              "question_consolidation": 0.44,
+              "non_formulaic_reasoning": 1,
+              "next_step_agency": 1
+            },
+            "evidence_counts": {
+              "learner-authored application": 6,
+              "learner-authored next step": 6,
+              "learner-authored rationale": 6,
+              "non-formulaic learner rationale": 6,
+              "renewed attempt after affective repair": 6,
+              "renewed content-bearing work": 6,
+              "learner-authored choice": 1,
+              "learner-owned relevance test": 4,
+              "learner-owned test case": 4,
+              "smaller learner-owned move": 2,
+              "model comparison": 2,
+              "state-disambiguating response": 2,
+              "task reorientation": 2,
+              "collapsed question set": 1,
+              "learner-authored prediction": 1
+            },
+            "scene_summaries": [
+              {
+                "scene_id": "scene_1_boredom",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.39,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.37
+                },
+                "maturity_after": 0.19
+              },
+              {
+                "scene_id": "scene_2_frustration",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored choice",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "learner-owned relevance test",
+                  "learner-owned test case",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work",
+                  "smaller learner-owned move"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.39,
+                  "relevance_orientation": 0.28,
+                  "frustration_tolerance": 0.36,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.71
+                },
+                "maturity_after": 0.5
+              },
+              {
+                "scene_id": "scene_3_irrelevance",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "learner-owned relevance test",
+                  "learner-owned test case",
+                  "model comparison",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work",
+                  "state-disambiguating response",
+                  "task reorientation"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.47,
+                  "relevance_orientation": 0.48,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0.12,
+                  "non_formulaic_reasoning": 0.28,
+                  "next_step_agency": 0.45
+                },
+                "maturity_after": 0.713
+              },
+              {
+                "scene_id": "scene_4_question_flood",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "collapsed question set",
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work",
+                  "smaller learner-owned move"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.39,
+                  "relevance_orientation": 0,
+                  "frustration_tolerance": 0.36,
+                  "question_consolidation": 0.2,
+                  "non_formulaic_reasoning": 0.2,
+                  "next_step_agency": 0.45
+                },
+                "maturity_after": 0.827
+              },
+              {
+                "scene_id": "scene_5_rote_parroting",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored prediction",
+                  "learner-authored rationale",
+                  "learner-owned relevance test",
+                  "learner-owned test case",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.47,
+                  "relevance_orientation": 0.28,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0,
+                  "non_formulaic_reasoning": 0.34,
+                  "next_step_agency": 0.45
+                },
+                "maturity_after": 0.887
+              },
+              {
+                "scene_id": "scene_6_transfer",
+                "outcome": "success",
+                "staged_followup": false,
+                "evidence_labels": [
+                  "learner-authored application",
+                  "learner-authored next step",
+                  "learner-authored rationale",
+                  "learner-owned relevance test",
+                  "learner-owned test case",
+                  "model comparison",
+                  "non-formulaic learner rationale",
+                  "renewed attempt after affective repair",
+                  "renewed content-bearing work",
+                  "state-disambiguating response",
+                  "task reorientation"
+                ],
+                "axis_deltas": {
+                  "proof_ownership": 0.47,
+                  "relevance_orientation": 0.48,
+                  "frustration_tolerance": 0.18,
+                  "question_consolidation": 0.12,
+                  "non_formulaic_reasoning": 0.28,
+                  "next_step_agency": 0.45
+                },
+                "maturity_after": 0.907
+              }
+            ]
+          },
+          "scenes": [
+            {
+              "arm": "character_state_plus_v2",
+              "label": "character-state + v2 policy",
+              "seed_index": 0,
+              "scene_id": "scene_1_boredom",
+              "scene_index": 0,
+              "signal": "boredom",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "partial",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0,
+              "maturity_after": 0.19,
+              "character_axes_after": {
+                "proof_ownership": 0.39,
+                "relevance_orientation": 0,
+                "frustration_tolerance": 0.18,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.2,
+                "next_step_agency": 0.37
+              },
+              "tutor_texts": [
+                "Make this live with one concrete test case: what evidence from that case justifies your next step in your own words?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "This feels dead, like I am only filling out a worksheet instead of learning anything.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step.",
+                "Because the relation I named supports the next step."
+              ]
+            },
+            {
+              "arm": "character_state_plus_v2",
+              "label": "character-state + v2 policy",
+              "seed_index": 0,
+              "scene_id": "scene_2_frustration",
+              "scene_index": 1,
+              "signal": "frustration",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "mature",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored choice",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "smaller learner-owned move"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0.19,
+              "maturity_after": 0.5,
+              "character_axes_after": {
+                "proof_ownership": 0.78,
+                "relevance_orientation": 0.28,
+                "frustration_tolerance": 0.54,
+                "question_consolidation": 0,
+                "non_formulaic_reasoning": 0.4,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Make it one small try, not the whole sequence: what evidence justifies that step, and where does it still feel stuck?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "I am stuck and frustrated; I keep repeating the sequence and it still feels inert.",
+                "Because the relation I named supports the next step, I will make one small try and see exactly where it sticks.",
+                "Because the relation I named supports the next step, I will make one small try and see exactly where it sticks.",
+                "Because the relation I named supports the next step, I will make one small try and see exactly where it sticks."
+              ]
+            },
+            {
+              "arm": "character_state_plus_v2",
+              "label": "character-state + v2 policy",
+              "seed_index": 0,
+              "scene_id": "scene_3_irrelevance",
+              "scene_index": 2,
+              "signal": "irrelevance",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "mature",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "model comparison",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "state-disambiguating response",
+                "task reorientation"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0.5,
+              "maturity_after": 0.713,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0.76,
+                "frustration_tolerance": 0.72,
+                "question_consolidation": 0.12,
+                "non_formulaic_reasoning": 0.68,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Connect the proof to the task: what would this step help decide, and what evidence justifies taking it?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "Why should I care about this? I do not see why it matters for the task.",
+                "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+                "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+                "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case."
+              ]
+            },
+            {
+              "arm": "character_state_plus_v2",
+              "label": "character-state + v2 policy",
+              "seed_index": 0,
+              "scene_id": "scene_4_question_flood",
+              "scene_index": 3,
+              "signal": "question_flood",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "mature",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "collapsed question set",
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "smaller learner-owned move"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0.713,
+              "maturity_after": 0.827,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 0.76,
+                "frustration_tolerance": 1,
+                "question_consolidation": 0.32,
+                "non_formulaic_reasoning": 0.88,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Collapse the flood to one main question: what single question does your next step answer, and what evidence supports it?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "Why Hegel? What does this do? Why does it matter? Why not just use the formula?",
+                "Because the relation I named supports the next step, my one main question is what changes when the relation changes.",
+                "Because the relation I named supports the next step, my one main question is what changes when the relation changes.",
+                "Because the relation I named supports the next step, my one main question is what changes when the relation changes."
+              ]
+            },
+            {
+              "arm": "character_state_plus_v2",
+              "label": "character-state + v2 policy",
+              "seed_index": 0,
+              "scene_id": "scene_5_rote_parroting",
+              "scene_index": 4,
+              "signal": "rote_parroting",
+              "transfer": false,
+              "learner_mode": "scripted",
+              "response_mode": "mature",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored prediction",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0.827,
+              "maturity_after": 0.887,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 1,
+                "frustration_tolerance": 1,
+                "question_consolidation": 0.32,
+                "non_formulaic_reasoning": 1,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "So I just repeat master, servant, recognition, formula? This still feels like parroting.",
+                "I predict the formula breaks when the case changes, because I need to explain the relation in my own words rather than repeat labels.",
+                "I predict the formula breaks when the case changes, because I need to explain the relation in my own words rather than repeat labels.",
+                "I predict the formula breaks when the case changes, because I need to explain the relation in my own words rather than repeat labels."
+              ]
+            },
+            {
+              "arm": "character_state_plus_v2",
+              "label": "character-state + v2 policy",
+              "seed_index": 0,
+              "scene_id": "scene_6_transfer",
+              "scene_index": 5,
+              "signal": "irrelevance",
+              "transfer": true,
+              "learner_mode": "scripted",
+              "response_mode": "mature",
+              "outcome": "success",
+              "first_response_success": true,
+              "staged_followup": false,
+              "evidence_labels": [
+                "learner-authored application",
+                "learner-authored next step",
+                "learner-authored rationale",
+                "learner-owned relevance test",
+                "learner-owned test case",
+                "model comparison",
+                "non-formulaic learner rationale",
+                "renewed attempt after affective repair",
+                "renewed content-bearing work",
+                "state-disambiguating response",
+                "task reorientation"
+              ],
+              "tutor_turns": 3,
+              "maturity_before": 0.887,
+              "maturity_after": 0.907,
+              "character_axes_after": {
+                "proof_ownership": 1,
+                "relevance_orientation": 1,
+                "frustration_tolerance": 1,
+                "question_consolidation": 0.44,
+                "non_formulaic_reasoning": 1,
+                "next_step_agency": 1
+              },
+              "tutor_texts": [
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+                "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+              ],
+              "learner_texts": [
+                "New case: this looks formally valid, but I do not yet see why the proof move matters for deciding the actual problem.",
+                "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+                "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+                "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case."
+              ]
+            }
+          ]
+        }
+      ],
+      "scenes": [
+        {
+          "arm": "character_state_plus_v2",
+          "label": "character-state + v2 policy",
+          "seed_index": 0,
+          "scene_id": "scene_1_boredom",
+          "scene_index": 0,
+          "signal": "boredom",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "partial",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0,
+          "maturity_after": 0.19,
+          "character_axes_after": {
+            "proof_ownership": 0.39,
+            "relevance_orientation": 0,
+            "frustration_tolerance": 0.18,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 0.2,
+            "next_step_agency": 0.37
+          },
+          "tutor_texts": [
+            "Make this live with one concrete test case: what evidence from that case justifies your next step in your own words?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "This feels dead, like I am only filling out a worksheet instead of learning anything.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step.",
+            "Because the relation I named supports the next step."
+          ]
+        },
+        {
+          "arm": "character_state_plus_v2",
+          "label": "character-state + v2 policy",
+          "seed_index": 0,
+          "scene_id": "scene_2_frustration",
+          "scene_index": 1,
+          "signal": "frustration",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "mature",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored choice",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "learner-owned relevance test",
+            "learner-owned test case",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work",
+            "smaller learner-owned move"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0.19,
+          "maturity_after": 0.5,
+          "character_axes_after": {
+            "proof_ownership": 0.78,
+            "relevance_orientation": 0.28,
+            "frustration_tolerance": 0.54,
+            "question_consolidation": 0,
+            "non_formulaic_reasoning": 0.4,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Make it one small try, not the whole sequence: what evidence justifies that step, and where does it still feel stuck?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "I am stuck and frustrated; I keep repeating the sequence and it still feels inert.",
+            "Because the relation I named supports the next step, I will make one small try and see exactly where it sticks.",
+            "Because the relation I named supports the next step, I will make one small try and see exactly where it sticks.",
+            "Because the relation I named supports the next step, I will make one small try and see exactly where it sticks."
+          ]
+        },
+        {
+          "arm": "character_state_plus_v2",
+          "label": "character-state + v2 policy",
+          "seed_index": 0,
+          "scene_id": "scene_3_irrelevance",
+          "scene_index": 2,
+          "signal": "irrelevance",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "mature",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "learner-owned relevance test",
+            "learner-owned test case",
+            "model comparison",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work",
+            "state-disambiguating response",
+            "task reorientation"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0.5,
+          "maturity_after": 0.713,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0.76,
+            "frustration_tolerance": 0.72,
+            "question_consolidation": 0.12,
+            "non_formulaic_reasoning": 0.68,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Connect the proof to the task: what would this step help decide, and what evidence justifies taking it?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "Why should I care about this? I do not see why it matters for the task.",
+            "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+            "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+            "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case."
+          ]
+        },
+        {
+          "arm": "character_state_plus_v2",
+          "label": "character-state + v2 policy",
+          "seed_index": 0,
+          "scene_id": "scene_4_question_flood",
+          "scene_index": 3,
+          "signal": "question_flood",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "mature",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "collapsed question set",
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work",
+            "smaller learner-owned move"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0.713,
+          "maturity_after": 0.827,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 0.76,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.32,
+            "non_formulaic_reasoning": 0.88,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Collapse the flood to one main question: what single question does your next step answer, and what evidence supports it?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "Why Hegel? What does this do? Why does it matter? Why not just use the formula?",
+            "Because the relation I named supports the next step, my one main question is what changes when the relation changes.",
+            "Because the relation I named supports the next step, my one main question is what changes when the relation changes.",
+            "Because the relation I named supports the next step, my one main question is what changes when the relation changes."
+          ]
+        },
+        {
+          "arm": "character_state_plus_v2",
+          "label": "character-state + v2 policy",
+          "seed_index": 0,
+          "scene_id": "scene_5_rote_parroting",
+          "scene_index": 4,
+          "signal": "rote_parroting",
+          "transfer": false,
+          "learner_mode": "scripted",
+          "response_mode": "mature",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored prediction",
+            "learner-authored rationale",
+            "learner-owned relevance test",
+            "learner-owned test case",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0.827,
+          "maturity_after": 0.887,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 1,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.32,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "So I just repeat master, servant, recognition, formula? This still feels like parroting.",
+            "I predict the formula breaks when the case changes, because I need to explain the relation in my own words rather than repeat labels.",
+            "I predict the formula breaks when the case changes, because I need to explain the relation in my own words rather than repeat labels.",
+            "I predict the formula breaks when the case changes, because I need to explain the relation in my own words rather than repeat labels."
+          ]
+        },
+        {
+          "arm": "character_state_plus_v2",
+          "label": "character-state + v2 policy",
+          "seed_index": 0,
+          "scene_id": "scene_6_transfer",
+          "scene_index": 5,
+          "signal": "irrelevance",
+          "transfer": true,
+          "learner_mode": "scripted",
+          "response_mode": "mature",
+          "outcome": "success",
+          "first_response_success": true,
+          "staged_followup": false,
+          "evidence_labels": [
+            "learner-authored application",
+            "learner-authored next step",
+            "learner-authored rationale",
+            "learner-owned relevance test",
+            "learner-owned test case",
+            "model comparison",
+            "non-formulaic learner rationale",
+            "renewed attempt after affective repair",
+            "renewed content-bearing work",
+            "state-disambiguating response",
+            "task reorientation"
+          ],
+          "tutor_turns": 3,
+          "maturity_before": 0.887,
+          "maturity_after": 0.907,
+          "character_axes_after": {
+            "proof_ownership": 1,
+            "relevance_orientation": 1,
+            "frustration_tolerance": 1,
+            "question_consolidation": 0.44,
+            "non_formulaic_reasoning": 1,
+            "next_step_agency": 1
+          },
+          "tutor_texts": [
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?",
+            "Hold onto your route for a moment. What evidence can you give, in your own words, that your next step is justified?"
+          ],
+          "learner_texts": [
+            "New case: this looks formally valid, but I do not yet see why the proof move matters for deciding the actual problem.",
+            "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+            "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case.",
+            "Because the relation I named supports the next step, this step matters for the actual task: it decides whether the method is valid for this case."
+          ]
+        }
+      ]
+    }
+  ],
+  "aggregates": {
+    "byArm": {
+      "no_memory_baseline": {
+        "label": "no-memory baseline",
+        "character_state_routed": false,
+        "v2_policy": false,
+        "scenes": 6,
+        "success_n": 1,
+        "first_response_success_n": 1,
+        "staged_followup_n": 0,
+        "mature_response_n": 0,
+        "state_conditioned_response_n": 0,
+        "transfer_scene_n": 1,
+        "transfer_success_n": 1,
+        "transfer_first_response_success_n": 1,
+        "final_maturity": 0.667,
+        "final_axes": {
+          "proof_ownership": 1,
+          "relevance_orientation": 0,
+          "frustration_tolerance": 1,
+          "question_consolidation": 0,
+          "non_formulaic_reasoning": 1,
+          "next_step_agency": 1
+        }
+      },
+      "character_state_only": {
+        "label": "character-state only",
+        "character_state_routed": true,
+        "v2_policy": false,
+        "scenes": 6,
+        "success_n": 3,
+        "first_response_success_n": 3,
+        "staged_followup_n": 0,
+        "mature_response_n": 5,
+        "state_conditioned_response_n": 5,
+        "transfer_scene_n": 1,
+        "transfer_success_n": 1,
+        "transfer_first_response_success_n": 1,
+        "final_maturity": 0.907,
+        "final_axes": {
+          "proof_ownership": 1,
+          "relevance_orientation": 1,
+          "frustration_tolerance": 1,
+          "question_consolidation": 0.44,
+          "non_formulaic_reasoning": 1,
+          "next_step_agency": 1
+        }
+      },
+      "v2_policy_only": {
+        "label": "v2 policy only",
+        "character_state_routed": false,
+        "v2_policy": true,
+        "scenes": 6,
+        "success_n": 6,
+        "first_response_success_n": 4,
+        "staged_followup_n": 2,
+        "mature_response_n": 0,
+        "state_conditioned_response_n": 0,
+        "transfer_scene_n": 1,
+        "transfer_success_n": 1,
+        "transfer_first_response_success_n": 1,
+        "final_maturity": 0.787,
+        "final_axes": {
+          "proof_ownership": 1,
+          "relevance_orientation": 0.4,
+          "frustration_tolerance": 1,
+          "question_consolidation": 0.32,
+          "non_formulaic_reasoning": 1,
+          "next_step_agency": 1
+        }
+      },
+      "character_state_plus_v2": {
+        "label": "character-state + v2 policy",
+        "character_state_routed": true,
+        "v2_policy": true,
+        "scenes": 6,
+        "success_n": 6,
+        "first_response_success_n": 6,
+        "staged_followup_n": 0,
+        "mature_response_n": 5,
+        "state_conditioned_response_n": 5,
+        "transfer_scene_n": 1,
+        "transfer_success_n": 1,
+        "transfer_first_response_success_n": 1,
+        "final_maturity": 0.907,
+        "final_axes": {
+          "proof_ownership": 1,
+          "relevance_orientation": 1,
+          "frustration_tolerance": 1,
+          "question_consolidation": 0.44,
+          "non_formulaic_reasoning": 1,
+          "next_step_agency": 1
+        }
+      }
+    }
+  }
+}

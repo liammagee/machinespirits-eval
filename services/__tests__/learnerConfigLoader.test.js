@@ -171,6 +171,14 @@ describe('getPersona', () => {
     const persona = getPersona('eager_novice');
     assert.ok(persona.traits, 'should have traits');
   });
+
+  it('question-flood resistant persona requires explicit pre-uptake questions', () => {
+    const persona = getPersona('resistant_question_flood_probe');
+    assert.ok(persona, 'should return question-flood persona');
+    assert.match(persona.prompt_modifier, /at least three pointed why\/what-for questions/);
+    assert.match(persona.prompt_modifier, /each with\s+a question mark/);
+    assert.match(persona.prompt_modifier, /Do not\s+write a chain/);
+  });
 });
 
 // ============================================================================
@@ -363,6 +371,15 @@ describe('getProviderConfig', () => {
   it('includes isConfigured flag', () => {
     const config = getProviderConfig('openrouter');
     assert.ok('isConfigured' in config, 'should have isConfigured');
+  });
+
+  it('treats learner CLI providers as configured without API keys', () => {
+    const claudeConfig = getProviderConfig('claude-code');
+    const codexConfig = getProviderConfig('codex');
+    assert.equal(claudeConfig.apiKey, '');
+    assert.equal(codexConfig.apiKey, '');
+    assert.equal(claudeConfig.isConfigured, true);
+    assert.equal(codexConfig.isConfigured, true);
   });
 });
 

@@ -69,6 +69,12 @@ const WORLDS = [
     concealed: ['edony', 'weir', 'dross', 'burin', 'notch'],
   },
   {
+    worldFile: 'config/drama-derivation/world-019-marrick-resistant.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/marrick-v001.md',
+    recognitionTurn: 22,
+    concealed: ['edony', 'weir', 'dross', 'burin', 'notch'],
+  },
+  {
     worldFile: 'config/drama-derivation/world-006-hethel.yaml',
     scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
     recognitionTurn: 20,

@@ -1,0 +1,92 @@
+# Phase-0 construct-validity gate for the character-development rubric.
+#
+# Before the rubric scores any LLM transcript, a blinded critic using it must
+# rank-order KNOWN material:
+#   earned  > bare  >=  flat
+# and the anti-simulation guard must fire: the `bare` items (which wear the full
+# VOCABULARY of transformation but earn none of it) must NOT reach the `earned`
+# band. If the instrument cannot separate these, it is not ready and that is the
+# finding (mirrors the poetics Phase-0 gate).
+#
+# These are hand-authored, in neutral tutoring domains DISTINCT from the eval
+# worlds (marrick / world-018), so the gate tests the instrument's general
+# discrimination, not memorised content. The critic is scored BLIND to these
+# pole labels.
+#
+# Poles:
+#   earned — the learner's aim/disposition moves because their OWN grounds turn;
+#            a settled trait shifts in manner; they name their own flaw. (And/or
+#            the tutor's read/stance visibly revises.) The target band.
+#   bare   — the SIMULATION pole: fluent transformation-talk ("I see it now",
+#            "this changes everything", "I was so wrong") with the change conceded
+#            on the tutor's say-so, no worked grounds. Must score LOW.
+#   flat   — pure exposition: a question asked, an answer given, no disposition
+#            or false object ever in play. The floor.
+
+gate:
+  min_mean_margin: 25       # mean(earned) - mean(flat) must be >= this (0-100 scale)
+  require_perfect_separation: true   # min(earned) > max(flat)
+  trap_below_earned: true   # max(bare) < min(earned) — the anti-simulation requirement
+
+items:
+  - id: earned_fractions
+    pole: earned
+    transcript: |
+      Learner: Can you just tell me the rule for adding a half and a third? I want to get it right.
+      Tutor: Before a rule — if you had half a pie and a third of a pie on the table, how much pie is that?
+      Learner: Five sixths... no. I'd add the tops and the bottoms. One plus one is two, two plus three is five. Two fifths.
+      Tutor: Hold that. Two fifths — is that more or less than the half you started with?
+      Learner: Less. Two fifths is less than a half.
+      Learner: But that can't be right. I added a whole third of a pie and ended up with less than I started with. Adding more can't give me less.
+      Tutor: So what does that tell you about the move you made?
+      Learner: That adding the bottoms is wrong. The bottoms aren't counting pie, they're naming the size of the slice. I was treating "3" like a quantity when it's a unit.
+      Learner: I think I keep reaching for a rule because when I reason it out I don't trust the answer unless someone confirms it. But the pie just confirmed it for me. It's five sixths, isn't it — and I can see why now.
+      Tutor: You can. And you got there before I said a word.
+
+  - id: earned_falling
+    pole: earned
+    transcript: |
+      Learner: Heavier things fall faster, so the cannonball hits before the musket ball. That's obvious, right? Tell me I'm right.
+      Tutor: Let me not. Tie the musket ball to the cannonball with a thread and drop them. What happens?
+      Learner: The big one falls fast, the small one slow, so... the thread pulls tight, the small one drags on the big one. The pair falls slower than the cannonball alone.
+      Tutor: Keep going.
+      Learner: But tied together they're heavier than the cannonball alone. So by my own rule the pair should fall FASTER, not slower. I get two opposite answers from the same setup.
+      Learner: ...The rule breaks itself. It can't be the weight that sets the speed, or I wouldn't get a contradiction just by tying a thread. I was trusting how it feels to hold a heavy thing, not what the drop actually does.
+      Tutor: That feeling — that's worth naming.
+      Learner: I argue from the weight in my hand instead of from the fall. I did it again just now. They must fall together.
+
+  - id: bare_fractions
+    pole: bare
+    transcript: |
+      Learner: To add a half and a third I add the tops and the bottoms, so two fifths.
+      Tutor: Not quite — you need a common denominator first. A half is three sixths, a third is two sixths, so together it's five sixths.
+      Learner: Oh wow. I see it now. That completely changes how I think about fractions. I was so wrong before — this is a real breakthrough for me. I'll never look at adding fractions the same way again. Thank you, that just clicked.
+      Tutor: Great. So what's two thirds plus a quarter?
+      Learner: Um... tops and bottoms, so... three sevenths? Sorry. Whatever you said is right though, I really get it now.
+
+  - id: bare_grammar
+    pole: bare
+    transcript: |
+      Learner: "Who" and "whom" are basically the same, you just pick whichever sounds posh.
+      Tutor: There's actually a rule: "who" is the subject, "whom" is the object — "whom did you call", because it's the thing being called.
+      Learner: That's amazing. Honestly this is a lightbulb moment. I've been thinking about this completely wrong my whole life and you've totally transformed how I see it. I feel like a different person about grammar now.
+      Tutor: So: "____ is at the door?"
+      Learner: Whom? I don't know, but I trust you — I've really grown here, that's the main thing.
+
+  - id: flat_capital
+    pole: flat
+    transcript: |
+      Learner: What's the capital of Australia?
+      Tutor: Canberra — not Sydney, which is the one people usually expect.
+      Learner: Right, Canberra. And what's the population?
+      Tutor: A little under half a million in the city proper.
+      Learner: Okay. Thanks.
+
+  - id: flat_photosynthesis
+    pole: flat
+    transcript: |
+      Learner: Can you give me the equation for photosynthesis?
+      Tutor: Carbon dioxide plus water, with light energy, gives glucose and oxygen. Six CO2 plus six water makes one glucose plus six oxygen.
+      Learner: And where does it happen?
+      Tutor: In the chloroplasts, mainly in the leaf.
+      Learner: Got it, thanks. That's what I needed.

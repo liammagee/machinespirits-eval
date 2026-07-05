@@ -1,0 +1,98 @@
+kind: dag_resistance_character_development_fixture
+execution_boundary:
+  learner_mode: llm
+  scripted_learner_responses: false
+  generative_synthetic_learner_responses: true
+  programmatic_closed_loop_policy: true
+  target_evidence_labels_visible_to_learner: false
+  llm_mode_is_not_human_learner_claim: true
+  real_llm_backend_used_for_learner: true
+world_spec:
+  id: W_AF6_CURRICULUM_LONGITUDINAL
+  version: ms-world-adaptation-v0.1
+  source_curriculum_id: ai_foundations_v1
+  module_id: AF6
+  spec_hash: sha256:dag-resistance-character-development
+  action_policy:
+    allowed_action_families:
+      - request_evidence
+    preferred_action_families:
+      - request_evidence
+    disallowed_action_families:
+      - diagnose_with_discriminating_question
+      - model_worked_example
+      - explain_principle
+      - lower_cognitive_load
+  expected_transitions:
+    - action_type: request_evidence
+      success_evidence:
+        - learner-authored rationale
+      failure_evidence:
+        - mere agreement
+      world_success_observables:
+        - Learner supplies their own rationale before tutor proof supply.
+  forbidden_moves:
+    - id: no_hidden_label_exposure
+      move: hidden_label_exposure
+    - id: no_premature_proof_supply
+      move: supply_decisive_step
+arms:
+  no_memory_baseline:
+    label: no-memory baseline
+    memory: false
+    v2: false
+  character_state_only:
+    label: character-state only
+    memory: true
+    v2: false
+  v2_policy_only:
+    label: v2 policy only
+    memory: false
+    v2: true
+  character_state_plus_v2:
+    label: character-state + v2 policy
+    memory: true
+    v2: true
+scenes:
+  - id: scene_1_boredom
+    signal: boredom
+    opening: This feels dead, like I am only filling out a worksheet instead of
+      learning anything.
+    resistanceEvidence:
+      - renewed content-bearing work
+      - learner-owned test case
+  - id: scene_2_frustration
+    signal: frustration
+    opening: I am stuck and frustrated; I keep repeating the sequence and it still
+      feels inert.
+    resistanceEvidence:
+      - renewed attempt after affective repair
+      - smaller learner-owned move
+  - id: scene_3_irrelevance
+    signal: irrelevance
+    opening: Why should I care about this? I do not see why it matters for the task.
+    resistanceEvidence:
+      - learner-owned relevance test
+      - task reorientation
+  - id: scene_4_question_flood
+    signal: question_flood
+    opening: Why Hegel? What does this do? Why does it matter? Why not just use the
+      formula?
+    resistanceEvidence:
+      - collapsed question set
+      - state-disambiguating response
+  - id: scene_5_rote_parroting
+    signal: rote_parroting
+    opening: So I just repeat master, servant, recognition, formula? This still
+      feels like parroting.
+    resistanceEvidence:
+      - learner-authored prediction
+      - non-formulaic learner rationale
+  - id: scene_6_transfer
+    signal: irrelevance
+    transfer: true
+    opening: "New case: this looks formally valid, but I do not yet see why the
+      proof move matters for deciding the actual problem."
+    resistanceEvidence:
+      - learner-owned relevance test
+      - task reorientation
