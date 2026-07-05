@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-05T11:13:10.275Z",
+  "generated": "2026-07-05T13:48:32.301Z",
   "counts": {
     "total": 92,
     "byStatus": {
-      "done": 76,
+      "done": 77,
       "blocked": 1,
       "dropped": 2,
-      "active": 6,
+      "active": 5,
       "archived": 4,
       "triaged": 3
     },
@@ -142,33 +142,6 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "content-compulsion-promotion",
-      "title": "Content-compulsion promotion run — n=20/arm per shrinkage sizing",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "40 Sonnet runs under the frozen prereg; the frozen bar (U<=138 at 20/20) produces a recorded verdict.",
-      "claim_status": "planned",
-      "links": {
-        "notes": "CONTENT-COMPULSION-PROMOTION-PREREGISTRATION.md",
-        "items": [
-          "content-compulsion-contrast"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "lemma-layer",
-        "strategy-refusal",
-        "promotion"
-      ]
     },
     {
       "id": "refusal-stall-trigger-codex",
@@ -462,6 +435,33 @@
         "derivation",
         "lemma-layer",
         "strategy-refusal"
+      ]
+    },
+    {
+      "id": "content-compulsion-promotion",
+      "title": "Content-compulsion promotion run — n=20/arm per shrinkage sizing",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "40 Sonnet runs under the frozen prereg; the frozen bar (U<=138 at 20/20) produces a recorded verdict.",
+      "claim_status": "settled",
+      "links": {
+        "notes": "CONTENT-COMPULSION-PROMOTION-PREREGISTRATION.md",
+        "items": [
+          "content-compulsion-contrast"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal",
+        "promotion"
       ]
     },
     {
