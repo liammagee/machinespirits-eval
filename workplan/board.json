@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-05T00:54:24.241Z",
+  "generated": "2026-07-05T01:32:56.152Z",
   "counts": {
-    "total": 81,
+    "total": 82,
     "byStatus": {
       "done": 69,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 4,
       "archived": 4,
       "triaged": 2
     },
     "byType": {
       "research": 40,
-      "experiment": 14,
+      "experiment": 15,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -144,6 +144,33 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "lemma-sonnet-calibrated-contrast",
+      "title": "Lemma-map Sonnet contrast at the calibrated dose — the measurable mid-tier test",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "24 Sonnet runs at dose 0.08 under the frozen pre-registration; the frozen bar produces a recorded verdict (or a voiding condition fires).",
+      "claim_status": "planned",
+      "links": {
+        "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "sonnet-calibrated-worlds",
+          "lemma-sonnet-contrast"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "model-tiers"
+      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
