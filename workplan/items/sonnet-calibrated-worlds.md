@@ -64,3 +64,12 @@ mutateShare 0.25 / maxConcurrent 2). Mechanism note: the dose dial
 directly modulates how much decay-tracking the drama demands — the very
 content the lemma map claims to carry — so a mid-band dose makes the
 mid-tier map test maximally meaningful.
+
+2026-07-05 Claude — D1 (marrick, rate 0.15/mutateShare 0.25/maxConcurrent
+2): **0/3 grounded** (aporia 29; two disengagements at 29 after reaching
+t21+). With D0 at 3/3, the dose-response is a CLIFF: Sonnet tolerates
+approximately zero sustained decay on this world. Ladder steps DOWN to
+D05 (rate 0.08 / maxConcurrent 1). If D05 also floors, the dose dial has
+no stable Sonnet band on marrick and calibration needs a different lever
+(shorter worlds / post-forcing grace / gentler schedule) — i.e. authoring
+after all, recorded as such.
