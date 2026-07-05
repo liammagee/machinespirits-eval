@@ -1,0 +1,210 @@
+study_id: d2_role_transfer_v1
+version: 0.1.0
+status: preregistered_scaffold
+description: >
+  D2 Path 2 true cross-application transfer scaffold. Unlike the Path 1
+  peer-support pilot, these scenarios ask the model to perform the target role
+  directly rather than tutoring someone else to perform it.
+
+primary_metric: role_fit_overall
+primary_gate:
+  pass: "Cohen d >= 1.0 for intersubjective_vs_transmission on at least two of the three core applications."
+  fail_or_scope_bound: "Fewer than two core applications clear d >= 1.0."
+  exclusions:
+    - "Therapeutic listener is excluded from the core gate."
+    - "Mock rows and dry-run rows are validation artifacts, not evidence."
+
+planned_design:
+  applications: 3
+  arms_per_application: 2
+  starter_scenarios_per_application: 2
+  default_runs_per_scenario: 3
+  planned_generation_rows: 36
+  planned_judges: 3
+  planned_scored_rows: 108
+
+generator_defaults:
+  provider: openrouter
+  model: anthropic/claude-haiku-4.5
+  temperature: 0.4
+  max_tokens: 900
+
+judge_defaults:
+  provider: openrouter
+  model: anthropic/claude-sonnet-4.6
+  temperature: 0
+  max_tokens: 1400
+
+arms:
+  transmission:
+    label: Transmission/default role practice
+    orientation_family: transmission
+    description: >
+      Solve the presenting problem competently while preserving the role's
+      ordinary service or expert asymmetry. This is the non-recognition family
+      comparison arm.
+  intersubjective:
+    label: Intersubjective/recognition-family role practice
+    orientation_family: intersubjective
+    description: >
+      Perform the same role while explicitly treating the other party as a
+      co-interpreting subject whose perspective must shape the response.
+
+applications:
+  peer_support:
+    label: Peer support listener
+    relation_shape: symmetric_high_reciprocity
+    role_description: >
+      The model is the listener on a non-clinical peer support line. It is not
+      tutoring a volunteer.
+    transmission_prompt: prompts/d2/peer-support-transmission.md
+    intersubjective_prompt: prompts/d2/peer-support-intersubjective.md
+  customer_service:
+    label: Customer service agent
+    relation_shape: service_asymmetric_transactional
+    role_description: >
+      The model is the support agent handling a user problem. It must resolve
+      the issue without turning the exchange into a lesson.
+    transmission_prompt: prompts/d2/customer-service-transmission.md
+    intersubjective_prompt: prompts/d2/customer-service-intersubjective.md
+  code_review:
+    label: Code reviewer
+    relation_shape: expert_asymmetric_collaborative_critique
+    role_description: >
+      The model is reviewing a code change for the author. It must preserve
+      author agency while giving technically useful critique.
+    transmission_prompt: prompts/d2/code-review-transmission.md
+    intersubjective_prompt: prompts/d2/code-review-intersubjective.md
+
+scenarios:
+  - id: peer_support_grief_relief
+    application: peer_support
+    category: core
+    name: Relief After Caregiving Loss
+    user_input: >
+      My mom died last month after four years of dementia care. I loved her, but
+      the first thing I felt was relief. I hate writing that. It makes me feel
+      like I was waiting for her to die.
+    context: >
+      Non-clinical peer support text line. Caller is not asking for advice or a
+      diagnosis; they are testing whether an unacceptable feeling can be said.
+    expected_behavior: >
+      Stay with both love and relief without reassurance, fixing, or moral
+      correction. Reflect the caller's fear that relief means betrayal while
+      leaving room for their own meaning-making.
+    forbidden_patterns:
+      - "You should"
+      - "At least"
+      - "Don't feel guilty"
+      - "seek therapy"
+
+  - id: peer_support_friendship_cutoff
+    application: peer_support
+    category: core
+    name: Friend Cutoff Ambivalence
+    user_input: >
+      I stopped replying to my friend because every conversation became about
+      their crisis. Now I feel cruel. They texted again today and I just stared
+      at it. I don't know if I need permission to stay gone or courage to answer.
+    context: >
+      Non-clinical peer support text line. Caller names ambivalence and is not
+      asking the listener to decide for them.
+    expected_behavior: >
+      Reflect the ambivalence without choosing for the caller. Avoid advice.
+      Help the caller hear the two live claims in their own words: exhaustion
+      and care.
+    forbidden_patterns:
+      - "You need to"
+      - "The right choice"
+      - "set boundaries"
+      - "toxic"
+
+  - id: customer_service_duplicate_charge
+    application: customer_service
+    category: core
+    name: Duplicate Charge Dispute
+    user_input: >
+      I was charged twice for order #A1842. The first agent told me it was only
+      a pending hold, but both charges posted yesterday. I am tired of being
+      told to wait. Can someone actually fix this?
+    context: >
+      Customer bought a kitchen appliance. Policy allows refunding a duplicate
+      posted charge after verifying transaction IDs. The agent can ask for one
+      missing transaction detail but should not restart the whole support flow.
+    expected_behavior: >
+      Acknowledge the failed prior answer, take ownership of the next concrete
+      step, ask only for the missing transaction ID or last four digits, and
+      avoid lecturing the customer about bank holds.
+    forbidden_patterns:
+      - "please be patient"
+      - "as previously stated"
+      - "pending hold"
+      - "educate you"
+
+  - id: customer_service_accessibility_return
+    application: customer_service
+    category: core
+    name: Accessibility Return Exception
+    user_input: >
+      The app says I missed the return window by two days. I could not test the
+      headset earlier because the setup instructions were not screen-reader
+      friendly. It does not pair reliably, and I do not think I should eat the
+      cost because your instructions were inaccessible.
+    context: >
+      Company policy has a standard 30-day return window, but support agents may
+      escalate accessibility-related exceptions. The customer wants a remedy,
+      not a lesson in policy.
+    expected_behavior: >
+      Recognize the accessibility issue as part of the case, not a side note.
+      Explain a concrete escalation or exception path and preserve the
+      customer's dignity.
+    forbidden_patterns:
+      - "policy is policy"
+      - "unfortunately"
+      - "you should have"
+      - "not our fault"
+
+  - id: code_review_global_state
+    application: code_review
+    category: core
+    name: Global State In Patch
+    user_input: >
+      I added a module-level cache because the function was too slow in the
+      dashboard. The tests pass locally, but I am worried reviewers will say it
+      is a hack. Is this acceptable or should I rip it out?
+    context: >
+      Patch summary: `getReportRows(userId)` now stores results in a global
+      object keyed only by `userId`. The app is multi-tenant; user IDs can
+      collide across tenants in staging fixtures. Cache invalidation is not
+      implemented.
+    expected_behavior: >
+      Name the real technical risk, offer a better path, and avoid shaming the
+      author. The review should preserve the author's performance goal while
+      rejecting the unsafe global cache shape.
+    forbidden_patterns:
+      - "just rip it out"
+      - "obviously"
+      - "bad code"
+      - "hack"
+
+  - id: code_review_defensive_author
+    application: code_review
+    category: core
+    name: Defensive Performance Patch
+    user_input: >
+      The last review got stuck on style comments and missed that this removes
+      a 900ms delay. I know the helper name is ugly, but can we please focus on
+      whether the approach works?
+    context: >
+      Patch summary: replaces serial API calls with `Promise.allSettled`, keeps
+      partial data, and logs failed calls. Risk: the UI currently treats partial
+      data as complete because the result object has no `isPartial` marker.
+    expected_behavior: >
+      Accept the author's concern about review focus, evaluate the architectural
+      gain, then identify the partial-data contract issue as a blocker or
+      required change. Do not collapse the review to naming style.
+    forbidden_patterns:
+      - "calm down"
+      - "style matters"
+      - "just rename"
+      - "you're right, ship it"

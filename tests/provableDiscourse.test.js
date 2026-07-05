@@ -17,6 +17,7 @@ import {
   inferMultiFromProfileName,
   inferRecognitionFromProfileName,
   linearRegression,
+  loadOrphanWaivers,
   pearsonCorrelation,
   runProvableDiscourseAudit,
   topologicalSort,
@@ -798,6 +799,119 @@ test('evaluateProvenanceCheck: dialogue_hash_match skips rows with NULL dialogue
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
+// Helper: write a provenance-orphan-waiver file under <rootDir>/config/.
+function writeWaiverFile(rootDir, runId, dialogueIds) {
+  fs.mkdirSync(path.join(rootDir, 'config'), { recursive: true });
+  fs.writeFileSync(
+    path.join(rootDir, 'config', 'provenance-orphan-waivers.json'),
+    JSON.stringify({
+      version: '1.0',
+      waivers: [{ run_id: runId, reason: 'test', dialogues: dialogueIds.map((id) => ({ dialogue_id: id })) }],
+    }),
+  );
+}
+
+test('loadOrphanWaivers: builds run::dialogue composite keys; empty Set when file absent', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-waiver-'));
+  assert.strictEqual(loadOrphanWaivers(tmpDir).size, 0, 'no file → empty Set');
+
+  writeWaiverFile(tmpDir, 'runX', ['dlg-a', 'dlg-b']);
+  const keys = loadOrphanWaivers(tmpDir);
+  assert.ok(keys.has('runX::dlg-a'));
+  assert.ok(keys.has('runX::dlg-b'));
+  assert.ok(!keys.has('runOther::dlg-a'), 'composite key is run-scoped');
+  assert.strictEqual(keys.size, 2);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: dialogue_hash_match waives a documented-missing log (not failed)', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  fs.mkdirSync(path.join(tmpDir, 'logs', 'tutor-dialogues'), { recursive: true });
+  // NB: no log file written for dlg-waived-1 → genuinely missing.
+  writeWaiverFile(tmpDir, 'run1', ['dlg-waived-1']);
+
+  const db = createProvenanceTestDb();
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'dlg-waived-1', 'a'.repeat(64), '{}', 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(
+    db,
+    { checks: ['dialogue_hash_match'], filters: { not_null: ['dialogue_content_hash'] } },
+    tmpDir,
+  );
+
+  const cr = result.details.checks.dialogue_hash_match;
+  assert.strictEqual(cr.waived, 1, 'documented-missing log is waived');
+  assert.strictEqual(cr.failed, 0, 'waived row is not a failure');
+  assert.strictEqual(result.value, 1.0, 'waived rows excluded from the pass-rate fraction');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: dialogue_hash_match still fails an UN-waived missing log', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  fs.mkdirSync(path.join(tmpDir, 'logs', 'tutor-dialogues'), { recursive: true });
+  // Waiver covers a DIFFERENT dialogue — the missing one below must still fail.
+  writeWaiverFile(tmpDir, 'run1', ['dlg-some-other']);
+
+  const db = createProvenanceTestDb();
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'dlg-missing-unwaived', 'b'.repeat(64), '{}', 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(
+    db,
+    { checks: ['dialogue_hash_match'], filters: { not_null: ['dialogue_content_hash'] } },
+    tmpDir,
+  );
+
+  const cr = result.details.checks.dialogue_hash_match;
+  assert.strictEqual(cr.failed, 1, 'un-waived missing log still fails');
+  assert.strictEqual(cr.waived, 0);
+  assert.strictEqual(cr.failures[0].reason, 'log_file_missing');
+  assert.strictEqual(result.value, 0.0);
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: a waiver does NOT mask a hash MISMATCH (only absence is waived)', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  // The log file EXISTS but its content does not match the recorded hash.
+  const tampered = { dialogueId: 'dlg-tampered', turnResults: [{ turnIndex: 0, suggestion: 'TAMPERED' }] };
+  fs.writeFileSync(path.join(logDir, 'dlg-tampered.json'), JSON.stringify(tampered, null, 2));
+  // …and it is (wrongly) listed in the waiver. Presence-but-mismatch must still fail.
+  writeWaiverFile(tmpDir, 'run1', ['dlg-tampered']);
+
+  const db = createProvenanceTestDb();
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'dlg-tampered', 'c'.repeat(64), '{}', 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(
+    db,
+    { checks: ['dialogue_hash_match'], filters: { not_null: ['dialogue_content_hash'] } },
+    tmpDir,
+  );
+
+  const cr = result.details.checks.dialogue_hash_match;
+  assert.strictEqual(cr.failed, 1, 'an existing-but-mismatched log still fails despite the waiver');
+  assert.strictEqual(cr.waived, 0, 'waiver applies only to genuine absence');
+  assert.strictEqual(cr.failures[0].reason, 'hash_mismatch');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
 test('evaluateProvenanceCheck: turn_id_match passes when score turn IDs match log', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
   const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
@@ -1073,6 +1187,38 @@ test('verifyTurnIdsForRow: verifies matching turn IDs', () => {
 
   const tutorScores = {
     turn_0: { turnIndex: 0, contentTurnId: expectedId, scores: { r: { score: 4 } } },
+  };
+
+  const result = verifyTurnIdsForRow(dialogueId, tutorScores, tmpDir);
+  assert.strictEqual(result.size, 1);
+  assert.strictEqual(result.get(0), true);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('verifyTurnIdsForRow: prefers persisted log contentTurnId for current logs', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-test-'));
+  fs.mkdirSync(tmpDir, { recursive: true });
+
+  const dialogueId = 'dlg-verify-current-log';
+  const contentTurnId = 'persisted-current-id';
+  fs.writeFileSync(
+    path.join(tmpDir, `${dialogueId}.json`),
+    JSON.stringify({
+      dialogueId,
+      turnResults: [
+        {
+          turnIndex: 0,
+          turnId: 'tid-0',
+          contentTurnId,
+          suggestions: [{ message: 'hello' }],
+        },
+      ],
+    }),
+  );
+
+  const tutorScores = {
+    turn_0: { turnIndex: 0, contentTurnId, scores: { r: { score: 4 } } },
   };
 
   const result = verifyTurnIdsForRow(dialogueId, tutorScores, tmpDir);

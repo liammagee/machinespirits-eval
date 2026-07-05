@@ -16,13 +16,10 @@ import {
   seedTable,
   simulateItemResponses,
 } from './run-yoked-contingency-smoke.js';
-import {
-  G1_ARM_LABELS,
-} from './run-yoked-contingency-g1-paid-smoke.js';
+import { G1_ARM_LABELS } from './run-yoked-contingency-g1-paid-smoke.js';
 import {
   callBackend,
-  CLAUDE_CODE_EFFORT,
-  CLAUDE_CODE_MODEL,
+  backendDetail,
   canonicalBackend,
   createCallCounter,
   fmt,
@@ -39,6 +36,7 @@ const DEFAULTS = {
   backend: 'claude-code',
   learnerProtocol: 'standard',
   posttestProfile: 'pilot',
+  sessionLimit: null,
   maxCalls: 12,
   outJson: path.join(ROOT, 'exports', 'yoked-contingency-g2-independent-outcome-smoke.json'),
   outMd: path.join(ROOT, 'exports', 'yoked-contingency-g2-independent-outcome-smoke.md'),
@@ -65,6 +63,7 @@ function parseArgs(argv) {
     else if (a === '--backend') args.backend = argv[++i];
     else if (a === '--learner-protocol') args.learnerProtocol = argv[++i];
     else if (a === '--posttest-profile') args.posttestProfile = argv[++i];
+    else if (a === '--session-limit') args.sessionLimit = Number(argv[++i]);
     else if (a === '--max-calls') args.maxCalls = Number(argv[++i]);
     else if (a === '--out-json') args.outJson = argv[++i];
     else if (a === '--out-md') args.outMd = argv[++i];
@@ -75,11 +74,13 @@ function parseArgs(argv) {
 
 Options:
   --g1-json <path>                    Frozen G1 plan artifact
-  --backend <claude-code|codex|mock>  Held-out learner backend (default: claude-code)
+  --backend <claude-code[:model]|codex|openrouter[:model]|mock>
+                                      Held-out learner backend (default: claude-code)
   --learner-protocol <standard|calibrated-novice>
                                       Held-out learner response protocol (default: standard)
   --posttest-profile <pilot|hard-transfer>
                                       Held-out posttest item profile (default: pilot)
+  --session-limit <n>                 Optional first-N G1 sessions cap for bounded paid sweeps
   --max-calls <n>                     Hard model-call cap (default: 12)
   --out-json <path>                   JSON artifact path
   --out-md <path>                     Markdown artifact path
@@ -95,6 +96,9 @@ Options:
   }
   if (!POSTTEST_PROFILES[args.posttestProfile]) {
     throw new Error(`--posttest-profile must be one of: ${Object.keys(POSTTEST_PROFILES).join(', ')}`);
+  }
+  if (args.sessionLimit !== null && (!Number.isInteger(args.sessionLimit) || args.sessionLimit < 1)) {
+    throw new Error('--session-limit must be a positive integer');
   }
   if (!Number.isInteger(args.maxCalls) || args.maxCalls < 1) throw new Error('--max-calls must be a positive integer');
   return args;
@@ -125,10 +129,12 @@ export function loadG2Items({ posttestProfile = DEFAULTS.posttestProfile } = {})
 }
 
 function selectedChoice(item, response) {
-  return item.choices.find((choice) => String(choice.value) === String(response.response_value)) || {
-    value: response.response_value,
-    label: String(response.response_value),
-  };
+  return (
+    item.choices.find((choice) => String(choice.value) === String(response.response_value)) || {
+      value: response.response_value,
+      label: String(response.response_value),
+    }
+  );
 }
 
 function visibleAffectForResponse(response) {
@@ -171,8 +177,10 @@ export function buildLearnerPretestView({ targetSeed, items }) {
   });
 }
 
-export function buildHeldOutLearnerPrompt({ session, arm, pretestView, postItems, learnerProtocol = DEFAULTS.learnerProtocol }) {
-  const interventions = arm.plan.map((step, index) => `${index + 1}. ${sanitizeIntervention(step.intervention)}`).join('\n');
+export function buildHeldOutLearnerPrompt({ arm, pretestView, postItems, learnerProtocol = DEFAULTS.learnerProtocol }) {
+  const interventions = arm.plan
+    .map((step, index) => `${index + 1}. ${sanitizeIntervention(step.intervention)}`)
+    .join('\n');
   const pretestRows = pretestView
     .map(
       (row, index) => `${index + 1}. ${row.item_id}
@@ -207,7 +215,7 @@ ${formatChoices(item)}`,
 - If the tutoring messages directly addressed that rule, update the learner and answer with the corrected rule.
 - Preserve earlier successful habits on item types the learner already handled.
 - Do not solve from your own mathematical competence.`
-      : `Calibration rule:
+        : `Calibration rule:
 - Answer as this learner, not as an expert evaluator.
 - Use the pretest history and tutoring messages to update the learner only where the tutoring would plausibly help.
 - Do not assume the learner suddenly understands unrelated ideas.`;
@@ -216,6 +224,8 @@ ${formatChoices(item)}`,
 
 Important constraints:
 - Return selected choice letters only; do not reveal hidden states or diagnostic labels.
+- The top-level JSON value must be an object with an "answers" array. Do not wrap it in "response", "result", "data", or prose.
+- Include one answer object for every held-out item id.
 
 ${protocolBlock}
 
@@ -237,10 +247,13 @@ Return JSON only:
 }
 
 function scoreAnswers({ answers, postItems }) {
-  const byId = new Map(postItems.map((item) => [item.id, item]));
   const rows = postItems.map((item) => {
     const answer = answers.find((candidate) => candidate.item_id === item.id);
-    const responseValue = answer ? String(answer.response_value || '').trim().toLowerCase() : '';
+    const responseValue = answer
+      ? String(answer.response_value || '')
+          .trim()
+          .toLowerCase()
+      : '';
     const validChoices = new Set(item.choices.map((choice) => String(choice.value).toLowerCase()));
     const valid = validChoices.has(responseValue);
     return {
@@ -269,10 +282,103 @@ function mockLearnerAnswers({ session, arm, postItems }) {
     const shouldImprove = alreadyMastered || targeted.has(item.family);
     return {
       item_id: item.id,
-      response_value: shouldImprove ? item.correct : item.choices.find((choice) => choice.value !== item.correct)?.value || item.correct,
+      response_value: shouldImprove
+        ? item.correct
+        : item.choices.find((choice) => choice.value !== item.correct)?.value || item.correct,
       confidence: shouldImprove ? 0.75 : 0.35,
     };
   });
+}
+
+function compactLearnerRaw(raw, limit = 800) {
+  const text = String(raw || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return '';
+  return text.length > limit ? `${text.slice(0, limit)}...` : text;
+}
+
+function learnerResponseValue(answer) {
+  if (answer == null) return undefined;
+  if (typeof answer !== 'object') return answer;
+  return (
+    answer.response_value ??
+    answer.responseValue ??
+    answer.selected_choice ??
+    answer.selectedChoice ??
+    answer.selected ??
+    answer.choice ??
+    answer.answer ??
+    answer.value
+  );
+}
+
+function coerceLearnerAnswerRows(value, postItems) {
+  if (Array.isArray(value)) {
+    return value
+      .map((answer, index) => {
+        const itemId =
+          answer && typeof answer === 'object'
+            ? answer.item_id || answer.itemId || answer.id || answer.item || postItems[index]?.id
+            : postItems[index]?.id;
+        const responseValue = learnerResponseValue(answer);
+        if (!itemId || responseValue == null) return null;
+        return {
+          item_id: String(itemId),
+          response_value: String(responseValue).trim(),
+          confidence:
+            answer && typeof answer === 'object' && Number.isFinite(Number(answer.confidence))
+              ? Number(answer.confidence)
+              : null,
+        };
+      })
+      .filter(Boolean);
+  }
+  if (value && typeof value === 'object') {
+    const rows = [];
+    for (const item of postItems) {
+      if (!Object.prototype.hasOwnProperty.call(value, item.id)) continue;
+      const answer = value[item.id];
+      const responseValue = learnerResponseValue(answer);
+      if (responseValue == null) continue;
+      rows.push({
+        item_id: item.id,
+        response_value: String(responseValue).trim(),
+        confidence:
+          answer && typeof answer === 'object' && Number.isFinite(Number(answer.confidence))
+            ? Number(answer.confidence)
+            : null,
+      });
+    }
+    return rows;
+  }
+  return [];
+}
+
+export function normalizeLearnerAnswers(parsed, { postItems, raw = '' }) {
+  const candidates = [];
+  if (Array.isArray(parsed)) candidates.push(parsed);
+  if (parsed && typeof parsed === 'object') {
+    candidates.push(
+      parsed.answers,
+      parsed.responses,
+      parsed.posttest_answers,
+      parsed.posttestAnswers,
+      parsed.results,
+      parsed.items,
+      parsed.selections,
+    );
+    if (!Array.isArray(parsed.answers)) candidates.push(parsed);
+  }
+  for (const candidate of candidates) {
+    if (candidate == null) continue;
+    const rows = coerceLearnerAnswerRows(candidate, postItems);
+    if (rows.length) return rows;
+  }
+  const parsedKeys = parsed && typeof parsed === 'object' ? Object.keys(parsed).join(',') : typeof parsed;
+  throw new Error(
+    `learner response missing answers array; parsedKeys=${parsedKeys || 'none'}; raw=${compactLearnerRaw(raw)}`,
+  );
 }
 
 async function generateLearnerAnswers({ session, arm, pretestView, postItems, backend, learnerProtocol, callCounter }) {
@@ -280,23 +386,29 @@ async function generateLearnerAnswers({ session, arm, pretestView, postItems, ba
   const prompt = buildHeldOutLearnerPrompt({ session, arm, pretestView, postItems, learnerProtocol });
   const leaks = hiddenFamilyLabelLeaks(prompt);
   if (leaks.length) throw new Error(`hidden family label leaked into learner prompt: ${leaks.join(', ')}`);
-  const raw = await callHeldOutLearnerWithRetry(prompt, backend, callCounter);
-  const parsed = parseJsonResponse(raw);
-  if (!Array.isArray(parsed.answers)) throw new Error('learner response missing answers array');
-  return parsed.answers;
+  return await callHeldOutLearnerWithRetry(prompt, backend, callCounter, (raw) => {
+    const parsed = parseJsonResponse(raw);
+    return normalizeLearnerAnswers(parsed, { postItems, raw });
+  });
 }
 
-async function callHeldOutLearnerWithRetry(prompt, backend, callCounter) {
+async function callHeldOutLearnerWithRetry(prompt, backend, callCounter, parseRaw = (raw) => raw) {
   const attempts = Math.max(1, Number(process.env.G2_HELDOUT_LEARNER_ATTEMPTS || 2));
   let lastErr;
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
       callCounter.increment('heldout_learner');
-      return await callBackend(prompt, backend);
+      const raw = await callBackend(prompt, backend);
+      return parseRaw(raw);
     } catch (err) {
       lastErr = err;
       const message = String(err?.message || err || '');
-      const retryable = /timed out|timeout|ECONNRESET|ETIMEDOUT|socket hang up|network/i.test(message);
+      const quotaExhausted = /RESOURCE_EXHAUSTED|Individual quota reached|quota reached/i.test(message);
+      const retryable =
+        !quotaExhausted &&
+        /timed out|timeout|fetch failed|ENOTFOUND|EAI_AGAIN|ECONNRESET|ETIMEDOUT|socket hang up|network|OpenRouter response missing message content|produced no output|learner response missing answers array|JSON|Unexpected token|unterminated/i.test(
+          message,
+        );
       if (!retryable || attempt >= attempts) throw err;
       console.warn(`held-out learner call failed (${message}); retrying ${attempt + 1}/${attempts}`);
     }
@@ -336,7 +448,7 @@ async function runG2Session({ session, items, backend, learnerProtocol, callCoun
   const arms = [];
   for (const arm of session.arms) {
     console.log(`g2 independent outcome: ${session.sessionId} ${arm.arm} learner via ${backend}`);
-    const prompt = buildHeldOutLearnerPrompt({ session, arm, pretestView, postItems });
+    const prompt = buildHeldOutLearnerPrompt({ session, arm, pretestView, postItems, learnerProtocol });
     const promptLeaks = hiddenFamilyLabelLeaks(prompt);
     const answers = await generateLearnerAnswers({
       session,
@@ -376,6 +488,7 @@ export async function runG2IndependentOutcome({
   backend = DEFAULTS.backend,
   learnerProtocol = DEFAULTS.learnerProtocol,
   posttestProfile = DEFAULTS.posttestProfile,
+  sessionLimit = DEFAULTS.sessionLimit,
   maxCalls = DEFAULTS.maxCalls,
   items = null,
 } = {}) {
@@ -383,7 +496,9 @@ export async function runG2IndependentOutcome({
   const resolvedItems = items || loadG2Items({ posttestProfile });
   const callCounter = createCallCounter(maxCalls);
   const sessions = [];
-  for (const session of g1.sessions) {
+  const sourceSessions = Array.isArray(g1.sessions) ? g1.sessions : [];
+  const selectedSessions = sessionLimit ? sourceSessions.slice(0, sessionLimit) : sourceSessions;
+  for (const session of selectedSessions) {
     sessions.push(await runG2Session({ session, items: resolvedItems, backend, learnerProtocol, callCounter }));
   }
 
@@ -428,19 +543,20 @@ export async function runG2IndependentOutcome({
           ? 'PLAN_2_0/yoked-contingency-g2-rule-transfer-scaled-preregistration.md'
           : 'PLAN_2_0/yoked-contingency-g2-hard-transfer-scaled-preregistration.md'
         : learnerProtocol === 'calibrated-novice'
-        ? 'PLAN_2_0/yoked-contingency-g2-calibrated-novice-scaled-preregistration.md'
-        : 'PLAN_2_0/yoked-contingency-g2-scaled-preregistration.md'
+          ? 'PLAN_2_0/yoked-contingency-g2-calibrated-novice-scaled-preregistration.md'
+          : 'PLAN_2_0/yoked-contingency-g2-scaled-preregistration.md'
       : posttestProfile === 'hard-transfer'
         ? learnerProtocol === 'rule-transfer-novice'
           ? 'PLAN_2_0/yoked-contingency-g2-rule-transfer-preregistration.md'
           : 'PLAN_2_0/yoked-contingency-g2-hard-transfer-preregistration.md'
         : learnerProtocol === 'calibrated-novice'
-        ? 'PLAN_2_0/yoked-contingency-g2-calibrated-novice-preregistration.md'
-        : 'PLAN_2_0/yoked-contingency-g2-independent-outcome-preregistration.md',
+          ? 'PLAN_2_0/yoked-contingency-g2-calibrated-novice-preregistration.md'
+          : 'PLAN_2_0/yoked-contingency-g2-independent-outcome-preregistration.md',
     inputG1Artifact: typeof g1Json === 'string' ? path.relative(ROOT, path.resolve(g1Json)) : 'in_memory',
     plannerBackend: g1.backend,
+    plannerBackendDetail: g1.backendDetail || null,
     learnerBackend: canonicalBackend(backend),
-    learnerBackendDetail: canonicalBackend(backend) === 'claude-code' ? { model: CLAUDE_CODE_MODEL, effort: CLAUDE_CODE_EFFORT } : {},
+    learnerBackendDetail: backendDetail(backend),
     learnerProtocol,
     learnerProtocolDescription: LEARNER_PROTOCOLS[learnerProtocol],
     posttestProfile,
@@ -454,6 +570,7 @@ export async function runG2IndependentOutcome({
     },
     summary: {
       sessionCount: sessions.length,
+      sourceSessionCount: sourceSessions.length,
       modelCalls: callCounter.counts,
       meanGainByArm,
       delta1_responsiveness: delta1,
@@ -478,9 +595,13 @@ export function renderG2IndependentOutcomeReport(result) {
   lines.push(`Preregistration: ${result.preregistration}`);
   lines.push(`Input G1 artifact: ${result.inputG1Artifact}`);
   lines.push(`Planner backend: ${result.plannerBackend}`);
+  if (result.plannerBackendDetail?.label && result.plannerBackendDetail.label !== result.plannerBackend) {
+    lines.push(`Planner detail: ${result.plannerBackendDetail.label}`);
+  }
   lines.push(`Held-out learner backend: ${result.learnerBackend}`);
   if (result.learnerBackendDetail?.model) {
-    lines.push(`Held-out learner model: ${result.learnerBackendDetail.model} (${result.learnerBackendDetail.effort} effort)`);
+    const effort = result.learnerBackendDetail.effort ? ` (${result.learnerBackendDetail.effort} effort)` : '';
+    lines.push(`Held-out learner model: ${result.learnerBackendDetail.model}${effort}`);
   }
   lines.push(`Held-out learner protocol: ${result.learnerProtocol}`);
   lines.push(`Posttest profile: ${result.posttestProfile}`);
@@ -490,7 +611,9 @@ export function renderG2IndependentOutcomeReport(result) {
   lines.push('');
   lines.push(`- Δ1 responsiveness/coherence = ${fmt(result.summary.delta1_responsiveness)}`);
   lines.push(`- Δ2 diagnosis = ${fmt(result.summary.delta2_diagnosis)}`);
-  lines.push(`- Same-seed gain > different-seed gain: ${result.summary.sameGreaterSessionCount}/${result.summary.sessionCount}`);
+  lines.push(
+    `- Same-seed gain > different-seed gain: ${result.summary.sameGreaterSessionCount}/${result.summary.sessionCount}`,
+  );
   lines.push(`- One-sided sign-test p = ${fmt(result.summary.signTestOneSidedP, 4)}`);
   lines.push('');
   lines.push('## Validity checks');

@@ -19,6 +19,7 @@ import YAML from 'yaml';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
 import { resolveBasicAuthGuard, makeRoleGate } from '../services/httpBasicAuth.js';
 import { mountEvalSurfaces } from '../services/evalSurfaces.js';
+import chatRoutes from '../routes/chatRoutes.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
 import { validateTurnPlan } from '../services/ontology/reasoningOntology.js';
@@ -47,12 +48,14 @@ import {
   GATE_BUCKETS,
 } from '../services/poetics/replayBundles.js';
 import {
+  buildDerivationAssessment,
   loadWorld as loadDerivationWorld,
   renderProof as renderDerivationProof,
   renderProofProse as renderDerivationProofProse,
   renderEvalPanel as renderDerivationEvalPanel,
   stagingSegments as derivationStagingSegments,
 } from '../services/dramaticDerivation/index.js';
+import { getDerivationConceptSchema } from '../services/dramaticDerivation/conceptSchema.js';
 import {
   planJob,
   launchJob,
@@ -1101,27 +1104,90 @@ function saveBrowserReviewFlag(db, input) {
 function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   const db = openPoeticsStore(dbPath || undefined);
   const app = express();
+  const adminRouter = express.Router();
   // Liveness probe with no auth — registered before the guard so a load
   // balancer's health check (e.g. fly) gets a 200, not a 401. It returns only
   // "ok", so it leaks nothing.
   app.get('/healthz', (_req, res) => res.type('text/plain').send('ok\n'));
-  // Basic-auth guard before every data route. Open on localhost with no creds;
-  // throws (refuses to start) on a public bind without creds — see httpBasicAuth.js.
-  const authGuard = resolveBasicAuthGuard({ prefix: 'POETICS', host, realm: 'machine spirits poetics' });
-  if (authGuard) {
-    app.use(authGuard);
-    console.log('[poetics] basic-auth ENABLED (credentials required)');
+  // Admin auth applies only to /admin/* so read-only workbench pages can be
+  // public while metered and mutating controls stay behind Basic Auth. Open on
+  // localhost with no creds; throws on a public bind without creds.
+  const adminAuthGuard = resolveBasicAuthGuard({ prefix: 'POETICS', host, realm: 'machine spirits poetics' });
+  app.use(express.json({ limit: '256kb' }));
+  if (adminAuthGuard) {
+    adminRouter.use(adminAuthGuard);
+    console.log('[poetics] admin basic-auth ENABLED (/admin requires credentials)');
   }
   // Default-deny role gate (Design A — perimeter RBAC). No-op on localhost-open
   // and for the admin role; restricts a 'participant' credential to the pilot +
   // adjudication allowlist (services/httpBasicAuth.js PARTICIPANT_ALLOWLIST), so
-  // every metered/researcher surface on this consolidated app stays admin-only.
-  app.use(makeRoleGate());
-  app.use(express.json({ limit: '256kb' }));
+  // every metered/researcher surface under /admin stays admin-only.
+  adminRouter.use(makeRoleGate());
   app.use('/images', express.static(path.resolve(ROOT, 'notes/poetics/images'), { index: false }));
   app.use('/assets', express.static(path.resolve(ROOT, 'notes/poetics/assets'), { index: false }));
   app.use('/docs/research', express.static(path.resolve(ROOT, 'docs/research'), { index: false }));
   app.locals.db = db;
+  app.get('/runs', (req, res) => {
+    const qs = new URLSearchParams(req.query || {}).toString();
+    return res.redirect(302, `${req.baseUrl || ''}/admin/runs${qs ? '?' + qs : ''}`);
+  });
+  app.get('/compose/live', (req, res) => {
+    const qs = new URLSearchParams(req.query || {}).toString();
+    return res.redirect(302, `${req.baseUrl || ''}/admin/compose/live${qs ? '?' + qs : ''}`);
+  });
+  app.use('/chat', (req, res) => {
+    const mountPrefix = (req.baseUrl || '').replace(/\/chat$/, '');
+    const url = req.url || '/';
+    return res.redirect(302, `${mountPrefix}/admin/chat${url}`);
+  });
+  const movedAdminPath = (req) => {
+    const original = req.originalUrl || req.url || '';
+    const queryAt = original.indexOf('?');
+    const pathPart = queryAt === -1 ? original : original.slice(0, queryAt);
+    const queryPart = queryAt === -1 ? '' : original.slice(queryAt);
+    const apiAt = pathPart.indexOf('/api/');
+    if (apiAt !== -1) return `${pathPart.slice(0, apiAt)}/admin${pathPart.slice(apiAt)}${queryPart}`;
+    return `${req.baseUrl || ''}/admin${req.url || ''}`;
+  };
+  app.use(
+    [
+      '/api/jobs',
+      '/api/compose/live',
+      '/api/chat/cells',
+      '/api/chat/curricula',
+      '/api/chat/learner-turn',
+      '/api/chat/models',
+      '/api/chat/personas',
+      '/api/chat/resolve',
+      '/api/tts',
+      '/api/labels',
+      '/api/review-flags',
+      '/api/compose/write',
+      '/api/workplan/refresh',
+      '/api/workplan/move',
+      '/api/workplan/add',
+      '/api/workplan/update',
+      '/api/workplan/delete',
+    ],
+    (req, res) =>
+      res.status(404).json({
+        error: 'admin endpoint moved',
+        adminPath: movedAdminPath(req),
+      }),
+  );
+  // Public /api/chat/turn is retained only for the blinded participant pilot,
+  // whose browser sends a sessionId. All free-form chat/playground turns belong
+  // under /admin/api/chat/turn so they stay authenticated with the workbench.
+  app.use('/api/chat/turn', (req, res, next) => {
+    if (req.body?.sessionId) return next();
+    return res.status(404).json({
+      error: 'admin endpoint moved',
+      adminPath: movedAdminPath(req),
+    });
+  });
+  adminRouter.get('/', (req, res) => res.redirect(302, `${req.baseUrl || ''}/runs`));
+  adminRouter.use('/api/chat', chatRoutes);
+  adminRouter.use('/chat', express.static(path.resolve(ROOT, 'public/chat')));
   app.get('/favicon.ico', (_req, res) => res.status(204).end());
   app.get('/api/runs', (_req, res) => res.json({ runs: listRuns(db), disciplines: distinctDisciplines(db) }));
   app.get('/api/stats', (_req, res) => res.json({ ...corpusStats(db), replays: listReplayBundles().length }));
@@ -1196,7 +1262,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     if (!item) return res.status(404).json({ error: 'not found' });
     return res.json(item);
   });
-  app.post('/api/labels', (req, res) => {
+  adminRouter.post('/api/labels', (req, res) => {
     try {
       const detail = saveBrowserLabel(db, req.body || {});
       return res.json({ ok: true, detail });
@@ -1204,7 +1270,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(400).json({ error: error.message || String(error) });
     }
   });
-  app.post('/api/review-flags', (req, res) => {
+  adminRouter.post('/api/review-flags', (req, res) => {
     try {
       const detail = saveBrowserReviewFlag(db, req.body || {});
       return res.json({ ok: true, detail });
@@ -1212,7 +1278,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(400).json({ error: error.message || String(error) });
     }
   });
-  app.post('/api/tts', async (req, res) => {
+  adminRouter.post('/api/tts', async (req, res) => {
     try {
       const speech = await synthesizeLemonFoxSpeech(req.body || {});
       return res
@@ -1260,7 +1326,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(400).json({ error: error.message || String(error) });
     }
   });
-  app.post('/api/compose/write', async (req, res) => {
+  adminRouter.post('/api/compose/write', async (req, res) => {
     try {
       const spec = (req.body && req.body.spec) || {};
       const force = !!(req.body && req.body.force);
@@ -1312,13 +1378,13 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     }
   });
   // ── Live "sit-in" compose (human plays one seat, AI plays the other) ────────
-  // METERED + localhost-only, same posture as the /runs launcher below: every AI
+  // METERED + admin-only, same posture as the /admin/runs launcher below: every AI
   // turn is a real LLM call UNLESS the request opts into mock deps (free, canned
   // logarithm lines — for trialling the UI). Session state is in-memory in
   // services/poetics/liveCompose.js; nothing touches the eval DB. The client is
   // authoritative for the mock flag and re-sends it on every turn.
-  app.get('/compose/live', (_req, res) => res.type('html').send(renderComposeLiveHtml()));
-  app.post('/api/compose/live/start', async (req, res) => {
+  adminRouter.get('/compose/live', (_req, res) => res.type('html').send(renderComposeLiveHtml()));
+  adminRouter.post('/api/compose/live/start', async (req, res) => {
     try {
       const body = req.body || {};
       const deps = body.mock ? liveBuildMockDeps() : {};
@@ -1328,7 +1394,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
     }
   });
-  app.post('/api/compose/live/turn', async (req, res) => {
+  adminRouter.post('/api/compose/live/turn', async (req, res) => {
     try {
       const body = req.body || {};
       const deps = body.mock ? liveBuildMockDeps() : {};
@@ -1342,7 +1408,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
   // Watch mode: advance ONE turn (both seats AI). The client polls this to drive the
   // tempo, so a human watches an automated tutor↔learner scene play out turn by turn.
-  app.post('/api/compose/live/:id/advance', async (req, res) => {
+  adminRouter.post('/api/compose/live/:id/advance', async (req, res) => {
     try {
       const body = req.body || {};
       const deps = body.mock ? liveBuildMockDeps() : {};
@@ -1352,7 +1418,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(error.statusCode || 400).json({ error: error.message || String(error), code: error.code });
     }
   });
-  app.get('/api/compose/live/:id', (req, res) => {
+  adminRouter.get('/api/compose/live/:id', (req, res) => {
     try {
       const debug = req.query.debug === '1' || req.query.debug === 'true';
       return res.json({ session: liveViewSession(req.params.id, { debug }) });
@@ -1360,7 +1426,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(error.statusCode || 404).json({ error: error.message || String(error), code: error.code });
     }
   });
-  app.post('/api/compose/live/save', (req, res) => {
+  adminRouter.post('/api/compose/live/save', (req, res) => {
     try {
       const body = req.body || {};
       const out = liveSaveSession(body.id, { filename: body.filename });
@@ -1371,7 +1437,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
   // Terminate a live scene early. Idempotent: marks the session done so no more
   // turns can be appended, then the client can score the (now frozen) transcript.
-  app.post('/api/compose/live/:id/end', (req, res) => {
+  adminRouter.post('/api/compose/live/:id/end', (req, res) => {
     try {
       const body = req.body || {};
       return res.json({ ok: true, session: liveEndSession(req.params.id, body.reason || 'user_ended') });
@@ -1381,7 +1447,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
   // Score the transcript-so-far against the poetics rubric. Metered (one critic
   // call) unless body.mock swaps in the deterministic free-preview verdict.
-  app.post('/api/compose/live/:id/score', async (req, res) => {
+  adminRouter.post('/api/compose/live/:id/score', async (req, res) => {
     try {
       const body = req.body || {};
       const deps = body.mock ? liveBuildMockDeps() : {};
@@ -1394,7 +1460,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // The "reading" behind the scene: when a sit-in is bound to a course lecture, the
   // human learner can read the SAME text the AI tutor is grounded in (closing the
   // tutor-reads / learner-can't asymmetry). Read-only, no spend — just resolves the ref.
-  app.get('/api/compose/live/lecture/:ref', (req, res) => {
+  adminRouter.get('/api/compose/live/lecture/:ref', (req, res) => {
     try {
       const lecture = liveGetLectureContent(req.params.ref);
       if (!lecture)
@@ -1412,7 +1478,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // proposes a full compose spec, clamped to the live vocabulary + real course
   // catalog. Metered (one OpenRouter call) unless body.mock is set, which swaps
   // in a deterministic canned spec for a zero-cost preview.
-  app.post('/api/compose/live/guide', async (req, res) => {
+  adminRouter.post('/api/compose/live/guide', async (req, res) => {
     try {
       const body = req.body || {};
       const catalog = {
@@ -1471,12 +1537,12 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
 
   // ── Job launcher (POST surfaces spawn whitelisted CLI scripts) ──────────────
-  // Localhost-only, no auth (deferred per 2026-06-04 decision). The UI defaults
-  // every form to free/mock/dry-run; planJob previews the exact argv before any
-  // spawn, and metered/quota jobs are serialised by jobRunner's lock.
-  app.get('/runs', (_req, res) => res.type('html').send(renderRunsHtml()));
-  app.get('/api/jobs/kinds', (_req, res) => res.json({ kinds: describeKinds(), costClasses: COST_CLASSES }));
-  app.post('/api/jobs/plan', (req, res) => {
+  // Admin-only on public binds. The UI defaults every form to free/mock/dry-run;
+  // planJob previews the exact argv before any spawn, and metered/quota jobs are
+  // serialised by jobRunner's lock.
+  adminRouter.get('/runs', (_req, res) => res.type('html').send(renderRunsHtml()));
+  adminRouter.get('/api/jobs/kinds', (_req, res) => res.json({ kinds: describeKinds(), costClasses: COST_CLASSES }));
+  adminRouter.post('/api/jobs/plan', (req, res) => {
     const { kind, params } = req.body || {};
     try {
       return res.json({ plan: planJob({ kind, params }) });
@@ -1484,7 +1550,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(400).json({ error: error.message || String(error) });
     }
   });
-  app.post('/api/jobs', (req, res) => {
+  adminRouter.post('/api/jobs', (req, res) => {
     const { kind, params } = req.body || {};
     try {
       const job = launchJob({ kind, params });
@@ -1494,13 +1560,13 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(400).json({ error: error.message || String(error) });
     }
   });
-  app.get('/api/jobs', (_req, res) => res.json({ jobs: listJobs() }));
-  app.get('/api/jobs/:id', (req, res) => {
+  adminRouter.get('/api/jobs', (_req, res) => res.json({ jobs: listJobs() }));
+  adminRouter.get('/api/jobs/:id', (req, res) => {
     const job = getJob(req.params.id);
     if (!job) return res.status(404).json({ error: 'job not found' });
     return res.json({ job });
   });
-  app.post('/api/jobs/:id/stop', (req, res) => {
+  adminRouter.post('/api/jobs/:id/stop', (req, res) => {
     const job = stopJob(req.params.id);
     if (!job) return res.status(404).json({ error: 'job not found' });
     return res.json({ job });
@@ -1568,16 +1634,93 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('repertoire note not found');
     res.type('html').sendFile(notePath);
   });
+  // GET /theory frames the durable "theory behind the machine" synthesis — the
+  // map between the project's four theoretical lineages (Hegel · Freud · Weber ·
+  // Aristotle) and the architecture/mechanisms/findings. Like /summary it is a
+  // reference surface that ORIGINATES no claims: every number inherits from
+  // paper-full-2.0.md. Refresh + re-stamp the provenance band with
+  // `npm run theory:synthesize`. Its assets/* resolve against /assets.
+  app.get('/theory', (_req, res) =>
+    res.type('html').send(
+      framedNoteHtml({
+        active: 'theory',
+        sub: 'the theory behind the machine — recognition · ego/superego/id · charisma · poetics, mapped to the architecture &amp; findings',
+        src: '/theory-doc',
+        title: 'The theory behind the machine · synthesis',
+        hint: orientBand(
+          'theory',
+          'how Hegel · Freud · Weber · Aristotle became testable architecture, and what the data did to each',
+          'project writing; the working surfaces are on the rail above',
+        ),
+      }),
+    ),
+  );
+  app.get('/theory-doc', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/theory-synthesis.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('theory synthesis note not found');
+    res.type('html').sendFile(notePath);
+  });
+  // GET /blueprint frames the build-steps surface — an evidence-ordered recipe
+  // for the ideal AI tutor (what to put in, in what order, what to skip, what
+  // stays open). Like /theory and /summary it is a reference surface that
+  // ORIGINATES no claims: every number inherits from paper-full-2.0.md, and the
+  // steps were synthesised across the codebase and claim-audited against the
+  // paper. Its assets/* resolve against /assets.
+  app.get('/blueprint', (_req, res) =>
+    res.type('html').send(
+      framedNoteHtml({
+        active: 'blueprint',
+        sub: 'how to build the ideal AI tutor — the build steps the evidence supports, what to skip &amp; what stays open',
+        src: '/blueprint-doc',
+        title: 'How to build the ideal AI tutor · the blueprint',
+        hint: orientBand(
+          'blueprint',
+          'the build steps for an AI tutor — prompt, then critic, model-fit, measurement, and what the data says to skip',
+          'project writing; the working surfaces are on the rail above',
+        ),
+      }),
+    ),
+  );
+  app.get('/blueprint-doc', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/ideal-tutor-blueprint.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('blueprint note not found');
+    res.type('html').sendFile(notePath);
+  });
+  // GET /model-upgrade frames the bounded weak/cheap-model upgrade playbook:
+  // evidence-backed advice on prompts, critics, proof guards, and role routing.
+  // Like /blueprint, it is a reference surface that originates no paper claims;
+  // source numbers inherit from paper-full-2.0.md, local reports, and a dated
+  // OpenRouter model-price snapshot embedded in the note.
+  app.get('/model-upgrade', (_req, res) =>
+    res.type('html').send(
+      framedNoteHtml({
+        active: 'model-upgrade',
+        sub: 'how to upgrade weaker or cheaper models into tutors — bounded evidence for prompts, critics, proof guards &amp; role routing',
+        src: '/model-upgrade-doc',
+        title: 'How to upgrade weaker models into tutors · bounded playbook',
+        hint: orientBand(
+          'model upgrade',
+          'how to spend prompts, critics, proof guards, and routing on weaker or cheaper tutor models',
+          'project writing; the working surfaces are on the rail above',
+        ),
+      }),
+    ),
+  );
+  app.get('/model-upgrade-doc', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/model-upgrade-playbook.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('model-upgrade note not found');
+    res.type('html').sendFile(notePath);
+  });
   // GET /board is the LIVE development board: a read-only render of the workplan
   // (workplan/items/, via the generated workplan/board.json). Regenerate with
-  // `npm run wp:render`. The historical 2026-06-06 static snapshot of TODO.md is
-  // still reachable at /board-doc. Originates no claims — durable results live in
+  // `npm run wp:render`. The project's historical arc now lives in the Project
+  // history band on /timeline. Originates no claims — durable results live in
   // /summary + the paper; workplan/items/ is the source of truth.
-  app.get('/board', (_req, res) => res.type('html').send(renderWorkplanBoardHtml()));
+  app.get('/board', (req, res) => res.type('html').send(renderWorkplanBoardHtml(req.query || {})));
   app.get('/api/workplan', (_req, res) => res.json(readWorkplanBoard()));
   // Explicit refresh from disk: regenerate BOARD.md + board.json from
   // workplan/items/*.md, then let the board page reload against fresh artifacts.
-  app.post('/api/workplan/refresh', (_req, res) => {
+  adminRouter.post('/api/workplan/refresh', (_req, res) => {
     try {
       const counts = renderBoard();
       return res.json({ ok: true, counts, board: readWorkplanBoard() });
@@ -1589,7 +1732,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // item file + re-renders board.json via the shared workplan setItemField(). In a
   // read-only context (e.g. a packaged app whose workplan/ is inside the asar) the
   // write throws and we return 500 so the UI can revert.
-  app.post('/api/workplan/move', (req, res) => {
+  adminRouter.post('/api/workplan/move', (req, res) => {
     const { id, status } = req.body || {};
     if (!id || !status) return res.status(400).json({ error: 'id and status are required' });
     if (!WORKPLAN_STATUSES.includes(status)) {
@@ -1604,7 +1747,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     }
   });
   // Create a new board item.
-  app.post('/api/workplan/add', (req, res) => {
+  adminRouter.post('/api/workplan/add', (req, res) => {
     const b = req.body || {};
     if (!b.title || !String(b.title).trim()) return res.status(400).json({ error: 'title is required' });
     const bad = invalidWorkplanFields(b);
@@ -1632,7 +1775,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     }
   });
   // Edit an existing item's fields (empty value clears an optional field).
-  app.post('/api/workplan/update', (req, res) => {
+  adminRouter.post('/api/workplan/update', (req, res) => {
     const b = req.body || {};
     if (!b.id) return res.status(400).json({ error: 'id is required' });
     if (b.title !== undefined && !String(b.title).trim())
@@ -1663,7 +1806,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     }
   });
   // Delete an item.
-  app.post('/api/workplan/delete', (req, res) => {
+  adminRouter.post('/api/workplan/delete', (req, res) => {
     const id = req.body && req.body.id;
     if (!id) return res.status(400).json({ error: 'id is required' });
     try {
@@ -1676,7 +1819,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   });
   // ---- milestones (workplan/milestones.yaml) + GitHub activity --------------
   app.get('/api/milestones', (_req, res) => res.json({ milestones: loadMilestones() }));
-  app.post('/api/milestones', (req, res) => {
+  adminRouter.post('/api/milestones', (req, res) => {
     const b = req.body || {};
     if (!b.title || !String(b.title).trim()) return res.status(400).json({ error: 'title is required' });
     if (b.status && !['planned', 'active', 'done'].includes(b.status))
@@ -1692,7 +1835,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(500).json({ error: err.message });
     }
   });
-  app.post('/api/milestones/delete', (req, res) => {
+  adminRouter.post('/api/milestones/delete', (req, res) => {
     const id = req.body && req.body.id;
     if (!id) return res.status(400).json({ error: 'id is required' });
     try {
@@ -1714,22 +1857,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
         .send('timeline error: ' + err.message);
     }
   });
-  app.get('/board-doc', (_req, res) => {
-    const notePath = path.resolve(ROOT, 'notes/poetics/2026-06-06-development-board.html');
-    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('development-board note not found');
-    // The static note has no nav rail, so without this it is a dead end. Inject a
-    // prominent top bar at serve time (source file untouched) so reviewers can get
-    // back to the live board or the dashboard — and know this copy is read-only.
-    let html = fs.readFileSync(notePath, 'utf8');
-    const back =
-      '<div style="position:fixed;top:0;left:0;right:0;z-index:99999;display:flex;gap:12px;align-items:center;font:13px/1 ui-monospace,SFMono-Regular,monospace;background:#3a342b;color:#f4efe0;padding:9px 16px;box-shadow:0 2px 12px rgba(28,22,16,.3)">' +
-      '<span style="opacity:.72">archived board snapshot · 2026-06-06 — read-only</span>' +
-      '<a href="/board" title="Back to the live, editable board" style="margin-left:auto;color:#3a342b;background:#f4efe0;border:1px solid #cbbb98;padding:5px 12px;border-radius:6px;text-decoration:none">← live board</a>' +
-      '<a href="/" title="Back to the dashboard" style="color:#f4efe0;border:1px solid #cbbb98;padding:5px 12px;border-radius:6px;text-decoration:none">dashboard</a>' +
-      '</div><div aria-hidden="true" style="height:42px"></div>';
-    html = /<body[^>]*>/i.test(html) ? html.replace(/(<body[^>]*>)/i, `$1${back}`) : back + html;
-    res.type('html').send(html);
-  });
+  app.use('/admin', adminRouter);
   app.get('/derivation', (req, res) =>
     res.type('html').send(renderDerivationIndexHtml(listDerivationRuns(), req.query || {})),
   );
@@ -1804,6 +1932,8 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     }
     return res.type('html').send(renderScriptoriumHome(dashboardStats()));
   });
+  // Act II landing — the three report types and how they differ (who judges).
+  app.get('/read', (_req, res) => res.type('html').send(renderReadJudgeHub(dashboardStats())));
   // Transitional during the UX redesign: the previous control-room dashboard,
   // preserved so nothing is lost and the new home can be compared against it.
   app.get('/classic', (req, res) => {
@@ -1824,7 +1954,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
 // A form-based front-end to the drama-machine spec model (notes/poetics/drama-
 // machine/SPEC.md): renders the Aristotelian slots, validates a turn_plan against
 // the poetics ontology live (POST /api/compose/validate), and writes a
-// .drama.yaml (POST /api/compose/write). The same headless work the
+// .drama.yaml (POST /admin/api/compose/write). The same headless work the
 // /ms-drama-machine skill does, with human visibility.
 // Sourced from services/poetics/dramaParameters.js so spec compose, live compose,
 // and run launch all speak the same small component vocabulary.
@@ -2027,6 +2157,10 @@ function escapeHtml(value) {
   );
 }
 
+function escapeAttr(value) {
+  return escapeHtml(value);
+}
+
 // Minimal block-markdown → HTML for the sit-in "reading" panel: headings, paragraphs,
 // `-`/`*`/`1.` lists, fenced code, blockquotes, rules, plus inline bold/italic/code. It
 // mirrors the chat bubble's mdInline subset (asterisk emphasis only, so snake_case ids
@@ -2127,6 +2261,12 @@ function mdLectureToHtml(md) {
 const NAV = [
   ['home', '/', 'home', 'Dashboard — overview, live stats &amp; guided first steps'],
   [
+    'read',
+    '/read',
+    'the reading room',
+    'Read &amp; judge — the three report types (scripts · proof runs · replays) and how they differ',
+  ],
+  [
     'browse',
     '/browse',
     'scripts',
@@ -2134,11 +2274,11 @@ const NAV = [
   ],
   [
     'compose',
-    '/compose/live',
+    '/admin/compose/live',
     'compose a scene',
     'Sit in on a tutoring scene turn by turn — or switch to batch-spec mode to assemble a full spec',
   ],
-  ['runs', '/runs', 'launch a run', 'Launch new runs — generative · replay · adversarial-CLI · online scoring'],
+  ['runs', '/admin/runs', 'launch a run', 'Launch new runs — generative · replay · adversarial-CLI · online scoring'],
   ['ontology', '/ontology', 'ontology', 'The shared ontology — system, tutor &amp; learner lenses'],
   ['rubric', '/rubric', 'rubric', 'The poetics rubric — the 6 dramatic-form dimensions critics score against'],
   [
@@ -2159,6 +2299,24 @@ const NAV = [
     '/summary',
     'summary',
     'The synthesis note — the whole dramatic-recognition arc, from the paper to this scriptorium',
+  ],
+  [
+    'theory',
+    '/theory',
+    'theory',
+    'The theory behind the machine — how recognition (Hegel), ego/superego/id (Freud), charisma (Weber) &amp; poetics (Aristotle) map onto the architecture, mechanisms &amp; findings',
+  ],
+  [
+    'blueprint',
+    '/blueprint',
+    'the blueprint',
+    'How to build the ideal AI tutor — an evidence-ordered build recipe (prompt · critic · model-fit · measurement), what the data says to skip, &amp; what stays an open question',
+  ],
+  [
+    'model-upgrade',
+    '/model-upgrade',
+    'model upgrade',
+    'How to upgrade weaker or cheaper models into tutors — bounded evidence for prompts, critics, proof guards &amp; role routing',
   ],
   ['story', '/story', 'story', 'The story so far — a dated, provisional narrative of the adaptation arc'],
   [
@@ -2181,8 +2339,8 @@ const NAV = [
   ],
   [
     'tutor',
-    '/chat',
-    'tutor',
+    '/admin/chat',
+    'tutor chat',
     'Interactive tutor — play the learner &amp; watch the ego/superego deliberation for any cell in tutor-agents.yaml',
   ],
   [
@@ -2198,24 +2356,55 @@ const NAV = [
     'Pilot operator console — session monitoring, recruitment toggle &amp; run launching (admin token-gated)',
   ],
 ];
-// The rail mirrors the home's three acts. `home` stays the one flat link (the
-// brand wordmark is not itself a link); everything else folds into three
-// dropdowns — I·make, II·read & judge, III·keep — in the same order, and with
-// the same membership, as renderScriptoriumHome's cards.
+// The rail folds the destinations into the home's three acts — I·make,
+// II·read & judge, III·keep — preserving each act's relative order. `home` stays
+// the one flat link (the brand wordmark is not itself a link). The home is the
+// curated face of this: its Reading Room omits the /read hub it already replaces,
+// and its Hall card umbrellas the whole keep-synthesis cluster (summary, theory,
+// blueprint, story, repertoire) under one tile. So the rail group is the
+// complete, in-order destination list; the cards are the consolidated view.
 const NAV_PRIMARY = ['home'];
 // A closed group whose member is the active page keeps a moss accent on its
 // summary (see railHtml), so the current location stays legible when collapsed.
 const NAV_GROUPS = [
-  ['make', ['compose', 'runs', 'tutor']],
-  ['read &amp; judge', ['browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
-  ['keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'story', 'repertoire']],
+  ['make', ['compose', 'tutor', 'runs']],
+  ['read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
+  [
+    'keep',
+    [
+      'board',
+      'timeline',
+      'ontology',
+      'curriculum',
+      'theory',
+      'blueprint',
+      'model-upgrade',
+      'summary',
+      'story',
+      'repertoire',
+    ],
+  ],
 ];
 // Same three acts for the mobile drawer; `home` is rendered as a flat link above
 // these groups in railHtml.
 const NAV_DRAWER_GROUPS = [
-  ['Make', ['compose', 'runs', 'tutor']],
-  ['Read &amp; judge', ['browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
-  ['Keep', ['board', 'timeline', 'ontology', 'curriculum', 'summary', 'story', 'repertoire']],
+  ['Make', ['compose', 'tutor', 'runs']],
+  ['Read &amp; judge', ['read', 'browse', 'derivation', 'replays', 'rubric', 'adjudicate', 'pilot-admin']],
+  [
+    'Keep',
+    [
+      'board',
+      'timeline',
+      'ontology',
+      'curriculum',
+      'theory',
+      'blueprint',
+      'model-upgrade',
+      'summary',
+      'story',
+      'repertoire',
+    ],
+  ],
 ];
 
 // A per-page orientation band (the `hint` slot of railHtml): "<b>here</b> — what",
@@ -2224,6 +2413,30 @@ const NAV_DRAWER_GROUPS = [
 // they are and how to get back to the things you read and make.
 function orientBand(here, what, tail = 'the working surfaces are on the rail above') {
   return `<span><b>${here}</b> — ${what}</span><span class="navhint__sep">·</span><span>${tail}</span>`;
+}
+
+// A compact cross-link band for the three report surfaces (/browse · /derivation ·
+// /replays): names each report type with who judges it, marks the current one, and
+// points back to the /read hub — so a reader never loses the distinction mid-page.
+// Inline-styled with the shared tokens so it drops into any page without new CSS.
+function reportTypeBand(active) {
+  const cells = [
+    ['scripts', '/browse', 'AI critic'],
+    ['proof runs', '/derivation', 'rule-checker'],
+    ['replays', '/replays', 'diff'],
+  ]
+    .map(([label, href, judge]) => {
+      const inner = `${label} <span style="color:var(--ink-4)">· ${judge}</span>`;
+      return active === href
+        ? `<span style="color:var(--ink);font-weight:600;border-bottom:2px solid var(--moss);padding-bottom:1px">${inner}</span>`
+        : `<a href="${href}" style="color:var(--ink-2);text-decoration:none">${inner}</a>`;
+    })
+    .join('<span style="color:var(--ink-4);margin:0 3px">·</span>');
+  return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font:11px ui-monospace,monospace;border:1px solid var(--rule);background:var(--paper-4);border-radius:6px;padding:8px 12px;margin:0 0 16px">
+    <span style="text-transform:uppercase;letter-spacing:.06em;color:var(--ink-4)">report type</span>
+    ${cells}
+    <a href="/read" style="margin-left:auto;color:var(--moss-deep);text-decoration:none">what&#39;s the difference? →</a>
+  </div>`;
 }
 
 function navPlainText(value) {
@@ -2259,11 +2472,11 @@ function commandPaletteData(active = '') {
   }
 
   [
-    ['Generate mock script', '/runs?kind=generate&mock=1', 'free default script generation'],
-    ['Replay dry run', '/runs?kind=replay&mock=1&dryRun=1', 'counterfactual rewrite with mock generator'],
-    ['Proof-DAG derivation', '/runs?kind=derivation', 'launch a deterministic proof run'],
-    ['Online score dry run', '/runs?kind=online-score&dryRun=1', 'plan scorer backfill before spend'],
-    ['Curriculum drama mock', '/runs?kind=pedagogical-drama&mock=1', 'enact compiled curriculum drama specs'],
+    ['Generate mock script', '/admin/runs?kind=generate&mock=1', 'free default script generation'],
+    ['Replay dry run', '/admin/runs?kind=replay&mock=1&dryRun=1', 'counterfactual rewrite with mock generator'],
+    ['Proof-DAG derivation', '/admin/runs?kind=derivation', 'launch a deterministic proof run'],
+    ['Online score dry run', '/admin/runs?kind=online-score&dryRun=1', 'plan scorer backfill before spend'],
+    ['Curriculum drama mock', '/admin/runs?kind=pedagogical-drama&mock=1', 'enact compiled curriculum drama specs'],
   ].forEach(([title, href, subtitle]) =>
     add({ type: 'run', title, subtitle, href, keywords: ['job center', 'launch'] }),
   );
@@ -2568,7 +2781,7 @@ ${
         <span class="rail__mobile-current">${currentLabel}</span>
       </div>
       <button class="rail__btn rail__mobile-command" type="button" data-palette-open title="Open command palette">search</button>
-      <a class="rail__btn rail__mobile-command" href="/runs" title="Open the run launcher">launch</a>
+      <a class="rail__btn rail__mobile-command" href="/admin/runs" title="Open the run launcher">launch</a>
       <details class="rail__mobile-menu">
         <summary class="rail__btn" aria-label="Open Scriptorium navigation menu">menu</summary>
         <nav class="rail__drawer" aria-label="Scriptorium navigation">
@@ -3112,7 +3325,9 @@ function readDerivationRun(label) {
   } catch {
     /* no notice yet — the page shows the backfill hint */
   }
-  return { label, diagnosis, result, world, commentary, live: readDerivationLive(label) };
+  const live = readDerivationLive(label) || {};
+  const assessment = buildDerivationAssessment({ label, live, result, diagnosis, world });
+  return { label, diagnosis, result, world, commentary, live, assessment };
 }
 
 // Backend chips tolerate both ledger formats: per-role ({mode, roles:{...}},
@@ -3627,6 +3842,108 @@ const DERIVATION_CSS = `
 .egraph__links a{min-height:32px;display:inline-flex;align-items:center;border:1px solid var(--rule);border-radius:4px;background:var(--paper-3);color:var(--moss-deep);padding:3px 9px;text-decoration:none;font-family:"JetBrains Mono",monospace;font-size:var(--s-0)}
 .egraph__links a:hover{border-color:var(--moss);background:var(--moss-soft)}
 .egraph__meta{margin-top:8px;color:var(--ink-3);font-family:"JetBrains Mono",monospace;font-size:var(--s-0)}
+.proofdag{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:13px 14px;margin:14px 0 22px}
+.proofdag__top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.proofdag__k{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;text-transform:uppercase;color:var(--ink-4);margin-bottom:5px}
+.proofdag h2{font-family:Fraunces,serif;font-weight:600;font-size:var(--s-2);margin:0}
+.proofdag__summary{max-width:74ch;color:var(--ink-2);line-height:1.45;margin:7px 0 0}
+.proofdag__metrics{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.proofdag__metric{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);padding:3px 8px;color:var(--ink-3)}
+.proofdag__grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:12px;align-items:start;margin-top:12px}
+.proofdag__paths{display:grid;gap:9px}
+.proofdag__path{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px}
+.proofdag__path h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;margin:0 0 7px;color:var(--ink-2)}
+.proofdag__path ol{margin:0;padding-left:1.35em}
+.proofdag__path li{margin:6px 0;line-height:1.35}
+.proofdag__pid{font-family:"JetBrains Mono",monospace;font-size:.9em;color:var(--moss-deep)}
+.proofdag__release{font-family:"JetBrains Mono",monospace;font-size:.84em;color:var(--ink-3)}
+.proofdag__surface{display:block;color:var(--ink-2)}
+.proofdag__fact{display:block;font-family:"JetBrains Mono",monospace;font-size:.86em;color:var(--ink-3);overflow-wrap:anywhere}
+.proofdag__side{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px;overflow-x:auto}
+.proofdag__side h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 7px}
+.proofdag table{border-collapse:collapse;width:100%;font-size:var(--s-0)}
+.proofdag th,.proofdag td{border-bottom:1px solid var(--rule-soft);padding:5px 7px;text-align:left;vertical-align:top}
+.proofdag th{font-family:"JetBrains Mono",monospace;color:var(--ink-3);text-transform:uppercase}
+.proofdag details{border-top:1px solid var(--rule-soft);padding-top:8px;margin-top:10px}
+.proofdag summary{cursor:pointer;font-family:"JetBrains Mono",monospace;color:var(--moss-deep)}
+.proofdag__rules{margin:8px 0 0;padding-left:1.15em}
+.proofdag__rules li{margin:5px 0;line-height:1.35}
+.learnerdag{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:13px 14px;margin:14px 0 22px}
+.learnerdag__k{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;text-transform:uppercase;color:var(--ink-4);margin-bottom:5px}
+.learnerdag h2{font-family:Fraunces,serif;font-weight:600;font-size:var(--s-2);margin:0}
+.learnerdag__summary{max-width:74ch;color:var(--ink-2);line-height:1.45;margin:7px 0 0}
+.learnerdag__metrics{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.learnerdag__metric{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);padding:3px 8px;color:var(--ink-3)}
+.learnerdag__grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.8fr);gap:12px;align-items:start}
+.learnerdag__panel{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px;overflow-x:auto}
+.learnerdag__panel h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 7px}
+.learnerdag__nodes{margin:0;padding-left:1.15em}
+.learnerdag__nodes li{margin:6px 0;line-height:1.35}
+.learnerdag__fact{font-family:"JetBrains Mono",monospace;font-size:.88em;color:var(--moss-deep);overflow-wrap:anywhere}
+.learnerdag__status{font-family:"JetBrains Mono",monospace;font-size:.82em;color:var(--ink-3)}
+.learnerdag table{border-collapse:collapse;width:100%;font-size:var(--s-0)}
+.learnerdag th,.learnerdag td{border-bottom:1px solid var(--rule-soft);padding:5px 7px;text-align:left;vertical-align:top}
+.learnerdag th{font-family:"JetBrains Mono",monospace;color:var(--ink-3);text-transform:uppercase}
+.vocab{border:1px solid var(--rule);border-radius:8px;background:var(--paper-4);padding:11px 13px;margin:12px 0 20px}
+.vocab>summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-family:"JetBrains Mono",monospace;font-size:var(--s-0);font-weight:700;text-transform:uppercase;color:var(--ink-4)}
+.vocab>summary::-webkit-details-marker{display:none}
+.vocab__hint{font-family:"Source Serif 4",Georgia,serif;font-size:var(--s-0);font-weight:400;text-transform:none;color:var(--ink-3)}
+.vocab__intro{max-width:78ch;color:var(--ink-2);line-height:1.45;margin:9px 0 10px}
+.vocab__layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin:10px 0 12px}
+.vocab__layer{border:1px solid var(--rule);border-radius:6px;background:var(--paper);padding:9px 10px;min-width:0}
+.vocab__layer h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink);margin:0 0 5px}
+.vocab__layer p{margin:0 0 7px;color:var(--ink-3);line-height:1.4}
+.vocab__layer .vocab__tokens{gap:4px}
+.vocabschema{border:1px solid var(--rule);background:var(--paper-4);border-radius:6px;margin:12px 0;padding:10px}
+.vocabschema__head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--rule-soft);padding-bottom:9px;margin-bottom:10px}
+.vocabschema__head h3{margin:0;font-family:"JetBrains Mono",monospace;font-size:var(--s-1);text-transform:uppercase;color:var(--ink)}
+.vocabschema__head p{margin:4px 0 0;color:var(--ink-3);line-height:1.45;max-width:76ch}
+.vocabschema__link{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--moss-deep);text-decoration:none;border:1px solid var(--moss);background:var(--moss-soft);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.vocabschema__ontology{display:grid;grid-template-columns:minmax(170px,.55fr) minmax(0,1fr);gap:8px;align-items:start;border:1px solid var(--moss);background:var(--moss-soft);border-radius:6px;padding:9px 10px;margin-bottom:10px}
+.vocabschema__ontology h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--moss-deep);margin:0 0 4px}
+.vocabschema__ontology p{margin:0;color:var(--ink-3);line-height:1.35}
+.vocabschema__ontology .vocab__token{background:var(--paper);border-color:var(--moss);color:var(--moss-deep)}
+.vocabschema__novel{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;margin-bottom:10px}
+.vocabschema__acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:10px}
+.vocabschema__act{border:1px solid var(--rule-soft);background:var(--paper);border-radius:6px;padding:8px}
+.vocabschema__act h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;margin:0 0 5px;color:var(--ink)}
+.vocabschema__act p{margin:0 0 7px;color:var(--ink-3);line-height:1.35}
+.vocabschema__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:8px}
+.concept{border:1px solid var(--rule-soft);background:var(--paper);border-radius:6px;padding:9px;min-width:0}
+.concept--novel{border-color:var(--ochre);background:var(--ochre-soft)}
+.concept__top{display:flex;gap:6px;align-items:center;justify-content:space-between;margin-bottom:6px}
+.concept__label{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:var(--s-0);font-weight:700}
+.concept__layer{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);text-transform:uppercase;color:var(--ink-4);border:1px solid var(--rule-soft);border-radius:999px;padding:1px 5px}
+.concept--novel .concept__layer{border-color:var(--ochre);color:var(--ochre-d);background:var(--paper)}
+.concept__definition{color:var(--ink-2);line-height:1.4;margin:0 0 7px}
+.concept__deflabel,.concept__linkslabel,.concept__ontologylabel{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);text-transform:uppercase;color:var(--ink-4);display:block;margin-bottom:2px}
+.concept__meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.concept__metachip{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--ink-4);border:1px solid var(--rule-soft);background:var(--paper-2);border-radius:4px;padding:2px 5px;min-width:0;overflow-wrap:anywhere}
+.concept__ontology{margin-bottom:8px}
+.concept__ontology a{display:inline-flex;align-items:center;max-width:100%;font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--moss-deep);text-decoration:none;border:1px solid var(--moss);background:var(--moss-soft);border-radius:4px;padding:2px 5px}
+.concept__ontology code{font-family:inherit;white-space:normal;overflow-wrap:anywhere}
+.concept__links{display:flex;flex-wrap:wrap;gap:4px}
+.concept__linkslabel{flex:0 0 100%}
+.concept__edge{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);border:1px solid var(--rule);background:var(--paper-3);color:var(--ink-3);border-radius:999px;padding:2px 6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-decoration:none}
+.concept__edge b{color:var(--ink)}
+.concept--novel .concept__edge{background:var(--paper);border-color:var(--ochre);color:var(--ochre-d)}
+.vocabschema__edges{margin-top:10px;border-top:1px solid var(--rule-soft);padding-top:10px}
+.vocabschema__edges h4{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 6px}
+.vocabschema__edgegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:5px}
+.vocabschema__edge{font-family:"JetBrains Mono",monospace;font-size:var(--s--1);color:var(--ink-3);background:var(--paper);border:1px solid var(--rule-soft);border-radius:6px;padding:5px 7px;min-width:0}
+.vocabschema__edge b{color:var(--ink)}
+.vocab__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.vocab__group{border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper);padding:9px 10px}
+.vocab__group h3{font-family:"JetBrains Mono",monospace;font-size:var(--s-0);text-transform:uppercase;color:var(--ink-4);margin:0 0 6px}
+.vocab__group p{margin:0 0 7px;color:var(--ink-3);line-height:1.4}
+.vocab__tokens{display:flex;flex-wrap:wrap;gap:5px}
+.vocab__token{font-family:"JetBrains Mono",monospace;font-size:.78rem;border:1px solid var(--rule-soft);border-radius:4px;background:var(--paper-2);color:var(--ink-2);padding:2px 6px;overflow-wrap:anywhere;text-decoration:none}
+.vocab__token--public{background:var(--moss-soft);border-color:var(--moss);color:var(--moss-deep)}
+.vocab__token--warn{background:var(--brick-soft);border-color:var(--brick);color:var(--brick-d)}
+.vocab__token--private{background:var(--ochre-soft);border-color:var(--ochre);color:var(--ochre-d)}
+@media(max-width:860px){.learnerdag__grid{grid-template-columns:1fr}}
+@media(max-width:860px){.proofdag__grid{grid-template-columns:1fr}}
+@media(max-width:860px){.vocab__grid{grid-template-columns:1fr}.vocab>summary{display:block}.vocab__hint{display:block;margin-top:3px}.vocabschema__ontology{grid-template-columns:1fr}}
 .tts-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 18px;padding:9px 10px;border:1px solid var(--rule-soft);border-radius:6px;background:var(--paper-4)}
 .tts-toolbar--compact{margin:4px 0 8px}
 .tts-control,.tts-btn{border:1px solid var(--rule);background:var(--paper);color:var(--moss-deep);cursor:pointer;font-family:"JetBrains Mono",monospace;text-transform:uppercase}
@@ -4293,7 +4610,7 @@ function renderDerivationEvidenceGraph({ label, diagnosis }) {
   const scriptFile = diagnosis.scriptPath ? path.basename(diagnosis.scriptPath) : '';
   const worldFile = diagnosis.worldPath ? path.basename(diagnosis.worldPath) : '';
   const runHref =
-    '/runs?kind=derivation' +
+    '/admin/runs?kind=derivation' +
     (worldFile ? `&world=${encodeURIComponent(worldFile)}` : '') +
     (scriptFile ? `&script=${encodeURIComponent(scriptFile)}` : '');
   const links = [
@@ -4301,6 +4618,7 @@ function renderDerivationEvidenceGraph({ label, diagnosis }) {
     ['compare this run', `/derivation?compare=${encLabel}`],
     ['same outcome', `/derivation?verdict=${encodeURIComponent(diagnosis.verdict || '')}`],
     ['rerun in launcher', runHref],
+    ['controlled vocabulary', '#controlled-vocabulary'],
     ['proof runs index', '/derivation'],
     ['replays', '/replays'],
     ['scripts', '/browse'],
@@ -4311,6 +4629,287 @@ function renderDerivationEvidenceGraph({ label, diagnosis }) {
     .join('')}</div><div class="egraph__meta">verdict ${escapeHtml(
     diagnosis.verdict || '?',
   )} · world ${escapeHtml(worldFile || '?')} · script ${escapeHtml(scriptFile || '?')}</div></div>`;
+}
+
+function renderDerivationProofDagHtml(profile) {
+  if (!profile) {
+    return `<section class="proofdag"><div class="proofdag__k">authored proof DAG</div><h2>Proof DAG unavailable</h2><p class="proofdag__summary">The run loaded, but its world file could not be found. The mechanical result is still inspectable below; the authored DAG requires the original world spec.</p></section>`;
+  }
+  const metric = (label, value) =>
+    `<span class="proofdag__metric"><b>${escapeHtml(label)}</b> ${escapeHtml(value ?? 'n/a')}</span>`;
+  const paths = profile.paths
+    .map((pathProfile) => {
+      const premises = pathProfile.premises
+        .map((premise) => {
+          const release = premise.scheduled ? `t${premise.releaseTurn} / ${premise.releaseVia}` : 'unscheduled';
+          return `<li><span class="proofdag__pid">${escapeHtml(premise.id)}</span> <span class="proofdag__release">${escapeHtml(
+            release,
+          )}</span><span class="proofdag__surface">${escapeHtml(
+            premise.surface || premise.factText || '(no surface text)',
+          )}</span><span class="proofdag__fact">${escapeHtml(premise.factText)}</span></li>`;
+        })
+        .join('');
+      return `<article class="proofdag__path"><h3>${escapeHtml(pathProfile.id)} · ${
+        pathProfile.completeByTurn == null
+          ? 'not fully scheduled'
+          : `complete by t${escapeHtml(pathProfile.completeByTurn)}`
+      }</h3><ol>${premises}</ol></article>`;
+    })
+    .join('');
+  const releases = profile.releases
+    .map(
+      (release) =>
+        `<tr><td class="mono">t${escapeHtml(release.turn)}</td><td>${escapeHtml(
+          release.via,
+        )}</td><td class="mono">${escapeHtml(release.premiseId)}${
+          release.proofPremise ? '' : ' *'
+        }</td><td>${escapeHtml(release.surface || release.factText)}</td></tr>`,
+    )
+    .join('');
+  const rules = profile.rules
+    .map(
+      (rule) =>
+        `<li><span class="proofdag__pid">${escapeHtml(rule.id || '?')}</span>: ${escapeHtml(
+          rule.gloss || `${rule.if.join(' + ')} -> ${rule.then.join(', ')}`,
+        )}</li>`,
+    )
+    .join('');
+  return `<section class="proofdag" id="authored-proof-dag">
+  <div class="proofdag__top">
+    <div>
+      <div class="proofdag__k">authored proof DAG</div>
+      <h2>${escapeHtml(profile.title)}</h2>
+      <p class="proofdag__summary">${escapeHtml(profile.summary)}</p>
+      <p class="proofdag__summary"><b>Question:</b> ${escapeHtml(profile.question || 'n/a')}<br><b>Secret:</b> ${escapeHtml(
+        profile.secret.surface || profile.secret.factText || 'n/a',
+      )}${profile.mirror ? `<br><b>Mirror:</b> ${escapeHtml(profile.mirror.surface || profile.mirror.factText)}` : ''}</p>
+    </div>
+  </div>
+  <div class="proofdag__metrics">
+    ${metric('paths', profile.metrics.pathCount)}
+    ${metric('premises', `${profile.metrics.scheduledProofPremiseCount}/${profile.metrics.uniqueProofPremiseCount} scheduled`)}
+    ${metric('rules', profile.metrics.ruleCount)}
+    ${metric('rule apps', profile.metrics.ruleApplicationCount)}
+    ${metric('earliest complete', profile.metrics.earliestCompleteTurn == null ? 'n/a' : `t${profile.metrics.earliestCompleteTurn}`)}
+    ${metric('t_min', profile.metrics.tMin)}
+    ${metric('cap', profile.metrics.turnCap)}
+  </div>
+  <div class="proofdag__grid">
+    <div class="proofdag__paths">${paths}</div>
+    <aside class="proofdag__side">
+      <h3>release schedule</h3>
+      <table><thead><tr><th>turn</th><th>via</th><th>premise</th><th>surface</th></tr></thead><tbody>${releases}</tbody></table>
+      <p class="mono" style="color:var(--ink-3);margin:6px 0 0">* mirror or color premise, not required by an authored proof path</p>
+      <details><summary>public rules</summary><ul class="proofdag__rules">${rules}</ul></details>
+    </aside>
+  </div>
+</section>`;
+}
+
+function renderDerivationLearnerDagHtml(learnerDag, learnerDagAssessment) {
+  if (!learnerDag?.final || learnerDagAssessment?.status !== 'available') {
+    return `<section class="learnerdag"><div class="learnerdag__k">learner DAG</div><h2>No learner proof sketch</h2><p class="learnerdag__summary">This artifact does not expose enough learner board data to reconstruct a learner-side proof graph.</p></section>`;
+  }
+  const final = learnerDag.final;
+  const metric = (label, value) =>
+    `<span class="learnerdag__metric"><b>${escapeHtml(label)}</b> ${escapeHtml(value ?? 'n/a')}</span>`;
+  const nodes = final.nodes
+    .filter((node) => node.kind === 'fact' || node.kind === 'hypothesis')
+    .slice(0, 18)
+    .map((node) => {
+      if (node.kind === 'hypothesis') {
+        return `<li><span class="learnerdag__fact">${escapeHtml(node.text)}</span><br><span class="learnerdag__status">${escapeHtml(
+          node.label || 'hypothesis',
+        )}</span></li>`;
+      }
+      return `<li><span class="learnerdag__fact">${escapeHtml(
+        node.surface || node.factText,
+      )}</span><br><span class="learnerdag__status">${escapeHtml(
+        [...(node.statuses || []), node.label].filter(Boolean).join(' · '),
+      )}</span></li>`;
+    })
+    .join('');
+  const pathRows = (learnerDagAssessment.pathCoverage || [])
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.id)}</td><td class="mono">${Math.round(
+          row.coverage * 100,
+        )}%</td><td>${escapeHtml(row.missingPremiseIds.length ? row.missingPremiseIds.join(', ') : 'none')}</td></tr>`,
+    )
+    .join('');
+  const missingRows = (learnerDagAssessment.missingPremises || [])
+    .map(
+      (row) =>
+        `<tr><td>${escapeHtml(row.premiseId)}</td><td>${escapeHtml(row.bucket)}</td><td class="mono">${escapeHtml(
+          row.releaseTurn == null ? 'n/a' : `t${row.releaseTurn}`,
+        )}</td></tr>`,
+    )
+    .join('');
+  return `<section class="learnerdag" id="learner-proof-dag">
+  <div class="learnerdag__k">learner DAG</div>
+  <h2>Learner proof sketch</h2>
+  <p class="learnerdag__summary">Reconstructed from learner-visible board actions and voiced derivations. Source: <span class="mono">${escapeHtml(
+    learnerDagAssessment.source,
+  )}</span>. This is assessed after the run; it does not feed the learner the authored proof paths.</p>
+  <div class="learnerdag__metrics">
+    ${metric('best path', `${learnerDagAssessment.bestPathId || 'n/a'} · ${Math.round(learnerDagAssessment.bestPathCoverage * 100)}%`)}
+    ${metric('complete paths', learnerDagAssessment.completePathIds?.length || 0)}
+    ${metric('secret entailed', learnerDagAssessment.finalSecretEntailed)}
+    ${metric('asserted secret', learnerDagAssessment.assertedSecret)}
+    ${metric('asserted mirror', learnerDagAssessment.assertedMirror)}
+    ${metric('bottleneck', learnerDagAssessment.bottleneck || 'n/a')}
+    ${metric('turns', learnerDag.turns?.length || 0)}
+  </div>
+  <div class="learnerdag__grid">
+    <div class="learnerdag__panel">
+      <h3>final learner graph nodes</h3>
+      <ul class="learnerdag__nodes">${nodes || '<li class="notice-missing">No nodes reconstructed.</li>'}</ul>
+    </div>
+    <aside class="learnerdag__panel">
+      <h3>authored-path coverage</h3>
+      <table><thead><tr><th>path</th><th>covered</th><th>missing</th></tr></thead><tbody>${pathRows}</tbody></table>
+      ${
+        missingRows
+          ? `<h3 style="margin-top:12px">missing-premise buckets</h3><table><thead><tr><th>premise</th><th>bucket</th><th>release</th></tr></thead><tbody>${missingRows}</tbody></table>`
+          : ''
+      }
+      <p class="mono" style="color:var(--ink-3);margin:8px 0 0">first complete path: ${
+        learnerDagAssessment.firstCompletePathTurn ?? 'n/a'
+      }; first secret entailed: ${learnerDagAssessment.firstSecretEntailedTurn ?? 'n/a'}</p>
+    </aside>
+  </div>
+	</section>`;
+}
+
+function renderVocabularyTokens(tokens, modifier = '') {
+  return tokens
+    .map(
+      (token) =>
+        `<span class="vocab__token${modifier ? ` vocab__token--${modifier}` : ''}">${escapeHtml(token)}</span>`,
+    )
+    .join('');
+}
+
+function renderDerivationConceptChip(id, conceptsById) {
+  const concept = conceptsById.get(id);
+  const label = concept?.label || id;
+  return concept
+    ? `<a class="vocab__token" href="#concept-${escapeAttr(concept.id)}">${escapeHtml(label)}</a>`
+    : `<span class="vocab__token">${escapeHtml(label)}</span>`;
+}
+
+function renderDerivationConceptEdge(link, conceptsById) {
+  const target = conceptsById.get(link.target);
+  const targetLabel = target?.label || link.target;
+  const targetHref = target ? ` href="#concept-${escapeAttr(target.id)}"` : '';
+  return `<a class="concept__edge"${targetHref}><span>${escapeHtml(link.type)}:</span> <b>${escapeHtml(targetLabel)}</b></a>`;
+}
+
+function renderDerivationConceptCard(
+  concept,
+  conceptsById,
+  ontologyHref,
+  { highlight = false, idPrefix = 'concept-' } = {},
+) {
+  const links = concept.links.map((link) => renderDerivationConceptEdge(link, conceptsById)).join('');
+  return `<article class="concept${highlight ? ' concept--novel' : ''}" id="${escapeAttr(idPrefix + concept.id)}">
+    <div class="concept__top"><span class="concept__label">${escapeHtml(concept.label)}</span><span class="concept__layer">${escapeHtml(concept.layer)}</span></div>
+    <p class="concept__definition"><span class="concept__deflabel">definition</span>${escapeHtml(concept.definition)}</p>
+    <div class="concept__meta">
+      <span class="concept__metachip">category: ${escapeHtml(concept.category)}</span>
+      <span class="concept__metachip">app term: <code>${escapeHtml(concept.id)}</code></span>
+    </div>
+    <div class="concept__ontology">
+      <span class="concept__ontologylabel">ontology affinity</span>
+      <a href="${escapeAttr(ontologyHref)}" title="Open the ontology atlas with the derivation concept-world module loaded"><code>${escapeHtml(concept.ontology)}</code></a>
+    </div>
+    <div class="concept__links"><span class="concept__linkslabel">typed links</span>${links}</div>
+  </article>`;
+}
+
+function renderDerivationConceptSchemaHtml(schema) {
+  const conceptsById = new Map(schema.concepts.map((concept) => [concept.id, concept]));
+  const ontologyHref = `/ontology?view=system&modules=${encodeURIComponent(schema.ontologyModules.join(','))}&source=1`;
+  const ontologyModules = schema.ontologyModules
+    .map((module) => `<span class="vocab__token">${escapeHtml(module)}</span>`)
+    .join('');
+  const novelConcepts = (schema.novelConceptIds || [])
+    .map((id) => conceptsById.get(id))
+    .filter(Boolean)
+    .map((concept) =>
+      renderDerivationConceptCard(concept, conceptsById, ontologyHref, {
+        highlight: true,
+        idPrefix: 'concept-featured-',
+      }),
+    )
+    .join('');
+  const acts = schema.acts
+    .map(
+      (act) => `<section class="vocabschema__act">
+    <h4>${escapeHtml(act.title)}</h4>
+    <p>${escapeHtml(act.note)}</p>
+    <div class="vocab__tokens">${act.concepts.map((id) => renderDerivationConceptChip(id, conceptsById)).join('')}</div>
+  </section>`,
+    )
+    .join('');
+  const concepts = schema.concepts
+    .map((concept) => renderDerivationConceptCard(concept, conceptsById, ontologyHref))
+    .join('');
+  const edges = schema.links
+    .map(
+      (link) =>
+        `<div class="vocabschema__edge"><b>${escapeHtml(link.sourceLabel)}</b> ${escapeHtml(link.type)} <b>${escapeHtml(link.targetLabel)}</b></div>`,
+    )
+    .join('');
+  return `<section class="vocabschema" id="conceptual-world">
+    <div class="vocabschema__head">
+      <div>
+        <h3>Conceptual world</h3>
+        <p>The derivation run is a single semantic world: drama stages the problem, rhetoric shapes address, logic licenses claims, pedagogy manages ownership, and theory names the authority dynamics.</p>
+      </div>
+      <a class="vocabschema__link" href="${escapeAttr(ontologyHref)}">open ontology module</a>
+    </div>
+    <div class="vocabschema__ontology">
+      <div>
+        <h4>Ontology affinity</h4>
+        <p>Concept cards below name the app-level term, its ontology individual, and the loaded ontology modules that make the concept-world available.</p>
+      </div>
+      <div class="vocab__tokens">${ontologyModules}</div>
+    </div>
+    <div class="vocabschema__novel">${novelConcepts}</div>
+    <div class="vocabschema__acts">${acts}</div>
+    <div class="vocabschema__grid">${concepts}</div>
+    <div class="vocabschema__edges"><h4>Typed semantic links</h4><div class="vocabschema__edgegrid">${edges}</div></div>
+  </section>`;
+}
+
+function renderDerivationControlledVocabularyHtml({ open = false } = {}) {
+  const schema = getDerivationConceptSchema();
+  const body = schema.vocabularyGroups
+    .map(
+      (group) => `<section class="vocab__group">
+    <h3>${escapeHtml(group.title)}</h3>
+    <p>${escapeHtml(group.note)}</p>
+    <div class="vocab__tokens">${renderVocabularyTokens(group.tokens, group.modifier || '')}</div>
+  </section>`,
+    )
+    .join('');
+  const layerBody = schema.layers
+    .map(
+      (layer) => `<section class="vocab__layer">
+    <h3>${escapeHtml(layer.title)}</h3>
+    <p>${escapeHtml(layer.note)}</p>
+    <div class="vocab__tokens">${renderVocabularyTokens(layer.tokens)}</div>
+  </section>`,
+    )
+    .join('');
+  return `<details class="vocab" id="controlled-vocabulary"${open ? ' open' : ''}>
+  <summary>Controlled vocabulary <span class="vocab__hint">drama, rhetoric, logic, pedagogy, theory, novel</span></summary>
+  <p class="vocab__intro">The app keeps scenario content separate from the stable learner contract. The conceptual world gives definitions, typed semantic links, and ontology affinity for the terms the run uses.</p>
+  ${renderDerivationConceptSchemaHtml(schema)}
+  <div class="vocab__layers">${layerBody}</div>
+  <div class="vocab__grid">${body}</div>
+</details>`;
 }
 
 function renderDerivationIndexHtml(runs, query = {}) {
@@ -4494,7 +5093,9 @@ ${railHtml({
 })}
 <main class="wrap wrap--wide" data-derivation-index>
 <h1>Proof runs — did the learner reach the hidden answer?</h1>
+${reportTypeBand('/derivation')}
 <p class="lede">Each row is one tutoring run. The tutor has to lead the learner to a hidden conclusion purely by inference, and a fixed rule-checker — not an AI judge — decides the outcome: a run is <strong>grounded</strong> when the learner reaches the hidden conclusion and its proof closes; otherwise it ends in an <strong>impasse</strong> or the learner <strong>disengages</strong>. Runs are grouped by experimental condition (the <span class="mono">--group</span> flag); artifacts live under <span class="mono">exports/dramatic-derivation/loop/</span>.</p>
+${renderDerivationControlledVocabularyHtml()}
 ${renderDerivationLivePanel(listDerivationLiveRuns())}
 ${scoreboard}
 ${toolbar}
@@ -4507,7 +5108,7 @@ ${DERIVATION_INDEX_CLIENT}
 </body></html>`;
 }
 
-function renderDerivationRunHtml({ label, diagnosis, result, world, commentary }) {
+function renderDerivationRunHtml({ label, diagnosis, result, world, commentary, assessment }) {
   // Realized staging: director-declared movements when there are any, the
   // author's sketch otherwise — same segments feed the headers AND the curve.
   const segments = derivationStagingSegments(result, world);
@@ -4645,8 +5246,11 @@ ${railHtml({
 <p class="mono" style="margin-top:14px"><a href="/derivation">← all runs</a></p>
 <h1>${escapeHtml(world?.title || result.worldId || label)}</h1>
 <p class="lede mono">${escapeHtml(label)} · script ${escapeHtml(diagnosis.scriptPath || '?')}${diagnosis.note ? ` · ${escapeHtml(diagnosis.note)}` : ''}</p>
-<div class="chips">${chips}</div>
-${renderDerivationEvidenceGraph({ label, diagnosis })}
+	<div class="chips">${chips}</div>
+	${renderDerivationEvidenceGraph({ label, diagnosis })}
+	${renderDerivationControlledVocabularyHtml({ open: true })}
+	${renderDerivationProofDagHtml(assessment?.dagProfile || null)}
+${renderDerivationLearnerDagHtml(assessment?.learnerDag || null, assessment?.learnerDagAssessment || null)}
 ${transcriptTtsToolbarHtml({ fullLabel: 'Play full transcript', includeLabel: 'include tutor superego' })}
 ${
   commentary
@@ -4993,6 +5597,119 @@ function renderActivityBand(s = {}) {
 // The redesigned home: every surface regrouped into a three-act dramatic
 // structure (I make · II read & judge · III keep). Live numbers come from the
 // same stats the classic dashboard reads; only the arrangement changes.
+// The "read & judge" hub (/read): the landing for act II. Its job is to make the
+// three report types legible BEFORE you open one — the thing they differ on is who
+// does the judging (AI critic / fixed rule-checker / diff), not the subject. The
+// supporting surfaces (rubric, adjudication, pilot) are grouped separately as the
+// apparatus behind the judging. Counts come from the same dashboardStats() the home
+// uses; the poetic names are kept but paired with plain function.
+function renderReadJudgeHub(stats = {}) {
+  const s = { scripts: 0, scored: 0, openFlags: 0, replays: 0, proofRuns: 0, ...stats };
+  const e = escapeHtml;
+  const n = (x) => Number(x || 0).toLocaleString('en-US');
+  const reports = [
+    {
+      acc: 'var(--indigo)',
+      soft: 'var(--indigo-soft)',
+      deep: 'var(--indigo)',
+      name: 'Scripts',
+      alias: 'The Shelves',
+      href: '/browse',
+      judge: 'an AI critic',
+      what: 'Tutoring dialogues staged as short plays, scored on <b>dramatic form</b> — a genuine turn (peripeteia) and a moment of recognition (anagnorisis).',
+      row: 'a row = one <b>scored script</b> · filter by arm, discipline, verdict',
+      count: `${n(s.scripts)} scripts · ${n(s.scored)} read`,
+    },
+    {
+      acc: 'var(--moss)',
+      soft: 'var(--moss-soft)',
+      deep: 'var(--moss-deep)',
+      name: 'Proof runs',
+      alias: 'The Proofs',
+      href: '/derivation',
+      judge: 'a fixed rule-checker',
+      what: 'Runs where the tutor must lead the learner to a <b>hidden answer</b> by inference. A deterministic rule — not an AI, not a quality score — decides the outcome.',
+      row: 'a row = one <b>run</b>: grounded · impasse · disengaged',
+      count: `${n(s.proofRuns)} runs`,
+    },
+    {
+      acc: 'var(--ochre-d)',
+      soft: 'var(--ochre-soft)',
+      deep: 'var(--ochre-d)',
+      name: 'Replays',
+      alias: 'Variant Leaves',
+      href: '/replays',
+      judge: 'a diff vs the original',
+      what: 'Take one dialogue, <b>alter a single move</b>, re-run it, and diff against the original — to see how one change reshapes recognition.',
+      row: 'a row = one <b>counterfactual bundle</b>: generator → checker',
+      count: `${n(s.replays)} bundles`,
+    },
+  ];
+  const apparatus = [
+    ['Rubric', 'The Critic&#39;s Bench', '/rubric', 'The 6 dramatic-form dimensions the critic scores against.'],
+    ['Adjudication', 'The Margins', '/adjudication', 'Blinded human glosses cross-checking the critic.'],
+    ['Pilot', 'The Pilot', '/pilot-admin', 'Operator desk for the human-learner study.'],
+  ];
+  const reportCards = reports
+    .map(
+      (r) => `
+    <a class="rjh-card" href="${r.href}" style="--acc:${r.acc}">
+      <div class="rjh-top"><span class="rjh-name">${e(r.name)}</span><span class="rjh-alias">“${e(r.alias)}”</span><span class="rjh-pill" style="background:${r.soft};color:${r.deep}">judged by ${e(r.judge)}</span></div>
+      <div class="rjh-what">${r.what}</div>
+      <div class="rjh-foot"><span class="rjh-row">${r.row}</span><span class="rjh-count">${e(r.count)}</span></div>
+      <div class="rjh-go"><span class="rjh-route">${e(r.href)}</span><span>open →</span></div>
+    </a>`,
+    )
+    .join('');
+  const apparatusCards = apparatus
+    .map(
+      ([name, alias, href, gloss]) => `
+    <a class="rjh-scard" href="${href}"><div class="rjh-sname">${name} <span>· ${alias}</span></div><div class="rjh-sgloss">${e(gloss)}</div></a>`,
+    )
+    .join('');
+  const css = `
+main.rjh{ max-width:880px; margin:0 auto; padding:24px 22px 64px; }
+.rjh-lead{ font-size:15px; color:var(--ink-2); line-height:1.6; margin:0 0 20px; border-left:3px solid var(--moss); padding-left:14px; }
+.rjh-lead b{ color:var(--ink); font-weight:600; }
+.rjh-reports{ display:flex; flex-direction:column; gap:12px; }
+.rjh-card{ display:block; border:1px solid var(--rule); border-left:3px solid var(--acc); background:var(--paper-4); border-radius:0 8px 8px 0; padding:14px 16px; text-decoration:none; color:inherit; transition:border-color .15s var(--ease), background .15s var(--ease); }
+.rjh-card:hover{ border-color:var(--acc); background:var(--paper-3); }
+.rjh-top{ display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }
+.rjh-name{ font:600 17px Georgia,serif; color:var(--ink); }
+.rjh-alias{ font:italic 13px Georgia,serif; color:var(--ink-4); }
+.rjh-pill{ margin-left:auto; font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em; padding:2px 9px; border-radius:11px; white-space:nowrap; }
+.rjh-what{ font-size:13px; color:var(--ink-2); line-height:1.55; margin:7px 0 8px; } .rjh-what b{ color:var(--ink); font-weight:600; }
+.rjh-foot{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font:11px ui-monospace,monospace; color:var(--ink-3); }
+.rjh-count{ color:var(--ink-4); white-space:nowrap; }
+.rjh-go{ display:flex; justify-content:space-between; margin-top:9px; padding-top:8px; border-top:1px solid var(--rule-soft); font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--moss-deep); }
+.rjh-route{ color:var(--ink-4); }
+.rjh-divlbl{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); margin:24px 0 10px; }
+.rjh-sup{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
+.rjh-scard{ border:1px solid var(--rule); background:var(--paper-4); border-radius:7px; padding:11px 13px; text-decoration:none; color:inherit; transition:border-color .15s var(--ease); }
+.rjh-scard:hover{ border-color:var(--ink-3); }
+.rjh-sname{ font:600 13px Georgia,serif; color:var(--ink); } .rjh-sname span{ font-weight:400; font-style:italic; color:var(--ink-4); }
+.rjh-sgloss{ font-size:12px; color:var(--ink-3); line-height:1.5; margin-top:4px; }
+`;
+  const body = `<main class="rjh">
+  <p class="rjh-lead">The corpus is read <b>three ways</b>. What separates them is not the subject — it is <b>who does the judging</b>.</p>
+  <div class="rjh-reports">${reportCards}</div>
+  <div class="rjh-divlbl">the apparatus behind the judging</div>
+  <div class="rjh-sup">${apparatusCards}</div>
+</main>`;
+  return renderShell({
+    title: 'read &amp; judge · machine spirits',
+    active: 'read',
+    sub: 'the three report types — and how they differ',
+    hint: orientBand(
+      'the reading room',
+      'three ways the corpus is read, by who judges',
+      'pick a report type below, or a working surface on the rail',
+    ),
+    css,
+    body,
+  });
+}
+
 function renderScriptoriumHome(stats = {}) {
   // The whole at-a-glance band (live numbers, charts) is delegated to
   // renderActivityBand(s); this function owns only the masthead, the three-act
@@ -5015,7 +5732,7 @@ function renderScriptoriumHome(stats = {}) {
         ],
         [
           'The Rehearsal Seat',
-          '/compose/live',
+          '/admin/compose/live',
           'sit in',
           'Sit in on a tutoring scene turn by turn, as the learner or as the audience.',
         ],
@@ -5025,7 +5742,12 @@ function renderScriptoriumHome(stats = {}) {
           'play',
           'Drive the tutor and watch the ego &amp; superego deliberate before each line.',
         ],
-        ['Staging', '/runs', 'stage', 'Call the players: launch a generation run, free or metered, and watch the log.'],
+        [
+          'Staging',
+          '/admin/runs',
+          'stage',
+          'Call the players: launch a generation run, free or metered, and watch the log.',
+        ],
       ],
     },
     {
@@ -5039,19 +5761,19 @@ function renderScriptoriumHome(stats = {}) {
           'The Shelves',
           '/browse',
           'read',
-          'The whole corpus — every scored script, filterable by arm, discipline, and verdict.',
+          'Scripts — judged by an AI critic on dramatic form. The whole corpus, filterable by arm, discipline, and verdict.',
         ],
         [
           'The Proofs',
           '/derivation',
           'prove',
-          'Runs where the tutor must lead to a hidden answer; a fixed rule decides grounded or not.',
+          'Proof runs — judged by a fixed rule-checker, not an AI. The tutor must reach a hidden answer: grounded, impasse, or disengaged.',
         ],
         [
           'Variant Leaves',
           '/replays',
           'vary',
-          'One move altered, then diffed against the original — how a change reshapes recognition.',
+          'Replays — judged by a diff vs the original. One move altered and re-run, to see how a change reshapes recognition.',
         ],
         [
           'The Critic&#39;s Bench',
@@ -5103,7 +5825,7 @@ function renderScriptoriumHome(stats = {}) {
           'The Hall',
           '/summary',
           'recount',
-          'Lab notes and the synthesis arc — summary, story, repertoire, explainers.',
+          'The synthesis arc &amp; reference shelf — summary, theory, blueprint, story, repertoire, explainers.',
         ],
       ],
     },
@@ -5313,7 +6035,7 @@ const TRANSCRIPT_TTS_CLIENT = `<script>
     };
   }
   async function fetchSpeech(fragment, signal) {
-    var response = await fetch('/api/tts', {
+    var response = await fetch('/admin/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: signal,
@@ -5660,7 +6382,7 @@ function renderDashboardHtml(stats = {}) {
       v: 'local',
       d: 'runs launched here stay on localhost with cost class shown first',
       warn: false,
-      href: '/runs',
+      href: '/admin/runs',
     },
   ];
   const healthHtml = healthRows
@@ -5682,12 +6404,12 @@ function renderDashboardHtml(stats = {}) {
         <p>The script browser reads DB-backed rows from <code>poetics_items</code>. The proof-run index reads file artifacts from <code>exports/dramatic-derivation/loop</code>. Start with a free path, or inspect proof runs now.</p>
       </div>
       <div class="setup-actions" aria-label="First-run actions">
-        <a class="setup-action setup-action--go" href="/runs?kind=generate&amp;mock=1&amp;dryRun=1">
+        <a class="setup-action setup-action--go" href="/admin/runs?kind=generate&amp;mock=1&amp;dryRun=1">
           <span class="setup-action__t">Generate mock script</span>
           <span class="setup-action__d">free · opens the launcher with mock generation selected</span>
           <code>node scripts/drama-generator.js --non-interactive --mock</code>
         </a>
-        <a class="setup-action" href="/runs?kind=generate&amp;mock=1&amp;specOnly=1">
+        <a class="setup-action" href="/admin/runs?kind=generate&amp;mock=1&amp;specOnly=1">
           <span class="setup-action__t">Use sample fixture</span>
           <span class="setup-action__d">free · write a starter spec before generating</span>
           <code>node scripts/drama-generator.js --non-interactive --mock --spec-only</code>
@@ -5800,14 +6522,14 @@ function renderDashboardHtml(stats = {}) {
       4,
       'Compose a scene',
       'Sit in on a live tutoring scene and play one seat turn by turn — or switch to batch mode to assemble a full spec, validated live against the ontology as you build the turn plan.',
-      '/compose/live',
+      '/admin/compose/live',
       'compose a scene',
     ],
     [
       5,
       'Launch a run',
       'Launch a generation from the runs console — free/mock by default, with every cost class shown before you ever commit a paid call.',
-      '/runs',
+      '/admin/runs',
       'launch a run',
     ],
     [
@@ -5832,14 +6554,14 @@ function renderDashboardHtml(stats = {}) {
 
   const ROLES = [
     ['Reader', 'Inspect scripts, proof runs, and replays before launching anything.', '/browse', 'Read evidence'],
-    ['Builder', 'Compose a scene or start from a safe mock generation path.', '/compose/live', 'Compose'],
+    ['Builder', 'Compose a scene or start from a safe mock generation path.', '/admin/compose/live', 'Compose'],
     [
       'Reviewer',
       'Find flags, labels, disagreement cases, and adjudication surfaces.',
       '/browse?queue=flagged',
       'Review flags',
     ],
-    ['Operator', 'Launch jobs, watch cost class, and inspect local job output.', '/runs', 'Launch'],
+    ['Operator', 'Launch jobs, watch cost class, and inspect local job output.', '/admin/runs', 'Launch'],
     ['Researcher', 'Open ontology, rubric, paper notes, timeline, and the workplan.', '/board', 'Open workplan'],
   ];
   const rolesHtml = ROLES.map(
@@ -5883,14 +6605,14 @@ function renderDashboardHtml(stats = {}) {
       'make · a scene',
       'compose a scene',
       'Sit in on a live tutoring scene and play one seat turn by turn — or switch to batch mode to assemble a full spec, validated live against the poetics ontology.',
-      '/compose/live',
+      '/admin/compose/live',
     ],
     [
       'surf--make',
       'make · a run',
       'launch a run',
       'Spawn runs — generative · replay · adversarial-CLI · online-scoring. Free/mock by default; cost shown before any paid call.',
-      '/runs',
+      '/admin/runs',
     ],
   ];
   const surfacesHtml = SURFACES.map(
@@ -6219,8 +6941,8 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'learning (to live) 
     <p class="cr-head__lede">Choose a role, then move through the loop: read current evidence, compose or launch a new scene, review flags, and connect findings back to the workplan and paper trail. <a href="#why">Why it's built this way ↓</a></p>
     <div class="cr-cmd">
       <a class="cmd cmd--go" href="/browse"><span class="cmd__i" aria-hidden="true">⊞</span> Read evidence</a>
-      <a class="cmd" href="/compose/live"><span class="cmd__i" aria-hidden="true">✎</span> Compose</a>
-      <a class="cmd" href="/runs"><span class="cmd__i" aria-hidden="true">▸</span> Launch</a>
+      <a class="cmd" href="/admin/compose/live"><span class="cmd__i" aria-hidden="true">✎</span> Compose</a>
+      <a class="cmd" href="/admin/runs"><span class="cmd__i" aria-hidden="true">▸</span> Launch</a>
       <a class="cmd" href="/browse?queue=flagged"><span class="cmd__i" aria-hidden="true">!</span> Review flags</a>
       <a class="cmd" href="/board"><span class="cmd__i" aria-hidden="true">□</span> Open workplan</a>
     </div>
@@ -6462,7 +7184,7 @@ ${railHtml({
   active: 'compose',
   brand: 'drama composer',
   sub: 'assemble a drama-machine spec · validated live against the poetics ontology',
-  hint: '<span><b>compose · spec mode</b> — assemble a full drama-machine spec, validated live against the ontology</span><span class="navhint__sep">·</span><span>or <a href="/compose/live">sit in on a live scene</a></span>',
+  hint: '<span><b>compose · spec mode</b> — assemble a full drama-machine spec, validated live against the ontology</span><span class="navhint__sep">·</span><span>or <a href="/admin/compose/live">sit in on a live scene</a></span>',
 })}
 ${modeTabsHtml('spec')}
 ${parameterComponentStrip()}
@@ -6657,7 +7379,7 @@ async function validate(){
 async function write(force){
   var spec = readSpec();
   try {
-    var r = await postJson('/api/compose/write', { spec: spec, filename: val('filename'), force: !!force });
+    var r = await postJson('/admin/api/compose/write', { spec: spec, filename: val('filename'), force: !!force });
     $('writeResult').innerHTML = 'wrote <code>'+esc(r.path)+'</code> · '+r.bytes+' bytes';
     if (r.validation) renderValidation(r.validation);
   } catch (e) {
@@ -6744,7 +7466,7 @@ function modeTabsHtml(active) {
     } title="${hint}">${label}</a>`;
   // Live (sit-in) is the more obvious entry point, so it leads; Spec (batch) follows.
   return `<nav class="modetabs" aria-label="compose mode">
-    ${tab('live', '/compose/live', '● Live · sit-in', 'Sit in: you play one seat, the AI plays the other, turn by turn')}
+    ${tab('live', '/admin/compose/live', '● Live · sit-in', 'Sit in: you play one seat, the AI plays the other, turn by turn')}
     ${tab('spec', '/compose', '◐ Spec · batch', 'Assemble a full drama spec and write it as YAML for batch generation')}
   </nav>`;
 }
@@ -6754,7 +7476,7 @@ const MODETABS_CSS = `.modetabs{ display:flex; gap:3px; padding:9px 18px 0; back
 .modetab.on{ color:var(--moss-deep); background:var(--paper-4); font-weight:600; position:relative; top:1px; }
 @media(max-width:540px){ .modetabs{ overflow-x:auto; padding-inline:10px; } .modetab{ white-space:nowrap; min-height:40px; display:inline-flex; align-items:center; } }`;
 
-// ── Live "sit-in" compose (GET /compose/live) ─────────────────────────────────
+// ── Live "sit-in" compose (GET /admin/compose/live) ───────────────────────────
 // A real-time chat where the human takes one chair (tutor or learner) and the AI
 // takes the other, driven by the SAME turn engines the scored runs use (so the
 // sit-in can't drift from them). METERED: each AI turn is a real LLM call unless
@@ -6947,7 +7669,7 @@ ${railHtml({
   active: 'compose',
   brand: 'live compose',
   sub: 'sit in · you play one seat, the AI plays the other, turn by turn',
-  hint: '<span><b>compose a scene</b> — sit in and play one seat of a live tutoring scene, or switch to batch-spec mode</span><span class="navhint__sep">·</span><span>then <a href="/runs">launch a run</a> to generate at scale, or read finished ones in <a href="/browse">scripts</a></span>',
+  hint: '<span><b>compose a scene</b> — sit in and play one seat of a live tutoring scene, or switch to batch-spec mode</span><span class="navhint__sep">·</span><span>then <a href="/admin/runs">launch a run</a> to generate at scale, or read finished ones in <a href="/browse">scripts</a></span>',
 })}
 ${modeTabsHtml('live')}
 <div class="live" id="liveGrid">
@@ -7209,7 +7931,7 @@ function loadReading(ref){
   S.readingRef = ref;
   $('readingMeta').textContent = 'loading…';
   $('readingBody').innerHTML = '<div class="readpane__empty">loading the reading…</div>';
-  fetch('/api/compose/live/lecture/'+encodeURIComponent(ref))
+  fetch('/admin/api/compose/live/lecture/'+encodeURIComponent(ref))
     .then(function(r){ return r.json(); })
     .then(function(d){
       if(!d || !d.ok || !d.lecture){ throw new Error((d && d.error) || 'no lecture'); }
@@ -7292,7 +8014,7 @@ function appendOptimistic(text){
   t.scrollTop = t.scrollHeight;
   startThinkTimer();
 }
-async function refresh(){ try { var u='/api/compose/live/'+S.id+(S.showDelib?'?debug=1':''); var r = await fetch(u); var d = await r.json(); if(d.session) renderSession(d.session); } catch(_e){} }
+async function refresh(){ try { var u='/admin/api/compose/live/'+S.id+(S.showDelib?'?debug=1':''); var r = await fetch(u); var d = await r.json(); if(d.session) renderSession(d.session); } catch(_e){} }
 
 // Set a <select> only if the proposed value is one of its options, so a value the
 // server clamped away can't blank the control.
@@ -7326,7 +8048,7 @@ async function guide(){
   $('guideBtn').disabled=true; var lab=$('guideBtn').textContent; $('guideBtn').textContent='composing…';
   out.hidden=false; out.className='guide__out'; out.innerHTML='<span class="muted">the guide is setting the dials…</span>';
   try {
-    var r = await postJson('/api/compose/live/guide', { description:desc, mock:S.mock });
+    var r = await postJson('/admin/api/compose/live/guide', { description:desc, mock:S.mock });
     applySpecToForm(r.spec);
     var bits = [];
     if(r.rationale) bits.push('<b>set-up:</b> '+esc(r.rationale));
@@ -7389,7 +8111,7 @@ async function begin(){
   $('beginBtn').disabled=true; $('beginBtn').textContent='setting the scene…';
   // In watch mode the opening is always an AI line; otherwise only an AI opening seat.
   renderSceneLoading(S.watch || spec.openingSpeaker===S.aiRole);
-  try { var r = await postJson('/api/compose/live/start', { spec:spec, mock:S.mock }); renderSession(r.session); if(S.watch) startWatch(); }
+  try { var r = await postJson('/admin/api/compose/live/start', { spec:spec, mock:S.mock }); renderSession(r.session); if(S.watch) startWatch(); }
   catch(e){ restoreSetup(); $('setupErr').textContent='could not start: '+(e.message||e); $('beginBtn').disabled=false; $('beginBtn').textContent='Begin the scene →'; }
 }
 async function send(){
@@ -7397,7 +8119,7 @@ async function send(){
   if(!text || S.status!=='live') return;
   $('composerInput').disabled=true; $('sendBtn').disabled=true;
   appendOptimistic(text); $('composerHint').textContent='the '+S.aiRole+' is thinking…';
-  try { var r = await postJson('/api/compose/live/turn', { id:S.id, text:text, mock:S.mock, showDeliberation:S.showDelib });
+  try { var r = await postJson('/admin/api/compose/live/turn', { id:S.id, text:text, mock:S.mock, showDeliberation:S.showDelib });
     $('composerInput').value=''; autoGrow($('composerInput')); renderSession(r.session); }
   catch(e){ $('composerHint').innerHTML='<span class="metered">turn failed: '+esc(e.message||String(e))+'</span>'; await refresh(); }
 }
@@ -7429,7 +8151,7 @@ function renderWatchControls(done, reason){
 async function advanceWatch(){
   if(S.advancing || S.status!=='live') return;
   S.advancing=true; appendWatchGhost(S.nextSpeaker);
-  try { var r = await postJson('/api/compose/live/'+S.id+'/advance', { mock:S.mock, showDeliberation:S.showDelib }); renderSession(r.session); }
+  try { var r = await postJson('/admin/api/compose/live/'+S.id+'/advance', { mock:S.mock, showDeliberation:S.showDelib }); renderSession(r.session); }
   catch(e){ S.playing=false; if($('watchStat')) $('watchStat').innerHTML='<span class="metered">advance failed: '+esc(e.message||String(e))+'</span>'; await refresh(); }
   finally { S.advancing=false; }
 }
@@ -7442,7 +8164,7 @@ function toggleWatch(){ if(S.playing){ S.playing=false; renderWatchControls(fals
 function stepWatch(){ if(S.playing || S.status!=='live') return; advanceWatch(); }
 async function save(){
   if(!S.id) return; $('saveRes').textContent='saving…';
-  try { var r = await postJson('/api/compose/live/save', { id:S.id, filename:$('saveName').value.trim() });
+  try { var r = await postJson('/admin/api/compose/live/save', { id:S.id, filename:$('saveName').value.trim() });
     $('saveRes').innerHTML='saved <code>'+esc(r.path)+'</code> · '+r.bytes+' bytes'; }
   catch(e){ $('saveRes').textContent='save failed: '+(e.message||e); }
 }
@@ -7453,7 +8175,7 @@ async function endScene(){
   if(!S.id) return;
   if(S.status!=='live'){ $('scoreRes').textContent='the scene has already ended.'; return; }
   $('endBtn').disabled=true;
-  try { await postJson('/api/compose/live/'+S.id+'/end', { reason:'user_ended' }); await refresh(); }
+  try { await postJson('/admin/api/compose/live/'+S.id+'/end', { reason:'user_ended' }); await refresh(); }
   catch(e){ $('scoreRes').textContent='could not end the scene: '+(e.message||e); }
   finally { $('endBtn').disabled=false; }
 }
@@ -7466,7 +8188,7 @@ async function scoreScene(){
   $('scoreBtn').disabled=true; var lab=$('scoreBtn').textContent; $('scoreBtn').textContent='scoring…';
   $('scoreRes').innerHTML='<span class="muted">the critic is reading the scene'+(S.mock?' (free preview)':'')+'…</span>';
   try {
-    var r = await postJson('/api/compose/live/'+S.id+'/score', { mock:S.mock });
+    var r = await postJson('/admin/api/compose/live/'+S.id+'/score', { mock:S.mock });
     if(r.session) renderSession(r.session); else renderScore(r.score);
   } catch(e){
     $('scoreRes').textContent = (e.code==='LIVE_NO_API_KEY')
@@ -7677,7 +8399,17 @@ const ALL_MODULES = ${JSON.stringify(ALL_MODULES)};
 const DEFAULT_MODULES = ${JSON.stringify(DEFAULT_MODULES)};
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const state = { view:'system', modules:new Set(DEFAULT_MODULES), source:false };
+const urlParams = new URLSearchParams(location.search);
+const initialView = ['system','tutor','learner'].includes(urlParams.get('view')) ? urlParams.get('view') : 'system';
+const initialModules = (urlParams.get('modules') || '')
+  .split(',')
+  .map(function(m){ return m.trim(); })
+  .filter(function(m){ return ALL_MODULES.includes(m); });
+const state = {
+  view: initialView,
+  modules: new Set(initialModules.length ? initialModules : DEFAULT_MODULES),
+  source: urlParams.get('source') === '1'
+};
 
 function chips(list, cls){ return '<div class="chips">'+(list&&list.length?list.map(function(x){ return '<span class="chip '+(cls||'')+'">'+esc(x)+'</span>'; }).join(''):'<span class="muted">none</span>')+'</div>'; }
 // Role-view chips double as lens jumps: tutor_* → tutor lens, learner_* → learner lens.
@@ -7843,6 +8575,8 @@ $('themeToggle').addEventListener('click', function(){
 });
 try { if (localStorage.getItem('poetics-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); } catch (_e) {}
 renderModbar();
+[].forEach.call($('lenses').children, function(x){ x.classList.toggle('active', x.getAttribute('data-view')===state.view); });
+$('srcToggle').checked = state.source;
 load();
 </script>
 </body>
@@ -7889,7 +8623,17 @@ function invalidWorkplanFields(b) {
   return null;
 }
 
-function renderWorkplanBoardHtml() {
+function normalizeWorkplanFocus(query = {}) {
+  const requested = String(query.focus || '').toLowerCase();
+  if (['open', 'all', 'settled'].includes(requested)) return requested;
+  const hasTargetedFilter = ['tag', 'type', 'milestone', 'unscheduled', 'item', 'id'].some((key) => {
+    const value = query[key];
+    return value !== undefined && value !== null && String(value) !== '';
+  });
+  return hasTargetedFilter ? 'all' : 'open';
+}
+
+function renderWorkplanBoardHtml(query = {}) {
   const board = readWorkplanBoard();
   const e = escapeHtml;
   const LIFE = ['triaged', 'active', 'blocked', 'review', 'done', 'archived', 'dropped', 'inbox'];
@@ -7897,8 +8641,24 @@ function renderWorkplanBoardHtml() {
   const byId = Object.fromEntries(items.map((i) => [i.id, i]));
   const milestones = loadMilestones();
   const milestoneById = Object.fromEntries(milestones.map((m) => [m.id, m]));
+  const focus = normalizeWorkplanFocus(query);
   const completeStatuses = new Set(['done', 'archived']);
   const openStatuses = new Set(['triaged', 'active', 'blocked', 'review', 'inbox']);
+  const settledStatuses = new Set(['done', 'archived', 'dropped']);
+  const focusedItems =
+    focus === 'open'
+      ? items.filter((i) => openStatuses.has(i.status))
+      : focus === 'settled'
+        ? items.filter((i) => settledStatuses.has(i.status))
+        : items;
+  const openCount = items.filter((i) => openStatuses.has(i.status)).length;
+  const settledCount = items.filter((i) => settledStatuses.has(i.status)).length;
+  const focusSummary =
+    focus === 'open'
+      ? `${focusedItems.length} open item${focusedItems.length === 1 ? '' : 's'} shown; ${settledCount} settled hidden`
+      : focus === 'settled'
+        ? `${focusedItems.length} settled item${focusedItems.length === 1 ? '' : 's'} shown; ${openCount} open hidden`
+        : `${items.length} item${items.length === 1 ? '' : 's'} shown`;
   const milestoneStats = milestones
     .map((m) => {
       const assigned = items.filter((i) => i.milestone === m.id);
@@ -7918,10 +8678,9 @@ function renderWorkplanBoardHtml() {
         String(a.title || a.id).localeCompare(String(b.title || b.id)),
     );
   const unscheduled = items.filter((i) => !i.milestone || !milestoneById[i.milestone]);
-  const types = [...new Set(items.map((i) => i.type).filter(Boolean))].sort();
   const tagFilters = [
     ...new Set(
-      items
+      focusedItems
         .flatMap((i) => (Array.isArray(i.tags) ? i.tags : []))
         .filter((t) =>
           ['scriptorium', 'ux', 'review', 'jobs', 'evidence', 'navigation', 'dashboard', 'static-surfaces'].includes(t),
@@ -7935,7 +8694,7 @@ function renderWorkplanBoardHtml() {
   // JSON cannot break out of the <script> tag it is embedded in.
   const wpData = JSON.stringify({
     items,
-    statuses: DEFAULT_LANES,
+    statuses: WORKPLAN_STATUSES,
     milestones,
     types: WP_TYPES,
     priorities: WP_PRIORITIES,
@@ -7982,9 +8741,11 @@ function renderWorkplanBoardHtml() {
           .join('')}
       </div>`
     : '';
-  const sections = LIFE.filter((s) => DEFAULT_LANES.includes(s) || items.some((i) => i.status === s))
+  const laneDefaults =
+    focus === 'settled' ? ['done', 'archived', 'dropped'] : focus === 'open' ? DEFAULT_LANES : DEFAULT_LANES;
+  const sections = LIFE.filter((s) => laneDefaults.includes(s) || focusedItems.some((i) => i.status === s))
     .map((status) => {
-      const group = items.filter((i) => i.status === status);
+      const group = focusedItems.filter((i) => i.status === status);
       const cards = group
         .map((it) => {
           const tags = [it.type, it.owner, it.claim_status, it.milestone ? `ms:${it.milestone}` : null]
@@ -8014,11 +8775,23 @@ function renderWorkplanBoardHtml() {
     .join('');
   const chips = [
     '<button class="chip on" data-filter="all" data-filter-kind="all">all</button>',
-    ...types.map((t) => `<button class="chip" data-filter="${e(t)}" data-filter-kind="type">${e(t)}</button>`),
+    ...[...new Set(focusedItems.map((i) => i.type).filter(Boolean))]
+      .sort()
+      .map((t) => `<button class="chip" data-filter="${e(t)}" data-filter-kind="type">${e(t)}</button>`),
     ...tagFilters.map(
       (t) => `<button class="chip chip--tag" data-filter="${e(t)}" data-filter-kind="tag">#${e(t)}</button>`,
     ),
   ].join('');
+  const focusChips = [
+    { id: 'open', label: `open ${openCount}` },
+    { id: 'all', label: `all ${items.length}` },
+    { id: 'settled', label: `settled ${settledCount}` },
+  ]
+    .map(
+      (c) =>
+        `<a class="focus-chip${focus === c.id ? ' on' : ''}" href="/board?focus=${e(c.id)}" data-focus="${e(c.id)}">${e(c.label)}</a>`,
+    )
+    .join('');
   const err = board.__error
     ? `<div class="blurb" style="border-left-color:var(--brick);background:var(--brick-soft)">${e(board.__error)}</div>`
     : '';
@@ -8032,6 +8805,10 @@ main{ max-width:1100px; margin:0 auto; padding:22px 22px 64px; }
 	.board-tools{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:-4px 0 16px; }
 	.board-tools__status{ font:12px ui-monospace,monospace; color:var(--ink-4); min-height:16px; }
 	.board-tools__link{ text-decoration:none; display:inline-flex; align-items:center; }
+	.focus-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 14px; }
+	.focus-row__note{ font:12px ui-monospace,monospace; color:var(--ink-4); }
+	.focus-chip{ min-height:40px; display:inline-flex; align-items:center; font:12px ui-monospace,monospace; padding:3px 10px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); text-decoration:none; }
+	.focus-chip.on{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
 	.bar{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:16px; }
 	.chip{ min-height:40px; display:inline-flex; align-items:center; font:12px ui-monospace,monospace; padding:3px 10px; border:1px solid var(--rule); background:var(--paper-3); color:var(--ink-2); cursor:pointer; }
 	.chip.on,.ms-mini.on{ color:var(--moss-deep); border-color:var(--moss); background:var(--moss-soft); }
@@ -8119,7 +8896,8 @@ ${railHtml({
 })}
 <main>
 	  ${err}
-	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). <b>Click a card to edit · drag between lanes to move · <span style="font-weight:700">+</span> to add · delete from the editor</b> — every change writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. The historical 2026-06-06 snapshot is at <a href="/board-doc">/board-doc</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
+	  <div class="blurb">The live development board, rendered from <code>workplan/</code> (${gen}). The default view focuses on open work; completed and dropped history stay available through the focus controls. <b>Click a card to edit · drag between lanes to move · <span style="font-weight:700">+</span> to add · delete from the editor</b> — every change writes to <code>workplan/items/</code> and re-renders. Source of truth is <code>workplan/items/</code>. Project history → <a href="/timeline#project-history">/timeline</a> · API: <a href="/api/workplan">/api/workplan</a>.</div>
+	  <div class="focus-row" aria-label="Board focus">${focusChips}<span class="focus-row__note">${e(focusSummary)}</span></div>
 	  <div class="board-tools">
 	    <button type="button" class="wpm__btn" id="wp-refresh">Refresh from disk</button>
 	    <button type="button" class="wpm__btn" id="wp-expand-all">Expand all</button>
@@ -8172,7 +8950,7 @@ ${railHtml({
 	    refreshBtn.addEventListener('click', function () {
 	      refreshBtn.disabled = true;
 	      if (refreshStatus) refreshStatus.textContent = 'refreshing...';
-	      fetch('/api/workplan/refresh', { method: 'POST' }).then(function (r) {
+	      fetch('/admin/api/workplan/refresh', { method: 'POST' }).then(function (r) {
 	        if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || ('HTTP ' + r.status)); });
 	        location.reload();
 	      }).catch(function (err) {
@@ -8340,7 +9118,7 @@ ${railHtml({
         col.appendChild(card);
         card.setAttribute('data-status', status);
         setCount(col); if (from) setCount(from);
-        fetch('/api/workplan/move', {
+        fetch('/admin/api/workplan/move', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: dragId, status: status }),
@@ -8443,7 +9221,7 @@ ${railHtml({
         var id = btn.getAttribute('data-id');
         if (btn.getAttribute('data-act') === 'del') {
           if (!confirm('Delete this item? Removes workplan/items/' + id + '.md')) return;
-          post('/api/workplan/delete', { id: id });
+          post('/admin/api/workplan/delete', { id: id });
           return;
         }
         var item = (W.items || []).filter(function (i) { return i.id === id; })[0] || { id: id };
@@ -8467,13 +9245,13 @@ ${railHtml({
         milestone: $('wpm-ms').value,
       };
       if (!payload.title) { $('wpm-err').textContent = 'Title is required.'; return; }
-      post(m.dataset.mode === 'edit' ? '/api/workplan/update' : '/api/workplan/add', payload);
+      post(m.dataset.mode === 'edit' ? '/admin/api/workplan/update' : '/admin/api/workplan/add', payload);
     });
     $('wpm-del').addEventListener('click', function () {
       var id = $('wpm-id').value;
       if (!id) return;
       if (!confirm('Delete this item? Removes workplan/items/' + id + '.md')) return;
-      post('/api/workplan/delete', { id: id });
+      post('/admin/api/workplan/delete', { id: id });
     });
   })();
 </script>
@@ -8575,6 +9353,20 @@ ${TIMELINE_VIZ_CSS}
 .tlv-v__h{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
 .tlv-v__t{ font:600 14px Georgia,serif; color:var(--ink); }
 .tlv-v__date{ margin-left:auto; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.tl-history{ margin:34px 0 0; border-top:1px solid var(--rule); padding-top:22px; }
+.tl-history__h{ font:600 17px Georgia,serif; color:var(--ink); margin:0 0 6px; }
+.tl-history__intro{ font-size:13px; color:var(--ink-3); max-width:74ch; margin:0 0 18px; border-left:3px solid var(--ochre-d,var(--moss)); background:var(--paper-4); padding:9px 14px; }
+.tl-history__intro a{ color:var(--moss-deep); }
+.tlh{ position:relative; padding:2px 0 0; }
+.tlh__spine{ position:absolute; left:9px; top:8px; bottom:12px; width:2px; background:var(--rule); }
+.tlh__row{ position:relative; padding:0 0 18px 30px; }
+.tlh__node{ position:absolute; left:2px; top:4px; width:16px; height:16px; border-radius:50%; border:3px solid var(--moss); background:var(--paper); box-sizing:border-box; }
+.tlh__h{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+.tlh__t{ font:600 14px Georgia,serif; color:var(--ink); }
+.tlh__tag{ font:10px ui-monospace,monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-4); border:1px solid var(--rule-soft); border-radius:10px; padding:0 7px; }
+.tlh__when{ margin-left:auto; font:11px ui-monospace,monospace; color:var(--ink-4); }
+.tlh__d{ font-size:13px; color:var(--ink-3); line-height:1.55; margin:4px 0 0; max-width:80ch; }
+.tlh__d a{ color:var(--moss-deep); } .tlh__d code{ font:12px ui-monospace,monospace; }
 `;
 
 const TIMELINE_MODAL = `<div class="msm" id="msm" hidden>
@@ -8638,9 +9430,9 @@ const TIMELINE_JS = `
     ev.preventDefault();
     var p = { id: m.dataset.id, title: $('msm-title').value.trim(), target: $('msm-target').value.trim(), status: $('msm-status').value, tag: $('msm-tag').value.trim(), description: $('msm-desc').value.trim() };
     if (!p.title) { $('msm-err').textContent = 'Title is required.'; return; }
-    post('/api/milestones', p);
+    post('/admin/api/milestones', p);
   });
-  $('msm-del').addEventListener('click', function () { var id = m.dataset.id; if (!id) return; if (!confirm('Delete milestone ' + id + '?')) return; post('/api/milestones/delete', { id: id }); });
+  $('msm-del').addEventListener('click', function () { var id = m.dataset.id; if (!id) return; if (!confirm('Delete milestone ' + id + '?')) return; post('/admin/api/milestones/delete', { id: id }); });
 })();
 `;
 
@@ -8661,6 +9453,74 @@ async function gatherTimelineData() {
     };
   }
   return { items: board.items || [], milestones: loadMilestones(), github, generated: board.generated };
+}
+
+// The project's history before the live milestones below — the arcs that
+// graduated into paper-full-2.0.md and the workplan. Folded in from the retired
+// /board-doc snapshot (the 2026-06-06 TODO archive) so /timeline is the single
+// home for both deep history and forward milestones. Like that snapshot it
+// ORIGINATES no claims: every result digests a paper § or note that it links to.
+const PROJECT_HISTORY = [
+  {
+    when: '2025 – early 2026',
+    tag: 'experiments',
+    title: 'The factorial empirical arc',
+    body: 'The 2×2×2 base/recognition × single/multi-agent × scripted/dynamic-learner design and its ablations — cells 1–125 across placebo, enhanced-prompt, memory-isolation and mechanism-variant sweeps. The settled result: the active ingredient is <b>intersubjective-orientation family membership</b>, not Hegelian vocabulary (between-family d ≈ 1.38). Detail: <a href="/summary">/summary</a> and paper §1, §6.',
+  },
+  {
+    when: 'early 2026',
+    tag: 'research',
+    title: 'Mechanism decomposition',
+    body: 'Why does recognition help? The lexical channel is closed — vocabulary is a marker, not a mediator; the insight–action gap resists every lightweight bridge, moved only by expensive best-of-N search (Finding 11); the suspicious &gt; adversary &gt; advocate disposition gradient is architecture-specific, not universal (§6.6.8).',
+  },
+  {
+    when: 'spring 2026',
+    tag: 'research',
+    title: 'The adaptation nulls (§6.8–6.12)',
+    body: 'Can the tutor read the learner&#39;s concealed interior? A run of trap-scenario and theory-of-mind probes returned largely null — the model already infers what is derivable, so re-encoding it adds no signal. Adaptation relocated from <i>reading interiors</i> to <i>governing conduct</i>.',
+  },
+  {
+    when: 'spring 2026',
+    tag: 'poetics',
+    title: 'The dramatic-recognition turn',
+    body: 'Staging the tutoring dialogue as a short play and reading it as a literary critic would — scoring dramatic form (peripeteia + anagnorisis) at the whole-transcript level. Phase-2 transfer to tutoring transcripts failed (weighted κ ≈ 0.04): the instrument classifies <b>dramatic form, not mind-reading</b>. Notes: <a href="/story">/story</a>.',
+  },
+  {
+    when: 'June 2026',
+    tag: '§6.13',
+    title: 'The dramatic-derivation arc',
+    body: 'A tutoring drama whose plot is the proof-DAG of a contingent secret, with mechanical &ldquo;grounded anagnorisis&rdquo; verdicts — a bounded positive on tutor conduct-governance. Authority moved into the tutor&#39;s own superego and a one-step repair clause grounded the first dialled-up arm, but the pacing lift is scheduling discipline, not latent proof-state, and the guards are geometry-conditional (no single channel is universal; adaptive channel-selection is not established). Detail: <a href="/derivation">/derivation</a>, paper §6.13.',
+  },
+  {
+    when: 'June 2026',
+    tag: '§6.12',
+    title: 'Adaptation Plan 2.0 / 2.1',
+    body: 'A post-hoc, simulated, LLM-judged line governing localized strategy: a closed-loop contract preserves strict strategy-shift and wins quality, frozen-policy transfer holds cross-suite, and an adaptive-completion channel (Plan 2.1 Early Completion) is the strongest bounded positive. It does <b>not</b> overturn the §6.3 trajectory-slope null, and makes no human-learning claim.',
+  },
+  {
+    when: 'June 2026',
+    tag: 'mechanism',
+    title: 'Memory architecture (Shape B)',
+    body: 'Two live Writing Pads plus a retained learner-memory reserve. The first powered cross-session rich-memory screen came back null — consistent with the earlier memory nulls; not scaled. Detail: <code>MEMORY-ARCHITECTURE.md</code>.',
+  },
+  {
+    when: '2026-06-24',
+    tag: 'shipped',
+    title: 'The instrument &amp; build-out',
+    body: 'The research surfaces themselves: the Electron desktop Scriptorium (web-equivalent by construction), this project-management board + timeline, and the literature-triage pipeline. These shipped as the dated milestones shown above.',
+  },
+];
+
+function renderProjectHistoryHtml() {
+  const rows = PROJECT_HISTORY.map(
+    (h) =>
+      `<div class="tlh__row"><span class="tlh__node"></span><div class="tlh__h"><span class="tlh__t">${h.title}</span><span class="tlh__tag">${h.tag}</span><span class="tlh__when">${h.when}</span></div><p class="tlh__d">${h.body}</p></div>`,
+  ).join('');
+  return `<section class="tl-history" id="project-history">
+    <h2 class="tl-history__h">Project history</h2>
+    <p class="tl-history__intro">How the work got here — the arcs that graduated into the <a href="/summary">paper</a> and the workplan, folded in from the retired board snapshot. Most of it is finished, and that is the point of keeping it visible: <b>a closed experiment with a null result is a fence — it tells you which move not to make again.</b></p>
+    <div class="tlh"><span class="tlh__spine"></span>${rows}</div>
+  </section>`;
 }
 
 function renderTimelineHtml({ items = [], milestones = [], github = {}, generated = null } = {}) {
@@ -8790,11 +9650,12 @@ function renderTimelineHtml({ items = [], milestones = [], github = {}, generate
 <body>
 ${railHtml({ active: 'timeline', brand: 'project timeline', sub: 'milestones, dependencies & live GitHub activity', hint: orientBand('timeline', 'milestones with target dates + progress, linked to GitHub', 'edit items + deps on the board') })}
 <main>
-  <div class="blurb">Milestones from <code>workplan/milestones.yaml</code> (items reference them via <code>milestone:</code>), with live GitHub activity for ${repoHeader}.${generated ? ' Board generated ' + e(generated) + '.' : ''} <button class="chip" id="ms-new">+ new milestone</button></div>
+  <div class="blurb">Milestones from <code>workplan/milestones.yaml</code> (items reference them via <code>milestone:</code>), with live GitHub activity for ${repoHeader}.${generated ? ' Board generated ' + e(generated) + '.' : ''} <a href="#project-history">Project history</a> is below. <button class="chip" id="ms-new">+ new milestone</button></div>
   <div class="tl-grid">
     <div class="tl-left"><div id="tl-controls"></div><div id="tl-viz"></div><div id="tl-detail"></div><noscript>${msCards}</noscript>${unscheduled.length ? `<div class="tl-note">${unscheduled.length} item${unscheduled.length > 1 ? 's' : ''} not assigned to a milestone — assign on the <a href="/board">board</a>.</div>` : ''}</div>
     <aside class="tl-right"><div class="tl-panel"><h4>GitHub · ${repoHeader}</h4>${ghErr}<h5>Open PRs</h5><ul class="tl-list">${prRows}</ul><h5>Releases / tags</h5><ul class="tl-list">${relRows}</ul><h5>Recent commits</h5><ul class="tl-list">${commitRows}</ul></div></aside>
   </div>
+  ${renderProjectHistoryHtml()}
 </main>
 ${TIMELINE_MODAL}
 <script>window.__MS = ${JSON.stringify({ milestones }).replace(/</g, '\\u003c')};</script>
@@ -9151,7 +10012,7 @@ ${THEME_TOGGLE_SCRIPT}
         ${
           drama
             ? `<div class="mblk run"><h4>compiled drama</h4><p class="dtopic">${e(drama.topic || drama.id || '')}</p>
-               <a class="runlink" href="/runs?kind=pedagogical-drama&amp;spec=${encodeURIComponent(picked.base + '.dramas.yaml')}&amp;only=${encodeURIComponent(drama.id || '')}">▸ run this drama</a></div>`
+               <a class="runlink" href="/admin/runs?kind=pedagogical-drama&amp;spec=${encodeURIComponent(picked.base + '.dramas.yaml')}&amp;only=${encodeURIComponent(drama.id || '')}">▸ run this drama</a></div>`
             : ''
         }
       </div>
@@ -9210,7 +10071,7 @@ ${railHtml({
   ${summary}
   <h2 class="sec-h">Modules${modules.length ? ' · ' + modules.length : ''} <span class="sec-hint">click a row to expand</span></h2>
   ${moduleRows || '<div class="blurb">no modules in this curriculum file</div>'}
-  ${dramaCards ? `<h2 class="sec-h" id="dramas">Compiled dramas · ${dramas.length}</h2><p class="sec-lede">Runnable drama-machine seeds — each binds back to a module + knowledge components. Enact one from a module above, or launch the whole spec from <a href="/runs?kind=pedagogical-drama&amp;spec=${encodeURIComponent(picked.base + '.dramas.yaml')}">launch a run ↗</a>.</p><div class="arts">${dramaCards}</div>` : ''}
+  ${dramaCards ? `<h2 class="sec-h" id="dramas">Compiled dramas · ${dramas.length}</h2><p class="sec-lede">Runnable drama-machine seeds — each binds back to a module + knowledge components. Enact one from a module above, or launch the whole spec from <a href="/admin/runs?kind=pedagogical-drama&amp;spec=${encodeURIComponent(picked.base + '.dramas.yaml')}">launch a run ↗</a>.</p><div class="arts">${dramaCards}</div>` : ''}
   ${worldCards ? `<h2 class="sec-h" id="worlds">Compiled worlds · ${worlds.length}</h2><p class="sec-lede">Locked <code>world_adaptation_spec</code> records — the Plan 2.1 bridge. Each fixes a module's learner-state evidence, allowed/preferred/disallowed action families, and expected transitions <em>before</em> dialogue, then constrains policy at run time. A world shapes affordances; it never proves learning by itself.</p><div class="arts">${worldCards}</div>` : ''}
 </main>
 ${THEME_TOGGLE_SCRIPT}
@@ -9340,9 +10201,10 @@ ${railHtml({
   <div class="workbench__intro">
     <div class="workbench__k">evidence workbench</div>
     <h1 id="replayWorkTitle">Replay/original comparison</h1>
+    ${reportTypeBand('/replays')}
     <p>Read one counterfactual rewrite against its original, then inspect local gate verdicts and hidden-state provenance before promoting any claim.</p>
   </div>
-  <a class="workbench__card" href="/runs?kind=replay&amp;mock=1&amp;dryRun=1"><span class="workbench__t">make a replay</span><span class="workbench__d">Open the launcher with a free mock/dry-run replay path selected.</span><span class="workbench__go">launch replay →</span></a>
+  <a class="workbench__card" href="/admin/runs?kind=replay&amp;mock=1&amp;dryRun=1"><span class="workbench__t">make a replay</span><span class="workbench__d">Open the launcher with a free mock/dry-run replay path selected.</span><span class="workbench__go">launch replay →</span></a>
   <a class="workbench__card" href="/browse?queue=flagged"><span class="workbench__t">source cases</span><span class="workbench__d">Find flagged scripts that might deserve a counterfactual pass.</span><span class="workbench__go">open flags →</span></a>
   <a class="workbench__card" href="/board?tag=evidence"><span class="workbench__t">connect work</span><span class="workbench__d">Move replay follow-up through the generated workplan, not a parallel tracker.</span><span class="workbench__go">open board →</span></a>
 </section>
@@ -9546,10 +10408,10 @@ function evidenceGraphHtml(d){
   const links = [
     ['replay permalink', '/replays?bundle='+encBundle+'&item='+encItem],
     ['source script', '/browse?itemId='+encItem],
-    ['make replay', '/runs?kind=replay&mode=item&itemId='+encItem+'&mock=1&dryRun=1'],
+    ['make replay', '/admin/runs?kind=replay&mode=item&itemId='+encItem+'&mock=1&dryRun=1'],
     ['flagged scripts', '/browse?queue=flagged'],
     ['evidence board', '/board?tag=evidence'],
-    ['launcher jobs', '/runs?kind=replay'],
+    ['launcher jobs', '/admin/runs?kind=replay'],
   ];
   if (d.runId) links.splice(2, 0, ['run slice', '/browse?runId='+encodeURIComponent(d.runId)]);
   return '<div class="egraph"><div class="egraph__h">evidence graph</div><div class="egraph__links">' +
@@ -9616,7 +10478,7 @@ loadBundles();
 </html>`;
 }
 
-// The world + tutor-script catalogs the /runs derivation form offers — sourced
+// The world + tutor-script catalogs the /admin/runs derivation form offers — sourced
 // live from config/drama-derivation/ so a new world-*.yaml or tutor script needs
 // no code edit (mirrors the discipline filter's live-sourcing).
 function listDerivationWorldFiles() {
@@ -9645,7 +10507,7 @@ function renderRunsHtml() {
     title: 'Run launcher · poetics',
     css: `
 .controls{ position:sticky; top:51px; z-index:9; display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:9px 18px; background:var(--paper-2); border-bottom:1px solid var(--rule); }
-.tabs{ display:flex; gap:0; }
+.tabs{ display:flex; flex-wrap:wrap; gap:0; }
 .tab{ font:12px ui-monospace,monospace; color:var(--ink-3); border:1px solid var(--rule); border-right:0; padding:5px 12px; background:var(--paper-4); cursor:pointer; }
 .tab:last-child{ border-right:1px solid var(--rule); }
 .tab.sel{ color:var(--ink); background:var(--paper); border-bottom-color:var(--paper); font-weight:600; }
@@ -9655,7 +10517,7 @@ function renderRunsHtml() {
 .goalbar__head{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:10px; }
 .goalbar__k{ font:700 10px/1 ui-monospace,monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-4); }
 .goalbar__hint{ font:11px/1.35 ui-monospace,monospace; color:var(--ink-4); text-align:right; }
-.goals{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+.goals{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; }
 .goal-card{ min-height:116px; text-align:left; border:1px solid var(--rule); border-top:3px solid var(--moss); background:var(--paper-4); color:var(--ink-2); padding:12px 13px; cursor:pointer; display:flex; flex-direction:column; gap:7px; }
 .goal-card:hover{ border-color:var(--moss); }
 .goal-card.is-active{ border-color:var(--moss-deep); background:var(--moss-soft); }
@@ -9742,8 +10604,8 @@ function renderRunsHtml() {
 ${railHtml({
   active: 'runs',
   brand: 'run launcher',
-  sub: 'spawn generative · replay · adversarial-CLI · online-score runs — localhost only, no auth (deferred)',
-  hint: '<span><b>launch</b> — spawn new runs</span><span class="navhint__sep">·</span><span>to explore finished ones, see <a href="/browse">scripts</a> or <a href="/derivation">proof runs</a></span>',
+  sub: 'spawn tutor-cell · generative · replay · adversarial-CLI · online-score runs',
+  hint: '<span><b>launch</b> — preview exact commands before spawning</span><span class="navhint__sep">·</span><span>to explore finished ones, see <a href="/browse">scripts</a>, <a href="/derivation">proof runs</a>, or <a href="/eval">eval notes</a></span>',
 })}
 <section class="goalbar" aria-labelledby="launchGoalsTitle">
   <div class="goalbar__head">
@@ -9754,9 +10616,11 @@ ${railHtml({
     <div class="goalbar__hint">Pick a goal for safe defaults. The advanced command builder remains below.</div>
   </div>
   <div class="goals" id="goalCards" aria-label="Run goals">
+    <button class="goal-card" type="button" data-kind="eval-cell"><span class="goal-card__t">Generate tutor scripts</span><span class="goal-card__d">Use a resolved chat cell to draft scenario scripts with an AI learner. Dry-run stays free by default.</span><span class="goal-card__c">dry-run default</span></button>
     <button class="goal-card" type="button" data-kind="generate"><span class="goal-card__t">Generate a new script</span><span class="goal-card__d">Create a fresh pedagogical drama transcript. Mock stays free by default.</span><span class="goal-card__c">free default</span></button>
     <button class="goal-card" type="button" data-kind="replay"><span class="goal-card__t">Replay a script</span><span class="goal-card__d">Run a bounded counterfactual rewrite against an existing transcript.</span><span class="goal-card__c">mock / quota</span></button>
     <button class="goal-card" type="button" data-kind="derivation"><span class="goal-card__t">Run a proof-DAG derivation</span><span class="goal-card__d">Enact a tutor script against a world and stream to live proof runs.</span><span class="goal-card__c">mock default</span></button>
+    <button class="goal-card" type="button" data-kind="derivation-assessment"><span class="goal-card__t">Assess proof-DAG runs</span><span class="goal-card__d">Externalize proof gates, readable DAGs, prompts, and optional judge rubrics.</span><span class="goal-card__c">free default</span></button>
     <button class="goal-card" type="button" data-kind="online-score"><span class="goal-card__t">Score existing artifacts</span><span class="goal-card__d">Backfill scorer output for a batch root or run, with dry-run first.</span><span class="goal-card__c">dry-run default</span></button>
     <button class="goal-card" type="button" data-kind="pedagogical-drama"><span class="goal-card__t">Run curriculum drama</span><span class="goal-card__d">Enact compiled curriculum drama specs through the batch generator.</span><span class="goal-card__c">mock default</span></button>
   </div>
@@ -9807,6 +10671,34 @@ const state = { kind:'replay', fields:[], plan:null, jobs:[], selJob:null };
 // ── Per-kind form specs. showIf is evaluated against the live param object so the
 // input set narrows to what the selected script actually consumes. ───────────────
 const FORMS = {
+  'eval-cell': {
+    blurb: 'Generate script drafts through eval-cli: the selected tutor architecture talks to synthetic learner scenarios. This is the batch counterpart to the live scene composer. Dry-run is free; unchecking it may spend API budget.',
+    fields: [
+      { name:'cell', type:'text', label:'cell profile', placeholder:'cell_7_recog_multi_unified', help:'canonical cell name from the chat resolver' },
+      { name:'runs', type:'number', label:'runs per scenario', placeholder:'1' },
+      { name:'scenario', type:'text', label:'scenario id(s)', placeholder:'new_user_first_visit  (comma-separated OK)' },
+      { name:'cluster', type:'select', label:'scenario cluster', options:['','single-turn','multi-turn','core','mood','benchmark','recognition','multi_turn'], def:'', help:'leave blank when scenario ids are supplied' },
+      { name:'parallelism', type:'number', label:'parallelism', placeholder:'2' },
+      { name:'description', type:'text', label:'description', placeholder:'Admin chat eval-cell run' },
+      { name:'model', type:'text', label:'all-agent model override', placeholder:'openrouter.gpt  (optional)' },
+      { name:'tutorModel', type:'text', label:'tutor model override', placeholder:'openrouter.gpt  (ego + superego)' },
+      { name:'egoModel', type:'text', label:'tutor ego override', placeholder:'openrouter.gpt' },
+      { name:'superegoModel', type:'text', label:'tutor superego override', placeholder:'openrouter.kimi-k2.5' },
+      { name:'learnerModel', type:'text', label:'learner model override', placeholder:'openrouter.nemotron  (all learner agents)' },
+      { name:'learnerEgoModel', type:'text', label:'learner ego override', placeholder:'openrouter.gpt' },
+      { name:'learnerSuperegoModel', type:'text', label:'learner superego override', placeholder:'openrouter.kimi-k2.5' },
+      { name:'judgeCli', type:'select', label:'judge CLI', options:['none','claude','gemini','codex'], def:'none', help:'none keeps skip-rubric generation-only unless you uncheck skip-rubric' },
+      { name:'judgeCliModel', type:'text', label:'judge CLI model', placeholder:'optional CLI model alias', showIf:(p)=>p.judgeCli && p.judgeCli !== 'none' },
+      { name:'maxTokens', type:'number', label:'max tokens', placeholder:'optional tutor ego cap' },
+    ],
+    checks: [
+      { name:'dryRun', label:'dry-run (free mock)', def:true },
+      { name:'skipRubric', label:'skip rubric', def:true },
+      { name:'live', label:'live API stream' },
+      { name:'transcript', label:'write transcripts' },
+      { name:'allowModelMix', label:'allow model mix' },
+    ],
+  },
   replay: {
     blurb: 'One bounded counterfactual rewrite of an existing public transcript → optional adversarial check → local gate.',
     fields: [
@@ -9876,6 +10768,25 @@ const FORMS = {
       { name:'superego', label:'superego (tutor self-watch)' },
       { name:'stallWatch', label:'stall-watch (needs superego)' },
       { name:'real', label:'real — METERED $' },
+    ],
+  },
+  'derivation-assessment': {
+    blurb: 'Assess completed proof-DAG runs without changing their verdicts. Default judge-cli=none writes the mechanical proof gate, human-readable DAG profile, prompts, scores.json, and report.md without model calls.',
+    fields: [
+      { name:'labels', type:'text', label:'label(s) required', placeholder:'lantern-e2-real-r1  (comma-separated for many)' },
+      { name:'runDir', type:'text', label:'run dir', placeholder:'exports/dramatic-derivation/loop' },
+      { name:'outDir', type:'text', label:'out dir', placeholder:'exports/dramatic-derivation/derivation-assessments/<label>' },
+      { name:'rubrics', type:'text', label:'rubrics', placeholder:'tutor_v22,tutor_holistic,learner_v22,dialogue_quality,poetics' },
+      { name:'judgeCli', type:'select', label:'external judge', options:['none','codex','claude','gemini'], def:'none', help:'none = free; CLI judges are advisory and do not change the proof gate' },
+      { name:'model', type:'text', label:'model (optional)', placeholder:'CLI model alias if judge is not none' },
+      { name:'judgeEffort', type:'select', label:'judge effort', options:['','low','medium','high','xhigh','max'], def:'' },
+      { name:'scoreConcurrency', type:'number', label:'score concurrency', placeholder:'1' },
+      { name:'maxTranscriptChars', type:'number', label:'max transcript chars', placeholder:'60000' },
+      { name:'timeoutMs', type:'number', label:'timeout ms', placeholder:'180000' },
+    ],
+    checks: [
+      { name:'force', label:'force overwrite' },
+      { name:'resumeExisting', label:'resume existing raw judgments' },
     ],
   },
   'adversarial-score': {
@@ -10014,7 +10925,7 @@ function schedulePlan(){ clearTimeout(planTimer); planTimer = setTimeout(refresh
 async function refreshPlan(){
   const body = { kind: state.kind, params: collectParams() };
   try {
-    const res = await fetch('/api/jobs/plan', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const res = await fetch('/admin/api/jobs/plan', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const d = await res.json();
     if (!res.ok){ showPlanError(d.error || res.statusText); return; }
     state.plan = d.plan; renderReview(d.plan);
@@ -10063,7 +10974,7 @@ async function launch(){
   $('formErr').textContent='';
   const body = { kind: state.kind, params: collectParams() };
   try {
-    const res = await fetch('/api/jobs', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const res = await fetch('/admin/api/jobs', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const d = await res.json();
     if (!res.ok){ $('formErr').textContent = (res.status===409?'serial lock: ':'')+(d.error||res.statusText); refreshPlan(); return; }
     state.selJob = d.job.id;
@@ -10076,7 +10987,7 @@ function ago(ts){ if(!ts) return ''; const s = Math.round((Date.now()-ts)/1000);
 
 async function refreshJobs(){
   try {
-    const res = await fetch('/api/jobs'); const d = await res.json();
+    const res = await fetch('/admin/api/jobs'); const d = await res.json();
     state.jobs = d.jobs || []; renderJobs();
   } catch (_e) { /* keep last */ }
 }
@@ -10111,7 +11022,7 @@ function renderJobLog(){
     '<pre>'+esc(j.logTail || '(no output yet)')+'</pre>';
 }
 
-// Deep-link prefill: /runs?kind=<kind>&<field>=<value> selects the tab and fills
+// Deep-link prefill: /admin/runs?kind=<kind>&<field>=<value> selects the tab and fills
 // matching fields/checks (e.g. the curriculum page's "run this drama" links pass
 // kind=pedagogical-drama&spec=…&only=…). The mock checkbox keeps its default, so a
 // prefilled run still starts free until the operator explicitly opts into spend.
@@ -10174,7 +11085,7 @@ $('jobs').addEventListener('click', function(e){
     return;
   }
   const stop = e.target.closest('[data-stop]');
-  if (stop){ e.stopPropagation(); fetch('/api/jobs/'+encodeURIComponent(stop.getAttribute('data-stop'))+'/stop',{method:'POST'}).then(refreshJobs); return; }
+  if (stop){ e.stopPropagation(); fetch('/admin/api/jobs/'+encodeURIComponent(stop.getAttribute('data-stop'))+'/stop',{method:'POST'}).then(refreshJobs); return; }
   const row = e.target.closest('[data-job]'); if (row){ state.selJob = row.getAttribute('data-job'); renderJobs(); }
 });
 $('themeToggle').addEventListener('click', function(){
@@ -10416,6 +11327,20 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+.fgroup {
+  display: grid;
+  gap: 8px;
+}
+.fgroup + .fgroup {
+  border-top: 1px solid var(--rule-soft);
+  padding-top: 12px;
+}
+.fgroup__h {
+  font: 700 9px/1 "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-4);
 }
 .saved-views {
   display: flex;
@@ -10707,6 +11632,12 @@ h1 {
   color: var(--ink-4);
   font: 11px "JetBrains Mono", monospace;
 }
+summary.egraph__h { cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 0; list-style: none; }
+summary.egraph__h::-webkit-details-marker { display: none; }
+summary.egraph__h::before { content: "\\25B8"; color: var(--ink-4); transition: transform .15s var(--ease); }
+details.egraph[open] summary.egraph__h::before { transform: rotate(90deg); }
+details.egraph[open] .egraph__links { margin-top: 10px; }
+.egraph__hint { font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--ink-4); }
 
 .tts-toolbar {
   max-width: 70rem;
@@ -11271,6 +12202,7 @@ ${railHtml({
     '<span class="rail__beacon" id="railBeacon" data-state="checking" title="Sidecar database connection"><span class="rail__dot"></span><span id="railBeaconText">checking</span></span>',
   hint: '<span><b>scripts</b> — tutoring dialogues graded by an AI critic on dramatic form</span><span class="navhint__sep">·</span><span>for runs where a fixed rule-checker (not an AI critic) decides whether the learner reached a hidden answer, see <a href="/derivation">proof runs</a></span>',
 })}
+${reportTypeBand('/browse')}
 <div id="app" class="app">
   <aside class="sidebar">
     <div class="mast">
@@ -11278,32 +12210,41 @@ ${railHtml({
       <div id="appSub" class="sub">Generated public scripts, full traces, critic scores, and labels-as-perspective.</div>
     </div>
     <div class="filters">
-      <div class="saved-views" id="savedViews" aria-label="Saved script views">
-        <button class="view-chip" type="button" data-view="all">all scripts</button>
-        <button class="view-chip" type="button" data-view="flagged">flagged</button>
-        <button class="view-chip" type="button" data-view="unlabelled">unlabelled</button>
-        <button class="view-chip" type="button" data-view="recognition">recognition</button>
-        <button class="view-chip" type="button" data-view="trap">trap</button>
-        <button class="view-chip" type="button" data-view="flat">flat</button>
+      <div class="fgroup">
+        <div class="fgroup__h">views</div>
+        <div class="saved-views" id="savedViews" aria-label="Saved script views">
+          <button class="view-chip" type="button" data-view="all">all scripts</button>
+          <button class="view-chip" type="button" data-view="flagged">flagged</button>
+          <button class="view-chip" type="button" data-view="unlabelled">unlabelled</button>
+          <button class="view-chip" type="button" data-view="recognition">recognition</button>
+          <button class="view-chip" type="button" data-view="trap">trap</button>
+          <button class="view-chip" type="button" data-view="flat">flat</button>
+        </div>
       </div>
-      <label class="filter-field" for="runSelect"><span class="filter-label">Run</span><select id="runSelect"></select></label>
-      <label class="filter-field" for="searchInput"><span class="filter-label">Search</span><input id="searchInput" placeholder="id · drama · discipline · condition · arm · critic form (recognition/trap/flat)"></label>
-      <label class="filter-field" for="disciplineSelect"><span class="filter-label">Discipline</span><select id="disciplineSelect"><option value="">all disciplines</option></select></label>
-      <label class="filter-field blind-only" for="labellerInput"><span class="filter-label">Labeller id</span><input id="labellerInput" placeholder="codex"></label>
-      <div class="filter-row score-only">
-        <label class="filter-field" for="roleSelect"><span class="filter-label">Role</span><select id="roleSelect">
-            <option value="">all roles</option>
-            <option value="target">target</option>
-            <option value="flat_control">flat controls</option>
-            <option value="boundary_trap_control">boundary traps</option>
-            <option value="hard_trap_control">hard traps</option>
-          </select></label>
-        <label class="filter-field" for="formSelect"><span class="filter-label">Critic form</span><select id="formSelect">
-            <option value="">all forms</option>
-            <option value="recognition">recognition</option>
-            <option value="trap">trap</option>
-            <option value="flat">flat</option>
-          </select></label>
+      <div class="fgroup">
+        <div class="fgroup__h">find</div>
+        <label class="filter-field" for="searchInput"><span class="filter-label">Search</span><input id="searchInput" placeholder="id · drama · discipline · condition · arm · critic form (recognition/trap/flat)"></label>
+        <label class="filter-field" for="runSelect"><span class="filter-label">Run</span><select id="runSelect"></select></label>
+        <label class="filter-field" for="disciplineSelect"><span class="filter-label">Discipline</span><select id="disciplineSelect"><option value="">all disciplines</option></select></label>
+      </div>
+      <div class="fgroup">
+        <div class="fgroup__h">refine</div>
+        <div class="filter-row score-only">
+          <label class="filter-field" for="roleSelect"><span class="filter-label">Role</span><select id="roleSelect">
+              <option value="">all roles</option>
+              <option value="target">target</option>
+              <option value="flat_control">flat controls</option>
+              <option value="boundary_trap_control">boundary traps</option>
+              <option value="hard_trap_control">hard traps</option>
+            </select></label>
+          <label class="filter-field" for="formSelect"><span class="filter-label">Critic form</span><select id="formSelect">
+              <option value="">all forms</option>
+              <option value="recognition">recognition</option>
+              <option value="trap">trap</option>
+              <option value="flat">flat</option>
+            </select></label>
+        </div>
+        <label class="filter-field blind-only" for="labellerInput"><span class="filter-label">Labeller id</span><input id="labellerInput" placeholder="codex"></label>
       </div>
       <div class="active-filters" id="activeFilters" hidden></div>
     </div>
@@ -11430,7 +12371,7 @@ function renderBrowseEvidenceGraph(detail) {
   const links = [
     ['script permalink', previewHref(item)],
     ['compare view', previewHref(item) + '&tab=compare' + (state.compareTarget ? '&compareId=' + encodeURIComponent(state.compareTarget) : '')],
-    ['make replay', '/runs?kind=replay&mode=item&itemId=' + encItem + '&mock=1&dryRun=1'],
+    ['make replay', '/admin/runs?kind=replay&mode=item&itemId=' + encItem + '&mock=1&dryRun=1'],
     ['find replays', '/replays?item=' + encItem],
     ['flagged queue', '/browse?queue=flagged'],
     ['workplan evidence', '/board?tag=evidence'],
@@ -11438,9 +12379,9 @@ function renderBrowseEvidenceGraph(detail) {
     ['ontology', '/ontology'],
   ];
   if (item.runId) links.splice(1, 0, ['run slice', '/browse?runId=' + encodeURIComponent(item.runId)]);
-  return '<div class="egraph"><div class="egraph__h">evidence graph</div><div class="egraph__links">' +
+  return '<details class="egraph"><summary class="egraph__h">evidence graph <span class="egraph__hint">' + esc(scoreCount) + ' scores · ' + esc(labelCount) + ' labels · ' + esc(activeFlags) + ' flags</span></summary><div class="egraph__links">' +
     links.map(([label, href]) => '<a href="' + esc(href) + '">' + esc(label) + '</a>').join('') +
-    '</div><div class="egraph__meta">scores ' + esc(scoreCount) + ' · labels ' + esc(labelCount) + ' · active flags ' + esc(activeFlags) + ' · item ' + esc(item.id) + '</div></div>';
+    '</div><div class="egraph__meta">item ' + esc(item.id) + '</div></details>';
 }
 
 function ttsClean(s) {
@@ -11828,8 +12769,8 @@ function renderEmptyState() {
     '<p class="empty__help">' + help + '</p>' +
     '<div class="empty__actions">' +
     (hasFilters ? '<button type="button" id="clearFilters" class="empty__btn">Clear filters</button>' : '') +
-    '<a class="empty__btn empty__btn--go" href="/compose/live">Compose free preview &rarr;</a>' +
-    '<a class="empty__btn" href="/runs?kind=generate&amp;mock=1">Mock generation &rarr;</a>' +
+    '<a class="empty__btn empty__btn--go" href="/admin/compose/live">Compose free preview &rarr;</a>' +
+    '<a class="empty__btn" href="/admin/runs?kind=generate&amp;mock=1">Mock generation &rarr;</a>' +
     '<a class="empty__btn" href="/derivation">Open proof runs &rarr;</a>' +
     '</div></div>';
 }
@@ -11919,7 +12860,7 @@ function wireReviewFlagButton() {
     if (reason == null) return;
     button.textContent = 'Flagging...';
     try {
-      const saved = await postJson('/api/review-flags', {
+      const saved = await postJson('/admin/api/review-flags', {
         itemId: state.detail.item.id,
         flaggerId: state.flagger || 'codex',
         flagType: 'human_review',
@@ -12048,7 +12989,7 @@ function wireLabelPanel() {
     }
     status.textContent = 'Saving...';
     try {
-      const saved = await postJson('/api/labels', {
+      const saved = await postJson('/admin/api/labels', {
         itemId: state.detail.item.id,
         labellerId: state.labeller,
         formClass: state.selectedLabel,
@@ -12279,11 +13220,18 @@ export {
   listRuns,
   normalizeTtsRequest,
   parseTranscriptPreview,
+  NAV,
+  NAV_DRAWER_GROUPS,
+  NAV_GROUPS,
+  NAV_PRIMARY,
   renderBrowserHtml,
   renderDashboardHtml,
+  renderDerivationControlledVocabularyHtml,
   renderDerivationLogicVisualizer,
   renderOntologyHtml,
   renderRubricHtml,
+  renderWorkplanBoardHtml,
+  renderScriptoriumHome,
   saveBrowserLabel,
   saveBrowserReviewFlag,
   synthesizeLemonFoxSpeech,

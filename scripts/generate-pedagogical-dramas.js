@@ -98,7 +98,16 @@ const PEDAGOGICAL_APPROACHES_DB = path.join(CAL_DIR, 'pedagogical-approaches.yam
 const DIALOGUE_APPROACHES_DB = path.join(CAL_DIR, 'dialogue-approaches.yaml');
 const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
 const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
-const TUTOR_ADAPTATION_POLICIES = new Set(['none', 'routine', 'uptake', 'peripeteia', 'uptake+peripeteia']);
+const TUTOR_ADAPTATION_POLICIES = new Set([
+  'none',
+  'routine',
+  'uptake',
+  'peripeteia',
+  'uptake+peripeteia',
+  'socratic_discovery',
+  'reveal_secret',
+  'withhold_secret',
+]);
 const AFFECTIVE_ADAPTATION_POLICIES = new Set(['none', 'procedural_sensitive']);
 const OPENING_SPEAKERS = new Set(['learner', 'tutor', 'director']);
 const CONTROL_ENDING_POLICIES = new Set(['default', 'hold']);
@@ -108,7 +117,7 @@ const CONTROL_ENDING_POLICIES = new Set(['default', 'hold']);
 const CLAUDE_EFFORT_LEVELS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 const PAIRED_ADAPTATION_ARMS = {
   routine: { revisitPolicy: 'none', tutorAdaptationPolicy: 'routine' },
-  none: { revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
+  none: { revisitPolicy: 'none', tutorAdaptationPolicy: 'none', secretTutorAdaptationPolicy: 'withhold_secret' },
   'reframe-only': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
   'tutor-uptake-only': { revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
   'reframe+tutor-uptake': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake' },
@@ -116,8 +125,10 @@ const PAIRED_ADAPTATION_ARMS = {
   'reframe+peripeteia': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake+peripeteia' },
   // Oedipus guided-discovery arms (require a scenario `secret`; behaviour is driven
   // by the arm-aware buildSecretContext in the engine, not the reframe/peripeteia
-  // machinery). socratic = meter premises so the learner infers S; reveal = state S
-  // outright (ceiling); the `none` arm above doubles as the withhold control.
+  // machinery). For secret-bearing scenarios, the `none` arm is upgraded at
+  // runtime to withhold_secret: the tutor receives a redacted control context
+  // plus forbidden clue channels, not S/premises. socratic = meter premises so
+  // the learner infers S; reveal = state S outright (ceiling).
   socratic: { revisitPolicy: 'none', tutorAdaptationPolicy: 'socratic_discovery' },
   reveal: { revisitPolicy: 'none', tutorAdaptationPolicy: 'reveal_secret' },
 };
@@ -170,6 +181,8 @@ Director and adaptation:
 Paired runs:
   --paired-continuation-policies none,revoice,reconsider,reframe
   --paired-adaptation-arms routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia,socratic,reveal
+  --paired-prefix-trace FILE          Reuse a saved trace as the fixed prefix through tutor turn 2
+  --paired-prefix-source-branch NAME  Label for the source branch (default: none)
 
 Output paths:
   --out-dir DIR
@@ -235,6 +248,8 @@ function parseArgs(argv) {
     openingSpeaker: null,
     pairedContinuationPolicies: null,
     pairedAdaptationArms: null,
+    pairedPrefixTrace: null,
+    pairedPrefixSourceBranch: 'none',
     affectiveAdaptationPolicy: null,
     controlEndingPolicy: 'default',
     generationConcurrency: 1,
@@ -317,6 +332,10 @@ function parseArgs(argv) {
         .split(',')
         .map((arm) => arm.trim())
         .filter(Boolean);
+    } else if (t === '--paired-prefix-trace') {
+      a.pairedPrefixTrace = path.resolve(argv[++i]);
+    } else if (t === '--paired-prefix-source-branch') {
+      a.pairedPrefixSourceBranch = String(argv[++i] || '').trim() || 'none';
     } else if (t === '--generation-concurrency') a.generationConcurrency = parseInt(argv[++i], 10);
     else throw new Error(`unknown arg: ${t}\n\n${usage()}`);
   }
@@ -375,13 +394,17 @@ function parseArgs(argv) {
       }
     }
   }
+  if (a.pairedPrefixTrace && !fs.existsSync(a.pairedPrefixTrace)) {
+    throw new Error(`--paired-prefix-trace not found: ${a.pairedPrefixTrace}`);
+  }
+  if (a.pairedPrefixTrace && !a.pairedAdaptationArms && !a.pairedContinuationPolicies) {
+    throw new Error('--paired-prefix-trace requires --paired-adaptation-arms or --paired-continuation-policies');
+  }
   if (a.pairedAdaptationArms) {
     if (!a.pairedAdaptationArms.length) throw new Error('--paired-adaptation-arms needs at least one arm');
     for (const arm of a.pairedAdaptationArms) {
       if (!PAIRED_ADAPTATION_ARMS[arm]) {
-        throw new Error(
-          '--paired-adaptation-arms must use routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia,socratic,reveal',
-        );
+        throw new Error(`--paired-adaptation-arms must use ${Object.keys(PAIRED_ADAPTATION_ARMS).join(',')}`);
       }
     }
   }
@@ -3705,6 +3728,16 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
     return plan ? { ...plan, tutor_adaptation_policy: 'none' } : plan;
   }
   const contracts = [];
+  if (policy === 'socratic_discovery') {
+    contracts.push(
+      'Oedipus socratic branch: privately use the hidden conclusion S and its premise ledger to steer the learner toward the premises that carry S. Surface those premises as concrete questions, evidence requests, or document checks, but do not state S yourself. Do not remain at generic troubleshooting or procedural advice; by the end, the learner should have enough public premises to infer S.',
+    );
+  }
+  if (policy === 'reveal_secret') {
+    contracts.push(
+      'Oedipus reveal branch: explicitly state or plainly paraphrase the hidden conclusion S in a tutor turn after the shared prefix. Name the concrete mechanism and why it resolves the discrepancy. Do not leave S as an exercise, procedural hint, or merely implied next check.',
+    );
+  }
   if (String(policy).includes('uptake')) {
     contracts.push(
       'If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one.',
@@ -3731,6 +3764,9 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
       .filter(Boolean)
       .join(' ');
   }
+  if (policy === 'socratic_discovery' || policy === 'reveal_secret') {
+    sideConstraints.tutor = combineText(sideConstraints.tutor, contracts.join(' '));
+  }
   const policyPlan = String(policy).includes('peripeteia') ? withPeripeteiaPressureCue(plan) : plan;
   return {
     ...policyPlan,
@@ -3749,7 +3785,7 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
 function controlEndingApplies(plan, d, policy = 'default') {
   if (!plan || policy === 'default') return false;
   const tutorPolicy = d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || plan.tutor_adaptation_policy || 'none';
-  return tutorPolicy === 'routine' || tutorPolicy === 'none';
+  return tutorPolicy === 'routine' || tutorPolicy === 'none' || tutorPolicy === 'withhold_secret';
 }
 
 function withControlEndingPolicy(plan, policy = 'default', d = null) {
@@ -3883,7 +3919,7 @@ function attachSecret(plan, d) {
 function controlEndingInstructionForPrompt(args, d) {
   if (!args || args.controlEndingPolicy === 'default') return null;
   const tutorPolicy = d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || 'none';
-  if (!(tutorPolicy === 'routine' || tutorPolicy === 'none')) {
+  if (!(tutorPolicy === 'routine' || tutorPolicy === 'none' || tutorPolicy === 'withhold_secret')) {
     return `Requested control-ending policy "${args.controlEndingPolicy}" is not applied to this adaptive arm. Preserve its normal ending shape.`;
   }
   if (args.controlEndingPolicy === 'hold') {
@@ -4710,18 +4746,47 @@ function pairedBranchDefinitions(args) {
       key: arm,
       revisitPolicy: PAIRED_ADAPTATION_ARMS[arm].revisitPolicy,
       tutorAdaptationPolicy: PAIRED_ADAPTATION_ARMS[arm].tutorAdaptationPolicy,
+      secretTutorAdaptationPolicy: PAIRED_ADAPTATION_ARMS[arm].secretTutorAdaptationPolicy || null,
     }));
   }
   return [...new Set(args.pairedContinuationPolicies)].map((policy) => ({
     key: policy,
     revisitPolicy: policy,
     tutorAdaptationPolicy: 'none',
+    secretTutorAdaptationPolicy: null,
   }));
 }
 
+function dramaHasOedipusSecret(d) {
+  return Boolean(d?.secret?.fact);
+}
+
+function effectiveBranchTutorAdaptationPolicy(branch, d) {
+  if (dramaHasOedipusSecret(d) && branch?.secretTutorAdaptationPolicy) {
+    return branch.secretTutorAdaptationPolicy;
+  }
+  return branch?.tutorAdaptationPolicy || 'none';
+}
+
+function effectiveBranchTutorAdaptationPolicyForOrder(branch, order = []) {
+  const policies = new Set((order || []).map((d) => effectiveBranchTutorAdaptationPolicy(branch, d)));
+  if (!policies.size) return branch?.tutorAdaptationPolicy || 'none';
+  if (policies.size === 1) return [...policies][0];
+  return [...policies].sort().join('|');
+}
+
 async function generatePairedContinuations({ args, order, runtime, llmCall }) {
+  if (args.pairedPrefixTrace && order.length !== 1) {
+    throw new Error('--paired-prefix-trace currently supports exactly one selected drama');
+  }
   const branches = pairedBranchDefinitions(args);
   const branchKeys = branches.map((branch) => branch.key);
+  const pairedPrefixSource = args.pairedPrefixTrace
+    ? {
+        prefix_source_trace: path.relative(WORKTREE_ROOT, args.pairedPrefixTrace),
+        prefix_source_branch: args.pairedPrefixSourceBranch || 'none',
+      }
+    : {};
   const progress = createProgressReporter({
     label: 'generation',
     total: order.length * (branches.length + 1),
@@ -4735,7 +4800,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         runtime,
         directorPolicy: branch.revisitPolicy,
         directorAnchor: args.directorRevisitAnchor,
-        tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+        tutorAdaptationPolicy: effectiveBranchTutorAdaptationPolicyForOrder(branch, order),
         transcriptsDir: armDirs[branch.key].transcriptsDir,
         order,
         paired: {
@@ -4743,6 +4808,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
           prefix_through: 'tutor_turn_2',
           branch_policies: branchKeys,
           branches,
+          ...pairedPrefixSource,
         },
       }),
     ]),
@@ -4767,66 +4833,92 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
         const itemWarnings = [];
         const itemEntries = {};
-        progress.note(`${d._tid} (${d.id}) shared prefix starting`);
-        console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
-        const prefixDrama = {
-          ...d,
-          _directorRevisitPolicy: 'none',
-          _directorRevisitAnchor: null,
-          _tutorAdaptationPolicy: 'none',
-        };
-        const directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
-        const prefixTrace = await runtime.runInteraction(
-          {
-            learnerId: branchId('prefix', d.id, 'none'),
-            personaId: d.persona,
-            tutorProfile: d.tutor_profile,
-            topic: d.topic,
-            scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
-            sessionId: branchId('prefix-session', d.id, 'none'),
-          },
-          llmCall,
-          {
-            ...dramaTurnOptionsForArgs(args),
-            maxTurns: 2,
-            observeInternals: true,
-            learnerProfile: d.learner_profile,
-            forceMaxTurns: true,
-            directorPlan,
-            onProgress: ({ phase, turnCount, maxTurns }) =>
-              progress.update(
-                `${d._tid}:prefix`,
-                maxTurns ? turnCount / maxTurns : 0,
-                `${d._tid} prefix · ${phase} ${turnCount}/${maxTurns}`,
-              ),
-            onTurn: createPartialTurnFlusher({
-              args,
-              d: prefixDrama,
+        let directorPlan;
+        let resumeTrace;
+        if (args.pairedPrefixTrace) {
+          progress.note(`${d._tid} (${d.id}) shared prefix loading`);
+          console.log(
+            `\n  ${d._tid} (${d.id}) — loading shared prefix from ${path.relative(WORKTREE_ROOT, args.pairedPrefixTrace)} …`,
+          );
+          const sourceTrace = JSON.parse(fs.readFileSync(args.pairedPrefixTrace, 'utf8'));
+          if (sourceTrace.drama_id && sourceTrace.drama_id !== d.id) {
+            throw new Error(`prefix trace drama_id ${sourceTrace.drama_id} does not match selected drama ${d.id}`);
+          }
+          if (sourceTrace.tid && sourceTrace.tid !== d._tid) {
+            throw new Error(`prefix trace tid ${sourceTrace.tid} does not match selected T id ${d._tid}`);
+          }
+          if (!sourceTrace.directorPlan) {
+            throw new Error(`prefix trace has no directorPlan: ${args.pairedPrefixTrace}`);
+          }
+          directorPlan = sourceTrace.directorPlan;
+          resumeTrace = tracePrefixThroughTutorTurn(sourceTrace, 2);
+        } else {
+          progress.note(`${d._tid} (${d.id}) shared prefix starting`);
+          console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
+          const prefixDrama = {
+            ...d,
+            _directorRevisitPolicy: 'none',
+            _directorRevisitAnchor: null,
+            _tutorAdaptationPolicy: dramaHasOedipusSecret(d) ? 'withhold_secret' : 'none',
+          };
+          directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
+          const prefixTrace = await runtime.runInteraction(
+            {
+              learnerId: branchId('prefix', d.id, 'none'),
+              personaId: d.persona,
+              tutorProfile: d.tutor_profile,
+              topic: d.topic,
+              scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
+              sessionId: branchId('prefix-session', d.id, 'none'),
+            },
+            llmCall,
+            {
+              ...dramaTurnOptionsForArgs(args),
+              maxTurns: 2,
+              observeInternals: true,
+              learnerProfile: d.learner_profile,
+              forceMaxTurns: true,
               directorPlan,
-              runtime,
-              progress,
-              progressKey: `${d._tid}:prefix`,
-            }),
-          },
-        );
-        const resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
+              onProgress: ({ phase, turnCount, maxTurns }) =>
+                progress.update(
+                  `${d._tid}:prefix`,
+                  maxTurns ? turnCount / maxTurns : 0,
+                  `${d._tid} prefix · ${phase} ${turnCount}/${maxTurns}`,
+                ),
+              onTurn: createPartialTurnFlusher({
+                args,
+                d: prefixDrama,
+                directorPlan,
+                runtime,
+                progress,
+                progressKey: `${d._tid}:prefix`,
+              }),
+            },
+          );
+          resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
+        }
         const prefixTurns = externalTurns(resumeTrace);
         const prefixHash = sha256Short(renderTranscript(prefixTurns));
-        progress.step(`${d._tid} prefix ready ${prefixHash}`, 1, `${d._tid}:prefix`);
+        progress.step(
+          `${d._tid} prefix ${args.pairedPrefixTrace ? 'loaded' : 'ready'} ${prefixHash}`,
+          1,
+          `${d._tid}:prefix`,
+        );
 
         for (const branch of branches) {
+          const branchTutorAdaptationPolicy = effectiveBranchTutorAdaptationPolicy(branch, d);
           const dirs = armDirs[branch.key];
           const outTxt = path.join(dirs.outDir, `${d._tid}.txt`);
           if (fs.existsSync(outTxt) && !args.force) {
             throw new Error(`paired continuation output exists: ${outTxt} (pass --force to overwrite)`);
           }
-          const branchPolicyDrama = { ...d, _tutorAdaptationPolicy: branch.tutorAdaptationPolicy };
+          const branchPolicyDrama = { ...d, _tutorAdaptationPolicy: branchTutorAdaptationPolicy };
           const branchDirectorPlan = withDirectorCueProvenance(
             withControlEndingPolicy(
               withAffectiveAdaptationPolicy(
                 withTutorAdaptationPolicy(
                   withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
-                  branch.tutorAdaptationPolicy,
+                  branchTutorAdaptationPolicy,
                 ),
                 d._affectiveAdaptationPolicy ||
                   d.affective_adaptation_policy ||
@@ -4844,7 +4936,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             _directorVariationKey: d._directorVariationKey || null,
             _directorRevisitPolicy: branch.revisitPolicy,
             _directorRevisitAnchor: branch.revisitPolicy === 'none' ? null : args.directorRevisitAnchor,
-            _tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+            _tutorAdaptationPolicy: branchTutorAdaptationPolicy,
             _affectiveAdaptationPolicy:
               d._affectiveAdaptationPolicy || d.affective_adaptation_policy || args.affectiveAdaptationPolicy || 'none',
             _controlEndingPolicy: args.controlEndingPolicy || 'default',
@@ -4919,7 +5011,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             removedNotes,
             traceTurns: trace.turns,
             directorPolicy: branch.revisitPolicy,
-            tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+            tutorAdaptationPolicy: branchTutorAdaptationPolicy,
           });
           itemWarnings.push(...qualityWarnings.map(formatQualityWarning));
           if (removedNotes.length) {
@@ -4949,9 +5041,10 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             shared_prefix_hash: prefixHash,
             branch_policy: branch.key,
             director_revisit_policy: branch.revisitPolicy,
-            tutor_adaptation_policy: branch.tutorAdaptationPolicy,
+            tutor_adaptation_policy: branchTutorAdaptationPolicy,
             affective_adaptation_policy:
               branchDrama._affectiveAdaptationPolicy || branchDirectorPlan?.affective_adaptation_policy || 'none',
+            ...pairedPrefixSource,
           };
           writeGeneratedDramaArtifacts({
             args,
@@ -5560,6 +5653,8 @@ export {
   noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
+  effectiveBranchTutorAdaptationPolicy,
+  effectiveBranchTutorAdaptationPolicyForOrder,
   parseArgs,
   qualityWarningsFor,
   reframeComplianceFailures,

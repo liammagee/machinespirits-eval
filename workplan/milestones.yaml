@@ -31,8 +31,8 @@ milestones:
     description: Dramatic recognition, Oedipus replay, and poetics-scorer follow-up work.
   - id: paper-2-evidence-cleanup
     title: Paper 2 evidence cleanup
-    target: 2026-08-20
-    status: active
+    target: 2026-06-24
+    status: done
     description: Deferred analysis decisions, claim-status cleanup, and current-paper boundary checks.
   - id: distribution
     title: Distribution & auto-update

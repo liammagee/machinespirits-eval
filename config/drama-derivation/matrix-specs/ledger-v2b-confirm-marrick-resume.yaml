@@ -1,0 +1,36 @@
+# Resume spec for the stopped marrick block (1/12 complete): the eleven
+# remaining labels, same base and out dir — baseline-r1 stays untouched;
+# ledger-v1-r1 re-runs under its own label (the pre-registered retry).
+base:
+  world: config/drama-derivation/world-005-marrick.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+arms:
+  - label: ledger-v1-r1
+    flags: { decay: '{"seed":11,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: baseline-r2
+    flags: { decay: '{"seed":13,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: ledger-v1-r2
+    flags: { decay: '{"seed":13,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: baseline-r3
+    flags: { decay: '{"seed":17,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: ledger-v1-r3
+    flags: { decay: '{"seed":17,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: baseline-r4
+    flags: { decay: '{"seed":19,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: ledger-v1-r4
+    flags: { decay: '{"seed":19,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: baseline-r5
+    flags: { decay: '{"seed":23,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: ledger-v1-r5
+    flags: { decay: '{"seed":23,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: baseline-r6
+    flags: { decay: '{"seed":29,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: ledger-v1-r6
+    flags: { decay: '{"seed":29,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', strategy-ledger: '{"registerPalette":["modern"]}' }

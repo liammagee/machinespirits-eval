@@ -43,7 +43,8 @@ export const DRAMA_PARAMETER_COMPONENTS = deepFreeze([
     id: 'cast',
     label: 'Cast',
     shortLabel: 'cast',
-    summary: 'Which human, LLM backend, model, or mock plays each role; cast.director is the scene-author/staging compatibility key.',
+    summary:
+      'Which human, LLM backend, model, or mock plays each role; cast.director is the scene-author/staging compatibility key.',
   },
   {
     id: 'audience',
@@ -136,7 +137,7 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
       'drama.secret.symbolic',
       'drama.act_structure',
     ],
-    runParams: ['world', 'script', 'answers'],
+    runParams: ['world', 'script', 'answers', 'labels', 'runDir'],
   },
   {
     id: 'cast_layer',
@@ -178,6 +179,9 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
       'key',
       'sampleDir',
       'rootDir',
+      'rubrics',
+      'judgeCli',
+      'judgeEffort',
       'scoreConcurrency',
       'allowQualityWarnings',
       'failOnViolation',
@@ -213,6 +217,8 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
       'outDir',
       'outRoot',
       'outBase',
+      'timeoutMs',
+      'maxTranscriptChars',
       'concurrency',
       'batchSize',
       'dryRun',
@@ -223,6 +229,7 @@ export const DRAMA_FUNCTIONAL_COMPONENTS = deepFreeze([
       'claudePersistentWorkers',
       'label',
       'effort',
+      'resumeExisting',
     ],
   },
 ]);
@@ -341,6 +348,7 @@ export const COMPOSER_BASE_VOCAB = deepFreeze({
     'uptake+peripeteia',
     'socratic_discovery',
     'reveal_secret',
+    'withhold_secret',
   ],
   speakers: ['learner', 'tutor', 'director'],
   stagePolicy: ['sparse', 'none', 'none_except_required_cue', 'short', 'interventionist', 'rich'],
@@ -390,6 +398,8 @@ export const RUN_PARAM_COMPONENT_BY_NAME = deepFreeze({
   only: 'matter',
   world: 'matter',
   script: 'matter',
+  labels: 'matter',
+  runDir: 'matter',
   sampleDir: 'matter',
   rootDir: 'matter',
   title: 'matter',
@@ -412,6 +422,9 @@ export const RUN_PARAM_COMPONENT_BY_NAME = deepFreeze({
   checker: 'audience',
   critic: 'audience',
   key: 'audience',
+  rubrics: 'audience',
+  judgeCli: 'audience',
+  judgeEffort: 'audience',
   allowQualityWarnings: 'audience',
   failOnViolation: 'audience',
 
@@ -427,6 +440,8 @@ export const RUN_PARAM_COMPONENT_BY_NAME = deepFreeze({
   outBase: 'runtime',
   concurrency: 'runtime',
   batchSize: 'runtime',
+  timeoutMs: 'runtime',
+  maxTranscriptChars: 'runtime',
   scoreConcurrency: 'runtime',
   mock: 'runtime',
   dryRun: 'runtime',
@@ -436,6 +451,7 @@ export const RUN_PARAM_COMPONENT_BY_NAME = deepFreeze({
   stallWatch: 'runtime',
   claudePersistentWorkers: 'runtime',
   label: 'runtime',
+  resumeExisting: 'runtime',
 });
 
 const COMPONENT_BY_ID = new Map(DRAMA_PARAMETER_COMPONENTS.map((component) => [component.id, component]));

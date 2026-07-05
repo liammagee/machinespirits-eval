@@ -1,7 +1,7 @@
 ---
 id: implement-messages-style-internal-history-probe
 title: Implement messages-style ego/superego history probe
-status: review
+status: done
 type: experiment
 priority: P2
 owner: codex

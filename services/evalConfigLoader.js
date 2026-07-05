@@ -54,6 +54,40 @@ function deepMerge(base, override) {
   return merged;
 }
 
+function resolveScenarioExtends(data) {
+  if (!data?.scenarios || !isPlainObject(data.scenarios)) return data;
+
+  const scenarios = { ...data.scenarios };
+  const resolving = new Set();
+
+  function resolveOne(id) {
+    const scenario = scenarios[id];
+    if (!isPlainObject(scenario) || !scenario.extends) return scenario;
+    if (resolving.has(id)) {
+      throw new Error(`Circular scenario extends detected at ${id}`);
+    }
+    resolving.add(id);
+    const base = resolveOne(scenario.extends);
+    resolving.delete(id);
+    if (!isPlainObject(base)) {
+      throw new Error(`Scenario ${id} extends missing scenario ${scenario.extends}`);
+    }
+    const { extends: _extends, ...local } = scenario;
+    delete local['<<'];
+    scenarios[id] = deepMerge(base, local);
+    return scenarios[id];
+  }
+
+  for (const id of Object.keys(scenarios)) {
+    resolveOne(id);
+  }
+
+  return {
+    ...data,
+    scenarios,
+  };
+}
+
 let localProvidersCache = null;
 let localProvidersMtime = null;
 
@@ -161,7 +195,7 @@ export function loadSuggestionScenarios({ forceReload } = {}) {
 
   try {
     const content = fs.readFileSync(effectivePath, 'utf-8');
-    scenariosCache = yaml.parse(content);
+    scenariosCache = resolveScenarioExtends(yaml.parse(content));
     return scenariosCache;
   } catch (err) {
     console.error('[evalConfigLoader] Failed to parse suggestion scenarios:', err.message);
@@ -227,11 +261,12 @@ export function getProviderConfig(providerName, options = {}) {
 
   const apiKey = provider.api_key_env ? process.env[provider.api_key_env] || '' : '';
   // Providers without api_key_env (local, lmstudio, etc.) only need base_url.
-  // claude-code spawns the local `claude` CLI, which manages its own auth via
-  // the user's Claude Code subscription, so it is always considered configured.
+  // CLI-backed providers manage auth through their own local login state, so
+  // they are considered configured even though they do not expose base_url or
+  // api_key_env settings.
   const needsApiKey = Boolean(provider.api_key_env);
-  const isConfigured =
-    providerName === 'claude-code' ? true : needsApiKey ? Boolean(apiKey) : Boolean(provider.base_url);
+  const isCliProvider = providerName === 'claude-code' || providerName === 'codex';
+  const isConfigured = isCliProvider ? true : needsApiKey ? Boolean(apiKey) : Boolean(provider.base_url);
 
   return {
     ...provider,
@@ -681,7 +716,7 @@ export function loadCustomScenarios(scenariosPath) {
 
   try {
     const content = fs.readFileSync(resolvedPath, 'utf-8');
-    const scenarios = yaml.parse(content);
+    const scenarios = resolveScenarioExtends(yaml.parse(content));
     console.log(`[evalConfigLoader] Loaded custom scenarios from: ${resolvedPath}`);
     return scenarios;
   } catch (err) {

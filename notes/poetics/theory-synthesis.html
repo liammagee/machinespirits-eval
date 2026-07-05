@@ -1,0 +1,318 @@
+<!doctype html>
+<!--
+  theory-synthesis.html — the theory behind the project, in one place.
+
+  A reference surface, NOT a source of new claims. Every number traces to a
+  section of docs/research/paper-full-2.0.md (the § pointers in the margins).
+  Refresh with:  npm run theory:synthesize   (or the /ms-theory-synthesis skill)
+  The refresh script re-stamps the provenance band and checks that every
+  referenced source path below still exists. Edit the prose by hand; it is the source.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>The theory behind the machine · synthesis</title>
+<meta name="description" content="How recognition (Hegel), ego/superego/id (Freud), charisma (Weber) and poetics (Aristotle) became testable architecture in this project — and what the data did to each." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<link rel="stylesheet" href="assets/techne.css" />
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">The theory behind the machine</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#wager">Wager</a>
+      <a href="#hegel">Hegel</a>
+      <a href="#freud">Freud</a>
+      <a href="#weber">Weber</a>
+      <a href="#aristotle">Aristotle</a>
+      <a href="#family">Family</a>
+      <a href="#ledger">Ledger</a>
+      <a href="#forward">Forward</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <!-- THEORY-SYNTH:PROVENANCE:START -->
+    <div class="hero__rune"><span>§</span> Theory synthesis · inherits <code>paper-full-2.0.md</code> v3.0.172 (June 2026) · refreshed 2026-06-24 · commit afae017e</div>
+    <!-- THEORY-SYNTH:PROVENANCE:END -->
+    <h1 class="hero__h1">How four old theories became <span class="em">testable architecture</span></h1>
+    <p class="hero__subtitle">Recognition, the divided mind, charisma, and dramatic form — read as design heuristics, built into agents, and then measured. This page is the map between the theory and the machine.</p>
+    <div class="hero__lede">
+      <div>
+        <p>The project's wager is that a handful of theories about how people change each other — Hegel on mutual recognition, Freud on the divided psyche, Weber on charisma, Aristotle on dramatic recognition — are not decoration on an AI tutor but <em>instructions for building different ones</em>. Each theory is translated into a concrete mechanism, wired into a prompt, an agent, or a rubric, and then put in front of the data. This page collects that translation in one place and reports, beside each thread, what the measurement returned — including where a theory-motivated mechanism produced nothing.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <!-- 01 · THE WAGER ------------------------------------------------------>
+    <section class="s" id="wager">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The wager</p>
+          <h2 class="s__h">Theory as a source of <em>different machines</em>, not a gloss on one.</h2>
+          <p>Most AI-tutor work picks an architecture and then reaches for language to describe it. This project runs the other way: it takes a theory of how a subject is changed through encounter with another, derives an <em>operational</em> design rule from it, and lets that rule produce an architecture that can be compared against its absence. The recognition prompt is not a description of Hegel — it is the instruction <q>build on what the learner actually said,</q> which narrows what the model can output. The superego is not a metaphor sitting on top of one agent — it is a <em>second</em> agent whose critique the first can refuse.</p>
+          <p>The stance throughout is deliberately modest about what is being claimed. The tutor does not <q>recognise</q> the learner in any metaphysical sense; the architecture produces <em>functional analogues</em> of recognition — measurable differences in output where there would otherwise be a generic response. The claims are behavioural (designed information flows produce measurable output differences), not cognitive (the machine has an inner life).</p>
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">Heuristic translation, not metaphysics <span class="chip chip--ochre"><span class="chip__dot"></span> stated limit</span></h3>
+            <div class="claim__body"><p>The design heuristic borrowed from a theory is judged by whether it yields a measurable functional analogue — calibration where there would be a generic answer, self-revision where there would be compliance — never by whether the machine <q>really</q> recognises, desires, or feels.</p></div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">§3.5 · §8.1</span> The paper draws the behavioural-vs-cognitive line explicitly: it studies recognition-<em>oriented design</em>, not recognition proper.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 · HEGEL ---------------------------------------------------------->
+    <section class="s" id="hegel">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Hegel · mutual recognition</p>
+          <h2 class="s__h">One theory, three mechanisms, at three levels of the machine.</h2>
+          <p>Hegel's <em>Phenomenology</em> — the master–slave dialectic, <em>Anerkennung</em>, <em>Bildung</em> — is the project's spine. It is read as three distinct design claims, each operating at a different layer, so each can be tested on its own:</p>
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">Calibration — prompt level <span class="chip chip--moss"><span class="chip__dot"></span> supported</span></h3>
+            <div class="claim__body"><p>Mutual acknowledgment means a response shaped by the <em>specific</em> content of the other's contribution. Operationalised as a prompt constraint, it should <em>narrow</em> the output distribution. It does: within-response dimension spread falls from <code>0.619</code> to <code>0.539</code> (<code>d=0.52</code>), replicating on a second model (<code>0.617→0.499</code>, <code>d=0.64</code>), and the largest gains land on the <em>weakest</em> baseline dimensions. It holds in single-agent cells, so it is genuinely prompt-level.</p></div>
+          </div>
+          <div class="claim">
+            <span class="claim__no">ii.</span>
+            <h3 class="claim__h">Error correction — architecture level <span class="chip chip--ochre"><span class="chip__dot"></span> supported · model-dependent</span></h3>
+            <div class="claim__body"><p><em>Bildung</em> means being changed by the encounter, not merely complying. The ego must be <em>receptive</em> to the superego, not obedient to it — so the ego keeps final authority. Under recognition the superego's added value collapses (<code>+9.0</code> points base → <code>+0.2</code> recognition) because the ego already meets its standard; superego approval jumps (<code>13.3%→55.1%</code> on one model, <code>51.6%→66.1%</code> on another). The magnitude tracks the generation model's strength.</p></div>
+          </div>
+          <div class="claim">
+            <span class="claim__no">iii.</span>
+            <h3 class="claim__h">Adaptive responsiveness — interaction level <span class="chip chip--brick"><span class="chip__dot"></span> null</span></h3>
+            <div class="claim__body"><p>The dialectic is temporal: each turn should be reshaped by the last. Predicted as rising per-turn trajectories under recognition. The well-powered analysis returns nothing — <code>d=0.03</code> on tutor slopes where the design could detect <code>d≥0.27</code> — and a lone exploratory effect in one scenario failed a pre-registered replication across models and judges. The temporal claim does not translate into measurable trajectory differences in 3–5 turn dialogues.</p></div>
+          </div>
+          <p>Where it lives in the machine: the recognition prompts (<code>tutor-ego-recognition.md</code>, <code>tutor-superego-recognition.md</code>), the recognition cell families, the <code>recognition_quality</code> rubric dimension, and a ten-concept Hegelian lexicon used to measure whether recognition cells actually concentrate the vocabulary (<code>analyze-recognition-lexicon.js</code>).</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">§3.2 · §3.5</span> The three-mechanism table is the paper's central translation device.</p>
+          <p class="note"><span class="note__lbl">§6.1</span> Calibration. <span class="note__lbl">§6.2</span> Error correction. <span class="note__lbl">§6.3 · A12</span> The adaptive-responsiveness null and its failed replication.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 · FREUD ---------------------------------------------------------->
+    <section class="s" id="freud">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Freud · the divided agent</p>
+          <h2 class="s__h">Recognition is built through Freud's structural model.</h2>
+          <p>If Hegel says <em>what</em> has to happen, Freud's topology says <em>how to wire it</em>. Each tutoring response is produced by two agents: an <strong>ego</strong> that generates, and a <strong>superego</strong> that judges against pedagogical and recognition criteria before anything reaches the learner. The superego is conceived as a <em>ghost</em> — a memorial trace of authority that judges but cannot negotiate. The load-bearing design choice is that the ego keeps <em>final authority</em>: it revises after critique but is not forced to comply. That single choice is what makes <q>receptivity</q> vary by condition, and that variation is exactly what the error-correction analysis exploits.</p>
+          <p>The architecture is <strong>bilateral and symmetric</strong>: the learner has its own ego→superego→revision loop, mirroring the tutor's, with matching trace labels on both sides. Two inversions of the standard stack are studied as their own families: <em>divergent superegos</em> (suspicious / adversary / advocate dispositions) and the <strong>id-director</strong> (cells 101–109), which flips the topology — an <q>id</q> authors a fresh ego persona each turn, with no post-hoc superego.</p>
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">The memory engineering is not the mechanism <span class="chip chip--ochre"><span class="chip__dot"></span> ablated</span></h3>
+            <div class="claim__body"><p>A controlled Writing-Pad ablation shows the three-layer memory <q>pad</q> is <em>not</em> load-bearing for recognition — the effect lives at the prompt level, not in the memory machinery.</p></div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">§4.1 · §4.2</span> Ego/superego on both sides; the ego's retained authority is the source of the receptivity signal.</p>
+          <p class="note"><span class="note__lbl">CLAUDE.md</span> Symmetric trace labels — <code>ego/generate → superego/review</code> mirror <code>learner_ego → learner_superego</code>.</p>
+          <p class="note"><span class="note__lbl">§6.6.9</span> Writing-Pad ablation (N=252).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 · WEBER ---------------------------------------------------------->
+    <section class="s" id="weber">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Weber · charisma</p>
+          <h2 class="s__h">A second kind of authority, measured on its own register.</h2>
+          <p>Weber names an authority that recognition theory deliberately sets aside: the <em>charismatic</em> kind, grounded in extraordinariness and co-constituted by followers who grant it. The project gives this its own instrument rather than folding it into recognition. The id-director family (cells 101–109) authors a charismatic persona each turn, and a Weber-derived <strong>8-dimension charisma rubric</strong> scores it — extraordinariness (escaping the default-AI register), compositional arc, rhetorical rhythm, affective intensity, distillation, persona signature, positioning, and a <em>co-constitutive invitation</em> that is explicitly contrasted with Hegelian mutual recognition.</p>
+          <p>The rubric is versioned independently of the main tutor rubric and stored in its own columns, so charisma and recognition can be <em>cross-correlated</em> rather than conflated. The point of the split is conceptual hygiene: a tutor can carry a room by charm in a way that is not the same thing as treating the learner as an autonomous subject, and the project keeps the two measurable apart.</p>
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">Two authorities, two instruments <span class="chip chip--moss">by design</span></h3>
+            <div class="claim__body"><p>Weberian co-constituted authority (the learner's affirmation validates the tutor) is scored separately from Hegelian recognition (the learner is treated as an equal source of meaning). Keeping them apart is what lets either one be studied.</p></div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">charisma rubric v1.0</span> <code>evaluation-rubric-charisma.yaml</code> cites Weber, <em>Economy and Society</em>, and contrasts the co-constitutive loop with recognition.</p>
+          <p class="note"><span class="note__lbl">cells 101–109</span> Id-director; scored into <code>tutor_charisma_*</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 · ARISTOTLE ------------------------------------------------------>
+    <section class="s" id="aristotle">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Aristotle · poetics</p>
+          <h2 class="s__h">The dialogue as drama; the critic as the audience.</h2>
+          <p>The dramatic-recognition arc makes a sharp move: if a learner's actual learning is inaccessible, locate the recognition where Aristotle put it — in the <em>audience</em>. The tutoring transcript is read as a <em>drama</em>, the evaluator as a literary critic, and the scoring is on dramatic <em>form</em> at the whole-transcript level: <strong>peripeteia</strong> (reversal), <strong>anagnorisis</strong> (a recognition the speaker could not have said a moment before), surprise-and-inevitability, unity of action, the misconception read as <em>hamartia</em>, and a cathartic close. A six-dimension poetics rubric, calibrated first on canonical scenes (Sophocles, Plato) versus flat exposition, scores it.</p>
+          <p>The pilot that pushed hardest — a learner led to discover a withheld, contingent fact through metered evidence — found that <em>premise-licensing is the load-bearing move</em>: a tutor freed to meter premises elicits discovery <code>7/9</code>, while a tutor that simply states the answer scores <code>0/4</code> by-reasoning (told, but not reasoned to).</p>
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">Form, not mind-reading <span class="chip chip--brick"><span class="chip__dot"></span> hard limit</span></h3>
+            <div class="claim__body"><p>The instrument classifies dramatic form; it does not detect real learning or interior states. The Phase-2 transfer to tutoring transcripts <strong>failed</strong> (weighted <code>κ≈0.04</code> against a ≥0.60 target): the codex critic over-attributes recognition roughly threefold, fooled by the <em>costume</em> of recognition vocabulary. Treat critic divergence here as a finding about gullibility, not as a calibration to chase.</p></div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">§6.10 · §7.9</span> Formal pedagogical structures (metering premises, avoiding the undercut) — explicitly <em>not</em> evidence of catharsis-as-learning.</p>
+          <p class="note"><span class="note__lbl">poetics rubric v1.0</span> <code>evaluation-rubric-poetics.yaml</code>, whole-transcript, Aristotle ch. 6–13.</p>
+          <p class="note"><span class="note__lbl">transfer</span> κ≈0.04 — the instrument reads form, not learning.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 · THE FAMILY / DEFLATION ----------------------------------------->
+    <section class="s" id="family">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The wider family · a deflation the project runs on itself</p>
+          <h2 class="s__h">The active ingredient is the <em>orientation</em>, not the vocabulary.</h2>
+          <p>Recognition theory is one articulation of a commitment shared across a whole family — Vygotsky's zone of proximal development, Piaget's accommodation, Kapur's productive failure, and the cognate work of Chi, VanLehn, and Graesser all carry it, in different words. The project tests whether Hegel's <em>specific</em> vocabulary is doing the causal work, and finds it is not: a prompt matched for specificity but grounded in those constructivist descendants reproduces the recognition effect (<code>d≈0.14–0.19</code> between them, i.e. equivalent), while a matched prompt grounded in the orthogonal <em>behaviourist</em> tradition scores well below baseline (<code>d=0.89</code> beneath it). The between-family gap (<code>d=1.38</code>) dwarfs every within-family contrast by an order of magnitude.</p>
+          <p>So the lever is <strong>intersubjective-pedagogy orientation</strong>, not the Hegelian terminology — and this does not displace recognition theory so much as locate it. The constructivists inherited the intersubjective commitment from Hegel, often without attribution; recognition is its most <em>explicit</em> statement. The vocabulary earns its place by making the commitment legible, not by being the unique cause.</p>
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">Vocabulary clarifies; orientation causes <span class="chip chip--moss">A10 / A10b</span></h3>
+            <div class="claim__body"><p>Between-family <code>d=1.38</code> ≫ within-family <code>d≈0.14–0.19</code>. Swapping Hegel's words for Vygotsky's barely moves the result; swapping the <em>orientation</em> for behaviourism collapses it.</p></div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">§7.9 · A10/A10b</span> The matched-specificity control: recognition vs. matched-pedagogical vs. behaviourist.</p>
+          <p class="note"><span class="note__lbl">§3.1</span> The family carries the same commitments in different vocabularies; recognition is chosen for diagnostic clarity.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 · THE LEDGER ----------------------------------------------------->
+    <section class="s" id="ledger">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The ledger</p>
+          <h2 class="s__h">What is load-bearing, and what the data refused.</h2>
+          <p>A reference page earns its keep by being even-handed about the nulls. The throughline of the project is that two of three pre-registered Hegelian mechanisms replicate across three generation models and three judges, the third does not, and several theory-motivated elaborations bought nothing.</p>
+
+          <p class="s__kicker" style="margin-top:1.2em">Carries weight</p>
+          <ul>
+            <li><strong>Calibration</strong> (Hegel, prompt level) — variance narrowing, replicated, floor-lifting. <span class="chip chip--moss"><span class="chip__dot"></span> supported</span></li>
+            <li><strong>Error correction</strong> (Freud's receptivity, architecture level) — superego value tracks model strength; the ego's retained authority is the hinge. <span class="chip chip--ochre"><span class="chip__dot"></span> supported · model-dependent</span></li>
+            <li><strong>Intersubjective orientation</strong> (the whole family) — the between-family <code>d=1.38</code> is the real lever. <span class="chip chip--moss"><span class="chip__dot"></span> supported</span></li>
+            <li><strong>Premise-metering</strong> (Aristotle, as form) — a tutor can be built to lead a learner to a withheld inference. <span class="chip chip--ochre"><span class="chip__dot"></span> supported · as form</span></li>
+          </ul>
+
+          <p class="s__kicker" style="margin-top:1.2em">The data refused</p>
+          <ul>
+            <li><strong>Adaptive responsiveness</strong> (the temporal dialectic) — <code>d=0.03</code>, well-powered null, failed replication. <span class="chip chip--brick"><span class="chip__dot"></span> null</span></li>
+            <li><strong>The specific vocabulary</strong> — Hegelian wording is not the cause; the orientation is. <span class="chip chip--brick"><span class="chip__dot"></span> deflated</span></li>
+            <li><strong>Catharsis as learning</strong> — the poetics instrument reads dramatic form, not durable learner change. <span class="chip chip--brick"><span class="chip__dot"></span> out of reach</span></li>
+            <li><strong>Dramatic transfer</strong> — the codex-trained critic does not transfer to tutoring transcripts (<code>κ≈0.04</code>); it is fooled by the costume. <span class="chip chip--brick"><span class="chip__dot"></span> failed transfer</span></li>
+          </ul>
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">The headline, plainly <span class="chip chip--moss">§ abstract</span></h3>
+            <div class="claim__body"><p>Two of three pre-registered mechanisms replicate across all three tested models and three judges; their magnitude and architectural completeness vary with generation quality; the third is null on the primary well-powered analysis. Generalisation to much weaker or frontier models stays an open question.</p></div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">read me as</span> a map, not a result. Every figure here is inherited from the paper at the version stamped in the header.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 · FORWARD -------------------------------------------------------->
+    <section class="s" id="forward">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">For future development</p>
+          <h2 class="s__h">Where the theory points next.</h2>
+          <p>These are <em>open directions</em>, not findings — each maps to a live or paused workplan item, and none of them is claimed here.</p>
+          <ul>
+            <li><strong>The learning door.</strong> Every interior claim is bounded by the synthetic learner. The human-learner validation pilot is engineering-complete and parked on IRB approval and real materials — it is the only path to the catharsis / durable-change question the poetics arc cannot reach. <span class="chip">§8.1 · A1</span></li>
+            <li><strong>More than two parties.</strong> The bilateral theory-of-mind machinery is inert in the dyad; a group-ToM regime is where explicit social-mental-state modelling is expected to start paying. <span class="chip">§6.8.8</span></li>
+            <li><strong>The concealed interior.</strong> The project owns the learner's hidden deliberation as ground truth, which makes <em>manifest ≠ latent</em> directly testable — modelling the concealed interior rather than the spoken surface. <span class="chip">Adaptation Plan 2.0</span></li>
+            <li><strong>Formal proof of derivation.</strong> The derivation arc shows a tutor can be made to lead a learner to a hidden answer under a rule-checker rather than a quality judge — the cleanest <q>did they get there</q> signal the project has. <span class="chip">§6.13</span></li>
+          </ul>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">discipline</span> New empirical claims belong in <code>paper-full-2.0.md</code> first; this surface only ever inherits from it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CROSS-REFERENCE TABLE (data-ref paths are validated by the refresh script) -->
+    <section class="s" id="crossref">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">✦<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Cross-reference</p>
+          <h2 class="s__h">Theory → mechanism → where it lives.</h2>
+          <p>The same threads as a gallery — colour tracks the ledger (green carries weight, amber is qualified or a register of its own, red is form-only or a failed transfer). The <code>data-ref</code> paths are what the refresh script checks still exist.</p>
+          <div class="ev-grid">
+            <article class="ev-card" data-status="strong" data-tags="hegel">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Hegel</span>
+              <h3>Mutual recognition</h3>
+              <p>Built in <code data-ref="prompts/tutor-ego-recognition.md">tutor-ego-recognition.md</code>; measured by <code data-ref="scripts/analyze-recognition-lexicon.js">analyze-recognition-lexicon.js</code> and the <code>recognition_quality</code> dimension (rubric v2.2).</p>
+            </article>
+            <article class="ev-card" data-status="strong" data-tags="freud">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Freud</span>
+              <h3>Ego · superego · id</h3>
+              <p>Bilateral loop in <code data-ref="services/learnerTutorInteractionEngine.js">learnerTutorInteractionEngine.js</code>; the id-director inversion in <code data-ref="services/idDirectorEngine.js">idDirectorEngine.js</code>.</p>
+            </article>
+            <article class="ev-card" data-status="boundary" data-tags="weber">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Weber</span>
+              <h3>Charisma</h3>
+              <p>Authored by <code data-ref="prompts/tutor-id-director.md">tutor-id-director.md</code> (cells 101–109); scored on its own <code data-ref="config/evaluation-rubric-charisma.yaml">charisma rubric v1.0</code>.</p>
+            </article>
+            <article class="ev-card" data-status="risk" data-tags="aristotle">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Aristotle</span>
+              <h3>Peripeteia · anagnorisis</h3>
+              <p>Generated via <code data-ref="scripts/drama-generator.js">drama-generator.js</code> + the adaptive runner; scored on the <code data-ref="config/evaluation-rubric-poetics.yaml">poetics rubric v1.0</code>. Reads form, not learning.</p>
+            </article>
+            <article class="ev-card" data-status="strong" data-tags="family">
+              <span class="chip chip--moss"><span class="chip__dot"></span> The family</span>
+              <h3>Intersubjective orientation</h3>
+              <p>Isolated by the theory-stripped control <code data-ref="prompts/tutor-ego-placebo.md">tutor-ego-placebo.md</code>; the A10/A10b contrast is the real lever (between-family <code>d=1.38</code>).</p>
+            </article>
+            <article class="ev-card" data-status="boundary" data-tags="map">
+              <span class="chip chip--ink"><span class="chip__dot"></span> The map</span>
+              <h3>Cell → architecture</h3>
+              <p>Every cell's architecture is declared in <code data-ref="config/tutor-agents.yaml">tutor-agents.yaml</code>; every number inherits from <code data-ref="docs/research/paper-full-2.0.md">paper-full-2.0.md</code>.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /shell -->
+
+  <footer class="colophon">
+    <p><span class="label">Colophon</span> &nbsp; A reference surface, not a source of claims — every number inherits from <code>docs/research/paper-full-2.0.md</code> at the version stamped above. Refresh with <code>npm run theory:synthesize</code> or the <code>/ms-theory-synthesis</code> skill. Typeset in Fraunces, Source Serif 4, JetBrains Mono; design <code>assets/techne.css</code>.</p>
+  </footer>
+
+</main>
+
+<script src="assets/techne.js"></script>
+</body>
+</html>

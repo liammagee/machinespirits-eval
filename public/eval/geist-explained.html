@@ -1270,6 +1270,9 @@ body.lightbox-open { overflow: hidden; }
       <p>
         Importantly, this isn't a deployable product. The architecture costs about <strong>225,000 tokens</strong> per 10-turn conversation — roughly twenty times what a single-pass chatbot uses. The researchers explicitly call it a "research instrument" for studying what produces what, not a recommendation that everyone should build their tutors this way.
       </p>
+      <p>
+        The most recent paper results make the product lesson sharper: start with the intersubjective prompt orientation, add the second voice only where it buys error correction, and do not treat either as a complete adaptivity system. When the tutor must choose a strategy based on learner state — especially in proof-like or rule-transfer tasks — the paper's later addenda move that control outside the prompt into typed state contracts, outcome closure checks, and guarded premise release.
+      </p>
     </div>
     <aside class="mr">
       <div class="note">
@@ -1955,7 +1958,10 @@ body.lightbox-open { overflow: hidden; }
       </div>
 
       <p>
-        This is the strongest form of the null in the paper. The first result showed recognition doesn't accumulate on its own. This one shows that <em>deliberately engineering for accumulation</em> — handing the system an editable, memory-carrying inner critic — doesn't manufacture it either. Whatever recognition does, it does at the <em>start</em> of the conversation, not by compounding over it.
+        Within the lightweight prompt-rewriting family, this is the strongest form of the null in the paper. The first result showed recognition doesn't accumulate on its own. This one shows that <em>deliberately engineering for accumulation</em> — handing the system an editable, memory-carrying inner critic — doesn't manufacture it either. Whatever recognition does, it does at the <em>start</em> of the conversation, not by compounding over it.
+      </p>
+      <p>
+        Later addenda sharpen the boundary rather than overturning it. Heavier external state-policy controllers can improve simulated strategy shifts when they use typed learner states, outcome closure, and explicit same-state versus different-state tests. In proof-like derivation worlds, the promoted arm is not "more recognition" but hidden <code>proofDebt</code> plus a guard that controls when evidence is released. That is adaptivity as conduct governance, not as a rising recognition slope.
       </p>
     </div>
     <aside class="mr">
@@ -2300,13 +2306,16 @@ body.lightbox-open { overflow: hidden; }
       <p>
         The second lesson is that the <em>orientation</em> matters more than the specific framing. You don't need to ground your prompt in Hegel. You can ground it in Vygotsky, Piaget, Dewey, or any of the constructivist family. What matters is that the prompt treats the user as a thinking subject whose contribution shapes what comes next. The behaviorist alternative — treating the user as a system to be conditioned — actively hurts.
       </p>
+      <p>
+        The third lesson is architectural: when your product needs the tutor to adapt to state, represent that state outside the model and test the policy. The latest paper results support typed learner-state contracts, explicit outcome closure, and guarded evidence release for proof-like tasks; they do not support relying on a tutor prompt to silently infer and accumulate the right strategy over a short dialogue.
+      </p>
 
       <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:1.5em 0 0.6em;color:var(--ink);">If you're thinking about AI in education...</h3>
       <p>
         The headline number — a Cohen's d of 1.63 — is roughly four times larger than the average effect of any educational intervention in classroom studies. If the result transfers to human learners (a big "if"), this would be substantial. The catch is the asymmetry: on strong models, the effect is almost entirely on the tutor side, with very little student-side change. If your goal is "the AI is a better tutor," recognition delivers. If your goal is "students learn more," the evidence is still ambiguous — and depends on whether the underlying model is in the band where rescuing the tutor also rescues the student.
       </p>
       <p>
-        The null finding on adaptive responsiveness is also worth noting: recognition doesn't make the tutor more responsive <em>over the course of a single conversation</em>. It makes the tutor better from the start. So designs that rely on "the AI will learn this specific student as the session progresses" don't get a boost from recognition; designs that rely on "the AI is well-oriented from utterance one" do.
+        The null finding on adaptive responsiveness is also worth noting: recognition doesn't make the tutor more responsive <em>over the course of a single conversation</em>. It makes the tutor better from the start. So designs that rely on "the AI will learn this specific student as the session progresses" don't get a boost from recognition; designs that rely on "the AI is well-oriented from utterance one" do. Designs that need real state-contingent tutoring should be evaluated as state-policy systems, not as prompt-only tutors.
       </p>
 
       <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:1.5em 0 0.6em;color:var(--ink);">If you're interested in what AI can be...</h3>
@@ -2344,7 +2353,7 @@ https://github.com/liammagee/machinespirits-eval/blob/main/public/eval/geist-exp
   </div>
 
   <p style="margin-top:2em;font-size:var(--s-mini);letter-spacing:0.08em;color:var(--ink-4);">
-    This guide draws exclusively on the empirical claims in <code>paper-full-2.0.md</code> v3.0.93. Every numerical claim above is verified by the paper's <code>provable-discourse</code> validator. The full validation chain runs every prose claim against the database and the dialogue logs. (See <code>scripts/validate-provable-discourse.js</code>.)
+    This guide draws exclusively on the empirical claims in <code>paper-full-2.0.md</code> v3.0.181. Every numerical claim above is grounded in the paper's provable-discourse discipline; newer build guidance above reflects the §6.12 state-policy and §6.13 conduct-governance addenda. (See <code>scripts/validate-provable-discourse.js</code>.)
   </p>
 </footer>
 

@@ -1,4 +1,7 @@
-export const ADAPTATION_ACTION_REGISTRY_VERSION = 'adaptation-action-registry.v1.2';
+import { classifyResistanceSignal, isKnownResistanceSignal } from '../resistanceSignalGate.js';
+
+export const ADAPTATION_ACTION_REGISTRY_VERSION = 'adaptation-action-registry.v1.3';
+export const ADAPTATION_POLICY_LAYER_VERSION = 'adaptation-policy-layer.v1.0';
 
 export const ADAPTIVE_POLICY_MODES = Object.freeze([
   'legacy',
@@ -22,7 +25,61 @@ export const DEFAULT_ADAPTIVE_POLICY_CONFIG = Object.freeze({
   sameActionWindow: 3,
   sameActionScope: 'same_condition',
   utilityTieEpsilon: 0.05,
+  resistanceSignalWeight: 0.45,
 });
+
+const RESISTANCE_SIGNAL_ROUTES = Object.freeze({
+  boredom: {
+    hypothesis_id: 'resistance_boredom',
+    description: 'Learner can follow the proof surface but the task has become dead or disengaging.',
+    preferred_actions: ['ask_strategy_choice', 'challenge_without_telling', 'request_evidence'],
+    expected_resistance_transition: { resistance_breakthrough: 0.25, ownership: 0.12, release: 0.12 },
+    success_evidence: ['renewed content-bearing work', 'learner-owned test case'],
+    axis_adjustments: { affective_readiness: -0.12, ownership: -0.05 },
+    weight: 1.1,
+  },
+  frustration: {
+    hypothesis_id: 'resistance_frustration',
+    description: 'Learner is stuck or annoyed; proof progress needs a smaller executable move.',
+    preferred_actions: ['acknowledge_and_redirect', 'lower_cognitive_load', 'minimal_hint'],
+    expected_resistance_transition: { resistance_breakthrough: 0.2, affective_readiness: 0.2 },
+    success_evidence: ['renewed attempt after affective repair', 'smaller learner-owned move'],
+    axis_adjustments: { affective_readiness: -0.2, metacognitive_accuracy: -0.05 },
+    weight: 1.15,
+  },
+  irrelevance: {
+    hypothesis_id: 'resistance_irrelevance',
+    description: 'Learner challenges why the proof obligation matters for their own task.',
+    preferred_actions: ['reanchor_goal', 'ask_strategy_choice', 'request_evidence'],
+    expected_resistance_transition: { resistance_breakthrough: 0.25, metacognitive_accuracy: 0.15, ownership: 0.1 },
+    success_evidence: ['learner-owned relevance test', 'task reorientation'],
+    axis_adjustments: { metacognitive_accuracy: -0.08, ownership: -0.05 },
+    weight: 1.12,
+  },
+  question_flood: {
+    hypothesis_id: 'resistance_question_flood',
+    description:
+      'Learner floods the exchange with questions; the policy must collapse them into a discriminating hinge.',
+    preferred_actions: ['diagnose_with_discriminating_question', 'name_the_disagreement', 'ask_strategy_choice'],
+    expected_resistance_transition: { resistance_breakthrough: 0.18, metacognitive_accuracy: 0.18 },
+    success_evidence: ['collapsed question set', 'state-disambiguating response'],
+    axis_adjustments: { metacognitive_accuracy: -0.12 },
+    weight: 1.1,
+  },
+  rote_parroting: {
+    hypothesis_id: 'resistance_rote_parroting',
+    description: 'Learner can repeat the sequence but has not turned it into an owned proof move.',
+    preferred_actions: ['elicit_prediction', 'request_evidence', 'challenge_without_telling'],
+    expected_resistance_transition: { resistance_breakthrough: 0.24, ownership: 0.14, proof: 0.08 },
+    success_evidence: ['learner-authored prediction', 'non-formulaic learner rationale'],
+    axis_adjustments: { proof: -0.05, ownership: -0.12 },
+    weight: 1.14,
+  },
+});
+
+const RESISTANCE_HYPOTHESIS_IDS = Object.freeze(
+  Object.values(RESISTANCE_SIGNAL_ROUTES).map((route) => route.hypothesis_id),
+);
 
 const ACTIONS = [
   {
@@ -61,6 +118,7 @@ const ACTIONS = [
       'notation_overload',
       'answer_seeking',
       'correct_alternative_model',
+      'resistance_question_flood',
     ],
   },
   {
@@ -76,7 +134,12 @@ const ACTIONS = [
       forbidden_evidence: ['mere agreement'],
     },
     forbidden_moves: ['supply_decisive_step', 'premature_correctness_validation'],
-    compatible_hypotheses: ['low_confidence', 'answer_seeking', 'procedure_without_rationale'],
+    compatible_hypotheses: [
+      'low_confidence',
+      'answer_seeking',
+      'procedure_without_rationale',
+      'resistance_rote_parroting',
+    ],
   },
   {
     action_type: 'request_evidence',
@@ -91,7 +154,14 @@ const ACTIONS = [
       forbidden_evidence: ['mere agreement', 'verbatim adoption of tutor rationale'],
     },
     forbidden_moves: ['supply_decisive_step', 'premature_correctness_validation', 'replace_learner_plan'],
-    compatible_hypotheses: ['correct_alternative_model', 'procedure_without_rationale', 'approval_dependency'],
+    compatible_hypotheses: [
+      'correct_alternative_model',
+      'procedure_without_rationale',
+      'approval_dependency',
+      'resistance_boredom',
+      'resistance_irrelevance',
+      'resistance_rote_parroting',
+    ],
   },
   {
     action_type: 'ask_strategy_choice',
@@ -106,7 +176,14 @@ const ACTIONS = [
       forbidden_evidence: ['mere agreement'],
     },
     forbidden_moves: ['replace_learner_plan', 'premature_correctness_validation'],
-    compatible_hypotheses: ['approval_dependency', 'answer_seeking', 'low_confidence'],
+    compatible_hypotheses: [
+      'approval_dependency',
+      'answer_seeking',
+      'low_confidence',
+      'resistance_boredom',
+      'resistance_irrelevance',
+      'resistance_question_flood',
+    ],
   },
   {
     action_type: 'contrast_models',
@@ -151,7 +228,12 @@ const ACTIONS = [
       forbidden_evidence: ['tutor-completed step'],
     },
     forbidden_moves: ['supply_decisive_step'],
-    compatible_hypotheses: ['missing_prerequisite', 'notation_overload', 'procedure_without_rationale'],
+    compatible_hypotheses: [
+      'missing_prerequisite',
+      'notation_overload',
+      'procedure_without_rationale',
+      'resistance_frustration',
+    ],
   },
   {
     action_type: 'lower_cognitive_load',
@@ -166,7 +248,12 @@ const ACTIONS = [
       forbidden_evidence: ['tutor-completed step'],
     },
     forbidden_moves: ['supply_decisive_step', 'replace_learner_plan'],
-    compatible_hypotheses: ['working_memory_overload', 'notation_overload', 'missing_prerequisite'],
+    compatible_hypotheses: [
+      'working_memory_overload',
+      'notation_overload',
+      'missing_prerequisite',
+      'resistance_frustration',
+    ],
   },
   {
     action_type: 'repair_overconfidence',
@@ -196,7 +283,13 @@ const ACTIONS = [
       forbidden_evidence: ['tutor-completed step'],
     },
     forbidden_moves: ['supply_decisive_step', 'replace_learner_plan'],
-    compatible_hypotheses: ['boundary_case', 'correct_alternative_model', 'procedure_without_rationale'],
+    compatible_hypotheses: [
+      'boundary_case',
+      'correct_alternative_model',
+      'procedure_without_rationale',
+      'resistance_boredom',
+      'resistance_rote_parroting',
+    ],
   },
   {
     action_type: 'reanchor_goal',
@@ -211,7 +304,7 @@ const ACTIONS = [
       forbidden_evidence: ['tutor-completed step'],
     },
     forbidden_moves: ['replace_learner_plan'],
-    compatible_hypotheses: ['task_misread', 'goal_drift'],
+    compatible_hypotheses: ['task_misread', 'goal_drift', 'resistance_irrelevance'],
   },
   {
     action_type: 'summarize_and_release',
@@ -272,7 +365,12 @@ const ACTIONS = [
       forbidden_evidence: ['mere agreement', 'tutor-completed step'],
     },
     forbidden_moves: ['supply_decisive_step', 'premature_correctness_validation'],
-    compatible_hypotheses: ['substantive_objection', 'metaphor_overextension', 'boundary_case'],
+    compatible_hypotheses: [
+      'substantive_objection',
+      'metaphor_overextension',
+      'boundary_case',
+      'resistance_question_flood',
+    ],
   },
   {
     action_type: 'acknowledge_and_redirect',
@@ -287,7 +385,7 @@ const ACTIONS = [
       forbidden_evidence: ['empty release', 'mere agreement'],
     },
     forbidden_moves: ['replace_learner_plan', 'premature_correctness_validation'],
-    compatible_hypotheses: ['affective_shutdown', 'low_confidence'],
+    compatible_hypotheses: ['affective_shutdown', 'low_confidence', 'resistance_frustration'],
   },
   {
     action_type: 'repair_misrecognition',
@@ -361,6 +459,11 @@ const HYPOTHESIS_ACTION_MAP = Object.freeze({
   correct_alternative_model: ['request_evidence', 'contrast_models', 'challenge_without_telling'],
   procedure_without_rationale: ['request_evidence', 'challenge_without_telling', 'elicit_prediction'],
   goal_drift: ['reanchor_goal', 'ask_strategy_choice'],
+  resistance_boredom: ['ask_strategy_choice', 'challenge_without_telling', 'request_evidence'],
+  resistance_frustration: ['acknowledge_and_redirect', 'lower_cognitive_load', 'minimal_hint'],
+  resistance_irrelevance: ['reanchor_goal', 'ask_strategy_choice', 'request_evidence'],
+  resistance_question_flood: ['diagnose_with_discriminating_question', 'name_the_disagreement', 'ask_strategy_choice'],
+  resistance_rote_parroting: ['elicit_prediction', 'request_evidence', 'challenge_without_telling'],
 });
 
 const LEGACY_POLICY_ACTION_BY_ADAPTATION_ACTION = Object.freeze({
@@ -439,6 +542,106 @@ function evidenceLine(text, fallback) {
   const trimmed = String(text || '').trim();
   if (!trimmed) return fallback;
   return trimmed.length > 140 ? `${trimmed.slice(0, 137)}...` : trimmed;
+}
+
+function clampRange(value, min = -1, max = 1, fallback = 0) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
+}
+
+function normalizeResistanceSignalConfig(config = {}) {
+  const target =
+    config.resistanceSignalTarget ??
+    config.resistance_signal_target ??
+    config.targetResistanceSignal ??
+    config.target_resistance_signal ??
+    '';
+  const rawEnabled =
+    config.resistanceSignalPolicy ??
+    config.resistance_signal_policy ??
+    config.learnerResistancePolicy ??
+    config.learner_resistance_policy ??
+    null;
+  const gate = config.resistanceSignalGate ?? config.resistance_signal_gate ?? [];
+  const enabled =
+    rawEnabled === true ||
+    rawEnabled === 'true' ||
+    rawEnabled === 'enabled' ||
+    Boolean(target) ||
+    (Array.isArray(gate) && gate.length > 0);
+  return {
+    enabled,
+    targetSignal: isKnownResistanceSignal(target) ? target : '',
+    gate: Array.isArray(gate) ? gate : [],
+    weight: Number(config.resistanceSignalWeight ?? config.resistance_signal_weight ?? 0.45) || 0.45,
+  };
+}
+
+function resistanceGateRouteForSignal(config, signal) {
+  const gate = normalizeResistanceSignalConfig(config).gate;
+  return (
+    gate.find(
+      (entry) => entry?.id === signal || entry?.expected_resistance_signal === signal || entry?.signal === signal,
+    ) || null
+  );
+}
+
+export function detectLearnerResistancePolicySignal(text, config = {}) {
+  const signalConfig = normalizeResistanceSignalConfig(config);
+  if (!signalConfig.enabled) return null;
+  const observedSignal = classifyResistanceSignal(text, signalConfig.targetSignal);
+  const route = observedSignal ? RESISTANCE_SIGNAL_ROUTES[observedSignal] : null;
+  if (!route) return null;
+  const gateRoute = resistanceGateRouteForSignal(config, observedSignal);
+  const expectedStrategy =
+    gateRoute?.expected_resistance_strategy ||
+    config.resistanceSignalStrategy ||
+    config.resistance_signal_strategy ||
+    '';
+  return {
+    version: ADAPTATION_POLICY_LAYER_VERSION,
+    kind: 'learner_resistance',
+    target_signal: signalConfig.targetSignal || null,
+    observed_signal: observedSignal,
+    matched_target: signalConfig.targetSignal ? observedSignal === signalConfig.targetSignal : null,
+    hypothesis_id: route.hypothesis_id,
+    description: route.description,
+    expected_strategy: expectedStrategy || null,
+    preferred_actions: [...route.preferred_actions],
+    evidence: evidenceLine(text, `${observedSignal} resistance signal`),
+  };
+}
+
+function resistanceRouteFromStateBelief(stateBelief) {
+  const signal = stateBelief?.policy_signals?.learner_resistance;
+  if (!signal?.observed_signal) return null;
+  return RESISTANCE_SIGNAL_ROUTES[signal.observed_signal] || null;
+}
+
+function resistanceSignalFromStateBelief(stateBelief) {
+  return stateBelief?.policy_signals?.learner_resistance || null;
+}
+
+function applyResistanceSignalToWeights(weights, signal, config = {}) {
+  if (!signal?.hypothesis_id) return weights;
+  const route = RESISTANCE_SIGNAL_ROUTES[signal.observed_signal];
+  if (!route) return weights;
+  const matchBonus = signal.matched_target === true ? 0.18 : 0;
+  const configWeight = normalizeResistanceSignalConfig(config).weight;
+  weights[route.hypothesis_id] = (weights[route.hypothesis_id] || 0) + route.weight + configWeight + matchBonus;
+  return weights;
+}
+
+function applyResistanceSignalToAxes(axes, signal) {
+  const route = signal ? RESISTANCE_SIGNAL_ROUTES[signal.observed_signal] : null;
+  if (!route) return axes;
+  const next = { ...axes };
+  for (const [axis, delta] of Object.entries(route.axis_adjustments || {})) {
+    next[axis] = clamp01((Number(next[axis]) || 0) + Number(delta || 0), Number(next[axis]) || 0);
+  }
+  next.resistance_breakthrough = clamp01(next.resistance_breakthrough ?? 0.1, 0.1);
+  return boundedAxisMap(next);
 }
 
 function lastDialogueText(dialogue, role = 'learner') {
@@ -712,9 +915,12 @@ export function estimateLearnerStateBelief({
   interventionLedger = [],
   turnIndex = 0,
   maxHypotheses = 3,
+  config = {},
 } = {}) {
   const learnerText = lastDialogueText(dialogue, 'learner');
+  const learnerResistanceSignal = detectLearnerResistancePolicySignal(learnerText, config);
   const weights = weightFromText(learnerText, interventionLedger);
+  applyResistanceSignalToWeights(weights, learnerResistanceSignal, config);
   const hypotheses = normalizeWeights(weights, maxHypotheses).map((h) => ({
     ...h,
     evidence: [evidenceLine(learnerText, `learner turn ${turnIndex}`)],
@@ -726,6 +932,11 @@ export function estimateLearnerStateBelief({
   const topGap = hypotheses.length > 1 ? hypotheses[0].probability - hypotheses[1].probability : 1;
   const needsDiscrimination = hypotheses.length > 1 && (hEntropy > 0.74 || (topGap < 0.25 && topActions.size > 1));
 
+  const axes = applyResistanceSignalToAxes(
+    axesFromDialogueAndLedger(learnerText, interventionLedger),
+    learnerResistanceSignal,
+  );
+
   return {
     version: '1.0',
     turn_index: turnIndex,
@@ -736,13 +947,16 @@ export function estimateLearnerStateBelief({
       next_authorship_opportunity: 'choose or justify the next task-relevant move',
     },
     hypotheses,
-    axes: axesFromDialogueAndLedger(learnerText, interventionLedger),
+    axes,
     uncertainty: {
       entropy: Number(hEntropy.toFixed(6)),
       needs_discrimination: needsDiscrimination,
       reason: needsDiscrimination
         ? 'Top hypotheses remain close enough to require an information-gathering action.'
         : 'Dominant hypothesis is sufficiently separated for a targeted intervention.',
+    },
+    policy_signals: {
+      learner_resistance: learnerResistanceSignal,
     },
   };
 }
@@ -936,6 +1150,57 @@ function worldPreferenceBonus(actionType, spec, config = {}) {
   return 0;
 }
 
+function resistanceSignalPreferenceBonus(actionType, stateBelief, config = {}) {
+  const signal = resistanceSignalFromStateBelief(stateBelief);
+  const route = resistanceRouteFromStateBelief(stateBelief);
+  if (!signal || !route) return 0;
+  const preferredIndex = route.preferred_actions.indexOf(actionType);
+  if (preferredIndex < 0) return 0;
+  const weight = Number(config.resistanceSignalWeight ?? config.resistance_signal_weight ?? 0.45) || 0.45;
+  const targetMatchMultiplier = signal.matched_target === true ? 1.15 : 1;
+  const rankMultiplier = preferredIndex === 0 ? 1 : preferredIndex === 1 ? 0.72 : 0.5;
+  return weight * targetMatchMultiplier * rankMultiplier;
+}
+
+function typedEvidenceContractsEnabled(config = {}) {
+  return config.typedEvidenceContracts === true || config.typed_evidence_contracts === true;
+}
+
+const RESISTANCE_SIGNAL_EVIDENCE_AXIS = Object.freeze({
+  boredom: 'test_case',
+  frustration: 'smaller_move',
+  irrelevance: 'relevance',
+  question_flood: 'collapsed_question',
+  rote_parroting: 'prediction',
+});
+
+function buildTypedEvidenceContract({ action, route, signal } = {}) {
+  const resistanceEvidence = uniqueStrings(route?.success_evidence || []);
+  const resistanceSet = new Set(resistanceEvidence);
+  let coreEvidence = uniqueStrings(
+    (action?.success_signal?.required_evidence || []).filter((label) => !resistanceSet.has(label)),
+  );
+  if (action?.action_type === 'request_evidence' && !coreEvidence.includes('learner-authored rationale')) {
+    coreEvidence = uniqueStrings(['learner-authored rationale', ...coreEvidence]);
+  }
+  return {
+    version: 'adaptation-evidence-contract.v1',
+    mode: 'proof_core_plus_resistance_core',
+    core_evidence: coreEvidence,
+    any_of_groups: resistanceEvidence.length
+      ? [
+          {
+            id: 'resistance_core',
+            axis: RESISTANCE_SIGNAL_EVIDENCE_AXIS[signal] || 'resistance_breakthrough',
+            min: 1,
+            labels: resistanceEvidence,
+          },
+        ]
+      : [],
+    supporting_evidence: resistanceEvidence,
+  };
+}
+
 export function applyWorldAdaptationToAction(action, config = {}) {
   const spec = normalizeWorldAdaptationSpec(config);
   if (!action || !spec) return action;
@@ -962,6 +1227,65 @@ export function applyWorldAdaptationToAction(action, config = {}) {
     },
     forbidden_moves: forbiddenMoves,
     world_adaptation: summarizeWorldAdaptationSpec(spec),
+  };
+}
+
+export function deriveAdaptationPolicyLayer({ stateBelief, config = {} } = {}) {
+  const proofDag = summarizeWorldAdaptationSpec(normalizeWorldAdaptationSpec(config));
+  const learnerResistance = resistanceSignalFromStateBelief(stateBelief);
+  if (!proofDag && !learnerResistance) return null;
+  return {
+    version: ADAPTATION_POLICY_LAYER_VERSION,
+    proof_dag: proofDag,
+    learner_resistance: learnerResistance,
+    policy_axes: ['proof', 'release', 'ownership', ...(learnerResistance ? ['resistance_breakthrough'] : [])],
+  };
+}
+
+export function applyAdaptationPolicyLayerToAction(action, stateBelief, config = {}) {
+  if (!action) return action;
+  const layer = deriveAdaptationPolicyLayer({ stateBelief, config });
+  if (!layer) return action;
+  const route = resistanceRouteFromStateBelief(stateBelief);
+  if (!route) {
+    return {
+      ...action,
+      adaptation_policy_layer: layer,
+    };
+  }
+
+  const requiredEvidence = uniqueStrings([
+    ...(action.success_signal?.required_evidence || []),
+    ...(route.success_evidence || []),
+  ]);
+  const expectedTransition = { ...(action.expected_transition || {}) };
+  for (const [axis, gain] of Object.entries(route.expected_resistance_transition || {})) {
+    expectedTransition[axis] = clampRange((Number(expectedTransition[axis]) || 0) + Number(gain || 0), -1, 1, 0);
+  }
+
+  const successSignal = {
+    ...(action.success_signal || {}),
+    required_evidence: requiredEvidence,
+  };
+  if (typedEvidenceContractsEnabled(config)) {
+    const contract = buildTypedEvidenceContract({
+      action: { ...action, success_signal: successSignal },
+      route,
+      signal: layer.learner_resistance?.observed_signal || null,
+    });
+    successSignal.evidence_contract = contract;
+    successSignal.required_evidence = contract.core_evidence;
+    successSignal.supporting_evidence = contract.supporting_evidence;
+  }
+
+  return {
+    ...action,
+    rationale: `${action.rationale} Learner resistance signal ${
+      layer.learner_resistance?.observed_signal || 'unknown'
+    } is routed through the same adaptation policy layer as proof/release/ownership state.`,
+    expected_transition: expectedTransition,
+    success_signal: successSignal,
+    adaptation_policy_layer: layer,
   };
 }
 
@@ -1033,6 +1357,7 @@ const ACTIONABLE_UNDER_UNCERTAINTY = new Set([
   'tutor_misread',
   'sophistication_upgrade',
   'false_mastery',
+  ...RESISTANCE_HYPOTHESIS_IDS,
 ]);
 
 function diagnosticStillRequired(stateBelief, interventionLedger = []) {
@@ -1128,11 +1453,13 @@ export function scoreCandidateAction(actionType, stateBelief, interventionLedger
   const recency = actionRecencyPenalty(actionType, stateBelief, interventionLedger, merged);
   const preferredAction = dominantPreferredActionBonus(actionType, stateBelief);
   const worldBonus = worldPreferenceBonus(actionType, worldSpec, merged);
+  const resistanceBonus = resistanceSignalPreferenceBonus(actionType, stateBelief, merged);
   const mismatchRisk = Math.max(0, 0.45 - fit);
   const utility =
     expectedStateGain(def) +
     preferredAction +
     worldBonus +
+    resistanceBonus +
     merged.actionFitWeight * fit +
     merged.uncertaintyWeight * uncertainty * def.default_information_gain +
     merged.ownershipWeight * ownershipGain(def) -
@@ -1151,7 +1478,9 @@ export function scoreCandidateAction(actionType, stateBelief, interventionLedger
     same_action_penalty: Number(recency.toFixed(6)),
     mismatch_risk: Number(mismatchRisk.toFixed(6)),
     world_adaptation_bonus: Number(worldBonus.toFixed(6)),
+    resistance_signal_bonus: Number(resistanceBonus.toFixed(6)),
     world_adaptation: summarizeWorldAdaptationSpec(worldSpec),
+    learner_resistance_signal: resistanceSignalFromStateBelief(stateBelief),
   };
 }
 
@@ -1248,11 +1577,15 @@ export function selectPedagogicalAction({
     }
   }
   const selectedDef = getActionDefinition(selectedRow.action_type);
-  const selectedAction = applyWorldAdaptationToAction(
-    withActionDefaults(selectedDef, {
-      id: `action-turn-${stateBelief?.turn_index ?? 0}`,
-      rationale: `Dominant hypothesis ${dominantHypothesis(stateBelief)}; utility ${selectedRow.utility}; fit ${selectedRow.state_action_fit}.`,
-    }),
+  const selectedAction = applyAdaptationPolicyLayerToAction(
+    applyWorldAdaptationToAction(
+      withActionDefaults(selectedDef, {
+        id: `action-turn-${stateBelief?.turn_index ?? 0}`,
+        rationale: `Dominant hypothesis ${dominantHypothesis(stateBelief)}; utility ${selectedRow.utility}; fit ${selectedRow.state_action_fit}.`,
+      }),
+      merged,
+    ),
+    stateBelief,
     merged,
   );
 
@@ -1262,6 +1595,7 @@ export function selectPedagogicalAction({
     candidateActions: candidates,
     registryVersion: ADAPTATION_ACTION_REGISTRY_VERSION,
     worldAdaptationSpec: summarizeWorldAdaptationSpec(worldSpec),
+    adaptationPolicyLayer: deriveAdaptationPolicyLayer({ stateBelief, config: merged }),
   };
 }
 

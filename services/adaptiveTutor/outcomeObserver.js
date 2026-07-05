@@ -1,4 +1,4 @@
-export const OUTCOME_OBSERVER_VERSION = 'adaptation-outcome-observer.v1.0';
+export const OUTCOME_OBSERVER_VERSION = 'adaptation-outcome-observer.v1.3';
 
 function includesAny(text, patterns) {
   return patterns.some((pattern) => pattern.test(text));
@@ -10,10 +10,119 @@ function evidenceSpan(text) {
   return trimmed.length > 180 ? `${trimmed.slice(0, 177)}...` : trimmed;
 }
 
-export function detectOutcomeEvidence(learnerTurn = '') {
+function questionCount(text = '') {
+  return (String(text || '').match(/\?/g) || []).length;
+}
+
+function semanticObserverEnabled(config = {}) {
+  return config.semanticOutcomeObserver === true || config.semantic_outcome_observer === true;
+}
+
+function uniqueStrings(values = []) {
+  return [...new Set(values.filter((value) => typeof value === 'string' && value.trim()).map((value) => value.trim()))];
+}
+
+export function analyzeEvidenceContract(successSignal = {}, categories = {}) {
+  const contract = successSignal?.evidence_contract || successSignal?.evidenceContract || null;
+  if (!contract) {
+    const required = uniqueStrings(successSignal?.required_evidence || []);
+    const observed = required.filter((label) => categories[label] === true);
+    const missing = required.filter((label) => categories[label] !== true);
+    return {
+      version: 'adaptation-evidence-contract-analysis.v1',
+      mode: 'flat_required_all',
+      satisfied: required.length > 0 && missing.length === 0,
+      required_evidence: required,
+      observed_required_evidence: observed,
+      missing_required_evidence: missing,
+      missing_evidence_axes: missing.map(evidenceAxisForLabel),
+      core_satisfied: required.length > 0 && missing.length === 0,
+      any_groups_satisfied: true,
+      groups: [],
+    };
+  }
+
+  const core = uniqueStrings(contract.core_evidence || contract.required_all || successSignal?.required_evidence || []);
+  const anyGroups = Array.isArray(contract.any_of_groups)
+    ? contract.any_of_groups
+    : contract.resistance_core
+      ? [contract.resistance_core]
+      : [];
+  const observedCore = core.filter((label) => categories[label] === true);
+  const missingCore = core.filter((label) => categories[label] !== true);
+  const groups = anyGroups.map((group, index) => {
+    const labels = uniqueStrings(group.labels || group.any_of || []);
+    const min = Math.max(1, Number(group.min || group.min_count || 1));
+    const observed = labels.filter((label) => categories[label] === true);
+    const satisfied = observed.length >= min;
+    return {
+      id: group.id || `any_group_${index + 1}`,
+      axis: group.axis || evidenceAxisForLabels(labels),
+      min,
+      labels,
+      observed,
+      missing: satisfied ? [] : labels,
+      satisfied,
+    };
+  });
+  const missingFromGroups = groups.flatMap((group) => group.missing);
+  const observedFromGroups = groups.flatMap((group) => group.observed);
+  const required = uniqueStrings([...core, ...groups.flatMap((group) => group.labels)]);
+  const missing = uniqueStrings([...missingCore, ...missingFromGroups]);
+  const observed = uniqueStrings([...observedCore, ...observedFromGroups]);
+  const missingAxes = uniqueStrings([
+    ...missingCore.map(evidenceAxisForLabel),
+    ...groups.filter((group) => !group.satisfied).map((group) => group.axis || evidenceAxisForLabels(group.labels)),
+  ]);
+  return {
+    version: 'adaptation-evidence-contract-analysis.v1',
+    mode: contract.mode || 'typed_core_any',
+    satisfied: core.length > 0 && missingCore.length === 0 && groups.every((group) => group.satisfied),
+    required_evidence: required,
+    observed_required_evidence: observed,
+    missing_required_evidence: missing,
+    missing_evidence_axes: missingAxes,
+    core_satisfied: core.length > 0 && missingCore.length === 0,
+    any_groups_satisfied: groups.every((group) => group.satisfied),
+    groups,
+  };
+}
+
+export function evidenceAxisForLabel(label = '') {
+  if (/rationale|reason|evidence|justif/u.test(label)) return 'proof_rationale';
+  if (/relevance|task reorientation/u.test(label)) return 'relevance';
+  if (/smaller|attempt|affective/u.test(label)) return 'smaller_move';
+  if (/prediction/u.test(label)) return 'prediction';
+  if (/collapsed question|state-disambiguating/u.test(label)) return 'collapsed_question';
+  if (/test case|content-bearing/u.test(label)) return 'test_case';
+  if (/choice|next step/u.test(label)) return 'learner_choice';
+  return 'evidence';
+}
+
+function evidenceAxisForLabels(labels = []) {
+  const axes = labels.map(evidenceAxisForLabel);
+  if (axes.includes('relevance')) return 'relevance';
+  if (axes.includes('smaller_move')) return 'smaller_move';
+  if (axes.includes('collapsed_question')) return 'collapsed_question';
+  if (axes.includes('prediction')) return 'prediction';
+  if (axes.includes('test_case')) return 'test_case';
+  return axes[0] || 'evidence';
+}
+
+export function detectOutcomeEvidence(learnerTurn = '', config = {}) {
   const text = String(learnerTurn || '').trim();
   const lower = text.toLowerCase();
+  const semantic = semanticObserverEnabled(config);
   const mereAgreement = includesAny(lower, [/^(yes|yeah|ok|okay|sure|got it|makes sense|i see)[.! ]*$/u]);
+  const formulaicRecitation = includesAny(lower, [
+    /^(master,?\s+servant,?\s+recognition,?\s+formula\.?)$/u,
+    /^(i just repeat )?master,?\s+servant,?\s+recognition/u,
+  ]);
+  const emptyRationale = includesAny(lower, [
+    /\bbecause (?:it )?(?:just|basically|obviously|simply) (?:works|matters|does)\b/u,
+    /\bthat proves (?:it|this)\b/u,
+    /\bthe evidence is (?:that )?(?:it )?(?:just|basically|obviously|simply) (?:works|matters|does)\b/u,
+  ]);
   const rationale = includesAny(lower, [
     /\bbecause\b/u,
     /\bso that\b/u,
@@ -21,9 +130,36 @@ export function detectOutcomeEvidence(learnerTurn = '') {
     /\bpreserve/u,
     /\binvariant\b/u,
     /\bdepends on\b/u,
+    ...(semantic
+      ? [
+          /\bevidence (?:is|would be|should be|for|that)\b/u,
+          /\bjustif(?:y|ies|ied|ication)\b/u,
+          /\bfollows from\b/u,
+          /\bvalid for\b/u,
+          /\bsupports? (?:that|the step|my step)\b/u,
+          /\bthe relation(?:ship)? (?:changes|matters|holds)\b/u,
+        ]
+      : []),
   ]);
-  const choice = includesAny(lower, [/\bi would\b/u, /\bi'll\b/u, /\bi choose\b/u, /\bmy strategy\b/u, /\bnext i\b/u]);
-  const prediction = includesAny(lower, [/\bi predict\b/u, /\bi expect\b/u, /\bwould happen\b/u, /\bwill happen\b/u]);
+  const choice = includesAny(lower, [
+    /\bi would\b/u,
+    /\bi'll\b/u,
+    /\bi will\b/u,
+    /\bi’d\b/u,
+    /\bi'd\b/u,
+    /\bi choose\b/u,
+    /\bmy strategy\b/u,
+    /\bnext i\b/u,
+    /\bafter that i(?:'d|’d| will)\b/u,
+  ]);
+  const prediction = includesAny(lower, [
+    /\bi predict\b/u,
+    /\bi(?:'d|’d) predict\b/u,
+    /\bi expect\b/u,
+    /\bi(?:'d|’d) expect\b/u,
+    /\bwould happen\b/u,
+    /\bwill happen\b/u,
+  ]);
   const undifferentiatedHelpRequest = includesAny(lower, [
     /can you explain more/u,
     /explain that one more time/u,
@@ -65,13 +201,88 @@ export function detectOutcomeEvidence(learnerTurn = '') {
     /just tell|answer/u,
     /another way|alternative|different model/u,
   ]);
-  const taskReorientation = includesAny(lower, [/task asks|question asks|we need to|goal is/u]);
+  const taskReorientation = includesAny(lower, [
+    /task asks|question asks|we need to|goal is/u,
+    ...(semantic
+      ? [
+          /\b(?:this|the) step (?:is supposed to|would help|helps) decide\b/u,
+          /\b(?:this|the) step (?:would|will|can|should)?\s*(?:help )?decide(?:s)?\b/u,
+          /\b(?:it|this|the step) (?:would|will|can|should)?\s*(?:help )?decide(?:s)? whether\b/u,
+          /\b(?:it|this|the step) (?:decides|would decide|helps decide) whether\b/u,
+          /\bactual (?:problem|task|case)\b/u,
+          /\bcomplet(?:e|ing) the task\b/u,
+          /\bwhat (?:the task|this step) is asking\b/u,
+          /\bwhat (?:we(?:'re| are)|i(?:'m| am)) trying to (?:decide|prove|show)\b/u,
+          /\bconnect (?:it|this|the step|the move) to (?:what|the thing) (?:we(?:'re| are)|i(?:'m| am)) trying\b/u,
+          /\bmaking the target testable\b/u,
+          /\b(?:old|same|earlier|prior) (?:move|route|step) (?:is|would be|becomes) (?:not )?relevant\b/u,
+          /\b(?:condition|assumption|precondition|guarantee) (?:still )?(?:holds|hold|is still in place|is satisfied|is present)\b/u,
+          /\b(?:only follows|follows only) if (?:the )?(?:condition|assumption|precondition)\b/u,
+          /\bbefore (?:applying|using|trusting|reusing) (?:the )?(?:main |same |old |earlier |prior )?(?:rule|move|route|approach)\b/u,
+          /\b(?:old|earlier|prior) (?:move|route|argument|proof|reasoning) (?:transfers|carries over|goes through|ports over)\b/u,
+          /\b(?:valid|invalid) transfer\b|\bnot (?:a|doing a) valid transfer\b/u,
+          /\bneed (?:a|to find a) different (?:route|move|step|link)\b/u,
+        ]
+      : []),
+  ]);
   const modelComparison = includesAny(lower, [/model|method|alternative|compare|instead|assume x|not-x|case where/u]);
   const selfCheck = includesAny(lower, [/check|recheck|test my|verify/u]);
   const learnerRepair = includesAny(lower, [/i should change|that was wrong|repair|revise|instead i/u]);
-  const transfer = includesAny(lower, [/new case|similar problem|transfer|same idea/u]);
-  const tutorAdoption = includesAny(lower, [/as you said|your reason|using your explanation/u]);
+  const transfer = includesAny(lower, [
+    /new case|similar problem|transfer|same idea/u,
+    ...(semantic
+      ? [
+          /\b(?:carry|carries|carried|carrying) over\b/u,
+          /\bwhat (?:does|can|should|might|may) carry over\b/u,
+          /\breuse (?:the )?(?:same|earlier|prior) (?:proof )?(?:move|step|route|trick)\b/u,
+          /\b(?:same|earlier|prior) (?:proof )?(?:move|step|route|trick) (?:still )?(?:applies|works|holds|is valid)\b/u,
+          /\b(?:same|earlier|prior) (?:proof )?(?:move|step|route|trick) (?:should|would|could) (?:work|apply|hold)\b/u,
+          /\banalog(?:y|ous|ical)\b/u,
+          /\bboundary condition\b/u,
+        ]
+      : []),
+  ]);
+  const tutorAdoption = includesAny(lower, [
+    /\bas you said\b/u,
+    /\busing your explanation\b/u,
+    /\byour explanation says\b/u,
+    /\byour reason explains it\b/u,
+  ]);
   const stateSignal = diagnostic || taskReorientation || modelComparison || selfCheck || learnerRepair;
+  const learnerOwnedAttempt = choice || rationale || prediction || learnerRepair || modelComparison || selfCheck;
+  const testCase = includesAny(lower, [/\btest\b/u, /\bcase\b/u, /\bexample\b/u, /\bconcrete\b/u, /\btry\b/u]);
+  const nonFormulaicRationale =
+    rationale &&
+    includesAny(lower, [
+      /\bown words\b/u,
+      /\bexplain\b/u,
+      /\brelation(?:ship)?\b/u,
+      /\bcase\b/u,
+      /\btest\b/u,
+      /\bbreak\b/u,
+      /\bnot enough\b/u,
+      /\bchanges?\b/u,
+      ...(semantic ? [/\bnot just\b/u, /\blabels?\b/u, /\bsetup\b/u, /\bassumptions?\b/u] : []),
+    ]);
+  const relevanceLanguage = includesAny(lower, [
+    /\bpoint\b/u,
+    /\bmatter\b/u,
+    /\bcare\b/u,
+    /\brelevance\b/u,
+    /\bwhy\b/u,
+    ...(semantic
+      ? [/\bhelps? decide\b/u, /\bactual (?:problem|task|case)\b/u, /\bvalid for the (?:case|task|problem)\b/u]
+      : []),
+  ]);
+  const collapsedQuestionSet =
+    questionCount(text) >= 2 ||
+    includesAny(lower, [
+      /\bone question\b/u,
+      /\bmain question\b/u,
+      /\bhinge\b/u,
+      /\bcollapse\b/u,
+      ...(semantic ? [/\bmy next step answers\b/u, /\bthe question is\b/u] : []),
+    ]);
 
   return {
     categories: {
@@ -90,9 +301,19 @@ export function detectOutcomeEvidence(learnerTurn = '') {
       'model comparison': modelComparison,
       'self-check': selfCheck,
       'mere agreement': mereAgreement,
+      'formulaic recitation': formulaicRecitation,
+      'empty rationale': emptyRationale,
       'verbatim adoption of tutor rationale': tutorAdoption,
+      'renewed content-bearing work': learnerOwnedAttempt && !mereAgreement,
+      'learner-owned test case': learnerOwnedAttempt && testCase,
+      'renewed attempt after affective repair': learnerOwnedAttempt && !mereAgreement,
+      'smaller learner-owned move': learnerOwnedAttempt && includesAny(lower, [/\bsmall\b/u, /\bone\b/u, /\btry\b/u]),
+      'learner-owned relevance test': learnerOwnedAttempt && (relevanceLanguage || testCase),
+      'collapsed question set': collapsedQuestionSet,
+      'non-formulaic learner rationale': nonFormulaicRationale,
       'tutor-completed step': false,
-      'empty release': !choice && !rationale && !prediction && !stateSignal && !targetedQuestion,
+      'empty release':
+        !choice && !rationale && !prediction && !stateSignal && !targetedQuestion && !formulaicRecitation,
       'premature tutor validation': false,
     },
     span: evidenceSpan(text),
@@ -111,6 +332,10 @@ export function inferObservedTransition(learnerTurn = '', evidence = detectOutco
   const conceptualMastery = (c['learner-authored rationale'] ? 0.1 : 0) + (c['learner-authored transfer'] ? 0.15 : 0);
   const metacognitiveAccuracy =
     (c['state-disambiguating response'] ? 0.2 : 0) + (c['self-check'] ? 0.1 : 0) + (c['task reorientation'] ? 0.1 : 0);
+  const resistanceBreakthrough =
+    (c['renewed content-bearing work'] ? 0.12 : 0) +
+    (c['non-formulaic learner rationale'] ? 0.12 : 0) +
+    (c['learner-owned test case'] ? 0.08 : 0);
 
   return {
     proof: Number(proof.toFixed(3)),
@@ -118,19 +343,19 @@ export function inferObservedTransition(learnerTurn = '', evidence = detectOutco
     ownership: Number(ownership.toFixed(3)),
     conceptual_mastery: Number(conceptualMastery.toFixed(3)),
     metacognitive_accuracy: Number(metacognitiveAccuracy.toFixed(3)),
+    resistance_breakthrough: Number(resistanceBreakthrough.toFixed(3)),
   };
 }
 
-function requiredEvidenceSatisfied(required = [], categories = {}) {
-  if (!required.length) return false;
-  return required.every((label) => categories[label] === true);
+function requiredEvidenceSatisfied(successSignal = {}, categories = {}) {
+  return analyzeEvidenceContract(successSignal, categories).satisfied;
 }
 
 function forbiddenEvidencePresent(forbidden = [], categories = {}) {
   return forbidden.some((label) => categories[label] === true);
 }
 
-export function observeInterventionOutcome({ pendingIntervention, learnerTurn, turnIndex = null } = {}) {
+export function observeInterventionOutcome({ pendingIntervention, learnerTurn, turnIndex = null, config = {} } = {}) {
   if (!pendingIntervention) {
     return {
       version: OUTCOME_OBSERVER_VERSION,
@@ -140,16 +365,22 @@ export function observeInterventionOutcome({ pendingIntervention, learnerTurn, t
       evidence: [],
     };
   }
-  const evidence = detectOutcomeEvidence(learnerTurn);
+  const evidence = detectOutcomeEvidence(learnerTurn, config);
   const observedTransition = inferObservedTransition(learnerTurn, evidence);
-  const required = pendingIntervention.success_signal?.required_evidence || [];
   const forbidden = pendingIntervention.success_signal?.forbidden_evidence || [];
-  const requiredOk = requiredEvidenceSatisfied(required, evidence.categories);
+  const contractState = analyzeEvidenceContract(pendingIntervention.success_signal || {}, evidence.categories);
+  const requiredOk = requiredEvidenceSatisfied(pendingIntervention.success_signal || {}, evidence.categories);
   const forbiddenHit = forbiddenEvidencePresent(forbidden, evidence.categories);
+  const shallowControlHit =
+    evidence.categories['mere agreement'] ||
+    evidence.categories['formulaic recitation'] ||
+    evidence.categories['empty rationale'] ||
+    evidence.categories['verbatim adoption of tutor rationale'] ||
+    evidence.categories['undifferentiated help request'];
 
   let outcome = 'inconclusive';
   if (requiredOk && !forbiddenHit) outcome = 'success';
-  if (forbiddenHit || evidence.categories['mere agreement']) outcome = 'failure';
+  if (forbiddenHit || shallowControlHit) outcome = 'failure';
   const actionType = pendingIntervention.action_type;
   if (actionType === 'diagnose_with_discriminating_question') {
     if (evidence.categories['state-disambiguating response']) outcome = 'success';
@@ -184,6 +415,7 @@ export function observeInterventionOutcome({ pendingIntervention, learnerTurn, t
     observed_transition: observedTransition,
     evidence: evidence.span ? [{ turn_index: turnIndex, quote: evidence.span, categories: evidence.categories }] : [],
     required_evidence_satisfied: requiredOk,
+    evidence_contract: contractState,
     forbidden_evidence_present: forbiddenHit,
   };
 }

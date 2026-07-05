@@ -35,6 +35,8 @@ describe('loadProviders', () => {
     assert.ok(keys.includes('openrouter'), 'should have openrouter');
     assert.ok(keys.includes('gemini'), 'should have gemini');
     assert.ok(keys.includes('local'), 'should have local');
+    assert.ok(keys.includes('claude-code'), 'should have claude-code');
+    assert.ok(keys.includes('codex'), 'should have codex');
   });
 
   it('returns cached result on second call', () => {
@@ -118,6 +120,15 @@ describe('getProviderConfig', () => {
     assert.strictEqual(config.isConfigured, true);
   });
 
+  it('CLI-backed providers are configured without API keys or base URLs', () => {
+    const claudeConfig = getProviderConfig('claude-code', { forceReload: true });
+    const codexConfig = getProviderConfig('codex', { forceReload: true });
+    assert.strictEqual(claudeConfig.apiKey, '');
+    assert.strictEqual(codexConfig.apiKey, '');
+    assert.strictEqual(claudeConfig.isConfigured, true);
+    assert.strictEqual(codexConfig.isConfigured, true);
+  });
+
   it('spreads all provider fields into result', () => {
     const config = getProviderConfig('openrouter');
     assert.ok(config.base_url, 'should include base_url from yaml');
@@ -170,6 +181,18 @@ describe('resolveModel (string format)', () => {
     assert.strictEqual(r.model, 'anthropic/claude-sonnet-4.6');
   });
 
+  it('resolves "openrouter.sonnet-5" to openrouter model ID', () => {
+    const r = resolveModel('openrouter.sonnet-5');
+    assert.strictEqual(r.provider, 'openrouter');
+    assert.strictEqual(r.model, 'anthropic/claude-sonnet-5');
+  });
+
+  it('resolves "claude-code.sonnet-5" to Claude CLI model ID', () => {
+    const r = resolveModel('claude-code.sonnet-5');
+    assert.strictEqual(r.provider, 'claude-code');
+    assert.strictEqual(r.model, 'claude-sonnet-5');
+  });
+
   it('resolves "openrouter.nemotron"', () => {
     const r = resolveModel('openrouter.nemotron');
     assert.strictEqual(r.provider, 'openrouter');
@@ -198,6 +221,13 @@ describe('resolveModel (string format)', () => {
     const r = resolveModel('local.default');
     assert.strictEqual(r.provider, 'local');
     assert.strictEqual(r.model, 'local-model');
+  });
+
+  it('resolves "codex.gpt-5.5"', () => {
+    const r = resolveModel('codex.gpt-5.5');
+    assert.strictEqual(r.provider, 'codex');
+    assert.strictEqual(r.model, 'gpt-5.5');
+    assert.strictEqual(r.isConfigured, true);
   });
 
   it('passes through unknown alias as-is', () => {

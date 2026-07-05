@@ -8,6 +8,40 @@ selector, replay, recognition, or learned-adaptation results.
 This file is the active plan. The other plan-like notes remain evidence ledgers
 or closed arcs, not competing roadmaps.
 
+## Current Promotion Status: Closed / Not Promoted
+
+A20 conduct-policy promotion, selector-v4 conduct enforcement, Phase 6
+progress-policy promotion, the A21 Hethel patch, didactic mode as proof-control
+policy, and ownership/didactic promotion from the current artifact pool are
+closed as valid negatives.
+
+Hidden+proofDebt remains the production proof-control arm. It should be treated
+as a compact proof-continuity controller, not as a weak static baseline.
+
+A20 conduct objects, episode replay, non-leak/generator-compliance audits, A21
+action-value microbenching, didactic-mode scaffolding, and the ownership
+benchmark remain durable research instrumentation. They are not promoted runtime
+policies.
+
+Do not reopen selector-v4, conduct enforcement, progress-policy, A21 patch
+promotion, or didactic/ownership promotion from the same mined artifact pool.
+Reopening proof-control work requires a new predeclared hidden+proofDebt failure
+under first-pass replay or paid evidence.
+
+## Future Proof-Control Reopening Gate
+
+A future proof-control arc may begin only from a predeclared hidden+proofDebt
+failure. For each failure, identify before policy work begins:
+
+1. whether the limiting cause is action choice, learner uptake, discourse
+   texture, decay/repair continuity, world instability, or over-constrained
+   runtime policy;
+2. a public signal available before the action;
+3. an A21-style action-value comparison showing a better action than the
+   hidden+proofDebt baseline selected;
+4. replay/no-harm evidence with no negative transfer against hidden+proofDebt on
+   held-out worlds.
+
 ## Source Ledgers
 
 | Source | Use in this plan |
@@ -522,9 +556,9 @@ over proof advance, and classify whether the failure is release starvation,
 learner uptake, decay/repair continuity, tutor discourse, or over-constrained
 runtime policy.
 
-A21 opened 2026-06-16 as a separate action-value microbench arc; see
-`A21-action-value-tutoring-microbench-implementation-plan.md` and the copied
-research note at `docs/research/A21-action-value-tutoring-microbench.md`.
+A21 opened 2026-06-16 as a separate action-value microbench arc; see the
+canonical research note at
+`docs/research/A21-action-value-tutoring-microbench.md`.
 Initial implementation is isolated under `services/dramaticDerivation/a21/` and
 does not change selector defaults, hidden+proofDebt behavior, conduct
 enforcement, or paid/replay validation gates. The first scaffold freezes the
@@ -656,6 +690,13 @@ pressure, conversational strain, and whether the learner is parroting, resisting
 asking for purpose, or nearing assertion. It must not see raw proof paths,
 hidden boards, D arithmetic, secrets, or corruption ledgers.
 
+## Archived: Closed Phase 6 / Progress-Policy Proposal
+
+The following progress-policy proposal is retained as historical provenance
+only. It is not an active roadmap. Phase 6 did not clear the Hethel gate, and A21
+Phase 9 showed that the proposed release-after-diagnostic patch matched
+hidden+proofDebt rather than beating it.
+
 Goal: test whether the conduct layer can stop asking diagnostics and press
 forward when repeated visible/hidden conflict probes have exhausted their local
 budget.
@@ -786,7 +827,32 @@ Every A20 report should include:
 Paper discipline still holds: new empirical claims go to
 `docs/research/paper-full-2.0.md` before sidecars inherit them.
 
-## Working Claim If This Succeeds
+## Regression Command Appendix
+
+Use these commands for closeout hygiene and regression checks. The report scripts
+are zero-paid/local, but write outputs; prefer temporary output paths when
+refreshing reports during validation.
+
+```bash
+npm run wp:validate
+node --test tests/dramaticDerivationConductPolicy.test.js tests/dramaticDerivationReplay.test.js
+node --test tests/dramaticDerivationDidacticMode.test.js
+node --test tests/derivationOwnershipBenchmark.test.js
+npm run derivation:a20-fixtures
+npm run derivation:a20-replay-panel
+npm run derivation:a21-microbench
+npm run derivation:a21-analyze
+npm run derivation:a21-report
+npm run derivation:ownership-benchmark
+npm test
+```
+
+## Archived Working Claim From the Original A20 Plan
+
+The original A20 plan aimed at the claim below. The current closeout supersedes
+it for the present artifact pool: A20/A21/ownership/didactic follow-ups are
+instrumentation only unless a future predeclared hidden+proofDebt failure or
+proof-identical quality-layer benchmark reopens the question.
 
 Do not claim "adaptive selector works." The strongest allowed claim would be:
 
@@ -795,4 +861,5 @@ Do not claim "adaptive selector works." The strongest allowed claim would be:
 > move before generation, it improves local repair/advance decisions over a
 > hidden + proofDebt substrate without increasing first-pass negative transfer.
 
-That is the next adaptive tutor claim worth trying to earn.
+That was the adaptive tutor claim the original A20 plan tried to earn; it is not
+licensed by the completed closeout.

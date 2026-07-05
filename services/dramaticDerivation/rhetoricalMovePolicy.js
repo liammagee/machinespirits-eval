@@ -864,6 +864,7 @@ function proofStepIntentAndTarget(context = {}, calibration = null) {
 function didacticModeRow(mode) {
   return (
     {
+      minimal_presence: { figure: 'aposiopesis', stance: 'didactic_minimal_presence', weight: 0.78 },
       teach_back: { figure: 'erotema', stance: 'didactic_teach_back', weight: 0.74 },
       concrete_example: { figure: 'exemplum', stance: 'didactic_concrete_example', weight: 0.72 },
       analogy_bridge: { figure: 'analogia', stance: 'didactic_analogy_bridge', weight: 0.72 },

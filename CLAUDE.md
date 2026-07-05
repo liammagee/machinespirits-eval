@@ -6,7 +6,7 @@ This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` speci
 
 ## Desktop app (Electron)
 
-There is an Electron desktop app that is the **exact equivalent of the web UX and stays in sync by construction** — it embeds the unchanged Express stack and loads the web UI over loopback, so there is ONE UI codebase. It lives under `desktop/` on branch `claude/electron-desktop-app` (worktree `../machinespirits-eval-electron`).
+There is an Electron desktop app that is the **exact equivalent of the web UX and stays in sync by construction** — it embeds the unchanged Express stack and loads the web UI over loopback, so there is ONE UI codebase. The desktop code lives under `desktop/` on `main` (merged from the now-removed `claude/electron-desktop-app` branch). Active dev happens in a dedicated Electron-ABI worktree — `../ms-electron` on branch `desktop-dev` — launched with `npm run desktop:dev`.
 
 **To change the UX (web AND desktop), edit the web stack** — `public/**`, the route renderers in `scripts/browse-poetics-scripts.js`, `routes/**`, `services/**`, or the shared mounter `services/evalSurfaces.js`. The desktop updates automatically; **never fork UI into `desktop/`.** Full rules + file map: `desktop/ARCHITECTURE.md`. Run/build/use docs: `desktop/README.md`.
 

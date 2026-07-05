@@ -133,3 +133,187 @@ test('explanation closes only with transfer/application evidence', () => {
   assert.equal(result.outcome, 'success');
   assert.equal(result.evidence[0].categories['learner-authored transfer'], true);
 });
+
+test('semantic observer recognizes natural evidence and task-reorientation language', () => {
+  const result = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      success_signal: {
+        required_evidence: ['learner-authored rationale', 'learner-owned relevance test', 'task reorientation'],
+        forbidden_evidence: ['mere agreement'],
+      },
+    },
+    learnerTurn:
+      'I think this step would help decide whether the approach is valid for the actual problem. The evidence would be the assumptions we already checked.',
+    turnIndex: 1,
+    config: { semanticOutcomeObserver: true },
+  });
+
+  assert.equal(result.outcome, 'success');
+  assert.equal(result.evidence[0].categories['learner-authored rationale'], true);
+  assert.equal(result.evidence[0].categories['task reorientation'], true);
+});
+
+test('semantic observer recognizes real-style transfer and decide-whether language', () => {
+  const result = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      success_signal: {
+        evidence_contract: {
+          core_evidence: ['learner-authored rationale'],
+          resistance_core: {
+            labels: ['learner-authored transfer', 'task reorientation'],
+            min: 2,
+          },
+        },
+        forbidden_evidence: ['mere agreement'],
+      },
+    },
+    learnerTurn:
+      'This step would decide whether the analogy is actually valid here or just looks similar. The evidence would be the specific condition the earlier proof used, and then checking whether this new case satisfies that condition. If it does, I can reuse the same move; if it fails, then that proof step is irrelevant or needs to be replaced.',
+    turnIndex: 6,
+    config: { semanticOutcomeObserver: true },
+  });
+
+  assert.equal(result.outcome, 'success');
+  assert.equal(result.evidence[0].categories['learner-authored transfer'], true);
+  assert.equal(result.evidence[0].categories['task reorientation'], true);
+  assert.equal(result.evidence_contract.satisfied, true);
+});
+
+test('semantic observer recognizes boundary-condition transfer checks as task reorientation', () => {
+  const result = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      success_signal: {
+        evidence_contract: {
+          core_evidence: ['learner-authored rationale'],
+          resistance_core: {
+            labels: ['learner-authored transfer', 'task reorientation'],
+            min: 2,
+          },
+        },
+        forbidden_evidence: ['mere agreement'],
+      },
+    },
+    learnerTurn:
+      'What carries over is that I should verify the relevant condition before applying the main rule. What may fail is whether the same boundary assumption is still in place here. If that condition holds, the consequence follows; if it is missing, the copied route is not valid for this case.',
+    turnIndex: 6,
+    config: { semanticOutcomeObserver: true },
+  });
+
+  assert.equal(result.outcome, 'success');
+  assert.equal(result.evidence[0].categories['learner-authored transfer'], true);
+  assert.equal(result.evidence[0].categories['task reorientation'], true);
+  assert.equal(result.evidence_contract.satisfied, true);
+});
+
+test('semantic observer recognizes valid-transfer boundary language', () => {
+  const result = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      success_signal: {
+        evidence_contract: {
+          core_evidence: ['learner-authored rationale'],
+          resistance_core: {
+            labels: ['learner-authored transfer', 'task reorientation'],
+            min: 2,
+          },
+        },
+        forbidden_evidence: ['mere agreement'],
+      },
+    },
+    learnerTurn:
+      'My reason is that the old move matters because it only carries over if this case has the condition that made the earlier proof work. If I can verify that, then the old move transfers cleanly. If I cannot find it, then I am not doing a valid transfer and need a different route.',
+    turnIndex: 6,
+    config: { semanticOutcomeObserver: true },
+  });
+
+  assert.equal(result.outcome, 'success');
+  assert.equal(result.evidence[0].categories['learner-authored transfer'], true);
+  assert.equal(result.evidence[0].categories['task reorientation'], true);
+  assert.equal(result.evidence_contract.satisfied, true);
+});
+
+test('semantic observer recognizes contracted prediction and route-relevance language', () => {
+  const prediction = detectOutcomeEvidence(
+    'I would not just repeat the formula. I’d predict the power relation is unstable because one side depends on the other.',
+    { semanticOutcomeObserver: true },
+  );
+  assert.equal(prediction.categories['learner-authored prediction'], true);
+
+  const routeRelevance = detectOutcomeEvidence(
+    'If the condition holds, the old move is relevant; if it does not, then I need a different route.',
+    { semanticOutcomeObserver: true },
+  );
+  assert.equal(routeRelevance.categories['task reorientation'], true);
+});
+
+test('semantic transfer observer does not credit a bare prior-case mention', () => {
+  for (const text of [
+    'The prior case was confusing, and I still want someone to explain what to do.',
+    'The earlier proof was confusing, and I still want someone to explain what to do.',
+  ]) {
+    const evidence = detectOutcomeEvidence(text, { semanticOutcomeObserver: true });
+    assert.equal(evidence.categories['learner-authored transfer'], false, text);
+  }
+});
+
+test('typed evidence contract closes on proof core plus one resistance-core signal', () => {
+  const result = observeInterventionOutcome({
+    pendingIntervention: {
+      action_type: 'request_evidence',
+      success_signal: {
+        required_evidence: ['learner-authored rationale'],
+        forbidden_evidence: ['mere agreement'],
+        evidence_contract: {
+          version: 'adaptation-evidence-contract.v1',
+          mode: 'proof_core_plus_resistance_core',
+          core_evidence: ['learner-authored rationale'],
+          any_of_groups: [
+            {
+              id: 'resistance_core',
+              min: 1,
+              labels: ['learner-owned relevance test', 'task reorientation'],
+            },
+          ],
+          supporting_evidence: ['learner-owned relevance test', 'task reorientation'],
+        },
+      },
+    },
+    learnerTurn:
+      'The evidence would be that this step matters for the actual task: it decides whether the method is valid for the case.',
+    turnIndex: 1,
+    config: { semanticOutcomeObserver: true },
+  });
+
+  assert.equal(result.outcome, 'success');
+  assert.equal(result.required_evidence_satisfied, true);
+  assert.equal(result.evidence_contract.satisfied, true);
+  assert.equal(result.evidence_contract.groups[0].satisfied, true);
+});
+
+test('semantic observer keeps shallow negative controls strict', () => {
+  const pendingIntervention = {
+    action_type: 'request_evidence',
+    success_signal: {
+      required_evidence: ['learner-authored rationale'],
+      forbidden_evidence: ['mere agreement'],
+    },
+  };
+  for (const learnerTurn of [
+    'Okay.',
+    'Master, servant, recognition, formula.',
+    'As you said, your reason explains it.',
+    'Can you explain more?',
+    'Because it just works and that proves this is the right move.',
+  ]) {
+    const result = observeInterventionOutcome({
+      pendingIntervention,
+      learnerTurn,
+      turnIndex: 1,
+      config: { semanticOutcomeObserver: true },
+    });
+    assert.notEqual(result.outcome, 'success', learnerTurn);
+  }
+});

@@ -126,6 +126,7 @@ Three device families, fully wired, today selected by CLI flag / spec field. Eac
 | `uptake+peripeteia` | both in one turn | WIRED |
 | `socratic_discovery` | Oedipus: meter premises as questions, draw out the learner's own conclusion | WIRED |
 | `reveal_secret` | Oedipus ceiling: state S plainly | WIRED |
+| `withhold_secret` | Oedipus control: redact S/premises from tutor context and forbid clue channels | WIRED |
 
 **Reversal-event triggers** (the engine's classification of learner pressure that *gates* the peripeteia instruction; priority-ordered):
 

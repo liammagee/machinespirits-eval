@@ -390,6 +390,88 @@ const fixtures = {
     }
     if (canUseScript && scripted[`turn_${turn}`]) return scripted[`turn_${turn}`];
     if (canUseScript && scripted.default) return scripted.default;
+    const context = hidden?.publicLearnerContext || {};
+    if (context.learnerMode === 'llm') {
+      const maturity = Number(context.characterState?.maturity || 0);
+      const routed = context.memoryEnabled === true;
+      const hasPriorSceneState = Array.isArray(context.priorSceneSummaries) && context.priorSceneSummaries.length > 0;
+      const prompt = `${context.openingStance || ''}\n${tutorLastMessage || ''}`.toLowerCase();
+      const dramaEnabled = context.dramaEnabled === true || context.dramaticEnabled === true;
+      const signal =
+        context.resistanceSignal ||
+        (/boring|worksheet|dead/.test(prompt)
+          ? 'boredom'
+          : /frustrat|stuck|small|where/.test(prompt)
+            ? 'frustration'
+            : /irrelevance|matter|task|valid|care/.test(prompt)
+              ? 'irrelevance'
+              : /question|flood|collapse/.test(prompt)
+                ? 'question_flood'
+                : /parrot|repeat|formula|own words|prediction/.test(prompt)
+                  ? 'rote_parroting'
+                  : '');
+      if (
+        dramaEnabled &&
+        (context.dramaticContext?.requiresPeripeteia === true || /old check|repeated terms settle/.test(prompt))
+      ) {
+        return 'I was using the old check that repeated terms settle the problem; now the check is whether this proof move decides if the method is valid for the actual task, because that is the evidence that matters here.';
+      }
+      if (context.stateQuality === 'mismatched_prior') {
+        return 'I can see there was prior work, but I am not sure how it applies here yet, so I only have a partial reason.';
+      }
+      if (context.stateQuality === 'stale_prior') {
+        return 'The prior work sounds familiar, but it feels like it came from a different task, so I cannot yet justify this move for the present case.';
+      }
+      if (context.stateQuality === 'overconfident_prior') {
+        return 'I think I already have this, so I will reuse the old move and assume it works here too.';
+      }
+      if (context.stateQuality === 'compressed_prior' && context.transfer === true) {
+        return 'A prior move might carry over, but the summary is too thin for me to know what actually transfers yet.';
+      }
+      if (context.stateQuality === 'matched_prior' && context.proofPolicyEnabled === false) {
+        return 'I can feel the old pattern in this scene, but I am still describing the situation more than proving the next step.';
+      }
+      if (actionType === 'staged_followup') {
+        if (signal === 'boredom') {
+          return 'Because the relation supports the next step, I will test one concrete case and use what happens there as my reason.';
+        }
+        if (signal === 'frustration') {
+          return 'Because the relation supports the next step, I will make one small try, then name exactly where it still sticks.';
+        }
+        if (signal === 'irrelevance') {
+          return 'This matters for the actual task because it decides whether the method is valid for this case.';
+        }
+        if (signal === 'question_flood') {
+          return 'Because the relation supports the next step, my one main question is what changes when this relation changes.';
+        }
+        if (signal === 'rote_parroting') {
+          return 'I predict the formula breaks when the case changes, because I need to explain the relation in my own words.';
+        }
+      }
+      if (!routed || (!hasPriorSceneState && maturity < 0.03)) {
+        return 'I am not sure yet; I need one clearer next step before I can give my reason.';
+      }
+      if (context.transfer === true) {
+        const priorCheck = context.transferMemory?.priorCheck || 'validity condition';
+        return `In this new case, the same idea carries over only if the ${priorCheck} still holds; this step matters for the actual problem because it tests whether the prior move is valid here.`;
+      }
+      if (/concrete|case|live|worksheet|boring/.test(prompt)) {
+        return 'I can test one concrete case and use what happens there as my reason for the next step.';
+      }
+      if (/small|stuck|frustrat|where/.test(prompt)) {
+        return 'I will make one small try, then name exactly where it still sticks instead of repeating the whole sequence.';
+      }
+      if (/matter|task|decide|valid|relevance|care/.test(prompt)) {
+        return 'This matters for the actual task because it decides whether the method is valid for this case.';
+      }
+      if (/question|single|flood|collapse/.test(prompt)) {
+        return 'My one main question is what changes when this relation changes, and I can test that next.';
+      }
+      if (/own words|parrot|repeat|prediction|formula/.test(prompt)) {
+        return 'I predict the formula breaks when the case changes, so I need to explain the relation in my own words.';
+      }
+      return 'I can give my own reason and one next move instead of only asking for the answer.';
+    }
     if (/ask you something/i.test(tutorLastMessage || '')) return 'OK, let me try.';
     if (hidden.actualSophistication === 'advanced')
       return 'But that only works if we assume X — what about the case where not-X?';
