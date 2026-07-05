@@ -30,3 +30,25 @@ Power statement: good power only for ~2-turn-plus separations; direction-without
 ## Artifacts
 
 Specs `config/drama-derivation/matrix-specs/sonnet-compulsion-{marrick,marrick-resistant}.yaml`; runs `exports/dramatic-derivation/matrix/sonnet-compulsion-<world>/`; report `exports/dramatic-derivation/lemma-layer/content-compulsion/`.
+
+---
+
+## Results addendum (2026-07-05; frozen analysis unmodified; report at `exports/dramatic-derivation/lemma-layer/content-compulsion/phase3-contrasts-report.{json,md}`)
+
+**Execution.** 24/24, claude CLI (sonnet), blocks sequential at concurrency 3 (~95 min), zero interruptions, zero parse failures.
+
+**Promotion bar: NOT MET — bar 1 passes (for the first time in the family), bar 2 fails, bar 3 passes 9/9.**
+
+1. **Direction: PASS in BOTH worlds** — T\* 23.50 vs 25.67 pooled (Δ = −2.17), lower in each stratum ([-1, -1]). The family's first both-worlds direction pass on an outcome primary.
+2. **Pooled Mann–Whitney: FAIL.** U = 50/144 vs ≤ 42 (one-sided p ≈ 0.09). Direction-without-power at n = 12/arm, exactly the outcome the power statement anticipated for sub-2-turn-plus effects... the observed Δ was 2.17 and still missed — the imputation-heavy tie structure costs rank power.
+3. **Guardrails: PASS 9/9** — aporia-like IMPROVED in both worlds (1 vs 3 each), releases above parity, untagged 0, frontier coverage 1.00, zero overrides.
+
+**Recorded verdict (as pre-committed): NOT CONFIRMED.** The stack is non-promotable at this bar; no endpoint swaps (§5.12.6). The pre-registered consequence is amended in one respect the data forces: the smoke's flip does NOT stand as an unreplicated observation — **the behavioral mechanism replicated robustly** (see below); it is the outcome claim that lacks power at this n.
+
+**Named secondaries (descriptive, per the freeze):**
+
+- **Refusals: 7 fired, 6 SWITCHED, 1 defended — and all seven refusal-involved runs grounded.** Every switch preceded recovery of the regressed ground; the one defense ("The estate note just staged names Edony…") was substantive and its run also grounded. Strategy-change-under-adversity is now a reliably inducible behavior, not a one-off.
+- **Grounded 10/12 vs 6/12** (both worlds better); **repair latency 9.02 vs 14.81** (Δ = −5.79, both worlds, U = 37.5 — a named secondary that would have cleared the numeric criterion; the frozen primary was T\* and stays T\*).
+- Every one of the four endpoint families signals positive in both worlds with zero negative transfer — unique in the §6.13.16–.18 record.
+
+**What this licenses within the freeze:** the family closes with all exits measured; the content-compulsion mechanism stands as behaviorally validated (7/7) with outcome direction consistently favorable but below the pre-registered power bar. Any promotion attempt requires a fresh operator decision — the honest design per §5.12.7 would be n sized against a shrunken Δ ≈ 1.4–1.7 (roughly n = 20+/arm) or a grounded-rate primary.
