@@ -1322,8 +1322,15 @@ export async function runDrama({ world, roles, options = {} }) {
           sceneIndex: sceneState?.index ?? null,
           turn,
         };
-        lemmaRun.choices.push({ turn, label: lm.choice.label, by: lm.choice.by });
-        if (lm.choice.by === 'tutor' && lemmaRun.frontier.length > 1) lemmaRun.tutorChoices += 1;
+        lemmaRun.choices.push({
+          turn,
+          label: lm.choice.label,
+          by: lm.choice.by,
+          ...(lm.choice.raw !== undefined ? { raw: lm.choice.raw } : {}),
+          ...(lm.choice.retried ? { retried: true, firstRaw: lm.choice.firstRaw ?? null } : {}),
+        });
+        if (['tutor', 'tutor_retry', 'delegate'].includes(lm.choice.by) && lemmaRun.frontier.length > 1)
+          lemmaRun.tutorChoices += 1;
         events.push({ turn, type: 'lemma_choice', detail: `${lm.choice.label} (${lm.choice.by})` });
       }
       if (lm.departure) {

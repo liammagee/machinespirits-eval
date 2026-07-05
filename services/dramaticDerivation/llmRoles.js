@@ -375,6 +375,24 @@ function parseJsonLoose(text) {
 }
 
 /** One call + one repair attempt, with role/turn context on failure. */
+/**
+ * Tolerant frontier-claim matcher (LEMMA instrument): exact label, then
+ * normalized label, then UNIQUE predicate-name match. Returns the frontier
+ * entry or null. "default" is handled by callers (explicit delegation).
+ */
+function matchFrontierClaim(frontier, claimed) {
+  if (!claimed) return null;
+  const norm = (x) => x.toLowerCase().replace(/\s+/g, '');
+  const predOf = (x) => x.split('(')[0];
+  let match =
+    frontier.find((f) => f.label === claimed) || frontier.find((f) => norm(f.label) === norm(claimed)) || null;
+  if (!match) {
+    const byPred = frontier.filter((f) => norm(predOf(f.label)) === norm(predOf(claimed)));
+    if (byPred.length === 1) match = byPred[0];
+  }
+  return match;
+}
+
 async function callJson(client, role, turn, { system, user, meta }) {
   const first = await client.call(role, { system, user, meta });
   try {
@@ -3499,7 +3517,13 @@ export function makeLlmTutor(
               const ll = view.lemmaLayer;
               const opening = Boolean(view.scene && view.scene.startTurn === view.turn);
               const hint = {};
-              if (opening && ll.frontier.length) hint.choose = ll.frontier[0].label.split('(')[0];
+              if (opening && ll.frontier.length) {
+                hint.choose = ll.config.mockBadChoice
+                  ? 'zzz_nonsense'
+                  : ll.frontier.length > 1
+                    ? ll.frontier[0].label.split('(')[0]
+                    : 'default';
+              }
               const activeSupport =
                 opening && ll.frontier.length
                   ? ll.frontier[0].support
@@ -3781,27 +3805,23 @@ export function makeLlmTutor(
         const lemmaOpening = Boolean(view.scene && view.scene.startTurn === view.turn);
         if (lemmaOpening && lemmaInfo.frontier.length) {
           const claimedLemma = typeof out.active_lemma === 'string' ? out.active_lemma.trim() : null;
-          // Tolerant matching (the codex instrument finding: real models do
-          // not echo labels verbatim): exact label, then normalized label,
-          // then UNIQUE predicate-name match.
-          const norm = (x) => x.toLowerCase().replace(/\s+/g, '');
-          const predOf = (x) => x.split('(')[0];
-          let match = null;
-          if (claimedLemma) {
-            match =
-              lemmaInfo.frontier.find((f) => f.label === claimedLemma) ||
-              lemmaInfo.frontier.find((f) => norm(f.label) === norm(claimedLemma)) ||
-              null;
-            if (!match) {
-              const byPred = lemmaInfo.frontier.filter((f) => norm(predOf(f.label)) === norm(predOf(claimedLemma)));
-              if (byPred.length === 1) match = byPred[0];
-            }
-          }
+          const delegated = Boolean(claimedLemma && claimedLemma.toLowerCase() === 'default');
+          const match = delegated ? null : matchFrontierClaim(lemmaInfo.frontier, claimedLemma);
           const pick = match || lemmaInfo.frontier[0];
           lemmaMeta.choice = {
             key: pick.key,
             label: pick.label,
-            by: match ? 'tutor' : lemmaInfo.frontier.length === 1 ? 'auto' : 'fallback',
+            by: match
+              ? out._lemmaRetried
+                ? 'tutor_retry'
+                : 'tutor'
+              : delegated
+                ? 'delegate'
+                : lemmaInfo.frontier.length === 1
+                  ? 'auto'
+                  : 'fallback',
+            raw: claimedLemma ?? null,
+            ...(out._lemmaRetried ? { firstRaw: out._lemmaFirstRaw ?? null, retried: true } : {}),
           };
         }
         const activeLemmaKeyNow = lemmaMeta.choice?.key || lemmaInfo.activeKey || null;
@@ -3950,7 +3970,33 @@ export function makeLlmTutor(
           : {}),
       };
     };
-    const draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
+    let draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
+    // FORCED CHOICE (lemma bind, scene openings): a missing/unmatched
+    // "active_lemma" is bounced ONCE with a pointed demand — non-answering
+    // must not be free, and even delegation must be said ("default"). Raw
+    // claims are recorded either way (the earlier smokes' diagnostic gap).
+    const lemmaForcedInfo = view.lemmaLayer;
+    const lemmaForcedOpening = Boolean(
+      lemmaForcedInfo?.config?.bind &&
+      view.scene &&
+      view.scene.startTurn === view.turn &&
+      lemmaForcedInfo.frontier.length,
+    );
+    if (lemmaForcedOpening) {
+      const claimed0 = typeof draftOut.active_lemma === 'string' ? draftOut.active_lemma.trim() : null;
+      const ok0 =
+        (claimed0 && claimed0.toLowerCase() === 'default') || matchFrontierClaim(lemmaForcedInfo.frontier, claimed0);
+      if (!ok0) {
+        const options = lemmaForcedInfo.frontier.map((f) => f.label.split('(')[0]).join(', ');
+        const demand = `\n\nHARNESS RETRY — your reply was received but "active_lemma" was ${
+          claimed0 ? `"${claimed0}", which names no frontier lemma` : 'missing'
+        }. This scene-opening turn REQUIRES an active choice. Reply again with the SAME JSON shape and set "active_lemma" to exactly one of: ${options} — or the word "default" to explicitly delegate the choice to the harness.`;
+        const retryOut = await callJson(client, 'tutor', view.turn, { system, user: user + demand, meta });
+        retryOut._lemmaFirstRaw = claimed0;
+        retryOut._lemmaRetried = true;
+        draftOut = retryOut;
+      }
+    }
     const draftTheory = reconstruct ? normalizeTheory(draftOut.theory) : null;
     // The plot parses only on an opening turn (mid-act re-commitments are
     // ignored — the standing plot is the commitment); a parse-miss leaves

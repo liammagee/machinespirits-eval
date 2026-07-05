@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-05T04:41:34.370Z",
+  "generated": "2026-07-05T05:36:51.781Z",
   "counts": {
-    "total": 83,
+    "total": 84,
     "byStatus": {
       "done": 72,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 4,
       "archived": 4,
       "triaged": 1
     },
     "byType": {
       "research": 40,
-      "experiment": 16,
+      "experiment": 17,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -143,6 +143,33 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "lemma-forced-choice-smoke",
+      "title": "Forced-choice binding smoke — does the model have a chapter preference when non-answering costs a retry?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "6 runs complete; the pre-stated reads (exercise, preference-vs-parrot diagnosis, conduct, capped color) recorded either way.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "lemma-bind-sonnet-smoke",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "binding",
+        "smoke"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
