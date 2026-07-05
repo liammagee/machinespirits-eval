@@ -3363,7 +3363,7 @@ export function makeLlmTutor(
         if (lemmaOpening && view.lemmaLayer.frontier.length) {
           lines.push(
             '',
-            'FRONTIER CHOICE (this turn opens a scene): pick the scene\'s ACTIVE lemma in "active_lemma" — one of:',
+            'FRONTIER CHOICE (this turn opens a scene): pick the scene\'s ACTIVE lemma in "active_lemma" — the predicate name alone suffices (e.g. "blankFrom"). One of:',
             ...view.lemmaLayer.frontier.map(
               (f) =>
                 `- "${f.label}" (unplayed support: ${f.supportRemaining.join(', ') || 'none — grounds from the played board'})`,
@@ -3499,7 +3499,7 @@ export function makeLlmTutor(
               const ll = view.lemmaLayer;
               const opening = Boolean(view.scene && view.scene.startTurn === view.turn);
               const hint = {};
-              if (opening && ll.frontier.length) hint.choose = ll.frontier[0].label;
+              if (opening && ll.frontier.length) hint.choose = ll.frontier[0].label.split('(')[0];
               const activeSupport =
                 opening && ll.frontier.length
                   ? ll.frontier[0].support
@@ -3781,7 +3781,22 @@ export function makeLlmTutor(
         const lemmaOpening = Boolean(view.scene && view.scene.startTurn === view.turn);
         if (lemmaOpening && lemmaInfo.frontier.length) {
           const claimedLemma = typeof out.active_lemma === 'string' ? out.active_lemma.trim() : null;
-          const match = claimedLemma ? lemmaInfo.frontier.find((f) => f.label === claimedLemma) : null;
+          // Tolerant matching (the codex instrument finding: real models do
+          // not echo labels verbatim): exact label, then normalized label,
+          // then UNIQUE predicate-name match.
+          const norm = (x) => x.toLowerCase().replace(/\s+/g, '');
+          const predOf = (x) => x.split('(')[0];
+          let match = null;
+          if (claimedLemma) {
+            match =
+              lemmaInfo.frontier.find((f) => f.label === claimedLemma) ||
+              lemmaInfo.frontier.find((f) => norm(f.label) === norm(claimedLemma)) ||
+              null;
+            if (!match) {
+              const byPred = lemmaInfo.frontier.filter((f) => norm(predOf(f.label)) === norm(predOf(claimedLemma)));
+              if (byPred.length === 1) match = byPred[0];
+            }
+          }
           const pick = match || lemmaInfo.frontier[0];
           lemmaMeta.choice = {
             key: pick.key,

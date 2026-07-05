@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-05T03:51:35.393Z",
+  "generated": "2026-07-05T04:17:13.640Z",
   "counts": {
-    "total": 82,
+    "total": 83,
     "byStatus": {
       "done": 71,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 4,
       "archived": 4,
       "triaged": 1
     },
     "byType": {
       "research": 40,
-      "experiment": 15,
+      "experiment": 16,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -143,6 +143,34 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "lemma-bind-sonnet-smoke",
+      "title": "Binding smoke on Sonnet at the calibrated dose — the first fair test of tutor-chosen binding",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "6 canary-gated runs complete (or an instrument stop is recorded); the pre-stated read rules produce propose/no-go, never a claim.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": "LEMMA-SONNET-CALIBRATED-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "lemma-sonnet-calibrated-contrast",
+          "proof-lemma-layer"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "binding",
+        "smoke"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
