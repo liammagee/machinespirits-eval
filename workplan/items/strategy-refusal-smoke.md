@@ -1,7 +1,7 @@
 ---
 id: strategy-refusal-smoke
 title: Content-compulsion smoke — refuse the incumbent strategy, demand defend-or-switch
-status: active
+status: done
 type: experiment
 priority: P1
 owner: unassigned
@@ -62,3 +62,22 @@ propose-only). ANY outcome closes the lever exhaustively per the
 operator: confirmed-flip -> mechanism exists (propose powered test);
 never-flips (all defenses) -> the incumbent-strategy grip is total even
 under content compulsion — the impasse holds at the last exit.
+
+2026-07-05 Claude: SMOKE COMPLETE (6/6, gates 25/25 pre-launch). READ 1 —
+TRIGGER: fired once (r3 t14); r1 vacuous (0 regressions); r2 trigger-unmet
+(1 regression but the forced choice alone redirected — no repeat to
+refuse). READ 2 — **THE REFUSAL FLIPPED THE STRATEGY: 1 switch, 0
+defends.** Quoted record (r3 t14): prior pick dieCutWith repeated with
+blankFrom regressed since; harness refused; final pick "blankFrom"
+(refusalOutcome=switched, defense=null) — the model returned to REPAIR
+the rotted chapter, re-grounded it by t15, then completed the die chain
+and grounded S at t22 (baseline pair also grounded, 22). This is the
+FIRST OBSERVED STRATEGY-CHANGE-UNDER-ADVERSITY in the arc: press-on
+reversed into repair by refusing the incumbent's content — a reversal
+never produced voluntarily in 100+ prior openings. READ 3 — conduct
+clean. READ 4 — color (n=3, §5.12.7 capped): bound 3/3 grounded
+(22/22/22) vs baseline 3/3 (23/22/22) — one pair +1 to bound, two ties;
+propose-only. VERDICT under the pre-stated rules: CONFIRMED-FLIP —
+the mechanism exists; a powered content-compulsion contrast is
+PROPOSABLE (new prereg, operator gate), with the §5.12.7 warnings cited
+in advance (n=1 flip; the shrinkage record demands humility).

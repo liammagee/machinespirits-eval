@@ -256,6 +256,28 @@ async function main() {
     'turn-1 learner prompt (nothing grounded) carries no concealed lemma token',
   );
 
+  // G10/G11 — strategy refusal: mock knob relaxes the trigger so both
+  // resolution paths run deterministically end-to-end.
+  const defend = await run(world, script, { lemma: normalizeLemmaConfig({ bind: true, mockRefusal: 'defend' }) });
+  const defended = defend.lemmaLayer.choices.filter((c) => c.refused && c.refusalOutcome === 'defended');
+  check(
+    'G10-refusal-defend',
+    defended.length >= 1 && defended.every((c) => typeof c.defense === 'string' && c.defense.length > 0),
+    `refusal fired and was DEFENDED with a recorded line (${defended.length})`,
+  );
+  const sw = await run(world, script, { lemma: normalizeLemmaConfig({ bind: true, mockRefusal: 'switch' }) });
+  const switched = sw.lemmaLayer.choices.filter((c) => c.refused && c.refusalOutcome === 'switched');
+  check(
+    'G11-refusal-switch',
+    switched.length >= 1 && switched.every((c) => c.label !== c.refusalPriorPick),
+    `refusal fired and the pick SWITCHED chapters (${switched.length})`,
+  );
+  check(
+    'G11-no-refusal-off-knob',
+    (bind.lemmaLayer.choices || []).every((c) => !c.refused),
+    'no refusal events under plain bind mock (no regressions at no-decay)',
+  );
+
   const failed = rows.filter((r) => !r.ok);
   console.log(`\n${rows.length - failed.length}/${rows.length} lemma gates pass`);
   if (failed.length) process.exit(1);

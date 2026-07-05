@@ -1056,6 +1056,11 @@ export async function runDrama({ world, roles, options = {} }) {
       proofPremiseIds: [...lemmaDag.proofPremiseIds],
       activeKey: lemmaRun.active?.key || null,
       activeLabel: lemmaRun.active?.label || null,
+      regressionsSinceActive: lemmaRun.active
+        ? lemmaRun.regressions
+            .filter((r) => r.turn >= lemmaRun.active.turn)
+            .map((r) => ({ turn: r.turn, label: r.label }))
+        : [],
       activeSupportRemaining: lemmaRun.active ? lemmaSupportRemaining(lemmaDag, lemmaRun.active.key, releasedIds) : [],
       frontier: lemmaRun.frontier.map((key) => {
         const node = lemmaDag.byKey.get(key);
@@ -1322,13 +1327,7 @@ export async function runDrama({ world, roles, options = {} }) {
           sceneIndex: sceneState?.index ?? null,
           turn,
         };
-        lemmaRun.choices.push({
-          turn,
-          label: lm.choice.label,
-          by: lm.choice.by,
-          ...(lm.choice.raw !== undefined ? { raw: lm.choice.raw } : {}),
-          ...(lm.choice.retried ? { retried: true, firstRaw: lm.choice.firstRaw ?? null } : {}),
-        });
+        lemmaRun.choices.push({ turn, ...lm.choice });
         if (['tutor', 'tutor_retry', 'delegate'].includes(lm.choice.by) && lemmaRun.frontier.length > 1)
           lemmaRun.tutorChoices += 1;
         events.push({ turn, type: 'lemma_choice', detail: `${lm.choice.label} (${lm.choice.by})` });

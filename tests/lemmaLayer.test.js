@@ -35,12 +35,14 @@ test('config: bind implies display; off-shapes normalize to null', () => {
     bind: false,
     mockUntagged: false,
     mockBadChoice: false,
+    mockRefusal: false,
   });
   assert.deepEqual(normalizeLemmaConfig('{"bind":true}'), {
     display: true,
     bind: true,
     mockUntagged: false,
     mockBadChoice: false,
+    mockRefusal: false,
   });
 });
 
