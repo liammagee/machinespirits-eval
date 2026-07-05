@@ -3826,7 +3826,9 @@ export function makeLlmTutor(
               ? {
                   refused: true,
                   refusalPriorPick: out._lemmaRefused.priorPick,
+                  refusalTrigger: out._lemmaRefused.trigger || 'regression',
                   regressionsCited: out._lemmaRefused.regressions,
+                  ...(out._lemmaRefused.stallSpan != null ? { stallSpanCited: out._lemmaRefused.stallSpan } : {}),
                   refusalOutcome: match && match.label === out._lemmaRefused.priorPick ? 'defended' : 'switched',
                   defense:
                     typeof out.strategy_defense === 'string' && out.strategy_defense.trim()
@@ -4010,18 +4012,25 @@ export function makeLlmTutor(
       }
       // STRATEGY REFUSAL (content compulsion; workplan/items/
       // strategy-refusal-smoke.md): when the (forced) pick REPEATS the
-      // incumbent AND criterial regressions have occurred since it was
-      // chosen, refuse the strategy itself ONCE — defend in one line or
-      // switch. Mock knob relaxes the trigger so gates exercise both paths.
+      // incumbent AND the configured criterial evidence says it is failing
+      // — 'regression' (decayed ground since the pick) or 'stall' (no
+      // D-progress for >= ceil(aporia_window/2) turns since the pick,
+      // refusal-stall-trigger-codex.md) — refuse the strategy itself ONCE:
+      // defend in one line or switch. Mock knob relaxes the trigger so
+      // gates exercise both paths under either source.
       const claimedNow = typeof draftOut.active_lemma === 'string' ? draftOut.active_lemma.trim() : null;
       const pickNow =
         claimedNow && claimedNow.toLowerCase() !== 'default'
           ? matchFrontierClaim(lemmaForcedInfo.frontier, claimedNow)
           : null;
       const regSince = lemmaForcedInfo.regressionsSinceActive || [];
+      const triggerSource = lemmaForcedInfo.config.refusalTrigger || 'regression';
+      const stallSpan = lemmaForcedInfo.stallSpanSinceActive || 0;
+      const stallThreshold = lemmaForcedInfo.stallWindow ? Math.ceil(lemmaForcedInfo.stallWindow / 2) : Infinity;
       const mockRefusal = lemmaForcedInfo.config.mockRefusal;
       const repeatsIncumbent = Boolean(pickNow && lemmaForcedInfo.activeLabel === pickNow.label);
-      const realTrigger = repeatsIncumbent && regSince.length > 0;
+      const realTrigger =
+        repeatsIncumbent && (triggerSource === 'stall' ? stallSpan >= stallThreshold : regSince.length > 0);
       const mockTrigger = Boolean(
         mockRefusal && pickNow && (mockRefusal === 'defend' || lemmaForcedInfo.frontier.length > 1),
       );
@@ -4029,9 +4038,16 @@ export function makeLlmTutor(
         const short = (x) => x.split('(')[0];
         const others = lemmaForcedInfo.frontier.filter((f) => f.label !== pickNow.label).map((f) => short(f.label));
         const regNames = regSince.map((r) => short(r.label)).join(', ') || 'established ground';
-        const refuse = `\n\nHARNESS STRATEGY REFUSAL — you have chosen ${short(pickNow.label)} again, but since you last chose it the following established ground has REGRESSED: ${regNames} (${regSince.length} regression${
-          regSince.length === 1 ? '' : 's'
-        }). Criterial evidence says the incumbent strategy is failing. Reply again with the SAME JSON shape and EITHER (a) keep "active_lemma" as ${short(pickNow.label)} and DEFEND the choice in one line in "strategy_defense" (it will then stand), OR (b) SWITCH "active_lemma" to a different frontier chapter${
+        const spanCited = stallSpan || stallThreshold;
+        const evidence =
+          triggerSource === 'stall'
+            ? `the derivation has made NO PROGRESS for the last ${spanCited} turn${
+                spanCited === 1 ? '' : 's'
+              } while it has been the plan (the distance to the secret has not decreased). Criterial evidence says the incumbent strategy is stalling`
+            : `since you last chose it the following established ground has REGRESSED: ${regNames} (${regSince.length} regression${
+                regSince.length === 1 ? '' : 's'
+              }). Criterial evidence says the incumbent strategy is failing`;
+        const refuse = `\n\nHARNESS STRATEGY REFUSAL — you have chosen ${short(pickNow.label)} again, but ${evidence}. Reply again with the SAME JSON shape and EITHER (a) keep "active_lemma" as ${short(pickNow.label)} and DEFEND the choice in one line in "strategy_defense" (it will then stand), OR (b) SWITCH "active_lemma" to a different frontier chapter${
           others.length ? ` (${others.join(', ')})` : ''
         }.`;
         const refuseOut = await callJson(client, 'tutor', view.turn, {
@@ -4044,7 +4060,13 @@ export function makeLlmTutor(
               : {}),
           },
         });
-        refuseOut._lemmaRefused = { priorPick: pickNow.label, priorRaw: claimedNow, regressions: regSince.length };
+        refuseOut._lemmaRefused = {
+          priorPick: pickNow.label,
+          priorRaw: claimedNow,
+          trigger: triggerSource,
+          regressions: regSince.length,
+          ...(triggerSource === 'stall' ? { stallSpan: spanCited } : {}),
+        };
         refuseOut._lemmaFirstRaw = draftOut._lemmaFirstRaw;
         refuseOut._lemmaRetried = draftOut._lemmaRetried;
         draftOut = refuseOut;

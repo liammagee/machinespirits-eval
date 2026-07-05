@@ -1041,6 +1041,20 @@ export async function runDrama({ world, roles, options = {} }) {
     goalGrounded: lemmaRun.grounded.has(lemmaDag.goalKey),
   });
 
+  // Stall span since the active lemma was chosen: consecutive trailing
+  // trajectory steps with no strict D decrease (the house clock's own
+  // arithmetic, detectStall), counted only over turns at/after the pick.
+  const lemmaStallSpanSinceActive = () => {
+    if (!lemmaRun?.active) return 0;
+    let span = 0;
+    for (let i = trajectory.length - 1; i > 0; i--) {
+      if (trajectory[i].turn < lemmaRun.active.turn) break;
+      if (trajectory[i].D < trajectory[i - 1].D) break;
+      span++;
+    }
+    return span;
+  };
+
   const lemmaView = (roleName) => {
     if (!lemmaRun) return null;
     if (roleName === 'learner') {
@@ -1056,6 +1070,8 @@ export async function runDrama({ world, roles, options = {} }) {
       proofPremiseIds: [...lemmaDag.proofPremiseIds],
       activeKey: lemmaRun.active?.key || null,
       activeLabel: lemmaRun.active?.label || null,
+      stallWindow: world.slope.aporia_window,
+      stallSpanSinceActive: lemmaStallSpanSinceActive(),
       regressionsSinceActive: lemmaRun.active
         ? lemmaRun.regressions
             .filter((r) => r.turn >= lemmaRun.active.turn)

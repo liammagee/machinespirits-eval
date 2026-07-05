@@ -22,6 +22,7 @@ import { closure, factKey } from './chainer.js';
 export const LEMMA_DEFAULTS = Object.freeze({
   display: false,
   bind: false,
+  refusalTrigger: 'regression',
   mockUntagged: false,
   mockBadChoice: false,
   mockRefusal: false,
@@ -33,6 +34,12 @@ export function normalizeLemmaConfig(raw) {
   const config = { ...LEMMA_DEFAULTS };
   if (typeof src.display === 'boolean') config.display = src.display;
   if (typeof src.bind === 'boolean') config.bind = src.bind;
+  // Refusal trigger source: 'regression' (decay evidence — the promotion
+  // stack, default) or 'stall' (no-D-progress span — the frontier-tier
+  // variant, refusal-stall-trigger-codex.md).
+  if (src.refusalTrigger === 'regression' || src.refusalTrigger === 'stall') {
+    config.refusalTrigger = src.refusalTrigger;
+  }
   // test-only knob: the MOCK backend omits the departure tag so gates can
   // exercise the block path; the real backend never reads it.
   if (typeof src.mockUntagged === 'boolean') config.mockUntagged = src.mockUntagged;

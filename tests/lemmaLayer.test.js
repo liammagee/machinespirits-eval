@@ -33,6 +33,7 @@ test('config: bind implies display; off-shapes normalize to null', () => {
   assert.deepEqual(normalizeLemmaConfig({ display: true }), {
     display: true,
     bind: false,
+    refusalTrigger: 'regression',
     mockUntagged: false,
     mockBadChoice: false,
     mockRefusal: false,
@@ -40,10 +41,13 @@ test('config: bind implies display; off-shapes normalize to null', () => {
   assert.deepEqual(normalizeLemmaConfig('{"bind":true}'), {
     display: true,
     bind: true,
+    refusalTrigger: 'regression',
     mockUntagged: false,
     mockBadChoice: false,
     mockRefusal: false,
   });
+  assert.equal(normalizeLemmaConfig({ bind: true, refusalTrigger: 'stall' }).refusalTrigger, 'stall');
+  assert.equal(normalizeLemmaConfig({ bind: true, refusalTrigger: 'bogus' }).refusalTrigger, 'regression');
 });
 
 test('marrick lemma DAG: 4 intermediates + goal, the authored AND-join', () => {

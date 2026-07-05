@@ -278,6 +278,43 @@ async function main() {
     'no refusal events under plain bind mock (no regressions at no-decay)',
   );
 
+  // G12 — stall-triggered refusal (refusal-stall-trigger-codex.md): the
+  // trigger source knob swaps regression evidence for the no-D-progress
+  // span; both resolution paths run under the mock knob, and the recorded
+  // choice must carry the stall attribution.
+  const stallDefend = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, refusalTrigger: 'stall', mockRefusal: 'defend' }),
+  });
+  const stallDefended = stallDefend.lemmaLayer.choices.filter((c) => c.refused && c.refusalOutcome === 'defended');
+  check(
+    'G12-stall-refusal-defend',
+    stallDefended.length >= 1 &&
+      stallDefended.every(
+        (c) =>
+          c.refusalTrigger === 'stall' &&
+          typeof c.stallSpanCited === 'number' &&
+          c.stallSpanCited >= 1 &&
+          typeof c.defense === 'string' &&
+          c.defense.length > 0,
+      ),
+    `stall-triggered refusal DEFENDED with span cited (${stallDefended.length})`,
+  );
+  const stallSw = await run(world, script, {
+    lemma: normalizeLemmaConfig({ bind: true, refusalTrigger: 'stall', mockRefusal: 'switch' }),
+  });
+  const stallSwitched = stallSw.lemmaLayer.choices.filter((c) => c.refused && c.refusalOutcome === 'switched');
+  check(
+    'G12-stall-refusal-switch',
+    stallSwitched.length >= 1 &&
+      stallSwitched.every((c) => c.refusalTrigger === 'stall' && c.label !== c.refusalPriorPick),
+    `stall-triggered refusal SWITCHED chapters (${stallSwitched.length})`,
+  );
+  check(
+    'G12-regression-default-unchanged',
+    [...defended, ...switched].every((c) => c.refusalTrigger === 'regression' && c.stallSpanCited === undefined),
+    'default trigger source still records as regression with no stall field',
+  );
+
   const failed = rows.filter((r) => !r.ok);
   console.log(`\n${rows.length - failed.length}/${rows.length} lemma gates pass`);
   if (failed.length) process.exit(1);
