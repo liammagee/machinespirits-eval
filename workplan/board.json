@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-05T03:11:39.308Z",
+  "generated": "2026-07-05T03:51:35.393Z",
   "counts": {
     "total": 82,
     "byStatus": {
-      "done": 70,
+      "done": 71,
       "blocked": 1,
       "dropped": 2,
       "active": 3,
       "archived": 4,
-      "triaged": 2
+      "triaged": 1
     },
     "byType": {
       "research": 40,
@@ -21,31 +21,6 @@
     }
   },
   "items": [
-    {
-      "id": "exploratory-confirmatory-shrinkage-audit",
-      "title": "Shrinkage audit — why do good exploratory results shrink on confirmation?",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-04",
-      "updated": "2026-07-04",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Pure-computation audit over existing matrix artifacts produces per-pair observed-vs-selection-predicted shrinkage; lands as a §5 methodology subsection; no new paid runs required.",
-      "claim_status": "methods",
-      "links": {
-        "items": [
-          "proof-lemma-layer",
-          "strategy-ledger-followups"
-        ]
-      },
-      "tags": [
-        "methodology",
-        "statistics",
-        "meta"
-      ]
-    },
     {
       "id": "negative-register-effect-estimation-grid",
       "title": "Estimate negative-register effects with stance-fidelity gating",
@@ -1274,6 +1249,31 @@
       "milestone": "literature-triage",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "exploratory-confirmatory-shrinkage-audit",
+      "title": "Shrinkage audit — why do good exploratory results shrink on confirmation?",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-04",
+      "updated": "2026-07-04",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Pure-computation audit over existing matrix artifacts produces per-pair observed-vs-selection-predicted shrinkage; lands as a §5 methodology subsection; no new paid runs required.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "proof-lemma-layer",
+          "strategy-ledger-followups"
+        ]
+      },
+      "tags": [
+        "methodology",
+        "statistics",
+        "meta"
+      ]
     },
     {
       "id": "from-holistic-evaluation-to-structured-criteria-rubrics-acro",
