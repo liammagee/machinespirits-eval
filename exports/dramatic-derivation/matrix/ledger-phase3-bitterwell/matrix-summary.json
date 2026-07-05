@@ -1,0 +1,168 @@
+{
+  "label": "ledger-phase3-bitterwell",
+  "spec": "config/drama-derivation/matrix-specs/ledger-phase3-bitterwell-resume.yaml",
+  "startedAt": "2026-07-02T21:22:28.172Z",
+  "elapsedMs": 543726,
+  "arms": [
+    {
+      "label": "ledger-learner-r2",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-bitterwell/ledger-learner-r2",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 16,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 16,
+        "releaseAdherence": {
+          "onCue": 7,
+          "total": 7
+        },
+        "learningSlope": {
+          "delta": 5,
+          "turns": 16,
+          "ratePerTurn": 0.313
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.875,
+          "distinct": 3,
+          "switchRate": 0.2,
+          "superego": null
+        },
+        "usage": {
+          "calls": 46,
+          "costUSD": 0.08562749999999998
+        }
+      }
+    },
+    {
+      "label": "baseline-r3",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-bitterwell/baseline-r3",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 7,
+          "total": 7
+        },
+        "learningSlope": {
+          "delta": 5,
+          "turns": 15,
+          "ratePerTurn": 0.333
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.933,
+          "distinct": 2,
+          "switchRate": 0.071,
+          "superego": null
+        },
+        "usage": {
+          "calls": 43,
+          "costUSD": 0.07284099999999998
+        }
+      }
+    },
+    {
+      "label": "ledger-r3",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-bitterwell/ledger-r3",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 7,
+          "total": 7
+        },
+        "learningSlope": {
+          "delta": 5,
+          "turns": 15,
+          "ratePerTurn": 0.333
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.867,
+          "distinct": 2,
+          "switchRate": 0.214,
+          "superego": null
+        },
+        "usage": {
+          "calls": 43,
+          "costUSD": 0.07723450000000001
+        }
+      }
+    },
+    {
+      "label": "ledger-palette-r3",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-bitterwell/ledger-palette-r3",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 7,
+          "total": 7
+        },
+        "learningSlope": {
+          "delta": 5,
+          "turns": 15,
+          "ratePerTurn": 0.333
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.6,
+          "distinct": 3,
+          "switchRate": 0.571,
+          "superego": null
+        },
+        "usage": {
+          "calls": 43,
+          "costUSD": 0.076483
+        }
+      }
+    },
+    {
+      "label": "ledger-learner-r3",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-phase3-bitterwell/ledger-learner-r3",
+      "diagnosis": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 15,
+        "firstForcedTurn": 15,
+        "assertedGroundedTurn": 15,
+        "releaseAdherence": {
+          "onCue": 7,
+          "total": 7
+        },
+        "learningSlope": {
+          "delta": 5,
+          "turns": 15,
+          "ratePerTurn": 0.333
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.667,
+          "distinct": 4,
+          "switchRate": 0.5,
+          "superego": null
+        },
+        "usage": {
+          "calls": 43,
+          "costUSD": 0.0799675
+        }
+      }
+    }
+  ]
+}

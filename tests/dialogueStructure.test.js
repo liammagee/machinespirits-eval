@@ -42,7 +42,19 @@ const SYSTEM_AGENTS = new Set(['system']);
  * and don't belong to either side's deliberation block. Treated like system
  * entries: they segment the trace but are filtered before block analysis.
  */
-const PROFILING_AGENTS = new Set(['learner_other_ego', 'tutor_other_ego', 'ego_self_reflection']);
+const PROFILING_AGENTS = new Set([
+  'learner_other_ego',
+  'tutor_other_ego',
+  'ego_self_reflection',
+  // De-substitution instrumentation (learner-interior gate, plan note
+  // 2026-07-03): criterial gate entries recorded alongside learner turns.
+  // They are measurement, not deliberation — excluded from block-shape
+  // analysis exactly like profiling agents.
+  'learner_resistance_gate',
+  'learner_drift_gate',
+  'learner_content_condition',
+  'learner_grounding',
+]);
 
 /** True if this entry is a learner-side entry (any learner agent label). */
 function isLearnerEntry(entry) {
@@ -107,10 +119,19 @@ const logFiles = discoverLogs();
 const multiTurnLogs = [];
 const singleTurnLogs = [];
 
+// De-substitution diagnostic logs (plan note 2026-07-03) carry
+// learner-interior gate instrumentation and id-director dynamic-learner
+// block shapes; they are audited by scripts/report-desubstitution-stage2.js
+// against their own trace contract, not by this structural test.
+function isDesubDiagnosticLog(d) {
+  return (d.dialogueTrace || []).some((e) => e.agent === 'learner_drift_gate');
+}
+
 // Pre-classify logs
 for (const f of logFiles) {
   try {
     const d = loadLog(f);
+    if (isDesubDiagnosticLog(d)) continue;
     if (d.isMultiTurn && d.totalTurns > 1) multiTurnLogs.push({ file: f, data: d });
     else singleTurnLogs.push({ file: f, data: d });
   } catch {

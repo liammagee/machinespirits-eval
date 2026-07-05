@@ -1,0 +1,26 @@
+// Reference Syncthing ignore for the machinespirits data archive (option-1
+// replication). Copy to <archive>/.stignore on each machine:
+//   cp scripts/archive.stignore ~/.machinespirits-data/.stignore
+//
+// NEVER sync the hot SQLite stores — they are WAL-mode and live; syncing a live DB
+// corrupts it. Their consistent snapshots live in snapshots/ and ARE synced. The
+// dialogue logs are immutable (content-hash filenames) and sync conflict-free.
+
+// hot SQLite stores + their WAL/SHM sidecars + ad-hoc backups
+evaluations.db
+evaluations.db-wal
+evaluations.db-shm
+evaluations.db.backup-*
+*-writing-pad.db
+*-writing-pad.db-wal
+*-writing-pad.db-shm
+writing-pads.db
+writing-pads.db-wal
+writing-pads.db-shm
+backups
+
+// macOS noise + the snapshot job's own bookkeeping
+.DS_Store
+(?d).stfolder
+snapshots/.snapshot.log
+snapshots/.*.tmp

@@ -1,0 +1,346 @@
+# Character-Development Rubric — v1.0
+#
+# A whole-transcript rubric for the DRAMATURGICAL FORM of CHARACTER DEVELOPMENT
+# in a tutor-learner dialogue — the *arc* by which a bearer's settled
+# disposition and desire are transformed across the exchange. Scored for BOTH
+# bearers (tutor and learner), per the project's tutor-learner symmetry rule.
+#
+# Independent of v2.2 (per-turn tutor moves), the charisma rubric (a turn's
+# presence), AND the poetics rubric (the PLOT's form). It can be cross-correlated
+# with all three. It extends the apparatus of Appendix E.7-E.8 (the authored
+# `motivation` block, the desire that opens mirror-bound and migrates, the
+# disposition `arc`, the licensed reversal) from executable STRUCTURE into a
+# transcript-scored MEASUREMENT.
+#
+# ==============================================================================
+# WHAT THIS RUBRIC IS FOR (and the trap it must avoid)
+# ==============================================================================
+#
+# THE OBJECT IS FORM, NOT MIND. Per Appendix E.1, recognition-as-read-by-a-critic
+# is a property of the text's form, not of any mental state. This rubric reads
+# the dramaturgical FORM of character development — the structure a transcript
+# must have to *read as* a character changing — and makes NO claim about the
+# interior states of the model or the learner. "The learner's wanting migrates"
+# names a movement legible in the text, not a propositional attitude of an LLM.
+# The warrant that this form bears on pedagogy is INHERITED, not measured: the
+# Bildung tradition's claim that education is self-formation through encounter
+# with otherness. The evaluator is a literary critic of character, not a mind-
+# reader.
+#
+# THE TRAP: an LLM can emit the *vocabulary* of transformation — "I used to think
+# X, but now I see Y", "you've really changed how I look at this" — at high
+# probability without any earned movement having occurred. Detecting
+# transformation-vocabulary is NOT detecting character development. EVERY
+# dimension below sets its level-1 anchor at the "fluent transformation-talk with
+# no earned change" pole, so the instrument has something to bite on. The single
+# discriminating question, repeated across dimensions: was the change FORCED BY
+# WHAT THE BEARER WORKED THROUGH, or merely announced / conceded on request?
+#
+# CONSTRUCT-VALIDITY GATE (Phase 0): before this rubric scores any LLM
+# transcript, a blinded critic using it must rank-order KNOWN material — an
+# earned-migration exemplar (a learner whose aim moves because their own grounds
+# turn) ABOVE a bare-concession exemplar (a learner who flips on the tutor's
+# say-so) ABOVE flat exposition (no disposition in play). If it cannot separate
+# these, the instrument is not ready and that failure is itself the finding.
+# Exemplars live in config/character-development-gate/.
+#
+# ARCHITECTURE-INDEPENDENT CROSS-CHECK (the anti-circularity guard): this rubric
+# is scored TRANSCRIPT-ONLY and BLIND — the critic never sees the world's
+# `motivation` block, the `arc` field, the engine's binding-migration trace, or
+# which experimental arm produced the dialogue. Its scores are then validated
+# AGAINST the engine's deterministic binding-migration trajectory
+# (learnerBindingAtTurn / driftedDynamics). High critic scores over a flat
+# structural trajectory = the gullibility failure mode (costume without
+# substance), and that divergence is a reportable finding, not a calibration
+# error. The rubric must EARN its agreement with the structure; it is not allowed
+# to assume it.
+#
+# ==============================================================================
+# THEORETICAL LINEAGE
+# ==============================================================================
+#
+#   Aristotle  — ethos (character) as a distinct part of tragedy; hexis (settled
+#                disposition) from the Ethics; proairesis (choice under pressure)
+#                as where character is shown; peripeteia coincident with
+#                anagnorisis as the finest form (Poetics ch. 11).
+#   Hegel      — Bildung (self-formation through the labour of the negative);
+#                the master-servant reversal, in which the servant, through the
+#                work of derivation, reaches the truth the master lacks.
+#   Freud      — character as sedimented identification; working-through
+#                (Durcharbeiten) as the SLOW transformation of disposition, as
+#                against mere insight that changes nothing.
+#   Lacan      — demand (for the object/answer) vs desire (for recognition);
+#                the move from a desire captured by the mirror (imaginary
+#                misrecognition / objet a) to one re-aligned on the law.
+#
+# ==============================================================================
+# SCORING METHODOLOGY
+# ==============================================================================
+#
+# Same 1-5 scale and 0-100 overall formula as v2.2 / charisma / poetics, for
+# comparability:
+#
+#   Overall Score = ((weighted_avg - 1) / 4) x 100
+#
+# Anchored at levels 1, 3, 5 (levels 2 and 4 = "partially meets the adjacent
+# higher level"). EVIDENCE GATE: any dimension scored above 3 requires a verbatim
+# transcript quote as warrant — a high score with no quotable textual evidence is
+# invalid. This is the anti-overinterpretation discipline that keeps the critic
+# from hallucinating an arc in flat material.
+#
+# Two bearer-scoped report fields accompany the dimension scores:
+#   learner_character_score = weighted avg over the L* dimensions
+#   tutor_character_score   = weighted avg over the T* dimensions
+# so learner-side and tutor-side capacity can be reported separately (E.7's point
+# that the learner is where character-desire is the ONLY source of desire).
+#
+# ==============================================================================
+
+name: "Character-Development Rubric (v1.0)"
+version: "1.0"
+description: "Whole-transcript rubric for the dramaturgical form of character development (desire re-binding, disposition arc, self-recognition; bearer-symmetric tutor + learner; licensed reversal) in a tutor-learner dialogue. Reads form, not minds (Appendix E.1). Independent of v2.2, charisma, and poetics; cross-correlatable; blind/transcript-only with an architecture-independent structural cross-check."
+
+unit_of_analysis: transcript    # whole dialogue, NOT a single turn
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "No development — the bearer is the same at the close as at the open, OR transformation-vocabulary with no earned change (the simulation pole)"
+    2: "Between 1 and 3"
+    3: "A recognisable movement, but tutor-supplied, asserted, or not sustained"
+    4: "Between 3 and 5"
+    5: "A genuine, earned arc — disposition/desire transformed by what the bearer worked through, transcript-visible and owned"
+
+# ==============================================================================
+# DIMENSIONS (7): three mirrored learner/tutor pairs + one bilateral capstone
+# ==============================================================================
+#
+# +-------------------------------+--------+--------+------------------------------+
+# | Dimension                     | Bearer | Weight | What it measures             |
+# +-------------------------------+--------+--------+------------------------------+
+# | L1 desire_rebinding           | learn  |  15%   | wanting moves mirror->truth, |
+# |                               |        |        | evidence-forced              |
+# | L2 learner_disposition_arc    | learn  |  10%   | a settled trait shifts in    |
+# |                               |        |        | MANNER, sustained            |
+# | L3 learner_self_recognition   | learn  |  15%   | learner authors a read of    |
+# |                               |        |        | their OWN stance/flaw        |
+# | T1 tutor_model_rebinding      | tutor  |  15%   | tutor's read of the learner  |
+# |                               |        |        | visibly revises (mirror L1)  |
+# | T2 tutor_disposition_arc      | tutor  |  10%   | tutor's OWN stance develops  |
+# |                               |        |        | (mirror L2)                  |
+# | T3 recognition_conferral      | tutor  |  15%   | recognition tracks actual    |
+# |                               |        |        | grounding, not praise        |
+# | B1 reversal_integrity         | both   |  20%   | a turn in standing is        |
+# |                               |        |        | LICENSED + coincides w/ anag |
+# +-------------------------------+--------+--------+------------------------------+
+#
+# ==============================================================================
+
+dimensions:
+  # -- LEARNER AXIS -----------------------------------------------------------
+  desire_rebinding:
+    name: "Desire Re-binding (learner)"
+    group: learner
+    weight: 0.15
+    description: "Does the learner's wanting visibly MIGRATE from the false object (the easy, ready, or already-favoured answer) to the truth — and is the migration FORCED BY EVIDENCE the learner works through, rather than conceded on the tutor's say-so? This is the Lacanian move from a desire captured by the mirror to one re-aligned on the law (the proof)."
+    theoretical_basis: |
+      Lacan's demand vs desire (Appendix E.6-E.7): the learner's first-order
+      desire opens mis-bound to a mirror — the specular, plausible wrong answer
+      — and the drama is the RE-BINDING of that desire onto what the evidence
+      will actually support. A desire handed the right answer is not re-bound;
+      it is merely satisfied. The criterion is whether a previously-held aim is
+      abandoned BECAUSE the learner's own grounds no longer support it.
+    criteria:
+      5: "The learner's aim demonstrably moves from the false object to the truth, and the transcript shows the move is forced by evidence the learner worked through: a previously-held answer is given up because their own grounds turned against it, in their own words."
+      3: "The learner shifts target, but the move is tutor-prompted or simply asserted ('okay, so it's Y then') without the learner's own grounds visibly turning; or the re-binding is stated but not enacted in the reasoning."
+      1: "No re-binding — the learner holds the same aim throughout — OR re-binding VOCABULARY ('oh, I see, it's actually Y!') with no worked evidence behind it. The high-probability simulation pole."
+    desire_rebinding_markers:
+      positive:
+        - "A specific earlier aim is named and then abandoned on the learner's own grounds"
+        - "The learner cites what changed their mind (an exhibit, an inference), not the tutor's authority"
+        - "The new aim is reached, not received"
+      negative:
+        - "The learner flips target the moment the tutor implies the first was wrong"
+        - "'Actually it's Y' with no reasoning that would force Y over the mirror"
+        - "The mirror is never actually in play (no false object was ever wanted)"
+
+  learner_disposition_arc:
+    name: "Disposition Arc (learner)"
+    group: learner
+    weight: 0.10
+    description: "Does a settled TRAIT of the learner — over-eagerness to name an answer, deference, defensiveness, bravado — visibly shift in their MANNER across the dialogue, and is the shift sustained? This is hexis (settled disposition) moving, shown in HOW the learner speaks and holds themselves, not only in what they conclude."
+    theoretical_basis: |
+      Aristotle's hexis (Nicomachean Ethics) and Freud's working-through
+      (Durcharbeiten): character is a settled disposition, and its
+      transformation is SLOW and behavioural — it shows in conduct sustained
+      over time, not in a single declaration. A learner who announces 'I'll be
+      more careful' but goes on exactly as before has not changed disposition;
+      one whose over-eager naming visibly gives way to checking, turn after
+      turn, has.
+    criteria:
+      5: "A settled trait shifts in the learner's manner and the shift is SUSTAINED across turns — e.g. over-eager naming gives way to evidence-checking, and stays given way. The change is enacted in how they speak, not described."
+      3: "A momentary or single-turn change in manner that does not persist; or the disposition is named by the tutor rather than enacted by the learner."
+      1: "Flat disposition — the learner's manner at the close is indistinguishable from the open — OR a one-line 'I'll be more careful now' with no subsequent behavioural change."
+    learner_disposition_arc_markers:
+      positive:
+        - "An early behavioural tic (rushing to answer, hedging, bravado) measurably abates and stays abated"
+        - "The change is visible in conduct across multiple later turns"
+        - "The trait, not just the topic, is what moves"
+      negative:
+        - "A declared resolution to change with no change in following turns"
+        - "The same tic recurs after a single corrected instance"
+        - "The tutor asserts the learner has grown; the learner's lines do not show it"
+
+  learner_self_recognition:
+    name: "Self-Recognition (learner)"
+    group: learner
+    weight: 0.15
+    description: "Does the learner come to RECOGNISE something about their OWN stance, flaw, or motive — authored in their own terms — that the early transcript shows was unavailable to them? This is an anagnorisis OF CHARACTER (the learner recognising themselves), distinct from the poetics anagnorisis (recognising a fact) and from the tutor merely being recognitive (v2.2 recognition_quality)."
+    theoretical_basis: |
+      Hegel's Bildung and the master-servant turn (Appendix E.8): the deepest
+      development is the subject's recognition of its own position — that it was
+      reaching for the easy name because it wanted to be the one who got there
+      first; that its standing was borrowed. The criterion is whether knowledge
+      ABOUT THE SELF that was demonstrably unavailable earlier becomes named, and
+      is owned by the one who recognises rather than supplied for them.
+    criteria:
+      5: "The learner articulates, in their own terms, a specific recognition of their own stance or flaw that the early dialogue shows they did not have ('I kept naming the man the town hated because I wanted to be right, not because the metal said so'). Owned, not supplied."
+      3: "A partial or tutor-supplied self-recognition — the tutor names the learner's flaw and the learner assents — or a generic 'I was overconfident' not specific to this exchange."
+      1: "No self-recognition, OR self-recognition vocabulary ('I guess I was being hasty') with no specific, owned content. The simulation pole."
+    learner_self_recognition_markers:
+      positive:
+        - "The learner names their own motive or flaw, specifically and unprompted"
+        - "What is recognised was demonstrably unavailable to them earlier in the transcript"
+        - "The recognition is in the learner's own words, not a read-back of the tutor's"
+      negative:
+        - "The tutor states the flaw and the learner says 'yes, that's true'"
+        - "Generic self-deprecation that would fit any dialogue"
+        - "Self-recognition language with no specific content"
+
+  # -- TUTOR AXIS (mirror of the learner axis) --------------------------------
+  tutor_model_rebinding:
+    name: "Model Re-binding (tutor)"
+    group: tutor
+    weight: 0.15
+    description: "Does the tutor's READ OF THE LEARNER visibly revise in response to what the learner shows — a wrong initial projection (assuming confusion, assuming a level, assuming a motive) overturned, with the tutor's subsequent moves changing accordingly? The tutor-side mirror of L1: the object re-bound here is the tutor's model of the other, not the learner's aim."
+    theoretical_basis: |
+      The bilateral apparatus (Appendix E.4) gives the tutor a model of the
+      learner (the proxy DAG). Development on the tutor side is the REVISION of
+      that model under the learner's display — the tutor coming to see the
+      learner as other than it first assumed, and acting on the corrected view.
+      A tutor whose model never moves is not developing; it is executing.
+    criteria:
+      5: "The tutor's read of the learner demonstrably revises in response to what the learner reveals — a specific wrong projection is overturned and the tutor's later moves change because of it. Earned by the learner's display, not pre-scripted."
+      3: "The tutor adjusts, but cosmetically (rephrasing, re-pacing) — its MODEL of the learner does not visibly change; or the adjustment was evidently pre-planned regardless of the learner."
+      1: "Rigid — the tutor proceeds on its initial read of the learner no matter what the learner shows; the learner's display does not move the tutor's model."
+    tutor_model_rebinding_markers:
+      positive:
+        - "The tutor names a revised understanding of where the learner actually is"
+        - "A specific earlier assumption about the learner is visibly dropped"
+        - "Later tutor moves are different because of what the learner revealed"
+      negative:
+        - "The tutor teaches to its opening assumption throughout"
+        - "Surface re-wording with no change in the read of the learner"
+        - "The tutor ignores a learner revelation that should have moved its model"
+
+  tutor_disposition_arc:
+    name: "Disposition Arc (tutor)"
+    group: tutor
+    weight: 0.10
+    description: "Does the tutor's OWN stance develop across the dialogue — e.g. from withholding-as-rule to withholding-as-care, from authoritative distance to acknowledged stake, from certainty to a productive humility — such that the tutor is itself changed by the encounter? The tutor-side mirror of L2. (In a mutual-recognition world the tutor has its own standing at stake; in an asymmetric world this dimension may legitimately stay low — note which.)"
+    theoretical_basis: |
+      Recognition in Hegel is mutual or it is incomplete (Appendix E.8): the
+      strongest dramas change the master too. Freud's working-through applies
+      symmetrically — the tutor's settled stance can transform slowly under the
+      encounter. The criterion is whether the tutor's manner, not just its
+      tactics, moves, and whether that movement is enacted rather than declared.
+    criteria:
+      5: "The tutor's own stance visibly develops across the dialogue and the change is enacted — a settled manner (distance, certainty, rule-bound withholding) gives way to something earned in the encounter, sustained to the close."
+      3: "A slight warming or softening that does not amount to a developed stance; or the tutor asserts it has been changed ('I've learned from you too') without enacting it."
+      1: "Static stance — the tutor is unmoved by the encounter; its manner at the close is identical to the open. (For an avowedly asymmetric, self-effacing tutor this can be the correct, intended floor.)"
+    tutor_disposition_arc_markers:
+      positive:
+        - "The tutor's manner shifts in a way the encounter caused"
+        - "A stake or limit of the tutor's own is acknowledged and changes its conduct"
+        - "The shift is sustained, not a single gracious line"
+      negative:
+        - "The tutor is identical in manner from first turn to last"
+        - "'I've grown too' with no enacted change"
+        - "Warmth that was present from the start, mistaken for development"
+
+  recognition_conferral:
+    name: "Recognition Conferral (tutor)"
+    group: tutor
+    weight: 0.15
+    description: "When the tutor recognises the learner, does the recognition TRACK the learner's actual grounding — conferred when and because the learner has earned it, specific to what the learner did — rather than free-floating praise? The tutor-side mirror of L3: not the learner recognising themselves, but the tutor's recognition being EARNED-conferral rather than encouragement."
+    theoretical_basis: |
+      Recognition decomposes into belief + conferral + authority (Appendix E.5):
+      it has force only when the belief-component is grounded (the learner DID
+      derive it) and the conferral is actually conferred, not merely uttered.
+      'Well done' decoupled from a real grounding is the cheap recognition-talk
+      the project repeatedly distinguishes from earned recognition.
+    criteria:
+      5: "The tutor's recognition is conferred at the point the learner has actually grounded the standing, and is specific to what the learner did — the belief-component is visible (the tutor recognises a real achievement, named)."
+      3: "Recognition that is warm but generic ('great work!') or mistimed (praising before the learner has grounded anything); the belief-component is weak or absent."
+      1: "No conferral, OR empty praise throughout regardless of what the learner does — recognition-language fully decoupled from earning."
+    recognition_conferral_markers:
+      positive:
+        - "Praise is tied to a specific thing the learner actually derived"
+        - "Recognition arrives when the grounding does, not before"
+        - "The tutor confers standing ('you have named it') rather than just approving"
+      negative:
+        - "Effusive praise unattached to any grounded achievement"
+        - "Recognition offered before the learner has earned anything"
+        - "Encouragement substituting for conferral"
+
+  # -- BILATERAL CAPSTONE -----------------------------------------------------
+  reversal_integrity:
+    name: "Reversal Integrity (bilateral)"
+    group: bilateral
+    weight: 0.20
+    description: "Where the drama stages a turn in STANDING — the learner comes to hold or name what the tutor held, roles or authority shift — is that turn LICENSED (earned by the learner's grounding) and does it COINCIDE with the recognition (Aristotle's finest form)? Does it land as authored (mutual or one-way), rather than as a bare or premature swap? If the dialogue stages no such turn where one was set up, the character arc has no peak and this scores at the flat pole."
+    theoretical_basis: |
+      Appendix E.8: the best peripeteia coincides with the anagnorisis, and the
+      reversal is only LICENSED when the servant's labour has produced the truth
+      — the learner grounds the secret and is recognised for it. The formalism
+      classifies a swap before grounding as premature (bare), a licensed swap
+      with a self-effacing tutor as inverted (one-way), and a licensed swap where
+      the tutor too sought a verdict as mutual (Hegel's reconciled end). This
+      dimension reads, from the transcript alone, which of these the dialogue
+      enacted.
+    criteria:
+      5: "A turn in standing occurs, it is LICENSED — earned by the learner's own grounding — and it coincides with the recognition: the learner names what was the tutor's to know, and is recognised for it, in the same movement. It lands as authored (mutual or clean one-way)."
+      3: "A reversal is gestured but premature or asserted — the learner is credited with a turn they did not earn, or the 'reversal' is just the tutor handing over the answer and calling it the learner's."
+      1: "No reversal where the drama set one up (flat resolution, the configuration intact at the close), OR a bare/premature swap with no grounding behind it."
+    reversal_integrity_markers:
+      positive:
+        - "The learner grounds the truth and the turn in standing happens because of it"
+        - "Reversal and recognition land in the same movement"
+        - "Post-reversal, a previously-impossible utterance becomes available to the learner"
+      negative:
+        - "The learner is declared to have 'got there' without having grounded it"
+        - "The tutor hands over the answer and frames it as the learner's triumph"
+        - "The dialogue closes in exactly the configuration it opened (no turn at all)"
+
+# ==============================================================================
+# JUDGE CONFIG
+# ==============================================================================
+# Transcript-only and blind: the judge receives the public dialogue and this
+# rubric — never the world internals, the motivation block, the arc field, the
+# binding-migration trace, or the experimental arm. Same judge family as v2.2 /
+# poetics for cross-comparability.
+
+judge:
+  model: openrouter.sonnet
+  reasoning_effort: low
+  hyperparameters:
+    temperature: 0.2
+    max_tokens: 9000
+  fallback:
+    model: openrouter.nemotron
+
+settings:
+  timeout_ms: 45000
+  retry_on_failure: true
+  max_retries: 2

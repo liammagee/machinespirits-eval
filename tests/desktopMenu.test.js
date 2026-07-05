@@ -41,7 +41,7 @@ test('parseNavHtml extracts rail destinations (incl. home + multi-segment), drop
     <nav class="rail">
       <a class="rail__link" href="/" title="Dashboard">home</a>
       <a class="rail__link" href="/browse" title="x">scripts</a>
-      <a class="rail__link" href="/compose/live" title="x">compose a scene</a>
+      <a class="rail__link" href="/admin/compose/live" title="x">compose a scene</a>
       <a class="rail__link" href="/board" title="x">board</a>
       <a class="rail__link" href="/board" title="dup">board again</a>
       <a href="/api/workplan">API</a>
@@ -49,9 +49,9 @@ test('parseNavHtml extracts rail destinations (incl. home + multi-segment), drop
     </nav>`;
   const items = parseNavHtml(html);
   const routes = items.map((i) => i.route);
-  assert.deepEqual(routes, ['/', '/browse', '/compose/live', '/board']); // deduped, /api + /_ dropped, order preserved
+  assert.deepEqual(routes, ['/', '/browse', '/admin/compose/live', '/board']); // deduped, /api + /_ dropped, order preserved
   assert.equal(items.find((i) => i.route === '/board').label, 'board');
-  assert.equal(items.find((i) => i.route === '/compose/live').label, 'compose a scene');
+  assert.equal(items.find((i) => i.route === '/admin/compose/live').label, 'compose a scene');
 });
 
 test('shared rail source exposes board in a visible nav group', () => {
@@ -60,7 +60,7 @@ test('shared rail source exposes board in a visible nav group', () => {
   // "keep" group; the invariant is only that board stays visible in a rail group.
   assert.match(
     source,
-    /\['keep',\s*\[[^\]]*'board'[^\]]*\]\]/,
+    /\[\s*'keep',\s*\[[\s\S]*?'board'[\s\S]*?\]\s*\]/,
     'desktop/web rail groups must keep board visible (now under Keep)',
   );
 });
@@ -69,7 +69,7 @@ test('navItems produce a Go menu (title-cased, Cmd+1 on the first) only with a n
   const nav = [
     { route: '/', label: 'home' },
     { route: '/board', label: 'board' },
-    { route: '/compose/live', label: 'compose a scene' },
+    { route: '/admin/compose/live', label: 'compose a scene' },
   ];
   // no navigate action → no Go menu
   assert.ok(!labels(buildMenuTemplate({ platform: 'darwin', navItems: nav, actions: {} })).includes('Go'));

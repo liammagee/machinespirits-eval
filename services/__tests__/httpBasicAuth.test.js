@@ -223,9 +223,12 @@ describe('httpBasicAuth · PARTICIPANT_ALLOWLIST excludes the danger paths', () 
     for (const p of [
       '/pilot-admin',
       '/pilot-admin/index.html',
+      '/human-coding-admin',
+      '/human-coding-admin/index.html',
       '/chat',
       '/chat/index.html',
       '/api/eval/quick',
+      '/api/human-coding/status',
       '/api/jobs',
       '/api/compose/live/turn',
       '/api/chat/learner-turn',

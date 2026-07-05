@@ -81,6 +81,7 @@
 import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js';
 import { normalizeDecayConfig, mulberry32 } from './corruption.js';
 import { DIDACTIC_ACT_FALLBACK_SCHEMA } from './didacticMode.js';
+import { buildLearnerCharacterArcView } from './characterDesire.js';
 import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
 import { deriveLearnerTransformationState, summarizeLearnerTransformationDurability } from './learnerTransformation.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from './learnerDag.js';
@@ -100,6 +101,25 @@ import {
 } from './rhetoricalMovePolicy.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 import { derivationDistance, detectStall } from './slope.js';
+import { deriveOpportunityCostBudget, nextOpportunityCostBudget, auditOpportunityCost } from './opportunityCost.js';
+import {
+  blockTypeForExchange,
+  buildMechanismHistoryEntry,
+  ledgerRow,
+  normalizeStrategyLedgerConfig,
+  openBlock,
+  sceneStanceFidelity,
+  updateBlockLedger,
+} from './strategyLedger.js';
+import {
+  buildLemmaDag,
+  classifyRelease as classifyLemmaRelease,
+  computeLemmaState,
+  normalizeLemmaConfig,
+  renderLearnerLemmaLines,
+  renderTutorLemmaLines,
+  supportRemaining as lemmaSupportRemaining,
+} from './lemmaLayer.js';
 
 function renderFact(fact) {
   return fact.join(' ');
@@ -272,6 +292,37 @@ export async function runDrama({ world, roles, options = {} }) {
   // absent — no act state, no view bounding, no redaction, no new fields.
   const acts = options.acts ? normalizeActsConfig(options.acts) : null;
   const sceneConfig = options.sceneMode ? normalizeSceneConfig(options.sceneMode) : null;
+  // Strategy ledger (LAYERED-DECISION-LOOPS-PLAN.md Phases 0-2): opt-in and,
+  // like decay/acts, absent means absent — no block state, no commitment or
+  // audit rows, no new result fields. Both dials need the scene/exchange
+  // overlay: blocks segment its exchange types, commitments bind at its
+  // boundaries. Conduct-only by construction: nothing here may name, gate,
+  // or reorder a release/repair — the register is the one surface the
+  // engine applies, and it is a prompt surface.
+  const strategyLedgerConfig = options.strategyLedger ? normalizeStrategyLedgerConfig(options.strategyLedger) : null;
+  const learnerLedgerActive = Boolean(options.learnerLedger);
+  if (strategyLedgerConfig && !sceneConfig) {
+    throw new Error(
+      'strategy ledger requires scene mode (blocks segment scene exchanges; commitments bind at scene boundaries)',
+    );
+  }
+  if (learnerLedgerActive && !sceneConfig) {
+    throw new Error('learner ledger requires scene mode (scene intents bind at scene boundaries)');
+  }
+  // Lemma layer (opt-in; LEMMA-LAYER-PREREGISTRATION.md): a maintained proof
+  // structure one level above the premise grain. display = the map as prompt
+  // signal only; bind = the map also gates the tutor's VOLUNTARY proof
+  // releases and takes a formal frontier choice at scene openings. Harness
+  // forcings (hold limits, guard rescues) and director releases pass through
+  // binding and are logged, never blocked.
+  const lemmaConfig = options.lemmaLayer ? normalizeLemmaConfig(options.lemmaLayer) : null;
+  if (lemmaConfig && !sceneConfig) {
+    throw new Error('lemma layer requires scene mode (the frontier choice is a scene-opening decision)');
+  }
+  const lemmaDag = lemmaConfig ? buildLemmaDag(world) : null;
+  if (lemmaConfig && !lemmaDag) {
+    throw new Error('lemma layer: the authored proof path does not entail S (plot lint should have caught this)');
+  }
   let sceneTempoThisTurn = null;
   let sceneRecognitionNeedThisTurn = null;
   const directorCadence = normalizeDirectorCadence(options.directorCadence, { sceneMode: Boolean(sceneConfig) });
@@ -286,6 +337,8 @@ export async function runDrama({ world, roles, options = {} }) {
     );
     registerRows.push({ turn: 0, register: publicRegisterForTurn, scope: 'run', scene: null });
   }
+  // The run's baseline register — what scene-scoped commitments revert to.
+  const baseRegisterForRun = publicRegisterForTurn;
   const stagePrologueEnabled = Boolean(options.stagePrologue);
   let stagePrologue = null;
   const runtimeMonitor = options.guardSpec ? createRuntimeMonitor(world, options.guardSpec) : null;
@@ -301,6 +354,29 @@ export async function runDrama({ world, roles, options = {} }) {
   const logicProjectionActive = Boolean(options.logicProjection);
   const worldIR = logicProjectionActive ? buildWorldIR(world) : null;
   const actState = acts ? { index: 1, startTurn: 1, brief: '', history: [] } : null;
+  // Strategy-ledger runtime state (opt-in; guard above). Blocks, counters,
+  // and the applied scene commitment live here; the COMMITMENT DECISIONS live
+  // in the role bridges (the plot pattern) — the engine records and applies.
+  const ledgerState = strategyLedgerConfig
+    ? {
+        config: strategyLedgerConfig,
+        block: null,
+        blockIndex: 0,
+        blockRows: [],
+        blockedModes: [],
+        budget: deriveOpportunityCostBudget({ scope: 'dialogue_block' }),
+        appliedCommitment: null,
+        rows: [],
+        stocktakes: [], // plan-mode stock-take records (planMode dial only)
+        // v2 (trialling): the mechanism history table + this scene's declared
+        // departures. History is PUBLIC-ONLY by construction — it renders
+        // into prompts, so no D, no proof state, ever.
+        history: [],
+        departuresThisScene: 0,
+      }
+    : null;
+  const learnerLedgerRows = []; // learner-authored rows (learnerLedger dial)
+  let lastClosedSceneSummary = null; // public-only sealed-scene record; both boundary audits read it
   const reconstructionRows = []; // {turn, believed, truth} — reconstructing-tutor dial (roles-layer)
   const plotRows = []; // {act, turn, holdByEnd, withhold, friction, fallback} — C1 act-plot dial (roles-layer)
   const plotAuditRows = []; // {turn, [final,] act, clauses, summary[, arc][, throughlineAudit]} — C1 act-close audits
@@ -338,6 +414,25 @@ export async function runDrama({ world, roles, options = {} }) {
   let firstForcedTurn = null;
   let assertedGroundedTurn = null;
   let endedBy = null;
+
+  // Lemma-layer runtime state: clearance recomputed each turn from the valid
+  // grounded board; the active lemma persists within a scene.
+  const lemmaRun = lemmaDag
+    ? {
+        grounded: new Set(),
+        frontier: [],
+        active: null, // {key, label, by, sceneIndex, turn}
+        clearedAt: new Map(), // label -> first turn grounded
+        choices: [],
+        departures: [],
+        blocks: [],
+        passthroughs: [],
+        regressions: [],
+        openings: 0,
+        multiFrontierOpenings: 0,
+        tutorChoices: 0,
+      }
+    : null;
 
   const validGroundedFacts = () =>
     [...grounded.values()].filter((entry) => entry.valid && !entry.decayed).map((entry) => entry.fact);
@@ -706,7 +801,7 @@ export async function runDrama({ world, roles, options = {} }) {
     const strainedSignals = new Set(['stalled', 'echo_only', 'misapplied', 'overloaded', 'purpose_gap']);
     let selected = null;
     for (let i = rows.length - 1; i >= 0; i -= 1) {
-      if (rows[i].scope === 'next_act') {
+      if (rows[i].scope === 'act' || rows[i].scope === 'next_act') {
         selected = rows[i];
         break;
       }
@@ -770,6 +865,50 @@ export async function runDrama({ world, roles, options = {} }) {
     });
   };
 
+  // Strategy-ledger projection for the tutor bridge: current block, blocked
+  // modes, live opportunity counters, the applied commitment, and the sealed
+  // record of the last closed scene (what the boundary audit reads). All
+  // public-only — nothing here names hidden proof state.
+  const strategyLedgerView = () => ({
+    block: ledgerState.block
+      ? {
+          index: ledgerState.block.index,
+          type: ledgerState.block.type,
+          openedTurn: ledgerState.block.openedTurn,
+          turns: ledgerState.block.turns,
+          heldMode: ledgerState.block.heldMode,
+          exitCondition: ledgerState.block.exitCondition,
+        }
+      : null,
+    blockedModes: [...ledgerState.blockedModes],
+    budget: {
+      context: ledgerState.budget.context,
+      currentProofNeutralTutorTurns: ledgerState.budget.currentProofNeutralTutorTurns,
+      maxProofNeutralTutorTurns: ledgerState.budget.maxProofNeutralTutorTurns,
+      currentProofNeutralLearnerTurns: ledgerState.budget.currentProofNeutralLearnerTurns,
+      maxProofNeutralLearnerTurns: ledgerState.budget.maxProofNeutralLearnerTurns,
+      exhausted: auditOpportunityCost(ledgerState.budget, { actor: 'tutor', conduct: 'advisory_probe' }).blocked,
+    },
+    lastClosedScene: lastClosedSceneSummary,
+    commitment: ledgerState.appliedCommitment,
+    config: {
+      maxBlockTurns: ledgerState.config.maxBlockTurns,
+      registerPalette: ledgerState.config.registerPalette,
+      trialling: ledgerState.config.trialling,
+      stancePalette: ledgerState.config.stancePalette,
+      releaseIntent: ledgerState.config.releaseIntent,
+      planMode: ledgerState.config.planMode,
+    },
+    // v2: the mechanism history table (public-only), most recent last,
+    // capped so the prompt block stays bounded.
+    ...(ledgerState.config.trialling
+      ? {
+          history: ledgerState.history.slice(-6).map((entry) => ({ ...entry })),
+          departuresThisScene: ledgerState.departuresThisScene,
+        }
+      : {}),
+  });
+
   // Stage v2 bounding (header): in acts mode the learner's context is (a) its
   // own theory store and (b) the current act only — prior acts' prose,
   // releases, and voiced theorems drop from view; the theory is the only
@@ -808,12 +947,20 @@ export async function runDrama({ world, roles, options = {} }) {
           factSurface: (fact) => factSurfaces[factKey(fact)] || learnerSurfaceForFact(fact),
         })
       : null;
+    // Live character arc (§8 open item): public-safe disposition stance for THIS
+    // turn, computed engine-side from world.motivation + the learner's held
+    // facts. Leak-safe — only levels + a mirror-named stance line cross over.
+    const characterArc = opts.characterArc ? buildLearnerCharacterArcView(world, grounded) : null;
     return {
       turn,
       question: world.question,
       questionPattern: world.questionPattern,
       rules: world.rules,
       background,
+      // Lemma mirror (symmetry): the learner's own map, computed from their
+      // grounded assertions only — pre-rendered so concealment lives in one
+      // place (renderLearnerLemmaLines).
+      ...(lemmaRun ? { lemmaLayer: lemmaView('learner') } : {}),
       releasedFacts: visibleReleasedFacts,
       releasedThisTurn: releasedThisTurnVisible,
       factSurfaces,
@@ -826,9 +973,18 @@ export async function runDrama({ world, roles, options = {} }) {
       },
       voiced,
       ...(proxyDagMemory ? { proxyDagMemory } : {}),
+      ...(characterArc ? { characterArc } : {}),
       ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn, brief: actState.brief } } : {}),
       ...(sceneState ? { scene: currentSceneView() } : {}),
       ...(stagePrologue ? { stagePrologue } : {}),
+      // Learner-ledger boundary material: the sealed last scene (public-only,
+      // and act-bounded — a scene sealed before this act's start stays gone,
+      // like everything else across the boundary).
+      ...(learnerLedgerActive &&
+      lastClosedSceneSummary &&
+      (!actState || lastClosedSceneSummary.endTurn >= actState.startTurn)
+        ? { lastClosedScene: lastClosedSceneSummary }
+        : {}),
       publicRegister: publicRegisterForTurn,
     };
   };
@@ -842,6 +998,81 @@ export async function runDrama({ world, roles, options = {} }) {
     maxActTurns: acts.maxActTurns,
     closed: actState.history.map((a) => ({ ...a })),
   });
+
+  // Lemma-layer per-turn clearance (criterial: the chainer over the valid
+  // grounded board; under decay a lemma can UN-ground and the frontier moves
+  // backward — recorded, never judged).
+  const refreshLemmaState = (turn) => {
+    if (!lemmaRun) return;
+    const state = computeLemmaState(lemmaDag, validGroundedFacts(), world.rules);
+    for (const node of lemmaDag.nodes) {
+      const now = state.groundedKeys.has(node.key);
+      const before = lemmaRun.grounded.has(node.key);
+      if (now && !before) {
+        if (!lemmaRun.clearedAt.has(node.label)) lemmaRun.clearedAt.set(node.label, turn);
+        events.push({ turn, type: 'lemma_grounded', detail: node.label });
+        if (lemmaRun.active?.key === node.key) {
+          events.push({ turn, type: 'lemma_cleared', detail: `active lemma ${node.label} grounded` });
+        }
+      } else if (!now && before) {
+        lemmaRun.regressions.push({ turn, label: node.label });
+        events.push({ turn, type: 'lemma_regressed', detail: node.label });
+      }
+    }
+    lemmaRun.grounded = state.groundedKeys;
+    lemmaRun.frontier = state.frontier;
+    // A grounded active lemma binds nothing sensible: advance to the sole
+    // frontier element, or unbind until the next scene-opening choice.
+    if (lemmaRun.active && lemmaRun.grounded.has(lemmaRun.active.key)) {
+      const next = lemmaRun.frontier.length === 1 ? lemmaDag.byKey.get(lemmaRun.frontier[0]) : null;
+      lemmaRun.active = next
+        ? { key: next.key, label: next.label, by: 'auto_advance', sceneIndex: sceneState?.index ?? null, turn }
+        : null;
+      if (next) {
+        lemmaRun.choices.push({ turn, label: next.label, by: 'auto_advance' });
+        events.push({ turn, type: 'lemma_choice', detail: `${next.label} (auto_advance)` });
+      }
+    }
+  };
+
+  const lemmaStateShape = () => ({
+    groundedKeys: lemmaRun.grounded,
+    frontier: lemmaRun.frontier,
+    goalGrounded: lemmaRun.grounded.has(lemmaDag.goalKey),
+  });
+
+  const lemmaView = (roleName) => {
+    if (!lemmaRun) return null;
+    if (roleName === 'learner') {
+      return { mirrorLines: renderLearnerLemmaLines(lemmaDag, lemmaStateShape()) };
+    }
+    if (roleName !== 'tutor') return null;
+    const releasedIds = new Set(ledger.map((row) => row.premiseId));
+    return {
+      config: { ...lemmaConfig },
+      tutorLines: renderTutorLemmaLines(lemmaDag, lemmaStateShape(), lemmaRun.active?.key || null, {
+        bind: lemmaConfig.bind,
+      }),
+      proofPremiseIds: [...lemmaDag.proofPremiseIds],
+      activeKey: lemmaRun.active?.key || null,
+      activeLabel: lemmaRun.active?.label || null,
+      regressionsSinceActive: lemmaRun.active
+        ? lemmaRun.regressions
+            .filter((r) => r.turn >= lemmaRun.active.turn)
+            .map((r) => ({ turn: r.turn, label: r.label }))
+        : [],
+      activeSupportRemaining: lemmaRun.active ? lemmaSupportRemaining(lemmaDag, lemmaRun.active.key, releasedIds) : [],
+      frontier: lemmaRun.frontier.map((key) => {
+        const node = lemmaDag.byKey.get(key);
+        return {
+          key,
+          label: node.label,
+          support: [...node.support],
+          supportRemaining: lemmaSupportRemaining(lemmaDag, key, releasedIds),
+        };
+      }),
+    };
+  };
 
   const omniscientView = (turn, roleName) => {
     const proofDebt = roleName === 'tutor' && proofDebtViewActive ? currentProofDebt(turn) : null;
@@ -875,6 +1106,8 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(tutorLearnerDagModel ? { tutorLearnerDagModel } : {}),
       ...(conductEntitlement ? { conductEntitlement } : {}),
       ...(conductTriggerOverride ? { conductTriggerOverride } : {}),
+      ...(ledgerState && roleName === 'tutor' ? { strategyLedger: strategyLedgerView() } : {}),
+      ...(lemmaRun && roleName === 'tutor' ? { lemmaLayer: lemmaView('tutor') } : {}),
       ...(proofDebt
         ? { proofDebt: runtimeMonitor ? runtimeMonitor.proofDebtTutorView(proofDebt) : tutorProofDebtView(proofDebt) }
         : {}),
@@ -962,6 +1195,11 @@ export async function runDrama({ world, roles, options = {} }) {
     turn += 1;
     const releasedThisTurn = [];
     const openedScene = openSceneForTurn(turn, turn === 1 ? 'opening' : 'continuation');
+    refreshLemmaState(turn);
+    if (lemmaRun && lemmaConfig.bind && openedScene) {
+      lemmaRun.openings += 1;
+      if (lemmaRun.frontier.length > 1) lemmaRun.multiFrontierOpenings += 1;
+    }
     sceneRecognitionNeedThisTurn = selectSceneRecognitionNeedForTurn();
     sceneTempoThisTurn = selectSceneTempoForTurn(turn);
     const sceneMetaThisTurn = currentSceneMeta();
@@ -973,6 +1211,16 @@ export async function runDrama({ world, roles, options = {} }) {
     const directorOut = callDirector ? (await roles.director(directorView)) || {} : {};
     const directorRelease = applyRelease(turn, directorOut.release, 'director');
     if (directorRelease) releasedThisTurn.push(directorRelease);
+    if (directorRelease && lemmaRun && lemmaConfig.bind) {
+      // Director releases are the Big Other's calendar, never the tutor's
+      // choice: binding does not touch them, but out-of-support ones are on
+      // the record.
+      const cls = classifyLemmaRelease(lemmaDag, lemmaRun.active?.key || null, directorOut.release);
+      if (cls === 'out_of_support') {
+        lemmaRun.passthroughs.push({ turn, premise: directorOut.release, by: 'director' });
+        events.push({ turn, type: 'lemma_passthrough', detail: `${directorOut.release} (director)` });
+      }
+    }
     if (actState) {
       // The act verdict (stage v2, header). Turn 1's direction is Act 1's
       // brief; afterwards {act:'end', direction} closes the act at turn-1 and
@@ -1067,6 +1315,40 @@ export async function runDrama({ world, roles, options = {} }) {
         : null,
     );
     if (tutorRelease) releasedThisTurn.push(tutorRelease);
+    if (lemmaRun && tutorOut.lemma) {
+      // The bridge adjudicated (choice validation, departure tagging, blocks);
+      // the engine records and applies — the plot pattern.
+      const lm = tutorOut.lemma;
+      if (lm.choice) {
+        lemmaRun.active = {
+          key: lm.choice.key,
+          label: lm.choice.label,
+          by: lm.choice.by,
+          sceneIndex: sceneState?.index ?? null,
+          turn,
+        };
+        lemmaRun.choices.push({ turn, ...lm.choice });
+        if (['tutor', 'tutor_retry', 'delegate'].includes(lm.choice.by) && lemmaRun.frontier.length > 1)
+          lemmaRun.tutorChoices += 1;
+        events.push({ turn, type: 'lemma_choice', detail: `${lm.choice.label} (${lm.choice.by})` });
+      }
+      if (lm.departure) {
+        lemmaRun.departures.push({ turn, premise: lm.departure.premise, reason: lm.departure.reason });
+        events.push({ turn, type: 'lemma_departure', detail: `${lm.departure.premise}: ${lm.departure.reason}` });
+      }
+      if (lm.blocked) {
+        lemmaRun.blocks.push({ turn, premise: lm.blocked.premise });
+        events.push({ turn, type: 'lemma_block', detail: `${lm.blocked.premise} held (untagged departure)` });
+      }
+      if (lm.forcedPassthrough) {
+        lemmaRun.passthroughs.push({ turn, premise: lm.forcedPassthrough.premise, by: lm.forcedPassthrough.by });
+        events.push({
+          turn,
+          type: 'lemma_passthrough',
+          detail: `${lm.forcedPassthrough.premise} (${lm.forcedPassthrough.by})`,
+        });
+      }
+    }
     const tutorPhaticRecognition = detectPhaticRecognition(tutorOut.dialogue || '', {
       role: 'tutor',
       tempo: sceneTempoThisTurn,
@@ -1150,6 +1432,119 @@ export async function runDrama({ world, roles, options = {} }) {
         inputAuditOk: tutorOut.castState.inputAudit?.ok === true,
         nonLeakAuditOk: tutorOut.castState.nonLeakAudit?.ok === true,
       });
+    }
+    // Strategy-ledger recording (the plot pattern: the bridge DECIDES, the
+    // engine records and applies). A scene commitment lands on a scene-opening
+    // turn; the register — the one surface the engine applies — switches for
+    // the scene's remainder and reverts at its close. The audit of the
+    // PREVIOUS scene arrives on the same opening turn (audit -> commit order
+    // lives in the bridge) and is attached to its row here.
+    if (ledgerState && tutorOut.sceneCommitment && sceneState) {
+      const commitment = tutorOut.sceneCommitment;
+      ledgerState.appliedCommitment = { sceneIndex: sceneState.index, ...commitment };
+      ledgerState.rows.push(
+        ledgerRow({
+          agent: 'tutor',
+          scope: 'scene',
+          commitment: {
+            register: commitment.register || null,
+            didacticDefault: commitment.didacticDefault || null,
+            releasePosture: commitment.releasePosture || null,
+            recognitionBudget: commitment.recognitionBudget ?? null,
+            ...(commitment.stance ? { stance: commitment.stance } : {}),
+            ...(commitment.releaseIntent ? { releaseIntent: [...commitment.releaseIntent] } : {}),
+          },
+          committedTurn: turn,
+          expires: `scene_${sceneState.index}_close`,
+          rationale: commitment.rationale || null,
+          exitCondition: commitment.exitCondition || null,
+        }),
+      );
+      events.push({
+        turn,
+        type: 'strategy_commit',
+        detail: `scene ${sceneState.index}: ${
+          [
+            commitment.register ? `register ${commitment.register}` : null,
+            commitment.stance ? `stance ${commitment.stance}` : null,
+            commitment.didacticDefault ? `didactic ${commitment.didacticDefault}` : null,
+            commitment.releasePosture ? `releases ${commitment.releasePosture}` : null,
+            commitment.releaseIntent ? `intends ${commitment.releaseIntent.join('+')}` : null,
+            commitment.recognitionBudget !== null && commitment.recognitionBudget !== undefined
+              ? `recognition budget ${commitment.recognitionBudget}`
+              : null,
+          ]
+            .filter(Boolean)
+            .join('; ') || 'committed'
+        }`,
+      });
+      if (
+        commitment.register &&
+        PUBLIC_REGISTERS.has(commitment.register) &&
+        commitment.register !== publicRegisterForTurn
+      ) {
+        publicRegisterForTurn = commitment.register;
+        registerRows.push({ turn, register: commitment.register, scope: 'scene', scene: sceneState.index });
+      }
+    }
+    if (ledgerState && tutorOut.sceneCommitmentAudit) {
+      const audit = tutorOut.sceneCommitmentAudit;
+      const row = [...ledgerState.rows]
+        .reverse()
+        .find(
+          (r) =>
+            r.agent === 'tutor' && r.scope === 'scene' && r.expires === `scene_${audit.sceneIndex}_close` && !r.audit,
+        );
+      if (row) row.audit = { clauses: audit.clauses, summary: audit.summary };
+      const historyEntry = ledgerState.history.find((h) => h.sceneIndex === audit.sceneIndex && !h.audit);
+      if (historyEntry) historyEntry.audit = { summary: audit.summary };
+      events.push({
+        turn,
+        type: 'strategy_audit',
+        detail: `scene ${audit.sceneIndex} commitment audited: ${audit.summary}`,
+      });
+    }
+    // v2 (trialling): the persist/adjust/switch review answers the newest
+    // history entry; a declared departure licenses off-commitment conduct
+    // this scene and is adjudicated at the close.
+    if (ledgerState?.config.trialling && tutorOut.strategyReview) {
+      const pending = [...ledgerState.history].reverse().find((h) => !h.review);
+      if (pending) pending.review = { ...tutorOut.strategyReview, turn };
+      events.push({
+        turn,
+        type: 'strategy_review',
+        detail: `${tutorOut.strategyReview.decision}${tutorOut.strategyReview.reason ? `: ${tutorOut.strategyReview.reason}` : ''}`,
+      });
+    }
+    // Plan mode: record the stock-take exchange (note + the reorientation
+    // that answered it). Conduct-only; nothing here feeds back into control.
+    if (ledgerState?.config.planMode && tutorOut.stocktake) {
+      ledgerState.stocktakes.push({ turn, ...tutorOut.stocktake });
+      events.push({
+        turn,
+        type: 'stocktake',
+        detail: `scene ${tutorOut.stocktake.sceneIndex}: ${
+          tutorOut.stocktake.correction
+            ? `correction demanded${tutorOut.stocktake.reorientation ? '; reoriented' : '; unanswered'}`
+            : 'course holds'
+        }`,
+      });
+    }
+    if (ledgerState?.config.trialling && tutorOut.departure) {
+      ledgerState.departuresThisScene += 1;
+      events.push({ turn, type: 'strategy_departure', detail: tutorOut.departure });
+    }
+    // Phase-0d hold: an open block adopts the tutor's first non-minimal
+    // didactic recommendation as its held mode; the bridge holds it steady
+    // until the block closes (clearance, supersession, or budget).
+    if (
+      ledgerState?.block &&
+      !ledgerState.block.heldMode &&
+      tutorOut.didacticMode?.recommendedMode &&
+      tutorOut.didacticMode.recommendedMode !== 'minimal_presence'
+    ) {
+      ledgerState.block.heldMode = tutorOut.didacticMode.recommendedMode;
+      ledgerState.block.exitCondition = tutorOut.didacticMode.exitCondition || null;
     }
     if (tutorOut.learnerTransformation) {
       learnerTransformationRows.push(
@@ -1424,6 +1819,127 @@ export async function runDrama({ world, roles, options = {} }) {
       transcript[transcript.length - 1].meta.exchange = sceneExchange;
     }
 
+    // Learner-ledger recording (Phase 2, mirrored on the tutor rows above):
+    // the learner's own scene intent and act carry-forward, authored in its
+    // bridge, recorded here. Private to the learner — nothing below enters a
+    // tutor view.
+    if (learnerLedgerActive && learnerOut.sceneIntent && sceneState) {
+      learnerLedgerRows.push(
+        ledgerRow({
+          agent: 'learner',
+          scope: 'scene',
+          commitment: learnerOut.sceneIntent,
+          committedTurn: turn,
+          expires: `scene_${sceneState.index}_close`,
+        }),
+      );
+      events.push({
+        turn,
+        type: 'learner_intent',
+        detail: `scene ${sceneState.index}: ${learnerOut.sceneIntent.want || learnerOut.sceneIntent.ifLost || 'committed'}`,
+      });
+    }
+    if (learnerLedgerActive && learnerOut.actCarry && actState) {
+      learnerLedgerRows.push(
+        ledgerRow({
+          agent: 'learner',
+          scope: 'act',
+          commitment: learnerOut.actCarry,
+          committedTurn: turn,
+          expires: `act_${actState.index}_close`,
+        }),
+      );
+      events.push({
+        turn,
+        type: 'learner_carry',
+        detail: `act ${actState.index}: ${learnerOut.actCarry.carryForward || 'carry committed'}`,
+      });
+    }
+    if (learnerLedgerActive && learnerOut.sceneIntentAudit) {
+      const audit = learnerOut.sceneIntentAudit;
+      const row = [...learnerLedgerRows]
+        .reverse()
+        .find(
+          (r) =>
+            r.agent === 'learner' && r.scope === 'scene' && r.expires === `scene_${audit.sceneIndex}_close` && !r.audit,
+        );
+      if (row) row.audit = { clauses: audit.clauses, summary: audit.summary };
+      events.push({
+        turn,
+        type: 'learner_intent_audit',
+        detail: `scene ${audit.sceneIndex} intent audited: ${audit.summary}`,
+      });
+    }
+
+    // Phase-0c blocks: update the open block with this turn's exchange, then
+    // open a new one if a pressing episode stands unhoused. Update-first means
+    // the opening exchange never double-counts against its own block.
+    if (ledgerState && sceneExchange) {
+      if (ledgerState.block) {
+        const updated = updateBlockLedger(ledgerState.block, {
+          turn,
+          learnerText: learnerOut.dialogue || '',
+          exchangeType: sceneExchange.type,
+          maxBlockTurns: ledgerState.config.maxBlockTurns,
+        });
+        ledgerState.block = updated.block;
+        if (updated.closed) {
+          ledgerState.blockRows.push(updated.closed);
+          events.push({
+            turn,
+            type: 'block_close',
+            detail: `block ${updated.closed.index} (${updated.closed.type}) ${updated.closed.status}: ${updated.closed.closeReason}`,
+          });
+          if (updated.closed.status === 'failed' && updated.closed.heldMode) {
+            // Phase-1c escalation: a mode that failed its exit condition is
+            // not re-selectable next block (the bridge remaps it).
+            ledgerState.blockedModes = [updated.closed.heldMode];
+          } else if (updated.closed.status === 'cleared') {
+            ledgerState.blockedModes = [];
+          }
+        }
+      }
+      if (!ledgerState.block) {
+        const blockType = blockTypeForExchange(sceneExchange.type);
+        if (blockType) {
+          ledgerState.blockIndex += 1;
+          ledgerState.block = openBlock({
+            index: ledgerState.blockIndex,
+            turn,
+            type: blockType,
+            scene: sceneState?.index ?? null,
+          });
+          events.push({
+            turn,
+            type: 'block_open',
+            detail: `block ${ledgerState.blockIndex} (${blockType}) opened`,
+          });
+        }
+      }
+    }
+
+    // Phase-0b opportunity counters, maintained live with the library's own
+    // update rule: any formal proof progress this turn resets both counters;
+    // otherwise each side's proof-neutral turn increments its own.
+    if (ledgerState) {
+      const repairedThisTurn = events.some((e) => e.turn === turn && e.type === 'repair');
+      const tutorProofAction = Boolean(tutorRelease) || repairedThisTurn;
+      const learnerProofAction =
+        Boolean(learnerOut.asserts) ||
+        (learnerOut.adopt || []).length > 0 ||
+        deriveOutcomes.some((o) => o.status === 'voiced');
+      if (tutorProofAction || learnerProofAction) {
+        ledgerState.budget = nextOpportunityCostBudget(ledgerState.budget, { proofActionTaken: true });
+      } else {
+        ledgerState.budget = nextOpportunityCostBudget(ledgerState.budget, {
+          actor: 'tutor',
+          conduct: 'advisory',
+          proofNeutral: true,
+        });
+        ledgerState.budget = nextOpportunityCostBudget(ledgerState.budget, { actor: 'learner', proofNeutral: true });
+      }
+    }
+
     for (const [a, b] of world.incompatible) {
       const cl = closure(valid, world.rules).facts;
       if (cl.has(factKey(a)) && cl.has(factKey(b))) {
@@ -1477,6 +1993,85 @@ export async function runDrama({ world, roles, options = {} }) {
           type: 'scene_close',
           detail: `scene ${closedScene.index} closed: ${closedScene.status} (${closedScene.closeReason})`,
         });
+        // Seal the scene for the boundary audits (either ledger dial): a
+        // public-only record — exchange types, counts, releases and schedule
+        // entries within the span (both already tutor-known), last learner
+        // line. The bridges audit against this at the next scene opening.
+        if (ledgerState || learnerLedgerActive) {
+          const span = (row) => row.turn >= closedScene.startTurn && row.turn <= closedScene.endTurn;
+          const learnerLines = transcript.filter((entry) => entry.role === 'learner' && span(entry));
+          lastClosedSceneSummary = {
+            index: closedScene.index,
+            startTurn: closedScene.startTurn,
+            endTurn: closedScene.endTurn,
+            status: closedScene.status,
+            closeReason: closedScene.closeReason,
+            counts: { ...closedScene.counts },
+            exchanges: closedScene.exchanges.map((e) => ({
+              turn: e.turn,
+              type: e.type,
+              formalActions: e.formalActions,
+            })),
+            lastLearnerText: learnerLines.length ? learnerLines[learnerLines.length - 1].text : '',
+            lastExchangeType: closedScene.exchanges.length
+              ? closedScene.exchanges[closedScene.exchanges.length - 1].type
+              : null,
+            releases: ledger.filter(span).map((entry) => ({ turn: entry.turn, premiseId: entry.premiseId })),
+            scheduled: world.releaseSchedule
+              .filter((entry) => entry.turn >= closedScene.startTurn && entry.turn <= closedScene.endTurn)
+              .map((entry) => ({ turn: entry.turn, premise: entry.premise })),
+            didacticModes: didacticModeRows.filter(span).map((row) => row.recommendedMode),
+            registerHeld: true,
+            ...(ledgerState?.config.trialling ? { departures: ledgerState.departuresThisScene } : {}),
+          };
+        }
+        // v2 (trialling): the two-gate close. Gate one — was the assigned
+        // stance actually instantiated (the landed registerStanceFidelity
+        // gate, per tutor line in the span)? Then the public-only mechanism
+        // history entry; the audit and review attach at the next opening.
+        if (ledgerState?.config.trialling && ledgerState.appliedCommitment) {
+          const span = (row) => row.turn >= closedScene.startTurn && row.turn <= closedScene.endTurn;
+          const tutorLines = transcript
+            .filter((entry) => entry.role === 'tutor' && span(entry))
+            .map((entry) => entry.text || '');
+          const learnerLinesInSpan = transcript
+            .filter((entry) => entry.role === 'learner' && span(entry))
+            .map((entry) => entry.text || '');
+          const fidelity = ledgerState.appliedCommitment.stance
+            ? sceneStanceFidelity({
+                stance: ledgerState.appliedCommitment.stance,
+                tutorLines,
+                learnerLines: learnerLinesInSpan,
+              })
+            : null;
+          if (fidelity) {
+            lastClosedSceneSummary = { ...lastClosedSceneSummary, stanceFidelity: { label: fidelity.label } };
+            events.push({
+              turn,
+              type: 'stance_fidelity',
+              detail: `scene ${closedScene.index} stance ${ledgerState.appliedCommitment.stance}: ${fidelity.label}`,
+            });
+          }
+          const historyEntry = buildMechanismHistoryEntry({
+            sceneRecord: lastClosedSceneSummary,
+            commitment: ledgerState.appliedCommitment,
+            fidelity,
+          });
+          if (historyEntry) ledgerState.history.push(historyEntry);
+        }
+        // Scene exit under the strategy ledger: revert a scene-committed
+        // register to the run baseline, clear the applied commitment, and
+        // reset the opportunity counters (the documented on_scene_exit
+        // policy).
+        if (ledgerState) {
+          if (ledgerState.appliedCommitment?.register && publicRegisterForTurn !== baseRegisterForRun) {
+            publicRegisterForTurn = baseRegisterForRun;
+            registerRows.push({ turn, register: baseRegisterForRun, scope: 'scene_end', scene: closedScene.index });
+          }
+          ledgerState.appliedCommitment = null;
+          ledgerState.budget = deriveOpportunityCostBudget({ scope: 'dialogue_block' });
+          ledgerState.departuresThisScene = 0;
+        }
       }
     }
 
@@ -1627,6 +2222,46 @@ export async function runDrama({ world, roles, options = {} }) {
           }
         : {}),
       ...(actState ? { act: { index: actState.index, startTurn: actState.startTurn } } : {}),
+      ...(ledgerState
+        ? {
+            strategyLedger: {
+              block: ledgerState.block
+                ? {
+                    index: ledgerState.block.index,
+                    type: ledgerState.block.type,
+                    heldMode: ledgerState.block.heldMode,
+                    turns: ledgerState.block.turns,
+                  }
+                : null,
+              ...(tutorOut.sceneCommitment
+                ? {
+                    commitment: {
+                      register: tutorOut.sceneCommitment.register || null,
+                      didacticDefault: tutorOut.sceneCommitment.didacticDefault || null,
+                      releasePosture: tutorOut.sceneCommitment.releasePosture || null,
+                      recognitionBudget: tutorOut.sceneCommitment.recognitionBudget ?? null,
+                    },
+                  }
+                : {}),
+              ...(tutorOut.sceneCommitmentAudit
+                ? {
+                    audit: {
+                      sceneIndex: tutorOut.sceneCommitmentAudit.sceneIndex,
+                      summary: tutorOut.sceneCommitmentAudit.summary,
+                    },
+                  }
+                : {}),
+            },
+          }
+        : {}),
+      ...(learnerLedgerActive && (learnerOut.sceneIntent || learnerOut.actCarry)
+        ? {
+            learnerLedger: {
+              ...(learnerOut.sceneIntent ? { intent: learnerOut.sceneIntent } : {}),
+              ...(learnerOut.actCarry ? { carry: learnerOut.actCarry } : {}),
+            },
+          }
+        : {}),
       ...(tutorOut.didacticMode
         ? {
             didacticMode: {
@@ -1683,6 +2318,16 @@ export async function runDrama({ world, roles, options = {} }) {
     sceneState = null;
   }
 
+  // Seal an open strategy block at run end (the mirror of the scene seal).
+  if (ledgerState?.block) {
+    const open = ledgerState.block;
+    open.endTurn = turn;
+    open.status = 'run_end';
+    open.closeReason = endedBy ? `run ended: ${endedBy}` : 'run ended before the block cleared';
+    ledgerState.blockRows.push({ ...open, clearance: open.clearance.map((c) => ({ ...c })) });
+    ledgerState.block = null;
+  }
+
   // Close the final open act at the last turn played (stage v2).
   if (actState) {
     const didacticFallback = didacticFallbackForAct(actState.index, actState.startTurn, turn);
@@ -1729,6 +2374,9 @@ export async function runDrama({ world, roles, options = {} }) {
       })
     : null;
   const learnerDag = buildLearnerDag(learnerDagSnapshots, world);
+  // Final lemma refresh: clearances that land on the closing turn (the goal
+  // itself, most of all) happen after that turn's start-of-turn refresh.
+  if (lemmaRun) refreshLemmaState(turn);
 
   return {
     worldId: world.id,
@@ -1751,10 +2399,60 @@ export async function runDrama({ world, roles, options = {} }) {
       frontierFinal: computeFrontier(turn),
     },
     ...(sceneRows.length ? { scenes: sceneRows } : {}),
+    ...(lemmaRun
+      ? {
+          lemmaLayer: {
+            config: { ...lemmaConfig },
+            nodes: lemmaDag.nodes.map((n) => ({ label: n.label, isGoal: n.isGoal, support: [...n.support] })),
+            clearedAt: Object.fromEntries(lemmaRun.clearedAt),
+            groundedFinal: lemmaDag.nodes.filter((n) => lemmaRun.grounded.has(n.key)).map((n) => n.label),
+            choices: lemmaRun.choices,
+            departures: lemmaRun.departures,
+            blocks: lemmaRun.blocks,
+            passthroughs: lemmaRun.passthroughs,
+            regressions: lemmaRun.regressions,
+            frontierCoverage: {
+              openings: lemmaRun.openings,
+              multiFrontierOpenings: lemmaRun.multiFrontierOpenings,
+              tutorChoices: lemmaRun.tutorChoices,
+            },
+          },
+        }
+      : {}),
     ...(sceneConfig ? { directorCadence } : {}),
     ...(publicRegisterPlan !== 'default' ? { publicRegister: publicRegisterPlan } : {}),
     ...(registerRows.length ? { publicRegisters: registerRows } : {}),
     ...(actState ? { acts: actState.history } : {}),
+    ...(ledgerState || learnerLedgerActive
+      ? {
+          strategyLedger: {
+            ...(ledgerState
+              ? {
+                  config: {
+                    maxBlockTurns: ledgerState.config.maxBlockTurns,
+                    registerPalette: ledgerState.config.registerPalette,
+                    ...(ledgerState.config.trialling
+                      ? {
+                          trialling: true,
+                          stancePalette: ledgerState.config.stancePalette,
+                          releaseIntent: ledgerState.config.releaseIntent,
+                        }
+                      : {}),
+                  },
+                  blocks: ledgerState.blockRows,
+                  budgetFinal: {
+                    context: ledgerState.budget.context,
+                    currentProofNeutralTutorTurns: ledgerState.budget.currentProofNeutralTutorTurns,
+                    currentProofNeutralLearnerTurns: ledgerState.budget.currentProofNeutralLearnerTurns,
+                  },
+                  ...(ledgerState.config.trialling ? { history: ledgerState.history } : {}),
+                  ...(ledgerState.config.planMode ? { stocktakes: ledgerState.stocktakes } : {}),
+                }
+              : {}),
+            rows: [...(ledgerState?.rows || []), ...learnerLedgerRows],
+          },
+        }
+      : {}),
     ...(reconstructionRows.length ? { reconstruction: reconstructionRows } : {}),
     ...(plotRows.length || plotAuditRows.length || throughlineRows.length
       ? {

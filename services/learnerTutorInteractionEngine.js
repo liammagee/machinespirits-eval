@@ -19,6 +19,7 @@ import { stripThinkBlocks } from './evaluationTextSanitizer.js';
 import { runIdDirectedTurn } from './idDirectorEngine.js';
 import { getTutorProfile as getEvalTutorProfile } from './evalConfigLoader.js';
 import { analyzePseudoCatharsis } from './pseudoCatharsisDetector.js';
+import { callAIWithCliBridge } from './cliProviderBridge.js';
 
 // ============================================================================
 // Interaction Engine Configuration
@@ -2742,11 +2743,13 @@ function calculateMemoryDelta(before, after) {
  * @returns {Promise<Object>} Learner result shape
  */
 async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 'learner', messageHistory = null) {
-  // Delegate all retry and fetch logic to tutor-core
-  const raw = await callAI(agentConfig, systemPrompt, userPrompt, agentRole, {
+  // Delegate metered providers to tutor-core, while allowing repo-local CLI
+  // providers for dynamic learners in high-powered, non-OpenRouter evals.
+  const raw = await callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, agentRole, {
     messageHistory,
     // Add providerConfig for API key/base URL resolution if needed by tutor-core
     ...agentConfig.providerConfig,
+    fallbackCallAI: callAI,
   });
 
   // Map tutor-core result shape back to learner result shape

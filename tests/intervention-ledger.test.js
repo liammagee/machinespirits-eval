@@ -54,3 +54,136 @@ test('ledger closes pending intervention from learner evidence', () => {
   assert.equal(closed.ledger[0].status, 'closed');
   assert.equal(closed.ledger[0].outcome, 'success');
 });
+
+function combinedPending() {
+  const successSignal = {
+    required_evidence: ['learner-authored rationale', 'learner-authored prediction', 'non-formulaic learner rationale'],
+    forbidden_evidence: ['mere agreement'],
+  };
+  return {
+    contract_id: 'combined-contract',
+    turn_index: 0,
+    hypothesis_ids: ['resistance_rote_parroting'],
+    action_type: 'request_evidence',
+    expected_transition: {},
+    success_signal: successSignal,
+    original_success_signal: successSignal,
+    adaptation_policy_layer: {
+      proof_dag: { id: 'W_AF6_CURRICULUM' },
+      learner_resistance: { observed_signal: 'rote_parroting' },
+    },
+    status: 'pending',
+    observed_transition: null,
+    outcome: null,
+    evidence: [],
+    staged_closure: null,
+    policy_update: null,
+  };
+}
+
+function typedCombinedPending() {
+  const successSignal = {
+    required_evidence: ['learner-authored rationale'],
+    forbidden_evidence: ['mere agreement'],
+    evidence_contract: {
+      version: 'adaptation-evidence-contract.v1',
+      mode: 'proof_core_plus_resistance_core',
+      core_evidence: ['learner-authored rationale'],
+      any_of_groups: [
+        {
+          id: 'resistance_core',
+          axis: 'relevance',
+          min: 1,
+          labels: ['learner-owned relevance test', 'task reorientation'],
+        },
+      ],
+      supporting_evidence: ['learner-owned relevance test', 'task reorientation'],
+    },
+  };
+  return {
+    ...combinedPending(),
+    success_signal: successSignal,
+    original_success_signal: successSignal,
+    adaptation_policy_layer: {
+      proof_dag: { id: 'W_AF6_CURRICULUM' },
+      learner_resistance: { observed_signal: 'irrelevance' },
+    },
+  };
+}
+
+test('staged combined closure keeps a partial proof/resistance contract pending', () => {
+  const staged = closePendingIntervention({
+    ledger: [combinedPending()],
+    learnerTurn: 'I can justify it because the relation changes in this case, not just by repeating the formula.',
+    turnIndex: 1,
+    config: { stagedCombinedClosure: true },
+  });
+
+  assert.equal(staged.closedRecord, null);
+  assert.equal(staged.pendingIntervention.status, 'pending');
+  assert.equal(staged.pendingIntervention.outcome, 'partial');
+  assert.deepEqual(staged.pendingIntervention.success_signal.required_evidence, ['learner-authored prediction']);
+  assert.deepEqual(staged.pendingIntervention.staged_closure.missing_required_evidence, [
+    'learner-authored prediction',
+  ]);
+});
+
+test('staged combined closure succeeds once missing evidence appears', () => {
+  const first = closePendingIntervention({
+    ledger: [combinedPending()],
+    learnerTurn: 'I can justify it because the relation changes in this case, not just by repeating the formula.',
+    turnIndex: 1,
+    config: { stagedCombinedClosure: true },
+  });
+  const second = closePendingIntervention({
+    ledger: first.ledger,
+    learnerTurn: 'I predict the formula breaks when the case changes.',
+    turnIndex: 2,
+    config: { stagedCombinedClosure: true },
+  });
+
+  assert.equal(second.pendingIntervention, null);
+  assert.equal(second.closedRecord.status, 'closed');
+  assert.equal(second.closedRecord.outcome, 'success');
+  assert.deepEqual(second.closedRecord.success_signal.required_evidence, [
+    'learner-authored rationale',
+    'learner-authored prediction',
+    'non-formulaic learner rationale',
+  ]);
+  assert.equal(second.closedRecord.evidence.length, 2);
+});
+
+test('typed staged closure succeeds with proof core plus one resistance core across turns', () => {
+  const first = closePendingIntervention({
+    ledger: [typedCombinedPending()],
+    learnerTurn: 'The evidence would be the assumption we already checked.',
+    turnIndex: 1,
+    config: { stagedCombinedClosure: true, semanticOutcomeObserver: true },
+  });
+  assert.equal(first.closedRecord, null);
+  assert.equal(first.pendingIntervention.status, 'pending');
+  assert.deepEqual(first.pendingIntervention.staged_closure.missing_evidence_axes, ['relevance']);
+
+  const second = closePendingIntervention({
+    ledger: first.ledger,
+    learnerTurn: 'This step helps decide whether the method is valid for the actual task.',
+    turnIndex: 2,
+    config: { stagedCombinedClosure: true, semanticOutcomeObserver: true },
+  });
+
+  assert.equal(second.pendingIntervention, null);
+  assert.equal(second.closedRecord.outcome, 'success');
+  assert.equal(second.closedRecord.evidence_contract.satisfied, true);
+});
+
+test('typed staged closure does not promote empty rationale to accumulated success', () => {
+  const closed = closePendingIntervention({
+    ledger: [typedCombinedPending()],
+    learnerTurn: 'Because it just works and that proves this is the right move.',
+    turnIndex: 1,
+    config: { stagedCombinedClosure: true, semanticOutcomeObserver: true },
+  });
+
+  assert.equal(closed.pendingIntervention, null);
+  assert.equal(closed.closedRecord.outcome, 'failure');
+});

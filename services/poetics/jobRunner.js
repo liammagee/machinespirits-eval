@@ -5,12 +5,12 @@ import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 // ============================================================================
-// Poetics job launcher — guarded spawner for the four poetics run types.
+// Poetics job launcher — guarded spawner for local browser-launched run types.
 //
-// The browser can kick off (1) new generative drama runs, (2) discursive
-// replays (counterfactual revisions), (3) adversarial CLI structure scores, and
-// (4) online OpenRouter-METERED Sonnet scores. Each kind maps to exactly one
-// whitelisted script; user input is turned into an argv ARRAY by a per-kind
+// The browser can kick off generative drama runs, discursive replays
+// (counterfactual revisions), evaluation-cell runs, adversarial CLI structure
+// scores, and online OpenRouter-METERED Sonnet scores. Each kind maps to
+// exactly one whitelisted script; user input is turned into an argv ARRAY by a per-kind
 // builder (never a shell string), and the resolved cost class drives the UI's
 // confirm gate + a serial lock.
 //
@@ -82,6 +82,16 @@ function bool(v) {
 // (codex/claude/agy/gemini) routes through the plan → quota, not metered.
 function looksMetered(model) {
   return typeof model === 'string' && model.includes('/');
+}
+
+function validateToken(value, key, pattern, help) {
+  if (!pattern.test(value)) throw new Error(`${key} has invalid characters${help ? ` (${help})` : ''}`);
+  return value;
+}
+
+function optSafeToken(params, key, pattern, help) {
+  const value = optString(params, key);
+  return value ? validateToken(value, key, pattern, help) : null;
 }
 
 // ── Per-kind argv builders ────────────────────────────────────────────────────
@@ -408,6 +418,71 @@ function buildOnlineScore(params) {
   return { argv, costClass, label, costNote };
 }
 
+const EVAL_JUDGE_CLIS = ['none', 'claude', 'gemini', 'codex'];
+const EVAL_TOKEN_RE = /^[\w./:-]+$/u;
+const EVAL_CSV_TOKEN_RE = /^[\w./:-]+(?:,[\w./:-]+)*$/u;
+const EVAL_CLUSTER_RE = /^[\w-]+(?:,[\w-]+)*$/u;
+
+function buildEvalCell(params) {
+  const cell = validateToken(reqString(params, 'cell'), 'cell', /^cell_\d+[\w-]*$/u, 'expected cell_<n>...');
+  const runs = optPosInt(params, 'runs') || 1;
+  const parallelism = optPosInt(params, 'parallelism');
+  const dryRun = bool(params.dryRun);
+  const skipRubric = bool(params.skipRubric);
+  const live = bool(params.live);
+  const transcript = bool(params.transcript);
+  const allowModelMix = bool(params.allowModelMix);
+
+  const scenario = optSafeToken(params, 'scenario', EVAL_CSV_TOKEN_RE, 'comma-separated scenario ids');
+  const cluster = optSafeToken(params, 'cluster', EVAL_CLUSTER_RE, 'comma-separated cluster names');
+  if (scenario && cluster) throw new Error('scenario and cluster are mutually exclusive');
+
+  const argv = ['run', '--profiles', cell, '--runs', String(runs)];
+  if (scenario) argv.push('--scenario', scenario);
+  if (cluster) argv.push('--cluster', cluster);
+  if (parallelism) argv.push('--parallelism', String(parallelism));
+
+  const description =
+    optString(params, 'description') || `Pedagogical drama batch: ${cell}${scenario ? ` / ${scenario}` : ''}`;
+  argv.push('--description', description.slice(0, 240));
+
+  const addModelFlag = (flag, key) => {
+    const value = optSafeToken(params, key, EVAL_TOKEN_RE, 'model alias or provider/model slug');
+    if (value) argv.push(flag, value);
+  };
+  addModelFlag('--model', 'model');
+  addModelFlag('--tutor-model', 'tutorModel');
+  addModelFlag('--ego-model', 'egoModel');
+  addModelFlag('--superego-model', 'superegoModel');
+  addModelFlag('--learner-model', 'learnerModel');
+  addModelFlag('--learner-ego-model', 'learnerEgoModel');
+  addModelFlag('--learner-superego-model', 'learnerSuperegoModel');
+
+  const judge = enumValue(params, 'judgeCli', EVAL_JUDGE_CLIS, 'none');
+  if (judge !== 'none') {
+    argv.push('--judge-cli', judge);
+    const judgeCliModel = optSafeToken(params, 'judgeCliModel', EVAL_TOKEN_RE, 'CLI model alias');
+    if (judgeCliModel) argv.push('--judge-cli-model', judgeCliModel);
+  }
+
+  const maxTokens = optPosInt(params, 'maxTokens');
+  if (maxTokens) argv.push('--max-tokens', String(maxTokens));
+  if (dryRun) argv.push('--dry-run');
+  if (skipRubric) argv.push('--skip-rubric');
+  if (live) argv.push('--live');
+  if (transcript) argv.push('--transcript');
+  if (allowModelMix) argv.push('--allow-model-mix');
+
+  const costClass = dryRun ? COST_CLASSES.FREE : COST_CLASSES.METERED;
+  const label = `script-batch · ${cell} · runs=${runs}${scenario ? ` · ${scenario}` : cluster ? ` · ${cluster}` : ''}${
+    dryRun ? ' · dry-run' : ''
+  }`;
+  const costNote = dryRun
+    ? 'Dry-run script batch uses mock tutor/learner/judge paths — no API spend.'
+    : 'Real script batches call the configured tutor and learner models; treat as OpenRouter/API metered spend.';
+  return { argv, costClass, label, costNote };
+}
+
 // ── Whitelisted job kinds ─────────────────────────────────────────────────────
 
 export const JOB_KINDS = Object.freeze({
@@ -452,6 +527,12 @@ export const JOB_KINDS = Object.freeze({
     script: 'scripts/score-poetics-missing-sonnet.js',
     title: 'Online score — Sonnet (OpenRouter, metered $)',
     build: buildOnlineScore,
+  },
+  'eval-cell': {
+    kind: 'eval-cell',
+    script: 'scripts/eval-cli.js',
+    title: 'Script batch — tutor cell + AI learner',
+    build: buildEvalCell,
   },
 });
 
@@ -506,6 +587,12 @@ function resultLinks(kind, params = {}) {
         label: 'open scored scripts',
         href: `/browse${q({ runId: params.mode === 'run' ? params.runId : '', tab: 'scores' })}`,
       },
+    ];
+  }
+  if (kind === 'eval-cell') {
+    return [
+      { label: 'open eval notes', href: '/eval' },
+      { label: 'launch another', href: `/admin/runs${q({ kind: 'eval-cell', cell: params.cell })}` },
     ];
   }
   return [];

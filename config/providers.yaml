@@ -30,6 +30,16 @@ providers:
       opus-4-8: claude-opus-4-8
       sonnet-4-5: claude-sonnet-4-5
       sonnet-4-6: claude-sonnet-4-6
+      sonnet-5: claude-sonnet-5
+
+  # Spawns the local `codex` CLI as a subprocess and uses the user's Codex
+  # login. No OpenRouter/OpenAI API key is required. Intended for high-powered
+  # eval slices where local CLI routing is part of the experimental condition.
+  codex:
+    default_model: gpt-5.5
+    models:
+      gpt-5.5: gpt-5.5
+      gpt-5.2-codex: gpt-5.2-codex
 
   openai:
     api_key_env: OPENAI_API_KEY
@@ -70,6 +80,7 @@ providers:
       gemini-flash-3.1: google/gemini-3.1-flash-lite-preview
       # Mid-tier options
       sonnet: anthropic/claude-sonnet-4.6
+      sonnet-5: anthropic/claude-sonnet-5
       gpt-mini: openai/gpt-5-mini
       # Premium options
       opus: anthropic/claude-opus-4.6

@@ -44,6 +44,11 @@ function mockOpenRouterResponse({ content = '', inputTokens = 10, outputTokens =
   };
 }
 
+function lastOpenRouterBody(mockFetch) {
+  const [, options] = mockFetch.mock.calls.at(-1);
+  return JSON.parse(options.body);
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -62,6 +67,11 @@ describe('callAI empty-content retry', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     vi.useRealTimers();
+    delete process.env.OPENROUTER_REASONING_EFFORT;
+    delete process.env.OPENROUTER_REASONING_MAX_TOKENS;
+    delete process.env.OPENROUTER_REASONING_EXCLUDE;
+    delete process.env.OPENROUTER_MAX_COMPLETION_TOKENS;
+    delete process.env.OPENROUTER_API_TIMEOUT_MS;
   });
 
   it('returns immediately on non-empty response (no retry)', async () => {
@@ -72,6 +82,49 @@ describe('callAI empty-content retry', () => {
     expect(result.text).toBe('Hello!');
     expect(result.emptyContentRetries).toBeUndefined();
     expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends OpenRouter reasoning runtime controls from environment overrides', async () => {
+    process.env.OPENROUTER_REASONING_EFFORT = 'none';
+    process.env.OPENROUTER_REASONING_MAX_TOKENS = '0';
+    process.env.OPENROUTER_REASONING_EXCLUDE = 'true';
+    process.env.OPENROUTER_MAX_COMPLETION_TOKENS = '1800';
+    mockFetch.mockResolvedValueOnce(mockOpenRouterResponse({ content: 'Runtime-controlled', outputTokens: 5 }));
+
+    const result = await callAI(
+      makeAgentConfig({
+        hyperparameters: {
+          temperature: 0.5,
+          max_tokens: 1500,
+          reasoning_effort: 'low',
+          reasoning_max_tokens: 400,
+          reasoning_exclude: false,
+          max_completion_tokens: 900,
+        },
+      }),
+      'system',
+      'user',
+      'ego',
+    );
+
+    const body = lastOpenRouterBody(mockFetch);
+    expect(result.text).toBe('Runtime-controlled');
+    expect(body.reasoning).toEqual({ max_tokens: 0, exclude: true });
+    expect(body.max_completion_tokens).toBe(1800);
+  });
+
+  it('sends OpenRouter abort signal and maps aborts to timeout errors when configured', async () => {
+    process.env.OPENROUTER_API_TIMEOUT_MS = '1234';
+    const abortError = new Error('The operation was aborted');
+    abortError.name = 'AbortError';
+    mockFetch.mockRejectedValueOnce(abortError);
+
+    await expect(callAI(makeAgentConfig(), 'system', 'user', 'ego')).rejects.toThrow(
+      /OpenRouter API request timed out after 1234ms/,
+    );
+
+    const [, options] = mockFetch.mock.calls[0];
+    expect(options.signal).toBeInstanceOf(AbortSignal);
   });
 
   it('retries on empty content with 0 output tokens and succeeds', async () => {

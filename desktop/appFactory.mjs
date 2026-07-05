@@ -4,7 +4,7 @@
 //
 // In production (smoke=false) it returns EXACTLY the web poetics app — the
 // superset built by the exported `createPoeticsBrowserApp` factory (which mounts
-// the four shared /api/* routers + static UI via mountEvalSurfaces, plus the
+// the shared /api/* routers + static UI via mountEvalSurfaces, plus the
 // poetics-only routes). Because the desktop serves the identical factory output,
 // the desktop and web route tables are the same by construction. That invariant
 // is locked by tests/desktopRouteParity.test.js — the "stays in sync" guard.
