@@ -46,3 +46,26 @@ Per run: `T*` = `assertedGroundedTurn`, cap+1 = 29 imputed (caps 28; the frozen 
 ## Artifacts
 
 Specs `config/drama-derivation/matrix-specs/sonnet-cal-display-{marrick,marrick-resistant}.yaml`; zero-paid validation pre-freeze; runs `exports/dramatic-derivation/matrix/sonnet-cal-display-<world>/`; analysis via the frozen `lemma-display` design; report `exports/dramatic-derivation/lemma-layer/sonnet-calibrated-contrast/`.
+
+---
+
+## Results addendum (2026-07-05; frozen analysis unmodified; report at `exports/dramatic-derivation/lemma-layer/sonnet-calibrated-contrast/phase3-contrasts-report.{json,md}`)
+
+**Execution.** 24/24 runs, claude CLI (sonnet), blocks sequential at concurrency 3 (~80 min), zero interruptions, zero parse failures. The calibration held: 17/24 runs grounded overall — the dose produced a genuinely informative regime (no floor, no ceiling) on both worlds.
+
+**Promotion bar: NOT MET — bars 1 and 2 fail; bar 3 passes 9/9.**
+
+1. **Direction: FAIL, split strata.** Marrick: display 23.17 vs baseline 25.83 (display, clearly — 5/6 grounded all at exactly T\* = 22 vs 3/6 scattered). Marrick-resistant: display 24.83 vs baseline 23.33 (baseline — display dropped two dramas the baseline held). Per-world [-1, +1].
+2. **Pooled Mann–Whitney: FAIL.** U = 65/144 vs ≤ 42; pooled T\* 24.00 vs 24.58 (Δ = −0.58).
+3. **Guardrails: PASS 9/9** — zero binding events, releases at parity or better, marrick aporia actually improved (1 vs 3).
+
+**Recorded verdict (as pre-committed): NOT CONFIRMED — and the mid-tier question closes MEASURED.** Unlike the voided first attempt, this is a real answer: at the dose where Sonnet's failure is specifically decay-repair, the lemma map as pure information does not reliably rescue it. The lemma-layer closure now spans two model tiers with both halves measured (frontier: redundant; mid-tier: not reliably additive), and the whole-line law survives its strongest test yet — an artifact aimed by a measured capability gap at exactly the content it externalizes still could not clear a pre-registered outcome bar.
+
+**Descriptive record:**
+
+- **The split mirrors the codex display confirmatory almost exactly** (that run: direction [-1, +1], display winning marrick and losing the resistant stratum). Two models, two independent seed draws, same shape: the map leans helpful on plain marrick and unhelpful on the resistant variant. If anything in this line deserves a future look, it is this world × map interaction — the resistant learner's push-back may interact badly with a tutor that trusts the map's "already established" entries (speculative; recorded as color only).
+- Marrick display's five wins all at exactly T\* = 22 (the schedule-optimal turn) vs baseline's scatter — on the world where the map helped, it helped by *tightening* execution to the calendar, consistent with the bookkeeping reading.
+- Repair latency worsened slightly in the display arm (13.56 vs 11.92) — the map does not speed repairs; where it helps it seems to prevent the *need* for late repairs (marrick aporia 1 vs 3).
+- The dose-calibration methodology itself is the durable product: the band rule + dose ladder took a void, unmeasurable question to a measured answer for ~12 screen runs of quota.
+
+**Consequences (per the freeze):** the mid-tier question closes measured; the lemma-layer line's closure extends to two tiers; the calibration and dose-response stand as reusable instruments; no further lemma draws at any tier without a fresh operator decision.
