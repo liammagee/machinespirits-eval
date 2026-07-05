@@ -1,7 +1,7 @@
 {
   "claims": {
     "paper.abstract.primary_scored_n": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "manifest",
         "version": "1.8.0",
@@ -12,7 +12,7 @@
       "actual_value": 4312
     },
     "auto.inventory.template.n.n_350.null.jaymev": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
         "count": 350,
@@ -21,7 +21,7 @@
       "actual_value": 350
     },
     "auto.inventory.inferred.n.n_216.null.1nvlvde": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
         "count": 216,
@@ -30,7 +30,7 @@
       "actual_value": 216
     },
     "auto.inventory.inferred.n.n_144.null.lgar52": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
         "count": 144,
@@ -39,7 +39,7 @@
       "actual_value": 144
     },
     "auto.inventory.inferred.n.n_108.null.t213jz": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
         "count": 108,
@@ -48,7 +48,7 @@
       "actual_value": 108
     },
     "auto.inventory.template.stat.d_0_05.null.10t77g9": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "effect_size",
         "domain": "tutor",
@@ -63,7 +63,7 @@
       "actual_value": -0.06913479944671314
     },
     "auto.inventory.inferred.n.n_6.null.4l8ul8": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
         "count": 6,
@@ -72,7 +72,7 @@
       "actual_value": 6
     },
     "paper2.calibration.variance_reduction": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "dimension_variance",
         "group_by": "recognition",
@@ -86,29 +86,29 @@
       "actual_value": -0.5283949078015643
     },
     "paper2.calibration.recognition_cluster_d": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "dimension_cluster_effect",
         "cluster": "recognition_theoretic",
         "group_by": "recognition",
         "n_dimensions": 3,
-        "n_rows": 11052
+        "n_rows": 11064
       },
       "actual_value": 0.8979098574195925
     },
     "paper2.calibration.infrastructure_cluster_d": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "dimension_cluster_effect",
         "cluster": "infrastructure",
         "group_by": "recognition",
         "n_dimensions": 7,
-        "n_rows": 11052
+        "n_rows": 11064
       },
-      "actual_value": 0.5585793778971496
+      "actual_value": 0.5590432762635021
     },
     "paper2.taxonomy.corpus_size": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "jsonl_critique_stats",
         "metric": "total_count",
@@ -118,7 +118,7 @@
       "actual_value": 500
     },
     "paper2.taxonomy.recognition_failure_dominant": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "jsonl_critique_stats",
         "metric": "category_pct",
@@ -129,7 +129,7 @@
       "actual_value": 16.2
     },
     "paper2.taxonomy.persistence_rate": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "jsonl_critique_stats",
         "metric": "persistence_rate",
@@ -139,7 +139,7 @@
       "actual_value": 0.4752252252252252
     },
     "paper2.taxonomy.stalling_rate": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "jsonl_critique_stats",
         "metric": "stalling_rate",
@@ -149,7 +149,7 @@
       "actual_value": 0.36363636363636365
     },
     "paper2.taxonomy.escalation_balance": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "jsonl_critique_stats",
         "metric": "escalation_balance",
@@ -159,7 +159,7 @@
       "actual_value": 1.1578947368421053
     },
     "paper2.trajectory.learner_positive_slope": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "trajectory_slope",
         "side": "learner",
@@ -174,7 +174,7 @@
       "actual_value": 0
     },
     "paper2.trajectory.tutor_positive_slope": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "trajectory_slope",
         "side": "tutor",
@@ -189,7 +189,7 @@
       "actual_value": 0.036739024418013286
     },
     "paper2.trajectory.recognition_steeper_learner": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "trajectory_slope",
         "side": "learner",
@@ -204,7 +204,7 @@
       "actual_value": 0
     },
     "paper2.trajectory.confusion_adaptation": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "conditional_delta",
         "event_dimension": "revision_signals",
@@ -219,7 +219,7 @@
       "actual_value": -0.17023346303501946
     },
     "paper2.s1.pilot.factorial_d": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "cross_reference",
         "ref_claim": "paper.modulation.dataset_n350"
@@ -227,7 +227,7 @@
       "actual_value": 1
     },
     "paper2.s1.verified.trace_logging": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "tutor-core/services/tutorDialogueEngine.js",
@@ -237,7 +237,7 @@
       "actual_value": 7
     },
     "paper2.s1.verified.provenance_hashes": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "services/evaluationStore.js",
@@ -247,7 +247,7 @@
       "actual_value": 11
     },
     "paper2.s1.verified.provable_discourse": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "scripts/validate-provable-discourse.js",
@@ -257,7 +257,7 @@
       "actual_value": 6
     },
     "paper2.s1.pilot.architecture_interaction": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "cross_reference",
         "ref_claim": "paper.modulation.dataset_n350"
@@ -265,25 +265,25 @@
       "actual_value": 1
     },
     "paper2.s3.failure.cognitive_overload": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
-        "count": 14295,
-        "max_created_at": "2026-07-01T04:53:00.382Z"
+        "count": 14552,
+        "max_created_at": "2026-07-05T10:02:28.704Z"
       },
-      "actual_value": 14295
+      "actual_value": 14552
     },
     "paper2.s3.failure.adversary_overdeference": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
-        "count": 14295,
-        "max_created_at": "2026-07-01T04:53:00.382Z"
+        "count": 14552,
+        "max_created_at": "2026-07-05T10:02:28.704Z"
       },
-      "actual_value": 14295
+      "actual_value": 14552
     },
     "paper2.s3.pilot.cells_40_45_architecture": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "config/tutor-agents.yaml",
@@ -293,7 +293,7 @@
       "actual_value": 2
     },
     "paper2.validity.cross_version_correlation": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "rubric_version_comparison",
         "version_column": "tutor_rubric_version",
@@ -301,14 +301,14 @@
         "version_b": "2.0",
         "metric": "tutor_first_turn_score",
         "output": "correlation",
-        "n_rows": 14109,
+        "n_rows": 14271,
         "n_pairs": 2,
-        "max_created_at": "2026-07-01T04:53:00.382Z"
+        "max_created_at": "2026-07-05T10:02:28.704Z"
       },
       "actual_value": 1
     },
     "paper2.validity.cross_version_effect_preserved": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "rubric_version_comparison",
         "version_column": "tutor_rubric_version",
@@ -316,14 +316,14 @@
         "version_b": "2.0",
         "metric": "tutor_first_turn_score",
         "output": "mean_delta",
-        "n_rows": 14109,
+        "n_rows": 14271,
         "n_pairs": 2,
-        "max_created_at": "2026-07-01T04:53:00.382Z"
+        "max_created_at": "2026-07-05T10:02:28.704Z"
       },
       "actual_value": 5.468596953767793
     },
     "paper2.provenance.dialogue_hashes": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "provenance_check",
         "checks": [
@@ -335,7 +335,7 @@
       "actual_value": 1
     },
     "paper2.provenance.judge_input_hashes": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "provenance_check",
         "checks": [
@@ -347,7 +347,7 @@
       "actual_value": 1
     },
     "paper2.provenance.audit_trail": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "provenance_check",
         "checks": [
@@ -359,7 +359,7 @@
       "actual_value": 0.9814163736815671
     },
     "paper2.s4.architecture.trace_logging_7_sites": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "tutor-core/services/tutorDialogueEngine.js",
@@ -369,7 +369,7 @@
       "actual_value": 7
     },
     "paper2.s4.architecture.disable_superego_flag": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "tutor-core/services/tutorDialogueEngine.js",
@@ -379,7 +379,7 @@
       "actual_value": 6
     },
     "paper2.s4.architecture.provenance_hashes": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "services/evaluationStore.js",
@@ -389,7 +389,7 @@
       "actual_value": 11
     },
     "paper2.s4.architecture.rubric_versioning": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "services/evaluationStore.js",
@@ -399,7 +399,7 @@
       "actual_value": 16
     },
     "paper2.s4.architecture.learner_deliberation": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "services/evaluationRunner.js",
@@ -409,7 +409,7 @@
       "actual_value": 5
     },
     "paper2.s4.architecture.two_file_storage": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "services/evaluationRunner.js",
@@ -419,7 +419,7 @@
       "actual_value": 4
     },
     "paper2.s4.architecture.superego_follows_lookahead": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "services/transcriptProjection.js",
@@ -429,79 +429,79 @@
       "actual_value": 3
     },
     "paper2.s6.calibration.within_response_d": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
-        "count": 4831,
-        "max_created_at": "2026-06-24T19:22:05.977Z"
+        "count": 4909,
+        "max_created_at": "2026-07-03T02:46:25.063Z"
       },
-      "actual_value": 4831
+      "actual_value": 4909
     },
     "paper2.s6.calibration.floor_elimination": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
-        "count": 14295,
-        "max_created_at": "2026-07-01T04:53:00.382Z"
+        "count": 14552,
+        "max_created_at": "2026-07-05T10:02:28.704Z"
       },
-      "actual_value": 14295
+      "actual_value": 14552
     },
     "paper2.s6.calibration.architecture_interaction": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
-        "count": 14295,
-        "max_created_at": "2026-07-01T04:53:00.382Z"
+        "count": 14552,
+        "max_created_at": "2026-07-05T10:02:28.704Z"
       },
-      "actual_value": 14295
+      "actual_value": 14552
     },
     "paper2.s6.calibration.scenario_impasse_largest": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
-        "count": 14295,
-        "max_created_at": "2026-07-01T04:53:00.382Z"
+        "count": 14552,
+        "max_created_at": "2026-07-05T10:02:28.704Z"
       },
-      "actual_value": 14295
+      "actual_value": 14552
     },
     "paper2.s6.calibration.cross_model_replication": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
-        "count": 4831,
-        "max_created_at": "2026-06-24T19:22:05.977Z"
+        "count": 4909,
+        "max_created_at": "2026-07-03T02:46:25.063Z"
       },
-      "actual_value": 4831
+      "actual_value": 4909
     },
     "paper2.s6.adaptive_responsiveness.tutor_learner_asymmetry": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
-        "count": 3681,
-        "max_created_at": "2026-06-24T18:12:28.487Z"
+        "count": 3759,
+        "max_created_at": "2026-07-03T02:46:25.063Z"
       },
-      "actual_value": 3681
+      "actual_value": 3759
     },
     "paper2.s6.asymmetry.effect_size_ratio": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
-        "count": 2782,
-        "max_created_at": "2026-06-24T18:12:28.487Z"
+        "count": 2860,
+        "max_created_at": "2026-07-03T02:46:25.063Z"
       },
-      "actual_value": 2782
+      "actual_value": 2860
     },
     "paper2.s6.model_dependence.recognition_d_similar": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "db_count",
-        "count": 4831,
-        "max_created_at": "2026-06-24T19:22:05.977Z"
+        "count": 4909,
+        "max_created_at": "2026-07-03T02:46:25.063Z"
       },
-      "actual_value": 4831
+      "actual_value": 4909
     },
     "paper2.s5.rubric.tutor_v22_dims": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "config/rubrics/v2.2/evaluation-rubric.yaml",
@@ -511,7 +511,7 @@
       "actual_value": 9
     },
     "paper2.s5.rubric.learner_v22_dims": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "config/rubrics/v2.2/evaluation-rubric-learner.yaml",
@@ -521,7 +521,7 @@
       "actual_value": 6
     },
     "paper2.s5.taxonomy.ten_categories": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "scripts/classify-superego-critiques.js",
@@ -531,7 +531,7 @@
       "actual_value": 10
     },
     "paper2.s7.provable_discourse.claim_count": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "config/provable-discourse-mechanisms.yaml",
@@ -541,7 +541,7 @@
       "actual_value": 88
     },
     "paper2.s7.provenance.tests_passing": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "tests/provenance.test.js",
@@ -551,7 +551,7 @@
       "actual_value": 70
     },
     "paper2.s7.rubric.four_versions": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "config/rubrics/BACKFILL-NOTES.md",
@@ -561,7 +561,7 @@
       "actual_value": 15
     },
     "paper2.s7.bugs.nine_corrections": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "notes/2026-06-03-major-bugs.md",
@@ -571,7 +571,7 @@
       "actual_value": 9
     },
     "paper2.s7.superego_guard.test_count": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "tests/superego-guard.test.js",
@@ -581,7 +581,7 @@
       "actual_value": 15
     },
     "paper2.s1.pilot.memory_isolation_d": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "cross_reference",
         "ref_claim": "paper.abstract.primary_scored_n"
@@ -589,7 +589,7 @@
       "actual_value": 1
     },
     "paper2.s1.pilot.variance_52_of_55": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "cross_reference",
         "ref_claim": "paper2.calibration.variance_reduction"
@@ -597,7 +597,7 @@
       "actual_value": 1
     },
     "paper2.s3.failure.model_dependent": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "cross_reference",
         "ref_claim": "paper2.s1.pilot.factorial_d"
@@ -605,7 +605,7 @@
       "actual_value": 1
     },
     "paper2.s3.pilot.strategy_shift_pct": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "cross_reference",
         "ref_claim": "paper2.s1.pilot.factorial_d"
@@ -613,7 +613,7 @@
       "actual_value": 1
     },
     "paper2.s3.pilot.stalling_base_bilateral": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "cross_reference",
         "ref_claim": "paper2.s1.pilot.factorial_d"
@@ -621,7 +621,7 @@
       "actual_value": 1
     },
     "paper2.s8.cross_judge.correlation_range": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "cross_reference",
         "ref_claim": "paper2.s1.pilot.factorial_d"
@@ -629,7 +629,7 @@
       "actual_value": 1
     },
     "paper2.s9.pilot.learner_paradox_d": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "cross_reference",
         "ref_claim": "paper2.s1.pilot.factorial_d"
@@ -637,7 +637,7 @@
       "actual_value": 1
     },
     "paper2.s6_8_9.character_dag_family_transfer_robustness": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "config/character-dag-drama/evidence-manifest-2026-07-01.md",
@@ -647,7 +647,7 @@
       "actual_value": 1
     },
     "paper2.appendix_e.character_development_self_commitment_pilot": {
-      "updated_at": "2026-07-01T05:39:58.974Z",
+      "updated_at": "2026-07-05T11:48:06.443Z",
       "fingerprint": {
         "source": "code_path",
         "file": "config/character-development/evidence-manifest-2026-06-28.md",
