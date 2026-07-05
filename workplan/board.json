@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-05T10:55:50.442Z",
+  "generated": "2026-07-05T13:05:21.375Z",
   "counts": {
     "total": 86,
     "byStatus": {
@@ -502,7 +502,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-07-02",
-      "updated": "2026-07-03",
+      "updated": "2026-07-05",
       "verification": "Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, paid smoke/full run IDs are recorded with register-specific results, and the hand-authored corrosive-exemplar test separates v2.2 guardrail sensitivity from register-rubric compression.",
       "claim_status": "methods",
       "links": {
