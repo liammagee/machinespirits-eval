@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-05T14:31:58.666Z",
+  "generated": "2026-07-05T20:24:05.431Z",
   "counts": {
     "total": 92,
     "byStatus": {
-      "done": 78,
+      "done": 79,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 3
     },
@@ -191,31 +191,6 @@
         "strategy-refusal",
         "learner",
         "symmetry"
-      ]
-    },
-    {
-      "id": "refusal-model-authored",
-      "title": "Exploration 3: who refuses — model-authored refusal content on a criterial trigger",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Variant implemented + gated, 6-run smoke complete, pre-stated reads recorded.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "content-compulsion-promotion"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "strategy-refusal",
-        "superego"
       ]
     },
     {
@@ -1914,6 +1889,31 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "refusal-model-authored",
+      "title": "Exploration 3: who refuses — model-authored refusal content on a criterial trigger",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Variant implemented + gated, 6-run smoke complete, pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal",
+        "superego"
+      ]
     },
     {
       "id": "review-ego-superego-internal-history-window",
