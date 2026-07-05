@@ -341,6 +341,49 @@ blind vs action-brief).
 - **P12 (direction):** A1p ≥ A0 on mean score. Directional only — no
   magnitude promise, no confirmatory bar at pilot estimates (§5.12.7).
 
+### 9b. XL result (recorded 2026-07-06, runs `agon-xl-smoke-01` + `agon-pilot-03-xl`)
+
+| arm | score | demo | wins | opp-miss (mean) | off-set | wasted | tainted events |
+|---|---|---|---|---|---|---|---|
+| A0 blind | 8.50±1.00 | 2.75 | 3/4 | 1.50 | 0 | 0 | 0 |
+| A1′ action-set | **9.75±0.50** | 3.00 | 4/4 | **0.00** | 0 | 0 | 0 |
+
+- **P8 PASS** (9 episodes incl. smoke, ~310–704s each, zero parse repairs,
+  zero bounces, zero crashes).
+- **P9 PASS** — the v0 single-attractor broke: scores 7/9/9/9 vs 9/10/10/10
+  (+ smoke 10), one genuine loss (A0-e2, demo 2 < win bar 3), four episodes
+  at ≥10 vs a v0 ceiling of 8.
+- **P10 NOT MET — informatively.** Zero tainted passes and zero tainted
+  leaks across 144 tutor messages: the taint rule never fired because it
+  **deterred** — under the new charter no tutor spoke a live answer even
+  once (in pilot-01, ego drafts did so routinely and only superego vetoes
+  caught them). And the learner still leaked ~1/episode at the t11 collapse
+  even though echoing was now safe-and-worthless: the collapse leak is
+  **self-generated, not echo**. The hypothesis behind P10 (v0's collapse
+  economy was partly echo) is answered in the negative by a cleaner
+  mechanism than the prediction anticipated.
+- **P11 PASS** — A1′ zero opportunity misses across all four episodes
+  (prediction allowed ≤1) with the bigger action sets; A0 leaves 1.5 legal
+  probes/episode untaken (2,0,2,2). The consumption signature replicates
+  from the v0 board exactly.
+- **P12 PASS** — A1′ − A0 = **+1.25** (vs +0.75 on the v0 board), win rate
+  1.00 vs 0.75. Same first-demonstration turn (~11) in both arms: the whole
+  lift is post-collapse harvest efficiency — the brief surfaces transfer
+  legality the blind tutor skips.
+
+**Cross-board summary:** two boards, same ordering (action-brief > blind),
+same mechanism marker (opp-miss 0.00 vs 1.50 on both), lift growing with
+headroom (+0.75 → +1.25). Internally replicated, still descriptive at
+n=4/arm per board.
+
+**New observations for the record:** (i) first `comply_mismatch` of the
+programme (A0-e2 t16, comparison item) — likely a format artifact (answer
+words vs "n/d"); matcher limitation noted, not patched mid-arc. (ii) The
+blind arms' attrition play is mono-target (five c1 probes in a row is
+0-opp-miss by construction when only c1 is ever taught); breadth during
+attrition is a strategy axis the current metrics under-price — candidate
+v0.4 measurement, not a rule change.
+
 ## 10. File map
 
 - `config/agon/fractions-agon.yaml` — rules, concepts, keyed probes, dodges

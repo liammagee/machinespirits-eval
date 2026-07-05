@@ -49,4 +49,15 @@ information failing the tutor's re-derivation, not information failing;
 the same referee data re-represented as "what may I do now" was consumed
 perfectly. Format boundary (state vs action projection), not tutor
 intelligence; n=4/arm descriptive, no confirmatory bar at these estimates.
-Lands as a new §6.x of paper-full-2.0.md.
+
+XL BOARD RUN 2026-07-06 (`agon-xl-smoke-01` + `agon-pilot-03-xl`, plan §9
+prereg + §9b result): 6-concept DAG / 16 turns / item variants / TAINT rule.
+P8, P9, P11, P12 PASS; P10 NOT MET informatively (zero taint events in 144
+tutor messages = deterrence — no tutor ever spoke a live answer under the
+new charter; collapse-leaks persist ~1/episode → self-generated, not echo).
+A1′ 9.75±0.50 (4/4 wins) > A0 8.50±1.00 (3/4); opp-miss 0.00 vs 1.50 —
+the consumption signature and ordering REPLICATE across boards, lift grows
+with headroom (+0.75 v0 → +1.25 XL). All lift is post-collapse harvest
+efficiency (same first-demo turn ~11 both arms). First comply_mismatch
+observed (format artifact, noted). Lands as a new §6.x of
+paper-full-2.0.md.
