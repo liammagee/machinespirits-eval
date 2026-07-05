@@ -168,3 +168,23 @@ substitution claim — an architecture-independence result that now survives
 a genuinely resistant, criterially-gated learner at 2× the generating
 sample — as an evidential strengthening note, not a new claim requiring a
 new §. No paper edit made under this arc's runs.
+
+2026-07-05 Claude: **PAPER FLAG resolved.** Folded the confirmatory result
+into `docs/research/paper-full-2.0.md` §7.11 as a closing three-paragraph
+block (evidential strengthening note, exactly as the flag prescribed — no
+new §, no non-discriminating-learner scope condition, since the verdict
+was DISSOLVED not REAL): the SFS=0.000 motivation (§8.1 cross-reference),
+the DAG-pinned learner + criterial drift gate (false-yield 0.00
+throughout), the instrument's exhaustion trajectory (38% →
+`eval-2026-07-03-a3cfbe14` → 3.3% `eval-2026-07-04-c689cf3a` → 0.83%
+`eval-2026-07-04-0d59e4c8`), the confirmatory matrix's clean DISSOLVED
+verdicts on both H-Dc and H-Oc (gap 0, 4/40 every arm), and the generating
+iteration-2 lead's failed replication at 2× sample. A methods clause
+cross-references §8.1: per-turn characterological gating does not compound
+to dialogue scale without a turn-decaying contract. Paper version
+3.0.205 → **3.0.206**; matching Appendix F entry added; no sections
+renumbered. All three cited run IDs spot-checked directly against
+`data/evaluations.db` (row counts match exactly: 60, 60, 120). Validation
+clean: `validate-paper-manifest.js` (60 pass/0 warn/0 fail),
+`paper:integrity-audit` (17 pass/12 pre-existing warn/0 fail),
+`atlas:validate` (0 errors/0 warnings). PR #97.
