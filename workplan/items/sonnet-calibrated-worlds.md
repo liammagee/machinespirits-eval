@@ -55,3 +55,12 @@ runs each, seeds 163/167/173, binding stack minus/with the stated decay):**
 
 Screens are exploratory instrument work: no claims, no contrast data.
 Cost: CLI quota only, 3-12 runs, ~10 min each at concurrency 3.
+
+2026-07-05 Claude — D0 (marrick, NO decay): **3/3 grounded, T* 22/22/23.**
+Sonnet handles the undamaged geometry cleanly (the AND-join is within
+reach); the sonnet-contrast floor was the decay dose, not the world. Too
+easy per the band rule (no variance) -> ladder steps to D1 (rate 0.15 /
+mutateShare 0.25 / maxConcurrent 2). Mechanism note: the dose dial
+directly modulates how much decay-tracking the drama demands — the very
+content the lemma map claims to carry — so a mid-band dose makes the
+mid-tier map test maximally meaningful.
