@@ -1182,3 +1182,139 @@ from a static code read. Full build-phase gate: 38/38 unit tests green
 functions plus the aggregator, 13 new cases), hermetic `--check` PASSED,
 lint/prettier clean on all touched files. Stage A3-build is complete and
 green; Stage A3-pilot (the 6-session live arc) follows next.
+
+**2026-07-07: full A3 arc scored; frozen §8.5 verdicts: precondition
+CONFIRMED, constructive-signal gate FAIL, red flag investigated and
+attributed to instrument ceiling, not leakage.** All 6 rows present and
+`success: true`: pad-ON `eval-2026-07-06-{1297acac,ba04f4ea,d169b15f}`
+(sessions 1→2→3, `--learner-id a3-drift-padon-v1-2026-07-07`); pad-OFF
+`eval-2026-07-06-4afdea05` (one run, 3 scenario rows for sessions 1-3, no
+learner-id — a different batching choice than A2's 3 separate pad-OFF
+run-ids, same no-pad/no-injection recipe). All 6:
+`cell_40_base_dialectical_suspicious_unified_superego` /
+`cell_93_..._nopad`, nemotron/kimi-k2.5, 4 turns and 11-14 API calls per
+session, $0.293 total, wall-clock 2026-07-06 15:58-17:05. Dialogue logs
+confirmed present for all 6 rows and cross-checked against each row's own
+`dialogueId` (no mismatch).
+
+*Precondition gate: CONFIRMED by direct primary-source inspection, not
+inference.* Pad-ON session 2's dialogue log
+(`dialogue-1783353681493-p0vo3n.json`) has 12 `dialogueTrace` entries
+carrying an `apiPayload` field (the literal outgoing ego/superego
+request); 8 of 12 contain the literal injected session-1 fraction text
+"1/4 + 1/6", including the first entry (`agent: ego, action: generate,
+round: 0`) — the injected narrative was present from the start of
+session 2's dialogue. Cumulative cross-session confirmation, via two
+independent markers chosen to be immune to a timestamp-substring false
+positive found and ruled out below: (a) the unambiguous session-1
+fraction "1/4 + 1/6" appears 16× in pad-ON's session-2 log and 16× in its
+session-3 log, vs 0× in pad-OFF's session-2 and session-3 logs; (b)
+session-2's own misconception vocabulary ("additive scaling", "scaling a
+ratio") — necessarily cross-session content when found in session 3,
+since session 3's own scripted topic is unrelated ("linear equations" /
+`LDS-M3` "flip-sign-forgetting", confirmed against the scenario YAML) —
+appears 2×/8× in pad-ON's session-3 log vs 0×/0× in pad-OFF's. The
+precondition this stage exists to fix is verified working, cumulatively,
+across both injected sessions, not merely hermetically plausible.
+
+*Frozen "4-slot" constructive-continuity aggregate*
+(`scripts/report-longitudinal-drift-stage-a3-live.js --score`, checker
+v1.1; `exports/longitudinal-drift-stage-a3.{json,md}`):
+
+| Arm | Continuity-ack s2 | Continuity-ack s3 | Misconception-not-retaught s2 | Misconception-not-retaught s3 | Slots hit |
+|---|---|---|---|---|---|
+| pad-ON | miss | miss | HIT | HIT | 2/4 |
+| pad-OFF | miss | miss | HIT | HIT | 2/4 |
+
+**Constructive-signal gate: FAIL** (needs pad-ON ≥2/4 AND pad-OFF =0/4;
+pad-ON clears its own bar, pad-OFF does not clear 0/4). **Red flag:
+RAISED** (pad-OFF is non-zero) — investigated per §8.5's own instruction
+("flagged for investigation... reported, not folded into a positive
+finding for pad-OFF"), not left as a bare number:
+
+- The identical HIT/HIT pattern in both arms is a checker-ceiling
+  artifact, not a leakage signal. Reading the four actual scored opening
+  texts directly: none of the six `RETEACHING_AS_NEW_MARKERS` phrases
+  ("let's learn", "today we'll cover", "here's a new concept", "let me
+  introduce", "so today", "let's start with") appears in any of them
+  (pad-ON s2: "You added the same number to both terms in the ratio
+  practice; let's practice scaling ratios correctly..."; pad-ON s3:
+  "Let's drill the sign-flip rule..."; pad-OFF s2: "Practice identifying
+  and correcting additive versus multiplicative scaling..."; pad-OFF s3:
+  "Rewrite each step of isolating x..."). §8.4's checker only registers a
+  miss when one of those phrases co-occurs with a prior-session
+  misconception marker in the same sentence; absent any of the six
+  phrases, the checker defaults to HIT regardless of whether real
+  cross-session memory access occurred. Both arms land on the same
+  default for the same reason — the checker did not have anything to
+  detect either way in this data, not "pad-OFF also achieved constructive
+  continuity."
+- A distinct false lead was checked and closed: an earlier coarse grep
+  for "2:3" (a candidate leaked-ratio marker) found 3 hits in pad-OFF's
+  session-3 log. Byte-offset inspection of all 3 shows each is a
+  substring coincidence inside a timestamp (`"2026-07-06T16:02:38.480Z"`,
+  matching "2:3" inside "16:02:38") or an HTTP `date` response header
+  (`"Mon, 06 Jul 2026 16:02:39 GMT"`, matching inside "16:02:39") — not
+  ratio content. No genuine occurrence of any clean, cross-session-
+  specific marker ("1/4 + 1/6", "additive scaling", "scaling a ratio",
+  "adds the same amount") was found anywhere in pad-OFF's session-2 or
+  session-3 logs. The red flag is fully explained by the checker artifact
+  above; there is no evidence of actual content leakage into the pad-OFF
+  arm.
+
+*Continuity-acknowledgment is a clean, non-artifactual null (0/2 both
+arms) — the pilot's one real behavioral finding.* Unlike misconception-
+handling, this checker scores presence of the desired behavior (hit=true
+when continuity language is found), so it is not ceiling-biased the same
+way; reading the four opening texts directly confirms the miss is real,
+not a phrasing near-miss — none of the four openings contains any
+resolution-register callback to a prior session, in either arm. This is
+informative in a way A1's and A2's nulls were not, because the
+precondition is demonstrably not broken here: pad-ON's own dialogue
+negotiation visibly carries rich, extensive cross-session material
+(confirmed above, in the model's actual outgoing request across most
+negotiation rounds of session 2 and cumulatively session 3), and none of
+it surfaces as an opening-turn continuity statement. The tutor's
+delivered opening line stays inside the current session's own topic in
+both arms; whatever cross-session synthesis happens during negotiation
+(the `dialecticalEngine` critique/revision rounds) does not carry through
+to a "last time we..." style opening, at least not in the phrasing this
+checker's fixed marker list looks for, and not in substance either on
+direct reading of the four texts.
+
+*Sharpened A2 reinterpretation (ties §8.2 and the fourth §8.8 breakage to
+this pilot's result).* §8.2 established that A2's stale-reference null
+was an instrument-gap finding, not a tutor-behavior finding, because no
+code path ever put prior-session content in the model's context. A3
+closes that gap and re-runs the same kind of check on a genuinely working
+channel — and the result is a real, if narrow, null: even with
+prior-session content demonstrably present in the model's context, the
+specific behavior both A2 and A3 look for (an explicit opening-turn
+continuity callback) still does not appear. This does not resurrect A2's
+original null as a tutor-behavior finding — A2 itself remains an
+instrument-gap finding, unaffected, and its validity-gate PASS and
+10-moment write-side result stand as before — but it does mean the next
+null in this lineage (A3's continuity-acknowledgment result) is the first
+one in this arc that can be read as being about tutor behavior rather
+than about broken plumbing, at n=2 openings/arm.
+
+**Bounded interpretation.** A3 completes exactly what it was authorized
+to do: the injection precondition is fixed and confirmed live (not just
+hermetically), and on that fixed instrument the constructive-signal gate
+is a clean FAIL at n=3 sessions/arm — directional only, per §8.5, and not
+a claim that pad-fed continuity behavior is absent in general. What it
+licenses: (a) the four read-side breakages (§8.1 ×3, §8.8 ×1) are real
+bugs worth fixing on their own terms if `tutor-core`'s internal Writing
+Pad path is ever meant to work unmodified — separately scoped, not
+authorized here; (b) a future confirmatory design on continuity-
+acknowledgment specifically would need either a larger n or a more
+targeted stimulus (e.g. a scenario that explicitly prompts the tutor to
+open with a check-in, rather than relying on spontaneous surfacing) — a
+fresh pre-registration's decision, not this one's.
+
+**STOP per §8.5/§8.7: Stage A3 is complete and this section authorizes
+nothing further.** Rows consumed: exactly the 6 sessions / 24 turns
+specified in §8.7 (plus the no-paid hermetic build-phase checks). Scaling
+to a confirmatory design, fixing the internal Writing Pad channels, or
+redesigning the continuity-acknowledgment outcome requires a fresh
+pre-registration and its own recorded go.

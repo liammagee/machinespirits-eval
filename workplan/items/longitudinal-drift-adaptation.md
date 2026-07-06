@@ -224,3 +224,33 @@ is live end-to-end on `cell_40`/the real drift scenario, not just
 plausible from a code read), lint/prettier clean. Stage A3-pilot (6
 sessions, ~$0.30) follows next; still no scaling beyond that without a
 fresh pre-registration.
+
+2026-07-07 Claude: Stage A3-pilot executed and scored — 6/6 sessions
+clean ($0.293 total). Precondition CONFIRMED live (not just
+hermetically): pad-ON session 2's dialogue log has 8/12 `apiPayload`
+entries carrying the literal injected session-1 fraction "1/4 + 1/6",
+from the first ego-generate call onward; cumulative cross-session
+markers ("1/4 + 1/6": 16/16 pad-ON s2/s3 vs 0/0 pad-OFF; session-2
+vocabulary in session-3, where session 3's own topic is unrelated:
+2/8 pad-ON vs 0/0 pad-OFF) confirm the fix holds through both injected
+sessions. Frozen §8.5 "4-slot" aggregate: pad-ON 2/4, pad-OFF 2/4 —
+**constructive-signal gate FAIL** (pad-OFF must be 0/4). Red flag
+(pad-OFF non-zero) investigated, not glossed: the misconception-
+not-retaught checker structurally defaults to HIT when none of its six
+fixed "reteach as new" phrases appear, which is true of all 4 scored
+opening texts in both arms (verified by reading them directly) — a
+checker-ceiling artifact, not leakage. A coarse "2:3" grep hit in
+pad-OFF's session-3 log was checked and is a timestamp-substring
+coincidence, not ratio content; no genuine cross-session marker was
+found anywhere in pad-OFF. Continuity-acknowledgment is a clean 0/2 null
+in both arms — not ceiling-biased like the other checker — and is the
+pilot's one real behavioral finding: even with prior-session content
+demonstrably reaching the model's context, the tutor's delivered opening
+line never carries an explicit "last time we..." callback. Sharpens §8.2:
+A2's stale-reference null stays an instrument-gap finding (unaffected),
+but A3's continuity null is the first in this lineage read as being
+about tutor behavior rather than broken plumbing. Bounded: directional
+only at n=3 sessions/arm; fixing the internal Writing Pad channels or a
+confirmatory continuity design are both separately-scoped, not
+authorized here. STOP per §8.5/§8.7 — nothing further without a fresh
+pre-registration.
