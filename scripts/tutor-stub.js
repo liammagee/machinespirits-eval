@@ -1329,6 +1329,20 @@ function formatInterimScore(score) {
   return value && value !== '?' ? String(value) : '--';
 }
 
+function formatSignedInterimNumber(value, { decimals = 2 } = {}) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric === 0) return null;
+  return `${numeric > 0 ? '+' : ''}${numeric.toFixed(decimals)}`;
+}
+
+function compactInterimCounts(counts = {}) {
+  const source = counts && typeof counts === 'object' && !Array.isArray(counts) ? counts : {};
+  const parts = Object.entries(source)
+    .filter(([, count]) => Number(count || 0) > 0)
+    .map(([key, count]) => `${key}:${count}`);
+  return parts.join(', ') || 'none';
+}
+
 function compactInterimStateSummary(state) {
   const bits = [];
   if (state?.classifier?.enabled) bits.push(state.classifier.combined ? 'combined-analysis' : 'classifier');
@@ -1353,6 +1367,34 @@ function compactInterimFieldSummary(state) {
     `cov ${formatInterimNumber(final.coverage)}`,
     bottleneck,
   ].join(' | ');
+}
+
+function previousLearnerDagModel(state, context) {
+  const currentTurn = Number(context?.tutorTurn || 0);
+  return [...(state?.turns || [])]
+    .reverse()
+    .find((turn) => !currentTurn || Number(turn.turn || 0) < currentTurn)?.tutorLearnerDagModel;
+}
+
+function compactPendingObjectiveSummary(state, context) {
+  if (!context?.learnerText && !context?.classification && !context?.tutorLearnerDag?.model) return null;
+  const turn = context.classification?.turn || {};
+  const overall = context.classification?.overall || {};
+  const assessment = context.tutorLearnerDag?.model?.assessment || {};
+  const selection = context.registerSelection || {};
+  const bottleneck = assessment.bottleneck || turn.pedagogical_need || 'awaiting analysis';
+  const register = selection.selected_register ? `via ${selection.selected_register}` : 'register pending';
+  const target = selection.expected_dag_move || overall.next_best_tutor_move || turn.pedagogical_need || 'choose one learner-owned next move';
+  const due = currentReleaseRows(state, context.tutorTurn).map((row) => row.premise);
+  return [
+    `objective t${context.tutorTurn || '?'}`,
+    `address ${oneLine(bottleneck, { max: 36 })}`,
+    register,
+    due.length ? `due ${due.join(',')}` : null,
+    `aim ${oneLine(target, { max: 68 })}`,
+  ]
+    .filter(Boolean)
+    .join(' | ');
 }
 
 function compactPendingLearnerSummary(context) {
@@ -1390,6 +1432,53 @@ function compactPendingLearnerDagSummary(context) {
   ].join(' | ');
 }
 
+function compactPendingDagMovementSummary(state, context) {
+  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
+  if (!model) return null;
+  const previous = previousLearnerDagModel(state, context);
+  const currentFeatures = dagProgressFeatures(model);
+  const previousFeatures = dagProgressFeatures(previous);
+  const coverageDelta = formatSignedInterimNumber(currentFeatures.bestPathCoverage - previousFeatures.bestPathCoverage);
+  const groundedDelta = currentFeatures.groundedCount - previousFeatures.groundedCount;
+  const voicedDelta = currentFeatures.voicedDerivedCount - previousFeatures.voicedDerivedCount;
+  const answersDelta = currentFeatures.answerCandidateCount - previousFeatures.answerCandidateCount;
+  const missingDelta = currentFeatures.missingPremiseCount - previousFeatures.missingPremiseCount;
+  const deltas = [
+    coverageDelta ? `cov ${coverageDelta}` : null,
+    groundedDelta ? `grounded ${groundedDelta > 0 ? '+' : ''}${groundedDelta}` : null,
+    voicedDelta ? `voiced ${voicedDelta > 0 ? '+' : ''}${voicedDelta}` : null,
+    answersDelta ? `answers ${answersDelta > 0 ? '+' : ''}${answersDelta}` : null,
+    missingDelta ? `missing ${missingDelta > 0 ? '+' : ''}${missingDelta}` : null,
+  ].filter(Boolean);
+  const assessment = model.assessment || {};
+  return [
+    `DAG move t${model.turn || context.tutorTurn || '?'}`,
+    deltas.length ? deltas.join(', ') : 'no movement from prior model',
+    `status ${assessment.finalSecretEntailed ? 'answer-entailed' : assessment.assertedSecret ? 'premature-assertion' : 'open'}`,
+    `buckets ${compactInterimCounts(assessment.missingPremiseBuckets)}`,
+  ].join(' | ');
+}
+
+function compactLearnerRecordUpdateSummary(state, context) {
+  const result = context?.tutorLearnerDag;
+  if (!result?.accepted && !result?.rejected?.length) return null;
+  const accepted = result.accepted || {};
+  const adopted = (accepted.adopt || []).join(',') || null;
+  const retracted = (accepted.retract || []).join(',') || null;
+  const derived = (accepted.derive || []).map((fact) => oneLine(factSurface(state.world, fact), { max: 34 }));
+  const rejected = result.rejected?.length || 0;
+  const bits = [
+    `record update t${context.tutorTurn || result.model?.turn || '?'}`,
+    adopted ? `adopt +${adopted}` : null,
+    retracted ? `retract ${retracted}` : null,
+    derived.length ? `derive ${derived.slice(0, 2).join('; ')}` : null,
+    accepted.hypothesis ? `hypothesis ${oneLine(accepted.hypothesis, { max: 44 })}` : null,
+    accepted.assertAnswer ? `assert ${accepted.assertAnswer}` : null,
+    rejected ? `rejected ${rejected}` : null,
+  ].filter(Boolean);
+  return bits.length > 1 ? bits.join(' | ') : null;
+}
+
 function compactPendingRegisterSummary(context) {
   const selection = context?.registerSelection;
   const efficacy = context?.previousRegisterEfficacy;
@@ -1405,6 +1494,40 @@ function compactPendingRegisterSummary(context) {
     if (efficacy.summary) bits.push(oneLine(efficacy.summary, { max: 48 }));
   }
   return bits.join(' | ');
+}
+
+function currentReleaseRows(state, tutorTurn) {
+  const world = state?.world;
+  if (!world || !Number.isFinite(Number(tutorTurn))) return [];
+  return world.releaseSchedule
+    .filter((entry) => Number(entry.turn) === Number(tutorTurn))
+    .map((entry) => {
+      const premise = world.premiseById.get(entry.premise);
+      return {
+        premise: entry.premise,
+        via: entry.via || null,
+        surface: String(premise?.surface || '').trim(),
+      };
+    });
+}
+
+function compactEvidenceTimingSummary(state, context) {
+  const world = state?.world;
+  const tutorTurn = Number(context?.tutorTurn || (state?.turns?.length || 0) + 1);
+  if (!world || !Number.isFinite(tutorTurn)) return null;
+  const dueNow = currentReleaseRows(state, tutorTurn);
+  const next = world.releaseSchedule.find((entry) => entry.turn > tutorTurn) || null;
+  const last = [...world.releaseSchedule].reverse().find((entry) => entry.turn <= tutorTurn) || null;
+  const dueSummary = dueNow.length
+    ? `due now ${dueNow.map((row) => `${row.premise}/${row.via || 'release'}`).join(', ')}: ${oneLine(
+        dueNow[0].surface,
+        { max: 58 },
+      )}`
+    : last
+      ? `latest ${last.premise}@t${last.turn}/${last.via || 'release'}`
+      : 'no evidence released yet';
+  const nextSummary = next ? `next ${next.premise}@t${next.turn}/${next.via || 'release'}` : 'next none';
+  return `evidence timing t${tutorTurn} | ${dueSummary} | ${nextSummary}`;
 }
 
 function compactPendingTutorDagSummary(state, context) {
@@ -1446,7 +1569,11 @@ function compactPendingFieldSummary(state, context) {
 function compactInterimPanels(active) {
   const context = active.context || {};
   const panels = [
+    compactPendingObjectiveSummary(active.state, context),
     compactPendingFieldSummary(active.state, context),
+    compactPendingDagMovementSummary(active.state, context),
+    compactLearnerRecordUpdateSummary(active.state, context),
+    compactEvidenceTimingSummary(active.state, context),
     compactPendingLearnerSummary(context),
     compactPendingLearnerDagSummary(context),
     compactPendingRegisterSummary(context),
@@ -1760,6 +1887,16 @@ function replayTextAsConsoleStream(role, text, stream = null) {
   const tokens = String(text || '').match(/\S+\s*/g) || [];
   for (const token of tokens) sink.write(token);
   return sink.finish();
+}
+
+function printTutorResponse(response, stream = null) {
+  if (response.guardedStreamReplay) {
+    response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text, stream);
+    return;
+  }
+  if (!response.streamed) {
+    console.log(`${C.magenta}tutor >${C.reset} ${response.text.trim()}`);
+  }
 }
 
 async function classifyForTurn(learnerText, state) {
@@ -3429,7 +3566,6 @@ async function callTutor({
     if (audit.ok) {
       response.leakAudit = audit;
       if (response.bufferedStream) {
-        response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text, stream);
         response.guardedStreamReplay = true;
       }
       return response;
@@ -3453,7 +3589,6 @@ async function callTutor({
       response.leakAudit = audit;
       response.repaired = true;
       if (response.bufferedStream) {
-        response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text, stream);
         response.guardedStreamReplay = true;
       }
       return response;
@@ -3471,7 +3606,6 @@ async function callTutor({
       deterministicFallback: true,
     };
     if (canStreamTutor) {
-      fallback.streamed = replayTextAsConsoleStream('tutor_stub_tutor', fallback.text, stream);
       fallback.guardedStreamReplay = true;
     }
     appendTraceEvent(trace, {
@@ -3947,11 +4081,9 @@ async function main() {
     } finally {
       stopInterimAnimation(state);
     }
-    if (!response.streamed) {
-      console.log(`${C.magenta}tutor >${C.reset} ${response.text.trim()}`);
-    }
-    console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
     printTutorDagSnapshot(response.dagSnapshot);
+    printTutorResponse(response, state.stream);
+    console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
     appendTraceEvent(state.trace, { type: 'run_end', reason: 'once', turns: state.turns.length });
     if (args.save) {
       saveTranscript(args.save, {
@@ -4171,11 +4303,9 @@ async function main() {
         stopInterimAnimation(state);
       }
       if (exiting) return;
-      if (!response.streamed) {
-        console.log(`${C.magenta}tutor >${C.reset} ${response.text.trim()}`);
-      }
-      console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
       printTutorDagSnapshot(response.dagSnapshot);
+      printTutorResponse(response, state.stream);
+      console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
     } catch (err) {
       stopInterimAnimation(state);
       clearStatusLine();
