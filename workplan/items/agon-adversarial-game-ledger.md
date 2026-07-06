@@ -59,8 +59,8 @@ A1′ 9.75±0.50 (4/4 wins) > A0 8.50±1.00 (3/4); opp-miss 0.00 vs 1.50 —
 the consumption signature and ordering REPLICATE across boards, lift grows
 with headroom (+0.75 v0 → +1.25 XL). All lift is post-collapse harvest
 efficiency (same first-demo turn ~11 both arms). First comply_mismatch
-observed (format artifact, noted). Lands as a new §6.x of
-paper-full-2.0.md.
+observed (format artifact, noted). FOLDED INTO THE PAPER as §6.15 (v3.0.207, 2026-07-06) with the staged
+pre-registrations cited and failed predictions reported as such.
 
 PROBES 2026-07-06 (plan §11 prereg + §11b): (1) Playbook memory-format —
 state-shaped INERT (opp-miss frozen 2.00/ep, zero harm/zero uptake);
