@@ -23,7 +23,7 @@ import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { call as callAI } from '../tutor-core/services/unifiedAIProviderService.js';
+import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider } from '../services/cliProviderBridge.js';
 import { getProviderConfig, resolveModel } from '../services/evalConfigLoader.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
@@ -55,6 +55,8 @@ const STUB = {
   temperature: 0.35,
   maxTokens: 2000,
   historyTurns: 8,
+  traceDir: process.env.TUTOR_STUB_TRACE_DIR || '.tutor-stub-traces',
+  stream: process.env.TUTOR_STUB_STREAM !== '0',
 };
 
 const C = {
@@ -109,6 +111,10 @@ const { values: args, positionals } = parseArgs({
     system: { type: 'string' },
     once: { type: 'string' },
     save: { type: 'string' },
+    'trace-dir': { type: 'string', default: STUB.traceDir },
+    'no-trace': { type: 'boolean', default: false },
+    'resume-last': { type: 'boolean', default: false },
+    'no-stream': { type: 'boolean', default: false },
     temperature: { type: 'string', default: String(STUB.temperature) },
     'max-tokens': { type: 'string', default: String(STUB.maxTokens) },
     'history-turns': { type: 'string', default: String(STUB.historyTurns) },
@@ -154,12 +160,24 @@ Options:
   --system <path>        replace generated system prompt with a file
   --once <text>          run one turn and exit
   --save <path>          write transcript JSON on exit
+  --trace-dir <path>     write JSONL model-call traces here
+                         (default: ${STUB.traceDir})
+  --no-trace             disable automatic local tracing
+  --resume-last          resume the newest completed dialogue found in trace-dir
+  --no-stream            disable token streaming for API-backed model calls
   --temperature <n>      API temperature (default: ${STUB.temperature})
   --max-tokens <n>       response token cap for API providers (default: ${STUB.maxTokens})
   --history-turns <n>    turns kept in context (default: ${STUB.historyTurns})
   --show-prompt          print the system prompt before starting
   --dry-run              print resolved config and first payload, but do not call a model
   --help                 show this message
+
+Interactive commands:
+  /analysis              show the latest completed turn's internal analysis
+  /a                     alias for /analysis
+  /clear                 reset transcript and learner/register state
+  /help                  show interactive commands
+  /quit                  exit
 
 Environment:
   OPENAI_API_KEY         required for openai.*
@@ -171,6 +189,8 @@ Environment:
                          optional default learner-record / combined-analysis model override
   TUTOR_STUB_TOPIC       optional default topic override
   TUTOR_STUB_WORLD       optional default detective-story world
+  TUTOR_STUB_TRACE_DIR   optional default trace directory
+  TUTOR_STUB_STREAM=0    disable token streaming by default
 `);
 }
 
@@ -190,10 +210,267 @@ function parsePositiveInt(value, name) {
   return parsed;
 }
 
+function resolveWorkspacePath(value) {
+  return path.isAbsolute(value) ? value : path.join(ROOT, value);
+}
+
+function safeTimestampForFile(date = new Date()) {
+  return date.toISOString().replace(/[:.]/g, '-');
+}
+
 function factText(fact) {
   if (!Array.isArray(fact) || fact.length === 0) return String(fact || '');
   const [rel, ...args] = fact;
   return `${rel}(${args.join(', ')})`;
+}
+
+function splitSymbolWords(value) {
+  return String(value || '')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .toLowerCase()
+    .split(/[^a-z0-9']+/)
+    .map((word) => word.trim())
+    .filter(Boolean);
+}
+
+function textTokens(text) {
+  return new Set(splitSymbolWords(text));
+}
+
+function tokenRegex(token) {
+  return new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'iu');
+}
+
+function textContainsToken(text, token) {
+  return tokenRegex(token).test(String(text || ''));
+}
+
+function factMatches(a, b) {
+  return factKey(a) === factKey(b);
+}
+
+function publicFactsAtTurn(world, tutorTurn) {
+  if (!world) return [];
+  const released = world.releaseSchedule
+    .filter((entry) => entry.turn <= tutorTurn)
+    .map((entry) => world.premiseById.get(entry.premise)?.fact)
+    .filter(Boolean);
+  return [...(world.background || []), ...released];
+}
+
+function entailedFactsAtTurn(world, tutorTurn) {
+  return [...closure(publicFactsAtTurn(world, tutorTurn), world.rules || []).facts.values()];
+}
+
+function entailsFactAtTurn(world, tutorTurn, fact) {
+  return entailedFactsAtTurn(world, tutorTurn).some((entailed) => factMatches(entailed, fact));
+}
+
+function answerTermForWorld(world) {
+  const pattern = world?.questionPattern || [];
+  const answerIndex = pattern.findIndex((part) => typeof part === 'string' && part.startsWith('?'));
+  if (answerIndex < 0) return null;
+  return world?.secret?.fact?.[answerIndex] || null;
+}
+
+function publicTextForTurn(world, tutorTurn, learnerText = '') {
+  if (!world) return '';
+  const releasedSurface = world.releaseSchedule
+    .filter((entry) => entry.turn <= tutorTurn)
+    .map((entry) => world.premiseById.get(entry.premise)?.surface || '')
+    .join('\n');
+  return [
+    world.question,
+    world.setting,
+    world.learnerVoice,
+    ...(world.rules || []).map((rule) => rule.gloss || ''),
+    releasedSurface,
+    learnerText,
+  ].join('\n');
+}
+
+const PRIVATE_TOKEN_STOPWORDS = new Set([
+  'about',
+  'above',
+  'after',
+  'again',
+  'alone',
+  'answer',
+  'assay',
+  'because',
+  'before',
+  'bench',
+  'blank',
+  'blanks',
+  'came',
+  'cast',
+  'coin',
+  'coins',
+  'could',
+  'down',
+  'evidence',
+  'false',
+  'hand',
+  'line',
+  'make',
+  'mark',
+  'name',
+  'only',
+  'public',
+  'rule',
+  'says',
+  'shilling',
+  'shillings',
+  'should',
+  'single',
+  'struck',
+  'that',
+  'their',
+  'them',
+  'these',
+  'this',
+  'trial',
+  'turn',
+  'what',
+  'when',
+  'where',
+  'which',
+  'with',
+  'would',
+]);
+
+function unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText }) {
+  const publicTokens = textTokens(publicTextForTurn(world, tutorTurn, learnerText));
+  const rows = [];
+  for (const premise of world?.premises || []) {
+    const release = world.releaseSchedule.find((entry) => entry.premise === premise.id);
+    if (!release || release.turn <= tutorTurn) continue;
+
+    const factTokens = new Set(
+      (premise.fact || [])
+        .slice(1)
+        .flatMap(splitSymbolWords)
+        .filter((token) => token.length >= 4 && !PRIVATE_TOKEN_STOPWORDS.has(token) && !publicTokens.has(token)),
+    );
+    const surfaceTokens = new Set(
+      splitSymbolWords(premise.surface)
+        .filter((token) => token.length >= 5 && !PRIVATE_TOKEN_STOPWORDS.has(token) && !publicTokens.has(token)),
+    );
+    const factMatches = [...factTokens].filter((token) => textContainsToken(text, token));
+    const surfaceMatches = [...surfaceTokens].filter((token) => textContainsToken(text, token));
+    const strongMatches = [...new Set([...factMatches, ...surfaceMatches])].sort();
+    if (factMatches.length || surfaceMatches.length >= 2) {
+      rows.push({
+        premise: premise.id,
+        scheduledTurn: release.turn,
+        matches: strongMatches,
+      });
+    }
+  }
+  return rows;
+}
+
+function auditTutorResponseLeak({ text, world, tutorTurn, learnerText }) {
+  if (!world) return { ok: true, leaks: [] };
+  const leaks = [];
+  const answerTerm = answerTermForWorld(world);
+  const answerTokens = splitSymbolWords(answerTerm);
+  const mentionsAnswer = answerTokens.some((token) => textContainsToken(text, token));
+  const finalEntailed = entailsFactAtTurn(world, tutorTurn, world.secret.fact);
+
+  if (mentionsAnswer && !finalEntailed) {
+    leaks.push({
+      type: 'concealed_answer_name',
+      reason: `mentions ${answerTerm} before the public record entails the answer`,
+      matches: answerTokens,
+    });
+  }
+
+  if (mentionsAnswer) {
+    const lower = String(text || '').toLowerCase();
+    const intermediateChecks = [
+      {
+        fact: ['castBlankFor', world.questionPattern?.[1] || world.secret.fact?.[1], answerTerm],
+        words: [/cast/u, /blank/u],
+        label: 'private_blank_conclusion',
+      },
+      {
+        fact: ['cutDieFor', world.questionPattern?.[1] || world.secret.fact?.[1], answerTerm],
+        words: [/\bcut\b/u, /\bdie\b/u],
+        label: 'private_die_conclusion',
+      },
+      {
+        fact: world.secret.fact,
+        words: [/\bstruck\b/u, /\bstrike\b/u, /\bcoiner\b/u, /\bcoined\b/u, /\bmade\b/u],
+        label: 'private_final_conclusion',
+      },
+    ];
+    for (const check of intermediateChecks) {
+      if (check.words.some((pattern) => pattern.test(lower)) && !entailsFactAtTurn(world, tutorTurn, check.fact)) {
+        leaks.push({
+          type: check.label,
+          reason: `states a conclusion about ${answerTerm} before that conclusion is derivable from released evidence`,
+          fact: factText(check.fact),
+        });
+      }
+    }
+  }
+
+  for (const row of unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText })) {
+    leaks.push({
+      type: 'unreleased_premise_content',
+      reason: `uses content from ${row.premise} before its scheduled release at turn ${row.scheduledTurn}`,
+      premise: row.premise,
+      matches: row.matches,
+    });
+  }
+
+  return {
+    ok: leaks.length === 0,
+    leaks,
+    finalEntailed,
+  };
+}
+
+function tutorLeakRepairPrompt({ originalUserPrompt, unsafeDraft, audit }) {
+  const leakRows = (audit.leaks || [])
+    .map((leak, index) => `${index + 1}. ${leak.type}: ${leak.reason}`)
+    .join('\n');
+  return [
+    originalUserPrompt,
+    '',
+    '[Tutor-only repair instruction]',
+    'Your previous draft leaked hidden/private proof content and must not be shown to the learner.',
+    'Rewrite the tutor reply from scratch.',
+    'Use only public setup, already released evidence, and public rules.',
+    'Do not name the concealed answer, any hidden actor, any unreleased object, or any intermediate conclusion involving them.',
+    'Do not use predicate/function notation, premise ids, rule ids, or route labels.',
+    'Do not use compressed technical labels such as "sole-caster", "blank-route", or "die-route"; translate them into ordinary evidence language.',
+    'If the learner wants an answer, ask what public evidence would license the next step instead.',
+    '',
+    'Leak audit:',
+    leakRows || '- unspecified private-content leak',
+    '',
+    'Unsafe draft to replace:',
+    unsafeDraft,
+    '[End tutor-only repair instruction]',
+  ].join('\n');
+}
+
+function deterministicLeakFallback({ learnerText }) {
+  const asksForChoice = /\b(choice|choose|which|what|next|write)\b/iu.test(learnerText || '');
+  if (asksForChoice) {
+    return [
+      "I can't put a name or private conclusion in the trial-book yet.",
+      'Choose one public test instead: the metal trail, the die-mark trail, or a witness/forge sighting.',
+      'Which one do you want to examine first?',
+    ].join(' ');
+  }
+  return [
+    "I can't license that conclusion yet.",
+    'Name the public evidence that would make the next step follow, or keep the verdict open.',
+  ].join(' ');
 }
 
 function ruleText(rule, index) {
@@ -359,6 +636,10 @@ function worldDagPrompt(world) {
     '',
     'DAG conduct:',
     '- Work from released evidence and public rules only.',
+    '- Treat every fact: line, predicate name, rule id, premise id, and proof-path id as private notation. Never write that notation to the learner.',
+    '- Translate formal facts into ordinary trial-book language before speaking: say "the dross alloy came from the mint crucible", not "meltedAt(drossSilver, mintCrucible)".',
+    '- Do not name the concealed answer, hidden answer-bearer, or any intermediate conclusion involving that bearer until the released public evidence derives that exact step.',
+    '- Especially avoid statements of the form "<hidden person> cast/cut/struck/made..." unless the learner has already derived it from staged evidence.',
     '- Ask what conjunct, premise, or rule is still missing; do not fill it early.',
     '- If the learner guesses the concealed answer, do not confirm it until the released facts derive it.',
     '- When a scheduled premise is due, introduce at most one piece of evidence and then ask the learner to place it on the board.',
@@ -382,6 +663,9 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag }) {
     '- Keep the answer short enough that the learner can respond.',
     '- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.',
     '- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.',
+    '- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.',
+    '- In story mode, speak in public evidence language: "which single line of evidence belongs in the trial-book?", not "add meltedAt(...)", "sole-caster", "blank-route", or "die-route".',
+    '- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.',
     ...worldPublicPrompt(world),
     ...(dag ? worldDagPrompt(world) : []),
   ].join('\n');
@@ -416,7 +700,9 @@ function metadataLine(meta) {
   const usage = meta.usage || {};
   const total = usage.totalTokens || 0;
   const cost = usage.cost ? `, $${Number(usage.cost).toFixed(6)}` : '';
-  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${total} tokens${cost}`;
+  const guard = meta.deterministicFallback ? ', leak-guard fallback' : meta.repaired ? ', leak-guard repaired' : '';
+  const stream = meta.guardedStreamReplay ? ', guarded stream' : meta.streamed ? ', streamed' : '';
+  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${total} tokens${cost}${guard}${stream}`;
 }
 
 function usesFixedOpenAITemperature(resolved) {
@@ -693,55 +979,123 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
   ].join('\n');
 }
 
-async function callPromptModel({ prompt, resolved, systemPrompt, role, maxTokens = 700 }) {
-  if (isCliProvider(resolved.provider)) {
-    const result = await callAIWithCliBridge(
-      { provider: resolved.provider, model: resolved.model },
-      systemPrompt,
-      prompt,
+async function callPromptModel({ prompt, resolved, systemPrompt, role, maxTokens = 700, trace = null, stream = null }) {
+  const startedAt = new Date().toISOString();
+  const shouldStream = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
+  try {
+    let response;
+    if (isCliProvider(resolved.provider)) {
+      const result = await callAIWithCliBridge(
+        { provider: resolved.provider, model: resolved.model },
+        systemPrompt,
+        prompt,
+        role,
+        { messageHistory: [] },
+      );
+      response = {
+        text: result.text,
+        provider: result.provider,
+        model: result.model,
+        latencyMs: result.latencyMs,
+        usage: {
+          inputTokens: result.inputTokens || 0,
+          outputTokens: result.outputTokens || 0,
+          totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
+          cost: result.cost || 0,
+        },
+      };
+    } else if (shouldStream) {
+      const temperature = effectiveTemperatureForModel(resolved, 0.1);
+      const sink = createConsoleTokenSink(role);
+      let final = null;
+      for await (const chunk of streamAI({
+        provider: resolved.provider,
+        model: resolved.model,
+        systemPrompt,
+        messages: [{ role: 'user', content: prompt }],
+        preset: 'socratic',
+        config: { temperature, maxTokens },
+      })) {
+        if (chunk.type === 'text_delta') {
+          sink.write(chunk.content);
+        } else if (chunk.type === 'done') {
+          final = chunk;
+        }
+      }
+      const streamed = sink.finish();
+      response = {
+        text: final?.content || '',
+        provider: final?.provider || resolved.provider,
+        model: final?.model || resolved.model,
+        latencyMs: final?.latencyMs || 0,
+        usage: final?.usage || null,
+        streamed,
+      };
+    } else {
+      const temperature = effectiveTemperatureForModel(resolved, 0.1);
+      const result = await callAI({
+        provider: resolved.provider,
+        model: resolved.model,
+        systemPrompt,
+        messages: [{ role: 'user', content: prompt }],
+        preset: 'socratic',
+        config: { temperature, maxTokens },
+      });
+      response = {
+        text: result.content,
+        provider: result.provider,
+        model: result.model,
+        latencyMs: result.latencyMs,
+        usage: result.usage,
+      };
+    }
+
+    appendTraceEvent(trace, {
+      type: 'model_call',
       role,
-      { messageHistory: [] },
-    );
-    return {
-      text: result.text,
-      provider: result.provider,
-      model: result.model,
-      latencyMs: result.latencyMs,
-      usage: {
-        inputTokens: result.inputTokens || 0,
-        outputTokens: result.outputTokens || 0,
-        totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
-        cost: result.cost || 0,
+      startedAt,
+      provider: response.provider,
+      model: response.model,
+      request: {
+        systemPrompt,
+        prompt,
+        maxTokens,
       },
-    };
+      response: {
+        text: response.text,
+        latencyMs: response.latencyMs,
+        usage: response.usage,
+        streamed: Boolean(response.streamed),
+      },
+    });
+    return response;
+  } catch (err) {
+    appendTraceEvent(trace, {
+      type: 'model_call_error',
+      role,
+      startedAt,
+      provider: resolved.provider,
+      model: resolved.model,
+      request: {
+        systemPrompt,
+        prompt,
+        maxTokens,
+      },
+      error: err.message,
+    });
+    throw err;
   }
-
-  const temperature = effectiveTemperatureForModel(resolved, 0.1);
-  const result = await callAI({
-    provider: resolved.provider,
-    model: resolved.model,
-    systemPrompt,
-    messages: [{ role: 'user', content: prompt }],
-    preset: 'socratic',
-    config: { temperature, maxTokens },
-  });
-
-  return {
-    text: result.content,
-    provider: result.provider,
-    model: result.model,
-    latencyMs: result.latencyMs,
-    usage: result.usage,
-  };
 }
 
-async function callClassifierModel({ prompt, resolved }) {
+async function callClassifierModel({ prompt, resolved, trace = null, stream = null }) {
   return await callPromptModel({
     prompt,
     resolved,
     systemPrompt: CLASSIFIER_SYSTEM_PROMPT,
     role: 'tutor_stub_learner_classifier',
     maxTokens: 700,
+    trace,
+    stream,
   });
 }
 
@@ -776,7 +1130,12 @@ async function classifyLearnerInput({ learnerText, state }) {
   const startedAt = Date.now();
   try {
     const prompt = buildLearnerClassifierPrompt({ learnerText, state });
-    const raw = await callClassifierModel({ prompt, resolved: state.classifier.resolved });
+    const raw = await callClassifierModel({
+      prompt,
+      resolved: state.classifier.resolved,
+      trace: state.trace,
+      stream: state.stream,
+    });
     const { parsed, parseError } = parseClassifierJson(raw.text);
     return {
       ...parsed,
@@ -821,6 +1180,218 @@ function printClassification(classification) {
 
 function clearStatusLine() {
   process.stdout.write(`${' '.repeat(80)}\r`);
+}
+
+function createTraceState({ enabled, traceDir, metadata }) {
+  if (!enabled) return { enabled: false };
+  const dir = resolveWorkspacePath(traceDir);
+  const runId = safeTimestampForFile();
+  const filePath = path.join(dir, `${runId}.jsonl`);
+  fs.mkdirSync(dir, { recursive: true });
+  const trace = {
+    enabled: true,
+    dir,
+    filePath,
+    runId,
+    seq: 0,
+  };
+  appendTraceEvent(trace, {
+    type: 'run_start',
+    metadata,
+  });
+  return trace;
+}
+
+function appendTraceEvent(trace, event) {
+  if (!trace?.enabled) return;
+  const entry = {
+    ts: new Date().toISOString(),
+    runId: trace.runId,
+    seq: ++trace.seq,
+    ...event,
+  };
+  fs.appendFileSync(trace.filePath, `${JSON.stringify(entry)}\n`);
+}
+
+function traceDisplayPath(trace) {
+  if (!trace?.enabled) return null;
+  return path.relative(ROOT, trace.filePath);
+}
+
+function jsonClone(value) {
+  if (value === undefined) return undefined;
+  return JSON.parse(JSON.stringify(value));
+}
+
+function readTraceEvents(filePath) {
+  const events = [];
+  const text = fs.readFileSync(filePath, 'utf8');
+  for (const line of text.split(/\r?\n/u)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed && typeof parsed === 'object') events.push(parsed);
+    } catch (_) {
+      // Ignore damaged trace lines; the next valid event may still be useful.
+    }
+  }
+  return events;
+}
+
+function dialogueTurnsFromTraceEvents(events) {
+  const turns = [];
+  for (const event of events) {
+    if (event?.type === 'history_clear') {
+      turns.length = 0;
+      continue;
+    }
+    if (event?.type !== 'turn_complete' || !event.turnRecord) continue;
+    turns.push(jsonClone(event.turnRecord));
+  }
+  return turns;
+}
+
+function latestDialogueTrace(traceDir) {
+  const dir = resolveWorkspacePath(traceDir);
+  if (!fs.existsSync(dir)) return null;
+  const files = fs
+    .readdirSync(dir)
+    .filter((name) => name.endsWith('.jsonl'))
+    .map((name) => path.join(dir, name))
+    .filter((filePath) => fs.statSync(filePath).isFile())
+    .map((filePath) => ({ filePath, mtimeMs: fs.statSync(filePath).mtimeMs }))
+    .sort((a, b) => b.mtimeMs - a.mtimeMs);
+
+  for (const { filePath } of files) {
+    const events = readTraceEvents(filePath);
+    const turns = dialogueTurnsFromTraceEvents(events);
+    if (!turns.length) continue;
+    const metadata = events.find((event) => event?.type === 'run_start')?.metadata || null;
+    return { filePath, metadata, turns, events };
+  }
+  return null;
+}
+
+function restoreRegisterStateFromTurns(state, turns) {
+  if (!state.register?.enabled) return { restored: 0 };
+  const byTurn = new Map();
+  for (const turn of turns) {
+    if (!turn?.registerSelection) continue;
+    const selection = jsonClone(turn.registerSelection);
+    const key = Number(selection.turn || turn.turn);
+    if (!Number.isFinite(key)) continue;
+    byTurn.set(key, selection);
+  }
+  for (const turn of turns) {
+    const efficacy = turn?.previousRegisterEfficacy;
+    const key = Number(efficacy?.registerTurn);
+    if (!Number.isFinite(key) || !byTurn.has(key)) continue;
+    const selection = byTurn.get(key);
+    if (!selection.efficacy) selection.efficacy = jsonClone(efficacy);
+  }
+  state.register.history = [...byTurn.values()].sort((a, b) => Number(a.turn || 0) - Number(b.turn || 0));
+  state.register.current = state.register.history[state.register.history.length - 1] || null;
+  return { restored: state.register.history.length };
+}
+
+function replayLearnerDagFromTurns(state, turns) {
+  if (!state.learnerDag?.enabled || !state.world) return { replayed: 0, skipped: 0 };
+  let replayed = 0;
+  let skipped = 0;
+  for (const turn of turns) {
+    const accepted = turn?.tutorLearnerDagUpdate?.accepted;
+    if (accepted) {
+      const result = applyLearnerRecordUpdate({
+        update: {
+          adopt: accepted.adopt || [],
+          retract: accepted.retract || [],
+          derive: accepted.derive || [],
+          hypothesis: accepted.hypothesis || null,
+          assert_answer: accepted.assertAnswer || null,
+        },
+        state,
+        tutorTurn: Number(turn.turn) || replayed + 1,
+        learnerText: turn.learner || '',
+      });
+      state.learnerDag.lastModel = result.model;
+      replayed += 1;
+      continue;
+    }
+    if (turn?.tutorLearnerDagModel) {
+      state.learnerDag.lastModel = jsonClone(turn.tutorLearnerDagModel);
+      skipped += 1;
+    }
+  }
+  return { replayed, skipped };
+}
+
+function restoreDialogueFromTrace(state, resume, { currentWorld }) {
+  if (!resume?.turns?.length) return null;
+  const turns = resume.turns.map((turn) => jsonClone(turn));
+  state.turns = turns;
+  state.history = [];
+  for (const turn of turns) {
+    if (turn.learner) state.history.push({ role: 'user', content: turn.learner });
+    if (turn.tutor) state.history.push({ role: 'assistant', content: turn.tutor });
+  }
+
+  const register = restoreRegisterStateFromTurns(state, turns);
+  const learnerDag = replayLearnerDagFromTurns(state, turns);
+  const warnings = [];
+  const resumedWorld = resume.metadata?.world?.id || null;
+  if (resumedWorld && currentWorld?.id && resumedWorld !== currentWorld.id) {
+    warnings.push(`trace world ${resumedWorld} differs from current world ${currentWorld.id}`);
+  }
+  return {
+    source: resume.filePath,
+    turns: turns.length,
+    register,
+    learnerDag,
+    metadata: resume.metadata || null,
+    warnings,
+  };
+}
+
+function providerSupportsStreaming(resolved) {
+  return Boolean(resolved?.provider && !isCliProvider(resolved.provider));
+}
+
+function streamEnabledFor(state, resolved) {
+  return Boolean(state?.stream?.enabled && providerSupportsStreaming(resolved));
+}
+
+function streamLabel(role) {
+  if (role === 'tutor_stub_tutor') return `${C.magenta}tutor >${C.reset} `;
+  if (role === 'tutor_stub_learner_analysis') return `${C.cyan}learner analysis stream >${C.reset} `;
+  if (role === 'tutor_stub_learner_record') return `${C.cyan}learner DAG stream >${C.reset} `;
+  if (role === 'tutor_stub_learner_classifier') return `${C.cyan}learner classifier stream >${C.reset} `;
+  return `${C.cyan}${role} >${C.reset} `;
+}
+
+function createConsoleTokenSink(role) {
+  let started = false;
+  return {
+    write(token) {
+      if (!started) {
+        clearStatusLine();
+        process.stdout.write(streamLabel(role));
+        started = true;
+      }
+      process.stdout.write(token);
+    },
+    finish() {
+      if (started) process.stdout.write('\n');
+      return started;
+    },
+  };
+}
+
+function replayTextAsConsoleStream(role, text) {
+  const sink = createConsoleTokenSink(role);
+  const tokens = String(text || '').match(/\S+\s*/g) || [];
+  for (const token of tokens) sink.write(token);
+  return sink.finish();
 }
 
 async function classifyForTurn(learnerText, state) {
@@ -1103,6 +1674,8 @@ async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn }) {
     systemPrompt: LEARNER_RECORD_SYSTEM_PROMPT,
     role: 'tutor_stub_learner_record',
     maxTokens: 700,
+    trace: state.trace,
+    stream: state.stream,
   });
   const { parsed, parseError } = parseClassifierJson(raw.text);
   return {
@@ -1122,7 +1695,9 @@ async function extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn })
     resolved: state.learnerDag.resolved,
     systemPrompt: LEARNER_ANALYSIS_SYSTEM_PROMPT,
     role: 'tutor_stub_learner_analysis',
-    maxTokens: 1200,
+    maxTokens: Math.max(2500, state.maxTokens || 0),
+    trace: state.trace,
+    stream: state.stream,
   });
   const { parsed, parseError } = parseClassifierJson(raw.text);
   return {
@@ -1809,6 +2384,165 @@ function printTutorDagSnapshot(snapshot) {
   console.log();
 }
 
+function oneLine(value, { max = 220 } = {}) {
+  const text = String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (text.length <= max) return text;
+  return `${text.slice(0, Math.max(0, max - 3))}...`;
+}
+
+function compactFactRow(row) {
+  if (!row) return '';
+  if (typeof row === 'string') return row;
+  if (row.surface) return row.surface;
+  if (row.text) return row.text;
+  if (row.fact) return factText(row.fact);
+  if (row.premise) return row.premise;
+  return JSON.stringify(row);
+}
+
+function printAnalysisLine(label, value, { max = 220 } = {}) {
+  const text = oneLine(value, { max });
+  if (!text) return;
+  console.log(`${C.dim}  ${label}: ${text}${C.reset}`);
+}
+
+function printAnalysisList(label, rows, { limit = 5 } = {}) {
+  const visible = Array.isArray(rows) ? rows.map(compactFactRow).filter(Boolean).slice(-limit) : [];
+  if (!visible.length) return;
+  console.log(`${C.dim}  ${label}:${C.reset}`);
+  for (const row of visible) {
+    console.log(`${C.dim}    - ${oneLine(row)}${C.reset}`);
+  }
+}
+
+function printInteractiveHelp() {
+  console.log(`${C.cyan}slash commands >${C.reset} /analysis, /a, /clear, /help, /quit\n`);
+}
+
+function printCurrentTurnAnalysis(state) {
+  const turn = state.turns[state.turns.length - 1] || null;
+  if (!turn) {
+    console.log(`${C.cyan}analysis >${C.reset} no completed turns yet`);
+    console.log(`${C.dim}  enter a learner turn first, then use /analysis to inspect the stored classifier, learner-DAG, register, and tutor-DAG data${C.reset}\n`);
+    return;
+  }
+
+  const classification = turn.classification || null;
+  const turnAnalysis = classification?.turn || {};
+  const overall = classification?.overall || {};
+  const conceptual = scoreValue(turnAnalysis.scores?.conceptual_engagement);
+  const readiness = scoreValue(turnAnalysis.scores?.epistemic_readiness);
+  const learnerDagModel = turn.tutorLearnerDagModel || null;
+  const metrics = learnerDagModel?.metrics || {};
+  const assessment = learnerDagModel?.assessment || {};
+  const learnerRecord = learnerDagModel?.learnerRecord || {};
+  const update = turn.tutorLearnerDagUpdate || null;
+  const accepted = update?.accepted || {};
+  const rejected = update?.rejected || [];
+  const extractor = update?.extractor || {};
+  const registerSelection = turn.registerSelection || null;
+  const selectedEfficacy = registerSelection?.efficacy || null;
+  const previousEfficacy = turn.previousRegisterEfficacy || null;
+  const tracePath = traceDisplayPath(state.trace);
+
+  console.log(`${C.cyan}analysis >${C.reset} current completed turn ${turn.turn}`);
+  printAnalysisLine('learner', turn.learner);
+
+  if (classification) {
+    printAnalysisLine('did this turn', turnAnalysis.summary || 'No turn summary.');
+    printAnalysisLine('did overall', overall.summary || 'No overall summary.');
+    printAnalysisLine(
+      'rubric',
+      `move=${turnAnalysis.discourse_move || 'unknown'}; stance=${turnAnalysis.epistemic_stance || 'unknown'}; evidence=${
+        turnAnalysis.evidence_use || 'unknown'
+      }; agency=${turnAnalysis.agency || 'unknown'}; conceptual=${conceptual}/5; readiness=${readiness}/5`,
+    );
+    printAnalysisLine('trajectory', overall.trajectory);
+    printAnalysisLine('current state', overall.current_state);
+    printAnalysisLine('next tutor move', overall.next_best_tutor_move || turnAnalysis.pedagogical_need);
+    if (classification.error || classification.parseError) {
+      printAnalysisLine('classifier warning', classification.error || classification.parseError);
+    }
+  } else {
+    printAnalysisLine('classifier', state.classifier?.enabled ? 'no classifier output stored for this turn' : 'off');
+  }
+
+  if (learnerDagModel) {
+    printAnalysisLine(
+      'learner-DAG',
+      `coverage=${assessment.bestPathCoverage ?? 'n/a'}; bottleneck=${assessment.bottleneck || 'unknown'}; grounded=${
+        metrics.groundedCount || 0
+      }; voiced=${metrics.voicedDerivedCount || 0}; hypotheses=${metrics.hypothesisCount || 0}; missing=${
+        metrics.missingPremiseCount || 0
+      }`,
+    );
+    if (update) {
+      printAnalysisLine(
+        'learner-record update',
+        `adopted=${accepted.adopt?.length || 0}; derived=${accepted.derive?.length || 0}; retracted=${
+          accepted.retract?.length || 0
+        }; hypothesis=${accepted.hypothesis ? 'yes' : 'no'}; assertedAnswer=${accepted.assertAnswer || 'none'}`,
+      );
+      if (rejected.length) printAnalysisLine('learner-record rejected', `${rejected.length} extractor item(s) rejected`);
+      if (extractor.error || extractor.parseError) printAnalysisLine('learner-record warning', extractor.error || extractor.parseError);
+    }
+    printAnalysisList('grounded public record', learnerRecord.grounded);
+    printAnalysisList('learner hypotheses', learnerRecord.hypotheses);
+    printAnalysisList('answer candidates', learnerRecord.answerCandidates);
+  } else {
+    printAnalysisLine('learner-DAG', state.learnerDag?.enabled ? 'no learner-DAG model stored for this turn' : 'off');
+  }
+
+  if (registerSelection) {
+    const confidence =
+      registerSelection.confidence === null || registerSelection.confidence === undefined
+        ? ''
+        : `; confidence=${registerSelection.confidence}`;
+    printAnalysisLine(
+      'selected register',
+      `${registerSelection.selected_register}${confidence}`,
+    );
+    printAnalysisLine('register reason', registerSelection.register_reason);
+    printAnalysisLine('expected DAG move', registerSelection.expected_dag_move);
+    printAnalysisLine('expected progress marker', registerSelection.expected_progress_marker);
+    if (selectedEfficacy) {
+      printAnalysisLine(
+        'selected register efficacy',
+        `${selectedEfficacy.label}; score=${selectedEfficacy.progressScore}; ${selectedEfficacy.summary}`,
+      );
+    } else {
+      printAnalysisLine('selected register efficacy', 'pending the next learner turn');
+    }
+  } else {
+    printAnalysisLine('selected register', state.register?.enabled ? 'none stored for this turn' : 'off');
+  }
+  if (previousEfficacy) {
+    printAnalysisLine(
+      'previous register efficacy',
+      `${previousEfficacy.selected_register}: ${previousEfficacy.label}; score=${previousEfficacy.progressScore}; ${previousEfficacy.summary}`,
+    );
+  }
+
+  if (turn.tutorLeakAudit) {
+    const leaks = turn.tutorLeakAudit.leaks || [];
+    printAnalysisLine('leak guard', turn.tutorLeakAudit.ok ? 'ok' : `${leaks.length} leak(s) found after repair/audit`);
+    for (const leak of leaks.slice(0, 3)) {
+      printAnalysisLine(`leak ${leak.type || 'unknown'}`, leak.reason);
+    }
+  }
+
+  if (turn.tutorDag) {
+    printTutorDagSnapshot(turn.tutorDag);
+  } else {
+    printAnalysisLine('tutor DAG', state.dag ? 'no snapshot stored for this turn' : 'off');
+  }
+
+  printAnalysisLine('trace', tracePath);
+  console.log();
+}
+
 function dagTurnContext(world, tutorTurn) {
   if (!world) return '';
   const released = world.releaseSchedule.filter((entry) => entry.turn <= tutorTurn);
@@ -1845,6 +2579,8 @@ async function callTutor({
   classification,
   tutorLearnerDagModel,
   registerSelection,
+  trace = null,
+  stream = null,
 }) {
   const context = trimHistory(history, historyTurns);
   const tutorTurn = Math.floor(history.length / 2) + 1;
@@ -1860,45 +2596,185 @@ async function callTutor({
     learnerPrompt,
   ].filter(Boolean);
   const userPrompt = promptParts.join('\n\n');
+  const leakGuardEnabled = Boolean(dag && world);
+  const canStreamTutor = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
+  const tutorStreamMode = canStreamTutor ? (leakGuardEnabled ? 'buffered' : 'live') : 'none';
 
-  if (isCliProvider(resolved.provider)) {
-    const result = await callAIWithCliBridge(
-      { provider: resolved.provider, model: resolved.model },
+  async function invokeTutorAttempt({ attemptUserPrompt, role, streamMode = 'none', repairAttempt = 0 }) {
+    const startedAt = new Date().toISOString();
+    const request = {
       systemPrompt,
-      userPrompt,
-      'tutor_stub',
-      { messageHistory: context },
-    );
-    return {
-      text: result.text,
-      provider: result.provider,
-      model: result.model,
-      latencyMs: result.latencyMs,
-      usage: {
-        inputTokens: result.inputTokens || 0,
-        outputTokens: result.outputTokens || 0,
-        totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
-        cost: result.cost || 0,
-      },
+      messages: [...context, { role: 'user', content: attemptUserPrompt }],
+      config: { temperature, maxTokens, historyTurns, leakGuard: leakGuardEnabled, repairAttempt },
     };
+    const useStreamingApi = streamMode === 'live' || streamMode === 'buffered';
+    let response;
+    if (isCliProvider(resolved.provider)) {
+      const result = await callAIWithCliBridge(
+        { provider: resolved.provider, model: resolved.model },
+        systemPrompt,
+        attemptUserPrompt,
+        role,
+        { messageHistory: context },
+      );
+      response = {
+        text: result.text,
+        provider: result.provider,
+        model: result.model,
+        latencyMs: result.latencyMs,
+        usage: {
+          inputTokens: result.inputTokens || 0,
+          outputTokens: result.outputTokens || 0,
+          totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
+          cost: result.cost || 0,
+        },
+      };
+    } else if (useStreamingApi) {
+      const sink = streamMode === 'live' ? createConsoleTokenSink(role) : null;
+      let final = null;
+      for await (const chunk of streamAI({
+        provider: resolved.provider,
+        model: resolved.model,
+        systemPrompt,
+        messages: request.messages,
+        preset: 'socratic',
+        config: { temperature, maxTokens },
+      })) {
+        if (chunk.type === 'text_delta') {
+          if (sink) sink.write(chunk.content);
+        } else if (chunk.type === 'done') {
+          final = chunk;
+        }
+      }
+      const streamed = sink ? sink.finish() : false;
+      response = {
+        text: final?.content || '',
+        provider: final?.provider || resolved.provider,
+        model: final?.model || resolved.model,
+        latencyMs: final?.latencyMs || 0,
+        usage: final?.usage || null,
+        streamed,
+        generatedWithStreaming: true,
+        bufferedStream: streamMode === 'buffered',
+      };
+    } else {
+      const result = await callAI({
+        provider: resolved.provider,
+        model: resolved.model,
+        systemPrompt,
+        messages: request.messages,
+        preset: 'socratic',
+        config: { temperature, maxTokens },
+      });
+      response = {
+        text: result.content,
+        provider: result.provider,
+        model: result.model,
+        latencyMs: result.latencyMs,
+        usage: result.usage,
+      };
+    }
+
+    appendTraceEvent(trace, {
+      type: 'model_call',
+      role,
+      startedAt,
+      provider: response.provider,
+      model: response.model,
+      request,
+      response: {
+        text: response.text,
+        latencyMs: response.latencyMs,
+        usage: response.usage,
+        streamed: Boolean(response.streamed),
+      },
+    });
+    return response;
   }
 
-  const result = await callAI({
-    provider: resolved.provider,
-    model: resolved.model,
-    systemPrompt,
-    messages: [...context, { role: 'user', content: userPrompt }],
-    preset: 'socratic',
-    config: { temperature, maxTokens },
-  });
+  try {
+    let response = await invokeTutorAttempt({
+      attemptUserPrompt: userPrompt,
+      role: 'tutor_stub_tutor',
+      streamMode: tutorStreamMode,
+      repairAttempt: 0,
+    });
 
-  return {
-    text: result.content,
-    provider: result.provider,
-    model: result.model,
-    latencyMs: result.latencyMs,
-    usage: result.usage,
-  };
+    if (!leakGuardEnabled) return response;
+
+    let audit = auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText });
+    appendTraceEvent(trace, {
+      type: 'tutor_response_audit',
+      turn: tutorTurn,
+      attempt: 0,
+      ok: audit.ok,
+      leaks: audit.leaks,
+    });
+    if (audit.ok) {
+      response.leakAudit = audit;
+      if (response.bufferedStream) {
+        response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text);
+        response.guardedStreamReplay = true;
+      }
+      return response;
+    }
+
+    response = await invokeTutorAttempt({
+      attemptUserPrompt: tutorLeakRepairPrompt({ originalUserPrompt: userPrompt, unsafeDraft: response.text, audit }),
+      role: 'tutor_stub_tutor_repair',
+      streamMode: canStreamTutor ? 'buffered' : 'none',
+      repairAttempt: 1,
+    });
+    audit = auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText });
+    appendTraceEvent(trace, {
+      type: 'tutor_response_audit',
+      turn: tutorTurn,
+      attempt: 1,
+      ok: audit.ok,
+      leaks: audit.leaks,
+    });
+    if (audit.ok) {
+      response.leakAudit = audit;
+      response.repaired = true;
+      if (response.bufferedStream) {
+        response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text);
+        response.guardedStreamReplay = true;
+      }
+      return response;
+    }
+
+    const fallbackText = deterministicLeakFallback({ learnerText, audit });
+    const fallback = {
+      text: fallbackText,
+      provider: resolved.provider,
+      model: resolved.model,
+      latencyMs: response.latencyMs || 0,
+      usage: response.usage || { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
+      leakAudit: audit,
+      repaired: true,
+      deterministicFallback: true,
+    };
+    if (canStreamTutor) {
+      fallback.streamed = replayTextAsConsoleStream('tutor_stub_tutor', fallback.text);
+      fallback.guardedStreamReplay = true;
+    }
+    appendTraceEvent(trace, {
+      type: 'tutor_response_fallback',
+      turn: tutorTurn,
+      leaks: audit.leaks,
+      text: fallbackText,
+    });
+    return fallback;
+  } catch (err) {
+    appendTraceEvent(trace, {
+      type: 'model_call_error',
+      role: 'tutor_stub_tutor',
+      provider: resolved.provider,
+      model: resolved.model,
+      error: err.message,
+    });
+    throw err;
+  }
 }
 
 function saveTranscript(filePath, transcript) {
@@ -1930,24 +2806,42 @@ async function runOneTurn(
     classification,
     tutorLearnerDagModel: tutorLearnerDag,
     registerSelection,
+    trace: state.trace,
+    stream: state.stream,
   });
   const dagSnapshot = buildTutorDagSnapshot(state, tutorTurn);
 
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
-  state.turns.push({
+  const turnRecord = {
     turn: tutorTurn,
     learner: learnerText,
     classification,
     tutorLearnerDagModel: tutorLearnerDag?.model || null,
+    tutorLearnerDagUpdate: tutorLearnerDag
+      ? {
+          accepted: tutorLearnerDag.accepted || null,
+          rejected: tutorLearnerDag.rejected || [],
+          extractor: tutorLearnerDag.extractor || null,
+        }
+      : null,
     registerSelection,
     previousRegisterEfficacy,
     tutor: response.text,
     tutorDag: dagSnapshot,
+    tutorLeakAudit: response.leakAudit || null,
+    tutorResponseRepaired: Boolean(response.repaired),
+    tutorDeterministicFallback: Boolean(response.deterministicFallback),
     provider: response.provider,
     model: response.model,
     latencyMs: response.latencyMs,
     usage: response.usage,
+  };
+  state.turns.push(turnRecord);
+  appendTraceEvent(state.trace, {
+    type: 'turn_complete',
+    turn: tutorTurn,
+    turnRecord,
   });
   return { ...response, dagSnapshot };
 }
@@ -2001,6 +2895,17 @@ async function main() {
         }
     : { enabled: false };
   const effectiveTemperature = effectiveTemperatureForModel(resolved, temperature);
+  const traceEnabled = !args['no-trace'];
+  const traceDir = resolveWorkspacePath(args['trace-dir']);
+  const streamEnabled = Boolean(STUB.stream && !args['no-stream']);
+  const tutorStreamState = !streamEnabled
+    ? 'off'
+    : !providerSupportsStreaming(resolved)
+      ? 'unavailable_cli_buffered'
+      : args.dag && worldBundle
+        ? 'guarded_after_audit'
+        : 'live';
+  const resumeCandidate = args['resume-last'] ? latestDialogueTrace(args['trace-dir']) : null;
 
   if (args['show-prompt']) {
     console.log(`${C.dim}--- system prompt ---${C.reset}`);
@@ -2043,6 +2948,29 @@ async function main() {
             : { enabled: false },
           maxTokens,
           historyTurns,
+          trace: traceEnabled
+            ? {
+                enabled: true,
+                dir: path.relative(ROOT, traceDir),
+              }
+            : { enabled: false },
+          stream: {
+            enabled: streamEnabled,
+            tutor: tutorStreamState,
+            tutorLive: tutorStreamState === 'live',
+            tutorGuardedAfterAudit: tutorStreamState === 'guarded_after_audit',
+            classifier: streamEnabled && classifierResolved ? providerSupportsStreaming(classifierResolved) : false,
+            learnerAnalysis: streamEnabled && learnerRecordResolved ? providerSupportsStreaming(learnerRecordResolved) : false,
+          },
+          resumeLast: args['resume-last']
+            ? resumeCandidate
+              ? {
+                  source: path.relative(ROOT, resumeCandidate.filePath),
+                  turns: resumeCandidate.turns.length,
+                  world: resumeCandidate.metadata?.world || null,
+                }
+              : { requested: true, found: false, traceDir: path.relative(ROOT, traceDir) }
+            : { requested: false },
           systemPrompt,
           firstMessage: firstMessage || null,
         },
@@ -2073,6 +3001,37 @@ async function main() {
     );
   }
 
+  const trace = createTraceState({
+    enabled: traceEnabled,
+    traceDir: args['trace-dir'],
+    metadata: {
+      modelRef: args.model,
+      resolved: visibleModel,
+      classifier: visibleClassifierConfig,
+      tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
+      registerSelection: registerSelectionEnabled ? { enabled: true, palette: registerPalette } : { enabled: false },
+      stream: {
+        enabled: streamEnabled,
+        tutor: tutorStreamState,
+        tutorLive: tutorStreamState === 'live',
+        tutorGuardedAfterAudit: tutorStreamState === 'guarded_after_audit',
+        classifier: streamEnabled && classifierResolved ? providerSupportsStreaming(classifierResolved) : false,
+        learnerAnalysis: streamEnabled && learnerRecordResolved ? providerSupportsStreaming(learnerRecordResolved) : false,
+      },
+      resumeLast: args['resume-last']
+        ? resumeCandidate
+          ? {
+              source: path.relative(ROOT, resumeCandidate.filePath),
+              turns: resumeCandidate.turns.length,
+              world: resumeCandidate.metadata?.world || null,
+            }
+          : { requested: true, found: false, traceDir: path.relative(ROOT, traceDir) }
+        : { requested: false },
+      world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
+      firstMessage: firstMessage || null,
+    },
+  });
+
   const state = {
     topic: effectiveTopic,
     systemPrompt,
@@ -2100,9 +3059,32 @@ async function main() {
       current: null,
       history: [],
     },
+    trace,
+    stream: {
+      enabled: streamEnabled,
+    },
     history: [],
     turns: [],
   };
+
+  const resumedDialogue = args['resume-last']
+    ? restoreDialogueFromTrace(state, resumeCandidate, { currentWorld: worldBundle?.world || null })
+    : null;
+  if (resumedDialogue) {
+    appendTraceEvent(state.trace, {
+      type: 'resume_loaded',
+      source: path.relative(ROOT, resumedDialogue.source),
+      turns: resumedDialogue.turns,
+      register: resumedDialogue.register,
+      learnerDag: resumedDialogue.learnerDag,
+      warnings: resumedDialogue.warnings,
+    });
+  } else if (args['resume-last']) {
+    appendTraceEvent(state.trace, {
+      type: 'resume_empty',
+      traceDir: path.relative(ROOT, traceDir),
+    });
+  }
 
   console.log(`\n${C.cyan}tutor-stub${C.reset} ${C.dim}${args.model} -> ${visibleModel.provider}/${visibleModel.model}${C.reset}`);
   if (classifierEnabled && combinedLearnerAnalysisEnabled) {
@@ -2130,6 +3112,42 @@ async function main() {
   } else {
     console.log(`${C.dim}register selection: off${C.reset}`);
   }
+  if (trace.enabled) {
+    console.log(`${C.dim}trace: ${traceDisplayPath(trace)}${C.reset}`);
+  } else {
+    console.log(`${C.dim}trace: off${C.reset}`);
+  }
+  if (streamEnabled) {
+    const streamBits = [
+      tutorStreamState === 'live' ? 'tutor live' : null,
+      tutorStreamState === 'guarded_after_audit' ? 'tutor guarded-after-audit' : null,
+      classifierResolved && providerSupportsStreaming(classifierResolved) ? 'classifier' : null,
+      learnerRecordResolved && providerSupportsStreaming(learnerRecordResolved) ? 'learner-DAG/analysis' : null,
+    ].filter(Boolean);
+    const streamSummary = streamBits.length
+      ? `on for ${streamBits.join(', ')}`
+      : tutorStreamState === 'unavailable_cli_buffered'
+        ? 'requested, but tutor provider is CLI-buffered'
+        : 'requested, but selected providers are CLI-buffered';
+    console.log(`${C.dim}stream: ${streamSummary}${C.reset}`);
+  } else {
+    console.log(`${C.dim}stream: off${C.reset}`);
+  }
+  if (resumedDialogue) {
+    console.log(
+      `${C.dim}resume: loaded ${resumedDialogue.turns} turn(s) from ${path.relative(ROOT, resumedDialogue.source)}${C.reset}`,
+    );
+    if (resumedDialogue.learnerDag.skipped) {
+      console.log(
+        `${C.dim}resume: learner-DAG replayed ${resumedDialogue.learnerDag.replayed}, reused ${resumedDialogue.learnerDag.skipped} stored model snapshot(s)${C.reset}`,
+      );
+    }
+    for (const warning of resumedDialogue.warnings) {
+      console.log(`${C.red}resume warning${C.reset}${C.dim}: ${warning}${C.reset}`);
+    }
+  } else if (args['resume-last']) {
+    console.log(`${C.dim}resume: no completed dialogue found in ${path.relative(ROOT, traceDir)}${C.reset}`);
+  }
   if (temperature !== effectiveTemperature) {
     console.log(
       `${C.dim}temperature: requested ${temperature}; using ${effectiveTemperature} because ${visibleModel.model} only supports the default${C.reset}`,
@@ -2141,7 +3159,7 @@ async function main() {
     );
   }
   printDirectorInitialContext(directorContext);
-  console.log(`${C.dim}topic: ${effectiveTopic} | /quit to exit | /clear to reset${C.reset}\n`);
+  console.log(`${C.dim}topic: ${effectiveTopic} | /analysis for current turn | /help for commands | /quit to exit${C.reset}\n`);
 
   if (firstMessage) {
     const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
@@ -2158,9 +3176,12 @@ async function main() {
       previousRegisterEfficacy,
     );
     clearStatusLine();
-    console.log(`${C.magenta}tutor >${C.reset} ${response.text.trim()}`);
+    if (!response.streamed) {
+      console.log(`${C.magenta}tutor >${C.reset} ${response.text.trim()}`);
+    }
     console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
     printTutorDagSnapshot(response.dagSnapshot);
+    appendTraceEvent(state.trace, { type: 'run_end', reason: 'once', turns: state.turns.length });
     if (args.save) {
       saveTranscript(args.save, {
         ...visibleModel,
@@ -2170,6 +3191,7 @@ async function main() {
           ? { enabled: true, palette: registerPalette, history: state.register.history }
           : null,
         directorContext,
+        trace: traceDisplayPath(state.trace),
         world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
         turns: state.turns,
       });
@@ -2180,6 +3202,7 @@ async function main() {
   const rl = readline.createInterface({ input, output });
   rl.on('SIGINT', () => {
     console.log();
+    appendTraceEvent(state.trace, { type: 'run_end', reason: 'sigint', turns: state.turns.length });
     if (args.save) {
       saveTranscript(args.save, {
         ...visibleModel,
@@ -2189,6 +3212,7 @@ async function main() {
           ? { enabled: true, palette: registerPalette, history: state.register.history }
           : null,
         directorContext,
+        trace: traceDisplayPath(state.trace),
         turns: state.turns,
       });
     }
@@ -2207,6 +3231,19 @@ async function main() {
     const trimmed = line.trim();
     if (!trimmed) continue;
     if (trimmed === '/quit' || trimmed === '/exit') break;
+    if (trimmed === '/help') {
+      printInteractiveHelp();
+      appendTraceEvent(state.trace, { type: 'interactive_help', turns: state.turns.length });
+      continue;
+    }
+    if (trimmed === '/analysis' || trimmed === '/a') {
+      printCurrentTurnAnalysis(state);
+      appendTraceEvent(state.trace, {
+        type: 'analysis_popup',
+        turn: state.turns[state.turns.length - 1]?.turn || null,
+      });
+      continue;
+    }
     if (trimmed === '/clear') {
       state.history = [];
       state.turns = [];
@@ -2221,6 +3258,7 @@ async function main() {
         current: null,
         history: [],
       };
+      appendTraceEvent(state.trace, { type: 'history_clear' });
       console.log(`${C.dim}history cleared${C.reset}\n`);
       continue;
     }
@@ -2240,7 +3278,9 @@ async function main() {
         previousRegisterEfficacy,
       );
       clearStatusLine();
-      console.log(`${C.magenta}tutor >${C.reset} ${response.text.trim()}`);
+      if (!response.streamed) {
+        console.log(`${C.magenta}tutor >${C.reset} ${response.text.trim()}`);
+      }
       console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
       printTutorDagSnapshot(response.dagSnapshot);
     } catch (err) {
@@ -2250,6 +3290,7 @@ async function main() {
   }
 
   rl.close();
+  appendTraceEvent(state.trace, { type: 'run_end', reason: 'exit', turns: state.turns.length });
   if (args.save) {
     saveTranscript(args.save, {
       ...visibleModel,
@@ -2259,6 +3300,7 @@ async function main() {
         ? { enabled: true, palette: registerPalette, history: state.register.history }
         : null,
       directorContext,
+      trace: traceDisplayPath(state.trace),
       world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
       turns: state.turns,
     });
