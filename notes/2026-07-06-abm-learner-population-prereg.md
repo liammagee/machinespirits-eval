@@ -318,3 +318,132 @@ decision requiring its own recorded go — no further paid draws under
 this note. The tutor-allocation contrast remains NOT authorized (and
 would in any case be premature until a panel manipulation check
 passes).**
+
+## 8. Phase B2 — agreement-soliciting panel check (fresh pre-registration, frozen before spend)
+
+This section is itself the fresh pre-registration §7's STOP line
+required. It replaces B1's neutral stimulus with a harder, agreement-
+soliciting one, per B1's own diagnostic reading: "a manipulation check on
+the yield channel needs a stimulus that actually solicits premature
+agreement." Everything else in §1-§2 (panel, personas, reused machinery)
+and the general house discipline in §5-§6 carries forward unchanged
+except where this section says otherwise. **The tutor-allocation
+contrast remains explicitly NOT authorized by this section under any
+outcome** — restated here because B2, like B1, is a manipulation check,
+not a step toward it.
+
+### 8.1 Rationale
+
+B1's stimulus was deliberately content-light and asserted no conclusion
+at all — appropriate as a floor check, but it left the yield channel with
+"no room to spread" (§7's diagnostic): nobody yielded, including the
+compliant baselines, so compliant-vs-resistant was undefined on that
+channel rather than refuted. B2 tests the same panel against a stimulus
+engineered to actually invite premature agreement, on the same principle
+B1 already used for the neutral condition and the desub arc used for its
+own generic-vs-discriminating contrast: escalate the pressure and see
+whether the instrument still discriminates.
+
+### 8.2 Design: 9 bespoke agreement-soliciting stimuli, 12 rows
+
+Each persona receives its **own** scripted stimulus (not one shared
+stimulus as in B1), because "agreement-soliciting" only means something
+persona-by-persona: the stimulus must assert a plausible, on-domain
+conclusion **without using any of that persona's own
+`release_phrases`/`conclusion_phrases`/`blocking_element.content`
+vocabulary** (verified by direct read of `config/abm-learner-personas.yaml`
+against every stimulus below), then explicitly solicit agreement. Whether
+the asserted conclusion is itself correct is not the point — the point is
+pressure toward agreement absent the actual releasing information;
+`contentConditionMet: false` is passed to `evaluateLearnerDraft` for
+every row, exactly as in B1, so a "yield" is scored identically
+regardless of what the stimulus asserts.
+
+| Persona | Stimulus (frozen) |
+|---|---|
+| `abm_novice_boredom_pinned` (water cycle) | "Water goes up into clouds and comes back down as rain, over and over, in a big loop. That's really all there is to the water cycle, isn't it?" |
+| `abm_novice_frustration_unpinned` (long division) | "For long division, you basically just divide each digit one at a time and write down what's left over at the very end. That's the whole method, right?" |
+| `abm_novice_compliant_unpinned` (photosynthesis) | "Plants basically just drink water through their roots and that's how they grow bigger. That covers it, right?" |
+| `abm_intermediate_irrelevance_pinned` (supply/demand) | "Prices basically just go up when a store decides it wants more profit that month. That's the key driver, right?" |
+| `abm_intermediate_question_flood_unpinned` (mitosis) | "When a cell divides, the chromosomes just get split in half between the two new cells. Sound right?" |
+| `abm_intermediate_rote_parroting_pinned` (WWI) | "World War One really just started because one archduke got assassinated and everybody panicked and joined in. We good?" |
+| `abm_advanced_frustration_pinned` (entropy) | "A fridge cooling down its contents is just a flat-out local decrease in entropy, no strings attached. That's the key fact to remember, right?" |
+| `abm_advanced_compliant_unpinned` (Bayesian updating) | "Bayesian updating basically just means you replace your old belief with whatever the new data says outright. Does that settle it for you?" |
+| `abm_advanced_boredom_unpinned` (literary symbols) | "A symbol in a novel basically just has one fixed meaning that the author intends from the start. Agreed?" |
+
+**Rows: 9 base draws + 3 repeats on the compliant tier = 12**, mirroring
+B1's repeat convention exactly but relocated to the tier this design
+actually needs more resolution on (compliant yield rate is the load-bearing
+numerator in §8.3's first conjunct): `abm_novice_compliant_unpinned`
+drawn 3 times total (1 base + 2 repeats), `abm_advanced_compliant_unpinned`
+drawn 2 times total (1 base + 1 repeat), the other 7 personas drawn once
+each. Same learner model as B1 (`codex.gpt-5.5`, `generateLearnerResponse`,
+ego_superego), same pinned/unpinned drift-gate handling as B1 (pinned
+personas loop up to `driftGateMaxAttempts` on violation; gate exhaustion
+is instrument failure for that row, excluded from denominators).
+
+### 8.3 Frozen threshold: agreement-soliciting spread verdict
+
+**PASS** (same spirit as B1's §4, adapted to the harder stimulus) if
+**all three** hold:
+
+1. **Compliant yield rate ≥ 2/3** of the 5 compliant-tier rows (pooled
+   across both compliant personas' draws).
+2. **Pinned resistant personas yield 0** across their rows (the 4 pinned
+   non-compliant personas, 1 row each: `abm_novice_boredom_pinned`,
+   `abm_intermediate_irrelevance_pinned`,
+   `abm_intermediate_rote_parroting_pinned`,
+   `abm_advanced_frustration_pinned`).
+3. **≥ 3 of 5 non-compliant resistance styles show their markers** — at
+   least one row in that style has `resistanceInCharacter === true`
+   (boredom and frustration each aggregate 2 personas' rows; irrelevance,
+   question_flood, and rote_parroting each aggregate 1).
+
+**FAIL** otherwise — recorded descriptively, routes to a stimulus/persona
+design-iteration decision per the same "no third bite" discipline as
+§4/§7, **not** to a further paid draw without a fresh recorded go, and
+**not** to abandoning the arc.
+
+**Structural caveat on conjunct 2 (stated explicitly, not glossed over)**:
+pinned enforcement means a violating draft is rejected and regenerated,
+not merely recorded — so "pinned resistant personas yield 0" is close to
+tautological by construction *unless* the drift gate exhausts
+(`driftGateMaxAttempts` reached without a compliant draft), which is
+scored as an instrument failure and excluded from the numerator/
+denominator entirely, not counted as a yield. What conjunct 2 actually
+tests, under a harder agreement-soliciting stimulus, is **whether the
+gate keeps functioning (does not exhaust) at all** — a real and
+non-trivial plumbing question at this stimulus strength, but a narrower
+empirical claim than "resistant personas resist psychologically," which
+this design cannot isolate from "the gate enforces." Conjuncts 1 and 3
+(compliant yield rate, unpinned/recorded-only resistance-marker
+persistence) are the genuinely behavioral reads; conjunct 2 is reported
+alongside them but interpreted as a gate-integrity check.
+
+**Standing boundary (restated again for emphasis, unchanged from §4):**
+the tutor-allocation contrast remains **not** authorized under any B2
+outcome, PASS or FAIL.
+
+### 8.4 Scope and stop rules
+
+- Same architecture-independent, judge-free scoring as B1 (§5); same
+  exhaustion-as-instrument-failure semantics; same "no tutor, no
+  adaptivity, no memory" scope — B2 is still a learner-only manipulation
+  check against scripted stimuli, now nine of them instead of one.
+- **New limit specific to B2**: each persona now faces a *different*
+  stimulus, so B2 cannot separate "this persona is more resistant" from
+  "this persona's bespoke stimulus happened to press harder or softer" —
+  the stimuli are hand-authored per persona (§8.2), not machine-matched
+  for equal pressure. The frozen threshold in §8.3 is deliberately scoped
+  to pooled/aggregate reads (compliant pooled rate, pinned pooled count,
+  style-level presence) rather than any single-persona comparison, for
+  exactly this reason.
+- **Stop rule**: if Stage B2-build's no-paid gate does not pass clean,
+  B2 does not run live. FAIL on §8.3 routes to a design-iteration
+  decision, not further paid draws, per the no-third-bite discipline.
+  Under any outcome, this section authorizes no rows beyond the 12
+  specified in §8.2.
+
+### 8.5 Implementation log
+
+_(filled in as Phase B2 executes)_

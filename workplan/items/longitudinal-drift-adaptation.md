@@ -98,3 +98,25 @@ sessions never feed pad content), so the stale-0 reflects an empty
 channel, not demonstrated indifference to memory. Instrument validated;
 a confirmatory design needs pad-feeding (multi-turn) sessions. STOP —
 awaiting a fresh pre-registration + go for anything further.
+
+2026-07-06 Claude: Stage A2 pre-registration frozen and committed
+(`notes/2026-07-06-longitudinal-drift-adaptation-prereg.md` §7).
+Redesign motivated by A1's own finding (single-turn sessions never feed
+the pad — 0 recognition moments) plus a confirmed mechanism trace:
+`cell_40`/`cell_93` both route through `dialecticalEngine.negotiateDialectically`'s
+per-turn superego-disapproval gate (a real LLM judgment call, no mock),
+which only writes a `recognition_moments` row when the superego
+disapproves; a live DB query confirmed zero such rows across all 3 real
+A1 pad-ON sessions. Design: 3 new `longitudinal_drift_session_{1,2,3}_multiturn`
+sibling scenarios (4 turns/session, same misconception schedule/tokens as
+A1) × {pad-ON, pad-OFF} = 6 dialogues, 24 turns total. New frozen
+instrument-precondition gate: after pad-ON session 1, the pad row must
+show ≥1 recognition moment (checked live before continuing) — 0 is
+INSTRUMENT_FLOOR, stop. Primary outcome unchanged (word-bounded
+opening-turn marker matching); secondary is the pad-content trace
+(recognition-moment count + plain-language ghost_demand/learner_need/
+synthesis rendering, scoped to what the live schema actually populates).
+Frozen thresholds carried forward (current-reference ≥2/3 pad-ON
+validity gate; stale-reference gap directional-only, non-confirmatory at
+this n). Stage A2-build (no-paid: 3 scenarios, hermetic plumbing script,
+unit tests) precedes the live pilot.

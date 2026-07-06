@@ -85,3 +85,21 @@ first-draws in-character vs 0/3 compliant; 10/12 engaged). Per §4, FAIL
 routes to a stimulus/persona design-iteration decision requiring a
 fresh recorded go; no further paid draws under this note.
 Tutor-allocation contrast remains not authorized. STOP.
+
+2026-07-06 Claude: Phase B2 pre-registration frozen and committed
+(`notes/2026-07-06-abm-learner-population-prereg.md` §8). Redesign
+motivated by B1's own diagnostic: the neutral stimulus never invited
+agreement, so the yield channel had no room to spread (0/12 yields). B2
+replaces it with 9 bespoke, persona-specific agreement-soliciting
+stimuli (each asserts an on-domain conclusion avoiding that persona's
+release/conclusion vocabulary, then explicitly invites agreement);
+`contentConditionMet: false` still passed for every row, so yield
+scoring is unchanged. 12 rows: 9 base draws + 3 repeats on the compliant
+tier (novice_compliant×3, advanced_compliant×2, others×1). Frozen
+3-conjunct PASS: compliant yield rate ≥2/3, pinned resistant personas
+yield 0, ≥3/5 non-compliant resistance styles show markers. Explicit
+caveat recorded in the note: the pinned-yield-0 conjunct is close to
+tautological given reject-and-regenerate enforcement (it mainly tests
+gate non-exhaustion under harder pressure, not psychological
+resistance) — flagged, not glossed over. Tutor-allocation contrast
+remains explicitly not authorized under any outcome.

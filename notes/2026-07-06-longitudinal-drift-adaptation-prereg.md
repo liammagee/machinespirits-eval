@@ -414,3 +414,280 @@ are instrument-failure/plumbing overhead documented above, not design
 scaling. Anything beyond (a powered confirmatory design, multi-turn
 pad-feeding sessions, more learner-ids/arms/model stacks) requires a
 fresh pre-registration and recorded go.
+
+## 7. Stage A2 — pad-feeding drift arc (fresh pre-registration, frozen before spend)
+
+This section is itself the fresh pre-registration Stage A1's STOP line
+required. It addresses the one precondition A1 surfaced — the pad
+persisted but stayed content-empty — and authorizes **only** the rows
+enumerated in §7.2/§7.6, nothing further. Everything in §1, §2.1-2.2
+(arms, cell pairing, harness-owned schedule content) and the general
+house discipline in §3-§5 carries forward unchanged except where this
+section explicitly says otherwise.
+
+### 7.1 Rationale: closing the precondition gap, precisely
+
+Stage A1's own implementation log (§6, point 6) already named the gap:
+"Recognition moments are content-driven and none fire in short
+single-turn suggestion sessions — so the persistence channel existed but
+carried no session-specific content." This go re-verified the mechanism
+behind that finding directly against `config/tutor-agents.yaml` and
+`tutor-core/services/{tutorDialogueEngine,dialecticalEngine,
+writingPadService,memoryDynamicsService,dbService}.js` (confirmed
+byte-identical to the copies used for A0/A1) plus the live A1 database
+(`tutor-core/data/lms.sqlite`), rather than re-assuming the A1-era
+summary of it:
+
+- Both `cell_40`/`cell_93` set `dialectical_negotiation: true`
+  (`config/tutor-agents.yaml`), which routes ego generation through
+  `tutorDialogueEngine.js`'s "Phase 2" branch
+  (`egoGenerateSuggestions`, `if (dialecticalNegotiation)`) into
+  `dialecticalEngine.negotiateDialectically(...)` — **not** the older
+  in-memory "Phase 0/1" `recordRecognitionMoment` path elsewhere in the
+  same file, which only runs for cells that leave `dialectical_negotiation`
+  unset/false. This is the exact path both A1 arms already ran; nothing
+  about it changes for A2.
+- `negotiateDialectically` calls a real `generateSuperegoCritique` LLM
+  call **once per turn**. If the superego does not disapprove of that
+  turn's ego suggestion, the function returns immediately with
+  `recognitionMoment: null` — **no row is written to `recognition_moments`
+  at all for that turn.** Only when the superego disapproves does the
+  function proceed to negotiation rounds and, at its final step (gated on
+  `learnerId && writingPad`), call
+  `writingPadService.createRecognitionMoment({...})` — which inserts
+  exactly one `recognition_moments` row.
+- Writing that row does **not** by itself update
+  `writing_pads.total_recognition_moments`. That column is only
+  incremented later, by `settleToUnconscious`, invoked from
+  `memoryDynamicsService.autoConsolidateToUnconscious`, invoked from
+  `runBackgroundMaintenance`. `services/evaluationRunner.js` already
+  calls `runBackgroundMaintenance(learnerId, {consolidation: {minAge: 0,
+  requireTransformative: false}})` unconditionally whenever `learnerId`
+  is set, once per `runSingleTest` call (i.e. once per session, after all
+  of that session's turns complete) — the in-repo comment at that call
+  site (`services/evaluationRunner.js`, ~L2830) states its purpose
+  directly: "makes the pad's permanent_traces / total_recognition_moments
+  counter visible to the *next* session under the same learner_id." No
+  new code is needed for A2 to benefit from this — it is already what A1
+  ran, and it is why a plumbing check can be hermetic (§7.6) even though
+  the live behavioral question (does the superego actually disapprove
+  often enough to produce a nonzero count) cannot be.
+- Querying the live A1 database directly confirms the A1 finding at the
+  most literal level: `recognition_moments` has **zero rows total**
+  (not merely a zero `total_recognition_moments` column) — across all
+  3 pad-ON single-turn sessions, the superego never disapproved even
+  once. This is a real empirical fact about this model stack's behavior
+  on single-turn sessions, not a structural impossibility — disapproval
+  comes from a genuine LLM judgment call (`generateSuperegoCritique`),
+  not a scripted or random gate. Multi-turn sessions give this call
+  several independent per-turn chances instead of one, which is the
+  entire mechanism A2 leans on — but it is not guaranteed, which is
+  exactly why §7.4's live, checked-before-continuing gate exists rather
+  than treating "more turns" as a foregone conclusion.
+- `conscious_state`/`preconscious_state` remain structurally unreachable
+  regardless of session length, confirmed again this go:
+  `pad.conscious.workingThoughts` is written only by a function
+  (`updateConscious`) with no caller anywhere on the cell_40/93 request
+  path. The task's original gate wording ("recognition moments ≥1 OR
+  conscious_state populated") therefore reduces, for this architecture,
+  to the recognition-moments count alone — stated explicitly here so it
+  is never re-derived or misremembered later.
+- What the resulting trace can and cannot show (schema-verified against
+  `tutor-core/migrations/008_writing_pad_schema.sql` and the live DB):
+  `createRecognitionMoment`'s actual write only ever populates
+  `thesis_agent` (hardcoded `'superego'`), `thesis_position`
+  (= the superego's critique voice), `antithesis_agent` (hardcoded
+  `'learner'`), `antithesis_position` (an inferred learner-need label,
+  not verbatim ego text), `synthesis_resolution`/`synthesis_strategy`
+  (a coarse strategy tag), and `transformative` (boolean). Columns such
+  as `thesis_reasoning`, `ego_transformation`, `superego_transformation`,
+  `learner_insight`, `mutual_acknowledgment`, `recognition_type`,
+  `struggle_depth`, `dialogue_trace`, and `learner_context` are accepted
+  by the caller's object literal but silently dropped by the current
+  `createRecognitionMoment` implementation (confirmed by direct read of
+  both the call site and the function body) — no current code path
+  populates them. The §7.3 secondary trace is reported at exactly this
+  resolution: a critique voice, an inferred need label, a strategy tag,
+  and a boolean — not a full ego-superego dialogue transcript.
+
+### 7.2 Design
+
+Unchanged from §2.1-2.2 except as stated:
+
+- **Arms**: identical cell pairing (`cell_40_base_dialectical_suspicious_unified_superego`
+  pad-ON / `cell_93_base_dialectical_suspicious_unified_superego_nopad`
+  pad-OFF), identical model stack (nemotron ego / kimi-k2.5 superego,
+  OpenRouter — the native stack A1's deviation log already established;
+  the task's original `ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS` env var is
+  inapplicable here and is not set — cell_40/93 are not id-director
+  cells and never reach the CLI bridge, exactly as A1 recorded).
+  New, distinct `--learner-id` values (not reused from A1): pad-ON
+  `a2-drift-padon-v1-2026-07-06`, pad-OFF arm runs with **no**
+  `--learner-id` (mirrors A1's corrected convention exactly).
+- **Schedule content**: identical `longitudinal_drift` metadata and
+  `learner_context` prose to the existing `longitudinal_drift_session_{1,2,3}`
+  scenarios — same `schedule_id: drift_schedule_v1`, same three tokens
+  (`LDS-M1`/`M2`/`M3`), same `interest_markers`/`active_misconception`
+  blocks, same `resolved_last_session` flags. No new schedule vocabulary
+  is introduced, so the existing checker's marker sets stay valid
+  unchanged.
+- **NEW — multi-turn wrapping**: three new sibling scenarios,
+  `longitudinal_drift_session_{1,2,3}_multiturn` (new IDs; the original
+  three single-turn scenarios are untouched and remain available for
+  reuse), each carrying the same `longitudinal_drift` block as its
+  single-turn sibling plus a `turns:` array of **3 scripted follow-up
+  turns** (giving 4 turns per session total: 1 opening + 3 follow-ups —
+  the upper end of the pre-authorized 3-4-turn / ~12-24-turn envelope,
+  chosen deliberately to maximize the number of independent per-turn
+  superego-disapproval draws per session, since that draw count is the
+  entire mechanism this arc depends on per §7.1). Each follow-up turn
+  stays on that session's own topic and misconception (no new tokens),
+  giving the ego/superego repeated, on-topic opportunities across the
+  session:
+  - Session 1 (fractions / `LDS-M1`, common-denominator-by-multiplying):
+    turn 1 reports trying 1/4 + 1/6 by multiplying denominators to 24;
+    turn 2 reports trying 1/3 + 1/5 the same way (denominator 15); turn 3
+    tries 1/2 + 1/4 (multiplying gives 8) and asks why the answer "looks
+    bigger than it needs to be" — the most direct probe of the pattern.
+  - Session 2 (ratios / `LDS-M2`, scaling-ratios-additively): turn 1
+    reports scaling 2:3 by adding 2 to each side (4:5); turn 2 compares
+    that to 4:6 (from doubling) and asks why they don't match; turn 3
+    asks for "the rule" for scaling a ratio up in general.
+  - Session 3 (linear equations / `LDS-M3`, flip-sign-forgetting): turn 1
+    reports solving `-2x > 6` as `x > -3`; turn 2 checks by substituting
+    `x = 0` and finds it doesn't satisfy that answer; turn 3 asks
+    generally "when do you flip the sign."
+  Each turn entry uses permissive rubric fields matching the parent
+  scenarios' own convention (`required_elements: []`,
+  `forbidden_elements: []`, `min_acceptable_score: 0`) so no unrelated
+  v2.2 rubric dimension can gate this run — A2's only frozen outcome is
+  the deterministic checker in §7.3.
+- **Row count**: 3 sessions × 2 arms = **6 sessions**, each 4 turns = **24
+  tutor generations total** (the top of the pre-authorized envelope,
+  chosen for the reason above). Uncapped `max_tokens`, carried forward
+  unchanged from A1's §2.4 terminal branch (not re-litigated here).
+- **Execution order and checkpoint (frozen)**: pad-ON session 1 runs
+  **alone, first**. Immediately after it completes, the §7.4
+  instrument-precondition gate is checked against the live DB before
+  anything else runs. Only on a PASS do pad-ON sessions 2-3 and the full
+  pad-OFF arm (all 3 sessions) proceed, sessions strictly in order
+  1→2→3 per arm exactly as A1 required.
+- **Resumability**: each session is one `eval-cli.js run` invocation
+  (one `runSingleTest` call handles that session's whole turn loop
+  internally in-process). If a process is killed mid-session, the same
+  scenario/`--learner-id` combination is simply re-run — a session either
+  completed (row + pad state exist) or it didn't; there is no partial-turn
+  resumption to manage.
+
+### 7.3 Primary and secondary outcome
+
+- **Primary (unchanged)**: `services/longitudinalDriftChecker.js`'s
+  `scoreOpeningTurn`/`summarizeDriftRun`, applied to each session's
+  **opening** turn only (`JSON.parse(suggestions)[0].message` for a
+  multi-turn row — the same extraction A1 already used) — no code
+  changes to the checker itself; it is a pure function over a message
+  string and is fully reusable as-is.
+- **Secondary (new) — pad-content trace**: after each pad-ON session,
+  record from the live DB: `writing_pads.total_recognition_moments` for
+  that learner-id, the raw `recognition_moments` row count for that pad
+  (cross-checked against each other — a mismatch after the session's
+  `runBackgroundMaintenance` call would itself flag a consolidation
+  failure, since `evaluationRunner.js` logs but does not raise on that
+  error), and, for any moments present, a plain-language rendering of
+  `ghost_demand.voice` / `learner_need.need` / `synthesis_strategy` /
+  `transformative`. Reported at exactly the resolution described in
+  §7.1's last bullet — not a full dialogue transcript.
+
+### 7.4 Frozen thresholds and stop rules
+
+- **NEW instrument-precondition gate (checked live, after pad-ON session
+  1 only, before anything else runs)**: the pad-ON learner-id's
+  `writing_pads.total_recognition_moments` must be **≥ 1** (equivalently,
+  its raw `recognition_moments` row count ≥ 1 — both are already
+  settled by the time this check runs, since `runBackgroundMaintenance`
+  fires at the end of every `runSingleTest` call before the CLI process
+  returns). This operationalizes the task's original "recognition
+  moments ≥1 OR conscious_state populated" gate; per §7.1,
+  `conscious_state` is structurally unreachable on this architecture
+  regardless of session length, so the gate reduces to the
+  recognition-moments count alone. **If 0: verdict = INSTRUMENT_FLOOR.
+  STOP — no session 2-3, no pad-OFF arm, no further rows under this
+  section without a fresh design iteration and go.**
+- **Primary-outcome validity gate (same spirit as §3, restated for the
+  multi-turn opening turn)**: current-reference hit rate on session
+  openings ≥ 2/3 in the pad-ON arm.
+- **Adaptation signal (directional-report-only at this n — this pilot
+  cannot confirm or refute, only license a scaled, separately
+  pre-registered prereg)**: pad-ON stale-reference rate < pad-OFF
+  stale-reference rate, with a gap ≥ 2/3 rows, is the pattern that would
+  be *consistent with* a genuine cross-session adaptation signal. Stated
+  explicitly: this note does not authorize treating any outcome at n=3
+  sessions/arm as a real/dissolved verdict, exactly as §3 already
+  established for A1 and this section does not relax.
+- **Structural red flag**: carried forward unchanged from §3 — nonzero
+  pad-OFF stale-reference rate is flagged, not treated as a finding.
+- **Row/session-level instrument failure**: generation error, empty or
+  malformed output, or schedule/scenario validation failure — excluded
+  from denominators, reported separately, mirroring §3 exactly.
+- **Stop rule**: if the Stage A2-build no-paid gate (§7.6) does not pass
+  clean, A2 does not run live. If the session-1 instrument-precondition
+  gate fails, STOP immediately. Under any outcome, this section
+  authorizes no rows beyond the 6 sessions / 24 turns specified in §7.2;
+  scaling to a confirmatory design remains a distinct, separately
+  pre-registered future decision.
+
+### 7.5 Scope and limits specific to A2
+
+All of §4's limits carry forward unchanged (single learner-id trajectory
+per arm; no learner-side dynamic model — `learner_architecture: unified`
+throughout, including the new scripted follow-up turns; architecture-
+independent, judge-free primary scoring; exhaustion-as-instrument-failure
+semantics). In addition:
+
+- **"Multi-turn" here means more scripted, harness-authored turns per
+  session, not a richer or more realistic learner.** The follow-up turns
+  are scripted exactly like the existing multi-turn suggestion scenarios
+  elsewhere in `config/suggestion-scenarios.yaml` — they give the tutor's
+  own per-turn dialectical mechanism more chances to fire, nothing more.
+  This does not change or relax A1's learner-side scope limits.
+- **A pass on §7.4's gate licenses this schedule/scenario wording and
+  this model stack specifically, not "multi-turn sessions feed the pad"
+  in general.** A different scenario design or model pairing could behave
+  differently; no general claim follows from a pass.
+- **A pass or fail on the session-1 gate is itself a substantive (if
+  narrow) empirical result about this model stack's behavior**, worth
+  recording regardless of what it licenses next — since superego
+  disapproval is a genuine per-turn LLM judgment call (confirmed via
+  direct code and config read, not a scripted or random gate), the gate
+  is not a foregone conclusion either way.
+
+### 7.6 Stages and gates
+
+- **Stage A2-build (no-paid, this go)**: the three
+  `longitudinal_drift_session_{1,2,3}_multiturn` scenarios in
+  `config/suggestion-scenarios.yaml`; a hermetic plumbing-verification
+  script (`scripts/report-longitudinal-drift-stage-a2.js`) that, against
+  a temp `AUTH_DB_PATH` (so the real DB is never touched), directly
+  exercises `writingPadService.createRecognitionMoment` with a synthetic
+  ghost/need/synthesis/parameters payload, confirms
+  `getRecognitionMoments`/`getRecognitionStats` see it, runs
+  `memoryDynamicsService.runBackgroundMaintenance` with the same options
+  `evaluationRunner.js` uses, and confirms
+  `getWritingPad(...).metrics.totalRecognitionMoments` then reads ≥1 —
+  proving the write→consolidate→column-update chain end-to-end, plumbing
+  only, explicitly not a claim about real-model behavior; the script also
+  validates the three new scenarios resolve, carry well-formed
+  `longitudinal_drift` blocks identical to their single-turn siblings,
+  and that `evalConfigLoader.isMultiTurnScenario` returns true for each.
+  Unit tests for any new checker logic. Gate: tests green, `--check`
+  green, lint/prettier clean on touched files.
+- **Stage A2-pilot (small paid pilot, authorized by this section only)**:
+  pad-ON session 1 alone → live §7.4 gate check → on PASS, pad-ON
+  sessions 2-3 and the full 3-session pad-OFF arm → score with the
+  unchanged checker → record verdicts per §7.4.
+- **Anything beyond Stage A2**: requires a fresh pre-registration and its
+  own recorded go, per §7.4's stop rule.
+
+### 7.7 Implementation log
+
+_(filled in as Stage A2 executes)_
