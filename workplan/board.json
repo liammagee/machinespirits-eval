@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-06T06:33:40.690Z",
+  "generated": "2026-07-06T12:04:57.425Z",
   "counts": {
     "total": 96,
     "byStatus": {
-      "done": 81,
+      "done": 82,
       "blocked": 1,
       "dropped": 2,
-      "active": 5,
+      "active": 4,
       "archived": 4,
       "triaged": 3
     },
@@ -142,33 +142,6 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "register-router-contrast",
-      "title": "Register-router powered contrast — n=20/arm per shrinkage sizing",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-06",
-      "updated": "2026-07-06",
-      "branch": "worktree-classifier-dag-register",
-      "verification": "40 Sonnet runs under the frozen prereg; the frozen bar (U<=138 at 20/20) produces a recorded verdict.",
-      "claim_status": "planned",
-      "links": {
-        "notes": "REGISTER-ROUTER-CONTRAST-PREREGISTRATION.md",
-        "items": [
-          "classifier-dag-register"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "classifier",
-        "register",
-        "dag"
-      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -703,6 +676,33 @@
         "derivation",
         "strategy-refusal",
         "frontier"
+      ]
+    },
+    {
+      "id": "register-router-contrast",
+      "title": "Register-router powered contrast — n=20/arm per shrinkage sizing",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "40 Sonnet runs under the frozen prereg; the frozen bar (U<=138 at 20/20) produces a recorded verdict.",
+      "claim_status": "settled",
+      "links": {
+        "notes": "REGISTER-ROUTER-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "classifier-dag-register"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "classifier",
+        "register",
+        "dag"
       ]
     },
     {
