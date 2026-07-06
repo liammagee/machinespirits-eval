@@ -63,6 +63,7 @@ const STUB = {
   multipleChoice: process.env.TUTOR_STUB_MULTIPLE_CHOICE === '1',
   opening: process.env.TUTOR_STUB_OPENING !== '0',
   closeoutReport: process.env.TUTOR_STUB_CLOSEOUT_REPORT !== '0',
+  fieldViz: process.env.TUTOR_STUB_FIELD_VIZ === '1',
   autoLearnerModel: process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'openai.mini',
   autoTurns: Number.parseInt(process.env.TUTOR_STUB_AUTO_TURNS || '8', 10),
   autoSafetyTurns: Number.parseInt(process.env.TUTOR_STUB_AUTO_SAFETY_TURNS || '80', 10),
@@ -81,6 +82,22 @@ const C = {
 };
 
 const FIELD_PROGRESS_THRESHOLD = 0.05;
+
+const SLASH_COMMANDS = [
+  '/analysis',
+  '/a',
+  '/field',
+  '/f',
+  '/viz',
+  '/v',
+  '/visualization',
+  '/report',
+  '/r',
+  '/clear',
+  '/help',
+  '/quit',
+  '/exit',
+];
 
 const LEARNER_FIELD_RANKS = {
   evidence_use: {
@@ -185,6 +202,7 @@ const { values: args, positionals } = parseArgs({
     'resume-last': { type: 'boolean', default: false },
     'no-stream': { type: 'boolean', default: false },
     'no-interim-animation': { type: 'boolean', default: false },
+    'field-viz': { type: 'boolean', default: STUB.fieldViz },
     'multiple-choice': { type: 'boolean', default: STUB.multipleChoice },
     'no-opening': { type: 'boolean', default: false },
     'no-closeout-report': { type: 'boolean', default: false },
@@ -262,6 +280,8 @@ Options:
   --no-stream            disable token streaming for API-backed model calls
   --no-interim-animation disable the temporary state/field status animation
                          shown while model calls are waiting
+  --field-viz            write/update lightweight field SVG + JSON artifacts
+                         in trace-dir after each completed turn
   --multiple-choice      allow compact multiple-choice tutor prompts
                          (off by default)
   --no-opening           do not print the tutor's default opening prompt
@@ -280,6 +300,8 @@ Interactive commands:
   /a                     alias for /analysis
   /field                 show a lightweight interaction-field trajectory
   /f                     alias for /field
+  /viz                   write a lightweight field SVG + JSON now
+  /v                     alias for /viz
   /report                show the compact dialogue closeout report
   /r                     alias for /report
   /clear                 reset transcript and learner/register state
@@ -300,6 +322,7 @@ Environment:
   TUTOR_STUB_STREAM=0    disable token streaming by default
   TUTOR_STUB_INTERIM_ANIMATION=0
                          disable interim state/field animation by default
+  TUTOR_STUB_FIELD_VIZ=1 enable field visualization artifacts by default
   TUTOR_STUB_MULTIPLE_CHOICE=1
                          enable multiple-choice prompts by default
   TUTOR_STUB_OPENING=0   disable default tutor opening prompt
@@ -3327,7 +3350,9 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 }
 
 function printInteractiveHelp() {
-  console.log(`${C.cyan}slash commands >${C.reset} /analysis, /a, /field, /f, /report, /r, /clear, /help, /quit\n`);
+  console.log(
+    `${C.cyan}slash commands >${C.reset} /analysis, /a, /field, /f, /viz, /v, /report, /r, /clear, /help, /quit\n`,
+  );
 }
 
 function printCurrentTurnAnalysis(state) {
@@ -3481,6 +3506,15 @@ function fieldBar(value, { width = 12 } = {}) {
   return `${'#'.repeat(filled)}${'.'.repeat(Math.max(0, width - filled))}`;
 }
 
+function escapeXml(value) {
+  return String(value ?? '')
+    .replace(/&/gu, '&amp;')
+    .replace(/</gu, '&lt;')
+    .replace(/>/gu, '&gt;')
+    .replace(/"/gu, '&quot;')
+    .replace(/'/gu, '&apos;');
+}
+
 function wordsInText(text) {
   return String(text || '')
     .split(/\s+/)
@@ -3624,6 +3658,158 @@ function printLightweightDialogueField(state) {
   }
   console.log();
   return field;
+}
+
+function fieldVizBasePath(state) {
+  const viz = state.fieldViz || {};
+  const dir = viz.dir || resolveWorkspacePath(STUB.traceDir);
+  const runId = viz.runId || state.trace?.runId || safeTimestampForFile();
+  viz.dir = dir;
+  viz.runId = runId;
+  state.fieldViz = viz;
+  fs.mkdirSync(dir, { recursive: true });
+  return path.join(dir, `${runId}-field`);
+}
+
+function fieldPolyline(rows, key, { width, height, padding }) {
+  if (!rows.length) return '';
+  const xSpan = Math.max(1, rows.length - 1);
+  return rows
+    .map((row, index) => {
+      const x = padding.left + (index / xSpan) * width;
+      const y = padding.top + (1 - clampField01(row[key])) * height;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+}
+
+function fieldTurnMarkers(rows, { width, height, padding }) {
+  if (!rows.length) return '';
+  const xSpan = Math.max(1, rows.length - 1);
+  return rows
+    .map((row, index) => {
+      const x = padding.left + (index / xSpan) * width;
+      const label = escapeXml(`${row.turn}: ${row.learnerMove} / ${row.register || 'no-register'} / ${row.bottleneck}`);
+      return `<circle cx="${x.toFixed(1)}" cy="${(padding.top + height + 18).toFixed(
+        1,
+      )}" r="2.8" fill="#475569"><title>${label}</title></circle>`;
+    })
+    .join('\n');
+}
+
+function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Field' } = {}) {
+  const rows = field?.rows || [];
+  const padding = { top: 78, right: 42, bottom: 78, left: 74 };
+  const chartWidth = 780;
+  const chartHeight = 280;
+  const svgWidth = chartWidth + padding.left + padding.right;
+  const svgHeight = chartHeight + padding.top + padding.bottom;
+  const final = field?.summary?.final || {};
+  const delta = field?.summary?.fieldDelta || {};
+  const series = [
+    ['learnerMastery', 'mastery', '#2563eb'],
+    ['learnerRisk', 'risk', '#dc2626'],
+    ['tutorAlignment', 'alignment', '#059669'],
+    ['jointMomentum', 'momentum', '#7c3aed'],
+  ];
+  const gridLines = [0, 0.25, 0.5, 0.75, 1]
+    .map((value) => {
+      const y = padding.top + (1 - value) * chartHeight;
+      return [
+        `<line x1="${padding.left}" y1="${y.toFixed(1)}" x2="${(padding.left + chartWidth).toFixed(
+          1,
+        )}" y2="${y.toFixed(1)}" stroke="#e2e8f0" />`,
+        `<text x="${padding.left - 12}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#64748b">${value.toFixed(
+          2,
+        )}</text>`,
+      ].join('\n');
+    })
+    .join('\n');
+  const lines = series
+    .map(
+      ([key, label, color]) =>
+        `<polyline points="${fieldPolyline(rows, key, {
+          width: chartWidth,
+          height: chartHeight,
+          padding,
+        })}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><title>${label}</title></polyline>`,
+    )
+    .join('\n');
+  const legend = series
+    .map(
+      ([key, label, color], index) =>
+        `<g transform="translate(${padding.left + index * 152}, ${svgHeight - 28})"><rect width="12" height="12" rx="2" fill="${color}" /><text x="18" y="11" font-size="12" fill="#334155">${label}: ${escapeXml(
+          final[key] ?? 'n/a',
+        )}</text></g>`,
+    )
+    .join('\n');
+  const deltaText = `delta M ${delta.learnerMastery >= 0 ? '+' : ''}${delta.learnerMastery ?? 'n/a'} | R ${
+    delta.learnerRisk >= 0 ? '+' : ''
+  }${delta.learnerRisk ?? 'n/a'} | A ${delta.tutorAlignment >= 0 ? '+' : ''}${
+    delta.tutorAlignment ?? 'n/a'
+  } | P ${delta.jointMomentum >= 0 ? '+' : ''}${delta.jointMomentum ?? 'n/a'}`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" role="img" aria-labelledby="title desc">
+  <title id="title">${escapeXml(title)}</title>
+  <desc id="desc">Lightweight tutor-stub field visualization across ${rows.length} completed turn(s).</desc>
+  <rect width="100%" height="100%" fill="#f8fafc" />
+  <text x="${padding.left}" y="32" font-size="22" font-weight="700" fill="#0f172a">${escapeXml(title)}</text>
+  <text x="${padding.left}" y="55" font-size="13" fill="#475569">turns ${field.turnCount}; mean speed ${escapeXml(
+    field.summary?.meanSpeed ?? 'n/a',
+  )}; ${escapeXml(deltaText)}; bottleneck ${escapeXml(final.bottleneck || 'unknown')}</text>
+  <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="#ffffff" stroke="#cbd5e1" />
+  ${gridLines}
+  ${lines}
+  ${fieldTurnMarkers(rows, { width: chartWidth, height: chartHeight, padding })}
+  <text x="${padding.left}" y="${svgHeight - 47}" font-size="11" fill="#64748b">Each marker title lists turn / learner move / register / bottleneck.</text>
+  ${legend}
+</svg>
+`;
+}
+
+function writeFieldVisualization(state, { reason = 'field_viz', force = false } = {}) {
+  if (!force && !state.fieldViz?.enabled) return null;
+  if (!state.turns.length) return null;
+  const field = buildLightweightDialogueField(state.turns);
+  const basePath = fieldVizBasePath(state);
+  const svgPath = `${basePath}.svg`;
+  const jsonPath = `${basePath}.json`;
+  fs.writeFileSync(svgPath, renderLightweightFieldSvg(field, { title: 'Tutor Stub Interaction Field' }));
+  fs.writeFileSync(jsonPath, `${JSON.stringify(field, null, 2)}\n`);
+  const result = {
+    field,
+    svgPath,
+    jsonPath,
+    svgDisplayPath: path.relative(ROOT, svgPath),
+    jsonDisplayPath: path.relative(ROOT, jsonPath),
+  };
+  state.fieldViz.lastWrite = {
+    svg: result.svgDisplayPath,
+    json: result.jsonDisplayPath,
+    turnCount: field.turnCount,
+  };
+  appendTraceEvent(state.trace, {
+    type: 'field_visualization_write',
+    reason,
+    svg: result.svgDisplayPath,
+    json: result.jsonDisplayPath,
+    turnCount: field.turnCount,
+    summary: field.summary,
+  });
+  return result;
+}
+
+function printFieldVisualization(state, { reason = 'viz' } = {}) {
+  if (!state.turns.length) {
+    console.log(`${C.cyan}viz >${C.reset} no completed turns yet`);
+    console.log(`${C.dim}  enter a learner turn first, or run with --resume-last and then use /viz${C.reset}\n`);
+    return null;
+  }
+  const result = writeFieldVisualization(state, { reason, force: true });
+  if (!result) return null;
+  console.log(`${C.cyan}viz >${C.reset} ${result.svgDisplayPath}`);
+  console.log(`${C.dim}  data: ${result.jsonDisplayPath}${C.reset}\n`);
+  return result;
 }
 
 function countBy(items, keyFn) {
@@ -4148,6 +4334,7 @@ async function runAnalyzedTutorTurn(learnerText, state) {
   printTutorDagSnapshot(response.dagSnapshot);
   printTutorResponse(response, state.stream);
   console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+  writeFieldVisualization(state, { reason: 'turn_complete' });
   return response;
 }
 
@@ -4334,6 +4521,7 @@ async function main() {
   const traceDir = resolveWorkspacePath(args['trace-dir']);
   const streamEnabled = Boolean(STUB.stream && !args['no-stream']);
   const interimAnimationEnabled = Boolean(STUB.interimAnimation && !args['no-interim-animation']);
+  const fieldVisualizationEnabled = Boolean(args['field-viz']);
   const openingEnabled = Boolean(STUB.opening && !args['no-opening']);
   const closeoutReportEnabled = Boolean(STUB.closeoutReport && !args['no-closeout-report']);
   const cliEffort = normalizeCliEffort(args['cli-effort']);
@@ -4422,6 +4610,12 @@ async function main() {
           interimAnimation: {
             enabled: interimAnimationEnabled,
             activeInThisTerminal: Boolean(interimAnimationEnabled && output.isTTY),
+          },
+          fieldVisualization: {
+            enabled: fieldVisualizationEnabled,
+            dir: path.relative(ROOT, traceDir),
+            automaticAfterTurns: fieldVisualizationEnabled,
+            slashCommand: '/viz',
           },
           resumeLast: args['resume-last']
             ? resumeCandidate
@@ -4513,6 +4707,12 @@ async function main() {
         enabled: interimAnimationEnabled,
         activeInThisTerminal: Boolean(interimAnimationEnabled && output.isTTY),
       },
+      fieldVisualization: {
+        enabled: fieldVisualizationEnabled,
+        dir: path.relative(ROOT, traceDir),
+        automaticAfterTurns: fieldVisualizationEnabled,
+        slashCommand: '/viz',
+      },
       resumeLast: args['resume-last']
         ? resumeCandidate
           ? {
@@ -4561,6 +4761,11 @@ async function main() {
     stream: {
       enabled: streamEnabled,
       interim,
+    },
+    fieldViz: {
+      enabled: fieldVisualizationEnabled,
+      dir: traceDir,
+      runId: trace.runId || safeTimestampForFile(),
     },
     cliEffort,
     multipleChoice: multipleChoiceEnabled,
@@ -4648,6 +4853,11 @@ async function main() {
       interimAnimationEnabled ? (output.isTTY ? 'on' : 'off (non-TTY)') : 'off'
     }${C.reset}`,
   );
+  console.log(
+    `${C.dim}field visualization: ${
+      fieldVisualizationEnabled ? `on -> ${path.relative(ROOT, traceDir)}` : 'off (/viz writes on demand)'
+    }${C.reset}`,
+  );
   console.log(`${C.dim}opening prompt: ${openingEnabled && !firstMessage ? 'on' : 'off'}${C.reset}`);
   console.log(`${C.dim}closeout report: ${closeoutReportEnabled ? 'on' : 'off'}${C.reset}`);
   if (cliEffort) {
@@ -4680,7 +4890,7 @@ async function main() {
   }
   printDirectorInitialContext(directorContext);
   console.log(
-    `${C.dim}topic: ${effectiveTopic} | /analysis or /field for state | slash commands work while thinking | /quit to exit${C.reset}\n`,
+    `${C.dim}topic: ${effectiveTopic} | /analysis, /field, or /viz for state | slash commands work while thinking | /quit to exit${C.reset}\n`,
   );
 
   if (autoLearnerEnabled) {
@@ -4716,6 +4926,7 @@ async function main() {
           : null,
         directorContext,
         trace: traceDisplayPath(state.trace),
+        fieldVisualization: state.fieldViz?.lastWrite || null,
         world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
         turns: state.turns,
       });
@@ -4760,6 +4971,7 @@ async function main() {
     printTutorDagSnapshot(response.dagSnapshot);
     printTutorResponse(response, state.stream);
     console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+    writeFieldVisualization(state, { reason: 'once' });
     appendTraceEvent(state.trace, { type: 'run_end', reason: 'once', turns: state.turns.length });
     if (args.save) {
       saveTranscript(args.save, {
@@ -4771,6 +4983,7 @@ async function main() {
           : null,
         directorContext,
         trace: traceDisplayPath(state.trace),
+        fieldVisualization: state.fieldViz?.lastWrite || null,
         world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
         turns: state.turns,
       });
@@ -4782,7 +4995,17 @@ async function main() {
     return;
   }
 
-  const rl = readline.createInterface({ input, output, prompt: `${C.bold}learner >${C.reset} ` });
+  const rl = readline.createInterface({
+    input,
+    output,
+    prompt: `${C.bold}learner >${C.reset} `,
+    completer(line) {
+      const trimmed = line.trimStart();
+      if (!trimmed.startsWith('/')) return [[], line];
+      const matches = SLASH_COMMANDS.filter((command) => command.startsWith(trimmed));
+      return [matches.length ? matches : SLASH_COMMANDS, trimmed];
+    },
+  });
   let processingTurn = false;
   let exiting = false;
   let finalized = false;
@@ -4802,6 +5025,7 @@ async function main() {
         : null,
       directorContext,
       trace: traceDisplayPath(state.trace),
+      fieldVisualization: state.fieldViz?.lastWrite || null,
       world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
       turns: state.turns,
     };
@@ -4908,6 +5132,25 @@ async function main() {
       finishSlashCommand();
       return true;
     }
+    if (trimmed === '/viz' || trimmed === '/v' || trimmed === '/visualization') {
+      clearStatusLine();
+      const viz = printFieldVisualization(state, { reason: duringTurn ? 'viz_during_turn' : 'viz' });
+      appendTraceEvent(state.trace, {
+        type: 'field_visualization_popup',
+        turn: state.turns[state.turns.length - 1]?.turn || null,
+        duringTurn,
+        viz: viz
+          ? {
+              svg: viz.svgDisplayPath,
+              json: viz.jsonDisplayPath,
+              turnCount: viz.field.turnCount,
+            }
+          : null,
+      });
+      if (duringTurn) console.log(`${C.dim}tutor is still thinking; visualization excludes the in-progress turn${C.reset}\n`);
+      finishSlashCommand();
+      return true;
+    }
     if (trimmed === '/report' || trimmed === '/r') {
       clearStatusLine();
       const report = printDialogueCloseout(state, { reason: duringTurn ? 'report_during_turn' : 'report', trace: state.trace });
@@ -4982,6 +5225,7 @@ async function main() {
       printTutorDagSnapshot(response.dagSnapshot);
       printTutorResponse(response, state.stream);
       console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+      writeFieldVisualization(state, { reason: 'turn_complete' });
     } catch (err) {
       stopInterimAnimation(state);
       clearStatusLine();
@@ -5012,7 +5256,7 @@ async function main() {
     if (processingTurn) {
       const pausedInterim = pauseInterimAnimation(state);
       pendingLearnerLines.push(trimmed);
-      console.log(`${C.dim}queued learner turn (${pendingLearnerLines.length} queued); use /analysis or /field while waiting${C.reset}`);
+      console.log(`${C.dim}queued learner turn (${pendingLearnerLines.length} queued); use /analysis, /field, or /viz while waiting${C.reset}`);
       appendTraceEvent(state.trace, {
         type: 'learner_turn_queued',
         queued: pendingLearnerLines.length,
