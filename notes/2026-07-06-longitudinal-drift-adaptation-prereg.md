@@ -690,4 +690,37 @@ semantics). In addition:
 
 ### 7.7 Implementation log
 
-_(filled in as Stage A2 executes)_
+**2026-07-06: Stage A2-build complete; no-paid gate green.** Three
+`longitudinal_drift_session_{1,2,3}_multiturn` scenarios (identical
+`longitudinal_drift` metadata to their single-turn parents + 3 scripted
+follow-up turns each, per §7.2), `checkPadInstrumentPrecondition` in
+`services/longitudinalDriftChecker.js`, 4 new unit tests (suite 15/15),
+hermetic `scripts/report-longitudinal-drift-stage-a2.js --check` green —
+proved the full synthetic-write → two-step consolidation gap →
+`runBackgroundMaintenance` → gate-now-passes chain against a temp
+`AUTH_DB_PATH`. Also confirmed live before spend: the checker resolves
+all three multiturn scenarios' metadata (disjoint LDS-M1/M2/M3
+vocabularies), and a synthetic session-2 opening containing session-1
+vocabulary registers `stale.hit=true` / `current.hit=false`. Committed
+at `6406b1a0`.
+
+**2026-07-06: pad-ON session 1 executed; §7.4 instrument-precondition
+gate: PASS (4 recognition moments).** Run `eval-2026-07-06-97a18895`
+(cell_40, `--learner-id a2-drift-padon-v1-2026-07-06`, uncapped,
+nemotron/kimi-k2.5): 1/1 success, 4 turns, 12 API calls, 22.6 min,
+$0.0447. **The superego disapproved on all 4 turns** — every turn
+produced a recognition moment (vs 0 across all of A1's 3 single-turn
+pad-ON sessions), confirming §7.1's mechanism read: more on-topic turns
+= more independent per-turn disapproval draws. Live gate check
+(`report-longitudinal-drift-stage-a2-live.js --gate`):
+`writing_pads.total_recognition_moments = 4`, raw `recognition_moments`
+row count = 4 (cross-check consistent — the eager consolidation ran; no
+consolidation mismatch). All 4 moments settled to the `unconscious`
+layer, all `transformative`, and their content carries **session-1
+specific vocabulary** (the superego's critique voice quotes the actual
+fractions: "1/4 + 1/6", "24 vs. 12", "LCD"; principles: socratic_rigor
+×3, intellectual_autonomy ×1; the inferred `need` label is uniformly
+"welcome_and_invitation", at exactly the coarse resolution §7.1's last
+bullet predicted). The persistence channel now carries session-specific
+content — the precondition A1 surfaced is closed. Per §7.2, pad-ON
+sessions 2-3 and the pad-OFF arm proceed.
