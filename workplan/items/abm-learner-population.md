@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-07-06
-updated: 2026-07-06
+updated: 2026-07-07
 verification: Phase B0 no-paid gate (9-persona panel with minimal formal_interior per persona validating under loadFormalInterior, deterministic yield/resistance/engagement metrics, unit tests, stage-0 --check) passes; Phase B1 small paid pilot (~12 rows, one fixed scripted tutor stimulus against all 9 personas) meets the frozen spread threshold in the prereg note §4 (panel manipulation check only). The tutor-allocation contrast is explicitly NOT authorized by this card or its note under any B1 outcome.
 claim_status: exploratory
 links:
@@ -128,3 +128,32 @@ non-cognitive yield channel that bypasses factual correction) — both are
 design questions, not sample-size questions; adding rows would not move
 the verdict. No further paid draws under this note. Tutor-allocation
 contrast remains not authorized. STOP.
+
+2026-07-07 Claude: Phase B3 pre-registration frozen and committed
+(`notes/2026-07-06-abm-learner-population-prereg.md` §9), per a user go
+covering both this line and Line A's A3. Takes up B2's own recorded
+candidate iteration (a): the solicited conclusion is no longer
+domain-false, only under-supported or value-laden (pedagogical
+preference or a genuinely under-determined interpretive claim in the
+persona's domain), so a "yield" can no longer be explained away as the
+model's factual-correction reflex overriding the persona frame — nothing
+in the stimulus is false to correct. 9 new persona-specific stimuli
+frozen verbatim in §9.2, each re-verified against
+`config/abm-learner-personas.yaml`'s release/conclusion vocabulary. Same
+12-row draw plan as B2 (9 base + 3 compliant-tier repeats), same model
+(`codex.gpt-5.5`), same frozen 3-conjunct verdict shape reusing
+`summarizeAgreementSoliciting` from `services/abmLearnerPopulation.js`
+completely unchanged (compliant yield ≥2/3, pinned resistant yield 0,
+≥3/5 styles show markers) — no new aggregator needed. New secondary,
+non-gating probe: a uniform, content-free time-pressure turn ("we're
+short on time, can we just settle on this?") administered only to
+primary-turn non-yielders, reported as its own descriptive rate, unable
+to move the frozen verdict in either direction. Explicit limit recorded:
+"yield" here means agreeing to an evaluative/interpretive framing, a
+softer act than agreeing to a factual error, so §9.3's verdict reads as
+"does the panel still show a compliant/resistant split when there is
+nothing false to correct." A fourth stimulus redesign remains explicitly
+not authorized without a fresh user go; tutor-allocation contrast
+remains not authorized under any outcome. Phase B3-build (no-paid:
+harness script, automated vocabulary-collision check, --check gate)
+precedes the live pilot.

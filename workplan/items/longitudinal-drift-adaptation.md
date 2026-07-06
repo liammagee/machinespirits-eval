@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-07-06
-updated: 2026-07-06
+updated: 2026-07-07
 verification: Stage A0 no-paid gate (drift-schedule scenarios, deterministic marker checker reusing learnerInteriorGate's word-bounded matching, unit tests, stage-0 --check) passes; Stage A1 small paid pilot (~10 rows — cap-vs-uncapped check plus 3-session pad-on/pad-off arc) meets the frozen instrument-validity gate in the prereg note §3 before any interpretation. Scope frozen at Stage A1 — no confirmatory matrix without a fresh pre-registration.
 claim_status: exploratory
 links:
@@ -147,3 +147,51 @@ channel (continuity acknowledgment, resolved-misconception handling),
 not just stale-vocabulary leakage. STOP per §7.4/§7.6 — nothing further
 authorized; scaling requires a fresh prereg + go. Artifacts:
 exports/longitudinal-drift-stage-a2.{json,md}.
+
+2026-07-07 Claude: Stage A3 pre-registration frozen and committed
+(`notes/2026-07-06-longitudinal-drift-adaptation-prereg.md` §8), per a
+user go covering both this line and Line B's B3. CRITICAL PRECONDITION
+resolved first, at code level: Writing Pad content never reaches the
+cell_40/93 tutor prompt, via three distinct, independently-diagnosed
+breakages, all rooted in one orphaned module
+(`tutor-core/services/recognitionOrchestrator.js`, confirmed zero
+callers from the real request path): (1) `unconscious.permanentTraces`
+(A2's 10 real moments) — `runMemoryCycle`'s end-of-dialogue
+`retrieveUnconsciousContext` call (`tutorDialogueEngine.js:3172`) IS
+made, but the result (`operations.contextRetrieval`) is computed and
+then never read or persisted one line later — a genuine
+retrieve-then-discard; (2) `preconscious.recentPatterns` — the
+promotion pipeline runs every turn but its input,
+`detectPatternsFromConscious`, reads `conscious.workingThoughts`, whose
+sole writer (`writingPadService.updateConscious`) is called only from
+the orphaned module, so it always sees zero patterns; (3)
+`unconscious.learnerArchetype` (read directly into the superego prompt)
+— `dialecticalEngine.negotiateDialectically` does call
+`evolveLearnerArchetype` on the real path and does persist a DB write,
+but its input (`getLearnerEvents`) is fed only by the orphaned module's
+`recordLearnerEvent`, so every evolution computes over zero events and
+persists the same empty defaults. Verdict: injection is BROKEN, not
+absent — three genuine attempts exist, each fails for a specific,
+now-precisely-located reason. A2's stale-reference null is reinterpreted
+as an instrument-gap finding, not a tutor-behavior finding (A2's own
+§7.7 hedging is now sharpened, not overturned — the model could not have
+surfaced prior-session content under any behavior, since no code path
+ever placed it in the prompt). Design: rather than patch tutor-core's
+internal channels, A3 reuses the already-proven EXTERNAL injection
+channel (`--external-ego-extension-file` → `systemPromptExtension`,
+prepended to the ego prompt in `egoGenerateSuggestions`), sourcing new
+content from a new `services/writingPadNarrativeBuilder.js` module that
+reads `unconscious.permanentTraces` directly (bypassing all three broken
+internal channels) — explicitly reusing only the plumbing of the
+separate, already-null rich-memory experiment, not its store or its
+finding. New primary outcome ("constructive continuity"): two new
+deterministic checkers land in `services/longitudinalDriftChecker.js`
+— continuity-acknowledgment (resolution-register phrases matched
+against session-2/3 openings) and resolved-misconception-not-retaught
+(fixed re-teaching-as-new marker list not landing near a resolved
+misconception token) — scored as a 4-slot count (2 sessions × 2
+checkers). Frozen gates: hermetic injection-precondition check must PASS
+before any paid session; constructive signal = pad-ON ≥2/4 AND pad-OFF
+0/4 (directional-only at this n); any pad-OFF hit is a red flag. Stage
+A3-build (no-paid: narrative builder, checker extensions, hermetic
+injection-path proof, unit tests) precedes the live pilot.

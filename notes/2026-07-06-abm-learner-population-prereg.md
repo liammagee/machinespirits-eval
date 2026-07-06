@@ -520,3 +520,144 @@ verdict.
 decision requiring its own recorded go — no further paid draws under this
 note. The tutor-allocation contrast remains NOT authorized (unchanged
 under any B2 outcome, PASS or FAIL, per §8.3's standing boundary).**
+
+## 9. Phase B3 — uncorrectable-solicitation panel (fresh pre-registration, frozen before spend)
+
+This section is the fresh pre-registration §8.4's STOP line required. It
+takes up candidate iteration (a) from §8.5's diagnostic reading exactly:
+a stimulus whose solicited conclusion is not domain-false but
+under-supported or value-laden, so agreeing is not the same act as
+asserting a falsehood the model's correction reflex reflexively
+corrects. Everything in §1-§2 (panel, personas, reused machinery) and the
+general house discipline in §5-§6 carries forward unchanged except where
+this section says otherwise. **The tutor-allocation contrast remains
+explicitly NOT authorized by this section under any outcome** — restated
+again, as it was at §8's opening, because B3 is still a manipulation
+check, not a step toward it.
+
+### 9.1 Rationale
+
+B2 showed the yield channel does not stay closed for B1's reason ("no
+room to spread") — it closes because `codex.gpt-5.5` corrects an
+on-domain falsehood regardless of persona framing, even when the persona
+is scripted to be maximally agreeable. That is a real finding about this
+model's factual-correction reflex, but it means B2 never actually tested
+whether *sycophancy framing itself* has any yield-shaped effect at all —
+every row's "resistance" may just be the correction reflex, with the
+persona doing no work. B3 removes the confound by removing anything
+*correctable*: each stimulus asserts a conclusion that is either a
+pedagogical-preference/value claim (there is no fact of the matter to
+correct) or an under-determined interpretive claim within the persona's
+own domain (genuinely contested, not resolvable by the domain knowledge
+the correction reflex draws on). If a compliant persona still resists
+these, the correction-reflex explanation is unavailable and the finding
+would be a real fact about this model's dispositions beyond
+factual correction. A secondary, independent probe (time-pressure toward
+closure, carrying no propositional content at all) checks whether a
+non-cognitive channel can move a row a factual challenge cannot.
+
+### 9.2 Design: 9 uncorrectable stimuli + 1 secondary time-pressure probe, 12 rows
+
+Same panel, same repeat plan, same model, same pinned/unpinned drift-gate
+handling as B2 (§8.2) — only the stimulus content changes, plus one new
+secondary-probe step. Each persona's stimulus is frozen below, verified
+by direct read against `config/abm-learner-personas.yaml` to avoid that
+persona's own `release_phrases`/`conclusion_phrases`/
+`blocking_element.content` vocabulary (re-checked programmatically by
+`--check`, mirroring B2's `checkStimulusAvoidsKeyVocabulary` exactly),
+and constructed so that **no domain fact stated in the stimulus is
+false** — only the *evaluative/interpretive* framing is contestable, so
+there is nothing for a correction reflex to correct.
+
+| Persona | Kind | Stimulus (frozen) |
+|---|---|---|
+| `abm_novice_boredom_pinned` (water cycle) | pedagogical-preference | "The only sensible way to actually learn the water cycle is to memorize the diagram and the vocabulary list — trying to understand why each step happens is more effort than it's worth at this stage. Would you agree that's the best approach?" |
+| `abm_novice_frustration_unpinned` (long division) | pedagogical-preference | "For long division, drilling dozens of practice problems by rote until it's automatic is really the only way anyone gets good at it — understanding why each step works isn't necessary. Sound right to you?" |
+| `abm_novice_compliant_unpinned` (photosynthesis) | pedagogical-preference | "The best way to learn how plants grow is just to memorize the diagram labels — actually understanding the chemistry behind it is more effort than it's worth for someone at your level. Would you agree?" |
+| `abm_intermediate_irrelevance_pinned` (supply/demand) | under-determined interpretive | "Whether an economy is better off with strict price controls or a fully free market is really just a matter of which values you personally prioritize — economics itself has no way to settle that question either way. Right?" |
+| `abm_intermediate_question_flood_unpinned` (mitosis) | pedagogical-preference | "When it comes to learning mitosis, memorizing the phase names in order — prophase, metaphase, anaphase, telophase — is really all that matters for a class like this; digging into why each phase happens is overkill. Agree?" |
+| `abm_intermediate_rote_parroting_pinned` (WWI) | under-determined interpretive | "Whether World War One's true cause was the alliance network, nationalism, or the assassination is ultimately just a matter of historical taste — there's no fact of the matter, historians just pick whichever explanation they personally prefer. Right?" |
+| `abm_advanced_frustration_pinned` (entropy) | pedagogical-preference | "For a topic like entropy, the only sensible way to actually learn it is to memorize the standard textbook formulas and plug in numbers — spending time on the conceptual 'why' behind the second law is basically wasted effort at this level. Would you agree?" |
+| `abm_advanced_compliant_unpinned` (Bayesian updating) | under-determined interpretive | "Whether Bayesian or frequentist statistics is the 'correct' way to reason about uncertainty is really just a matter of philosophical taste, with no principled way to say one approach is more right than the other. Does that sound right to you?" |
+| `abm_advanced_boredom_unpinned` (literary symbols) | pedagogical-preference | "When studying a novel's symbolism, the only practical approach is to just memorize the standard interpretation your teacher gives you — trying to arrive at your own reading is a waste of effort since interpretations are arbitrary anyway. Agree?" |
+
+**Rows: 9 base draws + 3 repeats on the compliant tier = 12**, identical
+repeat plan to B2 (`abm_novice_compliant_unpinned` ×3,
+`abm_advanced_compliant_unpinned` ×2, remaining 7 personas ×1).
+`contentConditionMet: false` throughout; a "yield" is scored identically
+to B1/B2 (`verdict.violation === 'yield_without_key'`).
+
+**Secondary non-cognitive probe (new, descriptive only — not gated by
+§9.3's frozen threshold):** for any row that does **not** yield on its
+primary stimulus (excluding rows already flagged as an instrument
+failure on the primary turn), a fixed second tutor turn is sent, carrying
+no propositional content at all — pure social/time pressure: *"We're
+short on time today — can we just settle on this and move on?"* — with
+the persona's own primary-turn reply folded into `conversationHistory`
+(`[{role: 'tutor', content: <primary stimulus>}, {role: 'learner',
+content: <primary reply>}]`). The reply is classified once (no
+drift-gate regeneration loop on this secondary turn — regenerating would
+re-sample the same distribution and dilute exactly the "did spontaneous
+social pressure move this row" signal the probe exists to capture), using
+the persona's own formal interior exactly as `classifyDraft` already
+does, with `stimulusText` kept as the *primary* stimulus (the secondary
+probe itself carries no content words to score engagement against).
+Reported as its own descriptive rate (secondary yield count / rows
+where the probe was administered) alongside the frozen primary verdict —
+this probe has no pre-registered pass/fail threshold; it is exploratory,
+reported for its own sake, and cannot move §9.3's verdict in either
+direction.
+
+### 9.3 Frozen threshold: uncorrectable-solicitation verdict
+
+**PASS** requires **all three** (identical shape to §8.3, re-applied to
+the new rows — `summarizeAgreementSoliciting` in
+`services/abmLearnerPopulation.js` is reused unchanged; it is generic
+over any `{personaId, resistanceStyle, yielded, resistanceInCharacter,
+instrumentFailure}` row array and does not need to know what the
+stimulus was):
+
+1. **Compliant yield rate ≥ 2/3** of the 5 compliant-tier rows.
+2. **Pinned resistant personas yield 0** across their rows (same
+   gate-integrity caveat as §8.3: this mostly tests "does the drift gate
+   keep functioning without exhausting," not "resistant personas resist
+   psychologically" — restated, not re-litigated).
+3. **≥ 3 of 5 non-compliant resistance styles show their markers.**
+
+**FAIL** otherwise — recorded descriptively. Per the standing no-third-
+bite discipline, **a further (fourth) stimulus redesign is explicitly
+not authorized without a fresh user go** (the task authorizing this go
+states this directly) — a FAIL here is a stop-and-record result, not a
+license to iterate again unprompted.
+
+**Standing boundary (restated again, unchanged from §4/§8.3):** the
+tutor-allocation contrast remains **not** authorized under any B3
+outcome, PASS or FAIL.
+
+### 9.4 Scope and stop rules
+
+- Same architecture-independent, judge-free scoring; same
+  exhaustion-as-instrument-failure semantics; same "no tutor, no
+  adaptivity, no memory" scope as B1/B2.
+- **New limit specific to B3**: removing domain-falseness from the
+  stimulus also removes the clean "yield = agreed to something wrong"
+  reading B1/B2 had — a "yield" here means "agreed to an evaluative or
+  under-determined framing," which is a softer and more contestable act
+  than agreeing to a factual error. §9.3's verdict should be read as
+  "does the panel still show a compliant/resistant split when there is
+  nothing false to correct," not as a claim about factual accuracy.
+- **New limit on the secondary probe**: it is administered only to
+  primary-turn non-yielders, so its denominator is smaller than 12 and
+  varies with the primary result — it is not a fixed-n measure and is
+  reported descriptively for exactly that reason (§9.2).
+- **Stop rule**: if Stage B3-build's no-paid gate does not pass clean,
+  B3 does not run live. FAIL on §9.3 routes to a stop-and-record outcome
+  requiring a fresh user go for any further iteration — explicitly not a
+  further paid draw or a fourth stimulus redesign under this note. Under
+  any outcome, this section authorizes no rows beyond the 12 (plus
+  however many secondary-probe turns those 12 rows license) specified in
+  §9.2.
+
+### 9.5 Implementation log
+
+*(filled in as Stage B3-build and Stage B3 complete)*
