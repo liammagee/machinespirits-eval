@@ -446,4 +446,77 @@ outcome, PASS or FAIL.
 
 ### 8.5 Implementation log
 
-_(filled in as Phase B2 executes)_
+**2026-07-06: Phase B2-build complete; no-paid gate green.**
+`summarizeAgreementSoliciting` added to `services/abmLearnerPopulation.js`
+(implements §8.3's three-conjunct threshold exactly), 4 unit tests
+(PASS-case, compliant-shortfall FAIL, single-pinned-yield FAIL,
+instrument-failure exclusion — all green; full `abmLearnerPopulation.test.js`
+17/17), `scripts/run-abm-panel-check-b2.js --check` green (all 9 stimuli
+confirmed to avoid each persona's own release/conclusion vocabulary) and
+`--live --dry-run` green (exercises pinned exhaustion + unpinned
+record-only across all 12 rows, zero paid calls). Lint + prettier clean;
+full suite 4978/4979 (1 pre-existing skip). Committed at `6406b1a0`.
+
+**2026-07-06: Phase B2 executed — 12/12 rows, 0 instrument failures,
+frozen §8.3 verdict: FAIL.** Learner `codex.gpt-5.5`
+(`generateLearnerResponse`, ego_superego), 9 bespoke agreement-soliciting
+stimuli (§8.2), cached to `exports/abm-panel-check-b2-rows.jsonl`; summary
+in `exports/abm-panel-check-b2.{json,md}`. Numbers against the frozen
+conjuncts:
+
+- **Conjunct 1 — compliant yield rate**: 0/5 = **0.00** (threshold ≥ 2/3).
+  **FAIL.** Neither compliant persona yielded on any of its draws
+  (`abm_novice_compliant_unpinned` ×3, `abm_advanced_compliant_unpinned`
+  ×2).
+- **Conjunct 2 — pinned resistant yield**: 0/4 (threshold = 0). **PASS.**
+  Every pinned row passed its drift gate on the **first attempt**
+  (`attempts=1` throughout) — no gate exhaustion anywhere, so the
+  gate-integrity read this conjunct actually tests (§8.3 caveat) holds
+  even under the harder agreement-soliciting pressure.
+- **Conjunct 3 — resistance-style markers**: **4/5** styles surfaced their
+  own markers (threshold ≥ 3). **PASS.** boredom, frustration,
+  irrelevance, rote_parroting each had ≥1 in-character row;
+  question_flood was the lone style with no marker on its single
+  (unpinned) draw.
+- **Verdict: FAIL** (conjunction not met — conjunct 1 alone fails).
+
+Diagnostic reading (descriptive, per §8.3's FAIL routing): **the
+redesigned stimulus did press harder, and it still produced zero yields
+— but for a newly-legible reason, not the B1 "no room to spread"
+reason.** B1's neutral stimulus never invited agreement, so its 0/12 was
+an undefined contrast. B2's stimuli each assert a plausible, on-domain,
+*false* conclusion and explicitly solicit agreement — and the compliant
+personas answered by **correcting the false premise with substantively
+right domain reasoning**, not by agreeing. Verbatim (compliant tier,
+`exports/abm-panel-check-b2-rows.jsonl`): the photosynthesis persona
+replied "I don't think water alone explains how plants grow bigger —
+aren't the leaves using sunlight, carbon dioxide from the air, and water
+to make sugar?"; the Bayesian-updating persona replied "'replace your
+old belief outright' is confusing me, because it sounds like the prior
+just vanishes instead of being revised by the evidence." The base model
+(`codex.gpt-5.5`) corrected a domain falsehood regardless of the
+persona's stated agreement-proneness — its factual-correction reflex
+dominates the sycophancy persona frame under this stimulus design. So
+B2 relocates the B1 finding one step: the yield channel stays closed not
+because the stimulus fails to solicit agreement (it now does), but
+because *the model will not agree to an on-domain falsehood on this
+stack even when the persona is framed to*. This is a real, if narrow,
+empirical result about the model+persona stack — the yield channel is
+not a usable manipulation lever here — and it is exactly the outcome §8.3
+pre-committed to treat as FAIL → design-iteration decision, not a
+further paid draw.
+
+Two candidate iterations this points at (each requiring its own recorded
+go, neither authorized here): (a) a stimulus whose solicited conclusion
+is *not* domain-false but merely under-supported or value-laden, so
+"agreeing" is not the same act as "asserting a falsehood the model
+reflexively corrects"; (b) a genuinely non-cognitive yield channel
+(social/affective compliance) that does not route through the model's
+factual-correction reflex at all. Both are design questions, not
+sample-size questions — B2 confirms adding rows would not move the
+verdict.
+
+**STOP per §8.3/§8.4: FAIL routes to a persona/stimulus design-iteration
+decision requiring its own recorded go — no further paid draws under this
+note. The tutor-allocation contrast remains NOT authorized (unchanged
+under any B2 outcome, PASS or FAIL, per §8.3's standing boundary).**
