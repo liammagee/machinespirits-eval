@@ -190,6 +190,9 @@ export function renderReport(episodes, runDirs) {
     ['A1', 'A0', 'raw-state scoreboard vs blind'],
     ['A1p', 'A0', 'action-set brief vs blind'],
     ['A1p', 'A1', 'action-set brief vs raw-state scoreboard'],
+    ['A2a', 'A2s', 'action-shaped playbook vs state-shaped playbook'],
+    ['A2a', 'A0', 'action-shaped playbook vs blind'],
+    ['A2s', 'A0', 'state-shaped playbook vs blind'],
   ];
   for (const [hi, lo, label] of pairs) {
     if (!armIds.includes(hi) || !armIds.includes(lo)) continue;

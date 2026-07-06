@@ -61,3 +61,18 @@ with headroom (+0.75 v0 → +1.25 XL). All lift is post-collapse harvest
 efficiency (same first-demo turn ~11 both arms). First comply_mismatch
 observed (format artifact, noted). Lands as a new §6.x of
 paper-full-2.0.md.
+
+PROBES 2026-07-06 (plan §11 prereg + §11b): (1) Playbook memory-format —
+state-shaped INERT (opp-miss frozen 2.00/ep, zero harm/zero uptake);
+action-shaped CONSUMED WRONGLY (e1's true lesson executed in e2 with
+precondition stripped: 4 illegal probes, 3 REVISEs ignored, superego
+capitulation, -4 before operator stop). P15 fails both halves, P16 fails
+for A2a. Sharpened principle: action-shaped AND freshly-conditioned —
+live brief works because the referee recomputes legality every turn;
+action memory without recomputation is worse than nothing. (2) Weak-tutor
+(Haiku ego+superego): P14 floor supported blind (score 0, 3 wasted, rut +
+stale probing vs strong 8.50/0 wasted); P13 brief-rescue NOT DECIDED —
+claude-CLI hangs at 3-4 calls/turn killed both A1p attempts (deviations
+recorded: 4->2 eps/arm, 300->90s timeouts). Open cells: playbook
+self-repair (does e2's own error-lesson fix e3), weak-ego brief rescue on
+a stable path.

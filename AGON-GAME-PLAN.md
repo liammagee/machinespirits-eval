@@ -431,6 +431,60 @@ episodes — single-sided learning by construction.
 Non-claims, unchanged: n=4/arm descriptive; no promotable claims; no
 confirmatory bar at these estimates.
 
+### 11b. Probe results (recorded 2026-07-06; deviations disclosed inline)
+
+**Probe 2 — playbook memory format (`agon-pilot-05-a2s` complete;
+`agon-pilot-05-a2a` stopped by operator after e2). Verdict: the format
+boundary governs CONSUMPTION, not correctness.**
+
+| arm | n | score | opp-miss/ep | wasted/ep | note |
+|---|---|---|---|---|---|
+| A0 blind (pilot-03 baseline) | 4 | 8.50±1.00 | 1.50 | 0.00 | |
+| A2s state playbook | 4 | 9.25±0.50 | 2.00 | 0.00 | e1 baseline 10; e2–e4 all 9 |
+| A2a action playbook | 1+partial | 9 (e1) | 2.00 (e1) | e2: 4 by t12 | e2 stopped at −4 |
+
+- **P15 FAILS on both halves, asymmetrically.** The state playbook is
+  INERT: opportunity misses frozen at exactly 2.00 in every episode,
+  playbook or none — consumed nowhere, harmed nothing (its +0.75 score vs
+  blind is win-consistency at n=4, with the consumption mechanism
+  untouched). The action playbook was CONSUMED — and wrongly: e1's true
+  lesson ("probing c1_transfer was LEGAL but you chose teach") was executed
+  in e2 with its precondition stripped (c1 not yet demonstrated), four
+  times (t6/t8/t10/t12), against three REVISEs and a fourth-time superego
+  capitulation, reaching −4 before the operator stopped the run.
+- **P16 HOLDS for A2s (zero wasted), FAILS decisively for A2a** (4 wasted
+  from a 0.00 baseline — the V2b negative-transfer motif, in its starkest
+  form yet: the strong model reproduced the weak model's
+  repeat-an-illegal-move-under-REVISE pathology, misled by its own
+  compressed memory).
+- **Sharpened principle:** A1′'s live brief works because the referee
+  recomputes the legality conditions every turn; the playbook's action
+  imperatives carried yesterday's legality into today. Action-shaped
+  signals get uptake — including when stale. State-shaped signals get no
+  uptake — useless but safe. The working formula is therefore
+  action-shaped AND freshly-conditioned; action-shaped memory without
+  recomputation is worse than nothing.
+- Untested (stopped): whether e2's own wasted-probe lessons would have
+  corrected e3 (mechanical self-repair of the playbook). Open cell.
+
+**Probe 1 — weak inner loop (`agon-pilot-04-weak`). INCOMPLETE; deviations:
+episodes 4→2 per arm (latency), tutor/learner timeouts 300→90s, and the
+run truncated by claude-CLI instability (repeated silent hangs — two
+300s double-timeouts, then 90s double-timeouts; one completed blind
+episode took 58 min absorbing hangs). Completed evidence:**
+
+- **P14 (floor) SUPPORTED on the blind side:** weak-blind A0-e1 scored 0
+  (demo 1, loss) with 3 wasted probes and a five-turn teach rut under
+  constant useless REVISEs — against strong-blind 8.50±1.00 with zero
+  wasted in 8 episodes. The weak ego also probed exactly when illegal
+  (stale + consecutive violations) having declined every legal window.
+- **P13 NOT DECIDED:** both weak-A1p attempts died mid-episode-1 on CLI
+  hangs before any brief-consumption evidence accrued. The
+  does-the-brief-rescue-a-weak-ego question stays open; it needs a stable
+  weak-model path (Haiku-via-claude-CLI at 3–4 calls/turn was the
+  unstable configuration; the 1-call/turn learner never hung in 17 strong
+  episodes).
+
 ## 12. File map
 
 - `config/agon/fractions-agon.yaml` — rules, concepts, keyed probes, dodges
