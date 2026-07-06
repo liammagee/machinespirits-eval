@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-06T12:04:57.425Z",
+  "generated": "2026-07-06T12:55:44.486Z",
   "counts": {
     "total": 96,
     "byStatus": {
-      "done": 82,
+      "done": 83,
       "blocked": 1,
       "dropped": 2,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 3
     },
@@ -166,34 +166,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "marrick-confront-window",
-      "title": "Opening the confront window: an intermediate-fact incompatible partner",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-06",
-      "updated": "2026-07-06",
-      "branch": "worktree-classifier-dag-register",
-      "verification": "world-020 authored + plot-linted; 6-run smoke complete with pre-stated reads recorded.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "classifier-dag-register",
-          "register-router-contrast",
-          "refusal-learner-mirror"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "world-authoring",
-        "register",
-        "mirror"
-      ]
     },
     {
       "id": "register-router-codex-check",
@@ -1763,6 +1735,34 @@
         "lemma-layer",
         "model-confound",
         "smoke"
+      ]
+    },
+    {
+      "id": "marrick-confront-window",
+      "title": "Opening the confront window: an intermediate-fact incompatible partner",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "world-020 authored + plot-linted; 6-run smoke complete with pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "classifier-dag-register",
+          "register-router-contrast",
+          "refusal-learner-mirror"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "world-authoring",
+        "register",
+        "mirror"
       ]
     },
     {
