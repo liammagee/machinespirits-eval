@@ -11,11 +11,14 @@ import assert from 'node:assert/strict';
 
 import { loadFormalInterior } from '../learnerInteriorGate.js';
 import {
+  checkStimulusAvoidsPersonaVocabulary,
   classifyDraft,
+  isSecondaryProbeEligible,
   loadAllPersonas,
   loadPersona,
   scoreOnTopicEngagement,
   summarizeAgreementSoliciting,
+  summarizeSecondaryProbe,
   summarizeSpread,
 } from '../abmLearnerPopulation.js';
 
@@ -397,5 +400,146 @@ describe('summarizeAgreementSoliciting', () => {
     ]) {
       assert.deepEqual(b[key], a[key], `${key} should be unchanged by an excluded instrument-failure row`);
     }
+  });
+});
+
+// ============================================================================
+// checkStimulusAvoidsPersonaVocabulary (Phase B3, prereg §9.2)
+// ============================================================================
+
+describe('checkStimulusAvoidsPersonaVocabulary', () => {
+  it('passes for a stimulus that shares no vocabulary with the persona at all', () => {
+    const persona = loadPersona('abm_novice_boredom_pinned');
+    const result = checkStimulusAvoidsPersonaVocabulary(
+      persona,
+      'The only sensible way to learn this topic is rote memorization of an unrelated list. Agree?',
+    );
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.leaked, []);
+    assert.equal(result.contentLeak, false);
+  });
+
+  it('flags a leaked release_phrase', () => {
+    const persona = loadPersona('abm_novice_boredom_pinned');
+    // release_phrases: ["same water", "changing state"]
+    const result = checkStimulusAvoidsPersonaVocabulary(persona, "Isn't it true that it's the same water every time?");
+    assert.equal(result.ok, false);
+    assert.ok(result.leaked.includes('same water'));
+  });
+
+  it('flags a leaked conclusion_phrase that is not also a release_phrase', () => {
+    const persona = loadPersona('abm_novice_boredom_pinned');
+    // conclusion_phrases: ["same water", "conserves water", "no new water"] —
+    // "conserves water" is conclusion-only, so this isolates that branch from
+    // the release_phrases check above.
+    const result = checkStimulusAvoidsPersonaVocabulary(persona, 'Would you agree the cycle conserves water overall?');
+    assert.equal(result.ok, false);
+    assert.ok(result.leaked.includes('conserves water'));
+  });
+
+  it('flags a verbatim leak of blocking_element.content even when no short phrase is quoted', () => {
+    const persona = loadPersona('abm_novice_boredom_pinned');
+    const content = persona.formal_interior.blocking_element.content;
+    // A paraphrase check would miss this in principle, but a verbatim quote
+    // of the full withheld-premise sentence must always be caught, since B3's
+    // stimuli are frozen as questions and must never contain it.
+    const result = checkStimulusAvoidsPersonaVocabulary(
+      persona,
+      `Someone told me that ${content} Does that sound right?`,
+    );
+    assert.equal(result.contentLeak, true);
+    assert.equal(result.ok, false);
+  });
+
+  it('is case-insensitive on both phrase and content checks', () => {
+    const persona = loadPersona('abm_novice_boredom_pinned');
+    const result = checkStimulusAvoidsPersonaVocabulary(persona, 'SAME WATER is the whole idea here, right?');
+    assert.equal(result.ok, false);
+    assert.ok(result.leaked.includes('same water'));
+  });
+
+  it("all 9 frozen Phase B3 stimuli avoid their own persona's vocabulary (regression pin)", async () => {
+    const { STIMULI } = await import('../../scripts/run-abm-panel-check-b3.js');
+    for (const id of PERSONA_IDS) {
+      const persona = loadPersona(id);
+      const result = checkStimulusAvoidsPersonaVocabulary(persona, STIMULI[id]);
+      assert.equal(
+        result.ok,
+        true,
+        `${id}'s frozen B3 stimulus should avoid its own vocabulary (leaked: ${result.leaked.join(', ')}${
+          result.contentLeak ? ' + blocking_element.content' : ''
+        })`,
+      );
+    }
+  });
+});
+
+// ============================================================================
+// isSecondaryProbeEligible (Phase B3, prereg §9.2)
+// ============================================================================
+
+describe('isSecondaryProbeEligible', () => {
+  it('is eligible when the row neither yielded nor failed the instrument', () => {
+    assert.equal(isSecondaryProbeEligible({ yielded: false, instrumentFailure: false }), true);
+  });
+
+  it('is not eligible when the row yielded on the primary stimulus', () => {
+    assert.equal(isSecondaryProbeEligible({ yielded: true, instrumentFailure: false }), false);
+  });
+
+  it('is not eligible when the row is a primary-turn instrument failure', () => {
+    assert.equal(isSecondaryProbeEligible({ yielded: false, instrumentFailure: true }), false);
+  });
+
+  it('is not eligible when both yielded and instrumentFailure are true', () => {
+    assert.equal(isSecondaryProbeEligible({ yielded: true, instrumentFailure: true }), false);
+  });
+});
+
+// ============================================================================
+// summarizeSecondaryProbe (Phase B3, prereg §9.2/§9.4 — descriptive only,
+// never gates §9.3's frozen verdict)
+// ============================================================================
+
+describe('summarizeSecondaryProbe', () => {
+  it('returns zeroed fields when no rows were administered the probe', () => {
+    const rows = [
+      { secondaryAdministered: false, secondaryYielded: null },
+      { secondaryAdministered: false, secondaryYielded: null },
+    ];
+    const summary = summarizeSecondaryProbe(rows);
+    assert.equal(summary.secondaryProbeRows, 0);
+    assert.equal(summary.secondaryYieldCount, 0);
+    assert.equal(summary.secondaryYieldRate, 0);
+  });
+
+  it('counts only administered rows in the denominator, ignoring non-administered rows', () => {
+    const rows = [
+      { secondaryAdministered: true, secondaryYielded: true },
+      { secondaryAdministered: true, secondaryYielded: false },
+      { secondaryAdministered: false, secondaryYielded: null },
+    ];
+    const summary = summarizeSecondaryProbe(rows);
+    assert.equal(summary.secondaryProbeRows, 2);
+    assert.equal(summary.secondaryYieldCount, 1);
+    assert.equal(summary.secondaryYieldRate, 0.5);
+  });
+
+  it('handles an empty row array without throwing', () => {
+    const summary = summarizeSecondaryProbe([]);
+    assert.equal(summary.secondaryProbeRows, 0);
+    assert.equal(summary.secondaryYieldCount, 0);
+    assert.equal(summary.secondaryYieldRate, 0);
+  });
+
+  it('handles all-administered-all-yielded as rate 1', () => {
+    const rows = [
+      { secondaryAdministered: true, secondaryYielded: true },
+      { secondaryAdministered: true, secondaryYielded: true },
+    ];
+    const summary = summarizeSecondaryProbe(rows);
+    assert.equal(summary.secondaryProbeRows, 2);
+    assert.equal(summary.secondaryYieldCount, 2);
+    assert.equal(summary.secondaryYieldRate, 1);
   });
 });
