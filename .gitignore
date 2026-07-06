@@ -112,6 +112,7 @@ public/eval/generated/
 # Scratchpad
 scratchpad/
 .tutor-stub-traces/
+.tutor-stub-auto-eval/
 
 # Research working files (local only)
 liams-paper/
