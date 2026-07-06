@@ -1,14 +1,5 @@
-import {
-  auditConductTutorView,
-  conductMoveSpec,
-  CONDUCT_POLICY_SCHEMA,
-  selectConductMove,
-} from './conductPolicy.js';
-import {
-  auditDidacticModePublicInput,
-  deriveDidacticOpportunityBudget,
-  DIDACTIC_MODE_SCHEMA,
-} from './didacticMode.js';
+import { auditConductTutorView, conductMoveSpec, CONDUCT_POLICY_SCHEMA, selectConductMove } from './conductPolicy.js';
+import { auditDidacticModePublicInput, deriveDidacticOpportunityBudget, DIDACTIC_MODE_SCHEMA } from './didacticMode.js';
 
 export const FIELD_PLANNER_SCHEMA = 'machinespirits.derivation.field-planner.v1';
 
@@ -138,7 +129,8 @@ function fieldMetrics(interactionField = {}, learnerField = {}) {
   const joint = final.joint?.dimensions || {};
   const tutor = final.tutor?.dimensions || {};
   const discourse = final.discourse?.dimensions || {};
-  const attractors = final.learner?.attractorCounts || finalLearnerSnapshot(learnerField)?.summary?.attractorCounts || {};
+  const attractors =
+    final.learner?.attractorCounts || finalLearnerSnapshot(learnerField)?.summary?.attractorCounts || {};
   return {
     learner: compactDimensions(learner),
     tutor: compactDimensions(tutor),
@@ -264,7 +256,9 @@ function promptLinesForPlan(plan) {
     `- script stage: ${plan.scriptStage || 'unknown'}; joint attractor: ${plan.jointAttractor || 'unknown'}`,
     `- conduct family: ${plan.selectedMoveFamily}; reason: ${plan.reasonCode}`,
     `- didactic mode: ${plan.didacticMode.recommendedMode}; signal: ${plan.didacticMode.learningSignal}`,
-    ...(plan.targetPremise ? [`- target public object: ${plan.targetPremise}${plan.targetSurface ? ` (${plan.targetSurface})` : ''}`] : []),
+    ...(plan.targetPremise
+      ? [`- target public object: ${plan.targetPremise}${plan.targetSurface ? ` (${plan.targetSurface})` : ''}`]
+      : []),
     `- rationale: ${plan.rationale}`,
   ];
 }

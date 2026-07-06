@@ -285,19 +285,9 @@ export {
   PEDAGOGICAL_SCRIPT_SCHEMA,
   TUTOR_FIELD_DIMENSIONS,
 } from './interactionField.js';
-export {
-  buildTutorFieldFrame,
-  TUTOR_FIELD_SCHEMA,
-} from './tutorField.js';
-export {
-  buildDiscourseFieldFrame,
-  DISCOURSE_FIELD_SCHEMA,
-} from './discourseField.js';
-export {
-  FIELD_PLANNER_SCHEMA,
-  selectFieldPlannerMove,
-  summarizeFieldPlannerOutcome,
-} from './fieldPlanner.js';
+export { buildTutorFieldFrame, TUTOR_FIELD_SCHEMA } from './tutorField.js';
+export { buildDiscourseFieldFrame, DISCOURSE_FIELD_SCHEMA } from './discourseField.js';
+export { FIELD_PLANNER_SCHEMA, selectFieldPlannerMove, summarizeFieldPlannerOutcome } from './fieldPlanner.js';
 export {
   buildLearnerProxyDagMemory,
   buildTutorLearnerDagModel,
