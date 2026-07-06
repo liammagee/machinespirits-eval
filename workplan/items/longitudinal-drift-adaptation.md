@@ -1,0 +1,100 @@
+---
+id: longitudinal-drift-adaptation
+title: Longitudinal drift adaptation (cross-session memory as new signal)
+status: review
+type: experiment
+priority: P1
+owner: claude
+source: manual
+created: 2026-07-06
+updated: 2026-07-06
+verification: Stage A0 no-paid gate (drift-schedule scenarios, deterministic marker checker reusing learnerInteriorGate's word-bounded matching, unit tests, stage-0 --check) passes; Stage A1 small paid pilot (~10 rows — cap-vs-uncapped check plus 3-session pad-on/pad-off arc) meets the frozen instrument-validity gate in the prereg note §3 before any interpretation. Scope frozen at Stage A1 — no confirmatory matrix without a fresh pre-registration.
+claim_status: exploratory
+links:
+  notes:
+    - notes/2026-07-06-longitudinal-drift-adaptation-prereg.md
+tags:
+  - tutor-side
+  - writing-pad
+  - cross-session
+  - longitudinal
+  - evaluation
+branch: worktree-longitudinal-abm
+---
+
+Test whether cross-session drift — a learner's hidden state (current
+interest, active misconception) changing between sessions on a
+harness-owned schedule the tutor never sees directly — is a source of
+signal the model lacks in-context, per
+`notes/2026-07-06-longitudinal-drift-adaptation-prereg.md` (frozen
+pre-registration). Motivated by §6.6.11's cross-session ego pre-alignment
+result (+1.31/session, the one positive trajectory finding in a paper
+otherwise dominated by null/substituted within-dialogue adaptation) and by
+the DAG-pinned-learner arc's closed confirmatory result (H-Dc/H-Oc both
+DISSOLVED — substitution survives even a criterially resistant learner).
+The instrument: the existing byte-identical §6.6.9 Writing Pad ablation
+pair (`cell_40` pad-ON vs `cell_93` pad-OFF, no new tutor-agents.yaml
+cells), three new drift-schedule scenarios carrying invented
+harness-owned misconception tokens, and a deterministic marker checker
+(`services/longitudinalDriftChecker.js`) scoring the tutor's session-N
+output for current-session-reference vs stale-session-(N-1)-reference,
+reusing `wordBounded`/`containsAny` exported from
+`services/learnerInteriorGate.js`. A frozen cap-vs-uncapped quality check
+(v2.2 first-turn score) decides the tutor ego's `max_tokens` cap before it
+is used in the main rows.
+
+Acceptance:
+
+- Drift schedule and marker checker are machine-checkable (word-bounded
+  matching only, no judge in the primary-outcome decision path).
+- The cap-vs-uncapped quality check runs and is decided **before** the cap
+  is used in the main drift-tracking rows (prereg §2.4's frozen one-shot
+  procedure).
+- Stage A1's instrument-validity gate (current-reference ≥ 2/3 in at least
+  one arm) is checked before any stale-reference reading is interpreted;
+  a nonzero pad-OFF stale-reference rate is treated as a red flag, not a
+  finding (prereg §3).
+- Stale-reference is reported as directional-only at n=3 sessions/arm —
+  this note and its companion do not license a real/dissolved verdict at
+  this n; a confirmatory design is a distinct, separately pre-registered
+  future decision.
+- No paid row beyond the ~10-row Stage A1 design runs without a fresh
+  pre-registration and recorded go (no-scaling discipline, prereg §5).
+
+2026-07-06 Claude: Pre-registration frozen and committed
+(`notes/2026-07-06-longitudinal-drift-adaptation-prereg.md`). Design:
+reuses `cell_40`/`cell_93` unchanged (no new cells) with `codex.gpt-5.5`
+ego/superego CLI overrides; three `longitudinal_drift_session_{1,2,3}`
+scenarios appended to `config/suggestion-scenarios.yaml` carrying invented
+`LDS-M{1,2,3}` misconception tokens on a fractions→ratios→linear-equations
+schedule; primary outcome is word-bounded current/stale marker matching on
+the tutor's session-N output, architecture-independent and judge-free.
+Frozen thresholds: instrument-validity gate (current-reference ≥2/3 in at
+least one arm) must pass before any stale-reference interpretation;
+stale-reference itself is directional-only at this n; row-level generation
+or schedule-validation failures are excluded as instrument failures, not
+scored. Stage A0 build follows in the same commit boundary as the
+pre-registration.
+
+2026-07-06 Claude: Stage A0 built and green (3 schedule scenarios,
+`services/longitudinalDriftChecker.js`, 11 tests, stage-0 --check,
+validate-config, lint/prettier). Stage A1 executed with two recorded
+deviations and one VOID pass, all in the prereg's implementation log:
+(1) executed stack is the cells' native nemotron/kimi-k2.5 (the CLI
+bridge does not reach tutor-core's dialogue engine — the desub codex
+precedent was id-director cells); (2) cap check — 700 catastrophic
+(empty outputs), 1400 within quality tolerance (+0.62 v2.2 first-turn)
+but empties 3/6 drift rows, so the main arc ran uncapped per §2.4's
+terminal branch; (3) first main pass VOID — `--learner-id` never
+reached single-turn generation (runner wiring gap, now fixed with a
+one-line `runSingleTurnTest` change + hermetic probe; pad-off arm now
+runs with no learner-id since the YAML `writing_pad_enabled` flag is
+runtime-inert). Corrected pass (6/6 rows clean): instrument-validity
+gate PASS (current-reference pad-ON 3/3, pad-OFF 2/3); stale-reference
+gap 0 (0/2 both arms, directional only); no pad-OFF red flag. Key
+qualifier: the pad row persisted across sessions but its content layers
+stayed empty scaffold (0 recognition moments — single-turn suggestion
+sessions never feed pad content), so the stale-0 reflects an empty
+channel, not demonstrated indifference to memory. Instrument validated;
+a confirmatory design needs pad-feeding (multi-turn) sessions. STOP —
+awaiting a fresh pre-registration + go for anything further.

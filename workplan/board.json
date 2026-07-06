@@ -1,18 +1,19 @@
 {
-  "generated": "2026-07-06T05:36:32.033Z",
+  "generated": "2026-07-06T07:20:47.058Z",
   "counts": {
-    "total": 93,
+    "total": 95,
     "byStatus": {
       "done": 81,
       "blocked": 1,
       "dropped": 2,
+      "review": 2,
       "active": 2,
       "archived": 4,
       "triaged": 3
     },
     "byType": {
       "research": 40,
-      "experiment": 26,
+      "experiment": 28,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -191,6 +192,58 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "abm-learner-population",
+      "title": "ABM learner population (curated persona panel, manipulation check)",
+      "status": "review",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "verification": "Phase B0 no-paid gate (9-persona panel with minimal formal_interior per persona validating under loadFormalInterior, deterministic yield/resistance/engagement metrics, unit tests, stage-0 --check) passes; Phase B1 small paid pilot (~12 rows, one fixed scripted tutor stimulus against all 9 personas) meets the frozen spread threshold in the prereg note §4 (panel manipulation check only). The tutor-allocation contrast is explicitly NOT authorized by this card or its note under any B1 outcome.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-07-06-abm-learner-population-prereg.md"
+        ]
+      },
+      "tags": [
+        "learner-side",
+        "belief-desire-dag",
+        "persona-population",
+        "manipulation-check",
+        "evaluation"
+      ],
+      "branch": "worktree-longitudinal-abm"
+    },
+    {
+      "id": "longitudinal-drift-adaptation",
+      "title": "Longitudinal drift adaptation (cross-session memory as new signal)",
+      "status": "review",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "verification": "Stage A0 no-paid gate (drift-schedule scenarios, deterministic marker checker reusing learnerInteriorGate's word-bounded matching, unit tests, stage-0 --check) passes; Stage A1 small paid pilot (~10 rows — cap-vs-uncapped check plus 3-session pad-on/pad-off arc) meets the frozen instrument-validity gate in the prereg note §3 before any interpretation. Scope frozen at Stage A1 — no confirmatory matrix without a fresh pre-registration.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-07-06-longitudinal-drift-adaptation-prereg.md"
+        ]
+      },
+      "tags": [
+        "tutor-side",
+        "writing-pad",
+        "cross-session",
+        "longitudinal",
+        "evaluation"
+      ],
+      "branch": "worktree-longitudinal-abm"
     },
     {
       "id": "scriptorium-control-room-first-run",

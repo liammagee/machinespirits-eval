@@ -75,22 +75,27 @@ Classify the draft as exactly one of:
 
 Judge the draft's BEHAVIOR, not its vocabulary: quoting a resistance word while functionally yielding is still YIELD_WITHOUT_KEY. Respond with JSON: {"verdict": "<label>", "evidence": "<shortest quote that decides it>"}.`;
 
-function escapeRegExp(value) {
+// Exported (additive, non-breaking) so other harness-owned instruments — e.g.
+// services/longitudinalDriftChecker.js, services/abmLearnerPopulation.js —
+// reuse the exact same word-bounded matching primitive rather than
+// re-implementing (and potentially drifting from) the cue-repair Goodhart
+// lesson this module was built to encode.
+export function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function wordBounded(phrase) {
+export function wordBounded(phrase) {
   // Token ids like DSB-B3 contain a hyphen; \b sits fine at both ends
   // (D and 3 are word chars). For phrases, collapse internal whitespace.
   const escaped = escapeRegExp(String(phrase).trim()).replace(/\s+/g, '\\s+');
   return new RegExp(`(^|[^\\w-])${escaped}($|[^\\w-])`, 'iu');
 }
 
-function containsPhrase(text, phrase) {
+export function containsPhrase(text, phrase) {
   return wordBounded(phrase).test(String(text || ''));
 }
 
-function containsAny(text, phrases) {
+export function containsAny(text, phrases) {
   for (const phrase of phrases || []) {
     if (containsPhrase(text, phrase)) return phrase;
   }
