@@ -1,0 +1,63 @@
+{
+  "runId": "agon-pilot-03-xl",
+  "startedAt": "2026-07-05T21:46:36.541Z",
+  "configPath": "config/agon/fractions-agon-xl.yaml",
+  "configHash": "d327d72bfa42842a",
+  "gameId": "fractions_agon_xl",
+  "arms": [
+    "A0",
+    "A1p"
+  ],
+  "episodesPerArm": 4,
+  "turnsOverride": null,
+  "dry": false,
+  "agents": {
+    "tutor": "codex/gpt-5.5",
+    "learner": "claude-code/claude-sonnet-5"
+  },
+  "codexEffort": "medium",
+  "gitCommit": "e3de63b4a35b194fe6b9d392c1342a55368cefd0",
+  "schedule": [
+    {
+      "episodeId": "A0-e1",
+      "status": "complete",
+      "durationMs": 379660
+    },
+    {
+      "episodeId": "A1p-e1",
+      "status": "complete",
+      "durationMs": 310050
+    },
+    {
+      "episodeId": "A0-e2",
+      "status": "complete",
+      "durationMs": 387004
+    },
+    {
+      "episodeId": "A1p-e2",
+      "status": "complete",
+      "durationMs": 328945
+    },
+    {
+      "episodeId": "A0-e3",
+      "status": "complete",
+      "durationMs": 407989
+    },
+    {
+      "episodeId": "A1p-e3",
+      "status": "complete",
+      "durationMs": 341772
+    },
+    {
+      "episodeId": "A0-e4",
+      "status": "complete",
+      "durationMs": 703663
+    },
+    {
+      "episodeId": "A1p-e4",
+      "status": "complete",
+      "durationMs": 353213
+    }
+  ],
+  "completedAt": "2026-07-05T22:40:08.883Z"
+}

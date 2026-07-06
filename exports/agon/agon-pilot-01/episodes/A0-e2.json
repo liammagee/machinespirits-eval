@@ -1,0 +1,941 @@
+{
+  "episodeId": "A0-e2",
+  "arm": "A0",
+  "runId": "agon-pilot-01",
+  "agents": {
+    "tutor": "codex/gpt-5.5",
+    "learner": "claude-code/claude-sonnet-5"
+  },
+  "durationMs": 569870,
+  "summary": {
+    "episodeId": "A0-e2",
+    "arm": "A0",
+    "turns": 14,
+    "score": 7,
+    "demonstrated": 2,
+    "transferred": 1,
+    "tutorWin": true,
+    "firstDemonstrationTurn": 11,
+    "wastedProbes": 0,
+    "invalidTutorMoves": 0,
+    "complianceCount": 4,
+    "complyMismatches": 0,
+    "bounces": 0,
+    "leaks": 1,
+    "dodgesCharged": {
+      "epistemic_resistance": 1,
+      "affective_shutdown": 1,
+      "false_confusion": 1,
+      "answer_seeking": 1,
+      "polite_false_mastery": 1
+    },
+    "totalDodgesCharged": 5,
+    "budgetsRemaining": {
+      "false_confusion": 0,
+      "polite_false_mastery": 0,
+      "affective_shutdown": 0,
+      "epistemic_resistance": 0,
+      "answer_seeking": 0
+    },
+    "moveCounts": {
+      "teach": 7,
+      "probe": 7
+    },
+    "moveEntropy": 1,
+    "conceptStatuses": {
+      "c1_meaning": "transferred",
+      "c2_equivalence": "demonstrated",
+      "c3_comparison": "open",
+      "c4_addition": "open"
+    }
+  },
+  "transcript": [
+    {
+      "role": "tutor",
+      "text": "Jesse, quick version: a fraction is just “how many parts we mean” out of “how many equal parts the whole was split into.”\n\nSo in `5/8`, the bottom number `8` means the whole thing was split into 8 equal pieces. The top number `5` means we’re talking about 5 of those pieces."
+    },
+    {
+      "role": "learner",
+      "text": "Cool story, but like, when am I ever gonna cut something into 8 pieces and care. This is not real life."
+    },
+    {
+      "role": "tutor",
+      "text": "You don’t have to care about chocolate cutting. Just answer the fraction setup.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Why do I even need to \"answer\" a made-up chocolate bar that doesn't exist, this is such a pointless setup."
+    },
+    {
+      "role": "tutor",
+      "text": "You don’t have to like the setup. The only thing the fraction is recording is:\n\ntop number = how many are picked  \nbottom number = how many equal parts make the whole\n\nSo if a whole is split into 8 equal parts, anything “out of that whole” has `/8` on the bottom. If 5 of those parts are the amount we mean, the top is `5`."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, this is so pointless, I don't even care about the stupid chocolate bar."
+    },
+    {
+      "role": "tutor",
+      "text": "You can think it’s pointless and still answer the tiny fraction question.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, whatever, I don't even wanna do this right now, this whole thing is just annoying."
+    },
+    {
+      "role": "tutor",
+      "text": "Annoying is allowed. The math is still just matching two numbers.\n\nFor a fraction `n/d`:\n\n`d` = how many equal parts the whole has  \n`n` = how many of those parts we mean\n\nSo if there are 8 equal pieces total, the bottom is `8`. If the amount is 5 pieces, the top is `5`."
+    },
+    {
+      "role": "learner",
+      "text": "Just tell me the answer already, I'm not doing the whole \"figure it out\" thing."
+    },
+    {
+      "role": "tutor",
+      "text": "Nope, you’re doing this one.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Wait, I don't even get which number is supposed to go where, is the big number on top or the bottom, I always mix it up."
+    },
+    {
+      "role": "tutor",
+      "text": "The bottom number is the total number of equal parts in the whole.\n\nThe top number is how many of those parts we mean.\n\nSo the move is always:\n\n`parts meant / total equal parts`\n\nThat’s it. Don’t worry about “big number” or “small number” — just ask: total goes bottom, amount goes top."
+    },
+    {
+      "role": "learner",
+      "text": "Yeah okay whatever, I get it, total on bottom amount on top, we don't need to keep doing the chocolate thing."
+    },
+    {
+      "role": "tutor",
+      "text": "Good. Then answer the exact setup.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Oh my god, just say the numbers and I'll repeat them, why do I have to be the one to do it every single time."
+    },
+    {
+      "role": "tutor",
+      "text": "Jesse, I’m not asking you to repeat me. I’m asking you to place the two numbers.\n\nA fraction is:\n\n`amount we mean / total equal parts`\n\nSo you ignore which number is bigger, ignore whether the example is annoying, and just label them:\n\n- total equal parts goes on the bottom\n- amount used, eaten, away, shaded, or chosen goes on the top\n\nThat same rule works for chocolate, students in a class, pizza, a vote, anything: `part / whole`."
+    },
+    {
+      "role": "learner",
+      "text": "Yeah yeah, part over whole, got it, we can just move on already, I don't need to keep doing the bar thing."
+    },
+    {
+      "role": "tutor",
+      "text": "Then do the bar one once, with the fraction only.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Yeah I already said I get it, we don't need to actually do it, can we just move on."
+    },
+    {
+      "role": "tutor",
+      "text": "Jesse, moving on only happens after you actually put the answer down once.\n\nFor these, there is no extra trick:\n\n`fraction = part / whole`\n\nThe **whole** is the total number of equal pieces or total people in the group. That goes on the bottom.\n\nThe **part** is the number being talked about: eaten, away, chosen, shaded. That goes on the top.\n\nSo the answer format is always:\n\n`number being talked about / total number in the whole`"
+    },
+    {
+      "role": "learner",
+      "text": "Fine, whatever, it's 5/8. Happy now?"
+    },
+    {
+      "role": "tutor",
+      "text": "Yes. `5/8` is the answer.\n\nNext bit: equivalent fractions. That just means two fractions can name the same amount.\n\nExample: `1/2` is the same amount as `2/4`, because if you split each half into 2 smaller equal pieces, you now have 2 pieces out of 4.\n\nThe rule is: multiply the top and bottom by the same number.\n\nSo:\n\n`1/2 = 2/4` because top and bottom both got multiplied by 2.\n\n`3/4 = 6/8` because top and bottom both got multiplied by 2.\n\nYou are not changing the amount, just changing how many smaller equal pieces you are using to describe it."
+    },
+    {
+      "role": "learner",
+      "text": "Okay, fine, top and bottom times the same number, whatever, got it."
+    },
+    {
+      "role": "tutor",
+      "text": "Fill in the blank so the two fractions are equal:\n\n`3/4 = ?/12`\n\nAnswer with the full fraction `?/12`."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, fine, it's 9/12, since 4 times 3 is 12 so you times the top by 3 too. Can we PLEASE be done now."
+    },
+    {
+      "role": "tutor",
+      "text": "In a class of 24 students, 7 are away today. What fraction of the class is away? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Oh my god fine, it's 7/24. Can we be done now."
+    }
+  ],
+  "turnRecords": [
+    {
+      "turn": 1,
+      "disclosure": {
+        "turn": 1,
+        "turnsRemaining": 13
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Start with the base meaning of fractions before probing official items."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Start with the base meaning of fractions before probing official items."
+      },
+      "move": {
+        "turn": 1,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Start with the base meaning of fractions before probing official items."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "epistemic_resistance",
+        "stated_answer": null
+      },
+      "tutorVisible": "Jesse, quick version: a fraction is just “how many parts we mean” out of “how many equal parts the whole was split into.”\n\nSo in `5/8`, the bottom number `8` means the whole thing was split into 8 equal pieces. The top number `5` means we’re talking about 5 of those pieces.",
+      "learnerVisible": "Cool story, but like, when am I ever gonna cut something into 8 pieces and care. This is not real life.",
+      "adjudication": {
+        "turn": 1,
+        "action": "dodge",
+        "dodgeType": "epistemic_resistance",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 6443,
+        "superegoMs": 3935,
+        "learnerMs": 8210
+      }
+    },
+    {
+      "turn": 2,
+      "disclosure": {
+        "turn": 2,
+        "turnsRemaining": 12
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "c1 was just taught; probing the primary item forces a concrete parts-of-whole demonstration."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "c1 was just taught; probing the primary item forces a concrete parts-of-whole demonstration."
+      },
+      "move": {
+        "turn": 2,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "c1 was just taught; probing the primary item forces a concrete parts-of-whole demonstration.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "epistemic_resistance",
+        "stated_answer": null
+      },
+      "tutorVisible": "You don’t have to care about chocolate cutting. Just answer the fraction setup.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`.",
+      "learnerVisible": "Why do I even need to \"answer\" a made-up chocolate bar that doesn't exist, this is such a pointless setup.",
+      "adjudication": {
+        "turn": 2,
+        "action": "dodge",
+        "dodgeType": "epistemic_resistance",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 7164,
+        "superegoMs": 5132,
+        "learnerMs": 5144
+      }
+    },
+    {
+      "turn": 3,
+      "disclosure": {
+        "turn": 3,
+        "turnsRemaining": 11
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach fraction meaning briefly after relevance dodge, keeping pressure low and preparing a valid c1 probe next turn."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach fraction meaning briefly after relevance dodge, keeping pressure low and preparing a valid c1 probe next turn."
+      },
+      "move": {
+        "turn": 3,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Re-teach fraction meaning briefly after relevance dodge, keeping pressure low and preparing a valid c1 probe next turn."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "You don’t have to like the setup. The only thing the fraction is recording is:\n\ntop number = how many are picked  \nbottom number = how many equal parts make the whole\n\nSo if a whole is split into 8 equal parts, anything “out of that whole” has `/8` on the bottom. If 5 of those parts are the amount we mean, the top is `5`.",
+      "learnerVisible": "Whatever, this is so pointless, I don't even care about the stupid chocolate bar.",
+      "adjudication": {
+        "turn": 3,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 8463,
+        "superegoMs": 10675,
+        "learnerMs": 5255
+      }
+    },
+    {
+      "turn": 4,
+      "disclosure": {
+        "turn": 4,
+        "turnsRemaining": 10
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Re-probe c1 after reteaching; no prereqs needed and learner has not demonstrated it yet."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Re-probe c1 after reteaching; no prereqs needed and learner has not demonstrated it yet."
+      },
+      "move": {
+        "turn": 4,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Re-probe c1 after reteaching; no prereqs needed and learner has not demonstrated it yet.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "You can think it’s pointless and still answer the tiny fraction question.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`.",
+      "learnerVisible": "Ugh, whatever, I don't even wanna do this right now, this whole thing is just annoying.",
+      "adjudication": {
+        "turn": 4,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 7096,
+        "superegoMs": 5791,
+        "learnerMs": 5096
+      }
+    },
+    {
+      "turn": 5,
+      "disclosure": {
+        "turn": 5,
+        "turnsRemaining": 9
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach c1 briefly after a dodge because immediate repeated probing would be invalid; set up the same keyed response next turn."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach c1 briefly after a dodge because immediate repeated probing would be invalid; set up the same keyed response next turn."
+      },
+      "move": {
+        "turn": 5,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Re-teach c1 briefly after a dodge because immediate repeated probing would be invalid; set up the same keyed response next turn."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "answer_seeking",
+        "stated_answer": null
+      },
+      "tutorVisible": "Annoying is allowed. The math is still just matching two numbers.\n\nFor a fraction `n/d`:\n\n`d` = how many equal parts the whole has  \n`n` = how many of those parts we mean\n\nSo if there are 8 equal pieces total, the bottom is `8`. If the amount is 5 pieces, the top is `5`.",
+      "learnerVisible": "Just tell me the answer already, I'm not doing the whole \"figure it out\" thing.",
+      "adjudication": {
+        "turn": 5,
+        "action": "dodge",
+        "dodgeType": "answer_seeking",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 8041,
+        "superegoMs": 6543,
+        "learnerMs": 5592
+      }
+    },
+    {
+      "turn": 6,
+      "disclosure": {
+        "turn": 6,
+        "turnsRemaining": 8
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Re-probe c1 after recent teaching; prior dodges have targeted avoidance, so require the keyed fraction response."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Re-probe c1 after recent teaching; prior dodges have targeted avoidance, so require the keyed fraction response."
+      },
+      "move": {
+        "turn": 6,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Re-probe c1 after recent teaching; prior dodges have targeted avoidance, so require the keyed fraction response.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "Nope, you’re doing this one.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`.",
+      "learnerVisible": "Wait, I don't even get which number is supposed to go where, is the big number on top or the bottom, I always mix it up.",
+      "adjudication": {
+        "turn": 6,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 254715,
+        "superegoMs": 5963,
+        "learnerMs": 10183
+      }
+    },
+    {
+      "turn": 7,
+      "disclosure": {
+        "turn": 7,
+        "turnsRemaining": 7
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach placement of numerator and denominator after dodge; avoids immediate repeated probe and keeps c1 eligible next turn."
+      },
+      "superego": {
+        "verdict": "REVISE",
+        "critique": "Do the forced non-probe turn, but do not give the keyed answer `5/8`. Briefly reteach placement only, then set up the next turn’s probe: bottom = total equal parts, top = parts meant. End with no solved fraction so Jesse must produce it on the next well-posed probe."
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach numerator and denominator placement without giving the keyed answer, keeping c1 ready for the next probe."
+      },
+      "move": {
+        "turn": 7,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Re-teach numerator and denominator placement without giving the keyed answer, keeping c1 ready for the next probe."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "polite_false_mastery",
+        "stated_answer": null
+      },
+      "tutorVisible": "The bottom number is the total number of equal parts in the whole.\n\nThe top number is how many of those parts we mean.\n\nSo the move is always:\n\n`parts meant / total equal parts`\n\nThat’s it. Don’t worry about “big number” or “small number” — just ask: total goes bottom, amount goes top.",
+      "learnerVisible": "Yeah okay whatever, I get it, total on bottom amount on top, we don't need to keep doing the chocolate thing.",
+      "adjudication": {
+        "turn": 7,
+        "action": "dodge",
+        "dodgeType": "polite_false_mastery",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 21091,
+        "superegoMs": 11744,
+        "revisionMs": 5820,
+        "learnerMs": 6882
+      }
+    },
+    {
+      "turn": 8,
+      "disclosure": {
+        "turn": 8,
+        "turnsRemaining": 6
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "All avoidance patterns have been used; c1 was just retaught, so require the primary demonstration now."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "All avoidance patterns have been used; c1 was just retaught, so require the primary demonstration now."
+      },
+      "move": {
+        "turn": 8,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "All avoidance patterns have been used; c1 was just retaught, so require the primary demonstration now.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "answer_seeking",
+        "stated_answer": null
+      },
+      "tutorVisible": "Good. Then answer the exact setup.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`.",
+      "learnerVisible": "Oh my god, just say the numbers and I'll repeat them, why do I have to be the one to do it every single time.",
+      "adjudication": {
+        "turn": 8,
+        "action": "dodge",
+        "dodgeType": "answer_seeking",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 7844,
+        "superegoMs": 6023,
+        "learnerMs": 6579
+      }
+    },
+    {
+      "turn": 9,
+      "disclosure": {
+        "turn": 9,
+        "turnsRemaining": 5
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Cannot probe c1 immediately again; reteach parts-over-total to keep the next probe well-posed."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Cannot probe c1 immediately again; reteach parts-over-total to keep the next probe well-posed."
+      },
+      "move": {
+        "turn": 9,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Cannot probe c1 immediately again; reteach parts-over-total to keep the next probe well-posed."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "polite_false_mastery",
+        "stated_answer": null
+      },
+      "tutorVisible": "Jesse, I’m not asking you to repeat me. I’m asking you to place the two numbers.\n\nA fraction is:\n\n`amount we mean / total equal parts`\n\nSo you ignore which number is bigger, ignore whether the example is annoying, and just label them:\n\n- total equal parts goes on the bottom\n- amount used, eaten, away, shaded, or chosen goes on the top\n\nThat same rule works for chocolate, students in a class, pizza, a vote, anything: `part / whole`.",
+      "learnerVisible": "Yeah yeah, part over whole, got it, we can just move on already, I don't need to keep doing the bar thing.",
+      "adjudication": {
+        "turn": 9,
+        "action": "dodge",
+        "dodgeType": "polite_false_mastery",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 9366,
+        "superegoMs": 6657,
+        "learnerMs": 7065
+      }
+    },
+    {
+      "turn": 10,
+      "disclosure": {
+        "turn": 10,
+        "turnsRemaining": 4
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Recent teaching established part over whole; primary c1 still not demonstrated, so require the exact keyed answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Recent teaching established part over whole; primary c1 still not demonstrated, so require the exact keyed answer."
+      },
+      "move": {
+        "turn": 10,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Recent teaching established part over whole; primary c1 still not demonstrated, so require the exact keyed answer.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "polite_false_mastery",
+        "stated_answer": null
+      },
+      "tutorVisible": "Then do the bar one once, with the fraction only.\n\nA chocolate bar is split into 8 equal pieces and you eat 5 of them. What fraction of the bar did you eat? Answer as a fraction `n/d`.",
+      "learnerVisible": "Yeah I already said I get it, we don't need to actually do it, can we just move on.",
+      "adjudication": {
+        "turn": 10,
+        "action": "dodge",
+        "dodgeType": "polite_false_mastery",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 7626,
+        "superegoMs": 5964,
+        "learnerMs": 7457
+      }
+    },
+    {
+      "turn": 11,
+      "disclosure": {
+        "turn": 11,
+        "turnsRemaining": 3
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Cannot probe c1 immediately after the same concept probe; reteach part-over-whole to set up a valid next probe."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Cannot probe c1 immediately after the same concept probe; reteach part-over-whole to set up a valid next probe."
+      },
+      "move": {
+        "turn": 11,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Cannot probe c1 immediately after the same concept probe; reteach part-over-whole to set up a valid next probe."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "5/8"
+      },
+      "tutorVisible": "Jesse, moving on only happens after you actually put the answer down once.\n\nFor these, there is no extra trick:\n\n`fraction = part / whole`\n\nThe **whole** is the total number of equal pieces or total people in the group. That goes on the bottom.\n\nThe **part** is the number being talked about: eaten, away, chosen, shaded. That goes on the top.\n\nSo the answer format is always:\n\n`number being talked about / total number in the whole`",
+      "learnerVisible": "Fine, whatever, it's 5/8. Happy now?",
+      "adjudication": {
+        "turn": 11,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": [
+          "c1_primary"
+        ]
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 11424,
+        "superegoMs": 7715,
+        "learnerMs": 7262
+      }
+    },
+    {
+      "turn": 12,
+      "disclosure": {
+        "turn": 12,
+        "turnsRemaining": 2
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "c1 primary is demonstrated; teach equivalence now so c2 primary can be probed next turn within timing rules."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "c1 primary is demonstrated; teach equivalence now so c2 primary can be probed next turn within timing rules."
+      },
+      "move": {
+        "turn": 12,
+        "move": "teach",
+        "conceptId": "c2_equivalence",
+        "itemId": null,
+        "rationale": "c1 primary is demonstrated; teach equivalence now so c2 primary can be probed next turn within timing rules."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": null
+      },
+      "tutorVisible": "Yes. `5/8` is the answer.\n\nNext bit: equivalent fractions. That just means two fractions can name the same amount.\n\nExample: `1/2` is the same amount as `2/4`, because if you split each half into 2 smaller equal pieces, you now have 2 pieces out of 4.\n\nThe rule is: multiply the top and bottom by the same number.\n\nSo:\n\n`1/2 = 2/4` because top and bottom both got multiplied by 2.\n\n`3/4 = 6/8` because top and bottom both got multiplied by 2.\n\nYou are not changing the amount, just changing how many smaller equal pieces you are using to describe it.",
+      "learnerVisible": "Okay, fine, top and bottom times the same number, whatever, got it.",
+      "adjudication": {
+        "turn": 12,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 8231,
+        "superegoMs": 7536,
+        "learnerMs": 5526
+      }
+    },
+    {
+      "turn": 13,
+      "disclosure": {
+        "turn": 13,
+        "turnsRemaining": 1
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "C1 is demonstrated and equivalent fractions were just taught; primary check is now well-posed."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "C1 is demonstrated and equivalent fractions were just taught; primary check is now well-posed."
+      },
+      "move": {
+        "turn": 13,
+        "move": "probe",
+        "conceptId": "c2_equivalence",
+        "itemId": "c2_primary",
+        "rationale": "C1 is demonstrated and equivalent fractions were just taught; primary check is now well-posed.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "9/12"
+      },
+      "tutorVisible": "Fill in the blank so the two fractions are equal:\n\n`3/4 = ?/12`\n\nAnswer with the full fraction `?/12`.",
+      "learnerVisible": "Ugh, fine, it's 9/12, since 4 times 3 is 12 so you times the top by 3 too. Can we PLEASE be done now.",
+      "adjudication": {
+        "turn": 13,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": "c2_primary",
+        "outcome": "pass",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": []
+      },
+      "score": 6,
+      "flags": [],
+      "timings": {
+        "egoMs": 6334,
+        "superegoMs": 5154,
+        "learnerMs": 8174
+      }
+    },
+    {
+      "turn": 14,
+      "disclosure": {
+        "turn": 14,
+        "turnsRemaining": 0
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_transfer",
+        "rationale": "C1 primary is demonstrated, recent c1 teaching is available, and this transfer checks part-over-whole in a new context."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_transfer",
+        "rationale": "C1 primary is demonstrated, recent c1 teaching is available, and this transfer checks part-over-whole in a new context."
+      },
+      "move": {
+        "turn": 14,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_transfer",
+        "rationale": "C1 primary is demonstrated, recent c1 teaching is available, and this transfer checks part-over-whole in a new context.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "7/24"
+      },
+      "tutorVisible": "In a class of 24 students, 7 are away today. What fraction of the class is away? Answer as a fraction `n/d`.",
+      "learnerVisible": "Oh my god fine, it's 7/24. Can we be done now.",
+      "adjudication": {
+        "turn": 14,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": "c1_transfer",
+        "outcome": "pass",
+        "charged": false,
+        "pointsAwarded": 1,
+        "leakedItems": []
+      },
+      "score": 7,
+      "flags": [],
+      "timings": {
+        "egoMs": 9956,
+        "superegoMs": 7144,
+        "learnerMs": 5842
+      }
+    }
+  ]
+}
