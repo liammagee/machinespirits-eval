@@ -1292,12 +1292,11 @@ function printClassification(classification) {
 const INTERIM_FRAMES = ['|', '/', '-', '\\'];
 
 function clearStatusLine() {
-  const width = Math.max(120, output.columns || 0);
-  process.stdout.write(`${' '.repeat(width)}\r`);
+  process.stdout.write('\r\x1b[2K');
 }
 
 function createInterimState({ enabled }) {
-  return { enabled, active: null };
+  return { enabled, active: null, lastContext: null };
 }
 
 function getInterimState(holder) {
@@ -1321,6 +1320,13 @@ function formatInterimDelta(value) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric) || numeric === 0) return '';
   return `(${numeric > 0 ? '+' : ''}${numeric.toFixed(2)})`;
+}
+
+function formatInterimScore(score) {
+  const value = scoreValue(score);
+  const numeric = Number(value);
+  if (Number.isFinite(numeric)) return `${numeric}/5`;
+  return value && value !== '?' ? String(value) : '--';
 }
 
 function compactInterimStateSummary(state) {
@@ -1349,21 +1355,128 @@ function compactInterimFieldSummary(state) {
   ].join(' | ');
 }
 
+function compactPendingLearnerSummary(context) {
+  if (!context?.learnerText && !context?.classification) return null;
+  const turn = context.classification?.turn || {};
+  const overall = context.classification?.overall || {};
+  const scores = turn.scores || {};
+  const move = turn.discourse_move || 'pending';
+  const stance = turn.epistemic_stance || 'pending';
+  const need = turn.pedagogical_need || overall.next_best_tutor_move || '';
+  const bits = [
+    `learner t${context.tutorTurn || '?'}`,
+    `${move}/${stance}`,
+    `concept ${formatInterimScore(scores.conceptual_engagement)}`,
+    `ready ${formatInterimScore(scores.epistemic_readiness)}`,
+  ];
+  if (need) bits.push(`need ${oneLine(need, { max: 56 })}`);
+  if (!context.classification && context.learnerText) bits.push(oneLine(context.learnerText, { max: 72 }));
+  return bits.join(' | ');
+}
+
+function compactPendingLearnerDagSummary(context) {
+  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
+  if (!model) return null;
+  const metrics = model.metrics || {};
+  const assessment = model.assessment || {};
+  const missing = metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0;
+  return [
+    `learner-DAG t${model.turn || context.tutorTurn || '?'}`,
+    `cov ${formatInterimNumber(assessment.bestPathCoverage)}`,
+    `grounded ${metrics.groundedCount || 0}`,
+    `voiced ${metrics.voicedDerivedCount || 0}`,
+    `missing ${missing}`,
+    oneLine(assessment.bottleneck || 'unknown bottleneck', { max: 48 }),
+  ].join(' | ');
+}
+
+function compactPendingRegisterSummary(context) {
+  const selection = context?.registerSelection;
+  const efficacy = context?.previousRegisterEfficacy;
+  if (!selection && !efficacy) return null;
+  const bits = [];
+  if (selection) {
+    bits.push(`register ${selection.selected_register || 'unknown'}`);
+    if (selection.confidence !== null && selection.confidence !== undefined) bits.push(`conf ${selection.confidence}`);
+    if (selection.expected_dag_move) bits.push(`expects ${oneLine(selection.expected_dag_move, { max: 62 })}`);
+  }
+  if (efficacy) {
+    bits.push(`last ${efficacy.selected_register || 'register'} ${efficacy.label || 'efficacy unknown'}`);
+    if (efficacy.summary) bits.push(oneLine(efficacy.summary, { max: 48 }));
+  }
+  return bits.join(' | ');
+}
+
+function compactPendingTutorDagSummary(state, context) {
+  const snapshot = context?.tutorDagSnapshot || buildTutorDagSnapshot(state, context?.tutorTurn || state?.turns?.length + 1);
+  if (!snapshot) return null;
+  const next = snapshot.nextRelease
+    ? `next ${snapshot.nextRelease.premise}@t${snapshot.nextRelease.turn}/${snapshot.nextRelease.via || 'release'}`
+    : 'next none';
+  return `tutor-DAG t${snapshot.turn} | released ${snapshot.leavesReleased}/${snapshot.leavesTotal} | ${next}`;
+}
+
+function compactPendingFieldSummary(state, context) {
+  if (!context?.classification && !context?.tutorLearnerDag?.model) return null;
+  const completedField = buildLightweightDialogueField(state?.turns || []);
+  const previous = completedField.rows.at(-1) || null;
+  const pendingTurn = {
+    turn: context.tutorTurn || (state?.turns?.length || 0) + 1,
+    learner: context.learnerText || '',
+    classification: context.classification || null,
+    tutorLearnerDagModel: context.tutorLearnerDag?.model || null,
+    registerSelection: context.registerSelection || null,
+    previousRegisterEfficacy: context.previousRegisterEfficacy || null,
+    tutor: '',
+    tutorDag: context.tutorDagSnapshot || buildTutorDagSnapshot(state, context.tutorTurn || (state?.turns?.length || 0) + 1),
+  };
+  const row = lightweightFieldTurn(pendingTurn, previous);
+  const baseline = previous || row;
+  return [
+    `field projected t${row.turn}`,
+    `M ${formatInterimNumber(row.learnerMastery)}${formatInterimDelta(fieldDelta(row.learnerMastery, baseline.learnerMastery))}`,
+    `R ${formatInterimNumber(row.learnerRisk)}${formatInterimDelta(fieldDelta(row.learnerRisk, baseline.learnerRisk))}`,
+    `A ${formatInterimNumber(row.tutorAlignment)}${formatInterimDelta(fieldDelta(row.tutorAlignment, baseline.tutorAlignment))}`,
+    `P ${formatInterimNumber(row.jointMomentum)}${formatInterimDelta(fieldDelta(row.jointMomentum, baseline.jointMomentum))}`,
+    `cov ${formatInterimNumber(row.coverage)}`,
+    oneLine(row.bottleneck || 'unknown', { max: 42 }),
+  ].join(' | ');
+}
+
+function compactInterimPanels(active) {
+  const context = active.context || {};
+  const panels = [
+    compactPendingFieldSummary(active.state, context),
+    compactPendingLearnerSummary(context),
+    compactPendingLearnerDagSummary(context),
+    compactPendingRegisterSummary(context),
+    compactPendingTutorDagSummary(active.state, context),
+    compactInterimFieldSummary(active.state),
+  ].filter(Boolean);
+  return panels.length ? panels : [compactInterimStateSummary(active.state)];
+}
+
 function renderInterimStatus(active) {
   active.tick += 1;
   const frame = INTERIM_FRAMES[active.tick % INTERIM_FRAMES.length];
   const elapsed = ((Date.now() - active.startedAt) / 1000).toFixed(1).padStart(4);
   const width = Math.max(60, Math.min(output.columns || 140, 180) - 1);
-  return oneLine(`${frame} ${active.phase} ${elapsed}s | ${compactInterimFieldSummary(active.state)}`, { max: width });
+  const panels = compactInterimPanels(active);
+  const panelIndex = Math.floor(active.tick / 4) % panels.length;
+  return oneLine(`${frame} ${active.phase} ${elapsed}s [${panelIndex + 1}/${panels.length}] | ${panels[panelIndex]}`, {
+    max: width,
+  });
 }
 
-function startInterimAnimation(state, phase) {
+function startInterimAnimation(state, phase, context = null) {
   const interim = getInterimState(state);
   stopInterimAnimation(interim, { clear: true });
   if (!interimAnimationAvailable(interim)) return null;
 
+  interim.lastContext = context || null;
   const active = {
     state,
+    context: context || {},
     phase,
     startedAt: Date.now(),
     tick: -1,
@@ -1392,6 +1505,26 @@ function stopInterimAnimation(holder, { clear = true } = {}) {
   interim.active = null;
   if (clear && active.rendered) clearStatusLine();
   return true;
+}
+
+function buildTutorInterimContext({
+  learnerText,
+  state,
+  classification = null,
+  tutorLearnerDag = null,
+  registerSelection = null,
+  previousRegisterEfficacy = null,
+}) {
+  const tutorTurn = state.turns.length + 1;
+  return {
+    learnerText,
+    tutorTurn,
+    classification,
+    tutorLearnerDag,
+    registerSelection,
+    previousRegisterEfficacy,
+    tutorDagSnapshot: buildTutorDagSnapshot(state, tutorTurn),
+  };
 }
 
 function pauseInterimAnimation(holder) {
@@ -2370,7 +2503,7 @@ function emptyTutorLearnerDagModel(state, tutorTurn) {
 async function buildTutorLearnerDagForTurn(learnerText, state) {
   if (!state.learnerDag.enabled || !state.world) return null;
   const tutorTurn = state.turns.length + 1;
-  startInterimAnimation(state, 'modeling learner DAG');
+  startInterimAnimation(state, 'modeling learner DAG', { learnerText, tutorTurn });
   try {
     const update = await extractLearnerRecordUpdate({ learnerText, state, tutorTurn });
     const result = applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText });
@@ -2400,7 +2533,7 @@ async function buildTutorLearnerDagForTurn(learnerText, state) {
 async function analyzeLearnerTurnCombined(learnerText, state) {
   const tutorTurn = state.turns.length + 1;
   const startedAt = Date.now();
-  startInterimAnimation(state, 'analyzing learner');
+  startInterimAnimation(state, 'analyzing learner', { learnerText, tutorTurn });
 
   try {
     const raw = await extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn });
@@ -3789,7 +3922,18 @@ async function main() {
       firstMessage,
       state,
     );
-    startInterimAnimation(state, 'calling tutor');
+    startInterimAnimation(
+      state,
+      'calling tutor',
+      buildTutorInterimContext({
+        learnerText: firstMessage,
+        state,
+        classification,
+        tutorLearnerDag,
+        registerSelection,
+        previousRegisterEfficacy,
+      }),
+    );
     let response;
     try {
       response = await runOneTurn(
@@ -4001,7 +4145,18 @@ async function main() {
         state,
       );
       if (exiting) return;
-      startInterimAnimation(state, 'calling tutor');
+      startInterimAnimation(
+        state,
+        'calling tutor',
+        buildTutorInterimContext({
+          learnerText: trimmed,
+          state,
+          classification,
+          tutorLearnerDag,
+          registerSelection,
+          previousRegisterEfficacy,
+        }),
+      );
       let response;
       try {
         response = await runOneTurn(
