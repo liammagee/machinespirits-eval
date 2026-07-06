@@ -37,6 +37,10 @@ import {
   getEngagementRegisterDefinition,
   getEngagementRegisterDefinitions,
   getEngagementRegisterNames,
+  getActionFamilyDefinitions,
+  getRegisterOntologyVersion,
+  getRequestTypeDefinitions,
+  resolveEngagementRegister,
 } from '../services/engagementRegisterRegistry.js';
 import { loadWorld, plotLint } from '../services/dramaticDerivation/world.js';
 
@@ -154,8 +158,8 @@ const LEARNER_RECORD_SYSTEM_PROMPT = [
 ].join('\n');
 
 const LEARNER_ANALYSIS_SYSTEM_PROMPT = [
-  'You are a compact learner-analysis pass for an experimental tutor.',
-  'Return a pedagogical discourse classification, a conservative public learner-record update, and, when requested, a tutor register selection.',
+  'You are a compact up-front reviewer for an experimental tutor.',
+  'Return a pedagogical discourse classification, a conservative public learner-record update, and, when requested, a reviewer-chosen tutor register.',
   'Use only the learner input, the public transcript, public rules, and staged public evidence supplied in the prompt.',
   'Do not infer hidden story facts, concealed answers, private tutor prompts, proof paths, or unstaged evidence.',
   'Return one JSON object only. No prose outside JSON.',
@@ -240,8 +244,8 @@ Options:
                          tutor-register palette for selection (default: all);
                          all includes every register in the registry
   --register-policy <dynamic|bland|random>
-                         dynamic makes scaffolding non-default; bland permits
-                         scaffolding as the ordinary stepwise proof register;
+                         dynamic makes brisk pacing non-default; bland permits
+                         brisk pacing as the ordinary stepwise proof register;
                          random samples uniformly from the active palette
                          (default: ${STUB.registerPolicy})
   --safe-registers       limit tutor-register selection to router-selectable
@@ -930,20 +934,18 @@ function buildRegisterPalette(mode) {
   } else if (value === 'all' || value === 'simulated') {
     names = allNames;
   } else {
-    names = value
-      .split(',')
-      .map((name) => name.trim())
-      .filter(Boolean);
+    names = value.split(',').map((name) => name.trim()).filter(Boolean);
   }
 
-  const unknown = names.filter((name) => !definitions[name]);
+  const resolvedNames = names.map((name) => resolveEngagementRegister(name)?.register || name);
+  const unknown = names.filter((name, index) => !definitions[resolvedNames[index]]);
   if (unknown.length) {
     throw new Error(
       `Unknown --register-palette register(s): ${unknown.join(', ')}. Known: ${allNames.join(', ')}`,
     );
   }
 
-  return [...new Set(names)];
+  return [...new Set(resolvedNames)];
 }
 
 function registerDefinitionSummary(name) {
@@ -953,7 +955,7 @@ function registerDefinitionSummary(name) {
     valence: def.valence || 'unknown',
     router_selectable: def.router_selectable === true,
     simulated_only: def.simulated_only === true,
-    trigger: def.trigger || null,
+    reviewer_cues: def.reviewer_cues || def.trigger || null,
     stance_contract: String(def.stance_contract || '').trim(),
     required_moves: Array.isArray(def.required_moves) ? def.required_moves : [],
     risk_flags: Array.isArray(def.risk_flags) ? def.risk_flags : [],
@@ -964,6 +966,27 @@ function registerDefinitionSummary(name) {
 
 function registerPalettePromptRows(palette) {
   return JSON.stringify(palette.map(registerDefinitionSummary), null, 2);
+}
+
+function requestTypePromptRows() {
+  const definitions = getRequestTypeDefinitions();
+  const rows = Object.entries(definitions).map(([requestType, definition]) => ({
+    request_type: requestType,
+    role: definition.role || 'logical_armature',
+    description: definition.description || '',
+    dag_use: definition.dag_use || '',
+  }));
+  return rows.length ? JSON.stringify(rows, null, 2) : 'No request-type registry is configured.';
+}
+
+function actionFamilyPromptRows() {
+  const definitions = getActionFamilyDefinitions();
+  const rows = Object.entries(definitions).map(([actionFamily, definition]) => ({
+    action_family: actionFamily,
+    role: definition.role || 'dag_device',
+    description: definition.description || '',
+  }));
+  return rows.length ? JSON.stringify(rows, null, 2) : 'No action-family registry is configured.';
 }
 
 function learnerDagPromptSummary(model) {
@@ -992,20 +1015,54 @@ function registerHistoryPromptSummary(state) {
   return history
     .slice(-6)
     .map((entry) => {
-      const efficacy = entry.efficacy
-        ? `${entry.efficacy.label} (score ${entry.efficacy.progressScore}; ${entry.efficacy.summary})`
+      const normalized = normalizeStoredRegisterSelection(entry);
+      const efficacy = normalized?.efficacy
+        ? `${normalized.efficacy.label} (score ${normalized.efficacy.progressScore}; ${normalized.efficacy.summary})`
         : 'pending next learner turn';
-      return `Turn ${entry.turn}: ${entry.selected_register} — ${entry.register_reason || 'no reason'}; efficacy: ${efficacy}`;
+      return `Turn ${entry.turn}: ${normalized?.selected_register || 'unknown'} — ${entry.register_reason || 'no reason'}; efficacy: ${efficacy}`;
     })
     .join('\n');
 }
 
 function latestRegisterSelection(state) {
-  return state.register?.history?.at(-1) || null;
+  return normalizeStoredRegisterSelection(state.register?.history?.at(-1) || null);
+}
+
+function normalizeStoredRegisterEfficacy(efficacy) {
+  if (!efficacy) return null;
+  const selection = normalizeStoredRegisterSelection({ selected_register: efficacy.selected_register });
+  return {
+    ...efficacy,
+    selected_register: selection?.selected_register || efficacy.selected_register,
+    legacy_selected_register: efficacy.legacy_selected_register || selection?.legacy_selected_register || null,
+  };
+}
+
+function normalizeStoredRegisterSelection(selection) {
+  if (!selection) return null;
+  const rawRegister = String(selection.selected_register || selection.selected_mode || selection.register || '').trim();
+  const resolved = resolveEngagementRegister(rawRegister, { fallback: rawRegister || null });
+  const selected = resolved?.register || rawRegister || null;
+  const actionFamily = selection.action_family || resolved?.action_family || null;
+  const requestType = selection.request_type || resolved?.request_type || selection.learner_signal || null;
+  return {
+    ...selection,
+    register_ontology_version: selection.register_ontology_version || getRegisterOntologyVersion(),
+    selected_register: selected,
+    selected_mode: selected,
+    legacy_selected_register:
+      selection.legacy_selected_register ||
+      resolved?.legacy_selected_register ||
+      preferredLegacyRegister({ register: selected, requestType, actionFamily }),
+    action_family: actionFamily,
+    request_type: requestType,
+    efficacy: normalizeStoredRegisterEfficacy(selection.efficacy),
+  };
 }
 
 function latestRegisterEfficacy(state) {
-  return [...(state.register?.history || [])].reverse().find((entry) => entry.efficacy)?.efficacy || null;
+  const entry = [...(state.register?.history || [])].reverse().find((item) => item.efficacy);
+  return normalizeStoredRegisterEfficacy(entry?.efficacy || null);
 }
 
 function latestFieldStateMismatch(state) {
@@ -1015,14 +1072,14 @@ function latestFieldStateMismatch(state) {
 function recentRegisterCount(state, registerName, { limit = 4 } = {}) {
   return (state.register?.history || [])
     .slice(-limit)
-    .filter((entry) => entry.selected_register === registerName).length;
+    .filter((entry) => normalizeStoredRegisterSelection(entry)?.selected_register === registerName).length;
 }
 
 function registerSelectionPolicyPrompt(state) {
   const policy = state.register?.policy || 'dynamic';
   const latest = latestRegisterSelection(state);
   const latestEfficacy = latest?.efficacy?.label || 'pending';
-  const recentScaffolding = recentRegisterCount(state, 'scaffolding');
+  const recentBrisk = recentRegisterCount(state, 'brisk');
   const lines =
     policy === 'random'
       ? [
@@ -1032,16 +1089,17 @@ function registerSelectionPolicyPrompt(state) {
       : policy === 'bland'
       ? [
           '- Register policy: bland. A plain, stepwise tutor is acceptable here.',
-          '- Scaffolding may be selected for ordinary proof-path pacing, missing premises, or inference gaps.',
+          '- Brisk may be selected for ordinary proof-path pacing, missing premises, or inference gaps.',
           '- Still choose another register when the learner clearly asks for a conceptual distinction, challenges the frame, shows resistance, or exposes affective stakes.',
         ]
       : [
-          '- Register policy: dynamic. Scaffolding is available but must not be the default register.',
-          '- Penalize repeating the same register, especially scaffolding. A repeated register needs a concrete reason that the current learner signal has changed.',
-          '- Use scaffolding only for a strong stepwise-support signal: explicit step-by-step request, visible procedural confusion about the immediate next evidence move, or a newly staged evidence item that needs one learner-owned inference.',
-          '- Do not choose scaffolding merely because the learner-DAG still has a release_or_pacing_gap, inference_gap, missing premise, or incomplete proof path.',
-          '- If the previous scaffolding choice produced no_clear_progress or regression_or_overreach, choose a non-scaffolding register unless the current learner explicitly asks for step-by-step help.',
-          '- Good dynamic alternatives: clarity for a distinction/error in terms; accountable_bid_authority for overleaping or status/authority challenge; charismatic_challenge for resistant, rote, answer-seeking, or low-agency compliance; witnessing_restraint for affective exposure.',
+          '- Register policy: dynamic. The up-front reviewer chooses the register; do not treat the learner request type as the register.',
+          '- Brisk pacing is available but must not be the default register.',
+          '- Penalize repeating the same register, especially brisk. A repeated register needs a concrete reviewer reason grounded in the current public turn.',
+          '- Use brisk only when tight pacing is the needed stance: explicit step-by-step request, visible procedural confusion about the immediate next evidence move, or a newly staged evidence item that needs one learner-owned inference.',
+          '- Do not choose brisk merely because the learner-DAG still has a release_or_pacing_gap, inference_gap, missing premise, or incomplete proof path.',
+          '- If the previous brisk choice produced no_clear_progress or regression_or_overreach, choose a non-brisk register unless the current learner explicitly asks for step-by-step help.',
+          '- Good dynamic alternatives: precise for a distinction/error in terms or accountable warrant; plain for compression/transfer; charismatic for resistant, rote, answer-seeking, or low-agency compliance; witnessing for affective exposure.',
         ];
   if (latest) {
     lines.push(`- Last register: ${latest.selected_register}; observed efficacy: ${latestEfficacy}.`);
@@ -1054,12 +1112,12 @@ function registerSelectionPolicyPrompt(state) {
       );
     }
   }
-  if (policy === 'dynamic' && recentScaffolding) {
-    lines.push(`- Recent scaffolding count: ${recentScaffolding} in the last four selections. Treat this as a repetition penalty.`);
+  if (policy === 'dynamic' && recentBrisk) {
+    lines.push(`- Recent brisk count: ${recentBrisk} in the last four selections. Treat this as a repetition penalty.`);
   }
   if (policy === 'dynamic') {
     lines.push(
-      '- If the last relation was field_without_dag, treat that as preparatory success: use transfer_grounding, plain_compression, or clarity to convert the emerging learner move into one public evidence claim.',
+      '- If the last relation was field_without_dag, treat that as preparatory success: use plain or precise to convert the emerging learner move into one public evidence claim.',
     );
     lines.push(
       '- If the last relation was dag_without_field, the proof state moved but learner agency flattened: ask the learner to restate why the evidence matters in their own words before pushing another proof step.',
@@ -1127,6 +1185,7 @@ function parseClassifierJson(rawText) {
     parsed: {
       turn: {
         summary: 'Classifier returned non-JSON output.',
+        request_type: 'off_task_or_mixed',
         discourse_move: 'unknown',
         evidence_use: 'unknown',
         epistemic_stance: 'unknown',
@@ -1203,10 +1262,16 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
     '1 = pure information reception; 2 = minimal metacognition; 3 = generic awareness of confusion or strategy; 4 = distinguishes genuine understanding from performance and asks evidence-generating questions; 5 = actively monitors bias, uncertainty, evidence, and what would count as knowing.',
     '',
     'Use these controlled labels where possible:',
+    '- request_type: conceptual_clarity_request, stepwise_support_request, authority_refusal_or_status_challenge, plain_language_request, plain_simplification_followup, transfer_demand_or_named_material, vulnerability_or_moral_exposure, resistance_or_low_agency, answer_seeking_or_overreach, off_task_or_mixed',
     '- discourse_move: question, claim, hypothesis, inference, evidence_adoption, challenge, repair_request, affective_signal, answer_seeking, metacognitive_reflection, off_task',
     '- evidence_use: none, repeats_setup, cites_public_evidence, links_evidence_to_rule, overleaps_evidence, revises_from_evidence',
     '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
     '- agency: passive, complying, attempting, steering, self_correcting',
+    '',
+    '# Request type registry',
+    '',
+    'Request type belongs to the logical armature: it describes what kind of move/device the learner turn calls for in the DAG or proof path. It is not the tutor register.',
+    requestTypePromptRows(),
     '',
     '# JSON schema',
     '',
@@ -1214,6 +1279,7 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
       {
         turn: {
           summary: 'plain-language sentence naming what the learner did in this turn',
+          request_type: 'logical request type, not a tutor register',
           discourse_move: 'one controlled label',
           evidence_use: 'one controlled label',
           epistemic_stance: 'one controlled label',
@@ -1378,6 +1444,7 @@ function failedClassification({ message, resolved, latencyMs = 0, usage = null }
     error: message,
     turn: {
       summary: 'Classifier failed before the tutor turn.',
+      request_type: 'off_task_or_mixed',
       discourse_move: 'unknown',
       evidence_use: 'unknown',
       epistemic_stance: 'unknown',
@@ -1439,6 +1506,7 @@ function printClassification(classification) {
   if (!classification) return;
   const conceptual = scoreValue(classification.turn?.scores?.conceptual_engagement);
   const readiness = scoreValue(classification.turn?.scores?.epistemic_readiness);
+  const requestType = classification.turn?.request_type || 'unknown_request';
   const move = classification.turn?.discourse_move || 'unknown';
   const stance = classification.turn?.epistemic_stance || 'unknown';
   const need = classification.turn?.pedagogical_need || classification.overall?.next_best_tutor_move || '';
@@ -1446,7 +1514,7 @@ function printClassification(classification) {
 
   console.log(`${C.cyan}learner classifier >${C.reset} ${classification.turn?.summary || 'No turn summary.'}`);
   console.log(
-    `${C.dim}  move: ${move}; stance: ${stance}; conceptual ${conceptual}/5, readiness ${readiness}/5${C.reset}`,
+    `${C.dim}  request: ${requestType}; move: ${move}; stance: ${stance}; conceptual ${conceptual}/5, readiness ${readiness}/5${C.reset}`,
   );
   console.log(`${C.dim}  overall: ${classification.overall?.summary || 'No overall summary.'}${C.reset}`);
   if (need) console.log(`${C.dim}  tutor cue: ${need}${C.reset}`);
@@ -2185,6 +2253,7 @@ function learnerClassificationSchema() {
   return {
     turn: {
       summary: 'plain-language sentence naming what the learner did in this turn',
+      request_type: 'logical request type, not a tutor register',
       discourse_move: 'one controlled label',
       evidence_use: 'one controlled label',
       epistemic_stance: 'one controlled label',
@@ -2220,8 +2289,10 @@ function learnerRecordSchema() {
 function registerSelectionSchema() {
   return {
     selected_register: 'one available tutor register name',
-    learner_signal: 'brief learner signal that licenses the register',
-    register_reason: 'why this register fits the classifier result and learner-DAG state',
+    reviewer_signal: 'brief up-front reviewer judgment that motivates this stance/tone choice',
+    request_type: 'logical request type from the classifier; this is not the register',
+    action_family: 'DAG/device action family; this is not the register',
+    register_reason: 'why the up-front reviewer chose this register for the next tutor response',
     evidence_span: 'short quote or public-state cue supporting the choice',
     risk_flags: ['guardrail flags, or empty array'],
     expected_dag_move: 'what learner-DAG progress this register is meant to produce next',
@@ -2249,7 +2320,7 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     '1. A pedagogical discourse classification.',
     '2. A conservative public learner-record update for the tutor-side learner-DAG model.',
     includeRegisterSelection
-      ? '3. A tutor-register selection driven by the classification plus the tutor-side learner-DAG state.'
+      ? '3. A tutor-register selection made by the up-front reviewer using the classification plus the tutor-side learner-DAG state.'
       : null,
     '',
     '# Public tutoring context',
@@ -2296,10 +2367,21 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     '1 = pure information reception; 2 = minimal metacognition; 3 = generic awareness of confusion or strategy; 4 = distinguishes genuine understanding from performance and asks evidence-generating questions; 5 = actively monitors bias, uncertainty, evidence, and what would count as knowing.',
     '',
     'Use these controlled classifier labels where possible:',
+    '- request_type: conceptual_clarity_request, stepwise_support_request, authority_refusal_or_status_challenge, plain_language_request, plain_simplification_followup, transfer_demand_or_named_material, vulnerability_or_moral_exposure, resistance_or_low_agency, answer_seeking_or_overreach, off_task_or_mixed',
     '- discourse_move: question, claim, hypothesis, inference, evidence_adoption, challenge, repair_request, affective_signal, answer_seeking, metacognitive_reflection, off_task',
     '- evidence_use: none, repeats_setup, cites_public_evidence, links_evidence_to_rule, overleaps_evidence, revises_from_evidence',
     '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
     '- agency: passive, complying, attempting, steering, self_correcting',
+    '',
+    '# Request type registry',
+    '',
+    'Request type belongs to the logical armature: it describes what kind of move/device the learner turn calls for in the DAG or proof path. It is not the tutor register.',
+    requestTypePromptRows(),
+    '',
+    '# Action-family registry',
+    '',
+    'Action family belongs to the DAG/device armature: it describes what the tutor response is trying to do structurally. It is not the tutor register.',
+    actionFamilyPromptRows(),
     '',
     '# Learner-record extraction rules',
     '',
@@ -2312,10 +2394,16 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     includeRegisterSelection ? '' : null,
     includeRegisterSelection ? '# Tutor-register selection' : null,
     includeRegisterSelection
-      ? 'Select one tutor register for the upcoming tutor response. Treat learner signal and tutor register as separate axes.'
+      ? 'As the up-front reviewer, select one tutor register for the upcoming tutor response. The learner does not choose or license the register.'
       : null,
     includeRegisterSelection
-      ? 'The selected register should be appropriate to the discourse classification, the learner-DAG state, and recent field/DAG efficacy.'
+      ? 'Keep two axes separate: request_type is the logical/DAG armature; selected_register is the reviewer-chosen stance, tone, and rhetorical posture.'
+      : null,
+    includeRegisterSelection
+      ? 'Also keep action_family separate: action_family says what device to run; selected_register says how the tutor should stand while doing it.'
+      : null,
+    includeRegisterSelection
+      ? 'The selected register should be appropriate to the classification, learner-DAG state, field movement, and recent register efficacy, but it is not another name for the learner request type or action family.'
       : null,
     includeRegisterSelection
       ? 'Use expected_field_move for the discourse/agency/posture movement you want, and expected_dag_move for the proof-state movement you want.'
@@ -2592,17 +2680,33 @@ function evaluatePendingRegisterEfficacy(state, currentDagResult, classification
   return pending.efficacy;
 }
 
-function firstAvailableRegister(palette, names, fallback = 'clarity') {
+function firstAvailableRegister(palette, names, fallback = 'precise') {
   for (const name of names) {
     if (palette.has(name)) return name;
   }
   return palette.has(fallback) ? fallback : [...palette][0] || fallback;
 }
 
+function preferredLegacyRegister({ register, requestType, actionFamily }) {
+  if (register === 'ironic') return 'ironic_challenge';
+  if (register === 'sarcastic') return 'sarcastic_challenge';
+  if (register === 'face_threat') return 'face_threat_challenge';
+  if (register === 'witnessing') return 'witnessing_restraint';
+  if (register === 'charismatic') return 'charismatic_challenge';
+  if (actionFamily === 'stage_next_step') return 'scaffolding';
+  if (actionFamily === 'answer_accountably') return 'accountable_bid_authority';
+  if (actionFamily === 'compress_sayback') return 'plain_compression';
+  if (actionFamily === 'reanchor_lived_stake') return 'lived_stakes_reentry';
+  if (actionFamily === 'ground_in_material') return 'transfer_grounding';
+  if (requestType === 'conceptual_clarity_request') return 'clarity';
+  return null;
+}
+
 function registerSignalText(classification) {
   const turn = classification?.turn || {};
   return [
     turn.summary,
+    turn.request_type,
     turn.discourse_move,
     turn.evidence_use,
     turn.epistemic_stance,
@@ -2622,22 +2726,22 @@ function hasExplicitStepwiseSignal(classification) {
   );
 }
 
-function scaffoldingRepeatPenalty(state) {
+function briskRepeatPenalty(state) {
   const latest = latestRegisterSelection(state);
   const latestBad =
-    latest?.selected_register === 'scaffolding' &&
+    latest?.selected_register === 'brisk' &&
     /no_clear_progress|regression_or_overreach/.test(latest.efficacy?.label || '');
-  return Boolean(latestBad || recentRegisterCount(state, 'scaffolding') >= 2);
+  return Boolean(latestBad || recentRegisterCount(state, 'brisk') >= 2);
 }
 
-function shouldUseDynamicScaffolding({ state, classification, assessment }) {
+function shouldUseDynamicBrisk({ state, classification, assessment }) {
   const bottleneck = assessment.bottleneck || '';
   const hasDagGap = /release_or_pacing_gap|inference_gap/.test(bottleneck);
   const explicitStepwise = hasExplicitStepwiseSignal(classification);
   const latestMismatch = latestFieldStateMismatch(state);
   if (/field_without_dag|dag_without_field/.test(latestMismatch || '') && !explicitStepwise) return false;
   if (!hasDagGap || !explicitStepwise) return false;
-  if (scaffoldingRepeatPenalty(state) && !explicitStepwise) return false;
+  if (briskRepeatPenalty(state) && !explicitStepwise) return false;
   return true;
 }
 
@@ -2645,64 +2749,72 @@ function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
   const palette = new Set(state.register?.palette || []);
   const policy = state.register?.policy || 'dynamic';
   const assessment = tutorLearnerDag?.model?.assessment || {};
+  const requestType = classification?.turn?.request_type || 'unknown_request';
   const move = classification?.turn?.discourse_move || 'unknown';
   const stance = classification?.turn?.epistemic_stance || 'unknown';
   const evidenceUse = classification?.turn?.evidence_use || 'unknown';
   const agency = classification?.turn?.agency || 'unknown';
   const latestMismatch = latestFieldStateMismatch(state);
-  let selected = 'clarity';
+  let selected = 'precise';
+  let actionFamily = 'clarify_distinction';
   let reason = '';
   let expectedFieldMove = '';
 
-  if (palette.has('witnessing_restraint') && /vulnerable|affective/.test(`${move} ${stance}`)) {
-    selected = 'witnessing_restraint';
-    reason = 'Affective exposure is the strongest current learner signal.';
+  if (palette.has('witnessing') && /vulnerable|affective/.test(`${move} ${stance}`)) {
+    selected = 'witnessing';
+    actionFamily = 'receive_vulnerability';
+    reason = 'The reviewer sees affective exposure as the strongest current public cue.';
     expectedFieldMove = 'Lower learner risk enough for a concrete public-evidence move to become possible.';
-  } else if (palette.has('accountable_bid_authority') && /challenge|overleaps_evidence/.test(`${move} ${evidenceUse}`)) {
-    selected = 'accountable_bid_authority';
+  } else if (palette.has('precise') && /challenge|overleaps_evidence/.test(`${move} ${evidenceUse}`)) {
+    selected = 'precise';
+    actionFamily = 'answer_accountably';
     reason = 'The learner is challenging or overleaping the public evidence, so the tutor should hold the bid accountable.';
     expectedFieldMove = 'Shift from unsupported assertion toward a publicly warranted claim.';
   } else if (policy === 'dynamic' && latestMismatch === 'field_without_dag') {
-    selected = firstAvailableRegister(palette, ['transfer_grounding', 'plain_compression', 'clarity', 'charismatic_challenge']);
+    selected = firstAvailableRegister(palette, ['plain', 'precise', 'charismatic']);
+    actionFamily = requestType === 'transfer_demand_or_named_material' ? 'ground_in_material' : 'compress_sayback';
     reason =
       'The previous register improved the learner field without proof-DAG movement; convert that preparatory movement into one public evidence claim.';
     expectedFieldMove = 'Turn improved orientation or agency into a learner-owned trial-book statement.';
   } else if (policy === 'dynamic' && latestMismatch === 'dag_without_field') {
-    selected = firstAvailableRegister(palette, ['plain_compression', 'clarity', 'witnessing_restraint', 'transfer_grounding']);
+    selected = firstAvailableRegister(palette, ['plain', 'precise', 'witnessing']);
+    actionFamily = 'compress_sayback';
     reason =
       'The proof-DAG advanced while learner field movement flattened; ask the learner to own the reason for the step before pushing another premise.';
     expectedFieldMove = 'Recover agency and explanatory ownership around the evidence just adopted.';
   } else if (
-    palette.has('charismatic_challenge') &&
+    palette.has('charismatic') &&
     /resistant|overconfident|answer_seeking|complying|passive/.test(`${stance} ${evidenceUse} ${agency}`)
   ) {
-    selected = 'charismatic_challenge';
+    selected = 'charismatic';
+    actionFamily = 'challenge_resistance';
     reason = 'Low-agency, answer-seeking, or overconfident posture warrants a compact challenge rather than another stepwise hint.';
     expectedFieldMove = 'Increase learner agency or evidence-seeking without supplying the concealed answer.';
-  } else if (policy === 'bland' && palette.has('scaffolding') && /release_or_pacing_gap|inference_gap/.test(assessment.bottleneck || '')) {
-    selected = 'scaffolding';
+  } else if (policy === 'bland' && palette.has('brisk') && /release_or_pacing_gap|inference_gap/.test(assessment.bottleneck || '')) {
+    selected = 'brisk';
+    actionFamily = 'stage_next_step';
     reason = 'Bland policy permits ordinary stepwise support for the current proof-state bottleneck.';
     expectedFieldMove = 'Keep learner effort organized around the next immediate evidence step.';
-  } else if (policy === 'dynamic' && palette.has('scaffolding') && shouldUseDynamicScaffolding({ state, classification, assessment })) {
-    selected = 'scaffolding';
+  } else if (policy === 'dynamic' && palette.has('brisk') && shouldUseDynamicBrisk({ state, classification, assessment })) {
+    selected = 'brisk';
+    actionFamily = 'stage_next_step';
     reason = 'The learner is explicitly asking for stepwise help on the immediate evidence move.';
     expectedFieldMove = 'Make the next learner-owned inference easier without turning it into a menu or answer.';
   } else if (!palette.has(selected)) {
     selected = firstAvailableRegister(palette, [
-      'clarity',
-      'accountable_bid_authority',
-      'charismatic_challenge',
-      'plain_compression',
-      'transfer_grounding',
-      'witnessing_restraint',
-      'scaffolding',
+      'precise',
+      'charismatic',
+      'plain',
+      'warm',
+      'witnessing',
+      'brisk',
     ]);
   }
 
   if (!reason) {
     reason =
-      policy === 'dynamic' && selected !== 'scaffolding'
-        ? 'Dynamic fallback selected after missing or invalid model register output; scaffolding is non-default.'
+      policy === 'dynamic' && selected !== 'brisk'
+        ? 'Dynamic fallback selected after missing or invalid model register output; brisk pacing is non-default.'
         : 'Fallback register selected after missing or invalid model register output.';
   }
   if (!expectedFieldMove) {
@@ -2711,7 +2823,10 @@ function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
 
   return {
     selected_register: selected,
-    learner_signal: move,
+    request_type: requestType,
+    action_family: actionFamily,
+    legacy_selected_register: preferredLegacyRegister({ register: selected, requestType, actionFamily }),
+    reviewer_signal: `${requestType}; ${move}`,
     register_reason: reason,
     evidence_span: classification?.turn?.summary || '',
     risk_flags: [],
@@ -2728,10 +2843,17 @@ function randomRegisterSelection({ state, classification }) {
   const palette = state.register?.palette || [];
   const randomValue = Math.random();
   const index = Math.min(palette.length - 1, Math.floor(randomValue * palette.length));
-  const selected = palette[index] || firstAvailableRegister(new Set(palette), ['clarity', 'plain_compression', 'scaffolding']);
+  const selected = palette[index] || firstAvailableRegister(new Set(palette), ['precise', 'plain', 'brisk']);
   return {
     selected_register: selected,
-    learner_signal: classification?.turn?.discourse_move || 'random_policy',
+    request_type: classification?.turn?.request_type || 'random_policy',
+    action_family: null,
+    legacy_selected_register: preferredLegacyRegister({
+      register: selected,
+      requestType: classification?.turn?.request_type || 'random_policy',
+      actionFamily: null,
+    }),
+    reviewer_signal: 'random_policy',
     register_reason:
       'Random register policy sampled uniformly from the active palette; this choice is not a classifier- or learner-DAG-based recommendation.',
     evidence_span: classification?.turn?.summary || '',
@@ -2763,30 +2885,58 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
   const normalizedRawSelection =
     typeof rawSelection === 'string' ? { selected_register: rawSelection } : rawSelection || {};
   const requested = String(normalizedRawSelection.selected_register || normalizedRawSelection.register || '').trim();
-  const requestedIsKnown = Boolean(requested && palette.has(requested));
-  const dynamicScaffoldingBlocked = Boolean(
+  const requestedResolution = resolveEngagementRegister(requested);
+  const requestedRegister = requestedResolution?.register || requested;
+  const requestedIsKnown = Boolean(requestedRegister && palette.has(requestedRegister));
+  const dynamicBriskBlocked = Boolean(
     requestedIsKnown &&
       policy === 'dynamic' &&
-      requested === 'scaffolding' &&
-      !shouldUseDynamicScaffolding({ state, classification, assessment: tutorLearnerDag?.model?.assessment || {} }),
+      requestedRegister === 'brisk' &&
+      !shouldUseDynamicBrisk({ state, classification, assessment: tutorLearnerDag?.model?.assessment || {} }),
   );
   const source =
     policy === 'random'
       ? normalizedRawSelection
-      : requestedIsKnown && !dynamicScaffoldingBlocked
+      : requestedIsKnown && !dynamicBriskBlocked
         ? normalizedRawSelection
         : fallbackRegisterSelection({ state, classification, tutorLearnerDag });
-  const selected = String(source.selected_register || source.register || '').trim();
+  const selectedRaw = String(source.selected_register || source.register || '').trim();
+  const selectedResolution = resolveEngagementRegister(selectedRaw, { fallback: 'precise' });
+  const selected = selectedResolution?.register || selectedRaw;
   const definition = getEngagementRegisterDefinition(selected) || {};
+  const requestType = String(
+    source.request_type ||
+      selectedResolution?.request_type ||
+      classification?.turn?.request_type ||
+      classification?.turn?.discourse_move ||
+      'unknown',
+  );
+  const actionFamily = String(source.action_family || selectedResolution?.action_family || '');
+  const reviewerSignal = String(
+    source.reviewer_signal ||
+      source.register_signal ||
+      source.learner_signal ||
+      source.learnerSignal ||
+      classification?.turn?.pedagogical_need ||
+      requestType,
+  );
   const selection = {
-    schema: 'machinespirits.tutor-stub.register-selection.v1',
+    schema: 'machinespirits.tutor-stub.register-selection.v2',
+    register_ontology_version: getRegisterOntologyVersion(),
     turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
     selected_register: selected,
     selected_mode: selected,
+    legacy_selected_register:
+      source.legacy_selected_register ||
+      selectedResolution?.legacy_selected_register ||
+      preferredLegacyRegister({ register: selected, requestType, actionFamily }),
+    action_family: actionFamily || null,
     valence: definition.valence || null,
     router_selectable: definition.router_selectable === true,
     simulated_only: definition.simulated_only === true,
-    learner_signal: String(source.learner_signal || classification?.turn?.discourse_move || 'unknown'),
+    request_type: requestType,
+    reviewer_signal: reviewerSignal,
+    learner_signal: requestType,
     register_reason: String(source.register_reason || source.reason || ''),
     evidence_span: String(source.evidence_span || source.evidence || ''),
     risk_flags: Array.isArray(source.risk_flags) ? source.risk_flags.map(String) : [],
@@ -2804,8 +2954,8 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
     selection.warning = source.warning;
   } else if (!requestedIsKnown && selection.source === 'combined_learner_analysis') {
     selection.warning = source.warning || `invalid_register_selection:${requested || 'missing'}`;
-  } else if (dynamicScaffoldingBlocked) {
-    selection.warning = 'dynamic_policy_scaffolding_demoted';
+  } else if (dynamicBriskBlocked) {
+    selection.warning = 'dynamic_policy_brisk_demoted';
     selection.original_register = requested;
   }
   state.register.history.push(selection);
@@ -3106,6 +3256,15 @@ function printRegisterSelection(selection, previousEfficacy = null) {
   const source =
     selection.source && selection.source !== 'combined_learner_analysis' ? `; source ${selection.source}` : '';
   console.log(`${C.cyan}tutor register >${C.reset} ${selection.selected_register}${confidence}${source}${warning}`);
+  if (selection.request_type || selection.reviewer_signal) {
+    console.log(
+      `${C.dim}  request: ${selection.request_type || 'unknown'}; action: ${
+        selection.action_family || 'none'
+      }; reviewer signal: ${
+        selection.reviewer_signal || 'unknown'
+      }${C.reset}`,
+    );
+  }
   if (selection.register_reason) console.log(`${C.dim}  reason: ${selection.register_reason}${C.reset}`);
   if (selection.expected_dag_move) console.log(`${C.dim}  expected DAG move: ${selection.expected_dag_move}${C.reset}`);
   if (selection.expected_field_move) console.log(`${C.dim}  expected field move: ${selection.expected_field_move}${C.reset}`);
@@ -3125,8 +3284,11 @@ function registerSelectionContext(selection, { multipleChoice = false } = {}) {
   return [
     '[Tutor-only selected register]',
     `Selected tutor register: ${selection.selected_register}`,
+    selection.legacy_selected_register ? `Legacy register alias: ${selection.legacy_selected_register}` : null,
     `Valence: ${selection.valence || 'unknown'}`,
-    `Learner signal: ${selection.learner_signal || 'unknown'}`,
+    `Logical request type: ${selection.request_type || selection.learner_signal || 'unknown'}`,
+    `Action family: ${selection.action_family || 'none'}`,
+    `Reviewer signal: ${selection.reviewer_signal || 'unknown'}`,
     `Reason: ${selection.register_reason || 'No reason supplied.'}`,
     `Expected learner-DAG move: ${selection.expected_dag_move || 'No expected move supplied.'}`,
     `Expected learner-field move: ${selection.expected_field_move || 'No expected field move supplied.'}`,
@@ -3376,9 +3538,9 @@ function printCurrentTurnAnalysis(state) {
   const accepted = update?.accepted || {};
   const rejected = update?.rejected || [];
   const extractor = update?.extractor || {};
-  const registerSelection = turn.registerSelection || null;
+  const registerSelection = normalizeStoredRegisterSelection(turn.registerSelection || null);
   const selectedEfficacy = registerSelection?.efficacy || null;
-  const previousEfficacy = turn.previousRegisterEfficacy || null;
+  const previousEfficacy = normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null);
   const tracePath = traceDisplayPath(state.trace);
   const field = buildLightweightDialogueField(state.turns);
   const fieldRow = field.rows.at(-1) || null;
@@ -3391,6 +3553,7 @@ function printCurrentTurnAnalysis(state) {
   if (classification) {
     printAnalysisLine('did this turn', turnAnalysis.summary || 'No turn summary.');
     printAnalysisLine('did overall', overall.summary || 'No overall summary.');
+    printAnalysisLine('logical request type', turnAnalysis.request_type || 'unknown_request');
     printAnalysisLine(
       'rubric',
       `move=${turnAnalysis.discourse_move || 'unknown'}; stance=${turnAnalysis.epistemic_stance || 'unknown'}; evidence=${
@@ -3442,6 +3605,12 @@ function printCurrentTurnAnalysis(state) {
       'selected register',
       `${registerSelection.selected_register}${confidence}`,
     );
+    printAnalysisLine('logical request type', registerSelection.request_type || registerSelection.learner_signal || 'unknown');
+    printAnalysisLine('action family', registerSelection.action_family || 'none');
+    if (registerSelection.legacy_selected_register) {
+      printAnalysisLine('legacy register alias', registerSelection.legacy_selected_register);
+    }
+    printAnalysisLine('reviewer signal', registerSelection.reviewer_signal || 'unknown');
     printAnalysisLine('register reason', registerSelection.register_reason);
     printAnalysisLine('expected DAG move', registerSelection.expected_dag_move);
     printAnalysisLine('expected field move', registerSelection.expected_field_move);
@@ -3927,7 +4096,9 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
   const last = state.turns[state.turns.length - 1] || {};
   const assessment = last.tutorLearnerDagModel?.assessment || {};
   const metrics = last.tutorLearnerDagModel?.metrics || {};
-  const registerCounts = compactCounts(countBy(state.turns, (turn) => turn.registerSelection?.selected_register || 'none'));
+  const registerCounts = compactCounts(
+    countBy(state.turns, (turn) => normalizeStoredRegisterSelection(turn.registerSelection)?.selected_register || 'none'),
+  );
   const bottleneckCounts = compactCounts(countBy(state.turns, (turn) => turn.tutorLearnerDagModel?.assessment?.bottleneck || 'unknown'));
   const payload = {
     schema: 'machinespirits.tutor-stub.closeout-report.v1',
@@ -3946,7 +4117,7 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
     finalTurn: {
       learner: last.learner || '',
       tutor: last.tutor || '',
-      register: last.registerSelection?.selected_register || null,
+      register: normalizeStoredRegisterSelection(last.registerSelection)?.selected_register || null,
       leakOk: last.tutorLeakAudit?.ok ?? null,
     },
   };

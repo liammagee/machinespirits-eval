@@ -8,6 +8,7 @@ import Database from 'better-sqlite3';
 import yaml from 'yaml';
 
 import { routeEngagementMode } from '../services/engagementModeRouter.js';
+import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -187,7 +188,8 @@ function getTutorMessage(row, turnIndex) {
 function getRegister(row, turnIndex) {
   const trace = parseJson(row.id_construction_trace, []);
   const traceTurn = trace.find((entry) => Number(entry.turn) === Number(turnIndex));
-  return traceTurn?.engagementState?.selected_register || traceTurn?.engagementState?.selected_mode || 'unrouted';
+  const raw = traceTurn?.engagementState?.selected_register || traceTurn?.engagementState?.selected_mode || 'unrouted';
+  return resolveEngagementRegister(raw)?.register || raw;
 }
 
 function findChallengeTurn(row) {
@@ -195,7 +197,10 @@ function findChallengeTurn(row) {
   const challenge = trace.find(
     (entry) =>
       Number(entry.turn) > 0 &&
-      (entry.engagementState?.selected_register || entry.engagementState?.selected_mode) === 'charismatic_challenge',
+      (resolveEngagementRegister(entry.engagementState?.selected_register || entry.engagementState?.selected_mode)
+        ?.register ||
+        entry.engagementState?.selected_register ||
+        entry.engagementState?.selected_mode) === 'charismatic',
   );
   return challenge ? Number(challenge.turn) : 1;
 }
@@ -212,7 +217,7 @@ function scoreTransition({ preLearner, tutorRegister, postLearner, postLearnerGe
   const uptake = countMatches(postLearner, UPTAKE_PATTERNS);
   const renewedWork = countMatches(postLearner, RENEWED_WORK_PATTERNS);
   const content = countMatches(postLearner, CONTENT_PATTERNS);
-  const routeHit = tutorRegister === 'charismatic_challenge';
+  const routeHit = (resolveEngagementRegister(tutorRegister)?.register || tutorRegister) === 'charismatic';
 
   const lexicalScore =
     (preResistance > 0 ? 20 : 0) +
@@ -270,18 +275,16 @@ function validateScenario(scenarios, learnerAgents) {
   if (!uptakeTurn) errors.push(`${SCENARIO_ID} must include turn_2_breakthrough_probe`);
 
   const initialRoute = routeEngagementMode({ learnerMessage: initial });
-  if (initialRoute.selected_register !== 'scaffolding') {
-    errors.push(`${SCENARIO_ID} initial route expected scaffolding, got ${initialRoute.selected_register}`);
+  if (initialRoute.selected_register !== 'brisk') {
+    errors.push(`${SCENARIO_ID} initial route expected brisk, got ${initialRoute.selected_register}`);
   }
   if (resistanceTurn) {
     const resistanceRoute = routeEngagementMode({
       learnerMessage: resistanceTurn.action_details?.message || '',
       registerHistory: ['scaffolding'],
     });
-    if (resistanceRoute.selected_register !== 'charismatic_challenge') {
-      errors.push(
-        `${SCENARIO_ID} resistance route expected charismatic_challenge, got ${resistanceRoute.selected_register}`,
-      );
+    if (resistanceRoute.selected_register !== 'charismatic') {
+      errors.push(`${SCENARIO_ID} resistance route expected charismatic, got ${resistanceRoute.selected_register}`);
     }
   }
   const gates = scenario.resistance_signal_gate || [];
@@ -293,7 +296,7 @@ function validateScenario(scenarios, learnerAgents) {
       learnerMessage: gate.message || '',
       registerHistory: ['scaffolding'],
     });
-    const expectedRegister = gate.expected_register || 'charismatic_challenge';
+    const expectedRegister = resolveEngagementRegister(gate.expected_register || 'charismatic_challenge')?.register || 'charismatic';
     const expectedSignal = gate.expected_resistance_signal || gate.id;
     if (routed.selected_register !== expectedRegister) {
       errors.push(`${SCENARIO_ID} gate ${gate.id}: expected ${expectedRegister}, got ${routed.selected_register}`);
@@ -389,7 +392,7 @@ function buildReport({ generatedAt, scenarioErrors, analyses }) {
   lines.push(`- Scenario: \`${SCENARIO_ID}\`.`);
   lines.push('- Outcome unit: local transition, not whole dialogue and not tutor charisma alone.');
   lines.push(
-    '- Required transition: generated resistant learner signal -> `charismatic_challenge` tutor turn -> generated learner uptake.',
+    '- Required transition: generated resistant learner signal -> `charismatic` tutor turn -> generated learner uptake.',
   );
   lines.push('- Resistance gate: boredom, frustration, irrelevance, excessive questioning, and rote parroting.');
   lines.push('- Scripted learner uptake is marked `scripted_not_outcome_evaluable`.');

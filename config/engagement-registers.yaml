@@ -1,105 +1,84 @@
-# First-class tutor engagement registers.
+# First-class tutor engagement registers and request armature.
 #
-# This registry separates learner signals from tutor registers. Router branch
-# priority still lives in services/engagementModeRouter.js so the current
-# behavior remains stable, but the register set, stance contracts, trigger
-# pattern groups, and resistance strategies are owned here.
+# Registers are reviewer-chosen stance/tone/posture decisions for the next tutor
+# response. Request types describe the learner turn's logical role in the DAG or
+# proof path. Do not treat request type as the register, and do not imply that
+# the learner selects or licenses the register.
+
+register_ontology_version: 2
 
 registers:
-  clarity:
+  plain:
     valence: positive
     router_selectable: true
-    trigger:
-      learner_signal: conceptual_clarity_request
+    reviewer_cues: |
+      Choose when the next tutor response should be compact, low-theory, and
+      reusable in the learner's own words.
     stance_contract: |
-      Define one distinction, name the current conceptual pressure, and ask one
-      check. Do not turn an ordinary conceptual question into a drama about the
-      tutor's authority.
+      Use ordinary language, short sentences, and one checkable line. Avoid
+      ornate theory display, broad prefaces, and menu-like route catalogues.
     risk_flags: []
     rubric: null
 
-  scaffolding:
+  precise:
     valence: positive
     router_selectable: true
-    trigger:
-      learner_signal: stepwise_support_request
+    reviewer_cues: |
+      Choose when the next tutor response should make a distinction, warrant, or
+      boundary exact without becoming cold or over-elaborate.
     stance_contract: |
-      Break the task into a small sequence. Give one learner-owned next step,
-      not a catalogue.
+      State one distinction or warrant cleanly, expose what would count against
+      it, and ask for one check. Do not smuggle in proof-path answers.
     risk_flags: []
     rubric: null
 
-  accountable_bid_authority:
+  brisk:
     valence: positive
     router_selectable: true
-    trigger:
-      learner_signal: authority_refusal_or_status_challenge
+    reviewer_cues: |
+      Choose when the next tutor response needs tight pacing and forward motion.
+      This is a tone/register choice, not the proof-step action itself.
     stance_contract: |
-      Accept that the tutor's framing is a bid, stake one curriculum-grounded
-      claim, name how it could fail, and give the learner a real refusal, test,
-      or correction path. Avoid status-display words even if the learner used
-      them.
-    risk_flags:
-      - status_display
+      Move quickly: one sentence of orientation, one learner-owned next move,
+      and no catalogue. Do not become brusque or answer-supplying.
+    risk_flags: []
     rubric: null
 
-  plain_compression:
+  warm:
     valence: positive
     router_selectable: true
-    trigger:
-      learner_signal: plain_language_request
+    reviewer_cues: |
+      Choose when the next tutor response should restore ordinary stakes,
+      invitation, or felt continuity without becoming sentimental.
     stance_contract: |
-      Use a say-back line, one simple example or contrast, and one check. Avoid
-      theory names, ornamental posture, and broad recognition-theory prefaces
-      unless the learner explicitly asks for them.
-    risk_flags:
-      - theory_drift
-    rubric: null
-
-  lived_stakes_reentry:
-    valence: positive
-    router_selectable: true
-    trigger:
-      learner_signal: plain_simplification_followup
-      requires_prior:
-        - plain_compression
-    stance_contract: |
-      The plain check has become too procedural. Add one ordinary lived stake,
-      then return immediately to the compact check. Do not add a lecture
-      paragraph.
+      Add one ordinary lived stake or invitation, then return immediately to a
+      concrete check. Do not add a lecture paragraph or flattery.
     risk_flags:
       - flat_protocol
     rubric: null
 
-  transfer_grounding:
+  witnessing:
     valence: positive
     router_selectable: true
-    trigger:
-      learner_signal: transfer_demand_or_named_material
+    reviewer_cues: |
+      Choose when the reviewer sees vulnerability, moral exposure, shame, or
+      affective risk and wants a non-capturing response that leaves judgment with
+      the learner.
     stance_contract: |
-      Answer first inside the learner-named material, artifact, case, or
-      curriculum object. In AI-syllabus scenes, use concrete design handles such
-      as task, data, baseline, decision rights, failure evidence, curriculum,
-      syllabus, unit, or student work before any recognition vocabulary.
+      Receive vulnerability without flattery, absolution, intimacy capture, or
+      spectacle. Then offer one concrete test, distinction, or next move that
+      leaves the learner's judgment with the learner.
     risk_flags:
-      - transfer_avoidance
-      - theory_drift
+      - over_challenge
     rubric: null
 
-  charismatic_challenge:
+  charismatic:
     valence: positive
     router_selectable: true
-    trigger:
-      learner_signal:
-        - instructional_register_exhausted
-        - boredom_or_compliance_challenge
-      signals:
-        - boredom
-        - frustration
-        - irrelevance
-        - question_flood
-        - rote_parroting
-        - dismissal
+    reviewer_cues: |
+      Choose when the reviewer judges that bland instructional posture is
+      preserving compliance, answer-seeking, or resistance rather than creating
+      movement.
     stance_contract: |
       Use sharper contrast, consequence, or challenge to interrupt boredom or
       performative compliance, but leave a concrete refusal path and one
@@ -109,31 +88,12 @@ registers:
       - status_display
     rubric: null
 
-  witnessing_restraint:
-    valence: positive
-    router_selectable: true
-    trigger:
-      learner_signal: vulnerability_or_moral_exposure
-    stance_contract: |
-      Receive vulnerability without flattery, absolution, intimacy capture, or
-      spectacle. Then offer one concrete test, distinction, or next move that
-      leaves the learner's judgment with the learner.
-    risk_flags:
-      - over_challenge
-    rubric: null
-
-  ironic_challenge:
+  ironic:
     valence: liminal
     router_selectable: false
-    trigger:
-      same_as: charismatic_challenge
-      signals:
-        - boredom
-        - frustration
-        - irrelevance
-        - question_flood
-        - rote_parroting
-        - dismissal
+    reviewer_cues: |
+      Choose only when the reviewer explicitly wants irony as the stance for
+      exposing a mismatch while keeping the learner able to own the unmasking.
     stance_contract: |
       Use Socratic irony: understatement, feigned puzzlement, or a deliberately
       exposed mismatch that lets the learner unmask the problem. The tutor may
@@ -169,18 +129,12 @@ registers:
       - misrecognition_cost
     rubric: config/rubrics/registers/irony-sarcasm.yaml
 
-  sarcastic_challenge:
+  sarcastic:
     valence: negative
     router_selectable: false
-    trigger:
-      same_as: charismatic_challenge
-      signals:
-        - boredom
-        - frustration
-        - irrelevance
-        - question_flood
-        - rote_parroting
-        - dismissal
+    reviewer_cues: |
+      Choose only as an experimental negative-register arm when the reviewer
+      wants dry sarcastic edge aimed at the work, claim, formula, or dodge.
     stance_contract: |
       Use dry sarcastic edge as an experiment-assigned probe of negative register
       effects. The stance may puncture rote compliance or evasive resistance by
@@ -222,19 +176,13 @@ registers:
       - contempt_drift
     rubric: config/rubrics/registers/irony-sarcasm.yaml
 
-  face_threat_challenge:
+  face_threat:
     valence: negative
     router_selectable: false
     simulated_only: true
-    trigger:
-      same_as: charismatic_challenge
-      signals:
-        - boredom
-        - frustration
-        - irrelevance
-        - question_flood
-        - rote_parroting
-        - dismissal
+    reviewer_cues: |
+      Choose only as a simulated stress-test arm when the reviewer intentionally
+      wants local face threat measured as an instrument condition.
     stance_contract: |
       Use an explicitly face-threatening challenge as a simulated-only stress
       test for the measurement instrument. The stance should make the learner's
@@ -284,6 +232,120 @@ registers:
       - contempt_drift
       - simulated_only
     rubric: config/rubrics/registers/irony-sarcasm.yaml
+
+legacy_register_aliases:
+  clarity:
+    register: precise
+    request_type: conceptual_clarity_request
+    action_family: clarify_distinction
+  scaffolding:
+    register: brisk
+    request_type: stepwise_support_request
+    action_family: stage_next_step
+  accountable_bid_authority:
+    register: precise
+    request_type: authority_refusal_or_status_challenge
+    action_family: answer_accountably
+  plain_compression:
+    register: plain
+    request_type: plain_language_request
+    action_family: compress_sayback
+  lived_stakes_reentry:
+    register: warm
+    request_type: plain_simplification_followup
+    action_family: reanchor_lived_stake
+  transfer_grounding:
+    register: plain
+    request_type: transfer_demand_or_named_material
+    action_family: ground_in_material
+  charismatic_challenge:
+    register: charismatic
+    request_type: resistance_or_low_agency
+    action_family: challenge_resistance
+  witnessing_restraint:
+    register: witnessing
+    request_type: vulnerability_or_moral_exposure
+    action_family: receive_vulnerability
+  ironic_challenge:
+    register: ironic
+    request_type: resistance_or_low_agency
+    action_family: challenge_resistance
+  sarcastic_challenge:
+    register: sarcastic
+    request_type: resistance_or_low_agency
+    action_family: challenge_resistance
+  face_threat_challenge:
+    register: face_threat
+    request_type: resistance_or_low_agency
+    action_family: challenge_resistance
+
+request_types:
+  conceptual_clarity_request:
+    role: logical_armature
+    description: The learner turn calls for one distinction, definition, or check.
+    dag_use: Select or clarify the next concept edge without changing tutor stance by itself.
+  stepwise_support_request:
+    role: logical_armature
+    description: The learner turn asks for sequence, next step, clue, or local procedure.
+    dag_use: Identify the next staged premise or inference device that can be filled.
+  authority_refusal_or_status_challenge:
+    role: logical_armature
+    description: The learner tests whether the tutor's framing or authority should be trusted.
+    dag_use: Surface warrant, defeasibility, and correction conditions for the current path.
+  plain_language_request:
+    role: logical_armature
+    description: The learner requests low-theory phrasing or a say-back version.
+    dag_use: Compress the current proof/state into a checkable public utterance.
+  plain_simplification_followup:
+    role: logical_armature
+    description: The learner asks for still simpler validation after an already plain move.
+    dag_use: Re-anchor the same edge without adding new proof branches.
+  transfer_demand_or_named_material:
+    role: logical_armature
+    description: The learner names a case, artifact, data source, curriculum object, or material.
+    dag_use: Bind the next move to the named object rather than to generic explanation.
+  vulnerability_or_moral_exposure:
+    role: logical_armature
+    description: The learner exposes shame, worry, moral risk, or desire for absolution.
+    dag_use: Protect agency/risk before asking for a public evidence commitment.
+  resistance_or_low_agency:
+    role: logical_armature
+    description: The learner shows boredom, frustration, rote compliance, dismissal, or low agency.
+    dag_use: Choose an intervention that restores ownership before the next proof move.
+  answer_seeking_or_overreach:
+    role: logical_armature
+    description: The learner asks for the answer, asserts beyond evidence, or skips warrant.
+    dag_use: Detect unsupported answer candidates and redirect to a warrantable edge.
+  off_task_or_mixed:
+    role: logical_armature
+    description: The learner turn is off path, mixed, or too ambiguous for a cleaner type.
+    dag_use: Keep updates conservative and ask for a diagnostic public move.
+
+action_families:
+  clarify_distinction:
+    role: dag_device
+    description: Define or sharpen one conceptual edge.
+  stage_next_step:
+    role: dag_device
+    description: Expose the next public premise, clue, or inference step without doing it for the learner.
+  answer_accountably:
+    role: dag_device
+    description: Make the tutor's claim defeasible and give the learner a correction path.
+  compress_sayback:
+    role: dag_device
+    description: Turn the current state into a short say-back/check form.
+  reanchor_lived_stake:
+    role: dag_device
+    description: Add one ordinary lived stake, then return to a compact proof/check move.
+  ground_in_material:
+    role: dag_device
+    description: Bind the next move to a named artifact, case, material, or curriculum object.
+  challenge_resistance:
+    role: dag_device
+    description: Interrupt rote compliance, answer-seeking, or low agency while preserving a repair path.
+  receive_vulnerability:
+    role: dag_device
+    description: Protect learner agency under affective or moral exposure before asking for evidence.
 
 routing_patterns:
   transfer:

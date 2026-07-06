@@ -552,7 +552,7 @@ export async function gateTriallingV2(rows, world, script) {
       publicRegister: 'modern',
       strategyLedger: normalizeStrategyLedgerConfig({
         trialling: true,
-        stancePalette: ['charismatic_challenge', 'ironic_challenge'],
+        stancePalette: ['charismatic', 'ironic'],
       }),
       maxTurns: 10,
       stopOnStall: false,

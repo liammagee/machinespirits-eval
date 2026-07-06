@@ -1646,7 +1646,8 @@ describe('runIdDirectedTurn', () => {
     assert.match(idCall.arguments[2][0].content, /<engagement_state>/);
     assert.match(idCall.arguments[2][0].content, /accountable_bid_authority/);
     assert.equal(result.engagementModeRouter, true);
-    assert.equal(result.engagementState.selected_mode, 'accountable_bid_authority');
+    assert.equal(result.engagementState.selected_mode, 'precise');
+    assert.equal(result.engagementState.legacy_selected_register, 'accountable_bid_authority');
     assert.equal(result.internalDeliberation[0].role, 'engagement_router');
     assert.equal(result.internalDeliberation[1].role, 'id');
   });
@@ -1875,7 +1876,7 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.engagementRouterTransferCompressionRepair, true);
     assert.equal(result.agencyReturnPrematureCertaintyGuard, true);
     assert.equal(result.prematureCertaintyGuard.repaired, true);
-    assert.equal(result.engagementState.selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementState.selected_register, 'charismatic');
     assert.doesNotMatch(result.externalMessage, /exactly/);
     assert.match(result.externalMessage, /starts to name the pressure point/);
     assert.doesNotMatch(verifierCall.arguments[2][0].content, /exactly/);
@@ -1938,10 +1939,10 @@ describe('runIdDirectedTurn', () => {
     });
 
     const idCall = llmCallSpy.mock.calls[0];
-    assert.equal(result.engagementRegisterArm, 'ironic_challenge');
-    assert.equal(result.engagementState.selected_register, 'ironic_challenge');
-    assert.equal(result.engagementState.router_selected_register, 'charismatic_challenge');
-    assert.equal(result.engagementState.assigned_register_arm, 'ironic_challenge');
+    assert.equal(result.engagementRegisterArm, 'ironic');
+    assert.equal(result.engagementState.selected_register, 'ironic');
+    assert.equal(result.engagementState.router_selected_register, 'charismatic');
+    assert.equal(result.engagementState.assigned_register_arm, 'ironic');
     assert.match(idCall.arguments[2][0].content, /<register_stance_contract>/);
     assert.match(idCall.arguments[2][0].content, /Socratic irony/);
     assert.match(idCall.arguments[2][0].content, /stance_fidelity_cues/);
@@ -2005,9 +2006,9 @@ describe('runIdDirectedTurn', () => {
     });
 
     const idCall = llmCallSpy.mock.calls[0];
-    assert.equal(result.engagementRegisterArm, 'face_threat_challenge');
-    assert.equal(result.engagementState.selected_register, 'face_threat_challenge');
-    assert.equal(result.engagementState.router_selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementRegisterArm, 'face_threat');
+    assert.equal(result.engagementState.selected_register, 'face_threat');
+    assert.equal(result.engagementState.router_selected_register, 'charismatic');
     assert.match(idCall.arguments[2][0].content, /face-threatening challenge/);
     assert.match(idCall.arguments[2][0].content, /stance_fidelity_cues/);
     assert.match(idCall.arguments[2][0].content, /right now this move is protecting you/);
@@ -2076,7 +2077,7 @@ describe('runIdDirectedTurn', () => {
     assert.match(idCall.arguments[2][0].content, /"resistance_signal": "rote_parroting"/);
     assert.match(idCall.arguments[2][0].content, /"resistance_strategy": "anti_formula_generation"/);
     assert.equal(result.engagementRouterResistanceTuning, true);
-    assert.equal(result.engagementState.selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementState.selected_register, 'charismatic');
     assert.equal(result.engagementState.resistance_signal, 'rote_parroting');
     assert.equal(result.engagementState.resistance_strategy, 'anti_formula_generation');
   });
@@ -2143,7 +2144,7 @@ describe('runIdDirectedTurn', () => {
     assert.match(idCall.arguments[2][0].content, /"resistance_strategy": "anti_formula_generation"/);
     assert.equal(result.engagementRouterResistanceTuning, true);
     assert.equal(result.engagementRouterResistanceOwnedTest, true);
-    assert.equal(result.engagementState.selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementState.selected_register, 'charismatic');
     assert.equal(result.engagementState.resistance_signal, 'rote_parroting');
     assert.equal(result.engagementState.resistance_strategy, 'anti_formula_generation');
   });
@@ -2212,7 +2213,7 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.engagementRouterResistanceTuning, true);
     assert.equal(result.engagementRouterResistanceOwnedTest, true);
     assert.equal(result.engagementRouterResistancePrecisionRepair, true);
-    assert.equal(result.engagementState.selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementState.selected_register, 'charismatic');
     assert.equal(result.engagementState.resistance_signal, 'question_flood');
     assert.equal(result.engagementState.resistance_strategy, 'question_collapse');
   });
@@ -2280,7 +2281,7 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.engagementRouterResistanceTuning, true);
     assert.equal(result.engagementRouterResistanceOwnedTest, true);
     assert.equal(result.engagementRouterResistanceGenerationRepair, true);
-    assert.equal(result.engagementState.selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementState.selected_register, 'charismatic');
     assert.equal(result.engagementState.resistance_signal, 'rote_parroting');
     assert.equal(result.engagementState.resistance_strategy, 'anti_formula_generation');
   });
@@ -2350,7 +2351,7 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.engagementRouterResistanceOwnedTest, true);
     assert.equal(result.engagementRouterResistanceGenerationRepair, true);
     assert.equal(result.engagementRouterResistanceQuestionLock, true);
-    assert.equal(result.engagementState.selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementState.selected_register, 'charismatic');
     assert.equal(result.engagementState.resistance_signal, 'question_flood');
     assert.equal(result.engagementState.resistance_strategy, 'question_collapse');
   });
@@ -2420,7 +2421,7 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.engagementRouterResistanceOwnedTest, true);
     assert.equal(result.engagementRouterResistanceGenerationRepair, true);
     assert.equal(result.engagementRouterResistanceCommitmentProbe, true);
-    assert.equal(result.engagementState.selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementState.selected_register, 'charismatic');
     assert.equal(result.engagementState.resistance_signal, 'question_flood');
     assert.equal(result.engagementState.resistance_strategy, 'question_collapse');
   });
@@ -2492,7 +2493,7 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.engagementRouterResistanceGenerationRepair, true);
     assert.equal(result.engagementRouterResistanceCommitmentProbe, true);
     assert.equal(result.engagementRouterResistanceBoredomStake, true);
-    assert.equal(result.engagementState.selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementState.selected_register, 'charismatic');
     assert.equal(result.engagementState.resistance_signal, 'boredom');
     assert.equal(result.engagementState.resistance_strategy, 'concrete_scene_test');
   });
@@ -2566,7 +2567,7 @@ describe('runIdDirectedTurn', () => {
     assert.equal(result.engagementRouterResistanceCommitmentProbe, true);
     assert.equal(result.engagementRouterResistanceBoredomStake, true);
     assert.equal(result.engagementRouterResistanceGlmCompact, true);
-    assert.equal(result.engagementState.selected_register, 'charismatic_challenge');
+    assert.equal(result.engagementState.selected_register, 'charismatic');
     assert.equal(result.engagementState.resistance_signal, 'question_flood');
     assert.equal(result.engagementState.resistance_strategy, 'question_collapse');
   });

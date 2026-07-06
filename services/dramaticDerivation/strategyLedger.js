@@ -17,7 +17,7 @@
  */
 
 import { DIDACTIC_MODE_FAMILIES } from './didacticMode.js';
-import { getEngagementRegisterDefinition } from '../engagementRegisterRegistry.js';
+import { getEngagementRegisterDefinition, resolveEngagementRegister } from '../engagementRegisterRegistry.js';
 import { evaluateRegisterStanceFidelity } from '../registerStanceFidelity.js';
 
 export const STRATEGY_LEDGER_SCHEMA = 'dramatic-derivation.strategy-ledger.v0';
@@ -110,13 +110,15 @@ export function normalizeStrategyLedgerConfig(raw) {
     if (!Array.isArray(out.stancePalette) || out.stancePalette.length < 1) {
       throw new Error('strategy-ledger config: stancePalette must be a non-empty array or null');
     }
-    out.stancePalette = out.stancePalette.map((name) => String(name).trim());
-    for (const name of out.stancePalette) {
-      const def = getEngagementRegisterDefinition(name);
+    out.stancePalette = out.stancePalette.map((name) => {
+      const raw = String(name).trim();
+      const resolved = resolveEngagementRegister(raw);
+      const def = resolved ? getEngagementRegisterDefinition(resolved.register) : null;
       if (!def) {
-        throw new Error(`strategy-ledger config: unknown engagement register "${name}" (not in the merged registry)`);
+        throw new Error(`strategy-ledger config: unknown engagement register "${raw}" (not in the merged registry)`);
       }
-    }
+      return resolved.register;
+    });
   }
   if (out.releaseIntent && !out.trialling) {
     throw new Error('strategy-ledger config: releaseIntent requires trialling (intent is audited by the review loop)');
@@ -343,7 +345,9 @@ export function normalizeSceneCommitmentV2(raw, { stancePalette = null, premiseI
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const base = normalizeSceneCommitment(raw, v1opts) || {};
   const stanceRaw = typeof raw.stance === 'string' ? raw.stance.trim() : null;
-  const stance = stanceRaw && Array.isArray(stancePalette) && stancePalette.includes(stanceRaw) ? stanceRaw : null;
+  const resolvedStance = resolveEngagementRegister(stanceRaw)?.register || stanceRaw;
+  const stance =
+    resolvedStance && Array.isArray(stancePalette) && stancePalette.includes(resolvedStance) ? resolvedStance : null;
   const idSet = premiseIds instanceof Set ? premiseIds : new Set(premiseIds || []);
   const releaseIntent = Array.isArray(raw.release_intent)
     ? [...new Set(raw.release_intent.map((x) => String(x).trim()).filter((id) => idSet.has(id)))].slice(0, 4)
