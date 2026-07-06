@@ -3380,6 +3380,10 @@ function printCurrentTurnAnalysis(state) {
   const selectedEfficacy = registerSelection?.efficacy || null;
   const previousEfficacy = turn.previousRegisterEfficacy || null;
   const tracePath = traceDisplayPath(state.trace);
+  const field = buildLightweightDialogueField(state.turns);
+  const fieldRow = field.rows.at(-1) || null;
+  const previousFieldRow = field.rows.at(-2) || null;
+  const firstFieldRow = field.rows[0] || null;
 
   console.log(`${C.cyan}analysis >${C.reset} current completed turn ${turn.turn}`);
   printAnalysisLine('learner', turn.learner);
@@ -3462,6 +3466,15 @@ function printCurrentTurnAnalysis(state) {
         previousEfficacy.mismatch || 'field-state unknown'
       }; fieldDelta=${previousEfficacy.field?.delta ?? 'n/a'}; ${previousEfficacy.summary}`,
     );
+  }
+
+  if (fieldRow) {
+    printAnalysisLine(
+      'field state',
+      `mastery=${fieldRow.learnerMastery}; risk=${fieldRow.learnerRisk}; alignment=${fieldRow.tutorAlignment}; momentum=${fieldRow.jointMomentum}; speed=${fieldRow.speed}`,
+    );
+    printAnalysisLine('field shift', summarizeFieldShift(fieldRow, previousFieldRow, firstFieldRow));
+    printAnalysisLine('field reading', describeFieldShift(fieldRow, previousFieldRow, field.summary));
   }
 
   if (turn.tutorLeakAudit) {
@@ -3625,6 +3638,61 @@ function buildLightweightDialogueField(turns = []) {
       },
     },
   };
+}
+
+function signedFieldDelta(current, previous) {
+  if (!previous) return 'baseline';
+  const delta = fieldDelta(current, previous);
+  return `${delta >= 0 ? '+' : ''}${delta}`;
+}
+
+function summarizeFieldShift(row, previous = null, first = null) {
+  const previousBits = previous
+    ? [
+        `prev M ${signedFieldDelta(row.learnerMastery, previous.learnerMastery)}`,
+        `R ${signedFieldDelta(row.learnerRisk, previous.learnerRisk)}`,
+        `A ${signedFieldDelta(row.tutorAlignment, previous.tutorAlignment)}`,
+        `P ${signedFieldDelta(row.jointMomentum, previous.jointMomentum)}`,
+      ]
+    : ['prev baseline'];
+  const totalBits =
+    first && first !== row
+      ? [
+          `total M ${signedFieldDelta(row.learnerMastery, first.learnerMastery)}`,
+          `R ${signedFieldDelta(row.learnerRisk, first.learnerRisk)}`,
+          `A ${signedFieldDelta(row.tutorAlignment, first.tutorAlignment)}`,
+          `P ${signedFieldDelta(row.jointMomentum, first.jointMomentum)}`,
+        ]
+      : ['total baseline'];
+  return `${previousBits.join(', ')}; ${totalBits.join(', ')}`;
+}
+
+function describeFieldShift(row, previous = null, summary = {}) {
+  if (!previous) {
+    return `baseline field frame; bottleneck ${row.bottleneck || summary.final?.bottleneck || 'unknown'}`;
+  }
+  const masteryDelta = fieldDelta(row.learnerMastery, previous.learnerMastery);
+  const riskDelta = fieldDelta(row.learnerRisk, previous.learnerRisk);
+  const alignmentDelta = fieldDelta(row.tutorAlignment, previous.tutorAlignment);
+  const momentumDelta = fieldDelta(row.jointMomentum, previous.jointMomentum);
+  const tags = [];
+  if (masteryDelta >= 0.05) tags.push('learner mastery rising');
+  if (riskDelta <= -0.05) tags.push('risk easing');
+  if (riskDelta >= 0.05) tags.push('risk increasing');
+  if (alignmentDelta >= 0.05) tags.push('tutor alignment improving');
+  if (alignmentDelta <= -0.05) tags.push('tutor alignment weakening');
+  if (momentumDelta >= 0.05) tags.push('joint momentum gaining');
+  if (momentumDelta <= -0.05) tags.push('joint momentum slowing');
+  if (!tags.length) tags.push('field mostly flat');
+  const direction =
+    masteryDelta > 0 && riskDelta <= 0
+      ? 'productive'
+      : masteryDelta > 0 && riskDelta > 0
+        ? 'productive but strained'
+        : masteryDelta <= 0 && riskDelta > 0
+          ? 'stalled or risk-heavy'
+          : 'stabilizing';
+  return `${direction}: ${tags.join('; ')}; bottleneck ${row.bottleneck || summary.final?.bottleneck || 'unknown'}`;
 }
 
 function printLightweightDialogueField(state) {
