@@ -1,18 +1,18 @@
 {
-  "generated": "2026-07-06T05:36:32.033Z",
+  "generated": "2026-07-06T06:33:40.690Z",
   "counts": {
-    "total": 93,
+    "total": 96,
     "byStatus": {
       "done": 81,
       "blocked": 1,
       "dropped": 2,
-      "active": 2,
+      "active": 5,
       "archived": 4,
       "triaged": 3
     },
     "byType": {
       "research": 40,
-      "experiment": 26,
+      "experiment": 29,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -144,6 +144,33 @@
       "branch": "worktree-blueprint-composition"
     },
     {
+      "id": "register-router-contrast",
+      "title": "Register-router powered contrast — n=20/arm per shrinkage sizing",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "40 Sonnet runs under the frozen prereg; the frozen bar (U<=138 at 20/20) produces a recorded verdict.",
+      "claim_status": "planned",
+      "links": {
+        "notes": "REGISTER-ROUTER-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "classifier-dag-register"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "classifier",
+        "register",
+        "dag"
+      ]
+    },
+    {
       "id": "lean-semantic-web-proof-dag-validation",
       "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
       "status": "active",
@@ -166,6 +193,61 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "marrick-confront-window",
+      "title": "Opening the confront window: an intermediate-fact incompatible partner",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "world-020 authored + plot-linted; 6-run smoke complete with pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "classifier-dag-register",
+          "register-router-contrast",
+          "refusal-learner-mirror"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "world-authoring",
+        "register",
+        "mirror"
+      ]
+    },
+    {
+      "id": "register-router-codex-check",
+      "title": "Register router at the frontier tier: codex mechanism check",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "6-run codex smoke complete with pre-stated reads recorded (fires, sensed distribution, conduct, capped color).",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "classifier-dag-register",
+          "register-router-contrast"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "classifier",
+        "register",
+        "frontier"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
