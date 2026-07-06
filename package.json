@@ -53,6 +53,7 @@
     "analyze:effects": "node scripts/analyze-eval-results.js",
     "analyze:costs": "node scripts/analyze-eval-costs.js",
     "analyze:traces": "node scripts/analyze-mechanism-traces.js",
+    "analyze:tutor-stub-fields": "node scripts/analyze-tutor-stub-field-traces.js",
     "analyze:reliability": "node scripts/analyze-judge-reliability.js",
     "analyze:trajectories": "node scripts/analyze-trajectory-curves.js",
     "analyze:change": "node scripts/analyze-within-test-change.js",

@@ -1,10 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { getScenario } from '../evalConfigLoader.js';
-import { loadDriftScenarioMeta, scoreOpeningTurn, summarizeDriftRun } from '../longitudinalDriftChecker.js';
+import { getScenario, isMultiTurnScenario } from '../evalConfigLoader.js';
+import {
+  checkPadInstrumentPrecondition,
+  loadDriftScenarioMeta,
+  scoreOpeningTurn,
+  summarizeDriftRun,
+} from '../longitudinalDriftChecker.js';
 
 const SESSION_IDS = ['longitudinal_drift_session_1', 'longitudinal_drift_session_2', 'longitudinal_drift_session_3'];
+const MULTITURN_SESSION_IDS = SESSION_IDS.map((id) => `${id}_multiturn`);
 
 function loadMetas() {
   return SESSION_IDS.map((id) => {
@@ -148,4 +154,37 @@ test('summarizeDriftRun: session-1-only rows (stale always null) report staleRef
   assert.equal(summary.staleEligibleRows, 0);
   assert.equal(summary.staleReferenceRate, null);
   assert.equal(summary.currentReferenceRate, 1);
+});
+
+// ============================================================================
+// Stage A2: multi-turn sibling scenarios + checkPadInstrumentPrecondition
+// ============================================================================
+
+test('Stage A2: all three multi-turn sibling scenarios resolve and are multi-turn', () => {
+  for (const id of MULTITURN_SESSION_IDS) {
+    const scenario = getScenario(id);
+    assert.ok(scenario, `scenario ${id} should resolve`);
+    assert.equal(isMultiTurnScenario(id), true, `scenario ${id} should be multi-turn`);
+    assert.equal(scenario.turns.length, 3, `scenario ${id} should carry exactly 3 follow-up turns`);
+  }
+});
+
+test('Stage A2: multi-turn siblings carry the same longitudinal_drift block as their single-turn parent', () => {
+  for (const id of SESSION_IDS) {
+    const parentMeta = loadDriftScenarioMeta(getScenario(id));
+    const multiturnMeta = loadDriftScenarioMeta(getScenario(`${id}_multiturn`));
+    assert.deepEqual(multiturnMeta, parentMeta, `${id}_multiturn's longitudinal_drift block should match its parent's`);
+  }
+});
+
+test('checkPadInstrumentPrecondition: FAILs (INSTRUMENT_FLOOR) on a null or empty pad', () => {
+  assert.equal(checkPadInstrumentPrecondition(null).pass, false);
+  assert.equal(checkPadInstrumentPrecondition(null).totalRecognitionMoments, 0);
+  assert.equal(checkPadInstrumentPrecondition({ metrics: { totalRecognitionMoments: 0 } }).pass, false);
+});
+
+test('checkPadInstrumentPrecondition: PASSes once at least one recognition moment exists', () => {
+  const result = checkPadInstrumentPrecondition({ metrics: { totalRecognitionMoments: 1 } });
+  assert.equal(result.pass, true);
+  assert.equal(result.totalRecognitionMoments, 1);
 });
