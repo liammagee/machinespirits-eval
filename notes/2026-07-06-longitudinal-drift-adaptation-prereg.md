@@ -724,3 +724,69 @@ fractions: "1/4 + 1/6", "24 vs. 12", "LCD"; principles: socratic_rigor
 bullet predicted). The persistence channel now carries session-specific
 content — the precondition A1 surfaced is closed. Per §7.2, pad-ON
 sessions 2-3 and the pad-OFF arm proceed.
+
+**2026-07-06: full A2 arc executed — 6/6 sessions clean; frozen §7.4
+verdicts: validity PASS, adaptation signal NULL (directional), no red
+flag.** Pad-ON runs `eval-2026-07-06-{97a18895,6966c1d5,d5652c5f}`
+(sessions 1→2→3, shared learner-id), pad-OFF runs
+`eval-2026-07-06-{51a74faa,cd3e0002,ff4d35db}` (sessions 1→2→3, no
+`--learner-id`), all uncapped nemotron/kimi-k2.5, 24 turns total,
+~$0.27, **0 row-level instrument failures**. Scored with the frozen
+checker (`report-longitudinal-drift-stage-a2-live.js --score`; artifacts
+`exports/longitudinal-drift-stage-a2.{json,md}`):
+
+- **Primary-outcome validity gate: PASS.** Pad-ON current-reference 2/3
+  (= the frozen 2/3 threshold exactly); pad-OFF also 2/3. Per-session:
+  both arms hit sessions 1-2 (`denominator`; `ratio`/`ratios`), both
+  missed session 3. Descriptive note: both session-3 openings DO
+  reference the current topic in natural language ("forgetting to flip
+  the inequality sign" pad-ON; "slips flipping signs" pad-OFF) but miss
+  the frozen word-bounded phrases ("forgets to flip the sign", "sign
+  flip") — a marker-phrasing near-miss, symmetric across arms,
+  scenario-linked not arm-linked. Recorded, not re-scored: the frozen
+  reading is the frozen reading.
+- **Adaptation signal (directional-report-only): NULL.** Stale-reference
+  pad-ON 0/2, pad-OFF 0/2 — gap 0.00 (needs ≥ 2/3 rows). Same surface
+  outcome as A1, but **materially more informative**: this time the
+  pad-ON pad demonstrably carried 10 session-specific,
+  consolidated-to-unconscious recognition moments (4+3+3 per session;
+  the critique voices quote each session's actual math), and later-
+  session openings STILL surfaced zero prior-session vocabulary in
+  either arm. A1's null said "nothing could have surfaced — the channel
+  was empty"; A2's null says "the channel carried content and none of it
+  surfaced in opening-turn temporal anchoring, in either direction."
+- **Structural red flag: none** (pad-OFF stale 0, as it structurally
+  must be).
+- **Mechanism observation recorded for precision (deviation-note, arms
+  remain clean)**: on the multi-turn path, `runMultiTurnTest` generates
+  a per-dialogue synthetic learner-id when none is supplied, so each
+  pad-OFF session ran with a FRESH synthetic pad (raw within-session
+  moments 4/0/1, never consolidated, id never reused) rather than "no
+  pad at all" as on A1's single-turn path. The §2.1 intent — no
+  cross-session channel for pad-OFF — holds exactly (a fresh id each
+  session can carry nothing over); within-session, the arms are actually
+  MORE symmetric than A1's (both arms have a live pad during a session),
+  isolating cross-session persistence as the sole manipulated variable.
+  Also notable: per-turn superego disapproval is genuinely stochastic —
+  pad-ON drew 4/3/3 moments per session, pad-OFF drew 4/0/1.
+
+**Bounded interpretation.** A2 completes what it was authorized to do:
+the instrument is now valid end-to-end INCLUDING the pad-feeding
+precondition A1 could not meet (multi-turn sessions reliably produce
+content-carrying, consolidated pads on this stack), and on that valid
+instrument the pilot reports a directional null: pad persistence did not
+alter opening-turn temporal anchoring at n=3 sessions/arm. Per §7.4 this
+confirms/refutes nothing at this n. What it sharpens: the stale-
+reference channel measures *leakage* of prior-session vocabulary, and
+zero leakage with a full pad means any scaled design should add an
+outcome channel for *constructive* pad use (e.g. continuity
+acknowledgment on `resolved_last_session: true`, or resolved-
+misconception handling), not just stale-vocabulary contamination. That
+is a fresh-prereg question, explicitly not authorized here.
+
+**STOP per §7.4/§7.6: Stage A2 is complete and this section authorizes
+nothing further.** Rows consumed: exactly the 6 sessions / 24 turns
+specified in §7.2 (plus the no-paid hermetic checks). Scaling to a
+confirmatory design (more sessions/arms, constructive-use outcome
+channels, other model stacks) requires a fresh pre-registration and its
+own recorded go.
