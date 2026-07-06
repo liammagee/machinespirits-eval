@@ -254,3 +254,40 @@ only at n=3 sessions/arm; fixing the internal Writing Pad channels or a
 confirmatory continuity design are both separately-scoped, not
 authorized here. STOP per §8.5/§8.7 — nothing further without a fresh
 pre-registration.
+
+2026-07-07 Claude: Part-1 read-path repairs + Stage A4 (structural
+check-in pilot) executed end-to-end. Part 1 (commit 686145ec, no prereg
+needed — engineering): all four internal Writing Pad read-path bugs
+fixed at the source — (1) dialectical superego critique never read
+permanentTraces back into its prompt (new priorSessionMemory section);
+(2) runMemoryCycle retrieved unconscious context then discarded it
+(now persisted into preconscious.recentPatterns as recalled_context);
+(3) nothing wrote conscious.workingThoughts on the live path (final
+suggestions now recorded, feeding pattern promotion); (4)
+getRecognitionMoment(s) dropped synthesis_resolution (restored); 15
+hermetic tests. A4 prereg frozen as note §9 (commit 426a483b): same
+3-session drift arc, identical scripted check-in slot in both arms'
+session-open turns, primary outcome = deterministic word-bounded
+content-bearing check-in rate, gates pad-ON >=3/4 AND pad-OFF 0/4.
+Pilot (6/6 clean, ~$0.30, pad-ON edecf6f8/3075efb4/c5bc6075, pad-OFF
+38d45370/14256553/14a100bc): §7.4 gate PASS (4 moments s1; 9 by s3);
+§9.4 live-delivery gate VOID-AS-INSTRUMENTED (naive marker scan false-
+PASSed on scenario-echo; pad-only strings 0/11 because the dialectical
+calls the fixes feed are logged nowhere — structural blind spot), with
+delivery CONFIRMED by triangulation (3 session-2 moments quoting live
+ratio content prove the pad-reading critique prompt ran; per-turn pad
+fetches carried session-1 traces + cross-session recalled_context
+reinforced x3-x7; code pinned to run commit). VERDICT: structural-
+signal gate FAIL — pad-ON 0/4, pad-OFF 0/4, no red flag, no instrument
+failures, marker-grep clean (coarse hits = same-session/curriculum/
+model idiom + one HTTP-date '4:5' substring, the A3 '2:3' precedent).
+All six openings dive into current-session math with zero retrospective
+content; even scenario-planted continuity text goes un-echoed. Bounded
+reading: delivered-but-not-used — memory demonstrably reaches the
+deliberation prompts while the delivered opening stays memory-silent,
+so A3's continuity null EXTENDS to the scripted case; the block now
+sits at the output genre/policy layer (suggestion-JSON format;
+negotiation resolutions not rewriting the delivered message), not
+memory access. Directional-only at n=3/arm. STOP per §9.4 — output-side
+levers are a fresh design decision requiring a new prereg + go.
+Artifacts: exports/longitudinal-drift-stage-a4.{json,md}.

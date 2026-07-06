@@ -1731,3 +1731,92 @@ instrument corrections rather than silently fixing them:
   interpretation must carry the same echo caveat symmetrically. Neither
   caveat changes the frozen thresholds; both bind the §9.4-verdict
   *interpretation* recorded after scoring.
+
+**Stage A4-pilot, completion and verdict (2026-07-07): 6/6 sessions
+clean; structural-signal gate FAIL — pad-ON 0/4, pad-OFF 0/4; no red
+flag; no instrument failures. A symmetric null: the scripted check-in
+slot does not surface prior-session content in the delivered opening in
+either arm.**
+
+- **Runs** (all `--skip-rubric`, 4/4 turns each, `success = 1`):
+  pad-ON `eval-2026-07-06-edecf6f8` / `-3075efb4` / `-c5bc6075` (rows
+  33950-33952, learner `a4-drift-padon-v1-2026-07-07`); pad-OFF
+  `eval-2026-07-06-38d45370` / `-14256553` / `-14a100bc` (rows
+  33953-33955, no learner-id — the runner assigns per-dialogue synthetic
+  ids, matching §7.7's recorded A2 behavior). Pad-ON session 3 ran
+  concurrently with the pad-OFF chain (2 sessions max in flight; safe by
+  design — pad-OFF has no cross-session state to contaminate).
+- **Frozen §9.4 scoring** (checker `longitudinalDriftChecker@1.2`,
+  artifacts `exports/longitudinal-drift-stage-a4.{json,md}`): every
+  applicable slot is a miss — content-bearing check-in 0/2 and
+  continuity-acknowledgment 0/2 in BOTH arms (session-1 rows n/a by
+  design). Aggregate: pad-ON **0/4** (gate required ≥3/4), pad-OFF
+  **0/4** (gate required exactly this) → **FAIL**. Red flag: none.
+  Instrument failures: none.
+- **The six openings, read directly** (all 94-270 chars): every one
+  opens mid-topic on the CURRENT session's math ("You added the same
+  number to both terms. Let's review how to scale ratios correctly…" —
+  pad-ON s2; "Practice flipping the sign when you multiply or divide by
+  a negative number…" — pad-ON s3; pad-OFF equivalents likewise) with
+  zero retrospective content. Notably, neither arm even echoes the
+  scenario-planted continuity vocabulary ("Last session's fractions
+  work is complete…" sits verbatim in both arms' ego prompts) — §9.7's
+  pre-scoring caveat (ii) (scenario-echo inflation) turned out moot in
+  practice; the misses are genuine and symmetric, not
+  checker-vocabulary artifacts.
+- **Delivery context (caveat (i) active)**: the pad-ON memory channel
+  was demonstrably compounding while the openings stayed
+  memory-silent — after session 3 the pad holds 9 recognition moments,
+  and `preconscious.recentPatterns` carries ALL 7 prior-session moments
+  as cross-session `recalled_context` entries (session-1 content
+  reinforced up to ×7, session-2 content ×4), i.e. session 3's
+  dialectical prompts carried BOTH prior sessions' content. The A4 null
+  is therefore read as **delivered-but-not-used at the scored channel**:
+  prior-session content reaches the dialectical critique/negotiation
+  prompts every turn, but the delivered opening suggestion — the ego's
+  suggestion-JSON genre answering the current learner message — never
+  carries it (consistent with the negotiation's resolution not
+  replacing the ego's message: no `dialecticalStrategy` metadata on any
+  scored opening).
+- **Marker-grep (leakage check), with a recorded scoping lesson**: a
+  coarse sweep of the pad-OFF dialogue logs for "pad-only" strings hit
+  on '1/2+1/4' (s1), '4:6, not 4:5' (s2), 'missed flipping' (s3),
+  'cognitive conflict'/'Master-Servant' (all) — ALL explained without
+  leakage: each is same-session content (both arms share the scenario's
+  math), shared-curriculum idiom (the EPOL 479 Hegel material), or
+  shared superego-model idiom — the same author-confound/costume lesson
+  the poetics arc recorded. Properly-scoped cross-session probes
+  (session-1-specific strings in pad-OFF s2/s3; session-2-specific in
+  s3, each first checked absent from the session's own scenario text):
+  ALL absent, except a single '4:5' in pad-OFF s3 confirmed by direct
+  inspection to be an HTTP `date` header substring ("23:14:53 GMT") —
+  the exact §8.8 '2:3' precedent. **No genuine cross-session leakage;
+  the pad-OFF arm is clean.**
+- **Cost**: callAI-universe tokens measured from `logs/tutor-api/`
+  over the pilot window: 82 calls, 444,205 in / 282,108 out
+  (nemotron 340K/224K, kimi-k2.5 104K/59K) — a lower bound, since the
+  dialectical-layer calls are unlogged (the observability gap recorded
+  above); consistent with A2/A3's ~$0.27-0.30 for the identical
+  6-session shape. Envelope respected.
+- **Bounded interpretation (directional-only at n=3 sessions/arm, per
+  §9.4/§9.5)**: A4 answers its §9.5 question in the negative on this
+  stack — even when the check-in move is structurally guaranteed
+  (identical explicit instruction in both arms' session-open prompts)
+  AND the internal memory path is demonstrably delivering prior-session
+  content into the model's deliberation prompts (this section's
+  delivery confirmation), the delivered opening does not reference that
+  content specifically. A3's spontaneous continuity null therefore
+  EXTENDS to the scripted case. The lineage now locates the block one
+  layer further out than A3 left it: A2 = channel broken (instrument
+  gap); A3 = channel externally injected, unprompted continuity null;
+  A4 = channel internally repaired + move scripted, continuity still
+  null at the delivered-output layer — pointing at the output
+  genre/policy (the ego's forward-looking suggestion format and/or the
+  negotiation's non-rewriting resolutions), not at memory access. What
+  would move next — an output-side lever (e.g. scoring a dedicated
+  check-in sentence the format explicitly requests, or wiring the
+  negotiation resolution into the delivered message) — is a fresh
+  design decision, NOT licensed here.
+- **STOP**: the §9.4 envelope (6 sessions / 24 turns) is exhausted and
+  the stop rule holds — nothing further on this line without a fresh
+  pre-registration and its own recorded go.
