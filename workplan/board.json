@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-06T05:04:37.661Z",
+  "generated": "2026-07-06T05:36:32.033Z",
   "counts": {
     "total": 93,
     "byStatus": {
-      "done": 80,
+      "done": 81,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 2,
       "archived": 4,
       "triaged": 3
     },
@@ -142,33 +142,6 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "classifier-dag-register",
-      "title": "Classify-then-route coupled to the proof DAG: register shift as the routed channel",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-06",
-      "updated": "2026-07-06",
-      "branch": "worktree-classifier-dag-register",
-      "verification": "Phase A audit numbers recorded (label coverage, text-only classifier accuracy vs formal labels, mirror-orbit prevalence); Phase B register-shift smoke recorded with pre-stated reads.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "refusal-learner-mirror",
-          "content-compulsion-promotion"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "classifier",
-        "register",
-        "dag"
-      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -360,6 +333,33 @@
         "meta"
       ],
       "milestone": "board-pm"
+    },
+    {
+      "id": "classifier-dag-register",
+      "title": "Classify-then-route coupled to the proof DAG: register shift as the routed channel",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "Phase A audit numbers recorded (label coverage, text-only classifier accuracy vs formal labels, mirror-orbit prevalence); Phase B register-shift smoke recorded with pre-stated reads.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "refusal-learner-mirror",
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "classifier",
+        "register",
+        "dag"
+      ]
     },
     {
       "id": "content-compulsion-contrast",

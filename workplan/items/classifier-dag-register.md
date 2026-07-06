@@ -1,7 +1,7 @@
 ---
 id: classifier-dag-register
 title: "Classify-then-route coupled to the proof DAG: register shift as the routed channel"
-status: active
+status: done
 type: experiment
 priority: P1
 owner: unassigned
@@ -84,3 +84,29 @@ deltas, registers render correctly; (4) color capped per §5.12.7
 either way this records as the stack's first non-criterial-sensor
 mechanism with the sensor quarantined at a prompt-side channel;
 promotion to any outcome claim requires a fresh pre-registration.
+
+**PHASE B RESULT (2026-07-06, 6/6 runs, smoke `register-router-smoke`;
+gates 8/8, rule tests 6/6, lemma 37/37 + ledger 34/34
+regression-clean):** (1) **REPAIR fired in all three router runs** —
+exactly once each (t13 / t10 / t20), always on the alpha chain, sensed
+label == applied label every time (no mock assistance), the chain
+genuinely regressed at fire time. CONFRONT vacuous with the WHY
+measured: partnerDerivable was **0/22 turns in every run** — the
+mirror's only incompatible partner is S itself, whose
+start-of-turn-derivability window has zero width before the drama ends
+(the option-6 finding, now quantified per turn); mirror-residual labels
+DID occur (1–2 per run), so the sensor side was live and the criterial
+license never opened. (2) Shift log: three decisions, all
+`repair(castBlankFor-region)` with regressed-chain evidence recorded.
+Sensor distribution across router turns: alpha chain 12–14, beta chain
+5–8, neither 1–3, mirror-residual 1–2 — learner talk is chain-dense.
+(3) Conduct: leaks 0 in all six runs; register_shift events 1:1 with
+non-didactic decisions; no-fire turns byte-identical to baseline by the
+R2 fingerprint gate. (4) Color (capped §5.12.7, n=3, the exploratory
+posture that has shrunk four times in this programme): **router 3/3
+grounded at T\*=22 vs baseline 1/3** (aporia 29, grounded 22,
+disengagement 29) — pairs r1 and r3 split router-grounded vs
+baseline-dead, r2 tied 22/22. The strongest first-draw color any
+mechanism in this family has produced, and precisely the shape §5.12.7
+warns about; a powered contrast (sized against a shrunken estimate)
+is PROPOSABLE at the operator gate, not licensed by this smoke.
