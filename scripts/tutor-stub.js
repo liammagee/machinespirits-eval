@@ -60,8 +60,14 @@ const STUB = {
   interimAnimation: process.env.TUTOR_STUB_INTERIM_ANIMATION !== '0',
   cliEffort: process.env.TUTOR_STUB_CLI_EFFORT || '',
   registerPolicy: process.env.TUTOR_STUB_REGISTER_POLICY || 'dynamic',
+  multipleChoice: process.env.TUTOR_STUB_MULTIPLE_CHOICE === '1',
   opening: process.env.TUTOR_STUB_OPENING !== '0',
   closeoutReport: process.env.TUTOR_STUB_CLOSEOUT_REPORT !== '0',
+  autoLearnerModel: process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'openai.mini',
+  autoTurns: Number.parseInt(process.env.TUTOR_STUB_AUTO_TURNS || '8', 10),
+  autoLearnerProfile:
+    process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE ||
+    'A curious but fallible learner. They respond only to public tutor messages, sometimes make partial guesses, and prefer short concrete replies.',
 };
 
 const C = {
@@ -71,6 +77,48 @@ const C = {
   red: '\x1b[31m',
   cyan: '\x1b[36m',
   magenta: '\x1b[35m',
+};
+
+const FIELD_PROGRESS_THRESHOLD = 0.05;
+
+const LEARNER_FIELD_RANKS = {
+  evidence_use: {
+    none: 0,
+    repeats_setup: 0.1,
+    cites_public_evidence: 0.4,
+    revises_from_evidence: 0.5,
+    links_evidence_to_rule: 0.7,
+    overleaps_evidence: -0.2,
+  },
+  agency: {
+    passive: 0,
+    complying: 0.2,
+    attempting: 0.5,
+    steering: 0.55,
+    self_correcting: 0.8,
+  },
+  epistemic_stance: {
+    answer_seeking: 0.1,
+    receptive: 0.2,
+    confused: 0.25,
+    exploratory: 0.5,
+    reflective: 0.65,
+    grounded: 0.75,
+    overconfident: 0.15,
+    resistant: 0.1,
+  },
+  discourse_move: {
+    off_task: 0,
+    answer_seeking: 0.1,
+    question: 0.3,
+    repair_request: 0.35,
+    challenge: 0.35,
+    claim: 0.45,
+    hypothesis: 0.5,
+    evidence_adoption: 0.65,
+    inference: 0.75,
+    metacognitive_reflection: 0.8,
+  },
 };
 
 const CLASSIFIER_SYSTEM_PROMPT = [
@@ -95,6 +143,14 @@ const LEARNER_ANALYSIS_SYSTEM_PROMPT = [
   'Return one JSON object only. No prose outside JSON.',
 ].join('\n');
 
+const AUTO_LEARNER_SYSTEM_PROMPT = [
+  'You are an automated learner in an experimental tutoring dialogue.',
+  'You see only the public transcript and the latest tutor message.',
+  'Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
+  'Reply as the learner only. No role label, no analysis, no JSON.',
+  'Keep the reply concise: usually one sentence, one question, or one trial-book claim.',
+].join('\n');
+
 const { values: args, positionals } = parseArgs({
   allowPositionals: true,
   options: {
@@ -116,12 +172,18 @@ const { values: args, positionals } = parseArgs({
     style: { type: 'string', default: STUB.style },
     system: { type: 'string' },
     once: { type: 'string' },
+    'auto-learner': { type: 'boolean', default: false },
+    'auto-learner-model': { type: 'string', default: STUB.autoLearnerModel },
+    'auto-learner-profile': { type: 'string', default: STUB.autoLearnerProfile },
+    'auto-turns': { type: 'string', default: String(STUB.autoTurns) },
+    'no-auto-stop-on-grounded': { type: 'boolean', default: false },
     save: { type: 'string' },
     'trace-dir': { type: 'string', default: STUB.traceDir },
     'no-trace': { type: 'boolean', default: false },
     'resume-last': { type: 'boolean', default: false },
     'no-stream': { type: 'boolean', default: false },
     'no-interim-animation': { type: 'boolean', default: false },
+    'multiple-choice': { type: 'boolean', default: STUB.multipleChoice },
     'no-opening': { type: 'boolean', default: false },
     'no-closeout-report': { type: 'boolean', default: false },
     'cli-effort': { type: 'string', default: STUB.cliEffort },
@@ -157,9 +219,10 @@ Options:
   --register-palette <all|safe|negative|non-simulated|csv>
                          tutor-register palette for selection (default: all);
                          all includes every register in the registry
-  --register-policy <dynamic|bland>
+  --register-policy <dynamic|bland|random>
                          dynamic makes scaffolding non-default; bland permits
-                         scaffolding as the ordinary stepwise proof register
+                         scaffolding as the ordinary stepwise proof register;
+                         random samples uniformly from the active palette
                          (default: ${STUB.registerPolicy})
   --safe-registers       limit tutor-register selection to router-selectable
                          safe registers
@@ -181,6 +244,8 @@ Options:
   --no-stream            disable token streaming for API-backed model calls
   --no-interim-animation disable the temporary state/field status animation
                          shown while model calls are waiting
+  --multiple-choice      allow compact multiple-choice tutor prompts
+                         (off by default)
   --no-opening           do not print the tutor's default opening prompt
   --no-closeout-report   do not print the compact dialogue closeout on exit
   --cli-effort <level>   effort for codex/claude-code CLI calls:
@@ -217,12 +282,14 @@ Environment:
   TUTOR_STUB_STREAM=0    disable token streaming by default
   TUTOR_STUB_INTERIM_ANIMATION=0
                          disable interim state/field animation by default
+  TUTOR_STUB_MULTIPLE_CHOICE=1
+                         enable multiple-choice prompts by default
   TUTOR_STUB_OPENING=0   disable default tutor opening prompt
   TUTOR_STUB_CLOSEOUT_REPORT=0
                          disable default closeout report
   TUTOR_STUB_CLI_EFFORT  optional default CLI effort override
   TUTOR_STUB_REGISTER_POLICY
-                         optional default register policy: dynamic or bland
+                         optional default register policy: dynamic, bland, or random
 `);
 }
 
@@ -691,7 +758,22 @@ function worldDagPrompt(world) {
   ].filter(Boolean);
 }
 
-function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag }) {
+function responseChoiceModeRules({ multipleChoice }) {
+  return multipleChoice
+    ? [
+        '- Multiple-choice mode is on. When it would help, you may present 2-4 short lettered choices for the learner\'s next move.',
+        '- Multiple-choice options must be public evidence-shaped moves, not answers. Do not include the concealed answer, unstaged evidence, predicate/function notation, premise ids, rule ids, or route labels.',
+        '- In story mode, each option should be a plain trial-book line shape, such as a metal mark, a tool mark, or a custody record. Keep medieval flavour but avoid long menus.',
+        '- End by asking the learner to choose one option or write their own evidence claim.',
+      ]
+    : [
+        '- Do not make the next step multiple choice. If the learner seems unsure, name the required shape of the trial-book line directly without giving the hidden answer: "write the evidence that shows which crucible the metal came from", "write the mark that identifies the tool", or "write the record that names who alone held it".',
+        '- When talking through options, collapse them to one live issue: what evidence is missing now, what it would prove, and what the learner should state next.',
+        '- End with one direct prompt for the learner to write or say the next evidence claim; avoid long explanations before that prompt.',
+      ];
+}
+
+function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag, multipleChoice = false }) {
   const world = worldBundle?.world || null;
   return [
     'You are an experimental AI tutor stub.',
@@ -711,9 +793,7 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag }) {
     '- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.',
     '- In story mode, speak in public evidence language: "which single line of evidence belongs in the trial-book?", not "add meltedAt(...)", "sole-caster", "blank-route", or "die-route".',
     '- In story mode, keep the medieval flavour but be terse: usually 2-4 short sentences, never a catalogue of routes.',
-    '- Do not make the next step multiple choice. If the learner seems unsure, name the required shape of the trial-book line directly without giving the hidden answer: "write the evidence that shows which crucible the metal came from", "write the mark that identifies the tool", or "write the record that names who alone held it".',
-    '- When talking through options, collapse them to one live issue: what evidence is missing now, what it would prove, and what the learner should state next.',
-    '- End with one direct prompt for the learner to write or say the next evidence claim; avoid long explanations before that prompt.',
+    ...responseChoiceModeRules({ multipleChoice }),
     '- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.',
     '- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.',
     ...worldPublicPrompt(world),
@@ -721,7 +801,7 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag }) {
   ].join('\n');
 }
 
-function loadSystemPrompt({ worldBundle, dag, topic }) {
+function loadSystemPrompt({ worldBundle, dag, topic, multipleChoice = false }) {
   if (!args.system) {
     return buildSystemPrompt({
       topic,
@@ -730,6 +810,7 @@ function loadSystemPrompt({ worldBundle, dag, topic }) {
       style: args.style,
       worldBundle,
       dag,
+      multipleChoice,
     });
   }
   return fs.readFileSync(args.system, 'utf8');
@@ -769,8 +850,8 @@ function effectiveTemperatureForModel(resolved, requestedTemperature) {
 
 function normalizeRegisterPolicy(value) {
   const policy = String(value || 'dynamic').trim().toLowerCase();
-  if (policy === 'dynamic' || policy === 'bland') return policy;
-  throw new Error(`Unknown --register-policy: ${value}. Expected dynamic or bland.`);
+  if (policy === 'dynamic' || policy === 'bland' || policy === 'random') return policy;
+  throw new Error(`Unknown --register-policy: ${value}. Expected dynamic, bland, or random.`);
 }
 
 function buildRegisterPalette(mode) {
@@ -869,6 +950,14 @@ function latestRegisterSelection(state) {
   return state.register?.history?.at(-1) || null;
 }
 
+function latestRegisterEfficacy(state) {
+  return [...(state.register?.history || [])].reverse().find((entry) => entry.efficacy)?.efficacy || null;
+}
+
+function latestFieldStateMismatch(state) {
+  return latestRegisterEfficacy(state)?.mismatch || null;
+}
+
 function recentRegisterCount(state, registerName, { limit = 4 } = {}) {
   return (state.register?.history || [])
     .slice(-limit)
@@ -881,7 +970,12 @@ function registerSelectionPolicyPrompt(state) {
   const latestEfficacy = latest?.efficacy?.label || 'pending';
   const recentScaffolding = recentRegisterCount(state, 'scaffolding');
   const lines =
-    policy === 'bland'
+    policy === 'random'
+      ? [
+          '- Register policy: random. The runtime will sample a register locally from the active palette.',
+          '- Do not choose or justify a tutor register in the model output for this policy.',
+        ]
+      : policy === 'bland'
       ? [
           '- Register policy: bland. A plain, stepwise tutor is acceptable here.',
           '- Scaffolding may be selected for ordinary proof-path pacing, missing premises, or inference gaps.',
@@ -897,9 +991,25 @@ function registerSelectionPolicyPrompt(state) {
         ];
   if (latest) {
     lines.push(`- Last register: ${latest.selected_register}; observed efficacy: ${latestEfficacy}.`);
+    if (latest.efficacy?.mismatch) {
+      lines.push(
+        `- Last field/state relation: ${latest.efficacy.mismatch}; field delta ${formatSignedInterimNumber(
+          latest.efficacy.field?.delta,
+          { decimals: 3 },
+        ) || '0'}, DAG progress ${latest.efficacy.dagProgress ? 'yes' : 'no'}.`,
+      );
+    }
   }
   if (policy === 'dynamic' && recentScaffolding) {
     lines.push(`- Recent scaffolding count: ${recentScaffolding} in the last four selections. Treat this as a repetition penalty.`);
+  }
+  if (policy === 'dynamic') {
+    lines.push(
+      '- If the last relation was field_without_dag, treat that as preparatory success: use transfer_grounding, plain_compression, or clarity to convert the emerging learner move into one public evidence claim.',
+    );
+    lines.push(
+      '- If the last relation was dag_without_field, the proof state moved but learner agency flattened: ask the learner to restate why the evidence matters in their own words before pushing another proof step.',
+    );
   }
   return lines.join('\n');
 }
@@ -2061,6 +2171,7 @@ function registerSelectionSchema() {
     evidence_span: 'short quote or public-state cue supporting the choice',
     risk_flags: ['guardrail flags, or empty array'],
     expected_dag_move: 'what learner-DAG progress this register is meant to produce next',
+    expected_field_move: 'what learner-field movement this register is meant to produce next',
     expected_progress_marker: 'what the next learner turn should show if this register worked',
     confidence: 0.75,
   };
@@ -2068,7 +2179,9 @@ function registerSelectionSchema() {
 
 function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
   const staged = stagedEvidenceRows(state.world, tutorTurn);
-  const includeRegisterSelection = Boolean(state.register?.enabled && state.register.palette?.length);
+  const includeRegisterSelection = Boolean(
+    state.register?.enabled && state.register.policy !== 'random' && state.register.palette?.length,
+  );
   const schema = {
     classification: learnerClassificationSchema(),
     learner_record: learnerRecordSchema(),
@@ -2148,7 +2261,10 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
       ? 'Select one tutor register for the upcoming tutor response. Treat learner signal and tutor register as separate axes.'
       : null,
     includeRegisterSelection
-      ? 'The selected register should be appropriate to both the discourse classification and the learner-DAG state.'
+      ? 'The selected register should be appropriate to the discourse classification, the learner-DAG state, and recent field/DAG efficacy.'
+      : null,
+    includeRegisterSelection
+      ? 'Use expected_field_move for the discourse/agency/posture movement you want, and expected_dag_move for the proof-state movement you want.'
       : null,
     includeRegisterSelection
       ? 'Never choose a register outside the available palette. Negative/liminal registers appear only when explicitly included in that palette.'
@@ -2284,6 +2400,76 @@ function dagProgressFeatures(model) {
   };
 }
 
+function meanFinite(values) {
+  const finite = values.filter((value) => Number.isFinite(value));
+  if (!finite.length) return null;
+  return finite.reduce((sum, value) => sum + value, 0) / finite.length;
+}
+
+function rankLearnerFieldLabel(axis, value) {
+  if (value === undefined || value === null) return null;
+  return LEARNER_FIELD_RANKS[axis]?.[String(value).trim()] ?? null;
+}
+
+function normalizedClassifierScore(score) {
+  const numeric = Number(scoreValue(score));
+  return Number.isFinite(numeric) ? clampField01((numeric - 1) / 4) : null;
+}
+
+function learnerSurfaceFieldPoint(classification) {
+  const turn = classification?.turn || {};
+  const scores = turn.scores || {};
+  const dimensions = {
+    conceptual: normalizedClassifierScore(scores.conceptual_engagement),
+    epistemic: normalizedClassifierScore(scores.epistemic_readiness),
+    evidence: rankLearnerFieldLabel('evidence_use', turn.evidence_use),
+    agency: rankLearnerFieldLabel('agency', turn.agency),
+    stance: rankLearnerFieldLabel('epistemic_stance', turn.epistemic_stance),
+    discourse: rankLearnerFieldLabel('discourse_move', turn.discourse_move),
+  };
+  return {
+    score: meanFinite(Object.values(dimensions)),
+    dimensions,
+    labels: {
+      discourse_move: turn.discourse_move || null,
+      evidence_use: turn.evidence_use || null,
+      epistemic_stance: turn.epistemic_stance || null,
+      agency: turn.agency || null,
+    },
+    summary: turn.summary || null,
+  };
+}
+
+function previousLearnerSurfaceFieldPoint(state) {
+  const previousTurn = [...(state.turns || [])].reverse().find((turn) => turn.classification);
+  return previousTurn ? learnerSurfaceFieldPoint(previousTurn.classification) : null;
+}
+
+function fieldProgressFromClassification({ state, classification }) {
+  const before = previousLearnerSurfaceFieldPoint(state);
+  const after = learnerSurfaceFieldPoint(classification);
+  const delta =
+    before?.score === null || before?.score === undefined || after?.score === null || after?.score === undefined
+      ? null
+      : Number((after.score - before.score).toFixed(3));
+  return {
+    threshold: FIELD_PROGRESS_THRESHOLD,
+    beforeScore: before?.score ?? null,
+    afterScore: after?.score ?? null,
+    delta,
+    progress: delta !== null && delta >= FIELD_PROGRESS_THRESHOLD,
+    before: before || null,
+    after,
+  };
+}
+
+function classifyFieldStateRelation({ fieldProgress, dagProgress }) {
+  if (fieldProgress && !dagProgress) return 'field_without_dag';
+  if (dagProgress && !fieldProgress) return 'dag_without_field';
+  if (fieldProgress && dagProgress) return 'both_progress';
+  return 'neither_progress';
+}
+
 function summarizeDagDeltas(delta) {
   const parts = [];
   if (delta.bestPathCoverage) parts.push(`coverage ${delta.bestPathCoverage > 0 ? '+' : ''}${delta.bestPathCoverage}`);
@@ -2297,7 +2483,7 @@ function summarizeDagDeltas(delta) {
   return parts.join(', ') || 'no learner-DAG movement';
 }
 
-function registerEfficacyFromDagProgress({ selection, currentModel, accepted }) {
+function registerEfficacyFromDagProgress({ selection, currentModel, accepted, state, classification }) {
   const before = dagProgressFeatures(selection?.selectedAtDag);
   const after = dagProgressFeatures(currentModel);
   const delta = Object.fromEntries(Object.keys(after).map((key) => [key, Number(after[key]) - Number(before[key])]));
@@ -2310,6 +2496,9 @@ function registerEfficacyFromDagProgress({ selection, currentModel, accepted }) 
     delta.missingPremiseCount -
     Math.max(0, delta.unsupportedAssertionCount);
   const label = progressScore > 0 ? 'positive_progress' : progressScore < 0 ? 'regression_or_overreach' : 'no_clear_progress';
+  const dagProgress = progressScore > 0;
+  const field = fieldProgressFromClassification({ state, classification });
+  const mismatch = classifyFieldStateRelation({ fieldProgress: field.progress, dagProgress });
   return {
     schema: 'machinespirits.tutor-stub.register-efficacy.v1',
     evaluatedAtTurn: currentModel?.turn ?? null,
@@ -2317,6 +2506,9 @@ function registerEfficacyFromDagProgress({ selection, currentModel, accepted }) 
     selected_register: selection?.selected_register || null,
     label,
     progressScore,
+    dagProgress,
+    field,
+    mismatch,
     delta,
     acceptedUpdate: accepted
       ? {
@@ -2327,11 +2519,12 @@ function registerEfficacyFromDagProgress({ selection, currentModel, accepted }) 
         }
       : null,
     summary: summarizeDagDeltas(delta),
-    caveat: 'Heuristic local association only: the next learner turn is compared with the DAG state when the register was selected.',
+    caveat:
+      'Heuristic local association only: the next learner turn is compared with the DAG and learner-field state when the register was selected.',
   };
 }
 
-function evaluatePendingRegisterEfficacy(state, currentDagResult) {
+function evaluatePendingRegisterEfficacy(state, currentDagResult, classification = null) {
   if (!state.register?.enabled || !currentDagResult?.model) return null;
   const pending = [...state.register.history].reverse().find((entry) => !entry.efficacy && entry.turn < currentDagResult.model.turn);
   if (!pending) return null;
@@ -2339,6 +2532,8 @@ function evaluatePendingRegisterEfficacy(state, currentDagResult) {
     selection: pending,
     currentModel: currentDagResult.model,
     accepted: currentDagResult.accepted,
+    state,
+    classification,
   });
   return pending.efficacy;
 }
@@ -2385,6 +2580,8 @@ function shouldUseDynamicScaffolding({ state, classification, assessment }) {
   const bottleneck = assessment.bottleneck || '';
   const hasDagGap = /release_or_pacing_gap|inference_gap/.test(bottleneck);
   const explicitStepwise = hasExplicitStepwiseSignal(classification);
+  const latestMismatch = latestFieldStateMismatch(state);
+  if (/field_without_dag|dag_without_field/.test(latestMismatch || '') && !explicitStepwise) return false;
   if (!hasDagGap || !explicitStepwise) return false;
   if (scaffoldingRepeatPenalty(state) && !explicitStepwise) return false;
   return true;
@@ -2398,21 +2595,44 @@ function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
   const stance = classification?.turn?.epistemic_stance || 'unknown';
   const evidenceUse = classification?.turn?.evidence_use || 'unknown';
   const agency = classification?.turn?.agency || 'unknown';
+  const latestMismatch = latestFieldStateMismatch(state);
   let selected = 'clarity';
+  let reason = '';
+  let expectedFieldMove = '';
 
   if (palette.has('witnessing_restraint') && /vulnerable|affective/.test(`${move} ${stance}`)) {
     selected = 'witnessing_restraint';
+    reason = 'Affective exposure is the strongest current learner signal.';
+    expectedFieldMove = 'Lower learner risk enough for a concrete public-evidence move to become possible.';
   } else if (palette.has('accountable_bid_authority') && /challenge|overleaps_evidence/.test(`${move} ${evidenceUse}`)) {
     selected = 'accountable_bid_authority';
+    reason = 'The learner is challenging or overleaping the public evidence, so the tutor should hold the bid accountable.';
+    expectedFieldMove = 'Shift from unsupported assertion toward a publicly warranted claim.';
+  } else if (policy === 'dynamic' && latestMismatch === 'field_without_dag') {
+    selected = firstAvailableRegister(palette, ['transfer_grounding', 'plain_compression', 'clarity', 'charismatic_challenge']);
+    reason =
+      'The previous register improved the learner field without proof-DAG movement; convert that preparatory movement into one public evidence claim.';
+    expectedFieldMove = 'Turn improved orientation or agency into a learner-owned trial-book statement.';
+  } else if (policy === 'dynamic' && latestMismatch === 'dag_without_field') {
+    selected = firstAvailableRegister(palette, ['plain_compression', 'clarity', 'witnessing_restraint', 'transfer_grounding']);
+    reason =
+      'The proof-DAG advanced while learner field movement flattened; ask the learner to own the reason for the step before pushing another premise.';
+    expectedFieldMove = 'Recover agency and explanatory ownership around the evidence just adopted.';
   } else if (
     palette.has('charismatic_challenge') &&
     /resistant|overconfident|answer_seeking|complying|passive/.test(`${stance} ${evidenceUse} ${agency}`)
   ) {
     selected = 'charismatic_challenge';
+    reason = 'Low-agency, answer-seeking, or overconfident posture warrants a compact challenge rather than another stepwise hint.';
+    expectedFieldMove = 'Increase learner agency or evidence-seeking without supplying the concealed answer.';
   } else if (policy === 'bland' && palette.has('scaffolding') && /release_or_pacing_gap|inference_gap/.test(assessment.bottleneck || '')) {
     selected = 'scaffolding';
+    reason = 'Bland policy permits ordinary stepwise support for the current proof-state bottleneck.';
+    expectedFieldMove = 'Keep learner effort organized around the next immediate evidence step.';
   } else if (policy === 'dynamic' && palette.has('scaffolding') && shouldUseDynamicScaffolding({ state, classification, assessment })) {
     selected = 'scaffolding';
+    reason = 'The learner is explicitly asking for stepwise help on the immediate evidence move.';
+    expectedFieldMove = 'Make the next learner-owned inference easier without turning it into a menu or answer.';
   } else if (!palette.has(selected)) {
     selected = firstAvailableRegister(palette, [
       'clarity',
@@ -2425,39 +2645,83 @@ function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
     ]);
   }
 
+  if (!reason) {
+    reason =
+      policy === 'dynamic' && selected !== 'scaffolding'
+        ? 'Dynamic fallback selected after missing or invalid model register output; scaffolding is non-default.'
+        : 'Fallback register selected after missing or invalid model register output.';
+  }
+  if (!expectedFieldMove) {
+    expectedFieldMove = 'Improve the learner field enough that the next public evidence move becomes more likely.';
+  }
+
   return {
     selected_register: selected,
     learner_signal: move,
-    register_reason:
-      policy === 'dynamic' && selected !== 'scaffolding'
-        ? 'Dynamic fallback selected after missing or invalid model register output; scaffolding is non-default.'
-        : 'Fallback register selected after missing or invalid model register output.',
+    register_reason: reason,
     evidence_span: classification?.turn?.summary || '',
     risk_flags: [],
     expected_dag_move: 'Elicit one public, checkable learner move that can update the learner-DAG record.',
+    expected_field_move: expectedFieldMove,
     expected_progress_marker: 'Next learner turn adopts staged evidence, voices a derivable inference, or corrects an overreach.',
     confidence: 0.25,
     warning: 'fallback_register_selection',
+    source: 'local_fallback_register_selection',
+  };
+}
+
+function randomRegisterSelection({ state, classification }) {
+  const palette = state.register?.palette || [];
+  const randomValue = Math.random();
+  const index = Math.min(palette.length - 1, Math.floor(randomValue * palette.length));
+  const selected = palette[index] || firstAvailableRegister(new Set(palette), ['clarity', 'plain_compression', 'scaffolding']);
+  return {
+    selected_register: selected,
+    learner_signal: classification?.turn?.discourse_move || 'random_policy',
+    register_reason:
+      'Random register policy sampled uniformly from the active palette; this choice is not a classifier- or learner-DAG-based recommendation.',
+    evidence_span: classification?.turn?.summary || '',
+    risk_flags: [],
+    expected_dag_move:
+      'No register-specific DAG move is predicted; preserve evidence safety while following the sampled register stance.',
+    expected_field_move:
+      'Observe whether the sampled stance changes learner agency, evidence use, stance, or conceptual engagement.',
+    expected_progress_marker:
+      'Use the next learner turn to observe whether this random register coincides with learner-DAG progress.',
+    confidence: null,
+    source: 'random_register_policy',
+    random: {
+      method: 'Math.random',
+      value: Number(randomValue.toFixed(6)),
+      index,
+      population: palette.length,
+    },
   };
 }
 
 function normalizeRegisterSelection(rawSelection, { state, classification, tutorLearnerDag, raw }) {
   if (!state.register?.enabled) return null;
   const palette = new Set(state.register.palette || []);
+  const policy = state.register?.policy || 'dynamic';
+  if (policy === 'random') {
+    rawSelection = randomRegisterSelection({ state, classification });
+  }
   const normalizedRawSelection =
     typeof rawSelection === 'string' ? { selected_register: rawSelection } : rawSelection || {};
   const requested = String(normalizedRawSelection.selected_register || normalizedRawSelection.register || '').trim();
   const requestedIsKnown = Boolean(requested && palette.has(requested));
   const dynamicScaffoldingBlocked = Boolean(
     requestedIsKnown &&
-      state.register.policy === 'dynamic' &&
+      policy === 'dynamic' &&
       requested === 'scaffolding' &&
       !shouldUseDynamicScaffolding({ state, classification, assessment: tutorLearnerDag?.model?.assessment || {} }),
   );
   const source =
-    requestedIsKnown && !dynamicScaffoldingBlocked
+    policy === 'random'
       ? normalizedRawSelection
-      : fallbackRegisterSelection({ state, classification, tutorLearnerDag });
+      : requestedIsKnown && !dynamicScaffoldingBlocked
+        ? normalizedRawSelection
+        : fallbackRegisterSelection({ state, classification, tutorLearnerDag });
   const selected = String(source.selected_register || source.register || '').trim();
   const definition = getEngagementRegisterDefinition(selected) || {};
   const selection = {
@@ -2473,14 +2737,18 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
     evidence_span: String(source.evidence_span || source.evidence || ''),
     risk_flags: Array.isArray(source.risk_flags) ? source.risk_flags.map(String) : [],
     expected_dag_move: String(source.expected_dag_move || ''),
+    expected_field_move: String(source.expected_field_move || source.expected_learner_field_move || ''),
     expected_progress_marker: String(source.expected_progress_marker || ''),
     confidence: Number.isFinite(Number(source.confidence)) ? Number(source.confidence) : null,
-    source: 'combined_learner_analysis',
+    source: source.source || 'combined_learner_analysis',
+    random: source.random || null,
     model: raw ? { provider: raw.provider, model: raw.model, latencyMs: raw.latencyMs, usage: raw.usage } : null,
     selectedAtDag: tutorLearnerDag?.model || null,
     efficacy: null,
   };
-  if (!requestedIsKnown) {
+  if (source.warning) {
+    selection.warning = source.warning;
+  } else if (!requestedIsKnown && selection.source === 'combined_learner_analysis') {
     selection.warning = source.warning || `invalid_register_selection:${requested || 'missing'}`;
   } else if (dynamicScaffoldingBlocked) {
     selection.warning = 'dynamic_policy_scaffolding_demoted';
@@ -2678,7 +2946,7 @@ async function analyzeLearnerTurnCombined(learnerText, state) {
     const update = learnerRecordFromCombinedAnalysis(raw);
     const tutorLearnerDag = applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText });
     state.learnerDag.lastModel = tutorLearnerDag.model;
-    const previousRegisterEfficacy = evaluatePendingRegisterEfficacy(state, tutorLearnerDag);
+    const previousRegisterEfficacy = evaluatePendingRegisterEfficacy(state, tutorLearnerDag, classification);
     const registerSelection = normalizeRegisterSelection(registerSelectionFromCombinedAnalysis(raw), {
       state,
       classification,
@@ -2708,10 +2976,18 @@ async function analyzeLearnerTurnCombined(learnerText, state) {
       },
     };
     state.learnerDag.lastModel = tutorLearnerDag.model;
+    const previousRegisterEfficacy = evaluatePendingRegisterEfficacy(state, tutorLearnerDag, classification);
+    const registerSelection = normalizeRegisterSelection(null, {
+      state,
+      classification,
+      tutorLearnerDag,
+      raw: null,
+    });
     stopInterimAnimation(state);
     printClassification(classification);
     printTutorLearnerDagModel(tutorLearnerDag);
-    return { classification, tutorLearnerDag, registerSelection: null, previousRegisterEfficacy: null };
+    printRegisterSelection(registerSelection, previousRegisterEfficacy);
+    return { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy };
   }
 }
 
@@ -2722,7 +2998,15 @@ async function analyzeLearnerTurn(learnerText, state) {
 
   const classification = await classifyForTurn(learnerText, state);
   const tutorLearnerDag = await buildTutorLearnerDagForTurn(learnerText, state);
-  return { classification, tutorLearnerDag, registerSelection: null, previousRegisterEfficacy: null };
+  const previousRegisterEfficacy = evaluatePendingRegisterEfficacy(state, tutorLearnerDag, classification);
+  const registerSelection = normalizeRegisterSelection(null, {
+    state,
+    classification,
+    tutorLearnerDag,
+    raw: null,
+  });
+  printRegisterSelection(registerSelection, previousRegisterEfficacy);
+  return { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy };
 }
 
 function printTutorLearnerDagModel(result) {
@@ -2756,19 +3040,24 @@ function printTutorLearnerDagModel(result) {
 
 function printRegisterSelection(selection, previousEfficacy = null) {
   if (previousEfficacy) {
+    const fieldDelta = formatSignedInterimNumber(previousEfficacy.field?.delta, { decimals: 3 }) || '0';
+    const mismatch = previousEfficacy.mismatch ? `; ${previousEfficacy.mismatch}; field ${fieldDelta}` : '';
     console.log(
-      `${C.cyan}register efficacy >${C.reset} ${previousEfficacy.selected_register} ${previousEfficacy.label} (${previousEfficacy.summary})`,
+      `${C.cyan}register efficacy >${C.reset} ${previousEfficacy.selected_register} ${previousEfficacy.label}${mismatch} (${previousEfficacy.summary})`,
     );
   }
   if (!selection) return;
   const warning = selection.warning ? ` ${C.red}${selection.warning}${C.reset}` : '';
   const confidence = selection.confidence !== null ? `; confidence ${selection.confidence}` : '';
-  console.log(`${C.cyan}tutor register >${C.reset} ${selection.selected_register}${confidence}${warning}`);
+  const source =
+    selection.source && selection.source !== 'combined_learner_analysis' ? `; source ${selection.source}` : '';
+  console.log(`${C.cyan}tutor register >${C.reset} ${selection.selected_register}${confidence}${source}${warning}`);
   if (selection.register_reason) console.log(`${C.dim}  reason: ${selection.register_reason}${C.reset}`);
   if (selection.expected_dag_move) console.log(`${C.dim}  expected DAG move: ${selection.expected_dag_move}${C.reset}`);
+  if (selection.expected_field_move) console.log(`${C.dim}  expected field move: ${selection.expected_field_move}${C.reset}`);
 }
 
-function registerSelectionContext(selection) {
+function registerSelectionContext(selection, { multipleChoice = false } = {}) {
   if (!selection) return '';
   const definition = getEngagementRegisterDefinition(selection.selected_register) || {};
   const stanceContract = String(definition.stance_contract || '').trim();
@@ -2786,12 +3075,15 @@ function registerSelectionContext(selection) {
     `Learner signal: ${selection.learner_signal || 'unknown'}`,
     `Reason: ${selection.register_reason || 'No reason supplied.'}`,
     `Expected learner-DAG move: ${selection.expected_dag_move || 'No expected move supplied.'}`,
+    `Expected learner-field move: ${selection.expected_field_move || 'No expected field move supplied.'}`,
     stanceContract ? 'Stance contract:' : null,
     stanceContract || null,
     guardrails.length ? 'Guardrails:' : null,
     ...guardrails,
     'Write the next tutor message in this register without naming the register, the classifier, or the learner-DAG machinery.',
-    'Keep the turn compact. In story mode, give one live evidence issue and one direct trial-book prompt, not a menu of possible routes.',
+    multipleChoice
+      ? 'Keep the turn compact. In story mode, if you use multiple choice, offer 2-4 short public evidence options and invite the learner to choose or write their own trial-book line.'
+      : 'Keep the turn compact. In story mode, give one live evidence issue and one direct trial-book prompt, not a menu of possible routes.',
     '[End tutor-only selected register]',
   ]
     .filter(Boolean)
@@ -3092,11 +3384,14 @@ function printCurrentTurnAnalysis(state) {
     );
     printAnalysisLine('register reason', registerSelection.register_reason);
     printAnalysisLine('expected DAG move', registerSelection.expected_dag_move);
+    printAnalysisLine('expected field move', registerSelection.expected_field_move);
     printAnalysisLine('expected progress marker', registerSelection.expected_progress_marker);
     if (selectedEfficacy) {
       printAnalysisLine(
         'selected register efficacy',
-        `${selectedEfficacy.label}; score=${selectedEfficacy.progressScore}; ${selectedEfficacy.summary}`,
+        `${selectedEfficacy.label}; score=${selectedEfficacy.progressScore}; ${
+          selectedEfficacy.mismatch || 'field-state unknown'
+        }; fieldDelta=${selectedEfficacy.field?.delta ?? 'n/a'}; ${selectedEfficacy.summary}`,
       );
     } else {
       printAnalysisLine('selected register efficacy', 'pending the next learner turn');
@@ -3107,7 +3402,9 @@ function printCurrentTurnAnalysis(state) {
   if (previousEfficacy) {
     printAnalysisLine(
       'previous register efficacy',
-      `${previousEfficacy.selected_register}: ${previousEfficacy.label}; score=${previousEfficacy.progressScore}; ${previousEfficacy.summary}`,
+      `${previousEfficacy.selected_register}: ${previousEfficacy.label}; score=${previousEfficacy.progressScore}; ${
+        previousEfficacy.mismatch || 'field-state unknown'
+      }; fieldDelta=${previousEfficacy.field?.delta ?? 'n/a'}; ${previousEfficacy.summary}`,
     );
   }
 
@@ -3430,12 +3727,13 @@ async function callTutor({
   trace = null,
   stream = null,
   cliEffort = null,
+  multipleChoice = false,
 }) {
   const context = trimHistory(history, historyTurns);
   const tutorTurn = Math.floor(history.length / 2) + 1;
   const advisory = classifierTutorContext(classification);
   const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel);
-  const registerAdvisory = registerSelectionContext(registerSelection);
+  const registerAdvisory = registerSelectionContext(registerSelection, { multipleChoice });
   const learnerPrompt = `Learner says:\n${learnerText}`;
   const promptParts = [
     dag && world ? dagTurnContext(world, tutorTurn) : null,
@@ -3659,6 +3957,7 @@ async function runOneTurn(
     trace: state.trace,
     stream: state.stream,
     cliEffort: state.cliEffort,
+    multipleChoice: state.multipleChoice,
   });
   const dagSnapshot = buildTutorDagSnapshot(state, tutorTurn);
 
@@ -3713,7 +4012,13 @@ async function main() {
   const worldBundle = resolveWorldRef(args.world);
   const directorContext = buildDirectorInitialContext(worldBundle?.world || null);
   const effectiveTopic = worldBundle && args.topic === STUB.topic ? worldBundle.world.title : args.topic;
-  const systemPrompt = loadSystemPrompt({ worldBundle, dag: args.dag, topic: effectiveTopic });
+  const multipleChoiceEnabled = Boolean(args['multiple-choice']);
+  const systemPrompt = loadSystemPrompt({
+    worldBundle,
+    dag: args.dag,
+    topic: effectiveTopic,
+    multipleChoice: multipleChoiceEnabled,
+  });
   const tutorDag = args.dag && worldBundle ? buildTutorDesireDag(worldBundle.world) : null;
   const resolved = resolveModel(args.model);
   const providerConfig = getProviderConfig(resolved.provider);
@@ -3722,7 +4027,12 @@ async function main() {
   const combinedLearnerAnalysisEnabled = Boolean(classifierEnabled && tutorLearnerDagEnabled);
   const registerPalette = buildRegisterPalette(args['safe-registers'] ? 'safe' : args['register-palette']);
   const registerPolicy = normalizeRegisterPolicy(args['register-policy']);
-  const registerSelectionEnabled = Boolean(!args['no-register-selection'] && combinedLearnerAnalysisEnabled);
+  const randomRegisterSelectionEnabled = registerPolicy === 'random';
+  const registerSelectionEnabled = Boolean(
+    !args['no-register-selection'] &&
+      registerPalette.length &&
+      (combinedLearnerAnalysisEnabled || randomRegisterSelectionEnabled),
+  );
   const classifierResolved = classifierEnabled && !combinedLearnerAnalysisEnabled ? resolveModel(args['classifier-model']) : null;
   const classifierProviderConfig = classifierResolved ? getProviderConfig(classifierResolved.provider) : null;
   const learnerRecordResolved = tutorLearnerDagEnabled ? resolveModel(args['learner-record-model']) : null;
@@ -3800,7 +4110,8 @@ async function main() {
                 enabled: true,
                 palette: registerPalette,
                 policy: registerPolicy,
-                combinedLearnerAnalysis: true,
+                combinedLearnerAnalysis: combinedLearnerAnalysisEnabled,
+                random: randomRegisterSelectionEnabled,
               }
             : { enabled: false },
           maxTokens,
@@ -3822,6 +4133,7 @@ async function main() {
           },
           opening: { enabled: openingEnabled, printedByDefault: Boolean(openingEnabled && !firstMessage) },
           closeoutReport: { enabled: closeoutReportEnabled },
+          multipleChoice: { enabled: multipleChoiceEnabled },
           interimAnimation: {
             enabled: interimAnimationEnabled,
             activeInThisTerminal: Boolean(interimAnimationEnabled && output.isTTY),
@@ -3874,7 +4186,13 @@ async function main() {
       classifier: visibleClassifierConfig,
       tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
       registerSelection: registerSelectionEnabled
-        ? { enabled: true, palette: registerPalette, policy: registerPolicy }
+        ? {
+            enabled: true,
+            palette: registerPalette,
+            policy: registerPolicy,
+            combinedLearnerAnalysis: combinedLearnerAnalysisEnabled,
+            random: randomRegisterSelectionEnabled,
+          }
         : { enabled: false },
       cliEffort: cliEffort || null,
       stream: {
@@ -3887,6 +4205,7 @@ async function main() {
       },
       opening: { enabled: openingEnabled, printedByDefault: Boolean(openingEnabled && !firstMessage) },
       closeoutReport: { enabled: closeoutReportEnabled },
+      multipleChoice: { enabled: multipleChoiceEnabled },
       interimAnimation: {
         enabled: interimAnimationEnabled,
         activeInThisTerminal: Boolean(interimAnimationEnabled && output.isTTY),
@@ -3941,6 +4260,7 @@ async function main() {
       interim,
     },
     cliEffort,
+    multipleChoice: multipleChoiceEnabled,
     history: [],
     turns: [],
   };
