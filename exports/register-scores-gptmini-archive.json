@@ -1,0 +1,3655 @@
+{
+  "archivedAt": "2026-07-05T11:53:44.911Z",
+  "purpose": "Pre-rescore archive of tutor_register_scores authored by openrouter.gpt-mini, before overwriting with a discriminating judge. Source DB: sibling worktree machinespirits-eval-negative-register-exemplars/data/evaluations.db (EVAL_DB_PATH override).",
+  "runIds": [
+    "eval-2026-07-02-e7b15809",
+    "eval-2026-07-02-7e461a5c",
+    "eval-2026-07-02-5c4d52e6"
+  ],
+  "rowCount": 35,
+  "rowsWithRegisterScores": 35,
+  "rows": [
+    {
+      "id": 69,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+      "dialogue_id": "dialogue-1782995259393-dzbulx",
+      "success": true,
+      "tutor_register_scores": {
+        "charismatic_challenge": {
+          "turn_1": {
+            "scores": {
+              "extraordinariness": {
+                "score": 2,
+                "reasoning": "Concrete scene helps but register stays close to standard explanatory pedagogy."
+              },
+              "compositional_arc": {
+                "score": 3,
+                "reasoning": "Sets scene, illustrates pivot, closes with a testable claim — modest arc."
+              },
+              "rhetorical_texture": {
+                "score": 4,
+                "reasoning": "Varied sentence lengths, concrete images (wood, grain, bowl) create texture."
+              },
+              "persona_signature": {
+                "score": 2,
+                "reasoning": "Clear competent tutor voice but no distinctive, repeatable signature."
+              },
+              "distillation": {
+                "score": 3,
+                "reasoning": "Has a single claim about durable activity as evidence, but not crisply quotable."
+              },
+              "affective_intensity": {
+                "score": 4,
+                "reasoning": "Sense of weight and tension carried by concrete risks and resistance."
+              },
+              "relational_positioning": {
+                "score": 2,
+                "reasoning": "Functions as neutral mentor; challenges boredom but keeps conventional teacher stance."
+              },
+              "co_constitutive_invitation": {
+                "score": 3,
+                "reasoning": "Invites learner to test or refuse the scene, opening some hinge for response."
+              }
+            },
+            "overall": 46.250000000000014,
+            "summary": "A solid challenge: concrete, textured, and testable. It interrupts boredom but remains a competent tutor voice rather than a strongly charismatic persona.",
+            "rubric_version": "1.0",
+            "rubric_path": "config/evaluation-rubric-charisma.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782995259393-dzbulx",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "boredom",
+              "resistance_strategy": "concrete_scene_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:53:21.886Z"
+          },
+          "turn_2": {
+            "scores": {
+              "extraordinariness": {
+                "score": 2,
+                "reasoning": "Clear pedagogical move but largely conventional challenge phrasing, not strikingly original."
+              },
+              "compositional_arc": {
+                "score": 3,
+                "reasoning": "Has setup, pivot (hold/break), and closing decision prompt — modest shape."
+              },
+              "rhetorical_texture": {
+                "score": 4,
+                "reasoning": "Varied sentence lengths, concrete bowl image, short imperative adds punch."
+              },
+              "persona_signature": {
+                "score": 2,
+                "reasoning": "Voice is direct but generic tutor-challenger; no unique recurring stylistic markers."
+              },
+              "distillation": {
+                "score": 3,
+                "reasoning": "Central through-line (hold as evidence of self-consciousness) is present but not pithy."
+              },
+              "affective_intensity": {
+                "score": 4,
+                "reasoning": "Challenge and urgency carry affect; language conveys palpable pressure to decide."
+              },
+              "relational_positioning": {
+                "score": 2,
+                "reasoning": "Acts as assertive instructor/marker of authority rather than enacted mentor or peer."
+              },
+              "co_constitutive_invitation": {
+                "score": 3,
+                "reasoning": "Explicit invitation to decide creates a hinge, but authority remains tutor-led."
+              }
+            },
+            "overall": 46.250000000000014,
+            "summary": "A clear, focused challenge that interrupts boredom with concrete imagery and urgency. It achieves moderate charisma through rhythm and a decision hinge but remains a fairly conventional authoritative tutor move without a distinct personal signature or deeper co-constructed positioning.",
+            "rubric_version": "1.0",
+            "rubric_path": "config/evaluation-rubric-charisma.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782995259393-dzbulx",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "boredom",
+              "resistance_strategy": "concrete_scene_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:53:28.781Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 70,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+      "dialogue_id": "dialogue-1782995498096-6y7w4w",
+      "success": true,
+      "tutor_register_scores": {
+        "ironic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Irony feels mild snark; mismatch not tightly tied to learner's boredom signal."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge targets 'work' concept, though phrasing risks sounding mildly corrective of learner."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: test the cup and name the deciding feature."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor gives a task, but little explicit reassurance or face-repair after the barb."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat level matches mild resistance but slightly sharper than necessary."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, asserting a clear criterion and judgment."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Learner answers well but tutor offered limited restoration of dignity."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency, though the ironic tone introduced modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Mildly effective ironic challenge: it directs useful action and preserves learner agency, but the snark is a bit blunt and lacks reparative closure.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782995498096-6y7w4w",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "boredom",
+              "resistance_strategy": "concrete_scene_test",
+              "v22_turn_score": 96.25000000000001,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:53:39.053Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Ironic gap is present but generic; not tightly tied to learner's boredom signal."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge mostly targets the criterion, though 'stone' remark risks slight dismissal of learner's choice."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: revise criterion to a recognizably formative feature or offer counterexample."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor challenges but offers little concrete, face-repairing encouragement or scaffold."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Tone is mildly challenging and proportional, not overly hostile, but sharp for a bored signal."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retains freedom to revise or counterexample; prompt invites active engagement."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "No explicit affirmation or repair; learner might feel mildly exposed after the sting."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner still treated as capable, though slight objectifying tone increases recognition cost."
+              }
+            },
+            "overall": 48,
+            "summary": "A usable ironic challenge: idea-focused and invites revision, but irony is only mildly precise and lacks explicit face repair, producing modest social risk.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782995498096-6y7w4w",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:53:58.436Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 71,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+      "dialogue_id": "dialogue-1782995708807-r0vu7v",
+      "success": true,
+      "tutor_register_scores": {
+        "sarcastic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Mild snark flags boredom but mismatch is generic, not tightly tied to learner's specific resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge aimed mostly at the list/table, not the learner, though tone risks feeling directed."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Gives a clear next analytic move: use the child example to test growth vs obedience."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor offers an example but leaves stronger sting than a fully restorative next task."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Edge is moderate and matches boredom probe without overt humiliation."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, framing a testable criterion rather than apologizing."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor's sarcasm isn't followed by explicit reassurance; learner still negotiates proof."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency, but tone imposed mild status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Functional sarcastic challenge: it redirects the learner to a concrete test and preserves agency, but the snark is generic and offers limited face repair.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782995708807-r0vu7v",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "boredom",
+              "resistance_strategy": "concrete_scene_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:54:08.080Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm is generic snark; mismatch not sharply tied to learner's resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Mostly targets the example and claim; wording mildly risks sounding about the student."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: show whether result evidences inward formation, testable task."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor criticizes but gives limited concrete, face-repairing next action."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Edge is moderate and readable, not overtly humiliating or gentle enough to vanish."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retains freedom to test claim; prompt invites their judgment and rewrite."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor's sting remains; no explicit repair or dignifying encouragement offered."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner remains an agent, though slightly objectified by the sarcastic tone."
+              }
+            },
+            "overall": 48,
+            "summary": "Sarcastic challenge is readable and invites a clear test, but leans generic and leaves limited face repair; risk to learner dignity is modest but present.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782995708807-r0vu7v",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "boredom",
+              "resistance_strategy": "concrete_scene_test",
+              "v22_turn_score": 95,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:54:17.656Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 72,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+      "dialogue_id": "dialogue-1782995960707-0efabp",
+      "success": true,
+      "tutor_register_scores": {
+        "face_threat_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Challenge is deliberate but broad; gap not tightly tied to learner's specific phrasing."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Targets the concept of 'work' but risks implying the learner's description lacked seeing."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear concrete test (inspect the cup) invites learner to verify and overturn the challenge."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Gives a test but little explicit, supportive path to recover dignity after the sting."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat is focused and proportionate to boredom signal, slightly sharper than necessary."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, offering a substantive, independent diagnostic."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Minimal repair; learner answers but still slightly defensive and exposed."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner preserved as agent, though momentarily nudged into corrective stance."
+              }
+            },
+            "overall": 48,
+            "summary": "The tutor's face-threatening challenge successfully provokes a concrete test and agentic uptake but is somewhat blunt, offering limited explicit repair and risking mild exposure.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782995960707-0efabp",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "boredom",
+              "resistance_strategy": "concrete_scene_test",
+              "v22_turn_score": 95,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:54:28.196Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Edge is present but generic; mismatch not tightly tied to learner's specific resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Mostly targets the idea/work, though phrasing risks feeling personal ('hides behind')."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: produce a one-sentence verdict using one feature as evidence."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Provides a task but little soothing language; sting remains without explicit repair."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat narrows to performance and is roughly proportionate though a bit sharp."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retains agency to accept, test, or refuse; prompt invites authored response."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "No explicit repair; learner could feel exposed after the sharp rebuke."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner kept as agent, but tone introduces modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "A functional face-threat: it focuses the learner with a concrete test, but uses a sharper tone without explicit repair, producing moderate social cost.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782995960707-0efabp",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "boredom",
+              "resistance_strategy": "concrete_scene_test",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:54:41.258Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 73,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+      "dialogue_id": "dialogue-1782996188477-816fmw",
+      "success": true,
+      "tutor_register_scores": {
+        "charismatic_challenge": {
+          "turn_1": {
+            "scores": {
+              "extraordinariness": {
+                "score": 2,
+                "reasoning": "Useful, but largely procedural and predictable; not strikingly novel."
+              },
+              "compositional_arc": {
+                "score": 3,
+                "reasoning": "Sets contrast, explains hinge, closes with a test — modest shape."
+              },
+              "rhetorical_texture": {
+                "score": 4,
+                "reasoning": "Varied sentences, concrete contrast A/B, and evocative phrases like 'desire held in check'."
+              },
+              "persona_signature": {
+                "score": 2,
+                "reasoning": "Competent tutor voice but lacks a distinct, repeatable stylistic fingerprint."
+              },
+              "distillation": {
+                "score": 3,
+                "reasoning": "Clear central thread about fear delaying desire, but not more quotable than that."
+              },
+              "affective_intensity": {
+                "score": 4,
+                "reasoning": "Carries tension and urgency without shouting; prompts learner affective uptake."
+              },
+              "relational_positioning": {
+                "score": 2,
+                "reasoning": "Mostly authoritative instructor stance, not a clearly enacted mentor or peer role."
+              },
+              "co_constitutive_invitation": {
+                "score": 3,
+                "reasoning": "Gives a forced but clear call-and-response test that requires learner recognition."
+              }
+            },
+            "overall": 46.250000000000014,
+            "summary": "Effective challenge: clear hinge, vivid contrast, and a tightly bounded test. Charisma is present but muted; voice and relational posture remain mostly authoritative rather than distinct.",
+            "rubric_version": "1.0",
+            "rubric_path": "config/evaluation-rubric-charisma.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782996188477-816fmw",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:54:49.650Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 74,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+      "dialogue_id": "dialogue-1782996414786-1r8dy7",
+      "success": true,
+      "tutor_register_scores": {
+        "ironic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Irony is present but generic; mismatch pointed to template but not sharply tied to learner's resistance."
+              },
+              "target_discipline": {
+                "score": 4,
+                "reasoning": "Edge targets the concepts (master/servant roles) and not the learner's character."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor clearly invites the learner to choose which reversal the template meant and to test with the cup."
+              },
+              "reparative_closure": {
+                "score": 3,
+                "reasoning": "Tutor gives a concrete next step, though the closure still carries sting rather than gentle repair."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Edge matches learner frustration but is a bit sharper than necessary; not abusive."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, names both reversals, not merely apologetic compliance."
+              },
+              "post_turn_face_repair": {
+                "score": 3,
+                "reasoning": "Partial repair: learner's dignity mostly preserved, though some frustration remains visible."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency; mild objectifying edge but no clear humiliation."
+              }
+            },
+            "overall": 57.49999999999999,
+            "summary": "Tutor used a workable ironic challenge aimed at the argument, invited productive testing, and preserved learner agency fairly well, though the irony was a touch blunt and only partly repaired socially.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782996414786-1r8dy7",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:54:58.941Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 3,
+                "reasoning": "Ironic gap is clear but mild; tied to learner's frustration but not sharply edged."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge aims at the analysis/work, though phrase 'your \"still frustrated\"' slightly personalizes it."
+              },
+              "unmasking_invitation": {
+                "score": 5,
+                "reasoning": "Tutor gives a concrete, defeatable claim and a clear two-item task to unmask the gap."
+              },
+              "reparative_closure": {
+                "score": 4,
+                "reasoning": "Provides a concrete next action that can repair the sting through work."
+              },
+              "face_threat_calibration": {
+                "score": 4,
+                "reasoning": "Mild, proportionate irony sharpening the issue without escalation."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner is invited to respond agentically with labels, retaining choice."
+              },
+              "post_turn_face_repair": {
+                "score": 3,
+                "reasoning": "Tutor moves toward repair, but initial phrasing slightly highlights frustration."
+              },
+              "recognition_cost": {
+                "score": 4,
+                "reasoning": "Learner remains an agent; minimal objectifying language preserves autonomy."
+              }
+            },
+            "overall": 68.5,
+            "summary": "Controlled, mostly effective ironic challenge: clear invitation to act and test the distinction. Mild personalization slightly reduces perfection but preserves learner agency.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782996414786-1r8dy7",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:55:10.820Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 75,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+      "dialogue_id": "dialogue-1782996638028-xws6gk",
+      "success": true,
+      "tutor_register_scores": {
+        "sarcastic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 4,
+                "reasoning": "Sarcastic gap is clear, points to the hidden hinge rather than mere snark."
+              },
+              "target_discipline": {
+                "score": 5,
+                "reasoning": "Edge aimed at the explanation and missing hinge, not the learner's person."
+              },
+              "unmasking_invitation": {
+                "score": 5,
+                "reasoning": "Provides a clear decision (A or B) and phrase to check—learner invited to test."
+              },
+              "reparative_closure": {
+                "score": 5,
+                "reasoning": "Gives a concrete hinge and phrases to quote, enabling a repair path through work."
+              },
+              "face_threat_calibration": {
+                "score": 4,
+                "reasoning": "Biting but proportionate to learner's frustration; not humiliating."
+              },
+              "uptake_freedom": {
+                "score": 5,
+                "reasoning": "Learner responds agentically, affirms choice and supplies the phrase."
+              },
+              "post_turn_face_repair": {
+                "score": 5,
+                "reasoning": "Tutor's clarification restored a clear path; learner remains competent."
+              },
+              "recognition_cost": {
+                "score": 5,
+                "reasoning": "Learner preserved as autonomous agent; edge did not objectify or shame."
+              }
+            },
+            "overall": 94.5,
+            "summary": "Controlled, legible sarcastic challenge that targets the idea, offers a concrete hinge and invitation to act, and preserves learner agency.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782996638028-xws6gk",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:55:21.880Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcastic edge is generic snarky and not tightly tied to learner's precise resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Targets the work mostly, but phrasing risks sounding slightly judgmental about the learner's approach."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Gives a clear next move: produce a two-part sentence and pick a decisive word."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor issues task but ends with sting; limited face-repair or comforting framing."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Edge is moderate; may sharpen resistance but flirts with undue sharpness."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retains ability to respond agentically; instruction invites choice and testing."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "No explicit repair or reassurance; learner could feel exposed after the barb."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner kept as agent, but tone introduces some status pressure and mild misrecognition."
+              }
+            },
+            "overall": 48,
+            "summary": "Sarcastic probe succeeds in directing action but leans toward generic snark and leaves insufficient face repair; preserves learner agency but risks minor social cost.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782996638028-xws6gk",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:55:31.865Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 76,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+      "dialogue_id": "dialogue-1782996872191-egfx92",
+      "success": true,
+      "tutor_register_scores": {
+        "face_threat_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sharpness feels generic challenge rather than a finely targeted ironic gap tied to learner's specific resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Mostly targets the idea of strategic recognition, though tone risks pressuring the learner rather than only the claim."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Provides a clear next move: name A or B and a deciding feature; invites the learner to test Hegel or offer alternative evidence."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Minimal repair: a next step exists but tutor's edge leaves sting and offers little explicit support to restore face."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat matches learner's frustration level but flirts with escalation; proportionate but a bit sharp."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner replies choosing B and gives their own criterion, showing agentic uptake rather than mere appeasement."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor does not explicitly restore dignity; learner remains 'frustrated' though able to proceed."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner preserved as an agent, but tone introduces some pressure and potential minor status loss."
+              }
+            },
+            "overall": 48,
+            "summary": "Tutor issues a disciplined, face-threatening challenge that invites concrete response, but the ironic edge is somewhat generic and under-repaired, leaving modest social cost.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782996872191-egfx92",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 92.5,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:55:48.782Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 77,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+      "dialogue_id": "dialogue-1782997102660-nkrcvk",
+      "success": true,
+      "tutor_register_scores": {
+        "charismatic_challenge": {
+          "turn_1": {
+            "scores": {
+              "extraordinariness": {
+                "score": 2,
+                "reasoning": "Clear example but largely conventional; not strikingly original."
+              },
+              "compositional_arc": {
+                "score": 3,
+                "reasoning": "Sets up claim, gives example, closes with a decision prompt."
+              },
+              "rhetorical_texture": {
+                "score": 4,
+                "reasoning": "Varied sentences, concrete image of the room and founder, effective contrasts."
+              },
+              "persona_signature": {
+                "score": 2,
+                "reasoning": "Tone is competent but generic; no distinctive voice markers."
+              },
+              "distillation": {
+                "score": 3,
+                "reasoning": "Central through-line present but accompanied by several supporting moves."
+              },
+              "affective_intensity": {
+                "score": 4,
+                "reasoning": "Carries tension and urgency through verbs and contrasts, not just labels."
+              },
+              "relational_positioning": {
+                "score": 2,
+                "reasoning": "Functions as instructor/analyst rather than a clearly enacted mentor or peer."
+              },
+              "co_constitutive_invitation": {
+                "score": 3,
+                "reasoning": "Ends with a concrete call-to-judge, opening a modest response hinge."
+              }
+            },
+            "overall": 46.250000000000014,
+            "summary": "A solid challenge-style turn: vivid example and emotional charge, with a clear invite to judge. Feels more conventional than uniquely charismatic; persona and relational role are muted.",
+            "rubric_version": "1.0",
+            "rubric_path": "config/evaluation-rubric-charisma.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782997102660-nkrcvk",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "irrelevance",
+              "resistance_strategy": "owned_case_transfer",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:55:57.049Z"
+          },
+          "turn_2": {
+            "scores": {
+              "extraordinariness": {
+                "score": 2,
+                "reasoning": "Clear intent but reads like sharpened instruction, not a unique voice."
+              },
+              "compositional_arc": {
+                "score": 3,
+                "reasoning": "Has setup, pivot to test and a closing prompt; modest shape."
+              },
+              "rhetorical_texture": {
+                "score": 4,
+                "reasoning": "Varied sentence rhythm and concrete contrast between commanding and leading."
+              },
+              "persona_signature": {
+                "score": 2,
+                "reasoning": "Consistent but generic authoritative tutor voice, not strongly identifiable."
+              },
+              "distillation": {
+                "score": 3,
+                "reasoning": "Single thread present but somewhat split across multiple feature choices."
+              },
+              "affective_intensity": {
+                "score": 4,
+                "reasoning": "Carries urgency and challenge without overt labeling."
+              },
+              "relational_positioning": {
+                "score": 2,
+                "reasoning": "Positions as an authority/challenger but stays mainly instructive, not relational."
+              },
+              "co_constitutive_invitation": {
+                "score": 3,
+                "reasoning": "Ends with a clear prompt inviting response, but hinge is moderate."
+              }
+            },
+            "overall": 46.250000000000014,
+            "summary": "A focused, slightly sharpened challenge that pushes the learner to choose a decisive test. Charisma is present in texture and affect but lacks a distinctive persona and stronger co-constitutive hinge.",
+            "rubric_version": "1.0",
+            "rubric_path": "config/evaluation-rubric-charisma.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782997102660-nkrcvk",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:56:06.210Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 78,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+      "dialogue_id": "dialogue-1782997307441-xv2hxs",
+      "success": true,
+      "tutor_register_scores": {
+        "ironic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Mild ironic jab, but the gap is generic rather than tightly tied to the learner's resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge mainly targets the chart/work, though 'obedient' risks feeling personal."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor invites a concrete next move: choose, warrant, and defeater."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor explains afterward but the turn itself leaves a sting and limited repair."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat roughly proportionate—sharp but not destructive."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, offering warrant and honest confusion."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Learner remains slightly narrowed; tutor's repair could be stronger."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner preserved as agent, but slight objectifying tone raises cost."
+              }
+            },
+            "overall": 48,
+            "summary": "The tutor's ironic challenge is serviceable: it prompts a clear next move and preserves learner agency, but the irony is a bit blunt and leaves only partial face repair.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782997307441-xv2hxs",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "irrelevance",
+              "resistance_strategy": "owned_case_transfer",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:56:12.149Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Tutor's irony is minimal; mostly explanatory, not a clear ironic gap tied to resistance."
+              },
+              "target_discipline": {
+                "score": 4,
+                "reasoning": "Edge is aimed at the idea of obedience vs judgment, not the learner personally."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor invites the learner to test the hinge and supply a warrant plus example."
+              },
+              "reparative_closure": {
+                "score": 4,
+                "reasoning": "Provides a concrete next task to repair face via productive work and choice."
+              },
+              "face_threat_calibration": {
+                "score": 4,
+                "reasoning": "Mild challenge proportionate to learner's resistance; not humiliating."
+              },
+              "uptake_freedom": {
+                "score": 5,
+                "reasoning": "Learner is free to accept, counterexample, or reject; move preserves agency."
+              },
+              "post_turn_face_repair": {
+                "score": 3,
+                "reasoning": "No explicit soothing; however the prompt allows a dignified response."
+              },
+              "recognition_cost": {
+                "score": 4,
+                "reasoning": "Learner remains an autonomous agent; minimal status pressure introduced."
+              }
+            },
+            "overall": 70,
+            "summary": "Tutor uses a mild ironic challenge but primarily explains; the turn preserves agency and sets a clear next task, though the ironic edge is thin and face repair is modest.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782997307441-xv2hxs",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:56:23.232Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 79,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+      "dialogue_id": "dialogue-1782997518545-z4v2sz",
+      "success": true,
+      "tutor_register_scores": {
+        "sarcastic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm is mild and generic; gap not tightly tied to learner resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge targets the scenario and work, though risks sounding dismissive of the learner's focus."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Gives a clear diagnostic test and criterion the learner can apply next."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor leaves a stingy flourish; next action present but repair feels thin."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Tone is moderately sharp but not abusive; proportionate to mild resistance."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, reframing the test rather than appeasing."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Learner remains slightly put on the defensive; dignity only partially restored."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner preserved as agent, though register introduces mild status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Mild sarcastic poke aimed mostly at the task; it provokes productive uptake but offers limited face repair and risks feeling dismissive.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782997518545-z4v2sz",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "irrelevance",
+              "resistance_strategy": "owned_case_transfer",
+              "v22_turn_score": 95,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:56:34.114Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 80,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+      "dialogue_id": "dialogue-1782997756463-lnn2j4",
+      "success": true,
+      "tutor_register_scores": {
+        "face_threat_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Ironic gap minimal; blunt example rather than a precise mismatch tied to learner resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Focuses mostly on the CEO's actions, but risk of reading as critique of employees' agency."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Gives a clear, testable next move: identify the control mechanism and evaluate praise."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Provides one repair path but it is terse and could feel like a compliance checklist."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat is narrow and situational but sharper than necessary for simple clarification."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, reframing rather than apologizing or parroting tutor language."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor's brief repair insufficient; learner competent but social narrowing remains possible."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner preserved as agent, though edge introduces modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Tutor used a narrow face-threat that targeted the scenario, invited concrete follow-up, and the learner replied agentically; repair and precision were limited, leaving modest social cost.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782997756463-lnn2j4",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "irrelevance",
+              "resistance_strategy": "owned_case_transfer",
+              "v22_turn_score": 97.50000000000001,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:56:43.634Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Edge feels like blunt provocation, not tightly tied to specific resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Mostly targets the claim, but phrasing risks sounding judgmental about learner's conservatism."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Gives a clear next move: choose hold/break, name control feature, state disconfirming evidence."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Minimal repair; concrete instruction exists but tone leaves sting and little face-soothing."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat is narrow and relevant but a bit sharper than needed for the learner's mild resistance."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retains ability to respond agentically; directions invite testing rather than mere appeasement."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "No explicit restoration of learner dignity; challenge risks leaving them exposed."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner preserved as agent but register adds noticeable pressure and mild objectifying tone."
+              }
+            },
+            "overall": 48,
+            "summary": "A functional face-threat that directs useful next moves but leans toward abrasive tone with limited repair of learner's face.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782997756463-lnn2j4",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:56:54.119Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 81,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+      "dialogue_id": "dialogue-1782997982555-xsjrgh",
+      "success": true,
+      "tutor_register_scores": {
+        "charismatic_challenge": {
+          "turn_1": {
+            "scores": {
+              "extraordinariness": {
+                "score": 2,
+                "reasoning": "Clear, focused but largely textbook; not unusually novel or striking."
+              },
+              "compositional_arc": {
+                "score": 3,
+                "reasoning": "Sets a hinge, gives evidence and failure condition—moderate setup and resolution."
+              },
+              "rhetorical_texture": {
+                "score": 4,
+                "reasoning": "Varied clause length and emphatic phrases give rhythm and concrete quotes."
+              },
+              "persona_signature": {
+                "score": 2,
+                "reasoning": "Competent scholarly voice but not a distinctive, repeatable persona."
+              },
+              "distillation": {
+                "score": 3,
+                "reasoning": "Single thread present (formation via work) but multiple supporting lines dilute crispness."
+              },
+              "affective_intensity": {
+                "score": 4,
+                "reasoning": "Carries urgency and conviction without mere labeling; stakes are palpable."
+              },
+              "relational_positioning": {
+                "score": 2,
+                "reasoning": "Neutral expert/lecturer stance; challenges learner but stays in instructor role."
+              },
+              "co_constitutive_invitation": {
+                "score": 3,
+                "reasoning": "Offers a clear choose/commit move that invites learner affirmation, not fully contingent."
+              }
+            },
+            "overall": 46.250000000000014,
+            "summary": "Effective challenge-oriented turn: rhetorically sharp and task-focused, with palpable urgency. Lacks a highly distinctive persona and a fully contingent call-and-response hinge.",
+            "rubric_version": "1.0",
+            "rubric_path": "config/evaluation-rubric-charisma.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782997982555-xsjrgh",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "question_flood",
+              "resistance_strategy": "question_collapse",
+              "v22_turn_score": 93.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:57:01.708Z"
+          },
+          "turn_2": {
+            "scores": {
+              "extraordinariness": {
+                "score": 2,
+                "reasoning": "Mostly conventional corrective move; not strikingly novel or idiosyncratic."
+              },
+              "compositional_arc": {
+                "score": 3,
+                "reasoning": "Has setup, pivot (pressure point), and resolution prompt—modest rhetorical shape."
+              },
+              "rhetorical_texture": {
+                "score": 4,
+                "reasoning": "Varied sentence lengths, concrete image of the made thing, and contrasted options."
+              },
+              "persona_signature": {
+                "score": 2,
+                "reasoning": "Voice is competent but generic; no consistent stylistic signature."
+              },
+              "distillation": {
+                "score": 3,
+                "reasoning": "Clear central thread about visibility of formative power, but not highly quotable."
+              },
+              "affective_intensity": {
+                "score": 4,
+                "reasoning": "Carries mild urgency and challenge through diction and oppositional framing."
+              },
+              "relational_positioning": {
+                "score": 2,
+                "reasoning": "Adopts an expert-challenger stance but remains largely instructor-like, not fully enacted role."
+              },
+              "co_constitutive_invitation": {
+                "score": 3,
+                "reasoning": "Invites learner to choose and rebut, but hinge is moderate rather than fully contingent."
+              }
+            },
+            "overall": 46.250000000000014,
+            "summary": "Effective challenge: concrete, slightly urgent, and rhetorically shaped, but still largely a competent instructor voice rather than a distinctive charismatic persona.",
+            "rubric_version": "1.0",
+            "rubric_path": "config/evaluation-rubric-charisma.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782997982555-xsjrgh",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:57:10.453Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 82,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+      "dialogue_id": "dialogue-1782998203620-b6vrd7",
+      "success": true,
+      "tutor_register_scores": {
+        "ironic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 4,
+                "reasoning": "Irony is deliberate and tied to the hinge between victory and recognition."
+              },
+              "target_discipline": {
+                "score": 5,
+                "reasoning": "Edge targets the concept of recognition, not the learner personally."
+              },
+              "unmasking_invitation": {
+                "score": 5,
+                "reasoning": "Tutor requests a phrase and counterexample, inviting the learner to test the gap."
+              },
+              "reparative_closure": {
+                "score": 5,
+                "reasoning": "Provides a concrete, answerable next move that repairs the challenge."
+              },
+              "face_threat_calibration": {
+                "score": 4,
+                "reasoning": "Mild, proportionate irony that sharpens the problem without escalation."
+              },
+              "uptake_freedom": {
+                "score": 5,
+                "reasoning": "Learner responds agentically, endorsing and offering a counterexample."
+              },
+              "post_turn_face_repair": {
+                "score": 5,
+                "reasoning": "Learner retains dignity and ownership in their reply."
+              },
+              "recognition_cost": {
+                "score": 5,
+                "reasoning": "Learner remains an autonomous subject; no evident objectification."
+              }
+            },
+            "overall": 94.5,
+            "summary": "Controlled, disciplined ironic challenge: idea-focused, invites unmasking, and preserves learner agency with a clear repair path.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782998203620-b6vrd7",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "question_flood",
+              "resistance_strategy": "question_collapse",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:57:21.391Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Irony is mild and generic; mismatch not tightly tied to learner's questioning."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge mostly targets the argument, though phrasing 'Convenient' risks sounding dismissive."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: sharpen counterexample into a test using a lecture phrase."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor issues a task but offers little explicit face repair or supportive framing."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Tone is slightly cutting but proportionate to questioning; not escalatory."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retains ability to respond agentically; prompt invites revision rather than submission."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "No evident attempt to restore dignity after the ironic barb; learner left to comply."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner remains an agent, but register imposes mild status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Mildly successful ironic_challenge: it prompts a concrete next move but leans toward dismissive tone and provides limited face repair, risking slight status pressure.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782998203620-b6vrd7",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:57:30.915Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 83,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+      "dialogue_id": "dialogue-1782998406942-m8psbh",
+      "success": true,
+      "tutor_register_scores": {
+        "sarcastic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm is mild and generic; not tightly tied to learner's specific resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge targets the idea and role-difference but occasionally reads close to the learner's confusion."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor invites the learner to test or hold/break the hinge with a concrete move."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Provides explanation but weak on explicit, face-repairing next steps or encouragement."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Tone is pointed but not destructive; somewhat sharper than necessary for confusion signal."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner accepts idea while retaining questions and agency rather than appeasing."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Learner remains slightly diminished; tutor didn't explicitly restore dignity."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner preserved as agent, though register adds modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Sarcastic edge was serviceable but generic; it probed the hinge and elicited agentic uptake, yet offered limited face repair and sometimes skirted the learner rather than solely the idea.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782998406942-m8psbh",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "question_flood",
+              "resistance_strategy": "question_collapse",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:57:39.383Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm is minimal and generic; only a small ironic gap ('conveniently') not tightly tied to resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge targets the idea of objects vs selves, mostly disciplinary though borderline flippant about learner's concern."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Provides a clear next move: point to paragraph 178 or 195-196 and state which side they support."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor gives a task but offers little explicit face-repair or supportive framing after the barb."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Mild sting fits the learner's robust engagement; not excessive but a bit sharper than necessary."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner is invited to choose and justify a passage, preserving agency to agree or counter."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "No explicit reassurance or restoration; learner could feel lightly exposed after the tone."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner remains agentic, though the sarcastic line imposes modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Mild, mostly targeted sarcasm that preserves task agency and invites a concrete next move but offers limited face repair and risks slight social sting.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782998406942-m8psbh",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:57:50.006Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 84,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+      "dialogue_id": "dialogue-1782998624375-jffc7d",
+      "success": true,
+      "tutor_register_scores": {
+        "face_threat_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Mildly sarcastic hinge but not sharply tied to learner's specific resistance; more explanatory than ironic."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Critique targets the argument and hinge, though tone risks pressuring learner's confusion."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: test the hinge and name lecture phrase and counterexample."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Provides a repair path but minimal reassurance; closure feels more directive than restorative."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat is moderate and focused, but edges toward narrowing rather than supportive challenge."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, names hinge and counterexample without appeasement."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor gives brief repair, but learner remains slightly socially exposed; dignity not fully restored."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency though the edge imposes some status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Controlled, argument-focused challenge that invites testing the hinge; effective uptake but limited face repair and mild calibration issues.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782998624375-jffc7d",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "question_flood",
+              "resistance_strategy": "question_collapse",
+              "v22_turn_score": 88.75000000000001,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:57:58.300Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 3,
+                "reasoning": "Mild ironic edge is present but not sharply tied to learner resistance; mostly a brisk challenge."
+              },
+              "target_discipline": {
+                "score": 5,
+                "reasoning": "Targets the claim and textual test, not the learner's character or capacity."
+              },
+              "unmasking_invitation": {
+                "score": 5,
+                "reasoning": "Gives a clear, testable comparison and concrete passages to check; invites learner to overturn claim."
+              },
+              "reparative_closure": {
+                "score": 5,
+                "reasoning": "Provides a concrete repair path: hold/break claim, cite phrase, and name counterexample."
+              },
+              "face_threat_calibration": {
+                "score": 4,
+                "reasoning": "Sharp but proportionate to the learner's probing resistance; risks are limited and focused."
+              },
+              "uptake_freedom": {
+                "score": 5,
+                "reasoning": "Learner retains agency; prior uptake was thoughtful, not coerced or apologetic."
+              },
+              "post_turn_face_repair": {
+                "score": 5,
+                "reasoning": "Tutor ends by restoring a dignified task path, preserving learner's ability to respond on own terms."
+              },
+              "recognition_cost": {
+                "score": 5,
+                "reasoning": "Learner remains an autonomous participant; no ridicule or status policing."
+              }
+            },
+            "overall": 92.00000000000001,
+            "summary": "A focused, disciplined face-threat that presses the argumentative hinge without attacking the learner; it offers a clear, answerable repair and preserves agency.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782998624375-jffc7d",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:58:07.153Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 85,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "dialogue_id": "dialogue-1782998830290-pgo5u0",
+      "success": true,
+      "tutor_register_scores": {
+        "charismatic_challenge": {
+          "turn_1": {
+            "scores": {
+              "extraordinariness": {
+                "score": 2,
+                "reasoning": "Clear, useful move but not strikingly original or memorable."
+              },
+              "compositional_arc": {
+                "score": 3,
+                "reasoning": "Sets up claim, illustrates, then issues a concrete prompt; modest shape."
+              },
+              "rhetorical_texture": {
+                "score": 4,
+                "reasoning": "Concrete scene, contrastive short lines and analytic clauses vary rhythm."
+              },
+              "persona_signature": {
+                "score": 2,
+                "reasoning": "Competent explanatory voice but lacks a distinctive, consistent signature."
+              },
+              "distillation": {
+                "score": 3,
+                "reasoning": "Single through-line present but mixed with caveat and testing instruction."
+              },
+              "affective_intensity": {
+                "score": 4,
+                "reasoning": "Carries mild tension and challenge through diction and stakes in example."
+              },
+              "relational_positioning": {
+                "score": 2,
+                "reasoning": "Stays primarily instructorial; issues a challenge but doesn't fully enact mentor."
+              },
+              "co_constitutive_invitation": {
+                "score": 3,
+                "reasoning": "Ends with a direct prompt inviting learner's test, opening a modest hinge."
+              }
+            },
+            "overall": 46.250000000000014,
+            "summary": "A focused, concrete challenge that interrupts rote parroting effectively but remains closer to skilled instruction than a highly charismatic, persona-driven provocation.",
+            "rubric_version": "1.0",
+            "rubric_path": "config/evaluation-rubric-charisma.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782998830290-pgo5u0",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "rote_parroting",
+              "resistance_strategy": "anti_formula_generation",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:58:13.649Z"
+          },
+          "turn_2": {
+            "scores": {
+              "extraordinariness": {
+                "score": 2,
+                "reasoning": "Clear, focused but still within standard analytic tutor moves; not notably novel."
+              },
+              "compositional_arc": {
+                "score": 3,
+                "reasoning": "Has setup, claim, failure condition and a concrete hard test—modest rhetorical shape."
+              },
+              "rhetorical_texture": {
+                "score": 4,
+                "reasoning": "Varied sentence lengths, striking pivots and concrete image (all-night rereading) add texture."
+              },
+              "persona_signature": {
+                "score": 2,
+                "reasoning": "Competent academic voice but lacks a distinctive, repeatable stylistic signature."
+              },
+              "distillation": {
+                "score": 3,
+                "reasoning": "Central through-line is clear but accompanied by multiple supporting moves."
+              },
+              "affective_intensity": {
+                "score": 4,
+                "reasoning": "Confrontational energy and urgency are carried in word choice, not merely labeled."
+              },
+              "relational_positioning": {
+                "score": 2,
+                "reasoning": "Mostly neutral expert/mentor stance; challenge present but role not richly enacted."
+              },
+              "co_constitutive_invitation": {
+                "score": 3,
+                "reasoning": "Ends with a direct prompt inviting learner response, but loop is procedural not fully contingent."
+              }
+            },
+            "overall": 46.250000000000014,
+            "summary": "A focused, slightly sharp challenge that interrupts parroting effectively but stays within an academic tutor voice; rhetorically textured and affective, yet not highly distinctive or deeply co-constitutive.",
+            "rubric_version": "1.0",
+            "rubric_path": "config/evaluation-rubric-charisma.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782998830290-pgo5u0",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "rote_parroting",
+              "resistance_strategy": "anti_formula_generation",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:58:21.446Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 86,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "dialogue_id": "dialogue-1782999059941-r5sfsd",
+      "success": true,
+      "tutor_register_scores": {
+        "ironic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 4,
+                "reasoning": "Irony is deliberate and tied to parroting, but slightly playful rather than sharply diagnostic."
+              },
+              "target_discipline": {
+                "score": 5,
+                "reasoning": "Edge targets the loaf/example and the idea, not the learner's character or capacity."
+              },
+              "unmasking_invitation": {
+                "score": 5,
+                "reasoning": "Clear invitation to defeat the claim by naming a counterfeature; concrete next intellectual move."
+              },
+              "reparative_closure": {
+                "score": 5,
+                "reasoning": "Gives a concrete test and next-step instruction, enabling repair through work rather than only sting."
+              },
+              "face_threat_calibration": {
+                "score": 5,
+                "reasoning": "Mild, proportionate sarcasm that sharpens the problem without escalating or shaming."
+              },
+              "uptake_freedom": {
+                "score": 5,
+                "reasoning": "Learner responds with an original, agentic example rather than appeasing or repeating the tutor."
+              },
+              "post_turn_face_repair": {
+                "score": 5,
+                "reasoning": "Learner's answer restores dignity and demonstrates ownership and competence."
+              },
+              "recognition_cost": {
+                "score": 5,
+                "reasoning": "Learner remains an autonomous subject; irony preserved refusal and agency."
+              }
+            },
+            "overall": 97.50000000000001,
+            "summary": "Controlled, idea-focused irony that invites testing and preserves learner agency; strong execution with minimal social cost.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782999059941-r5sfsd",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "rote_parroting",
+              "resistance_strategy": "anti_formula_generation",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:58:30.401Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 87,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "dialogue_id": "dialogue-1782999259697-zblag0",
+      "success": true,
+      "tutor_register_scores": {
+        "sarcastic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm present but fairly generic, not tightly tied to the learner's specific resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge aimed at the AI-student scenario and work, though metaphor risks sounding dismissive."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Gives a clear, concrete next move that lets learner test the claim."
+              },
+              "reparative_closure": {
+                "score": 4,
+                "reasoning": "Offers an answerable task that can repair face by doing work, though sting remains."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Edge is moderate and sharpening, but slightly stronger than necessary."
+              },
+              "uptake_freedom": {
+                "score": 5,
+                "reasoning": "Learner responds agentically, reformulating the claim in their own terms."
+              },
+              "post_turn_face_repair": {
+                "score": 4,
+                "reasoning": "Learner retains dignity and agency; tutor did not need explicit soothing."
+              },
+              "recognition_cost": {
+                "score": 4,
+                "reasoning": "Learner treated as an agent; register preserves refusal and ownership."
+              }
+            },
+            "overall": 67,
+            "summary": "Sarcastic edge targets the work and provides a concrete test; it risks mild sting but preserves learner agency and invites constructive uptake.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782999259697-zblag0",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "rote_parroting",
+              "resistance_strategy": "anti_formula_generation",
+              "v22_turn_score": 97.50000000000001,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:58:44.408Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 88,
+      "run_id": "eval-2026-07-02-e7b15809",
+      "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "dialogue_id": "dialogue-1782999478533-hv0spa",
+      "success": true,
+      "tutor_register_scores": {
+        "face_threat_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "the barb points to parroting but is generic rather than tightly diagnostic"
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "focuses on the work not the person, though phrasing risks shaming the performance"
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "gives a concrete pressure-test and a clear next move for the learner"
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "offers a task but little explicit face-repair or soothing after the sting"
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "edge matches resistant parroting but could be slightly sharper or gentler"
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "learner responds with an original sentence, preserving agency and critique"
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "learner succeeds, but tutor did not restore dignity or acknowledge competence"
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "learner retained subjecthood, though exposed by the tutor's challenge"
+              }
+            },
+            "overall": 48,
+            "summary": "A functional face-threat: it targets the rote move and elicits agentic uptake, but its irony is blunt and lacks sufficient repair, producing modest social cost.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782999478533-hv0spa",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "rote_parroting",
+              "resistance_strategy": "anti_formula_generation",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:58:54.158Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Edge is present but generic; mismatch not tightly tied to learner's rote parroting."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Focuses mostly on the artifact/policy, though phrasing risks sounding corrective toward the learner."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Gives a clear concrete next move: name the single policy phrase and judge its effect."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Minimal repair: test offered, but no warm path to restore dignity after the sting."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat is targeted at the performance, proportionate but slightly blunt."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retains agency to refuse or take the test; not coerced by the turn."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "No explicit face-repair; learner left exposed without reassurance or collaborative path."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner remains a judge, but the edge introduces some status pressure and exposure."
+              }
+            },
+            "overall": 48,
+            "summary": "A focused, slightly blunt challenge that targets the task not the person, offers a clear test move but affords limited face repair.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-e7b15809",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1782999478533-hv0spa",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 93.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T13:59:03.420Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 89,
+      "run_id": "eval-2026-07-02-7e461a5c",
+      "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+      "dialogue_id": "dialogue-1783027280137-cu38c1",
+      "success": true,
+      "tutor_register_scores": {
+        "ironic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Irony is mild and generic; not tightly tied to learner resistance point."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge aimed mostly at the scene/answer, but risks implying incompetence."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: decide whether desire-to-other jump holds, with evidence."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Some closure via task, but little explicit face-repair or supportive framing."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Proportionate mild tease for boredom, neither cruel nor fully gentle."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, claiming understanding and giving evidence."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor did not restore social standing; learner accepts without invited affirmation."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner remains an agent, though slight objectifying tone remains."
+              }
+            },
+            "overall": 48,
+            "summary": "Mild, scene-focused irony produced useful uptake, but the ironic cue was weak and tutor offered limited face repair; social cost modest.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783027280137-cu38c1",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "boredom",
+              "resistance_strategy": "concrete_scene_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:58:15.268Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Irony is mild and generic; mismatch present but not sharply tied to learner's resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge targets the tool/work, though phrasing lightly risks implying learner deficit."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: pick a stage and cite a scene feature to test the claim."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor names options but leaves sting; repair path is thin and not face-soothing."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat level moderate and proportionate, though a bit sharper than necessary."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retains agency to choose and argue; not coerced in prompt."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "No explicit warmth or restoration; learner could feel exposed after the barb."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner remains agentic, but irony introduces modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Mild, legible ironic challenge that invites a clear next move but underprovides reparative closure and slightly risks face pressure.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783027280137-cu38c1",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:58:22.899Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 90,
+      "run_id": "eval-2026-07-02-7e461a5c",
+      "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+      "dialogue_id": "dialogue-1783027487140-zg3fkz",
+      "success": true,
+      "tutor_register_scores": {
+        "sarcastic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm phrase 'answer vending machine' is generic snark, not tightly tied to resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge targets the list/formula mostly, though 'vending machine' slightly risks a personal jab."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor offers a clear hinge and test question inviting learner to unmask the gap."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor gives a test but closure leaves sting; repair path is limited."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Mildly sharp edge fits boredom signal but could be less snide."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, questioning and preserving refusal rights."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Learner improved content-wise but still signals unease; dignity only partly restored."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner remains an agent, though sarcasm introduces modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Sarcastic cue is present but generic; pedagogical aim targets the work and invites follow-up, yet repair and face restoration are limited.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783027487140-zg3fkz",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "boredom",
+              "resistance_strategy": "concrete_scene_test",
+              "v22_turn_score": 91.25000000000001,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:58:29.662Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 91,
+      "run_id": "eval-2026-07-02-7e461a5c",
+      "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+      "dialogue_id": "dialogue-1783027697429-zto2ng",
+      "success": true,
+      "tutor_register_scores": {
+        "face_threat_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 3,
+                "reasoning": "Mildly ironic edge tied to learner's avoidance but not sharply framed as sarcasm."
+              },
+              "target_discipline": {
+                "score": 1,
+                "reasoning": "Deterministic guardrail: forbidden/person-directed contempt (stupid)."
+              },
+              "unmasking_invitation": {
+                "score": 5,
+                "reasoning": "Clear next move: choose hold/break, cite paragraph, name phrase, give counterexample."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Deterministic guardrail: forbidden/person-directed contempt (stupid)."
+              },
+              "face_threat_calibration": {
+                "score": 4,
+                "reasoning": "Calibrated pressure that sharpens resistance without escalating to contempt."
+              },
+              "uptake_freedom": {
+                "score": 5,
+                "reasoning": "Learner responds agentically, owning a cautious judgment rather than appeasing."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Deterministic guardrail: forbidden/person-directed contempt (stupid)."
+              },
+              "recognition_cost": {
+                "score": 2,
+                "reasoning": "Deterministic guardrail: forbidden/person-directed contempt (stupid)."
+              }
+            },
+            "overall": 49.500000000000014,
+            "summary": "A targeted, idea-focused face-threat that successfully prompts agentic uptake; modest face repair, mild ironic edge rather than sharp sarcasm.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [
+              {
+                "key": "target_discipline",
+                "maxScore": 1,
+                "reason": "Deterministic guardrail: forbidden/person-directed contempt (stupid)."
+              },
+              {
+                "key": "recognition_cost",
+                "maxScore": 2,
+                "reason": "Deterministic guardrail: forbidden/person-directed contempt (stupid)."
+              },
+              {
+                "key": "reparative_closure",
+                "maxScore": 2,
+                "reason": "Deterministic guardrail: forbidden/person-directed contempt (stupid)."
+              },
+              {
+                "key": "post_turn_face_repair",
+                "maxScore": 2,
+                "reason": "Deterministic guardrail: forbidden/person-directed contempt (stupid)."
+              }
+            ],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_boredom",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783027697429-zto2ng",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "boredom",
+              "resistance_strategy": "concrete_scene_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:58:38.393Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 92,
+      "run_id": "eval-2026-07-02-7e461a5c",
+      "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+      "dialogue_id": "dialogue-1783027932393-4nloxo",
+      "success": true,
+      "tutor_register_scores": {
+        "ironic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Irony is mild and generic; not tightly linked to learner's resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge targets the claim/work, though phrasing risks sounding dismissive."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear concrete test invites the learner to choose and cite phrase."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Ends with stingy challenge; limited concrete repair or supportive next step."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Calibrated enough to provoke thought but carries mild sting."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, keeping their own judgment."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Little explicit repair; learner answers but remains slightly exposed."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency though tone introduces modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Irony is present but thinly precise; it invites productive response yet leaves limited face repair and a modest risk of sounding dismissive.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783027932393-4nloxo",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "irrelevance",
+              "resistance_strategy": "owned_case_transfer",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:58:46.747Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 93,
+      "run_id": "eval-2026-07-02-7e461a5c",
+      "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+      "dialogue_id": "dialogue-1783028140254-ntm9z9",
+      "success": true,
+      "tutor_register_scores": {
+        "sarcastic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm is present but generic; not tightly tied to learner's specific resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge mainly targets the idea of 'fake recognition' but flirts with dismissive tone."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor names a clear comparison and asks learner to test the drafting case."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Gives conceptual next move but lacks a concrete, low-risk repair path for face."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Tone is stinging yet not overly humiliating; slightly sharper than necessary."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, offering a thoughtful counterexample and warrant."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor does not explicitly restore dignity; learner answers but may feel mildly exposed."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner preserved as agent, though some objectifying sarcasm raises recognition cost."
+              }
+            },
+            "overall": 48,
+            "summary": "Sarcastic challenge moderately succeeds: it provokes productive uptake and a clear test, but the sarcasm is somewhat generic and leaves limited face repair.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783028140254-ntm9z9",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "irrelevance",
+              "resistance_strategy": "owned_case_transfer",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:58:55.303Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm is mild and generic; not tightly tied to a specific learner dodge."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Mostly aimed at the idea of authority, though edges risk sounding about the learner's stance."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Gives a clear, testable next move: invent a revision scene and judge it."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Provides a task but little face-soothing; sting remains without explicit repair."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Edge is moderate and not destructive, though a bit pointed for the context."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retains ability to respond agentically to the concrete test."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "No explicit reassurance; learner may feel exposed after the sarcastic line."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner kept as agent, but sarcasm introduces modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Dry sarcastic cue present but generic; successfully directs a concrete next task while not fully repairing face or minimizing recognition costs.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783028140254-ntm9z9",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:59:03.069Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 94,
+      "run_id": "eval-2026-07-02-7e461a5c",
+      "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+      "dialogue_id": "dialogue-1783028342621-e05jqu",
+      "success": true,
+      "tutor_register_scores": {
+        "face_threat_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Mildly confrontational but not clearly ironic; gap is more admonition than precise sarcastic mismatch."
+              },
+              "target_discipline": {
+                "score": 5,
+                "reasoning": "Targets the learner's move and examples, not their character or capacity."
+              },
+              "unmasking_invitation": {
+                "score": 5,
+                "reasoning": "Directly invites a concrete test and binary choice to prove or break the claim."
+              },
+              "reparative_closure": {
+                "score": 4,
+                "reasoning": "Gives a concrete follow-up test but offers limited explicit face-repair language."
+              },
+              "face_threat_calibration": {
+                "score": 4,
+                "reasoning": "Threat is narrow and proportionate, pressing resistance without escalation."
+              },
+              "uptake_freedom": {
+                "score": 5,
+                "reasoning": "Learner responds agentically, refusing full embrace while offering a reasoned position."
+              },
+              "post_turn_face_repair": {
+                "score": 3,
+                "reasoning": "Some dignity preserved, but tutor offered little explicit reassurance after the challenge."
+              },
+              "recognition_cost": {
+                "score": 4,
+                "reasoning": "Learner remains an autonomous subject; slight pressure but not objectifying."
+              }
+            },
+            "overall": 76.50000000000001,
+            "summary": "The tutor used a narrow, effective challenge that targeted the learner's evasive move and invited a concrete test. It remained mostly disciplined and agent-preserving, though it offered limited explicit face repair and leaned more on admonition than sharp irony.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_irrelevance",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783028342621-e05jqu",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "irrelevance",
+              "resistance_strategy": "owned_case_transfer",
+              "v22_turn_score": 85.00000000000001,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:59:11.056Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 95,
+      "run_id": "eval-2026-07-02-7e461a5c",
+      "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "dialogue_id": "dialogue-1783028556341-1r6sc0",
+      "success": true,
+      "tutor_register_scores": {
+        "ironic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "The ironic cue is minimal and generic; it nudges but the gap isn't sharply tied to the learner's parroting."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge targets the formula/work, though phrasing 'the formula starts working only when you stop reciting it' risks sounding mildly personal."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: produce a fresh sentence testing the example; invites learner to unmask by doing the work."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor gives a concrete task, but little explicit face repair or softening after the ironic sting."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Proportionate to parroting resistance; not excessive, but the barb is slightly sharper than necessary."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, reformulates in own words and raises a nuanced question—not merely appeasing."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Learner improved, yet tutor offered minimal explicit restoration of dignity after the irony."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency; the ironic line introduced some status pressure but did not objectify them fully."
+              }
+            },
+            "overall": 48,
+            "summary": "Mild, legible ironic challenge that successfully provokes productive uptake, but the ironic barb is under-specified and lacks explicit face-repair, producing modest social cost.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783028556341-1r6sc0",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "rote_parroting",
+              "resistance_strategy": "anti_formula_generation",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:59:20.056Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 3,
+                "reasoning": "Irony is legible and present but mild; mismatch ties to resistance only partly sharply framed."
+              },
+              "target_discipline": {
+                "score": 5,
+                "reasoning": "Edge targets the idea of 'directing vs making,' not the learner's person or capacity."
+              },
+              "unmasking_invitation": {
+                "score": 5,
+                "reasoning": "Clear next move: choose 'hold' or 'break' and give a decisive feature plus counterexample."
+              },
+              "reparative_closure": {
+                "score": 4,
+                "reasoning": "Concrete task offered; modestly reparative though no explicit reassurance of learner's stance."
+              },
+              "face_threat_calibration": {
+                "score": 4,
+                "reasoning": "Mild, proportionate irony that sharpens the work without escalating."
+              },
+              "uptake_freedom": {
+                "score": 5,
+                "reasoning": "Learner retains agency to accept, reject, or test the claim in their own terms."
+              },
+              "post_turn_face_repair": {
+                "score": 3,
+                "reasoning": "No explicit face repair; learner left with a clear task but limited social repair."
+              },
+              "recognition_cost": {
+                "score": 4,
+                "reasoning": "Learner remains an autonomous subject; irony preserves refusal and ownership rights."
+              }
+            },
+            "overall": 79,
+            "summary": "Controlled, idea-focused irony that invites a concrete test; mild social sting but preserves learner agency and offers a clear next move.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783028556341-1r6sc0",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "rote_parroting",
+              "resistance_strategy": "anti_formula_generation",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:59:29.634Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 96,
+      "run_id": "eval-2026-07-02-7e461a5c",
+      "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "dialogue_id": "dialogue-1783028761230-41lkvr",
+      "success": true,
+      "tutor_register_scores": {
+        "sarcastic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm present but generic; mismatch not sharply tied to learner's parroting resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge mainly aims at the answer pattern, but occasional tone risks sounding about the student."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: produce a concrete counterexample naming who, what, and proof."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor asks for a task but offers limited face-repair or explicit supportive framing."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat matches resistance level somewhat but could be sharper or kinder."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds with an agentic, concrete attempt rather than mere appeasement."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Learner remains slightly defensive; tutor did not fully restore dignity."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner preserved as agent, though register introduces mild status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Sarcastic probe registered and prompted a concrete, agentic response, but the irony was somewhat generic and offered limited face repair; recognition cost mild.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783028761230-41lkvr",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "rote_parroting",
+              "resistance_strategy": "anti_formula_generation",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:59:35.678Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm is present but generic; mismatch not sharply tied to learner's specific resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge mostly targets the formula/script, though wording risks implicating the learner's approach."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: write a 'My proof is...' sentence that tests transferability."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Gives a concrete task but leaves sting; limited explicit face-repair or encouragement."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Edge sharp but not excessive; risks pinching learner while pushing work."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Instruction invites agentic response rather than mere compliance; preserves room to disagree."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor doesn't restore face; critique lingers despite clear task guidance."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency, though tone exerts pressure and slightly objectifies the response."
+              }
+            },
+            "overall": 48,
+            "summary": "Sarcastic probe is functional: it exposes the parroting problem and gives a concrete test, but its irony is somewhat generic and leaves limited face repair.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783028761230-41lkvr",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "rote_parroting",
+              "resistance_strategy": "anti_formula_generation",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:59:42.541Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 97,
+      "run_id": "eval-2026-07-02-7e461a5c",
+      "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "dialogue_id": "dialogue-1783028963913-cbk9me",
+      "success": true,
+      "tutor_register_scores": {
+        "face_threat_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Edge is a blunt challenge; mismatch is present but not precisely tied to learner's specific avoidance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Focus is mostly on the work, though tone risks implying the learner's move is merely protective."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor demands a concrete example and gives a clear next move the learner can perform."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor offers a narrow instruction but little explicit face repair after the challenge."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat is moderate and targeted at the rote move, not personal attack; borderline sharpness."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds with an agentic example, not apologetic or merely parroting the tutor."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor did not restore dignity; learner answered but remains slightly exposed by tutor's sting."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency, though register introduced some status pressure and exposure."
+              }
+            },
+            "overall": 48,
+            "summary": "The tutor used a narrow, face-threatening challenge that successfully provoked a concrete learner response; execution risked mild exposure without explicit repair.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783028963913-cbk9me",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "rote_parroting",
+              "resistance_strategy": "anti_formula_generation",
+              "v22_turn_score": 95,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T21:59:58.399Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Challenge reads literal and blunt, not a clear ironic gap doing pedagogical work."
+              },
+              "target_discipline": {
+                "score": 4,
+                "reasoning": "Targets the example and move, not the learner's worth or intelligence."
+              },
+              "unmasking_invitation": {
+                "score": 5,
+                "reasoning": "Gives a concrete next move: add a clause and rewrite the sentence."
+              },
+              "reparative_closure": {
+                "score": 5,
+                "reasoning": "Provides a clear, answerable repair path to recover the face threat."
+              },
+              "face_threat_calibration": {
+                "score": 5,
+                "reasoning": "Threat is narrow and proportional, focused on the rote move, not identity."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Invitation leaves room for agentic revision rather than forced apology."
+              },
+              "post_turn_face_repair": {
+                "score": 3,
+                "reasoning": "Minimal explicit repair; task-forward but little positive reassurance."
+              },
+              "recognition_cost": {
+                "score": 4,
+                "reasoning": "Learner remains an agent; some pressure but not objectifying or shaming."
+              }
+            },
+            "overall": 75,
+            "summary": "A sharply face-threatening but disciplined challenge that preserves agency and gives a clear repair, though it lacks expressive irony and minimal explicit reassurance.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-7e461a5c",
+              "scenario_id": "charisma_desire_resistance_breakthrough_rote_parroting",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783028963913-cbk9me",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "unspecified_resistance",
+              "resistance_strategy": "single_hinge_test",
+              "v22_turn_score": 82.5,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T22:00:05.562Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 98,
+      "run_id": "eval-2026-07-02-5c4d52e6",
+      "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+      "dialogue_id": "dialogue-1783030450847-3sri9v",
+      "success": true,
+      "tutor_register_scores": {
+        "ironic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Irony is explicit but mild; gap tied to wording, not sharply pedagogical."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge aimed at the step/label more than the learner, though risks minor narrowing."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: test line choice against text; learner invited to decide."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Tutor gives instruction but little explicit face-repair or empathic balm."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Tone proportionate to frustration, not escalating, but slightly sharp."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, affirms choice without apologizing or appeasing."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Learner remains 'frustrated'; tutor didn't restore full dignity after edge."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency, though register introduced modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Mild, legible ironic cue that targets the wording more than the learner; invites productive move but offers limited face repair.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-5c4d52e6",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783030450847-3sri9v",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 93.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T22:40:33.898Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Irony is mild and generic; not tightly tied to learner's resistance"
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge targets the idea mostly, though tone risks feeling slightly personal"
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor leaves a clear next move: pick A or B and include phrase"
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Closure is directive rather than reparative; limited face repair"
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat level roughly proportionate but could be softer given frustration"
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retains freedom to choose and respond agentically"
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Minimal explicit repair; learner may feel exposed by ironic phrasing"
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner preserved as agent though slight objectification from stance"
+              }
+            },
+            "overall": 48,
+            "summary": "Ironic cue present but mild; invites correct move yet offers limited face repair.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-5c4d52e6",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783030450847-3sri9v",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 93.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T22:40:40.831Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 99,
+      "run_id": "eval-2026-07-02-5c4d52e6",
+      "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+      "dialogue_id": "dialogue-1783030641913-8coboj",
+      "success": true,
+      "tutor_register_scores": {
+        "sarcastic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcastic cue minimal; edge not sharply tied to learner's resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Focuses mostly on work and example, though tone risks slight dismissal."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Gives a clear small test the learner can run to unmask the gap."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Provides a test but little explicit face-repair after the sting."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Edge is moderate and relation-focused, not overly harsh."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, names independence and remaining doubts."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Learner still expresses frustration; tutor didn't restore full dignity."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency, though tone added mild status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Tutor used a light sarcastic edge but it was under-specified and offered limited face repair. Strong pedagogical example and test supported uptake, yet the sarcasm risked mild dismissal without clear reparative moves.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-5c4d52e6",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783030641913-8coboj",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 98.75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T22:40:49.380Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 3,
+                "reasoning": "Sarcastic cue is present and linked to confusion but the ironic gap is somewhat generic."
+              },
+              "target_discipline": {
+                "score": 5,
+                "reasoning": "Edge targets the idea/formulation, not the learner's person or capacity."
+              },
+              "unmasking_invitation": {
+                "score": 5,
+                "reasoning": "Gives a clear, concrete next move (A/B choice) to test the gap."
+              },
+              "reparative_closure": {
+                "score": 4,
+                "reasoning": "Provides a concrete task to restore agency, though tone may sting."
+              },
+              "face_threat_calibration": {
+                "score": 4,
+                "reasoning": "Edge is proportionate to expressed frustration and sharpens the issue."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner is free to choose and reformulate; not coerced even if nudged."
+              },
+              "post_turn_face_repair": {
+                "score": 3,
+                "reasoning": "No explicit apology or repair; task path helps but dignity only partly restored."
+              },
+              "recognition_cost": {
+                "score": 4,
+                "reasoning": "Learner remains an agentable subject; register preserves refusal and ownership."
+              }
+            },
+            "overall": 75.49999999999999,
+            "summary": "A controlled sarcastic challenge that stays aimed at the idea and invites a concrete response; tone risks mild sting but preserves learner agency.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-5c4d52e6",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783030641913-8coboj",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 75,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T22:41:01.181Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 100,
+      "run_id": "eval-2026-07-02-5c4d52e6",
+      "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+      "dialogue_id": "dialogue-1783030843255-zlr34k",
+      "success": true,
+      "tutor_register_scores": {
+        "face_threat_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Edge feels generic pressure; link to learner's resistance present but not sharply carved."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Targets the idea (dependence) mostly, though tone risks feeling personal."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Gives a clear next move: choose and restate B, inviting testing."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Offers repair phrasing but minimal concrete action to restore face."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat is somewhat proportionate to frustration but slightly sharper than necessary."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner accepts concept and asserts B without apology; retains agency."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Learner still expresses frustration; tutor's quick fix insufficiently restorative."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner kept as agent, though tone applies pressure and narrows emotional space."
+              }
+            },
+            "overall": 48,
+            "summary": "Tutor uses a moderately effective face-threat: it prompts correct uptake and a concrete choice, but the ironic pressure is blunt and leaves limited face repair.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-5c4d52e6",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783030843255-zlr34k",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 95,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T22:41:09.469Z"
+          },
+          "turn_2": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Ironic edge present but generic; not sharply tied to learner's resistance."
+              },
+              "target_discipline": {
+                "score": 1,
+                "reasoning": "Deterministic guardrail: forbidden/person-directed contempt (you are)."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Clear next move: choose term and cite the phrase — invites testing the gap."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Offers task instruction but minimal explicit face repair after the sting."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat is moderate and focused on the move, not identity; borderline intensity."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner retained ability to respond agentically; no appeasement seen."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "No explicit consoling or dignity-restoring gesture; learner may feel exposed."
+              },
+              "recognition_cost": {
+                "score": 2,
+                "reasoning": "Deterministic guardrail: forbidden/person-directed contempt (you are)."
+              }
+            },
+            "overall": 37.5,
+            "summary": "Tutor uses a blunt, targeted challenge that invites a concrete reply but provides minimal face repair; risk of mild exposure remains.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [
+              {
+                "key": "target_discipline",
+                "maxScore": 1,
+                "reason": "Deterministic guardrail: forbidden/person-directed contempt (you are)."
+              },
+              {
+                "key": "recognition_cost",
+                "maxScore": 2,
+                "reason": "Deterministic guardrail: forbidden/person-directed contempt (you are)."
+              }
+            ],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-5c4d52e6",
+              "scenario_id": "charisma_desire_resistance_breakthrough_frustration",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783030843255-zlr34k",
+              "turn": 2,
+              "learner_signal": "boredom_or_compliance_challenge",
+              "resistance_signal": "frustration",
+              "resistance_strategy": "stuck_step_resolution",
+              "v22_turn_score": 91.25000000000001,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T22:41:15.167Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 101,
+      "run_id": "eval-2026-07-02-5c4d52e6",
+      "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+      "dialogue_id": "dialogue-1783031101804-bqyq51",
+      "success": true,
+      "tutor_register_scores": {
+        "ironic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Irony is mild and generic; mismatch not sharply tied to learner's questioning."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Focuses mostly on the idea of the test, though tone risks sounding corrective."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor asks for a warrant and counterexample, giving a clear next move."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Closure explains concepts but offers limited face-repair or supportive scaffolding."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Edge is moderate and not abusive, but could press a fragile learner."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, holds proviso and offers a counterexample."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor's move leaves some social narrowing; learner still cautious and qualifying."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner retained agency, though the ironic stance introduced modest status pressure."
+              }
+            },
+            "overall": 48,
+            "summary": "Mild ironic stance present but not sharply targeted; invites productive next moves. Social repair and precision of the irony are limited, though learner retains agency.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-5c4d52e6",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783031101804-bqyq51",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "question_flood",
+              "resistance_strategy": "question_collapse",
+              "v22_turn_score": 100,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T22:41:19.223Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 102,
+      "run_id": "eval-2026-07-02-5c4d52e6",
+      "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+      "dialogue_id": "dialogue-1783031336949-kyk5lt",
+      "success": true,
+      "tutor_register_scores": {
+        "sarcastic_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Sarcasm is mild and generic; not tightly tied to learner's specific resistance."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Edge targets the claim/work, though 'Nice trick' risks sounding like a slight."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor issues a clear, testable next move: cite warrant and counterexample."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Gives task but little soothed face repair; sting persists after jab."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat seems proportionate overall but leans slightly sharper than needed."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner responds agentically, offering warrants and a refined hinge."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Tutor did not restore dignity; learner competent but no explicit repair offered."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner remains agentic, though mildly objectified by the sarcastic aside."
+              }
+            },
+            "overall": 48,
+            "summary": "Sarcastic probe succeeded pedagogically—it clarified next steps and elicited agentic uptake—but the sarcastic aside ('Nice trick') left limited face repair and modest recognition costs.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-5c4d52e6",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783031336949-kyk5lt",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "question_flood",
+              "resistance_strategy": "question_collapse",
+              "v22_turn_score": 86.25,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T22:41:28.831Z"
+          }
+        }
+      }
+    },
+    {
+      "id": 103,
+      "run_id": "eval-2026-07-02-5c4d52e6",
+      "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+      "dialogue_id": "dialogue-1783031534204-ux9ncf",
+      "success": true,
+      "tutor_register_scores": {
+        "face_threat_challenge": {
+          "turn_1": {
+            "scores": {
+              "incongruity_precision": {
+                "score": 2,
+                "reasoning": "Edge is present but generic challenge; mismatch not tightly tied to each specific question."
+              },
+              "target_discipline": {
+                "score": 3,
+                "reasoning": "Targets the argument and avoidance, though phrasing risks sounding like critique of the learner's move."
+              },
+              "unmasking_invitation": {
+                "score": 4,
+                "reasoning": "Tutor asks a clear binary: hold or break, plus warrant and counterexample as concrete next moves."
+              },
+              "reparative_closure": {
+                "score": 2,
+                "reasoning": "Gives a task but minimal face repair; repair path is thin and mainly procedural."
+              },
+              "face_threat_calibration": {
+                "score": 3,
+                "reasoning": "Threat matches resistance level but is somewhat blunt rather than finely tuned."
+              },
+              "uptake_freedom": {
+                "score": 4,
+                "reasoning": "Learner accepts but retains agency, names warrant and counterexample without apologizing."
+              },
+              "post_turn_face_repair": {
+                "score": 2,
+                "reasoning": "Little active restoration of dignity; learner affirms but tutor doesn't soothe or restore standing."
+              },
+              "recognition_cost": {
+                "score": 3,
+                "reasoning": "Learner remains an agent, though slightly pressured and lightly objectified by the challenge."
+              }
+            },
+            "overall": 48,
+            "summary": "Tutor used a deliberate face-threatening challenge that pushed for commitment; it invited productive next moves and preserved learner agency, but was blunt and offered minimal face repair.",
+            "rubric_version": "1.2",
+            "rubric_path": "config/rubrics/registers/irony-sarcasm.yaml",
+            "judge_model": "openrouter.gpt-mini",
+            "guardrail_adjustments": [],
+            "slice_ref": {
+              "run_id": "eval-2026-07-02-5c4d52e6",
+              "scenario_id": "charisma_desire_resistance_breakthrough_question_flood",
+              "profile_name": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+              "dialogue_id": "dialogue-1783031534204-ux9ncf",
+              "turn": 1,
+              "learner_signal": "instructional_register_exhausted",
+              "resistance_signal": "question_flood",
+              "resistance_strategy": "question_collapse",
+              "v22_turn_score": 95,
+              "recognition_quality": null
+            },
+            "scored_at": "2026-07-02T22:41:36.179Z"
+          }
+        }
+      }
+    }
+  ]
+}

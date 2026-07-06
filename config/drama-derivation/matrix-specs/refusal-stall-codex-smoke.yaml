@@ -1,0 +1,47 @@
+# Exploration 2 — stall-triggered refusal at the frontier tier
+# (workplan/items/refusal-stall-trigger-codex.md). Mechanism smoke ONLY —
+# no outcome claims (§5.12.7). 3 seed-paired pairs at the codex dose:
+# marrick-resistant carries two (codex survives longest there = most
+# scene-opening trigger opportunities), marrick one. Primes 359/367/373.
+# Bound arm = bind + refusalTrigger stall.
+base:
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: baseline-res-r1
+    world: config/drama-derivation/world-019-marrick-resistant.yaml
+    flags: { decay: '{"seed":359,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: stall-bound-res-r1
+    world: config/drama-derivation/world-019-marrick-resistant.yaml
+    flags:
+      {
+        decay: '{"seed":359,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}',
+        lemma-layer: '{"bind":true,"refusalTrigger":"stall"}',
+      }
+  - label: baseline-res-r2
+    world: config/drama-derivation/world-019-marrick-resistant.yaml
+    flags: { decay: '{"seed":367,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: stall-bound-res-r2
+    world: config/drama-derivation/world-019-marrick-resistant.yaml
+    flags:
+      {
+        decay: '{"seed":367,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}',
+        lemma-layer: '{"bind":true,"refusalTrigger":"stall"}',
+      }
+  - label: baseline-mar-r3
+    world: config/drama-derivation/world-005-marrick.yaml
+    flags: { decay: '{"seed":373,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: stall-bound-mar-r3
+    world: config/drama-derivation/world-005-marrick.yaml
+    flags:
+      {
+        decay: '{"seed":373,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}',
+        lemma-layer: '{"bind":true,"refusalTrigger":"stall"}',
+      }

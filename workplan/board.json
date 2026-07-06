@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-05T13:26:03.419Z",
+  "generated": "2026-07-06T06:26:55.583Z",
   "counts": {
-    "total": 87,
+    "total": 94,
     "byStatus": {
-      "done": 76,
+      "done": 81,
       "blocked": 1,
       "dropped": 2,
       "review": 1,
       "active": 2,
       "archived": 4,
-      "triaged": 1
+      "triaged": 3
     },
     "byType": {
       "research": 40,
-      "experiment": 20,
+      "experiment": 27,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -65,6 +65,56 @@
         "negative-registers",
         "effect-estimation",
         "stance-fidelity"
+      ]
+    },
+    {
+      "id": "refusal-cross-stack-adaptive",
+      "title": "Exploration 5: cross-stack transfer — the refusal gate on the adaptive LangGraph runner",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Scoped implementation plan validated against services/adaptiveTutor/; a trap-suite smoke with strategy_shift_correctness as the native endpoint; reads pre-stated before any paid run.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "langgraph",
+        "strategy-refusal",
+        "cross-stack"
+      ]
+    },
+    {
+      "id": "refusal-defense-adjudication",
+      "title": "Exploration 4: adjudicating the defense — does a hollow defense earn a second refusal?",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Design gated on the promotion verdict + defense base-rate; executes only if defends are frequent enough to matter (>= ~20% of refusals) and promotion confirms.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion",
+          "refusal-model-authored"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal"
       ]
     },
     {
@@ -310,6 +360,33 @@
       "milestone": "board-pm"
     },
     {
+      "id": "classifier-dag-register",
+      "title": "Classify-then-route coupled to the proof DAG: register shift as the routed channel",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "Phase A audit numbers recorded (label coverage, text-only classifier accuracy vs formal labels, mirror-orbit prevalence); Phase B register-shift smoke recorded with pre-stated reads.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "refusal-learner-mirror",
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "classifier",
+        "register",
+        "dag"
+      ]
+    },
+    {
       "id": "content-compulsion-contrast",
       "title": "Content-compulsion contrast — the refusal stack at pre-registered tier",
       "status": "done",
@@ -333,6 +410,33 @@
         "derivation",
         "lemma-layer",
         "strategy-refusal"
+      ]
+    },
+    {
+      "id": "content-compulsion-promotion",
+      "title": "Content-compulsion promotion run — n=20/arm per shrinkage sizing",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "40 Sonnet runs under the frozen prereg; the frozen bar (U<=138 at 20/20) produces a recorded verdict.",
+      "claim_status": "settled",
+      "links": {
+        "notes": "CONTENT-COMPULSION-PROMOTION-PREREGISTRATION.md",
+        "items": [
+          "content-compulsion-contrast"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "lemma-layer",
+        "strategy-refusal",
+        "promotion"
       ]
     },
     {
@@ -519,6 +623,32 @@
       ]
     },
     {
+      "id": "refusal-stall-trigger-codex",
+      "title": "Exploration 2: stall-triggered refusal at the frontier tier (codex)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Trigger implemented + gated (deterministic stall arithmetic, both mock paths), 6-run codex smoke complete, pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion",
+          "strategy-refusal-smoke"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal",
+        "frontier"
+      ]
+    },
+    {
       "id": "register-taxonomy-negative-registers",
       "title": "Implement register taxonomy and negative-register evaluation",
       "status": "done",
@@ -527,7 +657,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-07-02",
-      "updated": "2026-07-03",
+      "updated": "2026-07-05",
       "verification": "Registry/rubric/cell/reporter tests pass, cells 196-198 validate, no-paid stage-0 checks pass, paid smoke/full run IDs are recorded with register-specific results, and the hand-authored corrosive-exemplar test separates v2.2 guardrail sensitivity from register-rubric compression.",
       "claim_status": "methods",
       "links": {
@@ -1785,6 +1915,57 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "refusal-learner-mirror",
+      "title": "Exploration 6: the learner's mirror — refusing the learner's incumbent fixation",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Learner-side trigger implemented + gated (symmetric to the tutor side per the house rule), 6-run smoke complete, pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal",
+        "learner",
+        "symmetry"
+      ]
+    },
+    {
+      "id": "refusal-model-authored",
+      "title": "Exploration 3: who refuses — model-authored refusal content on a criterial trigger",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-strategy-ledger-followups",
+      "verification": "Variant implemented + gated, 6-run smoke complete, pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal",
+        "superego"
+      ]
     },
     {
       "id": "review-ego-superego-internal-history-window",

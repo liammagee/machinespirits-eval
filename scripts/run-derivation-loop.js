@@ -655,6 +655,34 @@ async function main() {
     console.error('--lemma-layer requires --scene-mode (the frontier choice is a scene-opening decision)');
     process.exit(1);
   }
+  // Register router (classifier-dag-register Phase B): per tutor turn the
+  // learner's last message is classified (audited lexical sensor, chain
+  // grain) and a stance register is routed from classifier x DAG state.
+  // Value 'on' (bare) or JSON {"mockLabel":...,"mockDagState":true} (test).
+  const registerRouterArg = arg('register-router', null);
+  let registerRouter = null;
+  if (flag('register-router') && registerRouterArg !== 'off') {
+    try {
+      registerRouter = registerRouterArg && registerRouterArg !== 'on' ? JSON.parse(registerRouterArg) : true;
+    } catch (err) {
+      console.error(`--register-router ${err.message}`);
+      process.exit(1);
+    }
+  }
+  // Learner mirror refusal (exploration 6): one criterial refusal retry to
+  // the LEARNER when they re-voice the mirror hypothesis against their own
+  // grounded record. Value 'on' (bare) or JSON {"mock":"reconcile"|"reexamine"}.
+  const learnerMirrorRefusalArg = arg('learner-mirror-refusal', null);
+  let learnerMirrorRefusal = null;
+  if (flag('learner-mirror-refusal') && learnerMirrorRefusalArg !== 'off') {
+    try {
+      learnerMirrorRefusal =
+        learnerMirrorRefusalArg && learnerMirrorRefusalArg !== 'on' ? JSON.parse(learnerMirrorRefusalArg) : true;
+    } catch (err) {
+      console.error(`--learner-mirror-refusal ${err.message}`);
+      process.exit(1);
+    }
+  }
   if (strategyLedger && !sceneMode) {
     console.error(
       '--strategy-ledger requires --scene-mode (blocks segment scene exchanges; commitments bind at scene boundaries)',
@@ -1370,6 +1398,8 @@ async function main() {
         ...(acts ? { acts } : {}),
         ...(strategyLedger ? { strategyLedger } : {}),
         ...(lemmaLayer ? { lemmaLayer } : {}),
+        ...(learnerMirrorRefusal ? { learnerMirrorRefusal } : {}),
+        ...(registerRouter ? { registerRouter } : {}),
         ...(learnerLedger ? { learnerLedger } : {}),
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
         ...(conductPolicy ? { conductPolicy } : {}),

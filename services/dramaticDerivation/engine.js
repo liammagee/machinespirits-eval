@@ -120,6 +120,8 @@ import {
   renderTutorLemmaLines,
   supportRemaining as lemmaSupportRemaining,
 } from './lemmaLayer.js';
+import { buildChainMap, buildRegionLexicons, classifyMessage } from './messageClassifier.js';
+import { decideRegister, normalizeRegisterRouterConfig, REGISTER_BLOCKS } from './registerRouter.js';
 
 function renderFact(fact) {
   return fact.join(' ');
@@ -323,6 +325,37 @@ export async function runDrama({ world, roles, options = {} }) {
   if (lemmaConfig && !lemmaDag) {
     throw new Error('lemma layer: the authored proof path does not entail S (plot lint should have caught this)');
   }
+  // Learner mirror refusal (exploration 6, refusal-learner-mirror.md): the
+  // learner's mirror-fixation treated as an incumbent strategy. Fires at most
+  // once per run; the payload is computed HERE so concealment lives engine-
+  // side (grounds = the learner's OWN grounded base facts only).
+  const learnerMirrorRefusalConfig = options.learnerMirrorRefusal
+    ? options.learnerMirrorRefusal === true
+      ? {}
+      : options.learnerMirrorRefusal
+    : null;
+  const mirrorRefusalState = { fired: false, record: null };
+  // Register router (classifier-dag-register Phase B): per tutor turn, the
+  // learner's last message is classified by the Phase-A-audited lexical
+  // sensor (chain grain, deterministic) and a stance register is routed
+  // from the classifier × DAG interaction. Prompt-side only.
+  const registerRouterConfig = options.registerRouter ? normalizeRegisterRouterConfig(options.registerRouter) : null;
+  const registerRouterState = registerRouterConfig
+    ? (() => {
+        const dag = buildLemmaDag(world);
+        if (!dag) throw new Error('register router: the authored proof path does not entail S');
+        const varIndex = world.questionPattern.findIndex((tok) => typeof tok === 'string' && tok.startsWith('?'));
+        return {
+          dag,
+          lexicons: buildRegionLexicons(world, dag),
+          chainOf: buildChainMap(dag),
+          mirrorTerm: world.mirror ? String(world.mirror.fact[varIndex] ?? '').toLowerCase() : null,
+          clearedAt: new Map(), // lemma key -> first turn grounded
+          decisions: [],
+          cache: new Map(), // turn -> decision
+        };
+      })()
+    : null;
   let sceneTempoThisTurn = null;
   let sceneRecognitionNeedThisTurn = null;
   const directorCadence = normalizeDirectorCadence(options.directorCadence, { sceneMode: Boolean(sceneConfig) });
@@ -936,6 +969,57 @@ export async function runDrama({ world, roles, options = {} }) {
       ...voiced.map((entry) => entry.fact),
     ];
     const factSurfaces = learnerFactSurfaces(surfaceFacts);
+    // Mirror-refusal payload (concealment-safe by construction): present only
+    // while unfired AND evidence incompatible with the mirror is derivable
+    // from the learner's OWN grounded record. The cited grounds are the
+    // proof-tree BASE facts of the incompatible partner — every one a fact
+    // the learner has themselves grounded; the derived conclusion is never
+    // named (the stall-watcher's charter-v3 discipline, learner-side).
+    const mirrorRefusal = (() => {
+      if (!learnerMirrorRefusalConfig || !world.mirror || mirrorRefusalState.fired) return null;
+      const mirrorKey = factKey(world.mirror.fact);
+      const cl = closure(grounded, world.rules);
+      const partnerKeys = (world.incompatible || [])
+        .filter((pair) => pair.some((f) => factKey(f) === mirrorKey))
+        .map((pair) => pair.find((f) => factKey(f) !== mirrorKey))
+        .filter((f) => f && cl.facts.has(factKey(f)))
+        .map((f) => factKey(f));
+      const groundKeys = new Set();
+      for (const pk of partnerKeys) {
+        const stack = [pk];
+        while (stack.length) {
+          const key = stack.pop();
+          const proof = cl.proofs.get(key);
+          if (!proof) {
+            groundKeys.add(key);
+            continue;
+          }
+          for (const prem of proof.premises) stack.push(prem);
+        }
+      }
+      const grounds = grounded
+        .filter((fact) => groundKeys.has(factKey(fact)))
+        .map((fact) => factSurfaces[factKey(fact)] || learnerSurfaceForFact(fact));
+      // Real runs: the payload exists only while the window is live (the
+      // refusal trigger guards on grounds). Mock runs: emit the mock fields
+      // pre-window too — the mock learner voices the mirror instead of
+      // insta-asserting the true answer, so a zero-paid run can REACH the
+      // window at all (start-of-turn derivability has zero width under the
+      // mock's same-turn assertion pace).
+      if (!grounds.length && !learnerMirrorRefusalConfig.mock) return null;
+      const varIndex = world.questionPattern.findIndex((tok) => typeof tok === 'string' && tok.startsWith('?'));
+      return {
+        mirrorKey,
+        mirrorSurface: String(world.mirror.fact[varIndex] ?? world.mirror.fact[world.mirror.fact.length - 1]),
+        grounds,
+        ...(learnerMirrorRefusalConfig.mock
+          ? {
+              mock: learnerMirrorRefusalConfig.mock,
+              mockAnswer: String(world.mirror.fact[varIndex] ?? ''),
+            }
+          : {}),
+      };
+    })();
     const proxyDagMemory = opts.learnerProxyDag
       ? buildLearnerProxyDagMemory({
           turn,
@@ -961,6 +1045,7 @@ export async function runDrama({ world, roles, options = {} }) {
       // grounded assertions only — pre-rendered so concealment lives in one
       // place (renderLearnerLemmaLines).
       ...(lemmaRun ? { lemmaLayer: lemmaView('learner') } : {}),
+      ...(mirrorRefusal ? { mirrorRefusal } : {}),
       releasedFacts: visibleReleasedFacts,
       releasedThisTurn: releasedThisTurnVisible,
       factSurfaces,
@@ -1041,6 +1126,20 @@ export async function runDrama({ world, roles, options = {} }) {
     goalGrounded: lemmaRun.grounded.has(lemmaDag.goalKey),
   });
 
+  // Stall span since the active lemma was chosen: consecutive trailing
+  // trajectory steps with no strict D decrease (the house clock's own
+  // arithmetic, detectStall), counted only over turns at/after the pick.
+  const lemmaStallSpanSinceActive = () => {
+    if (!lemmaRun?.active) return 0;
+    let span = 0;
+    for (let i = trajectory.length - 1; i > 0; i--) {
+      if (trajectory[i].turn < lemmaRun.active.turn) break;
+      if (trajectory[i].D < trajectory[i - 1].D) break;
+      span++;
+    }
+    return span;
+  };
+
   const lemmaView = (roleName) => {
     if (!lemmaRun) return null;
     if (roleName === 'learner') {
@@ -1056,6 +1155,8 @@ export async function runDrama({ world, roles, options = {} }) {
       proofPremiseIds: [...lemmaDag.proofPremiseIds],
       activeKey: lemmaRun.active?.key || null,
       activeLabel: lemmaRun.active?.label || null,
+      stallWindow: world.slope.aporia_window,
+      stallSpanSinceActive: lemmaStallSpanSinceActive(),
       regressionsSinceActive: lemmaRun.active
         ? lemmaRun.regressions
             .filter((r) => r.turn >= lemmaRun.active.turn)
@@ -1072,6 +1173,63 @@ export async function runDrama({ world, roles, options = {} }) {
         };
       }),
     };
+  };
+
+  // Register-router decision, once per turn (cached): the Phase-A-audited
+  // sensor over the learner's LAST message × criterial DAG state (grounded
+  // lemma regression tracked here; mirror-partner derivability from the
+  // learner's own record). Mock knobs force sensor/DAG inputs so zero-paid
+  // gates exercise both fire paths; the pure rule is unit-tested directly.
+  const registerRouterDecision = (turn) => {
+    if (!registerRouterState) return null;
+    const rr = registerRouterState;
+    if (rr.cache.has(turn)) return rr.cache.get(turn);
+    const grounded = validGroundedFacts();
+    const state = computeLemmaState(rr.dag, grounded, world.rules);
+    for (const key of state.groundedKeys) if (!rr.clearedAt.has(key)) rr.clearedAt.set(key, turn);
+    const regressedChains = new Set();
+    for (const [key] of rr.clearedAt) {
+      if (!state.groundedKeys.has(key)) regressedChains.add(rr.chainOf.get(key) || key);
+    }
+    let partnerDerivable = false;
+    if (world.mirror) {
+      const mirrorKey = factKey(world.mirror.fact);
+      const cl = closure(grounded, world.rules);
+      partnerDerivable = (world.incompatible || []).some((pair) => {
+        const partner = pair.some((f) => factKey(f) === mirrorKey) ? pair.find((f) => factKey(f) !== mirrorKey) : null;
+        return partner ? cl.facts.has(factKey(partner)) : false;
+      });
+    }
+    const lastLearner = [...transcript].reverse().find((e) => e.role === 'learner');
+    const sensed = lastLearner
+      ? classifyMessage(lastLearner.text, rr.lexicons, rr.mirrorTerm)
+      : { label: 'neither', score: 0 };
+    const label = registerRouterConfig.mockLabel || sensed.label;
+    const dag = registerRouterConfig.mockDagState
+      ? {
+          partnerDerivable: true,
+          regressedChains: new Set(rr.dag.nodes.filter((n) => !n.isGoal).map((n) => rr.chainOf.get(n.key))),
+        }
+      : { partnerDerivable, regressedChains };
+    const register = decideRegister({
+      label,
+      partnerDerivable: dag.partnerDerivable,
+      regressedChains: dag.regressedChains,
+      chainOf: rr.chainOf,
+    });
+    const decision = {
+      turn,
+      label,
+      sensedLabel: sensed.label,
+      partnerDerivable: dag.partnerDerivable,
+      regressedChains: [...dag.regressedChains],
+      register,
+      ...(REGISTER_BLOCKS[register] ? { block: REGISTER_BLOCKS[register] } : {}),
+    };
+    rr.decisions.push(decision);
+    if (register !== 'didactic') events.push({ turn, type: 'register_shift', detail: `${register} (${label})` });
+    rr.cache.set(turn, decision);
+    return decision;
   };
 
   const omniscientView = (turn, roleName) => {
@@ -1108,6 +1266,7 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(conductTriggerOverride ? { conductTriggerOverride } : {}),
       ...(ledgerState && roleName === 'tutor' ? { strategyLedger: strategyLedgerView() } : {}),
       ...(lemmaRun && roleName === 'tutor' ? { lemmaLayer: lemmaView('tutor') } : {}),
+      ...(registerRouterState && roleName === 'tutor' ? { registerRouter: registerRouterDecision(turn) } : {}),
       ...(proofDebt
         ? { proofDebt: runtimeMonitor ? runtimeMonitor.proofDebtTutorView(proofDebt) : tutorProofDebtView(proofDebt) }
         : {}),
@@ -1646,6 +1805,11 @@ export async function runDrama({ world, roles, options = {} }) {
     const dBeforeLearner = derivationDistance(world, validGroundedFacts());
     const groundedBeforeLearner = validGroundedFacts().length;
     const learnerOut = (await roles.learner(learnerView(turn, releasedThisTurn))) || {};
+    if (learnerOut.mirrorRefusal && !mirrorRefusalState.fired) {
+      mirrorRefusalState.fired = true;
+      mirrorRefusalState.record = { ...learnerOut.mirrorRefusal };
+      events.push({ turn, type: 'mirror_refusal', detail: learnerOut.mirrorRefusal.outcome });
+    }
     for (const fact of learnerOut.retract || []) {
       const key = factKey(fact);
       // Retracting a mutation-born false belief is half of a REVISION (the
@@ -2416,6 +2580,15 @@ export async function runDrama({ world, roles, options = {} }) {
               multiFrontierOpenings: lemmaRun.multiFrontierOpenings,
               tutorChoices: lemmaRun.tutorChoices,
             },
+          },
+        }
+      : {}),
+    ...(mirrorRefusalState.record ? { mirrorRefusal: mirrorRefusalState.record } : {}),
+    ...(registerRouterState
+      ? {
+          registerRouter: {
+            decisions: registerRouterState.decisions,
+            shifts: registerRouterState.decisions.filter((d) => d.register !== 'didactic').length,
           },
         }
       : {}),
