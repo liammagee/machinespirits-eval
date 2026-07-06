@@ -658,6 +658,20 @@ async function main() {
     console.error('--lemma-layer requires --scene-mode (the frontier choice is a scene-opening decision)');
     process.exit(1);
   }
+  // Register router (classifier-dag-register Phase B): per tutor turn the
+  // learner's last message is classified (audited lexical sensor, chain
+  // grain) and a stance register is routed from classifier x DAG state.
+  // Value 'on' (bare) or JSON {"mockLabel":...,"mockDagState":true} (test).
+  const registerRouterArg = arg('register-router', null);
+  let registerRouter = null;
+  if (flag('register-router') && registerRouterArg !== 'off') {
+    try {
+      registerRouter = registerRouterArg && registerRouterArg !== 'on' ? JSON.parse(registerRouterArg) : true;
+    } catch (err) {
+      console.error(`--register-router ${err.message}`);
+      process.exit(1);
+    }
+  }
   // Learner mirror refusal (exploration 6): one criterial refusal retry to
   // the LEARNER when they re-voice the mirror hypothesis against their own
   // grounded record. Value 'on' (bare) or JSON {"mock":"reconcile"|"reexamine"}.
@@ -1412,6 +1426,7 @@ async function main() {
         ...(strategyLedger ? { strategyLedger } : {}),
         ...(lemmaLayer ? { lemmaLayer } : {}),
         ...(learnerMirrorRefusal ? { learnerMirrorRefusal } : {}),
+        ...(registerRouter ? { registerRouter } : {}),
         ...(learnerLedger ? { learnerLedger } : {}),
         ...(proofDebtGuard ? { proofDebtGuard } : {}),
         ...(conductPolicy ? { conductPolicy } : {}),

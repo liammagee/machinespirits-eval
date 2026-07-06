@@ -489,7 +489,9 @@ async function main() {
   );
   const fieldPlanner = requestedFieldPlanner || fieldPlannerEnforce;
   if (fieldPlanner && acts) {
-    console.error('--field-planner on currently requires non-acts mode (acts redacts learner-store state from the tutor)');
+    console.error(
+      '--field-planner on currently requires non-acts mode (acts redacts learner-store state from the tutor)',
+    );
     process.exit(1);
   }
   const castLayer = track('cast-layer', triState('cast-layer', Boolean(srcDiag.castLayer)), Boolean(srcDiag.castLayer));

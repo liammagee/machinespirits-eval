@@ -2414,7 +2414,9 @@ export function makeLlmTutor(
     );
   }
   const fieldPlannerEnabled = Boolean(fieldPlanner || fieldPlannerEnforce);
-  const conductPolicyEnabled = Boolean(conductPolicy || conductPolicyEnforce || conductProgressPolicy || fieldPlannerEnforce);
+  const conductPolicyEnabled = Boolean(
+    conductPolicy || conductPolicyEnforce || conductProgressPolicy || fieldPlannerEnforce,
+  );
   const rhetoricalPolicyConfig = rhetoricalPolicy ? normalizeRhetoricalPolicyConfig(rhetoricalPolicy) : null;
   const system = tutorSystem(world, script, dials, {
     actsMode,
@@ -3470,6 +3472,9 @@ export function makeLlmTutor(
         'The dialogue so far (you remember all of it; the learner sees only this act):',
         renderTranscriptTail(view.transcript, view.transcript.length),
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
+        // Register router (classifier-dag-register Phase B): a per-turn
+        // stance block routed from the learner's last message × DAG state.
+        ...(view.registerRouter?.block ? ['', view.registerRouter.block] : []),
         ...sceneTempoLines(view.scene, 'tutor'),
         ...sceneRecognitionNeedLines(view.scene, 'tutor'),
         ...castLayerSection,
@@ -3502,6 +3507,9 @@ export function makeLlmTutor(
         `Turn ${view.turn} of ${world.turnCap}.`,
         `Evidence on stage so far: ${view.ledger.length ? view.ledger.map((l) => l.premiseId).join(', ') : 'none'}.`,
         ...stagePrologueLines(view.stagePrologue, 'tutor'),
+        // Register router (classifier-dag-register Phase B): a per-turn
+        // stance block routed from the learner's last message × DAG state.
+        ...(view.registerRouter?.block ? ['', view.registerRouter.block] : []),
         ...sceneTempoLines(view.scene, 'tutor'),
         ...sceneRecognitionNeedLines(view.scene, 'tutor'),
         ...castLayerSection,

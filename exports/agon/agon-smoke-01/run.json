@@ -1,0 +1,27 @@
+{
+  "runId": "agon-smoke-01",
+  "startedAt": "2026-07-05T12:19:55.260Z",
+  "configPath": "config/agon/fractions-agon.yaml",
+  "configHash": "7ebdf0996ec3215d",
+  "gameId": "fractions_agon_v0",
+  "arms": [
+    "A1"
+  ],
+  "episodesPerArm": 1,
+  "turnsOverride": 8,
+  "dry": false,
+  "agents": {
+    "tutor": "codex/gpt-5.5",
+    "learner": "claude-code/claude-sonnet-5"
+  },
+  "codexEffort": "medium",
+  "gitCommit": "bb2584379e5a937f0a5464c3065d6007dab08146",
+  "schedule": [
+    {
+      "episodeId": "A1-e1",
+      "status": "complete",
+      "durationMs": 208867
+    }
+  ],
+  "completedAt": "2026-07-05T12:23:24.156Z"
+}
