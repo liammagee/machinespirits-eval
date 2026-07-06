@@ -319,8 +319,7 @@ function analyzeTrace(file, args) {
       prev.registerSelection?.selected_register ||
       prev.registerSelection?.selected_mode ||
       'unknown';
-    const fieldDelta =
-      cur.field.score == null || prev.field.score == null ? null : cur.field.score - prev.field.score;
+    const fieldDelta = cur.field.score == null || prev.field.score == null ? null : cur.field.score - prev.field.score;
 
     const pair = {
       file,
@@ -655,14 +654,18 @@ function formatNumber(value) {
 
 function formatSigned(value) {
   if (!Number.isFinite(value)) return '';
-  const fixed = Math.abs(value).toFixed(3).replace(/\.?0+$/, '');
+  const fixed = Math.abs(value)
+    .toFixed(3)
+    .replace(/\.?0+$/, '');
   if (value > 0) return `+${fixed}`;
   if (value < 0) return `-${fixed}`;
   return '0';
 }
 
 function excerpt(text, maxLength) {
-  const normalized = String(text || '').replace(/\s+/g, ' ').trim();
+  const normalized = String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (normalized.length <= maxLength) return normalized;
   return `${normalized.slice(0, maxLength - 1)}…`;
 }

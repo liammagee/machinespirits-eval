@@ -78,7 +78,10 @@ test('buildDialogueReport accumulates learner-field movement and renders sibling
   assert.equal(report.pedagogicalInteractionField.turns.length, 2);
   assert.equal(report.pedagogicalInteractionField.script.id, 'prediction_failure_repair_generalisation_transfer');
   assert.equal(report.pedagogicalInteractionField.turns[0].tutor.schema, 'machinespirits.derivation.tutor-field.v1');
-  assert.equal(report.pedagogicalInteractionField.turns[0].discourse.schema, 'machinespirits.derivation.discourse-field.v1');
+  assert.equal(
+    report.pedagogicalInteractionField.turns[0].discourse.schema,
+    'machinespirits.derivation.discourse-field.v1',
+  );
   assert.ok(report.pedagogicalInteractionField.turns[0].tutor.evidence);
   assert.ok(report.pedagogicalInteractionField.turns[0].discourse.evidence);
   assert.ok(report.summary.fieldDelta.mastery > 0);
