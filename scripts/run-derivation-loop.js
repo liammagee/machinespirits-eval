@@ -350,7 +350,8 @@
  * movement, instrument panel at the foot, critic's notice at the very end),
  * diagnosis.json (taxonomy verdict, D(t), release adherence, staging,
  * dialogue discipline, logic projection, usage/cost), result.json (the raw
- * engine output, including harness-only logic snapshots),
+ * engine output, including harness-only logic snapshots), dialogue-report.md,
+ * dialogue-report.json, dynamic-field.svg (the dynamic learner-field report),
  * commentary.md (the critic's notice, standalone).
  */
 
@@ -386,6 +387,8 @@ import {
   renderTranscript,
   runCritic,
   commentaryFileMd,
+  buildDialogueReport,
+  renderDialogueReportArtifacts,
 } from '../services/dramaticDerivation/index.js';
 import {
   buildWorldIR,
@@ -902,6 +905,12 @@ async function main() {
   }
   const discursiveCalibration = flag('discursive-calibration');
   const didacticMode = flag('didactic-mode');
+  const fieldPlannerEnforce = flag('field-planner-enforce');
+  const fieldPlanner = flag('field-planner') || fieldPlannerEnforce;
+  if (fieldPlanner && acts) {
+    console.error('--field-planner currently requires non-acts mode (acts redacts learner-store state from the tutor)');
+    process.exit(1);
+  }
   const castLayer = flag('cast-layer');
   const castReinvention = flag('cast-reinvention');
   const learnerDrift = flag('learner-drift');
@@ -1037,6 +1046,8 @@ async function main() {
       rhetoricalPolicy: rhetoricalPolicy || null,
       discursiveCalibration,
       didacticMode,
+      fieldPlanner,
+      fieldPlannerEnforce,
       castLayer,
       castReinvention,
       learnerDrift,
@@ -1205,6 +1216,13 @@ async function main() {
   if (didacticMode) {
     console.log('didact  MODE ON — public scene/act learning signals choose explanatory mode only');
   }
+  if (fieldPlanner) {
+    console.log(
+      fieldPlannerEnforce
+        ? 'field   PLANNER ON + ENFORCE — coupled learner/tutor/discourse field selects and enforces the tutor conduct family'
+        : 'field   PLANNER ON — coupled learner/tutor/discourse field selects the tutor conduct family and didactic mode',
+    );
+  }
   if (castLayer) {
     console.log(
       `cast    LAYER ON${castReinvention ? ' + REINVENTION ON' : ''} — public character/relation conduct advisory only`,
@@ -1278,6 +1296,8 @@ async function main() {
       rhetoricalPolicy,
       discursiveCalibration,
       didacticMode,
+      fieldPlanner,
+      fieldPlannerEnforce,
       castLayer,
       castReinvention,
       ownershipTarget: world.ownershipTarget,
@@ -1315,6 +1335,11 @@ async function main() {
     if (s.exchange?.tempo) bits.push(`tempo ${s.exchange.tempo}`);
     if (s.didacticMode?.recommendedMode) {
       bits.push(`didactic ${s.didacticMode.recommendedMode}/${s.didacticMode.learningSignal || 'unknown'}`);
+    }
+    if (s.fieldPlanner?.selectedMoveFamily) {
+      bits.push(
+        `field ${s.fieldPlanner.selectedMoveFamily}${s.fieldPlanner.targetPremise ? `/${s.fieldPlanner.targetPremise}` : ''}${s.fieldPlanner.efficacy ? `/${s.fieldPlanner.efficacy}` : ''}`,
+      );
     }
     if (s.castState?.tutor?.currentStance) bits.push(`cast ${s.castState.tutor.currentStance}`);
     if (s.tutorReinvention?.active) bits.push(`reinvent ${s.tutorReinvention.toStance}`);
@@ -1376,6 +1401,8 @@ async function main() {
         learnerProxyDag,
         proxyDagPacing,
         tutorLearnerDag,
+        fieldPlanner,
+        fieldPlannerEnforce,
         directorCadence,
         stagePrologue,
         publicRegister,
@@ -1475,6 +1502,8 @@ async function main() {
     rhetoricalPolicy: rhetoricalPolicy || null,
     discursiveCalibration,
     didacticMode,
+    fieldPlanner,
+    fieldPlannerEnforce,
     castLayer,
     castReinvention,
     learnerDrift,
@@ -1494,6 +1523,10 @@ async function main() {
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'diagnosis.json'), `${JSON.stringify(diagnosis, null, 2)}\n`);
   fs.writeFileSync(path.join(outDir, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);
+  const dialogueReport = buildDialogueReport(result, world, { label, diagnosis });
+  for (const [filename, content] of Object.entries(renderDialogueReportArtifacts(dialogueReport))) {
+    fs.writeFileSync(path.join(outDir, filename), content);
+  }
 
   let commentaryEmbed = null;
   if (criticMode !== 'off') {
@@ -1597,7 +1630,7 @@ async function main() {
   }
   console.log('');
   console.log(
-    `artifacts ${path.relative(ROOT, outDir)}/{transcript.md, diagnosis.json, result.json${commentaryEmbed ? ', commentary.md' : ''}}`,
+    `artifacts ${path.relative(ROOT, outDir)}/{transcript.md, diagnosis.json, result.json, dialogue-report.md, dialogue-report.json, dynamic-field.svg${commentaryEmbed ? ', commentary.md' : ''}}`,
   );
 }
 

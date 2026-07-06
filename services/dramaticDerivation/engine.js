@@ -85,8 +85,11 @@ import { buildLearnerCharacterArcView } from './characterDesire.js';
 import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
 import { deriveLearnerTransformationState, summarizeLearnerTransformationDurability } from './learnerTransformation.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from './learnerDag.js';
+import { buildDynamicLearnerField } from './learnerField.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import { buildLearnerProxyDagMemory, buildTutorLearnerDagModel, deriveProxyDagPacingSignal } from './proxyDagMemory.js';
+import { buildPedagogicalInteractionField } from './interactionField.js';
+import { selectFieldPlannerMove, summarizeFieldPlannerOutcome } from './fieldPlanner.js';
 import {
   classifyLearnerExchange,
   applyRecognitionNeedPolicy,
@@ -292,6 +295,13 @@ export async function runDrama({ world, roles, options = {} }) {
   // absent — no act state, no view bounding, no redaction, no new fields.
   const acts = options.acts ? normalizeActsConfig(options.acts) : null;
   const sceneConfig = options.sceneMode ? normalizeSceneConfig(options.sceneMode) : null;
+  const fieldPlannerActive = Boolean(options.fieldPlanner || options.fieldPlannerEnforce);
+  const fieldPlannerEnforceActive = Boolean(options.fieldPlannerEnforce);
+  if (fieldPlannerActive && acts) {
+    throw new Error(
+      'field planner currently requires non-acts mode; acts mode redacts learner-store state from the tutor view',
+    );
+  }
   // Strategy ledger (LAYERED-DECISION-LOOPS-PLAN.md Phases 0-2): opt-in and,
   // like decay/acts, absent means absent — no block state, no commitment or
   // audit rows, no new result fields. Both dials need the scene/exchange
@@ -400,6 +410,7 @@ export async function runDrama({ world, roles, options = {} }) {
   const learnerTransformationPostRows = []; // post-learner public ownership proof snapshots
   const proxyDagPacingRows = []; // harness-only advisory assessment rows, if enabled
   const tutorLearnerDagRows = []; // redacted tutor-side model of learner DAG state, if enabled
+  const fieldPlannerRows = []; // coupled-field runtime policy choices and post-turn outcomes
   let sceneState = null;
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
@@ -735,6 +746,42 @@ export async function runDrama({ world, roles, options = {} }) {
       role: roleName,
       proxyDagMemory,
       assessment: learnerDag.assessment,
+    });
+  };
+
+  const currentFieldPlanner = (turn) => {
+    const snapshot = buildLearnerDagSnapshot(world, {
+      turn,
+      boardFacts: learnerBoardFacts(),
+      validFacts: validGroundedFacts(),
+      voiced: voicedLedger,
+      hypotheses,
+      ledger,
+      source: 'engine_field_planner',
+    });
+    const snapshots = [...learnerDagSnapshots.filter((row) => Number(row.turn) < Number(turn)), snapshot];
+    const learnerDag = buildLearnerDag(snapshots, world);
+    const learnerField = buildDynamicLearnerField(world, learnerDag);
+    const resultLike = {
+      worldId: world.id,
+      events: [...events],
+      trajectory: [...trajectory],
+      transcript: [...transcript],
+      ledger: [...ledger],
+      firstForcedTurn,
+      assertedGroundedTurn,
+      turnsPlayed: Math.max(0, turn - 1),
+      learnerDag,
+    };
+    const interactionField = buildPedagogicalInteractionField(world, resultLike, { learnerField });
+    return selectFieldPlannerMove({
+      world,
+      turn,
+      interactionField,
+      learnerField,
+      nextScheduledRelease: nextScheduledRelease(turn),
+      canAssertFinal: entails(validGroundedFacts(), world.rules, world.secret.fact),
+      proofDebt: currentProofDebt(turn),
     });
   };
 
@@ -1160,6 +1207,8 @@ export async function runDrama({ world, roles, options = {} }) {
         : null;
     const tutorLearnerDagModel =
       opts.tutorLearnerDag && roleName === 'tutor' && !actState ? currentTutorLearnerDagModel(turn, roleName) : null;
+    const fieldPlanner =
+      fieldPlannerActive && roleName === 'tutor' && !actState ? currentFieldPlanner(turn, roleName) : null;
     const conductTriggerOverride =
       roleName === 'tutor' && (conductPolicyActive || conductPolicyEnforceActive)
         ? conductTriggerOverrides.find((trigger) => Number(trigger?.turn) === turn) || null
@@ -1182,6 +1231,7 @@ export async function runDrama({ world, roles, options = {} }) {
       publicRegister: publicRegisterForTurn,
       ...(proxyDagPacing ? { proxyDagPacing } : {}),
       ...(tutorLearnerDagModel ? { tutorLearnerDagModel } : {}),
+      ...(fieldPlanner ? { fieldPlanner } : {}),
       ...(conductEntitlement ? { conductEntitlement } : {}),
       ...(conductTriggerOverride ? { conductTriggerOverride } : {}),
       ...(ledgerState && roleName === 'tutor' ? { strategyLedger: strategyLedgerView() } : {}),
@@ -1369,6 +1419,7 @@ export async function runDrama({ world, roles, options = {} }) {
     const tutorView = omniscientView(turn, 'tutor');
     if (tutorView.proxyDagPacing) proxyDagPacingRows.push({ ...tutorView.proxyDagPacing });
     if (tutorView.tutorLearnerDagModel) tutorLearnerDagRows.push({ ...tutorView.tutorLearnerDagModel });
+    let fieldPlannerRow = null;
     const debtAudit = proofDebtGuardActive ? currentProofDebt(turn) : null;
     if (debtAudit?.active) {
       proofDebtRows.push({
@@ -1384,6 +1435,47 @@ export async function runDrama({ world, roles, options = {} }) {
       });
     }
     const tutorOut = (await roles.tutor(tutorView)) || {};
+    if (tutorOut.fieldPlanner || tutorView.fieldPlanner) {
+      const planner = tutorOut.fieldPlanner || tutorView.fieldPlanner;
+      fieldPlannerRow = {
+        turn,
+        schema: planner.schema,
+        selectedMoveFamily: planner.selectedMoveFamily || null,
+        reasonCode: planner.reasonCode || null,
+        rationale: planner.rationale || null,
+        targetPremise: planner.targetPremise || null,
+        targetSurface: planner.targetSurface || null,
+        didacticMode: planner.didacticMode
+          ? {
+              recommendedMode: planner.didacticMode.recommendedMode || null,
+              learningSignal: planner.didacticMode.learningSignal || null,
+              currentObject: planner.didacticMode.currentObject || null,
+            }
+          : null,
+        scriptStage: planner.scriptStage || null,
+        jointAttractor: planner.jointAttractor || null,
+        metrics: planner.metrics || null,
+        conductDecision: planner.conductDecision
+          ? {
+              selectedMoveFamily: planner.conductDecision.selectedMoveFamily || null,
+              reasonCode: planner.conductDecision.reasonCode || null,
+              targetPremise: planner.conductDecision.targetPremise || null,
+              nonLeakAuditOk: planner.conductDecision.nonLeakAudit?.ok === true,
+            }
+          : null,
+        enforcementRequested: fieldPlannerEnforceActive,
+        realizedMove: tutorOut.move || null,
+        realizedRelease: tutorOut.release || null,
+        conductPolicy: tutorOut.conductPolicy
+          ? {
+              selectedMoveFamily: tutorOut.conductPolicy.selectedMoveFamily || null,
+              reasonCode: tutorOut.conductPolicy.reasonCode || null,
+              enforcement: tutorOut.conductPolicy.enforcement || null,
+            }
+          : null,
+      };
+      fieldPlannerRows.push(fieldPlannerRow);
+    }
     const tutorRelease = applyRelease(
       turn,
       tutorOut.release,
@@ -1450,6 +1542,9 @@ export async function runDrama({ world, roles, options = {} }) {
         ...(tutorOut.rhetoricalPolicy ? { rhetoricalPolicy: tutorOut.rhetoricalPolicy } : {}),
         ...(tutorOut.discursiveCalibration ? { discursiveCalibration: tutorOut.discursiveCalibration } : {}),
         ...(tutorOut.didacticMode ? { didacticMode: tutorOut.didacticMode } : {}),
+        ...(tutorOut.fieldPlanner || tutorView.fieldPlanner
+          ? { fieldPlanner: tutorOut.fieldPlanner || tutorView.fieldPlanner }
+          : {}),
         ...(tutorOut.learnerTransformation ? { learnerTransformation: tutorOut.learnerTransformation } : {}),
         ...(tutorOut.castState ? { castState: tutorOut.castState } : {}),
         ...(tutorOut.tutorReinvention ? { tutorReinvention: tutorOut.tutorReinvention } : {}),
@@ -1856,6 +1951,20 @@ export async function runDrama({ world, roles, options = {} }) {
       events.push({ turn, type: 'forced', detail: 'learner facts now force S' });
     }
     const D = derivationDistance(world, valid);
+    if (fieldPlannerRow) {
+      fieldPlannerRow.outcome = summarizeFieldPlannerOutcome(fieldPlannerRow, {
+        distanceBefore: dBeforeLearner,
+        distanceAfter: D,
+        groundedBefore: groundedBeforeLearner,
+        groundedAfter: valid.length,
+        adoptedCount: (learnerOut.adopt || []).length,
+        retractedCount: (learnerOut.retract || []).length,
+        derivedCount: deriveOutcomes.filter((o) => o.status === 'voiced').length,
+        overreachCount: deriveOutcomes.filter((o) => o.status === 'overreach').length,
+        asserted: Boolean(learnerOut.asserts),
+        forced,
+      });
+    }
     learnerDagSnapshots.push(
       buildLearnerDagSnapshot(world, {
         turn,
@@ -2355,6 +2464,17 @@ export async function runDrama({ world, roles, options = {} }) {
             },
           }
         : {}),
+      ...(fieldPlannerRow
+        ? {
+            fieldPlanner: {
+              selectedMoveFamily: fieldPlannerRow.selectedMoveFamily,
+              reasonCode: fieldPlannerRow.reasonCode,
+              targetPremise: fieldPlannerRow.targetPremise,
+              didacticMode: fieldPlannerRow.didacticMode?.recommendedMode || null,
+              efficacy: fieldPlannerRow.outcome?.efficacy || null,
+            },
+          }
+        : {}),
       ...(tutorOut.castState
         ? {
             castState: {
@@ -2555,6 +2675,7 @@ export async function runDrama({ world, roles, options = {} }) {
     ...(learnerTransformationDurability ? { learnerTransformationDurability } : {}),
     ...(tutorLearnerDagRows.length ? { tutorLearnerDagModel: tutorLearnerDagRows } : {}),
     ...(proxyDagPacingRows.length ? { proxyDagPacing: proxyDagPacingRows } : {}),
+    ...(fieldPlannerRows.length ? { fieldPlanner: fieldPlannerRows } : {}),
     ...(logicSnapshots.length ? { logicSnapshots } : {}),
     ...(corruption
       ? {
