@@ -19,6 +19,38 @@ const DEFAULT_CODEX_TIMEOUT_MS = positiveIntEnv(
   positiveIntEnv('ID_DIRECTOR_CODEX_CLI_TIMEOUT_MS', 300_000),
 );
 const CLI_PROVIDERS = new Set(['claude-code', 'codex']);
+const CLI_EFFORT_LEVELS = new Set(['low', 'medium', 'high', 'xhigh', 'max', 'config']);
+
+export function normalizeCliEffort(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const normalized = String(value).trim().toLowerCase();
+  if (!CLI_EFFORT_LEVELS.has(normalized)) {
+    throw new Error(`CLI effort must be low|medium|high|xhigh|max|config (got ${value})`);
+  }
+  return normalized;
+}
+
+export function resolveCliEffort(provider, explicitEffort = null) {
+  const normalizedProvider = String(provider || '').trim();
+  if (!isCliProvider(normalizedProvider)) return null;
+  const explicit = normalizeCliEffort(explicitEffort);
+  if (explicit) return explicit;
+  if (normalizedProvider === 'codex') {
+    return normalizeCliEffort(
+      process.env.CLI_PROVIDER_CODEX_EFFORT || process.env.CLI_PROVIDER_EFFORT || process.env.CODEX_REASONING_EFFORT || 'xhigh',
+    );
+  }
+  if (normalizedProvider === 'claude-code') {
+    return normalizeCliEffort(
+      process.env.CLI_PROVIDER_CLAUDE_EFFORT ||
+        process.env.CLI_PROVIDER_EFFORT ||
+        process.env.CLAUDE_CODE_EFFORT ||
+        process.env.CLAUDE_EFFORT ||
+        null,
+    );
+  }
+  return null;
+}
 
 export function isCliProvider(provider) {
   return CLI_PROVIDERS.has(provider);
@@ -47,14 +79,16 @@ function buildCliUserText(userPrompt, messageHistory) {
   return userText;
 }
 
-async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHistory, timeoutMs }) {
+async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHistory, timeoutMs, effort }) {
   const userText = buildCliUserText(userPrompt, messageHistory);
   const start = Date.now();
   const effectiveTimeout = timeoutMs || DEFAULT_CLAUDE_TIMEOUT_MS;
+  const effectiveEffort = resolveCliEffort('claude-code', effort);
 
   return await new Promise((resolve, reject) => {
     const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
     if (model) args.push('--model', model);
+    if (effectiveEffort && effectiveEffort !== 'config') args.push('--effort', effectiveEffort);
     const env = { ...process.env };
     delete env.CLAUDE_CODE;
     delete env.CLAUDECODE;
@@ -90,6 +124,7 @@ async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHis
           text: out.trim(),
           model: model || 'claude-cli',
           provider: 'claude-code',
+          effort: effectiveEffort || null,
           latencyMs: Date.now() - start,
           inputTokens: 0,
           outputTokens: 0,
@@ -102,11 +137,12 @@ async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHis
   });
 }
 
-async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHistory, timeoutMs }) {
+async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHistory, timeoutMs, effort }) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-cli-provider-codex-'));
   const outFile = path.join(tmpDir, 'last-message.txt');
   const start = Date.now();
   const effectiveTimeout = timeoutMs || DEFAULT_CODEX_TIMEOUT_MS;
+  const effectiveEffort = resolveCliEffort('codex', effort);
   const prompt = [
     'System prompt for this role:',
     systemPrompt,
@@ -128,9 +164,10 @@ async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHist
         tmpDir,
         '--color',
         'never',
-        '-c',
-        `model_reasoning_effort="${process.env.CODEX_REASONING_EFFORT || 'xhigh'}"`,
       ];
+      if (effectiveEffort && effectiveEffort !== 'config') {
+        args.push('-c', `model_reasoning_effort="${effectiveEffort}"`);
+      }
       if (model && model !== 'auto') args.push('-m', model);
       args.push('-o', outFile, '-');
 
@@ -168,6 +205,8 @@ async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHist
           text,
           model: model || 'codex-cli',
           provider: 'codex',
+          effort: effectiveEffort || null,
+          reasoningEffort: effectiveEffort || null,
           latencyMs: Date.now() - start,
           inputTokens: 0,
           outputTokens: 0,
@@ -191,6 +230,7 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       role,
       messageHistory: opts?.messageHistory,
       timeoutMs: opts?.timeoutMs,
+      effort: opts?.effort,
     });
   }
   if (agentConfig?.provider === 'codex') {
@@ -201,6 +241,7 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       role,
       messageHistory: opts?.messageHistory,
       timeoutMs: opts?.timeoutMs,
+      effort: opts?.effort,
     });
   }
   if (!opts?.fallbackCallAI) {

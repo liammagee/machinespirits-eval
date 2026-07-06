@@ -24,7 +24,7 @@ import { stdin as input, stdout as output } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
-import { callAIWithCliBridge, isCliProvider } from '../services/cliProviderBridge.js';
+import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
 import { getProviderConfig, resolveModel } from '../services/evalConfigLoader.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
 import { closure, factKey, matchPattern } from '../services/dramaticDerivation/chainer.js';
@@ -57,6 +57,11 @@ const STUB = {
   historyTurns: 8,
   traceDir: process.env.TUTOR_STUB_TRACE_DIR || '.tutor-stub-traces',
   stream: process.env.TUTOR_STUB_STREAM !== '0',
+  interimAnimation: process.env.TUTOR_STUB_INTERIM_ANIMATION !== '0',
+  cliEffort: process.env.TUTOR_STUB_CLI_EFFORT || '',
+  registerPolicy: process.env.TUTOR_STUB_REGISTER_POLICY || 'dynamic',
+  opening: process.env.TUTOR_STUB_OPENING !== '0',
+  closeoutReport: process.env.TUTOR_STUB_CLOSEOUT_REPORT !== '0',
 };
 
 const C = {
@@ -100,6 +105,7 @@ const { values: args, positionals } = parseArgs({
     'learner-record-model': { type: 'string', default: STUB.learnerRecordModel },
     'no-register-selection': { type: 'boolean', default: false },
     'register-palette': { type: 'string', default: 'all' },
+    'register-policy': { type: 'string', default: STUB.registerPolicy },
     'safe-registers': { type: 'boolean', default: false },
     topic: { type: 'string', default: STUB.topic },
     world: { type: 'string', default: STUB.world },
@@ -115,6 +121,10 @@ const { values: args, positionals } = parseArgs({
     'no-trace': { type: 'boolean', default: false },
     'resume-last': { type: 'boolean', default: false },
     'no-stream': { type: 'boolean', default: false },
+    'no-interim-animation': { type: 'boolean', default: false },
+    'no-opening': { type: 'boolean', default: false },
+    'no-closeout-report': { type: 'boolean', default: false },
+    'cli-effort': { type: 'string', default: STUB.cliEffort },
     temperature: { type: 'string', default: String(STUB.temperature) },
     'max-tokens': { type: 'string', default: String(STUB.maxTokens) },
     'history-turns': { type: 'string', default: String(STUB.historyTurns) },
@@ -147,6 +157,10 @@ Options:
   --register-palette <all|safe|negative|non-simulated|csv>
                          tutor-register palette for selection (default: all);
                          all includes every register in the registry
+  --register-policy <dynamic|bland>
+                         dynamic makes scaffolding non-default; bland permits
+                         scaffolding as the ordinary stepwise proof register
+                         (default: ${STUB.registerPolicy})
   --safe-registers       limit tutor-register selection to router-selectable
                          safe registers
   --world <id|path|none> detective-story world (default: ${STUB.world})
@@ -165,6 +179,12 @@ Options:
   --no-trace             disable automatic local tracing
   --resume-last          resume the newest completed dialogue found in trace-dir
   --no-stream            disable token streaming for API-backed model calls
+  --no-interim-animation disable the temporary state/field status animation
+                         shown while model calls are waiting
+  --no-opening           do not print the tutor's default opening prompt
+  --no-closeout-report   do not print the compact dialogue closeout on exit
+  --cli-effort <level>   effort for codex/claude-code CLI calls:
+                         low, medium, high, xhigh, max, or config
   --temperature <n>      API temperature (default: ${STUB.temperature})
   --max-tokens <n>       response token cap for API providers (default: ${STUB.maxTokens})
   --history-turns <n>    turns kept in context (default: ${STUB.historyTurns})
@@ -175,6 +195,10 @@ Options:
 Interactive commands:
   /analysis              show the latest completed turn's internal analysis
   /a                     alias for /analysis
+  /field                 show a lightweight interaction-field trajectory
+  /f                     alias for /field
+  /report                show the compact dialogue closeout report
+  /r                     alias for /report
   /clear                 reset transcript and learner/register state
   /help                  show interactive commands
   /quit                  exit
@@ -191,6 +215,14 @@ Environment:
   TUTOR_STUB_WORLD       optional default detective-story world
   TUTOR_STUB_TRACE_DIR   optional default trace directory
   TUTOR_STUB_STREAM=0    disable token streaming by default
+  TUTOR_STUB_INTERIM_ANIMATION=0
+                         disable interim state/field animation by default
+  TUTOR_STUB_OPENING=0   disable default tutor opening prompt
+  TUTOR_STUB_CLOSEOUT_REPORT=0
+                         disable default closeout report
+  TUTOR_STUB_CLI_EFFORT  optional default CLI effort override
+  TUTOR_STUB_REGISTER_POLICY
+                         optional default register policy: dynamic or bland
 `);
 }
 
@@ -463,13 +495,26 @@ function deterministicLeakFallback({ learnerText }) {
   if (asksForChoice) {
     return [
       "I can't put a name or private conclusion in the trial-book yet.",
-      'Choose one public test instead: the metal trail, the die-mark trail, or a witness/forge sighting.',
-      'Which one do you want to examine first?',
+      'Write the next trial-book line as a testable evidence claim: what mark on the coin, metal, tool, hand, or record would license the next step?',
     ].join(' ');
   }
   return [
     "I can't license that conclusion yet.",
     'Name the public evidence that would make the next step follow, or keep the verdict open.',
+  ].join(' ');
+}
+
+function buildTutorOpening(state) {
+  const world = state.world;
+  if (world) {
+    return [
+      `Before we write a name in the trial-book, keep the public question in view: ${world.question}`,
+      'Start with one mark the evidence can actually bear: what fact about the coin should we test or enter first?',
+    ].join(' ');
+  }
+  return [
+    `Let's start ${state.topic ? `with ${state.topic}` : 'there'}.`,
+    'Say your first idea, or name the one point you want to test first.',
   ].join(' ');
 }
 
@@ -665,6 +710,11 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag }) {
     '- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.',
     '- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.',
     '- In story mode, speak in public evidence language: "which single line of evidence belongs in the trial-book?", not "add meltedAt(...)", "sole-caster", "blank-route", or "die-route".',
+    '- In story mode, keep the medieval flavour but be terse: usually 2-4 short sentences, never a catalogue of routes.',
+    '- Do not make the next step multiple choice. If the learner seems unsure, name the required shape of the trial-book line directly without giving the hidden answer: "write the evidence that shows which crucible the metal came from", "write the mark that identifies the tool", or "write the record that names who alone held it".',
+    '- When talking through options, collapse them to one live issue: what evidence is missing now, what it would prove, and what the learner should state next.',
+    '- End with one direct prompt for the learner to write or say the next evidence claim; avoid long explanations before that prompt.',
+    '- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.',
     '- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.',
     ...worldPublicPrompt(world),
     ...(dag ? worldDagPrompt(world) : []),
@@ -700,9 +750,10 @@ function metadataLine(meta) {
   const usage = meta.usage || {};
   const total = usage.totalTokens || 0;
   const cost = usage.cost ? `, $${Number(usage.cost).toFixed(6)}` : '';
+  const effort = meta.effort || meta.reasoningEffort ? `, effort ${meta.effort || meta.reasoningEffort}` : '';
   const guard = meta.deterministicFallback ? ', leak-guard fallback' : meta.repaired ? ', leak-guard repaired' : '';
   const stream = meta.guardedStreamReplay ? ', guarded stream' : meta.streamed ? ', streamed' : '';
-  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${total} tokens${cost}${guard}${stream}`;
+  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${total} tokens${cost}${effort}${guard}${stream}`;
 }
 
 function usesFixedOpenAITemperature(resolved) {
@@ -714,6 +765,12 @@ function effectiveTemperatureForModel(resolved, requestedTemperature) {
     return 1;
   }
   return requestedTemperature;
+}
+
+function normalizeRegisterPolicy(value) {
+  const policy = String(value || 'dynamic').trim().toLowerCase();
+  if (policy === 'dynamic' || policy === 'bland') return policy;
+  throw new Error(`Unknown --register-policy: ${value}. Expected dynamic or bland.`);
 }
 
 function buildRegisterPalette(mode) {
@@ -806,6 +863,45 @@ function registerHistoryPromptSummary(state) {
       return `Turn ${entry.turn}: ${entry.selected_register} — ${entry.register_reason || 'no reason'}; efficacy: ${efficacy}`;
     })
     .join('\n');
+}
+
+function latestRegisterSelection(state) {
+  return state.register?.history?.at(-1) || null;
+}
+
+function recentRegisterCount(state, registerName, { limit = 4 } = {}) {
+  return (state.register?.history || [])
+    .slice(-limit)
+    .filter((entry) => entry.selected_register === registerName).length;
+}
+
+function registerSelectionPolicyPrompt(state) {
+  const policy = state.register?.policy || 'dynamic';
+  const latest = latestRegisterSelection(state);
+  const latestEfficacy = latest?.efficacy?.label || 'pending';
+  const recentScaffolding = recentRegisterCount(state, 'scaffolding');
+  const lines =
+    policy === 'bland'
+      ? [
+          '- Register policy: bland. A plain, stepwise tutor is acceptable here.',
+          '- Scaffolding may be selected for ordinary proof-path pacing, missing premises, or inference gaps.',
+          '- Still choose another register when the learner clearly asks for a conceptual distinction, challenges the frame, shows resistance, or exposes affective stakes.',
+        ]
+      : [
+          '- Register policy: dynamic. Scaffolding is available but must not be the default register.',
+          '- Penalize repeating the same register, especially scaffolding. A repeated register needs a concrete reason that the current learner signal has changed.',
+          '- Use scaffolding only for a strong stepwise-support signal: explicit step-by-step request, visible procedural confusion about the immediate next evidence move, or a newly staged evidence item that needs one learner-owned inference.',
+          '- Do not choose scaffolding merely because the learner-DAG still has a release_or_pacing_gap, inference_gap, missing premise, or incomplete proof path.',
+          '- If the previous scaffolding choice produced no_clear_progress or regression_or_overreach, choose a non-scaffolding register unless the current learner explicitly asks for step-by-step help.',
+          '- Good dynamic alternatives: clarity for a distinction/error in terms; accountable_bid_authority for overleaping or status/authority challenge; charismatic_challenge for resistant, rote, answer-seeking, or low-agency compliance; witnessing_restraint for affective exposure.',
+        ];
+  if (latest) {
+    lines.push(`- Last register: ${latest.selected_register}; observed efficacy: ${latestEfficacy}.`);
+  }
+  if (policy === 'dynamic' && recentScaffolding) {
+    lines.push(`- Recent scaffolding count: ${recentScaffolding} in the last four selections. Treat this as a repetition penalty.`);
+  }
+  return lines.join('\n');
 }
 
 function firstJsonObjectCandidate(text) {
@@ -979,7 +1075,16 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
   ].join('\n');
 }
 
-async function callPromptModel({ prompt, resolved, systemPrompt, role, maxTokens = 700, trace = null, stream = null }) {
+async function callPromptModel({
+  prompt,
+  resolved,
+  systemPrompt,
+  role,
+  maxTokens = 700,
+  trace = null,
+  stream = null,
+  cliEffort = null,
+}) {
   const startedAt = new Date().toISOString();
   const shouldStream = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
   try {
@@ -990,7 +1095,7 @@ async function callPromptModel({ prompt, resolved, systemPrompt, role, maxTokens
         systemPrompt,
         prompt,
         role,
-        { messageHistory: [] },
+        { messageHistory: [], effort: cliEffort },
       );
       response = {
         text: result.text,
@@ -1003,10 +1108,12 @@ async function callPromptModel({ prompt, resolved, systemPrompt, role, maxTokens
           totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
           cost: result.cost || 0,
         },
+        effort: result.effort || result.reasoningEffort || null,
+        reasoningEffort: result.reasoningEffort || result.effort || null,
       };
     } else if (shouldStream) {
       const temperature = effectiveTemperatureForModel(resolved, 0.1);
-      const sink = createConsoleTokenSink(role);
+      const sink = createConsoleTokenSink(role, stream?.interim);
       let final = null;
       for await (const chunk of streamAI({
         provider: resolved.provider,
@@ -1060,12 +1167,14 @@ async function callPromptModel({ prompt, resolved, systemPrompt, role, maxTokens
         systemPrompt,
         prompt,
         maxTokens,
+        cliEffort,
       },
       response: {
         text: response.text,
         latencyMs: response.latencyMs,
         usage: response.usage,
         streamed: Boolean(response.streamed),
+        effort: response.effort || response.reasoningEffort || null,
       },
     });
     return response;
@@ -1087,7 +1196,7 @@ async function callPromptModel({ prompt, resolved, systemPrompt, role, maxTokens
   }
 }
 
-async function callClassifierModel({ prompt, resolved, trace = null, stream = null }) {
+async function callClassifierModel({ prompt, resolved, trace = null, stream = null, cliEffort = null }) {
   return await callPromptModel({
     prompt,
     resolved,
@@ -1096,6 +1205,7 @@ async function callClassifierModel({ prompt, resolved, trace = null, stream = nu
     maxTokens: 700,
     trace,
     stream,
+    cliEffort,
   });
 }
 
@@ -1135,6 +1245,7 @@ async function classifyLearnerInput({ learnerText, state }) {
       resolved: state.classifier.resolved,
       trace: state.trace,
       stream: state.stream,
+      cliEffort: state.cliEffort,
     });
     const { parsed, parseError } = parseClassifierJson(raw.text);
     return {
@@ -1178,8 +1289,131 @@ function printClassification(classification) {
   if (errorPrefix) console.log(`${errorPrefix}${C.dim}: ${classification.error || classification.parseError}${C.reset}`);
 }
 
+const INTERIM_FRAMES = ['|', '/', '-', '\\'];
+
 function clearStatusLine() {
-  process.stdout.write(`${' '.repeat(80)}\r`);
+  const width = Math.max(120, output.columns || 0);
+  process.stdout.write(`${' '.repeat(width)}\r`);
+}
+
+function createInterimState({ enabled }) {
+  return { enabled, active: null };
+}
+
+function getInterimState(holder) {
+  if (!holder) return null;
+  if (Object.prototype.hasOwnProperty.call(holder, 'active') && Object.prototype.hasOwnProperty.call(holder, 'enabled')) {
+    return holder;
+  }
+  return holder.interim || null;
+}
+
+function interimAnimationAvailable(interim) {
+  return Boolean(interim?.enabled && output.isTTY);
+}
+
+function formatInterimNumber(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric.toFixed(2) : '--';
+}
+
+function formatInterimDelta(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric === 0) return '';
+  return `(${numeric > 0 ? '+' : ''}${numeric.toFixed(2)})`;
+}
+
+function compactInterimStateSummary(state) {
+  const bits = [];
+  if (state?.classifier?.enabled) bits.push(state.classifier.combined ? 'combined-analysis' : 'classifier');
+  if (state?.learnerDag?.enabled) bits.push('learner-DAG');
+  if (state?.register?.enabled) bits.push('register');
+  if (state?.dag) bits.push('tutor-DAG');
+  return `state t0 | ${bits.length ? bits.join('+') : 'plain tutor'}`;
+}
+
+function compactInterimFieldSummary(state) {
+  if (!state?.turns?.length) return compactInterimStateSummary(state);
+  const field = buildLightweightDialogueField(state.turns);
+  const final = field.summary.final;
+  const delta = field.summary.fieldDelta;
+  const bottleneck = oneLine(final.bottleneck || 'unknown', { max: 42 });
+  return [
+    `field t${field.turnCount}`,
+    `M ${formatInterimNumber(final.learnerMastery)}${formatInterimDelta(delta.learnerMastery)}`,
+    `R ${formatInterimNumber(final.learnerRisk)}${formatInterimDelta(delta.learnerRisk)}`,
+    `A ${formatInterimNumber(final.tutorAlignment)}${formatInterimDelta(delta.tutorAlignment)}`,
+    `P ${formatInterimNumber(final.jointMomentum)}${formatInterimDelta(delta.jointMomentum)}`,
+    `cov ${formatInterimNumber(final.coverage)}`,
+    bottleneck,
+  ].join(' | ');
+}
+
+function renderInterimStatus(active) {
+  active.tick += 1;
+  const frame = INTERIM_FRAMES[active.tick % INTERIM_FRAMES.length];
+  const elapsed = ((Date.now() - active.startedAt) / 1000).toFixed(1).padStart(4);
+  const width = Math.max(60, Math.min(output.columns || 140, 180) - 1);
+  return oneLine(`${frame} ${active.phase} ${elapsed}s | ${compactInterimFieldSummary(active.state)}`, { max: width });
+}
+
+function startInterimAnimation(state, phase) {
+  const interim = getInterimState(state);
+  stopInterimAnimation(interim, { clear: true });
+  if (!interimAnimationAvailable(interim)) return null;
+
+  const active = {
+    state,
+    phase,
+    startedAt: Date.now(),
+    tick: -1,
+    interval: null,
+    paused: false,
+    rendered: false,
+  };
+  active.render = () => {
+    if (active.paused) return;
+    clearStatusLine();
+    process.stdout.write(`${C.dim}${renderInterimStatus(active)}${C.reset}\r`);
+    active.rendered = true;
+  };
+  interim.active = active;
+  active.render();
+  active.interval = setInterval(active.render, 350);
+  active.interval.unref?.();
+  return active;
+}
+
+function stopInterimAnimation(holder, { clear = true } = {}) {
+  const interim = getInterimState(holder);
+  const active = interim?.active;
+  if (!active) return false;
+  if (active.interval) clearInterval(active.interval);
+  interim.active = null;
+  if (clear && active.rendered) clearStatusLine();
+  return true;
+}
+
+function pauseInterimAnimation(holder) {
+  const interim = getInterimState(holder);
+  const active = interim?.active;
+  if (!active || active.paused) return false;
+  if (active.interval) clearInterval(active.interval);
+  active.interval = null;
+  active.paused = true;
+  if (active.rendered) clearStatusLine();
+  return true;
+}
+
+function resumeInterimAnimation(holder) {
+  const interim = getInterimState(holder);
+  const active = interim?.active;
+  if (!active || !active.paused || !interimAnimationAvailable(interim)) return false;
+  active.paused = false;
+  active.render();
+  active.interval = setInterval(active.render, 350);
+  active.interval.unref?.();
+  return true;
 }
 
 function createTraceState({ enabled, traceDir, metadata }) {
@@ -1369,11 +1603,12 @@ function streamLabel(role) {
   return `${C.cyan}${role} >${C.reset} `;
 }
 
-function createConsoleTokenSink(role) {
+function createConsoleTokenSink(role, interim = null) {
   let started = false;
   return {
     write(token) {
       if (!started) {
+        stopInterimAnimation(interim);
         clearStatusLine();
         process.stdout.write(streamLabel(role));
         started = true;
@@ -1387,8 +1622,8 @@ function createConsoleTokenSink(role) {
   };
 }
 
-function replayTextAsConsoleStream(role, text) {
-  const sink = createConsoleTokenSink(role);
+function replayTextAsConsoleStream(role, text, stream = null) {
+  const sink = createConsoleTokenSink(role, stream?.interim || stream);
   const tokens = String(text || '').match(/\S+\s*/g) || [];
   for (const token of tokens) sink.write(token);
   return sink.finish();
@@ -1396,9 +1631,9 @@ function replayTextAsConsoleStream(role, text) {
 
 async function classifyForTurn(learnerText, state) {
   if (!state.classifier.enabled) return null;
-  process.stdout.write(`${C.dim}classifying learner...${C.reset}\r`);
+  startInterimAnimation(state, 'classifying learner');
   const classification = await classifyLearnerInput({ learnerText, state });
-  clearStatusLine();
+  stopInterimAnimation(state);
   printClassification(classification);
   return classification;
 }
@@ -1649,6 +1884,9 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
       ? 'Never choose a register outside the available palette. Negative/liminal registers appear only when explicitly included in that palette.'
       : null,
     includeRegisterSelection ? '' : null,
+    includeRegisterSelection ? '# Register-selection policy' : null,
+    includeRegisterSelection ? registerSelectionPolicyPrompt(state) : null,
+    includeRegisterSelection ? '' : null,
     includeRegisterSelection ? '# Available tutor-register palette' : null,
     includeRegisterSelection ? registerPalettePromptRows(state.register.palette) : null,
     includeRegisterSelection ? '' : null,
@@ -1676,6 +1914,7 @@ async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn }) {
     maxTokens: 700,
     trace: state.trace,
     stream: state.stream,
+    cliEffort: state.cliEffort,
   });
   const { parsed, parseError } = parseClassifierJson(raw.text);
   return {
@@ -1698,6 +1937,7 @@ async function extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn })
     maxTokens: Math.max(2500, state.maxTokens || 0),
     trace: state.trace,
     stream: state.stream,
+    cliEffort: state.cliEffort,
   });
   const { parsed, parseError } = parseClassifierJson(raw.text);
   return {
@@ -1833,30 +2073,95 @@ function evaluatePendingRegisterEfficacy(state, currentDagResult) {
   return pending.efficacy;
 }
 
+function firstAvailableRegister(palette, names, fallback = 'clarity') {
+  for (const name of names) {
+    if (palette.has(name)) return name;
+  }
+  return palette.has(fallback) ? fallback : [...palette][0] || fallback;
+}
+
+function registerSignalText(classification) {
+  const turn = classification?.turn || {};
+  return [
+    turn.summary,
+    turn.discourse_move,
+    turn.evidence_use,
+    turn.epistemic_stance,
+    turn.affect,
+    turn.agency,
+    turn.pedagogical_need,
+    classification?.overall?.current_state,
+    classification?.overall?.next_best_tutor_move,
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+function hasExplicitStepwiseSignal(classification) {
+  return /step|stepwise|next|how do i|how should i|start|begin|walk|break|stuck|confus|which evidence|what evidence|what line|clue|hint|show me|what should i do/iu.test(
+    registerSignalText(classification),
+  );
+}
+
+function scaffoldingRepeatPenalty(state) {
+  const latest = latestRegisterSelection(state);
+  const latestBad =
+    latest?.selected_register === 'scaffolding' &&
+    /no_clear_progress|regression_or_overreach/.test(latest.efficacy?.label || '');
+  return Boolean(latestBad || recentRegisterCount(state, 'scaffolding') >= 2);
+}
+
+function shouldUseDynamicScaffolding({ state, classification, assessment }) {
+  const bottleneck = assessment.bottleneck || '';
+  const hasDagGap = /release_or_pacing_gap|inference_gap/.test(bottleneck);
+  const explicitStepwise = hasExplicitStepwiseSignal(classification);
+  if (!hasDagGap || !explicitStepwise) return false;
+  if (scaffoldingRepeatPenalty(state) && !explicitStepwise) return false;
+  return true;
+}
+
 function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
   const palette = new Set(state.register?.palette || []);
+  const policy = state.register?.policy || 'dynamic';
   const assessment = tutorLearnerDag?.model?.assessment || {};
   const move = classification?.turn?.discourse_move || 'unknown';
   const stance = classification?.turn?.epistemic_stance || 'unknown';
   const evidenceUse = classification?.turn?.evidence_use || 'unknown';
+  const agency = classification?.turn?.agency || 'unknown';
   let selected = 'clarity';
 
   if (palette.has('witnessing_restraint') && /vulnerable|affective/.test(`${move} ${stance}`)) {
     selected = 'witnessing_restraint';
-  } else if (palette.has('charismatic_challenge') && /resistant|overconfident|answer_seeking/.test(`${stance} ${evidenceUse}`)) {
-    selected = 'charismatic_challenge';
-  } else if (palette.has('scaffolding') && /release_or_pacing_gap|inference_gap/.test(assessment.bottleneck || '')) {
-    selected = 'scaffolding';
   } else if (palette.has('accountable_bid_authority') && /challenge|overleaps_evidence/.test(`${move} ${evidenceUse}`)) {
     selected = 'accountable_bid_authority';
+  } else if (
+    palette.has('charismatic_challenge') &&
+    /resistant|overconfident|answer_seeking|complying|passive/.test(`${stance} ${evidenceUse} ${agency}`)
+  ) {
+    selected = 'charismatic_challenge';
+  } else if (policy === 'bland' && palette.has('scaffolding') && /release_or_pacing_gap|inference_gap/.test(assessment.bottleneck || '')) {
+    selected = 'scaffolding';
+  } else if (policy === 'dynamic' && palette.has('scaffolding') && shouldUseDynamicScaffolding({ state, classification, assessment })) {
+    selected = 'scaffolding';
   } else if (!palette.has(selected)) {
-    selected = [...palette][0] || 'clarity';
+    selected = firstAvailableRegister(palette, [
+      'clarity',
+      'accountable_bid_authority',
+      'charismatic_challenge',
+      'plain_compression',
+      'transfer_grounding',
+      'witnessing_restraint',
+      'scaffolding',
+    ]);
   }
 
   return {
     selected_register: selected,
     learner_signal: move,
-    register_reason: 'Fallback register selected after missing or invalid model register output.',
+    register_reason:
+      policy === 'dynamic' && selected !== 'scaffolding'
+        ? 'Dynamic fallback selected after missing or invalid model register output; scaffolding is non-default.'
+        : 'Fallback register selected after missing or invalid model register output.',
     evidence_span: classification?.turn?.summary || '',
     risk_flags: [],
     expected_dag_move: 'Elicit one public, checkable learner move that can update the learner-DAG record.',
@@ -1872,8 +2177,15 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
   const normalizedRawSelection =
     typeof rawSelection === 'string' ? { selected_register: rawSelection } : rawSelection || {};
   const requested = String(normalizedRawSelection.selected_register || normalizedRawSelection.register || '').trim();
+  const requestedIsKnown = Boolean(requested && palette.has(requested));
+  const dynamicScaffoldingBlocked = Boolean(
+    requestedIsKnown &&
+      state.register.policy === 'dynamic' &&
+      requested === 'scaffolding' &&
+      !shouldUseDynamicScaffolding({ state, classification, assessment: tutorLearnerDag?.model?.assessment || {} }),
+  );
   const source =
-    requested && palette.has(requested)
+    requestedIsKnown && !dynamicScaffoldingBlocked
       ? normalizedRawSelection
       : fallbackRegisterSelection({ state, classification, tutorLearnerDag });
   const selected = String(source.selected_register || source.register || '').trim();
@@ -1898,8 +2210,11 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
     selectedAtDag: tutorLearnerDag?.model || null,
     efficacy: null,
   };
-  if (!requested || !palette.has(requested)) {
+  if (!requestedIsKnown) {
     selection.warning = source.warning || `invalid_register_selection:${requested || 'missing'}`;
+  } else if (dynamicScaffoldingBlocked) {
+    selection.warning = 'dynamic_policy_scaffolding_demoted';
+    selection.original_register = requested;
   }
   state.register.history.push(selection);
   state.register.current = selection;
@@ -2055,12 +2370,12 @@ function emptyTutorLearnerDagModel(state, tutorTurn) {
 async function buildTutorLearnerDagForTurn(learnerText, state) {
   if (!state.learnerDag.enabled || !state.world) return null;
   const tutorTurn = state.turns.length + 1;
-  process.stdout.write(`${C.dim}modeling learner DAG...${C.reset}\r`);
+  startInterimAnimation(state, 'modeling learner DAG');
   try {
     const update = await extractLearnerRecordUpdate({ learnerText, state, tutorTurn });
     const result = applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText });
     state.learnerDag.lastModel = result.model;
-    clearStatusLine();
+    stopInterimAnimation(state);
     printTutorLearnerDagModel(result);
     return result;
   } catch (err) {
@@ -2076,7 +2391,7 @@ async function buildTutorLearnerDagForTurn(learnerText, state) {
       },
     };
     state.learnerDag.lastModel = result.model;
-    clearStatusLine();
+    stopInterimAnimation(state);
     printTutorLearnerDagModel(result);
     return result;
   }
@@ -2085,7 +2400,7 @@ async function buildTutorLearnerDagForTurn(learnerText, state) {
 async function analyzeLearnerTurnCombined(learnerText, state) {
   const tutorTurn = state.turns.length + 1;
   const startedAt = Date.now();
-  process.stdout.write(`${C.dim}analyzing learner...${C.reset}\r`);
+  startInterimAnimation(state, 'analyzing learner');
 
   try {
     const raw = await extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn });
@@ -2100,7 +2415,7 @@ async function analyzeLearnerTurnCombined(learnerText, state) {
       tutorLearnerDag,
       raw,
     });
-    clearStatusLine();
+    stopInterimAnimation(state);
     printClassification(classification);
     printTutorLearnerDagModel(tutorLearnerDag);
     printRegisterSelection(registerSelection, previousRegisterEfficacy);
@@ -2123,7 +2438,7 @@ async function analyzeLearnerTurnCombined(learnerText, state) {
       },
     };
     state.learnerDag.lastModel = tutorLearnerDag.model;
-    clearStatusLine();
+    stopInterimAnimation(state);
     printClassification(classification);
     printTutorLearnerDagModel(tutorLearnerDag);
     return { classification, tutorLearnerDag, registerSelection: null, previousRegisterEfficacy: null };
@@ -2206,6 +2521,7 @@ function registerSelectionContext(selection) {
     guardrails.length ? 'Guardrails:' : null,
     ...guardrails,
     'Write the next tutor message in this register without naming the register, the classifier, or the learner-DAG machinery.',
+    'Keep the turn compact. In story mode, give one live evidence issue and one direct trial-book prompt, not a menu of possible routes.',
     '[End tutor-only selected register]',
   ]
     .filter(Boolean)
@@ -2418,7 +2734,7 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 }
 
 function printInteractiveHelp() {
-  console.log(`${C.cyan}slash commands >${C.reset} /analysis, /a, /clear, /help, /quit\n`);
+  console.log(`${C.cyan}slash commands >${C.reset} /analysis, /a, /field, /f, /report, /r, /clear, /help, /quit\n`);
 }
 
 function printCurrentTurnAnalysis(state) {
@@ -2543,6 +2859,268 @@ function printCurrentTurnAnalysis(state) {
   console.log();
 }
 
+function clampField01(value) {
+  if (!Number.isFinite(Number(value))) return 0;
+  return Math.max(0, Math.min(1, Number(value)));
+}
+
+function roundField(value) {
+  return Number((Number(value) || 0).toFixed(3));
+}
+
+function fieldScore(score) {
+  const raw = scoreValue(score);
+  const numeric = Number(raw);
+  return Number.isFinite(numeric) ? clampField01(numeric / 5) : 0;
+}
+
+function fieldDelta(current, previous) {
+  return roundField((current || 0) - (previous || 0));
+}
+
+function fieldBar(value, { width = 12 } = {}) {
+  const filled = Math.round(clampField01(value) * width);
+  return `${'#'.repeat(filled)}${'.'.repeat(Math.max(0, width - filled))}`;
+}
+
+function wordsInText(text) {
+  return String(text || '')
+    .split(/\s+/)
+    .filter(Boolean).length;
+}
+
+function lightweightFieldTurn(turn, previous = null) {
+  const classification = turn?.classification || {};
+  const turnAnalysis = classification.turn || {};
+  const scores = turnAnalysis.scores || {};
+  const model = turn?.tutorLearnerDagModel || {};
+  const metrics = model.metrics || {};
+  const assessment = model.assessment || {};
+  const register = turn?.registerSelection || {};
+  const priorEfficacy = turn?.previousRegisterEfficacy || null;
+  const leakOk = !turn?.tutorLeakAudit || turn.tutorLeakAudit.ok === true;
+  const conceptual = fieldScore(scores.conceptual_engagement);
+  const readiness = fieldScore(scores.epistemic_readiness);
+  const coverage = clampField01(Number(assessment.bestPathCoverage || 0));
+  const grounded = clampField01(Number(metrics.groundedCount || 0) / 8);
+  const missing = clampField01(Number(metrics.missingPremiseCount || 0) / 8);
+  const overreach =
+    /overconfident|answer_seeking|overleaps_evidence|unsupported|resistant/iu.test(
+      [
+        turnAnalysis.epistemic_stance,
+        turnAnalysis.evidence_use,
+        assessment.bottleneck,
+        priorEfficacy?.label,
+      ]
+        .filter(Boolean)
+        .join(' '),
+    )
+      ? 0.25
+      : 0;
+  const responseWords = wordsInText(turn?.tutor);
+  const brevity = clampField01(1 - Math.max(0, responseWords - 95) / 130);
+  const registerConfidence = Number.isFinite(Number(register.confidence)) ? clampField01(Number(register.confidence)) : 0.5;
+  const efficacyScore = priorEfficacy ? clampField01((Number(priorEfficacy.progressScore || 0) + 4) / 8) : 0.5;
+
+  const learnerMastery = roundField(0.34 * conceptual + 0.26 * readiness + 0.3 * coverage + 0.1 * grounded);
+  const learnerRisk = roundField(clampField01(0.45 * missing + 0.25 * (1 - readiness) + overreach));
+  const tutorAlignment = roundField(
+    clampField01(0.3 * registerConfidence + 0.24 * efficacyScore + 0.22 * brevity + 0.24 * (leakOk ? 1 : 0)),
+  );
+  const jointMomentum = roundField(
+    clampField01(
+      0.42 * Math.max(0, fieldDelta(learnerMastery, previous?.learnerMastery)) +
+        0.28 * Math.max(0, fieldDelta(coverage, previous?.coverage)) +
+        0.18 * efficacyScore +
+        0.12 * (turn?.tutorDag?.leavesReleased || 0) / Math.max(1, turn?.tutorDag?.leavesTotal || 1),
+    ),
+  );
+
+  return {
+    turn: turn.turn,
+    learnerMastery,
+    learnerRisk,
+    tutorAlignment,
+    jointMomentum,
+    coverage,
+    groundedCount: Number(metrics.groundedCount || 0),
+    missingCount: Number(metrics.missingPremiseCount || 0),
+    conceptual,
+    readiness,
+    register: register.selected_register || null,
+    bottleneck: assessment.bottleneck || 'unknown',
+    learnerMove: turnAnalysis.discourse_move || 'unknown',
+    speed: previous
+      ? roundField(
+          Math.sqrt(
+            fieldDelta(learnerMastery, previous.learnerMastery) ** 2 +
+              fieldDelta(learnerRisk, previous.learnerRisk) ** 2 +
+              fieldDelta(tutorAlignment, previous.tutorAlignment) ** 2 +
+              fieldDelta(jointMomentum, previous.jointMomentum) ** 2,
+          ),
+        )
+      : 0,
+  };
+}
+
+function buildLightweightDialogueField(turns = []) {
+  const rows = [];
+  for (const turn of turns) {
+    rows.push(lightweightFieldTurn(turn, rows.at(-1) || null));
+  }
+  const first = rows[0] || {};
+  const final = rows.at(-1) || {};
+  return {
+    schema: 'machinespirits.tutor-stub.lightweight-field.v1',
+    turnCount: rows.length,
+    rows,
+    summary: {
+      finalTurn: final.turn || null,
+      meanSpeed: roundField(rows.reduce((sum, row) => sum + row.speed, 0) / Math.max(1, rows.length)),
+      fieldDelta: {
+        learnerMastery: fieldDelta(final.learnerMastery, first.learnerMastery),
+        learnerRisk: fieldDelta(final.learnerRisk, first.learnerRisk),
+        tutorAlignment: fieldDelta(final.tutorAlignment, first.tutorAlignment),
+        jointMomentum: fieldDelta(final.jointMomentum, first.jointMomentum),
+      },
+      final: {
+        learnerMastery: final.learnerMastery ?? null,
+        learnerRisk: final.learnerRisk ?? null,
+        tutorAlignment: final.tutorAlignment ?? null,
+        jointMomentum: final.jointMomentum ?? null,
+        coverage: final.coverage ?? null,
+        bottleneck: final.bottleneck || null,
+      },
+    },
+  };
+}
+
+function printLightweightDialogueField(state) {
+  if (!state.turns.length) {
+    console.log(`${C.cyan}field >${C.reset} no completed turns yet`);
+    console.log(`${C.dim}  enter a learner turn first, or run with --resume-last and then use /field${C.reset}\n`);
+    return null;
+  }
+
+  const field = buildLightweightDialogueField(state.turns);
+  const delta = field.summary.fieldDelta;
+  const final = field.summary.final;
+  console.log(`${C.cyan}field >${C.reset} ${field.turnCount} turn lightweight interaction field`);
+  console.log(
+    `${C.dim}  final: mastery ${final.learnerMastery}, risk ${final.learnerRisk}, alignment ${final.tutorAlignment}, momentum ${final.jointMomentum}, coverage ${final.coverage}${C.reset}`,
+  );
+  console.log(
+    `${C.dim}  delta: mastery ${delta.learnerMastery >= 0 ? '+' : ''}${delta.learnerMastery}, risk ${
+      delta.learnerRisk >= 0 ? '+' : ''
+    }${delta.learnerRisk}, alignment ${delta.tutorAlignment >= 0 ? '+' : ''}${delta.tutorAlignment}, momentum ${
+      delta.jointMomentum >= 0 ? '+' : ''
+    }${delta.jointMomentum}; mean speed ${field.summary.meanSpeed}${C.reset}`,
+  );
+  console.log(`${C.dim}  bottleneck: ${final.bottleneck || 'unknown'}${C.reset}`);
+  console.log(`${C.dim}  turn | mastery        | risk           | align          | momentum       | move / register / bottleneck${C.reset}`);
+  for (const row of field.rows) {
+    const label = [row.learnerMove, row.register || 'no-register', row.bottleneck].filter(Boolean).join(' / ');
+    console.log(
+      `${C.dim}  ${String(row.turn).padStart(4)} | ${fieldBar(row.learnerMastery)} ${row.learnerMastery.toFixed(2)} | ${fieldBar(row.learnerRisk)} ${row.learnerRisk.toFixed(2)} | ${fieldBar(row.tutorAlignment)} ${row.tutorAlignment.toFixed(2)} | ${fieldBar(row.jointMomentum)} ${row.jointMomentum.toFixed(2)} | ${oneLine(label, { max: 96 })}${C.reset}`,
+    );
+  }
+  console.log();
+  return field;
+}
+
+function countBy(items, keyFn) {
+  const counts = new Map();
+  for (const item of items) {
+    const key = keyFn(item) || 'unknown';
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+
+function compactCounts(items, { limit = 5 } = {}) {
+  if (!items.length) return 'none';
+  return items
+    .slice(0, limit)
+    .map(([key, count]) => `${key} ${count}`)
+    .join(', ');
+}
+
+function dialogueCaseStatus(turn) {
+  const assessment = turn?.tutorLearnerDagModel?.assessment || {};
+  const missing = Number(turn?.tutorLearnerDagModel?.metrics?.missingPremiseCount ?? assessment.missingPremiseCount ?? 0);
+  if (assessment.finalSecretEntailed && assessment.assertedSecret) {
+    return 'case closed: verdict is grounded and the learner has asserted it';
+  }
+  if (assessment.finalSecretEntailed) {
+    return 'ready for verdict: evidence entails the answer, but the learner has not fully stated it';
+  }
+  if (missing > 0) {
+    return `open: ${missing} premise(s) still missing; bottleneck ${assessment.bottleneck || 'unknown'}`;
+  }
+  return `open: bottleneck ${assessment.bottleneck || 'unknown'}`;
+}
+
+function printDialogueCloseout(state, { reason = 'report', trace = state.trace } = {}) {
+  const tracePath = traceDisplayPath(trace);
+  if (!state.turns.length) {
+    console.log(`${C.cyan}closeout >${C.reset} ${reason}; no completed tutor turns`);
+    if (tracePath) console.log(`${C.dim}  trace: ${tracePath}${C.reset}`);
+    console.log(`${C.dim}  start with the tutor opening prompt, then enter one learner turn to build a report${C.reset}\n`);
+    return null;
+  }
+
+  const field = buildLightweightDialogueField(state.turns);
+  const delta = field.summary.fieldDelta;
+  const final = field.summary.final;
+  const last = state.turns[state.turns.length - 1] || {};
+  const assessment = last.tutorLearnerDagModel?.assessment || {};
+  const metrics = last.tutorLearnerDagModel?.metrics || {};
+  const registerCounts = compactCounts(countBy(state.turns, (turn) => turn.registerSelection?.selected_register || 'none'));
+  const bottleneckCounts = compactCounts(countBy(state.turns, (turn) => turn.tutorLearnerDagModel?.assessment?.bottleneck || 'unknown'));
+  const payload = {
+    schema: 'machinespirits.tutor-stub.closeout-report.v1',
+    reason,
+    turnCount: state.turns.length,
+    trace: tracePath,
+    finalStatus: dialogueCaseStatus(last),
+    finalAssessment: {
+      bottleneck: assessment.bottleneck || null,
+      bestPathCoverage: assessment.bestPathCoverage ?? null,
+      finalSecretEntailed: assessment.finalSecretEntailed === true,
+      assertedSecret: assessment.assertedSecret === true,
+      missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0),
+    },
+    field: field.summary,
+    finalTurn: {
+      learner: last.learner || '',
+      tutor: last.tutor || '',
+      register: last.registerSelection?.selected_register || null,
+      leakOk: last.tutorLeakAudit?.ok ?? null,
+    },
+  };
+
+  console.log(`${C.cyan}closeout >${C.reset} ${reason}; ${state.turns.length} completed turn(s)`);
+  if (tracePath) console.log(`${C.dim}  trace: ${tracePath}${C.reset}`);
+  console.log(`${C.dim}  status: ${payload.finalStatus}${C.reset}`);
+  console.log(
+    `${C.dim}  final: coverage ${payload.finalAssessment.bestPathCoverage ?? 'n/a'}, missing ${
+      payload.finalAssessment.missingPremiseCount
+    }, bottleneck ${payload.finalAssessment.bottleneck || 'unknown'}, leak ${
+      payload.finalTurn.leakOk === null ? 'n/a' : payload.finalTurn.leakOk ? 'ok' : 'blocked'
+    }${C.reset}`,
+  );
+  console.log(
+    `${C.dim}  field: mastery ${final.learnerMastery}, risk ${final.learnerRisk}, alignment ${final.tutorAlignment}, momentum ${final.jointMomentum}; delta M ${
+      delta.learnerMastery >= 0 ? '+' : ''
+    }${delta.learnerMastery}, R ${delta.learnerRisk >= 0 ? '+' : ''}${delta.learnerRisk}${C.reset}`,
+  );
+  console.log(`${C.dim}  registers: ${registerCounts}${C.reset}`);
+  console.log(`${C.dim}  bottlenecks: ${bottleneckCounts}${C.reset}`);
+  console.log(`${C.dim}  last learner: ${oneLine(last.learner, { max: 180 })}${C.reset}`);
+  console.log(`${C.dim}  last tutor: ${oneLine(last.tutor, { max: 220 })}${C.reset}\n`);
+  return payload;
+}
+
 function dagTurnContext(world, tutorTurn) {
   if (!world) return '';
   const released = world.releaseSchedule.filter((entry) => entry.turn <= tutorTurn);
@@ -2581,6 +3159,7 @@ async function callTutor({
   registerSelection,
   trace = null,
   stream = null,
+  cliEffort = null,
 }) {
   const context = trimHistory(history, historyTurns);
   const tutorTurn = Math.floor(history.length / 2) + 1;
@@ -2607,6 +3186,7 @@ async function callTutor({
       messages: [...context, { role: 'user', content: attemptUserPrompt }],
       config: { temperature, maxTokens, historyTurns, leakGuard: leakGuardEnabled, repairAttempt },
     };
+    if (cliEffort) request.config.cliEffort = cliEffort;
     const useStreamingApi = streamMode === 'live' || streamMode === 'buffered';
     let response;
     if (isCliProvider(resolved.provider)) {
@@ -2615,7 +3195,7 @@ async function callTutor({
         systemPrompt,
         attemptUserPrompt,
         role,
-        { messageHistory: context },
+        { messageHistory: context, effort: cliEffort },
       );
       response = {
         text: result.text,
@@ -2628,9 +3208,11 @@ async function callTutor({
           totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
           cost: result.cost || 0,
         },
+        effort: result.effort || result.reasoningEffort || null,
+        reasoningEffort: result.reasoningEffort || result.effort || null,
       };
     } else if (useStreamingApi) {
-      const sink = streamMode === 'live' ? createConsoleTokenSink(role) : null;
+      const sink = streamMode === 'live' ? createConsoleTokenSink(role, stream?.interim) : null;
       let final = null;
       for await (const chunk of streamAI({
         provider: resolved.provider,
@@ -2687,6 +3269,7 @@ async function callTutor({
         latencyMs: response.latencyMs,
         usage: response.usage,
         streamed: Boolean(response.streamed),
+        effort: response.effort || response.reasoningEffort || null,
       },
     });
     return response;
@@ -2713,7 +3296,7 @@ async function callTutor({
     if (audit.ok) {
       response.leakAudit = audit;
       if (response.bufferedStream) {
-        response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text);
+        response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text, stream);
         response.guardedStreamReplay = true;
       }
       return response;
@@ -2737,7 +3320,7 @@ async function callTutor({
       response.leakAudit = audit;
       response.repaired = true;
       if (response.bufferedStream) {
-        response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text);
+        response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text, stream);
         response.guardedStreamReplay = true;
       }
       return response;
@@ -2755,7 +3338,7 @@ async function callTutor({
       deterministicFallback: true,
     };
     if (canStreamTutor) {
-      fallback.streamed = replayTextAsConsoleStream('tutor_stub_tutor', fallback.text);
+      fallback.streamed = replayTextAsConsoleStream('tutor_stub_tutor', fallback.text, stream);
       fallback.guardedStreamReplay = true;
     }
     appendTraceEvent(trace, {
@@ -2808,6 +3391,7 @@ async function runOneTurn(
     registerSelection,
     trace: state.trace,
     stream: state.stream,
+    cliEffort: state.cliEffort,
   });
   const dagSnapshot = buildTutorDagSnapshot(state, tutorTurn);
 
@@ -2870,6 +3454,7 @@ async function main() {
   const tutorLearnerDagEnabled = Boolean(args['tutor-learner-dag'] && worldBundle);
   const combinedLearnerAnalysisEnabled = Boolean(classifierEnabled && tutorLearnerDagEnabled);
   const registerPalette = buildRegisterPalette(args['safe-registers'] ? 'safe' : args['register-palette']);
+  const registerPolicy = normalizeRegisterPolicy(args['register-policy']);
   const registerSelectionEnabled = Boolean(!args['no-register-selection'] && combinedLearnerAnalysisEnabled);
   const classifierResolved = classifierEnabled && !combinedLearnerAnalysisEnabled ? resolveModel(args['classifier-model']) : null;
   const classifierProviderConfig = classifierResolved ? getProviderConfig(classifierResolved.provider) : null;
@@ -2898,6 +3483,10 @@ async function main() {
   const traceEnabled = !args['no-trace'];
   const traceDir = resolveWorkspacePath(args['trace-dir']);
   const streamEnabled = Boolean(STUB.stream && !args['no-stream']);
+  const interimAnimationEnabled = Boolean(STUB.interimAnimation && !args['no-interim-animation']);
+  const openingEnabled = Boolean(STUB.opening && !args['no-opening']);
+  const closeoutReportEnabled = Boolean(STUB.closeoutReport && !args['no-closeout-report']);
+  const cliEffort = normalizeCliEffort(args['cli-effort']);
   const tutorStreamState = !streamEnabled
     ? 'off'
     : !providerSupportsStreaming(resolved)
@@ -2943,11 +3532,13 @@ async function main() {
             ? {
                 enabled: true,
                 palette: registerPalette,
+                policy: registerPolicy,
                 combinedLearnerAnalysis: true,
               }
             : { enabled: false },
           maxTokens,
           historyTurns,
+          cliEffort: cliEffort || null,
           trace: traceEnabled
             ? {
                 enabled: true,
@@ -2961,6 +3552,12 @@ async function main() {
             tutorGuardedAfterAudit: tutorStreamState === 'guarded_after_audit',
             classifier: streamEnabled && classifierResolved ? providerSupportsStreaming(classifierResolved) : false,
             learnerAnalysis: streamEnabled && learnerRecordResolved ? providerSupportsStreaming(learnerRecordResolved) : false,
+          },
+          opening: { enabled: openingEnabled, printedByDefault: Boolean(openingEnabled && !firstMessage) },
+          closeoutReport: { enabled: closeoutReportEnabled },
+          interimAnimation: {
+            enabled: interimAnimationEnabled,
+            activeInThisTerminal: Boolean(interimAnimationEnabled && output.isTTY),
           },
           resumeLast: args['resume-last']
             ? resumeCandidate
@@ -3009,7 +3606,10 @@ async function main() {
       resolved: visibleModel,
       classifier: visibleClassifierConfig,
       tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
-      registerSelection: registerSelectionEnabled ? { enabled: true, palette: registerPalette } : { enabled: false },
+      registerSelection: registerSelectionEnabled
+        ? { enabled: true, palette: registerPalette, policy: registerPolicy }
+        : { enabled: false },
+      cliEffort: cliEffort || null,
       stream: {
         enabled: streamEnabled,
         tutor: tutorStreamState,
@@ -3017,6 +3617,12 @@ async function main() {
         tutorGuardedAfterAudit: tutorStreamState === 'guarded_after_audit',
         classifier: streamEnabled && classifierResolved ? providerSupportsStreaming(classifierResolved) : false,
         learnerAnalysis: streamEnabled && learnerRecordResolved ? providerSupportsStreaming(learnerRecordResolved) : false,
+      },
+      opening: { enabled: openingEnabled, printedByDefault: Boolean(openingEnabled && !firstMessage) },
+      closeoutReport: { enabled: closeoutReportEnabled },
+      interimAnimation: {
+        enabled: interimAnimationEnabled,
+        activeInThisTerminal: Boolean(interimAnimationEnabled && output.isTTY),
       },
       resumeLast: args['resume-last']
         ? resumeCandidate
@@ -3031,6 +3637,7 @@ async function main() {
       firstMessage: firstMessage || null,
     },
   });
+  const interim = createInterimState({ enabled: interimAnimationEnabled });
 
   const state = {
     topic: effectiveTopic,
@@ -3056,13 +3663,17 @@ async function main() {
     register: {
       enabled: registerSelectionEnabled,
       palette: registerPalette,
+      policy: registerPolicy,
       current: null,
       history: [],
     },
     trace,
+    interim,
     stream: {
       enabled: streamEnabled,
+      interim,
     },
+    cliEffort,
     history: [],
     turns: [],
   };
@@ -3108,7 +3719,7 @@ async function main() {
     console.log(`${C.dim}tutor learner-DAG: off${C.reset}`);
   }
   if (registerSelectionEnabled) {
-    console.log(`${C.dim}register selection: on [${registerPalette.join(', ')}]${C.reset}`);
+    console.log(`${C.dim}register selection: on [${registerPalette.join(', ')}] | policy ${registerPolicy}${C.reset}`);
   } else {
     console.log(`${C.dim}register selection: off${C.reset}`);
   }
@@ -3132,6 +3743,16 @@ async function main() {
     console.log(`${C.dim}stream: ${streamSummary}${C.reset}`);
   } else {
     console.log(`${C.dim}stream: off${C.reset}`);
+  }
+  console.log(
+    `${C.dim}interim animation: ${
+      interimAnimationEnabled ? (output.isTTY ? 'on' : 'off (non-TTY)') : 'off'
+    }${C.reset}`,
+  );
+  console.log(`${C.dim}opening prompt: ${openingEnabled && !firstMessage ? 'on' : 'off'}${C.reset}`);
+  console.log(`${C.dim}closeout report: ${closeoutReportEnabled ? 'on' : 'off'}${C.reset}`);
+  if (cliEffort) {
+    console.log(`${C.dim}cli effort: ${cliEffort}${C.reset}`);
   }
   if (resumedDialogue) {
     console.log(
@@ -3159,23 +3780,29 @@ async function main() {
     );
   }
   printDirectorInitialContext(directorContext);
-  console.log(`${C.dim}topic: ${effectiveTopic} | /analysis for current turn | /help for commands | /quit to exit${C.reset}\n`);
+  console.log(
+    `${C.dim}topic: ${effectiveTopic} | /analysis or /field for state | slash commands work while thinking | /quit to exit${C.reset}\n`,
+  );
 
   if (firstMessage) {
     const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
       firstMessage,
       state,
     );
-    process.stdout.write(`${C.dim}calling tutor...${C.reset}\r`);
-    const response = await runOneTurn(
-      firstMessage,
-      state,
-      classification,
-      tutorLearnerDag,
-      registerSelection,
-      previousRegisterEfficacy,
-    );
-    clearStatusLine();
+    startInterimAnimation(state, 'calling tutor');
+    let response;
+    try {
+      response = await runOneTurn(
+        firstMessage,
+        state,
+        classification,
+        tutorLearnerDag,
+        registerSelection,
+        previousRegisterEfficacy,
+      );
+    } finally {
+      stopInterimAnimation(state);
+    }
     if (!response.streamed) {
       console.log(`${C.magenta}tutor >${C.reset} ${response.text.trim()}`);
     }
@@ -3188,7 +3815,7 @@ async function main() {
         classifier: classifierEnabled ? visibleClassifierConfig : null,
         tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
         registerSelection: registerSelectionEnabled
-          ? { enabled: true, palette: registerPalette, history: state.register.history }
+          ? { enabled: true, palette: registerPalette, policy: registerPolicy, history: state.register.history }
           : null,
         directorContext,
         trace: traceDisplayPath(state.trace),
@@ -3196,115 +3823,262 @@ async function main() {
         turns: state.turns,
       });
     }
+    if (closeoutReportEnabled) {
+      const report = printDialogueCloseout(state, { reason: 'once', trace: state.trace });
+      appendTraceEvent(state.trace, { type: 'closeout_report', reason: 'once', report });
+    }
     return;
   }
 
-  const rl = readline.createInterface({ input, output });
-  rl.on('SIGINT', () => {
-    console.log();
-    appendTraceEvent(state.trace, { type: 'run_end', reason: 'sigint', turns: state.turns.length });
-    if (args.save) {
-      saveTranscript(args.save, {
-        ...visibleModel,
-        classifier: classifierEnabled ? visibleClassifierConfig : null,
-        tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
-        registerSelection: registerSelectionEnabled
-          ? { enabled: true, palette: registerPalette, history: state.register.history }
-          : null,
-        directorContext,
-        trace: traceDisplayPath(state.trace),
-        turns: state.turns,
-      });
-    }
-    process.exit(0);
+  const rl = readline.createInterface({ input, output, prompt: `${C.bold}learner >${C.reset} ` });
+  let processingTurn = false;
+  let exiting = false;
+  let finalized = false;
+  const pendingLearnerLines = [];
+  let resolveInteractive = null;
+  const interactiveDone = new Promise((resolve) => {
+    resolveInteractive = resolve;
   });
 
-  while (true) {
-    let line;
-    try {
-      line = await rl.question(`${C.bold}learner >${C.reset} `);
-    } catch (err) {
-      if (/readline was closed/i.test(err.message)) break;
-      throw err;
-    }
+  function transcriptPayload() {
+    return {
+      ...visibleModel,
+      classifier: classifierEnabled ? visibleClassifierConfig : null,
+      tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
+      registerSelection: registerSelectionEnabled
+        ? { enabled: true, palette: registerPalette, policy: registerPolicy, history: state.register.history }
+        : null,
+      directorContext,
+      trace: traceDisplayPath(state.trace),
+      world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
+      turns: state.turns,
+    };
+  }
 
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-    if (trimmed === '/quit' || trimmed === '/exit') break;
+  function finalizeInteractive(reason) {
+    if (finalized) return;
+    finalized = true;
+    appendTraceEvent(state.trace, { type: 'run_end', reason, turns: state.turns.length });
+    if (closeoutReportEnabled) {
+      const report = printDialogueCloseout(state, { reason, trace: state.trace });
+      appendTraceEvent(state.trace, { type: 'closeout_report', reason, report });
+    }
+    if (args.save) {
+      saveTranscript(args.save, transcriptPayload());
+    }
+  }
+
+  function requestExit(reason) {
+    exiting = true;
+    stopInterimAnimation(state);
+    finalizeInteractive(reason);
+    rl.close();
+    resolveInteractive();
+  }
+
+  function promptIfIdle() {
+    if (!exiting && !processingTurn) rl.prompt();
+  }
+
+  function emitOpeningPrompt(reason = 'start') {
+    if (!openingEnabled || state.history.length) return null;
+    const opening = buildTutorOpening(state);
+    state.history.push({ role: 'assistant', content: opening });
+    appendTraceEvent(state.trace, { type: 'tutor_opening', reason, text: opening });
+    console.log(`${C.magenta}tutor >${C.reset} ${opening}\n`);
+    return opening;
+  }
+
+  function resetInteractiveState() {
+    state.history = [];
+    state.turns = [];
+    state.learnerDag = createLearnerDagState({
+      enabled: tutorLearnerDagEnabled,
+      resolved: learnerRecordResolved,
+      world: worldBundle?.world || null,
+    });
+    state.register = {
+      enabled: registerSelectionEnabled,
+      palette: registerPalette,
+      policy: registerPolicy,
+      current: null,
+      history: [],
+    };
+  }
+
+  function handleSlashCommand(trimmed, { duringTurn = false } = {}) {
+    if (!trimmed.startsWith('/')) return false;
+    if (trimmed === '/quit' || trimmed === '/exit') {
+      if (duringTurn) {
+        stopInterimAnimation(state);
+        clearStatusLine();
+        console.log(`${C.dim}exit requested; stopping this stub now${C.reset}`);
+        finalizeInteractive('exit_requested_during_turn');
+        process.exit(0);
+      }
+      requestExit('exit');
+      return true;
+    }
+    const pausedInterim = duringTurn ? pauseInterimAnimation(state) : false;
+    const finishSlashCommand = () => {
+      if (pausedInterim) resumeInterimAnimation(state);
+    };
     if (trimmed === '/help') {
+      clearStatusLine();
       printInteractiveHelp();
-      appendTraceEvent(state.trace, { type: 'interactive_help', turns: state.turns.length });
-      continue;
+      appendTraceEvent(state.trace, { type: 'interactive_help', turns: state.turns.length, duringTurn });
+      if (duringTurn) console.log(`${C.dim}tutor is still thinking; slash commands remain available${C.reset}\n`);
+      finishSlashCommand();
+      return true;
     }
     if (trimmed === '/analysis' || trimmed === '/a') {
+      clearStatusLine();
       printCurrentTurnAnalysis(state);
       appendTraceEvent(state.trace, {
         type: 'analysis_popup',
         turn: state.turns[state.turns.length - 1]?.turn || null,
+        duringTurn,
       });
-      continue;
+      if (duringTurn) console.log(`${C.dim}tutor is still thinking; showing the latest completed turn${C.reset}\n`);
+      finishSlashCommand();
+      return true;
+    }
+    if (trimmed === '/field' || trimmed === '/f') {
+      clearStatusLine();
+      const field = printLightweightDialogueField(state);
+      appendTraceEvent(state.trace, {
+        type: 'field_popup',
+        turn: state.turns[state.turns.length - 1]?.turn || null,
+        duringTurn,
+        field,
+      });
+      if (duringTurn) console.log(`${C.dim}tutor is still thinking; field excludes the in-progress turn${C.reset}\n`);
+      finishSlashCommand();
+      return true;
+    }
+    if (trimmed === '/report' || trimmed === '/r') {
+      clearStatusLine();
+      const report = printDialogueCloseout(state, { reason: duringTurn ? 'report_during_turn' : 'report', trace: state.trace });
+      appendTraceEvent(state.trace, {
+        type: 'closeout_report_popup',
+        turn: state.turns[state.turns.length - 1]?.turn || null,
+        duringTurn,
+        report,
+      });
+      if (duringTurn) console.log(`${C.dim}tutor is still thinking; closeout excludes the in-progress turn${C.reset}\n`);
+      finishSlashCommand();
+      return true;
     }
     if (trimmed === '/clear') {
-      state.history = [];
-      state.turns = [];
-      state.learnerDag = createLearnerDagState({
-        enabled: tutorLearnerDagEnabled,
-        resolved: learnerRecordResolved,
-        world: worldBundle?.world || null,
-      });
-      state.register = {
-        enabled: registerSelectionEnabled,
-        palette: registerPalette,
-        current: null,
-        history: [],
-      };
+      if (duringTurn) {
+        clearStatusLine();
+        console.log(`${C.dim}/clear is disabled while a tutor turn is in progress${C.reset}\n`);
+        appendTraceEvent(state.trace, { type: 'slash_command_deferred', command: '/clear', reason: 'turn_in_progress' });
+        finishSlashCommand();
+        return true;
+      }
+      resetInteractiveState();
+      pendingLearnerLines.length = 0;
       appendTraceEvent(state.trace, { type: 'history_clear' });
       console.log(`${C.dim}history cleared${C.reset}\n`);
-      continue;
+      emitOpeningPrompt('clear');
+      finishSlashCommand();
+      return true;
     }
+    clearStatusLine();
+    console.log(`${C.red}unknown command:${C.reset} ${trimmed} ${C.dim}(try /help)${C.reset}\n`);
+    appendTraceEvent(state.trace, { type: 'unknown_slash_command', command: trimmed, duringTurn });
+    finishSlashCommand();
+    return true;
+  }
 
+  async function processLearnerLine(trimmed) {
+    if (exiting) return;
+    processingTurn = true;
     try {
       const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
         trimmed,
         state,
       );
-      process.stdout.write(`${C.dim}calling tutor...${C.reset}\r`);
-      const response = await runOneTurn(
-        trimmed,
-        state,
-        classification,
-        tutorLearnerDag,
-        registerSelection,
-        previousRegisterEfficacy,
-      );
-      clearStatusLine();
+      if (exiting) return;
+      startInterimAnimation(state, 'calling tutor');
+      let response;
+      try {
+        response = await runOneTurn(
+          trimmed,
+          state,
+          classification,
+          tutorLearnerDag,
+          registerSelection,
+          previousRegisterEfficacy,
+        );
+      } finally {
+        stopInterimAnimation(state);
+      }
+      if (exiting) return;
       if (!response.streamed) {
         console.log(`${C.magenta}tutor >${C.reset} ${response.text.trim()}`);
       }
       console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
       printTutorDagSnapshot(response.dagSnapshot);
     } catch (err) {
+      stopInterimAnimation(state);
       clearStatusLine();
       console.error(`${C.red}error:${C.reset} ${err.message}\n`);
+    } finally {
+      processingTurn = false;
+      if (exiting) return;
+      const next = pendingLearnerLines.shift();
+      if (next) {
+        console.log(`${C.dim}running queued learner turn (${pendingLearnerLines.length} still queued)${C.reset}`);
+        void processLearnerLine(next);
+      } else {
+        promptIfIdle();
+      }
     }
   }
 
-  rl.close();
-  appendTraceEvent(state.trace, { type: 'run_end', reason: 'exit', turns: state.turns.length });
-  if (args.save) {
-    saveTranscript(args.save, {
-      ...visibleModel,
-      classifier: classifierEnabled ? visibleClassifierConfig : null,
-      tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
-      registerSelection: registerSelectionEnabled
-        ? { enabled: true, palette: registerPalette, history: state.register.history }
-        : null,
-      directorContext,
-      trace: traceDisplayPath(state.trace),
-      world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
-      turns: state.turns,
-    });
-  }
+  rl.on('line', (line) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      promptIfIdle();
+      return;
+    }
+    if (handleSlashCommand(trimmed, { duringTurn: processingTurn })) {
+      promptIfIdle();
+      return;
+    }
+    if (processingTurn) {
+      const pausedInterim = pauseInterimAnimation(state);
+      pendingLearnerLines.push(trimmed);
+      console.log(`${C.dim}queued learner turn (${pendingLearnerLines.length} queued); use /analysis or /field while waiting${C.reset}`);
+      appendTraceEvent(state.trace, {
+        type: 'learner_turn_queued',
+        queued: pendingLearnerLines.length,
+      });
+      if (pausedInterim) resumeInterimAnimation(state);
+      return;
+    }
+    void processLearnerLine(trimmed);
+  });
+
+  rl.on('SIGINT', () => {
+    stopInterimAnimation(state);
+    console.log();
+    requestExit('sigint');
+  });
+
+  rl.on('close', () => {
+    exiting = true;
+    stopInterimAnimation(state);
+    if (!finalized) finalizeInteractive('exit');
+    resolveInteractive();
+  });
+
+  emitOpeningPrompt('start');
+
+  promptIfIdle();
+  await interactiveDone;
 }
 
 main().catch((err) => {

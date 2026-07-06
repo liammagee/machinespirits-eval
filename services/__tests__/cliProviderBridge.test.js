@@ -6,6 +6,8 @@ import {
   cliAwareProviderConfig,
   isCliProvider,
   isProviderConfigured,
+  normalizeCliEffort,
+  resolveCliEffort,
 } from '../cliProviderBridge.js';
 
 describe('cliProviderBridge', () => {
@@ -46,5 +48,57 @@ describe('cliProviderBridge', () => {
       () => callAIWithCliBridge({ provider: 'openai' }, 'system', 'user', 'learner'),
       /No fallback AI caller supplied/,
     );
+  });
+
+  it('normalizes and validates CLI effort levels', () => {
+    assert.equal(normalizeCliEffort('HIGH'), 'high');
+    assert.equal(normalizeCliEffort(' config '), 'config');
+    assert.equal(normalizeCliEffort(''), null);
+    assert.throws(() => normalizeCliEffort('extreme'), /CLI effort must be/);
+  });
+
+  it('resolves effort for Codex and Claude CLI providers', () => {
+    const oldGlobal = process.env.CLI_PROVIDER_EFFORT;
+    const oldCodex = process.env.CLI_PROVIDER_CODEX_EFFORT;
+    const oldCodexLegacy = process.env.CODEX_REASONING_EFFORT;
+    const oldClaude = process.env.CLI_PROVIDER_CLAUDE_EFFORT;
+    const oldClaudeCode = process.env.CLAUDE_CODE_EFFORT;
+    const oldClaudeLegacy = process.env.CLAUDE_EFFORT;
+
+    try {
+      delete process.env.CLI_PROVIDER_EFFORT;
+      delete process.env.CLI_PROVIDER_CODEX_EFFORT;
+      delete process.env.CODEX_REASONING_EFFORT;
+      delete process.env.CLI_PROVIDER_CLAUDE_EFFORT;
+      delete process.env.CLAUDE_CODE_EFFORT;
+      delete process.env.CLAUDE_EFFORT;
+
+      assert.equal(resolveCliEffort('codex'), 'xhigh');
+      assert.equal(resolveCliEffort('claude-code'), null);
+      assert.equal(resolveCliEffort('codex', 'low'), 'low');
+      assert.equal(resolveCliEffort('claude-code', 'max'), 'max');
+
+      process.env.CLI_PROVIDER_EFFORT = 'medium';
+      assert.equal(resolveCliEffort('codex'), 'medium');
+      assert.equal(resolveCliEffort('claude-code'), 'medium');
+
+      process.env.CLI_PROVIDER_CODEX_EFFORT = 'high';
+      process.env.CLI_PROVIDER_CLAUDE_EFFORT = 'xhigh';
+      assert.equal(resolveCliEffort('codex'), 'high');
+      assert.equal(resolveCliEffort('claude-code'), 'xhigh');
+    } finally {
+      if (oldGlobal === undefined) delete process.env.CLI_PROVIDER_EFFORT;
+      else process.env.CLI_PROVIDER_EFFORT = oldGlobal;
+      if (oldCodex === undefined) delete process.env.CLI_PROVIDER_CODEX_EFFORT;
+      else process.env.CLI_PROVIDER_CODEX_EFFORT = oldCodex;
+      if (oldCodexLegacy === undefined) delete process.env.CODEX_REASONING_EFFORT;
+      else process.env.CODEX_REASONING_EFFORT = oldCodexLegacy;
+      if (oldClaude === undefined) delete process.env.CLI_PROVIDER_CLAUDE_EFFORT;
+      else process.env.CLI_PROVIDER_CLAUDE_EFFORT = oldClaude;
+      if (oldClaudeCode === undefined) delete process.env.CLAUDE_CODE_EFFORT;
+      else process.env.CLAUDE_CODE_EFFORT = oldClaudeCode;
+      if (oldClaudeLegacy === undefined) delete process.env.CLAUDE_EFFORT;
+      else process.env.CLAUDE_EFFORT = oldClaudeLegacy;
+    }
   });
 });
