@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-06T10:01:27.215Z",
+  "generated": "2026-07-06T13:30:39.194Z",
   "counts": {
-    "total": 96,
+    "total": 99,
     "byStatus": {
-      "done": 81,
+      "done": 84,
       "blocked": 1,
       "dropped": 2,
       "review": 3,
@@ -13,7 +13,7 @@
     },
     "byType": {
       "research": 40,
-      "experiment": 29,
+      "experiment": 32,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -698,6 +698,33 @@
         "derivation",
         "strategy-refusal",
         "frontier"
+      ]
+    },
+    {
+      "id": "register-router-contrast",
+      "title": "Register-router powered contrast — n=20/arm per shrinkage sizing",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "40 Sonnet runs under the frozen prereg; the frozen bar (U<=138 at 20/20) produces a recorded verdict.",
+      "claim_status": "settled",
+      "links": {
+        "notes": "REGISTER-ROUTER-CONTRAST-PREREGISTRATION.md",
+        "items": [
+          "classifier-dag-register"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "classifier",
+        "register",
+        "dag"
       ]
     },
     {
@@ -1761,6 +1788,34 @@
       ]
     },
     {
+      "id": "marrick-confront-window",
+      "title": "Opening the confront window: an intermediate-fact incompatible partner",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "world-020 authored + plot-linted; 6-run smoke complete with pre-stated reads recorded.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "classifier-dag-register",
+          "register-router-contrast",
+          "refusal-learner-mirror"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "world-authoring",
+        "register",
+        "mirror"
+      ]
+    },
+    {
       "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
       "title": "Measuring Whether LLM Tutors Teach or Solve: A Diagnostic for Educational Impact",
       "status": "done",
@@ -2017,6 +2072,33 @@
         "derivation",
         "strategy-refusal",
         "superego"
+      ]
+    },
+    {
+      "id": "register-router-codex-check",
+      "title": "Register router at the frontier tier: codex mechanism check",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "6-run codex smoke complete with pre-stated reads recorded (fires, sensed distribution, conduct, capped color).",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "classifier-dag-register",
+          "register-router-contrast"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "classifier",
+        "register",
+        "frontier"
       ]
     },
     {

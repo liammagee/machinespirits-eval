@@ -141,6 +141,24 @@ const DESIGNS = {
     },
   },
 
+  // REGISTER-ROUTER-CONTRAST-PREREGISTRATION.md — frozen at its launch
+  // commit. Two arms; promotion on RR.
+  'register-router': {
+    arms: ['baseline', 'register-router'],
+    armPattern: /^(baseline|register-router)-r(\d+)$/,
+    contrasts: [
+      { id: 'RR', name: 'register-router-vs-baseline (promotion)', treat: 'register-router', control: 'baseline' },
+    ],
+    endpoints: {
+      RR: [
+        ['timeToRecognition', 'lower'],
+        ['grounded', 'higher'],
+        ['aporiaLike', 'lower'],
+        ['repairLatency', 'lower'],
+      ],
+    },
+  },
+
   // LEMMA-DISPLAY-CONFIRMATORY-PREREGISTRATION.md — frozen at its launch
   // commit. Two arms; promotion on LDC.
   'lemma-display': {
@@ -320,6 +338,24 @@ function extractRun(world, label, dir) {
       ? result.lemmaLayer.frontierCoverage.multiFrontierOpenings
         ? result.lemmaLayer.frontierCoverage.tutorChoices / result.lemmaLayer.frontierCoverage.multiFrontierOpenings
         : null
+      : null,
+    // --- register-router endpoints (null-safe on non-router artifacts) ---
+    routerShifts: result.registerRouter?.shifts ?? null,
+    routerDecisions: result.registerRouter?.decisions?.length ?? null,
+    // audit-trail integrity: every non-didactic decision must carry its DAG
+    // evidence — repair cites a regressed chain, confront cites the partner.
+    routerUnevidencedFires: result.registerRouter
+      ? result.registerRouter.decisions.filter(
+          (d) =>
+            d.register !== 'didactic' &&
+            !(d.register === 'repair' ? (d.regressedChains || []).length > 0 : d.partnerDerivable === true),
+        ).length
+      : null,
+    routerShiftEventMismatch: result.registerRouter
+      ? Math.abs(
+          (result.events || []).filter((e) => e.type === 'register_shift').length -
+            result.registerRouter.decisions.filter((d) => d.register !== 'didactic').length,
+        )
       : null,
     stocktakes: result.strategyLedger?.stocktakes?.length ?? null,
     correctionsDemanded: (result.strategyLedger?.stocktakes || []).filter((st) => st.correction).length,
@@ -501,6 +537,28 @@ function main() {
         .filter((r) => r.arm === 'lemma-display')
         .every((r) => (r.lemmaChoices ?? 0) === 0 && (r.lemmaBlocks ?? 0) === 0 && (r.lemmaDepartures ?? 0) === 0),
       'display arm carries no binding events',
+    );
+  } else if (opts.design === 'register-router') {
+    g(
+      'guard-overrides',
+      runs.every((r) => r.guardOverrides === 0),
+      `${runs.filter((r) => r.guardOverrides > 0).length} run(s) with pacing-guard overrides`,
+    );
+    const router = runs.filter((r) => r.arm === 'register-router');
+    g(
+      'router-fires-evidenced',
+      router.every((r) => (r.routerUnevidencedFires ?? 0) === 0),
+      `${router.filter((r) => (r.routerUnevidencedFires ?? 0) > 0).length} router run(s) with an unevidenced fire`,
+    );
+    g(
+      'router-events-consistent',
+      router.every((r) => (r.routerShiftEventMismatch ?? 0) === 0),
+      `${router.filter((r) => (r.routerShiftEventMismatch ?? 0) > 0).length} router run(s) with event/decision mismatch`,
+    );
+    g(
+      'router-decisions-logged',
+      router.every((r) => (r.routerDecisions ?? 0) > 0),
+      'every router run logs per-turn decisions',
     );
   } else if (opts.design !== 'plan-mode') {
     const coverage = ledgerArms.map((r) => r.commitCoverage).filter((v) => v !== null);
