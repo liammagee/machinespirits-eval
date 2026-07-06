@@ -3975,6 +3975,14 @@ function cleanAutomatedLearnerReply(text) {
     .trim();
 }
 
+function deterministicAutomatedLearnerFallback({ state }) {
+  const latestTutor = [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+  if (/trial-book|evidence|write|say|state|claim/iu.test(latestTutor)) {
+    return 'What single public evidence claim should I write into the trial-book next?';
+  }
+  return 'What public evidence should I test first?';
+}
+
 function buildAutomatedLearnerPrompt({ state, profile, turnNumber }) {
   const latestTutor = [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
   return [
@@ -4027,8 +4035,14 @@ async function runOneTurn(
   registerSelection = null,
   previousRegisterEfficacy = null,
 ) {
-  const learnerText = inputText.trim();
-  if (!learnerText) return null;
+  const learnerText = String(inputText || '').trim();
+  if (!learnerText) {
+    appendTraceEvent(state.trace, {
+      type: 'empty_learner_turn_rejected',
+      turn: state.turns.length + 1,
+    });
+    throw new Error('empty learner turn: no tutor response can be generated without learner text');
+  }
   const tutorTurn = state.turns.length + 1;
 
   const response = await callTutor({
@@ -4181,6 +4195,16 @@ async function runAutomatedLearnerDialogue({
         stopInterimAnimation(state);
       }
       nextLearnerText = generated.text;
+      if (!nextLearnerText) {
+        nextLearnerText = deterministicAutomatedLearnerFallback({ state });
+        appendTraceEvent(state.trace, {
+          type: 'auto_learner_empty_fallback',
+          turn: turnNumber,
+          text: nextLearnerText,
+          provider: generated.provider,
+          model: generated.model,
+        });
+      }
       appendTraceEvent(state.trace, {
         type: 'auto_learner_turn',
         turn: turnNumber,
