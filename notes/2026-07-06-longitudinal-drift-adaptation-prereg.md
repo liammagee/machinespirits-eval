@@ -1086,4 +1086,99 @@ exhaustion-as-instrument-failure semantics). In addition:
 
 ### 8.8 Implementation log
 
-*(filled in as Stage A3-build and Stage A3-pilot complete)*
+**Stage A3-build, correction to §8.1 (2026-07-07): a fourth read-side
+breakage, found by the §8.5 hermetic gate itself, now fixed.** Building
+`services/writingPadNarrativeBuilder.js` and its unit tests (the exact
+work §8.5's own precondition gate calls for) surfaced a fourth breakage,
+distinct from and additional to §8.1's three: `unconscious.permanentTraces`
+(the one field §8.1 confirmed A2's 10 moments actually populated) turns
+out to carry no usable content of its own on the real write path, even
+though the count is genuine. Root cause, confirmed by direct code read
+of `tutor-core/services/writingPadService.js`: `createRecognitionMoment`
+persists real content into the `recognition_moments` table's
+`synthesis_resolution` column (line ~397, `synthesis.synthesis || ''`),
+but its own return value, and every subsequent read, goes through
+`getRecognitionMoment`/`getRecognitionMoments` (lines 429-448, 450-482),
+both of which reconstruct their return object from an explicit field
+allowlist that keeps the content-identical `synthesis_strategy` column
+but **omits `synthesis_resolution` entirely**. `settleToUnconscious`
+(line ~257) builds each `permanentTraces` entry by reading exactly
+`recognitionMoment.synthesis_resolution` — the dropped field — so every
+real trace it persists has `synthesis: undefined`, which `JSON.stringify`
+silently drops as a key. Verified twice: (a) a hermetic synthetic
+reproduction of the real chain (`createRecognitionMoment` →
+`getRecognitionMoments` → `settleToUnconscious`) against a temp DB; (b) a
+direct read-only `sqlite3` query against the real A2 production pad
+(`tutor-core/data/lms.sqlite`, learner `a2-drift-padon-v1-2026-07-06`,
+`total_recognition_moments = 10`) — all 3 sampled real `permanentTraces`
+entries have the shape `{id, timestamp, transformations: {}, struggleDepth: 0}`
+with no `synthesis` key at all, on real paid-run data, not a test
+artifact. (The same read confirms `ego_transformation`/
+`superego_transformation`/`learner_insight`/`recognition_type` — the
+other three content-bearing columns the schema defines — are always
+NULL on the real write path too: `createRecognitionMoment`'s own
+destructure never reads those fields from its caller, regardless of
+what `dialecticalEngine.js`'s Step 3 call site passes for them. Only
+`synthesis_resolution`/`synthesis_strategy` and the `ghost_demand`/
+`learner_need`/`parameters`/`transformative` JSON blobs actually persist.)
+
+This corrects §8.1's own characterization: A2's 10 moments are real and
+correctly counted (the write side and the `total_recognition_moments`
+column are unaffected by this bug), but their content was never actually
+recoverable from `permanentTraces` as §8.1 stated — only from the raw
+`recognition_moments.synthesis_resolution` column directly. §8.2's
+reinterpretation stands regardless (the *tutor prompt* never saw any of
+this content either way, for all four reasons now), and §8.3's design
+choice — inject externally rather than patch tutor-core internals —
+turns out to be exactly the right posture for this bug too, not just the
+original three: since each trace's own `.id` correctly survives into
+`permanentTraces` (`settleToUnconscious` copies it through intact) and is
+a live foreign key back to its `recognition_moments` row,
+`writingPadNarrativeBuilder.js`'s `renderTraceLine` was extended with a
+small, read-only, additive lookup — `SELECT synthesis_resolution,
+synthesis_strategy FROM recognition_moments WHERE id = ?`, called via
+`tutor-core/services/dbService.js`'s own `getDb()` — that recovers the
+real text by id before falling through to the existing transformations/
+recognitionType/null chain. This is still zero changes inside
+`tutor-core/**` (a raw, additive SELECT from eval-layer code against a
+table already in tutor-core's own schema, not a patch to tutor-core's
+functions), so §8.3's "minimal external injection, not internal repair"
+framing is unchanged in spirit — it now also has to route around one
+more internal accessor bug, not just the three orphaned-module gaps.
+Re-run against the real A2 production pad after the fix:
+`buildWritingPadNarrative('a2-drift-padon-v1-2026-07-06')` now returns a
+1819-character narrative quoting all of A2's real fractions-session
+tutoring content (LCD-finding, denominator-multiplication critique,
+ratio-scaling cognitive-conflict prompts) — confirming the fix recovers
+real production content, not just synthetic test content. Module version
+bumped to 1.1 to reflect the fix; this correction is logged here (the
+implementation log) rather than by rewriting §8.1's frozen prose, per
+this note's own established convention (A1/A2 recorded their deviations
+the same way).
+
+**Stage A3-build, gate results:** both halves of §8.5's precondition gate
+pass, via `scripts/report-longitudinal-drift-stage-a3.js --check`
+(hermetic: temp `AUTH_DB_PATH` + temp `EVAL_DB_PATH`/`EVAL_LOGS_DIR`, a
+fake non-secret `OPENROUTER_API_KEY` so provider resolution proceeds, and
+`globalThis.fetch` stubbed to a canned non-empty response — zero network
+calls, zero paid spend, real production DB/logs untouched). Half (i):
+`buildWritingPadNarrative` returns `null` for a freshly initialized pad
+and returns the seeded marker's text for a pad with one real,
+consolidated recognition moment (the exact `createRecognitionMoment` →
+`runBackgroundMaintenance` chain the live pilot depends on, not a
+synthetic `updateUnconscious` shortcut). Half (ii): calling the real
+`runEvaluation()` in-process against the real
+`longitudinal_drift_session_1_multiturn` scenario and the real
+`cell_40_base_dialectical_suspicious_unified_superego` cell, with
+`externalEgoExtension` set to half (i)'s narrative, drove 4 stubbed
+outgoing calls (matching the scenario's 4 turns) and the seeded marker
+was present in the captured request body — confirming the
+`externalEgoExtension` → `fullEgoExtension` → `systemPromptExtension` →
+`egoGenerateSuggestions`'s `effectiveSystemPrompt` chain (§8.3's citation)
+is live end-to-end on this exact scenario/cell pair, not just plausible
+from a static code read. Full build-phase gate: 38/38 unit tests green
+(`services/__tests__/writingPadNarrativeBuilder.test.js`,
+`services/__tests__/longitudinalDriftChecker.test.js` — 2 new checker
+functions plus the aggregator, 13 new cases), hermetic `--check` PASSED,
+lint/prettier clean on all touched files. Stage A3-build is complete and
+green; Stage A3-pilot (the 6-session live arc) follows next.

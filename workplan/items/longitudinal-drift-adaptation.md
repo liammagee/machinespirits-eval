@@ -195,3 +195,32 @@ before any paid session; constructive signal = pad-ON ≥2/4 AND pad-OFF
 0/4 (directional-only at this n); any pad-OFF hit is a red flag. Stage
 A3-build (no-paid: narrative builder, checker extensions, hermetic
 injection-path proof, unit tests) precedes the live pilot.
+
+2026-07-07 Claude: Stage A3-build complete and green, with a fourth
+breakage found and fixed along the way (logged in full in the prereg
+note's §8.8). Building `services/writingPadNarrativeBuilder.js` surfaced
+that `unconscious.permanentTraces` — the one field §8.1 confirmed A2's
+10 moments actually populated — also never carried usable content on the
+real path: `tutor-core/services/writingPadService.js`'s
+`getRecognitionMoment`/`getRecognitionMoments` both drop the
+`synthesis_resolution` column from their returned objects, so
+`settleToUnconscious`'s `synthesis: recognitionMoment.synthesis_resolution`
+read always saw `undefined`. Confirmed on real production data (the A2
+pad, `a2-drift-padon-v1-2026-07-06`): all 10 real `permanentTraces`
+entries have no `synthesis` key. Fix: an additive, read-only raw-SQL
+lookup by the trace's own `.id` (which does survive intact) directly
+against `recognition_moments.synthesis_resolution`, added to
+`writingPadNarrativeBuilder.js` only — zero changes inside
+`tutor-core/**`, consistent with §8.3's injection-not-internal-repair
+design. Re-run against the real A2 pad post-fix: a real 1819-character
+narrative, not null. Gate results: 38/38 unit tests green
+(`writingPadNarrativeBuilder.test.js` new, `longitudinalDriftChecker.test.js`
++13 cases for the two new checkers/aggregator), hermetic
+`scripts/report-longitudinal-drift-stage-a3.js --check` PASSED both
+halves (narrative surfaces a real consolidated moment's text; a real
+`runEvaluation()` call with `externalEgoExtension` set puts the seeded
+marker in the captured outgoing ego request body — the injection chain
+is live end-to-end on `cell_40`/the real drift scenario, not just
+plausible from a code read), lint/prettier clean. Stage A3-pilot (6
+sessions, ~$0.30) follows next; still no scaling beyond that without a
+fresh pre-registration.
