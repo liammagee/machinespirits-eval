@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-06T07:16:05.825Z",
+  "generated": "2026-07-06T07:20:47.058Z",
   "counts": {
-    "total": 94,
+    "total": 95,
     "byStatus": {
-      "done": 80,
+      "done": 81,
       "blocked": 1,
       "dropped": 2,
       "review": 2,
@@ -13,7 +13,7 @@
     },
     "byType": {
       "research": 40,
-      "experiment": 27,
+      "experiment": 28,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -386,6 +386,33 @@
         "meta"
       ],
       "milestone": "board-pm"
+    },
+    {
+      "id": "classifier-dag-register",
+      "title": "Classify-then-route coupled to the proof DAG: register shift as the routed channel",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "Phase A audit numbers recorded (label coverage, text-only classifier accuracy vs formal labels, mirror-orbit prevalence); Phase B register-shift smoke recorded with pre-stated reads.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "refusal-learner-mirror",
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "classifier",
+        "register",
+        "dag"
+      ]
     },
     {
       "id": "content-compulsion-contrast",
