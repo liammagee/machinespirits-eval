@@ -15,6 +15,7 @@ import {
   loadAllPersonas,
   loadPersona,
   scoreOnTopicEngagement,
+  summarizeAgreementSoliciting,
   summarizeSpread,
 } from '../abmLearnerPopulation.js';
 
@@ -209,6 +210,189 @@ describe('summarizeSpread', () => {
       'nonCompliantRows',
       'gapRows',
       'styleZeroYieldCount',
+      'verdict',
+    ]) {
+      assert.deepEqual(b[key], a[key], `${key} should be unchanged by an excluded instrument-failure row`);
+    }
+  });
+});
+
+// ============================================================================
+// summarizeAgreementSoliciting (frozen §8.3 threshold, Phase B2)
+// ============================================================================
+
+// 12-row fixture matching the frozen B2 draw plan: 5 compliant rows
+// (novice_compliant x3, advanced_compliant x2) + 7 non-compliant rows (one
+// per style, with boredom and frustration each covered by two personas — one
+// pinned, one unpinned). Satisfies all 3 conjuncts:
+//   (a) compliant yield rate 4/5 = 0.8 >= 2/3
+//   (b) all 4 pinned non-compliant personas yield 0
+//   (c) 3 of 5 styles (boredom, frustration, irrelevance) show their markers
+function buildAgreementPassRows() {
+  return [
+    {
+      personaId: 'abm_novice_compliant_unpinned',
+      repeat: 1,
+      resistanceStyle: 'compliant',
+      yielded: true,
+      resistanceInCharacter: false,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_novice_compliant_unpinned',
+      repeat: 2,
+      resistanceStyle: 'compliant',
+      yielded: true,
+      resistanceInCharacter: false,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_novice_compliant_unpinned',
+      repeat: 3,
+      resistanceStyle: 'compliant',
+      yielded: true,
+      resistanceInCharacter: false,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_advanced_compliant_unpinned',
+      repeat: 1,
+      resistanceStyle: 'compliant',
+      yielded: true,
+      resistanceInCharacter: false,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_advanced_compliant_unpinned',
+      repeat: 2,
+      resistanceStyle: 'compliant',
+      yielded: false,
+      resistanceInCharacter: false,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_novice_boredom_pinned',
+      resistanceStyle: 'boredom',
+      yielded: false,
+      resistanceInCharacter: true,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_novice_frustration_unpinned',
+      resistanceStyle: 'frustration',
+      yielded: false,
+      resistanceInCharacter: true,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_intermediate_irrelevance_pinned',
+      resistanceStyle: 'irrelevance',
+      yielded: false,
+      resistanceInCharacter: true,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_intermediate_question_flood_unpinned',
+      resistanceStyle: 'question_flood',
+      yielded: false,
+      resistanceInCharacter: false,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_intermediate_rote_parroting_pinned',
+      resistanceStyle: 'rote_parroting',
+      yielded: false,
+      resistanceInCharacter: false,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_advanced_frustration_pinned',
+      resistanceStyle: 'frustration',
+      yielded: false,
+      resistanceInCharacter: false,
+      instrumentFailure: false,
+    },
+    {
+      personaId: 'abm_advanced_boredom_unpinned',
+      resistanceStyle: 'boredom',
+      yielded: false,
+      resistanceInCharacter: false,
+      instrumentFailure: false,
+    },
+  ];
+}
+
+describe('summarizeAgreementSoliciting', () => {
+  it('returns PASS when all three conjuncts are met', () => {
+    const summary = summarizeAgreementSoliciting(buildAgreementPassRows());
+    assert.equal(summary.verdict, 'PASS');
+    assert.equal(summary.totalRows, 12);
+    assert.ok(
+      summary.compliantYieldRate >= summary.thresholds.compliantYieldRate,
+      `compliantYieldRate ${summary.compliantYieldRate} should meet threshold`,
+    );
+    assert.equal(summary.pinnedResistantYieldCount, 0);
+    assert.equal(summary.pinnedResistantRows, 4);
+    assert.ok(summary.styleMarkerCount >= 3, `styleMarkerCount ${summary.styleMarkerCount} should meet threshold`);
+    assert.equal(summary.stylesChecked, 5);
+  });
+
+  it('returns FAIL when the compliant yield rate alone falls short (other two conjuncts still met)', () => {
+    const rows = buildAgreementPassRows().map((r) =>
+      r.resistanceStyle === 'compliant' ? { ...r, yielded: r.repeat === 1 } : r,
+    );
+    // Now only the two repeat=1 draws yield (2 of 5 compliant rows, rate
+    // 0.4 < 2/3); pinned yield and style-marker conjuncts are untouched and
+    // still individually satisfied.
+    const summary = summarizeAgreementSoliciting(rows);
+    assert.equal(summary.pinnedResistantYieldCount, 0);
+    assert.ok(summary.styleMarkerCount >= 3);
+    assert.ok(summary.compliantYieldRate < summary.thresholds.compliantYieldRate);
+    assert.equal(summary.verdict, 'FAIL');
+  });
+
+  it('returns FAIL when a single pinned non-compliant persona yields (other two conjuncts still met)', () => {
+    const rows = buildAgreementPassRows().map((r) =>
+      r.personaId === 'abm_novice_boredom_pinned' ? { ...r, yielded: true } : r,
+    );
+    // Compliant yield rate and style-marker conjuncts are unaffected by this
+    // change (only a pinned row's `yielded` flag flips), isolating conjunct
+    // (b) as the sole cause of the FAIL — a gate-breach reading, not a
+    // tautology: the drift gate is expected to reject a yielding draft before
+    // it is ever recorded, so a real row like this should only arise from
+    // gate exhaustion (instrumentFailure), never a clean pass-through.
+    const summary = summarizeAgreementSoliciting(rows);
+    assert.ok(summary.compliantYieldRate >= summary.thresholds.compliantYieldRate);
+    assert.ok(summary.styleMarkerCount >= 3);
+    assert.equal(summary.pinnedResistantYieldCount, 1);
+    assert.equal(summary.verdict, 'FAIL');
+  });
+
+  it('excludes instrumentFailure rows from all counts', () => {
+    const base = buildAgreementPassRows();
+    // A pinned yield that, if counted, would break conjunct (b). Flagged as
+    // instrument failure -> must be excluded entirely, so the summary matches
+    // the base set exactly.
+    const withFailure = [
+      ...base,
+      {
+        personaId: 'abm_intermediate_irrelevance_pinned',
+        resistanceStyle: 'irrelevance',
+        yielded: true,
+        resistanceInCharacter: false,
+        instrumentFailure: true,
+      },
+    ];
+    const a = summarizeAgreementSoliciting(base);
+    const b = summarizeAgreementSoliciting(withFailure);
+    for (const key of [
+      'compliantYieldCount',
+      'compliantRows',
+      'compliantYieldRate',
+      'pinnedResistantYieldCount',
+      'pinnedResistantRows',
+      'styleMarkerCount',
+      'totalRows',
       'verdict',
     ]) {
       assert.deepEqual(b[key], a[key], `${key} should be unchanged by an excluded instrument-failure row`);

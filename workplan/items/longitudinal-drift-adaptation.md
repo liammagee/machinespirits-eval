@@ -98,3 +98,52 @@ sessions never feed pad content), so the stale-0 reflects an empty
 channel, not demonstrated indifference to memory. Instrument validated;
 a confirmatory design needs pad-feeding (multi-turn) sessions. STOP —
 awaiting a fresh pre-registration + go for anything further.
+
+2026-07-06 Claude: Stage A2 pre-registration frozen and committed
+(`notes/2026-07-06-longitudinal-drift-adaptation-prereg.md` §7).
+Redesign motivated by A1's own finding (single-turn sessions never feed
+the pad — 0 recognition moments) plus a confirmed mechanism trace:
+`cell_40`/`cell_93` both route through `dialecticalEngine.negotiateDialectically`'s
+per-turn superego-disapproval gate (a real LLM judgment call, no mock),
+which only writes a `recognition_moments` row when the superego
+disapproves; a live DB query confirmed zero such rows across all 3 real
+A1 pad-ON sessions. Design: 3 new `longitudinal_drift_session_{1,2,3}_multiturn`
+sibling scenarios (4 turns/session, same misconception schedule/tokens as
+A1) × {pad-ON, pad-OFF} = 6 dialogues, 24 turns total. New frozen
+instrument-precondition gate: after pad-ON session 1, the pad row must
+show ≥1 recognition moment (checked live before continuing) — 0 is
+INSTRUMENT_FLOOR, stop. Primary outcome unchanged (word-bounded
+opening-turn marker matching); secondary is the pad-content trace
+(recognition-moment count + plain-language ghost_demand/learner_need/
+synthesis rendering, scoped to what the live schema actually populates).
+Frozen thresholds carried forward (current-reference ≥2/3 pad-ON
+validity gate; stale-reference gap directional-only, non-confirmatory at
+this n). Stage A2-build (no-paid: 3 scenarios, hermetic plumbing script,
+unit tests) precedes the live pilot.
+
+2026-07-06 Claude: Stage A2 executed end-to-end — instrument fully
+validated (pad-feeding precondition included), adaptation signal NULL.
+A2-build no-paid gate green (3 multiturn scenarios,
+checkPadInstrumentPrecondition, hermetic write→consolidate→gate chain
+proof, 15/15 checker tests; commit 6406b1a0). Pad-ON session 1
+(eval-2026-07-06-97a18895) cleared the frozen §7.4 instrument-
+precondition gate: superego disapproved on ALL 4 turns → 4 recognition
+moments, consolidated (column == raw count == 4), content quoting the
+session's actual math — the A1 empty-channel gap is CLOSED. Full arc
+(6/6 sessions clean, 24 turns, ~$0.27, pad-ON runs
+97a18895/6966c1d5/d5652c5f, pad-OFF 51a74faa/cd3e0002/ff4d35db):
+validity gate PASS (current-reference 2/3 both arms — session-3 miss is
+a symmetric marker-phrasing near-miss, recorded not re-scored);
+adaptation signal NULL (stale-reference 0/2 both arms, gap 0) — now
+against a demonstrably content-carrying pad (10 moments, 4+3+3), so the
+null upgrades from A1's "channel was empty" to "channel carried content
+and none of it surfaced in opening-turn temporal anchoring either way";
+no structural red flag. Deviation note recorded: multi-turn path gives
+pad-OFF sessions fresh per-dialogue synthetic pads (within-session
+moments 4/0/1, never consolidated/reused) — cross-session channel still
+cleanly absent, arms within-session MORE symmetric than A1. Bounded
+next-step reading: a scaled design needs a constructive-use outcome
+channel (continuity acknowledgment, resolved-misconception handling),
+not just stale-vocabulary leakage. STOP per §7.4/§7.6 — nothing further
+authorized; scaling requires a fresh prereg + go. Artifacts:
+exports/longitudinal-drift-stage-a2.{json,md}.

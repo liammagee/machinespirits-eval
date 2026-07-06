@@ -168,3 +168,28 @@ export function summarizeDriftRun(rows = []) {
     staleEligibleRows: withStale.length,
   };
 }
+
+/**
+ * Stage A2 instrument-precondition gate (prereg §7.4). A1 found that
+ * single-turn sessions never write a `recognition_moments` row at all (the
+ * per-turn superego-disapproval gate in `dialecticalEngine.negotiateDialectically`
+ * never fired), so before A2's multi-turn redesign can be interpreted as a
+ * working pad-feeding instrument, it must first clear a live-DB check: after
+ * pad-ON session 1 completes, the learner's Writing Pad must show at least
+ * one recognition moment (`writing_pads.total_recognition_moments`, made
+ * visible by the eager `runBackgroundMaintenance` consolidation call
+ * `services/evaluationRunner.js` already makes after every session).
+ *
+ * A `pass: false` result is INSTRUMENT_FLOOR per §7.4 — stop, do not
+ * continue to sessions 2-3 or the pad-OFF arm, and record the result as an
+ * instrument-validity finding, not a substantive one.
+ *
+ * @param {Object|null} pad - a writing pad object as returned by
+ *   tutor-core/services/writingPadService.js's getWritingPad /
+ *   getOrInitializeWritingPad (or null if no pad row exists yet)
+ * @returns {{pass: boolean, totalRecognitionMoments: number}}
+ */
+export function checkPadInstrumentPrecondition(pad) {
+  const totalRecognitionMoments = pad?.metrics?.totalRecognitionMoments ?? 0;
+  return { pass: totalRecognitionMoments >= 1, totalRecognitionMoments };
+}

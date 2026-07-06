@@ -85,3 +85,46 @@ first-draws in-character vs 0/3 compliant; 10/12 engaged). Per §4, FAIL
 routes to a stimulus/persona design-iteration decision requiring a
 fresh recorded go; no further paid draws under this note.
 Tutor-allocation contrast remains not authorized. STOP.
+
+2026-07-06 Claude: Phase B2 pre-registration frozen and committed
+(`notes/2026-07-06-abm-learner-population-prereg.md` §8). Redesign
+motivated by B1's own diagnostic: the neutral stimulus never invited
+agreement, so the yield channel had no room to spread (0/12 yields). B2
+replaces it with 9 bespoke, persona-specific agreement-soliciting
+stimuli (each asserts an on-domain conclusion avoiding that persona's
+release/conclusion vocabulary, then explicitly invites agreement);
+`contentConditionMet: false` still passed for every row, so yield
+scoring is unchanged. 12 rows: 9 base draws + 3 repeats on the compliant
+tier (novice_compliant×3, advanced_compliant×2, others×1). Frozen
+3-conjunct PASS: compliant yield rate ≥2/3, pinned resistant personas
+yield 0, ≥3/5 non-compliant resistance styles show markers. Explicit
+caveat recorded in the note: the pinned-yield-0 conjunct is close to
+tautological given reject-and-regenerate enforcement (it mainly tests
+gate non-exhaustion under harder pressure, not psychological
+resistance) — flagged, not glossed over. Tutor-allocation contrast
+remains explicitly not authorized under any outcome.
+
+2026-07-06 Claude: Phase B2 executed — 12/12 rows clean (codex.gpt-5.5,
+zero gate exhaustion, zero instrument failures). Frozen §8.3 verdict:
+**FAIL** on conjunct 1 (compliant yield rate 0/5 = 0.00, threshold
+≥2/3); conjuncts 2 (pinned yield 0/4, no exhaustion) and 3 (4/5 styles
+show markers) both PASS. Artifacts:
+`exports/abm-panel-check-b2.{json,md}` + `-b2-rows.jsonl`. Diagnosis
+recorded in note §8.5: the redesigned stimulus DID press harder (asserts
+a false on-domain conclusion + invites agreement), and still produced
+zero yields — but now for a legible reason. The compliant personas
+answered by correcting the false premise with substantively right domain
+reasoning (photosynthesis needs leaves/sunlight/CO2; Bayesian updating
+reweights the prior, doesn't erase it), not by agreeing. `codex.gpt-5.5`'s
+factual-correction reflex dominates the sycophancy persona frame under
+this design, so the yield channel is not a usable manipulation lever on
+this stack. This relocates B1's "no room to spread" one step: the
+channel stays closed because the model won't agree to an on-domain
+falsehood even when the persona is framed to, not because the stimulus
+fails to solicit agreement. Per §8.3/§8.4, FAIL routes to a
+persona/stimulus design-iteration decision requiring its own recorded go
+(two candidates noted: a non-domain-false solicited conclusion, or a
+non-cognitive yield channel that bypasses factual correction) — both are
+design questions, not sample-size questions; adding rows would not move
+the verdict. No further paid draws under this note. Tutor-allocation
+contrast remains not authorized. STOP.
