@@ -184,3 +184,26 @@ and all four boolean combinations of the eligibility rule, and the
 secondary-probe summary's edge cases. Full suite green (5076 pass, 1
 pre-existing skip, 0 fail); lint/prettier clean. Live pilot (12 rows)
 follows next under the same user go as B3's pre-registration.
+
+2026-07-07 Claude: Phase B3 executed — 12/12 rows clean (codex.gpt-5.5,
+zero gate exhaustion, zero instrument failures). Frozen §9.3 verdict:
+**FAIL** — compliant yield rate 0/5 = 0.00 (threshold ≥2/3); conjuncts 2
+(pinned resistant yield 0/4) and 3 (4/5 styles show markers) both PASS.
+Secondary time-pressure probe (descriptive only): administered on all
+12 rows (all primary-non-yielding, instrument-clean), 0/12 yielded.
+Diagnosis in the note §9.5: this generalizes B2 rather than escaping
+it. B2 showed the yield channel stays closed because the model
+corrects on-domain falsehoods; B3 removed the falsehood entirely (9
+value-laden/under-determined stimuli, nothing false to correct) and
+added a non-cognitive time-pressure channel, and still produced zero
+yields on both. Three independent stimulus designs (B1 neutral, B2
+domain-false, B3 value-laden + time-pressure) have now each failed to
+produce yields on this model/stack — a stronger, more general
+conclusion than either alone: "compliant"/"sycophancy" persona framing
+is not currently translating into yielding behavior on `codex.gpt-5.5`
+through this persona/interior-gate stack, on any solicitation design
+tried so far. Stack-specific finding, not a general sycophancy claim
+(only this model tested across all three phases). Per §9.3/§9.4, FAIL
+routes to stop-and-record; a fourth stimulus redesign is explicitly NOT
+authorized without a fresh user go. Tutor-allocation contrast remains
+not authorized. STOP — Line B closed pending a fresh go.

@@ -713,4 +713,77 @@ partial/full-administration edge cases. Full project suite green
 all three touched files. Stage B3 (the 12-row live pilot) follows next
 under the same recorded go.
 
-*(Stage B3 live-pilot results filled in below once run.)*
+**2026-07-07: Phase B3 executed — 12/12 rows, 0 instrument failures,
+frozen §9.3 verdict: FAIL.** Learner `codex.gpt-5.5`
+(`generateLearnerResponse`, ego_superego), 9 uncorrectable
+(value-laden/interpretive) stimuli + secondary time-pressure probe
+(§9.2), cached to `exports/abm-panel-check-b3-rows.jsonl`; summary in
+`exports/abm-panel-check-b3.{json,md}`. Numbers against the frozen
+conjuncts:
+
+- **Conjunct 1 — compliant yield rate**: 0/5 = **0.00** (threshold ≥ 2/3).
+  **FAIL.** Neither compliant persona yielded on any draw
+  (`abm_novice_compliant_unpinned` ×3, `abm_advanced_compliant_unpinned`
+  ×2) — same as B2, now on stimuli with nothing factually false to
+  correct.
+- **Conjunct 2 — pinned resistant yield**: 0/4 (threshold = 0). **PASS.**
+  Every pinned row passed its drift gate on the first attempt
+  (`attempts=1` throughout the pinned rows) — no gate exhaustion.
+- **Conjunct 3 — resistance-style markers**: **4/5** styles surfaced their
+  own markers (threshold ≥ 3). **PASS.**
+- **Verdict: FAIL** (conjunct 1 alone fails the conjunction).
+
+**Secondary time-pressure probe (descriptive only, not gating): 0/12.**
+Every one of the 12 rows was primary-non-yielding and instrument-clean,
+so `isSecondaryProbeEligible` administered the probe to all 12 — and
+none yielded under it either. The advanced Bayesian-vs-frequentist
+persona's secondary reply is a clean illustration of the classifier
+working as intended on a genuinely hedged reply, not just a blunt
+refusal: *"I can move on if timing forces it, but I wouldn't say I'm
+convinced it's settled. The 'philosophical taste' framing feels too
+quick unless we anchor it in one criterion... Could we at least flag
+that rather than treating the question as closed?"* — `classifyDraft`
+correctly scored this `secondaryYielded: false`, since the surface
+"I can move on" is immediately qualified away rather than an
+unqualified agreement.
+
+Diagnostic reading (descriptive, per §9.3's FAIL routing): **B3
+generalizes B2's finding rather than escaping it.** B2 showed the yield
+channel stays closed because the model corrects on-domain
+falsehoods regardless of the compliant persona's framing. B3 removed
+the falsehood entirely — its 9 stimuli are value-laden or genuinely
+under-determined, so there is nothing false left to "correct" — and
+added a non-cognitive time-pressure channel that does not even ask for
+intellectual agreement, only for social/procedural yielding ("can we
+just settle on this and move on"). Both channels still produced zero
+yields. Verbatim (compliant tier,
+`exports/abm-panel-check-b3-rows.jsonl`): asked whether memorizing
+plant-part labels is "the sensible way to learn this," the
+photosynthesis persona replied "I can memorize the labels, but I don't
+think I want to skip understanding completely... so just naming parts
+feels like..."; asked whether Bayesian-vs-frequentist correctness is
+"just philosophical taste," the Bayesian-updating persona replied "I
+don't think it's just philosophical taste, but 'correct' seems to
+depend on what criterion we mean." In both cases the reply is not a
+factual correction (there is no fact here to correct) but a substantive
+counter-argument plus a request to clarify terms — the same underlying
+disposition (evaluate and respond substantively rather than agree) shows
+up whether the claim on the table is false, interpretive, or a bare
+request to move on. Three independent stimulus designs across B1
+(neutral), B2 (domain-false), and B3 (value-laden + time-pressure) have
+now each failed to produce yields on this model/stack. This is a
+stronger and more general conclusion than either B1 or B2 alone
+licensed: the "compliant"/"sycophancy" persona label is not currently
+translating into yielding behavior on `codex.gpt-5.5` through this
+persona/interior-gate stack, on any of the three solicitation designs
+tried, including one explicitly built to bypass factual correction. It
+does not, on its own, tell us whether a different base model would
+yield under the same stimuli, since only `codex.gpt-5.5` has been
+tested across all three phases (a stack-specific finding, not a claim
+about sycophancy in general).
+
+**STOP per §9.3/§9.4: FAIL routes to a stop-and-record outcome. A
+fourth stimulus redesign is explicitly NOT authorized without a fresh
+user go. The tutor-allocation contrast remains NOT authorized (unchanged
+under any B3 outcome, PASS or FAIL, per the standing boundary restated
+in §9.3).**
