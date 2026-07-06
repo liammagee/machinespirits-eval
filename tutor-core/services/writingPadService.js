@@ -440,6 +440,13 @@ export function getRecognitionMoment(id) {
     ghostDemand: JSON.parse(row.ghost_demand || '{}'),
     learnerNeed: JSON.parse(row.learner_need || '{}'),
     synthesis_strategy: row.synthesis_strategy,
+    // Recognition Engine read-path fix (Line A, notes/2026-07-06-longitudinal-
+    // drift-adaptation-prereg.md §8.8, bug 4): this accessor used to omit
+    // synthesis_resolution entirely, so settleToUnconscious's own read of
+    // recognitionMoment.synthesis_resolution always saw undefined on the
+    // real write path, even though the column is populated correctly by
+    // createRecognitionMoment's INSERT above.
+    synthesis_resolution: row.synthesis_resolution,
     transformative: Boolean(row.transformative),
     parameters: JSON.parse(row.parameters || '{}'),
     persistence_layer: row.persistence_layer,
@@ -477,6 +484,8 @@ export function getRecognitionMoments(writingPadId, options = {}) {
     ghostDemand: JSON.parse(row.ghost_demand || '{}'),
     learnerNeed: JSON.parse(row.learner_need || '{}'),
     synthesis_strategy: row.synthesis_strategy,
+    // Bug 4 fix (see getRecognitionMoment above) — same dropped column.
+    synthesis_resolution: row.synthesis_resolution,
     transformative: Boolean(row.transformative),
     parameters: JSON.parse(row.parameters || '{}'),
     persistence_layer: row.persistence_layer,

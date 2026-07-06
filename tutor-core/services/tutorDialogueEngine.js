@@ -1897,6 +1897,45 @@ ${userPrompt}`;
     }
   }
 
+  // Recognition Engine read-path fix (Line A, notes/2026-07-06-longitudinal-
+  // drift-adaptation-prereg.md §8.8, bug 3): nothing on this live path ever
+  // wrote to conscious.workingThoughts, so memoryDynamicsService's
+  // detectPatternsFromConscious/autoPromotePatterns (invoked once per turn
+  // from the memory cycle in runDialogue, just after this function returns)
+  // always saw an empty array and could never promote anything into
+  // preconscious.recentPatterns — the exact channel dialecticalEngine.js's
+  // generateSuperegoCritique already reads from. recognitionOrchestrator.js's
+  // processDialogueResult builds this same shape of "thought" for its own
+  // Phase 1, but that module has zero callers on this request path (see its
+  // header) and invoking it here would require fabricating a learnerResponse
+  // this request shape doesn't carry, plus would double-run the memory cycle
+  // runDialogue already runs directly. Mirrored inline instead, deliberately
+  // unconditional on dialecticalNegotiation so it applies to every
+  // learnerId-bearing cell, not just cell_40/93.
+  if (learnerId && suggestions.length > 0) {
+    try {
+      const finalSuggestion = suggestions[0] || {};
+      const existingPad = writingPadService.getWritingPad(learnerId);
+      if (existingPad) {
+        writingPadService.updateConscious(learnerId, {
+          workingThoughts: [
+            ...(existingPad.conscious.workingThoughts || []),
+            {
+              type: 'suggestion',
+              suggestionType: finalSuggestion.type || 'suggestion',
+              content: finalSuggestion.message || finalSuggestion.title || '',
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      if (!isQuietOrTranscript()) {
+        console.error(`[WritingPad] Failed to record working thought for ${learnerId}:`, error.message);
+      }
+    }
+  }
+
   return { suggestions, rawPrompt: userPrompt, rawResponse: response.text, metrics: response };
 }
 

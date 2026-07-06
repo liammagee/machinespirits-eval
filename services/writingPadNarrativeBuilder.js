@@ -49,6 +49,23 @@
  * additive raw-SQL lookup by id — still zero changes inside
  * tutor-core/**, and still reusing only plumbing (the DB file / schema),
  * not patching tutor-core's own accessor functions.
+ *
+ * STATUS UPDATE (§8.8): the four internal read-path bugs this module was
+ * built to work around (recognitionOrchestrator.js orphaned; runMemoryCycle
+ * discarding retrieved unconscious context; the pattern-promotion pipeline
+ * starved of conscious.workingThoughts; getRecognitionMoment(s) dropping
+ * synthesis_resolution) are now fixed directly inside tutor-core/services/
+ * {dialecticalEngine,memoryDynamicsService,tutorDialogueEngine,
+ * writingPadService}.js. The INTERNAL path (unconscious.permanentTraces ->
+ * dialecticalEngine.generateSuperegoCritique's own prompt) is now the
+ * canonical channel for A4 onward, proven end-to-end in tutor-core/services/
+ * __tests__/writingPadInternalPathDelivery.test.js. This module is NOT
+ * deleted and is NOT wired into A4 — it is retained as the A3 instrument,
+ * for provenance: it is what made the read-side breakage legible in the
+ * first place (the raw-SQL `synthesis_resolution` repair in
+ * `renderTraceLine` below was the first working fix for what is now bug 4),
+ * and its diagnostic narrative-building logic may still be useful if the
+ * internal channel ever needs an external cross-check again.
  */
 import { getWritingPad } from '../tutor-core/services/writingPadService.js';
 import { getDb } from '../tutor-core/services/dbService.js';
