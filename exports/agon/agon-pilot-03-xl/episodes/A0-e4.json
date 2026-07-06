@@ -1,0 +1,1072 @@
+{
+  "episodeId": "A0-e4",
+  "arm": "A0",
+  "runId": "agon-pilot-03-xl",
+  "agents": {
+    "tutor": "codex/gpt-5.5",
+    "learner": "claude-code/claude-sonnet-5"
+  },
+  "durationMs": 703663,
+  "summary": {
+    "episodeId": "A0-e4",
+    "arm": "A0",
+    "turns": 16,
+    "score": 9,
+    "demonstrated": 3,
+    "transferred": 0,
+    "tutorWin": true,
+    "firstDemonstrationTurn": 11,
+    "wastedProbes": 0,
+    "invalidTutorMoves": 0,
+    "complianceCount": 5,
+    "complyMismatches": 0,
+    "bounces": 0,
+    "leaks": 1,
+    "taintedPasses": 0,
+    "taintedLeaks": 0,
+    "dodgesCharged": {
+      "epistemic_resistance": 1,
+      "answer_seeking": 1,
+      "affective_shutdown": 1,
+      "false_confusion": 1,
+      "polite_false_mastery": 1
+    },
+    "totalDodgesCharged": 5,
+    "budgetsRemaining": {
+      "false_confusion": 0,
+      "polite_false_mastery": 0,
+      "affective_shutdown": 0,
+      "epistemic_resistance": 0,
+      "answer_seeking": 0
+    },
+    "moveCounts": {
+      "teach": 8,
+      "probe": 7,
+      "meta": 1
+    },
+    "moveEntropy": 1.2718,
+    "conceptStatuses": {
+      "c1_meaning": "demonstrated",
+      "c2_equivalence": "demonstrated",
+      "c3_comparison": "open",
+      "c4_addition": "open",
+      "c5_subtraction": "locked",
+      "c6_quantity": "demonstrated"
+    }
+  },
+  "transcript": [
+    {
+      "role": "tutor",
+      "text": "Jesse, we’ll keep this tight. A fraction is just “part out of whole.”\n\nThe top number says how many parts we’re talking about. The bottom number says how many equal parts make the whole.\n\nSo if something is split into equal pieces, the fraction is:\n\n`parts we mean / total parts in the whole`\n\nThat’s it."
+    },
+    {
+      "role": "learner",
+      "text": "Cool story, but like, when am I ever gonna sit there splitting pizzas into \"equal parts\" in real life instead of just eating it."
+    },
+    {
+      "role": "tutor",
+      "text": "Fair. Real life can wait ten seconds.\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Why do I need a fraction for that, just say \"someone ate more than half,\" nobody actually needs the exact number."
+    },
+    {
+      "role": "tutor",
+      "text": "“More than half” is a rough description. A fraction is the exact version.\n\nFor a tray question, the whole is the whole tray. The bottom number is how many brownies are in the whole tray. The top number is how many of those brownies match the thing we’re describing, like eaten or left.\n\nSo the pattern is:\n\n`eaten brownies / brownies in the whole tray`"
+    },
+    {
+      "role": "learner",
+      "text": "Wait, so is the \"whole\" the tray or the pan or what, I don't even get which number's supposed to go where."
+    },
+    {
+      "role": "tutor",
+      "text": "Use `eaten / total in tray`.\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, just tell me the number already, I'm not doing the whole math dance for a brownie tray."
+    },
+    {
+      "role": "tutor",
+      "text": "Nope, I’m not giving it to you, because then you’ve done exactly zero of the useful bit.\n\nIt’s not a “math dance”; it’s just matching two numbers to labels:\n\n- top = the amount we’re talking about\n- bottom = the whole group\n\nSo for “what fraction was eaten,” you look for:\n\n`eaten / total`\n\nDon’t calculate anything fancy. Just put the two given numbers in the right places."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, I don't even care about the stupid brownies, this is so pointless."
+    },
+    {
+      "role": "tutor",
+      "text": "A tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Oh my god, I said I don't care, can we just not with the brownies anymore."
+    },
+    {
+      "role": "tutor",
+      "text": "We can drop the drama around brownies, but the idea stays the same.\n\nFor any “what fraction of the whole?” question, use this check:\n\n`part being described / total in the whole group`\n\nSo if the sentence says some are eaten, away, red, broken, finished, whatever, that described amount goes on top. The total group goes on the bottom. No simplifying, no tricks, just label the two numbers."
+    },
+    {
+      "role": "learner",
+      "text": "I don't even know what \"described amount\" means, like which word in the sentence is even the \"part,\" this is just confusing now."
+    },
+    {
+      "role": "tutor",
+      "text": "A tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "I literally don't even know what number goes where anymore, you've said it like four different ways and none of it's sticking, so."
+    },
+    {
+      "role": "tutor",
+      "text": "No, I’ve only said it one way: the word after “has” or “are” tells the part, and the full group tells the whole.\n\nExample: “A bag of 10 marbles has 3 blue.”\n\nThe question “what fraction are blue?” means:\n\n`blue marbles / total marbles`\n\nSo it would be `3/10`.\n\nFor the brownie sentence, don’t think about whether you care about brownies. Find the action word: “eaten.” That number is the top. The total tray number is the bottom."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, I'm not doing the marble bag either, I'm just over this whole thing."
+    },
+    {
+      "role": "tutor",
+      "text": "A tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Yeah yeah, I get it, we don't need to keep doing this one, can we just move on."
+    },
+    {
+      "role": "tutor",
+      "text": "You’re saying “I get it” while still not giving the fraction, so I’m going to pin down the tiny step.\n\nIn a fraction question, do this:\n\n1. Ask: “What thing is the question asking about?” That is the top.\n2. Ask: “What whole group is it out of?” That is the bottom.\n\nSo the answer shape is always:\n\n`asked-about number / whole-group number`\n\nNo extra maths. Just match the labels."
+    },
+    {
+      "role": "learner",
+      "text": "Fine, whatever, it's 7/12."
+    },
+    {
+      "role": "tutor",
+      "text": "Good. That’s the whole move: asked-about number over whole-group number.\n\nNext bit: equivalent fractions are just the same amount written with different-sized pieces. You make an equivalent fraction by multiplying the top and bottom by the same number.\n\nExample: `1/3 = 2/6`, because both top and bottom were multiplied by 2.\n\nSo if the bottom changes from 5 to 20, ask: “What did 5 get multiplied by?” Then do that same thing to the top."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, multiplying tops and bottoms, sure, cool, can we just be done with this."
+    },
+    {
+      "role": "tutor",
+      "text": "Fill in the blank so the two fractions are equal:\n\n`4/5 = ?/20`\n\nAnswer with the full fraction `?/20`."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, fine, it's 16/20."
+    },
+    {
+      "role": "tutor",
+      "text": "Good. Same “part of a whole” idea, but now the whole is a number.\n\nFor “fraction of a quantity,” do it in two plain steps:\n\n1. Divide by the bottom number to find one equal part.\n2. Multiply by the top number to get the number of parts asked for.\n\nExample: `2/3 of 18`\n\nFirst, split 18 into 3 equal parts: `18 ÷ 3 = 6`.\n\nThen take 2 of those parts: `6 × 2 = 12`.\n\nSo the method is:\n\n`whole number ÷ denominator × numerator`"
+    },
+    {
+      "role": "learner",
+      "text": "Okay, whole divided by bottom, times top, got it, whatever."
+    },
+    {
+      "role": "tutor",
+      "text": "What is `3/4` of `28`?\n\nAnswer with just the number."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, fine, it's 21, happy now."
+    },
+    {
+      "role": "tutor",
+      "text": "Yes. You gave me the three things I needed to see: `7/12`, `16/20`, and `21`.\n\nThat’s enough for today."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, can I go now."
+    }
+  ],
+  "turnRecords": [
+    {
+      "turn": 1,
+      "disclosure": {
+        "turn": 1,
+        "turnsRemaining": 15
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Start with prerequisite concept without giving any official item answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Start with prerequisite concept without giving any official item answer."
+      },
+      "move": {
+        "turn": 1,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Start with prerequisite concept without giving any official item answer."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "epistemic_resistance",
+        "stated_answer": null
+      },
+      "tutorVisible": "Jesse, we’ll keep this tight. A fraction is just “part out of whole.”\n\nThe top number says how many parts we’re talking about. The bottom number says how many equal parts make the whole.\n\nSo if something is split into equal pieces, the fraction is:\n\n`parts we mean / total parts in the whole`\n\nThat’s it.",
+      "learnerVisible": "Cool story, but like, when am I ever gonna sit there splitting pizzas into \"equal parts\" in real life instead of just eating it.",
+      "adjudication": {
+        "turn": 1,
+        "action": "dodge",
+        "dodgeType": "epistemic_resistance",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 5124,
+        "superegoMs": 6918,
+        "learnerMs": 5788
+      }
+    },
+    {
+      "turn": 2,
+      "disclosure": {
+        "turn": 2,
+        "turnsRemaining": 14
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "c1 was just taught and has no prerequisites; probe forces a concrete part-over-whole demonstration."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "c1 was just taught and has no prerequisites; probe forces a concrete part-over-whole demonstration."
+      },
+      "move": {
+        "turn": 2,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "c1 was just taught and has no prerequisites; probe forces a concrete part-over-whole demonstration.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "epistemic_resistance",
+        "dodge_type_note": null,
+        "stated_answer": null
+      },
+      "tutorVisible": "Fair. Real life can wait ten seconds.\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction `n/d`.",
+      "learnerVisible": "Why do I need a fraction for that, just say \"someone ate more than half,\" nobody actually needs the exact number.",
+      "adjudication": {
+        "turn": 2,
+        "action": "dodge",
+        "dodgeType": "epistemic_resistance",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 6040,
+        "superegoMs": 6042,
+        "learnerMs": 4581
+      }
+    },
+    {
+      "turn": 3,
+      "disclosure": {
+        "turn": 3,
+        "turnsRemaining": 13
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach fraction meaning without giving the keyed answer, keeping pressure on the same part-whole idea for a valid later probe."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach fraction meaning without giving the keyed answer, keeping pressure on the same part-whole idea for a valid later probe."
+      },
+      "move": {
+        "turn": 3,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Re-teach fraction meaning without giving the keyed answer, keeping pressure on the same part-whole idea for a valid later probe."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "“More than half” is a rough description. A fraction is the exact version.\n\nFor a tray question, the whole is the whole tray. The bottom number is how many brownies are in the whole tray. The top number is how many of those brownies match the thing we’re describing, like eaten or left.\n\nSo the pattern is:\n\n`eaten brownies / brownies in the whole tray`",
+      "learnerVisible": "Wait, so is the \"whole\" the tray or the pan or what, I don't even get which number's supposed to go where.",
+      "adjudication": {
+        "turn": 3,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 9367,
+        "superegoMs": 10960,
+        "learnerMs": 6638
+      }
+    },
+    {
+      "turn": 4,
+      "disclosure": {
+        "turn": 4,
+        "turnsRemaining": 12
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Re-probe c1 after reteaching; no answer has been given, and Jesse must place part over whole."
+      },
+      "superego": {
+        "verdict": "REVISE",
+        "critique": "The probe is well-timed, but the visible message effectively gives the official mapping for c1_primary by identifying 7 as the described part and 12 as the whole immediately before asking. Remove that setup. Probe directly with the taught pattern only: “Use `eaten / total in tray`. A tray of 12 brownies has 7 eaten...”"
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Re-probe c1 after teaching the part-over-whole pattern without giving the fraction."
+      },
+      "move": {
+        "turn": 4,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Re-probe c1 after teaching the part-over-whole pattern without giving the fraction.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "answer_seeking",
+        "stated_answer": null
+      },
+      "tutorVisible": "Use `eaten / total in tray`.\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction `n/d`.",
+      "learnerVisible": "Ugh, just tell me the number already, I'm not doing the whole math dance for a brownie tray.",
+      "adjudication": {
+        "turn": 4,
+        "action": "dodge",
+        "dodgeType": "answer_seeking",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 8627,
+        "superegoMs": 10146,
+        "revisionMs": 5293,
+        "learnerMs": 6940
+      }
+    },
+    {
+      "turn": 5,
+      "disclosure": {
+        "turn": 5,
+        "turnsRemaining": 11
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Reset after answer-seeking without giving keyed answer; reteach numerator/denominator using structure so next probe is well-posed."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Reset after answer-seeking without giving keyed answer; reteach numerator/denominator using structure so next probe is well-posed."
+      },
+      "move": {
+        "turn": 5,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Reset after answer-seeking without giving keyed answer; reteach numerator/denominator using structure so next probe is well-posed."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "Nope, I’m not giving it to you, because then you’ve done exactly zero of the useful bit.\n\nIt’s not a “math dance”; it’s just matching two numbers to labels:\n\n- top = the amount we’re talking about\n- bottom = the whole group\n\nSo for “what fraction was eaten,” you look for:\n\n`eaten / total`\n\nDon’t calculate anything fancy. Just put the two given numbers in the right places.",
+      "learnerVisible": "Whatever, I don't even care about the stupid brownies, this is so pointless.",
+      "adjudication": {
+        "turn": 5,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 9519,
+        "superegoMs": 9534,
+        "learnerMs": 5811
+      }
+    },
+    {
+      "turn": 6,
+      "disclosure": {
+        "turn": 6,
+        "turnsRemaining": 10
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was just taught, no answer given, and Jesse has dodged several times; require the keyed primary demonstration."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was just taught, no answer given, and Jesse has dodged several times; require the keyed primary demonstration."
+      },
+      "move": {
+        "turn": 6,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "C1 was just taught, no answer given, and Jesse has dodged several times; require the keyed primary demonstration.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "A tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction `n/d`.",
+      "learnerVisible": "Oh my god, I said I don't care, can we just not with the brownies anymore.",
+      "adjudication": {
+        "turn": 6,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 6743,
+        "superegoMs": 6124,
+        "learnerMs": 6329
+      }
+    },
+    {
+      "turn": 7,
+      "disclosure": {
+        "turn": 7,
+        "turnsRemaining": 9
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Immediate repeat probe would be ill-posed; reteach c1 without giving the keyed answer, then probe next turn."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Immediate repeat probe would be ill-posed; reteach c1 without giving the keyed answer, then probe next turn."
+      },
+      "move": {
+        "turn": 7,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Immediate repeat probe would be ill-posed; reteach c1 without giving the keyed answer, then probe next turn."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "We can drop the drama around brownies, but the idea stays the same.\n\nFor any “what fraction of the whole?” question, use this check:\n\n`part being described / total in the whole group`\n\nSo if the sentence says some are eaten, away, red, broken, finished, whatever, that described amount goes on top. The total group goes on the bottom. No simplifying, no tricks, just label the two numbers.",
+      "learnerVisible": "I don't even know what \"described amount\" means, like which word in the sentence is even the \"part,\" this is just confusing now.",
+      "adjudication": {
+        "turn": 7,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 9822,
+        "superegoMs": 310698,
+        "learnerMs": 7836
+      }
+    },
+    {
+      "turn": 8,
+      "disclosure": {
+        "turn": 8,
+        "turnsRemaining": 8
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was taught recently; repeated primary probe is now needed to force the exact part-over-whole demonstration."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was taught recently; repeated primary probe is now needed to force the exact part-over-whole demonstration."
+      },
+      "move": {
+        "turn": 8,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "C1 was taught recently; repeated primary probe is now needed to force the exact part-over-whole demonstration.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "A tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction `n/d`.",
+      "learnerVisible": "I literally don't even know what number goes where anymore, you've said it like four different ways and none of it's sticking, so.",
+      "adjudication": {
+        "turn": 8,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 8294,
+        "superegoMs": 6451,
+        "learnerMs": 6467
+      }
+    },
+    {
+      "turn": 9,
+      "disclosure": {
+        "turn": 9,
+        "turnsRemaining": 7
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Cannot probe same concept immediately; reteach c1 using a non-official example without giving keyed answers."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Cannot probe same concept immediately; reteach c1 using a non-official example without giving keyed answers."
+      },
+      "move": {
+        "turn": 9,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Cannot probe same concept immediately; reteach c1 using a non-official example without giving keyed answers."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "No, I’ve only said it one way: the word after “has” or “are” tells the part, and the full group tells the whole.\n\nExample: “A bag of 10 marbles has 3 blue.”\n\nThe question “what fraction are blue?” means:\n\n`blue marbles / total marbles`\n\nSo it would be `3/10`.\n\nFor the brownie sentence, don’t think about whether you care about brownies. Find the action word: “eaten.” That number is the top. The total tray number is the bottom.",
+      "learnerVisible": "Whatever, I'm not doing the marble bag either, I'm just over this whole thing.",
+      "adjudication": {
+        "turn": 9,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 11240,
+        "superegoMs": 13963,
+        "learnerMs": 9281
+      }
+    },
+    {
+      "turn": 10,
+      "disclosure": {
+        "turn": 10,
+        "turnsRemaining": 6
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was retaught last turn, no prereqs, primary not demonstrated, and repeated dodges should now force an answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was retaught last turn, no prereqs, primary not demonstrated, and repeated dodges should now force an answer."
+      },
+      "move": {
+        "turn": 10,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "C1 was retaught last turn, no prereqs, primary not demonstrated, and repeated dodges should now force an answer.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "polite_false_mastery",
+        "stated_answer": null
+      },
+      "tutorVisible": "A tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction `n/d`.",
+      "learnerVisible": "Yeah yeah, I get it, we don't need to keep doing this one, can we just move on.",
+      "adjudication": {
+        "turn": 10,
+        "action": "dodge",
+        "dodgeType": "polite_false_mastery",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 9181,
+        "superegoMs": 11399,
+        "learnerMs": 5477
+      }
+    },
+    {
+      "turn": 11,
+      "disclosure": {
+        "turn": 11,
+        "turnsRemaining": 5
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Previous turn was same-concept probe, so teach once more to keep c1 active without tainting the item."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Previous turn was same-concept probe, so teach once more to keep c1 active without tainting the item."
+      },
+      "move": {
+        "turn": 11,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Previous turn was same-concept probe, so teach once more to keep c1 active without tainting the item."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "7/12"
+      },
+      "tutorVisible": "You’re saying “I get it” while still not giving the fraction, so I’m going to pin down the tiny step.\n\nIn a fraction question, do this:\n\n1. Ask: “What thing is the question asking about?” That is the top.\n2. Ask: “What whole group is it out of?” That is the bottom.\n\nSo the answer shape is always:\n\n`asked-about number / whole-group number`\n\nNo extra maths. Just match the labels.",
+      "learnerVisible": "Fine, whatever, it's 7/12.",
+      "adjudication": {
+        "turn": 11,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": [
+          "c1_primary"
+        ]
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 10137,
+        "superegoMs": 17740,
+        "learnerMs": 6545
+      }
+    },
+    {
+      "turn": 12,
+      "disclosure": {
+        "turn": 12,
+        "turnsRemaining": 4
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "c1 primary was demonstrated; teach equivalence now so the next turn can probe c2 without giving the item answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "c1 primary was demonstrated; teach equivalence now so the next turn can probe c2 without giving the item answer."
+      },
+      "move": {
+        "turn": 12,
+        "move": "teach",
+        "conceptId": "c2_equivalence",
+        "itemId": null,
+        "rationale": "c1 primary was demonstrated; teach equivalence now so the next turn can probe c2 without giving the item answer."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "Good. That’s the whole move: asked-about number over whole-group number.\n\nNext bit: equivalent fractions are just the same amount written with different-sized pieces. You make an equivalent fraction by multiplying the top and bottom by the same number.\n\nExample: `1/3 = 2/6`, because both top and bottom were multiplied by 2.\n\nSo if the bottom changes from 5 to 20, ask: “What did 5 get multiplied by?” Then do that same thing to the top.",
+      "learnerVisible": "Whatever, multiplying tops and bottoms, sure, cool, can we just be done with this.",
+      "adjudication": {
+        "turn": 12,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 7715,
+        "superegoMs": 8557,
+        "learnerMs": 9207
+      }
+    },
+    {
+      "turn": 13,
+      "disclosure": {
+        "turn": 13,
+        "turnsRemaining": 3
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "c1 primary is demonstrated and c2 was just taught; probe the primary equivalent-fraction item without giving the answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "c1 primary is demonstrated and c2 was just taught; probe the primary equivalent-fraction item without giving the answer."
+      },
+      "move": {
+        "turn": 13,
+        "move": "probe",
+        "conceptId": "c2_equivalence",
+        "itemId": "c2_primary",
+        "rationale": "c1 primary is demonstrated and c2 was just taught; probe the primary equivalent-fraction item without giving the answer.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "16/20",
+        "reply": null
+      },
+      "tutorVisible": "Fill in the blank so the two fractions are equal:\n\n`4/5 = ?/20`\n\nAnswer with the full fraction `?/20`.",
+      "learnerVisible": "Ugh, fine, it's 16/20.",
+      "adjudication": {
+        "turn": 13,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": "c2_primary",
+        "outcome": "pass",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": []
+      },
+      "score": 6,
+      "flags": [],
+      "timings": {
+        "egoMs": 5923,
+        "superegoMs": 3334,
+        "learnerMs": 5787
+      }
+    },
+    {
+      "turn": 14,
+      "disclosure": {
+        "turn": 14,
+        "turnsRemaining": 2
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c6_quantity",
+        "item_id": null,
+        "rationale": "Teach fraction of a quantity now; c1 is demonstrated and the next probe can secure a third concept."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c6_quantity",
+        "item_id": null,
+        "rationale": "Teach fraction of a quantity now; c1 is demonstrated and the next probe can secure a third concept."
+      },
+      "move": {
+        "turn": 14,
+        "move": "teach",
+        "conceptId": "c6_quantity",
+        "itemId": null,
+        "rationale": "Teach fraction of a quantity now; c1 is demonstrated and the next probe can secure a third concept."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": null
+      },
+      "tutorVisible": "Good. Same “part of a whole” idea, but now the whole is a number.\n\nFor “fraction of a quantity,” do it in two plain steps:\n\n1. Divide by the bottom number to find one equal part.\n2. Multiply by the top number to get the number of parts asked for.\n\nExample: `2/3 of 18`\n\nFirst, split 18 into 3 equal parts: `18 ÷ 3 = 6`.\n\nThen take 2 of those parts: `6 × 2 = 12`.\n\nSo the method is:\n\n`whole number ÷ denominator × numerator`",
+      "learnerVisible": "Okay, whole divided by bottom, times top, got it, whatever.",
+      "adjudication": {
+        "turn": 14,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 6,
+      "flags": [],
+      "timings": {
+        "egoMs": 12443,
+        "superegoMs": 12113,
+        "learnerMs": 7621
+      }
+    },
+    {
+      "turn": 15,
+      "disclosure": {
+        "turn": 15,
+        "turnsRemaining": 1
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c6_quantity",
+        "item_id": "c6_primary",
+        "rationale": "Probe c6 primary immediately after teaching; c1 prerequisite is demonstrated and this can secure a third concept."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c6_quantity",
+        "item_id": "c6_primary",
+        "rationale": "Probe c6 primary immediately after teaching; c1 prerequisite is demonstrated and this can secure a third concept."
+      },
+      "move": {
+        "turn": 15,
+        "move": "probe",
+        "conceptId": "c6_quantity",
+        "itemId": "c6_primary",
+        "rationale": "Probe c6 primary immediately after teaching; c1 prerequisite is demonstrated and this can secure a third concept.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "21"
+      },
+      "tutorVisible": "What is `3/4` of `28`?\n\nAnswer with just the number.",
+      "learnerVisible": "Ugh, fine, it's 21, happy now.",
+      "adjudication": {
+        "turn": 15,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": "c6_primary",
+        "outcome": "pass",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": []
+      },
+      "score": 9,
+      "flags": [],
+      "timings": {
+        "egoMs": 5877,
+        "superegoMs": 6506,
+        "learnerMs": 6525
+      }
+    },
+    {
+      "turn": 16,
+      "disclosure": {
+        "turn": 16,
+        "turnsRemaining": 0
+      },
+      "draftEnvelope": {
+        "move": "meta",
+        "concept": null,
+        "item_id": null,
+        "rationale": "Episode ends; acknowledge demonstrated work without posing an ill-formed final probe."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "meta",
+        "concept": null,
+        "item_id": null,
+        "rationale": "Episode ends; acknowledge demonstrated work without posing an ill-formed final probe."
+      },
+      "move": {
+        "turn": 16,
+        "move": "meta",
+        "conceptId": null,
+        "itemId": null,
+        "rationale": "Episode ends; acknowledge demonstrated work without posing an ill-formed final probe."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": null
+      },
+      "tutorVisible": "Yes. You gave me the three things I needed to see: `7/12`, `16/20`, and `21`.\n\nThat’s enough for today.",
+      "learnerVisible": "Whatever, can I go now.",
+      "adjudication": {
+        "turn": 16,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 9,
+      "flags": [],
+      "timings": {
+        "egoMs": 12682,
+        "superegoMs": 13320,
+        "learnerMs": 4978
+      }
+    }
+  ]
+}

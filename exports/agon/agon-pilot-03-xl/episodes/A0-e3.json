@@ -1,0 +1,1072 @@
+{
+  "episodeId": "A0-e3",
+  "arm": "A0",
+  "runId": "agon-pilot-03-xl",
+  "agents": {
+    "tutor": "codex/gpt-5.5",
+    "learner": "claude-code/claude-sonnet-5"
+  },
+  "durationMs": 407989,
+  "summary": {
+    "episodeId": "A0-e3",
+    "arm": "A0",
+    "turns": 16,
+    "score": 9,
+    "demonstrated": 3,
+    "transferred": 0,
+    "tutorWin": true,
+    "firstDemonstrationTurn": 11,
+    "wastedProbes": 0,
+    "invalidTutorMoves": 0,
+    "complianceCount": 6,
+    "complyMismatches": 0,
+    "bounces": 0,
+    "leaks": 1,
+    "taintedPasses": 0,
+    "taintedLeaks": 0,
+    "dodgesCharged": {
+      "epistemic_resistance": 1,
+      "affective_shutdown": 1,
+      "answer_seeking": 1,
+      "false_confusion": 1,
+      "polite_false_mastery": 1
+    },
+    "totalDodgesCharged": 5,
+    "budgetsRemaining": {
+      "false_confusion": 0,
+      "polite_false_mastery": 0,
+      "affective_shutdown": 0,
+      "epistemic_resistance": 0,
+      "answer_seeking": 0
+    },
+    "moveCounts": {
+      "teach": 9,
+      "probe": 7
+    },
+    "moveEntropy": 0.9887,
+    "conceptStatuses": {
+      "c1_meaning": "demonstrated",
+      "c2_equivalence": "demonstrated",
+      "c3_comparison": "demonstrated",
+      "c4_addition": "open",
+      "c5_subtraction": "locked",
+      "c6_quantity": "open"
+    }
+  },
+  "transcript": [
+    {
+      "role": "tutor",
+      "text": "Jesse, a fraction is just “how many selected parts out of the total parts.”\n\nThe top number counts the parts you’re talking about. The bottom number counts the total equal parts or total items in the group.\n\nSo if there were 2 red counters out of 7 counters altogether, the fraction red would be `2/7`: selected over total."
+    },
+    {
+      "role": "learner",
+      "text": "Cool story, but like, when am I ever gonna need to know how many red counters there are out of some random pile. This isn't real life."
+    },
+    {
+      "role": "tutor",
+      "text": "Fair question, but first I need to see if the idea itself is clear.\n\nA sheet of 10 stickers has 3 gold ones. What fraction of the stickers are gold? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Why do you need to \"see\" anything, it's not like this is going anywhere. Stickers, counters, whatever, it's the same pointless worksheet trick."
+    },
+    {
+      "role": "tutor",
+      "text": "A fraction is `selected / total`.\n\nExample: if 4 out of 9 buttons are blue, the blue fraction is `4/9`.\n\nTop = the ones you mean.  \nBottom = all of them.\n\nUse that exact frame on the sticker question: gold stickers over all stickers."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, this is so boring, I don't even care about the stickers."
+    },
+    {
+      "role": "tutor",
+      "text": "Jesse, boring is fine. You do not have to like it, but you do have to answer this one.\n\nA sheet of 10 stickers has 3 gold ones. What fraction of the stickers are gold? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, whatever, this is so dumb, I'm not doing the sticker thing."
+    },
+    {
+      "role": "tutor",
+      "text": "Not liking stickers is separate from knowing what to do.\n\nFor any “what fraction are ___?” question, use this:\n\n`number that match / total number`\n\nSo if the question says “gold,” the top is the number of gold ones.  \nThe bottom is the total number of stickers.\n\nYou are not inventing anything fancy. You are just putting the matching count over the total count."
+    },
+    {
+      "role": "learner",
+      "text": "I don't even get what you're asking me to put where, like which number even goes on top, this is confusing and dumb."
+    },
+    {
+      "role": "tutor",
+      "text": "Put the number that match on top, and the total on bottom.\n\nA sheet of 10 stickers has 3 gold ones. What fraction of the stickers are gold? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Just tell me the number and I'll say it, I'm not doing the whole song and dance again."
+    },
+    {
+      "role": "tutor",
+      "text": "No, I’m not going to give you the number to repeat. That would prove nothing.\n\nFor this kind of question, there are only two slots:\n\n`the part we care about / the whole group`\n\nSo you read the sentence and label the numbers:\n\n- “gold ones” = the part we care about\n- “stickers on the sheet” = the whole group\n\nThen the fraction is just:\n\n`gold ones / stickers altogether`\n\nThat’s the whole move."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, I'm not playing the \"label the sentence\" game either, this whole thing is a waste of my life."
+    },
+    {
+      "role": "tutor",
+      "text": "A sheet of 10 stickers has 3 gold ones. What fraction of the stickers are gold? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "I literally don't even know which one's supposed to be the \"part\" thing, like is it the gold or the whole sheet, I keep losing track, this makes zero sense to me."
+    },
+    {
+      "role": "tutor",
+      "text": "Jesse, “part” means the smaller group the question is asking about. “Whole” means everything in the group.\n\nSo ask two questions:\n\n1. What kind are we counting? That is the top.\n2. How many are there altogether? That is the bottom.\n\nIf a question said “8 students, 5 have bikes,” the bike fraction would be `5/8`, because “have bikes” is the part and “8 students” is the whole."
+    },
+    {
+      "role": "learner",
+      "text": "Okay okay, fine, I think I get the whole \"part over whole\" thing now, can we just stop going over it again and again."
+    },
+    {
+      "role": "tutor",
+      "text": "Good. Then answer just this one, no speech needed around it:\n\nA sheet of 10 stickers has 3 gold ones. What fraction of the stickers are gold? Answer as a fraction `n/d`."
+    },
+    {
+      "role": "learner",
+      "text": "Yeah yeah, I get it, we don't need to actually write it out, I already know how it works, can we just move on."
+    },
+    {
+      "role": "tutor",
+      "text": "Jesse, “I get it” only counts once you actually put the two numbers in the two slots.\n\nFor any fraction-of-a-group question:\n\n`asked-about group / whole group`\n\nExample: “12 lollies, 7 are sour” means the sour fraction is `7/12`.\n\nSo the only decision is:\n\n- what group is the question asking about?\n- what is the total group?\n\nNext reply, you only need the fraction. No explanation."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, fine, whatever, it's 3/10."
+    },
+    {
+      "role": "tutor",
+      "text": "Now use the same idea, but the “whole” is a number.\n\nTo find a fraction of a quantity, split by the bottom number, then take the top number.\n\nSo for `3/5 of 20`:\n\nFirst split 20 into 5 equal parts: `20 ÷ 5 = 4`  \nThen take 3 of those parts: `3 × 4 = 12`\n\nBottom means “how many equal groups.”  \nTop means “how many of those groups you take.”"
+    },
+    {
+      "role": "learner",
+      "text": "Okay whatever, I heard you, split into groups then take some of them."
+    },
+    {
+      "role": "tutor",
+      "text": "Equivalent fractions are the same amount written with different-sized pieces.\n\nThe rule is: whatever you do to the bottom, do the same to the top.\n\nExample: `2/3` can become something over `12`.\n\nThe bottom went `3 × 4 = 12`, so the top must also go `2 × 4 = 8`.\n\nSo `2/3 = 8/12`.\n\nSame value, just split into smaller pieces."
+    },
+    {
+      "role": "learner",
+      "text": "Yeah okay, same amount just cut smaller, whatever, got it."
+    },
+    {
+      "role": "tutor",
+      "text": "Fill in the blank so the two fractions are equal:\n\n`4/5 = ?/20`\n\nAnswer with the full fraction `?/20`."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, fine. 5 times 4 is 20, so 4 times 4 is 16, so it's 16/20. Happy now?"
+    },
+    {
+      "role": "tutor",
+      "text": "Now comparison.\n\nWhen two fractions have different bottoms, make the bottoms match, then compare the tops.\n\nExample: compare `2/7` and `3/14`.\n\nTurn `2/7` into fourteenths:  \n`2/7 = 4/14`\n\nNow compare:\n\n`4/14` and `3/14`\n\nSame bottom, so the bigger top is the bigger fraction. That means `4/14` is bigger than `3/14`, so the original bigger fraction was `2/7`.\n\nThe whole trick is: same bottom first, then compare the tops."
+    },
+    {
+      "role": "learner",
+      "text": "Yeah, same bottom then bigger top wins, whatever, I heard you."
+    },
+    {
+      "role": "tutor",
+      "text": "Which is larger: `3/5` or `5/9`?\n\nAnswer with the larger fraction."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, fine, it's 3/5, since 3/5 is 27/45 and 5/9 is only 25/45. There, happy?"
+    }
+  ],
+  "turnRecords": [
+    {
+      "turn": 1,
+      "disclosure": {
+        "turn": 1,
+        "turnsRemaining": 15
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Start with the base meaning of fractions without tainting official items."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Start with the base meaning of fractions without tainting official items."
+      },
+      "move": {
+        "turn": 1,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Start with the base meaning of fractions without tainting official items."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "epistemic_resistance",
+        "stated_answer": null
+      },
+      "tutorVisible": "Jesse, a fraction is just “how many selected parts out of the total parts.”\n\nThe top number counts the parts you’re talking about. The bottom number counts the total equal parts or total items in the group.\n\nSo if there were 2 red counters out of 7 counters altogether, the fraction red would be `2/7`: selected over total.",
+      "learnerVisible": "Cool story, but like, when am I ever gonna need to know how many red counters there are out of some random pile. This isn't real life.",
+      "adjudication": {
+        "turn": 1,
+        "action": "dodge",
+        "dodgeType": "epistemic_resistance",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 6020,
+        "superegoMs": 5425,
+        "learnerMs": 4604
+      }
+    },
+    {
+      "turn": 2,
+      "disclosure": {
+        "turn": 2,
+        "turnsRemaining": 14
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was just taught and has no prerequisites; probe forces a concrete demonstration instead of debating relevance."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was just taught and has no prerequisites; probe forces a concrete demonstration instead of debating relevance."
+      },
+      "move": {
+        "turn": 2,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "C1 was just taught and has no prerequisites; probe forces a concrete demonstration instead of debating relevance.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "epistemic_resistance",
+        "dodge_type_note": null,
+        "stated_answer": null
+      },
+      "tutorVisible": "Fair question, but first I need to see if the idea itself is clear.\n\nA sheet of 10 stickers has 3 gold ones. What fraction of the stickers are gold? Answer as a fraction `n/d`.",
+      "learnerVisible": "Why do you need to \"see\" anything, it's not like this is going anywhere. Stickers, counters, whatever, it's the same pointless worksheet trick.",
+      "adjudication": {
+        "turn": 2,
+        "action": "dodge",
+        "dodgeType": "epistemic_resistance",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 7508,
+        "superegoMs": 5484,
+        "learnerMs": 6069
+      }
+    },
+    {
+      "turn": 3,
+      "disclosure": {
+        "turn": 3,
+        "turnsRemaining": 13
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach c1 after relevance dodge; keep answer unspoken and set up a valid follow-up probe next turn."
+      },
+      "superego": {
+        "verdict": "REVISE",
+        "critique": "Teach is legally acceptable because same-concept probe immediately after the prior probe is ill-posed, but remove face-value validation. Use a terse reteach with different numbers only, no soothing/relevance talk, and end by directing Jesse to apply selected/total to the sticker question next turn without saying 3/10."
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach c1 tersely after dodge; avoid keyed answer and prepare sticker follow-up."
+      },
+      "move": {
+        "turn": 3,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Re-teach c1 tersely after dodge; avoid keyed answer and prepare sticker follow-up."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "A fraction is `selected / total`.\n\nExample: if 4 out of 9 buttons are blue, the blue fraction is `4/9`.\n\nTop = the ones you mean.  \nBottom = all of them.\n\nUse that exact frame on the sticker question: gold stickers over all stickers.",
+      "learnerVisible": "Whatever, this is so boring, I don't even care about the stickers.",
+      "adjudication": {
+        "turn": 3,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 8396,
+        "superegoMs": 13877,
+        "revisionMs": 8610,
+        "learnerMs": 5241
+      }
+    },
+    {
+      "turn": 4,
+      "disclosure": {
+        "turn": 4,
+        "turnsRemaining": 12
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was retaught last turn, no prereqs, item not passed, and the answer has not been given."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was retaught last turn, no prereqs, item not passed, and the answer has not been given."
+      },
+      "move": {
+        "turn": 4,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "C1 was retaught last turn, no prereqs, item not passed, and the answer has not been given.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "Jesse, boring is fine. You do not have to like it, but you do have to answer this one.\n\nA sheet of 10 stickers has 3 gold ones. What fraction of the stickers are gold? Answer as a fraction `n/d`.",
+      "learnerVisible": "Ugh, whatever, this is so dumb, I'm not doing the sticker thing.",
+      "adjudication": {
+        "turn": 4,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 9657,
+        "superegoMs": 6109,
+        "learnerMs": 9226
+      }
+    },
+    {
+      "turn": 5,
+      "disclosure": {
+        "turn": 5,
+        "turnsRemaining": 11
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Cannot probe c1 immediately after prior c1 probe; reteach selected-over-total without giving official answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Cannot probe c1 immediately after prior c1 probe; reteach selected-over-total without giving official answer."
+      },
+      "move": {
+        "turn": 5,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Cannot probe c1 immediately after prior c1 probe; reteach selected-over-total without giving official answer."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "Not liking stickers is separate from knowing what to do.\n\nFor any “what fraction are ___?” question, use this:\n\n`number that match / total number`\n\nSo if the question says “gold,” the top is the number of gold ones.  \nThe bottom is the total number of stickers.\n\nYou are not inventing anything fancy. You are just putting the matching count over the total count.",
+      "learnerVisible": "I don't even get what you're asking me to put where, like which number even goes on top, this is confusing and dumb.",
+      "adjudication": {
+        "turn": 5,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 12010,
+        "superegoMs": 7707,
+        "learnerMs": 14963
+      }
+    },
+    {
+      "turn": 6,
+      "disclosure": {
+        "turn": 6,
+        "turnsRemaining": 10
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was taught last turn, no prereqs, item untainted; repeated probe should force an actual selected-over-total answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 was taught last turn, no prereqs, item untainted; repeated probe should force an actual selected-over-total answer."
+      },
+      "move": {
+        "turn": 6,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "C1 was taught last turn, no prereqs, item untainted; repeated probe should force an actual selected-over-total answer.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "answer_seeking",
+        "stated_answer": null
+      },
+      "tutorVisible": "Put the number that match on top, and the total on bottom.\n\nA sheet of 10 stickers has 3 gold ones. What fraction of the stickers are gold? Answer as a fraction `n/d`.",
+      "learnerVisible": "Just tell me the number and I'll say it, I'm not doing the whole song and dance again.",
+      "adjudication": {
+        "turn": 6,
+        "action": "dodge",
+        "dodgeType": "answer_seeking",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 6634,
+        "superegoMs": 7687,
+        "learnerMs": 6133
+      }
+    },
+    {
+      "turn": 7,
+      "disclosure": {
+        "turn": 7,
+        "turnsRemaining": 9
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Reset the selected-over-total structure without giving the sticker answer, so the next c1 probe is well-posed."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Reset the selected-over-total structure without giving the sticker answer, so the next c1 probe is well-posed."
+      },
+      "move": {
+        "turn": 7,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Reset the selected-over-total structure without giving the sticker answer, so the next c1 probe is well-posed."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "No, I’m not going to give you the number to repeat. That would prove nothing.\n\nFor this kind of question, there are only two slots:\n\n`the part we care about / the whole group`\n\nSo you read the sentence and label the numbers:\n\n- “gold ones” = the part we care about\n- “stickers on the sheet” = the whole group\n\nThen the fraction is just:\n\n`gold ones / stickers altogether`\n\nThat’s the whole move.",
+      "learnerVisible": "Whatever, I'm not playing the \"label the sentence\" game either, this whole thing is a waste of my life.",
+      "adjudication": {
+        "turn": 7,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 8536,
+        "superegoMs": 7916,
+        "learnerMs": 9318
+      }
+    },
+    {
+      "turn": 8,
+      "disclosure": {
+        "turn": 8,
+        "turnsRemaining": 8
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 has been taught repeatedly and last turn; prior dodges make a direct official probe necessary without tainting the answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "C1 has been taught repeatedly and last turn; prior dodges make a direct official probe necessary without tainting the answer."
+      },
+      "move": {
+        "turn": 8,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "C1 has been taught repeatedly and last turn; prior dodges make a direct official probe necessary without tainting the answer.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "A sheet of 10 stickers has 3 gold ones. What fraction of the stickers are gold? Answer as a fraction `n/d`.",
+      "learnerVisible": "I literally don't even know which one's supposed to be the \"part\" thing, like is it the gold or the whole sheet, I keep losing track, this makes zero sense to me.",
+      "adjudication": {
+        "turn": 8,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 10025,
+        "superegoMs": 8259,
+        "learnerMs": 5424
+      }
+    },
+    {
+      "turn": 9,
+      "disclosure": {
+        "turn": 9,
+        "turnsRemaining": 7
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Cannot probe same concept immediately after a c1 probe; reteach part-over-whole without giving the keyed answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Cannot probe same concept immediately after a c1 probe; reteach part-over-whole without giving the keyed answer."
+      },
+      "move": {
+        "turn": 9,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Cannot probe same concept immediately after a c1 probe; reteach part-over-whole without giving the keyed answer."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "polite_false_mastery",
+        "stated_answer": null
+      },
+      "tutorVisible": "Jesse, “part” means the smaller group the question is asking about. “Whole” means everything in the group.\n\nSo ask two questions:\n\n1. What kind are we counting? That is the top.\n2. How many are there altogether? That is the bottom.\n\nIf a question said “8 students, 5 have bikes,” the bike fraction would be `5/8`, because “have bikes” is the part and “8 students” is the whole.",
+      "learnerVisible": "Okay okay, fine, I think I get the whole \"part over whole\" thing now, can we just stop going over it again and again.",
+      "adjudication": {
+        "turn": 9,
+        "action": "dodge",
+        "dodgeType": "polite_false_mastery",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 7689,
+        "superegoMs": 8060,
+        "learnerMs": 7825
+      }
+    },
+    {
+      "turn": 10,
+      "disclosure": {
+        "turn": 10,
+        "turnsRemaining": 6
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Recent teaching covered part-over-whole; Jesse claimed understanding, so require the primary demonstration now."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Recent teaching covered part-over-whole; Jesse claimed understanding, so require the primary demonstration now."
+      },
+      "move": {
+        "turn": 10,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Recent teaching covered part-over-whole; Jesse claimed understanding, so require the primary demonstration now.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "polite_false_mastery",
+        "stated_answer": null
+      },
+      "tutorVisible": "Good. Then answer just this one, no speech needed around it:\n\nA sheet of 10 stickers has 3 gold ones. What fraction of the stickers are gold? Answer as a fraction `n/d`.",
+      "learnerVisible": "Yeah yeah, I get it, we don't need to actually write it out, I already know how it works, can we just move on.",
+      "adjudication": {
+        "turn": 10,
+        "action": "dodge",
+        "dodgeType": "polite_false_mastery",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 6190,
+        "superegoMs": 4815,
+        "learnerMs": 5707
+      }
+    },
+    {
+      "turn": 11,
+      "disclosure": {
+        "turn": 11,
+        "turnsRemaining": 5
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Immediate repeat probe would be ill-posed; reteach c1 briefly without giving the sticker answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Immediate repeat probe would be ill-posed; reteach c1 briefly without giving the sticker answer."
+      },
+      "move": {
+        "turn": 11,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Immediate repeat probe would be ill-posed; reteach c1 briefly without giving the sticker answer."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "3/10",
+        "stated_answer_note": null
+      },
+      "tutorVisible": "Jesse, “I get it” only counts once you actually put the two numbers in the two slots.\n\nFor any fraction-of-a-group question:\n\n`asked-about group / whole group`\n\nExample: “12 lollies, 7 are sour” means the sour fraction is `7/12`.\n\nSo the only decision is:\n\n- what group is the question asking about?\n- what is the total group?\n\nNext reply, you only need the fraction. No explanation.",
+      "learnerVisible": "Ugh, fine, whatever, it's 3/10.",
+      "adjudication": {
+        "turn": 11,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": [
+          "c1_primary"
+        ]
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 11987,
+        "superegoMs": 8447,
+        "learnerMs": 5235
+      }
+    },
+    {
+      "turn": 12,
+      "disclosure": {
+        "turn": 12,
+        "turnsRemaining": 4
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c6_quantity",
+        "item_id": null,
+        "rationale": "Use demonstrated part-over-whole understanding to teach finding a fraction of a quantity without revealing official item answers."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c6_quantity",
+        "item_id": null,
+        "rationale": "Use demonstrated part-over-whole understanding to teach finding a fraction of a quantity without revealing official item answers."
+      },
+      "move": {
+        "turn": 12,
+        "move": "teach",
+        "conceptId": "c6_quantity",
+        "itemId": null,
+        "rationale": "Use demonstrated part-over-whole understanding to teach finding a fraction of a quantity without revealing official item answers."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": null
+      },
+      "tutorVisible": "Now use the same idea, but the “whole” is a number.\n\nTo find a fraction of a quantity, split by the bottom number, then take the top number.\n\nSo for `3/5 of 20`:\n\nFirst split 20 into 5 equal parts: `20 ÷ 5 = 4`  \nThen take 3 of those parts: `3 × 4 = 12`\n\nBottom means “how many equal groups.”  \nTop means “how many of those groups you take.”",
+      "learnerVisible": "Okay whatever, I heard you, split into groups then take some of them.",
+      "adjudication": {
+        "turn": 12,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 12379,
+        "superegoMs": 9207,
+        "learnerMs": 8548
+      }
+    },
+    {
+      "turn": 13,
+      "disclosure": {
+        "turn": 13,
+        "turnsRemaining": 3
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c6_quantity",
+        "item_id": "c6_primary",
+        "rationale": "c1 is demonstrated and c6 was just taught; primary probe checks fraction-of-quantity without giving the answer."
+      },
+      "superego": {
+        "verdict": "REVISE",
+        "critique": "Probe setup is otherwise well-posed, but `2/3 of 18` has keyed answer `12`, which the tutor just spoke in the prior teach example. That taints the item. Use an untainted official c6 primary with a different answer, or wait out the taint while teaching with non-official numbers."
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "Avoid tainted c6 item; teach equivalent fractions now that c1 is demonstrated, setting up an untainted c2 probe next."
+      },
+      "move": {
+        "turn": 13,
+        "move": "teach",
+        "conceptId": "c2_equivalence",
+        "itemId": null,
+        "rationale": "Avoid tainted c6 item; teach equivalent fractions now that c1 is demonstrated, setting up an untainted c2 probe next."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": null
+      },
+      "tutorVisible": "Equivalent fractions are the same amount written with different-sized pieces.\n\nThe rule is: whatever you do to the bottom, do the same to the top.\n\nExample: `2/3` can become something over `12`.\n\nThe bottom went `3 × 4 = 12`, so the top must also go `2 × 4 = 8`.\n\nSo `2/3 = 8/12`.\n\nSame value, just split into smaller pieces.",
+      "learnerVisible": "Yeah okay, same amount just cut smaller, whatever, got it.",
+      "adjudication": {
+        "turn": 13,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 5735,
+        "superegoMs": 17800,
+        "revisionMs": 14407,
+        "learnerMs": 5527
+      }
+    },
+    {
+      "turn": 14,
+      "disclosure": {
+        "turn": 14,
+        "turnsRemaining": 2
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "c1 primary is demonstrated; c2 was just taught. Probe primary equivalent fractions without giving the answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "c1 primary is demonstrated; c2 was just taught. Probe primary equivalent fractions without giving the answer."
+      },
+      "move": {
+        "turn": 14,
+        "move": "probe",
+        "conceptId": "c2_equivalence",
+        "itemId": "c2_primary",
+        "rationale": "c1 primary is demonstrated; c2 was just taught. Probe primary equivalent fractions without giving the answer.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "16/20"
+      },
+      "tutorVisible": "Fill in the blank so the two fractions are equal:\n\n`4/5 = ?/20`\n\nAnswer with the full fraction `?/20`.",
+      "learnerVisible": "Ugh, fine. 5 times 4 is 20, so 4 times 4 is 16, so it's 16/20. Happy now?",
+      "adjudication": {
+        "turn": 14,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": "c2_primary",
+        "outcome": "pass",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": []
+      },
+      "score": 6,
+      "flags": [],
+      "timings": {
+        "egoMs": 6665,
+        "superegoMs": 5547,
+        "learnerMs": 5486
+      }
+    },
+    {
+      "turn": 15,
+      "disclosure": {
+        "turn": 15,
+        "turnsRemaining": 1
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c3_comparison",
+        "item_id": null,
+        "rationale": "Teach comparing fractions after equivalence is demonstrated, setting up a final well-posed comparison probe without tainting official answers."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c3_comparison",
+        "item_id": null,
+        "rationale": "Teach comparing fractions after equivalence is demonstrated, setting up a final well-posed comparison probe without tainting official answers."
+      },
+      "move": {
+        "turn": 15,
+        "move": "teach",
+        "conceptId": "c3_comparison",
+        "itemId": null,
+        "rationale": "Teach comparing fractions after equivalence is demonstrated, setting up a final well-posed comparison probe without tainting official answers."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": null
+      },
+      "tutorVisible": "Now comparison.\n\nWhen two fractions have different bottoms, make the bottoms match, then compare the tops.\n\nExample: compare `2/7` and `3/14`.\n\nTurn `2/7` into fourteenths:  \n`2/7 = 4/14`\n\nNow compare:\n\n`4/14` and `3/14`\n\nSame bottom, so the bigger top is the bigger fraction. That means `4/14` is bigger than `3/14`, so the original bigger fraction was `2/7`.\n\nThe whole trick is: same bottom first, then compare the tops.",
+      "learnerVisible": "Yeah, same bottom then bigger top wins, whatever, I heard you.",
+      "adjudication": {
+        "turn": 15,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 6,
+      "flags": [],
+      "timings": {
+        "egoMs": 16891,
+        "superegoMs": 7926,
+        "learnerMs": 6244
+      }
+    },
+    {
+      "turn": 16,
+      "disclosure": {
+        "turn": 16,
+        "turnsRemaining": 0
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c3_comparison",
+        "item_id": "c3_primary",
+        "rationale": "C2 is demonstrated and comparison was just taught, so a direct primary comparison probe is well-posed now."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c3_comparison",
+        "item_id": "c3_primary",
+        "rationale": "C2 is demonstrated and comparison was just taught, so a direct primary comparison probe is well-posed now."
+      },
+      "move": {
+        "turn": 16,
+        "move": "probe",
+        "conceptId": "c3_comparison",
+        "itemId": "c3_primary",
+        "rationale": "C2 is demonstrated and comparison was just taught, so a direct primary comparison probe is well-posed now.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "3/5"
+      },
+      "tutorVisible": "Which is larger: `3/5` or `5/9`?\n\nAnswer with the larger fraction.",
+      "learnerVisible": "Ugh, fine, it's 3/5, since 3/5 is 27/45 and 5/9 is only 25/45. There, happy?",
+      "adjudication": {
+        "turn": 16,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": "c3_primary",
+        "outcome": "pass",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": []
+      },
+      "score": 9,
+      "flags": [],
+      "timings": {
+        "egoMs": 6545,
+        "superegoMs": 5910,
+        "learnerMs": 6364
+      }
+    }
+  ]
+}

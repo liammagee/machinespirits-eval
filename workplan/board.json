@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-06T07:20:47.058Z",
+  "generated": "2026-07-06T10:01:27.215Z",
   "counts": {
-    "total": 95,
+    "total": 96,
     "byStatus": {
       "done": 81,
       "blocked": 1,
       "dropped": 2,
-      "review": 2,
+      "review": 3,
       "active": 2,
       "archived": 4,
       "triaged": 3
     },
     "byType": {
       "research": 40,
-      "experiment": 28,
+      "experiment": 29,
       "infra": 10,
       "content": 2,
       "maintenance": 5,
@@ -218,6 +218,30 @@
         "evaluation"
       ],
       "branch": "worktree-longitudinal-abm"
+    },
+    {
+      "id": "agon-adversarial-game-ledger",
+      "title": "Agon — adversarial tutoring game with an external referee ledger",
+      "status": "review",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-agon-game",
+      "verification": "Hermetic suite green (18 referee tests + exact-valued dry episode); real-CLI smoke passes P1/P2 apparatus bars; A0-vs-A1 pilot report generated from ledger JSON only.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "AGON-GAME-PLAN.md"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "agon",
+        "game",
+        "ledger",
+        "adversarial-learner"
+      ]
     },
     {
       "id": "longitudinal-drift-adaptation",
