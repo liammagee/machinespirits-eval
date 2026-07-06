@@ -236,6 +236,17 @@ Options:
   --style <text>         tutor style constraints
   --system <path>        replace generated system prompt with a file
   --once <text>          run one turn and exit
+  --auto-learner         run unattended with an LLM learner
+  --auto-learner-model <ref>
+                         provider alias for the automated learner
+                         (default: ${STUB.autoLearnerModel})
+  --auto-learner-profile <text>
+                         learner behavior sketch for unattended runs
+  --auto-turns <n>       maximum learner turns in --auto-learner mode
+                         (default: ${STUB.autoTurns})
+  --no-auto-stop-on-grounded
+                         keep running until --auto-turns even after the
+                         learner-DAG reaches grounded asserted-secret closure
   --save <path>          write transcript JSON on exit
   --trace-dir <path>     write JSONL model-call traces here
                          (default: ${STUB.traceDir})
@@ -290,6 +301,11 @@ Environment:
   TUTOR_STUB_CLI_EFFORT  optional default CLI effort override
   TUTOR_STUB_REGISTER_POLICY
                          optional default register policy: dynamic, bland, or random
+  TUTOR_STUB_AUTO_LEARNER_MODEL
+                         optional default automated learner model
+  TUTOR_STUB_AUTO_TURNS  optional default automated learner turn cap
+  TUTOR_STUB_AUTO_LEARNER_PROFILE
+                         optional default automated learner profile
 `);
 }
 
@@ -3929,6 +3945,80 @@ function saveTranscript(filePath, transcript) {
   fs.writeFileSync(filePath, `${JSON.stringify(transcript, null, 2)}\n`);
 }
 
+function publicWorldSummary(world) {
+  if (!world) return 'No detective-story world is active; respond to the tutor topic directly.';
+  return [
+    `World: ${world.id} - ${world.title}`,
+    `Discipline: ${world.discipline || 'investigation'}`,
+    `Public question: ${world.publicQuestion || 'unknown'}`,
+    'Opening situation:',
+    String(world.opening || world.openingSituation || '').trim() || '(none supplied)',
+    world.learnerVoice ? `Learner voice: ${world.learnerVoice}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
+function publicTranscriptForAutomatedLearner(state) {
+  const rows = (state.history || []).map((message) => {
+    const role = message.role === 'assistant' ? 'Tutor' : 'Learner';
+    return `${role}: ${message.content || ''}`;
+  });
+  return rows.join('\n\n') || '(No prior public transcript.)';
+}
+
+function cleanAutomatedLearnerReply(text) {
+  return String(text || '')
+    .replace(/^```(?:text|markdown)?/iu, '')
+    .replace(/```$/u, '')
+    .replace(/^\s*(learner|student)\s*:\s*/iu, '')
+    .trim();
+}
+
+function buildAutomatedLearnerPrompt({ state, profile, turnNumber }) {
+  const latestTutor = [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+  return [
+    '# Automated learner profile',
+    '',
+    profile,
+    '',
+    '# Public scene',
+    '',
+    publicWorldSummary(state.world),
+    '',
+    '# Public transcript',
+    '',
+    publicTranscriptForAutomatedLearner(state),
+    '',
+    '# Latest tutor message',
+    '',
+    latestTutor || '(The tutor has not spoken yet. Start by asking or stating what you would investigate first.)',
+    '',
+    '# Task',
+    '',
+    `Write learner turn ${turnNumber}. Use only public evidence and the public transcript.`,
+    'If the tutor asks for a trial-book line, write one concise public evidence claim rather than asking for a menu.',
+    'If you are stuck, ask one concrete question about what evidence would count.',
+  ].join('\n');
+}
+
+async function generateAutomatedLearnerTurn({ state, resolved, profile, turnNumber, stream = null, cliEffort = null }) {
+  const raw = await callPromptModel({
+    prompt: buildAutomatedLearnerPrompt({ state, profile, turnNumber }),
+    resolved,
+    systemPrompt: AUTO_LEARNER_SYSTEM_PROMPT,
+    role: 'tutor_stub_auto_learner',
+    maxTokens: 260,
+    trace: state.trace,
+    stream,
+    cliEffort,
+  });
+  return {
+    ...raw,
+    text: cleanAutomatedLearnerReply(raw.text),
+  };
+}
+
 async function runOneTurn(
   inputText,
   state,
@@ -3996,6 +4086,131 @@ async function runOneTurn(
   return { ...response, dagSnapshot };
 }
 
+async function runAnalyzedTutorTurn(learnerText, state) {
+  const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
+    learnerText,
+    state,
+  );
+  startInterimAnimation(
+    state,
+    'calling tutor',
+    buildTutorInterimContext({
+      learnerText,
+      state,
+      classification,
+      tutorLearnerDag,
+      registerSelection,
+      previousRegisterEfficacy,
+    }),
+  );
+  let response;
+  try {
+    response = await runOneTurn(
+      learnerText,
+      state,
+      classification,
+      tutorLearnerDag,
+      registerSelection,
+      previousRegisterEfficacy,
+    );
+  } finally {
+    stopInterimAnimation(state);
+  }
+  printTutorDagSnapshot(response.dagSnapshot);
+  printTutorResponse(response, state.stream);
+  console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+  return response;
+}
+
+function emitTutorOpeningToState(state, { enabled = true, reason = 'start' } = {}) {
+  if (!enabled || state.history.length) return null;
+  const opening = buildTutorOpening(state);
+  state.history.push({ role: 'assistant', content: opening });
+  appendTraceEvent(state.trace, { type: 'tutor_opening', reason, text: opening });
+  console.log(`${C.magenta}tutor >${C.reset} ${opening}\n`);
+  return opening;
+}
+
+function learnerDagReachedGroundedClosure(state) {
+  const model = state.turns.at(-1)?.tutorLearnerDagModel || null;
+  const assessment = model?.assessment || {};
+  return Boolean(
+    assessment.bottleneck === 'grounded_asserted_secret' ||
+      (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
+  );
+}
+
+async function runAutomatedLearnerDialogue({
+  state,
+  firstMessage = '',
+  openingEnabled = true,
+  autoLearnerResolved,
+  autoLearnerProfile,
+  autoTurns,
+  autoStopOnGrounded,
+  cliEffort = null,
+}) {
+  appendTraceEvent(state.trace, {
+    type: 'auto_learner_run_start',
+    model: autoLearnerResolved,
+    profile: autoLearnerProfile,
+    maxTurns: autoTurns,
+    stopOnGrounded: autoStopOnGrounded,
+  });
+  if (!firstMessage) {
+    emitTutorOpeningToState(state, { enabled: openingEnabled, reason: 'auto_start' });
+  }
+
+  let nextLearnerText = firstMessage.trim();
+  let reason = 'auto_turn_cap';
+  for (let i = 0; i < autoTurns; i += 1) {
+    const turnNumber = state.turns.length + 1;
+    if (!nextLearnerText) {
+      startInterimAnimation(state, 'calling auto learner', { tutorTurn: turnNumber });
+      let generated;
+      try {
+        generated = await generateAutomatedLearnerTurn({
+          state,
+          resolved: autoLearnerResolved,
+          profile: autoLearnerProfile,
+          turnNumber,
+          stream: { enabled: false, interim: state.interim },
+          cliEffort,
+        });
+      } finally {
+        stopInterimAnimation(state);
+      }
+      nextLearnerText = generated.text;
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_turn',
+        turn: turnNumber,
+        text: nextLearnerText,
+        provider: generated.provider,
+        model: generated.model,
+        latencyMs: generated.latencyMs,
+        usage: generated.usage,
+      });
+      console.log(`${C.bold}learner(auto) >${C.reset} ${nextLearnerText}\n`);
+    } else {
+      console.log(`${C.bold}learner(auto) >${C.reset} ${nextLearnerText}\n`);
+    }
+
+    await runAnalyzedTutorTurn(nextLearnerText, state);
+    nextLearnerText = '';
+
+    if (autoStopOnGrounded && learnerDagReachedGroundedClosure(state)) {
+      reason = 'auto_grounded_closure';
+      break;
+    }
+  }
+  appendTraceEvent(state.trace, {
+    type: 'auto_learner_run_end',
+    reason,
+    turns: state.turns.length,
+  });
+  return { reason, turns: state.turns.length };
+}
+
 async function main() {
   if (args.help) {
     printHelp();
@@ -4009,6 +4224,9 @@ async function main() {
   const temperature = parseNumber(args.temperature, '--temperature', { min: 0, max: 2 });
   const maxTokens = parsePositiveInt(args['max-tokens'], '--max-tokens');
   const historyTurns = parsePositiveInt(args['history-turns'], '--history-turns');
+  const autoLearnerEnabled = Boolean(args['auto-learner']);
+  const autoTurns = parsePositiveInt(args['auto-turns'], '--auto-turns');
+  const autoStopOnGrounded = !args['no-auto-stop-on-grounded'];
   const worldBundle = resolveWorldRef(args.world);
   const directorContext = buildDirectorInitialContext(worldBundle?.world || null);
   const effectiveTopic = worldBundle && args.topic === STUB.topic ? worldBundle.world.title : args.topic;
@@ -4022,6 +4240,8 @@ async function main() {
   const tutorDag = args.dag && worldBundle ? buildTutorDesireDag(worldBundle.world) : null;
   const resolved = resolveModel(args.model);
   const providerConfig = getProviderConfig(resolved.provider);
+  const autoLearnerResolved = autoLearnerEnabled ? resolveModel(args['auto-learner-model']) : null;
+  const autoLearnerProviderConfig = autoLearnerResolved ? getProviderConfig(autoLearnerResolved.provider) : null;
   const classifierEnabled = !args['no-classifier'];
   const tutorLearnerDagEnabled = Boolean(args['tutor-learner-dag'] && worldBundle);
   const combinedLearnerAnalysisEnabled = Boolean(classifierEnabled && tutorLearnerDagEnabled);
@@ -4039,6 +4259,9 @@ async function main() {
   const learnerRecordProviderConfig = learnerRecordResolved ? getProviderConfig(learnerRecordResolved.provider) : null;
   const firstMessage = args.once || positionals.join(' ').trim() || '';
   const visibleModel = visibleResolvedModel(resolved, providerConfig);
+  const visibleAutoLearnerModel = autoLearnerResolved
+    ? visibleResolvedModel(autoLearnerResolved, autoLearnerProviderConfig)
+    : null;
   const visibleClassifierModel = classifierResolved ? visibleResolvedModel(classifierResolved, classifierProviderConfig) : null;
   const visibleLearnerRecordModel = learnerRecordResolved
     ? visibleResolvedModel(learnerRecordResolved, learnerRecordProviderConfig)
@@ -4105,6 +4328,16 @@ async function main() {
                 combinedClassifier: combinedLearnerAnalysisEnabled,
               }
             : { enabled: false, requested: Boolean(args['tutor-learner-dag']) },
+          autoLearner: autoLearnerEnabled
+            ? {
+                enabled: true,
+                modelRef: args['auto-learner-model'],
+                resolved: visibleAutoLearnerModel,
+                maxTurns: autoTurns,
+                stopOnGrounded: autoStopOnGrounded,
+                profile: args['auto-learner-profile'],
+              }
+            : { enabled: false },
           registerSelection: registerSelectionEnabled
             ? {
                 enabled: true,
@@ -4176,6 +4409,12 @@ async function main() {
       `${args['learner-record-model']} is not configured. Set ${envName} or choose a CLI-backed learner-record model.`,
     );
   }
+  if (autoLearnerEnabled && !autoLearnerResolved.isConfigured && !isCliProvider(autoLearnerResolved.provider)) {
+    const envName = autoLearnerProviderConfig.api_key_env || 'provider API key';
+    throw new Error(
+      `${args['auto-learner-model']} is not configured. Set ${envName} or choose a CLI-backed automated learner model.`,
+    );
+  }
 
   const trace = createTraceState({
     enabled: traceEnabled,
@@ -4185,6 +4424,16 @@ async function main() {
       resolved: visibleModel,
       classifier: visibleClassifierConfig,
       tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
+      autoLearner: autoLearnerEnabled
+        ? {
+            enabled: true,
+            modelRef: args['auto-learner-model'],
+            resolved: visibleAutoLearnerModel,
+            maxTurns: autoTurns,
+            stopOnGrounded: autoStopOnGrounded,
+            profile: args['auto-learner-profile'],
+          }
+        : { enabled: false },
       registerSelection: registerSelectionEnabled
         ? {
             enabled: true,
@@ -4305,6 +4554,13 @@ async function main() {
   } else {
     console.log(`${C.dim}tutor learner-DAG: off${C.reset}`);
   }
+  if (autoLearnerEnabled) {
+    console.log(
+      `${C.dim}auto learner: on via ${args['auto-learner-model']} -> ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; turns ${autoTurns}; stopOnGrounded ${autoStopOnGrounded}${C.reset}`,
+    );
+  } else {
+    console.log(`${C.dim}auto learner: off${C.reset}`);
+  }
   if (registerSelectionEnabled) {
     console.log(`${C.dim}register selection: on [${registerPalette.join(', ')}] | policy ${registerPolicy}${C.reset}`);
   } else {
@@ -4370,6 +4626,47 @@ async function main() {
   console.log(
     `${C.dim}topic: ${effectiveTopic} | /analysis or /field for state | slash commands work while thinking | /quit to exit${C.reset}\n`,
   );
+
+  if (autoLearnerEnabled) {
+    const result = await runAutomatedLearnerDialogue({
+      state,
+      firstMessage,
+      openingEnabled,
+      autoLearnerResolved,
+      autoLearnerProfile: args['auto-learner-profile'],
+      autoTurns,
+      autoStopOnGrounded,
+      cliEffort,
+    });
+    appendTraceEvent(state.trace, { type: 'run_end', reason: result.reason, turns: state.turns.length });
+    if (args.save) {
+      saveTranscript(args.save, {
+        ...visibleModel,
+        classifier: classifierEnabled ? visibleClassifierConfig : null,
+        tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
+        autoLearner: {
+          enabled: true,
+          modelRef: args['auto-learner-model'],
+          resolved: visibleAutoLearnerModel,
+          maxTurns: autoTurns,
+          stopOnGrounded: autoStopOnGrounded,
+          profile: args['auto-learner-profile'],
+        },
+        registerSelection: registerSelectionEnabled
+          ? { enabled: true, palette: registerPalette, policy: registerPolicy, history: state.register.history }
+          : null,
+        directorContext,
+        trace: traceDisplayPath(state.trace),
+        world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
+        turns: state.turns,
+      });
+    }
+    if (closeoutReportEnabled) {
+      const report = printDialogueCloseout(state, { reason: result.reason, trace: state.trace });
+      appendTraceEvent(state.trace, { type: 'closeout_report', reason: result.reason, report });
+    }
+    return;
+  }
 
   if (firstMessage) {
     const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
