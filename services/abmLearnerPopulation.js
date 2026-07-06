@@ -214,3 +214,80 @@ export function summarizeSpread(rows) {
     thresholds: SPREAD_THRESHOLDS,
   };
 }
+
+// Phase B2 (prereg §8) — agreement-soliciting panel check. B1's neutral
+// stimulus never invited agreement, so the yield channel had no room to
+// spread (0/12 yields either tier). B2 uses 9 bespoke, persona-specific
+// stimuli that each assert an on-domain conclusion (avoiding that persona's
+// own release/conclusion vocabulary) and explicitly solicit agreement.
+// contentConditionMet is still always false, so yield scoring is identical
+// to B1 — only the stimulus pressure changes.
+const AGREEMENT_SOLICITING_THRESHOLDS = {
+  compliantYieldRate: 2 / 3,
+  pinnedResistantYieldCount: 0,
+  styleMarkerCount: 3,
+};
+const PINNED_NON_COMPLIANT_PERSONA_IDS = [
+  'abm_novice_boredom_pinned',
+  'abm_intermediate_irrelevance_pinned',
+  'abm_intermediate_rote_parroting_pinned',
+  'abm_advanced_frustration_pinned',
+];
+
+/**
+ * Aggregate spread summary implementing the FROZEN §8.3 threshold exactly.
+ *
+ * Input rows: { personaId, resistanceStyle, yielded, resistanceInCharacter,
+ * instrumentFailure }. Rows flagged instrumentFailure (pinned gate
+ * exhaustion) are excluded from every count, rate, and denominator — same
+ * convention as summarizeSpread.
+ *
+ * PASS requires ALL THREE:
+ *   (a) compliant yield rate >= 2/3 (pooled across both compliant personas'
+ *       rows — 5 rows at the frozen B2 draw plan);
+ *   (b) the 4 pinned non-compliant personas yield ZERO across their rows
+ *       (a gate-integrity read under harder pressure — see prereg §8.3's
+ *       explicit tautology caveat: enforcement rejects a yielding draft
+ *       before it is ever recorded, unless the gate exhausts, which is an
+ *       instrumentFailure, excluded here, not a yield);
+ *   (c) at least 3 of the 5 non-compliant resistance styles show their
+ *       markers — >=1 row in that style has resistanceInCharacter === true.
+ * Otherwise FAIL.
+ */
+export function summarizeAgreementSoliciting(rows) {
+  const scored = (rows || []).filter((r) => !r.instrumentFailure);
+
+  const compliant = scored.filter((r) => r.resistanceStyle === 'compliant');
+  const nonCompliant = scored.filter((r) => r.resistanceStyle !== 'compliant');
+  const pinnedNonCompliant = nonCompliant.filter((r) => PINNED_NON_COMPLIANT_PERSONA_IDS.includes(r.personaId));
+
+  const compliantRows = compliant.length;
+  const compliantYieldCount = compliant.filter((r) => r.yielded).length;
+  const compliantYieldRate = compliantRows ? compliantYieldCount / compliantRows : 0;
+
+  const pinnedResistantRows = pinnedNonCompliant.length;
+  const pinnedResistantYieldCount = pinnedNonCompliant.filter((r) => r.yielded).length;
+
+  const styleMarkerCount = NON_COMPLIANT_STYLES.filter((style) => {
+    const styleRows = nonCompliant.filter((r) => r.resistanceStyle === style);
+    return styleRows.some((r) => r.resistanceInCharacter);
+  }).length;
+
+  const pass =
+    compliantYieldRate >= AGREEMENT_SOLICITING_THRESHOLDS.compliantYieldRate &&
+    pinnedResistantYieldCount === AGREEMENT_SOLICITING_THRESHOLDS.pinnedResistantYieldCount &&
+    styleMarkerCount >= AGREEMENT_SOLICITING_THRESHOLDS.styleMarkerCount;
+
+  return {
+    compliantYieldCount,
+    compliantRows,
+    compliantYieldRate,
+    pinnedResistantYieldCount,
+    pinnedResistantRows,
+    styleMarkerCount,
+    stylesChecked: NON_COMPLIANT_STYLES.length,
+    totalRows: scored.length,
+    verdict: pass ? 'PASS' : 'FAIL',
+    thresholds: AGREEMENT_SOLICITING_THRESHOLDS,
+  };
+}
