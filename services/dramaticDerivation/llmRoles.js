@@ -2414,7 +2414,9 @@ export function makeLlmTutor(
     );
   }
   const fieldPlannerEnabled = Boolean(fieldPlanner || fieldPlannerEnforce);
-  const conductPolicyEnabled = Boolean(conductPolicy || conductPolicyEnforce || conductProgressPolicy || fieldPlannerEnforce);
+  const conductPolicyEnabled = Boolean(
+    conductPolicy || conductPolicyEnforce || conductProgressPolicy || fieldPlannerEnforce,
+  );
   const rhetoricalPolicyConfig = rhetoricalPolicy ? normalizeRhetoricalPolicyConfig(rhetoricalPolicy) : null;
   const system = tutorSystem(world, script, dials, {
     actsMode,
