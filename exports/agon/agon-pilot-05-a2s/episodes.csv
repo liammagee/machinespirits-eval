@@ -1,0 +1,14 @@
+episodeId,arm,turns,demonstrated,transferred,score,tutorWin,firstDemonstrationTurn,dodgesCharged,wastedProbes,bounces,leaks,complyMismatches,moveEntropy
+A0-e1,A0,16,3,0,9,true,11,5,0,0,1,0,1.5052
+A0-e2,A0,16,2,1,7,false,11,5,0,0,1,1,1
+A0-e3,A0,16,3,0,9,true,11,5,0,0,1,0,0.9887
+A0-e4,A0,16,3,0,9,true,11,5,0,0,1,0,1.2718
+A1p-e1,A1p,16,3,1,10,true,11,5,0,0,1,0,1
+A1p-e2,A1p,16,3,0,9,true,12,5,0,0,0,0,1
+A1p-e3,A1p,16,3,1,10,true,11,5,0,0,1,0,1
+A1p-e4,A1p,16,3,1,10,true,11,5,0,0,1,0,1
+A2a-e1,A2a,16,3,0,9,true,11,5,0,0,1,0,0.9887
+A2s-e1,A2s,16,3,1,10,true,11,5,0,0,1,0,1
+A2s-e2,A2s,16,3,0,9,true,11,5,0,0,1,0,0.9887
+A2s-e3,A2s,16,3,0,9,true,11,5,0,0,1,0,0.9887
+A2s-e4,A2s,16,3,0,9,true,11,5,0,0,1,0,0.9887

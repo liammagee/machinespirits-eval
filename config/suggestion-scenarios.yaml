@@ -1997,3 +1997,123 @@ scenarios:
           - "Now you understand Hegel"
           - "I'm glad you came around"
         min_acceptable_score: 90
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # LONGITUDINAL DRIFT SCENARIOS (Line A, notes/2026-07-06-longitudinal-drift-adaptation-prereg.md)
+  #
+  # Three scenarios forming one harness-owned schedule (`drift_schedule_v1`).
+  # Each carries the ordinary `learner_context` prose the tutor actually sees,
+  # plus a `longitudinal_drift` metadata block read only by
+  # services/longitudinalDriftChecker.js (never shown to the tutor). Run
+  # strictly in session order 1 -> 2 -> 3 against the same --learner-id so
+  # that any cross-session tracking can only come from the Writing Pad.
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  longitudinal_drift_session_1:
+    type: suggestion
+    id: longitudinal_drift_session_1
+    category: longitudinal_drift
+    name: "Longitudinal Drift - Session 1 (fractions)"
+    description: "First session of a 3-session cross-session drift schedule; no predecessor session"
+    is_new_user: true
+    course_ids: ["479"]
+    learner_context: |
+      ### User Profile
+      - New user, first session of a multi-session arc.
+      - Recently submitted practice work on fractions.
+      - Recurring pattern in that work: when adding two fractions with
+        different denominators, always forms a common denominator by
+        multiplying the two denominators together, even when a smaller
+        common denominator is available (e.g. treats 1/4 + 1/6 as needing a
+        denominator of 24 rather than 12).
+
+      ### Current Session
+      - Topic: fractions.
+      - No previous session on record.
+    expected_behavior: "Suggestion should orient the learner toward today's fractions work; may address the common-denominator-by-multiplying pattern."
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 0
+    longitudinal_drift:
+      schedule_id: drift_schedule_v1
+      session_index: 1
+      current_interest: "fractions"
+      interest_markers: ["fraction", "fractions", "numerator", "denominator"]
+      active_misconception:
+        token: "LDS-M1"
+        label: "common-denominator-by-multiplying"
+        markers: ["LDS-M1", "common denominator", "multiply the denominators"]
+      resolved_last_session: null
+
+  longitudinal_drift_session_2:
+    type: suggestion
+    id: longitudinal_drift_session_2
+    category: longitudinal_drift
+    name: "Longitudinal Drift - Session 2 (ratios)"
+    description: "Second session of a 3-session cross-session drift schedule; predecessor topic resolved"
+    is_new_user: false
+    course_ids: ["479"]
+    learner_context: |
+      ### User Profile
+      - Returning user - second session of a multi-session arc.
+      - Last session's fractions work is complete; the common-denominator-
+        by-multiplying pattern is resolved and is no longer a live issue.
+      - Recently submitted practice work on ratios.
+      - Recurring pattern in that work: scales a ratio by adding the same
+        amount to both terms instead of multiplying both terms by the same
+        factor (e.g. turns 2:3 into 4:5 by adding 2 to each side, rather than
+        into 4:6 by doubling).
+
+      ### Current Session
+      - Topic: ratios.
+      - Previous session: fractions (resolved).
+    expected_behavior: "Suggestion should orient the learner toward today's ratio work; may address the additive-scaling pattern."
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 0
+    longitudinal_drift:
+      schedule_id: drift_schedule_v1
+      session_index: 2
+      current_interest: "ratios"
+      interest_markers: ["ratio", "ratios", "proportion", "proportions"]
+      active_misconception:
+        token: "LDS-M2"
+        label: "scaling-ratios-additively"
+        markers: ["LDS-M2", "additive scaling", "adds the same amount"]
+      resolved_last_session: true
+
+  longitudinal_drift_session_3:
+    type: suggestion
+    id: longitudinal_drift_session_3
+    category: longitudinal_drift
+    name: "Longitudinal Drift - Session 3 (linear equations)"
+    description: "Third session of a 3-session cross-session drift schedule; predecessor topic resolved"
+    is_new_user: false
+    course_ids: ["479"]
+    learner_context: |
+      ### User Profile
+      - Returning user - third session of a multi-session arc.
+      - Last session's ratio work is complete; the additive-scaling pattern
+        is resolved and is no longer a live issue.
+      - Recently submitted practice work on linear equations.
+      - Recurring pattern in that work: forgets to flip the equation's
+        inequality/equality sign when multiplying or dividing both sides by
+        a negative number while isolating x.
+
+      ### Current Session
+      - Topic: linear equations.
+      - Previous session: ratios (resolved).
+    expected_behavior: "Suggestion should orient the learner toward today's linear-equations work; may address the sign-flip-forgetting pattern."
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 0
+    longitudinal_drift:
+      schedule_id: drift_schedule_v1
+      session_index: 3
+      current_interest: "linear equations"
+      interest_markers: ["linear equation", "linear equations", "slope", "solve for x"]
+      active_misconception:
+        token: "LDS-M3"
+        label: "flip-sign-forgetting"
+        markers: ["LDS-M3", "forgets to flip the sign", "sign flip"]
+      resolved_last_session: true
