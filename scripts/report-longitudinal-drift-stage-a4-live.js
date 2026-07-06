@@ -130,41 +130,56 @@ async function runVerifyLive(learnerId, runId, sessionIndex) {
     ...previousMeta.active_misconception.markers,
   ];
 
-  const logsDir = process.env.EVAL_LOGS_DIR || path.join(ROOT, 'logs');
-  const logPath = path.join(logsDir, `${runId}.jsonl`);
+  // §8.8's own method: the per-session dialogue log in logs/tutor-dialogues/,
+  // resolved via the run's result row's dialogue_id, whose dialogueTrace
+  // entries carry the literal outgoing ego/superego request as `apiPayload`.
+  const results = deps.evaluationStore.getResults(runId, { scenarioId: checkinScenarioId(n) });
+  const row = results[0];
+  if (!row) {
+    console.error(`FAIL: no result row for run ${runId} × scenario ${checkinScenarioId(n)}.`);
+    return 1;
+  }
+  if (!row.dialogueId) {
+    console.error(`FAIL: result row ${row.id} has no dialogue_id — cannot locate the dialogue log.`);
+    return 1;
+  }
+  const { resolveTutorDialoguesDir } = await import('../services/evaluationDataPaths.js');
+  const logPath = path.join(resolveTutorDialoguesDir(ROOT), `${row.dialogueId}.json`);
   if (!fs.existsSync(logPath)) {
     console.error(`FAIL: no dialogue log found at ${logPath}`);
     return 1;
   }
-  const lines = fs
-    .readFileSync(logPath, 'utf8')
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
+  const dialogue = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+  const traceEntries = Array.isArray(dialogue.dialogueTrace) ? dialogue.dialogueTrace : [];
+  const payloadEntries = traceEntries.filter((e) => e?.apiPayload);
 
-  let payloadCount = 0;
   let hitCount = 0;
+  let firstEntryHit = false;
   const hitMarkers = new Set();
-  for (const line of lines) {
-    let entry;
-    try {
-      entry = JSON.parse(line);
-    } catch {
-      continue;
-    }
-    const payload = entry?.apiPayload;
-    if (!payload) continue;
-    payloadCount += 1;
-    const payloadText = JSON.stringify(payload);
+  payloadEntries.forEach((entry, i) => {
+    const payloadText = JSON.stringify(entry.apiPayload);
+    let entryHit = false;
     for (const marker of candidates) {
       const re = new RegExp(`\\b${String(marker).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-      if (re.test(payloadText)) hitMarkers.add(marker);
+      if (re.test(payloadText)) {
+        hitMarkers.add(marker);
+        entryHit = true;
+      }
     }
-    if (hitMarkers.size > 0) hitCount += 1;
-  }
+    if (entryHit) {
+      hitCount += 1;
+      if (i === 0) firstEntryHit = true;
+    }
+  });
 
-  console.log(`apiPayload entries scanned: ${payloadCount}`);
+  console.log(`dialogue log: ${logPath}`);
+  console.log(`dialogueTrace entries with apiPayload: ${payloadEntries.length}`);
   console.log(`entries containing prior-session vocabulary: ${hitCount}`);
+  const first = payloadEntries[0];
+  console.log(
+    `first payload entry (${first ? `agent: ${first.agent}, action: ${first.action}, round: ${first.round}` : 'none'}) ` +
+      `contains prior-session vocabulary: ${firstEntryHit}`,
+  );
   console.log(`markers matched: ${hitMarkers.size ? [...hitMarkers].join(', ') : '(none)'}`);
 
   if (hitCount === 0) {

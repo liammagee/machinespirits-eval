@@ -1628,3 +1628,106 @@ missing rows (`--gate` on an absent learner-id correctly reports
 an instrument-failure row and a FAIL verdict) — no real session data
 scored yet, no paid calls made. Stage A4-build is complete and green;
 Stage A4-pilot (the 6-session live arc) follows next.
+
+**Stage A4-pilot, pad-ON sessions 1-2 + the live delivery gate
+(2026-07-07): §7.4 gate PASS; §9.4 gate VOID-AS-INSTRUMENTED with
+delivery itself CONFIRMED live by direct primary-source inspection.**
+Recorded in full, per this note's convention of logging in-flight
+instrument corrections rather than silently fixing them:
+
+- **Pad-ON session 1** (`eval-2026-07-06-edecf6f8`, row 33950, scenario
+  `longitudinal_drift_session_1_multiturn_checkin`, 4/4 turns clean,
+  run metadata pins `gitCommit: 426a483b`): §7.4 instrument-precondition
+  gate **PASS** — `total_recognition_moments = 4` (column == raw row
+  count), the same all-4-turns-disapproved shape A2 saw, voices quoting
+  the session's actual fractions content.
+- **Pad-ON session 2** (`eval-2026-07-06-3075efb4`, row 33951, 4/4
+  turns clean). Two defects were then found in the `--verify-live`
+  instrument itself, before any gate verdict was accepted:
+  1. **Script path/counting corrections** (in-flight, recorded): the
+     mode as committed looked for `logs/<runId>.jsonl`, which does not
+     exist — the real per-session dialogue log is
+     `logs/tutor-dialogues/<dialogue_id>.json` resolved via the run's
+     result row, exactly the file §8.8 used. It also over-counted
+     matched entries (a `hitMarkers`-accumulation bug made every entry
+     after the first match count as a hit). Both fixed in
+     `scripts/report-longitudinal-drift-stage-a4-live.js` before
+     scoring; the fix is instrument-repair, not a design change — §9.4
+     froze the *method* (dialogue-log `apiPayload` inspection per §8.8),
+     which the corrected script now actually implements.
+  2. **The corrected scan then produced a false PASS**: 11/11
+     `dialogueTrace` `apiPayload` entries matched session-1 vocabulary
+     (`fractions`, `denominator`) — but every match traces to session
+     2's OWN scenario `learner_context` ("Last session's fractions work
+     is complete; the common-denominator-by-multiplying pattern is
+     resolved…"), which §7.2's drift schedule plants by design in BOTH
+     arms. Under §8.8's false-positive-immunity standard (which §9.4
+     explicitly invokes), the scan was re-run on pad-only strings —
+     literal session-1 recognition-moment text (superego-generated at
+     session-1 runtime, impossible to originate in any scenario YAML:
+     "1/2+1/4", "least common denominator", "breakthrough moment",
+     "cognitive conflict", "LDS-M1"): **0 of 11 entries hit**.
+- **Investigation (all read-only, no further spend until resolved)**:
+  the zero is a *structural blind spot in the observable, not absent
+  delivery*. On cell_40's live path the four §9.1 fixes feed the
+  dialectical layer — `tutorDialogueEngine.egoGenerateSuggestions` →
+  `dialecticalEngine.negotiateDialectically` →
+  `generateSuperegoCritique` / `egoRespondsToSuperego`, whose prompts
+  unconditionally embed `unconscious.permanentTraces.slice(-3)` (the
+  §9.1-bug-1 `priorSessionMemory` section) and
+  `preconscious.recentPatterns.slice(0, 3)` (the §9.1-bug-2 channel)
+  whenever a learner pad exists. Those calls go through
+  `aiService.generateText`, which is logged NOWHERE with prompt text:
+  not in the dialogue log's `apiPayload` entries (those cover only the
+  standard ego/superego loop via `callAI`) and not in
+  `logs/tutor-api/*.jsonl` (same `callAI` universe — grep for the
+  critique prompt's own unconditional headings, e.g. "Prior recognition
+  moments", across the full day's log: 0). The §9.4 observable can
+  therefore never witness this channel, in either direction.
+- **Delivery confirmation, by the same direct primary-source standard
+  §8.8/§9.4 demand, on artifacts rather than the unlogged prompt
+  string**: (a) `negotiateDialectically` demonstrably ran per turn in
+  session 2 — turns 1-3 each wrote a recognition moment (21:21:05,
+  21:28:41, 21:36:17) whose LLM-generated ghost voices quote session
+  2's live ratio content ("4:5 and 4:6", "2:3 scales to 4:6, not 4:5"),
+  and turn 4's stored suggestion carries
+  `metadata.dialecticalStrategy: "no_conflict"`; (b) at every one of
+  those calls the freshly-fetched pad (fetched per turn at
+  `tutorDialogueEngine.js` line ~1806) contained session-1 content —
+  `permanentTraces` held session 1's 4 traces with real synthesis text
+  from before session 2 began, and `preconscious.recentPatterns`
+  acquired two cross-session `recalled_context` entries (signatures
+  referencing session-1 trace timestamps 21:05:14 / 21:13:50, one
+  carrying the literal session-1 synthesis "1/2+1/4 only requires a
+  denominator of 4… least common denominator…") at 21:22:39, i.e. from
+  turn 1's memory cycle onward, reinforced ×3 across turns 2-4 — the
+  §9.1-bug-2 fix visibly persisting cross-session retrievals live;
+  (c) the code embedding that pad state into those prompts is pinned to
+  the run's own recorded commit (426a483b). Conclusion: **session-1 pad
+  content reached session 2's dialectical prompts on every turn
+  (`priorSessionMemory` from turn 1; `recentPatterns` from turn 2) —
+  the internal read path delivers live.** Gate disposition, following
+  §6's Stage-A1 precedent of recording instrument problems as VOID
+  rather than re-reading them as outcomes: §9.4's live gate is **VOID
+  as instrumented** (confounded markers + blind observable), delivery
+  is **CONFIRMED** by the above triangulation, the stop rule's literal
+  trigger ("no `apiPayload` entry contains any session-1 marker") is
+  not met, and the pilot proceeds to session 3 and the pad-OFF arm.
+- **Two bounded caveats recorded now, before scoring**: (i) the pad
+  content demonstrably reaches the *dialectical critique/negotiation
+  prompts*; its influence on the SCORED channel (the opening turn's
+  final delivered message) is indirect — on session 2's turns 1-3 the
+  negotiation wrote moments but left no `dialecticalStrategy` metadata
+  on the stored suggestions, consistent with the negotiation's
+  resolution not replacing the ego's message on those turns — so a
+  check-in miss at scoring time is interpretable as
+  "delivered-but-not-used", NOT "not delivered" (and conversely a hit
+  is not automatically pad-attributable, see ii). (ii) The scenario's
+  own `learner_context` plants prior-session vocabulary (`fractions`,
+  `denominator`) in BOTH arms by §7.2 design, so the primary checker
+  can hit off scenario echo alone in either arm; §9.4's red-flag clause
+  (any pad-OFF hit → investigate as leakage, never a pad-OFF finding)
+  already governs the pad-OFF side, and the pad-ON side's
+  interpretation must carry the same echo caveat symmetrically. Neither
+  caveat changes the frozen thresholds; both bind the §9.4-verdict
+  *interpretation* recorded after scoring.
