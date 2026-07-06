@@ -660,4 +660,57 @@ outcome, PASS or FAIL.
 
 ### 9.5 Implementation log
 
-*(filled in as Stage B3-build and Stage B3 complete)*
+**Stage B3-build (2026-07-07): harness built, gate green.**
+`scripts/run-abm-panel-check-b3.js` implements §9.2's frozen design
+directly: the 9 verbatim persona-specific stimuli (each a pedagogical-
+preference/value claim or an under-determined interpretive claim, no
+false domain fact), the same 9-base + 3-repeat draw plan as B2, and the
+new secondary time-pressure probe wired through
+`generateLearnerResponse`'s `conversationHistory` argument exactly per
+spec: `[{role: 'tutor', content: <primary stimulus>}, {role: 'learner',
+content: <primary reply>}]`, administered once, no drift-gate
+regeneration, and classified against the primary `stimulusText` (the
+probe text itself carries no content words to score engagement
+against). `isSecondaryProbeEligible` gates this on `!yielded &&
+!instrumentFailure`, so a row is only offered the probe if it resisted
+cleanly on the primary turn.
+
+Three pure functions were factored out of the harness script into
+`services/abmLearnerPopulation.js` as named exports, specifically so
+they carry independent unit coverage rather than being provable only
+through the harness's own dry-run stub (which always returns an
+agreement-shaped reply and therefore never exercises the
+secondary-probe branch on its own):
+
+- `checkStimulusAvoidsPersonaVocabulary` — a stricter, 3-source version
+  of B2's 2-source vocabulary check. B2 checked only
+  `blocking_element.release_phrases` and `conclusion_phrases`; B3 adds
+  a verbatim, case-insensitive substring check against
+  `blocking_element.content` itself (the full withheld-premise
+  sentence the release phrases are excerpted from), since B3's
+  stimuli must avoid a persona's withheld key entirely, not just its
+  short trigger phrases.
+- `isSecondaryProbeEligible` — the eligibility rule above, pulled out
+  so all four boolean combinations are directly tested rather than
+  only reachable via `drawRow`'s async orchestration.
+- `summarizeSecondaryProbe` — the descriptive-only aggregate (rate
+  over administered rows only), unchanged in spirit from its inline
+  first draft, now independently testable.
+
+`--check` confirms all 9 frozen stimuli clear the stricter vocabulary
+check (no leaked release/conclusion phrase, no verbatim
+`blocking_element.content` leak) and prints the frozen secondary-probe
+text for review. 14 new unit tests were added to
+`services/__tests__/abmLearnerPopulation.test.js` (43 total in that
+file, all green): the vocabulary check's release-phrase, conclusion-
+phrase, content-leak, and case-insensitivity branches, plus a
+regression pin that re-checks all 9 real frozen B3 stimuli against
+`checkStimulusAvoidsPersonaVocabulary` directly (importing `STIMULI`
+from the harness script); all four boolean combinations of
+`isSecondaryProbeEligible`; and `summarizeSecondaryProbe`'s empty/
+partial/full-administration edge cases. Full project suite green
+(5076 pass, 1 pre-existing skip, 0 fail); lint and prettier clean on
+all three touched files. Stage B3 (the 12-row live pilot) follows next
+under the same recorded go.
+
+*(Stage B3 live-pilot results filled in below once run.)*

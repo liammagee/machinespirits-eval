@@ -157,3 +157,30 @@ not authorized without a fresh user go; tutor-allocation contrast
 remains not authorized under any outcome. Phase B3-build (no-paid:
 harness script, automated vocabulary-collision check, --check gate)
 precedes the live pilot.
+
+2026-07-07 Claude: Phase B3-build complete, gate green.
+`scripts/run-abm-panel-check-b3.js` implements the frozen §9.2 design:
+9 verbatim persona-specific stimuli, the identical 12-row draw plan,
+and the secondary time-pressure probe wired through
+`generateLearnerResponse`'s `conversationHistory` (primary stimulus +
+primary reply, tutor/learner roles) exactly per spec. Three new pure
+functions were pulled out into `services/abmLearnerPopulation.js` so
+they carry their own unit coverage rather than living only inside the
+harness script: `checkStimulusAvoidsPersonaVocabulary` (a stricter,
+3-source version of B2's vocabulary check — adds a verbatim
+`blocking_element.content` substring check alongside the existing
+release/conclusion-phrase checks, since B3's stimuli must avoid a
+persona's withheld key entirely, not just its trigger phrases),
+`isSecondaryProbeEligible` (a row gets the secondary probe iff it did
+not yield on the primary turn and is not already a primary-turn
+instrument failure), and `summarizeSecondaryProbe` (purely descriptive
+rate, never gates §9.3's verdict). `--check` confirms all 9 frozen
+stimuli clear the stricter vocabulary check and prints the draw plan;
+14 new unit tests added to
+`services/__tests__/abmLearnerPopulation.test.js` (43 total in that
+file, all green) covering the vocabulary check's phrase/content/case
+branches plus a regression pin re-checking all 9 real frozen stimuli,
+and all four boolean combinations of the eligibility rule, and the
+secondary-probe summary's edge cases. Full suite green (5076 pass, 1
+pre-existing skip, 0 fail); lint/prettier clean. Live pilot (12 rows)
+follows next under the same user go as B3's pre-registration.
