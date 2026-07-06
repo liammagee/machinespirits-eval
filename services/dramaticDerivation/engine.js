@@ -120,6 +120,8 @@ import {
   renderTutorLemmaLines,
   supportRemaining as lemmaSupportRemaining,
 } from './lemmaLayer.js';
+import { buildChainMap, buildRegionLexicons, classifyMessage } from './messageClassifier.js';
+import { decideRegister, normalizeRegisterRouterConfig, REGISTER_BLOCKS } from './registerRouter.js';
 
 function renderFact(fact) {
   return fact.join(' ');
@@ -333,6 +335,27 @@ export async function runDrama({ world, roles, options = {} }) {
       : options.learnerMirrorRefusal
     : null;
   const mirrorRefusalState = { fired: false, record: null };
+  // Register router (classifier-dag-register Phase B): per tutor turn, the
+  // learner's last message is classified by the Phase-A-audited lexical
+  // sensor (chain grain, deterministic) and a stance register is routed
+  // from the classifier × DAG interaction. Prompt-side only.
+  const registerRouterConfig = options.registerRouter ? normalizeRegisterRouterConfig(options.registerRouter) : null;
+  const registerRouterState = registerRouterConfig
+    ? (() => {
+        const dag = buildLemmaDag(world);
+        if (!dag) throw new Error('register router: the authored proof path does not entail S');
+        const varIndex = world.questionPattern.findIndex((tok) => typeof tok === 'string' && tok.startsWith('?'));
+        return {
+          dag,
+          lexicons: buildRegionLexicons(world, dag),
+          chainOf: buildChainMap(dag),
+          mirrorTerm: world.mirror ? String(world.mirror.fact[varIndex] ?? '').toLowerCase() : null,
+          clearedAt: new Map(), // lemma key -> first turn grounded
+          decisions: [],
+          cache: new Map(), // turn -> decision
+        };
+      })()
+    : null;
   let sceneTempoThisTurn = null;
   let sceneRecognitionNeedThisTurn = null;
   const directorCadence = normalizeDirectorCadence(options.directorCadence, { sceneMode: Boolean(sceneConfig) });
@@ -1152,6 +1175,63 @@ export async function runDrama({ world, roles, options = {} }) {
     };
   };
 
+  // Register-router decision, once per turn (cached): the Phase-A-audited
+  // sensor over the learner's LAST message × criterial DAG state (grounded
+  // lemma regression tracked here; mirror-partner derivability from the
+  // learner's own record). Mock knobs force sensor/DAG inputs so zero-paid
+  // gates exercise both fire paths; the pure rule is unit-tested directly.
+  const registerRouterDecision = (turn) => {
+    if (!registerRouterState) return null;
+    const rr = registerRouterState;
+    if (rr.cache.has(turn)) return rr.cache.get(turn);
+    const grounded = validGroundedFacts();
+    const state = computeLemmaState(rr.dag, grounded, world.rules);
+    for (const key of state.groundedKeys) if (!rr.clearedAt.has(key)) rr.clearedAt.set(key, turn);
+    const regressedChains = new Set();
+    for (const [key] of rr.clearedAt) {
+      if (!state.groundedKeys.has(key)) regressedChains.add(rr.chainOf.get(key) || key);
+    }
+    let partnerDerivable = false;
+    if (world.mirror) {
+      const mirrorKey = factKey(world.mirror.fact);
+      const cl = closure(grounded, world.rules);
+      partnerDerivable = (world.incompatible || []).some((pair) => {
+        const partner = pair.some((f) => factKey(f) === mirrorKey) ? pair.find((f) => factKey(f) !== mirrorKey) : null;
+        return partner ? cl.facts.has(factKey(partner)) : false;
+      });
+    }
+    const lastLearner = [...transcript].reverse().find((e) => e.role === 'learner');
+    const sensed = lastLearner
+      ? classifyMessage(lastLearner.text, rr.lexicons, rr.mirrorTerm)
+      : { label: 'neither', score: 0 };
+    const label = registerRouterConfig.mockLabel || sensed.label;
+    const dag = registerRouterConfig.mockDagState
+      ? {
+          partnerDerivable: true,
+          regressedChains: new Set(rr.dag.nodes.filter((n) => !n.isGoal).map((n) => rr.chainOf.get(n.key))),
+        }
+      : { partnerDerivable, regressedChains };
+    const register = decideRegister({
+      label,
+      partnerDerivable: dag.partnerDerivable,
+      regressedChains: dag.regressedChains,
+      chainOf: rr.chainOf,
+    });
+    const decision = {
+      turn,
+      label,
+      sensedLabel: sensed.label,
+      partnerDerivable: dag.partnerDerivable,
+      regressedChains: [...dag.regressedChains],
+      register,
+      ...(REGISTER_BLOCKS[register] ? { block: REGISTER_BLOCKS[register] } : {}),
+    };
+    rr.decisions.push(decision);
+    if (register !== 'didactic') events.push({ turn, type: 'register_shift', detail: `${register} (${label})` });
+    rr.cache.set(turn, decision);
+    return decision;
+  };
+
   const omniscientView = (turn, roleName) => {
     const proofDebt = roleName === 'tutor' && proofDebtViewActive ? currentProofDebt(turn) : null;
     const proxyDagPacing =
@@ -1186,6 +1266,7 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(conductTriggerOverride ? { conductTriggerOverride } : {}),
       ...(ledgerState && roleName === 'tutor' ? { strategyLedger: strategyLedgerView() } : {}),
       ...(lemmaRun && roleName === 'tutor' ? { lemmaLayer: lemmaView('tutor') } : {}),
+      ...(registerRouterState && roleName === 'tutor' ? { registerRouter: registerRouterDecision(turn) } : {}),
       ...(proofDebt
         ? { proofDebt: runtimeMonitor ? runtimeMonitor.proofDebtTutorView(proofDebt) : tutorProofDebtView(proofDebt) }
         : {}),
@@ -2503,6 +2584,14 @@ export async function runDrama({ world, roles, options = {} }) {
         }
       : {}),
     ...(mirrorRefusalState.record ? { mirrorRefusal: mirrorRefusalState.record } : {}),
+    ...(registerRouterState
+      ? {
+          registerRouter: {
+            decisions: registerRouterState.decisions,
+            shifts: registerRouterState.decisions.filter((d) => d.register !== 'didactic').length,
+          },
+        }
+      : {}),
     ...(sceneConfig ? { directorCadence } : {}),
     ...(publicRegisterPlan !== 'default' ? { publicRegister: publicRegisterPlan } : {}),
     ...(registerRows.length ? { publicRegisters: registerRows } : {}),
