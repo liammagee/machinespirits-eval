@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-06T12:55:44.486Z",
+  "generated": "2026-07-06T13:13:37.302Z",
   "counts": {
     "total": 96,
     "byStatus": {
-      "done": 83,
+      "done": 84,
       "blocked": 1,
       "dropped": 2,
-      "active": 3,
+      "active": 2,
       "archived": 4,
       "triaged": 3
     },
@@ -166,33 +166,6 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
-    },
-    {
-      "id": "register-router-codex-check",
-      "title": "Register router at the frontier tier: codex mechanism check",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-06",
-      "updated": "2026-07-06",
-      "branch": "worktree-classifier-dag-register",
-      "verification": "6-run codex smoke complete with pre-stated reads recorded (fires, sensed distribution, conduct, capped color).",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "classifier-dag-register",
-          "register-router-contrast"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "classifier",
-        "register",
-        "frontier"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -2022,6 +1995,33 @@
         "derivation",
         "strategy-refusal",
         "superego"
+      ]
+    },
+    {
+      "id": "register-router-codex-check",
+      "title": "Register router at the frontier tier: codex mechanism check",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-06",
+      "updated": "2026-07-06",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "6-run codex smoke complete with pre-stated reads recorded (fires, sensed distribution, conduct, capped color).",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "classifier-dag-register",
+          "register-router-contrast"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "classifier",
+        "register",
+        "frontier"
       ]
     },
     {
