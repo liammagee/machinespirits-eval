@@ -8,6 +8,7 @@
  * Usage:
  *   npm run tutor:stub:auto-eval -- --dry-run
  *   npm run tutor:stub:auto-eval -- --runs 2 --turns 8
+ *   npm run tutor:stub:auto-eval -- --runs 1 --until-grounded
  */
 
 import fs from 'node:fs';
@@ -41,6 +42,8 @@ const { values: args } = parseArgs({
     'register-palette': { type: 'string', default: 'all' },
     'first-message': { type: 'string', default: '' },
     'cli-effort': { type: 'string', default: process.env.TUTOR_STUB_EVAL_CLI_EFFORT || '' },
+    'until-grounded': { type: 'boolean', default: false },
+    'safety-turns': { type: 'string', default: process.env.TUTOR_STUB_EVAL_SAFETY_TURNS || '80' },
     'no-dag': { type: 'boolean', default: false },
     'no-stop-on-grounded': { type: 'boolean', default: false },
     'keep-going': { type: 'boolean', default: false },
@@ -66,6 +69,8 @@ Options:
   --register-palette <mode>  default: all
   --first-message <text>     seed the first learner turn instead of using tutor opening
   --cli-effort <level>       low, medium, high, xhigh, max, or config for CLI providers
+  --until-grounded           do not stop at --turns; stop at grounded closure
+  --safety-turns <n>         runaway guard for --until-grounded (default: 80)
   --no-dag                   omit tutor proof-DAG context
   --no-stop-on-grounded      run until --turns even after grounded closure
   --keep-going               continue after a failed run
@@ -79,6 +84,10 @@ function positiveInt(value, name) {
     throw new Error(`${name} must be a positive integer`);
   }
   return parsed;
+}
+
+function turnsArg() {
+  return args['until-grounded'] ? 'until-grounded' : String(positiveInt(args.turns, '--turns'));
 }
 
 function csv(value) {
@@ -106,11 +115,14 @@ function listTraceFiles(traceDir) {
 }
 
 function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
+  const autoTurns = turnsArg();
   const command = [
     'scripts/tutor-stub.js',
     '--auto-learner',
     '--auto-turns',
-    String(positiveInt(args.turns, '--turns')),
+    autoTurns,
+    '--auto-safety-turns',
+    String(positiveInt(args['safety-turns'], '--safety-turns')),
     '--model',
     args.model,
     '--classifier-model',
@@ -148,6 +160,9 @@ function main() {
   }
 
   const runs = positiveInt(args.runs, '--runs');
+  if (args['until-grounded'] && args['no-stop-on-grounded']) {
+    throw new Error('--until-grounded cannot be combined with --no-stop-on-grounded');
+  }
   const policies = csv(args.policies);
   if (!policies.length) throw new Error('--policies must include at least one policy');
   const traceDir = resolvePath(args['trace-dir']);
@@ -205,7 +220,9 @@ function writeSummary({ traceDir, startedAt, results, failed }) {
     failed,
     config: {
       runs: positiveInt(args.runs, '--runs'),
-      turns: positiveInt(args.turns, '--turns'),
+      turns: turnsArg(),
+      untilGrounded: Boolean(args['until-grounded']),
+      safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
       policies: csv(args.policies),
       model: args.model,
       analysisModel: args['analysis-model'],
