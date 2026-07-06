@@ -65,6 +65,7 @@ const STUB = {
   closeoutReport: process.env.TUTOR_STUB_CLOSEOUT_REPORT !== '0',
   autoLearnerModel: process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'openai.mini',
   autoTurns: Number.parseInt(process.env.TUTOR_STUB_AUTO_TURNS || '8', 10),
+  autoSafetyTurns: Number.parseInt(process.env.TUTOR_STUB_AUTO_SAFETY_TURNS || '80', 10),
   autoLearnerProfile:
     process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE ||
     'A curious but fallible learner. They respond only to public tutor messages, sometimes make partial guesses, and prefer short concrete replies.',
@@ -176,6 +177,7 @@ const { values: args, positionals } = parseArgs({
     'auto-learner-model': { type: 'string', default: STUB.autoLearnerModel },
     'auto-learner-profile': { type: 'string', default: STUB.autoLearnerProfile },
     'auto-turns': { type: 'string', default: String(STUB.autoTurns) },
+    'auto-safety-turns': { type: 'string', default: String(STUB.autoSafetyTurns) },
     'no-auto-stop-on-grounded': { type: 'boolean', default: false },
     save: { type: 'string' },
     'trace-dir': { type: 'string', default: STUB.traceDir },
@@ -242,8 +244,13 @@ Options:
                          (default: ${STUB.autoLearnerModel})
   --auto-learner-profile <text>
                          learner behavior sketch for unattended runs
-  --auto-turns <n>       maximum learner turns in --auto-learner mode
+  --auto-turns <n|until-grounded>
+                         maximum learner turns in --auto-learner mode, or
+                         until-grounded to stop only at grounded closure
                          (default: ${STUB.autoTurns})
+  --auto-safety-turns <n>
+                         runaway guard used when --auto-turns until-grounded
+                         (default: ${STUB.autoSafetyTurns})
   --no-auto-stop-on-grounded
                          keep running until --auto-turns even after the
                          learner-DAG reaches grounded asserted-secret closure
@@ -304,6 +311,8 @@ Environment:
   TUTOR_STUB_AUTO_LEARNER_MODEL
                          optional default automated learner model
   TUTOR_STUB_AUTO_TURNS  optional default automated learner turn cap
+  TUTOR_STUB_AUTO_SAFETY_TURNS
+                         optional runaway guard for until-grounded mode
   TUTOR_STUB_AUTO_LEARNER_PROFILE
                          optional default automated learner profile
 `);
@@ -323,6 +332,12 @@ function parsePositiveInt(value, name) {
     throw new Error(`${name} must be a positive integer`);
   }
   return parsed;
+}
+
+function parseAutoTurns(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (['0', 'none', 'unbounded', 'until-grounded', 'grounded'].includes(raw)) return null;
+  return parsePositiveInt(value, '--auto-turns');
 }
 
 function resolveWorkspacePath(value) {
@@ -4161,6 +4176,7 @@ async function runAutomatedLearnerDialogue({
   autoLearnerResolved,
   autoLearnerProfile,
   autoTurns,
+  autoSafetyTurns,
   autoStopOnGrounded,
   cliEffort = null,
 }) {
@@ -4169,6 +4185,8 @@ async function runAutomatedLearnerDialogue({
     model: autoLearnerResolved,
     profile: autoLearnerProfile,
     maxTurns: autoTurns,
+    untilGrounded: autoTurns === null,
+    safetyTurns: autoSafetyTurns,
     stopOnGrounded: autoStopOnGrounded,
   });
   if (!firstMessage) {
@@ -4177,7 +4195,11 @@ async function runAutomatedLearnerDialogue({
 
   let nextLearnerText = firstMessage.trim();
   let reason = 'auto_turn_cap';
-  for (let i = 0; i < autoTurns; i += 1) {
+  for (let i = 0; autoTurns === null || i < autoTurns; i += 1) {
+    if (autoTurns === null && i >= autoSafetyTurns) {
+      reason = 'auto_safety_turn_cap';
+      break;
+    }
     const turnNumber = state.turns.length + 1;
     if (!nextLearnerText) {
       startInterimAnimation(state, 'calling auto learner', { tutorTurn: turnNumber });
@@ -4249,8 +4271,12 @@ async function main() {
   const maxTokens = parsePositiveInt(args['max-tokens'], '--max-tokens');
   const historyTurns = parsePositiveInt(args['history-turns'], '--history-turns');
   const autoLearnerEnabled = Boolean(args['auto-learner']);
-  const autoTurns = parsePositiveInt(args['auto-turns'], '--auto-turns');
+  const autoTurns = parseAutoTurns(args['auto-turns']);
+  const autoSafetyTurns = parsePositiveInt(args['auto-safety-turns'], '--auto-safety-turns');
   const autoStopOnGrounded = !args['no-auto-stop-on-grounded'];
+  if (autoLearnerEnabled && autoTurns === null && !autoStopOnGrounded) {
+    throw new Error('--auto-turns until-grounded requires grounded-closure stopping; remove --no-auto-stop-on-grounded');
+  }
   const worldBundle = resolveWorldRef(args.world);
   const directorContext = buildDirectorInitialContext(worldBundle?.world || null);
   const effectiveTopic = worldBundle && args.topic === STUB.topic ? worldBundle.world.title : args.topic;
@@ -4357,7 +4383,9 @@ async function main() {
                 enabled: true,
                 modelRef: args['auto-learner-model'],
                 resolved: visibleAutoLearnerModel,
-                maxTurns: autoTurns,
+                maxTurns: autoTurns ?? 'until-grounded',
+                untilGrounded: autoTurns === null,
+                safetyTurns: autoTurns === null ? autoSafetyTurns : null,
                 stopOnGrounded: autoStopOnGrounded,
                 profile: args['auto-learner-profile'],
               }
@@ -4453,7 +4481,9 @@ async function main() {
             enabled: true,
             modelRef: args['auto-learner-model'],
             resolved: visibleAutoLearnerModel,
-            maxTurns: autoTurns,
+            maxTurns: autoTurns ?? 'until-grounded',
+            untilGrounded: autoTurns === null,
+            safetyTurns: autoTurns === null ? autoSafetyTurns : null,
             stopOnGrounded: autoStopOnGrounded,
             profile: args['auto-learner-profile'],
           }
@@ -4579,8 +4609,10 @@ async function main() {
     console.log(`${C.dim}tutor learner-DAG: off${C.reset}`);
   }
   if (autoLearnerEnabled) {
+    const autoTurnSummary =
+      autoTurns === null ? `until grounded; safety ${autoSafetyTurns}` : `${autoTurns}`;
     console.log(
-      `${C.dim}auto learner: on via ${args['auto-learner-model']} -> ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; turns ${autoTurns}; stopOnGrounded ${autoStopOnGrounded}${C.reset}`,
+      `${C.dim}auto learner: on via ${args['auto-learner-model']} -> ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; turns ${autoTurnSummary}; stopOnGrounded ${autoStopOnGrounded}${C.reset}`,
     );
   } else {
     console.log(`${C.dim}auto learner: off${C.reset}`);
@@ -4659,6 +4691,7 @@ async function main() {
       autoLearnerResolved,
       autoLearnerProfile: args['auto-learner-profile'],
       autoTurns,
+      autoSafetyTurns,
       autoStopOnGrounded,
       cliEffort,
     });
@@ -4672,7 +4705,9 @@ async function main() {
           enabled: true,
           modelRef: args['auto-learner-model'],
           resolved: visibleAutoLearnerModel,
-          maxTurns: autoTurns,
+          maxTurns: autoTurns ?? 'until-grounded',
+          untilGrounded: autoTurns === null,
+          safetyTurns: autoTurns === null ? autoSafetyTurns : null,
           stopOnGrounded: autoStopOnGrounded,
           profile: args['auto-learner-profile'],
         },
