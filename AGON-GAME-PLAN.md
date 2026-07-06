@@ -474,10 +474,14 @@ run truncated by claude-CLI instability (repeated silent hangs — two
 episode took 58 min absorbing hangs). Completed evidence:**
 
 - **P14 (floor) SUPPORTED on the blind side:** weak-blind A0-e1 scored 0
-  (demo 1, loss) with 3 wasted probes and a five-turn teach rut under
-  constant useless REVISEs — against strong-blind 8.50±1.00 with zero
-  wasted in 8 episodes. The weak ego also probed exactly when illegal
-  (stale + consecutive violations) having declined every legal window.
+  (demo 1, loss) with a five-turn teach rut under constant useless
+  REVISEs — against strong-blind 8.50±1.00 with zero wasted in 8
+  episodes. Probe discipline broke in BOTH directions (audit-corrected
+  2026-07-06; the earlier "probed only when illegal" reading was a
+  filtered-monitor artifact): of six probes executed, three were
+  ill-posed while seven legal probe windows went untaken (replay:
+  opp-miss 7, off-set 3, vs strong-blind opp-miss 1.5); the episode's
+  single demonstration came from its one clean probe at turn 13.
 - **P13 NOT DECIDED:** both weak-A1p attempts died mid-episode-1 on CLI
   hangs before any brief-consumption evidence accrued. The
   does-the-brief-rescue-a-weak-ego question stays open; it needs a stable
