@@ -1,7 +1,7 @@
 ---
 id: abm-learner-population
 title: ABM learner population (curated persona panel, manipulation check)
-status: active
+status: review
 type: experiment
 priority: P1
 owner: claude
@@ -69,3 +69,19 @@ bypassing full tutor generation entirely (no tutor, no adaptivity, no
 memory in this phase). Frozen spread threshold and the tutor-allocation
 boundary stated in note §4. Phase B0 build follows in the same commit
 boundary as the pre-registration.
+
+2026-07-06 Claude: Phase B0 built and green (9-persona YAML, service,
+13 tests, stage-0 --check, panel harness --check/--live/--dry-run).
+Phase B1 executed: 12/12 rows clean (codex.gpt-5.5 learner, zero gate
+exhaustion, zero instrument failures). Frozen §4 verdict: **FAIL** —
+yield gap 0.00 rows (compliant 0/3, non-compliant 0/9; threshold ≥3)
+though 5/5 non-compliant styles held at zero yields (threshold ≥3).
+Diagnosis recorded in the note: nobody yielded because the frozen
+neutral stimulus never invites yielding (the desub arc's own near-zero
+false-yield result, now confirmed at panel scale) — the yield channel
+had no room to spread, so the contrast is undefined on it, not refuted.
+Resistance-marker and engagement channels DID spread (4/9 resistant
+first-draws in-character vs 0/3 compliant; 10/12 engaged). Per §4, FAIL
+routes to a stimulus/persona design-iteration decision requiring a
+fresh recorded go; no further paid draws under this note.
+Tutor-allocation contrast remains not authorized. STOP.

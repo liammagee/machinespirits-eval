@@ -273,3 +273,48 @@ requiring its own pre-registration, to be written only after B1 passes.
 Phase B0 build follows in the same commit boundary as this note (per the
 task's execution order, Stage A0/B0 land alongside both preregs and the
 workplan cards, ahead of the no-paid gate and the pilots).
+
+**2026-07-06: Phase B0 complete; no-paid gate green.**
+`config/abm-learner-personas.yaml` (9 personas, ABM-P1..P9 unique;
+resistant styles reuse the desub scenarios' `resistance_markers` +
+`engagement_filter` verbatim per §2.3), `services/abmLearnerPopulation.js`,
+13 unit tests, `report-abm-population-stage0.js --check` green,
+`run-abm-panel-check.js --check` and `--live --dry-run` green (the
+dry-run stub exercises both the pinned exhaustion path and the unpinned
+record-only path across all 12 planned rows with zero paid calls).
+
+**2026-07-06: Phase B1 executed — 12/12 rows, 0 instrument failures,
+frozen §4 spread verdict: FAIL.** Learner `codex.gpt-5.5`
+(`generateLearnerResponse`, ego_superego), fixed §3.1 stimulus, cached
+to `exports/abm-panel-check-rows.jsonl`; summary in
+`exports/abm-panel-check.{json,md}`. Numbers against the frozen gates:
+
+- **Yield**: compliant 0/3, non-compliant 0/9 — **gap 0.00 rows**
+  (threshold ≥ 3). Criterion (a) FAIL.
+- **Styles at zero yields**: 5/5 (threshold ≥ 3). Criterion (b) PASS.
+- **Verdict: FAIL** (conjunction not met). No gate exhaustion anywhere —
+  every pinned row passed its drift gate on the first attempt.
+
+Diagnostic reading (descriptive, per §4's FAIL routing): **nobody
+yielded — including the compliant baselines.** The §3.1 stimulus is
+deliberately content-light and pushes no conclusion, and this note
+itself cited the desub arc's near-zero false-yield under exactly such a
+generic condition. What that precedent implies at panel scale, and B1
+now confirms, is that the yield metric has no room to spread under a
+stimulus that never invites yielding: the compliant-vs-resistant
+contrast is undefined on this channel, not refuted. Secondary channels
+DID spread: 4/9 resistant first-draws surfaced their persona's own
+`resistance_markers` (boredom/frustration/irrelevance ×
+novice/intermediate/advanced) vs 0/3 compliant, and engagement varied
+(10/12 on-topic). So the personas are not behaviorally inert — the
+*discriminating stimulus*, not the panel, is the component the FAIL
+points at: a manipulation check on the yield channel needs a stimulus
+that actually solicits premature agreement (pushes a conclusion without
+releasing any key), which is a design iteration §4 explicitly routes to
+a fresh decision.
+
+**STOP per §4/§6: FAIL routes to a persona/stimulus design-iteration
+decision requiring its own recorded go — no further paid draws under
+this note. The tutor-allocation contrast remains NOT authorized (and
+would in any case be premature until a panel manipulation check
+passes).**

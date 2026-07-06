@@ -1,7 +1,7 @@
 ---
 id: longitudinal-drift-adaptation
 title: Longitudinal drift adaptation (cross-session memory as new signal)
-status: active
+status: review
 type: experiment
 priority: P1
 owner: claude
@@ -75,3 +75,26 @@ stale-reference itself is directional-only at this n; row-level generation
 or schedule-validation failures are excluded as instrument failures, not
 scored. Stage A0 build follows in the same commit boundary as the
 pre-registration.
+
+2026-07-06 Claude: Stage A0 built and green (3 schedule scenarios,
+`services/longitudinalDriftChecker.js`, 11 tests, stage-0 --check,
+validate-config, lint/prettier). Stage A1 executed with two recorded
+deviations and one VOID pass, all in the prereg's implementation log:
+(1) executed stack is the cells' native nemotron/kimi-k2.5 (the CLI
+bridge does not reach tutor-core's dialogue engine — the desub codex
+precedent was id-director cells); (2) cap check — 700 catastrophic
+(empty outputs), 1400 within quality tolerance (+0.62 v2.2 first-turn)
+but empties 3/6 drift rows, so the main arc ran uncapped per §2.4's
+terminal branch; (3) first main pass VOID — `--learner-id` never
+reached single-turn generation (runner wiring gap, now fixed with a
+one-line `runSingleTurnTest` change + hermetic probe; pad-off arm now
+runs with no learner-id since the YAML `writing_pad_enabled` flag is
+runtime-inert). Corrected pass (6/6 rows clean): instrument-validity
+gate PASS (current-reference pad-ON 3/3, pad-OFF 2/3); stale-reference
+gap 0 (0/2 both arms, directional only); no pad-OFF red flag. Key
+qualifier: the pad row persisted across sessions but its content layers
+stayed empty scaffold (0 recognition moments — single-turn suggestion
+sessions never feed pad content), so the stale-0 reflects an empty
+channel, not demonstrated indifference to memory. Instrument validated;
+a confirmatory design needs pad-feeding (multi-turn) sessions. STOP —
+awaiting a fresh pre-registration + go for anything further.

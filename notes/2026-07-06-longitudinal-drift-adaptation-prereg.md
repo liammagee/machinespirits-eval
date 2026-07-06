@@ -292,3 +292,125 @@ future decision, explicitly **not** authorized by this note.
 Stage A0 build follows in the same commit boundary as this note (per the
 task's execution order, Stage A0/B0 land alongside both preregs and the
 workplan cards, ahead of the no-paid gate and the pilots).
+
+**2026-07-06: Stage A0 complete; no-paid gate green.** Three schedule
+scenarios (`category: longitudinal_drift`, so they never leak into
+category-filtered standard suites), `services/longitudinalDriftChecker.js`,
+11 unit tests, `report-longitudinal-drift-stage0.js --check` green,
+`validate-config` 0 errors, full suite 4989/4990 (1 pre-existing skip),
+lint/prettier clean. Committed at the Stage A0/B0 boundary.
+
+**2026-07-06: DEVIATION (recorded before any paid row): executed model
+stack is the cells' native OpenRouter stack, not `codex.gpt-5.5`.**
+§2.1 froze `codex.gpt-5.5` for ego+superego via CLI overrides, on the
+belief the desub arc had already driven tutor-core's dialogue engine
+through the CLI-provider bridge. Verified false at execution time: the
+desub cells (186/193/199) are **id-director** cells, whose engine
+(`services/idDirectorEngine.js`) imports `callAIWithCliBridge`; the
+standard-runner path used by cells 40/93
+(`tutorApi.generateSuggestions` → `tutorDialogueEngine._fetchProvider`)
+supports only HTTP providers (anthropic/openai/openrouter/gemini/local/
+lmstudio) and has no injection hook. This is the long-standing
+"bridge doesn't reach tutor-core dialogue engine" boundary, re-confirmed
+by direct read. Resolution: both arms run on the cells' own, unmodified
+YAML stack — **nemotron ego + kimi-k2.5 superego (OpenRouter)** — which
+remains byte-identical across arms, so the pad-on/pad-off contrast is
+untouched; the codex choice was quota economics, never part of the
+contrast. `--max-tokens` IS honored on the OpenRouter path
+(`_fetchProvider` request body), so the §2.4 cap check stays meaningful.
+Wiring the CLI bridge into tutor-core would break the one-way
+tutor-core seam and is out of scope for this go. Cap-check judging uses
+`--judge-cli claude` (Sonnet-class, subscription-quota) per the
+established claude-code judge routing.
+
+**2026-07-06: Stage A1 executed. Cap-check verdict, a VOID first main
+pass (two instrument defects found and fixed), a corrected main pass,
+and the frozen-gate verdicts.** Full sequence, in order:
+
+1. **Cap check (§2.4)** — runs `eval-2026-07-06-ee9bde25` (700),
+   `eval-2026-07-06-7b1eef19` (uncapped), `eval-2026-07-06-888bd193`
+   (1400 fallback), 2 scenarios each, judged `--judge-cli claude`
+   (claude-code/sonnet, v2.2): **700 = catastrophic failure** (both rows
+   empty `[]` — the cap starves nemotron's reasoning before any final
+   output; not even scoreable, trivially outside the 5-point tolerance).
+   **1400 passed the frozen quality tolerance** (capped mean 23.75 vs
+   uncapped 23.13 first-turn, +0.62, well within 5 points).
+2. **First main pass (6 rows, cap 1400) = VOID, two instrument
+   defects.** (a) 3/6 rows empty — the 1400 cap that was
+   quality-tolerant on the generic cap-check scenarios is operationally
+   broken on the longer drift scenarios (>1/6 rows, i.e.
+   instrument-failure-affected per §3 on its own). (b) Far more
+   important: **the Writing Pad was never engaged at all** — zero
+   `writing_pads` rows for any learner-id. Root cause: `--learner-id`
+   reached only the DB result row on *single-turn* scenarios
+   (`runSingleTurnTest` did not forward `learnerId` into
+   `generateAndEvaluateTurn`; its own comment said "passes through to
+   result row only"). The multi-turn path (which the A7 arc used) does
+   forward it — these drift scenarios are single-turn, so the
+   manipulated variable (pad) never existed in the first pass. Both
+   defects are instrument failures in §3's sense; the pass is VOID, not
+   data. Rows kept in the DB for provenance
+   (`eval-2026-07-06-{c3958bda,2b59cc81,1f6f3349,f9c8af5e,5dfd12f9,f02ebb17}`).
+3. **Fixes.** One-line runner change forwarding `learnerId` in
+   `runSingleTurnTest` (mirrors `runMultiTurnTest` exactly); verified
+   end-to-end with a hermetic one-row probe (temp `EVAL_DB_PATH` +
+   `AUTH_DB_PATH`; pad row created, real output; `--dry-run` cannot
+   exercise this path since it short-circuits before `runDialogue`).
+   Discovered along the way: the YAML `writing_pad_enabled` flag is
+   read by **no runtime code** (only an analysis script) — pad-on/off
+   is operationalized entirely by supplying `--learner-id` or not.
+   **Second deviation from §2.1 recorded**: the pad-OFF arm runs with
+   NO `--learner-id` (rather than its own id), which achieves §2.1's
+   stated intent ("cell_93 should never touch the writing_pads table")
+   exactly, whereas an id on the fixed wiring would have created a pad
+   for the pad-OFF arm too. Cap decision for the corrected pass: per
+   §2.4's terminal branch, the main arc runs **uncapped** (700
+   catastrophic; 1400 passed tolerance on generic scenarios but empties
+   half the drift rows; the check does not get a third bite) — token
+   cost recorded as an open limitation.
+4. **Corrected main pass (6 rows, uncapped, wiring fixed)**: pad-ON =
+   cell_40 + `--learner-id a1-drift-padon-v2-2026-07-06`
+   (`eval-2026-07-06-{5673b4bb,191b2ac3,93f5d964}`), pad-OFF = cell_93,
+   no learner-id (`eval-2026-07-06-{163dfdb8,eeb8e9ab,8a151532}`),
+   sessions strictly 1→2→3 per arm. **0/6 instrument failures.**
+   Exactly one `writing_pads` row existed after the pad-ON arc (created
+   session 1, reused sessions 2-3, `updated_at > created_at`) and none
+   for pad-OFF — the A7 plumbing criteria.
+5. **Results against the frozen §3 gates** (checker =
+   `longitudinalDriftChecker.scoreOpeningTurn` on the stored
+   `suggestions` field, the frozen literal reading; the learner-visible
+   title+message-only sub-reading is reported secondarily and changes
+   no verdict):
+   - **Instrument validity gate: PASS.** Current-reference pad-ON 3/3,
+     pad-OFF 2/3 (literal reading; 2/3 and 2/3 on the learner-visible
+     reading) — ≥2/3 in at least one arm, comfortably; not
+     INSTRUMENT_FLOOR.
+   - **Stale-reference (directional, not adjudicated at this n)**:
+     pad-ON 0/2, pad-OFF 0/2 — **gap 0**. No temporal anchoring signal
+     in either direction.
+   - **Structural red flag: none** (pad-OFF stale-reference 0, as it
+     structurally must be).
+   - **Row-level instrument failures in the adjudicated pass: 0/6.**
+6. **The load-bearing qualifier on the stale-0 result**: the pad-ON
+   pad row persisted and was updated across sessions, but its content
+   layers stayed empty scaffold (conscious `workingThoughts: []`,
+   preconscious `recentPatterns: []`, `total_recognition_moments: 0`).
+   Recognition moments are content-driven and none fire in short
+   single-turn suggestion sessions — so the persistence *channel*
+   existed but carried no session-specific *content*, and no stale
+   vocabulary could have surfaced through it. The corrected pilot
+   therefore validates the instrument (schedule, checker, gates, arm
+   wiring) and surfaces a mechanism precondition: **a confirmatory
+   design needs sessions that actually feed the pad's content layers**
+   (multi-turn sessions, or an explicit pad-content injection check)
+   before pad-on-vs-pad-off stale-tracking is a live contrast. This is
+   an instrument finding, not an adaptation finding.
+
+**STOP per §3/§5: Stage A1 is complete and this note authorizes nothing
+further.** Rows consumed: 6 cap-check + 6 void + 1 hermetic wiring probe
++ 6 corrected = 19 tutor generations plus 4 judged rows, all on the
+cheap OpenRouter stack (nemotron/kimi-k2.5) — the void pass and probe
+are instrument-failure/plumbing overhead documented above, not design
+scaling. Anything beyond (a powered confirmatory design, multi-turn
+pad-feeding sessions, more learner-ids/arms/model stacks) requires a
+fresh pre-registration and recorded go.

@@ -2872,7 +2872,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     judgeCliModel = null,
     dryRun = false,
     showMessages = false,
-    learnerId = null, // A7 Longitudinal: passes through to result row only
+    learnerId = null, // A7 Longitudinal: Writing Pad persistence + result row (generation wiring added for the Line A drift pilot)
   } = options;
 
   // Resolve model aliases through eval's providers.yaml
@@ -2954,6 +2954,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       maxRounds,
       log,
       scenarioId: scenario.id,
+      learnerId, // Writing Pad persistence — mirrors runMultiTurnTest (was result-row-only before the Line A longitudinal-drift pilot)
       dryRun,
       showMessages,
     },
