@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "peripeteia": {
+      "score": 5,
+      "reasoning": "Clear orientation-reversal with a visible hinge. The learner opens committed to Reyner — 'The civic notes already names Reyner... I've got it written right here in the margin' (T1) — with the task framed as confirming the bonded name. It closes on the opposite: 'Strike what I had in the margin... Oswin felled the span' (T22). The hinge is shown across T20 (toll page surfaces Oswin) → T21 'That is... not Reyner' → T22. The relation veers from liability-naming to causal tracing."
+    },
+    "anagnorisis": {
+      "score": 5,
+      "reasoning": "Two owned recognition-events. T12 matches the rubric's 5-exemplar in form — a self-flaw the learner authors: 'I ran ahead of myself... I was already naming yards and hands off something I don't actually have on the table' (knowledge of his own leap-to-blame, unstated earlier, not tutor-supplied). The climactic T21 'That is... not Reyner' and T22 'Strike what I had in the margin' articulate a conclusion unavailable at T1; the name is evidence-delivered but the reversal of his own committed draft is owned by the speaker."
+    },
+    "surprise_and_inevitability": {
+      "score": 4,
+      "reasoning": "Inevitability is exemplary: green-mortar (struck centering, T9) → crowsfoot trace (T13) → Caudle yard (T17) → toll book (T20) so the ending is, on re-reading, exactly what each step prepared. Surprise is the weaker leg — the tutor's relentless gap-pointing telegraphs 'not Reyner,' so a competent reader foresees a reversal, though not its specific content (Oswin the gate-keeper, 'bare green props up from the ford the morning after the flood,' T20). Both legs present, surprise discounted by foreshadowing."
+    },
+    "unity_of_action": {
+      "score": 5,
+      "reasoning": "One complete action with a necessary macro-sequence: liability facts (note/yard/bond) shown insufficient for agency → cause (T9) → trace (T13) → source (T17) → carrier (T20). Each tutor turn takes up the specific prior file ('Take only the bond...' T8; 'Break out the crown bed...' T9; 'Take the photo sheet in pieces' T13). The chain cannot be reordered — carrier needs source, source needs trace, trace needs the cured-vs-green bed. Beginning (unopened file/demand), complicating middle (resistance plus the T11–12 false start), closing (Oswin named, draft struck)."
+    },
+    "hamartia_integration": {
+      "score": 5,
+      "reasoning": "The misconception is the mainspring: the learner conflates liability with causal agency — 'Why does it matter whether I can name the cause... if the notes already tells me who answers for it?' (T5); 'who pays is settled, even if who pulled the timber is still open' (T9). The complication and turn arise entirely from working this through; the flaw exposes its own insufficiency and is exactly what gets struck — 'enter the finding from those steps, not from the bond' / 'Strike what I had in the margin' (T22)."
+    },
+    "cathartic_closure": {
+      "score": 4,
+      "reasoning": "The close lands as a reader-felt discharge — a clerk who clung to the bond for twenty turns finally strikes his own draft and names Oswin (T22), purging the built resistance. Held to 4 rather than 5 because the final recognition is the transcript's most tutor-scaffolded moment: T22's tutor turn supplies the three-part recap ('Cause:... Source:... Carrier:...') and directs 'Now enter the finding,' so the catharsis is co-produced rather than erupting from the learner alone."
+    }
+  },
+  "overall_score": 92,
+  "summary": "A strongly-formed didactic drama. A genuine peripeteia (Reyner→Oswin) with a visible hinge, a learner-authored recognition (the T12 self-flaw catch and the T22 striking of his own draft), a tightly necessary evidentiary action, and a misconception (liability = agency) that drives every beat. Two soft spots keep it from the top: the reversal is foreshadowed by the tutor's persistent gap-pointing (surprise discounted), and the closing recognition is heavily tutor-scaffolded.",
+  "caveats": [
+    "The culprit's name (Oswin) is delivered by the evidence (toll page, T20), not discovered by the learner; what the learner owns is the reversal of his own draft, not the fact itself.",
+    "The middle liability files (contract note, yard, bond) make closely-related 'responsibility' moves whose internal order is somewhat flexible, even though the macro cause→trace→source→carrier sequence is strictly necessary.",
+    "Scored on public dramatic form only; the deterministic proof verdict (grounded_anagnorisis, D=0, 0 leaks) is reported separately and did not enter these scores."
+  ]
+}

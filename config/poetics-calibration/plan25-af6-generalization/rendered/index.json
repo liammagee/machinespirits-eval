@@ -1,0 +1,38 @@
+{
+  "schema": "plan25_af6_generalization_rendered_index_v0_1",
+  "generated_at": "2026-06-22T14:27:41.627Z",
+  "scene_set": "config/poetics-calibration/plan25-af6-generalization/scene-set.yaml",
+  "template": "config/poetics-calibration/plan25-af6-generalization/branch-template.yaml",
+  "scenes": [
+    {
+      "id": "tier_a_null_floor_96_recall_20",
+      "dir": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_a_null_floor_96_recall_20",
+      "design": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_a_null_floor_96_recall_20/branch-spec.yaml",
+      "prefix": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_a_null_floor_96_recall_20/frozen-prefix.txt"
+    },
+    {
+      "id": "tier_a_null_floor_90_recall_15",
+      "dir": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_a_null_floor_90_recall_15",
+      "design": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_a_null_floor_90_recall_15/branch-spec.yaml",
+      "prefix": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_a_null_floor_90_recall_15/frozen-prefix.txt"
+    },
+    {
+      "id": "tier_a_below_floor_recall_14",
+      "dir": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_a_below_floor_recall_14",
+      "design": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_a_below_floor_recall_14/branch-spec.yaml",
+      "prefix": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_a_below_floor_recall_14/frozen-prefix.txt"
+    },
+    {
+      "id": "tier_b_precision_recall_confusion",
+      "dir": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_b_precision_recall_confusion",
+      "design": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_b_precision_recall_confusion/branch-spec.yaml",
+      "prefix": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_b_precision_recall_confusion/frozen-prefix.txt"
+    },
+    {
+      "id": "tier_b_specificity_recall_confusion",
+      "dir": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_b_specificity_recall_confusion",
+      "design": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_b_specificity_recall_confusion/branch-spec.yaml",
+      "prefix": "config/poetics-calibration/plan25-af6-generalization/rendered/tier_b_specificity_recall_confusion/frozen-prefix.txt"
+    }
+  ]
+}

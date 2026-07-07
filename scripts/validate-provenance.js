@@ -15,7 +15,9 @@
  *   node scripts/validate-provenance.js <runId>           # validate a specific run
  *   node scripts/validate-provenance.js <runId> --verbose  # show per-row failure details
  *   node scripts/validate-provenance.js <runId> --json out.json  # structured JSON output
- *   node scripts/validate-provenance.js                    # validate ALL runs with scored rows
+ *   node scripts/validate-provenance.js --db <path> --logs <logs-root-or-tutor-dialogues-dir>
+ *   node scripts/validate-provenance.js                    # validate complete-provenance runs
+ *   node scripts/validate-provenance.js --all-runs         # include legacy/partial runs
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
@@ -23,27 +25,29 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
 import Database from 'better-sqlite3';
-import { verifyTurnIdsForRow } from '../services/provableDiscourse.js';
+import { verifyTurnIdsForRow, loadOrphanWaivers } from '../services/provableDiscourse.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const DB_PATH = join(ROOT, 'data', 'evaluations.db');
-const LOG_DIR = join(ROOT, 'logs', 'tutor-dialogues');
+let LOG_DIR = resolveTutorDialoguesDir(ROOT);
 
 // ── CLI Parsing ──────────────────────────────────────────────────────────────
 
 function parseCli() {
   const args = process.argv.slice(2);
-  const flags = { verbose: false };
+  const flags = { verbose: false, allRuns: false };
   const values = {};
   let runId = null;
 
-  const VALUE_OPTIONS = new Set(['json', 'db']);
+  const VALUE_OPTIONS = new Set(['json', 'db', 'logs', 'logs-dir']);
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (arg === '--verbose') {
       flags.verbose = true;
+    } else if (arg === '--all-runs') {
+      flags.allRuns = true;
     } else if (arg.startsWith('--')) {
       const key = arg.slice(2);
       if (VALUE_OPTIONS.has(key) && i + 1 < args.length) {
@@ -54,7 +58,14 @@ function parseCli() {
     }
   }
 
-  return { runId, verbose: flags.verbose, jsonPath: values.json || null, dbPath: values.db || null };
+  return {
+    runId,
+    verbose: flags.verbose,
+    allRuns: flags.allRuns,
+    jsonPath: values.json || null,
+    dbPath: values.db || null,
+    logsPath: values.logs || values['logs-dir'] || null,
+  };
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -87,6 +98,56 @@ function safeJsonParse(value) {
   } catch {
     return null;
   }
+}
+
+function hasCompleteTurnProvenance(tutorScoresValue) {
+  const tutorScores = safeJsonParse(tutorScoresValue);
+  if (!tutorScores) return false;
+  const turns = Object.values(tutorScores).filter((turnValue) => turnValue && typeof turnValue === 'object');
+  if (turns.length === 0) return false;
+  return turns.every((turnValue) => turnValue.contentTurnId && turnValue.judgeInputHash);
+}
+
+function selectCompleteProvenanceRuns(db) {
+  const allScoredRuns = db
+    .prepare(`SELECT COUNT(DISTINCT run_id) AS c FROM evaluation_results WHERE tutor_scores IS NOT NULL`)
+    .get()?.c;
+  const candidates = db
+    .prepare(
+      `SELECT run_id,
+              COUNT(*) AS scored_rows,
+              SUM(dialogue_content_hash IS NOT NULL) AS dialogue_hash_rows,
+              SUM(config_hash IS NOT NULL) AS config_hash_rows
+       FROM evaluation_results
+       WHERE tutor_scores IS NOT NULL
+       GROUP BY run_id
+       HAVING scored_rows > 0
+          AND dialogue_hash_rows = scored_rows
+          AND config_hash_rows = scored_rows
+       ORDER BY run_id`,
+    )
+    .all();
+
+  const rowsForRun = db.prepare(
+    `SELECT tutor_scores FROM evaluation_results WHERE run_id = ? AND tutor_scores IS NOT NULL`,
+  );
+
+  const selected = [];
+  const skippedPartial = [];
+  for (const candidate of candidates) {
+    const rows = rowsForRun.all(candidate.run_id);
+    if (rows.every((row) => hasCompleteTurnProvenance(row.tutor_scores))) {
+      selected.push({ run_id: candidate.run_id });
+    } else {
+      skippedPartial.push(candidate.run_id);
+    }
+  }
+
+  return {
+    selected,
+    skippedLegacyOrPartial: Math.max(0, Number(allScoredRuns || 0) - selected.length),
+    skippedPartial,
+  };
 }
 
 function coverageStatus(covered, total, label) {
@@ -144,20 +205,28 @@ function checkDialogueHashCoverage(db, runId, verbose) {
 function checkDialogueLogIntegrity(db, runId, verbose) {
   const rows = db
     .prepare(
-      `SELECT id, dialogue_id, dialogue_content_hash FROM evaluation_results
+      `SELECT id, run_id, dialogue_id, dialogue_content_hash FROM evaluation_results
      WHERE run_id = ? AND dialogue_content_hash IS NOT NULL AND dialogue_id IS NOT NULL`,
     )
     .all(runId);
 
+  const waivers = loadOrphanWaivers(ROOT);
+
   let matched = 0;
   let mismatched = 0;
   let missing = 0;
+  let waived = 0;
   let parseError = 0;
   const failures = [];
 
   for (const row of rows) {
     const filePath = join(LOG_DIR, `${row.dialogue_id}.json`);
     if (!existsSync(filePath)) {
+      // Accepted-missing (documented transcript loss) → waived, not a failure.
+      if (waivers.has(`${row.run_id}::${row.dialogue_id}`)) {
+        waived++;
+        continue;
+      }
       missing++;
       failures.push({ id: row.id, dialogueId: row.dialogue_id, reason: 'log_file_missing' });
       continue;
@@ -180,13 +249,14 @@ function checkDialogueLogIntegrity(db, runId, verbose) {
     }
   }
 
+  const waivedNote = waived > 0 ? `, ${waived} waived (accepted loss)` : '';
   if (rows.length === 0) {
     warn('Dialogue log integrity: no rows with dialogue_content_hash to verify');
   } else if (mismatched === 0 && missing === 0 && parseError === 0) {
-    pass(`Dialogue log integrity: ${matched}/${rows.length} verified`);
+    pass(`Dialogue log integrity: ${matched}/${rows.length} verified${waivedNote}`);
   } else {
     fail(
-      `Dialogue log integrity: ${matched} match, ${mismatched} mismatch, ${missing} missing, ${parseError} parse error (of ${rows.length})`,
+      `Dialogue log integrity: ${matched} match, ${mismatched} mismatch, ${missing} missing, ${parseError} parse error${waivedNote} (of ${rows.length})`,
     );
   }
 
@@ -203,6 +273,7 @@ function checkDialogueLogIntegrity(db, runId, verbose) {
     matched,
     mismatched,
     missing,
+    waived,
     parseError,
     status: mismatched === 0 && missing === 0 && parseError === 0 ? 'pass' : 'fail',
     failures,
@@ -543,9 +614,10 @@ function validateRun(db, runId, verbose) {
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 function main() {
-  const { runId, verbose, jsonPath, dbPath } = parseCli();
+  const { runId, verbose, allRuns, jsonPath, dbPath, logsPath } = parseCli();
 
-  const effectiveDbPath = dbPath || DB_PATH;
+  const effectiveDbPath = resolveEvaluationDbPath(ROOT, dbPath || null);
+  LOG_DIR = resolveTutorDialoguesDir(ROOT, logsPath || null);
   if (!existsSync(effectiveDbPath)) {
     console.error(`Database not found: ${effectiveDbPath}`);
     process.exit(1);
@@ -559,11 +631,25 @@ function main() {
     // Validate a single run
     results.push(validateRun(db, runId, verbose));
   } else {
-    // Validate all runs with scored rows
-    const runs = db
-      .prepare(`SELECT DISTINCT run_id FROM evaluation_results WHERE tutor_scores IS NOT NULL ORDER BY run_id`)
-      .all();
-    console.log(`\n═══ Provenance Validation: All Runs (${runs.length}) ═══`);
+    let runs;
+    if (allRuns) {
+      runs = db
+        .prepare(`SELECT DISTINCT run_id FROM evaluation_results WHERE tutor_scores IS NOT NULL ORDER BY run_id`)
+        .all();
+      console.log(`\n═══ Provenance Validation: All Runs (${runs.length}) ═══`);
+    } else {
+      const selection = selectCompleteProvenanceRuns(db);
+      runs = selection.selected;
+      console.log(`\n═══ Provenance Validation: Complete-Provenance Runs (${selection.selected.length}) ═══`);
+      if (selection.skippedLegacyOrPartial > 0) {
+        console.log(
+          `  Skipped ${selection.skippedLegacyOrPartial} legacy/partial run(s); use --all-runs for the historical debt audit.`,
+        );
+      }
+      if (selection.skippedPartial.length > 0 && verbose) {
+        console.log(`  Partial provenance skipped: ${selection.skippedPartial.join(', ')}`);
+      }
+    }
     for (const row of runs) {
       results.push(validateRun(db, row.run_id, verbose));
     }

@@ -2,7 +2,7 @@
 """
 Track A -- Repertoire-Ceiling Diagnostic -- Stage 0  (offline, zero-API, read-only)
 
-Pre-registration: notes/adaptation-repertoire-stage0-preregistration.md
+Pre-registration: notes/2026-06-09-adaptation-repertoire-stage0-preregistration.md
 (FROZEN 2026-06-09, before any query of the evaluation data; user signed off
 on the "Option A" matched-learner design that day).
 
@@ -13,7 +13,7 @@ Reads existing trace files. Lands as §6.11 of docs/research/paper-full-2.0.md,
 positive or negative, no spin-off.
 
 ==============================================================================
-THE QUESTION (one question; §2 of notes/adaptation-exploration-plan.md)
+THE QUESTION (one question; §2 of notes/2026-06-09-adaptation-exploration-plan.md)
 ==============================================================================
 Is the adaptation ceiling a *mechanism* failure or a *repertoire* failure? The
 five convergent negatives (§6.7, §6.8.8, §6.9.7, §6.9.8, §6.10) all assumed the
@@ -522,7 +522,7 @@ def main():
 
     meta = {
         "stage": "Track A Repertoire-Ceiling Stage 0 (offline, zero-API, read-only)",
-        "preregistration": "notes/adaptation-repertoire-stage0-preregistration.md",
+        "preregistration": "notes/2026-06-09-adaptation-repertoire-stage0-preregistration.md",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "seed": SEED, "B_boot": B_BOOT, "min_runs": MIN_RUNS, "din_floor": DIN_FLOOR,
         "zero_api": True, "read_only": True, "db": DB, "logs": LOGS,

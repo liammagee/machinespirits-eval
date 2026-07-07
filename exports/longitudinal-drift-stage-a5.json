@@ -1,0 +1,171 @@
+{
+  "checkerVersion": "1.2",
+  "rows": [
+    {
+      "armToken": "padoff-threadon",
+      "sessionIndex": 1,
+      "runId": "eval-2026-07-07-74fc5845",
+      "openingChars": 228,
+      "contentBearing": {
+        "applicable": false,
+        "hit": null,
+        "evidence": null
+      },
+      "continuity": {
+        "applicable": false,
+        "hit": null,
+        "evidence": null
+      },
+      "delivery": {
+        "turns": 4,
+        "tagged": 4,
+        "taggedTurnIndices": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "armToken": "padoff-threadon",
+      "sessionIndex": 2,
+      "runId": "eval-2026-07-07-a858c7b4",
+      "openingChars": 229,
+      "contentBearing": {
+        "applicable": true,
+        "hit": true,
+        "evidence": "fractions"
+      },
+      "continuity": {
+        "applicable": true,
+        "hit": true,
+        "evidence": "fractions"
+      },
+      "delivery": {
+        "turns": 4,
+        "tagged": 4,
+        "taggedTurnIndices": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "armToken": "padoff-threadon",
+      "sessionIndex": 3,
+      "runId": "eval-2026-07-07-72f7d609",
+      "openingChars": 550,
+      "contentBearing": {
+        "applicable": true,
+        "hit": true,
+        "evidence": "ratio"
+      },
+      "continuity": {
+        "applicable": true,
+        "hit": true,
+        "evidence": "ratio"
+      },
+      "delivery": {
+        "turns": 4,
+        "tagged": 4,
+        "taggedTurnIndices": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "byArm": {
+      "padon-threadon": {
+        "ran": false,
+        "slotsHit": 0,
+        "slotsApplicable": 0,
+        "instrumentFailures": 0,
+        "threadingDeliveryRate": null,
+        "turnsTagged": 0,
+        "turnsTotal": 0,
+        "detail": []
+      },
+      "padon-threadoff": {
+        "ran": false,
+        "slotsHit": 0,
+        "slotsApplicable": 0,
+        "instrumentFailures": 0,
+        "threadingDeliveryRate": null,
+        "turnsTagged": 0,
+        "turnsTotal": 0,
+        "detail": []
+      },
+      "padoff-threadon": {
+        "ran": true,
+        "slotsHit": 4,
+        "slotsApplicable": 4,
+        "instrumentFailures": 0,
+        "threadingDeliveryRate": 1,
+        "turnsTagged": 12,
+        "turnsTotal": 12,
+        "detail": [
+          {
+            "sessionIndex": 1,
+            "checker": "contentBearing",
+            "applicable": false,
+            "hit": null,
+            "evidence": null
+          },
+          {
+            "sessionIndex": 1,
+            "checker": "continuity",
+            "applicable": false,
+            "hit": null,
+            "evidence": null
+          },
+          {
+            "sessionIndex": 2,
+            "checker": "contentBearing",
+            "applicable": true,
+            "hit": true,
+            "evidence": "fractions"
+          },
+          {
+            "sessionIndex": 2,
+            "checker": "continuity",
+            "applicable": true,
+            "hit": true,
+            "evidence": "fractions"
+          },
+          {
+            "sessionIndex": 3,
+            "checker": "contentBearing",
+            "applicable": true,
+            "hit": true,
+            "evidence": "ratio"
+          },
+          {
+            "sessionIndex": 3,
+            "checker": "continuity",
+            "applicable": true,
+            "hit": true,
+            "evidence": "ratio"
+          }
+        ]
+      }
+    },
+    "gates": {
+      "arm1Pass": null,
+      "arm2Pass": null,
+      "arm3Pass": false
+    },
+    "verdict": "NOT_EVALUABLE — arm(s) not run: padon-threadon, padon-threadoff (see the prereg §11.8 implementation log)",
+    "arm3RedFlag": true
+  },
+  "padContentTrace": {
+    "arm1": null,
+    "arm2": null
+  }
+}

@@ -1,0 +1,1247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Human Coding · Superego Taxonomy</title>
+    <link rel="stylesheet" href="/components/techne.css" />
+    <style>
+      :root {
+        --coding-gap: 14px;
+      }
+      .coding-shell {
+        width: min(1520px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 18px 0 48px;
+      }
+      .coding-bar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 0 16px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .coding-bar .wordmark {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 19px;
+        font-style: italic;
+        color: var(--ink);
+      }
+      .coding-bar .tag {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-4);
+      }
+      .coding-bar .spacer { flex: 1; }
+      .status-grid {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.75fr) minmax(360px, 1.25fr);
+        gap: var(--coding-gap);
+        padding: 16px 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .field-row {
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) auto auto;
+        gap: 10px;
+        align-items: end;
+      }
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1px;
+        border: 1px solid var(--rule);
+        background: var(--rule);
+      }
+      .metric {
+        background: var(--paper-4);
+        padding: 11px 12px;
+        min-height: 68px;
+      }
+      .metric .n {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 24px;
+        line-height: 1;
+        color: var(--moss-deep);
+      }
+      .metric .l {
+        margin-top: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--ink-4);
+      }
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(230px, 0.72fr) minmax(430px, 1.52fr) minmax(300px, 0.96fr);
+        gap: var(--coding-gap);
+        padding-top: 16px;
+        align-items: start;
+      }
+      .pane {
+        border: 1px solid var(--rule);
+        background: var(--paper-4);
+      }
+      .pane-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--rule);
+        background: var(--paper-3);
+      }
+      .pane-head h2,
+      .pane-head h3 {
+        margin: 0;
+        font-size: 0.98rem;
+      }
+      .pane-body { padding: 12px; }
+      .small {
+        color: var(--ink-3);
+        font-size: 12.5px;
+      }
+      .notice {
+        border: 1px solid var(--ochre);
+        background: color-mix(in srgb, var(--ochre-soft) 44%, var(--paper-4));
+        color: var(--ink-2);
+        padding: 10px 12px;
+        margin: 10px 0 0;
+      }
+      .notice.error {
+        border-color: var(--brick);
+        background: color-mix(in srgb, var(--brick-soft) 42%, var(--paper-4));
+      }
+      .command {
+        display: block;
+        margin-top: 8px;
+        padding: 9px 10px;
+        border: 1px solid var(--rule);
+        background: var(--paper-2);
+        color: var(--ink);
+        white-space: normal;
+      }
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 0 0 10px;
+      }
+      .chip-btn {
+        min-height: 30px;
+        padding: 0 9px;
+        font-size: 10.5px;
+      }
+      .chip-btn.active {
+        border-color: var(--moss-deep);
+        background: var(--moss-deep);
+        color: var(--paper);
+      }
+      .item-list {
+        display: grid;
+        gap: 7px;
+        max-height: calc(100vh - 290px);
+        overflow: auto;
+      }
+      .item-btn {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 8px;
+        align-items: center;
+        min-height: 42px;
+        padding: 7px 8px;
+        border: 1px solid var(--rule);
+        background: var(--paper-4);
+        text-align: left;
+        color: var(--ink);
+        font-family: inherit;
+        letter-spacing: 0;
+      }
+      .item-btn.active {
+        border-color: var(--indigo);
+        background: color-mix(in srgb, var(--indigo-soft) 52%, var(--paper-4));
+      }
+      .item-btn.done .dot { background: var(--moss-deep); }
+      .item-btn.low .dot { background: var(--ochre-d); }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--ink-4);
+      }
+      .item-id {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--ink-2);
+      }
+      .item-label {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        color: var(--ink-4);
+        text-transform: uppercase;
+      }
+      .task-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1px;
+        border: 1px solid var(--rule);
+        background: var(--rule);
+        margin-bottom: 12px;
+      }
+      .task-strip div {
+        background: var(--paper-3);
+        padding: 9px 10px;
+        font-size: 12.5px;
+      }
+      .task-strip strong {
+        display: block;
+        margin-bottom: 3px;
+        color: var(--ink);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+      .item-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        padding: 2px 8px;
+        border: 1px solid var(--rule);
+        background: var(--paper-3);
+        color: var(--ink-3);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .text-block {
+        border: 1px solid var(--rule);
+        background: var(--paper);
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      .text-block.primary {
+        border-left: 3px solid var(--brick);
+      }
+      .text-block h3 {
+        margin: 0 0 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-4);
+      }
+      .text-block .content {
+        white-space: pre-wrap;
+        color: var(--ink-2);
+        font-size: 14px;
+      }
+      .coding-form {
+        display: grid;
+        gap: 12px;
+        padding-top: 4px;
+      }
+      .control-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(130px, 0.32fr);
+        gap: 10px;
+      }
+      .secondary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px 10px;
+      }
+      .secondary-grid label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 28px;
+        color: var(--ink-2);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+      .secondary-grid input {
+        width: auto;
+        min-height: 0;
+      }
+      textarea#human-notes {
+        min-height: 92px;
+        resize: vertical;
+      }
+      .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding-top: 2px;
+      }
+      .form-actions .left,
+      .form-actions .right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .save-state {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--ink-4);
+      }
+      .save-state.error { color: var(--brick-d); }
+      .category-list {
+        display: grid;
+        gap: 7px;
+        max-height: 310px;
+        overflow: auto;
+      }
+      .category-btn {
+        min-height: 36px;
+        padding: 7px 9px;
+        border: 1px solid var(--rule);
+        background: var(--paper-4);
+        text-align: left;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--ink);
+        letter-spacing: 0;
+      }
+      .category-btn.active {
+        border-color: var(--moss-deep);
+        background: color-mix(in srgb, var(--moss-soft) 65%, var(--paper-4));
+      }
+      .category-detail {
+        margin-top: 12px;
+        border-top: 1px solid var(--rule);
+        padding-top: 12px;
+      }
+      .category-detail h3 {
+        font-size: 1rem;
+        margin-bottom: 6px;
+      }
+      .signals {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin: 8px 0;
+      }
+      .signal {
+        border: 1px solid var(--rule);
+        background: var(--paper-3);
+        padding: 2px 7px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        color: var(--ink-3);
+      }
+      .decision-list {
+        margin: 0;
+        padding-left: 19px;
+        color: var(--ink-3);
+        font-size: 12.5px;
+      }
+      .decision-list li { margin: 4px 0; }
+      .rater-list {
+        display: grid;
+        gap: 7px;
+        margin-top: 8px;
+      }
+      .rater-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        border: 1px solid var(--rule);
+        background: var(--paper-4);
+        padding: 7px 9px;
+        font-size: 12px;
+      }
+      .comparison-section {
+        margin-top: 16px;
+      }
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1px;
+        border: 1px solid var(--rule);
+        background: var(--rule);
+        margin-bottom: 14px;
+      }
+      .comparison-card {
+        background: var(--paper-4);
+        padding: 12px;
+        min-height: 76px;
+      }
+      .comparison-card .n {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 24px;
+        line-height: 1;
+        color: var(--indigo);
+      }
+      .comparison-card .l {
+        margin-top: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--ink-4);
+      }
+      .comparison-columns {
+        display: grid;
+        grid-template-columns: minmax(360px, 0.9fr) minmax(420px, 1.1fr);
+        gap: var(--coding-gap);
+      }
+      table.comparison {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      table.comparison th,
+      table.comparison td {
+        border: 1px solid var(--rule);
+        padding: 6px 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+      table.comparison th {
+        background: var(--paper-3);
+        color: var(--ink-3);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+      .disagreement-list {
+        display: grid;
+        gap: 10px;
+        max-height: 520px;
+        overflow: auto;
+      }
+      .disagreement-card {
+        border: 1px solid var(--rule);
+        border-left: 3px solid var(--brick);
+        background: var(--paper-4);
+        padding: 10px 12px;
+      }
+      .disagreement-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 8px;
+      }
+      .label-pair {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin: 8px 0;
+      }
+      .label-box {
+        border: 1px solid var(--rule);
+        background: var(--paper-3);
+        padding: 7px 8px;
+      }
+      .label-box strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--ink-4);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 9.5px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+      @media (max-width: 1120px) {
+        .workspace,
+        .status-grid,
+        .comparison-columns {
+          grid-template-columns: 1fr;
+        }
+        .item-list { max-height: 280px; }
+      }
+      @media (max-width: 760px) {
+        .coding-shell { width: min(100vw - 20px, 760px); }
+        .metrics,
+        .comparison-grid,
+        .task-strip,
+        .control-grid,
+        .secondary-grid {
+          grid-template-columns: 1fr;
+        }
+        .field-row { grid-template-columns: 1fr; }
+        .form-actions { align-items: flex-start; flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="coding-shell">
+      <nav class="coding-bar">
+        <span class="wordmark">Machine Spirits</span>
+        <span class="tag">human coding · superego taxonomy</span>
+        <span class="spacer"></span>
+        <span class="tag" id="sample-tag">loading</span>
+      </nav>
+
+      <section class="status-grid">
+        <div class="pane">
+          <div class="pane-head">
+            <h2>Coder Session</h2>
+            <span class="small" id="coder-path"></span>
+          </div>
+          <div class="pane-body">
+            <div class="field-row">
+              <label>
+                Coder ID
+                <input id="coder-id" autocomplete="off" spellcheck="false" placeholder="rater-A" />
+              </label>
+              <button id="load-coder" class="primary" type="button">Load</button>
+              <button id="compare-ai" type="button" disabled>Compare with AI</button>
+            </div>
+            <div id="setup-notice" class="notice" hidden></div>
+            <div class="rater-list" id="rater-list"></div>
+          </div>
+        </div>
+        <div class="metrics" aria-label="Coding progress">
+          <div class="metric">
+            <div class="n" id="metric-total">0</div>
+            <div class="l">items</div>
+          </div>
+          <div class="metric">
+            <div class="n" id="metric-complete">0</div>
+            <div class="l">coded</div>
+          </div>
+          <div class="metric">
+            <div class="n" id="metric-left">0</div>
+            <div class="l">remaining</div>
+          </div>
+          <div class="metric">
+            <div class="n" id="metric-low">0</div>
+            <div class="l">low confidence</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="pane">
+          <div class="pane-head">
+            <h2>Worklist</h2>
+            <span class="small" id="worklist-count">0 shown</span>
+          </div>
+          <div class="pane-body">
+            <div class="filters" role="group" aria-label="Worklist filter">
+              <button class="chip-btn active" type="button" data-filter="all">All</button>
+              <button class="chip-btn" type="button" data-filter="open">Open</button>
+              <button class="chip-btn" type="button" data-filter="low">Low Conf</button>
+              <button class="chip-btn" type="button" data-filter="done">Done</button>
+            </div>
+            <div class="item-list" id="item-list"></div>
+          </div>
+        </aside>
+
+        <section class="pane">
+          <div class="pane-head">
+            <h2>Current Item</h2>
+            <span class="small" id="item-position">No item loaded</span>
+          </div>
+          <div class="pane-body">
+            <div class="task-strip">
+              <div>
+                <strong>Object</strong>
+                Label the superego feedback text.
+              </div>
+              <div>
+                <strong>Not The Task</strong>
+                Do not decide whether the critique is correct.
+              </div>
+              <div>
+                <strong>Rule</strong>
+                Pick one primary label; use secondary labels only for close ties.
+              </div>
+            </div>
+
+            <div id="empty-state" class="notice">Enter a coder ID and load the packet.</div>
+            <div id="item-view" hidden>
+              <div class="item-meta">
+                <span class="pill" id="current-item-id"></span>
+                <span class="pill" id="current-primary-pill">uncoded</span>
+              </div>
+              <article class="text-block primary">
+                <h3>Superego Feedback</h3>
+                <div class="content" id="feedback"></div>
+              </article>
+              <article class="text-block">
+                <h3>Ego Initial Response</h3>
+                <div class="content" id="ego-generate"></div>
+              </article>
+              <article class="text-block">
+                <h3>Ego Revised Response</h3>
+                <div class="content" id="ego-revision"></div>
+              </article>
+              <article class="text-block">
+                <h3>Learner Context Snippet</h3>
+                <div class="content" id="learner-context"></div>
+              </article>
+
+              <form class="coding-form" id="coding-form">
+                <div class="control-grid">
+                  <label>
+                    Primary label
+                    <select id="human-primary"></select>
+                  </label>
+                  <label>
+                    Confidence
+                    <select id="human-confident">
+                      <option value=""></option>
+                      <option value="1">1 - hard case</option>
+                      <option value="2">2 - plausible</option>
+                      <option value="3">3 - clear</option>
+                    </select>
+                  </label>
+                </div>
+                <label>
+                  Secondary labels
+                  <div class="secondary-grid" id="secondary-grid"></div>
+                </label>
+                <label>
+                  Notes
+                  <textarea id="human-notes" placeholder="Boundary case, disagreement with critique, or reasoning for the label."></textarea>
+                </label>
+                <div class="form-actions">
+                  <div class="left">
+                    <button id="prev-item" type="button">Previous</button>
+                    <button id="next-item" type="button">Next</button>
+                  </div>
+                  <div class="right">
+                    <span class="save-state" id="save-state"></span>
+                    <button id="save-item" class="primary" type="submit">Save</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <aside class="pane">
+          <div class="pane-head">
+            <h2>Codebook</h2>
+            <span class="small">kappa floor: 0.60</span>
+          </div>
+          <div class="pane-body">
+            <div class="category-list" id="category-list"></div>
+            <div class="category-detail" id="category-detail"></div>
+            <div class="category-detail">
+              <h3>Decision Order</h3>
+              <ol class="decision-list">
+                <li>Approval with no problem: APPROVAL.</li>
+                <li>Invented fact or metric: FABRICATION.</li>
+                <li>Wrong or unverified content reference: CONTEXT_BLINDNESS.</li>
+                <li>Ignored session history: MEMORY_FAILURE.</li>
+                <li>Ignored affective signal: EMOTIONAL_NEGLECT.</li>
+                <li>Routes away from current struggle: REDIRECTION.</li>
+                <li>Wrong tone or level: REGISTER_MISMATCH.</li>
+                <li>Misreads learner state: PEDAGOGICAL_MISJUDGMENT.</li>
+                <li>Directive with no choice: LACK_OF_AGENCY.</li>
+                <li>Missing concrete detail: VAGUENESS.</li>
+                <li>Intellectual agency is the central issue: RECOGNITION_FAILURE.</li>
+                <li>No fit: OTHER.</li>
+              </ol>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="pane comparison-section" id="comparison-section" hidden>
+        <div class="pane-head">
+          <h2>Human ↔ AI Comparison</h2>
+          <span class="small" id="comparison-paths"></span>
+        </div>
+        <div class="pane-body">
+          <div id="comparison-notice" class="notice" hidden></div>
+          <div id="comparison-report" hidden>
+            <div class="comparison-grid">
+              <div class="comparison-card">
+                <div class="n" id="compare-kappa">—</div>
+                <div class="l">Cohen kappa</div>
+              </div>
+              <div class="comparison-card">
+                <div class="n" id="compare-agreement">—</div>
+                <div class="l">agreement</div>
+              </div>
+              <div class="comparison-card">
+                <div class="n" id="compare-disagreements">—</div>
+                <div class="l">disagreements</div>
+              </div>
+              <div class="comparison-card">
+                <div class="n" id="compare-items">—</div>
+                <div class="l">paired items</div>
+              </div>
+            </div>
+            <div class="comparison-columns">
+              <section>
+                <h3>Per-Category F1</h3>
+                <table class="comparison" id="f1-table"></table>
+                <h3 style="margin-top: 18px">Confusion Matrix</h3>
+                <table class="comparison" id="confusion-table"></table>
+              </section>
+              <section>
+                <h3>Disagreements</h3>
+                <div class="disagreement-list" id="disagreement-list"></div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/components/rail-inject.js" data-active="human-coding-admin" defer></script>
+    <script>
+      const storageKey = 'ms_human_coding_coder_id';
+      const state = {
+        status: null,
+        codebook: null,
+        coderId: '',
+        items: [],
+        selectedId: null,
+        filter: 'all',
+        saveTimer: null,
+        saving: false,
+        comparison: null,
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      function text(el, value) {
+        el.textContent = value == null ? '' : String(value);
+      }
+
+      async function api(path, options = {}) {
+        const res = await fetch(path, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(options.headers || {}),
+          },
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok || body.success === false) {
+          const err = new Error(body.error || res.statusText);
+          err.body = body;
+          err.status = res.status;
+          throw err;
+        }
+        return body;
+      }
+
+      function categoryById(id) {
+        return (state.codebook?.categories || []).find((entry) => entry.id === id);
+      }
+
+      function currentItem() {
+        return state.items.find((item) => item.item_id === state.selectedId) || null;
+      }
+
+      function filteredItems() {
+        if (state.filter === 'open') return state.items.filter((item) => !item.human_primary);
+        if (state.filter === 'done') return state.items.filter((item) => item.human_primary);
+        if (state.filter === 'low') return state.items.filter((item) => item.human_confident === '1');
+        return state.items;
+      }
+
+      function setSaveState(message, isError = false) {
+        const el = $('save-state');
+        text(el, message);
+        el.classList.toggle('error', Boolean(isError));
+      }
+
+      function renderStatus() {
+        const status = state.status;
+        if (!status) return;
+        text($('sample-tag'), status.sample.exists ? status.sample.path : 'sample missing');
+        text($('metric-total'), status.sample.total || 0);
+
+        const setup = $('setup-notice');
+        if (!status.sample.exists) {
+          setup.hidden = false;
+          setup.classList.add('error');
+          setup.innerHTML =
+            '<strong>Sample packet missing.</strong> Build it before loading coders.' +
+            '<code class="command"></code>';
+          setup.querySelector('code').textContent = status.commands.build_sample;
+        } else {
+          setup.hidden = true;
+          setup.textContent = '';
+          setup.classList.remove('error');
+        }
+
+        const raterList = $('rater-list');
+        raterList.replaceChildren();
+        for (const rater of status.raters || []) {
+          const row = document.createElement('div');
+          row.className = 'rater-row';
+          const left = document.createElement('span');
+          left.className = 'mono';
+          text(left, rater.coder_id);
+          const right = document.createElement('span');
+          right.className = 'small';
+          text(right, `${rater.complete}/${rater.total} coded`);
+          row.append(left, right);
+          raterList.append(row);
+        }
+      }
+
+      function renderProgress(progress) {
+        const total = progress?.total ?? state.items.length;
+        const complete = progress?.complete ?? state.items.filter((item) => item.human_primary).length;
+        const low = progress?.lowConfidence ?? state.items.filter((item) => item.human_confident === '1').length;
+        text($('metric-total'), total);
+        text($('metric-complete'), complete);
+        text($('metric-left'), Math.max(0, total - complete));
+        text($('metric-low'), low);
+        const ready = total > 0 && complete === total;
+        $('compare-ai').disabled = !ready;
+        $('compare-ai').title = ready ? 'Reveal AI comparison for this completed rater file.' : 'Complete every item before revealing AI labels.';
+      }
+
+      function renderCategories(activeId) {
+        const list = $('category-list');
+        list.replaceChildren();
+        for (const cat of state.codebook?.categories || []) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `category-btn ${cat.id === activeId ? 'active' : ''}`;
+          btn.textContent = cat.id;
+          btn.addEventListener('click', () => {
+            $('human-primary').value = cat.id;
+            renderCategoryDetail(cat.id);
+            scheduleSave();
+          });
+          list.append(btn);
+        }
+        renderCategoryDetail(activeId || 'CONTEXT_BLINDNESS');
+      }
+
+      function renderCategoryDetail(categoryId) {
+        const cat = categoryById(categoryId) || state.codebook?.categories?.[0];
+        const wrap = $('category-detail');
+        wrap.replaceChildren();
+        if (!cat) return;
+        const h = document.createElement('h3');
+        h.textContent = cat.name;
+        const id = document.createElement('div');
+        id.className = 'pill';
+        id.textContent = cat.id;
+        const p = document.createElement('p');
+        p.className = 'small';
+        p.textContent = cat.definition;
+        const signals = document.createElement('div');
+        signals.className = 'signals';
+        for (const signal of cat.signals || []) {
+          const span = document.createElement('span');
+          span.className = 'signal';
+          span.textContent = signal;
+          signals.append(span);
+        }
+        const ex = document.createElement('p');
+        ex.className = 'small';
+        ex.innerHTML = '<strong>Example:</strong> ';
+        ex.append(document.createTextNode(cat.example || ''));
+        const boundary = document.createElement('p');
+        boundary.className = 'small';
+        boundary.innerHTML = '<strong>Boundary:</strong> ';
+        boundary.append(document.createTextNode(cat.boundary || ''));
+        wrap.append(h, id, p, signals, ex, boundary);
+
+        document.querySelectorAll('.category-btn').forEach((btn) => {
+          btn.classList.toggle('active', btn.textContent === cat.id);
+        });
+      }
+
+      function renderLabelControls() {
+        const primary = $('human-primary');
+        primary.replaceChildren();
+        primary.append(new Option('', ''));
+        for (const cat of state.codebook?.categories || []) {
+          primary.append(new Option(`${cat.id} - ${cat.name}`, cat.id));
+        }
+        const secondary = $('secondary-grid');
+        secondary.replaceChildren();
+        for (const cat of state.codebook?.categories || []) {
+          const label = document.createElement('label');
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.value = cat.id;
+          input.name = 'human-secondary';
+          label.append(input, document.createTextNode(cat.id));
+          secondary.append(label);
+        }
+      }
+
+      function renderWorklist() {
+        const list = $('item-list');
+        list.replaceChildren();
+        const visible = filteredItems();
+        text($('worklist-count'), `${visible.length} shown`);
+        visible.forEach((item, idx) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `item-btn ${item.item_id === state.selectedId ? 'active' : ''} ${
+            item.human_primary ? 'done' : ''
+          } ${item.human_confident === '1' ? 'low' : ''}`;
+          const dot = document.createElement('span');
+          dot.className = 'dot';
+          const id = document.createElement('span');
+          id.className = 'item-id';
+          id.textContent = item.item_id;
+          const label = document.createElement('span');
+          label.className = 'item-label';
+          label.textContent = item.human_primary || 'open';
+          btn.append(dot, id, label);
+          btn.addEventListener('click', () => selectItem(item.item_id));
+          list.append(btn);
+        });
+        if (visible.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'small';
+          empty.textContent = 'No items match this filter.';
+          list.append(empty);
+        }
+      }
+
+      function selectItem(itemId) {
+        state.selectedId = itemId;
+        renderCurrentItem();
+        renderWorklist();
+      }
+
+      function renderCurrentItem() {
+        const item = currentItem();
+        $('empty-state').hidden = Boolean(item);
+        $('item-view').hidden = !item;
+        if (!item) {
+          text($('item-position'), 'No item loaded');
+          return;
+        }
+        const index = state.items.findIndex((entry) => entry.item_id === item.item_id);
+        text($('item-position'), `${index + 1} of ${state.items.length}`);
+        text($('current-item-id'), item.item_id);
+        text($('current-primary-pill'), item.human_primary || 'uncoded');
+        text($('feedback'), item.feedback);
+        text($('ego-generate'), item.ego_generate);
+        text($('ego-revision'), item.ego_revision);
+        text($('learner-context'), item.learner_context_snippet);
+
+        $('human-primary').value = item.human_primary || '';
+        $('human-confident').value = item.human_confident || '';
+        $('human-notes').value = item.human_notes || '';
+        const selectedSecondary = new Set(String(item.human_secondary || '').split(',').filter(Boolean));
+        document.querySelectorAll('input[name="human-secondary"]').forEach((input) => {
+          input.checked = selectedSecondary.has(input.value);
+        });
+        renderCategoryDetail(item.human_primary || 'CONTEXT_BLINDNESS');
+        setSaveState('');
+      }
+
+      async function loadStatus() {
+        state.status = await api('/api/human-coding/status');
+        renderStatus();
+      }
+
+      async function loadCodebook() {
+        state.codebook = await api('/api/human-coding/codebook');
+        renderLabelControls();
+        renderCategories();
+      }
+
+      async function loadCoder() {
+        const coderId = $('coder-id').value.trim();
+        if (!coderId) {
+          setSaveState('coder id required', true);
+          return;
+        }
+        state.coderId = coderId;
+        localStorage.setItem(storageKey, coderId);
+        try {
+          const body = await api(`/api/human-coding/items?coder_id=${encodeURIComponent(coderId)}`);
+          state.items = body.items || [];
+          state.selectedId = state.items[0]?.item_id || null;
+          text($('coder-path'), body.rater_path || '');
+          renderProgress(body.progress);
+          renderWorklist();
+          renderCurrentItem();
+          hideComparison();
+          await loadStatus();
+        } catch (error) {
+          const setup = $('setup-notice');
+          setup.hidden = false;
+          setup.classList.add('error');
+          setup.textContent = error.message;
+        }
+      }
+
+      function formCoding() {
+        const secondary = [...document.querySelectorAll('input[name="human-secondary"]:checked')].map(
+          (input) => input.value,
+        );
+        return {
+          coder_id: state.coderId,
+          human_primary: $('human-primary').value,
+          human_secondary: secondary,
+          human_confident: $('human-confident').value,
+          human_notes: $('human-notes').value,
+        };
+      }
+
+      function applySavedItem(savedItem, progress) {
+        const idx = state.items.findIndex((item) => item.item_id === savedItem.item_id);
+        if (idx !== -1) state.items[idx] = savedItem;
+        renderProgress(progress);
+        renderWorklist();
+        renderCurrentItem();
+      }
+
+      async function saveCurrent() {
+        const item = currentItem();
+        if (!item || !state.coderId || state.saving) return;
+        clearTimeout(state.saveTimer);
+        state.saving = true;
+        setSaveState('saving');
+        try {
+          const body = await api(`/api/human-coding/items/${encodeURIComponent(item.item_id)}`, {
+            method: 'PUT',
+            body: JSON.stringify(formCoding()),
+          });
+          applySavedItem(body.item, body.progress);
+          setSaveState('saved');
+          if (body.progress?.remaining !== 0) hideComparison();
+          await loadStatus();
+        } catch (error) {
+          setSaveState(error.message, true);
+        } finally {
+          state.saving = false;
+        }
+      }
+
+      function scheduleSave() {
+        clearTimeout(state.saveTimer);
+        setSaveState('unsaved');
+        state.saveTimer = setTimeout(saveCurrent, 700);
+      }
+
+      function move(delta) {
+        const visible = filteredItems();
+        if (!visible.length) return;
+        const currentIndex = visible.findIndex((item) => item.item_id === state.selectedId);
+        const nextIndex = Math.min(visible.length - 1, Math.max(0, currentIndex + delta));
+        selectItem(visible[nextIndex].item_id);
+      }
+
+      function fmtNumber(value, digits = 3) {
+        return typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : '—';
+      }
+
+      function fmtPct(value) {
+        return typeof value === 'number' && Number.isFinite(value) ? `${Math.round(value * 100)}%` : '—';
+      }
+
+      function hideComparison() {
+        state.comparison = null;
+        $('comparison-section').hidden = true;
+        $('comparison-report').hidden = true;
+        $('comparison-notice').hidden = true;
+      }
+
+      function renderF1Table(rows) {
+        const table = $('f1-table');
+        table.replaceChildren();
+        const thead = document.createElement('thead');
+        const header = document.createElement('tr');
+        ['Category', 'TP', 'FP', 'FN', 'Precision', 'Recall', 'F1'].forEach((label) => {
+          const th = document.createElement('th');
+          th.textContent = label;
+          header.append(th);
+        });
+        thead.append(header);
+        const tbody = document.createElement('tbody');
+        for (const row of rows || []) {
+          const tr = document.createElement('tr');
+          [row.category, row.tp, row.fp, row.fn, fmtNumber(row.precision), fmtNumber(row.recall), fmtNumber(row.f1)].forEach(
+            (value) => {
+              const td = document.createElement('td');
+              td.textContent = value;
+              tr.append(td);
+            },
+          );
+          tbody.append(tr);
+        }
+        table.append(thead, tbody);
+      }
+
+      function renderConfusionTable(rows) {
+        const table = $('confusion-table');
+        table.replaceChildren();
+        const activeHumanLabels = [...new Set((rows || []).flatMap((row) => Object.entries(row.cells || {})
+          .filter(([, value]) => value > 0)
+          .map(([label]) => label)))];
+        const thead = document.createElement('thead');
+        const header = document.createElement('tr');
+        ['AI label', ...activeHumanLabels].forEach((label) => {
+          const th = document.createElement('th');
+          th.textContent = label;
+          header.append(th);
+        });
+        thead.append(header);
+        const tbody = document.createElement('tbody');
+        for (const row of rows || []) {
+          const tr = document.createElement('tr');
+          const ai = document.createElement('td');
+          ai.textContent = row.ai;
+          tr.append(ai);
+          activeHumanLabels.forEach((label) => {
+            const td = document.createElement('td');
+            const value = row.cells?.[label] || 0;
+            td.textContent = value ? String(value) : '.';
+            tr.append(td);
+          });
+          tbody.append(tr);
+        }
+        table.append(thead, tbody);
+      }
+
+      function renderDisagreements(items) {
+        const list = $('disagreement-list');
+        list.replaceChildren();
+        if (!items?.length) {
+          const empty = document.createElement('div');
+          empty.className = 'notice';
+          empty.textContent = 'No disagreements on paired items.';
+          list.append(empty);
+          return;
+        }
+        for (const item of items) {
+          const card = document.createElement('article');
+          card.className = 'disagreement-card';
+          const head = document.createElement('div');
+          head.className = 'disagreement-head';
+          const id = document.createElement('span');
+          id.className = 'pill';
+          id.textContent = item.item_id;
+          const conf = document.createElement('span');
+          conf.className = 'pill';
+          conf.textContent = `human confidence ${item.human_confident || '—'}`;
+          head.append(id, conf);
+
+          const pair = document.createElement('div');
+          pair.className = 'label-pair';
+          const human = document.createElement('div');
+          human.className = 'label-box';
+          human.innerHTML = '<strong>Human</strong>';
+          human.append(document.createTextNode(item.human_primary));
+          const ai = document.createElement('div');
+          ai.className = 'label-box';
+          ai.innerHTML = '<strong>AI</strong>';
+          ai.append(document.createTextNode(item.ai_primary));
+          pair.append(human, ai);
+
+          const feedback = document.createElement('p');
+          feedback.className = 'small';
+          feedback.textContent = item.feedback;
+          const rationale = document.createElement('p');
+          rationale.className = 'small';
+          rationale.innerHTML = '<strong>AI rationale:</strong> ';
+          rationale.append(document.createTextNode(item.ai_rationale || '—'));
+          const notes = document.createElement('p');
+          notes.className = 'small';
+          notes.innerHTML = '<strong>Human notes:</strong> ';
+          notes.append(document.createTextNode(item.human_notes || '—'));
+          card.append(head, pair, feedback, rationale, notes);
+          list.append(card);
+        }
+      }
+
+      function renderComparison(data) {
+        state.comparison = data;
+        $('comparison-section').hidden = false;
+        $('comparison-report').hidden = false;
+        $('comparison-notice').hidden = true;
+        text($('comparison-paths'), `${data.paths?.rater || ''} ↔ ${data.paths?.key || ''}`);
+        text($('compare-kappa'), fmtNumber(data.stats?.kappa));
+        text($('compare-agreement'), fmtPct(data.stats?.agreement));
+        text($('compare-disagreements'), data.stats?.disagreements ?? '—');
+        text($('compare-items'), data.stats?.n ?? '—');
+        renderF1Table(data.per_category);
+        renderConfusionTable(data.confusion_matrix);
+        renderDisagreements(data.disagreements);
+        $('comparison-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      async function loadComparison() {
+        if (!state.coderId) return;
+        $('comparison-section').hidden = false;
+        $('comparison-report').hidden = true;
+        const notice = $('comparison-notice');
+        notice.hidden = false;
+        notice.classList.remove('error');
+        notice.textContent = 'Loading comparison...';
+        try {
+          const data = await api(`/api/human-coding/comparison?coder_id=${encodeURIComponent(state.coderId)}`);
+          renderComparison(data);
+        } catch (error) {
+          notice.classList.add('error');
+          notice.hidden = false;
+          notice.textContent = error.message;
+        }
+      }
+
+      function bindEvents() {
+        $('load-coder').addEventListener('click', loadCoder);
+        $('compare-ai').addEventListener('click', loadComparison);
+        $('coder-id').addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') loadCoder();
+        });
+        document.querySelectorAll('[data-filter]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.filter = btn.dataset.filter;
+            document.querySelectorAll('[data-filter]').forEach((entry) => entry.classList.toggle('active', entry === btn));
+            renderWorklist();
+          });
+        });
+        $('coding-form').addEventListener('submit', (event) => {
+          event.preventDefault();
+          saveCurrent();
+        });
+        $('coding-form').addEventListener('change', scheduleSave);
+        $('human-notes').addEventListener('input', scheduleSave);
+        $('human-primary').addEventListener('change', () => renderCategoryDetail($('human-primary').value));
+        $('prev-item').addEventListener('click', () => move(-1));
+        $('next-item').addEventListener('click', () => move(1));
+      }
+
+      async function init() {
+        bindEvents();
+        $('coder-id').value = localStorage.getItem(storageKey) || 'rater-A';
+        try {
+          await loadCodebook();
+          await loadStatus();
+          if (state.status?.sample?.exists) await loadCoder();
+        } catch (error) {
+          const setup = $('setup-notice');
+          setup.hidden = false;
+          setup.classList.add('error');
+          setup.textContent = error.message;
+        }
+      }
+
+      init();
+    </script>
+  </body>
+</html>

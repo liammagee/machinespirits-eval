@@ -1,0 +1,109 @@
+{
+  "schema": "yoked_contingency_glm52_completed_matrix_v1",
+  "generatedAt": "2026-06-25T01:55:58.375Z",
+  "status": "pass_completed_glm52_model_invariance",
+  "boundary": "The completed GLM 5.2 regenerated planner and learner row preserves the same-state advantage at the scaled endpoint.",
+  "controls": {
+    "learnerProtocol": "rule-transfer-novice",
+    "posttestProfile": "hard-transfer",
+    "sessionLimit": 9,
+    "maxCallsPerRun": 27,
+    "maxPlanCalls": 27,
+    "planTurns": 4,
+    "includeFrozen": true,
+    "directG2RerunAttempts": 8,
+    "openrouterReasoningExclude": true,
+    "openrouterMaxTokens": 4000,
+    "openrouterTimeoutMs": 300000
+  },
+  "planArtifacts": [
+    {
+      "planLabel": "regenerated_openrouter-z-ai-glm-5-2",
+      "planKind": "regenerated",
+      "planBackend": "openrouter",
+      "planBackendDetail": {
+        "kind": "openrouter",
+        "model": "z-ai/glm-5.2",
+        "label": "openrouter:z-ai/glm-5.2"
+      },
+      "artifactJson": "exports/yoked-contingency-model-invariance-glm52-planner-scaled/g1-plans/openrouter-z-ai-glm-5-2.json",
+      "artifactMd": "exports/yoked-contingency-model-invariance-glm52-planner-scaled/g1-plans/openrouter-z-ai-glm-5-2.md",
+      "summary": {
+        "sessionCount": 9,
+        "armsPerSession": 3,
+        "planTurns": 4,
+        "modelCalls": {
+          "total": 27,
+          "learner_prose": 0,
+          "prose_classifier": 0,
+          "tutor_plan": 27
+        },
+        "meanGainByArm": {
+          "contingent": 0.292,
+          "same_seed_yoked": 0.195,
+          "different_seed_yoked": 0.003
+        },
+        "delta1_responsiveness": 0.097,
+        "delta2_diagnosis": 0.192,
+        "sameSeedActiveTargets": 4,
+        "differentSeedActiveTargets": 0.111,
+        "sameGreaterSessionCount": 9,
+        "sourceBehaviorExactCount": 27,
+        "invalidPlanCount": 0
+      }
+    }
+  ],
+  "summary": {
+    "rowCount": 1,
+    "supportCount": 1,
+    "learnerBackends": [
+      {
+        "kind": "openrouter",
+        "model": "z-ai/glm-5.2",
+        "label": "openrouter:z-ai/glm-5.2"
+      }
+    ],
+    "plannerBackends": [
+      {
+        "kind": "openrouter",
+        "model": "z-ai/glm-5.2",
+        "label": "openrouter:z-ai/glm-5.2"
+      }
+    ],
+    "read": "The completed GLM 5.2 planner/learner route supports the endpoint."
+  },
+  "rows": [
+    {
+      "planLabel": "regenerated_openrouter-z-ai-glm-5-2",
+      "planKind": "regenerated",
+      "planBackend": "openrouter",
+      "planBackendDetail": {
+        "kind": "openrouter",
+        "model": "z-ai/glm-5.2",
+        "label": "openrouter:z-ai/glm-5.2"
+      },
+      "planJson": "exports/yoked-contingency-model-invariance-glm52-planner-scaled/g1-plans/openrouter-z-ai-glm-5-2.json",
+      "learnerBackend": "openrouter",
+      "learnerBackendDetail": {
+        "kind": "openrouter",
+        "model": "z-ai/glm-5.2",
+        "label": "openrouter:z-ai/glm-5.2"
+      },
+      "artifactJson": "exports/yoked-contingency-model-invariance-glm52-planner-scaled/g2-runs/regenerated-openrouter-z-ai-glm-5-2__openrouter-z-ai-glm-5-2.json",
+      "artifactMd": "exports/yoked-contingency-model-invariance-glm52-planner-scaled/g2-runs/regenerated-openrouter-z-ai-glm-5-2__openrouter-z-ai-glm-5-2.md",
+      "summary": {
+        "status": "pass_g2_independent_outcome",
+        "boundaryClass": "supports_invariance_endpoint",
+        "sessionCount": 9,
+        "sourceSessionCount": 9,
+        "modelCalls": 28,
+        "delta1_responsiveness": 0.044,
+        "delta2_diagnosis": 0.4,
+        "sameGreaterSessionCount": 9,
+        "signTestOneSidedP": 0.002,
+        "invalidAnswerCount": 0,
+        "promptFamilyLabelLeakCount": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "peripeteia": {
+      "score": 4,
+      "reasoning": "The dialogue's orientation genuinely reverses. It opens with the name effectively pre-written — 'Reyner holds the bond — he answers for the fall, he's who we name' (T1) — and closes at the opposite pole: 'the felling line takes Oswin's name, not Reyner's' (T20). The hinge is transcript-visible — T9 'The green mortar cuts the town's case open' overturns the town's confession-reading, and T17 'I was running them together' marks the assumption collapsing. Held to 4 rather than 5 because the reversal is achieved by incremental erosion across many turns rather than one decisive veer; no single moment flips the framing."
+    },
+    "anagnorisis": {
+      "score": 5,
+      "reasoning": "A self-authored recognition-event in the sharpest form. At T1 the learner holds the conflation outright ('Those are the same question in practice, aren't they?'). At T17 they name their own flaw: 'the mark names the yard, not the hand that drew the props. Those are two different things, and I was running them together.' This is not mere recognition-vocabulary — it is backed by a demonstrable change in available knowledge: at T20 the learner can perform an operation impossible at T1, naming Oswin for the felling while confining Reyner to the paying line. The tutor only ever asks questions; the articulation is owned by the learner."
+    },
+    "surprise_and_inevitability": {
+      "score": 4,
+      "reasoning": "Inevitability is strong: the learner pre-states the whole resolution chain at T11 ('a mark... names the timber, the timber names a yard, the yard names whoever drew the props. That's the chain'), so Oswin's arrival at T20 is exactly what the earlier turns prepared, and 'pulling the centering is felling it' is a fitting final collapse of the cause/hand split the learner had carefully held apart. Surprise is more moderate — the resolution swerves from the opening Reyner-expectation, but by T19 a name's arrival is foreseeable and the middle is a competent, predictable forensic narrowing. The inevitability leg outweighs the surprise leg."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete action with a single spine: the blank 'hand line' is threaded through all 20 turns, and the evidence enters in a necessary order (contract → crown break → yard ownership → bond → green mortar → trace concept → crowsfoot → timber-reeve/yard → draw-notes → toll-book/hand) that cannot be reordered without breaking the arc. Held to 4 because turns 14–16 plateau on the same beat — 'mark shown, yard not shown, hand not shown' restated three times — and at least one of those turns could be compressed without disturbing the whole, which is the one place the necessary-sequence discipline slackens."
+    },
+    "hamartia_integration": {
+      "score": 5,
+      "reasoning": "The misconception — conflating liability ('who pays') with causal agency ('whose hand') — is the mainspring, established at T1 and driving every subsequent move. Each evidence file is processed through 'which line does this fill?', and the error is never corrected-and-discarded: it stays a live temptation the learner keeps returning to ('I want to say that makes him the hand' T6; 'the liability sits with Reyner' T11; T13). The complication and the turn arise entirely from working the flaw through until it exposes its own insufficiency and is what gets recognised at T17."
+    },
+    "cathartic_closure": {
+      "score": 4,
+      "reasoning": "The close is earned, not a premature summary or generic encouragement. The tension built by holding the blank line open against pressure to write 'Reyner' discharges when the withheld name finally lands with concrete specificity — 'Oswin... put those bare props on a cart the morning after the flood' (T20) — and the 'pulling the centering is felling it' reframe settles the cause/hand distinction the whole play turned on. Held to 4 rather than 5 because the ending is slightly clipped and lands as a brisk forensic Q.E.D. ('it doesn't put his hand on those props') rather than a fully resonant settling beat; the discharge is real but understated."
+    }
+  },
+  "overall_score": 84,
+  "summary": "A tightly unified forensic derivation drama whose dramatic strength is real and not formalism-driven (0 formalism leaks; the public language stays in period idiom — assize-book, soffit, falsework, crowsfoot). Its strongest dimensions are hamartia integration and anagnorisis: the liability-vs-agency conflation is the engine of the whole plot, and the learner authors a genuine recognition of that flaw ('I was running them together', T17) that is backed by a demonstrable change in what they can conclude by T20. Reversal, surprise, unity, and closure are all clearly above competent but each carries one calibrating reservation (incremental rather than decisive reversal; surprise concentrated at the close; a 14–16 plateau; a slightly clipped ending).",
+  "caveats": [
+    "The 'Resistant Clerk' frame yields gentle resistance: the learner concedes within nearly every turn ('Fair', 'I'll grant that'), so the reversal is reached by reluctant assent rather than sustained struggle — the flaw stays live mainly through repeated returns to the Reyner temptation (T11, T13) rather than active pushback.",
+    "Surprise is concentrated at the resolution; the middle is a foreseeable evidence-narrowing, so the score leans heavily on the inevitability leg.",
+    "Unity is dented by the three-turn plateau at 14–16 restating the same 'mark/yard/hand' status."
+  ]
+}

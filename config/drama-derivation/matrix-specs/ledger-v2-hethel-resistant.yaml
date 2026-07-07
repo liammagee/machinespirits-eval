@@ -1,0 +1,30 @@
+# Strategy Ledger v2 matrix — hethel block (STRATEGY-LEDGER-V2-PREREGISTRATION.md)
+# Binding conditions on every arm: release authority + pacing guard + decay.
+# Backend: DERIVATION_PROVIDER=codex on the matrix process (constant, recorded).
+base:
+  world: config/drama-derivation/world-010-hethel-resistant.yaml
+  script: config/drama-derivation/tutor-scripts/hethel-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+    decay: '{"seed":11,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}'
+arms:
+  - label: baseline-r1
+  - label: ledger-v1-r1
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: trialling-r1
+    flags: { strategy-ledger: '{"trialling":true,"stancePalette":["charismatic_challenge","ironic_challenge"],"releaseIntent":true,"registerPalette":["modern"]}' }
+  - label: baseline-r2
+  - label: ledger-v1-r2
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: trialling-r2
+    flags: { strategy-ledger: '{"trialling":true,"stancePalette":["charismatic_challenge","ironic_challenge"],"releaseIntent":true,"registerPalette":["modern"]}' }
+  - label: baseline-r3
+  - label: ledger-v1-r3
+    flags: { strategy-ledger: '{"registerPalette":["modern"]}' }
+  - label: trialling-r3
+    flags: { strategy-ledger: '{"trialling":true,"stancePalette":["charismatic_challenge","ironic_challenge"],"releaseIntent":true,"registerPalette":["modern"]}' }

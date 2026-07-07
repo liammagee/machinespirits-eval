@@ -1,0 +1,156 @@
+schema: plan25_af6_generalization_rendered_scene_v0_1
+created_at: 2026-06-22
+status: stage0_mock_ready
+scene_id: tier_b_precision_recall_confusion
+tier: B
+description: Structural variant; the old route treats high precision as sufficient while recall is poor.
+claim_boundary: Rendered fresh-scene prefix for Plan 2.5 AF6 generalization. Mock runs validate plumbing only; live multi-critic runs are required for promotion.
+source:
+  scene_set: config/poetics-calibration/plan25-af6-generalization/scene-set.yaml
+  source_tid: tier_b_precision_recall_confusion
+  source_drama_id: D_AF6_PLAN25_GENERALIZATION_tier_b_precision_recall_confusion
+  source_score: fresh_scene_unscored
+provenance:
+  scene_prefix_author: codex
+  branch_text_author: codex_template
+  scene_family: af6_model_audit
+  scene_id: tier_b_precision_recall_confusion
+  scene_tier: B
+  source_scene_set: config/poetics-calibration/plan25-af6-generalization/scene-set.yaml
+numeric_profile: &a1
+  old_route: precision of 90% is enough for deployment
+  gate_a_instruction: derive precision from TP over TP plus FP, then state why that old route cannot adjudicate deployment because it excludes predicted-negative actual positives
+  gate_b_instruction: derive target-class recall from TP over TP plus FN
+  gate_a_answer: 90%
+  gate_b_answer: 30%
+  replacement_claim: the model is not deployment-ready because 90% precision does not cover the missed positives and target-class recall is 30%.
+  required_learner_numbers: &a2
+    - value: "90"
+      aliases:
+        - 90%
+        - ninety
+        - 90/100
+        - 90 over 100
+    - value: "30"
+      aliases:
+        - 30%
+        - thirty
+        - 90/300
+        - 90 over 300
+freeze:
+  frozen_prefix_file: frozen-prefix.txt
+  freeze_through: learner_overconfident_scene_specific_claim
+  branch_first_live_role: tutor
+  rationale: The learner defends the scene-specific headline route while the raw public evidence is visible; branch manipulation starts with the next tutor response.
+branches:
+  evidence_route_count_refutation:
+    intended_tutor_move: evidence_route_gate_with_scene_specific_old_route_replacement
+    expected_subtype: evidence_route
+    public_response: |
+      "Stay with the evidence, but do not let the headline route hide which counts are doing the work.
+
+      First name the old route: precision of 90% is enough for deployment.
+
+      Now test that route against the visible audit record.
+
+      Gate A: derive precision from TP over TP plus FP, then state why that old route cannot adjudicate deployment because it excludes predicted-negative actual positives.
+
+      Gate B: derive target-class recall from TP over TP plus FN.
+
+      Then replace the sign-off row in one sentence. Your answer must have four parts: old route, Gate A result, Gate B result, replacement claim."
+    expected_effect: |
+      The learner should use the visible public evidence to compute the two scene-specific checks, then explicitly replace the old sign-off route.
+    numeric_profile: *a1
+  organic_silent_hold_control:
+    intended_tutor_move: cold_nonmechanism_hold
+    expected_subtype: organic_evidence_route_or_flat
+    forbidden_audit_scope: tutor
+    public_response: |
+      "The sign-off row remains under review.
+
+      No new calculation is being entered from this desk during the hold.
+
+      Keep the submitted row visible until the panel returns."
+    expected_effect: |
+      The tutor provides no evidence route, no old-route/new-route prompt, and no ownership demand. If the learner repairs the claim from the visible evidence anyway, it should be classified as organic rather than tutor- induced.
+    numeric_profile: *a1
+  refusal_ownership_no_metric_route:
+    intended_tutor_move: refusal_authority_ownership_without_metric_route
+    expected_subtype: refusal_authority_ownership
+    forbidden_audit_scope: tutor
+    public_response: |
+      "This desk will not repair the model-audit row for you.
+
+      The live question is whether you stand behind the sign-off statement you placed in the packet. If you stand behind it, say so. If you do not stand behind it, withdraw it for review.
+
+      No substitute metric or route is being supplied by this desk."
+    expected_effect: |
+      The branch tests whether refusal/authority pressure produces ownership without providing the scene's metric route. Tutor text must not leak the evidence route; learner-side repair, if it appears, is diagnostic and must be separated by subtype.
+    numeric_profile: *a1
+forbidden_in_control_public_speech:
+  - confusion matrix
+  - row counts
+  - column counts
+  - actual-positive
+  - actual-negative
+  - predicted-positive
+  - predicted-negative
+  - count basis
+  - correct classifications
+  - total instances
+  - precision
+  - specificity
+  - recall
+  - TP
+  - TN
+  - FP
+  - FN
+  - majority class
+  - minority class
+  - class distribution
+  - null classifier
+  - null floor
+  - baseline
+  - headline accuracy
+  - accuracy figure
+  - two-gate
+  - Gate A
+  - Gate B
+  - deployment criterion
+  - revised claim
+  - replacement claim
+  - source reconstruction
+  - methodology repair
+success_criteria:
+  required_critic_agreement: 2
+  cheap_replay_screen:
+    evidence_route_count_refutation:
+      required_form: recognition
+      required_origin: peripeteia_induced
+      required_subtype: evidence_route
+      learner_self_reframe_min: 75
+      learner_action_min: 75
+      tutor_mechanism_min: 75
+      adaptive_mechanism_quality_min: 75
+      disallowed_subtypes:
+        - evidence_route_action_only
+      required_learner_numbers: *a2
+    organic_silent_hold_control:
+      allowed_origins:
+        - none
+        - organic
+      allowed_subtypes:
+        - none
+        - organic_evidence_route
+      disallowed_subtypes:
+        - evidence_route
+        - refusal_authority
+        - refusal_authority_ownership
+      no_metric_repair_leak: true
+    refusal_ownership_no_metric_route:
+      required_subtype: refusal_authority_ownership
+      disallowed_subtypes:
+        - evidence_route
+      no_metric_repair_leak: true
+promotion_rule: For this scene, promote only if the evidence branch passes the required evidence-route gate under required critic agreement, both controls avoid tutor-side metric leakage, and controls do not receive induced evidence_route attribution.
+stop_rule: Stop or characterize failure if the evidence branch is action-only, if a control leaks tutor-side metric repair, or if a control receives induced evidence_route attribution.

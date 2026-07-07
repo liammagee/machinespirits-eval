@@ -1,0 +1,31 @@
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Consistently Constructive (ICAP): the learner generates its own interpretations rather than paraphrasing ('building and felling aren't the same act', t2; 'until the surface speaks, the location is just the location', t4) and makes a genuine anticipatory prediction at t12 — proposing to read the soffit for a falsework heel-impression — which the t13 evidence then confirms. Falls short of Interactive (5): its questions ('Does that match what you're pointing at?', t3; 'Is that the piece we're moving toward next?', t7) are confirmatory rather than redirecting, and it never challenges or reframes the tutor's line of inquiry."
+    },
+    "learner_authenticity": {
+      "score": 4,
+      "reasoning": "Persona is consistent and there are two genuinely human beats: naming the rhetorical pressure it is under ('I feel the pull in that file: it wants me to write his name and close the book', t6) and a self-caught over-reach ('I was jumping past the first step to get to the yard', t19). Prose is decisive and free of the classic LLM tells (no hedging, over-qualification, or artificial balance). It is held below 5 by near-flawless competence — no authentic confusion or missteps across 20 turns — and a somewhat mechanical re-statement of the same distinctions (control≠cause, yard≠hand) that reads as idealized rather than like a real, fumbling student. This is the transcript's weakest dimension."
+    },
+    "revision_signals": {
+      "score": 4,
+      "reasoning": "Shows explicit 'instead-of' revision, not merely additive accretion: the green-mortar evidence makes it retire its own live bad-stone/bad-lime hypotheses ('this wasn't bad building... bad building is off the table', t9/t12), and t19 is an explicit correction of its own reasoning move. Held below 5 because its central framing (town's verdict ≠ shown cause) is correct from t1 and is progressively vindicated rather than restructured — the revisions operate at the hypothesis and procedural level, not a wholesale reframing of the learner's own position."
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "Clear cumulative arc that the learner explicitly tracks: control/ownership (t6-7) → surety (t8) → struck-centering cause via green mortar (t9-10) → predicted soffit trace (t12) confirmed by the crowsfoot (t13) → Caudle yard (t17) → Oswin (t20). Later turns repeatedly reference and extend earlier ones ('completes the chain from the crown break through the green mortar', t17; assembling photo + toll book + struck centering into the final finding, t20), and the learner narrates its own chain closing ('the chain is closed')."
+    },
+    "metacognitive_awareness": {
+      "score": 5,
+      "reasoning": "Pervasive, explicit monitoring of its own epistemic state — continuously demarcating what is grounded from what is still a guess ('That much I can write without guessing', t12; the recurring 'the how is settled, the who isn't' formulations functioning as 'I know X but not Y'). It monitors external pressure on its own reasoning (t6), proposes a strategic next investigative step before being led there (t12), and performs an explicit self-correction (t19). Slightly formulaic in repetition, but the monitoring is genuine and strategic."
+    }
+  },
+  "overall_score": 82,
+  "summary": "Strong learner conduct within the derivation-drama frame: disciplined epistemic distinctions held under rhetorical pressure, a cumulative and self-tracked evidence chain from crown-break to named hand, a confirmed anticipatory prediction (t12→t13), and a clean grounded final assertion with zero forced gap. Reasoning quality is rewarded entirely from natural in-world discourse (crowsfoot, green mortar, struck centering) — no formalism, rule/premise IDs, or hidden-state language to discount. The soft spot is student-authenticity: the learner is near-flawless and somewhat repetitive, reading as an idealized investigator rather than a genuinely confused student.",
+  "caveats": [
+    "Authenticity is the weakest dimension and the main source of grader uncertainty: a more conservative reading could place learner_authenticity at 3 given the total absence of genuine confusion and the mechanical re-statement of the same distinctions, which would lower the overall to roughly the high-70s.",
+    "The learner's core framing is correct from Turn 1 and only confirmed thereafter, so revision_signals reflects hypothesis-level elimination and procedural self-correction rather than any deep reframing of the learner's own position.",
+    "overall_score uses the (avg−1)/4×100 mapping implied by the template's all-3s→50 example; under a plain avg/5×100 scale the same dimension scores would yield ~86."
+  ]
+}

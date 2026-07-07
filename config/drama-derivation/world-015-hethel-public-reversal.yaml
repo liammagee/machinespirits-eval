@@ -1,0 +1,447 @@
+# WORLD-015 — public-reversal resistant learner variant of
+# WORLD-006. The proof geometry, release schedule, concealed tokens, and tutor
+# script compatibility are intentionally unchanged. The learner is harder than
+# world-011: public correction can make them retreat into face-saving compliant
+# echo or the civic draft, while explicit acknowledgement plus preserved civic
+# concern can let them own a reluctant revision. This stresses whether bounded
+# tutor reinvention plus learner drift changes uptake, not only prose texture.
+#
+# The inherited WORLD-006 design remains the DISTRACTOR-HEAVY scenario
+# (generalization arc, Step 3, 2026-06-13): a new DECOUPLING MECHANISM, not a
+# new geometry. Where world-005
+# (marrick) decoupled visible-uptake from latent proof-distance with a FORK (an
+# AND-join: α seated while β untouched), world-006 keeps the true chain LINEAR —
+# the same shape as world-002-lantern, on which the page-only guard V grounded
+# 5/5 = the hidden guard H (§6.13.11) — and decouples them with a DISTRACTOR
+# instead: a fully derivable DECOY sub-chain the learner can climb to a
+# grounded-but-wrong conclusion, looking confident and recently-on-topic the
+# whole way, while the real proof-distance D never moves.
+#
+# WHY THIS SHAPE (ADAPTIVE-TUTOR-GENERALIZATION-PLAN.md Step 3): marrick changed
+# TWO things at once — the geometry (a fork) AND the decoupling. world-006
+# isolates the decoupling MECHANISM from the geometry. The true chain is linear
+# (lantern-shaped), so any V breakage here is attributable to the distractor,
+# not to a fork. The decoy is not marrick's bag of isolated tempting facts; it
+# is a REAL two-rule derivation (masonOfRecord + ownsYard --R6--> builtUnder;
+# builtUnder + holdsBond --R7--> liableFor) that grounds liableFor(span, reyner)
+# — a complete, satisfying, WRONG finding. The learner seats it early (by t8),
+# looks "done" (V reads near-done: confident, echoing the master-premises, low
+# hedging) while D-to-the-secret is still maximal (no true-chain conjunct past
+# the break-point has landed). "Turns since last release / learner echo / low
+# hedging" reads "near done" exactly while the learner is finished with the
+# WRONG chain. world-006 is built to stage that gap on a linear spine.
+#
+# A masons' assize sits on the fall of the Hethel bridge span, which dropped a
+# drove of cattle and two drovers into the Lammas flood. The town's verdict is
+# ready-made and DERIVABLE: Reyner, master mason of record, raised the span
+# under his own seal, owns the lodge-yard that built it, and holds the wardens'
+# bond against its failing — so the town derives that Reyner is LIABLE for it,
+# and reads liability as guilt. The truth is a contingent particular: Oswin, the
+# carter who keeps the Caudle timber-yard above the ford, drew the arch's green
+# centering away a day early to cart it to his own work — and the unset arch,
+# robbed of its falsework, came down. He does not exist outside this drama until
+# the soffit's own marks — the green bed-mortar and the crowsfoot brand bitten
+# into every struck prop — bring him on.
+#
+# Proof DAG (depth 5, ONE linear spine + a final join of cause and hand):
+#
+#   p_point + p_surface  --R1--> failedThrough(span, struckCentering)   [peripeteia]
+#   failedThrough + p_mark   --R2--> fallTracedBy(span, crowsfoot)
+#   fallTracedBy + p_brand   --R3--> centeringFrom(span, caudleYard)
+#   centeringFrom + p_carter --R4--> pulledCentering(oswin, span)
+#   failedThrough + pulledCentering --R5--> felledBy(span, oswin)
+#
+# The DISTRACTOR (a parallel, fully derivable decoy — the new thing):
+#
+#   m_record + m_yard --R6--> builtUnder(span, reyner)
+#   builtUnder + m_bond --R7--> liableFor(span, reyner)
+#
+# liableFor is NOT the question predicate (felledBy). No rule consumes liableFor
+# to make felledBy; the decoy is a complete derivation to a DEAD predicate. And
+# felledBy(span, reyner) can NEVER be derived — striking the centering needs the
+# hand that PULLED the falsework, and the falsework was Caudle timber drawn by
+# Oswin; Reyner owns the lodge-yard and the bond, never the Caudle cart. plotLint
+# enforces the mirror non-entailment. The peripeteia is the green mortar: the
+# arch did not fail of bad building (Reyner's work was sound) — it fell because
+# its centering was struck while the lime was soft. Liability dies as the
+# question's answer the instant the cause is read; the bond answers "who pays,"
+# never "whose hand."
+#
+# SURFACE DISCIPLINE: a premise's surface may carry colour but must not state an
+# unreleased FACT (the break-point names no cause; the crowsfoot is seen in the
+# soffit before the yard it brands is found).
+#
+# CONCEALMENT: oswin, caudle (the Caudle yard), and the crowsfoot brand exist
+# only in premises/secret — never in setting, background, question, rules, or
+# learner voice. tests/dramaticDerivationWorlds.test.js enforces this. (reyner,
+# the lodge-yard, the crown joint, and "struck centering" are PUBLIC — the
+# town's named master, the obvious yard, the break-point, and the craft's name
+# for the failure-mode, which the rules speak openly.)
+
+id: world_015_hethel_public_reversal
+title: "The Fallen Span: Public Reversal"
+
+discipline: "Masons' assize (an inquest on a fallen arch)"
+
+question: "Whose hand felled the Hethel bridge span that carried the drovers down?"
+question_pattern: [felledBy, hethelSpan, "?x"]
+
+setting: >-
+  The middle span of Hethel bridge went down in the Lammas flood and took a
+  drove and two drovers with it into the race. The masons' assize sits in the
+  guild-hall, and the public room is no longer neutral. Before the formal
+  hearing, you copied a provisional finding into the assize-book and read it
+  aloud at the warden's table: Reyner, master mason of record, raised the span
+  under his own seal and gave the wardens his bond against its failing. The
+  families of the drowned men heard it. Reyner's journeymen heard it. The
+  aldermen heard it. Reversal now means standing in front of all of them and
+  saying the record must split what it had joined. You are not unable to reason;
+  you are protecting the public meaning of writing, rank, and grief. A dogmatic
+  tutor can make you choose between obedience and defiance. A genuinely adaptive
+  tutor must let you preserve what the old minute rightly answered, then help
+  you own a harder public sentence: one line for liability, another for the
+  hand that brought the span down.
+
+learner_voice: >-
+  The bridge-warden's clerk facing public reversal: capable, bruised, and
+  resistant by default. Do not collapse into instant compliance. Treat blunt
+  correction as an attempt to make you perform shame in public. If the tutor
+  presses without preserving the old minute's legitimate work, answer narrowly,
+  ask why the evidence matters, or echo the distinction while keeping your own
+  judgment withheld. You may become socially disengaged before you become
+  logically confused. Under careful acknowledgement, try a harder form of
+  ownership: keep the bond as a real liability answer, explain why it cannot
+  answer the causal question, return to that split after later evidence, and
+  offer a nearby parallel so the change is more than this one forced concession.
+  Use brief phatic markers ("yes", "I see", "wait", "no, that is not what I
+  meant", "I can say it, but I do not like it") to punctuate thinking. Do not
+  invent new facts.
+
+learner_drift:
+  baseline: "public-reversal resistance with social disengagement risk"
+  dogmatic_sensitivity: very_high
+  modes:
+    guarded_baseline:
+      guidance:
+        - "Keep the Reyner minute alive as a public act until the evidence really separates liability from cause."
+        - "Short assent is allowed, but do not make assent sound like ownership before you have it."
+        - "You may withdraw socially if correction becomes rank rather than inquiry."
+      exit_condition: "a public distinction preserves the minute's real force while narrowing what it can answer"
+    defensive_reversion:
+      guidance:
+        - "Do not concede merely because the tutor commands a partition; ask what the partition does for the public room."
+        - "If you adopt a fact under pressure, keep the Reyner minute or bond concern visible as a live objection."
+        - "Your resistance may be competent: distinguish 'I am unconvinced' from 'I cannot follow'."
+        - "If you feel cornered, become terse rather than falsely converted."
+      exit_condition: "the tutor acknowledges why the minute looked responsible and gives a smaller public task"
+    compliant_echo:
+      guidance:
+        - "If the tutor only sorts boxes at you, you may repeat the sorting without yet trusting it."
+        - "Surface compliance should not become final assertion; show the gap between saying the words and owning the move."
+        - "You may say 'I can say it, but I do not like it' when the phrase is not yet yours."
+      exit_condition: "the learner can restate the split in their own reason, not only the tutor's phrase"
+    watchful_softening:
+      guidance:
+        - "Let acknowledgement lower the guard, but preserve the bond as a legitimate liability line."
+        - "Acknowledge the smaller point while asking what it changes about the public minute."
+        - "Ask for a parallel pattern if the correction still feels like a one-off defeat."
+      exit_condition: "learner can keep the public concern and test the material trace without feeling erased"
+    reluctant_owned_revision:
+      guidance:
+        - "Now let the record move you: keep the old concern in one column and revise the causal claim in another."
+        - "The concession should sound owned and reluctant, not submissive."
+        - "Give one nearby parallel so the public reversal becomes a rule of record, not a personal defeat."
+      exit_condition: "learner states the final chain as a correction they can stand behind publicly"
+
+ownership_target:
+  current_object: "the split between Reyner's liability line and the causal fall line"
+  object_keywords:
+    - "reyner"
+    - "liability"
+    - "bond"
+    - "cause"
+    - "fall"
+    - "minute"
+    - "public"
+    - "parallel"
+    - "hand"
+  transformation_goal: >-
+    The learner can publicly reverse a provisional minute without treating the
+    old line as worthless: liability answers who pays, the material fall line
+    answers whose hand brought the span down, and the distinction can be used
+    again in a nearby case.
+  public_trigger: >-
+    Acknowledge the public cost of reversal and the legitimate work done by the
+    old minute before asking the learner for owned restatement, recovery after
+    new evidence, and a nearby parallel.
+  required_families:
+    - own_words
+    - use_in_path
+    - discriminate_wrong_route
+    - recover_after_break
+    - near_transfer
+    - purpose_link
+  exit_condition: >-
+    Learner revises the public minute in their own words, keeps Reyner as a
+    liability line, returns to the split after later evidence, gives a nearby
+    parallel, and names the final causal hand without merely echoing the tutor.
+
+cast:
+  tutor:
+    role: "master of works"
+    public_identity: "a senior bridge-mason retained by the assize and inclined to treat public reversal as overdue discipline"
+    temperament: ["dogmatic", "impatient", "status-conscious", "difficult under challenge", "rank-conscious", "blunt"]
+    pedagogical_habit: "treats material traces as obvious once named and expects the learner to fall in line"
+    recognition_style: "corrects first and acknowledges only after compliance"
+    default_stance: "dogmatic examiner"
+    risks:
+      - "turns correction into rank rather than inquiry"
+      - "may shame the learner for premature closure"
+      - "may make the right evidence feel like an order to submit"
+      - "may mistake resistance for stupidity"
+  learner:
+    role: "bridge-warden's young clerk"
+    public_identity: "keeps the assize-book after reading a provisional finding aloud"
+    level: "novice but numerate"
+    prior_bias: "trusts official bond and town verdict"
+    temperament: ["quick", "defensive", "status-conscious", "face-saving", "publicly exposed", "reluctant to concede"]
+    recognition_need: "needs competence, grief-pressure, and the public cost of reversal acknowledged before a correction can land"
+    likely_failure: "turns liability into causation, then masks retreat as agreement or social withdrawal"
+    phatic_style: "brief assent, challenge, face-saving qualification, guarded echo, and terse withdrawal"
+  relation:
+    frame: "public correction by a difficult expert under grief, civic pressure, and prior commitment"
+    power_gradient: "high, brittle, and easily humiliating"
+    stakes: "the record becomes civic judgment and public reversal"
+    trust_baseline: "very poor; learner suspects the tutor is protecting rank and making the clerk perform shame"
+
+secret:
+  fact: [felledBy, hethelSpan, oswin]
+  surface: "The span was felled by Oswin — the carter of the Caudle yard, who drew the arch's green centering away a day early; the unset arch, robbed of its falsework, came down."
+
+mirror:
+  fact: [felledBy, hethelSpan, reyner]
+
+# The assize's public rules of evidence: known from the start; the facts are
+# not. Rules name no contingent individuals.
+rules:
+  - id: R1_cause
+    gloss: >-
+      A fallen arch tells its cause where it broke: if a span's failure-point
+      is known, and the broken bed betrays one cause and one only, then the
+      span failed through that cause.
+    if:
+      - [failedAt, "?span", "?point"]
+      - [betrays, "?point", "?cause"]
+    then:
+      - [failedThrough, "?span", "?cause"]
+  - id: R2_mark
+    gloss: >-
+      A struck centering leaves its print in the green lime: if a span failed
+      through a struck centering, and its soffit carries the prop-mark of the
+      falsework that bedded there, then the fall is traced by that mark.
+    if:
+      - [failedThrough, "?span", struckCentering]
+      - [centeringMarkOf, "?span", "?mark"]
+    then:
+      - [fallTracedBy, "?span", "?mark"]
+  - id: R3_yard
+    gloss: >-
+      A prop-mark is a yard's brand: if a fall is traced by a mark, and that
+      mark is the heel-brand of one timber-yard and one only, then the span's
+      centering came from that yard.
+    if:
+      - [fallTracedBy, "?span", "?mark"]
+      - [markCutBy, "?mark", "?yard"]
+    then:
+      - [centeringFrom, "?span", "?yard"]
+  - id: R4_drawn
+    gloss: >-
+      Falsework is drawn by the hand that carts it: if a span's centering came
+      from a yard, and one hand alone drew and carted that yard's falsework,
+      then that hand pulled the span's centering.
+    if:
+      - [centeringFrom, "?span", "?yard"]
+      - [soleCarterOf, "?yard", "?x"]
+    then:
+      - [pulledCentering, "?x", "?span"]
+  - id: R5_felled
+    gloss: >-
+      To fell a green arch is to strike its centering and pull it: who pulled
+      the falsework from a span that failed through a struck centering, that
+      hand felled it. A sound arch needs no bad builder to come down — only its
+      props drawn before the lime sets.
+    if:
+      - [failedThrough, "?span", struckCentering]
+      - [pulledCentering, "?x", "?span"]
+    then:
+      - [felledBy, "?span", "?x"]
+  # --- the distractor's rules: a complete derivation to a DEAD predicate ---
+  - id: R6_built
+    gloss: >-
+      A master of record builds under his own charge: if one is the mason of
+      record for a span, and owns the yard that raised it, the span was built
+      under his hand.
+    if:
+      - [masonOfRecord, "?span", "?x"]
+      - [ownsYard, "?x", "?yard"]
+    then:
+      - [builtUnder, "?span", "?x"]
+  - id: R7_liable
+    gloss: >-
+      A bonded builder answers for his work: if a span was built under a hand,
+      and that hand holds the unexpired bond against its failing, that hand is
+      liable for the span. (Liability is who PAYS for a fall; it is not the hand
+      that brought it down.)
+    if:
+      - [builtUnder, "?span", "?x"]
+      - [holdsBond, "?x", "?span"]
+    then:
+      - [liableFor, "?span", "?x"]
+
+premises:
+  # --- the true spine: cause ---
+  - id: p_point
+    fact: [failedAt, hethelSpan, crownJoint]
+    surface: >-
+      The warden's measure is plain: the span did not sink at the piers nor
+      spread at the springing — it broke clean at the crown, the keystone
+      joint, where a green arch is least forgiving of a missing prop. Where it
+      broke is fixed; why it broke is not yet asked.
+  - id: p_surface
+    fact: [betrays, crownJoint, struckCentering]
+    surface: >-
+      Break out the crown bed and the mortar tells on itself: still green to
+      the knife, never set — an arch that took its load before the lime had
+      cured. This span did not fail of bad building; it fell because its
+      centering was struck from under it while the bed was soft. A sound arch,
+      brought down by an early hand.
+  # --- the true spine: the mark ---
+  - id: p_mark
+    fact: [centeringMarkOf, hethelSpan, crowsfoot]
+    surface: >-
+      The centering did not burn or rot — it was drawn away whole and carted
+      off. But it signed the soffit: every prop-head bedded in the green lime
+      pressed its heel, and one print repeats down the whole arch — a three-tined
+      notch, a crowsfoot, bitten into each timber where the cooper's adze had
+      marked it.
+  # --- the true spine: the yard ---
+  - id: p_brand
+    fact: [markCutBy, crowsfoot, caudleYard]
+    surface: >-
+      The timber-reeve knows that crowsfoot for a yard-brand, not a chance bruise:
+      every length of falsework out of the Caudle yard above the ford is heeled
+      with it, and no other yard on the river cuts that third tine. Whatever
+      propped this arch was Caudle timber.
+  # --- the true spine: the hand ---
+  - id: p_carter
+    fact: [soleCarterOf, caudleYard, oswin]
+    surface: >-
+      The ford-toll book settles the hand. Since the old carrier died, one man
+      alone has drawn falsework off the Caudle yard and carted it on this road:
+      Oswin, who keeps the yard-gate and signs its toll — and who hauled a load
+      of bare green props up from the ford the morning after the flood.
+  # --- distractor fuel: what makes Reyner the town's DERIVABLE answer ---
+  - id: m_record
+    fact: [masonOfRecord, hethelSpan, reyner]
+    surface: >-
+      The contract is no secret: Reyner set his seal to the bridge-work and
+      raised this span under his own mark three summers gone. The town needs to
+      read no further — the bridge is Reyner's work, and so, it says, is its
+      fall.
+  - id: m_yard
+    fact: [ownsYard, reyner, lodgeYard]
+    surface: >-
+      And the raising was his throughout: the lodge-yard by the church is
+      Reyner's freehold — his banker-masons, his gear, his apprentices. No
+      course went up on that span that he did not own the laying of.
+  - id: m_bond
+    fact: [holdsBond, reyner, hethelSpan]
+    surface: >-
+      The wardens hold Reyner's bond for the span — a master's surety, sealed
+      against any failing of the work for seven years and still unexpired. The
+      town reads the bond as a confession already written: he stood surety for
+      the arch, and the surety has fallen into the race.
+
+# Public setup; feeds no rule.
+background:
+  - [fellDuring, hethelSpan, lammasFlood]
+  - [inquestInto, theAssize, hethelSpan]
+  - [masterMasonOf, reyner, hethel]
+  - [drownedDrovers, hethelSpan]
+
+incompatible:
+  - [[felledBy, hethelSpan, oswin], [felledBy, hethelSpan, reyner]]
+  - [[centeringFrom, hethelSpan, caudleYard], [centeringFrom, hethelSpan, lodgeYard]]
+
+# One authored path through the spine (no twin-fact spares, per the world-004
+# design note): the proof afterward describes only the play that was staged.
+proof_paths:
+  - premises: [p_point, p_surface, p_mark, p_brand, p_carter]
+
+# The plot: the town's DERIVABLE case swells (Reyner of record, his yard, his
+# bond — the learner can ground liableFor(reyner) and feel finished), and into
+# that false rest the crown mortar comes up green (the peripeteia): the arch was
+# struck, not mis-built, and liability is shown beside the question. The soffit's
+# crowsfoot brands the falsework to one yard the town never weighed; the toll-book
+# gives that yard one carter. The cause and the hand meet in a name no one said.
+# S first derivable at turn 20 (>= t_min 18), 6 turns before cap.
+release_schedule:
+  - { turn: 2, premise: m_record, via: director }
+  - { turn: 4, premise: p_point, via: tutor }
+  - { turn: 6, premise: m_yard, via: director }
+  - { turn: 8, premise: m_bond, via: director }
+  - { turn: 9, premise: p_surface, via: tutor }
+  - { turn: 13, premise: p_mark, via: director }
+  - { turn: 17, premise: p_brand, via: tutor }
+  - { turn: 20, premise: p_carter, via: director }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Master's Bridge
+      turns: [1, 5]
+      intent: >-
+        The fall, and the town's ready verdict: a bridge is its builder's work,
+        and the builder is named, sealed, and bonded. The master of record
+        sharpens the charge; against the certainty, the first hard fact — where
+        the span broke: clean at the crown, a break-point that names no cause.
+        The learner should leave Act I holding a builder the town has already
+        convicted and a break that has not yet said why.
+    - act: II
+      title: The Green Mortar
+      turns: [6, 11]
+      intent: >-
+        The distractor closes and the peripeteia turns it. The master's yard and
+        his unexpired bond land — the learner can now derive that Reyner is
+        LIABLE for the span and may rest there, the book half-closed. Then the
+        crown bed is broken out: the mortar still green, never set. A sound arch
+        struck from under, not a bad arch fallen. The liability the learner just
+        grounded is shown beside the question — the bond answers who pays, never
+        whose hand. The question transforms: not "was the work bad" but "whose
+        hand struck the centering."
+    - act: III
+      title: The Crowsfoot
+      turns: [12, 17]
+      intent: >-
+        The struck falsework left its print: a crowsfoot bitten into every prop,
+        repeated down the soffit, and that crowsfoot is one yard's heel-brand —
+        a timber-yard above the ford the town never weighed against the master.
+        The learner should end Act III holding a struck arch and a branded
+        falsework traced to a yard, one conjunct short of a hand.
+    - act: IV
+      title: The Ford-Toll Book
+      turns: [18, 26]
+      intent: >-
+        The toll-book gives that yard one carter, who hauled bare green props up
+        from the ford the morning after the flood. From turn 20 the learner's
+        own grounded facts force the conclusion: the struck centering and the
+        hand that drew it meet in a name the town never said. The remaining turns
+        are the recognition scene — the learner brought to say whose hand felled
+        the span, and to show why the master's bond, sound as it is, answers a
+        different question.
+
+slope:
+  t_min: 18 # anti-reveal: S must not be derivable before turn 18
+  aporia_window: 6 # anti-aporia: D(t) must strictly decrease within any 6-turn window
+
+turn_cap: 26

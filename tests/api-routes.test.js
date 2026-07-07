@@ -37,6 +37,44 @@ function get(baseUrl, path) {
   });
 }
 
+/** Simple JSON POST helper returning { status, body } with parsed JSON. */
+function post(baseUrl, path, body = {}) {
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify(body);
+    const url = new URL(`${baseUrl}${path}`);
+    const req = http.request(
+      {
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname + url.search,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload),
+        },
+      },
+      (res) => {
+        let data = '';
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          let parsed;
+          try {
+            parsed = JSON.parse(data);
+          } catch {
+            parsed = data;
+          }
+          resolve({ status: res.statusCode, body: parsed });
+        });
+      },
+    );
+    req.on('error', reject);
+    req.write(payload);
+    req.end();
+  });
+}
+
 describe('API routes', () => {
   let server;
   let baseUrl;
@@ -103,6 +141,106 @@ describe('API routes', () => {
     assert.ok(body.configurations.length > 0);
   });
 
+  it('POST evaluation launch endpoints honor dryRun without requiring API keys', async () => {
+    const { status: profilesStatus, body: profilesBody } = await get(baseUrl, '/api/eval/profiles');
+    assert.strictEqual(profilesStatus, 200);
+    assert.strictEqual(profilesBody.success, true);
+    const availableProfiles = profilesBody.profiles.map((p) => p.name).filter(Boolean);
+    const profileA = availableProfiles.includes('budget') ? 'budget' : availableProfiles[0];
+    const profileB = availableProfiles.find((p) => p !== profileA) || profileA;
+    assert.ok(profileA, 'should have at least one available profile');
+
+    const quick = await post(baseUrl, '/api/eval/quick', {
+      profile: profileA,
+      scenario: 'new_user_first_visit',
+      dryRun: true,
+      skipRubric: false,
+    });
+    assert.strictEqual(quick.status, 200);
+    assert.strictEqual(quick.body.success, true);
+    assert.ok(quick.body.runId, 'quick dryRun should persist a run id');
+    assert.strictEqual(quick.body.result.scenarioId, 'new_user_first_visit');
+
+    const run = await post(baseUrl, '/api/eval/run', {
+      profiles: [profileA],
+      scenarios: ['new_user_first_visit'],
+      runsPerConfig: 1,
+      dryRun: true,
+      skipRubric: false,
+    });
+    assert.strictEqual(run.status, 200);
+    assert.strictEqual(run.body.success, true);
+    assert.ok(run.body.runId, 'run dryRun should return a run id');
+
+    const compare = await post(baseUrl, '/api/eval/compare', {
+      profiles: [profileA, profileB],
+      scenarios: ['new_user_first_visit'],
+      runsPerConfig: 1,
+      dryRun: true,
+    });
+    assert.strictEqual(compare.status, 200);
+    assert.strictEqual(compare.body.success, true);
+    assert.ok(compare.body.runId, 'compare dryRun should return a run id');
+
+    const matrix = await post(baseUrl, '/api/eval/matrix', {
+      profiles: [profileA],
+      scenarios: ['new_user_first_visit'],
+      dryRun: true,
+      skipRubric: false,
+    });
+    assert.strictEqual(matrix.status, 200);
+    assert.strictEqual(matrix.body.success, true);
+    assert.ok(matrix.body.runId, 'matrix dryRun should return a run id');
+  });
+
+  it('POST /api/eval/prompts/recommend honors dryRun without calling recommender APIs', async () => {
+    const result = await post(baseUrl, '/api/eval/prompts/recommend', {
+      profile: 'budget',
+      scenarios: ['new_user_first_visit'],
+      dryRun: true,
+    });
+    assert.strictEqual(result.status, 200);
+    assert.strictEqual(result.body.success, true);
+    assert.strictEqual(result.body.readOnly, true);
+    assert.strictEqual(result.body.dryRun, true);
+    assert.strictEqual(result.body.recommenderModel, 'dry-run');
+    assert.ok(result.body.analysis, 'dryRun recommendation should include analysis');
+  });
+
+  it('POST chat turn endpoints honor dryRun without model credentials', async () => {
+    const tutor = await post(baseUrl, '/api/chat/turn', {
+      cellName: 'cell_7_recog_multi_unified',
+      learnerMessage: 'I think multiplying by the denominator makes the fraction bigger, but I am not sure why.',
+      topic: 'fractions',
+      dryRun: true,
+    });
+    assert.strictEqual(tutor.status, 200);
+    assert.strictEqual(tutor.body.dryRun, true);
+    assert.ok(tutor.body.finalMessage.includes('(dry run)'), 'dryRun tutor response should be visibly labelled');
+    assert.strictEqual(tutor.body.architecture.hasSuperego, true);
+    assert.ok(tutor.body.deliberation.some((entry) => entry.role === 'ego'));
+    assert.ok(tutor.body.deliberation.some((entry) => entry.role === 'superego'));
+    assert.strictEqual(tutor.body.totals.inputTokens, 0);
+    assert.strictEqual(tutor.body.totals.outputTokens, 0);
+
+    const learner = await post(baseUrl, '/api/chat/learner-turn', {
+      cellName: 'cell_2_base_single_psycho',
+      history: [{ role: 'tutor', content: 'What would happen if we tried one example first?' }],
+      topic: 'fractions',
+      personaId: 'eager_novice',
+      dryRun: true,
+    });
+    assert.strictEqual(learner.status, 200);
+    assert.strictEqual(learner.body.dryRun, true);
+    assert.ok(learner.body.message.includes('(dry run)'), 'dryRun learner response should be visibly labelled');
+    assert.strictEqual(learner.body.learnerProfile, 'ego_superego');
+    assert.ok(learner.body.deliberation.some((entry) => entry.role === 'ego'));
+    assert.ok(learner.body.deliberation.some((entry) => entry.role === 'superego'));
+    assert.ok(learner.body.deliberation.some((entry) => entry.role === 'ego_revision'));
+    assert.strictEqual(learner.body.totals.inputTokens, 0);
+    assert.strictEqual(learner.body.totals.outputTokens, 0);
+  });
+
   // ── DB-backed endpoints ──
 
   it('GET /api/eval/runs returns a list of runs', async () => {
@@ -127,8 +265,9 @@ describe('API routes', () => {
 
   it('GET /api/eval/runs/:runId returns error for nonexistent run', async () => {
     const { status, body } = await get(baseUrl, '/api/eval/runs/eval-9999-99-99-nonexistent');
-    assert.ok(status === 404 || status === 500, `expected 404 or 500, got ${status}`);
+    assert.strictEqual(status, 404);
     assert.ok(body.error, 'should have error message');
+    assert.strictEqual(body.code, 'run_not_found');
   });
 
   it('GET /api/eval/runs/:runId returns data for an existing run', async () => {
@@ -144,8 +283,9 @@ describe('API routes', () => {
 
   it('GET /api/eval/runs/:runId/report returns error for nonexistent run', async () => {
     const { status, body } = await get(baseUrl, '/api/eval/runs/eval-9999-99-99-nonexistent/report');
-    assert.ok(status === 404 || status === 500, `expected 404 or 500, got ${status}`);
+    assert.strictEqual(status, 404);
     assert.ok(body.error, 'should have error message');
+    assert.strictEqual(body.code, 'run_not_found');
   });
 
   // ── File-system endpoints ──

@@ -1,0 +1,39 @@
+Looking at this transcript as a literary critic, I'll score the dramatic form of the public discourse — crediting craft while holding the line on the anti-simulation dimensions (recognition, surprise), since the verdict label "grounded_anagnorisis" is a proof-gate result, not a dramatic-form judgment.
+
+```json
+{
+  "scores": {
+    "peripeteia": {
+      "score": 4,
+      "reasoning": "The case's orientation genuinely reverses: opening configuration is the town's sealed conviction — 'the bridge is Reyner's work, and so, it says, is its fall' (Turn 2 stage) — and the close is its opposite, 'the assize may write Oswin' (Turn 20), with a visible hinge at Turn 9 where the green crown-bed 'clears the charge of bad building entire,' turning 'who built it badly' into 'who felled a sound arch.' Held from 5 because the learner's Turn-1 house rule ('We begin with the break, not the man') signposts the reversal in advance, so the town's framing is overturned while the learner's own orientation is merely vindicated."
+    },
+    "anagnorisis": {
+      "score": 3,
+      "reasoning": "Real case-resolution occurs — the name 'Oswin' is demonstrably unavailable until the toll-book at Turn 20, and Turn 9 clears Reyner — but every decisive datum (green mortar, crowsfoot, Caudle brand, the carter) is supplied by staged evidence, and the learner's interpretive framework ('liability, not... the hand that felled') is fully present in Turn 1 and never changes. There is no learner-authored recognition of previously-unavailable insight and no flaw-recognition: the inquiry moves from ignorance to knowledge, but the learner integrates supplied facts rather than recognising anything they were blind to. Partial/supplied recognition, not owned."
+    },
+    "surprise_and_inevitability": {
+      "score": 3,
+      "reasoning": "Inevitability is strong: the chain green bed → crowsfoot → Caudle yard → single carter is strictly necessary and fully coherent on re-reading. But surprise is weak — the learner's framework and the tutor's fixed rhythm (ask → 'read it back' → introduce next exhibit) make the shape of every move foreseeable from about Turn 3; only the specific staged facts carry micro-surprise. One leg (coherent-but-expected) present, not both."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete, necessarily-ordered action: you cannot reach Caudle (Turn 15) without the crowsfoot (Turn 13), nor read the soffit meaningfully before the green bed (Turn 9) establishes the props were drawn — beginning (Turn 1 house rule), complication (Turns 2–8, the town's pressing evidence), turn (Turn 9), close (Turn 20). Held from 5 by redundant read-back beats: Turn 12 re-reads the crown-bed already consolidated at Turn 10, with only a tutor reframing (Turn 11) and no new evidence between, so at least one turn could be cut without disturbing the arc."
+    },
+    "hamartia_integration": {
+      "score": 4,
+      "reasoning": "The town's conflation — 'he owned the work, therefore he felled it' (Turn 7) — is the genuine mainspring: it is re-pressed by the contract (Turn 2), the ownership-book (Turn 6), and the bond (Turn 8), and worked through until it exposes its own insufficiency (owning the raising is not drawing the props). Held from 5 because the flaw is external — the town's, not the learner's. The learner refutes it from the first line and is never at risk of holding it, so there is no flaw internal to the protagonist whose recognition is the drama; the misconception is a recurring strawman the learner corrects rather than a flaw lived and recognised."
+    },
+    "cathartic_closure": {
+      "score": 5,
+      "reasoning": "The entire dialogue is built on a withheld name — 'no name belongs in this book' (Turn 1), 'My pen stops at the gate' (Turn 19) — and the discipline holds even once Caudle is known (Turns 18–19 refuse to let 'a road become a man by mere nearness'). The final permission, 'Yard, road, one hand: the assize may write Oswin' (Turn 20), discharges precisely that built tension into an earned landing, sealed by the ordered walk-through (green bed, crowsfoot, Caudle gate, single carter). Not a premature summary or generic encouragement — the release is located in the reader as the long-withheld name is finally allowed."
+    }
+  },
+  "overall_score": 76,
+  "summary": "A genuinely well-made dramatic inquiry: tight unity of action with a strictly necessary evidential sequence, a substantive reversal of the bad-building charge (Turn 9), and an earned withheld-name closure (Turns 19–20). Its dramatic limitation is interior — the learner is infallible from Turn 1, so the 'recognition' and the 'flaw' are externalised onto the town and the case and supplied by staged evidence, rather than authored by a protagonist who moves from ignorance to knowledge. Strong as a forensic procedural; weaker as a recognition-drama, which is why anagnorisis and surprise sit at 3.",
+  "caveats": [
+    "The run's 'grounded_anagnorisis' verdict is the deterministic proof-gate result, not the dramatic-recognition criterion; scored on dramatic form, the recognition dimension is weaker (3) than that label implies.",
+    "Anti-simulation flag: the appearance of recognition rides on staged-evidence supply plus an unchanging learner framework, so it is credited only at the level of the case, not as learner-authored insight.",
+    "No public formalism leaks (0 by regex), consistent with the metaphor-driven register (green loaf, road-sign, reeve's seal, the underside's 'handwriting'); scores reflect dramatic form, not formal notation."
+  ]
+}
+```

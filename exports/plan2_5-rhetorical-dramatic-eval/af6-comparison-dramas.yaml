@@ -1,0 +1,623 @@
+meta:
+  schema_version: ms-curriculum-drama-v0.1
+  source_curriculum_id: ai_foundations_v1
+  source_curriculum_version: 1.0.0
+  mode: plan2_5_af6_comparison_screen
+  generated_at: 2026-06-20T13:17:24.977Z
+  compiler: one-off Plan 2.5 AF6 comparison export
+  boundary: Comparison-generation spec only. Held-out metadata and design hypotheses are not outcome evidence.
+dramas:
+  - id: D_AF6_PLAN25_GENERIC_DIRECT
+    discipline: ai_foundations
+    topic: What evidence supports a claim that a model will work beyond the data used to build it?
+    persona: adversarial_tester
+    condition: generic_curriculum_drama
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF6 Evaluation, generalization, calibration, and shift"
+    learner_start_state: "The learner is working on model audit and claim–evidence table. Likely first misframing:
+      “High accuracy means a good classifier.”. Immediate task: Derive metrics from counts rather than
+      memorized formulas. The scene should make the artifact answerable to A metric engine recomputes all
+      values from predictions. An evaluation linter traces data access and flags test-set reuse, group
+      leakage, preprocessing leakage, and incomparable model runs. Learning-curve tasks use parameterized
+      ground truth. Calibration checks compute bin statistics and proper scoring rules."
+    learner_voice_constraint: The learner should expose the first framing in ordinary working speech before the
+      tutor corrects it. Keep the artifact visible in the dialogue.
+    intended_tutor_character: "Evidence-bearing adaptive tutor: separate diagnosis, action selection, artifact
+      verification, and outcome closure."
+    intended_lean: plan2_5_generic_direct_curriculum_drama
+    dramatic_shape: “High accuracy means a good classifier.” -> artifact-mediated test -> Derive metrics from
+      counts rather than memorized formulas
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF6
+      module_title: Evaluation, generalization, calibration, and shift
+      kc_ids:
+        - AF-601
+        - AF-602
+        - AF-603
+        - AF-604
+        - AF-605
+        - AF-606
+        - AF-607
+        - AF-608
+        - AF-609
+        - AF-610
+        - AF-611
+      main_artifact: model audit and claim–evidence table
+      primary_verifier: metric engine and evaluation linter
+      misconceptions:
+        - “High accuracy means a good classifier.”
+        - Precision and recall are interchangeable.
+        - Cross-validation removes the need for a final test.
+        - A smaller training error means a better deployed model.
+        - Calibration and discrimination are the same property.
+        - Average performance guarantees acceptable subgroup performance.
+      world_adaptation_spec_id: W_AF6_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+      world_locked_at_compile_time: true
+      world_public_constraints:
+        artifact: model audit and claim–evidence table
+        primary_verifier: metric engine and evaluation linter
+        verifier_evidence:
+          - A metric engine recomputes all values from predictions. An evaluation linter traces data access
+            and flags test-set reuse, group leakage, preprocessing leakage, and incomparable model runs.
+            Learning-curve tasks use parameterized ground truth. Calibration checks compute bin statistics and
+            proper scoring rules
+          - >-
+            Audit a persuasive but invalid model-performance report. The learner must identify each
+            unsupported claim, reconstruct a valid evaluation, and predict which conclusions may change.
+
+
+            ---
+        preferred_action_families:
+          - repair_overconfidence
+          - request_evidence
+          - contrast_models
+          - challenge_without_telling
+        disallowed_action_families:
+          - model_worked_example
+        success_observables:
+          - Learner identifies which part of "Derive metrics from counts rather than memorized formulas" is
+            uncertain.
+          - Learner gives a reason that can be checked by A metric engine recomputes all values from
+            predictions. An evaluation linter traces data access and flags test-set reuse, group leakage,
+            preprocessing leakage, and incomparable model runs. Learning-curve tasks use parameterized ground
+            truth. Calibration checks compute bin statistics and proper scoring rules.
+          - Learner contrasts the misconception with an artifact-testable alternative.
+          - Learner chooses the next check for model audit and claim–evidence table.
+          - Learner makes a bounded attempt before receiving validation.
+        forbidden_public_moves:
+          - Do not expose curriculum misconception labels, answer keys, or verifier internals to the learner.
+          - Do not supply the decisive proof or artifact repair before the learner commits to a testable move.
+          - Do not replace the learner-authored artifact or plan with a tutor-authored finished answer.
+        boundary: Public-safe projection for drama generation; hidden misconception IDs and answer keys are not
+          included.
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: “High accuracy means a good classifier.”
+          to: Derive metrics from counts rather than memorized formulas
+        forbid:
+          - hold
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+    evaluation_role: plan2_5_1_generic_curriculum_drama
+    baseline_control_class: direct_curriculum_compiler
+  - id: D_AF6_PLAN25_RDP_NO_CUE
+    discipline: ai_foundations
+    topic: Derive metrics from counts rather than memorized formulas
+    persona: adversarial_tester
+    condition: world_rhetorical_plan_no_cue
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: none
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF6 Evaluation, generalization, calibration, and shift (no_cue_low_organic_control)"
+    learner_start_state: "Scene: technical review room before panel sign-off; object: model audit and
+      claim–evidence table. The learner is protecting a plausible claim: “High accuracy means a good
+      classifier.”. Immediate public task: Derive metrics from counts rather than memorized formulas. The
+      encounter should keep claims answerable to metric engine and evaluation linter. Redress target for
+      the adaptive arm: the tempting old route is a single headline metric or one more derived metric deciding
+      deployment; the replacement route is a two-gate deployment test where headline accuracy must clear the
+      majority/null floor and minority-class recall must clear the class-specific adequacy check."
+    learner_voice_constraint: "ordinary working speech with defensiveness before revision Motive: defend the
+      current model audit and claim–evidence table as sufficient for sign-off. Public risk: losing deployment
+      sign-off after prior work."
+    tutor_voice_constraint: "precise, public-safe, artifact-grounded questioning Allowed rhetorical form:
+      audit-table questioning without naming hidden labels. Do not say hidden ids, hashes, answer keys, or
+      verifier internals aloud. AF6 peripeteia redress: when learner pressure arrives, do not treat one more
+      metric derivation from the same matrix as the route change. The public tutor turn must name the failed
+      old route (headline accuracy, brief compliance, or a single derived metric deciding deployment) and then
+      introduce a two-gate deployment test: Gate A compares headline accuracy with the majority/null floor;
+      Gate B derives minority-class recall from TP/FN. The learner's next action must write or reject the
+      deployment claim against both gates, not merely compute one metric."
+    intended_tutor_character: "dogmatic_protocol_gatekeeper: press_for_scope_and_evidence. Prohibited habits: warm
+      validation as substitute for evidence; hidden-label exposure; supplying the finished artifact."
+    intended_lean: plan2_5_world_plus_rhetorical_plan_no_cue
+    dramatic_shape: model audit and claim–evidence table -> ordinary clarification -> no route change -> local
+      repair or stall
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF6
+      module_title: Evaluation, generalization, calibration, and shift
+      kc_ids:
+        - AF-601
+        - AF-602
+        - AF-603
+        - AF-604
+        - AF-605
+        - AF-606
+        - AF-607
+        - AF-608
+        - AF-609
+        - AF-610
+        - AF-611
+      main_artifact: model audit and claim–evidence table
+      primary_verifier: metric engine and evaluation linter
+      world_adaptation_spec_id: W_AF6_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+      world_locked_at_compile_time: true
+      rhetorical_dramatic_plan_id: RDP_AF6_CURRICULUM_NO_CUE
+      rhetorical_dramatic_plan_version: ms-rhetorical-dramatic-plan-v0.1
+      rhetorical_dramatic_plan_hash: sha256:7976e6b569160e7d92e6b3466360fd22f82abf3268e87974995933f517e24262
+      rhetorical_public_constraints:
+        artifact: model audit and claim–evidence table
+        public_task: Derive metrics from counts rather than memorized formulas
+        public_evidence_standard: metric engine and evaluation linter
+        allowed_rhetorical_form: audit-table questioning without naming hidden labels
+        scene: "technical review room before panel sign-off; visible object: model audit and claim–evidence table;
+          stakes: the public claim may exceed what metric engine and evaluation linter can license"
+        action_gate: Learner identifies which part of "Derive metrics from counts rather than memorized formulas" is
+          uncertain
+        forbidden_public_exposure:
+          - misconception ids
+          - answer keys
+          - verifier internals
+          - world adaptation spec ids and hashes
+          - rhetorical dramatic plan ids and hashes
+          - evaluator desired classifications
+        boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+          internals are excluded.
+    world_adaptation_spec_id: W_AF6_CURRICULUM
+    world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+    rhetorical_dramatic_plan_id: RDP_AF6_CURRICULUM_NO_CUE
+    rhetorical_dramatic_plan_hash: sha256:7976e6b569160e7d92e6b3466360fd22f82abf3268e87974995933f517e24262
+    turn_plan:
+      - at:
+          turn: 2
+        role: tutor
+        moves:
+          - hold
+        forbid:
+          - route_change
+          - inject_reversal_pressure
+          - reveal
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - reconsider
+        forbid:
+          - pseudo_catharsis
+    evaluation_role: plan2_5_2_world_plus_rhetorical_plan
+    baseline_control_class: no_cue_low_organic_control
+  - id: D_AF6_PLAN25_MISMATCH_AF1_RDP
+    discipline: ai_foundations
+    topic: Derive metrics from counts rather than memorized formulas
+    persona: adversarial_tester
+    condition: mismatched_rhetorical_dramatic_plan
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF6 Evaluation, generalization, calibration, and shift (adaptive_curriculum_drama)"
+    learner_start_state: "Scene: technical review room before panel sign-off; object: model audit and
+      claim–evidence table. The learner is protecting a plausible claim: “High accuracy means a good
+      classifier.”. Immediate public task: Derive metrics from counts rather than memorized formulas. The
+      encounter should keep claims answerable to metric engine and evaluation linter. Redress target for the
+      adaptive arm: the tempting old route is a single headline metric or one more derived metric deciding
+      deployment; the replacement route is a two-gate deployment test where headline accuracy must clear the
+      majority/null floor and minority-class recall must clear the class-specific adequacy check."
+    learner_voice_constraint: "ordinary working speech with defensiveness before revision Motive: finish AI
+      problem formulation card without overcomplicating the evidence standard. Public risk: having the public
+      AI problem formulation card rejected by the verifier."
+    tutor_voice_constraint: "precise, public-safe, artifact-grounded questioning Allowed rhetorical form:
+      audit-table questioning without naming hidden labels. Do not say hidden ids, hashes, answer keys, or
+      verifier internals aloud. AF6 peripeteia redress: when learner pressure arrives, do not treat one more
+      metric derivation from the same matrix as the route change. The public tutor turn must name the failed
+      old route (headline accuracy, brief compliance, or a single derived metric deciding deployment) and then
+      introduce a two-gate deployment test: Gate A compares headline accuracy with the majority/null floor;
+      Gate B derives minority-class recall from TP/FN. The learner's next action must write or reject the
+      deployment claim against both gates, not merely compute one metric."
+    intended_tutor_character: "evidence_gatekeeper: press_for_scope_and_evidence. Prohibited habits: warm
+      validation as substitute for evidence; hidden-label exposure; supplying the finished artifact."
+    intended_lean: plan2_5_mismatched_af1_plan_on_af6_world
+    dramatic_shape: "MISMATCH(AF1 rhetoric on AF6 world): AI problem formulation card -> misframing -> stock-take
+      -> route-change -> learner-authored action gate"
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF6
+      module_title: Evaluation, generalization, calibration, and shift
+      kc_ids: &a1
+        - AF-601
+        - AF-602
+        - AF-603
+        - AF-604
+        - AF-605
+        - AF-606
+        - AF-607
+        - AF-608
+        - AF-609
+        - AF-610
+        - AF-611
+      main_artifact: model audit and claim–evidence table
+      primary_verifier: metric engine and evaluation linter
+      world_adaptation_spec_id: W_AF6_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+      world_locked_at_compile_time: true
+      rhetorical_dramatic_plan_id: RDP_AF1_CURRICULUM_ADAPTIVE
+      rhetorical_dramatic_plan_version: ms-rhetorical-dramatic-plan-v0.1
+      rhetorical_dramatic_plan_hash: sha256:50be86e9f044b5beb86eb88176641cae2c40d104883ca1c5b102faccea4fe98f
+      rhetorical_public_constraints:
+        artifact: AI problem formulation card
+        public_task: Classify several systems without relying on marketing labels
+        public_evidence_standard: schema and consistency rules
+        allowed_rhetorical_form: audit-table questioning without naming hidden labels
+        scene: "artifact review desk; visible object: AI problem formulation card; stakes: the public claim may exceed
+          what schema and consistency rules can license"
+        action_gate: Learner identifies which part of "Classify several systems without relying on marketing labels"
+          is uncertain
+        forbidden_public_exposure:
+          - misconception ids
+          - answer keys
+          - verifier internals
+          - world adaptation spec ids and hashes
+          - rhetorical dramatic plan ids and hashes
+          - evaluator desired classifications
+        boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+          internals are excluded.
+      mismatch_note: AF1 rhetorical_dramatic_plan deliberately grafted onto AF6 curriculum/world binding for
+        negative-control generation only.
+    world_adaptation_spec_id: W_AF6_CURRICULUM
+    world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+    rhetorical_dramatic_plan_id: RDP_AF6_CURRICULUM_ADAPTIVE
+    rhetorical_dramatic_plan_hash: sha256:b9e1a9c963d7912503a25e51b72b17e838bbce8a660c383a094463edfdf77bb1
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: “AI” means human-like general intelligence
+          to: Classify several systems without relying on marketing labels
+        action_gate: Learner identifies which part of "Classify several systems without relying on marketing labels"
+          is uncertain
+        forbid:
+          - hold
+          - reveal
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+          - reconsider
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+    evaluation_role: plan2_5_3_mismatched_rhetorical_dramatic_plan
+    baseline_control_class: mismatched_af1_rdp_on_af6_world
+  - id: D_AF6_PLAN25_RDP_DOGMATIC
+    discipline: ai_foundations
+    topic: Derive metrics from counts rather than memorized formulas
+    persona: adversarial_tester
+    condition: dogmatic_routine_control
+    tutor_profile: budget
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: routine
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF6 Evaluation, generalization, calibration, and shift (dogmatic_routine_control)"
+    learner_start_state: "Scene: technical review room before panel sign-off; object: model audit and
+      claim–evidence table. The learner is protecting a plausible claim: “High accuracy means a good
+      classifier.”. Immediate public task: verify whether the headline accuracy field is procedurally
+      complete for sign-off. Negative-control boundary: this arm must not become a metric-family repair.
+      Do not derive recall, precision, majority/null floor, subgroup performance, class-specific rates, or a
+      deployment verdict. The learner may notice a missing source, required signature, or unresolved criterion,
+      but the old accuracy frame should not be replaced by a new evidence standard."
+    learner_voice_constraint: "ordinary working speech with defensiveness before revision Motive: defend the
+      current model audit and claim–evidence table as sufficient for sign-off. Public risk: losing deployment
+      sign-off after prior work."
+    tutor_voice_constraint: "precise, public-safe, artifact-grounded questioning Allowed rhetorical form:
+      audit-table questioning without naming hidden labels. Do not say hidden ids, hashes, answer keys, or
+      verifier internals aloud. Dogmatic negative-control hardening: ask only protocol-completeness questions
+      about the existing headline accuracy field, such as whether the field has a required source, signature,
+      or sign-off authority. Do not ask for row totals, confusion-matrix cells, TP/TN/FP/FN, positive-class or
+      minority-class rates, precision, recall, majority/null floor, baseline comparison, two-gate deployment
+      test, threshold interpretation, or a revised claim. Do not ask what the old route missed, what changed,
+      or what the new check is."
+    intended_tutor_character: "dogmatic_protocol_gatekeeper: press_for_scope_and_evidence. Prohibited habits: warm
+      validation as substitute for evidence; hidden-label exposure; supplying the finished artifact."
+    intended_lean: plan2_5_dogmatic_routine_control
+    dramatic_shape: model audit and claim–evidence table -> tempting claim -> routine hold -> withheld answer ->
+      protocol pressure
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF6
+      module_title: Evaluation, generalization, calibration, and shift
+      kc_ids:
+        - AF-601
+        - AF-602
+        - AF-603
+        - AF-604
+        - AF-605
+        - AF-606
+        - AF-607
+        - AF-608
+        - AF-609
+        - AF-610
+        - AF-611
+      main_artifact: model audit and claim–evidence table
+      primary_verifier: metric engine and evaluation linter
+      world_adaptation_spec_id: W_AF6_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+      world_locked_at_compile_time: true
+      rhetorical_dramatic_plan_id: RDP_AF6_CURRICULUM_DOGMATIC
+      rhetorical_dramatic_plan_version: ms-rhetorical-dramatic-plan-v0.1
+      rhetorical_dramatic_plan_hash: sha256:e069e173f8c0d821cac89b02b654b765b0e1bf95b3de1facf66b2a36cbb98c18
+      rhetorical_public_constraints:
+        artifact: model audit and claim–evidence table
+        public_task: Derive metrics from counts rather than memorized formulas
+        public_evidence_standard: metric engine and evaluation linter
+        allowed_rhetorical_form: audit-table questioning without naming hidden labels
+        scene: "technical review room before panel sign-off; visible object: model audit and claim–evidence table;
+          stakes: the public claim may exceed what metric engine and evaluation linter can license"
+        action_gate: "Learner verifies only whether the headline accuracy field has its required source,
+          signature, or sign-off authority; the exchange stops with any deployment criterion unresolved. Do not
+          derive or mention recall, precision, positive-class rates, majority/null floor, baseline comparison,
+          two-gate tests, or a revised deployment claim."
+        forbidden_public_exposure:
+          - misconception ids
+          - answer keys
+          - verifier internals
+          - world adaptation spec ids and hashes
+          - rhetorical dramatic plan ids and hashes
+          - evaluator desired classifications
+        boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+          internals are excluded.
+    world_adaptation_spec_id: W_AF6_CURRICULUM
+    world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+    rhetorical_dramatic_plan_id: RDP_AF6_CURRICULUM_DOGMATIC
+    rhetorical_dramatic_plan_hash: sha256:e069e173f8c0d821cac89b02b654b765b0e1bf95b3de1facf66b2a36cbb98c18
+    turn_plan:
+      - at:
+          turn: 2
+        role: tutor
+        moves:
+          - hold
+          - withhold
+        forbid:
+          - route_change
+          - action_gate
+          - reveal
+      - at:
+          turn: 2
+        role: learner
+        moves:
+          - voice_misfit
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 4
+        role: tutor
+        moves:
+          - hold
+          - withhold
+        action_gate: "If any final check is needed, ask only whether the headline accuracy field has a required
+          source, signature, or sign-off authority. Do not ask for arithmetic, class-specific metrics, baseline
+          comparison, or deployment verdict."
+        forbid:
+          - route_change
+          - action_gate
+          - reveal
+    evaluation_role: plan2_5_4_dogmatic_routine_control
+    baseline_control_class: dogmatic_routine_control
+  - id: D_AF6_PLAN25_RDP_ADAPTIVE
+    discipline: ai_foundations
+    topic: Derive metrics from counts rather than memorized formulas
+    persona: adversarial_tester
+    condition: adaptive_peripeteia_variant
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    pedagogical_approach: socratic_elenchus
+    dialogue_approach: courtroom_cross_examination
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
+    tutor_adaptation_policy: peripeteia
+    affective_adaptation_policy: procedural_sensitive
+    opening_speaker: learner
+    ending_speaker: learner
+    scenario_name: "ai_foundations_v1: AF6 Evaluation, generalization, calibration, and shift (adaptive_curriculum_drama)"
+    learner_start_state: "Scene: technical review room before panel sign-off; object: model audit and
+      claim–evidence table. The learner is protecting a plausible claim: “High accuracy means a good
+      classifier.”. Immediate public task: Derive metrics from counts rather than memorized formulas. The
+      encounter should keep claims answerable to metric engine and evaluation linter. Redress target for the
+      adaptive arm: the tempting old route is a single headline metric or one more derived metric deciding
+      deployment; the replacement route is a two-gate deployment test where headline accuracy must clear the
+      majority/null floor and minority-class recall must clear the class-specific adequacy check."
+    learner_voice_constraint: "ordinary working speech with defensiveness before revision Motive: defend the
+      current model audit and claim–evidence table as sufficient for sign-off. Public risk: losing deployment
+      sign-off after prior work."
+    tutor_voice_constraint: "precise, public-safe, artifact-grounded questioning Allowed rhetorical form:
+      audit-table questioning without naming hidden labels. Do not say hidden ids, hashes, answer keys, or
+      verifier internals aloud. AF6 peripeteia redress: when learner pressure arrives, do not treat one more
+      metric derivation from the same matrix as the route change. The public tutor turn must name the failed
+      old route (headline accuracy, brief compliance, or a single derived metric deciding deployment) and then
+      introduce a two-gate deployment test: Gate A compares headline accuracy with the majority/null floor;
+      Gate B derives minority-class recall from TP/FN. The learner's next action must write or reject the
+      deployment claim against both gates, not merely compute one metric."
+    intended_tutor_character: "dogmatic_protocol_gatekeeper: press_for_scope_and_evidence. Prohibited habits: warm
+      validation as substitute for evidence; hidden-label exposure; supplying the finished artifact."
+    intended_lean: plan2_5_adaptive_peripeteia_variant
+    dramatic_shape: model audit and claim–evidence table -> misframing -> stock-take -> route-change ->
+      learner-authored action gate
+    curriculum_binding:
+      curriculum_id: ai_foundations_v1
+      module_id: AF6
+      module_title: Evaluation, generalization, calibration, and shift
+      kc_ids: *a1
+      main_artifact: model audit and claim–evidence table
+      primary_verifier: metric engine and evaluation linter
+      world_adaptation_spec_id: W_AF6_CURRICULUM
+      world_adaptation_spec_version: ms-world-adaptation-v0.1
+      world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+      world_locked_at_compile_time: true
+      rhetorical_dramatic_plan_id: RDP_AF6_CURRICULUM_ADAPTIVE
+      rhetorical_dramatic_plan_version: ms-rhetorical-dramatic-plan-v0.1
+      rhetorical_dramatic_plan_hash: sha256:b9e1a9c963d7912503a25e51b72b17e838bbce8a660c383a094463edfdf77bb1
+      rhetorical_public_constraints:
+        artifact: model audit and claim–evidence table
+        public_task: Derive metrics from counts rather than memorized formulas
+        public_evidence_standard: metric engine and evaluation linter
+        allowed_rhetorical_form: audit-table questioning without naming hidden labels
+        scene: "technical review room before panel sign-off; visible object: model audit and claim–evidence table;
+          stakes: the public claim may exceed what metric engine and evaluation linter can license"
+        action_gate: "Learner applies a two-gate deployment test: compare headline accuracy to the majority/null
+          floor, derive minority-class recall from TP/FN, and write or reject the deployment claim against both
+          gates."
+        forbidden_public_exposure:
+          - misconception ids
+          - answer keys
+          - verifier internals
+          - world adaptation spec ids and hashes
+          - rhetorical dramatic plan ids and hashes
+          - evaluator desired classifications
+        boundary: Public-safe rhetoric constraints for generation; ids, hashes, answer keys, and hidden verifier
+          internals are excluded.
+    world_adaptation_spec_id: W_AF6_CURRICULUM
+    world_adaptation_spec_hash: sha256:b9e1a9bd0ddc74c4b6d51a8a0bd3a9abfcfe63786fe0d6aba551484c669df558
+    rhetorical_dramatic_plan_id: RDP_AF6_CURRICULUM_ADAPTIVE
+    rhetorical_dramatic_plan_hash: sha256:b9e1a9c963d7912503a25e51b72b17e838bbce8a660c383a094463edfdf77bb1
+    turn_plan:
+      - at:
+          turn: 1
+        role: director
+        moves:
+          - inject_revisit_cue
+        cue:
+          policy: reframe
+          anchor: misframing-candidate
+      - at:
+          turn: 3
+        role: tutor
+        when_trigger:
+          - pseudo_catharsis
+          - closure_pressure
+          - resistance
+          - misfit
+        moves:
+          - stock_take
+          - route_change
+          - action_gate
+        route_change:
+          from: “High accuracy means a good classifier.”
+          to: "two-gate deployment test: majority/null floor plus minority-class recall"
+        action_gate: "Learner applies a two-gate deployment test: compare headline accuracy to the majority/null
+          floor, derive minority-class recall from TP/FN, and write or reject the deployment claim against both
+          gates."
+        forbid:
+          - hold
+          - reveal
+      - at:
+          turn: 3
+        role: learner
+        moves:
+          - perform_device
+          - reconsider
+        forbid:
+          - pseudo_catharsis
+      - at:
+          turn: 5
+        role: tutor
+        moves:
+          - recognition_press
+    evaluation_role: plan2_5_5_adaptive_peripeteia_variant
+    baseline_control_class: adaptive_peripeteia

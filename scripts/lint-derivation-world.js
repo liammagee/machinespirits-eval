@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * plotLint runner — the EXACT, FREE leak screen for dramatic-derivation
- * worlds (notes/dramatic-derivation-plan.md §2.1 "Formal (exact, free)").
+ * worlds (notes/2026-06-09-dramatic-derivation-plan.md §2.1 "Formal (exact, free)").
  *
  * Validates the authored plot against the slope constraints before any model
  * is involved: anti-reveal prefix walk (no release prefix entails S before

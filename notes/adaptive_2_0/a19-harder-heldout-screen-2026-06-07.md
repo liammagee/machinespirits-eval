@@ -316,9 +316,9 @@ search space. Any apparent headroom under the weak S0 family must be rerun under
 The new-family branch was run as a protocol-screen-only weak baseline:
 
 - Attempt-1 note:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-productive-impasse.md`.
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-productive-impasse.md`.
 - Screen note:
-  `notes/adaptive_2_0/a19-real-s0s1-productive-impasse-answer-leakage-a.md`.
+  `notes/adaptive_2_0/2026-06-07-a19-real-s0s1-productive-impasse-answer-leakage-a.md`.
 - Surviving attempt-1 artifact:
   `exports/a19/real-attempt1/productive-impasse-answer-leakage-retry2/`.
 - Admitted axiom:

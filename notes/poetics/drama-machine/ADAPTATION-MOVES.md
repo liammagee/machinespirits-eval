@@ -95,7 +95,10 @@ The learner's adaptive moves are mostly **responses** — to a director revisit 
 
 ## 5. DIRECTOR moves
 
-The director's moves are *staging-level* — they inject pressure or a cue into the scene, scheduled by turn and timing. All pre-baked at setup today (no live re-cue).
+The serialized role remains `director`; conceptually these are **staging
+director** moves, distinct from setup-only scene authorship. They inject
+pressure or a cue into the scene, scheduled by turn and timing. All pre-baked
+at setup today (no live re-cue).
 
 | Move | Register | What it does | Grounded form | Status |
 |---|---|---|---|---|
@@ -141,7 +144,7 @@ turn_plan:
 
 **Two move-set shorthands** (so you don't always spell out atoms):
 
-- **Policy macros** — the existing labels expand to move-sets: `peripeteia → [stock_take, route_change, action_gate]`, `uptake → [uptake]`, `socratic_discovery → [meter, recognition_press]`, `routine → [hold]`, `reveal → [reveal]`.
+- **Policy macros** — the existing labels expand to move-sets: `peripeteia → [stock_take, route_change, action_gate]`, `uptake → [uptake]`, `socratic_discovery → [meter, recognition_press]`, `routine → [hold]`, `withhold_secret → [withhold]`, `reveal_secret → [reveal]`.
 - **Approach move-packs** — a `pedagogical_approach` / `dialogue_approach` *is* a pre-bundled move-set with a `turn_shape`. E.g. `aristotelian_reversal` packs `turn_shape: "pressure, reversal, recognition or failed recognition"` (`dialogue-approaches.yaml:12`) with `tutor_constraint`/`learner_constraint`. Selecting an approach seeds the `turn_plan` defaults; explicit `turn_plan` entries override.
 
 **Compile path (what runs today vs what's TO-BUILD):**

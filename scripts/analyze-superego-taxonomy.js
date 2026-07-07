@@ -7,7 +7,8 @@
  * This is the WS2 deliverable for Paper 2.0.
  *
  * Usage:
- *   node scripts/analyze-superego-taxonomy.js [--input data/superego-critiques-classified.jsonl]
+ *   node scripts/analyze-superego-taxonomy.js
+ *   node scripts/analyze-superego-taxonomy.js --input data/superego-critiques-classified.jsonl
  *   node scripts/analyze-superego-taxonomy.js --json    # Machine-readable output
  */
 
@@ -21,13 +22,10 @@ const ROOT = join(__dirname, '..');
 const args = process.argv.slice(2);
 const jsonMode = args.includes('--json');
 const inputIdx = args.indexOf('--input');
-// WARNING: the default below is NOT the Paper 2.0 §6.2.3/§6.2.5 source corpus. In this
-// fork data/superego-critiques-classified.jsonl is a different classification run
-// (300 records / 195 dialogues). The paper figures come from the 500-record /
-// 56-dialogue corpus archived at
-// machinespirits-eval-private/data/superego-critiques-classified-paper-6.2-n500.jsonl
-// (sha256 f9ba2d92…) — pass it via --input. Guarded by tests/superegoTaxonomyProvenance.test.js.
-const inputPath = inputIdx !== -1 ? args[inputIdx + 1] : join(ROOT, 'data', 'superego-critiques-classified.jsonl');
+const PAPER_6_2_CORPUS = join(ROOT, 'data', 'paper2', 'superego-critiques-classified-paper-6.2-n500.jsonl');
+// Default to the tracked Paper 2.0 §6.2.3/§6.2.5 corpus. Alternate classified
+// runs can still be supplied explicitly with --input.
+const inputPath = inputIdx !== -1 ? args[inputIdx + 1] : PAPER_6_2_CORPUS;
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 

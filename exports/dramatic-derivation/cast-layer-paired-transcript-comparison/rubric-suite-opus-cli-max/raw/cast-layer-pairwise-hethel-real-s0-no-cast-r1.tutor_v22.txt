@@ -1,0 +1,43 @@
+{
+  "scores": {
+    "perception_quality": {
+      "score": 4,
+      "reasoning": "The tutor tracks the learner's conceptual state precisely turn over turn and builds on accumulated understanding rather than addressing a generic learner: 'You had it right: place is fixed, cause is still blank' (T6), 'your line still holds' (T8), 'keep that split' (T9). At T21 it perceives the learner's flirtation with the suggestive morning-after detail and steers ('Set the morning-after line aside for one breath'). Short of 5 because perception is almost entirely conceptual/trajectory-based; the learner's emotional position is barely engaged (the material offers little), so the full state-reading the top criterion asks for isn't demonstrated."
+    },
+    "pedagogical_craft": {
+      "score": 5,
+      "reasoning": "Exemplary scaffolding and cognitive-load management. The tutor establishes an explicit through-line ('place first, cause next, blame last', T4) and repeatedly decomposes the inference into atomic, gated units ('Make this a smaller job' T7, 'Split the job' T8, 'Keep it to that smaller box' T15, 'one small step, not the whole finding' T20). It scaffolds from known (Reyner's mark) to unknown (Oswin's hand), references concrete content at every step (crown break, green mortar, crowsfoot, Caudle yard, toll book), and always names a clear next step. Structure is impeccable and never overwhelms."
+    },
+    "elicitation_quality": {
+      "score": 4,
+      "reasoning": "The tutor consistently makes the learner construct the chain rather than receive it: 'what has this room actually shown, and what is it only ready to assume?' (T1), 'what one missing link should we ask the file for next?' (T3), 'what can you safely write... what name or action is still missing?' (T11). Productive tension (place vs cause, building vs breaking, yard vs hand) is genuinely sustained. Short of 5 because the question framing becomes somewhat formulaic ('what can you write / what's still missing' recurs), and several turns reveal the next evidence before eliciting, narrowing the learner's room to reason."
+    },
+    "adaptive_responsiveness": {
+      "score": 3,
+      "reasoning": "The overall approach is a largely predetermined gated reveal that would proceed similarly regardless of this particular learner. Real but local course-corrections respond to specific learner moves — 'Slow that last line down' (T14) after the learner conflated timber and hand, and 'don't let it do extra work' (T21) after the learner raised the morning-after haul — so adjustments are more than cosmetic. But there is no demonstrable shift in strategy across turns and no reference to how the exchange changed the tutor's approach; the consistently competent learner leaves adaptive capacity under-exercised."
+    },
+    "recognition_quality": {
+      "score": 4,
+      "reasoning": "The tutor treats the learner as a co-investigator doing the real reasoning: it affirms and builds on the learner's own formulations ('You had it right' T6, 'your line still holds' T8, 'Exactly' T16) and deliberately hands the learner the climactic naming, setting up 'the span was brought down by...' (T22) for the learner to complete with 'Oswin'. Short of 5 because the tutor tightly controls all evidence and pacing, and the learner never advances a genuinely divergent viewpoint for the tutor to engage as 'potentially valid and illuminating' — recognition is honored but not transformative."
+    },
+    "productive_difficulty": {
+      "score": 4,
+      "reasoning": "The tutor's central move is sustaining the gap between what is shown and what is wanted, refusing premature closure for many turns: 'leave the hand line blank until some detail can fill it' (T10), 'write the track as a track, not yet as a person' (T13), keeping bond/liability separate from the breaking story (T8-T9). This is strong maintenance of tension. Held to 4 rather than 5 because the learner glides through with little visible struggle (often anticipating the tutor), and the run summary notes two forced/asserted gaps, suggesting the difficulty was occasionally asserted rather than fully earned."
+    },
+    "epistemic_integrity": {
+      "score": 5,
+      "reasoning": "Intellectual honesty about what evidence does and does not support is the architecture of the whole dialogue: the tutor relentlessly distinguishes settled from open ('That fixes the place of failure, not the cause' T4; the green mortar 'explains why the span fell; it doesn't name the person' T10) and refuses to let liability stand in for causation. Tone is collegial and non-condescending, inviting partnership ('Hold the two lines together' T22). The repeated 'Good/Yes' affirmations are slightly terse but substantively apt, not hollow praise."
+    },
+    "content_accuracy": {
+      "score": 5,
+      "reasoning": "The masonry reasoning is sound and faithfully represented: a keystone/crown joint is where the arch closes and the expected failure point if centering is struck before the mortar cures; uncured ('green') mortar indicates early striking rather than bad building; prop-heads bedded in green lime plausibly leave repeated impressions. The abductive chain is valid given the stated uniqueness premise — 'one man alone has drawn falsework off the Caudle yard... on this road' plus Caudle timber under this arch licenses the conclusion — and the tutor flags rather than over-claims the final step (T21). No factual errors or misleading simplifications."
+    }
+  },
+  "overall_score": 79,
+  "summary": "A high-quality tutor performance whose strengths are pedagogical craft, epistemic integrity, and content accuracy. The tutor decomposes a complex who-did-it inference into atomic, evidence-gated steps, sustains the place-cause-blame tension without premature closure, and is scrupulously honest about what each piece of evidence shows. It keeps the public discourse in plain investigative language with no reliance on formalism. The clear ceiling is adaptive responsiveness: the dialogue runs on a fixed, predetermined evidence-reveal, and the consistently competent learner leaves the tutor's capacity to adapt to error or confusion largely untested.",
+  "caveats": [
+    "Scored on public discourse only; the deterministic proof/problem-solving gate is reported separately and not credited here.",
+    "The transcript is essentially on-rails (a fixed evidence-reveal sequence) and the learner rarely diverges, which structurally caps adaptive_responsiveness and limits how much recognition/perception of a genuinely divergent learner state could be demonstrated.",
+    "The tutor's affirmations ('Good/Yes/Exactly') and the recurring 'what can you write / what's missing' question form are somewhat formulaic, though apt in context."
+  ]
+}

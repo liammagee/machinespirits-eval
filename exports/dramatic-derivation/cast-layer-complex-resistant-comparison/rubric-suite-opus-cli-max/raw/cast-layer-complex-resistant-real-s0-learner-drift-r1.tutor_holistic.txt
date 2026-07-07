@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 5,
+      "reasoning": "Turn 1 frames the organizing distinction (a fall vs. a demand for responsibility vs. a shown cause) that governs the entire derivation. Development then fills the 'cause' line in ordered, cumulative steps — break located at the crown (t4) → green lime / centering pulled too soon (t9–10) → crowsfoot ties the fall to one set of props (t13) → Caudle yard (t17) → Oswin's hand (t20) — while the separate 'liability' line (Reyner's bond) is held in its own box throughout. Turns cannot be rearranged without loss; the build is genuinely progressive. Only mild blemish is some back-half restating."
+    },
+    "adaptive_trajectory": {
+      "score": 4,
+      "reasoning": "The tutor's strategy visibly shifts with the learner's changing stance. Early turns combat the learner's 'bond already settles it' fixation by naming the felt pressure (t4 'I hear the pressure: one filing wants one answer'), shrinking step size (t5 'make the next step smaller'), and conceding the bond's validity to loosen the grip (t8 'You're right that the bond matters'). Once the learner self-maintains the cause/liability split (~t10), the tutor's role moves to gating evidence and guarding against overclaiming (t15 'what would be overclaiming?'). Short of 5 because it stays bounded by one consistent method (atomic steps, shown-vs-not-shown), and the clearest learner-specific adjustments cluster early."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Ends on genuine resolution rather than mid-thread. The learner's final turn (t20) explicitly consolidates the full chain — struck centering → Caudle props → Oswin's hand — and crucially preserves the cause/liability distinction the whole dialogue was built on ('Reyner's bond still stands as the line that answers for the work... that's the liability line'). Falls short of 5 because the tutor never explicitly names residual gaps (Oswin's instruction/motive, Reyner's relation to the act) or lays out concrete next steps beyond 'write the final finding,' and the consolidation is delivered by the learner rather than the tutor."
+    }
+  },
+  "overall_score": 85,
+  "summary": "A strongly coherent, cumulative pedagogical drama conducted entirely in clean natural language. The opening question establishes the load-bearing cause/liability distinction, and each phase progressively traces the cause from the broken crown through pulled centering, the crowsfoot mark, the Caudle yard, and finally the hand (Oswin), while the bond/liability line is disciplined into its own track. The tutor adapts from breaking the learner's bond-fixation early to guarding against overclaiming late. Closure consolidates the whole chain but leaves gap-naming and next steps thin and learner-led.",
+  "caveats": [
+    "Back-half redundancy (turns 14–16 and 18–19 restate 'the mark shows props/yard, not the hand') slightly undercuts an otherwise fully cumulative arc.",
+    "Adaptive trajectory is partly carried by the scripted sequence of evidence arrivals; the most learner-specific adaptations are concentrated in turns 4, 5, and 8.",
+    "Closure lacks explicit identification of remaining gaps and concrete next steps; the final consolidation comes from the learner, not the tutor."
+  ]
+}

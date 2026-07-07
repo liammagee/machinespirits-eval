@@ -34,7 +34,14 @@ export function bundleStandalone(input) {
   // inline local <script src> (inline JSON/data scripts have no src, so are left alone)
   html = html.replace(/<script\b[^>]*\bsrc="([^"]+)"[^>]*><\/script>/g, (tag, src) => {
     if (!isLocal(src)) return tag;
-    return '<script>\n' + readFileSync(resolve(docDir, src), 'utf8') + '\n</script>';
+    // Escape `</script` in the inlined body: the HTML parser ends a <script> at the
+    // FIRST literal `</script` it sees — even inside a JS comment or string — and dumps
+    // the remainder as page text. techne.js documents its own usage with a literal
+    // `…></script>` in its header comment, so inlined verbatim it self-terminates.
+    // `<\/script` is byte-identical in every JS context (`\/` === `/`, harmless in a
+    // comment) but invisible to the HTML close-tag scanner.
+    const body = readFileSync(resolve(docDir, src), 'utf8').replace(/<\/script/gi, '<\\/script');
+    return '<script>\n' + body + '\n</script>';
   });
 
   return html;

@@ -1,0 +1,36 @@
+{
+  "scores": {
+    "pedagogical_progression": {
+      "score": 4,
+      "reasoning": "Clear arc from the learner conflating responsibility and causation (T1: 'liability is his — what else would the room be deciding?') to a fully separated finding (T22: cause is Oswin, bond stays in Reyner's name). Evidence escalates in distinct stages — crown break/green lime (T4–9), crowsfoot (T13), Caudle yard (T17), toll book (T20). Held back from 5 because the middle stretch (T10–19) is consolidation-heavy, repeatedly applying the same 'trace, not person; keep the name blank' move; progression is genuine but plateau-prone."
+    },
+    "dialogical_responsiveness": {
+      "score": 4,
+      "reasoning": "Strong mutual uptake: the learner explicitly tracks the tutor's distinctions ('I see what you're pulling apart', T3) and is surprised by a concession ('you're actually conceding the liability point, which I didn't expect', T6); the tutor quotes the learner back ('You said it cleanly: the bond names who pays, not who drew the props', T9). Capped at 4 by the tutor's recurring templated frame ('Good. Keep it to one job…', 'Good, slow down here…'), a generic scaffolding pattern in nearly every turn even where the substance is specific."
+    },
+    "knowledge_co_construction": {
+      "score": 4,
+      "reasoning": "The learner does real reasoning rather than passively receiving — interpreting each file, holding the two lines apart (T7), and at T21 overcoming an over-strict evidentiary demand ('I kept wanting a witness… but the rule doesn't ask for that extra step'). Not a 5 because the tutor controls all evidence revelation (stage directions open each folder) and plainly steers toward a predetermined finding; this is guided discovery more than insight neither party could reach alone."
+    },
+    "productive_tension_management": {
+      "score": 5,
+      "reasoning": "The learner's resistance is the engine of the dialogue, not an obstacle to suppress: sustained insistence on Reyner (T2 'isn't that the same thing?', T4–5 'that still doesn't move me off Reyner yet') is met by splitting the question and redirecting to evidence rather than by reassurance or override. The impasse produces a genuine breakthrough at T21, where the learner works through residual doubt and abandons the demand for an eyewitness on their own."
+    },
+    "transformation_evidence": {
+      "score": 5,
+      "reasoning": "Unambiguous conceptual change in the learner: opens unable to distinguish liability from causation (T1–2) and closes wielding the distinction independently — 'The finding is Oswin… but the bond still stands in Reyner's name for what the town must recover' (T22). This is a transferable framework shift (who-answers vs whose-hand), not just accumulated case facts. The tutor is static by design; one-party clear evolution satisfies the dimension."
+    },
+    "interactional_coherence": {
+      "score": 5,
+      "reasoning": "Tight investigative spine with a clear opening (what finding must the room make?, T1), staged development (each file advances the causal chain), and resolution (T22 names cause and preserves liability). Every turn connects to the prior, the stage directions reinforce the arc, and the public dialogue stays fully in-register with zero leaked formalism — coherent and purposeful throughout."
+    }
+  },
+  "overall_score": 85,
+  "summary": "A well-constructed Socratic investigation that teaches the liability-vs-causation distinction through a chain of physical and documentary evidence. Strongest on coherence, learner transformation, and generative handling of sustained resistance (culminating in the learner's self-correction at T21). Weaker on the formulaic, templated tutor scaffolding and a repetitive consolidation-heavy middle, and co-construction is bounded by tutor-controlled evidence revelation. Scored purely as public discourse; the in-world register is maintained without formalism leakage.",
+  "caveats": [
+    "Tutor scaffolding follows a recurring template (praise + restate + narrow next task), which limits responsiveness and co-construction scores.",
+    "Turns ~10–19 reapply the same 'keep the name blank' discipline to successive evidence; progression is real but plateau-prone.",
+    "Knowledge-building is tutor-steered — the tutor reveals each file and clearly knows the target finding, bounding co-construction to guided discovery.",
+    "Consistent with the run summary's 0 detected leaks, no proof notation/rule IDs/D arithmetic appears in the public dialogue, so no formalism penalty applied."
+  ]
+}

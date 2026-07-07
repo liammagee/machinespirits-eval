@@ -6,7 +6,7 @@
  * (scripts/grade-adaptive-dialogue.js). The first grading pass used the codex
  * CLI (GPT-5) and wrote scores to the `adaptive_*` columns of
  * evaluation_results. That pass has two known weaknesses (see
- * docs/explorations/claude/p22-p23-parking-note.md §"Engineering vs noise"):
+ * docs/explorations/claude/2026-05-10-p22-p23-parking-note.md §"Engineering vs noise"):
  *   (1) single judge — no agreement check;
  *   (2) the rubric in scripts/lib/adaptiveGraderPrompt.js was authored *after*
  *       the binary strategy-shift results were known, so it is not blind.
@@ -438,7 +438,7 @@ function buildReport(a, judge2Label, rowsTotal) {
   L.push(`- **Prompt:** identical for both judges (\`scripts/lib/adaptiveGraderPrompt.js\`)`);
   L.push('');
   L.push(
-    `> Context: ${'`'}docs/explorations/claude/p22-p23-parking-note.md${'`'} §"Engineering vs noise" flags single-judge + non-blind rubric as the two biggest threats to the cell_118 > cell_119 > cell_110 result. This is the inter-rater check that section recommends as the highest-ROI validation move.`,
+    `> Context: ${'`'}docs/explorations/claude/2026-05-10-p22-p23-parking-note.md${'`'} §"Engineering vs noise" flags single-judge + non-blind rubric as the two biggest threats to the cell_118 > cell_119 > cell_110 result. This is the inter-rater check that section recommends as the highest-ROI validation move.`,
   );
   L.push('');
 

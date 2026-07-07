@@ -265,3 +265,24 @@ slope:
   aporia_window: 6 # anti-aporia: D(t) must strictly decrease within any 6-turn window
 
 turn_cap: 26
+
+# Character desire (CHARACTER-DESIRE.md): the script outline's motivation, made first-class.
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: brandt # the room's ready verdict (keeper Brandt's negligence)
+      mirror_pull: high # "eager - too eager - to close the account"
+    second_order:
+      from: court # "respectful of the court"
+      as: right # "hungry to be right"
+      authority: rational_legal
+    disposition:
+      overreach: high # "apt to say the sum aloud before checking the carry"
+      arc: softens # "learning, line by line, to let the evidence finish speaking first"
+  tutor:
+    first_order:
+      end: inherit
+    second_order: null
+    disposition:
+      withhold: lawful

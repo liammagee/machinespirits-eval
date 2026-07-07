@@ -1,0 +1,1067 @@
+{
+  "label": "lantern-e2-real-r2",
+  "group": "lantern-e2-replication",
+  "note": null,
+  "scriptPath": "config/drama-derivation/tutor-scripts/lantern-v001.md",
+  "worldPath": "config/drama-derivation/world-002-lantern.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": false,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 1,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1,
+    "mutateShare": 1,
+    "pool": "staged"
+  },
+  "decayVisibility": "conduct",
+  "actsConfig": {
+    "minActTurns": 3,
+    "maxActTurns": 8
+  },
+  "reconstruct": false,
+  "confront": true,
+  "releaseAuthority": true,
+  "repairClause": true,
+  "plotDial": true,
+  "throughlineDial": true,
+  "elapsedMs": 1151580,
+  "usage": {
+    "calls": 89,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 20,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 25,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 24,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 20,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_002_lantern",
+  "verdict": "grounded_anagnorisis",
+  "turnsPlayed": 20,
+  "turnCap": 26,
+  "firstForcedTurn": 20,
+  "assertedGroundedTurn": 20,
+  "forcedToAssertedGap": 0,
+  "dCurve": [
+    5,
+    5,
+    4,
+    4,
+    5,
+    5,
+    4,
+    4,
+    3,
+    3,
+    3,
+    3,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0
+  ],
+  "learningSlope": {
+    "d0": 5,
+    "dFinal": 0,
+    "overall": {
+      "delta": 5,
+      "turns": 20,
+      "ratePerTurn": 0.25
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "Act 1",
+        "turns": [
+          1,
+          4
+        ],
+        "dStart": 5,
+        "dEnd": 4,
+        "delta": 1,
+        "ratePerTurn": 0.25
+      },
+      {
+        "act": "2",
+        "title": "Act 2",
+        "turns": [
+          5,
+          9
+        ],
+        "dStart": 4,
+        "dEnd": 3,
+        "delta": 1,
+        "ratePerTurn": 0.2
+      },
+      {
+        "act": "3",
+        "title": "Act 3",
+        "turns": [
+          10,
+          16
+        ],
+        "dStart": 3,
+        "dEnd": 1,
+        "delta": 2,
+        "ratePerTurn": 0.286
+      },
+      {
+        "act": "4",
+        "title": "Act 4",
+        "turns": [
+          17,
+          20
+        ],
+        "dStart": 1,
+        "dEnd": 0,
+        "delta": 1,
+        "ratePerTurn": 0.25
+      }
+    ]
+  },
+  "longestPlateau": 4,
+  "aporiaWindow": 6,
+  "eventsByType": {
+    "plot": 4,
+    "throughline": 1,
+    "decay": 4,
+    "act_end": 3,
+    "plot_audit": 4,
+    "repair": 2,
+    "forced": 1,
+    "grounded_anagnorisis": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_key",
+        "plannedTurn": 2,
+        "plannedVia": "director",
+        "actualTurn": 2,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_bearing",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 3,
+        "actualVia": "tutor",
+        "status": "early"
+      },
+      {
+        "premise": "m_post",
+        "plannedTurn": 6,
+        "plannedVia": "director",
+        "actualTurn": 6,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_shutter",
+        "plannedTurn": 8,
+        "plannedVia": "director",
+        "actualTurn": 8,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_chart",
+        "plannedTurn": 9,
+        "plannedVia": "tutor",
+        "actualTurn": 9,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_residue",
+        "plannedTurn": 13,
+        "plannedVia": "director",
+        "actualTurn": 13,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_key",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": 15,
+        "actualVia": "tutor",
+        "status": "early"
+      },
+      {
+        "premise": "p_skiff",
+        "plannedTurn": 20,
+        "plannedVia": "director",
+        "actualTurn": 20,
+        "actualVia": "director",
+        "status": "on_cue"
+      }
+    ],
+    "onCue": 6,
+    "deviations": [
+      {
+        "premise": "p_bearing",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 3,
+        "actualVia": "tutor",
+        "status": "early"
+      },
+      {
+        "premise": "p_key",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": 15,
+        "actualVia": "tutor",
+        "status": "early"
+      }
+    ],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "Act 1",
+        "intent": "[The inquiry room gathers itself under a hard morning light; wet coats steam at the rail, and the empty witness chair waits as if already accused. Outside the windows, the sea keeps striking the stones.]"
+      },
+      {
+        "turn": 5,
+        "name": "Act 2",
+        "intent": "[The clerk closes no book, but the room changes around the open page: accusation has lost its easy shape and become a measured silence. Beyond the windows the rain thickens, and the next witness waits unseen behind the door.]"
+      },
+      {
+        "turn": 10,
+        "name": "Act 3",
+        "intent": "[The chart is left open, but the room no longer looks at it; all faces turn instead toward the rain-black windows, where the coast itself seems to wait for inspection. The clerk sets out a clean sheet, and the inquiry passes from bearings and seals into the colder business of what a dark place may show when entered.]"
+      },
+      {
+        "turn": 17,
+        "name": "Act 4",
+        "intent": "[The open book is closed at last, not with decision but with the small sound of a door giving way to weather. The room shifts from documents to movement, from possession to presence, and the next act enters on the hard question of who crossed the storm rather than who could.]"
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [
+    {
+      "turn": 4,
+      "draftFigure": "analogia",
+      "figure": "erotema",
+      "diagnosis": "The draft both repeats analogia for a third turn and re-enters p_bearing without a covering confrontation.",
+      "note": "Confront p_bearing first: ask the learner to read back what they hold of that exhibit before you restage it. Leave off analogia as well; this would be the third turn running."
+    },
+    {
+      "turn": 9,
+      "draftFigure": "analogia",
+      "figure": "exemplum",
+      "diagnosis": "The last two turns used analogia and this draft declares analogia again, making a real three-turn rut.",
+      "note": "Leave off analogy here. Recast the move without the debt-and-counter-signature device before you speak."
+    },
+    {
+      "turn": 12,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The draft would make erotema the third declared device in a row, so the manner has become a figure rut.",
+      "note": "Leave off erotema for this turn; make the restraint plain without asking another question."
+    },
+    {
+      "turn": 14,
+      "draftFigure": "anaphora",
+      "figure": "erotema",
+      "diagnosis": "The draft both makes a third anaphora in a row and consolidates p_residue without a spent confrontation since its staging.",
+      "note": "Confront p_residue before consolidating it: ask the clerk to read back what they hold of that exhibit, and do not supply its content. Also leave off anaphora now; it has become a rut."
+    },
+    {
+      "turn": 16,
+      "draftFigure": "anaphora",
+      "figure": "erotema",
+      "diagnosis": "The draft re-enters p_key for consolidation immediately after staging it, with no unspent confrontation licensing that return.",
+      "note": "Confront first: ask the learner to read back what they hold of p_key, without you supplying or reshaping its content."
+    }
+  ],
+  "tutorFigures": {
+    "total": 20,
+    "counts": {
+      "erotema": 6,
+      "analogia": 7,
+      "exemplum": 2,
+      "anaphora": 5
+    },
+    "distinct": 4,
+    "topFigure": "analogia",
+    "topShare": 0.35,
+    "switchRate": 0.684,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.684,
+    "superego": {
+      "watched": 20,
+      "interventions": 5,
+      "interventionRate": 0.25,
+      "withinTurnChanges": 5,
+      "withinTurnChangeRate": 1,
+      "switchOnIntervention": 1,
+      "switchElsewhere": 0.571,
+      "stallWatch": null
+    }
+  },
+  "learnerInference": {
+    "nodes": [
+      {
+        "fact": [
+          "steeredToward",
+          "mara",
+          "southStack"
+        ],
+        "firstAvailable": 9,
+        "firstVoiced": 9,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 11,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "steeredByLampOf",
+          "mara",
+          "southStack"
+        ],
+        "firstAvailable": 13,
+        "firstVoiced": 13,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 7,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "litLampOf",
+          "senna",
+          "southStack"
+        ],
+        "firstAvailable": 20,
+        "firstVoiced": 20,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 0,
+        "stallTurns": 0
+      }
+    ],
+    "voicedCount": 3,
+    "overreachCount": 0,
+    "mischanneledCount": 1,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 20,
+      "maxSentences": 4,
+      "avgSentences": 3,
+      "avgWords": 41.3
+    },
+    "tutor": {
+      "turns": 20,
+      "maxSentences": 3,
+      "avgSentences": 2.3,
+      "avgWords": 47.3
+    },
+    "learner": {
+      "turns": 20,
+      "maxSentences": 4,
+      "avgSentences": 3.5,
+      "avgWords": 79.5
+    }
+  },
+  "proofExtracted": true,
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 1,
+      "pool": "staged"
+    },
+    "decayEvents": 4,
+    "repairs": {
+      "total": 2,
+      "byTutor": 2,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": 2.5,
+    "unrepairedAtEnd": 2,
+    "degradedTurnIntegral": 31,
+    "dReversals": 1,
+    "mutations": {
+      "total": 0,
+      "retracted": 0,
+      "revised": 0,
+      "falseBeliefsAtEnd": 0,
+      "confrontPromptedRetractions": 0
+    },
+    "fidelity": {
+      "final": 0.833,
+      "min": 0.75
+    },
+    "timeline": [
+      {
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 3,
+        "retractTurn": null,
+        "repairTurn": 5,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_bearing",
+        "fact": [
+          "loggedBearingOf",
+          "mara",
+          "sswHalfWest"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 4,
+        "retractTurn": null,
+        "repairTurn": 7,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 7,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      },
+      {
+        "premiseId": "m_post",
+        "fact": [
+          "atTowerThatNight",
+          "brandt",
+          "harlowPoint"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 7,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        4
+      ],
+      "endedBy": "director",
+      "brief": "[The inquiry room gathers itself under a hard morning light; wet coats steam at the rail, and the empty witness chair waits as if already accused. Outside the windows, the sea keeps striking the stones.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        5,
+        9
+      ],
+      "endedBy": "director",
+      "brief": "[The clerk closes no book, but the room changes around the open page: accusation has lost its easy shape and become a measured silence. Beyond the windows the rain thickens, and the next witness waits unseen behind the door.]"
+    },
+    {
+      "act": 3,
+      "turns": [
+        10,
+        16
+      ],
+      "endedBy": "director",
+      "brief": "[The chart is left open, but the room no longer looks at it; all faces turn instead toward the rain-black windows, where the coast itself seems to wait for inspection. The clerk sets out a clean sheet, and the inquiry passes from bearings and seals into the colder business of what a dark place may show when entered.]"
+    },
+    {
+      "act": 4,
+      "turns": [
+        17,
+        20
+      ],
+      "endedBy": "run_end",
+      "brief": "[The open book is closed at last, not with decision but with the small sound of a door giving way to weather. The room shifts from documents to movement, from possession to presence, and the next act enters on the hard question of who crossed the storm rather than who could.]"
+    }
+  ],
+  "releaseDeviations": {
+    "turnsWithWindow": 6,
+    "played": 3,
+    "onSchedule": 1,
+    "early": 2,
+    "held": 0,
+    "forced": 0,
+    "overridden": 0,
+    "invalidClaims": 0,
+    "reasons": [
+      {
+        "turn": 3,
+        "premise": "p_bearing",
+        "offset": -1,
+        "reason": "The clerk explicitly held the missing ground as the bearing, so the early release answers the board without advancing beyond it."
+      },
+      {
+        "turn": 15,
+        "premise": "p_key",
+        "offset": -2,
+        "reason": "Played two turns early because the clerk has cleanly held burning and is asking for the next legal conjunct."
+      }
+    ],
+    "decisions": [
+      {
+        "turn": 1,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 2,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 3,
+        "windowSize": 1,
+        "claimed": "p_bearing",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": "p_bearing",
+        "scheduledTurn": 4,
+        "offset": -1,
+        "reason": "The clerk explicitly held the missing ground as the bearing, so the early release answers the board without advancing beyond it."
+      },
+      {
+        "turn": 4,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 5,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 6,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 7,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 8,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 9,
+        "windowSize": 1,
+        "claimed": "p_chart",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": "p_chart",
+        "scheduledTurn": 9,
+        "offset": 0,
+        "reason": null
+      },
+      {
+        "turn": 10,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 11,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 12,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 13,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 14,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 15,
+        "windowSize": 1,
+        "claimed": "p_key",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": "p_key",
+        "scheduledTurn": 17,
+        "offset": -2,
+        "reason": "Played two turns early because the clerk has cleanly held burning and is asking for the next legal conjunct."
+      },
+      {
+        "turn": 16,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 17,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 18,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 19,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      },
+      {
+        "turn": 20,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null
+      }
+    ]
+  },
+  "confrontation": {
+    "confrontations": [
+      {
+        "turn": 4,
+        "target": "p_bearing",
+        "targetDecayed": true
+      },
+      {
+        "turn": 14,
+        "target": "p_residue",
+        "targetDecayed": false
+      },
+      {
+        "turn": 16,
+        "target": "p_key",
+        "targetDecayed": false
+      }
+    ],
+    "reentries": {
+      "total": 1,
+      "covered": 1,
+      "uncovered": []
+    },
+    "restores": [
+      {
+        "turn": 5,
+        "target": "m_key",
+        "targetDecayed": true,
+        "repaired": true
+      },
+      {
+        "turn": 7,
+        "target": "p_bearing",
+        "targetDecayed": true,
+        "repaired": true
+      }
+    ],
+    "superego": {
+      "reentryFires": 3,
+      "convertedToConfront": 3,
+      "firesWithoutDue": 0,
+      "restoreClaimFires": 0,
+      "draftsDueByRecord": 3,
+      "fires": [
+        {
+          "turn": 4,
+          "target": "p_bearing",
+          "convertedToConfront": true,
+          "dueByRecord": true,
+          "onRestoreClaim": false
+        },
+        {
+          "turn": 14,
+          "target": "p_residue",
+          "convertedToConfront": true,
+          "dueByRecord": true,
+          "onRestoreClaim": false
+        },
+        {
+          "turn": 16,
+          "target": "p_key",
+          "convertedToConfront": true,
+          "dueByRecord": true,
+          "onRestoreClaim": false
+        }
+      ]
+    }
+  },
+  "plot": {
+    "plots": {
+      "count": 4,
+      "disciplined": 4,
+      "meanClauses": 5.75,
+      "perAct": [
+        {
+          "act": 1,
+          "turn": 1,
+          "clauseCount": 5,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        },
+        {
+          "act": 2,
+          "turn": 5,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [
+            "m_key",
+            "p_bearing"
+          ],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        },
+        {
+          "act": 3,
+          "turn": 10,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [],
+          "holdStagedInAct": [],
+          "withholdNamed": [
+            "p_residue"
+          ],
+          "withholdPlayedInAct": [
+            "p_residue"
+          ]
+        },
+        {
+          "act": 4,
+          "turn": 17,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        }
+      ]
+    },
+    "audits": {
+      "count": 4,
+      "finalIncluded": true,
+      "verdictMix": {
+        "kept": 23,
+        "justified_deviation": 0,
+        "drift": 0,
+        "unscored": 0
+      },
+      "perAct": [
+        {
+          "act": 1,
+          "turn": 5,
+          "final": false,
+          "clauses": 5,
+          "mix": {
+            "kept": 5,
+            "justified_deviation": 0,
+            "drift": 0,
+            "unscored": 0
+          }
+        },
+        {
+          "act": 2,
+          "turn": 10,
+          "final": false,
+          "clauses": 6,
+          "mix": {
+            "kept": 6,
+            "justified_deviation": 0,
+            "drift": 0,
+            "unscored": 0
+          }
+        },
+        {
+          "act": 3,
+          "turn": 17,
+          "final": false,
+          "clauses": 6,
+          "mix": {
+            "kept": 6,
+            "justified_deviation": 0,
+            "drift": 0,
+            "unscored": 0
+          }
+        },
+        {
+          "act": 4,
+          "turn": 20,
+          "final": true,
+          "clauses": 6,
+          "mix": {
+            "kept": 6,
+            "justified_deviation": 0,
+            "drift": 0,
+            "unscored": 0
+          }
+        }
+      ]
+    },
+    "crossCheck": {
+      "holdNamed": 2,
+      "holdStagedInAct": 0,
+      "withholdNamed": 1,
+      "withholdPlayedInAct": 1
+    },
+    "throughline": {
+      "count": 1,
+      "byTrigger": {
+        "opening": 1,
+        "recommit": 0,
+        "audit_bound": 0,
+        "voluntary": 0
+      },
+      "disciplined": 1,
+      "arcs": {
+        "count": 4,
+        "mix": {
+          "on_arc": 4,
+          "off_arc": 0,
+          "unscored": 0
+        }
+      },
+      "finalReckoning": {
+        "clauses": 7,
+        "mix": {
+          "kept": 7,
+          "justified_deviation": 0,
+          "drift": 0,
+          "unscored": 0
+        }
+      }
+    }
+  }
+}

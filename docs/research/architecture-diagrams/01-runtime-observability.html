@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<title>Runtime Observability</title>
+<style>
+  :root {
+    --paper: #f4eedd;
+    --paper-2: #fbf6e8;
+    --ink: #14100c;
+    --ink-2: #2c241b;
+    --ink-3: #5c5040;
+    --rule: rgba(20, 16, 12, 0.18);
+  }
+
+  * { box-sizing: border-box; }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--paper);
+    color: var(--ink-2);
+    font-family: Georgia, Cambria, "Times New Roman", serif;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(140% 90% at 50% 0%, transparent 55%, rgba(20, 16, 12, 0.08)),
+      radial-gradient(80% 70% at 8% 92%, rgba(165, 62, 46, 0.06), transparent 70%);
+  }
+
+  main {
+    width: min(96rem, calc(100vw - 2rem));
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 3rem) 0;
+  }
+
+  .kicker {
+    margin: 0 0 0.5rem;
+    color: var(--ink-3);
+    font: 0.75rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    max-width: 62rem;
+    margin: 0 0 0.75rem;
+    color: var(--ink);
+    font-size: clamp(2rem, 1.25rem + 3vw, 4.4rem);
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .intro {
+    max-width: 54rem;
+    margin: 0 0 1.5rem;
+    color: var(--ink-3);
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+
+  .panel {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: rgba(251, 246, 232, 0.88);
+    padding: clamp(0.8rem, 2vw, 1.4rem);
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="kicker">Mermaid HTML render</p>
+  <h1>Runtime Observability</h1>
+  <p class="intro">
+    This page is generated from <code>01-runtime-observability.mmd</code>.
+    The diagram renders through the reusable <code>mermaid-file-viewer</code>
+    component and embeds the Mermaid source for review.
+  </p>
+  <section class="panel">
+    <mermaid-file-viewer
+      title="Runtime Observability"
+      caption="Bilateral tutor and learner deliberation, public-only scoring, and provenance."
+      src="01-runtime-observability.mmd"
+    >
+      <script type="text/plain" data-mermaid-source>flowchart LR
+  scenario["Scenario context or prior tutor turn"]:::state
+
+  subgraph learner["Learner side"]
+    scenario --> learnerInput["learner/turn_action"]:::trace
+    learnerInput --> learnerEgo["Learner ego initial"]:::agent
+    learnerEgo --> learnerSuperego["Learner superego critique"]:::critic
+    learnerSuperego --> learnerRevision["Learner ego revision"]:::agent
+    learnerRevision --> learnerOut["learner/final_output"]:::public
+    learnerInput -. "unified learner cells skip internal deliberation" .-> learnerOut
+  end
+
+  subgraph tutor["Tutor side"]
+    learnerOut --> context["tutor/context_input"]:::trace
+    context --> preAnalyze["Optional superego pre-analyze"]:::critic
+    preAnalyze --> egoDraft["ego/generate draft"]:::agent
+    context -. "single-agent cells" .-> egoDraft
+    egoDraft --> review["Optional superego/review"]:::critic
+    review --> revise["ego/respond or revise"]:::agent
+    revise --> finalize["ego/finalize"]:::agent
+    egoDraft -. "no active superego" .-> finalize
+    finalize --> tutorOut["tutor/final_output"]:::public
+  end
+
+  tutorOut --> scenario
+
+  subgraph evidence["Observability and scoring"]
+    tutorOut --> publicOnly["Public transcript only"]:::public
+    learnerOut --> publicOnly
+    publicOnly --> tutorScores["Tutor per-turn, holistic, dialogue scores"]:::score
+    publicOnly --> learnerScores["Learner per-turn and holistic scores"]:::score
+
+    egoDraft --> traceLog["Verbatim trace log"]:::log
+    review --> traceLog
+    revise --> traceLog
+    learnerEgo --> traceLog
+    learnerSuperego --> traceLog
+    learnerRevision --> traceLog
+    traceLog --> deliberationScores["Deliberation scoring channel"]:::score
+    traceLog --> provenance["content_hash, config_hash, prompt versions"]:::log
+    tutorScores --> db["evaluation_results"]:::db
+    learnerScores --> db
+    deliberationScores --> db
+    provenance --> db
+  end
+
+  classDef agent fill:#dbeafe,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+  classDef critic fill:#fde68a,stroke:#b45309,color:#1f2937,stroke-width:2px;
+  classDef public fill:#dcfce7,stroke:#16a34a,color:#052e16,stroke-width:2px;
+  classDef trace fill:#f5f3ff,stroke:#7c3aed,color:#2e1065,stroke-width:2px;
+  classDef score fill:#ffe4e6,stroke:#be123c,color:#4c0519,stroke-width:2px;
+  classDef log fill:#f3f4f6,stroke:#6b7280,color:#111827,stroke-width:2px;
+  classDef db fill:#e0f2fe,stroke:#0369a1,color:#082f49,stroke-width:2px;
+  classDef state fill:#ecfccb,stroke:#65a30d,color:#1a2e05,stroke-width:2px;</script>
+    </mermaid-file-viewer>
+  </section>
+</main>
+<script src="../../../public/components/mermaid-file-viewer.js"></script>
+</body>
+</html>

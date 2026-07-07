@@ -1,0 +1,41 @@
+# workplan/milestones.yaml — project milestones for the board timeline (/timeline).
+# Items reference a milestone via their `milestone: <id>` frontmatter field.
+# Fields: id (kebab slug), title, target (YYYY-MM-DD), status (planned | active |
+#   done), description (optional), tag (optional git tag that marks it shipped).
+# Manage from the /timeline page, or edit this file directly.
+milestones:
+  - id: desktop-app
+    title: Desktop app (Scriptorium)
+    target: 2026-06-24
+    status: done
+    description: Electron desktop shell mirroring the web UX, kept in sync by construction.
+  - id: board-pm
+    title: Project-management board
+    target: 2026-06-24
+    status: done
+    description: Kanban CRUD, task dependencies, milestones, timeline, and GitHub links.
+  - id: literature-triage
+    title: Literature triage
+    target: 2026-06-24
+    status: done
+    description: Daily-roundup paper captures converted into keep/drop/defer decisions.
+  - id: human-pilot-prep
+    title: Human-learner pilot prep
+    target: 2026-08-01
+    status: planned
+    description: A1 validation materials, pilot design inputs, and human-learning evidence gates.
+  - id: poetics-followups
+    title: Poetics follow-ups
+    target: 2026-08-10
+    status: planned
+    description: Dramatic recognition, Oedipus replay, and poetics-scorer follow-up work.
+  - id: paper-2-evidence-cleanup
+    title: Paper 2 evidence cleanup
+    target: 2026-06-24
+    status: done
+    description: Deferred analysis decisions, claim-status cleanup, and current-paper boundary checks.
+  - id: distribution
+    title: Distribution & auto-update
+    target: 2026-08-15
+    status: planned
+    description: Developer-ID notarization, electron-updater, and Windows/Linux targets.

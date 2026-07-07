@@ -129,9 +129,9 @@ it cannot upgrade A19 into an empirical transfer claim.
 
 The initial A19 scaffold is complete:
 
-- `notes/adaptive_2_0/a19-drama-axiom-transfer-spec.md`
-- `notes/adaptive_2_0/a19-drama-axiom-transfer-todo.md`
-- `notes/adaptive_2_0/a19-literature-positioning-matrix.md`
+- `notes/adaptive_2_0/2026-06-07-a19-drama-axiom-transfer-spec.md`
+- `notes/adaptive_2_0/2026-06-07-a19-drama-axiom-transfer-todo.md`
+- `notes/adaptive_2_0/2026-06-07-a19-literature-positioning-matrix.md`
 - `config/teaching-drama-axioms/a19-protocol.yaml`
 - `config/teaching-drama-axioms/pilot-families.yaml`
 - `scripts/validate-teaching-drama-axiom-protocol.js`
@@ -179,7 +179,7 @@ The three post-A18/A19 tracks were pursued and resolved for this unit of work:
 The loop registry records this state in:
 
 - `config/teaching-drama-axioms/a19-generalization-loops.yaml`
-- `notes/adaptive_2_0/a19-generalization-systemization-plan.md`
+- `notes/adaptive_2_0/2026-06-08-a19-generalization-systemization-plan.md`
 - `notes/adaptive_2_0/a19-exhaustion-report-2026-06-08.md`
 
 ## Negative Findings To Preserve

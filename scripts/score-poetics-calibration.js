@@ -14,7 +14,7 @@
  * is itself the finding (DRAMATIC-RECOGNITION-PLAN.md §6) — no downstream phases.
  *
  * Usage:
- *   node scripts/score-poetics-calibration.js [--model claude-code|sonnet|gpt|haiku]
+ *   node scripts/score-poetics-calibration.js [--model claude-code|sonnet|gpt|haiku|agy:gemini-3.1-pro-high]
  *        [--concurrency 3] [--mock] [--out exports/poetics-calibration-<ts>.json]
  *
  * --mock returns deterministic stub scores (no API) to smoke-test the plumbing.
@@ -52,14 +52,29 @@ const MODEL_MAP = {
   'gemini-pro-3.1': 'google/gemini-3.1-pro-preview',
   'gemini-3.5-flash': 'google/gemini-3.5-flash',
   'google/gemini-3.5-flash': 'google/gemini-3.5-flash',
+  glm5: 'z-ai/glm-5',
+  glm5_2: 'z-ai/glm-5.2',
+  'ollama:phi4': 'ollama:phi4:latest',
+  'ollama:deepseek-r1:8b': 'ollama:deepseek-r1:8b',
+  'ollama:deepseek-r1:14b': 'ollama:deepseek-r1:14b',
+  'ollama:deepseek-r1:32b': 'ollama:deepseek-r1:32b',
+  'agy:gemini-3.1-pro-high': 'Gemini 3.1 Pro (High)',
+  'agy:gemini-3.1-pro-low': 'Gemini 3.1 Pro (Low)',
+  'agy:gemini-3.5-flash-high': 'Gemini 3.5 Flash (High)',
+  'agy:gemini-3.5-flash-medium': 'Gemini 3.5 Flash (Medium)',
+  'agy:gemini-3.5-flash-low': 'Gemini 3.5 Flash (Low)',
+  'agy:gpt-oss-120b-medium': 'GPT-OSS 120B (Medium)',
 };
 const OPENROUTER_SCORER_MAX_TOKENS = Number(process.env.OPENROUTER_SCORER_MAX_TOKENS || 4096);
+const AGY_PRINT_TIMEOUT = process.env.AGY_PRINT_TIMEOUT || '5m';
 
 // ── Model calls (mirrors scripts/assess-transcripts.js) ─────────────────────
 
 async function callModel(prompt, modelKey) {
   if (modelKey === 'claude-code') return callClaudeCode(prompt);
   if (modelKey === 'codex') return callCodex(prompt);
+  if (String(modelKey).startsWith('ollama:')) return callOllama(prompt, modelKey);
+  if (String(modelKey).startsWith('agy:')) return callAgy(prompt, modelKey);
   return callOpenRouter(prompt, modelKey);
 }
 
@@ -155,6 +170,58 @@ async function callCodex(prompt) {
   }
 }
 
+async function callOllama(prompt, modelKey) {
+  const model = String(modelKey || '').replace(/^ollama:/, '');
+  if (!model) throw new Error(`Invalid Ollama model key: ${modelKey}`);
+  const stdout = await new Promise((resolve, reject) => {
+    const child = spawn('ollama', ['run', model, '--format', 'json', '--hidethinking', '--nowordwrap'], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, OLLAMA_NOHISTORY: '1', TERM: 'dumb' },
+      cwd: ROOT,
+    });
+    let out = '';
+    let err = '';
+    child.stdout.on('data', (d) => (out += d));
+    child.stderr.on('data', (d) => (err += d));
+    child.on('error', (e) => reject(new Error(`Failed to spawn ollama: ${e.message}`)));
+    child.on('close', (code) => {
+      if (code !== 0) reject(new Error(err || out || `ollama exited with code ${code}`));
+      else resolve(out);
+    });
+    child.stdin.write(prompt);
+    child.stdin.end();
+  });
+  const cleaned = stripTerminalControls(stdout).trim();
+  if (!cleaned) throw new Error(`ollama ${model} produced no output`);
+  return cleaned;
+}
+
+async function callAgy(prompt, modelKey) {
+  const model = MODEL_MAP[modelKey];
+  if (!model) throw new Error(`Unknown agy model: ${modelKey}`);
+  const stdout = await new Promise((resolve, reject) => {
+    const child = spawn('agy', ['--model', model, '--print', '--print-timeout', AGY_PRINT_TIMEOUT], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, TERM: 'dumb' },
+      cwd: ROOT,
+    });
+    let out = '';
+    let err = '';
+    child.stdout.on('data', (d) => (out += d));
+    child.stderr.on('data', (d) => (err += d));
+    child.on('error', (e) => reject(new Error(`Failed to spawn agy: ${e.message}`)));
+    child.on('close', (code) => {
+      if (code !== 0) reject(new Error(err || out || `agy exited with code ${code}`));
+      else resolve(out);
+    });
+    child.stdin.write(prompt);
+    child.stdin.end();
+  });
+  const cleaned = stripTerminalControls(stdout).trim();
+  if (!cleaned) throw new Error(`agy ${model} produced no output`);
+  return cleaned;
+}
+
 async function callOpenRouter(prompt, modelKey) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not set');
@@ -191,7 +258,18 @@ async function callOpenRouter(prompt, modelKey) {
   }
 }
 
+/* eslint-disable no-control-regex */
+function stripTerminalControls(content) {
+  return String(content || '')
+    .replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, '')
+    .replace(/\x1B\][\s\S]*?(?:\x07|\x1B\\)/g, '')
+    .replace(/\x1B[@-Z\\-_]/g, '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
+}
+/* eslint-enable no-control-regex */
+
 function parseJsonResponse(content) {
+  content = stripTerminalControls(content);
   const parseCandidate = (candidate) => {
     try {
       return JSON.parse(candidate);
@@ -221,7 +299,7 @@ function parseJsonResponse(content) {
 // slow null — probe its reliability (N~20) and swap the critic instead.
 function isTransientScorerError(err) {
   const m = String(err?.message || err || '');
-  return /No content|produced no output|Failed to parse JSON|Unexpected end of JSON|\babort(?:ed)?\b|timed?[ _]?out|ECONNRESET|ETIMEDOUT|EAI_AGAIN|fetch failed|socket hang up|network error|OpenRouter (?:408|429|5\d\d)\b/i.test(
+  return /No content|produced no output|Failed to parse JSON|Unexpected (?:end of JSON|character)|\babort(?:ed)?\b|timed?[ _]?out|ECONNRESET|ETIMEDOUT|EAI_AGAIN|fetch failed|socket hang up|network error|OpenRouter (?:408|429|5\d\d)\b/i.test(
     m,
   );
 }

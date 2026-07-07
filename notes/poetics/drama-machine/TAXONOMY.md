@@ -8,7 +8,7 @@
 
 ## 0. What this is
 
-The repo can already *generate* a tutoring dialogue as a **drama** (director scene-card → ego/superego tutor and learner → critic panel scores it on Aristotelian form). But the dramaturgical pieces — characters, plot devices, staging, the audience — are scattered across `generate-pedagogical-dramas.js`, the interaction engine, a dozen config YAMLs, and the critic scripts. **None of it is named as one system.**
+The repo can already *generate* a tutoring dialogue as a **drama** (`director` scene-author card → ego/superego tutor and learner → critic panel scores it on Aristotelian form). But the dramaturgical pieces — characters, plot devices, staging, the audience — are scattered across `generate-pedagogical-dramas.js`, the interaction engine, a dozen config YAMLs, and the critic scripts. **None of it is named as one system.**
 
 The **drama machine** is that system, named. The goal:
 
@@ -66,6 +66,21 @@ Aristotle (*Poetics* ch. 6) decomposes tragedy into **six parts**: *mythos* (plo
 - **PARTIAL** — exists but cosmetic / not enforced / asymmetric.
 - **TO-BUILD** — named here, not yet implemented; needs engine work.
 
+### 1.1 Terminology policy: director, author, staging
+
+The repo uses `director` in three different neighborhoods. The policy is to
+split the concepts in documentation while preserving the serialized key:
+
+| Surface | Keep / use | Rationale |
+|---|---|---|
+| Runtime keys, CLI flags, traces, cached plans, `cast.director`, `role: director`, `via: director` | Keep `director` | These names are compatibility-bearing and already appear in generated artifacts, tests, URLs, role maps, and config. |
+| Human-facing docs and UI labels | Prefer `scene author / director` when the role is being selected | This names the actual function: author scene ecology, public stage material, speaker order, and scheduled cues. |
+| Future split, if needed | Reserve `authorial_voice` for setup authorship and `staging_director` for live cueing | No loader accepts these aliases today; adding them would be a small compatibility shim, not a repository-wide rename. |
+| `id_director` / id-director charisma family | Leave unchanged | This is a separate tutor architecture: an id authors the tutor ego prompt. It is not the drama-machine scene-author role. |
+
+No archived empirical artifact or paper claim should be renamed or reinterpreted
+as part of this vocabulary clarification.
+
 ---
 
 ## 2. MYTHOS — Plot ("the arrangement of the incidents; the soul of the tragedy")
@@ -111,6 +126,7 @@ Three device families, fully wired, today selected by CLI flag / spec field. Eac
 | `uptake+peripeteia` | both in one turn | WIRED |
 | `socratic_discovery` | Oedipus: meter premises as questions, draw out the learner's own conclusion | WIRED |
 | `reveal_secret` | Oedipus ceiling: state S plainly | WIRED |
+| `withhold_secret` | Oedipus control: redact S/premises from tutor context and forbid clue channels | WIRED |
 
 **Reversal-event triggers** (the engine's classification of learner pressure that *gates* the peripeteia instruction; priority-ordered):
 
@@ -189,7 +205,7 @@ LEARNER ego → superego (advisory critique) → ego adjudication (FINAL, ego ha
 
 Persisted to traces: `internalDeliberation[]` (role, stage, full content, metrics) both sides; tutor/learner **writing pads** (3-layer conscious/preconscious/unconscious for the learner); `id_construction_trace` for id cells.
 
-**Asymmetry [TO-BUILD]:** the **tutor has an `id`** (a meta-authorial layer that evolves its persona turn-by-turn); the **learner does not** — its persona is fixed for the whole drama. A symmetric *learner-id* would let a learner's character evolve under pressure.
+**Asymmetry [TO-BUILD]:** the **tutor has an `id`** (a meta-authorial layer that evolves its persona turn-by-turn); the **learner does not** — its persona is fixed for the whole drama. A symmetric *learner-id* would let a learner's character evolve under pressure. This `id`/`id_director` terminology is separate from the drama-machine `director` key.
 
 ### 3.4 Multiple learners — **[TO-BUILD], the vision's end-state**
 
@@ -236,7 +252,7 @@ Carried by the `directorPlan` and `VOICE_VARIANTS` (6 seeded bundles), all injec
 
 ## 6. OPSIS — Spectacle (the staging) — **WIRED**
 
-The director's scene card. Single LLM call at setup (or seeded fallback); **not** re-invoked mid-drama.
+The `director` role's scene-author card. Single LLM call at setup (or seeded fallback); **not** re-invoked mid-drama.
 
 | Slot | Value space | Default |
 |---|---|---|
@@ -250,7 +266,7 @@ The director's scene card. Single LLM call at setup (or seeded fallback); **not*
 | `stage_direction_policy` | none · none_except_required_cue · sparse · short · interventionist · rich | sparse |
 | `stage_direction_style` | bare_transcript · scene_heading · object_business · ambient_pressure · placard_caption · thread_metadata · choric_margin · rich_scene_work | seeded |
 
-**[TO-BUILD]:** a *live director* that observes the emerging dialogue and re-cues (today all cues are pre-baked into `interventions[]` at setup).
+**[TO-BUILD]:** a *live staging director* that observes the emerging dialogue and re-cues (today all cues are pre-baked into `interventions[]` at setup). If built, keep `director` as a compatibility alias and consider adding `authorial_voice` for setup-only authorship.
 
 ---
 
@@ -291,7 +307,7 @@ Orthogonal to the six parts: each **role** can be played by a human, a specific 
 
 | Role | human? | LLM? | mock? | How expressed today |
 |---|---|---|---|---|
-| director | ✗ | ✓ `--role-map director=<backend>` | ✓ | CLI only |
+| director (`cast.director`) | ✗ | ✓ `--role-map director=<backend>` | ✓ | CLI only; conceptually the scene author / staging director |
 | tutor_ego / tutor_superego | ✗ | ✓ `--role-map tutor=…` | ✓ | CLI only |
 | learner_ego / learner_superego | ✗ | ✓ `--role-map learner=…` | ✓ | CLI only |
 | **tutor (whole)** | **Claude** | ✓ | — | `/ms-play-tutor` skill (Claude tutor, human learner) |

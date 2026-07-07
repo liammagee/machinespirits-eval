@@ -1,0 +1,240 @@
+{
+  "version": "1.0",
+  "updated": "2026-06-28",
+  "purpose": "Accepted-missing dialogue logs for the provenance checks. A row listed here is counted as `waived` (reported explicitly), not `failed`, but ONLY when its logs/tutor-dialogues/{dialogue_id}.json file is genuinely ABSENT. A log file that exists but hash-MISMATCHES is never waived — that indicates modification and must still fail. Matching is keyed on the (run_id, dialogue_id) pair. See workplan item consolidate-logs-db-private-archive.",
+  "total_waived": 54,
+  "waivers": [
+    {
+      "run_id": "eval-2026-06-24-250c6251",
+      "cells": [
+        "cell_40_base_dialectical_suspicious_unified_superego",
+        "cell_41_recog_dialectical_suspicious_unified_superego",
+        "cell_42_base_dialectical_adversary_unified_superego",
+        "cell_43_recog_dialectical_adversary_unified_superego",
+        "cell_44_base_dialectical_advocate_unified_superego",
+        "cell_45_recog_dialectical_advocate_unified_superego"
+      ],
+      "paper_ref": "§6.6.8 — D4 architecture-matched cells 40-45 SEL disposition-gradient replication",
+      "reason": "Dialogue-log JSON files were written to an ephemeral path during the run and never consolidated into the canonical archive; verified 2026-06-28 as not recoverable in any worktree (searched by both dialogue_id and content_hash). The cited Δ/d values derive from the retained DB columns (tutor_scores, suggestions, scores_with_reasoning — all 144 rows present) and exports/d4-sel-disposition-gradient-eval-2026-06-24-250c6251.md, NOT from the lost JSON. Consequence: these dialogues cannot be independently content-hash-reverified or re-read from the structured log; the cited first-turn quality numbers stand, the provenance artifact does not.",
+      "verified": "2026-06-28",
+      "dialogues": [
+        {
+          "dialogue_id": "dialogue-1782323788894-ec5j9l",
+          "content_hash": "09d10cae6cdaa128c375bbcd1600169b7c811ed121ae8007d14cedb43df68955"
+        },
+        {
+          "dialogue_id": "dialogue-1782323803778-mrkbfo",
+          "content_hash": "64fd08f64837a5c159778b5079d7078d1d847b1b48015af057d88817d879e17f"
+        },
+        {
+          "dialogue_id": "dialogue-1782323929694-b7elph",
+          "content_hash": "a1f9940aa0c5e5b6c8fd56e892f8f1ab2d17c9b72a34e8214354f01eb87a30f7"
+        },
+        {
+          "dialogue_id": "dialogue-1782323933225-5adcnd",
+          "content_hash": "ac19e2725122788f4c3f3e27cce3b97cf4b8c854f09a55bc687fe41908a4f3d2"
+        },
+        {
+          "dialogue_id": "dialogue-1782324077080-2oeq2b",
+          "content_hash": "bee5e37c73ac9f03af0f51e32c287afeacb51bcd9777a23143627a8e18c8f657"
+        },
+        {
+          "dialogue_id": "dialogue-1782324064101-5wy357",
+          "content_hash": "9680415cfad92c154762541bff4e1c20f9c31bb5fd86c0d827934083bf703922"
+        },
+        {
+          "dialogue_id": "dialogue-1782324232293-t2jfnd",
+          "content_hash": "205fb0dfad1f5272f4e7ee7d3b294a03572d932340310c7c00f60e443f3faacf"
+        },
+        {
+          "dialogue_id": "dialogue-1782324238278-3liitv",
+          "content_hash": "219eaf59a229e81d04f13ae383afa83714aed2d5f132f1dbe606788f5a4da7d7"
+        },
+        {
+          "dialogue_id": "dialogue-1782324375444-5i0t9t",
+          "content_hash": "02100ba81f5e9d813c3443cbc3937a83f1711f76edc53f248e9cbd375a3c98d5"
+        },
+        {
+          "dialogue_id": "dialogue-1782324396220-zrp4jy",
+          "content_hash": "b9e7d6b64f8cf3bcbd1c7da9ef95d4f740c1ad36946c9f173dd9ae09432a34fb"
+        },
+        {
+          "dialogue_id": "dialogue-1782324496882-pwy8gd",
+          "content_hash": "b74f222dd47002dd7dbc6050cbd01064052c96d6b463e8129e31b31cf71c1ab8"
+        },
+        {
+          "dialogue_id": "dialogue-1782324583687-thm21s",
+          "content_hash": "5f6cfeb5c459354407c7b03e932820ba75232b70a98b45202d9102615ac1bcf8"
+        },
+        {
+          "dialogue_id": "dialogue-1782324666275-9umal7",
+          "content_hash": "6fe43e782920fe80f5995ccacd99ec59d9d46b90c618e39df4e63927c98a43ca"
+        },
+        {
+          "dialogue_id": "dialogue-1782324748729-a3sd0b",
+          "content_hash": "e3eed6d6906273423526f2e90df9432771669c168ada3c42dd97b60f5328e6b8"
+        },
+        {
+          "dialogue_id": "dialogue-1782324794184-lpxstj",
+          "content_hash": "dec839f45732f530ac2c11668060d0ca0b524dccba1a28edd2a9fed5d4ef6c10"
+        },
+        {
+          "dialogue_id": "dialogue-1782324874829-scx8f3",
+          "content_hash": "f262521b0ec11e5f7ca294f2528ff46e69852e63065f7be66f040641c7923acf"
+        },
+        {
+          "dialogue_id": "dialogue-1782324924135-xgkdsi",
+          "content_hash": "58a6de6ed09cd725bf693bcf96727296f6ed9294487015e41f1400966ace55f3"
+        },
+        {
+          "dialogue_id": "dialogue-1782324992354-gadqv6",
+          "content_hash": "ac4e5505fbedc38e5ed6512310be887b6da2a48598d23f0e53132597c5cd5f96"
+        },
+        {
+          "dialogue_id": "dialogue-1782325074591-2aa6oy",
+          "content_hash": "ba9e7b0f1dec478ab40a61ed9c20c7b5b3a6bbb3dff7ded3cc4bfadb83d67c67"
+        },
+        {
+          "dialogue_id": "dialogue-1782325153423-uwsohf",
+          "content_hash": "49e386dbbd605f181d05387ef7b791b5f58c40adfc34dcd46ef70603d6a5e852"
+        },
+        {
+          "dialogue_id": "dialogue-1782325247260-k9x1d8",
+          "content_hash": "d57fb14e065a368c710262d81abf14306409c48ddc1e47bcce15441b516697c3"
+        },
+        {
+          "dialogue_id": "dialogue-1782325326279-nxheof",
+          "content_hash": "5be243863576841315a045e51634e30638e5b3c40067d3befef44b6469d965ba"
+        },
+        {
+          "dialogue_id": "dialogue-1782325397397-hxchec",
+          "content_hash": "e2be915f25fb02d4ece28a24c4b7c6c3b081d9ea981630305ff614cb4beefc58"
+        },
+        {
+          "dialogue_id": "dialogue-1782325511609-ytvdwa",
+          "content_hash": "1979d0f8fff1b38b8de0e6d2ea9acd2d439860054d9d28687ebd9edad76722af"
+        },
+        {
+          "dialogue_id": "dialogue-1782325580427-tj593t",
+          "content_hash": "896d23f32938edd0d3b12ec8d6df396b30d15f26e6921596493716ed993a5afd"
+        },
+        {
+          "dialogue_id": "dialogue-1782325686936-kav5ls",
+          "content_hash": "7c985710dc9e799c51f29c8bd74c0229d5d3ffc135b12e0d47186204143e7272"
+        },
+        {
+          "dialogue_id": "dialogue-1782325747747-wur32i",
+          "content_hash": "1c36bbed4f6db7885e4144de86e422fec8058273f6b6d75748323291e5fecaa6"
+        },
+        {
+          "dialogue_id": "dialogue-1782325865714-le2g1o",
+          "content_hash": "f0d2fdc8a3a99aa3b03f96b42d9e5567fa09a399cad175a024f85b84853c7ac2"
+        },
+        {
+          "dialogue_id": "dialogue-1782325920674-f36aos",
+          "content_hash": "4bfd5eefb010eb4511b36e75d157656e81acd20db6506c089efcea203ef72112"
+        },
+        {
+          "dialogue_id": "dialogue-1782326128762-afqtff",
+          "content_hash": "041a310e8a2eef45662e80d7a09b42f2e149c6e1bf140355ce3708e8b5cb28df"
+        },
+        {
+          "dialogue_id": "dialogue-1782326073253-tog48j",
+          "content_hash": "4340f6292228c34c453b5de515ddf4269a19c7aa9c8c1aa3d07ce11e3f5492bd"
+        },
+        {
+          "dialogue_id": "dialogue-1782326265948-w48jlk",
+          "content_hash": "ac338050e25d6f147c2a651811c7f2ed322d2a6680ecfb8234207698f096d3bf"
+        },
+        {
+          "dialogue_id": "dialogue-1782326267391-y6qwnh",
+          "content_hash": "705008ef06aa31d563374e39db63e8e01ff7f286de9d11c38a71a11d5bfafced"
+        },
+        {
+          "dialogue_id": "dialogue-1782326417736-y5zftq",
+          "content_hash": "c10ab269ef00b4ed3eb0a4849e89b57a5c8ace0d746b0919adfdf6bec5c72f84"
+        },
+        {
+          "dialogue_id": "dialogue-1782326421641-fgrw1x",
+          "content_hash": "0fc659521eea5de972c4c0de0115468cb057a45f4bcc783bf1304839ce2d6cae"
+        },
+        {
+          "dialogue_id": "dialogue-1782326578077-wks4r2",
+          "content_hash": "ee6d502d265be8b3b7da059e967028a320dd8d952d14bbef59a54f2d160abceb"
+        },
+        {
+          "dialogue_id": "dialogue-1782326592777-bhgaah",
+          "content_hash": "eba39c3d7524d13c7b1c8702c4aeeccfbb2ff5616f2377604725f91d8bae1b28"
+        },
+        {
+          "dialogue_id": "dialogue-1782326748515-3dla18",
+          "content_hash": "09b498c5fc1b709ad66648e7b57c90ea5318dbc768a6cff7bc3543a41b371338"
+        },
+        {
+          "dialogue_id": "dialogue-1782326804846-nkb1l4",
+          "content_hash": "3b9fccc4c1e0d69e18c3e1262fe76d17b92a92e6adae460feb29288b5d971c8b"
+        },
+        {
+          "dialogue_id": "dialogue-1782326952443-maa5nl",
+          "content_hash": "6f9a682a5de572bddf467bb538e2d24505681584b688cd7565bb8df64792c10e"
+        },
+        {
+          "dialogue_id": "dialogue-1782327020832-2spt58",
+          "content_hash": "034393c56b408b6c645fe0ed85c46881ed0416df59e76330e8d8b3d1575f518a"
+        },
+        {
+          "dialogue_id": "dialogue-1782327201597-xbtfgs",
+          "content_hash": "fa03dfc5c6db3c6163d0937d686138fe605e051fcc73ffbaca4cf0ba56b93a6a"
+        },
+        {
+          "dialogue_id": "dialogue-1782327270025-3hla4s",
+          "content_hash": "70b63d8c923eef3be5c7e0d132596dbc639a569531552a73b9af19b7e4f05b41"
+        },
+        {
+          "dialogue_id": "dialogue-1782327474622-j2rn9y",
+          "content_hash": "71bd4f99778262c8652d88ced61edefaf2bfc619d8a47de8418d21358097ca90"
+        },
+        {
+          "dialogue_id": "dialogue-1782327507648-0pqzr3",
+          "content_hash": "1a49e17bd53c97fe85b19b916fb92fd0976c57f5a694c983e0ef6e43b5ee5e38"
+        },
+        {
+          "dialogue_id": "dialogue-1782327689852-rxvptf",
+          "content_hash": "af27966eac5f89f6a0addade1a62f65f65b399c5e289b06da32e4f4e70fac0b5"
+        },
+        {
+          "dialogue_id": "dialogue-1782327760310-jf9hf0",
+          "content_hash": "e6449b20dc9321053bf0cdf3b9d41fc6b4fa0a42fd972dd0baa89f3a57ac79db"
+        },
+        {
+          "dialogue_id": "dialogue-1782327953282-3nn2ir",
+          "content_hash": "de4ce691514757e51f59ea75d840d994c7a223a77acb615008e318b052e93936"
+        },
+        {
+          "dialogue_id": "dialogue-1782328037929-537rnx",
+          "content_hash": "5b16903da35602ef7aa28319e14c73c9e5c77c029105bc84e82cc06eb905a919"
+        },
+        {
+          "dialogue_id": "dialogue-1782328224368-oh9qkk",
+          "content_hash": "4e00bc2a0f506a5fb46305ac86b0edd6800e6014b8f3f46c1487f8c9a539d95a"
+        },
+        {
+          "dialogue_id": "dialogue-1782328264773-q4tb2k",
+          "content_hash": "b2efca4c28fe66b36b4cd4770f8cb0e2816544534a3b3ab02eb92db4e8e8fabc"
+        },
+        {
+          "dialogue_id": "dialogue-1782328448816-tbldbx",
+          "content_hash": "4f027d9cc3474e3a2d94a4d4b1858d4351ca942efe8a0493ff52427c507e727c"
+        },
+        {
+          "dialogue_id": "dialogue-1782328484167-s7qcmv",
+          "content_hash": "7e6452855a3f8fb8868db10bdba4f7f6c19c496fcd6f8b2fc050f5ec2eb8d668"
+        },
+        {
+          "dialogue_id": "dialogue-1782328682413-1isbyv",
+          "content_hash": "cdb9136b510c79d6acc6d92129ea42f0ab36789d9d57a83955e0432b37f23007"
+        }
+      ]
+    }
+  ]
+}

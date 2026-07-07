@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "pedagogical_progression": {
+      "score": 4,
+      "reasoning": "Clear arc from the town's surface leap ('he owned it, therefore he felled it') to a layered chain: cause (green crown-bed, T9) → mark (crowsfoot, T13) → yard (Caudle, T15) → hand (Oswin, T20). Each new piece of evidence opens genuine conceptual territory. Held back from 5 by the recurring 'read it back in your own words' recap turns (3, 5, 10, 12, 14, 16), which are deliberate consolidation plateaus rather than new ground."
+    },
+    "dialogical_responsiveness": {
+      "score": 4,
+      "reasoning": "Both parties reliably pick up the other's specific contributions: the tutor's 'Good: let the master's charge stand' (T7) and 'keep the entries in order' (T11) build directly on the learner's prior move, and the learner extends the tutor's own images (the raw loaf T9, the road-sign T13). The repeated, formulaic 'read it back to me' prompt is the 'occasional scripted move' that keeps this at 4 rather than 5."
+    },
+    "knowledge_co_construction": {
+      "score": 4,
+      "reasoning": "The learner does real constructive work every turn — distinguishing liability from the felling hand (T2-3), naming the missing step the town skipped (T7), refusing to let yard become hand (T17-19) — rather than merely receiving. Both contribute. But it is maieutic guided discovery toward a fixed destination: the tutor holds the structure and the evidence is injected exogenously via stage directions, so the final insight is not one 'neither party could have produced alone.'"
+    },
+    "productive_tension_management": {
+      "score": 4,
+      "reasoning": "The standing tension between the seductive wrong inference and disciplined proof is the engine of the whole piece: each exhibit (seal, bond, ownership, mark, yard) tempts premature closure and is met generatively, not dismissed. The held impasse at T17-19 ('my pen stops at the gate') resolves into the T20 breakthrough. Short of 5 because it is one repeated tension-type and the learner never genuinely resists the tutor — the disagreement is with the absent town, not within the dyad."
+    },
+    "transformation_evidence": {
+      "score": 3,
+      "reasoning": "The learner's understanding of the case is completed (no name → 'the assize may write Oswin'), and the T20 anagnorisis is a real recognition event. But the learner's stance and method are fixed from the first line ('we begin with the break, not the man') and never change — they arrive fully formed in discipline and leave the same, only better-informed. The transformation is in the resolution of the inquiry, not in either party's framing or mode of thinking."
+    },
+    "interactional_coherence": {
+      "score": 5,
+      "reasoning": "Exemplary arc: opening (the empty space awaiting the town's certainty, T1), ordered development (seal → measure → broken bed → crowsfoot → yard → toll), and resolution (Oswin named, T20). Every turn connects to the last, stage directions thread evidence in logical sequence, and the closing recapitulation ('green bed, crowsfoot, Caudle gate, single carter') explicitly binds the whole exchange together. Purposeful throughout, entirely in-world."
+    }
+  },
+  "overall_score": 74,
+  "summary": "A tightly coherent forensic catechism that progresses cleanly from a tempting surface inference to a fully grounded causal chain, with sustained productive tension and strong mutual responsiveness. Its ceiling is set by being a guided, predetermined inquiry rather than symmetric co-construction, and by a learner whose disciplined stance is static from the first turn to the last — only the evidence, not the mind, is transformed.",
+  "caveats": [
+    "Knowledge-building is maieutic/guided discovery toward a fixed answer the tutor already holds; evidence is injected by stage directions, so 'co-construction' is asymmetric.",
+    "Transformation is in the case (anagnorisis) rather than in either party's stance — the learner's epistemic discipline is unchanged from turn 1 to turn 20.",
+    "Scored on public discourse only; the in-world register is clean (no formalism, rule IDs, or proof notation surfaced in dialogue), so nothing was penalized or rewarded on that axis."
+  ]
+}

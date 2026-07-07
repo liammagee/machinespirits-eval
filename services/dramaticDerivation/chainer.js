@@ -1,6 +1,6 @@
 /**
  * Deterministic forward chainer with proof trees — the symbolic half of the
- * dramatic-derivation arc (notes/dramatic-derivation-plan.md §2.4).
+ * dramatic-derivation arc (notes/2026-06-09-dramatic-derivation-plan.md §2.4).
  *
  * Facts are arrays of atoms (strings); rules are horn clauses whose `if`
  * patterns may bind "?variables". `entails`/`proofTree` are the

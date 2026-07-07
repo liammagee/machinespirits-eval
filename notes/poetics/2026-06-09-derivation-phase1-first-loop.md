@@ -1,6 +1,6 @@
 # Dramatic derivation, phase 1: world-001 + the first closed staging loop
 
-2026-06-09 · branch `claude/dramatic-derivation` · plan: `notes/dramatic-derivation-plan.md` §3
+2026-06-09 · branch `claude/dramatic-derivation` · plan: `notes/2026-06-09-dramatic-derivation-plan.md` §3
 
 ## What now exists
 

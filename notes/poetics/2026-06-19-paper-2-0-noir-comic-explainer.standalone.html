@@ -1,0 +1,2154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>The Case of the Learning Machine - Paper 2.0 noir comic</title>
+<meta name="description" content="A film-noir comic explainer for Paper 2.0's AI tutoring architecture findings: calibration, error correction, adaptation nulls, conduct governance, and the human-validation boundary." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<style>
+/* ════════════════════════════════════════════════════════════════
+   techne.css — dramatic-recognition editorial design system
+   Shared stylesheet. Extracted from the arc note so design and
+   content live in separate files (Tier 1). Consumed by the arc
+   HTML and by the pandoc template (arc.template.html).
+   ════════════════════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════════════════
+     Dramatic Recognition Arc — live, data-driven synthesis note
+     editorial publication, techne palette
+     ═══════════════════════════════════════════════════════════════ */
+
+  :root {
+    --paper:     #F4EEDD;
+    --paper-2:   #ECE3CB;
+    --paper-3:   #F8F2E2;
+    --paper-4:   #FBF6E8;
+    --ink:       #14100C;
+    --ink-2:     #2C241B;
+    --ink-3:     #5C5040;
+    --ink-4:     #8C7E6A;
+    --linen:     #D8C7A9;
+    --moss:      #56683A;
+    --moss-deep: #3A4824;
+    --brick:     #A53E2E;
+    --brick-d:   #7C2C1F;
+    --ochre:     #C08A3E;
+    --ochre-d:   #8C5F1F;
+    --rule:      rgba(28, 22, 16, 0.18);
+    --rule-soft: rgba(28, 22, 16, 0.10);
+
+    --s-mini: clamp(0.62rem, 0.58rem + 0.14vw, 0.72rem);
+    --s-0:    clamp(0.78rem, 0.74rem + 0.18vw, 0.90rem);
+    --s-1:    clamp(0.95rem, 0.90rem + 0.20vw, 1.05rem);
+    --s-2:    clamp(1.05rem, 1.00rem + 0.26vw, 1.20rem);
+    --s-3:    clamp(1.30rem, 1.20rem + 0.50vw, 1.60rem);
+    --s-4:    clamp(1.80rem, 1.50rem + 1.40vw, 2.80rem);
+    --s-5:    clamp(2.60rem, 1.80rem + 3.50vw, 5.20rem);
+    --s-6:    clamp(3.40rem, 2.20rem + 5.20vw, 7.40rem);
+
+    --lead: 1.55;
+    --ease: cubic-bezier(.22,.61,.36,1);
+
+    --toc-w: 17rem;
+  }
+
+  [data-theme="dark"] {
+    --paper:     #14100C;
+    --paper-2:   #1B1612;
+    --paper-3:   #1F1A14;
+    --paper-4:   #221C16;
+    --ink:       #F4EEDD;
+    --ink-2:     #E0D8C3;
+    --ink-3:     #B9AD96;
+    --ink-4:     #8C7E6A;
+    --linen:     #3A322A;
+    --moss:      #8DA868;
+    --moss-deep: #B5CD92;
+    --brick:     #E36953;
+    --brick-d:   #F08A75;
+    --ochre:     #E6B265;
+    --ochre-d:   #F3CB88;
+    --rule:      rgba(244, 238, 221, 0.18);
+    --rule-soft: rgba(244, 238, 221, 0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; background: var(--paper); scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink-2);
+    font-family: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+    font-size: var(--s-1);
+    line-height: var(--lead);
+    font-feature-settings: "ss01", "kern", "liga";
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    min-height: 100vh;
+    letter-spacing: 0.003em;
+    transition: background-color .3s var(--ease), color .3s var(--ease);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(20,16,12,0.07) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(165,62,46,0.04), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(86,104,58,0.05), transparent 70%);
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::before {
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(244,238,221,0.06) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(227,105,83,0.05), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(141,168,104,0.05), transparent 70%);
+    mix-blend-mode: screen;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.18;
+    background-image: radial-gradient(rgba(20,16,12,0.55) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::after {
+    opacity: 0.10;
+    background-image: radial-gradient(rgba(244,238,221,0.45) 0.5px, transparent 0.5px);
+    mix-blend-mode: screen;
+  }
+
+  /* ═══════ typography ═══════ */
+  h1, h2, h3, h4, .display {
+    font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+    font-optical-sizing: auto;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    font-feature-settings: "ss01", "ss02", "kern";
+    margin: 0;
+  }
+  p { margin: 0 0 0.95em; }
+  em { font-style: italic; color: var(--ink); }
+  strong { font-weight: 600; color: var(--ink); }
+  a { color: var(--brick-d); text-decoration: none; border-bottom: 1px solid currentColor; transition: color .25s var(--ease); }
+  a:hover { color: var(--brick); }
+  a.bare { border-bottom: none; }
+
+  .label {
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  mark.kw {
+    background: linear-gradient(180deg, transparent 60%, rgba(192,138,62,0.30) 60%);
+    color: inherit;
+    padding: 0 0.05em;
+  }
+
+  /* ═══════ sticky reading rail ═══════ */
+  .rail {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .rail__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    max-width: 100rem;
+    margin: 0 auto;
+    padding: 0.7em clamp(0.8rem, 3vw, 2.5rem);
+  }
+  .rail__title { flex: 0 0 auto; font-style: italic; color: var(--ink); }
+  .rail__dot { width: 5px; height: 5px; background: var(--moss); border-radius: 50%; flex: 0 0 auto; }
+  .rail__nav {
+    flex: 1;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .rail__nav::-webkit-scrollbar { display: none; }
+  .rail__nav a {
+    border-bottom: none;
+    color: var(--ink-3);
+    padding: 0.3em 0;
+    margin-right: 1.1em;
+    white-space: nowrap;
+    transition: color .15s var(--ease);
+  }
+  .rail__nav a:hover { color: var(--ink); }
+  .rail__nav a.active { color: var(--brick-d); }
+  .rail__nav a.active::before { content: "▸ "; color: var(--brick); }
+  @media (max-width: 70rem) { .rail__title { display: none; } .rail__nav { display: none; } }
+  .rail__progress {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--brick);
+    width: 0%;
+    transition: width .1s linear;
+  }
+  .rail__actions { display: flex; gap: 0.5em; flex: 0 0 auto; align-items: center; }
+  .rail__btn {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.85em;
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+    letter-spacing: 0.16em;
+  }
+  .rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .rail__btn--icon { padding: 0.35em 0.6em; }
+  .rail__btn--icon svg { display: block; width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  /* ═══════ live beacon ═══════ */
+  .beacon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.3em 0.7em 0.3em 0.55em;
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    color: var(--ink-3);
+    cursor: help;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease);
+  }
+  .beacon__pulse {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink-4);
+    flex: 0 0 auto;
+  }
+  .beacon[data-state="checking"] .beacon__pulse { background: var(--ochre); animation: beaconPulse 1.2s var(--ease) infinite; }
+  .beacon[data-state="live"] { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 55%, var(--rule)); }
+  .beacon[data-state="live"] .beacon__pulse { background: var(--moss); box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 70%, transparent); animation: beaconPulse 2s var(--ease) infinite; }
+  .beacon[data-state="offline"] { color: var(--ink-3); border-color: var(--rule); }
+  .beacon[data-state="offline"] .beacon__pulse { background: var(--ink-4); }
+  .beacon:hover { color: var(--ink); }
+
+  @keyframes beaconPulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 65%, transparent); }
+    70% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--moss) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 0%, transparent); }
+  }
+
+  /* ═══════ toc drawer ═══════ */
+  .toc-toggle {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.75em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+  }
+  .toc-toggle:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc-toggle svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  .toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--toc-w);
+    height: 100vh;
+    z-index: 25;
+    background: var(--paper-4);
+    border-right: 1px solid var(--rule);
+    box-shadow: 8px 0 24px -16px rgba(20,16,12,0.20);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform .35s var(--ease);
+    padding: 4.2em 1.2em 2em;
+    font-family: "Source Serif 4", serif;
+  }
+  .toc[aria-hidden="false"] { transform: translateX(0); }
+  .toc__header {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.4em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .toc__title {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-size: var(--s-2);
+    color: var(--ink);
+    line-height: 1.1;
+    margin: 0 0 1.2em;
+  }
+  .toc__close {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.2em 0.5em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+  }
+  .toc__close:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc__list { list-style: none; padding: 0; margin: 0 0 1.5em; }
+  .toc__item { padding: 0; margin: 0 0 0.15em; border-left: 2px solid transparent; padding-left: 0.6em; transition: border-color .2s var(--ease); }
+  .toc__item.is-active { border-left-color: var(--brick); }
+  .toc__item a {
+    border-bottom: none;
+    color: var(--ink-3);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    padding: 0.32em 0;
+    font-size: 0.93em;
+    line-height: 1.3;
+    transition: color .15s var(--ease);
+  }
+  .toc__item a:hover { color: var(--ink); }
+  .toc__item.is-active > a { color: var(--brick-d); font-weight: 500; }
+  .toc__num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    color: var(--ink-4);
+    letter-spacing: 0.06em;
+    flex: 0 0 1.6em;
+  }
+  .toc__item.is-active > a > .toc__num { color: var(--brick); }
+  .toc__sub {
+    list-style: none;
+    padding: 0 0 0.4em;
+    margin: 0 0 0 1.7em;
+    border-left: 1px dotted var(--rule);
+  }
+  .toc__sub li { margin: 0; }
+  .toc__sub a {
+    border-bottom: none;
+    color: var(--ink-4);
+    font-size: 0.82em;
+    padding: 0.18em 0 0.18em 0.8em;
+    display: block;
+    line-height: 1.25;
+    transition: color .15s var(--ease);
+  }
+  .toc__sub a:hover { color: var(--ink-2); }
+  .toc__sub a.is-active { color: var(--brick-d); }
+  .toc__meta {
+    border-top: 1px solid var(--rule);
+    margin-top: 1.4em;
+    padding-top: 1em;
+    font-size: 0.84em;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+  .toc__meta dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); margin-top: 0.7em; }
+  .toc__meta dd { margin: 0.1em 0 0; color: var(--ink-2); }
+
+  .toc__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 24;
+    background: rgba(20,16,12,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s var(--ease);
+  }
+  .toc[aria-hidden="false"] ~ .toc__scrim { opacity: 1; pointer-events: auto; }
+  body[data-theme="dark"] .toc__scrim { background: rgba(0,0,0,0.55); }
+
+  /* desktop: pin the TOC permanently if wide enough */
+  @media (min-width: 92rem) {
+    .toc { transform: translateX(0); box-shadow: none; padding-top: 4.2em; }
+    .toc__close { display: none; }
+    .toc__scrim { display: none; }
+    main { padding-left: var(--toc-w); }
+    .rail { padding-left: 0; }
+    .toc-toggle { display: none; }
+  }
+
+  /* ═══════ layout shell ═══════ */
+  .shell {
+    max-width: 92rem;
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 4vw, 4rem);
+  }
+
+  .diag {
+    display: grid;
+    grid-template-columns:
+      [margin-l] minmax(0, 13rem)
+      [body] minmax(0, 38rem)
+      [margin-r] minmax(0, 13rem);
+    gap: clamp(1rem, 2vw, 2.5rem);
+    align-items: start;
+    margin: 0 auto;
+    max-width: 80rem;
+  }
+  .diag > .body { grid-column: body; }
+  .diag > .ml { grid-column: margin-l; padding-top: 0.4em; }
+  .diag > .mr { grid-column: margin-r; padding-top: 0.4em; }
+  .diag > .full { grid-column: 1 / -1; max-width: 80rem; margin: 0 auto; }
+  .diag + .diag { margin-top: 1em; }
+
+  @media (max-width: 60rem) {
+    .diag { grid-template-columns: 1fr; }
+    .diag > .ml, .diag > .mr {
+      border-left: 2px solid var(--rule);
+      padding-left: 0.9em;
+      margin-bottom: 1em;
+      color: var(--ink-3);
+      font-size: 0.9em;
+    }
+  }
+
+  /* ═══════ hero ═══════ */
+  .hero {
+    border-bottom: 1px solid var(--rule);
+    padding: clamp(2rem, 5vw, 5rem) 0 clamp(2rem, 4vw, 4rem);
+    position: relative;
+  }
+  .hero__rune {
+    position: absolute;
+    top: 1rem;
+    left: clamp(1rem, 4vw, 4rem);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .hero__rune span { color: var(--brick-d); }
+  .hero__masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 2.5em auto 2em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+  }
+  .hero__rule { flex: 1; height: 1px; background: var(--rule); margin: 0 1em; position: relative; top: -0.4em; }
+  .hero__h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: var(--s-5);
+    line-height: 0.96;
+    font-weight: 460;
+    margin: 0 auto 0.4em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    letter-spacing: -0.022em;
+    color: var(--ink);
+  }
+  .hero__h1 .em {
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+  }
+  .hero__subtitle {
+    margin: 0.6em auto 0;
+    max-width: 56rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    font-family: "Fraunces", serif;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    font-size: var(--s-3);
+    font-weight: 320;
+    color: var(--ink-3);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .hero__latest {
+    margin: 1.5em auto 0;
+    max-width: 80rem;
+    padding: 1em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    background: color-mix(in srgb, var(--paper-3) 72%, transparent);
+    display: grid;
+    grid-template-columns: minmax(0, 0.32fr) minmax(0, 0.68fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: baseline;
+  }
+  @media (max-width: 60rem) { .hero__latest { grid-template-columns: 1fr; } }
+  .hero__latest strong {
+    display: block;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-3);
+    font-weight: 430;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero__latest p {
+    margin: 0;
+    font-size: var(--s-1);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .hero__lede {
+    margin: 2.4em auto 0;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    display: grid;
+    grid-template-columns: minmax(0, 38rem) minmax(0, 22rem);
+    gap: clamp(1.5rem, 4vw, 4rem);
+  }
+  @media (max-width: 60rem) { .hero__lede { grid-template-columns: 1fr; } }
+  .hero__lede p {
+    font-size: var(--s-2);
+    line-height: 1.5;
+    color: var(--ink-2);
+    font-weight: 350;
+    font-family: "Source Serif 4", serif;
+    margin: 0 0 0.85em;
+  }
+  .hero__lede p:first-of-type::first-letter {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: 3.4em;
+    line-height: 0.9;
+    float: left;
+    padding: 0.05em 0.08em 0 0;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .hero__num {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid var(--moss);
+    padding-left: 1.4em;
+    align-self: stretch;
+  }
+  .hero__num__big {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.9;
+    font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 144;
+    color: var(--moss-deep);
+    font-weight: 320;
+    letter-spacing: -0.04em;
+  }
+  .hero__num__big .frac {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 280;
+  }
+  .hero__num__sub {
+    margin-top: 0.5em;
+    font-size: var(--s-0);
+    color: var(--ink-3);
+    line-height: 1.45;
+    max-width: 22em;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.4em 0 0;
+  }
+
+  /* ═══════ section structure ═══════ */
+  .s {
+    padding: clamp(3rem, 6vw, 6rem) 0;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: 4em;
+  }
+  .s:last-of-type { border-bottom: none; }
+  .s__num {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 80, "WONK" 0, "opsz" 144;
+    color: var(--moss);
+    letter-spacing: -0.05em;
+    user-select: none;
+    margin: 0;
+  }
+  .s__num .glyph {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 240;
+  }
+  .s__h {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-4);
+    line-height: 1.05;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    font-weight: 460;
+    margin: 0.4em 0 1em;
+    color: var(--ink);
+    letter-spacing: -0.018em;
+  }
+  .s__h em {
+    font-style: italic;
+    color: var(--brick-d);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+  }
+  .s__kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin: 0 0 0.6em;
+  }
+  .s__sub {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-weight: 480;
+    margin: 1.4em 0 0.6em;
+    line-height: 1.2;
+    scroll-margin-top: 4em;
+  }
+
+  /* ═══════ marginalia ═══════ */
+  .note {
+    font-family: "Source Serif 4", serif;
+    font-size: 0.86em;
+    line-height: 1.5;
+    color: var(--ink-3);
+    font-style: italic;
+  }
+  .note__lbl {
+    display: block;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-bottom: 0.5em;
+    font-weight: 500;
+  }
+  .note--moss .note__lbl { color: var(--moss-deep); }
+  .note--ink .note__lbl { color: var(--ink-3); }
+  .note--ochre .note__lbl { color: var(--ochre-d); }
+  .note p { margin: 0 0 0.6em; }
+
+  /* ═══════ pull quote ═══════ */
+  .pq {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-weight: 360;
+    border-left: 2px solid var(--brick);
+    padding: 0.4em 0 0.4em 1.2em;
+    margin: 1.4em 0;
+    letter-spacing: -0.005em;
+  }
+  .pq cite, .pq .cite {
+    display: block;
+    font-style: normal;
+    font-variation-settings: normal;
+    margin-top: 0.5em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  /* ═══════ glossary ═══════ */
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+    gap: 1.1em 1.6em;
+    margin-top: 1em;
+  }
+  .gl-row {
+    border-top: 1px dotted var(--rule);
+    padding-top: 0.7em;
+  }
+  .gl-row dt {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    line-height: 1.2;
+  }
+  .gl-row dt .gloss {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ochre-d);
+    font-style: normal;
+    margin-left: 0.5em;
+  }
+  .gl-row dd {
+    margin: 0.35em 0 0;
+    color: var(--ink-2);
+    font-size: 0.97em;
+    line-height: 1.5;
+  }
+
+  /* ═══════ inline glossary terms (tooltip on hover) ═══════ */
+  .gl-term {
+    font-style: normal;
+    border-bottom: 1px dotted var(--ochre);
+    cursor: help;
+    position: relative;
+    transition: color .15s var(--ease);
+  }
+  .gl-term:hover, .gl-term:focus {
+    color: var(--ochre-d);
+    outline: none;
+  }
+  .gl-term[data-gloss]::after {
+    content: attr(data-gloss);
+    position: absolute;
+    bottom: calc(100% + 0.6em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.85em;
+    line-height: 1.4;
+    padding: 0.55em 0.9em;
+    border-radius: 2px;
+    width: max-content;
+    max-width: 18em;
+    white-space: normal;
+    box-shadow: 0 8px 20px -10px rgba(20,16,12,0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+    text-align: left;
+    letter-spacing: 0;
+  }
+  .gl-term[data-gloss]::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 0.25em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    border: 5px solid transparent;
+    border-top-color: var(--ink);
+    opacity: 0;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+  }
+  .gl-term:hover::after, .gl-term:focus::after,
+  .gl-term:hover::before, .gl-term:focus::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ═══════ claim/counter pairs ═══════ */
+  .claim {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8em 1.4em;
+    align-items: baseline;
+    margin: 0 0 2.4em;
+  }
+  .claim__no {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-4);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    color: var(--ink-4);
+    font-style: italic;
+    width: 1.6em;
+    text-align: right;
+  }
+  .claim__h {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-3);
+    line-height: 1.15;
+    font-weight: 460;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.012em;
+  }
+  .claim__body { grid-column: 2; margin-top: 0.6em; color: var(--ink-2); }
+  .claim__body p { font-size: var(--s-1); line-height: 1.6; }
+  .claim__counter {
+    grid-column: 2;
+    margin-top: 0.4em;
+    border-left: 2px solid var(--brick);
+    padding: 0.2em 0 0.2em 1em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.95em;
+    color: var(--ink-3);
+  }
+  .claim__counter::before {
+    content: "caveat.";
+    display: inline;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-right: 0.6em;
+    font-weight: 500;
+  }
+
+  /* ═══════ status chips ═══════ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.25em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    margin-right: 0.4em;
+    margin-bottom: 0.4em;
+  }
+  .chip--moss { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 50%, var(--rule)); }
+  .chip--brick { color: var(--brick-d); border-color: color-mix(in srgb, var(--brick) 50%, var(--rule)); }
+  .chip--ochre { color: var(--ochre-d); border-color: color-mix(in srgb, var(--ochre) 50%, var(--rule)); }
+  .chip--ink { color: var(--ink); border-color: var(--ink-3); background: var(--paper); }
+  .chip__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ═══════ deeplink pills (open in browser) ═══════ */
+  .deeplink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.35em 0.7em 0.35em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .deeplink:hover {
+    color: var(--brick-d);
+    border-color: color-mix(in srgb, var(--brick) 60%, var(--rule));
+    background: var(--paper-4);
+  }
+  .deeplink__arrow {
+    transition: transform .2s var(--ease);
+    color: var(--brick);
+    font-weight: 600;
+  }
+  .deeplink:hover .deeplink__arrow { transform: translateX(2px); }
+  .deeplink[data-live="checking"] .deeplink__count::after { content: " · …"; color: var(--ochre); }
+  .deeplink[data-live="live"] { border-color: color-mix(in srgb, var(--moss) 45%, var(--rule)); }
+  .deeplink[data-live="live"] .deeplink__count { color: var(--moss-deep); }
+  .deeplink[data-live="offline"] { opacity: 0.7; }
+  .deeplink__count {
+    font-style: normal;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+  }
+
+  .deeplink-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.1em 0 0.4em;
+  }
+
+  /* ═══════ timeline ═══════ */
+  .timeline {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    margin-top: 1em;
+  }
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1.4em;
+    align-items: start;
+    padding: 1.2em 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .timeline-row .when {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    padding-top: 0.4em;
+  }
+  .timeline-row h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .timeline-row p { margin: 0; color: var(--ink-2); font-size: 0.97em; }
+  @media (max-width: 60rem) {
+    .timeline-row { grid-template-columns: 1fr; gap: 0.4em; }
+  }
+
+  /* ═══════ evidence grid ═══════ */
+  .filters { display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0 0 1.4em; }
+  .filter-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease);
+  }
+  .filter-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .filter-btn[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .ev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+    gap: 1em;
+  }
+  .ev-card {
+    padding: 1.2em 1.3em;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink-4);
+    transition: border-color .2s var(--ease), background .2s var(--ease);
+    display: flex;
+    flex-direction: column;
+  }
+  .ev-card.is-hidden { display: none; }
+  .ev-card[data-status="strong"] { border-left-color: var(--moss); }
+  .ev-card[data-status="boundary"] { border-left-color: var(--ochre); }
+  .ev-card[data-status="risk"] { border-left-color: var(--brick); }
+  .ev-card[data-status="output"] { border-left-color: var(--ink-3); }
+  .ev-card h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    margin: 0.4em 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .ev-card p { margin: 0 0 0.7em; color: var(--ink-2); font-size: 0.95em; line-height: 1.5; }
+  .ev-card .deeplink-row { margin-top: auto; }
+
+  /* ═══════ accordion ═══════ */
+  .accordion {
+    border-top: 1px solid var(--rule);
+  }
+  .accordion:last-of-type { border-bottom: 1px solid var(--rule); }
+  .accordion summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1em 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+  }
+  .accordion summary::-webkit-details-marker { display: none; }
+  .accordion summary h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .accordion summary .acc-marker {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--brick-d);
+    font-size: var(--s-1);
+  }
+  .accordion[open] summary .acc-marker::before { content: "–"; }
+  .accordion:not([open]) summary .acc-marker::before { content: "+"; }
+  .accordion .body { padding: 0 0 1.3em; color: var(--ink-2); }
+  .accordion .body p { margin: 0 0 0.7em; }
+
+  /* ═══════ spec / route ═══════ */
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    gap: 1em;
+    margin-top: 1.3em;
+  }
+  .spec-box {
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    padding: 1em 1.1em;
+  }
+  .spec-box h4 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.6em;
+  }
+  .spec-box ul { list-style: none; padding: 0; margin: 0; }
+  .spec-box li {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82em;
+    color: var(--ink-2);
+    padding: 0.18em 0;
+    border-bottom: 1px dotted var(--rule-soft);
+  }
+  .spec-box li:last-child { border-bottom: none; }
+
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+    gap: 0.7em;
+    margin-top: 1.2em;
+    counter-reset: step;
+  }
+  .ladder-step {
+    counter-increment: step;
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    padding: 0.9em 1em;
+    position: relative;
+    font-size: 0.92em;
+  }
+  .ladder-step::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    color: var(--ochre-d);
+    display: block;
+    margin-bottom: 0.4em;
+  }
+  .ladder-step strong {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    color: var(--ink);
+    font-weight: 460;
+    display: block;
+    margin-bottom: 0.2em;
+  }
+  .ladder-step span { color: var(--ink-3); font-size: 0.93em; }
+
+  /* ═══════ callouts ═══════ */
+  .callout {
+    border: 1px solid color-mix(in srgb, var(--brick) 40%, var(--rule));
+    background: linear-gradient(180deg, rgba(165,62,46,0.06), rgba(165,62,46,0.02) 80%, transparent);
+    padding: 1.2em 1.3em;
+    margin-top: 1.4em;
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .callout strong { color: var(--brick-d); font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.18em; text-transform: uppercase; }
+
+  /* ═══════ interactive chart ═══════ */
+  figure.chart-fig { margin: 1.4em 0 1em; }
+  figure.chart-fig figcaption {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 0.7em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em 1.4em;
+    align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.5em;
+  }
+  figure.chart-fig figcaption .cap-title { color: var(--brick-d); }
+  figure.chart-fig figcaption .legend {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.8em;
+    margin-left: auto;
+  }
+  figure.chart-fig figcaption .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--ink-3);
+  }
+  figure.chart-fig figcaption .legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+  figure.chart-fig figcaption .legend .lg-routine { color: var(--ink-4); }
+  figure.chart-fig figcaption .legend .lg-none    { color: var(--ochre); }
+  figure.chart-fig figcaption .legend .lg-perip   { color: var(--moss-deep); }
+
+  .chart { width: 100%; height: auto; }
+  .chart .axis-line { stroke: var(--rule); stroke-width: 1; }
+  .chart .axis-tick { stroke: var(--rule-soft); stroke-width: 1; stroke-dasharray: 2 3; }
+  .chart .axis-lbl  { fill: var(--ink-4); font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.05em; }
+  .chart .metric-lbl { fill: var(--ink-2); font-family: "Source Serif 4", serif; font-size: 12px; font-style: italic; }
+  .chart .bar-routine { fill: var(--ink-4); }
+  .chart .bar-none    { fill: var(--ochre); }
+  .chart .bar-perip   { fill: var(--moss-deep); }
+  .chart .bar         { transition: opacity .2s var(--ease); transform-origin: left center; }
+  .chart .bar:hover   { opacity: 0.82; }
+  .chart .bar-val     { fill: var(--ink-2); font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 500; }
+  .chart .bar-rect    { rx: 1; ry: 1; }
+  .chart .anim        { transform-origin: left; animation: barIn .9s var(--ease) both; }
+
+  @keyframes barIn {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+
+  /* ═══════ transcript block ═══════ */
+  .tx {
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    margin: 1.1em 0;
+  }
+  .tx > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.7em 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1px solid transparent;
+  }
+  .tx > summary::-webkit-details-marker { display: none; }
+  .tx > summary .tx__title { color: var(--brick-d); }
+  .tx > summary .tx__hint { color: var(--ink-4); font-style: italic; text-transform: none; letter-spacing: 0.02em; font-family: "Source Serif 4", serif; font-size: 0.95em; }
+  .tx[open] > summary { border-bottom-color: var(--rule); }
+  .tx[open] > summary::after { content: "–"; color: var(--brick-d); }
+  .tx:not([open]) > summary::after { content: "+"; color: var(--brick-d); }
+  .tx__body {
+    padding: 0.8em 1.2em 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.85em;
+    line-height: 1.55;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    max-height: 26em;
+    overflow-y: auto;
+  }
+  .tx__body .tx-stage   { color: var(--ink-4); font-style: italic; }
+  .tx__body .tx-tutor   { color: var(--moss-deep); }
+  .tx__body .tx-learner { color: var(--brick-d); }
+  .tx__body .tx-label   { display: inline-block; min-width: 4.2em; font-weight: 600; color: var(--ink); }
+  .tx__caption {
+    padding: 0.6em 1.2em 0.9em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    color: var(--ink-3);
+    font-size: 0.88em;
+    border-top: 1px dotted var(--rule);
+    background: var(--paper-3);
+  }
+  .tx__caption strong { font-family: "JetBrains Mono", monospace; font-style: normal; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--moss-deep); margin-right: 0.5em; }
+
+  /* ═══════ footer ═══════ */
+  .colophon {
+    padding: 3em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    color: var(--ink-3);
+    font-size: 0.88em;
+    line-height: 1.55;
+  }
+  .colophon code {
+    font-family: "JetBrains Mono", monospace;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    padding: 0.1em 0.4em;
+    font-size: 0.92em;
+    color: var(--ink-2);
+  }
+  .colophon dl { display: grid; grid-template-columns: 12rem 1fr; gap: 0.5em 1.2em; margin: 1em 0 0; }
+  .colophon dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brick-d); }
+  .colophon dd { margin: 0; }
+  @media (max-width: 50rem) { .colophon dl { grid-template-columns: 1fr; } .colophon dd { margin: 0 0 0.6em; } }
+  .colophon__live {
+    border: 1px dashed var(--rule);
+    padding: 0.9em 1.1em;
+    margin-top: 1.4em;
+    background: var(--paper-3);
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .colophon__live code { background: var(--paper-4); }
+
+  /* ═══════ print ═══════ */
+  @media print {
+    body { background: #fff; color: #000; }
+    body::before, body::after, .rail, .rail__actions, .filters, .toc, .toc__scrim, .toc-toggle, .beacon, .deeplink, .deeplink-row { display: none !important; }
+    main { padding-left: 0 !important; }
+    .accordion .body, .tx[open] .tx__body { display: block !important; }
+    .accordion summary .acc-marker, .tx summary::after { display: none; }
+    .s { break-inside: avoid; }
+    .ev-card { break-inside: avoid; }
+    .chart { break-inside: avoid; }
+    .gl-term { border-bottom: none; }
+    .gl-term::after, .gl-term::before { display: none; }
+  }
+
+</style>
+<style>
+  :root {
+    --comic-ink: #18130f;
+    --comic-paper: #f5ecdd;
+    --comic-amber: #d79543;
+    --comic-brick: #9d3d2f;
+    --comic-moss: #526847;
+    --comic-line: rgba(43, 31, 22, 0.25);
+  }
+
+  .rail__nav a {
+    white-space: nowrap;
+  }
+
+  .hero--comic {
+    min-height: 86vh;
+    position: relative;
+    display: grid;
+    align-items: end;
+    overflow: hidden;
+    background: #111;
+    color: #fff7e9;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .hero--comic::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(16, 11, 8, 0.88) 0%, rgba(16, 11, 8, 0.58) 42%, rgba(16, 11, 8, 0.18) 100%),
+      linear-gradient(0deg, rgba(16, 11, 8, 0.88) 0%, rgba(16, 11, 8, 0.18) 56%, rgba(16, 11, 8, 0.55) 100%);
+    pointer-events: none;
+  }
+
+  .hero--comic .hero__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.9) contrast(1.05);
+  }
+
+  .hero--comic .hero__copy {
+    position: relative;
+    z-index: 1;
+    width: min(920px, calc(100vw - 2rem));
+    padding: clamp(5rem, 10vh, 8rem) 0 clamp(3rem, 7vh, 5rem);
+    margin: 0 auto;
+  }
+
+  .hero--comic .hero__rune {
+    color: #f2c883;
+  }
+
+  .hero--comic .hero__h1,
+  .hero--comic .hero__subtitle {
+    text-shadow: 0 2px 22px rgba(0, 0, 0, 0.55);
+  }
+
+  .hero--comic .hero__subtitle {
+    max-width: 720px;
+  }
+
+  .comic-panel {
+    margin: clamp(1.6rem, 4vw, 2.6rem) 0;
+    border: 1px solid var(--comic-line);
+    border-radius: 6px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--comic-paper), transparent 8%);
+    box-shadow: 0 18px 48px rgba(31, 21, 13, 0.12);
+  }
+
+  .comic-panel__frame {
+    aspect-ratio: 16 / 10;
+    background: #15110d;
+    display: grid;
+    place-items: center;
+  }
+
+  .comic-panel__frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .comic-panel figcaption {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.82rem 0.95rem 0.92rem;
+    font-size: clamp(0.88rem, 1.8vw, 1.02rem);
+    line-height: 1.45;
+    border-top: 1px solid var(--comic-line);
+  }
+
+  .comic-panel figcaption strong {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    color: var(--comic-brick);
+    font-size: 0.76em;
+  }
+
+  .beat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin: 1.4rem 0;
+  }
+
+  .beat {
+    border: 1px solid var(--comic-line);
+    border-radius: 6px;
+    padding: 0.95rem;
+    background: rgba(255, 250, 239, 0.58);
+  }
+
+  .beat h3 {
+    margin: 0 0 0.38rem;
+    font-size: 1.03rem;
+    color: var(--comic-ink);
+  }
+
+  .beat p {
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .verdict-list {
+    display: grid;
+    gap: 0.72rem;
+    margin: 1.25rem 0;
+  }
+
+  .verdict {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
+    align-items: start;
+    border-top: 1px solid var(--comic-line);
+    padding-top: 0.78rem;
+  }
+
+  .verdict__tag {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    color: #fff8ea;
+    background: var(--comic-moss);
+    border-radius: 4px;
+    padding: 0.18rem 0.38rem;
+  }
+
+  .verdict__tag--open {
+    background: var(--comic-brick);
+  }
+
+  .evidence-desk {
+    display: grid;
+    gap: 1rem;
+    margin: 1.3rem 0;
+  }
+
+  .atlas-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .atlas-strip figure,
+  .atlas-frame {
+    margin: 0;
+    border: 1px solid var(--comic-line);
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(255, 250, 239, 0.62);
+  }
+
+  .atlas-strip img {
+    width: 100%;
+    display: block;
+    background: #f8f0df;
+  }
+
+  .atlas-strip figcaption,
+  .atlas-frame figcaption {
+    padding: 0.72rem 0.86rem;
+    font-size: 0.92rem;
+    line-height: 1.4;
+    border-top: 1px solid var(--comic-line);
+  }
+
+  .atlas-frame iframe {
+    width: 100%;
+    min-height: 420px;
+    border: 0;
+    display: block;
+    background: #fff8ea;
+  }
+
+  .link-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin: 1rem 0 0;
+  }
+
+  .link-row a {
+    border: 1px solid var(--comic-line);
+    border-radius: 4px;
+    padding: 0.45rem 0.58rem;
+    text-decoration: none;
+    color: inherit;
+    background: rgba(255, 250, 239, 0.62);
+  }
+
+  .comic-small {
+    font-size: 0.93rem;
+    line-height: 1.55;
+  }
+
+  @media (max-width: 760px) {
+    .hero--comic {
+      min-height: 82vh;
+    }
+
+    .hero--comic::after {
+      background:
+        linear-gradient(0deg, rgba(16, 11, 8, 0.9) 0%, rgba(16, 11, 8, 0.42) 62%, rgba(16, 11, 8, 0.34) 100%);
+    }
+
+    .hero--comic .hero__copy {
+      padding-top: 7rem;
+    }
+
+    .beat-grid,
+    .atlas-strip {
+      grid-template-columns: 1fr;
+    }
+
+    .verdict {
+      grid-template-columns: 1fr;
+      gap: 0.42rem;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">The Case of the Learning Machine</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#case">Case</a>
+      <a href="#calibration">Spotlight</a>
+      <a href="#critic">Critic</a>
+      <a href="#adaptation">False lead</a>
+      <a href="#apparatus">Apparatus</a>
+      <a href="#guards">Guards</a>
+      <a href="#open-door">Open door</a>
+      <a href="#atlas">Atlas</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero hero--comic" aria-labelledby="comic-title">
+    <img class="hero__image" src="images/paper-2-noir-comic-01.png" alt="A noir classroom-laboratory case board with researchers, teachers, an AI tutor silhouette, and a learner under lamplight." />
+    <div class="hero__copy">
+      <div class="hero__rune"><span>&sect;</span> Case File - updated 2026-06-19 - paper-full-2.0.md v3.0.163</div>
+      <h1 class="hero__h1" id="comic-title">The Case of the <span class="em">Learning Machine</span></h1>
+      <p class="hero__subtitle">A film-noir comic explainer for Paper 2.0: what made the AI tutor better, what did not, and why the next witness has to be human.</p>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <section class="s" id="case">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The case</p>
+          <h2 class="s__h">The paper did not find a magic tutor. It found which parts of the machine actually moved.</h2>
+          <p>Paper 2.0 tested a tutor that can draft, criticize itself, revise, and leave a trace of what happened. The question was simple enough for a comic and hard enough for a research program: when the tutor improves, which piece did the work?</p>
+
+          <div class="beat-grid" aria-label="Plain-language cast list">
+            <div class="beat">
+              <h3>The tutor</h3>
+              <p>The system trying to help. In some cells it speaks once; in others it drafts, gets criticized, and revises.</p>
+            </div>
+            <div class="beat">
+              <h3>The learner</h3>
+              <p>A simulated learner in the main study. Useful for mechanism tracing, but not a substitute for human learning outcomes.</p>
+            </div>
+            <div class="beat">
+              <h3>The apparatus</h3>
+              <p>Judges, traces, rubrics, scenario controls, and proof checkers that keep each claim tied to evidence.</p>
+            </div>
+          </div>
+
+          <p class="pq">The headline resolves to two supported mechanisms and one clean null: better prompt calibration, conditional error correction, and no reliable average adaptation-rate gain.<cite>Paper 2.0 abstract</cite></p>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Critical read</span> The older arc page is a technical notebook for the dramatic-recognition sidecar. This comic is the reader-facing version of the whole current paper, including later conduct-governance findings.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="calibration">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Clue one - calibration</p>
+          <h2 class="s__h">The strongest clue was not a secret module. It was the way the tutor was asked to listen.</h2>
+          <figure class="comic-panel">
+            <div class="comic-panel__frame">
+              <img src="images/paper-2-noir-comic-02.png" alt="A noir AI tutor turns from generic answers toward a learner's notebook under a focused amber spotlight." loading="lazy" decoding="async" />
+            </div>
+            <figcaption>
+              <strong>Panel 02</strong>
+              Recognition-oriented prompts narrowed the tutor's answer space. The tutor became less scattered, lifted its weakest dimensions, and engaged more with the learner's actual interpretation.
+            </figcaption>
+          </figure>
+
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">Supported <span class="chip chip--moss">general mechanism</span></h3>
+            <div class="claim__body">
+              <p>Across the tested models and judges, recognition-oriented prompting produced large tutor-output gains and reduced within-response variance. The paper now frames the active ingredient as an intersubjective-pedagogy orientation, not magic words from Hegel.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Plain version</span> The tutor got better when the prompt treated the learner as a thinking partner rather than a container for answers.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="critic">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Clue two - the critic</p>
+          <h2 class="s__h">The inner critic helped most when the first draft had something left to catch.</h2>
+          <figure class="comic-panel">
+            <div class="comic-panel__frame">
+              <img src="images/paper-2-noir-comic-03.png" alt="A noir split scene where an inner critic improves a rough draft, while a polished draft needs little correction." loading="lazy" decoding="async" />
+            </div>
+            <figcaption>
+              <strong>Panel 03</strong>
+              The ego-superego loop is real error correction, but it overlaps with calibration. If the prompt already prevents many errors, the critic has less new work to do.
+            </figcaption>
+          </figure>
+
+          <div class="claim">
+            <span class="claim__no">ii.</span>
+            <h3 class="claim__h">Supported, but conditional <span class="chip chip--moss">substitution</span></h3>
+            <div class="claim__body">
+              <p>The superego added about 9-15 points under baseline conditions, then lost marginal value under recognition-oriented prompting. The paper names this universal substitution: prompt calibration and architectural critique catch overlapping failures.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Cost lesson</span> On stronger models, a single recognition-oriented tutor may be the better cost-quality trade-off. The multi-agent critic is most valuable when the first draft still has real error headroom.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="adaptation">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The false lead</p>
+          <h2 class="s__h">The tutor often started better. It did not reliably get better faster across the dialogue.</h2>
+          <figure class="comic-panel">
+            <div class="comic-panel__frame">
+              <img src="images/paper-2-noir-comic-04.png" alt="A tutor and learner walk along a mostly level noir city path while a detective studies the path with a ruler." loading="lazy" decoding="async" />
+            </div>
+            <figcaption>
+              <strong>Panel 04</strong>
+              The paper separates level from rate. Recognition lifted the tutor's quality level, but the well-powered multi-turn tests did not show a reliable change in the tutor's turn-by-turn slope.
+            </figcaption>
+          </figure>
+
+          <div class="claim">
+            <span class="claim__no">iii.</span>
+            <h3 class="claim__h">Null <span class="chip chip--brick">do not rescue</span></h3>
+            <div class="claim__body">
+              <p>The primary N=432 trajectory tests were null, and a small exploratory disengagement effect did not survive pre-registered replication. The honest claim is not "no rich adaptation exists." It is narrower: these fixed-weight prompt and architecture interventions did not move the measured slope proxy.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Noir rule</span> A false lead still teaches you something. Here it forced the paper to distinguish a better opening move from a reliably changing relationship.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="apparatus">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The lab as witness</p>
+          <h2 class="s__h">The transferable contribution is the apparatus: a way to make mechanism claims auditable.</h2>
+          <figure class="comic-panel">
+            <div class="comic-panel__frame">
+              <img src="images/paper-2-noir-comic-05.png" alt="A noir teaching stage with tutor, learner, critic, judge, visible evidence channels, and a mechanical checker." loading="lazy" decoding="async" />
+            </div>
+            <figcaption>
+              <strong>Panel 05</strong>
+              The research instrument logs drafts, critiques, revisions, public outputs, judge scores, provenance hashes, and later proof-stage checks. The machine does not ask us to trust the vibe; it leaves a trail.
+            </figcaption>
+          </figure>
+
+          <div class="verdict-list">
+            <div class="verdict">
+              <span class="verdict__tag">Method</span>
+              <p>Process tracing turns "the tutor improved" into smaller questions: what did the prompt constrain, what did the critic catch, what changed in the revision, and what did judges see in the public output?</p>
+            </div>
+            <div class="verdict">
+              <span class="verdict__tag">Boundary</span>
+              <p>These are LLM-judged findings about synthetic-learner dialogues. They are strong evidence about tutor production, but they are not yet evidence that people learn more.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Reviewer-proofing</span> The paper's best discipline is not treating generated deliberation as a mind. It treats it as designed, inspectable text moving through a controlled system.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="guards">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The later case</p>
+          <h2 class="s__h">When the question moved from reading minds to governing conduct, the reliable lever became checkable timing.</h2>
+          <figure class="comic-panel">
+            <div class="comic-panel__frame">
+              <img src="images/paper-2-noir-comic-06.png" alt="A noir proof path with visible-footprint and hidden-blueprint guards guiding different routes, plus a repair kit near a cracked stone." loading="lazy" decoding="async" />
+            </div>
+            <figcaption>
+              <strong>Panel 06</strong>
+              The dramatic-derivation work reframed adaptivity as conduct governance: hold each premise until the learner is ready, repair proof debt when a needed premise slips, and prove the final recognition mechanically.
+            </figcaption>
+          </figure>
+
+          <div class="claim">
+            <span class="claim__no">iv.</span>
+            <h3 class="claim__h">Bounded positive <span class="chip chip--ochre">no universal guard</span></h3>
+            <div class="claim__body">
+              <p>On a linear proof chain, a page-only guard matched the hidden proof-state guard. On a forked world, the page-only guard failed where the hidden guard grounded. On a distractor world, the channels swapped. The production arm is hidden plus proofDebt, but the paper keeps the stronger lesson: the right signal depends on the world's geometry.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Plain version</span> Sometimes the page tells you enough. Sometimes it lies. Sometimes the hidden map overcorrects. The guard must match the task, not the other way round.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="open-door">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The open door</p>
+          <h2 class="s__h">The next witness is not another synthetic learner. It is a person.</h2>
+          <figure class="comic-panel">
+            <div class="comic-panel__frame">
+              <img src="images/paper-2-noir-comic-07.png" alt="A noir classroom-laboratory opens onto a brighter room where human learners wait with notebooks." loading="lazy" decoding="async" />
+            </div>
+            <figcaption>
+              <strong>Panel 07</strong>
+              The mechanism case is ready for human validation. The paper can say which tutor-production mechanisms replicated in the lab; it cannot yet say those mechanisms improve human learning.
+            </figcaption>
+          </figure>
+
+          <div class="verdict-list" aria-label="Claim ladder">
+            <div class="verdict">
+              <span class="verdict__tag">Supported</span>
+              <p>Recognition-oriented, intersubjective prompting calibrates tutor output across the tested model and judge panel.</p>
+            </div>
+            <div class="verdict">
+              <span class="verdict__tag">Supported</span>
+              <p>Draft-critique-revise architecture corrects errors conditionally, with strongest value when baseline drafts leave error headroom.</p>
+            </div>
+            <div class="verdict">
+              <span class="verdict__tag">Bounded</span>
+              <p>Conduct governance can work when external guards enforce checkable timing, but visible and hidden channels are each task-bound.</p>
+            </div>
+            <div class="verdict">
+              <span class="verdict__tag verdict__tag--open">Open</span>
+              <p>Whether better tutor production yields better human learning remains the outstanding validation step.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Human boundary</span> The pilot infrastructure exists in the repo, but recruitment and real learner evidence remain gated by consent, real item content, and IRB-ready materials.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="atlas">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">08<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The evidence desk</p>
+          <h2 class="s__h">For readers who want the machinery, the diagrams keep the comic honest.</h2>
+          <p>This section reuses the deterministic architecture atlas from the technical arc. The comic panels carry the story; these diagrams carry the exact structure.</p>
+
+          <div class="evidence-desk">
+            <div class="atlas-strip">
+              <figure>
+                <img src="architecture-diagrams/architecture-overview.svg" alt="Deterministic architecture overview diagram for Paper 2.0's tutoring system and mechanism boundaries." loading="lazy" decoding="async" />
+                <figcaption><strong>Overview.</strong> The full research apparatus, from recognition orientation through runtime traces, scoring, adaptive runners, and conduct governance.</figcaption>
+              </figure>
+              <figure>
+                <img src="architecture-diagrams/gpt-image-2-frontispiece.png" alt="Conceptual frontispiece of the AI tutoring research apparatus as a lab bench, inspection channel, stage, proof path, and human-study frontier." loading="lazy" decoding="async" />
+                <figcaption><strong>Frontispiece.</strong> A conceptual companion image; the SVG and Mermaid diagrams remain the authoritative claim carriers.</figcaption>
+              </figure>
+            </div>
+
+            <details>
+              <summary>Open Mermaid mechanism diagrams</summary>
+              <figure class="atlas-frame">
+                <iframe src="architecture-diagrams/02-mechanism-findings.html" title="Mechanism findings Mermaid diagram"></iframe>
+                <figcaption>Calibration, substitution, nulls, and interpretation boundaries.</figcaption>
+              </figure>
+              <figure class="atlas-frame">
+                <iframe src="architecture-diagrams/04-conduct-governance-boundary.html" title="Conduct governance boundary Mermaid diagram"></iframe>
+                <figcaption>Proof-world guards, proof debt, and the no-universal-guard boundary.</figcaption>
+              </figure>
+            </details>
+          </div>
+
+          <div class="link-row" aria-label="Source links">
+            <a href="2026-05-26-paper-to-dramatic-recognition-arc.html">Technical arc notebook</a>
+            <a href="2026-06-19-paper-2-0-noir-comic-image-prompts.md">Image prompt pack</a>
+            <a href="architecture-diagrams/README.md">Architecture diagram notes</a>
+            <a href="../../docs/research/paper-full-2.0.md">Canonical Paper 2.0 source</a>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Traceability</span> New claims belong in the canonical paper first. This comic only reframes claims already present in <code>docs/research/paper-full-2.0.md</code> v3.0.163.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="colophon">
+    <p><span class="label">Colophon</span> &nbsp; A techne comic explainer using the shared <code>assets/techne.css</code> and <code>assets/techne.js</code> framework. GPT Image 2 panels are stored under <code>notes/poetics/images/</code>; prompts are stored beside this file. Canonical claims trace to <code>docs/research/paper-full-2.0.md</code> v3.0.163.</p>
+  </footer>
+
+</main>
+
+<script type="application/json" id="techne-gloss-aliases">
+{
+  "calibration": "calibration",
+  "ego-superego": "ego-superego",
+  "proof debt": "proof-debt",
+  "synthetic learner": "synthetic-learner"
+}
+</script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   techne.js — shared behaviour for techne editorial docs.
+
+   Drop into any doc with  <script src="assets/techne.js"><\/script>
+   just before </body>. Every feature is GUARDED and opt-in: it
+   activates only if its markup is present, so this file is safe to
+   load on a doc that has no rail / TOC / beacon / charts / glossary.
+
+   Doc-specific *content* stays in the doc as declarative JSON:
+     • chart data:   <script type="application/json" class="techne-chart" data-target="myChartId">{…}<\/script>
+     • gloss aliases: <script type="application/json" id="techne-gloss-aliases">{ "inline term": "glossary-key" }<\/script>
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  function init() {
+    const root = document.documentElement;
+    const body = document.body;
+    const $ = (sel, ctx) => (ctx || document).querySelector(sel);
+    const $$ = (sel, ctx) => Array.from((ctx || document).querySelectorAll(sel));
+
+    /* ── theme toggle (opt-in: #themeToggle; theme persists regardless) ── */
+    const THEME_KEY = 'techneTheme';
+    function setTheme(next) {
+      root.dataset.theme = next;
+      if (body) body.dataset.theme = next;
+      const t = document.getElementById('themeToggle');
+      if (t) t.textContent = next === 'dark' ? 'Light' : 'Dark';
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    let saved = 'light';
+    try {
+      saved = localStorage.getItem(THEME_KEY) || 'light';
+    } catch (e) {
+      /* ignore */
+    }
+    setTheme(saved);
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+    }
+
+    /* ── reading progress + active-section spy (opt-in: #railProgress / .rail__nav a) ── */
+    const railProgress = document.getElementById('railProgress');
+    const railLinks = $$('.rail__nav a');
+    const tocItems = $$('.toc__item');
+    const spy = railLinks.map((a) => $(a.getAttribute('href'))).filter(Boolean);
+    if (railProgress || railLinks.length) {
+      const update = () => {
+        const top = window.scrollY || root.scrollTop;
+        if (railProgress) {
+          const h = root.scrollHeight - window.innerHeight;
+          railProgress.style.width = (h <= 0 ? 0 : Math.min(100, Math.max(0, (top / h) * 100))) + '%';
+        }
+        if (spy.length) {
+          let idx = 0;
+          const probe = top + window.innerHeight * 0.25;
+          spy.forEach((s, i) => {
+            if (s.offsetTop <= probe) idx = i;
+          });
+          const id = spy[idx] ? spy[idx].id : '';
+          railLinks.forEach((a, i) => a.classList.toggle('active', i === idx));
+          tocItems.forEach((li) => li.classList.toggle('is-active', li.dataset.target === id));
+        }
+      };
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    }
+
+    /* ── filter chips (opt-in: [data-filter] buttons + .ev-card[data-tags]) ── */
+    const filterButtons = $$('[data-filter]');
+    if (filterButtons.length) {
+      const cards = $$('.ev-card');
+      filterButtons.forEach((btn) =>
+        btn.addEventListener('click', () => {
+          const f = btn.dataset.filter;
+          filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          cards.forEach((c) => {
+            const tags = (c.dataset.tags || '').split(' ');
+            c.classList.toggle('is-hidden', !(f === 'all' || tags.includes(f)));
+          });
+        }),
+      );
+    }
+
+    /* ── TOC drawer (opt-in: #toc) ── */
+    const toc = document.getElementById('toc');
+    if (toc) {
+      const tocToggle = document.getElementById('tocToggle');
+      const tocClose = document.getElementById('tocClose');
+      const tocScrim = document.getElementById('tocScrim');
+      const open = () => {
+        toc.setAttribute('aria-hidden', 'false');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'true');
+      };
+      const close = () => {
+        toc.setAttribute('aria-hidden', 'true');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'false');
+      };
+      if (tocToggle)
+        tocToggle.addEventListener('click', () => (toc.getAttribute('aria-hidden') === 'false' ? close() : open()));
+      if (tocClose) tocClose.addEventListener('click', close);
+      if (tocScrim) tocScrim.addEventListener('click', close);
+      toc.addEventListener('click', (e) => {
+        if (e.target.closest('a[href^="#"]') && window.matchMedia('(max-width: 91.999rem)').matches)
+          setTimeout(close, 80);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && toc.getAttribute('aria-hidden') === 'false') close();
+      });
+    }
+
+    /* ── inline glossary tooltips (opt-in: #glossaryList + .gl-term) ── */
+    const glossaryList = document.getElementById('glossaryList');
+    if (glossaryList) {
+      let aliases = {};
+      const aliasEl = document.getElementById('techne-gloss-aliases');
+      if (aliasEl) {
+        try {
+          aliases = JSON.parse(aliasEl.textContent) || {};
+        } catch (e) {
+          /* ignore */
+        }
+      }
+      const map = {};
+      $$('.gl-row', glossaryList).forEach((row) => {
+        const dt = row.querySelector('dt'),
+          dd = row.querySelector('dd');
+        if (!dt || !dd) return;
+        const glossEl = dt.querySelector('.gloss');
+        const term = dt.firstChild ? dt.firstChild.textContent.trim().toLowerCase() : '';
+        const ddText = dd.textContent.trim().replace(/\s+/g, ' ');
+        const gloss = glossEl ? glossEl.textContent.trim() : '';
+        if (term) map[term] = { ddText, gloss };
+        if (row.dataset.term) map[row.dataset.term.toLowerCase()] = { ddText, gloss };
+      });
+      $$('.gl-term').forEach((el) => {
+        const raw = el.textContent.trim().toLowerCase();
+        const entry = map[aliases[raw] || raw] || map[raw];
+        if (!entry) return;
+        const tip = entry.ddText.length > 220 ? entry.ddText.slice(0, 218) + '…' : entry.ddText;
+        el.setAttribute('data-gloss', tip);
+        el.setAttribute('tabindex', '0');
+        el.title = entry.gloss + ' — ' + tip;
+      });
+    }
+
+    /* ── live data layer (opt-in: #beacon; probes the poetics browser) ── */
+    const beacon = document.getElementById('beacon');
+    if (beacon) {
+      const LIVE_HOST = window.location.protocol === 'file:' ? 'http://127.0.0.1:3466' : '';
+      const LIVE_TIMEOUT_MS = 1500;
+      const beaconText = beacon.querySelector('.beacon__text');
+      const tocLiveDt = document.getElementById('tocLive');
+
+      const getJSON = async (url) => {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), LIVE_TIMEOUT_MS);
+        try {
+          const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+          clearTimeout(timer);
+          return res.ok ? await res.json() : null;
+        } catch (e) {
+          clearTimeout(timer);
+          return null;
+        }
+      };
+      const setBeacon = (state, text) => {
+        beacon.setAttribute('data-state', state);
+        if (beaconText) beaconText.textContent = text;
+      };
+      const setAllLiveText = (state, label) => {
+        $$('[data-live-text]').forEach((el) => {
+          el.textContent = label;
+          const wrapper = el.closest('a');
+          if (wrapper && wrapper.matches('[data-run-id], [data-live-target]')) wrapper.setAttribute('data-live', state);
+        });
+      };
+
+      (async function hydrate() {
+        setBeacon('checking', 'checking');
+        setAllLiveText('checking', 'checking…');
+        const runsData = await getJSON(LIVE_HOST + '/api/runs');
+        const runs = runsData && Array.isArray(runsData.runs) ? runsData.runs : null;
+        if (runs === null) {
+          setBeacon('offline', 'offline · :3466');
+          if (tocLiveDt)
+            tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>offline</em>. Run <code>npm run poetics:browse</code>.';
+          setAllLiveText('offline', 'static');
+          return;
+        }
+        setBeacon('live', 'live · ' + runs.length + ' runs');
+        if (tocLiveDt) tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>live</em>, ' + runs.length + ' runs indexed.';
+        $$('[data-live-target="browser"]').forEach((card) => {
+          card.setAttribute('data-live', 'live');
+          const c = card.querySelector('[data-live-text]');
+          if (c) c.textContent = runs.length + ' runs';
+        });
+        const groups = $$('[data-run-id]').reduce((acc, c) => {
+          const id = c.getAttribute('data-run-id');
+          (acc[id] = acc[id] || []).push(c);
+          return acc;
+        }, {});
+        await Promise.all(
+          Object.keys(groups).map(async (id) => {
+            const itemsData =
+              id && id !== '*'
+                ? await getJSON(LIVE_HOST + '/api/items?runId=' + encodeURIComponent(id))
+                : await getJSON(LIVE_HOST + '/api/items');
+            const items = itemsData && Array.isArray(itemsData.items) ? itemsData.items : null;
+            groups[id].forEach((c) => {
+              c.setAttribute('data-live', items === null ? 'offline' : 'live');
+              const counter = c.querySelector('[data-live-text]');
+              if (counter) counter.textContent = items === null ? '—' : items.length + ' items';
+            });
+          }),
+        );
+      })();
+    }
+
+    /* ── grouped bar charts (opt-in: <svg class="chart" id="X"> + JSON data block) ──
+       Provide data per chart with:
+         <script type="application/json" class="techne-chart" data-target="X">
+           { "metrics": [{"label": "…"}], "arms": [{"key":"routine","values":[…],"denom":[…]}] }
+         <\/script>                                                                      */
+    function renderGroupedChart(svgEl, data) {
+      const W = 720,
+        H = 280,
+        padL = 130,
+        padR = 24,
+        padT = 12,
+        padB = 36;
+      const innerW = W - padL - padR,
+        innerH = H - padT - padB;
+      const groupH = innerH / data.metrics.length;
+      const barH = (groupH - 8) / data.arms.length;
+      const armColor = { routine: 'bar-routine', none: 'bar-none', 'peripeteia-only': 'bar-perip' };
+      let svg = `<line class="axis-line" x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" />`;
+      [0, 25, 50, 75, 100].forEach((v) => {
+        const x = padL + (v / 100) * innerW;
+        svg += `<line class="axis-tick" x1="${x}" y1="${padT}" x2="${x}" y2="${padT + innerH}" />`;
+        svg += `<text class="axis-lbl" x="${x}" y="${padT + innerH + 16}" text-anchor="middle">${v}</text>`;
+      });
+      data.metrics.forEach((metric, mi) => {
+        const groupTop = padT + mi * groupH;
+        svg += `<text class="metric-lbl" x="${padL - 12}" y="${groupTop + groupH / 2 + 4}" text-anchor="end">${metric.label}</text>`;
+        data.arms.forEach((arm, ai) => {
+          const v = arm.values[mi];
+          const denom = arm.denom ? arm.denom[mi] : null;
+          const pct = denom ? (v / denom) * 100 : v;
+          const w = Math.max(2, (pct / 100) * innerW);
+          const y = groupTop + 4 + ai * barH;
+          const cls = armColor[arm.key] || 'bar-routine';
+          const display = denom ? `${v}/${denom}` : `${v}`;
+          const delay = (mi * 0.06 + ai * 0.04).toFixed(2);
+          svg += `<g class="bar anim" style="animation-delay:${delay}s">`;
+          svg += `<rect class="bar-rect ${cls}" x="${padL}" y="${y}" width="${w}" height="${Math.max(8, barH - 3)}"></rect>`;
+          svg += `<text class="bar-val" x="${padL + w + 6}" y="${y + barH / 2 + 4}">${display}</text></g>`;
+        });
+      });
+      svgEl.innerHTML = svg;
+    }
+
+    const chartSpecs = $$('script.techne-chart[data-target]')
+      .map((s) => {
+        const el = document.getElementById(s.dataset.target);
+        let data = null;
+        try {
+          data = JSON.parse(s.textContent);
+        } catch (e) {
+          /* ignore */
+        }
+        return el && data ? { el, data } : null;
+      })
+      .filter(Boolean);
+    if (chartSpecs.length) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting || entry.target.dataset.rendered) return;
+            const spec = chartSpecs.find((s) => s.el === entry.target);
+            if (!spec) return;
+            entry.target.dataset.rendered = '1';
+            renderGroupedChart(spec.el, spec.data);
+          });
+        },
+        { threshold: 0.15 },
+      );
+      chartSpecs.forEach((s) => obs.observe(s.el));
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
+</body>
+</html>

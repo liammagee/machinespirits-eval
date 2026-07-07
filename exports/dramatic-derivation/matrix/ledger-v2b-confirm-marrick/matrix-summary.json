@@ -1,0 +1,368 @@
+{
+  "label": "ledger-v2b-confirm-marrick",
+  "spec": "config/drama-derivation/matrix-specs/ledger-v2b-confirm-marrick-resume2.yaml",
+  "startedAt": "2026-07-03T20:05:22.499Z",
+  "elapsedMs": 636987,
+  "arms": [
+    {
+      "label": "baseline-r6",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-v2b-confirm-marrick/baseline-r6",
+      "diagnosis": {
+        "verdict": "aporia",
+        "turnsPlayed": 15,
+        "firstForcedTurn": null,
+        "assertedGroundedTurn": null,
+        "releaseAdherence": {
+          "onCue": 4,
+          "total": 9
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.6,
+          "distinct": 3,
+          "switchRate": 0.571,
+          "superego": null
+        },
+        "corruption": {
+          "config": {
+            "seed": 29,
+            "rate": 0.35,
+            "graceTurns": 2,
+            "maxConcurrent": 3,
+            "startTurn": 1,
+            "mutateShare": 0.5,
+            "pool": "world"
+          },
+          "decayEvents": 7,
+          "repairs": {
+            "total": 5,
+            "byTutor": 5,
+            "byReadoption": 0
+          },
+          "meanRepairLatency": 2.2,
+          "unrepairedAtEnd": 2,
+          "degradedTurnIntegral": 18,
+          "dReversals": 1,
+          "mutations": {
+            "total": 3,
+            "retracted": 3,
+            "revised": 3,
+            "falseBeliefsAtEnd": 0
+          },
+          "fidelity": {
+            "final": 0.818,
+            "min": 0.636
+          },
+          "timeline": [
+            {
+              "premiseId": "m_caster",
+              "fact": [
+                "soleCasterAt",
+                "mintCrucible",
+                "verrell"
+              ],
+              "mode": "mutate",
+              "falseForm": [
+                "soleCasterAt",
+                "weirCrucible",
+                "verrell"
+              ],
+              "decayTurn": 4,
+              "retractTurn": 10,
+              "repairTurn": 5,
+              "via": "tutor"
+            },
+            {
+              "premiseId": "p_alloy",
+              "fact": [
+                "alloyOf",
+                "falseShilling",
+                "drossSilver"
+              ],
+              "mode": "delete",
+              "falseForm": null,
+              "decayTurn": 5,
+              "retractTurn": null,
+              "repairTurn": 6,
+              "via": "tutor"
+            },
+            {
+              "premiseId": "m_caster",
+              "fact": [
+                "soleCasterAt",
+                "mintCrucible",
+                "verrell"
+              ],
+              "mode": "mutate",
+              "falseForm": [
+                "soleCasterAt",
+                "mintCrucible",
+                "edony"
+              ],
+              "decayTurn": 7,
+              "retractTurn": 10,
+              "repairTurn": 8,
+              "via": "tutor"
+            },
+            {
+              "premiseId": "p_alloy",
+              "fact": [
+                "alloyOf",
+                "falseShilling",
+                "drossSilver"
+              ],
+              "mode": "delete",
+              "falseForm": null,
+              "decayTurn": 8,
+              "retractTurn": null,
+              "repairTurn": 9,
+              "via": "tutor"
+            },
+            {
+              "premiseId": "m_graver",
+              "fact": [
+                "soleHolderOf",
+                "broadGraver",
+                "verrell"
+              ],
+              "mode": "mutate",
+              "falseForm": [
+                "soleHolderOf",
+                "broadGraver",
+                "edony"
+              ],
+              "decayTurn": 8,
+              "retractTurn": 15,
+              "repairTurn": 15,
+              "via": "tutor"
+            },
+            {
+              "premiseId": "p_alloy",
+              "fact": [
+                "alloyOf",
+                "falseShilling",
+                "drossSilver"
+              ],
+              "mode": "delete",
+              "falseForm": null,
+              "decayTurn": 11,
+              "retractTurn": null,
+              "repairTurn": null,
+              "via": null
+            },
+            {
+              "premiseId": "p_crucible",
+              "fact": [
+                "meltedAt",
+                "drossSilver",
+                "weirCrucible"
+              ],
+              "mode": "delete",
+              "falseForm": null,
+              "decayTurn": 12,
+              "retractTurn": null,
+              "repairTurn": null,
+              "via": null
+            }
+          ]
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0
+        }
+      }
+    },
+    {
+      "label": "ledger-v1-r6",
+      "exitCode": 0,
+      "ok": true,
+      "dir": "exports/dramatic-derivation/matrix/ledger-v2b-confirm-marrick/ledger-v1-r6",
+      "diagnosis": {
+        "verdict": "aporia",
+        "turnsPlayed": 15,
+        "firstForcedTurn": null,
+        "assertedGroundedTurn": null,
+        "releaseAdherence": {
+          "onCue": 4,
+          "total": 9
+        },
+        "learningSlope": {
+          "delta": 2,
+          "turns": 15,
+          "ratePerTurn": 0.133
+        },
+        "tutorFigures": {
+          "topFigure": "erotema",
+          "topShare": 0.533,
+          "distinct": 4,
+          "switchRate": 0.643,
+          "superego": null
+        },
+        "corruption": {
+          "config": {
+            "seed": 29,
+            "rate": 0.35,
+            "graceTurns": 2,
+            "maxConcurrent": 3,
+            "startTurn": 1,
+            "mutateShare": 0.5,
+            "pool": "world"
+          },
+          "decayEvents": 8,
+          "repairs": {
+            "total": 5,
+            "byTutor": 5,
+            "byReadoption": 0
+          },
+          "meanRepairLatency": 1.2,
+          "unrepairedAtEnd": 3,
+          "degradedTurnIntegral": 12,
+          "dReversals": 2,
+          "mutations": {
+            "total": 2,
+            "retracted": 2,
+            "revised": 2,
+            "falseBeliefsAtEnd": 0
+          },
+          "fidelity": {
+            "final": 0.727,
+            "min": 0.667
+          },
+          "timeline": [
+            {
+              "premiseId": "m_caster",
+              "fact": [
+                "soleCasterAt",
+                "mintCrucible",
+                "verrell"
+              ],
+              "mode": "mutate",
+              "falseForm": [
+                "soleCasterAt",
+                "weirCrucible",
+                "verrell"
+              ],
+              "decayTurn": 4,
+              "retractTurn": 7,
+              "repairTurn": 5,
+              "via": "tutor"
+            },
+            {
+              "premiseId": "p_alloy",
+              "fact": [
+                "alloyOf",
+                "falseShilling",
+                "drossSilver"
+              ],
+              "mode": "delete",
+              "falseForm": null,
+              "decayTurn": 5,
+              "retractTurn": null,
+              "repairTurn": 6,
+              "via": "tutor"
+            },
+            {
+              "premiseId": "m_caster",
+              "fact": [
+                "soleCasterAt",
+                "mintCrucible",
+                "verrell"
+              ],
+              "mode": "mutate",
+              "falseForm": [
+                "soleCasterAt",
+                "weirCrucible",
+                "verrell"
+              ],
+              "decayTurn": 7,
+              "retractTurn": 10,
+              "repairTurn": 8,
+              "via": "tutor"
+            },
+            {
+              "premiseId": "p_alloy",
+              "fact": [
+                "alloyOf",
+                "falseShilling",
+                "drossSilver"
+              ],
+              "mode": "delete",
+              "falseForm": null,
+              "decayTurn": 8,
+              "retractTurn": null,
+              "repairTurn": 10,
+              "via": "tutor"
+            },
+            {
+              "premiseId": "p_crucible",
+              "fact": [
+                "meltedAt",
+                "drossSilver",
+                "weirCrucible"
+              ],
+              "mode": "delete",
+              "falseForm": null,
+              "decayTurn": 8,
+              "retractTurn": null,
+              "repairTurn": 9,
+              "via": "tutor"
+            },
+            {
+              "premiseId": "p_crucible",
+              "fact": [
+                "meltedAt",
+                "drossSilver",
+                "weirCrucible"
+              ],
+              "mode": "delete",
+              "falseForm": null,
+              "decayTurn": 12,
+              "retractTurn": null,
+              "repairTurn": null,
+              "via": null
+            },
+            {
+              "premiseId": "p_alloy",
+              "fact": [
+                "alloyOf",
+                "falseShilling",
+                "drossSilver"
+              ],
+              "mode": "delete",
+              "falseForm": null,
+              "decayTurn": 13,
+              "retractTurn": null,
+              "repairTurn": null,
+              "via": null
+            },
+            {
+              "premiseId": "m_caster",
+              "fact": [
+                "soleCasterAt",
+                "mintCrucible",
+                "verrell"
+              ],
+              "mode": "delete",
+              "falseForm": null,
+              "decayTurn": 14,
+              "retractTurn": null,
+              "repairTurn": null,
+              "via": null
+            }
+          ]
+        },
+        "usage": {
+          "calls": 40,
+          "costUSD": 0
+        }
+      }
+    }
+  ]
+}

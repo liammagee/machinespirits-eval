@@ -1,0 +1,30 @@
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Constructive throughout: the learner resists with reasons rather than deflecting (T2 'Isn't that the same thing?'; T4 'that still doesn't move me off Reyner yet'), self-explains, and at T12 generates a prediction of the evidence still needed ('a mark on the arch from where the props bedded'). Challenges the tutor's framing in T2-T4. Held below 5 because the inquiry stays tutor-led — each step is a tutor-set 'smaller task' — and the learner introduces no novel examples or applications beyond the case at hand."
+    },
+    "learner_authenticity": {
+      "score": 4,
+      "reasoning": "Resistance is plausible and persona-consistent (a clerk reluctant to let go of Reyner). The 'Wait —' realizations (T3, T6, T21) and reactions to the tutor as an interlocutor ('which I didn't expect,' T6; 'you took the order I named and didn't just flatten it,' T16) read as genuine. Kept at 4 because the phrasing is uniformly polished and lucid — closer to an idealized reasoner cleanly partitioning lines than a fumbling, messier real student."
+    },
+    "revision_signals": {
+      "score": 5,
+      "reasoning": "Explicit, restructuring revisions, not additive: T9 'the bad-work line in my draft is finished'; T21 'I kept wanting a witness... but the rule doesn't ask for that extra step'; T22 'I'll amend the causal line.' The learner moves from conflating liability with causation (T1-T2) to holding them apart, integrating each new file into a reworked understanding."
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "Sustains two parallel lines (liability vs causation) from T7 onward and builds the causal chain cumulatively (green bed → crowsfoot → Caudle timber → Oswin). T21 explicitly lines up three earlier notes ('green bed... crowsfoot... toll book'), and T22 recapitulates the full arc in order — clear evidence of a framework developing across turns rather than turn-isolated responses."
+    },
+    "metacognitive_awareness": {
+      "score": 5,
+      "reasoning": "Continuously monitors the boundary between what can be asserted and what must stay blank (T7, T11, T14-19: 'I can write X / Y stays blank'), strategically withholds the name pending an explicit tie (T20), and reflects on his own mistaken expectation at T21 ('I kept wanting a witness... but the rule doesn't ask for that')."
+    }
+  },
+  "overall_score": 88,
+  "summary": "Strong public learner conduct in a resistant persona. The learner resists with articulated reasons, then revises explicitly and cumulatively — separating liability (Reyner's bond) from causation and tracing the causal chain to Oswin while consistently policing what the evidence licenses. Revision, cumulative progression, and metacognitive monitoring are all clearly at the top of the scale; engagement and authenticity are high but capped by a tutor-led inquiry and uniformly polished phrasing.",
+  "caveats": [
+    "Engagement is bounded by the tutor controlling the sequence (each turn a 'smaller task'); the learner reasons well within that frame but rarely redirects it.",
+    "Scored on public discourse only; the separately reported proof gate (forced/asserted gap: 2) is not reflected here, and no formalism leaks were present to penalize."
+  ]
+}

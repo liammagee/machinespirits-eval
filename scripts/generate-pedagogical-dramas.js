@@ -52,6 +52,7 @@
  * quota-interrupted run resumes by re-running.
  *
  * Usage:
+ *   node scripts/generate-pedagogical-dramas.js --help           # print CLI reference, no validation/work
  *   node scripts/generate-pedagogical-dramas.js --dry-run        # plan only, no LLM, no writes
  *   node scripts/generate-pedagogical-dramas.js --mock           # full pipeline, stub LLM, *-mock dirs (free)
  *   node scripts/generate-pedagogical-dramas.js                  # REAL claude-code CLI (attended, paid quota)
@@ -63,7 +64,11 @@
  *        --effort low|medium|high|xhigh|max (claude CLI reasoning tier; claude
  *          backend only — codex uses CODEX_REASONING_EFFORT, agy has no effort knob)
  *        --out-dir / --key · --delib-dir / --transcripts-dir / --writing-pad-dir
- *        --generator claude|codex|gemini · --role-map "tutor=codex,learner=claude" (mixed)
+ *        --generator claude|codex|gemini|api · --api-model <OpenRouter alias/slug>
+ *        --role-map "tutor=codex,learner=claude" (mixed)
+ *        --role-map "tutor_ego=api:glm5_2,tutor_superego=codex,learner=codex"
+ *        --opening-speaker learner|tutor|director (override spec/director speaker order)
+ *        --control-ending default|hold (control arms only; hold suppresses clean breakthrough endings)
  *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reconsider|reframe
  *        --director-revisit-anchor latest|opening|misframing-candidate
  *        --director-variation-key <repeat-or-batch-id>
@@ -93,14 +98,26 @@ const PEDAGOGICAL_APPROACHES_DB = path.join(CAL_DIR, 'pedagogical-approaches.yam
 const DIALOGUE_APPROACHES_DB = path.join(CAL_DIR, 'dialogue-approaches.yaml');
 const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
 const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
-const TUTOR_ADAPTATION_POLICIES = new Set(['none', 'routine', 'uptake', 'peripeteia', 'uptake+peripeteia']);
+const TUTOR_ADAPTATION_POLICIES = new Set([
+  'none',
+  'routine',
+  'uptake',
+  'peripeteia',
+  'uptake+peripeteia',
+  'socratic_discovery',
+  'reveal_secret',
+  'withhold_secret',
+]);
+const AFFECTIVE_ADAPTATION_POLICIES = new Set(['none', 'procedural_sensitive']);
+const OPENING_SPEAKERS = new Set(['learner', 'tutor', 'director']);
+const CONTROL_ENDING_POLICIES = new Set(['default', 'hold']);
 // claude CLI reasoning tiers (`claude --effort <level>`). codex tops out at xhigh;
 // the claude CLI adds a `max` tier above it. Used by the claude backend only —
 // agy exposes no effort flag, and codex reads CODEX_REASONING_EFFORT (env).
 const CLAUDE_EFFORT_LEVELS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 const PAIRED_ADAPTATION_ARMS = {
   routine: { revisitPolicy: 'none', tutorAdaptationPolicy: 'routine' },
-  none: { revisitPolicy: 'none', tutorAdaptationPolicy: 'none' },
+  none: { revisitPolicy: 'none', tutorAdaptationPolicy: 'none', secretTutorAdaptationPolicy: 'withhold_secret' },
   'reframe-only': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'none' },
   'tutor-uptake-only': { revisitPolicy: 'none', tutorAdaptationPolicy: 'uptake' },
   'reframe+tutor-uptake': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake' },
@@ -108,16 +125,100 @@ const PAIRED_ADAPTATION_ARMS = {
   'reframe+peripeteia': { revisitPolicy: 'reframe', tutorAdaptationPolicy: 'uptake+peripeteia' },
   // Oedipus guided-discovery arms (require a scenario `secret`; behaviour is driven
   // by the arm-aware buildSecretContext in the engine, not the reframe/peripeteia
-  // machinery). socratic = meter premises so the learner infers S; reveal = state S
-  // outright (ceiling); the `none` arm above doubles as the withhold control.
+  // machinery). For secret-bearing scenarios, the `none` arm is upgraded at
+  // runtime to withhold_secret: the tutor receives a redacted control context
+  // plus forbidden clue channels, not S/premises. socratic = meter premises so
+  // the learner infers S; reveal = state S outright (ceiling).
   socratic: { revisitPolicy: 'none', tutorAdaptationPolicy: 'socratic_discovery' },
   reveal: { revisitPolicy: 'none', tutorAdaptationPolicy: 'reveal_secret' },
 };
 
 // ── args ─────────────────────────────────────────────────────────────────────
 
+function usage() {
+  return `Usage:
+  node scripts/generate-pedagogical-dramas.js [options]
+
+Common examples:
+  node scripts/generate-pedagogical-dramas.js --dry-run
+  node scripts/generate-pedagogical-dramas.js --mock --first-lesson
+  node scripts/generate-pedagogical-dramas.js --generator codex --first-lesson --trace-calls
+  node scripts/generate-pedagogical-dramas.js --generator api --api-model glm5_2 --first-lesson
+  node scripts/generate-pedagogical-dramas.js \\
+    --generator codex \\
+    --role-map "director=codex,tutor_ego=api:glm5_2,tutor_superego=codex,learner=codex"
+
+Selection:
+  --spec FILE                         Drama YAML spec
+  --first-lesson                      Select earliest AI Foundations lesson in the spec
+  --only ID[,ID...]                   Generate selected drama IDs or T IDs
+  --seed N                            T-id shuffle seed (default: 20260520)
+  --tid-start N                       Offset generated T IDs
+  --max-turns N                       Tutor turns per drama (default: 6)
+
+Backends and routing:
+  --generator claude|codex|gemini|api Default backend for every role
+  --model ALIAS                       Claude CLI model alias (default: opus)
+  --effort low|medium|high|xhigh|max  Claude CLI reasoning effort
+  --api-model ALIAS_OR_SLUG           OpenRouter alias/slug for API calls
+  --role-map MAP                      Route roles independently. Keys: director, tutor, learner,
+                                      tutor_ego, tutor_superego, learner_ego, learner_superego, default.
+                                      Values: claude, codex, gemini, api, api:<alias-or-slug>,
+                                      openrouter:<alias-or-slug>.
+
+Director and adaptation:
+  --director-mode off|scene
+  --director-revisit-cue
+  --director-revisit-policy none|anchor|revoice|reconsider|reframe
+  --director-revisit-anchor latest|opening|misframing-candidate
+  --director-variation-key KEY
+  --director-plan-cache DIR           Reuse cached director plans by content hash (skips the ~90-150s director call on rerun)
+  --reuse-director-plan FILE          Force a saved raw director response for the drama (single-drama use)
+  --opening-speaker learner|tutor|director
+  --affective-adaptation-policy none|procedural_sensitive
+  --control-ending default|hold
+
+Paired runs:
+  --paired-continuation-policies none,revoice,reconsider,reframe
+  --paired-adaptation-arms routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia,socratic,reveal
+  --paired-prefix-trace FILE          Reuse a saved trace as the fixed prefix through tutor turn 2
+  --paired-prefix-source-branch NAME  Label for the source branch (default: none)
+
+Output paths:
+  --out-dir DIR
+  --delib-dir DIR
+  --transcripts-dir DIR
+  --key FILE
+  --writing-pad-dir DIR
+
+Operational flags:
+  -h, --help                          Print this help and exit
+  --dry-run                           Print generation plan only; no writes, no LLM calls
+  --mock                              Use deterministic stub LLMs
+  --force                             Overwrite selected/generated outputs
+  --reclean                           Reclean existing transcripts without generation
+  --trace-calls                       Record per-call telemetry
+  --call-telemetry-json FILE
+  --call-telemetry-csv FILE
+  --role-max-tokens SPEC              Per-role output budgets, e.g. "tutor_superego=700,learner_superego=500" or "preset" (off by default; API hard-cap, CLI terse-directive)
+  --drama-compact-prompts             Use compact drama tutor prompts (~2k vs ~20k chars); off by default
+  --drama-fidelity MODE               compact (DEFAULT: compact prompts) | full (original full recognition prompts) | public-only (ego-only, cheap screen)
+  --context-mode MODE                 last-six (default) | ledger-recent (state ledger + recent turns) | full-public (full transcript, diagnostic)
+  --recent-turns N                    Verbatim recent-turn window under ledger-recent/full-public (default 4)
+  --phatic-rate P                     0..1 (default 0): on low-stakes turns, probability of a reflexive ego-only turn (skips superego), for realistic backchannels
+  --claude-persistent-workers         Reuse persistent Claude worker processes
+  --generation-concurrency N          Independent dramas to generate concurrently (default: 1)
+
+Environment:
+  CODEX_REASONING_EFFORT              Codex reasoning effort (default: xhigh)
+  CODEX_MODEL                         Codex model override
+  GEN_DRAMAS_TRACE_CALLS=1            Enable call telemetry by default
+`;
+}
+
 function parseArgs(argv) {
   const a = {
+    help: false,
     seed: 20260520,
     maxTurns: 6,
     model: 'opus',
@@ -133,6 +234,7 @@ function parseArgs(argv) {
     force: false,
     reclean: false,
     only: null,
+    firstLesson: false,
     outDir: null,
     delibDir: null,
     transcriptsDir: null,
@@ -143,16 +245,42 @@ function parseArgs(argv) {
     directorRevisitPolicy: 'none',
     directorRevisitAnchor: 'latest',
     directorVariationKey: null,
+    openingSpeaker: null,
     pairedContinuationPolicies: null,
     pairedAdaptationArms: null,
+    pairedPrefixTrace: null,
+    pairedPrefixSourceBranch: 'none',
+    affectiveAdaptationPolicy: null,
+    controlEndingPolicy: 'default',
     generationConcurrency: 1,
+    claudePersistentWorkers: false,
+    traceCalls: process.env.GEN_DRAMAS_TRACE_CALLS === '1',
+    callTelemetryJsonPath: null,
+    callTelemetryCsvPath: null,
+    directorPlanCache: null,
+    reuseDirectorPlan: null,
+    roleMaxTokens: null,
+    dramaCompactPrompts: false,
+    // Default drama fidelity is `compact` (compact tutor prompts + full
+    // deliberation) as of the n=6 critic-scored comparison showing composite
+    // parity with `full` at ~half the input. Pass `--drama-fidelity full` to
+    // restore the original full-recognition-prompt behaviour.
+    dramaFidelity: 'compact',
+    contextMode: 'last-six',
+    recentTurns: 4,
+    phaticRate: 0,
   };
+  if (argv.some((token) => token === '--help' || token === '-h')) {
+    a.help = true;
+    return a;
+  }
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
     if (t === '--mock') a.mock = true;
     else if (t === '--dry-run') a.dryRun = true;
     else if (t === '--force') a.force = true;
     else if (t === '--reclean') a.reclean = true;
+    else if (t === '--first-lesson') a.firstLesson = true;
     else if (t === '--seed') a.seed = parseInt(argv[++i], 10);
     else if (t === '--max-turns') a.maxTurns = parseInt(argv[++i], 10);
     else if (t === '--model') a.model = argv[++i];
@@ -170,11 +298,30 @@ function parseArgs(argv) {
     else if (t === '--key') a.keyPath = path.resolve(argv[++i]);
     else if (t === '--writing-pad-dir') a.writingPadDir = path.resolve(argv[++i]);
     else if (t === '--role-map') a.roleMap = parseRoleMap(argv[++i]);
+    else if (t === '--claude-persistent-workers') a.claudePersistentWorkers = true;
+    else if (t === '--trace-calls') a.traceCalls = true;
     else if (t === '--director-mode') a.directorMode = argv[++i];
     else if (t === '--director-revisit-cue') a.directorRevisitPolicy = 'anchor';
     else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
     else if (t === '--director-revisit-anchor') a.directorRevisitAnchor = argv[++i];
     else if (t === '--director-variation-key') a.directorVariationKey = argv[++i];
+    else if (t === '--director-plan-cache') a.directorPlanCache = path.resolve(argv[++i]);
+    else if (t === '--reuse-director-plan') a.reuseDirectorPlan = path.resolve(argv[++i]);
+    else if (t === '--role-max-tokens') a.roleMaxTokens = parseRoleMaxTokens(argv[++i]);
+    else if (t === '--drama-compact-prompts') a.dramaCompactPrompts = true;
+    else if (t === '--drama-fidelity') a.dramaFidelity = String(argv[++i] || '').toLowerCase();
+    else if (t === '--context-mode') a.contextMode = String(argv[++i] || '').toLowerCase();
+    else if (t === '--recent-turns') a.recentTurns = parseInt(argv[++i], 10);
+    else if (t === '--phatic-rate') a.phaticRate = Number(argv[++i]);
+    else if (t === '--opening-speaker') a.openingSpeaker = String(argv[++i] || '').toLowerCase();
+    else if (t === '--control-ending') a.controlEndingPolicy = argv[++i];
+    else if (t === '--call-telemetry-json') {
+      a.callTelemetryJsonPath = path.resolve(argv[++i]);
+      a.traceCalls = true;
+    } else if (t === '--call-telemetry-csv') {
+      a.callTelemetryCsvPath = path.resolve(argv[++i]);
+      a.traceCalls = true;
+    } else if (t === '--affective-adaptation-policy') a.affectiveAdaptationPolicy = argv[++i];
     else if (t === '--paired-continuation-policies') {
       a.pairedContinuationPolicies = String(argv[++i] || '')
         .split(',')
@@ -185,9 +332,14 @@ function parseArgs(argv) {
         .split(',')
         .map((arm) => arm.trim())
         .filter(Boolean);
+    } else if (t === '--paired-prefix-trace') {
+      a.pairedPrefixTrace = path.resolve(argv[++i]);
+    } else if (t === '--paired-prefix-source-branch') {
+      a.pairedPrefixSourceBranch = String(argv[++i] || '').trim() || 'none';
     } else if (t === '--generation-concurrency') a.generationConcurrency = parseInt(argv[++i], 10);
-    else throw new Error(`unknown arg: ${t}`);
+    else throw new Error(`unknown arg: ${t}\n\n${usage()}`);
   }
+  if (a.help) return a;
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
   if (!Number.isInteger(a.maxTurns) || a.maxTurns < 1) throw new Error('--max-turns must be a positive integer');
   if (!['claude', 'codex', 'gemini', 'api'].includes(a.generator))
@@ -195,12 +347,40 @@ function parseArgs(argv) {
   if (a.effort && !CLAUDE_EFFORT_LEVELS.has(a.effort))
     throw new Error(`--effort must be low|medium|high|xhigh|max (got ${a.effort})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
+  if (a.only && a.firstLesson) throw new Error('use either --only or --first-lesson, not both');
   if (!Number.isInteger(a.generationConcurrency) || a.generationConcurrency < 1) {
     throw new Error('--generation-concurrency must be a positive integer');
+  }
+  if (a.affectiveAdaptationPolicy && !AFFECTIVE_ADAPTATION_POLICIES.has(a.affectiveAdaptationPolicy)) {
+    throw new Error(
+      `--affective-adaptation-policy must be ${[...AFFECTIVE_ADAPTATION_POLICIES].join('|')} (got ${a.affectiveAdaptationPolicy})`,
+    );
+  }
+  if (!CONTROL_ENDING_POLICIES.has(a.controlEndingPolicy)) {
+    throw new Error('--control-ending must be default|hold');
+  }
+  if (!['full', 'compact', 'public-only'].includes(a.dramaFidelity)) {
+    throw new Error(`--drama-fidelity must be full|compact|public-only (got ${a.dramaFidelity})`);
+  }
+  // compact + public-only run on the compact drama prompts; full uses the full
+  // recognition prompts. Coupling here keeps fidelity the single knob.
+  // Any fidelity other than `full` uses the compact tutor prompts (compact is the default).
+  if (a.dramaFidelity !== 'full') a.dramaCompactPrompts = true;
+  if (!['last-six', 'ledger-recent', 'full-public'].includes(a.contextMode)) {
+    throw new Error(`--context-mode must be last-six|ledger-recent|full-public (got ${a.contextMode})`);
+  }
+  if (!Number.isInteger(a.recentTurns) || a.recentTurns < 1) {
+    throw new Error('--recent-turns must be a positive integer');
+  }
+  if (!Number.isFinite(a.phaticRate) || a.phaticRate < 0 || a.phaticRate > 1) {
+    throw new Error('--phatic-rate must be a number in [0,1]');
   }
   if (a.pedagogyDb && !fs.existsSync(a.pedagogyDb)) throw new Error(`--pedagogy-db not found: ${a.pedagogyDb}`);
   if (a.dialogueDb && !fs.existsSync(a.dialogueDb)) throw new Error(`--dialogue-db not found: ${a.dialogueDb}`);
   if (!['off', 'scene'].includes(a.directorMode)) throw new Error('--director-mode must be off|scene');
+  if (a.openingSpeaker && !OPENING_SPEAKERS.has(a.openingSpeaker)) {
+    throw new Error('--opening-speaker must be learner|tutor|director');
+  }
   if (!DIRECTOR_REVISIT_POLICIES.has(a.directorRevisitPolicy))
     throw new Error('--director-revisit-policy must be none|anchor|revoice|reconsider|reframe');
   if (!DIRECTOR_REVISIT_ANCHORS.has(a.directorRevisitAnchor))
@@ -214,13 +394,17 @@ function parseArgs(argv) {
       }
     }
   }
+  if (a.pairedPrefixTrace && !fs.existsSync(a.pairedPrefixTrace)) {
+    throw new Error(`--paired-prefix-trace not found: ${a.pairedPrefixTrace}`);
+  }
+  if (a.pairedPrefixTrace && !a.pairedAdaptationArms && !a.pairedContinuationPolicies) {
+    throw new Error('--paired-prefix-trace requires --paired-adaptation-arms or --paired-continuation-policies');
+  }
   if (a.pairedAdaptationArms) {
     if (!a.pairedAdaptationArms.length) throw new Error('--paired-adaptation-arms needs at least one arm');
     for (const arm of a.pairedAdaptationArms) {
       if (!PAIRED_ADAPTATION_ARMS[arm]) {
-        throw new Error(
-          '--paired-adaptation-arms must use routine,none,reframe-only,tutor-uptake-only,reframe+tutor-uptake,peripeteia-only,reframe+peripeteia,socratic,reveal',
-        );
+        throw new Error(`--paired-adaptation-arms must use ${Object.keys(PAIRED_ADAPTATION_ARMS).join(',')}`);
       }
     }
   }
@@ -253,9 +437,13 @@ function parseArgs(argv) {
   a.transcriptsDir = a.transcriptsDir || path.join(CAL_DIR, `phase2-transcripts-${base}${suffix}`);
   a.keyPath = a.keyPath || path.join(CAL_DIR, `phase2-key-${base}${suffix}.yaml`);
   a.writingPadDir = a.writingPadDir || path.join(a.delibDir, '.writing-pad');
+  if (a.traceCalls) {
+    a.callTelemetryJsonPath = a.callTelemetryJsonPath || path.join(a.delibDir, 'call-telemetry.json');
+    a.callTelemetryCsvPath = a.callTelemetryCsvPath || path.join(a.delibDir, 'call-telemetry.csv');
+  }
   // --effort drives the claude backend only. Warn (don't throw) if it can't reach
   // claude: a pure codex/gemini run, or a --role-map that routes no role to claude.
-  const claudeReachable = a.generator === 'claude' || (a.roleMap && Object.values(a.roleMap).includes('claude'));
+  const claudeReachable = a.generator === 'claude' || roleMapUsesBackend(a.roleMap, 'claude');
   if (a.effort && !claudeReachable) {
     console.warn(
       `[warn] --effort ${a.effort} only affects the claude backend; generator=${a.generator} ignores it ` +
@@ -444,16 +632,43 @@ function formatPublicTurnText(role, text) {
   return asides ? `${asides}\n\n${directSpeech}` : directSpeech;
 }
 
+function formatConsolidatedStageText(texts) {
+  const clean = texts
+    .map((text) =>
+      String(text || '')
+        .replace(/[[\]]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim(),
+    )
+    .filter(Boolean)
+    .map((text) => (/[.?!]$/u.test(text) ? text : `${text}.`))
+    .join(' ');
+  return clean ? `[${clean}]` : '';
+}
+
 function renderTranscript(turns, removedSink) {
-  return (
-    turns
-      .map((t) => {
-        const { text, removed } = stripStageDirections(neutralize(t.text));
-        if (removedSink && removed.length) removed.forEach((r) => removedSink.push({ role: t.role, note: r }));
-        return `${t.role}: ${formatPublicTurnText(t.role, text)}`;
-      })
-      .join('\n\n') + '\n'
-  );
+  const blocks = [];
+  let pendingStageTexts = [];
+  const flushStage = () => {
+    if (!pendingStageTexts.length) return;
+    const stageText = formatConsolidatedStageText(pendingStageTexts);
+    if (stageText) blocks.push(`STAGE: ${stageText}`);
+    pendingStageTexts = [];
+  };
+
+  for (const t of turns) {
+    const role = String(t.role || '').toUpperCase();
+    const { text, removed } = stripStageDirections(neutralize(t.text));
+    if (removedSink && removed.length) removed.forEach((r) => removedSink.push({ role, note: r }));
+    if (role === 'STAGE') {
+      pendingStageTexts.push(text);
+      continue;
+    }
+    flushStage();
+    blocks.push(`${role}: ${formatPublicTurnText(role, text)}`);
+  }
+  flushStage();
+  return `${blocks.join('\n\n')}\n`;
 }
 
 function publicReaderContextText(plan) {
@@ -620,19 +835,29 @@ function revoiceMatchStats(anchor, learnerText) {
   };
 }
 
-function revoiceComplianceFailures(turns) {
+function requestedReframeStageTurnNumbers(traceTurns = []) {
+  return new Set(
+    (traceTurns || [])
+      .filter((turn) => turn?.phase === 'director' && turn?.directorCue?.requestedRevisitPolicy === 'reframe')
+      .map((turn, idx) => turn.turnNumber ?? idx + 1),
+  );
+}
+
+function revoiceComplianceFailures(turns, { ignoredStageTurnNumbers = new Set() } = {}) {
   const failures = [];
   for (let i = 0; i < turns.length; i++) {
     const cue = turns[i];
     if (cue.role !== 'STAGE' || !isRevoiceOrReconsiderCueText(cue.text)) {
       continue;
     }
+    const stageTurnNumber = cue.turnNumber ?? i + 1;
+    if (ignoredStageTurnNumbers.has(stageTurnNumber)) continue;
     const anchor = extractRevisitAnchor(cue.text);
     const learner = turns.slice(i + 1).find((turn) => turn.role !== 'STAGE');
     const stats = revoiceMatchStats(anchor, learner?.role === 'LEARNER' ? learner.text : '');
     if (anchor && learner?.role === 'LEARNER' && stats.compliant) continue;
     failures.push({
-      stage_turn_number: cue.turnNumber ?? i + 1,
+      stage_turn_number: stageTurnNumber,
       learner_turn_number: learner?.turnNumber ?? null,
       reason: !anchor
         ? 'missing_anchor'
@@ -661,6 +886,7 @@ function namesEarlierFramingProblem(text) {
     /\b(?:the\s+)?mistake\s+(?:was|is)\s+that\b/i,
     /\b(?:that|it)\s+(?:was|put|made)\b[\s\S]{0,90}\b(?:too\s+\w+|mood first|sound like|ahead|early)\b/i,
     /\bI\s+(?:was still|was putting|was making|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again|into|mean)\b/i,
+    /\bI\s+was\s+treating\b[\s\S]{0,120}\bas\b[\s\S]{0,120}\b(?:old\s+check|that\s+was\s+the\s+pressure|the\s+pressure)\b/i,
     /\bI\s+(?:said|treated|read)\b[\s\S]{0,90}\bas\s+if\b/i,
     /\b(?:that|this|it|my old framing|the old read|that old wording|old wording|that way of saying it)\b[\s\S]{0,90}\b(?:hid|hides|hiding|made it sound|makes it sound)\b/i,
     /\b(?:that|this|it|my old framing|the old read|that old wording|old wording|that way of saying it)\b[\s\S]{0,90}\b(?:only going by|only counting|not asking)\b/i,
@@ -776,6 +1002,8 @@ function replacesEarlierFraming(text) {
     /\bshould\s+(?:maybe\s+)?be\s+(?:marked|read|treated)\s+first\s+as\b/i,
     /\b(?:question|test)\s+is\s+not\b[\s\S]{0,120}\bbut\s+(?:whether|if)\b/i,
     /\bnow\s+the\s+question\s+is\s+whether\b/i,
+    /\bnow\s+the\s+(?:check|test|standard)\s+is\s+(?:whether|if|to|that|where|how|what)\b/i,
+    /\bnow\s+the\s+(?:check|test|standard)\s+is\s*:/i,
     /\b(?:breaks?|interrupts?)\s+the\s+simple\s+story\b/i,
     /\bwrite\s+this\s+as\b/i,
     /\b(?:result|claim|summary|importance)\b[\s\S]{0,90}\bdepends on\b/i,
@@ -887,8 +1115,14 @@ function hasBlockingQualityWarnings(qualityWarnings = []) {
   return qualityWarnings.some((warning) => warning.severity !== 'info');
 }
 
+function keyCurriculumBindingForDrama(d) {
+  return d.curriculum_binding ? JSON.parse(JSON.stringify(d.curriculum_binding)) : null;
+}
+
 function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
   const blocked = hasBlockingQualityWarnings(qualityWarnings);
+  const worldAdaptation = worldAdaptationBindingForDrama(d);
+  const rhetoricalDramaticPlan = rhetoricalDramaticPlanBindingForDrama(d);
   return {
     drama_id: d.id,
     discipline: d.discipline,
@@ -905,6 +1139,9 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     intended_tutor_character: d.intended_tutor_character,
     intended_lean: d.intended_lean,
     dramatic_shape: d.dramatic_shape,
+    curriculum_binding: keyCurriculumBindingForDrama(d),
+    world_adaptation: worldAdaptation,
+    rhetorical_dramatic_plan: rhetoricalDramaticPlan,
     evaluation_role: d.evaluation_role || null,
     baseline_control_class: d.baseline_control_class || null,
     organic_reversal_risk: d.organic_reversal_risk || null,
@@ -912,14 +1149,24 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     n_tutor_turns: nTutor,
     n_learner_turns: nLearner,
     director_mode: d._directorMode || null,
+    opening_speaker_override: d._openingSpeakerOverride || null,
     director_variation_key: d._directorVariationKey || null,
     director_revisit_cue: Boolean(d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none'),
     director_revisit_policy: d._directorRevisitPolicy || 'none',
     director_revisit_anchor:
       d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none' ? d._directorRevisitAnchor || 'latest' : null,
     tutor_adaptation_policy: d._tutorAdaptationPolicy || d._directorPlan?.tutor_adaptation_policy || 'none',
+    control_ending_policy: d._controlEndingPolicy || d._directorPlan?.control_ending_policy || 'default',
+    control_ending_applied: Boolean(d._directorPlan?.control_ending_applied),
+    affective_adaptation_policy:
+      d._affectiveAdaptationPolicy ||
+      d.affective_adaptation_policy ||
+      d._directorPlan?.affective_adaptation_policy ||
+      'none',
+    curriculum_script_notes: curriculumScriptNotesForDrama(d, d._directorPlan || null),
     opening_speaker: d._directorPlan?.opening_speaker || null,
     ending_speaker: d._directorPlan?.ending_speaker || null,
+    director_plan_cache: d._directorPlan?.director_plan_cache || 'off',
     quality_status: blocked ? 'review_before_scoring' : 'ok',
     quality_warnings: qualityWarnings,
   };
@@ -1150,7 +1397,10 @@ function qualityWarningsFor({
       recommended_action: 'regenerate_or_exclude_before_scoring',
     });
   }
-  const revoiceFailures = revoiceComplianceFailures(turns);
+  const downgradedReframes = reframeDowngradeFailures(traceTurns, turns);
+  const revoiceFailures = revoiceComplianceFailures(turns, {
+    ignoredStageTurnNumbers: requestedReframeStageTurnNumbers(traceTurns),
+  });
   if (revoiceFailures.length) {
     warnings.push({
       code: 'revoice_cue_not_revoiced',
@@ -1172,7 +1422,6 @@ function qualityWarningsFor({
       recommended_action: 'regenerate_or_exclude_before_scoring',
     });
   }
-  const downgradedReframes = reframeDowngradeFailures(traceTurns, turns);
   if (downgradedReframes.length) {
     warnings.push({
       code: 'reframe_cue_downgraded',
@@ -1286,14 +1535,45 @@ function buildCallProvenance({
       user: sha256Short(userPrompt),
       combined: sha256Short(`${systemPrompt}\n\n---\n\n${userPrompt}`),
     },
+    promptCharCounts: {
+      system: String(systemPrompt || '').length,
+      user: String(userPrompt || '').length,
+      combined: String(`${systemPrompt || ''}\n\n---\n\n${userPrompt || ''}`).length,
+    },
     args,
+  };
+}
+
+// Normalize a raw provider usage block to canonical camelCase fields. When a
+// backend reports NO usage at all — e.g. the claude CLI on a Max-plan
+// subscription window, which does not echo token counts (see
+// services/adaptiveTutor/realLLM.js) — the fields are null ("unavailable"),
+// which is deliberately distinct from a real 0. Telemetry renders null as a
+// blank cell so a reader cannot mistake "no usage reported" for "a zero-token /
+// zero-cost call". Backends that do report (OpenRouter) yield numeric fields.
+function normalizeUsage(rawUsage) {
+  const usage = rawUsage || {};
+  const input = usage.inputTokens ?? usage.prompt_tokens ?? usage.input_tokens;
+  const output = usage.outputTokens ?? usage.completion_tokens ?? usage.output_tokens;
+  const total = usage.totalTokens ?? usage.total_tokens;
+  const cost = usage.cost;
+  if (input == null && output == null && total == null && cost == null) {
+    return { inputTokens: null, outputTokens: null, totalTokens: null, cost: null };
+  }
+  const inputTokens = input ?? 0;
+  const outputTokens = output ?? 0;
+  return {
+    inputTokens,
+    outputTokens,
+    totalTokens: total ?? inputTokens + outputTokens,
+    cost: cost ?? 0,
   };
 }
 
 function withUsage(result, { provider, model, provenance }) {
   return {
     content: result.content,
-    usage: { inputTokens: 0, outputTokens: 0 },
+    usage: normalizeUsage(result.usage),
     provider,
     model,
     latencyMs: result.latencyMs,
@@ -1303,6 +1583,405 @@ function withUsage(result, { provider, model, provenance }) {
   };
 }
 
+function callTelemetrySummary(records = []) {
+  const byRole = {};
+  const byBackend = {};
+  let totalLatencyMs = 0;
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+  let totalCost = 0;
+  for (const record of records) {
+    byRole[record.role || 'unknown'] = (byRole[record.role || 'unknown'] || 0) + 1;
+    byBackend[record.backend || 'unknown'] = (byBackend[record.backend || 'unknown'] || 0) + 1;
+    totalLatencyMs += record.latency_ms || 0;
+    totalInputTokens += record.usage?.input_tokens || 0;
+    totalOutputTokens += record.usage?.output_tokens || 0;
+    totalCost += record.usage?.cost || 0;
+  }
+  return {
+    enabled: true,
+    count: records.length,
+    total_latency_ms: totalLatencyMs,
+    total_input_tokens: totalInputTokens,
+    total_output_tokens: totalOutputTokens,
+    total_tokens: totalInputTokens + totalOutputTokens,
+    total_cost_usd: totalCost,
+    by_role: byRole,
+    by_backend: byBackend,
+  };
+}
+
+function csvCell(value) {
+  if (value == null) return '';
+  const text = String(value);
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function callTelemetryCsv(records = []) {
+  const headers = [
+    'seq',
+    'role',
+    'backend',
+    'provider',
+    'cli',
+    'model',
+    'reasoning_effort',
+    'started_at',
+    'finished_at',
+    'latency_ms',
+    'prompt_hash_system',
+    'prompt_hash_user',
+    'prompt_hash_combined',
+    'prompt_chars_system',
+    'prompt_chars_user',
+    'prompt_chars_combined',
+    'output_chars',
+    'role_max_tokens',
+    'input_tokens',
+    'output_tokens',
+    'total_tokens',
+    'cost_usd',
+    'worker_persistent',
+    'worker_key',
+    'worker_reused',
+    'worker_created',
+    'worker_disabled_reason',
+    'status',
+    'error',
+  ];
+  const rows = records.map((record) => [
+    record.seq,
+    record.role,
+    record.backend,
+    record.provider,
+    record.cli,
+    record.model,
+    record.reasoning_effort,
+    record.started_at,
+    record.finished_at,
+    record.latency_ms,
+    record.prompt_hashes?.system,
+    record.prompt_hashes?.user,
+    record.prompt_hashes?.combined,
+    record.prompt_chars?.system,
+    record.prompt_chars?.user,
+    record.prompt_chars?.combined,
+    record.output_chars,
+    record.role_max_tokens,
+    record.usage?.input_tokens,
+    record.usage?.output_tokens,
+    record.usage?.total_tokens,
+    record.usage?.cost,
+    record.worker?.persistent,
+    record.worker?.key,
+    record.worker?.reused,
+    record.worker?.created,
+    record.worker?.disabled_reason,
+    record.status,
+    record.error,
+  ]);
+  return `${headers.join(',')}\n${rows.map((row) => row.map(csvCell).join(',')).join('\n')}\n`;
+}
+
+function writeCallTelemetryArtifacts({ records = [], jsonPath = null, csvPath = null } = {}) {
+  if (!jsonPath && !csvPath) return null;
+  const payload = {
+    generated_at: new Date().toISOString(),
+    summary: callTelemetrySummary(records),
+    records,
+  };
+  if (jsonPath) {
+    fs.mkdirSync(path.dirname(jsonPath), { recursive: true });
+    fs.writeFileSync(jsonPath, JSON.stringify(payload, null, 2), 'utf8');
+  }
+  if (csvPath) {
+    fs.mkdirSync(path.dirname(csvPath), { recursive: true });
+    fs.writeFileSync(csvPath, callTelemetryCsv(records), 'utf8');
+  }
+  return payload;
+}
+
+function callTelemetryArtifactPathsForArgs(args) {
+  if (!args?.traceCalls) return null;
+  return {
+    json: args.callTelemetryJsonPath || null,
+    csv: args.callTelemetryCsvPath || null,
+  };
+}
+
+function relativeCallTelemetryArtifactsForArgs(args) {
+  const paths = callTelemetryArtifactPathsForArgs(args);
+  if (!paths) return null;
+  return Object.fromEntries(
+    Object.entries(paths)
+      .filter(([, value]) => value)
+      .map(([key, value]) => [key, path.relative(WORKTREE_ROOT, value)]),
+  );
+}
+
+function makeCallTelemetryRecorder({ enabled = false, print = false, jsonPath = null, csvPath = null } = {}) {
+  const records = [];
+  let seq = 0;
+  let flushWarningEmitted = false;
+  const flush = () => {
+    if (!enabled || (!jsonPath && !csvPath)) return;
+    try {
+      writeCallTelemetryArtifacts({ records, jsonPath, csvPath });
+    } catch (err) {
+      if (!flushWarningEmitted) {
+        flushWarningEmitted = true;
+        console.warn(`[warn] could not persist call telemetry: ${err?.message || String(err)}`);
+      }
+    }
+  };
+  return {
+    enabled: Boolean(enabled),
+    records,
+    record({
+      startedAt,
+      finishedAt,
+      requestedModel,
+      systemPrompt,
+      userPrompt,
+      opts = {},
+      response = null,
+      error = null,
+    }) {
+      if (!enabled) return null;
+      const provenance = response?.provenance || response?.apiPayload?.provenance || {};
+      const promptHashes = provenance.promptHashes || {
+        system: sha256Short(systemPrompt),
+        user: sha256Short(userPrompt),
+        combined: sha256Short(`${systemPrompt || ''}\n\n---\n\n${userPrompt || ''}`),
+      };
+      const promptChars = provenance.promptCharCounts || {
+        system: String(systemPrompt || '').length,
+        user: String(userPrompt || '').length,
+        combined: String(`${systemPrompt || ''}\n\n---\n\n${userPrompt || ''}`).length,
+      };
+      const worker = provenance.worker || null;
+      // null token/cost fields mean "backend reported no usage" (e.g. claude CLI
+      // on a subscription window), kept distinct from a real 0 — see normalizeUsage.
+      const usage = normalizeUsage(response?.usage);
+      const record = {
+        seq: ++seq,
+        role: opts.agentRole || provenance.agentRole || 'gen',
+        backend: provenance.backend || response?.provider || null,
+        provider: response?.provider || null,
+        cli: provenance.cli || null,
+        model: response?.model || provenance.model || requestedModel || null,
+        reasoning_effort: provenance.reasoningEffort || null,
+        started_at: new Date(startedAt).toISOString(),
+        finished_at: new Date(finishedAt).toISOString(),
+        latency_ms: response?.latencyMs ?? provenance.latencyMs ?? finishedAt - startedAt,
+        prompt_hashes: promptHashes,
+        prompt_chars: promptChars,
+        output_chars: String(response?.content || '').length,
+        role_max_tokens: opts.roleMaxTokensRequested ?? null,
+        usage: {
+          input_tokens: usage.inputTokens,
+          output_tokens: usage.outputTokens,
+          total_tokens: usage.totalTokens,
+          cost: usage.cost,
+        },
+        worker: worker
+          ? {
+              persistent: Boolean(worker.persistent),
+              key: worker.key || null,
+              reused: Boolean(worker.reused),
+              created: Boolean(worker.created),
+              disabled_reason: worker.disabledReason || null,
+            }
+          : null,
+        status: error ? 'error' : 'ok',
+      };
+      if (error) record.error = String(error?.message || error).slice(0, 500);
+      records.push(record);
+      flush();
+      if (print) {
+        const workerLabel = record.worker?.persistent
+          ? record.worker.created
+            ? ' worker=new'
+            : record.worker.reused
+              ? ' worker=reused'
+              : ' worker=persistent'
+          : record.worker?.disabled_reason
+            ? ' worker=fallback'
+            : '';
+        console.error(
+          `[gen-calls] #${record.seq} ${record.role} ${record.backend || '?'} ${record.model || '?'} ` +
+            `${record.latency_ms}ms sys=${record.prompt_chars.system} user=${record.prompt_chars.user} ` +
+            `out=${record.output_chars}${workerLabel}`,
+        );
+      }
+      return record;
+    },
+    summary() {
+      return callTelemetrySummary(records);
+    },
+    snapshot() {
+      return records.map((record) => ({ ...record }));
+    },
+    flush,
+  };
+}
+
+function callTelemetryForArgs(args) {
+  const recorder = args?._callTelemetry;
+  return recorder?.enabled ? recorder : null;
+}
+
+function callTelemetryPayloadForArgs(args) {
+  const recorder = callTelemetryForArgs(args);
+  if (!recorder) return null;
+  return {
+    summary: recorder.summary(),
+    records: recorder.snapshot(),
+  };
+}
+
+function flushCallTelemetryArtifactsForArgs(args) {
+  const recorder = callTelemetryForArgs(args);
+  if (!recorder) return null;
+  recorder.flush?.();
+  return relativeCallTelemetryArtifactsForArgs(args);
+}
+
+function attachCallTelemetrySummary(target, args) {
+  const payload = callTelemetryPayloadForArgs(args);
+  if (!payload) return target;
+  target.call_telemetry_summary = payload.summary;
+  const artifacts = relativeCallTelemetryArtifactsForArgs(args);
+  if (artifacts && Object.keys(artifacts).length) target.call_telemetry_artifacts = artifacts;
+  return target;
+}
+
+// ── Slice 3: per-role output budgets ─────────────────────────────────────────
+// Off by default. When --role-max-tokens supplies a budget for a role, the API
+// backend receives it as a hard max_tokens; the claude/codex/gemini CLI backends
+// have no max_tokens flag, so the budget becomes a static per-role "be terse"
+// directive appended to the system prompt (a soft cap that preserves persistent-
+// worker reuse, since the directive is identical for every call of that role).
+// The doc's conservative defaults, available via `--role-max-tokens preset`.
+const ROLE_OUTPUT_BUDGET_PRESET = {
+  director: 3500,
+  tutor_ego: 800,
+  tutor_superego: 800,
+  learner_ego: 700,
+  learner_superego: 600,
+};
+
+function parseRoleMaxTokens(str) {
+  const raw = String(str || '').trim();
+  if (!raw) return null;
+  if (raw === 'preset' || raw === 'default') return { ...ROLE_OUTPUT_BUDGET_PRESET };
+  const out = {};
+  for (const pair of raw.split(',')) {
+    const segment = pair.trim();
+    if (!segment) continue;
+    const [role, value] = segment.split('=').map((s) => s.trim());
+    const budget = parseInt(value, 10);
+    if (!role || !Number.isInteger(budget) || budget <= 0) {
+      throw new Error(`--role-max-tokens: expected role=N pairs (or "preset"); got "${segment}"`);
+    }
+    out[role] = budget;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+function roleOutputBudgetDirective(budget) {
+  const chars = budget * 4; // rough tokens→characters
+  return (
+    `\n\nOUTPUT BUDGET: keep your entire reply within about ${budget} tokens (~${chars} characters). ` +
+    'Be terse and cut padding. Preserve any required structure (a pass/fail/revise verdict, a single ' +
+    'public line, required JSON fields); do not drop required content to save space.'
+  );
+}
+
+// Wrap the base llmCall so a budgeted role gets max_tokens (API) plus a terse
+// directive (all backends). Placed INSIDE the telemetry wrapper so telemetry
+// records the role prompt size without the directive, and reads the requested
+// budget back off the (by-reference) opts object.
+function wrapLlmCallWithRoleBudgets(llmCall, budgets) {
+  if (!budgets || !Object.keys(budgets).length) return llmCall;
+  const budgeted = async function budgetedLlmCall(model, systemPrompt, messages, opts = {}) {
+    const role = opts.agentRole || 'gen';
+    const budget = budgets[role];
+    if (!budget) return llmCall(model, systemPrompt, messages, opts);
+    opts.roleMaxTokensRequested = budget;
+    const sys = `${systemPrompt || ''}${roleOutputBudgetDirective(budget)}`;
+    return llmCall(model, sys, messages, { ...opts, maxTokens: budget });
+  };
+  budgeted.close = () => llmCall.close?.();
+  return budgeted;
+}
+
+// ── Slice 4: compact drama-specific tutor prompts ────────────────────────────
+// Off by default. With --drama-compact-prompts the tutor ego/superego static
+// system prompts (the ~20k-char recognition prompts, the dominant per-call input
+// cost) are replaced with compact drama-lane prompts that keep the recognition
+// stance + safety rails but drop the suggestion-JSON schema, Writing-Pad memory
+// mechanics, and curriculum-navigation affordances the drama runtime never uses.
+// Returned as runInteraction options the engine reads; {} when disabled, so the
+// default path is byte-identical.
+// runInteraction options carrying the drama-lane runtime knobs: the fidelity
+// mode (Slice 5) and, when compact prompts are active (Slice 4), the tutor
+// prompt overrides. Spread into each runInteraction options object. The fidelity
+// is always present; the prompt overrides only when --drama-compact-prompts /
+// a compact fidelity is set, so the full default path is unchanged.
+let _compactDramaPromptOverrides;
+function dramaTurnOptionsForArgs(args) {
+  const out = {
+    dramaFidelity: args?.dramaFidelity || 'full',
+    contextMode: args?.contextMode || 'last-six',
+    recentTurns: args?.recentTurns || 4,
+    phaticRate: args?.phaticRate || 0,
+  };
+  if (!args?.dramaCompactPrompts) return out;
+  if (!_compactDramaPromptOverrides) {
+    const dir = path.join(WORKTREE_ROOT, 'prompts', 'drama');
+    _compactDramaPromptOverrides = {
+      tutorEgoPromptOverride: fs.readFileSync(path.join(dir, 'tutor-ego-compact.md'), 'utf8'),
+      tutorSuperegoPromptOverride: fs.readFileSync(path.join(dir, 'tutor-superego-compact.md'), 'utf8'),
+    };
+  }
+  return { ...out, ..._compactDramaPromptOverrides };
+}
+
+function wrapLlmCallWithTelemetry(llmCall, recorder) {
+  if (!recorder?.enabled) return llmCall;
+  const telemetryLlmCall = async function telemetryLlmCall(model, systemPrompt, messages, opts = {}) {
+    const startedAt = Date.now();
+    const userPrompt = (messages || []).map((m) => m.content).join('\n');
+    try {
+      const response = await llmCall(model, systemPrompt, messages, opts);
+      recorder.record({
+        startedAt,
+        finishedAt: Date.now(),
+        requestedModel: model,
+        systemPrompt,
+        userPrompt,
+        opts,
+        response,
+      });
+      return response;
+    } catch (error) {
+      recorder.record({
+        startedAt,
+        finishedAt: Date.now(),
+        requestedModel: model,
+        systemPrompt,
+        userPrompt,
+        opts,
+        error,
+      });
+      throw error;
+    }
+  };
+  telemetryLlmCall.close = () => llmCall.close?.();
+  return telemetryLlmCall;
+}
+
 // ── claude-code CLI bridge (lifted from realLLM.js:callClaudeCli) ────────────
 
 // High reasoning tiers (xhigh/max) on heavy prompts (e.g. the director's scene
@@ -1310,6 +1989,21 @@ function withUsage(result, { provider, model, provenance }) {
 // ceiling for those runs without changing the default.
 const CLAUDE_CLI_TIMEOUT_MS = Number(process.env.GEN_DRAMAS_CLAUDE_TIMEOUT_MS) || 360_000;
 const CLI_TRACE = process.env.GEN_DRAMAS_CLI_TRACE === '1';
+
+function claudeCliEnv() {
+  const env = { ...process.env };
+  delete env.CLAUDE_CODE;
+  delete env.CLAUDECODE;
+  // The run's --effort flag is the single source of truth for the reasoning tier.
+  // A parent session may export CLAUDE_CODE_EFFORT_LEVEL (e.g. =max); left in the
+  // child env it silently overrides --effort, so the run *records* xhigh but
+  // *executes* max — both a latency surprise and a provenance lie. Strip it so
+  // behaviour and provenance agree.
+  delete env.CLAUDE_CODE_EFFORT_LEVEL;
+  delete env.ANTHROPIC_API_KEY; // force subscription window, not metered API
+  delete env.ANTHROPIC_AUTH_TOKEN;
+  return env;
+}
 
 function callClaudeCli(systemPrompt, userPrompt, model, effort, role) {
   const start = Date.now();
@@ -1322,18 +2016,7 @@ function callClaudeCli(systemPrompt, userPrompt, model, effort, role) {
     // default (preserves the original default-effort claude arm); pinned → recorded
     // in provenance below so the run carries its own reasoning setting.
     if (effort) args.push('--effort', effort);
-    const env = { ...process.env };
-    delete env.CLAUDE_CODE;
-    delete env.CLAUDECODE;
-    // The run's --effort flag is the single source of truth for the reasoning tier.
-    // A parent session may export CLAUDE_CODE_EFFORT_LEVEL (e.g. =max); left in the
-    // child env it silently overrides --effort, so the run *records* xhigh but
-    // *executes* max — both a latency surprise and a provenance lie. Strip it so
-    // behaviour and provenance agree.
-    delete env.CLAUDE_CODE_EFFORT_LEVEL;
-    delete env.ANTHROPIC_API_KEY; // force subscription window, not metered API
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
+    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env: claudeCliEnv() });
     let out = '';
     let err = '';
     const to = setTimeout(() => {
@@ -1386,6 +2069,271 @@ function callClaudeCli(systemPrompt, userPrompt, model, effort, role) {
     child.stdin.write(userPrompt);
     child.stdin.end();
   });
+}
+
+function extractClaudeStreamText(event) {
+  if (!event) return '';
+  if (typeof event.result === 'string') return event.result;
+  const content = event.message?.content || event.content;
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return '';
+  return content
+    .map((part) => {
+      if (!part) return '';
+      if (typeof part === 'string') return part;
+      if (part.type === 'text' && typeof part.text === 'string') return part.text;
+      return '';
+    })
+    .filter(Boolean)
+    .join('');
+}
+
+class ClaudeStreamWorker {
+  constructor({ systemPrompt, model, effort, role, key }) {
+    this.systemPrompt = systemPrompt;
+    this.model = model;
+    this.effort = effort;
+    this.role = role;
+    this.key = key;
+    this.child = null;
+    this.buffer = '';
+    this.stderr = '';
+    this.pending = null;
+    this.queue = Promise.resolve();
+    this.closed = false;
+  }
+
+  start() {
+    if (this.child) return;
+    const args = [
+      '-p',
+      '--input-format',
+      'stream-json',
+      '--output-format',
+      'stream-json',
+      '--system-prompt',
+      this.systemPrompt,
+      '--no-session-persistence',
+    ];
+    if (this.model) args.push('--model', this.model);
+    if (this.effort) args.push('--effort', this.effort);
+    this.child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env: claudeCliEnv() });
+    this.child.stdout.on('data', (chunk) => this.onStdout(chunk));
+    this.child.stderr.on('data', (chunk) => {
+      this.stderr += chunk;
+    });
+    this.child.on('error', (err) => this.failPending(err));
+    this.child.on('close', (code) => {
+      this.closed = true;
+      this.failPending(
+        new Error(this.stderr.trim() || `persistent claude worker exited ${code} (role=${this.role}, key=${this.key})`),
+      );
+    });
+    if (CLI_TRACE) console.error(`[gen-cli] persistent claude worker start role=${this.role} key=${this.key}`);
+  }
+
+  call(userPrompt, role) {
+    this.queue = this.queue.then(() => this.callOne(userPrompt, role));
+    return this.queue;
+  }
+
+  callOne(userPrompt, role) {
+    if (this.closed) throw new Error(`persistent claude worker is closed (role=${this.role}, key=${this.key})`);
+    this.start();
+    const start = Date.now();
+    return new Promise((resolve, reject) => {
+      const to = setTimeout(() => {
+        this.failPending(
+          new Error(
+            `persistent claude worker timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, key=${this.key})`,
+          ),
+        );
+      }, CLAUDE_CLI_TIMEOUT_MS);
+      this.pending = {
+        role,
+        userPrompt,
+        start,
+        output: '',
+        resolve: (content) => {
+          clearTimeout(to);
+          const latencyMs = Date.now() - start;
+          if (CLI_TRACE) {
+            console.error(`[gen-cli] persistent role=${role} ${latencyMs}ms ${content.length}b key=${this.key}`);
+          }
+          resolve({
+            content: String(content || '').trim(),
+            latencyMs,
+            provenance: buildCallProvenance({
+              agentRole: role,
+              backend: 'claude',
+              cli: 'claude-stream-json',
+              model: this.model || 'default',
+              reasoningEffort: this.effort || null,
+              systemPrompt: this.systemPrompt,
+              userPrompt,
+              latencyMs,
+              args: [
+                '-p',
+                '--input-format',
+                'stream-json',
+                '--output-format',
+                'stream-json',
+                '--system-prompt',
+                `<sha256:${sha256Short(this.systemPrompt)}>`,
+                '--no-session-persistence',
+                ...(this.model ? ['--model', this.model] : []),
+                ...(this.effort ? ['--effort', this.effort] : []),
+              ],
+            }),
+          });
+        },
+        reject: (err) => {
+          clearTimeout(to);
+          reject(err);
+        },
+      };
+      const payload = {
+        type: 'user',
+        message: {
+          role: 'user',
+          content: userPrompt,
+        },
+      };
+      this.child.stdin.write(`${JSON.stringify(payload)}\n`);
+    });
+  }
+
+  onStdout(chunk) {
+    this.buffer += chunk;
+    let idx;
+    while ((idx = this.buffer.indexOf('\n')) >= 0) {
+      const line = this.buffer.slice(0, idx).trim();
+      this.buffer = this.buffer.slice(idx + 1);
+      if (!line) continue;
+      let event;
+      try {
+        event = JSON.parse(line);
+      } catch (_) {
+        this.failPending(new Error(`invalid claude stream-json line: ${line.slice(0, 200)}`));
+        continue;
+      }
+      this.onEvent(event);
+    }
+  }
+
+  onEvent(event) {
+    if (event.type === 'assistant') {
+      const text = extractClaudeStreamText(event);
+      if (text && this.pending) this.pending.output += text;
+      return;
+    }
+    if (event.type === 'error' || event.is_error) {
+      this.failPending(new Error(event.message || event.error || JSON.stringify(event)));
+      return;
+    }
+    if (event.type !== 'result') return;
+    const text = extractClaudeStreamText(event) || this.pending?.output || '';
+    const pending = this.pending;
+    this.pending = null;
+    if (pending) pending.resolve(text);
+  }
+
+  failPending(err) {
+    const pending = this.pending;
+    this.pending = null;
+    if (pending) pending.reject(err);
+  }
+
+  close() {
+    if (!this.child || this.closed) return;
+    this.closed = true;
+    try {
+      this.child.stdin.end();
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      this.child.kill('SIGTERM');
+    } catch (_) {
+      /* ignore */
+    }
+  }
+}
+
+class ClaudePersistentPool {
+  constructor({ model, effort, createWorker } = {}) {
+    this.model = model;
+    this.effort = effort;
+    this.workers = new Map();
+    this.disabledReason = null;
+    // Worker factory, injectable for tests so the reuse/create bookkeeping can be
+    // exercised without spawning a real claude child process. Production callers
+    // omit it and get the default streaming worker — behavior is unchanged.
+    this.createWorker = createWorker || ((opts) => new ClaudeStreamWorker(opts));
+  }
+
+  workerKey(systemPrompt, role) {
+    return `${role || 'gen'}:${this.model || 'default'}:${this.effort || 'default'}:${sha256Short(systemPrompt)}`;
+  }
+
+  async call(systemPrompt, userPrompt, role) {
+    if (this.disabledReason) {
+      const result = await callClaudeCli(systemPrompt, userPrompt, this.model, this.effort, role);
+      result.provenance.worker = {
+        persistent: false,
+        key: null,
+        reused: false,
+        created: false,
+        disabledReason: this.disabledReason,
+      };
+      return result;
+    }
+    const key = this.workerKey(systemPrompt, role);
+    const existed = this.workers.has(key);
+    let worker = this.workers.get(key);
+    if (!worker) {
+      worker = this.createWorker({
+        systemPrompt,
+        model: this.model,
+        effort: this.effort,
+        role: role || 'gen',
+        key,
+      });
+      this.workers.set(key, worker);
+    }
+    try {
+      const result = await worker.call(userPrompt, role || 'gen');
+      result.provenance.worker = {
+        persistent: true,
+        key,
+        reused: existed,
+        created: !existed,
+        disabledReason: null,
+      };
+      return result;
+    } catch (err) {
+      worker.close();
+      this.workers.delete(key);
+      this.disabledReason = err?.message || String(err);
+      console.warn(
+        `[warn] persistent Claude worker failed; falling back to one-shot claude CLI for this run: ${this.disabledReason}`,
+      );
+      const result = await callClaudeCli(systemPrompt, userPrompt, this.model, this.effort, role);
+      result.provenance.worker = {
+        persistent: false,
+        key,
+        reused: false,
+        created: false,
+        disabledReason: this.disabledReason,
+      };
+      return result;
+    }
+  }
+
+  close() {
+    for (const worker of this.workers.values()) worker.close();
+    this.workers.clear();
+  }
 }
 
 // ── codex exec CLI bridge (mirrors score-poetics-calibration.js:callCodex) ───
@@ -1578,12 +2526,42 @@ const GEN_API_MODELS = {
 const GEN_API_TEMPERATURE = Number(process.env.GEN_API_TEMPERATURE ?? 1.0);
 const GEN_API_MAX_TOKENS = Number(process.env.GEN_API_MAX_TOKENS || 8192);
 const GEN_API_TIMEOUT_MS = Number(process.env.GEN_API_TIMEOUT_MS || 300000);
+const GEN_API_RETRIES = Number(process.env.GEN_API_RETRIES || 2);
+let _openRouterModelAliases = null;
 
-function resolveApiModel(modelKey) {
-  return GEN_API_MODELS[modelKey] || (String(modelKey).includes('/') ? modelKey : null);
+function openRouterModelAliases() {
+  if (_openRouterModelAliases) return _openRouterModelAliases;
+  try {
+    const providers = yaml.parse(fs.readFileSync(path.join(WORKTREE_ROOT, 'config', 'providers.yaml'), 'utf8'));
+    _openRouterModelAliases = providers?.providers?.openrouter?.models || {};
+  } catch {
+    _openRouterModelAliases = {};
+  }
+  return _openRouterModelAliases;
 }
 
-async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
+function resolveApiModel(modelKey) {
+  const key = String(modelKey || '').trim();
+  if (!key) return null;
+  const alias = key.startsWith('openrouter.') ? key.slice('openrouter.'.length) : key;
+  return GEN_API_MODELS[key] || openRouterModelAliases()[alias] || (key.includes('/') ? key : null);
+}
+
+function isRetryableApiGeneratorError(error) {
+  const message = String(error?.message || error);
+  return (
+    /\b(?:429|408|500|502|503|504)\b/.test(message) ||
+    /invalid JSON|empty response|returned no content|fetch failed|network|terminated|ECONNRESET|ETIMEDOUT|AbortError/i.test(
+      message,
+    )
+  );
+}
+
+async function sleep(ms) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function callApiModelOnce(systemPrompt, userPrompt, modelKey, role, maxTokens = GEN_API_MAX_TOKENS) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not set (required for --generator api)');
   const model = resolveApiModel(modelKey);
@@ -1600,7 +2578,7 @@ async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model,
-        max_tokens: GEN_API_MAX_TOKENS,
+        max_tokens: maxTokens || GEN_API_MAX_TOKENS,
         temperature: GEN_API_TEMPERATURE,
         include_reasoning: false,
         messages: [
@@ -1610,17 +2588,33 @@ async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
       }),
       signal: controller.signal,
     });
+    const bodyText = await res.text();
     if (!res.ok) {
-      const body = await res.text();
-      throw new Error(`OpenRouter ${res.status} (role=${role}): ${body.slice(0, 200)}`);
+      throw new Error(`OpenRouter ${res.status} (role=${role}, model=${model}): ${bodyText.slice(0, 200)}`);
     }
-    const data = await res.json();
+    if (!bodyText.trim()) {
+      throw new Error(`OpenRouter empty response body (role=${role}, model=${model})`);
+    }
+    let data;
+    try {
+      data = JSON.parse(bodyText);
+    } catch (err) {
+      throw new Error(`OpenRouter invalid JSON (role=${role}, model=${model}): ${err.message}`);
+    }
     const content = data.choices?.[0]?.message?.content;
     if (!content) throw new Error(`OpenRouter returned no content (role=${role})`);
     const latencyMs = Date.now() - started;
+    const inputTokens = data.usage?.prompt_tokens ?? data.usage?.input_tokens ?? 0;
+    const outputTokens = data.usage?.completion_tokens ?? data.usage?.output_tokens ?? 0;
     return {
       content,
       latencyMs,
+      usage: {
+        inputTokens,
+        outputTokens,
+        totalTokens: data.usage?.total_tokens ?? inputTokens + outputTokens,
+        cost: data.usage?.cost ?? data.total_cost ?? 0,
+      },
       provenance: buildCallProvenance({
         agentRole: role,
         backend: 'api',
@@ -1638,18 +2632,42 @@ async function callApiModel(systemPrompt, userPrompt, modelKey, role) {
   }
 }
 
+async function callApiModel(systemPrompt, userPrompt, modelKey, role, maxTokens = GEN_API_MAX_TOKENS) {
+  let lastError = null;
+  for (let attempt = 0; attempt <= GEN_API_RETRIES; attempt += 1) {
+    try {
+      return await callApiModelOnce(systemPrompt, userPrompt, modelKey, role, maxTokens);
+    } catch (err) {
+      lastError = err;
+      if (attempt >= GEN_API_RETRIES || !isRetryableApiGeneratorError(err)) throw err;
+      const delayMs = 1000 * (attempt + 1);
+      console.warn(
+        `[warn] OpenRouter api generator retry ${attempt + 1}/${GEN_API_RETRIES} ` +
+          `(role=${role}, model=${resolveApiModel(modelKey) || modelKey}): ${err.message}`,
+      );
+      await sleep(delayMs);
+    }
+  }
+  throw lastError;
+}
+
 // runInteraction's llmCall contract: (model, systemPrompt, messages, opts) →
 // {content, usage}. We IGNORE the per-profile model and force claude-code.
-function makeClaudeLlmCall(modelAlias, effort) {
-  return async function claudeLlmCall(_model, systemPrompt, messages, opts = {}) {
+function makeClaudeLlmCall(modelAlias, effort, options = {}) {
+  const pool = options.persistentWorkers ? new ClaudePersistentPool({ model: modelAlias, effort }) : null;
+  const claudeLlmCall = async function claudeLlmCall(_model, systemPrompt, messages, opts = {}) {
     const userPrompt = (messages || []).map((m) => m.content).join('\n');
-    const result = await callClaudeCli(systemPrompt, userPrompt, modelAlias, effort, opts.agentRole || 'gen');
+    const result = pool
+      ? await pool.call(systemPrompt, userPrompt, opts.agentRole || 'gen')
+      : await callClaudeCli(systemPrompt, userPrompt, modelAlias, effort, opts.agentRole || 'gen');
     return withUsage(result, {
       provider: 'claude-code',
-      model: `claude/${modelAlias || 'default'}${effort ? `@${effort}` : ''}`,
+      model: `claude/${modelAlias || 'default'}${effort ? `@${effort}` : ''}${pool ? '#persistent-workers' : ''}`,
       provenance: result.provenance,
     });
   };
+  claudeLlmCall.close = () => pool?.close();
+  return claudeLlmCall;
 }
 
 // Same contract via codex exec. The per-profile model is ignored; system +
@@ -1687,7 +2705,13 @@ function makeGeminiLlmCall() {
 function makeApiLlmCall(modelKey) {
   return async function apiLlmCall(_model, systemPrompt, messages, opts = {}) {
     const userPrompt = (messages || []).map((m) => m.content).join('\n');
-    const result = await callApiModel(systemPrompt, userPrompt, modelKey, opts.agentRole || 'gen');
+    const result = await callApiModel(
+      systemPrompt,
+      userPrompt,
+      modelKey,
+      opts.agentRole || 'gen',
+      opts.maxTokens || GEN_API_MAX_TOKENS,
+    );
     return withUsage(result, {
       provider: 'openrouter',
       model: `api/${modelKey}`,
@@ -1743,6 +2767,38 @@ const ROLE_ALIASES = {
 };
 const ROLE_NAMES = ['director', 'tutor_ego', 'tutor_superego', 'learner_ego', 'learner_superego'];
 const ROLE_MAP_KEYS = new Set(['tutor', 'learner', 'default', ...ROLE_NAMES]);
+const ROLE_MAP_BACKENDS = new Set(['claude', 'codex', 'gemini', 'api', 'openrouter']);
+
+function parseRoleRouteValue(value, label = 'role-map value') {
+  const raw = String(value || '').trim();
+  const splitAt = raw.indexOf(':');
+  const backendRaw = (splitAt >= 0 ? raw.slice(0, splitAt) : raw).trim();
+  const backend = backendRaw === 'openrouter' ? 'api' : backendRaw;
+  const apiModelKey = splitAt >= 0 ? raw.slice(splitAt + 1).trim() : null;
+  if (!ROLE_MAP_BACKENDS.has(backendRaw)) {
+    throw new Error(`${label} must be claude|codex|gemini|api[:model]|openrouter[:model] (got "${raw}")`);
+  }
+  if (apiModelKey != null && !apiModelKey) {
+    throw new Error(`${label} has an empty API model suffix (got "${raw}")`);
+  }
+  if (apiModelKey && backend !== 'api') {
+    throw new Error(`${label} can only include a model suffix for api/openrouter routes (got "${raw}")`);
+  }
+  if (apiModelKey && !resolveApiModel(apiModelKey)) {
+    throw new Error(`${label} API model "${apiModelKey}" is not a known OpenRouter alias and is not a full model slug`);
+  }
+  return { backend, apiModelKey, raw };
+}
+
+function canonicalRoleRouteValue(value) {
+  const route = parseRoleRouteValue(value);
+  if (route.backend === 'api' && route.apiModelKey) return `api:${route.apiModelKey}`;
+  return route.backend;
+}
+
+function roleMapUsesBackend(roleMap, backend) {
+  return Object.values(roleMap || {}).some((value) => parseRoleRouteValue(value).backend === backend);
+}
 
 function parseRoleMap(str) {
   const map = {};
@@ -1757,48 +2813,90 @@ function parseRoleMap(str) {
     const v = pair.slice(eq + 1).trim();
     if (!ROLE_MAP_KEYS.has(k))
       throw new Error(`--role-map key "${rawKey}" not one of: ${[...ROLE_MAP_KEYS].join(', ')}`);
-    if (v !== 'claude' && v !== 'codex')
-      throw new Error(`--role-map value for "${k}" must be claude|codex (got "${v}")`);
-    map[k] = v;
+    map[k] = canonicalRoleRouteValue(v);
   }
   if (Object.keys(map).length === 0) throw new Error('--role-map is empty');
   return map;
 }
 
-function resolveBackend(agentRole, roleMap, fallback) {
-  if (agentRole && roleMap[agentRole]) return roleMap[agentRole]; // exact role
+function resolveRoleRoute(agentRole, roleMap, fallback, defaultApiModelKey = null) {
+  let rawRoute = null;
+  if (agentRole && roleMap?.[agentRole]) rawRoute = roleMap[agentRole]; // exact role
   const side =
     agentRole && agentRole.startsWith('tutor')
       ? 'tutor'
       : agentRole && agentRole.startsWith('learner')
         ? 'learner'
         : null;
-  if (side && roleMap[side]) return roleMap[side]; // tutor|learner side
-  if (roleMap.default) return roleMap.default; // explicit default
-  return fallback; // --generator
+  if (!rawRoute && side && roleMap?.[side]) rawRoute = roleMap[side]; // tutor|learner side
+  if (!rawRoute && roleMap?.default) rawRoute = roleMap.default; // explicit default
+  if (!rawRoute) rawRoute = fallback; // --generator
+  const route = parseRoleRouteValue(rawRoute || fallback || 'claude');
+  return {
+    ...route,
+    apiModelKey: route.backend === 'api' ? route.apiModelKey || defaultApiModelKey : null,
+  };
+}
+
+function resolveBackend(agentRole, roleMap, fallback) {
+  return resolveRoleRoute(agentRole, roleMap, fallback).backend;
+}
+
+function formatRoleRoute(route) {
+  if (route.backend !== 'api') return route.backend;
+  return `api:${resolveApiModel(route.apiModelKey) || route.apiModelKey}`;
+}
+
+function roleMapModelLabel(args) {
+  if (!args.roleMap) return generatorModelLabel(args);
+  const entries = ROLE_NAMES.map((role) => {
+    const route = resolveRoleRoute(role, args.roleMap, args.generator, args.apiModel);
+    return `${role}=${formatRoleRoute(route)}`;
+  });
+  return `mixed (${entries.join(', ')})`;
 }
 
 // Router llmCall: dispatch each role to its resolved backend. Under --mock both
 // backends are the same stub, but the route decision is still computed + logged
 // (GEN_DRAMAS_CLI_TRACE=1) so routing can be smoke-tested for free.
-function makeRouterLlmCall({ roleMap, fallback, claudeModelAlias, claudeEffort, apiModelKey, mock }) {
-  const claudeBridge = mock ? makeMockLlmCall('claude') : makeClaudeLlmCall(claudeModelAlias, claudeEffort);
+function makeRouterLlmCall({
+  roleMap,
+  fallback,
+  claudeModelAlias,
+  claudeEffort,
+  apiModelKey,
+  mock,
+  claudePersistentWorkers = false,
+}) {
+  const claudeBridge = mock
+    ? makeMockLlmCall('claude')
+    : makeClaudeLlmCall(claudeModelAlias, claudeEffort, { persistentWorkers: claudePersistentWorkers });
   const codexBridge = mock ? makeMockLlmCall('codex') : makeCodexLlmCall();
   const geminiBridge = mock ? makeMockLlmCall('gemini') : makeGeminiLlmCall();
-  const apiBridge = mock ? makeMockLlmCall('api') : makeApiLlmCall(apiModelKey);
-  return async function routerLlmCall(model, systemPrompt, messages, opts = {}) {
-    const backend = resolveBackend(opts.agentRole, roleMap, fallback);
-    if (CLI_TRACE) console.error(`[gen-route] role=${opts.agentRole || '?'} → ${backend}`);
+  const apiBridges = new Map();
+  const getApiBridge = (modelKey) => {
+    const key = modelKey || apiModelKey;
+    if (!apiBridges.has(key)) {
+      apiBridges.set(key, mock ? makeMockLlmCall(`api:${key}`) : makeApiLlmCall(key));
+    }
+    return apiBridges.get(key);
+  };
+  const routerLlmCall = async function routerLlmCall(model, systemPrompt, messages, opts = {}) {
+    const route = resolveRoleRoute(opts.agentRole, roleMap, fallback, apiModelKey);
+    const backend = route.backend;
+    if (CLI_TRACE) console.error(`[gen-route] role=${opts.agentRole || '?'} → ${formatRoleRoute(route)}`);
     const bridge =
       backend === 'codex'
         ? codexBridge
         : backend === 'gemini'
           ? geminiBridge
           : backend === 'api'
-            ? apiBridge
+            ? getApiBridge(route.apiModelKey)
             : claudeBridge;
     return bridge(model, systemPrompt, messages, opts);
   };
+  routerLlmCall.close = () => claudeBridge.close?.();
+  return routerLlmCall;
 }
 
 // ── teaching-drama director ─────────────────────────────────────────────────
@@ -1976,6 +3074,241 @@ function combineText(...parts) {
     .join(' ');
 }
 
+function compactList(items, max = 4) {
+  return (items || []).filter(Boolean).slice(0, max);
+}
+
+function moduleOrdinalForDrama(d, fallback = Number.MAX_SAFE_INTEGER) {
+  const raw = d?.curriculum_binding?.module_id || d?.module_id || d?.id || '';
+  const match = String(raw).match(/\bAF(\d+)\b/u);
+  return match ? Number(match[1]) : fallback;
+}
+
+function selectFirstLessonDrama(dramas = []) {
+  if (!Array.isArray(dramas) || !dramas.length) return null;
+  return dramas
+    .map((drama, index) => ({ drama, index, moduleOrdinal: moduleOrdinalForDrama(drama, index) }))
+    .sort((a, b) => a.moduleOrdinal - b.moduleOrdinal || a.index - b.index)[0].drama;
+}
+
+function worldAdaptationBindingForDrama(d) {
+  const binding = d?.curriculum_binding || {};
+  const specId =
+    binding.world_adaptation_spec_id || binding.world_adaptation?.id || d?.world_adaptation_spec_id || null;
+  const specHash =
+    binding.world_adaptation_spec_hash || binding.world_adaptation?.spec_hash || d?.world_adaptation_spec_hash || null;
+  const constraints = binding.world_public_constraints || binding.world_adaptation?.public_constraints || null;
+  if (!specId && !specHash && !constraints) return null;
+  return {
+    source_curriculum_id: binding.curriculum_id || binding.source_curriculum_id || null,
+    module_id: binding.module_id || null,
+    module_title: binding.module_title || null,
+    spec_id: specId,
+    spec_version: binding.world_adaptation_spec_version || binding.world_adaptation?.version || null,
+    spec_hash: specHash,
+    locked_at_compile_time:
+      binding.world_locked_at_compile_time ?? binding.world_adaptation?.locked_at_compile_time ?? null,
+    public_constraints_present: Boolean(constraints),
+  };
+}
+
+function rhetoricalDramaticPlanBindingForDrama(d) {
+  const binding = d?.curriculum_binding || {};
+  const planId = binding.rhetorical_dramatic_plan_id || d?.rhetorical_dramatic_plan_id || null;
+  const planHash = binding.rhetorical_dramatic_plan_hash || d?.rhetorical_dramatic_plan_hash || null;
+  const constraints = binding.rhetorical_public_constraints || null;
+  if (!planId && !planHash && !constraints) return null;
+  return {
+    source_curriculum_id: binding.curriculum_id || binding.source_curriculum_id || null,
+    module_id: binding.module_id || null,
+    module_title: binding.module_title || null,
+    plan_id: planId,
+    plan_version: binding.rhetorical_dramatic_plan_version || null,
+    plan_hash: planHash,
+    public_constraints_present: Boolean(constraints),
+  };
+}
+
+function turnPlanSummaryForNotes(turnPlan = []) {
+  return compactList(Array.isArray(turnPlan) ? turnPlan : [], 8).map((entry) => ({
+    at: entry.at || null,
+    role: entry.role || null,
+    moves: compactList(entry.moves, 8),
+    route_change: entry.route_change || null,
+    forbid: compactList(entry.forbid, 8),
+    when_trigger: compactList(entry.when_trigger, 8),
+  }));
+}
+
+function curriculumScriptNotesForDrama(d, directorPlan = null) {
+  const binding = d?.curriculum_binding || {};
+  const worldConstraints = binding.world_public_constraints || {};
+  const rhetoricalConstraints = binding.rhetorical_public_constraints || {};
+  const turnPlan = Array.isArray(d?.turn_plan) ? d.turn_plan : directorPlan?.turn_plan || [];
+  const affectivePolicy =
+    d?._affectiveAdaptationPolicy ||
+    d?.affective_adaptation_policy ||
+    directorPlan?.affective_adaptation_policy ||
+    'none';
+  const tutorPolicy =
+    d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || directorPlan?.tutor_adaptation_policy || 'none';
+  if (
+    !binding.curriculum_id &&
+    !binding.module_id &&
+    !rhetoricalConstraints.public_task &&
+    !worldConstraints.artifact &&
+    !turnPlan.length
+  ) {
+    return null;
+  }
+  return {
+    boundary:
+      'Held-out explanatory notes. Use for provenance and diagnosis; do not expose these labels, hashes, or hidden curriculum terms in public dialogue.',
+    curriculum: {
+      curriculum_id: binding.curriculum_id || null,
+      module_id: binding.module_id || null,
+      module_title: binding.module_title || null,
+      lesson_objective: rhetoricalConstraints.public_task || d?.topic || null,
+      learner_artifact: rhetoricalConstraints.artifact || worldConstraints.artifact || binding.main_artifact || null,
+      evidence_standard:
+        rhetoricalConstraints.public_evidence_standard ||
+        worldConstraints.primary_verifier ||
+        binding.primary_verifier ||
+        null,
+      knowledge_component_ids: compactList(binding.kc_ids, 12),
+      misconception_pressure: compactList(binding.misconceptions, 6),
+    },
+    world_contract: {
+      spec_id: binding.world_adaptation_spec_id || d?.world_adaptation_spec_id || null,
+      spec_hash: binding.world_adaptation_spec_hash || d?.world_adaptation_spec_hash || null,
+      locked_at_compile_time: binding.world_locked_at_compile_time ?? null,
+      preferred_action_families: compactList(worldConstraints.preferred_action_families, 8),
+      disallowed_action_families: compactList(worldConstraints.disallowed_action_families, 8),
+      success_observables: compactList(worldConstraints.success_observables, 6),
+      forbidden_public_moves: compactList(worldConstraints.forbidden_public_moves, 6),
+    },
+    rhetoric: {
+      plan_id: binding.rhetorical_dramatic_plan_id || d?.rhetorical_dramatic_plan_id || null,
+      plan_hash: binding.rhetorical_dramatic_plan_hash || d?.rhetorical_dramatic_plan_hash || null,
+      allowed_public_form: rhetoricalConstraints.allowed_rhetorical_form || null,
+      scene: rhetoricalConstraints.scene || directorPlan?.scene_setting || null,
+      action_gate: rhetoricalConstraints.action_gate || null,
+      forbidden_public_exposure: compactList(rhetoricalConstraints.forbidden_public_exposure, 8),
+    },
+    script_lowering: {
+      scenario_name: d?.scenario_name || null,
+      learner_start_state: d?.learner_start_state || null,
+      intended_tutor_character: d?.intended_tutor_character || null,
+      dramatic_shape: d?.dramatic_shape || null,
+      tutor_adaptation_policy: tutorPolicy,
+      affective_adaptation_policy: affectivePolicy,
+      turn_plan_summary: turnPlanSummaryForNotes(turnPlan),
+    },
+  };
+}
+
+function curriculumScriptNotesForTrace(trace, keyItem = null) {
+  if (trace?.run?.curriculum_script_notes) return trace.run.curriculum_script_notes;
+  const d = {
+    id: keyItem?.drama_id || trace?.drama_id || trace?.dramaId || null,
+    discipline: keyItem?.discipline || null,
+    condition: keyItem?.condition || null,
+    topic: trace?.topic || null,
+    scenario_name: keyItem?.scenario_name || null,
+    learner_start_state: keyItem?.learner_start_state || null,
+    intended_tutor_character: keyItem?.intended_tutor_character || null,
+    dramatic_shape: keyItem?.dramatic_shape || null,
+    tutor_adaptation_policy: keyItem?.tutor_adaptation_policy || trace?.run?.tutor_adaptation_policy || 'none',
+    affective_adaptation_policy:
+      keyItem?.affective_adaptation_policy || trace?.run?.affective_adaptation_policy || 'none',
+    curriculum_binding: keyItem?.curriculum_binding || {},
+    turn_plan: trace?.directorPlan?.turn_plan || [],
+  };
+  const notes = curriculumScriptNotesForDrama(d, trace?.directorPlan || null);
+  if (notes) {
+    notes.boundary =
+      'Held-out explanatory notes reconstructed from the trace/key. Use for provenance and diagnosis; do not expose these labels, hashes, or hidden curriculum terms in public dialogue.';
+  }
+  return notes;
+}
+
+function worldConstraintTextForDrama(d) {
+  const binding = d?.curriculum_binding || {};
+  const constraints = binding.world_public_constraints || {};
+  const rhetoricalConstraints = binding.rhetorical_public_constraints || {};
+  const artifact = constraints.artifact || binding.main_artifact || null;
+  const verifier = constraints.primary_verifier || binding.primary_verifier || null;
+  const verifierEvidence = compactList(constraints.verifier_evidence, 2);
+  const preferred = compactList(constraints.preferred_action_families, 6);
+  const disallowed = compactList(constraints.disallowed_action_families, 6);
+  const successObservables = compactList(constraints.success_observables, 4);
+  const forbidden = compactList(constraints.forbidden_public_moves, 4);
+  const rhetoricalForbidden = compactList(rhetoricalConstraints.forbidden_public_exposure, 6);
+  const lines = [];
+  if (artifact) lines.push(`Keep the learner-authored artifact in play: ${artifact}.`);
+  if (verifier) lines.push(`Make claims answerable to this verifier/evidence standard: ${verifier}.`);
+  if (verifierEvidence.length)
+    lines.push(`Verifier evidence available to embody in scene furniture: ${verifierEvidence.join(' | ')}.`);
+  if (rhetoricalConstraints.public_task) lines.push(`Public task to stage: ${rhetoricalConstraints.public_task}.`);
+  if (rhetoricalConstraints.public_evidence_standard) {
+    lines.push(`Public evidence standard to preserve: ${rhetoricalConstraints.public_evidence_standard}.`);
+  }
+  if (rhetoricalConstraints.allowed_rhetorical_form) {
+    lines.push(`Allowed rhetorical posture: ${rhetoricalConstraints.allowed_rhetorical_form}.`);
+  }
+  if (rhetoricalConstraints.scene) lines.push(`Scene constraint: ${rhetoricalConstraints.scene}.`);
+  if (rhetoricalConstraints.action_gate)
+    lines.push(`Learner action gate to seek: ${rhetoricalConstraints.action_gate}.`);
+  if (preferred.length) {
+    lines.push(
+      `Privately prefer these curriculum action families when choosing a tutor move; do not say the labels aloud: ${preferred.join(', ')}.`,
+    );
+  }
+  if (disallowed.length) {
+    lines.push(
+      `Privately avoid these action families unless the drama spec explicitly overrides them: ${disallowed.join(', ')}.`,
+    );
+  }
+  if (successObservables.length) {
+    lines.push(`A useful learner movement should become observable as: ${successObservables.join(' | ')}.`);
+  }
+  if (forbidden.length) lines.push(`Forbidden public moves: ${forbidden.join(' | ')}.`);
+  if (rhetoricalForbidden.length) {
+    lines.push(`Forbidden public exposure categories: ${rhetoricalForbidden.join(' | ')}.`);
+  }
+  if (!lines.length) return '';
+  lines.push(
+    'Do not expose curriculum misconception IDs, spec IDs, spec hashes, answer keys, or hidden verifier internals in public speech.',
+  );
+  return lines.join(' ');
+}
+
+function withWorldAdaptationConstraints(plan, d) {
+  if (!plan) return plan;
+  const worldBinding = worldAdaptationBindingForDrama(d);
+  const rhetoricalBinding = rhetoricalDramaticPlanBindingForDrama(d);
+  const worldConstraintText = worldConstraintTextForDrama(d);
+  if (!worldBinding && !worldConstraintText) return plan;
+  const sideConstraints = { ...(plan.side_constraints || {}) };
+  if (worldConstraintText) {
+    sideConstraints.tutor = combineText(
+      sideConstraints.tutor,
+      `Curriculum-world constraint, private and public-safe: ${worldConstraintText}`,
+    );
+    sideConstraints.learner = combineText(
+      sideConstraints.learner,
+      'Curriculum-world learner constraint: keep replies grounded in the current artifact and evidence standard; resist or revise through observable evidence rather than polished hidden-label language.',
+    );
+  }
+  return {
+    ...plan,
+    ...(worldBinding ? { world_adaptation: worldBinding } : {}),
+    ...(rhetoricalBinding ? { rhetorical_dramatic_plan: rhetoricalBinding } : {}),
+    world_constraints_applied: Boolean(worldConstraintText),
+    side_constraints: sideConstraints,
+  };
+}
+
 function stageDirectionPolicyFor(d) {
   return d.stage_direction_policy || d._dialogueApproach?.stage_direction_policy || null;
 }
@@ -2080,7 +3413,9 @@ function applyApproachDirectorOverrides(d, plan) {
       learner: combineText(plan.side_constraints?.learner, pedagogy?.learner_prompt, dialogue?.learner_constraint),
     },
   };
-  if (dialogue?.opening_speaker && !d.opening_speaker) next.opening_speaker = dialogue.opening_speaker;
+  if (dialogue?.opening_speaker && !d.opening_speaker && !d._openingSpeakerOverride) {
+    next.opening_speaker = dialogue.opening_speaker;
+  }
   if (dialogue?.ending_speaker && !d.ending_speaker) next.ending_speaker = dialogue.ending_speaker;
 
   if (stagePolicy === 'none' || stagePolicy === 'none_except_required_cue') {
@@ -2095,6 +3430,11 @@ function applyApproachDirectorOverrides(d, plan) {
     next.interventions = [...ordinary.slice(0, 1), ...revisit];
   }
   return next;
+}
+
+function applyOpeningSpeakerOverride(d, plan) {
+  if (!plan || !d?._openingSpeakerOverride) return plan;
+  return { ...plan, opening_speaker: d._openingSpeakerOverride };
 }
 
 function variationOffset(key = '') {
@@ -2132,7 +3472,11 @@ function fallbackDirectorPlan(d, reason = 'fallback', args = {}) {
     scene_opening: stageOpeningForStyle(d, setting, stageStyle, stagePolicy),
     relationship: d.relationship || 'a tutor and learner who do not yet share a stable register',
     stakes: d.stakes || d.learner_start_state || d.topic,
-    opening_speaker: d.opening_speaker || dialogue?.opening_speaker || (opensWithTutor ? 'tutor' : 'learner'),
+    opening_speaker:
+      d._openingSpeakerOverride ||
+      d.opening_speaker ||
+      dialogue?.opening_speaker ||
+      (opensWithTutor ? 'tutor' : 'learner'),
     ending_speaker: d.ending_speaker || dialogue?.ending_speaker || (endsWithTutor ? 'tutor' : 'learner'),
     locale: d.locale || voice.locale,
     register: d.register || dialogue?.turn_shape || voice.register,
@@ -2189,7 +3533,9 @@ function applySpecDirectorOverrides(d, plan) {
   return {
     ...plan,
     ...(d.public_reader_context ? { public_reader_context: d.public_reader_context } : {}),
-    ...(d.opening_speaker ? { opening_speaker: d.opening_speaker } : {}),
+    ...(d.opening_speaker || d._openingSpeakerOverride
+      ? { opening_speaker: d._openingSpeakerOverride || d.opening_speaker }
+      : {}),
     ...(d.ending_speaker ? { ending_speaker: d.ending_speaker } : {}),
     side_constraints: sideConstraints,
   };
@@ -2210,7 +3556,7 @@ function withDirectorRevisitCue(plan, policy, anchorPolicy) {
   if (!plan || !policy || policy === 'none') return plan;
   const cueText =
     policy === 'reframe'
-      ? 'An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled "earlier wording / what that old frame hid / replacement frame." Keep the cue brief and diegetic; the learner response fills all three slots in public speech without needing to sound certain.'
+      ? 'An earlier learner line will return as a visible object in the scene: a three-slot reframe card labelled "earlier wording / what that old frame hid / replacement frame." Keep the cue brief and diegetic. The learner\'s next public reply must start by revoicing the returned wording, then name what the old frame hid, then state the replacement frame/check before applying any new artifact or case. The learner may stay uncertain; do not turn the cue into a tidy breakthrough.'
       : policy === 'reconsider'
         ? 'An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should decide whether that wording still stands, needs narrowing, or needs replacing.'
         : policy === 'revoice'
@@ -2218,7 +3564,7 @@ function withDirectorRevisitCue(plan, policy, anchorPolicy) {
           : 'An earlier learner line will return as a visible object in the scene. Keep the cue brief and diegetic; the learner response should answer what that wording now misses, keeps, or changes.';
   const cueReasoning =
     policy === 'reframe'
-      ? 'Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.'
+      ? 'Opt-in reframe mirror: the learner must start with the earlier line, expose the framing problem, and state the replacement frame/check in public speech before new casework.'
       : policy === 'reconsider'
         ? 'Opt-in reconsideration mirror: the learner must make a public judgment about earlier wording without being forced to replace it.'
         : policy === 'revoice'
@@ -2382,6 +3728,16 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
     return plan ? { ...plan, tutor_adaptation_policy: 'none' } : plan;
   }
   const contracts = [];
+  if (policy === 'socratic_discovery') {
+    contracts.push(
+      'Oedipus socratic branch: privately use the hidden conclusion S and its premise ledger to steer the learner toward the premises that carry S. Surface those premises as concrete questions, evidence requests, or document checks, but do not state S yourself. Do not remain at generic troubleshooting or procedural advice; by the end, the learner should have enough public premises to infer S.',
+    );
+  }
+  if (policy === 'reveal_secret') {
+    contracts.push(
+      'Oedipus reveal branch: explicitly state or plainly paraphrase the hidden conclusion S in a tutor turn after the shared prefix. Name the concrete mechanism and why it resolves the discrepancy. Do not leave S as an exercise, procedural hint, or merely implied next check.',
+    );
+  }
   if (String(policy).includes('uptake')) {
     contracts.push(
       'If the runtime supplies a tutor-private learner reframe event, the tutor ego/superego loop must adapt to the changed learner frame. If no event is supplied, do not invent one.',
@@ -2389,7 +3745,7 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
   }
   if (String(policy).includes('peripeteia')) {
     contracts.push(
-      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route. Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. After that action, the ending shape should add an earned learner reorientation: the learner names how the earlier resistance, false closure, or local misfit now reads differently because of the performed device. This must be concrete and tied to the task, not a stock "I get it" declaration. Cheerful informality is only one possible register, not the default solution.',
+      'If the runtime supplies a tutor-private learner resistance, breakdown, false-closure, or misfit event, the tutor ego/superego loop must invent an adaptive learning mechanism rather than repeat the prior move. Treat peripeteia as dramatic pressure: take stock, break the failed tutoring habit, and make a new device visible through task, evidence, role, object, counterexample, interruption, social consequence, representation, or affective register. The public turn must contain a stock-taking contrast plus a new device/artifact/criterion/role/standard that makes the learner do different work. Make both halves quotable in the public tutor line: first name that the old route, prior route, same route, or current check no longer settles, is not enough, cannot decide, or has stopped working; then name the new route, new device, changed standard, criterion, counterexample, gate, card, blank, role, or test the learner must now use. The public device must be fitted, not merely novel: the learner should be able to hear why this device answers the exact pressure or misfit. The superego should name the failed habit, required route change, and mechanism-quality risk; the ego must adjudicate that critique and enact the route change in public. The new device must be mechanism-level, not a warmer or longer continuation of the prior route, not the same object with one more calculation, and not a routine narrowing such as "check one thing first". Do not close immediately after introducing a gate or device: leave a concrete action for the learner to perform on the next turn. After that action, the ending shape should add an earned learner reorientation: the learner names how the earlier resistance, false closure, or local misfit now reads differently because of the performed device. This must be concrete and tied to the task, not a stock "I get it" declaration. Cheerful informality is only one possible register, not the default solution.',
     );
   }
   const sideConstraints = { ...(plan.side_constraints || {}) };
@@ -2402,11 +3758,14 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
       .join(' ');
     sideConstraints.tutor = [
       sideConstraints.tutor,
-      'Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible: what stopped working, and what new device now carries the learning pressure. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech.',
+      'Peripeteia branch: when hidden learner pressure is supplied, the next tutor turn should visibly move from the prior route to a different mechanism-level route. Do not merely repeat the same object, example, graph, checklist, question, or evidence standard with more explanation. The public tutor line should make the contrast legible in two explicit clauses: what old route no longer settles or cannot decide, and what new device, gate, criterion, standard, counterexample, role, blank, card, or test now carries the learning pressure. Use those public words plainly enough that a blind scorer can quote both the stock-taking contrast and the new public mechanism from the tutor turn. The public tutor line must give the learner a concrete action to attempt on the next turn; avoid treating the mechanism as a closing speech.',
       'The tutor superego should function like a mechanism critic: identify the failed teaching habit, require a replacement route family, test whether the device is fitted to the exact pressure, and block cosmetic revision. The tutor ego must enact that replacement route publicly before the learner is allowed to settle or close.',
     ]
       .filter(Boolean)
       .join(' ');
+  }
+  if (policy === 'socratic_discovery' || policy === 'reveal_secret') {
+    sideConstraints.tutor = combineText(sideConstraints.tutor, contracts.join(' '));
   }
   const policyPlan = String(policy).includes('peripeteia') ? withPeripeteiaPressureCue(plan) : plan;
   return {
@@ -2420,6 +3779,92 @@ function withTutorAdaptationPolicy(plan, policy = 'none') {
       : {}),
     side_constraints: sideConstraints,
     tutor_adaptation_contract: contracts.join(' '),
+  };
+}
+
+function controlEndingApplies(plan, d, policy = 'default') {
+  if (!plan || policy === 'default') return false;
+  const tutorPolicy = d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || plan.tutor_adaptation_policy || 'none';
+  return tutorPolicy === 'routine' || tutorPolicy === 'none' || tutorPolicy === 'withhold_secret';
+}
+
+function withControlEndingPolicy(plan, policy = 'default', d = null) {
+  if (!plan || policy === 'default') return plan;
+  if (!controlEndingApplies(plan, d, policy)) {
+    return {
+      ...plan,
+      control_ending_policy: policy,
+      control_ending_applied: false,
+    };
+  }
+  if (policy !== 'hold') throw new Error(`unknown control ending policy: ${policy}`);
+  const sideConstraints = {
+    ...(plan.side_constraints || {}),
+    tutor: [
+      plan.side_constraints?.tutor,
+      'Control-ending hold: this is a negative/control arm. Keep the final exchange local and evidentiary. Do not create a clean self-reframing moment, old/new frame contrast, or learner-authored breakthrough summary. If the learner improves, keep it as a partial calculation, unresolved criterion, or bounded next check. Do not ask "what changed", "what was the old frame", "what were you treating as the verdict", or any equivalent recognitive prompt.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    learner: [
+      plan.side_constraints?.learner,
+      'Control-ending hold: do not volunteer a full re-reading of your earlier turn. Do not say "I was treating", "earlier I", "now the check", "the old frame", "what changed", "the trap", "now I see", or "I get it". End with a local calculation, a missing datum, an unresolved criterion, or a concrete next check rather than a complete replacement frame.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  };
+  return {
+    ...plan,
+    control_ending_policy: policy,
+    control_ending_applied: true,
+    control_ending_shape: 'hold local evidence without clean learner reframe',
+    ending_speaker: 'learner',
+    interventions: (plan.interventions || []).filter(
+      (cue) => !['learner_revisit_earlier_wording', 'learner_reversal_pressure'].includes(cue.cue_kind),
+    ),
+    voice_constraints: [
+      plan.voice_constraints,
+      'Control-ending hold is active: do not turn the closing exchange into a successful recognition scene. Competent local work is allowed; full self-reframing is not.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    side_constraints: sideConstraints,
+  };
+}
+
+function affectiveAdaptationContract(policy = 'none') {
+  if (policy === 'none') return '';
+  if (policy !== 'procedural_sensitive') {
+    throw new Error(`unknown affective adaptation policy: ${policy}`);
+  }
+  return [
+    'Affective adaptation layer: run this whether or not a procedural route change occurs.',
+    'Privately infer the learner pressure at stake: face-saving, defensiveness, shame risk, status threat, fatigue, anxiety, overconfidence, or brittle compliance.',
+    'If the tutor makes a procedural change, fit the affective stance to that change: a stricter evidence gate needs respectful firmness and status protection; a new object or representation needs cognitive-load relief; a role/status shift needs explicit ownership boundaries; an action gate needs lowered social risk for an incomplete try.',
+    'If no procedural change occurs, still adapt affect through pacing, address, directness, silence, formality, accountability, or status protection.',
+    'Do not substitute warmth for evidence, lower the evidence standard, expose hidden labels, or solve the artifact for the learner.',
+  ].join(' ');
+}
+
+function withAffectiveAdaptationPolicy(plan, policy = 'none') {
+  if (!plan) return plan;
+  if (!AFFECTIVE_ADAPTATION_POLICIES.has(policy)) throw new Error(`unknown affective adaptation policy: ${policy}`);
+  if (policy === 'none') return { ...plan, affective_adaptation_policy: 'none' };
+  const contract = affectiveAdaptationContract(policy);
+  const sideConstraints = { ...(plan.side_constraints || {}) };
+  sideConstraints.tutor = combineText(
+    sideConstraints.tutor,
+    `${contract} The tutor's private review should name the affective stance and how it fits the current procedural move, if any.`,
+  );
+  sideConstraints.learner = combineText(
+    sideConstraints.learner,
+    'Affective-response constraint: let resistance, defensiveness, fatigue, status concern, or brittle compliance remain visible when it is plausible; do not convert every affective adjustment into immediate agreement.',
+  );
+  return {
+    ...plan,
+    affective_adaptation_policy: policy,
+    affective_adaptation_contract: contract,
+    side_constraints: sideConstraints,
   };
 }
 
@@ -2471,6 +3916,95 @@ function attachSecret(plan, d) {
   return plan;
 }
 
+function controlEndingInstructionForPrompt(args, d) {
+  if (!args || args.controlEndingPolicy === 'default') return null;
+  const tutorPolicy = d?._tutorAdaptationPolicy || d?.tutor_adaptation_policy || 'none';
+  if (!(tutorPolicy === 'routine' || tutorPolicy === 'none' || tutorPolicy === 'withhold_secret')) {
+    return `Requested control-ending policy "${args.controlEndingPolicy}" is not applied to this adaptive arm. Preserve its normal ending shape.`;
+  }
+  if (args.controlEndingPolicy === 'hold') {
+    return [
+      'CONTROL ENDING HOLD applies to this non-adaptive control arm.',
+      'Shape the scene so the closing learner turn can remain local: partial calculation, missing datum, unresolved criterion, or concrete next check.',
+      'Do not design the scene to end with a clean old-frame/new-frame learner breakthrough.',
+      'Competent routine work is allowed; recognitive self-reframing is not the target.',
+    ].join(' ');
+  }
+  return null;
+}
+
+function applyRuntimeDirectorPolicies({ d, args, plan, revisitPolicy, revisitAnchor }) {
+  return withTurnPlan(
+    applyOpeningSpeakerOverride(
+      d,
+      attachSecret(
+        withWorldAdaptationConstraints(
+          withDirectorCueProvenance(
+            withControlEndingPolicy(
+              applyApproachDirectorOverrides(
+                d,
+                withAffectiveAdaptationPolicy(
+                  withTutorAdaptationPolicy(
+                    withDirectorRevisitCue(plan, revisitPolicy, revisitAnchor),
+                    d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
+                  ),
+                  d._affectiveAdaptationPolicy ||
+                    d.affective_adaptation_policy ||
+                    args.affectiveAdaptationPolicy ||
+                    'none',
+                ),
+              ),
+              args.controlEndingPolicy,
+              d,
+            ),
+          ),
+          d,
+        ),
+        d,
+      ),
+    ),
+    d,
+  );
+}
+
+// ── Slice 6: director-plan cache ─────────────────────────────────────────────
+// The director call is the single most expensive call in a scene (~90-150s) and
+// is a pure function of (drama, generator, model, effort, director system prompt,
+// director user prompt). On a rerun after a cue/runtime patch, the director's
+// RAW response can be replayed and the deterministic post-processing
+// (applySpecDirectorOverrides + applyRuntimeDirectorPolicies) re-applied fresh,
+// so a downstream policy change is still honoured. Caching the raw response —
+// not the merged plan — keeps that re-application live. Off by default.
+function directorPlanCacheKey({ d, args, systemPrompt, userPrompt }) {
+  return sha256Short(
+    JSON.stringify({
+      v: 'director-plan-cache-v1',
+      drama: d.id,
+      generator: args.generator,
+      model: args.model || null,
+      effort: args.effort || null,
+      system: sha256Short(systemPrompt),
+      user: sha256Short(userPrompt),
+    }),
+  );
+}
+
+function readDirectorPlanRaw(file) {
+  try {
+    const text = fs.readFileSync(file, 'utf8');
+    // Accept either a cache envelope {raw_content} or a bare director JSON/string.
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed.raw_content === 'string') return parsed.raw_content;
+      return text;
+    } catch (_) {
+      return text;
+    }
+  } catch (_) {
+    return null;
+  }
+}
+
 async function buildDirectorPlan(d, llmCall, args) {
   if (args.directorMode === 'off') return null;
   const revisitPolicy = d._directorRevisitPolicy ?? args.directorRevisitPolicy;
@@ -2519,6 +4053,10 @@ async function buildDirectorPlan(d, llmCall, args) {
       d._pedagogicalApproach || d._dialogueApproach
         ? 'Use the selected pedagogical and dialogue approaches as directorial source material for scene ecology, tutor constraints, learner constraints, speaker order, turn length, and stage-direction policy. Do not name these approach IDs in public speech.'
         : null,
+    opening_speaker_override: args.openingSpeaker || null,
+    speaker_order_instruction: args.openingSpeaker
+      ? `The run configuration requires opening_speaker=${args.openingSpeaker}. Make the scene plausible for that first speaker.`
+      : null,
     director_variation_key: variationKey,
     forbidden_failure_modes: [
       'every turn in first/second person',
@@ -2531,13 +4069,53 @@ async function buildDirectorPlan(d, llmCall, args) {
     opt_in_revisit_cue:
       revisitPolicy !== 'none' &&
       `The generator will inject one visible learner look-back cue after turn 2 using the ${revisitPolicy} policy and the ${revisitAnchor} anchor selector. Let the scene make that cue plausible without naming recognition or guaranteeing a breakthrough.`,
+    control_ending_policy: args.controlEndingPolicy || 'default',
+    control_ending_instruction: controlEndingInstructionForPrompt(args, d),
     fallback_variation_seed: fallback,
   });
-  const response = await llmCall('director', buildDirectorSystemPrompt(), [{ role: 'user', content: userPrompt }], {
-    temperature: 0.85,
-    maxTokens: 900,
-    agentRole: 'director',
-  });
+  const directorSystemPrompt = buildDirectorSystemPrompt();
+  let directorPlanCacheStatus = 'off';
+  let directorPlanCacheFile = null;
+  let cachedDirectorRaw = null;
+  if (args.reuseDirectorPlan) {
+    cachedDirectorRaw = readDirectorPlanRaw(args.reuseDirectorPlan);
+    directorPlanCacheStatus = cachedDirectorRaw != null ? 'reuse-file' : 'reuse-file-missing';
+  } else if (args.directorPlanCache) {
+    const key = directorPlanCacheKey({ d, args, systemPrompt: directorSystemPrompt, userPrompt });
+    directorPlanCacheFile = path.join(args.directorPlanCache, `${key}.json`);
+    if (fs.existsSync(directorPlanCacheFile)) {
+      cachedDirectorRaw = readDirectorPlanRaw(directorPlanCacheFile);
+      directorPlanCacheStatus = cachedDirectorRaw != null ? 'hit' : 'miss';
+    } else {
+      directorPlanCacheStatus = 'miss';
+    }
+  }
+  let response;
+  if (cachedDirectorRaw != null) {
+    response = { content: cachedDirectorRaw, provenance: { agentRole: 'director', director_plan_cached: true } };
+  } else {
+    response = await llmCall('director', directorSystemPrompt, [{ role: 'user', content: userPrompt }], {
+      temperature: 0.85,
+      maxTokens: 900,
+      agentRole: 'director',
+    });
+    if (directorPlanCacheFile) {
+      try {
+        fs.mkdirSync(path.dirname(directorPlanCacheFile), { recursive: true });
+        fs.writeFileSync(
+          directorPlanCacheFile,
+          JSON.stringify(
+            { drama_id: d.id, generated_at: new Date().toISOString(), raw_content: String(response.content || '') },
+            null,
+            2,
+          ),
+          'utf8',
+        );
+      } catch (err) {
+        console.warn(`[warn] could not write director-plan cache: ${err?.message || String(err)}`);
+      }
+    }
+  }
   try {
     const parsed = extractJsonObject(response.content);
     if (!parsed) throw new Error('no JSON object');
@@ -2550,44 +4128,18 @@ async function buildDirectorPlan(d, llmCall, args) {
           ? parsed.interventions
           : fallback.interventions,
       parse_status: 'ok',
+      director_plan_cache: directorPlanCacheStatus,
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
-    return withTurnPlan(
-      attachSecret(
-        withDirectorCueProvenance(
-          applyApproachDirectorOverrides(
-            d,
-            withTutorAdaptationPolicy(
-              withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-              d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
-            ),
-          ),
-        ),
-        d,
-      ),
-      d,
-    );
+    return applyRuntimeDirectorPolicies({ d, args, plan: merged, revisitPolicy, revisitAnchor });
   } catch (error) {
     const merged = applySpecDirectorOverrides(d, {
       ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`, args),
       raw_director_response: String(response.content || '').slice(0, 2000),
+      director_plan_cache: directorPlanCacheStatus,
       provenance: response.provenance || response.apiPayload?.provenance || null,
     });
-    return withTurnPlan(
-      attachSecret(
-        withDirectorCueProvenance(
-          applyApproachDirectorOverrides(
-            d,
-            withTutorAdaptationPolicy(
-              withDirectorRevisitCue(merged, revisitPolicy, revisitAnchor),
-              d._tutorAdaptationPolicy || d.tutor_adaptation_policy || 'none',
-            ),
-          ),
-        ),
-        d,
-      ),
-      d,
-    );
+    return applyRuntimeDirectorPolicies({ d, args, plan: merged, revisitPolicy, revisitAnchor });
   }
 }
 
@@ -2619,6 +4171,13 @@ function reclean(args) {
   for (const f of jsons) {
     const tid = f.replace(/\.json$/, '');
     const trace = JSON.parse(fs.readFileSync(path.join(args.delibDir, f), 'utf8'));
+    const keyItem = keyObj?.items?.[tid] || null;
+    trace.run = trace.run || {};
+    if (!trace.run.affective_adaptation_policy && keyItem?.affective_adaptation_policy) {
+      trace.run.affective_adaptation_policy = keyItem.affective_adaptation_policy;
+    }
+    trace.run.curriculum_script_notes =
+      trace.run.curriculum_script_notes || curriculumScriptNotesForTrace(trace, keyItem);
     const turns = externalTurns(trace, { restoreLeakedEgo: true });
     const removed = [];
     const publicTranscript = renderTranscript(turns, removed);
@@ -2645,6 +4204,10 @@ function reclean(args) {
     if (keyObj?.items?.[tid]) {
       keyObj.items[tid].quality_status = trace.quality_status;
       keyObj.items[tid].quality_warnings = qualityWarnings;
+      keyObj.items[tid].affective_adaptation_policy =
+        keyObj.items[tid].affective_adaptation_policy || trace.run.affective_adaptation_policy || 'none';
+      keyObj.items[tid].curriculum_script_notes =
+        keyObj.items[tid].curriculum_script_notes || trace.run.curriculum_script_notes || null;
     }
     warnings.push(...qualityWarnings.map(formatQualityWarning));
     if (removed.length) {
@@ -2714,7 +4277,9 @@ function generatorModelLabel(args) {
   // to `${args.model}` (which defaults to 'opus'), so api/sonnet runs were recorded
   // — in the banner AND the key — as "opus". Name the real model explicitly.
   if (args.generator === 'api') return `api/${resolveApiModel(args.apiModel) || args.apiModel}`;
-  return `claude-cli/${args.model}${args.effort ? `@${args.effort}` : ''}`;
+  return `claude-cli/${args.model}${args.effort ? `@${args.effort}` : ''}${
+    args.claudePersistentWorkers ? '#persistent-workers' : ''
+  }`;
 }
 
 function formatHeldOutEntryContent(entry) {
@@ -2749,6 +4314,8 @@ function formatSuperegoInnerAddress(text) {
     [/\bPUBLIC_ACTION_GATE:\s*/gi, 'Public action gate: '],
     [/\bMECHANISM_QUALITY_CHECK:\s*/gi, 'Mechanism quality check: '],
     [/\bREGISTER_CHECK:\s*/gi, 'Register check: '],
+    [/\bAFFECT_CHECK:\s*/gi, 'Affective stance check: '],
+    [/\bAFFECTIVE_STANCE:\s*/gi, 'Affective stance: '],
     [/\bThe Ego is\b/g, 'You are'],
     [/\bthe Ego is\b/g, 'you are'],
     [/\bThe Ego was\b/g, 'You were'],
@@ -2787,6 +4354,16 @@ function renderHeldOutTranscript(trace, { tid, dramaId, mode }) {
     lines.push('```yaml');
     lines.push(yaml.stringify(trace.directorPlan).trim());
     lines.push('```', '');
+  }
+
+  if (mode === 'full') {
+    const notes = trace.run?.curriculum_script_notes || curriculumScriptNotesForTrace(trace);
+    if (notes) {
+      lines.push('## Curriculum -> Rhetoric -> Script Notes', '');
+      lines.push('```yaml');
+      lines.push(yaml.stringify(notes).trim());
+      lines.push('```', '');
+    }
   }
 
   if (mode === 'full') {
@@ -2840,6 +4417,130 @@ function writeHeldOutTranscripts({ args, tid, dramaId, trace, publicTranscript }
   fs.writeFileSync(artifacts.tutor, renderHeldOutTranscript(trace, { tid, dramaId, mode: 'tutor' }), 'utf8');
   fs.writeFileSync(artifacts.learner, renderHeldOutTranscript(trace, { tid, dramaId, mode: 'learner' }), 'utf8');
   return Object.fromEntries(Object.entries(artifacts).map(([k, v]) => [k, path.relative(WORKTREE_ROOT, v)]));
+}
+
+function runMetadataForDrama({ args, d, directorPlan, runtime, transcriptArtifacts, extra = {} }) {
+  const telemetry = callTelemetryPayloadForArgs(args);
+  return {
+    generator: args.roleMap ? 'mixed' : args.generator,
+    role_map: args.roleMap || null,
+    director_mode: args.directorMode,
+    director_revisit_cue: d._directorRevisitPolicy !== 'none',
+    director_revisit_policy: d._directorRevisitPolicy,
+    director_revisit_anchor: d._directorRevisitAnchor,
+    tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
+    control_ending_policy: args.controlEndingPolicy || 'default',
+    control_ending_applied: Boolean(directorPlan?.control_ending_applied),
+    affective_adaptation_policy:
+      d._affectiveAdaptationPolicy ||
+      d.affective_adaptation_policy ||
+      directorPlan?.affective_adaptation_policy ||
+      'none',
+    opening_speaker_override: args.openingSpeaker || null,
+    opening_speaker: directorPlan?.opening_speaker || null,
+    ending_speaker: directorPlan?.ending_speaker || null,
+    director_variation_key: d._directorVariationKey || null,
+    stage_direction_style: stageDirectionStyleFor(d)?.id || null,
+    model: generatorModelLabel(args),
+    codex_reasoning_effort: CODEX_REASONING_EFFORT,
+    writing_pad: runtime.writingPad,
+    world_adaptation: worldAdaptationBindingForDrama(d),
+    rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
+    curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
+    transcript_artifacts: transcriptArtifacts,
+    ...(relativeCallTelemetryArtifactsForArgs(args)
+      ? { call_telemetry_artifacts: relativeCallTelemetryArtifactsForArgs(args) }
+      : {}),
+    ...(telemetry ? { call_telemetry_summary: telemetry.summary } : {}),
+    ...extra,
+  };
+}
+
+function writePartialTurnArtifacts({ args, d, trace, directorPlan, runtime, turn }) {
+  const partialArgs = {
+    ...args,
+    outDir: path.join(args.outDir, '_partial'),
+    delibDir: path.join(args.delibDir, '_partial'),
+    transcriptsDir: path.join(args.transcriptsDir, '_partial'),
+  };
+  fs.mkdirSync(partialArgs.outDir, { recursive: true });
+  fs.mkdirSync(partialArgs.delibDir, { recursive: true });
+  const removedNotes = [];
+  const publicTranscript = renderTranscript(externalTurns(trace), removedNotes);
+  const outTxt = path.join(partialArgs.outDir, `${d._tid}.txt`);
+  fs.writeFileSync(outTxt, publicTranscript, 'utf8');
+  const telemetry = callTelemetryPayloadForArgs(args);
+  trace.run = {
+    ...(trace.run || {}),
+    affective_adaptation_policy:
+      d._affectiveAdaptationPolicy ||
+      d.affective_adaptation_policy ||
+      directorPlan?.affective_adaptation_policy ||
+      'none',
+    curriculum_script_notes: trace.run?.curriculum_script_notes || curriculumScriptNotesForDrama(d, directorPlan),
+  };
+  const transcriptArtifacts = writeHeldOutTranscripts({
+    args: partialArgs,
+    tid: d._tid,
+    dramaId: d.id,
+    trace,
+    publicTranscript,
+  });
+  const payload = {
+    tid: d._tid,
+    drama_id: d.id,
+    partial: true,
+    flushed_at: new Date().toISOString(),
+    last_flushed_turn: turn
+      ? {
+          turnNumber: turn.turnNumber ?? null,
+          phase: turn.phase || null,
+          timestamp: turn.timestamp || null,
+        }
+      : null,
+    run: runMetadataForDrama({
+      args,
+      d,
+      directorPlan,
+      runtime,
+      transcriptArtifacts,
+      extra: {
+        partial: true,
+        status: 'running',
+      },
+    }),
+    directorPlan,
+    turns: trace.turns,
+    metrics: trace.metrics,
+    writingPadSnapshots: trace.writingPadSnapshots,
+    ...(telemetry ? { call_telemetry: telemetry } : {}),
+    quality_status: 'running',
+    quality_warnings: [],
+    stripped_stage_directions: removedNotes,
+  };
+  fs.writeFileSync(path.join(partialArgs.delibDir, `${d._tid}.json`), JSON.stringify(payload, null, 2), 'utf8');
+  return {
+    sample: path.relative(WORKTREE_ROOT, outTxt),
+    transcripts: transcriptArtifacts,
+    deliberation: path.relative(WORKTREE_ROOT, path.join(partialArgs.delibDir, `${d._tid}.json`)),
+  };
+}
+
+function createPartialTurnFlusher({ args, d, directorPlan, runtime, progress, progressKey = d._tid }) {
+  return ({ turn, trace }) => {
+    try {
+      const artifacts = writePartialTurnArtifacts({ args, d, trace, directorPlan, runtime, turn });
+      const phase = turn?.phase || 'turn';
+      const turnNumber = turn?.turnNumber ?? '?';
+      progress?.note?.(`${progressKey} partial flush ${phase} ${turnNumber} -> ${artifacts.sample}`);
+    } catch (err) {
+      console.warn(
+        `[warn] ${progressKey} partial flush failed after ${turn?.phase || 'turn'} ${turn?.turnNumber ?? '?'}: ${
+          err?.message || String(err)
+        }`,
+      );
+    }
+  };
 }
 
 function prepareWritingPad(args) {
@@ -2902,6 +4603,7 @@ function writeGeneratedDramaArtifacts({
   transcriptArtifacts,
   pairedContinuation = null,
 }) {
+  const telemetry = callTelemetryPayloadForArgs(args);
   fs.writeFileSync(
     path.join(dirs.delibDir, `${d._tid}.json`),
     JSON.stringify(
@@ -2916,18 +4618,36 @@ function writeGeneratedDramaArtifacts({
           director_revisit_policy: d._directorRevisitPolicy,
           director_revisit_anchor: d._directorRevisitAnchor,
           tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
+          control_ending_policy: args.controlEndingPolicy || 'default',
+          control_ending_applied: Boolean(directorPlan?.control_ending_applied),
+          affective_adaptation_policy:
+            d._affectiveAdaptationPolicy ||
+            d.affective_adaptation_policy ||
+            directorPlan?.affective_adaptation_policy ||
+            'none',
+          opening_speaker_override: args.openingSpeaker || null,
+          opening_speaker: directorPlan?.opening_speaker || null,
+          ending_speaker: directorPlan?.ending_speaker || null,
           director_variation_key: d._directorVariationKey || null,
           stage_direction_style: stageDirectionStyleFor(d)?.id || null,
           model: generatorModelLabel(args),
           codex_reasoning_effort: CODEX_REASONING_EFFORT,
           writing_pad: runtime.writingPad,
+          world_adaptation: worldAdaptationBindingForDrama(d),
+          rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
+          curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
           transcript_artifacts: transcriptArtifacts,
+          ...(relativeCallTelemetryArtifactsForArgs(args)
+            ? { call_telemetry_artifacts: relativeCallTelemetryArtifactsForArgs(args) }
+            : {}),
+          ...(telemetry ? { call_telemetry_summary: telemetry.summary } : {}),
           ...(pairedContinuation ? { paired_continuation: pairedContinuation } : {}),
         },
         directorPlan,
         turns: trace.turns,
         metrics: trace.metrics,
         writingPadSnapshots: trace.writingPadSnapshots,
+        ...(telemetry ? { call_telemetry: telemetry } : {}),
         quality_status: hasBlockingQualityWarnings(qualityWarnings) ? 'review_before_scoring' : 'ok',
         quality_warnings: qualityWarnings,
       },
@@ -2944,6 +4664,7 @@ function baseKeyObject({
   directorPolicy,
   directorAnchor,
   tutorAdaptationPolicy = 'none',
+  affectiveAdaptationPolicy = args.affectiveAdaptationPolicy || 'none',
   transcriptsDir,
   order,
   paired = null,
@@ -2965,24 +4686,26 @@ function baseKeyObject({
             : args.generator === 'gemini'
               ? 'real-gemini'
               : 'real-claude-code',
-    model: args.mock
-      ? null
-      : args.roleMap
-        ? `mixed (claude=${args.model}${args.effort ? `@${args.effort}` : ''}, codex=config-default@${CODEX_REASONING_EFFORT})`
-        : generatorModelLabel(args),
+    model: args.mock ? null : args.roleMap ? roleMapModelLabel(args) : generatorModelLabel(args),
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
     director_mode: args.directorMode,
+    opening_speaker_override: args.openingSpeaker || null,
     director_variation_key: args.directorVariationKey || null,
     director_revisit_cue: directorPolicy !== 'none',
     director_revisit_policy: directorPolicy,
     director_revisit_anchor: directorPolicy === 'none' ? null : directorAnchor,
     tutor_adaptation_policy: tutorAdaptationPolicy,
+    control_ending_policy: args.controlEndingPolicy || 'default',
+    affective_adaptation_policy: affectiveAdaptationPolicy,
     approach_databases: {
       pedagogical: path.relative(WORKTREE_ROOT, args.pedagogyDb),
       dialogue: path.relative(WORKTREE_ROOT, args.dialogueDb),
     },
     transcripts_dir: path.relative(WORKTREE_ROOT, transcriptsDir),
+    ...(relativeCallTelemetryArtifactsForArgs(args)
+      ? { call_telemetry_artifacts: relativeCallTelemetryArtifactsForArgs(args) }
+      : {}),
     seed: args.seed,
     max_turns: args.maxTurns,
     n: order.length,
@@ -3023,18 +4746,47 @@ function pairedBranchDefinitions(args) {
       key: arm,
       revisitPolicy: PAIRED_ADAPTATION_ARMS[arm].revisitPolicy,
       tutorAdaptationPolicy: PAIRED_ADAPTATION_ARMS[arm].tutorAdaptationPolicy,
+      secretTutorAdaptationPolicy: PAIRED_ADAPTATION_ARMS[arm].secretTutorAdaptationPolicy || null,
     }));
   }
   return [...new Set(args.pairedContinuationPolicies)].map((policy) => ({
     key: policy,
     revisitPolicy: policy,
     tutorAdaptationPolicy: 'none',
+    secretTutorAdaptationPolicy: null,
   }));
 }
 
+function dramaHasOedipusSecret(d) {
+  return Boolean(d?.secret?.fact);
+}
+
+function effectiveBranchTutorAdaptationPolicy(branch, d) {
+  if (dramaHasOedipusSecret(d) && branch?.secretTutorAdaptationPolicy) {
+    return branch.secretTutorAdaptationPolicy;
+  }
+  return branch?.tutorAdaptationPolicy || 'none';
+}
+
+function effectiveBranchTutorAdaptationPolicyForOrder(branch, order = []) {
+  const policies = new Set((order || []).map((d) => effectiveBranchTutorAdaptationPolicy(branch, d)));
+  if (!policies.size) return branch?.tutorAdaptationPolicy || 'none';
+  if (policies.size === 1) return [...policies][0];
+  return [...policies].sort().join('|');
+}
+
 async function generatePairedContinuations({ args, order, runtime, llmCall }) {
+  if (args.pairedPrefixTrace && order.length !== 1) {
+    throw new Error('--paired-prefix-trace currently supports exactly one selected drama');
+  }
   const branches = pairedBranchDefinitions(args);
   const branchKeys = branches.map((branch) => branch.key);
+  const pairedPrefixSource = args.pairedPrefixTrace
+    ? {
+        prefix_source_trace: path.relative(WORKTREE_ROOT, args.pairedPrefixTrace),
+        prefix_source_branch: args.pairedPrefixSourceBranch || 'none',
+      }
+    : {};
   const progress = createProgressReporter({
     label: 'generation',
     total: order.length * (branches.length + 1),
@@ -3048,7 +4800,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         runtime,
         directorPolicy: branch.revisitPolicy,
         directorAnchor: args.directorRevisitAnchor,
-        tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+        tutorAdaptationPolicy: effectiveBranchTutorAdaptationPolicyForOrder(branch, order),
         transcriptsDir: armDirs[branch.key].transcriptsDir,
         order,
         paired: {
@@ -3056,6 +4808,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
           prefix_through: 'tutor_turn_2',
           branch_policies: branchKeys,
           branches,
+          ...pairedPrefixSource,
         },
       }),
     ]),
@@ -3080,54 +4833,100 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
         const itemWarnings = [];
         const itemEntries = {};
-        progress.note(`${d._tid} (${d.id}) shared prefix starting`);
-        console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
-        const prefixDrama = {
-          ...d,
-          _directorRevisitPolicy: 'none',
-          _directorRevisitAnchor: null,
-          _tutorAdaptationPolicy: 'none',
-        };
-        const directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
-        const prefixTrace = await runtime.runInteraction(
-          {
-            learnerId: branchId('prefix', d.id, 'none'),
-            personaId: d.persona,
-            tutorProfile: d.tutor_profile,
-            topic: d.topic,
-            scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
-            sessionId: branchId('prefix-session', d.id, 'none'),
-          },
-          llmCall,
-          {
-            maxTurns: 2,
-            observeInternals: true,
-            learnerProfile: d.learner_profile,
-            forceMaxTurns: true,
-            directorPlan,
-            onProgress: ({ phase, turnCount, maxTurns }) =>
-              progress.update(
-                `${d._tid}:prefix`,
-                maxTurns ? turnCount / maxTurns : 0,
-                `${d._tid} prefix · ${phase} ${turnCount}/${maxTurns}`,
-              ),
-          },
-        );
-        const resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
+        let directorPlan;
+        let resumeTrace;
+        if (args.pairedPrefixTrace) {
+          progress.note(`${d._tid} (${d.id}) shared prefix loading`);
+          console.log(
+            `\n  ${d._tid} (${d.id}) — loading shared prefix from ${path.relative(WORKTREE_ROOT, args.pairedPrefixTrace)} …`,
+          );
+          const sourceTrace = JSON.parse(fs.readFileSync(args.pairedPrefixTrace, 'utf8'));
+          if (sourceTrace.drama_id && sourceTrace.drama_id !== d.id) {
+            throw new Error(`prefix trace drama_id ${sourceTrace.drama_id} does not match selected drama ${d.id}`);
+          }
+          if (sourceTrace.tid && sourceTrace.tid !== d._tid) {
+            throw new Error(`prefix trace tid ${sourceTrace.tid} does not match selected T id ${d._tid}`);
+          }
+          if (!sourceTrace.directorPlan) {
+            throw new Error(`prefix trace has no directorPlan: ${args.pairedPrefixTrace}`);
+          }
+          directorPlan = sourceTrace.directorPlan;
+          resumeTrace = tracePrefixThroughTutorTurn(sourceTrace, 2);
+        } else {
+          progress.note(`${d._tid} (${d.id}) shared prefix starting`);
+          console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
+          const prefixDrama = {
+            ...d,
+            _directorRevisitPolicy: 'none',
+            _directorRevisitAnchor: null,
+            _tutorAdaptationPolicy: dramaHasOedipusSecret(d) ? 'withhold_secret' : 'none',
+          };
+          directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
+          const prefixTrace = await runtime.runInteraction(
+            {
+              learnerId: branchId('prefix', d.id, 'none'),
+              personaId: d.persona,
+              tutorProfile: d.tutor_profile,
+              topic: d.topic,
+              scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
+              sessionId: branchId('prefix-session', d.id, 'none'),
+            },
+            llmCall,
+            {
+              ...dramaTurnOptionsForArgs(args),
+              maxTurns: 2,
+              observeInternals: true,
+              learnerProfile: d.learner_profile,
+              forceMaxTurns: true,
+              directorPlan,
+              onProgress: ({ phase, turnCount, maxTurns }) =>
+                progress.update(
+                  `${d._tid}:prefix`,
+                  maxTurns ? turnCount / maxTurns : 0,
+                  `${d._tid} prefix · ${phase} ${turnCount}/${maxTurns}`,
+                ),
+              onTurn: createPartialTurnFlusher({
+                args,
+                d: prefixDrama,
+                directorPlan,
+                runtime,
+                progress,
+                progressKey: `${d._tid}:prefix`,
+              }),
+            },
+          );
+          resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
+        }
         const prefixTurns = externalTurns(resumeTrace);
         const prefixHash = sha256Short(renderTranscript(prefixTurns));
-        progress.step(`${d._tid} prefix ready ${prefixHash}`, 1, `${d._tid}:prefix`);
+        progress.step(
+          `${d._tid} prefix ${args.pairedPrefixTrace ? 'loaded' : 'ready'} ${prefixHash}`,
+          1,
+          `${d._tid}:prefix`,
+        );
 
         for (const branch of branches) {
+          const branchTutorAdaptationPolicy = effectiveBranchTutorAdaptationPolicy(branch, d);
           const dirs = armDirs[branch.key];
           const outTxt = path.join(dirs.outDir, `${d._tid}.txt`);
           if (fs.existsSync(outTxt) && !args.force) {
             throw new Error(`paired continuation output exists: ${outTxt} (pass --force to overwrite)`);
           }
+          const branchPolicyDrama = { ...d, _tutorAdaptationPolicy: branchTutorAdaptationPolicy };
           const branchDirectorPlan = withDirectorCueProvenance(
-            withTutorAdaptationPolicy(
-              withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
-              branch.tutorAdaptationPolicy,
+            withControlEndingPolicy(
+              withAffectiveAdaptationPolicy(
+                withTutorAdaptationPolicy(
+                  withPairedDirectorRevisitCue(directorPlan, branch.revisitPolicy, args.directorRevisitAnchor),
+                  branchTutorAdaptationPolicy,
+                ),
+                d._affectiveAdaptationPolicy ||
+                  d.affective_adaptation_policy ||
+                  args.affectiveAdaptationPolicy ||
+                  'none',
+              ),
+              args.controlEndingPolicy,
+              branchPolicyDrama,
             ),
           );
           const branchDrama = {
@@ -3137,7 +4936,16 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             _directorVariationKey: d._directorVariationKey || null,
             _directorRevisitPolicy: branch.revisitPolicy,
             _directorRevisitAnchor: branch.revisitPolicy === 'none' ? null : args.directorRevisitAnchor,
-            _tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+            _tutorAdaptationPolicy: branchTutorAdaptationPolicy,
+            _affectiveAdaptationPolicy:
+              d._affectiveAdaptationPolicy || d.affective_adaptation_policy || args.affectiveAdaptationPolicy || 'none',
+            _controlEndingPolicy: args.controlEndingPolicy || 'default',
+          };
+          const branchArgs = {
+            ...args,
+            outDir: dirs.outDir,
+            delibDir: dirs.delibDir,
+            transcriptsDir: dirs.transcriptsDir,
           };
           progress.note(`${d._tid} ${branch.key} starting`);
           console.log(`    ${branch.key} → continuing from prefix ${prefixHash} …`);
@@ -3160,6 +4968,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
               observeInternals: true,
               learnerProfile: d.learner_profile,
               forceMaxTurns: true,
+              ...dramaTurnOptionsForArgs(args),
               directorPlan: branchDirectorPlan,
               resumeTrace,
               onProgress: ({ phase, turnCount, maxTurns }) =>
@@ -3168,6 +4977,14 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
                   maxTurns ? turnCount / maxTurns : 0,
                   `${d._tid} ${branch.key} · ${phase} ${turnCount}/${maxTurns}`,
                 ),
+              onTurn: createPartialTurnFlusher({
+                args: branchArgs,
+                d: branchDrama,
+                directorPlan: branchDirectorPlan,
+                runtime,
+                progress,
+                progressKey: `${d._tid}:${branch.key}`,
+              }),
             },
           );
           const turns = externalTurns(trace);
@@ -3194,7 +5011,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             removedNotes,
             traceTurns: trace.turns,
             directorPolicy: branch.revisitPolicy,
-            tutorAdaptationPolicy: branch.tutorAdaptationPolicy,
+            tutorAdaptationPolicy: branchTutorAdaptationPolicy,
           });
           itemWarnings.push(...qualityWarnings.map(formatQualityWarning));
           if (removedNotes.length) {
@@ -3204,6 +5021,13 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
               'utf8',
             );
           }
+          trace.run = {
+            ...(trace.run || {}),
+            affective_adaptation_policy:
+              branchDrama._affectiveAdaptationPolicy || branchDirectorPlan?.affective_adaptation_policy || 'none',
+            curriculum_script_notes:
+              trace.run?.curriculum_script_notes || curriculumScriptNotesForDrama(branchDrama, branchDirectorPlan),
+          };
           const transcriptArtifacts = writeHeldOutTranscripts({
             args: { ...args, transcriptsDir: dirs.transcriptsDir },
             tid: d._tid,
@@ -3217,7 +5041,10 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
             shared_prefix_hash: prefixHash,
             branch_policy: branch.key,
             director_revisit_policy: branch.revisitPolicy,
-            tutor_adaptation_policy: branch.tutorAdaptationPolicy,
+            tutor_adaptation_policy: branchTutorAdaptationPolicy,
+            affective_adaptation_policy:
+              branchDrama._affectiveAdaptationPolicy || branchDirectorPlan?.affective_adaptation_policy || 'none',
+            ...pairedPrefixSource,
           };
           writeGeneratedDramaArtifacts({
             args,
@@ -3258,9 +5085,14 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
   }
   progress.finish('paired generation complete');
 
+  flushCallTelemetryArtifactsForArgs(args);
   for (const branch of branches) {
     const dirs = armDirs[branch.key];
-    fs.writeFileSync(dirs.keyPath, yaml.stringify(finalizeKeyObject(armKeys[branch.key])), 'utf8');
+    fs.writeFileSync(
+      dirs.keyPath,
+      yaml.stringify(attachCallTelemetrySummary(finalizeKeyObject(armKeys[branch.key]), args)),
+      'utf8',
+    );
     console.log(`\n${branch.key}:`);
     console.log(`  samples → ${path.relative(WORKTREE_ROOT, dirs.outDir)}`);
     console.log(`  key     → ${path.relative(WORKTREE_ROOT, dirs.keyPath)}`);
@@ -3298,13 +5130,32 @@ async function loadInteractionRuntime(args) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  if (args.help) {
+    process.stdout.write(`${usage()}\n`);
+    return;
+  }
+  Object.defineProperty(args, '_callTelemetry', {
+    value: makeCallTelemetryRecorder({
+      enabled: args.traceCalls,
+      print: args.traceCalls,
+      jsonPath: args.callTelemetryJsonPath,
+      csvPath: args.callTelemetryCsvPath,
+    }),
+    enumerable: false,
+  });
   if (args.reclean) return reclean(args);
   if (!fs.existsSync(args.spec)) throw new Error(`dramas spec not found: ${args.spec}`);
   const spec = yaml.parse(fs.readFileSync(args.spec, 'utf8'));
   const dramas = spec.dramas || [];
   if (dramas.length === 0) throw new Error('no dramas in spec');
+  let selectedDramas = dramas;
+  if (args.firstLesson) {
+    const first = selectFirstLessonDrama(dramas);
+    if (!first) throw new Error('--first-lesson matched no dramas');
+    selectedDramas = [first];
+  }
   const approachDatabases = loadApproachDatabases(args);
-  dramas.forEach((d) => attachApproaches(d, approachDatabases));
+  selectedDramas.forEach((d) => attachApproaches(d, approachDatabases));
 
   // Seeded T-id assignment over the FULL spec FIRST, so the neutral id encodes
   // neither condition nor spec order. --tid-start offsets the numbering so a
@@ -3312,7 +5163,7 @@ async function main() {
   // the Fisher–Yates shuffle remapping the already-landed ids — the shuffle is
   // NOT stable under a set-size change.
   const rng = mulberry32(args.seed);
-  let order = shuffled(dramas, rng);
+  let order = shuffled(selectedDramas, rng);
   const width = Math.max(2, String(args.tidStart + order.length).length);
   order.forEach((d, i) => (d._tid = `T${String(i + 1 + args.tidStart).padStart(width, '0')}`));
 
@@ -3339,6 +5190,16 @@ async function main() {
         `drama ${d.id || '<unknown>'} tutor_adaptation_policy must be ${[...TUTOR_ADAPTATION_POLICIES].join('|')}`,
       );
     }
+    d._affectiveAdaptationPolicy = args.affectiveAdaptationPolicy || d.affective_adaptation_policy || 'none';
+    if (!AFFECTIVE_ADAPTATION_POLICIES.has(d._affectiveAdaptationPolicy)) {
+      throw new Error(
+        `drama ${d.id || '<unknown>'} affective_adaptation_policy must be ${[...AFFECTIVE_ADAPTATION_POLICIES].join(
+          '|',
+        )}`,
+      );
+    }
+    d._controlEndingPolicy = args.controlEndingPolicy || 'default';
+    d._openingSpeakerOverride = args.openingSpeaker || null;
     d._directorVariationKey = d.director_variation_key || args.directorVariationKey || null;
     d._stageDirectionStyle = resolveStageDirectionStyle(d);
   }
@@ -3361,12 +5222,18 @@ async function main() {
           ? `REAL (agy/${GEMINI_MODEL})`
           : args.generator === 'api'
             ? `REAL (api/${resolveApiModel(args.apiModel) || args.apiModel} via OpenRouter, metered)`
-            : `REAL (claude CLI --model ${args.model}${args.effort ? ` --effort ${args.effort}` : ''}, Max-plan quota)`;
+            : `REAL (claude CLI --model ${args.model}${args.effort ? ` --effort ${args.effort}` : ''}${
+                args.claudePersistentWorkers ? ' · persistent workers' : ''
+              }, Max-plan quota)`;
   console.log(`\n══ Phase-2 de-confound generator — ${genLabel} ══`);
   console.log(
     `  generator: ${args.roleMap ? 'mixed' : args.generator} · dramas: ${order.length} · maxTurns: ${args.maxTurns} · ` +
       `seed: ${args.seed}${args.tidStart ? ` · tid-start: ${args.tidStart}` : ''} · director: ${args.directorMode}` +
-      `${revisitSummary.cue ? ` + revisit-${revisitSummary.policy}/${revisitSummary.anchor}` : ''}`,
+      `${args.firstLesson ? ' · first-lesson' : ''}` +
+      `${args.openingSpeaker ? ` · opens=${args.openingSpeaker}` : ''}` +
+      `${revisitSummary.cue ? ` + revisit-${revisitSummary.policy}/${revisitSummary.anchor}` : ''}` +
+      `${args.affectiveAdaptationPolicy ? ` · affect=${args.affectiveAdaptationPolicy}` : ''}` +
+      `${args.traceCalls ? ' · trace-calls' : ''}`,
   );
   // Explicit model + code-version provenance. The genLabel/key historically said
   // "claude --model opus" for every run because args.model defaults to 'opus';
@@ -3385,12 +5252,19 @@ async function main() {
   console.log(`  models: ${generatorModelLabel(args)} · code git:${_gitRev} · node ${process.version}`);
   console.log(`  out: ${path.relative(WORKTREE_ROOT, args.outDir)}`);
   console.log(`  held-out transcripts: ${path.relative(WORKTREE_ROOT, args.transcriptsDir)}`);
+  if (args.traceCalls) {
+    console.log(
+      `  call telemetry: ${path.relative(WORKTREE_ROOT, args.callTelemetryJsonPath)} · ` +
+        `${path.relative(WORKTREE_ROOT, args.callTelemetryCsvPath)}`,
+    );
+  }
   for (const d of order) {
     console.log(
       `  ${d._tid} ← ${d.id}  [${d.condition}]  ${d.discipline} · persona=${d.persona} · ` +
         `tutor=${d.tutor_profile} · learner=${d.learner_profile}` +
         `${d._pedagogicalApproach || d._dialogueApproach ? ` · approach=${[d._pedagogicalApproach?.id, d._dialogueApproach?.id].filter(Boolean).join('+')}` : ''}` +
-        `${d._stageDirectionStyle ? ` · stage=${d._stageDirectionStyle.id}` : ''}`,
+        `${d._stageDirectionStyle ? ` · stage=${d._stageDirectionStyle.id}` : ''}` +
+        `${d._affectiveAdaptationPolicy && d._affectiveAdaptationPolicy !== 'none' ? ` · affect=${d._affectiveAdaptationPolicy}` : ''}`,
     );
   }
 
@@ -3417,7 +5291,7 @@ async function main() {
 
   const runtime = await loadInteractionRuntime(args);
 
-  const llmCall = args.roleMap
+  const baseLlmCall = args.roleMap
     ? makeRouterLlmCall({
         roleMap: args.roleMap,
         fallback: args.generator,
@@ -3425,6 +5299,7 @@ async function main() {
         claudeEffort: args.effort,
         apiModelKey: args.apiModel,
         mock: args.mock,
+        claudePersistentWorkers: args.claudePersistentWorkers,
       })
     : args.mock
       ? makeMockLlmCall(args.generator)
@@ -3434,9 +5309,17 @@ async function main() {
           ? makeGeminiLlmCall()
           : args.generator === 'api'
             ? makeApiLlmCall(args.apiModel)
-            : makeClaudeLlmCall(args.model, args.effort);
+            : makeClaudeLlmCall(args.model, args.effort, { persistentWorkers: args.claudePersistentWorkers });
+  const llmCall = wrapLlmCallWithTelemetry(
+    wrapLlmCallWithRoleBudgets(baseLlmCall, args.roleMaxTokens),
+    args._callTelemetry,
+  );
   if (args.pairedContinuationPolicies || args.pairedAdaptationArms) {
-    await generatePairedContinuations({ args, order, runtime, llmCall });
+    try {
+      await generatePairedContinuations({ args, order, runtime, llmCall });
+    } finally {
+      await llmCall.close?.();
+    }
     return;
   }
   const keyItems = {};
@@ -3465,6 +5348,12 @@ async function main() {
           if (fs.existsSync(tracePath)) {
             try {
               const traceJson = JSON.parse(fs.readFileSync(tracePath, 'utf8'));
+              traceJson.run = traceJson.run || {};
+              traceJson.run.affective_adaptation_policy =
+                traceJson.run.affective_adaptation_policy || d.affective_adaptation_policy || 'none';
+              traceJson.run.curriculum_script_notes =
+                traceJson.run.curriculum_script_notes ||
+                curriculumScriptNotesForDrama(d, traceJson.directorPlan || null);
               const t = externalTurns(traceJson, { restoreLeakedEgo: true });
               writeHeldOutTranscripts({
                 args,
@@ -3487,6 +5376,9 @@ async function main() {
                     d._stageDirectionStyle ||
                     null,
                   _directorPlan: traceJson.directorPlan || null,
+                  _affectiveAdaptationPolicy:
+                    traceJson.run?.affective_adaptation_policy || d.affective_adaptation_policy || 'none',
+                  _controlEndingPolicy: traceJson.run?.control_ending_policy || args.controlEndingPolicy || 'default',
                 },
                 t.filter((x) => x.role === 'TUTOR').length,
                 t.filter((x) => x.role === 'LEARNER').length,
@@ -3538,6 +5430,7 @@ async function main() {
             observeInternals: true,
             learnerProfile: d.learner_profile,
             forceMaxTurns: true,
+            ...dramaTurnOptionsForArgs(args),
             directorPlan,
             onProgress: ({ phase, turnCount, maxTurns }) =>
               progress.update(
@@ -3545,6 +5438,13 @@ async function main() {
                 maxTurns ? turnCount / maxTurns : 0,
                 `${d._tid} · ${phase} ${turnCount}/${maxTurns}`,
               ),
+            onTurn: createPartialTurnFlusher({
+              args,
+              d,
+              directorPlan,
+              runtime,
+              progress,
+            }),
           },
         );
 
@@ -3572,6 +5472,18 @@ async function main() {
             'utf8',
           );
         }
+        trace.run = {
+          ...(trace.run || {}),
+          opening_speaker_override: args.openingSpeaker || null,
+          opening_speaker: directorPlan?.opening_speaker || null,
+          ending_speaker: directorPlan?.ending_speaker || null,
+          affective_adaptation_policy:
+            d._affectiveAdaptationPolicy ||
+            d.affective_adaptation_policy ||
+            directorPlan?.affective_adaptation_policy ||
+            'none',
+          curriculum_script_notes: trace.run?.curriculum_script_notes || curriculumScriptNotesForDrama(d, directorPlan),
+        };
         const transcriptArtifacts = writeHeldOutTranscripts({
           args,
           tid: d._tid,
@@ -3579,6 +5491,7 @@ async function main() {
           trace,
           publicTranscript,
         });
+        const telemetry = callTelemetryPayloadForArgs(args);
         // HELD OUT — full trace incl. internal deliberation; never shown to critic/labeller.
         fs.writeFileSync(
           path.join(args.delibDir, `${d._tid}.json`),
@@ -3594,17 +5507,35 @@ async function main() {
                 director_revisit_policy: d._directorRevisitPolicy,
                 director_revisit_anchor: d._directorRevisitAnchor,
                 tutor_adaptation_policy: d._tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none',
+                control_ending_policy: args.controlEndingPolicy || 'default',
+                control_ending_applied: Boolean(directorPlan?.control_ending_applied),
+                affective_adaptation_policy:
+                  d._affectiveAdaptationPolicy ||
+                  d.affective_adaptation_policy ||
+                  directorPlan?.affective_adaptation_policy ||
+                  'none',
+                opening_speaker_override: args.openingSpeaker || null,
+                opening_speaker: directorPlan?.opening_speaker || null,
+                ending_speaker: directorPlan?.ending_speaker || null,
                 director_variation_key: d._directorVariationKey || null,
                 stage_direction_style: stageDirectionStyleFor(d)?.id || null,
-                model: generatorModelLabel(args),
+                model: args.roleMap ? roleMapModelLabel(args) : generatorModelLabel(args),
                 codex_reasoning_effort: CODEX_REASONING_EFFORT,
                 writing_pad: runtime.writingPad,
+                world_adaptation: worldAdaptationBindingForDrama(d),
+                rhetorical_dramatic_plan: rhetoricalDramaticPlanBindingForDrama(d),
+                curriculum_script_notes: curriculumScriptNotesForDrama(d, directorPlan),
                 transcript_artifacts: transcriptArtifacts,
+                ...(relativeCallTelemetryArtifactsForArgs(args)
+                  ? { call_telemetry_artifacts: relativeCallTelemetryArtifactsForArgs(args) }
+                  : {}),
+                ...(telemetry ? { call_telemetry_summary: telemetry.summary } : {}),
               },
               directorPlan,
               turns: trace.turns,
               metrics: trace.metrics,
               writingPadSnapshots: trace.writingPadSnapshots,
+              ...(telemetry ? { call_telemetry: telemetry } : {}),
               quality_status: hasBlockingQualityWarnings(qualityWarnings) ? 'review_before_scoring' : 'ok',
               quality_warnings: qualityWarnings,
             },
@@ -3623,6 +5554,8 @@ async function main() {
   } catch (err) {
     progress.stop();
     throw err;
+  } finally {
+    await llmCall.close?.();
   }
   for (const result of generatedResults) {
     if (result.keyItem) keyItems[result.tid] = result.keyItem;
@@ -3653,7 +5586,8 @@ async function main() {
     }
   }
   Object.assign(keyObj.items, keyItems);
-  fs.writeFileSync(args.keyPath, yaml.stringify(finalizeKeyObject(keyObj)), 'utf8');
+  flushCallTelemetryArtifactsForArgs(args);
+  fs.writeFileSync(args.keyPath, yaml.stringify(attachCallTelemetrySummary(finalizeKeyObject(keyObj), args)), 'utf8');
 
   console.log(`\nwrote transcripts → ${path.relative(WORKTREE_ROOT, args.outDir)}`);
   console.log(`wrote held-out deliberation → ${path.relative(WORKTREE_ROOT, args.delibDir)}`);
@@ -3669,14 +5603,17 @@ async function main() {
     // Mixed authorship has no single arms-length critic: whichever model authored
     // ANY role can't be a clean generator≠critic judge of the whole transcript.
     // Exact backend set = whatever each of the 5 roles actually resolves to.
+    const resolvedRoutes = ROLE_NAMES.map((role) =>
+      formatRoleRoute(resolveRoleRoute(role, args.roleMap, args.generator, args.apiModel)),
+    );
+    const routeSet = new Set(resolvedRoutes);
     const backends = new Set(ROLE_NAMES.map((r) => resolveBackend(r, args.roleMap, args.generator)));
-    const both = backends.has('claude') && backends.has('codex');
     console.log(
-      `\nnext (MIXED authorship — generator≠critic does NOT hold cleanly: ${[...backends].join('+')} each authored ≥1 role):\n` +
-        (both
-          ? `  no fully arms-length automated critic exists for a claude+codex drama; choose the critic deliberately\n` +
-            `  (e.g. an OpenRouter model neither side used: --model gpt), and lean on the human labeller as primary:\n`
-          : `  judge with the model that authored NO role here:\n`) +
+      `\nnext (MIXED authorship — generator≠critic does NOT hold cleanly: ${[...routeSet].join('+')} each authored ≥1 role):\n` +
+        `  choose a critic that authored NO role here; if an OpenRouter/API role used a model family, do not reuse that family as critic.\n` +
+        (backends.has('claude') && backends.has('codex')
+          ? `  for claude+codex mixes, prefer an OpenRouter model neither side used (for example --model gpt only when GPT did not author a role), and lean on the human labeller as primary:\n`
+          : `  judge with a non-authoring model and treat the human labeller as primary:\n`) +
         `  node scripts/score-poetics-phase2.js --model <critic> --sample-dir ${rel} --key ${keyRel} --out exports/poetics-phase2-mixed-<critic>.json\n` +
         `  node scripts/label-poetics-phase2.js --sample-dir ${rel} --labeller liam   # human triangulation (not a gate)`,
     );
@@ -3704,22 +5641,40 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 
 export {
   attachApproaches,
+  callTelemetrySummary,
+  ClaudePersistentPool,
+  curriculumScriptNotesForDrama,
   formatPublicTurnText,
   intrusiveStageDirectionFailures,
   keyItemFor,
   loadApproachDatabases,
+  makeCallTelemetryRecorder,
   makeRouterLlmCall,
   noCuePrematureClosureFailures,
   noCueReframeLeakageFailures,
   pairedBranchDefinitions,
+  effectiveBranchTutorAdaptationPolicy,
+  effectiveBranchTutorAdaptationPolicyForOrder,
   parseArgs,
   qualityWarningsFor,
   reframeComplianceFailures,
   reframeMatchStats,
+  renderHeldOutTranscript,
+  renderTranscript,
   resolveApiModel,
+  resolveRoleRoute,
   revoiceComplianceFailures,
   revoiceMatchStats,
+  selectFirstLessonDrama,
   stageDirectionStyleFor,
+  usage,
+  withAffectiveAdaptationPolicy,
+  withControlEndingPolicy,
+  withWorldAdaptationConstraints,
+  wrapLlmCallWithTelemetry,
+  writeCallTelemetryArtifacts,
+  writePartialTurnArtifacts,
   withPairedDirectorRevisitCue,
   withTutorAdaptationPolicy,
+  withUsage,
 };

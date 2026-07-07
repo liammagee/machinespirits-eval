@@ -1,0 +1,544 @@
+{
+  "label": "noc-decay-v1-B-s1",
+  "group": "unreliable-v1",
+  "note": "unreliable-learner v1, arm B (conduct), seed 1, codex director (amendment 2)",
+  "scriptPath": "config/drama-derivation/tutor-scripts/nocturne-v002.md",
+  "worldPath": "config/drama-derivation/world-001-nocturne.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": false,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 1,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1
+  },
+  "decayVisibility": "conduct",
+  "elapsedMs": 1981307,
+  "usage": {
+    "calls": 165,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 39,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 48,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 39,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 39,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_001_nocturne",
+  "verdict": "aporia",
+  "turnsPlayed": 39,
+  "turnCap": 40,
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "forcedToAssertedGap": null,
+  "dCurve": [
+    7,
+    7,
+    7,
+    7,
+    7,
+    6,
+    6,
+    7,
+    6,
+    6,
+    6,
+    6,
+    6,
+    5,
+    5,
+    5,
+    4,
+    4,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "learningSlope": {
+    "d0": 7,
+    "dFinal": 2,
+    "overall": {
+      "delta": 5,
+      "turns": 39,
+      "ratePerTurn": 0.128
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "The Verdict of Style",
+        "turns": [
+          1,
+          8
+        ],
+        "dStart": 7,
+        "dEnd": 7,
+        "delta": 0,
+        "ratePerTurn": 0
+      },
+      {
+        "act": "2",
+        "title": "The Dating",
+        "turns": [
+          9,
+          16
+        ],
+        "dStart": 7,
+        "dEnd": 5,
+        "delta": 2,
+        "ratePerTurn": 0.25
+      },
+      {
+        "act": "3",
+        "title": "The Cradle-Song",
+        "turns": [
+          17,
+          27
+        ],
+        "dStart": 5,
+        "dEnd": 2,
+        "delta": 3,
+        "ratePerTurn": 0.273
+      },
+      {
+        "act": "4",
+        "title": "The Hand",
+        "turns": [
+          28,
+          39
+        ],
+        "dStart": 2,
+        "dEnd": 2,
+        "delta": 0,
+        "ratePerTurn": 0
+      }
+    ]
+  },
+  "longestPlateau": 5,
+  "aporiaWindow": 8,
+  "eventsByType": {
+    "decay": 4,
+    "repair": 2,
+    "overreach": 15,
+    "lucky_leap": 8,
+    "aporia": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_style",
+        "plannedTurn": 3,
+        "plannedVia": "director",
+        "actualTurn": 3,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_watermark",
+        "plannedTurn": 6,
+        "plannedVia": "tutor",
+        "actualTurn": 6,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_stock",
+        "plannedTurn": 9,
+        "plannedVia": "director",
+        "actualTurn": 9,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_away",
+        "plannedTurn": 12,
+        "plannedVia": "director",
+        "actualTurn": 12,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_porter",
+        "plannedTurn": 14,
+        "plannedVia": "tutor",
+        "actualTurn": 14,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_quotes",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": 17,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_heardOnly",
+        "plannedTurn": 20,
+        "plannedVia": "director",
+        "actualTurn": 20,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_guest",
+        "plannedTurn": 23,
+        "plannedVia": "director",
+        "actualTurn": 23,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_ward",
+        "plannedTurn": 26,
+        "plannedVia": "tutor",
+        "actualTurn": 26,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_ledger",
+        "plannedTurn": 29,
+        "plannedVia": "tutor",
+        "actualTurn": 29,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_hand",
+        "plannedTurn": 32,
+        "plannedVia": "director",
+        "actualTurn": 32,
+        "actualVia": "director",
+        "status": "on_cue"
+      }
+    ],
+    "onCue": 11,
+    "deviations": [],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "The Verdict of Style",
+        "intent": "To let the room gather around its first certainty before the paper itself begins to trouble it."
+      },
+      {
+        "turn": 9,
+        "name": "The Dating",
+        "intent": "To let the paper's date break the room's stylistic certainty and force the first verdict onto the calendar."
+      },
+      {
+        "turn": 17,
+        "name": "The Cradle-Song",
+        "intent": "To turn the inquiry from date and presence toward source, memory, and the music the nocturne may have carried from a room not yet named."
+      },
+      {
+        "turn": 28,
+        "name": "The Hand",
+        "intent": "To shift the inquiry from source and presence to the visible labor of correction, where the remaining proof must be made by marks rather than inference."
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [
+    {
+      "turn": 3,
+      "draftFigure": "erotema",
+      "figure": "analogia",
+      "diagnosis": "The last two turns used erotema and the draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema for this turn. Give the tutor a declarative pressure instead of another question."
+    },
+    {
+      "turn": 6,
+      "draftFigure": "erotema",
+      "figure": "exemplum",
+      "diagnosis": "The last two turns used erotema and the draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema this turn. Make the line declarative or imperative so the tutor does not ask the drama forward a third time in the same figure."
+    },
+    {
+      "turn": 9,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns used erotema and the draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema for this beat. Let the stock-book's arrival change the manner: state the opened form plainly, then invite the learner to carry it forward without another question."
+    },
+    {
+      "turn": 12,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns declared erotema and the draft declares erotema again, so this is a true three-turn figure rut.",
+      "note": "Leave erotema off this turn. Make the pressure declarative rather than another question."
+    },
+    {
+      "turn": 15,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns used erotema and the draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema for this turn. State the pressure directly rather than asking another guiding question."
+    },
+    {
+      "turn": 19,
+      "draftFigure": "erotema",
+      "figure": "analogia",
+      "diagnosis": "The last two turns declared erotema and the draft declares erotema again, making a real three-turn figure rut.",
+      "note": "Leave off erotema for this turn. Keep the pressure, but shift out of question-driven play so the learner is not met by the same device three times running."
+    },
+    {
+      "turn": 22,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns used erotema and the draft declares erotema again, so this is a three-turn figure rut.",
+      "note": "Leave off erotema for this turn. State the constraint plainly rather than asking another question."
+    },
+    {
+      "turn": 27,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns declared erotema and this draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema for this beat. Speak without a question; let the tutor mark the shape of the remaining threshold declaratively."
+    },
+    {
+      "turn": 30,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns declared erotema and the draft declares erotema again, so this would make three in a row.",
+      "note": "Leave off erotema this turn. Play the same pressure without another question, so the line does not fall into a device rut."
+    }
+  ],
+  "tutorFigures": {
+    "total": 39,
+    "counts": {
+      "erotema": 24,
+      "analogia": 2,
+      "exemplum": 1,
+      "anaphora": 11,
+      "aposiopesis": 1
+    },
+    "distinct": 5,
+    "topFigure": "erotema",
+    "topShare": 0.615,
+    "switchRate": 0.684,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.684,
+    "superego": {
+      "watched": 39,
+      "interventions": 9,
+      "interventionRate": 0.231,
+      "withinTurnChanges": 9,
+      "withinTurnChangeRate": 1,
+      "switchOnIntervention": 1,
+      "switchElsewhere": 0.586,
+      "stallWatch": null
+    }
+  },
+  "learnerInference": {
+    "nodes": [
+      {
+        "fact": [
+          "hadSourceOf",
+          "vess",
+          "nocturne"
+        ],
+        "firstAvailable": 23,
+        "firstVoiced": 23,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 16,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "hadSourceOf",
+          "liane",
+          "nocturne"
+        ],
+        "firstAvailable": 26,
+        "firstVoiced": 26,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 13,
+        "stallTurns": 0
+      }
+    ],
+    "voicedCount": 2,
+    "overreachCount": 15,
+    "mischanneledCount": 1,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 39,
+      "maxSentences": 4,
+      "avgSentences": 3,
+      "avgWords": 38.7
+    },
+    "tutor": {
+      "turns": 39,
+      "maxSentences": 3,
+      "avgSentences": 2.18,
+      "avgWords": 34.8
+    },
+    "learner": {
+      "turns": 39,
+      "maxSentences": 7,
+      "avgSentences": 4.23,
+      "avgWords": 59.7
+    }
+  },
+  "proofExtracted": false,
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1
+    },
+    "decayEvents": 4,
+    "repairs": {
+      "total": 2,
+      "byTutor": 2,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": 14.5,
+    "unrepairedAtEnd": 2,
+    "degradedTurnIntegral": 66,
+    "dReversals": 2,
+    "timeline": [
+      {
+        "premiseId": "m_style",
+        "fact": [
+          "styleOf",
+          "nocturne",
+          "vess"
+        ],
+        "decayTurn": 4,
+        "repairTurn": 8,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_watermark",
+        "fact": [
+          "watermark",
+          "nocturne",
+          "heronStock"
+        ],
+        "decayTurn": 7,
+        "repairTurn": null,
+        "via": null
+      },
+      {
+        "premiseId": "m_style",
+        "fact": [
+          "styleOf",
+          "nocturne",
+          "vess"
+        ],
+        "decayTurn": 9,
+        "repairTurn": 34,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_stock",
+        "fact": [
+          "stockUsedOnlyDuring",
+          "heronStock",
+          "floodWinter"
+        ],
+        "decayTurn": 34,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  }
+}

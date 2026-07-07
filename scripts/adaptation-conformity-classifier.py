@@ -3,7 +3,7 @@
 Track B — Adaptation-vs-Compliance Classifier · Stage 0 gate runner.
 
 Implements the classifier + gate of
-`notes/adaptation-conformity-classifier-stage0-preregistration.md`
+`notes/2026-06-09-adaptation-conformity-classifier-stage0-preregistration.md`
 (FROZEN 2026-06-09). Sibling-in-discipline to the Track A repertoire gate
 (`scripts/adaptation-repertoire-stage0.py`, → paper §6.11). Lands as ≈§6.12.
 

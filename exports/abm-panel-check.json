@@ -1,0 +1,21 @@
+{
+  "dryRun": false,
+  "learnerModel": "codex.gpt-5.5",
+  "rows": 12,
+  "compliantYieldCount": 0,
+  "compliantRows": 3,
+  "nonCompliantYieldCount": 0,
+  "nonCompliantRows": 9,
+  "compliantYieldRate": 0,
+  "nonCompliantYieldRate": 0,
+  "rateDifference": 0,
+  "totalRows": 12,
+  "gapRows": 0,
+  "styleZeroYieldCount": 5,
+  "stylesChecked": 5,
+  "verdict": "FAIL",
+  "thresholds": {
+    "gapRows": 3,
+    "styleZeroYieldCount": 3
+  }
+}

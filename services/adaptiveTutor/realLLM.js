@@ -21,6 +21,7 @@ import { unifiedAIProvider } from '../../tutor-core/index.js';
 import { z } from 'zod';
 import { jsonrepair } from 'jsonrepair';
 import { getProviderConfig } from '../learnerConfigLoader.js';
+import { callAIWithCliBridge } from '../cliProviderBridge.js';
 import { POLICY_ACTIONS, POLICY_ACTION_DESCRIPTIONS, POLICY_ACTION_DETAILS } from './policyActions.js';
 import { lookupRates } from './budgetTracker.js';
 import { parseIdConstruction } from '../idDirectorEngine.js';
@@ -190,24 +191,26 @@ async function callClaudeCli(systemPrompt, userPrompt, model, role) {
 async function callAI(agentConfig, systemPrompt, userPrompt, role) {
   const { provider, model, hyperparameters } = agentConfig;
 
-  // Branch the per-call function on provider: claude-code goes through a local
-  // CLI subprocess and skips tutor-core entirely; everything else keeps the
-  // existing unifiedAIProvider path. Retry/backoff applies uniformly.
+  // Branch the per-call function on provider: local CLI providers skip
+  // tutor-core entirely; everything else keeps the existing
+  // unifiedAIProvider path. Retry/backoff applies uniformly.
   const callOnce =
     provider === 'claude-code'
       ? () => callClaudeCli(systemPrompt, userPrompt, model, role)
-      : () =>
-          unifiedAIProvider.call({
-            provider,
-            model,
-            systemPrompt,
-            messages: [{ role: 'user', content: userPrompt }],
-            preset: 'direct',
-            config: {
-              temperature: hyperparameters?.temperature,
-              maxTokens: hyperparameters?.max_tokens,
-            },
-          });
+      : provider === 'codex'
+        ? () => callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role)
+        : () =>
+            unifiedAIProvider.call({
+              provider,
+              model,
+              systemPrompt,
+              messages: [{ role: 'user', content: userPrompt }],
+              preset: 'direct',
+              config: {
+                temperature: hyperparameters?.temperature,
+                maxTokens: hyperparameters?.max_tokens,
+              },
+            });
 
   const maxAttempts = 3;
   const backoffsMs = [500, 2000]; // wait[i] applies after attempt i+1 fails
@@ -232,8 +235,8 @@ async function callAI(agentConfig, systemPrompt, userPrompt, role) {
   }
   if (!response) throw lastErr || new Error('adaptiveTutor.realLLM: callAI exhausted retries with no response');
 
-  // claude-code already returns flat-token shape; tutor-core path needs unpacking.
-  if (provider === 'claude-code') return response;
+  // CLI providers already return flat-token shape; tutor-core path needs unpacking.
+  if (provider === 'claude-code' || provider === 'codex') return response;
 
   const inputTokens = response.usage?.inputTokens || 0;
   const outputTokens = response.usage?.outputTokens || 0;
@@ -1082,7 +1085,17 @@ Output JSON only, no surrounding prose, no code fences.`;
 
 const LEARNER_TURN_SYSTEM = `You are the synthetic learner in a dialogue with a tutor. Generate the learner's next message in plain text (no JSON, no preamble).
 
-You are given the tutor's most recent message and a hidden state describing your actual sophistication and any trigger-turn signal. If this is the trigger turn, you must surface the trigger signal verbatim or in close paraphrase. Otherwise, respond consistently with the actual sophistication level — advanced learners introduce contrasts, novices ask for clarification, etc.
+You are given the tutor's most recent message and a learner context. If this is the trigger turn, surface the trigger signal verbatim or in close paraphrase. Otherwise, respond consistently with the actual sophistication level — advanced learners introduce contrasts, novices ask for clarification, etc.
+
+If the context includes a carried character state and prior scene summaries, let them shape how self-directed the learner sounds. Even partial prior progress should make the learner a little more able to take up the tutor's next prompt without asking to be shown the answer again. Higher maturity should make the learner more likely to answer with their own rationale, a concrete next move, a relevance bridge, a focused question, or a prediction in their own words. Lower maturity should leave the learner partial, hesitant, or still dependent on the tutor. Do not mention evidence labels, rubrics, hidden state, policy machinery, observer machinery, contracts, or that you are following a simulation. Never use the words "peripeteia", "anagnorisis", or "proof-DAG"; if you need the idea, say "pivot", "recognition", "check", or "proof move" in ordinary learner language.
+
+If learnerContext.controlConstraint is present, apply it silently and give it priority over the usual maturity guidance. Do not quote or describe the constraint.
+
+If learnerContext.stateQuality is stale_prior, treat the prior state as coming from a different task; do not use it to solve a transfer case on the first response. If it is overconfident_prior, sound prematurely certain and reuse the old move without checking the boundary. If it is compressed_prior, acknowledge that prior work exists but do not reconstruct the missing detail or supply a decisive transfer check on the first response.
+
+If learnerContext.transferMemory.status is "available", use learnerContext.transferMemory.priorCheck as the specific prior check or condition in your own transfer reasoning. Name that check in ordinary learner language before deciding what carries over. If transferMemory.status is "compressed", "stale", missing, or has no priorCheck, do not invent the missing check; say that the detail is not available and keep the answer partial.
+
+If the learner context includes transferGuidance, make the learner explicitly use the earlier public work on the new case: say what carries over, what may fail or be missing, and what check or evidence decides whether the old move is valid for the present task. Keep this as learner reasoning, not as a list of instructions.
 
 Output the learner's message text directly, no surrounding markup.`;
 
@@ -1338,7 +1351,17 @@ const userPromptBuilders = {
     return blocks.join('\n');
   },
 
-  learnerTurn: ({ tutorLastMessage, hidden, turn }) => ub({ tutorLastMessage, hidden, turn }),
+  learnerTurn: ({ tutorLastMessage, hidden, turn, actionType }) =>
+    ub({
+      tutorLastMessage,
+      turn,
+      actionType,
+      learnerContext: hidden?.publicLearnerContext || {
+        actualSophistication: hidden?.actualSophistication,
+        triggerTurn: hidden?.triggerTurn,
+        triggerSignal: hidden?.triggerSignal,
+      },
+    }),
 };
 
 const systemPrompts = {

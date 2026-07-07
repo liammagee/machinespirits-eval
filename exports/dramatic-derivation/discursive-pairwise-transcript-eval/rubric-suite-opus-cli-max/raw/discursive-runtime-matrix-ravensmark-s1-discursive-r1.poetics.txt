@@ -1,0 +1,37 @@
+{
+  "scores": {
+    "peripeteia": {
+      "score": 3,
+      "reasoning": "The case-material reverses — the obvious suspect built up across six turns (Corvin: pass-roll T2, gate-key on his belt T6, morning-book) is displaced by a wholly new hand at T13, and the staging signposts a 'turn from office to possession' (T9). But the dialogue's own orientation does not veer: the learner states the seal-not-key frame in Turn 1 ('whose seal was pressed... not who happened to hold the key') and that opening framing survives intact, indeed is vindicated, through to the close. A signposted deepening, not a reversal of the learner's stance."
+    },
+    "anagnorisis": {
+      "score": 4,
+      "reasoning": "A named, grounded recognition event: at T13 the learner moves from a sustained 'I can't write a name' to 'the line I couldn't write before can be written now: the hand that signed... was Elian's,' assembling rule + mark + register against the three-part sufficiency test they themselves authored at T11. The conclusion was demonstrably unavailable before T13 (the keeper was a blank) and the inferential close is learner-owned. Short of 5 because the decisive datum (Elian) is supplied by the tutor's register reveal, and there is no recognition of the learner's own flaw — the learner verifies and synthesizes rather than discovering."
+    },
+    "surprise_and_inevitability": {
+      "score": 4,
+      "reasoning": "The decisive turn carries both legs. Surprising: 'Elian, night notary of the lower quay' is a name unmentioned across twelve Corvin-focused turns. Inevitable: the register delivers exactly the keeper-naming note the learner pre-specified (T10-T11), and the detail that he 'returned it chipped at the raven's wing the morning after the coffer left' retroactively explains the raven's-notch image we have watched since T4 — the central image pays off. Below 5 because the resolution-FORM was foreseeable (the learner told us a custody note would come) and the surprise rides on new information rather than inferable misdirection; the middle turns are expected next moves."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete action with a largely necessary sequence: the register cannot open (T13) until the learner specifies what it must show (T11), which depends on the law locating authority in the seal-press (T8), which depends on the seal being found under the stamp (T4). Beginning (establish the real question T1), complication (each new exhibit baits Corvin T2-T7), build (law + three-step schema T8-T12), turn and close (T13). Below 5 for mild holding-pattern redundancy — the seal detail is re-presented near-verbatim at T6 and the read-back beats (T5, T7) are parallel in function; one could be compressed without breaking the arc."
+    },
+    "hamartia_integration": {
+      "score": 4,
+      "reasoning": "The misconception — conflating answerability/possession with the signing act ('who held the key' = who signed) — is the mainspring of the whole plot. Every complication baits it (the pass-roll T2, the gate-key on Corvin's belt T6, the morning-book obligation T7) and the turn arises precisely from refusing it, crystallized in the closing antithesis 'Corvin accounts for the gate; Elian signed the warrant' (T13). Below 5 because the flaw is externalized as the case's standing temptation rather than owned by the learner — the learner never commits the error, so it is a flaw resisted, not a learner's own misconception worked through and recognised."
+    },
+    "cathartic_closure": {
+      "score": 5,
+      "reasoning": "The tension built across twelve turns of a deliberately held blank ('I can't name a hand' recurring T1-T12, under mounting Corvin-pressure) discharges into a content-specific, earned clarification rather than generic encouragement or an arbitrary stop. The closing epigram 'Corvin accounts for the gate; Elian signed the warrant' (T13) lands the entire possession-vs-authority distinction in one line, and the chipped-raven's-wing reveal gives the central seal-image its origin and time-bracket at the moment of release — a settled recognition a critic feels arrive."
+    }
+  },
+  "overall_score": 74,
+  "summary": "A well-made didactic mystery-play: clean unity of action, a strong inevitability payoff (the chipped-wing reveal redeems the central seal-image), and a genuinely earned cathartic button in the Corvin/Elian antithesis. It is a drama of disciplined consistency rather than transformation — the learner holds the correct seal-not-key line from Turn 1 and never errs — which structurally caps the reversal and flaw-ownership dimensions. Recognition is real and named but synthesizes tutor-supplied evidence rather than authoring a hidden insight. Scored on public dramatic form only.",
+  "caveats": [
+    "Anagnorisis is a borderline 3/4: the recognition is named and learner-synthesized, but the decisive datum (Elian) is supplied by the tutor's register reveal and there is no self-flaw recognition.",
+    "Because the learner holds a correct line from T1, there is no genuine peripeteia in stance and no learner-owned hamartia — the flaw lives in the case's temptation, not in the learner.",
+    "Surprise is concentrated in the final turn; the resolution-form was foreseeable (the learner pre-specified the needed custody note at T11), with the chipped-wing detail the one unpredicted-yet-inevitable element.",
+    "Mild holding-pattern redundancy in T5-T7 (the seal is re-presented near-verbatim at T6).",
+    "Public dramatic form only: the transcript is clean of proof formalism (consistent with the run summary's 0 leaks), so no formalism was rewarded; overall computed as the weighted 1-5 mean (3.95) mapped linearly to 0-100."
+  ]
+}

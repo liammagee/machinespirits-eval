@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 4,
+      "reasoning": "Clear opening establishes the central distinction the whole dialogue turns on — liability/paperwork vs. the physical act that felled the span (T1). Evidence is then revealed in a forced, cumulative order that builds genuine scaffolding: where it broke (crown, T4) → why (green bed, props drawn too soon, T9) → a trace (crowsfoot, T13) → the yard (Caudle, T17) → the carter (Oswin, T20). Each beat depends on the prior and the turns could not be reordered without loss. Held back from 5 by a repetitive consolidation plateau across T11–T19, where several turns reiterate the same 'what is shown / what stays blank' move rather than extending it."
+    },
+    "adaptive_trajectory": {
+      "score": 4,
+      "reasoning": "Adaptation is substantive and keyed to this specific learner. The tutor strategically concedes the liability point to free the learner's attention for causation (T6, T8) — a move the learner explicitly registers as unexpected ('you're actually conceding the liability point'). The tutor's direction of correction then reverses as the learner's error migrates from over-attributing the fall to Reyner (T2–T5) to over-cautiously demanding a witness at the arch (T20); the tutor responds by laying the three notes side by side so the learner sees the chain is already complete (T21). Below 5 because the underlying Socratic method — 'take the smaller step,' 'split the task' — is constant from T1 to T22; the evidence and the obstacle evolve more than the strategy itself."
+    },
+    "pedagogical_closure": {
+      "score": 5,
+      "reasoning": "Excellent close. The learner performs the synthesis in order — green bed → Caudle mark → one Caudle carter → Oswin (T22) — rather than the tutor reciting it, which is stronger evidence of consolidated learning. Critically, the close resolves the exact conflation that opened the dialogue: the two findings are now held cleanly apart (Oswin on the causal line; Reyner's bond left standing for liability/recovery). A concrete, genre-appropriate next step is named ('I'll amend the causal line in the draft'). The thematic payoff from T1–T3 is explicitly delivered."
+    }
+  },
+  "overall_score": 81,
+  "summary": "A coherent, well-constructed pedagogical drama. The tutor opens by naming the liability-vs-causation distinction, reveals evidence in a forced cumulative order that builds toward a genuine recognition turn (T21), and lands a strong synthesizing close that resolves the learner's original conflation while holding the two findings apart. Public discourse stays in natural dramatic language throughout — no rule IDs, proof notation, or hidden-state talk leaks into the dialogue. Main weakness is a repetitive 'what's shown / what stays blank' plateau in the middle and a Socratic method that stays constant in kind even as its content adapts.",
+  "caveats": [
+    "Mid-dialogue plateau (T11–T19) reiterates the same evidentiary-discipline move across several turns, the chief reason the arc is a 4 not a 5.",
+    "Closure reaches a complete finding rather than opening a forward learning horizon; appropriate to the adjudication genre, but it means 'what comes next' is limited to amending the draft.",
+    "Scored on public discourse quality only; the deterministic proof/derivation gate is reported separately and did not factor into these scores."
+  ]
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Dramatic-derivation harness smoke (phase 1 step 1 of
- * notes/dramatic-derivation-plan.md §3): deterministic mock roles drive the
+ * notes/2026-06-09-dramatic-derivation-plan.md §3): deterministic mock roles drive the
  * engine end-to-end with ZERO model calls and ZERO DB writes. Verifies the
  * plot lint, the happy path to grounded anagnorisis, and that the failure
  * taxonomy detects seeded lucky-leap / stall / mirror behaviors.

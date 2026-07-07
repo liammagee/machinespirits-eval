@@ -1,0 +1,34 @@
+{
+  "scores": {
+    "peripeteia": {
+      "score": 4,
+      "reasoning": "Clear hinge at Turn 9: the green mortar overturns the town's central charge — 'The bad-building charge just fell apart... the arch itself was sound; what felled it was an early hand at the centering, not anything Reyner put wrong in the stone.' The orientation inverts from 'the builder Reyner is to blame' to 'a distinct hand pulled the props,' reframing the case from a defect-in-work to a separate act by a different person (Oswin, T20). Short of 5 because the learner anticipated this split from T2 ('building it and felling it are two different acts'), so the reversal lands as confirmation of a telegraphed distinction rather than a veer overturning the learner's own stance — the reversal sits in the case material and the town's framing, not the tutor-learner relation."
+    },
+    "anagnorisis": {
+      "score": 3,
+      "reasoning": "The case moves from ignorance to a named culprit, and the learner authors intermediate recognitions (T9 bad-building collapse). But the decisive content is room-supplied: the crown bed, the crowsfoot (T13), the timber-reeve's read (T15), and finally the toll book that names Oswin (T20 stage direction) are all delivered to the learner, who assembles and reads off the conclusion. There is no learner self-recognition and no naming of a previously-held flaw — the learner is correct from T1; the misconception belongs to the offstage town. Genuine at the case level but substantially supplied and assembled rather than owned — the partial/supplied pattern."
+    },
+    "surprise_and_inevitability": {
+      "score": 3,
+      "reasoning": "Inevitability is very strong — every step is tightly motivated and coherent on re-reading (location → cause → trace → yard → hand). But surprise is largely absent: the learner forecasts each piece before it arrives ('if the soffit shows a prop-mark...' T6; 'we'd need a draw-roll naming one hand' T16), so each evidentiary turn is the expected next move, and the T9 inversion is heavily telegraphed by T2–T8. One leg (coherence) firmly present, the other (surprise) weak — a competent-but-expected derivation, the regurgitative-adjacent pole."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete action with a necessary spine: each link depends on the prior — the crowsfoot cannot be traced (T13) before struck-centering is established as cause (T9), the yard cannot be named (T15) before the mark is found, the hand cannot be named (T20) before the yard. Beginning (T1 framing), complication (the town's seal/yard/bond false-closes at T2/T6/T8), turn (T9), close (T20). Held from 5 by compressible restatement beats — T17 largely restates the timber-reeve's Caudle reading already given at T15, and T12 near-duplicates T11's 'no prop-mark on the table yet'; at least one turn could be cut without breaking the arc."
+    },
+    "hamartia_integration": {
+      "score": 4,
+      "reasoning": "The misconception — the town's conflation of liability with causation ('he built it, so he brought it down') — is the mainspring, not corrected-and-discarded. Each false close (seal T2, yard T6, bond T8) is the same flaw recurring, and the plot is its progressive defeat: ownership evidence accumulates yet cannot name the hand, exposing its own insufficiency (T7: 'what must the broken place prove that ownership cannot?'). Held from 5 because the flaw belongs to the offstage town, not the learner-protagonist (who never errs), and the defeated misconception is not explicitly named as recognised at the close — the recognition is the positive naming of Oswin, not 'the town was wrong to conflate.'"
+    },
+    "cathartic_closure": {
+      "score": 4,
+      "reasoning": "The tutor builds tension with a sustained refrain — 'still not shown: whose hand' (T7, T9, T15, T16) — deferring the name turn after turn; T20 discharges it as the toll book settles one mover, with a concrete, vivid landing (Oswin 'hauled a load of bare green props up from the ford the morning after the flood'). The close is earned by the whole chain and just — the wrongly-accused Reyner is cleared. Short of 5 because the final learner turn leans on full-chain recapitulation (slightly QED-flavoured) and the catharsis is intellectual-procedural rather than a deeper dramatic purge."
+    }
+  },
+  "overall_score": 66,
+  "summary": "A well-made didactic derivation-play: one tightly necessary action (unity 4) driven by a genuine, sustained misconception — the town's liability/causation conflation (hamartia 4) — with a clear reversal when the green mortar clears the builder (peripeteia 4) and an earned, concrete close on the named hand (closure 4). It falls short of the sharpest dramatic recognition: the derivation is telegraphed, so the decisive turns are coherent but unsurprising (surprise 3), and the recognition is room-supplied and assembled rather than owned or self-implicating by the learner, who is correct throughout (anagnorisis 3). Strong craft, modest dramatic surprise.",
+  "caveats": [
+    "The learner holds no flaw of their own; the drama's hamartia and reversal live in the ambient town and the case material, so this reads as a detective resisting a wrong crowd more than a protagonist working through an error — the structural reason both anagnorisis and peripeteia stop short of 5.",
+    "Scored on public dramatic form only; the deterministic proof gate (grounded_anagnorisis, D=0) was not used as evidence, and the clean public discourse (0 regex formalism leaks) meant no formal-notation penalty applied."
+  ]
+}

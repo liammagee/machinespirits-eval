@@ -24,7 +24,7 @@ The real attempt-1 replay survived the recursive tutor-learning gate.
 - Attempt-1 artifacts:
   `exports/a19/real-attempt1-v08/moral-disclosure-standing-repair/`
 - Attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-learner-standing.md`
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-learner-standing.md`
 - Admitted axiom:
   `exports/a19/axioms/moral-disclosure-standing-repair/axiom.json`
 

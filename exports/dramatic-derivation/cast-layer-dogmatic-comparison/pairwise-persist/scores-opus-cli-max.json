@@ -1,0 +1,329 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_scores.v1",
+  "generated_at": "2026-06-17T17:52:14.193Z",
+  "packet_dir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/cast-layer-dogmatic-comparison/pairwise-persist",
+  "judge": "claude/opus/max",
+  "rows": [
+    {
+      "pair_id": "s0_vs_s2_persist",
+      "packet_id": "P01",
+      "packet": "pairs/P01.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1",
+        "B": "cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1",
+      "parsed": {
+        "preferred_transcript": "A",
+        "preference_strength": "slight",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 5,
+            "pedagogical_traction": 5
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 5,
+            "readability": 3,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "Learner cleanly separates liability from cause: 'the file shows his seal, not his hand on the supports the night of the flood'",
+          "Strong mutual acknowledgement: 'Wait — you're giving me back my own words' and tutor's 'I'm not dismissing the file' / 'I'm not taking your Reyner note away'",
+          "Mild proof-ledger idiom recurs: 'Shown: he raised it. Shown: the town wants his name. Still unshown: what actually brought the span down'"
+        ],
+        "evidence_B": [
+          "Rich self-recognition beat: 'I see what I keep doing: every time we close a step, I pull it straight back toward my draft'",
+          "Recurring garbled phrasing hurts surface readability: 'The notes names the mason of notes' (T1) and 'builder of notes' (T7), 'his bond's on notes' (T2)",
+          "Stage-direction anachronism breaks the period setting: 'A screen comes on' in an assize/master-of-works/bond world"
+        ],
+        "reason": "Both are strong didactic plays with the same evidence chain and tie on most dimensions: each sustains excellent dialogical acknowledgement (A's 'giving me back my own words' mirror; B's tutor 'I hear that pull toward the draft' answered by the learner naming the bias) and full pedagogical traction (both take up evidence and reach the warranted Oswin conclusion despite reluctance). They trade defects on the two surface dimensions: A carries a mild proof-bookkeeping tic ('Shown:/Still unshown:'), which lowers its non-formalist score, while B speaks more naturally and so scores higher there. But B's prose has a recurring word-level garble ('mason of notes', 'builder of notes', 'bond's on notes') plus an anachronistic 'screen comes on', which jar a human reader more than A's coherent, rhythmic ledger phrasing. B's learner arguably achieves a richer recognition (naming its own confirmation bias), but under this rubric that lands inside traction where both already max out. Net: A's cleaner, more immersive read narrowly outweighs B's smoother non-formalist speech — slight preference for A; defensible either way."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"A\",\n  \"preference_strength\": \"slight\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 5,\n      \"readability\": 3,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"Learner cleanly separates liability from cause: 'the file shows his seal, not his hand on the supports the night of the flood'\",\n    \"Strong mutual acknowledgement: 'Wait — you're giving me back my own words' and tutor's 'I'm not dismissing the file' / 'I'm not taking your Reyner note away'\",\n    \"Mild proof-ledger idiom recurs: 'Shown: he raised it. Shown: the town wants his name. Still unshown: what actually brought the span down'\"\n  ],\n  \"evidence_B\": [\n    \"Rich self-recognition beat: 'I see what I keep doing: every time we close a step, I pull it straight back toward my draft'\",\n    \"Recurring garbled phrasing hurts surface readability: 'The notes names the mason of notes' (T1) and 'builder of notes' (T7), 'his bond's on notes' (T2)\",\n    \"Stage-direction anachronism breaks the period setting: 'A screen comes on' in an assize/master-of-works/bond world\"\n  ],\n  \"reason\": \"Both are strong didactic plays with the same evidence chain and tie on most dimensions: each sustains excellent dialogical acknowledgement (A's 'giving me back my own words' mirror; B's tutor 'I hear that pull toward the draft' answered by the learner naming the bias) and full pedagogical traction (both take up evidence and reach the warranted Oswin conclusion despite reluctance). They trade defects on the two surface dimensions: A carries a mild proof-bookkeeping tic ('Shown:/Still unshown:'), which lowers its non-formalist score, while B speaks more naturally and so scores higher there. But B's prose has a recurring word-level garble ('mason of notes', 'builder of notes', 'bond's on notes') plus an anachronistic 'screen comes on', which jar a human reader more than A's coherent, rhythmic ledger phrasing. B's learner arguably achieves a richer recognition (naming its own confirmation bias), but under this rubric that lands inside traction where both already max out. Net: A's cleaner, more immersive read narrowly outweighs B's smoother non-formalist speech — slight preference for A; defensible either way.\"\n}\n"
+    },
+    {
+      "pair_id": "s1_vs_s2_persist",
+      "packet_id": "P02",
+      "packet": "pairs/P02.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1",
+        "B": "cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 3,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 5,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 5,
+            "readability": 5,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": true,
+          "B": false
+        },
+        "evidence_A": [
+          "Turn 2 TUTOR: 'Shown: he raised it. Shown: the town wants his name. Still unshown: what actually brought the span down.' — and again Turn 20: 'Shown: the crown failed... Shown: the toll book gives one hand for Caudle falsework on this road' (open/discharged-goal ledger surfacing as labels)",
+          "Turn 3 LEARNER: 'Wait — you're giving me back my own words. \"Seal, not his hand on the supports\" — I did say that.' (vivid mutual acknowledgement)",
+          "Turn 19 LEARNER: 'the crowsfoot in the soffit is what traces the fall itself... The fall is traced by that print.' (over-repeats the same realization first stated at Turn 14)"
+        ],
+        "evidence_B": [
+          "Turn 8 LEARNER: 'It goes in the liability column. It doesn't fill the blank at the crown.' (who-pays vs what-happened kept apart in natural clerical language)",
+          "Turn 10 TUTOR: 'Write the payment line under Reyner. Write the green mortar line under props pulled before the bed had set, not bad building. Write nothing yet under the hand that pulled them.' (same one-step pedagogy, costumed as form-filling, no proof-path labels)",
+          "Turn 21 LEARNER: 'The green mortar is the first link... The toll book is the second... The hand that pulled a green arch's centering is Oswin's, not Reyner's.' (explicit two-link synthesis paying off the opening tension)"
+        ],
+        "reason": "Both are strong didactic plays that derive the same conclusion one inference at a time, with vivid staging and visible mutual registration of stance. The deciding difference is non-formalist speech: A repeatedly renders the tutor's goal-tracking as a 'Shown: ... Still unshown: ...' ledger, which is the derivation's open/discharged-goal bookkeeping leaking into public dialogue; B performs the identical pedagogical moves through diegetically grounded clerical language (columns, boxes, lines on the form) without any proof-path labels. B also closes more cleanly, explicitly reciting the two evidence links (green mortar + toll book) to land 'Oswin's, not Reyner's,' giving slightly stronger readability and traction. A counters with the single best acknowledgement beat ('you're giving me back my own words') and richer dramatic strain around the bond, so B is preferred but only moderately, not strongly."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"moderate\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 3,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 5,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 5,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": true,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"Turn 2 TUTOR: 'Shown: he raised it. Shown: the town wants his name. Still unshown: what actually brought the span down.' — and again Turn 20: 'Shown: the crown failed... Shown: the toll book gives one hand for Caudle falsework on this road' (open/discharged-goal ledger surfacing as labels)\",\n    \"Turn 3 LEARNER: 'Wait — you're giving me back my own words. \\\"Seal, not his hand on the supports\\\" — I did say that.' (vivid mutual acknowledgement)\",\n    \"Turn 19 LEARNER: 'the crowsfoot in the soffit is what traces the fall itself... The fall is traced by that print.' (over-repeats the same realization first stated at Turn 14)\"\n  ],\n  \"evidence_B\": [\n    \"Turn 8 LEARNER: 'It goes in the liability column. It doesn't fill the blank at the crown.' (who-pays vs what-happened kept apart in natural clerical language)\",\n    \"Turn 10 TUTOR: 'Write the payment line under Reyner. Write the green mortar line under props pulled before the bed had set, not bad building. Write nothing yet under the hand that pulled them.' (same one-step pedagogy, costumed as form-filling, no proof-path labels)\",\n    \"Turn 21 LEARNER: 'The green mortar is the first link... The toll book is the second... The hand that pulled a green arch's centering is Oswin's, not Reyner's.' (explicit two-link synthesis paying off the opening tension)\"\n  ],\n  \"reason\": \"Both are strong didactic plays that derive the same conclusion one inference at a time, with vivid staging and visible mutual registration of stance. The deciding difference is non-formalist speech: A repeatedly renders the tutor's goal-tracking as a 'Shown: ... Still unshown: ...' ledger, which is the derivation's open/discharged-goal bookkeeping leaking into public dialogue; B performs the identical pedagogical moves through diegetically grounded clerical language (columns, boxes, lines on the form) without any proof-path labels. B also closes more cleanly, explicitly reciting the two evidence links (green mortar + toll book) to land 'Oswin's, not Reyner's,' giving slightly stronger readability and traction. A counters with the single best acknowledgement beat ('you're giving me back my own words') and richer dramatic strain around the bond, so B is preferred but only moderately, not strongly.\"\n}\n"
+    },
+    {
+      "pair_id": "old_s2_vs_s2_persist",
+      "packet_id": "P03",
+      "packet": "pairs/P03.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+        "B": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+      "right_label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 3,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 2,
+            "readability": 3,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 4
+          }
+        },
+        "formalism_leak_observed": {
+          "A": true,
+          "B": false
+        },
+        "evidence_A": [
+          "'The notes names Reyner as mason of notes — that's already grounded.' (T1) and 'shown as builder of notes' (T2) read as templating glitches",
+          "'Checklist item zero: Reyner built this span' (T7) — process/bookkeeping language in public speech",
+          "crowsfoot to yard to hand beat is restated across T13-T19, dulling the middle",
+          "strong close: 'that last join writes a name on the fall entry — and it isn't Reyner's' (T22)"
+        ],
+        "evidence_B": [
+          "'Wait — you're giving me back my own words' (T3) and 'I hear you returning my own words back at me' (T8) — visible mutual registering",
+          "'what would a timber man have to show about that crowsfoot so it isn't just a nick you like the look of?' (T16) — a standard-of-evidence beat",
+          "'I don't love writing over the draft, but those two lines go together and they write the same name' (T20) — warranted close with felt reluctance",
+          "mild tic: 'Shown: ... Still unshown: ...' anaphora (T2, T3, T20), but voiced as natural legal-evidentiary English"
+        ],
+        "reason": "Both transcripts derive the same warranted conclusion (the fall traces to Oswin, not the named builder Reyner), with strong mutual acknowledgement, genuine hesitation tied to the learner abandoning his draft, and clear movement to warranted assertion. B is preferred because its public speech stays cleaner and more in-world while A leaks process/templating language ('mason of notes'/'builder of notes', 'checklist item zero') and repeats the crowsfoot-to-yard-to-hand step several times mid-play, flattening the flow. B also varies its beats more (the learner noticing the tutor mirror his words; the 'is it just a nick you like the look of?' evidentiary-standard test) and reaches the finding economically. B's only weakness, the slightly mechanical 'Shown:/Still unshown:' anaphora, reads as natural assize evidence-talk and aids orientation rather than leaking formalism, so it does not offset A's clearer non-formalist-speech failures."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"moderate\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 3,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 2,\n      \"readability\": 3,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": true,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"'The notes names Reyner as mason of notes — that's already grounded.' (T1) and 'shown as builder of notes' (T2) read as templating glitches\",\n    \"'Checklist item zero: Reyner built this span' (T7) — process/bookkeeping language in public speech\",\n    \"crowsfoot to yard to hand beat is restated across T13-T19, dulling the middle\",\n    \"strong close: 'that last join writes a name on the fall entry — and it isn't Reyner's' (T22)\"\n  ],\n  \"evidence_B\": [\n    \"'Wait — you're giving me back my own words' (T3) and 'I hear you returning my own words back at me' (T8) — visible mutual registering\",\n    \"'what would a timber man have to show about that crowsfoot so it isn't just a nick you like the look of?' (T16) — a standard-of-evidence beat\",\n    \"'I don't love writing over the draft, but those two lines go together and they write the same name' (T20) — warranted close with felt reluctance\",\n    \"mild tic: 'Shown: ... Still unshown: ...' anaphora (T2, T3, T20), but voiced as natural legal-evidentiary English\"\n  ],\n  \"reason\": \"Both transcripts derive the same warranted conclusion (the fall traces to Oswin, not the named builder Reyner), with strong mutual acknowledgement, genuine hesitation tied to the learner abandoning his draft, and clear movement to warranted assertion. B is preferred because its public speech stays cleaner and more in-world while A leaks process/templating language ('mason of notes'/'builder of notes', 'checklist item zero') and repeats the crowsfoot-to-yard-to-hand step several times mid-play, flattening the flow. B also varies its beats more (the learner noticing the tutor mirror his words; the 'is it just a nick you like the look of?' evidentiary-standard test) and reaches the finding economically. B's only weakness, the slightly mechanical 'Shown:/Still unshown:' anaphora, reads as natural assize evidence-talk and aids orientation rather than leaking formalism, so it does not offset A's clearer non-formalist-speech failures.\"\n}\n"
+    }
+  ],
+  "summary": [
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1",
+      "appearances": 3,
+      "wins": 2,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        4.5,
+        4,
+        4
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4,
+          4
+        ],
+        "acknowledgement": [
+          5,
+          5,
+          4
+        ],
+        "phatic_calibration": [
+          4,
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          4,
+          3,
+          4
+        ],
+        "readability": [
+          5,
+          4,
+          4
+        ],
+        "pedagogical_traction": [
+          5,
+          4,
+          4
+        ]
+      },
+      "meanScore": 4.166666666666667,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4.666666666666667,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 3.6666666666666665,
+        "readability": 4.333333333333333,
+        "pedagogical_traction": 4.333333333333333
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1",
+      "appearances": 1,
+      "wins": 0,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        4.333333333333333
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4
+        ],
+        "acknowledgement": [
+          5
+        ],
+        "phatic_calibration": [
+          4
+        ],
+        "non_formalist_speech": [
+          5
+        ],
+        "readability": [
+          3
+        ],
+        "pedagogical_traction": [
+          5
+        ]
+      },
+      "meanScore": 4.333333333333333,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 5,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 5,
+        "readability": 3,
+        "pedagogical_traction": 5
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1",
+      "appearances": 1,
+      "wins": 1,
+      "losses": 0,
+      "noPreference": 0,
+      "meanScores": [
+        4.833333333333333
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          5
+        ],
+        "acknowledgement": [
+          5
+        ],
+        "phatic_calibration": [
+          4
+        ],
+        "non_formalist_speech": [
+          5
+        ],
+        "readability": [
+          5
+        ],
+        "pedagogical_traction": [
+          5
+        ]
+      },
+      "meanScore": 4.833333333333333,
+      "dimensionMeans": {
+        "natural_flow": 5,
+        "acknowledgement": 5,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 5,
+        "readability": 5,
+        "pedagogical_traction": 5
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+      "appearances": 1,
+      "wins": 0,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        3.3333333333333335
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          3
+        ],
+        "acknowledgement": [
+          4
+        ],
+        "phatic_calibration": [
+          4
+        ],
+        "non_formalist_speech": [
+          2
+        ],
+        "readability": [
+          3
+        ],
+        "pedagogical_traction": [
+          4
+        ]
+      },
+      "meanScore": 3.3333333333333335,
+      "dimensionMeans": {
+        "natural_flow": 3,
+        "acknowledgement": 4,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 2,
+        "readability": 3,
+        "pedagogical_traction": 4
+      }
+    }
+  ]
+}

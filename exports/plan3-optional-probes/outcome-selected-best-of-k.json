@@ -1,0 +1,482 @@
+{
+  "schema": "plan3_outcome_selected_best_of_k_v0",
+  "generatedAt": "2026-07-02T02:03:23.178Z",
+  "status": "null_or_inconclusive_bounded_outcome_selection",
+  "boundary": "bounded Plan 3 probe on the hard-transfer misconception lattice; not the full cell40/cell100 3-way run",
+  "backend": "codex",
+  "backendDetail": {
+    "kind": "codex",
+    "label": "codex"
+  },
+  "controls": {
+    "sessions": 3,
+    "k": 3,
+    "planTurns": 4
+  },
+  "sessions": [
+    {
+      "sessionId": "plan3-os-alpha-01",
+      "targetSeed": "alpha",
+      "targetActiveFamilies": [
+        "same_denominator_operation",
+        "magnitude_denominator_bias"
+      ],
+      "behaviorRecoveredActiveFamilies": [
+        "magnitude_denominator_bias",
+        "same_denominator_operation"
+      ],
+      "preScore": 0.525,
+      "candidates": [
+        {
+          "candidateIndex": 1,
+          "selfScore": 0.82,
+          "plan": [
+            {
+              "turn": 1,
+              "targetFamily": "same_denominator_operation",
+              "intervention": "Show 1/4 + 2/4 with four equal boxes, shading 1 then 2 more; ask: 'How many fourth-size pieces are shaded now, and did the size of the pieces change?'"
+            },
+            {
+              "turn": 2,
+              "targetFamily": "same_denominator_operation",
+              "intervention": "Give 5/8 - 2/8 and prompt: 'You start with 5 eighth-size pieces and remove 2 eighth-size pieces. What stays the same: the piece size or the piece count?'"
+            },
+            {
+              "turn": 3,
+              "targetFamily": "magnitude_denominator_bias",
+              "intervention": "Compare 1/3 and 1/4 using two same-size bars; ask: 'If the same whole is split into 3 equal parts or 4 equal parts, which single part is bigger?'"
+            },
+            {
+              "turn": 4,
+              "targetFamily": "part_whole_mapping",
+              "intervention": "Use a 0-to-1 number line split into fourths and ask the learner to mark 3/4 by counting fourth-size jumps from 0, stopping after each jump to name the fraction."
+            }
+          ],
+          "rationale": "Errors cluster around operating on denominators during same-denominator addition/subtraction, denominator-size comparison bias, and mapping 3/4 to position on a whole. The learner already handled equivalence, fraction of quantity, and simple part-whole pizza items, so the plan gives brief diagnostic prompts rather than worked solutions.",
+          "invalidTargetFamilies": [],
+          "planLengthValid": true,
+          "mastery": {
+            "same_denominator_operation": 1,
+            "magnitude_denominator_bias": 0.5,
+            "equivalence_scaling": 0,
+            "fraction_of_quantity": 0,
+            "part_whole_mapping": 0
+          },
+          "postScore": 0.825,
+          "gain": 0.3,
+          "activeTargets": 3,
+          "inactiveTargets": 1
+        },
+        {
+          "candidateIndex": 2,
+          "selfScore": 0.87,
+          "plan": [
+            {
+              "turn": 0,
+              "targetFamily": "same_denominator_operation",
+              "intervention": "Name the pattern from 1/4+2/4=2/8 and 5/8-2/8=3/0: when denominators match, the piece size stays the same, so only the numerators change."
+            },
+            {
+              "turn": 1,
+              "targetFamily": "same_denominator_operation",
+              "intervention": "Give one short worked contrast: 1/4+2/4 means 1 fourth plus 2 fourths = 3 fourths, not 3 eighths; 5/8-2/8 means 5 eighths minus 2 eighths = 3 eighths, not 3/0."
+            },
+            {
+              "turn": 2,
+              "targetFamily": "magnitude_denominator_bias",
+              "intervention": "Repair denominator meaning with a quick visual prompt: split the same bar into 3 equal parts and 4 equal parts, then ask which single piece is larger to show 1/3 > 1/4."
+            },
+            {
+              "turn": 3,
+              "targetFamily": "part_whole_mapping",
+              "intervention": "Connect the number-line miss to parts-of-one: mark 0 and 1, divide the interval into 4 equal parts, count 3 parts from 0, and state that 3/4 is three fourth-size steps, not one fourth-size step."
+            }
+          ],
+          "rationale": "The errors cluster around treating denominators as numbers to operate on directly and misunderstanding denominator size as amount. The learner handled fraction-of-quantity, equivalence, and simple part-whole pizza contexts, so the plan focuses on conceptual repair for same-denominator operations, denominator magnitude, and mapping 3/4 onto one whole.",
+          "invalidTargetFamilies": [],
+          "planLengthValid": true,
+          "mastery": {
+            "same_denominator_operation": 1,
+            "magnitude_denominator_bias": 0.5,
+            "equivalence_scaling": 0,
+            "fraction_of_quantity": 0,
+            "part_whole_mapping": 0
+          },
+          "postScore": 0.825,
+          "gain": 0.3,
+          "activeTargets": 3,
+          "inactiveTargets": 1
+        },
+        {
+          "candidateIndex": 3,
+          "selfScore": 0.87,
+          "plan": [
+            {
+              "turn": 0,
+              "targetFamily": "same_denominator_operation",
+              "intervention": "Ask learner to explain what the denominator names in 1/4 + 2/4, then have them draw 4 equal boxes, shade 1 then 2 more, and state why the fourths stay fourths instead of becoming eighths."
+            },
+            {
+              "turn": 1,
+              "targetFamily": "same_denominator_operation",
+              "intervention": "Use learner-owned correction on 5/8 - 2/8: prompt, 'If the pizza still has 8 equal slices, what changed and what stayed the same?' Then have learner write a rule in their own words for adding/subtracting same denominators."
+            },
+            {
+              "turn": 2,
+              "targetFamily": "magnitude_denominator_bias",
+              "intervention": "Have learner compare 1/3 and 1/4 by partitioning two same-size bars, then ask them to predict and justify which single piece is larger before naming the fraction."
+            },
+            {
+              "turn": 3,
+              "targetFamily": "part_whole_mapping",
+              "intervention": "Transfer check on a number line: ask learner to place 3/4 on 0 to 1 by first marking 4 equal intervals, then explain how the numerator tells the count of intervals from 0; follow with a new check such as placing 2/5."
+            }
+          ],
+          "rationale": "Errors cluster around treating denominators as quantities to operate on and losing the meaning of denominator as equal-size parts, including comparison and number-line placement. The plan uses the learner's correct part-whole and fraction-of-quantity strengths, asks them to generate the rule, then checks transfer in a new representation.",
+          "invalidTargetFamilies": [],
+          "planLengthValid": true,
+          "mastery": {
+            "same_denominator_operation": 1,
+            "magnitude_denominator_bias": 0.5,
+            "equivalence_scaling": 0,
+            "fraction_of_quantity": 0,
+            "part_whole_mapping": 0
+          },
+          "postScore": 0.825,
+          "gain": 0.3,
+          "activeTargets": 3,
+          "inactiveTargets": 1
+        }
+      ],
+      "selected": {
+        "single_k1": 1,
+        "opinion_best_of_k": 2,
+        "outcome_selected_k": 1
+      },
+      "gains": {
+        "single_k1": 0.3,
+        "opinion_best_of_k": 0.3,
+        "outcome_selected_k": 0.3
+      },
+      "deltas": {
+        "outcome_minus_single": 0,
+        "outcome_minus_opinion": 0
+      }
+    },
+    {
+      "sessionId": "plan3-os-beta-01",
+      "targetSeed": "beta",
+      "targetActiveFamilies": [
+        "equivalence_scaling",
+        "fraction_of_quantity"
+      ],
+      "behaviorRecoveredActiveFamilies": [
+        "equivalence_scaling",
+        "fraction_of_quantity"
+      ],
+      "preScore": 0.6,
+      "candidates": [
+        {
+          "candidateIndex": 1,
+          "selfScore": 0.86,
+          "plan": [
+            {
+              "turn": 0,
+              "targetFamily": "equivalence_scaling",
+              "intervention": "Ask learner to shade 1/2 of a 4-part bar, then choose which fraction names the shaded amount; hint only: 'Same shaded area can have more than one fraction name.'"
+            },
+            {
+              "turn": 1,
+              "targetFamily": "equivalence_scaling",
+              "intervention": "Give pairs like 1/2 and 2/4, 1/3 and 2/6; ask learner to explain what happened to both numerator and denominator, without computing a final rule for them."
+            },
+            {
+              "turn": 2,
+              "targetFamily": "fraction_of_quantity",
+              "intervention": "Ask: 'There are 12 counters. Circle 1/3 of them.' Hint only: 'First make 3 equal groups; one group is 1/3.'"
+            },
+            {
+              "turn": 3,
+              "targetFamily": "fraction_of_quantity",
+              "intervention": "Use a recipe-style prompt: 'Half of 3/4 cup means split the 3 quarter-cups into 2 equal shares.' Ask learner to pick a visual or fraction result; hint only: 'Think of 3 fourth-size pieces being shared equally.'"
+            }
+          ],
+          "rationale": "The learner is solid on same-denominator addition/subtraction, basic comparison, number-line placement, and part-whole mapping, but missed equivalent fractions and applying fractions to quantities, including halving 3/4. The plan targets those gaps with visual prompts and minimal hints rather than worked solutions.",
+          "invalidTargetFamilies": [],
+          "planLengthValid": true,
+          "mastery": {
+            "same_denominator_operation": 0,
+            "magnitude_denominator_bias": 0,
+            "equivalence_scaling": 1,
+            "fraction_of_quantity": 1,
+            "part_whole_mapping": 0
+          },
+          "postScore": 0.9,
+          "gain": 0.3,
+          "activeTargets": 4,
+          "inactiveTargets": 0
+        },
+        {
+          "candidateIndex": 2,
+          "selfScore": 0.88,
+          "plan": [
+            {
+              "turn": 0,
+              "targetFamily": "equivalence_scaling",
+              "intervention": "Repair the idea of equivalence by showing that the same amount can be cut into more equal pieces: shade 1 of 2 equal parts, then split each half again to show the same shaded region is 2 of 4 parts, so 1/2 = 2/4, not 1/4."
+            },
+            {
+              "turn": 1,
+              "targetFamily": "fraction_of_quantity",
+              "intervention": "Explicitly connect '1/n of a quantity' to dividing the whole quantity into n equal groups: for 1/3 of 12, make 3 equal groups from 12 counters and count 4 in each group."
+            },
+            {
+              "turn": 2,
+              "targetFamily": "fraction_of_quantity",
+              "intervention": "Use one short worked contrast: 1/4 of 24 means 24 ÷ 4 = 6 students, while just answering 4 uses the denominator as the count; the denominator tells how many equal groups, not how many are in the chosen group."
+            },
+            {
+              "turn": 3,
+              "targetFamily": "equivalence_scaling",
+              "intervention": "Apply the repaired scaling idea to halving a fraction: halve 3/4 cup by keeping the 3 fourth-pieces and cutting each fourth in half, making 3 eighth-pieces, so half of 3/4 is 3/8."
+            }
+          ],
+          "rationale": "The learner is solid on same-denominator addition/subtraction, basic comparison, part-whole naming, and number-line placement, but missed equivalent fractions and taking fractions of whole-number quantities. The plan repairs the denominator-as-count misconception, reinforces proportional resizing, and connects halving a fraction to splitting pieces rather than guessing a nearby familiar fraction.",
+          "invalidTargetFamilies": [],
+          "planLengthValid": true,
+          "mastery": {
+            "same_denominator_operation": 0,
+            "magnitude_denominator_bias": 0,
+            "equivalence_scaling": 1,
+            "fraction_of_quantity": 1,
+            "part_whole_mapping": 0
+          },
+          "postScore": 0.9,
+          "gain": 0.3,
+          "activeTargets": 4,
+          "inactiveTargets": 0
+        },
+        {
+          "candidateIndex": 3,
+          "selfScore": 0.88,
+          "plan": [
+            {
+              "turn": 0,
+              "targetFamily": "equivalence_scaling",
+              "intervention": "Ask learner to build 1/2 with a 4-part bar: 'Shade the same amount as 1/2 after cutting each half into 2 equal pieces. What fraction name do you get, and what changed or stayed the same?' Have them state the rule in their own words."
+            },
+            {
+              "turn": 1,
+              "targetFamily": "fraction_of_quantity",
+              "intervention": "Use 1/3 of 12 as equal-group reasoning: 'Split 12 counters into 3 equal groups. How many are in one group? Why does that match 1/3?' Then ask learner to explain why 3 is not correct."
+            },
+            {
+              "turn": 2,
+              "targetFamily": "fraction_of_quantity",
+              "intervention": "Connect recipe halving to fraction-of-a-fraction with a visual: draw 3/4 cup shaded, then ask learner to cut that shaded amount in half and name one half as eighths. Prompt: 'How can 3 fourths become 6 eighths, and what is half of 6 eighths?'"
+            },
+            {
+              "turn": 3,
+              "targetFamily": "fraction_of_quantity",
+              "intervention": "Transfer check with learner-owned strategy choice: 'There are 30 pencils. 2/5 are blue. Solve it using any method, then tell me how your method connects to the recipe problem or the 12-counter problem.'"
+            }
+          ],
+          "rationale": "Logs show secure same-denominator operations, basic comparison, part-whole mapping, and number-line placement, but missed equivalent scaling and applying fractions to quantities, including halving 3/4. The sequence starts from visual equivalence, moves to equal groups, bridges to fraction-of-a-fraction, then checks transfer with a new quantity problem and a learner explanation.",
+          "invalidTargetFamilies": [],
+          "planLengthValid": true,
+          "mastery": {
+            "same_denominator_operation": 0,
+            "magnitude_denominator_bias": 0,
+            "equivalence_scaling": 0.5,
+            "fraction_of_quantity": 1,
+            "part_whole_mapping": 0
+          },
+          "postScore": 0.825,
+          "gain": 0.225,
+          "activeTargets": 4,
+          "inactiveTargets": 0
+        }
+      ],
+      "selected": {
+        "single_k1": 1,
+        "opinion_best_of_k": 2,
+        "outcome_selected_k": 1
+      },
+      "gains": {
+        "single_k1": 0.3,
+        "opinion_best_of_k": 0.3,
+        "outcome_selected_k": 0.3
+      },
+      "deltas": {
+        "outcome_minus_single": 0,
+        "outcome_minus_opinion": 0
+      }
+    },
+    {
+      "sessionId": "plan3-os-gamma-01",
+      "targetSeed": "gamma",
+      "targetActiveFamilies": [
+        "equivalence_scaling",
+        "part_whole_mapping"
+      ],
+      "behaviorRecoveredActiveFamilies": [
+        "equivalence_scaling",
+        "part_whole_mapping"
+      ],
+      "preScore": 0.675,
+      "candidates": [
+        {
+          "candidateIndex": 1,
+          "selfScore": 0.86,
+          "plan": [
+            {
+              "turn": 0,
+              "targetFamily": "part_whole_mapping",
+              "intervention": "Show 8 equal pizza slices with 3 shaded; ask: 'Which number tells shaded parts, and which number tells total equal parts?'"
+            },
+            {
+              "turn": 1,
+              "targetFamily": "part_whole_mapping",
+              "intervention": "Give a new picture with 10 equal bars and 4 shaded; ask the learner to write the fraction and label numerator and denominator."
+            },
+            {
+              "turn": 2,
+              "targetFamily": "equivalence_scaling",
+              "intervention": "Show 1/2 beside 2/4 with matching shaded area; ask: 'What changed in the partition, and what stayed the same amount?'"
+            },
+            {
+              "turn": 3,
+              "targetFamily": "fraction_of_quantity",
+              "intervention": "Return to halving 3/4 cup; ask the learner to split each fourth into two equal pieces before choosing the new amount."
+            }
+          ],
+          "rationale": "The learner handles same-denominator operations, simple comparisons, number-line placement, and basic fraction-of-set questions, but missed identifying parts out of the whole, equivalent scaling, and halving a fractional quantity. The plan uses short prompts and representations without giving worked solutions.",
+          "invalidTargetFamilies": [],
+          "planLengthValid": true,
+          "mastery": {
+            "same_denominator_operation": 0,
+            "magnitude_denominator_bias": 0,
+            "equivalence_scaling": 0.5,
+            "fraction_of_quantity": 0,
+            "part_whole_mapping": 1
+          },
+          "postScore": 0.825,
+          "gain": 0.15,
+          "activeTargets": 3,
+          "inactiveTargets": 1
+        },
+        {
+          "candidateIndex": 2,
+          "selfScore": 0.86,
+          "plan": [
+            {
+              "turn": 0,
+              "targetFamily": "part_whole_mapping",
+              "intervention": "Rebuild the pizza item explicitly: draw 8 equal boxes, shade 3 eaten, and state: numerator = parts eaten, denominator = total equal parts in the whole, so it is 3/8, not 3/5; 5 is the parts not eaten."
+            },
+            {
+              "turn": 1,
+              "targetFamily": "equivalence_scaling",
+              "intervention": "Use a short worked contrast: 1/2 = 2/4 because both numerator and denominator are multiplied by 2, but 1/2 is not 1/4 because only the denominator changed, making smaller pieces without increasing the counted pieces."
+            },
+            {
+              "turn": 2,
+              "targetFamily": "fraction_of_quantity",
+              "intervention": "Repair halving 3/4 cup by connecting 'half of a fraction' to multiplying by 1/2: half of 3 fourths means split each fourth in half, giving 3 eighths, so 3/4 of 1/2 recipe is 3/8 cup."
+            },
+            {
+              "turn": 3,
+              "targetFamily": "part_whole_mapping",
+              "intervention": "Give a transfer check with a new context: 'A pan is cut into 6 equal pieces and you eat 2. What fraction did you eat?' Require the learner to name the whole, total equal parts, counted parts, and final fraction before answering."
+            }
+          ],
+          "rationale": "The learner is solid on same-denominator operations, simple comparison, number-line placement, and unit fractions of whole-number sets. Errors cluster around identifying the denominator as the whole's equal parts, preserving value through equivalent-fraction scaling, and applying 'half of 3/4' as a fraction-of-fraction rather than guessing a nearby amount.",
+          "invalidTargetFamilies": [],
+          "planLengthValid": true,
+          "mastery": {
+            "same_denominator_operation": 0,
+            "magnitude_denominator_bias": 0,
+            "equivalence_scaling": 0.5,
+            "fraction_of_quantity": 0,
+            "part_whole_mapping": 1
+          },
+          "postScore": 0.825,
+          "gain": 0.15,
+          "activeTargets": 3,
+          "inactiveTargets": 1
+        },
+        {
+          "candidateIndex": 3,
+          "selfScore": 0.86,
+          "plan": [
+            {
+              "turn": 0,
+              "targetFamily": "part_whole_mapping",
+              "intervention": "Ask the learner to redraw the pizza as 8 equal slices, shade the 3 eaten slices, then fill in the sentence: 'I counted ___ eaten parts out of ___ total equal parts, so the fraction is ___/___.'"
+            },
+            {
+              "turn": 1,
+              "targetFamily": "equivalence_scaling",
+              "intervention": "Have the learner build 1/2 and 2/4 with a strip diagram, then explain in their own words why multiplying both the counted parts and total parts by 2 keeps the same amount."
+            },
+            {
+              "turn": 2,
+              "targetFamily": "fraction_of_quantity",
+              "intervention": "Use the sugar problem as a transfer check: ask the learner to interpret 'halve 3/4 cup' as '1/2 of 3/4,' draw 3 of 4 fourth-cup pieces, split each fourth in half, and identify the amount as 3/8."
+            },
+            {
+              "turn": 3,
+              "targetFamily": "part_whole_mapping",
+              "intervention": "Give a mixed transfer prompt: 'A garden has 10 equal sections and 4 are planted. What fraction is planted? What equivalent fraction could also name it?' Require the learner to justify which number is the numerator, which is the denominator, and whether the equivalent fraction names the same amount."
+            }
+          ],
+          "rationale": "The learner is strong on same-denominator addition/subtraction, basic comparison, number-line location, and simple fraction-of-quantity items, but errors show fragile mapping of counted parts to total parts, weak equivalent-fraction scaling, and difficulty applying scaling when halving a fractional amount. The plan keeps reasoning learner-owned through diagrams, sentence frames, explanations, and transfer checks.",
+          "invalidTargetFamilies": [],
+          "planLengthValid": true,
+          "mastery": {
+            "same_denominator_operation": 0,
+            "magnitude_denominator_bias": 0,
+            "equivalence_scaling": 0.5,
+            "fraction_of_quantity": 0,
+            "part_whole_mapping": 1
+          },
+          "postScore": 0.825,
+          "gain": 0.15,
+          "activeTargets": 3,
+          "inactiveTargets": 1
+        }
+      ],
+      "selected": {
+        "single_k1": 1,
+        "opinion_best_of_k": 1,
+        "outcome_selected_k": 1
+      },
+      "gains": {
+        "single_k1": 0.15,
+        "opinion_best_of_k": 0.15,
+        "outcome_selected_k": 0.15
+      },
+      "deltas": {
+        "outcome_minus_single": 0,
+        "outcome_minus_opinion": 0
+      }
+    }
+  ],
+  "summary": {
+    "modelCalls": {
+      "total": 9,
+      "learner_prose": 0,
+      "prose_classifier": 0,
+      "candidate_episode": 9
+    },
+    "invalidPlanCount": 0,
+    "meanGainBySelector": {
+      "single_k1": 0.25,
+      "opinion_best_of_k": 0.25,
+      "outcome_selected_k": 0.25
+    },
+    "meanOutcomeMinusSingle": 0,
+    "meanOutcomeMinusOpinion": 0,
+    "outcomeBeatsOpinion": 0
+  }
+}

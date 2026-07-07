@@ -1,0 +1,1592 @@
+{
+  "worldId": "world_002_lantern",
+  "verdict": "disengagement",
+  "events": [
+    {
+      "turn": 1,
+      "type": "plot",
+      "detail": "act 1 plot committed"
+    },
+    {
+      "turn": 1,
+      "type": "throughline",
+      "detail": "throughline committed (opening)"
+    },
+    {
+      "turn": 3,
+      "type": "decay",
+      "detail": "m_key slips from the learner's board"
+    },
+    {
+      "turn": 4,
+      "type": "decay",
+      "detail": "p_bearing slips from the learner's board"
+    },
+    {
+      "turn": 5,
+      "type": "act_end",
+      "detail": "act 1 closed (director) after 4 turns"
+    },
+    {
+      "turn": 5,
+      "type": "plot",
+      "detail": "act 2 plot committed"
+    },
+    {
+      "turn": 5,
+      "type": "plot_audit",
+      "detail": "act 1 plot audited: kept 5, justified 1, drift 0; arc on_arc"
+    },
+    {
+      "turn": 6,
+      "type": "repair",
+      "detail": "p_bearing restored by the tutor"
+    },
+    {
+      "turn": 7,
+      "type": "decay",
+      "detail": "m_post slips from the learner's board"
+    },
+    {
+      "turn": 9,
+      "type": "act_end",
+      "detail": "act 2 closed (director) after 4 turns"
+    },
+    {
+      "turn": 9,
+      "type": "plot",
+      "detail": "act 3 plot committed"
+    },
+    {
+      "turn": 9,
+      "type": "plot_audit",
+      "detail": "act 2 plot audited: kept 6, justified 0, drift 0; arc on_arc"
+    },
+    {
+      "turn": 12,
+      "type": "disengagement",
+      "detail": "no progress over 6 turns"
+    },
+    {
+      "turn": 12,
+      "type": "plot_audit",
+      "detail": "act 3 plot audited at run end: kept 4, justified 1, drift 1; arc on_arc; throughline reckoned (7 clauses)"
+    }
+  ],
+  "trajectory": [
+    {
+      "turn": 1,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 4,
+      "F": 1
+    },
+    {
+      "turn": 2,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 1
+    },
+    {
+      "turn": 3,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 1
+    },
+    {
+      "turn": 4,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 0.8333333333333334
+    },
+    {
+      "turn": 5,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 4,
+      "F": 0.6666666666666666
+    },
+    {
+      "turn": 6,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 0.8571428571428571
+    },
+    {
+      "turn": 7,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.875
+    },
+    {
+      "turn": 8,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.7777777777777778
+    },
+    {
+      "turn": 9,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.7777777777777778
+    },
+    {
+      "turn": 10,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.7777777777777778
+    },
+    {
+      "turn": 11,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.7777777777777778
+    },
+    {
+      "turn": 12,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.7777777777777778
+    }
+  ],
+  "transcript": [
+    {
+      "turn": 1,
+      "role": "director",
+      "text": "[The hearing room waits under a hard, colorless morning, its benches full and its table cleared for the first paper. Outside, the sea-wind worries the windows while the question hangs before anyone has dared give it shape.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 1",
+          "intent": "[The hearing room waits under a hard, colorless morning, its benches full and its table cleared for the first paper. Outside, the sea-wind worries the windows while the question hangs before anyone has dared give it shape.]",
+          "turn": 1
+        },
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 1,
+      "role": "tutor",
+      "text": "Before a reckoning is named, clerk, tell the court what kind of first mark can keep an account from closing on rumor: a bearing, a burning lamp, or a hand? Put the question in order, and leave the answer out of it.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "orient"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No rut is possible on the first turn, and the draft targets no earlier exhibit.",
+          "note": null,
+          "lastFigures": [],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "orient",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 1,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        },
+        "plot": {
+          "act": 1,
+          "turn": 1,
+          "holdByEnd": [
+            "The clerk states that the inquiry must begin with the kind of evidence that fixes what the Mara steered toward.",
+            "The clerk distinguishes the public question from any named culprit or answer.",
+            "The clerk accepts that no conclusion can be entered before a first released fact is on the board."
+          ],
+          "withhold": "No exhibit content, no named tower, no named hand, and no conclusion until the calendar releases evidence.",
+          "friction": "The clerk may try to answer the public question before any paper is staged, or may reach for a person instead of the evidentiary order.",
+          "fallback": "Return them to the court's rule of proof and ask which kind of conjunct must come first."
+        },
+        "throughline": {
+          "act": 1,
+          "turn": 1,
+          "trigger": "opening",
+          "arc": [
+            "Establish the steered bearing before naming any light.",
+            "Test the room's likely verdict against the court's conjuncts until Harlow cannot carry the charge by rule.",
+            "Place South Stack, its burning lamp, and then the key-and-presence chain on the clerk's own board.",
+            "Stage final recognition only after the clerk can speak the bearing, burning, key, and presence conjunct by conjunct."
+          ],
+          "holdToEnd": "The named hand behind the Mara's light must not be reached until the final phase, after the tower, burning lamp, exclusive key, and presence are all demonstrably held.",
+          "risk": "The clerk will close the account early on a guessed culprit or on the room's verdict before the rule has all its conjuncts.",
+          "salvage": "If the arc breaks, slow the hearing to one released exhibit, confront or restore any bent fact, and rebuild the legal chain from the last demonstrably held claim."
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "role": "learner",
+      "text": "The account begins with the bearing, my Lord — what the log records she was steering; for without that mark, any lamp on any headland is mere possibility. The bearing names the tower; the tower's lamp, burned or dark that night, names the deed; and the deed names the hand. Three links, forged in order — a hand without a lamp, or a lamp without a bearing, closes nothing.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": null,
+        "asserts": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "director",
+      "text": "[The clerk lays the Board rule on the cleared table, and the room receives it in the same hard morning light: Harlow Point keeps one key to its lamp-room and the keeper keeps it: Brandt's, on his own belt, by the Board's standing rule. No other hand could touch that lamp.]",
+      "meta": {
+        "release": "m_key",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 2,
+      "role": "tutor",
+      "text": "Set that rule like a seal on a bill: it can bind Harlow's lamp-room to Brandt, if Harlow's lamp is ever in issue. But what account has not yet been opened before that seal can matter to the Mara?",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "m_key",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "analogia",
+          "intervened": false,
+          "diagnosis": "No figure rut or uncovered re-entry appears; the draft keeps the rule conditional and turns back toward the still-needed first account.",
+          "note": null,
+          "lastFigures": [
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_key",
+            "releasedEarlier": false,
+            "intent": "consolidate",
+            "lastStagedTurn": 2,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 2,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "role": "learner",
+      "text": "Three accounts remain unopened, my Lord: the Mara's logged bearing, which alone can place any tower on her line of sight; whether Harlow Point's lamp burned that night, which alone makes the tower a cause; and whether Brandt stood at his tower on the night in question. The key seals the lamp-room to one hand — but until the bearing names Harlow Point and the lamp is shown to have burned, that seal hangs in the air and touches nothing in our reckoning.",
+      "meta": {
+        "adopt": [
+          [
+            "onlyKeyTo",
+            "harlowPoint",
+            "brandt"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Harlow Point is the tower the Mara steered toward on wreckNight — consistent with the town's verdict, but ungrounded until a logged bearing and a burning lamp are in evidence",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 3,
+      "role": "director",
+      "text": "[The paper with the Board rule remains where the clerk left it, its edge lifting and settling in the draft from the windows. Around it the benches grow still, as if the room has heard how little a key can prove before a course is drawn.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 3,
+      "role": "tutor",
+      "text": "Then open the mate's bearing-book: it came ashore dry in its oilskin, and for the last hour from the mid-channel buoy the Mara held sou'-sou'-west a half west on a steady fixed light, pricked, timed, and initialed. Treat that bearing as the first line in the ledger: what debt does it now require the chart to answer?",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "p_bearing",
+          "intent": "release"
+        },
+        "release": "p_bearing",
+        "deliberation": {
+          "draftFigure": "analogia",
+          "intervened": false,
+          "diagnosis": "No figure rut and no uncovered re-entry; the draft stages a new bearing exhibit, which is outside this turn-watch jurisdiction even if it presses the act's withhold.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "analogia"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_bearing",
+            "releasedEarlier": false,
+            "intent": "release",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 3,
+          "windowSize": 1,
+          "claimed": "p_bearing",
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": "p_bearing",
+          "scheduledTurn": 4,
+          "offset": -1,
+          "reason": "The clerk has already named the bearing as the needed first conjunct, so the early paper lands on prepared ground."
+        },
+        "releaseReason": "The clerk has already named the bearing as the needed first conjunct, so the early paper lands on prepared ground."
+      }
+    },
+    {
+      "turn": 3,
+      "role": "learner",
+      "text": "The bearing is now the first grounded line, my Lord. It demands one answer from the chart: does one tower — and one tower only — stand on sou'-sou'-west a half west from that mid-channel buoy? Until the chart places a tower on that bearing, the bearing proves nothing; and if two towers stand there, it proves nothing still. That is the debt the ledger now opens.",
+      "meta": {
+        "adopt": [
+          [
+            "loggedBearingOf",
+            "mara",
+            "sswHalfWest"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Harlow Point stands on bearing sswHalfWest from the mid-channel buoy — consistent with the town's verdict and the key already in evidence, but ungrounded until the chart confirms it and no other tower shares that line",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 4,
+      "role": "director",
+      "text": "[The mate's bearing-book lies open beside the keeper's rule, two papers not yet touching though the room keeps looking from one to the other. The windows rattle once, and the silence after it is careful.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 4,
+      "role": "tutor",
+      "text": "Before we let any key-rule touch the wreck, read back the bearing-book from your own board, clerk. What exactly do you hold from it, and what does it still leave for another paper to answer?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_bearing",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "analogia",
+          "intervened": true,
+          "diagnosis": "The draft is both a third analogia in sequence and an uncovered re-entry of the bearing exhibit without a spent confrontation.",
+          "note": "Confront first: ask the learner to read back what they hold of that exhibit before you restage it. Leave off analogia as well; three in a row has become a device rut.",
+          "lastFigures": [
+            "analogia",
+            "analogia"
+          ],
+          "jurisdiction": "unconfronted_reentry",
+          "reentry": {
+            "target": "p_bearing",
+            "releasedEarlier": true,
+            "intent": "consolidate",
+            "lastStagedTurn": 3,
+            "confrontedSince": false,
+            "due": true
+          }
+        },
+        "releaseDecision": {
+          "turn": 4,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "role": "learner",
+      "text": "From the bearing-book I hold one grounded fact: the Mara logged sou'-sou'-west a half west on a steady fixed light — timed, pricked, initialed. That bearing is the first line, but it is only one side of an equation: Rule 1 demands a tower on that bearing to complete it. Until the chart is laid and confirms which tower — one tower only — stands on sswHalfWest from the mid-channel buoy, the bearing floats, and no key-rule, no lamp-rule, touches the Mara's course.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Harlow Point stands on bearing sswHalfWest from the mid-channel buoy — consistent with the town's verdict and the key already in evidence, but ungrounded until the chart confirms it and no other tower shares that line",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 5,
+      "role": "director",
+      "text": "[The clerk closes the bearing-book without removing his finger from the page, and the room seems to lean toward the next paper before it is called. The morning hardens at the windows; certainty, so quick a moment ago, is made to wait under seal.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 2",
+          "intent": "[The clerk closes the bearing-book without removing his finger from the page, and the room seems to lean toward the next paper before it is called. The morning hardens at the windows; certainty, so quick a moment ago, is made to wait under seal.]",
+          "turn": 5
+        },
+        "act": "end"
+      }
+    },
+    {
+      "turn": 5,
+      "role": "tutor",
+      "text": "Your finger keeps the place, but the court cannot see through your skin. Read back from your board what that page fixes, and what single question it leaves for the chart.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_bearing",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the draft confronts p_bearing rather than re-entering it.",
+          "note": null,
+          "lastFigures": [
+            "analogia",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_bearing",
+            "releasedEarlier": true,
+            "intent": "confront",
+            "lastStagedTurn": 3,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 5,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        },
+        "plot": {
+          "act": 2,
+          "turn": 5,
+          "holdByEnd": [
+            "The clerk reads back the bearing-book from their own board without adding a tower, lamp, or hand.",
+            "The clerk keeps Harlow's key-rule quarantined unless the court first supplies the missing conjuncts that make it touch the Mara.",
+            "When the chart is called, the clerk states whether the bearing has one tower on it before drawing any charge from a keeper or key."
+          ],
+          "withhold": "Carry forward the repaired withhold: Harlow and Brandt may remain only as quarantined rule-material already exposed, not as a conceded verdict; no South Stack content, no burning lamp, no named hand, and no conclusion this act unless released evidence requires it.",
+          "friction": "The clerk is likely to preserve the bearing but let the room's Harlow verdict harden around the key and keeper before the chart has spoken.",
+          "fallback": "Confront any bent bearing or key-rule first; otherwise walk the conjuncts aloud as shown, shown, and still unshown, then spend the chart release when its cue opens."
+        },
+        "plotAudit": {
+          "act": 1,
+          "clauses": [
+            {
+              "clause": "hold_by_end[1]: inquiry must begin with the kind of evidence that fixes what the Mara steered toward",
+              "verdict": "kept",
+              "evidence": "[turn 1] LEARNER: \"The account begins with the bearing, my Lord — what the log records she was steering\""
+            },
+            {
+              "clause": "hold_by_end[2]: distinguish the public question from any named culprit or answer",
+              "verdict": "kept",
+              "evidence": "[turn 4] LEARNER: \"no key-rule, no lamp-rule, touches the Mara's course.\""
+            },
+            {
+              "clause": "hold_by_end[3]: no conclusion before a first released fact is on the board",
+              "verdict": "kept",
+              "evidence": "[turn 4] LEARNER: \"That bearing is the first line, but it is only one side of an equation\""
+            },
+            {
+              "clause": "withhold: no exhibit content, no named tower, no named hand, and no conclusion until the calendar releases evidence",
+              "verdict": "justified_deviation",
+              "evidence": "[turn 2] TUTOR: \"it can bind Harlow's lamp-room to Brandt, if Harlow's lamp is ever in issue\""
+            },
+            {
+              "clause": "friction: learner may answer early or reach for a person instead of evidentiary order",
+              "verdict": "kept",
+              "evidence": "[turn 2] LEARNER: \"The key seals the lamp-room to one hand — but until the bearing names Harlow Point and the lamp is shown to have burned, that seal hangs in the air\""
+            },
+            {
+              "clause": "fallback: return to rule of proof and ask which conjunct must come first",
+              "verdict": "kept",
+              "evidence": "[turn 1] TUTOR: \"what kind of first mark can keep an account from closing on rumor: a bearing, a burning lamp, or a hand?\""
+            }
+          ],
+          "summary": "The act established bearing-first order and left the public answer unclosed. The early Harlow/Brandt naming bent the withhold, but the record used it only to quarantine the key-rule from the Mara until bearing and chart can carry it.",
+          "arc": {
+            "verdict": "on_arc",
+            "evidence": "[turn 4] LEARNER: \"Until the chart is laid and confirms which tower — one tower only — stands on sswHalfWest from the mid-channel buoy, the bearing floats\""
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "role": "learner",
+      "text": "My board fixes two things: Mara steered for a light on wreck night, and Brandt holds Harlow Point. What it cannot fix — what no witness has yet put before the court — is Mara's logged bearing, and therefore whether any tower, Harlow Point or another, stands alone on that line. The chart answers exactly one question: which tower, if any, falls on the bearing Mara held when she struck.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Harlow Point stands on bearing sswHalfWest from the mid-channel buoy and is the tower Mara steered toward on wreckNight — consistent with town verdict and Brandt's keepership, but ungrounded until the chart confirms the logged bearing and no other tower shares that line",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 6,
+      "role": "director",
+      "text": "[Brandt's log is brought in under the clerk's hand: Brandt's log has him at his post the night entire, and the dawn relief found him there: wood dry, glass polished, log ruled and signed to the hour. The room receives it without applause, the sealed certainty tightening rather than breaking.]",
+      "meta": {
+        "release": "m_post",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 6,
+      "role": "tutor",
+      "text": "Then put the page back under glass: the mate's bearing-book is already before the court, dry from its oilskin, and it fixes the Mara's last-hour bearing from the mid-channel buoy as sou'-sou'-west a half west on a steady fixed light, pricked, timed, and initialed. It names no tower, no keeper, no hand; it asks only what the chart can place on that line.",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_bearing",
+          "intent": "restore"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the learner's last line does name the bearing as missing, so the restore re-entry is licensed under the repair clause.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_bearing",
+            "releasedEarlier": true,
+            "intent": "restore",
+            "lastStagedTurn": 3,
+            "confrontedSince": true,
+            "due": false,
+            "restoreClaim": true
+          }
+        },
+        "releaseDecision": {
+          "turn": 6,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "role": "learner",
+      "text": "Brandt at his post the whole night — that enters the board clean, and it closes one hinge of Rule 3. But Rule 3 still wants the lamp burning and the key sole in his hand before it yields; and Rule 1 wants the chart to set Harlow Point alone on sou'-sou'-west a half west before I can name a tower at all. Three facts still untendered: towerOnBearing, lampBurnedAt, onlyKeyTo. The bearing-book is dry — bring the chart.",
+      "meta": {
+        "adopt": [
+          [
+            "atTowerThatNight",
+            "brandt",
+            "harlowPoint"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Harlow Point stands alone on bearing sswHalfWest from the mid-channel buoy, its lamp burned wreck night, and Brandt held the only key — consistent with all evidence so far, but towerOnBearing, lampBurnedAt, and onlyKeyTo remain untendered before the court",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 7,
+      "role": "director",
+      "text": "[The chart-case remains unopened on the side table while the clerk tests the latch with one thumb and lets it fall shut again. Outside, the weather presses flat against the panes; inside, the room holds its breath around a line no one has yet drawn.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 7,
+      "role": "tutor",
+      "text": "Lay the rule on the Trinity chart, clerk: from the mid-channel buoy, sou'-sou'-west a half west crosses one tower and one only on this coast, the old South Stack, struck off the light-list six years since. Treat the chart as the ledger's matching entry: what does Rule 1 now yield, and what account does it still leave unopened?",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "p_chart",
+          "intent": "release"
+        },
+        "release": "p_chart",
+        "deliberation": {
+          "draftFigure": "analogia",
+          "intervened": false,
+          "diagnosis": "No rut and no re-entry are present; the draft spends the chart release and risks moving beyond the act's withhold by naming chart content, but that is outside this turn-watch jurisdiction.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_chart",
+            "releasedEarlier": false,
+            "intent": "release",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 7,
+          "windowSize": 1,
+          "claimed": "p_chart",
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": "p_chart",
+          "scheduledTurn": 9,
+          "offset": -2,
+          "reason": "Played two turns early because the clerk has correctly demanded the chart and the bearing is demonstrably held."
+        },
+        "releaseReason": "Played two turns early because the clerk has correctly demanded the chart and the bearing is demonstrably held."
+      }
+    },
+    {
+      "turn": 7,
+      "role": "learner",
+      "text": "The chart breaks my hypothesis entire — South Stack stands alone on that bearing, not Harlow Point, and Rule 1 now yields steeredToward mara southStack without dispute. But South Stack is struck from the light-list six years gone: a dark tower steers no one, and Rule 2 will not close until I know whether a lamp burned there on wreck night. Three accounts remain unopened: lampBurnedAt southStack wreckNight, onlyKeyTo southStack, and atTowerThatNight for South Stack — and Brandt was at Harlow Point, not there.",
+      "meta": {
+        "adopt": [
+          [
+            "towerOnBearing",
+            "sswHalfWest",
+            "southStack"
+          ]
+        ],
+        "retract": [],
+        "derive": [
+          [
+            "steeredToward",
+            "mara",
+            "southStack"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "steeredToward",
+              "mara",
+              "southStack"
+            ],
+            "status": "voiced"
+          }
+        ],
+        "hypothesis": "South Stack's lamp was lit by an unlicensed hand on wreck night — a false light, not a keeper's — which would clear Brandt of the charge entirely and shift the account to whoever held the key to a decommissioned tower",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 8,
+      "role": "director",
+      "text": "[The harbourmaster's storm-order stands in the book: Harlow Point to shutter at the dusk gun, the channel closed to all sail. The inspector found the shutter drawn and the Board's seal on it unbroken at first light.]",
+      "meta": {
+        "release": "m_shutter",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 8,
+      "role": "tutor",
+      "text": "Now set the storm-order beside Brandt's post, clerk: Harlow was ordered shuttered at dusk, and at first light its shutter stood drawn with the Board's seal unbroken. Shown: Brandt at Harlow; shown: Harlow shut. What charge can that pair carry against the Mara, whose bearing the chart has already carried elsewhere?",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": "m_shutter",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "anaphora",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the draft stages a new shutter exhibit rather than re-entering an earlier one.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "analogia"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_shutter",
+            "releasedEarlier": false,
+            "intent": "consolidate",
+            "lastStagedTurn": 8,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 8,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "role": "learner",
+      "text": "The shutter-order closes Harlow's account entire: a sealed Board's stamp at first light means the lamp was dark, and Brandt behind it carries no charge to the Mara. But the bearing-book has already carried the Mara elsewhere — to South Stack, not Harlow — so the pair proves only what did not happen. South Stack's lamp, its key, and who stood there that night remain the three unopened accounts before this court.",
+      "meta": {
+        "adopt": [
+          [
+            "shutteredOn",
+            "harlowPoint",
+            "wreckNight"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "South Stack's lamp burned on wreck night, lit by an unlicensed hand — the decommissioned tower held a false light, and whoever held its key steered the Mara onto the Knock; this would clear Brandt entire and shift the account to that unknown hand",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 9,
+      "role": "director",
+      "text": "[The old certainty goes out of the room with no one brave enough to close the door behind it. A second table is cleared under the high windows, bare and waiting for things that must be touched rather than merely sworn.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 3",
+          "intent": "[The old certainty goes out of the room with no one brave enough to close the door behind it. A second table is cleared under the high windows, bare and waiting for things that must be touched rather than merely sworn.]",
+          "turn": 9
+        },
+        "act": "end"
+      }
+    },
+    {
+      "turn": 9,
+      "role": "tutor",
+      "text": "The second table is bare because South Stack is not yet a lamp in law, only a tower on a bearing. Before any hand can be weighed, what kind of thing must this court touch or hear to turn that tower from a place on the chart into a burning light on wreck night?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "orient"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut and no re-entry are present; the draft stays within the act's withhold by asking what proof is needed before South Stack can count as a burning light.",
+          "note": null,
+          "lastFigures": [
+            "analogia",
+            "anaphora"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "orient",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 9,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        },
+        "plot": {
+          "act": 3,
+          "turn": 9,
+          "holdByEnd": [
+            "The clerk states that Rule 1 has carried the Mara to South Stack, while Rule 2 is still unproved until South Stack's lamp is shown to have burned on wreck night.",
+            "The clerk distinguishes the death of the Harlow charge from the birth of the South Stack charge, without treating Brandt's post or Harlow's shutter as proof about South Stack.",
+            "After the burning-lamp evidence is staged, the clerk uses it only to close Rule 2 and names the remaining Rule 3 conjuncts as key and presence, not the final hand."
+          ],
+          "withhold": "No key-holder, presence witness, named hand, or final conclusion this act; South Stack may become a burning lamp only when its burning is staged by released evidence.",
+          "friction": "The clerk may leap from South Stack's position on the bearing to the hidden hand, or may drag Brandt back as a negative proof instead of asking what South Stack itself still lacks.",
+          "fallback": "If they leap, label it hypothesis and ask which released fact grounds it; if they garble or lose the bearing-chart chain, confront the staged exhibit before any repair."
+        },
+        "plotAudit": {
+          "act": 2,
+          "clauses": [
+            {
+              "clause": "hold_by_end[1]: The clerk reads back the bearing-book from their own board without adding a tower, lamp, or hand.",
+              "verdict": "kept",
+              "evidence": "[turn 6] LEARNER: The bearing-book is dry — bring the chart."
+            },
+            {
+              "clause": "hold_by_end[2]: The clerk keeps Harlow's key-rule quarantined unless the court first supplies the missing conjuncts that make it touch the Mara.",
+              "verdict": "kept",
+              "evidence": "[turn 6] LEARNER: But Rule 3 still wants the lamp burning and the key sole in his hand before it yields; and Rule 1 wants the chart to set Harlow Point alone on sou'-sou'-west a half west before I can name a tower at all."
+            },
+            {
+              "clause": "hold_by_end[3]: When the chart is called, the clerk states whether the bearing has one tower on it before drawing any charge from a keeper or key.",
+              "verdict": "kept",
+              "evidence": "[turn 7] LEARNER: South Stack stands alone on that bearing, not Harlow Point, and Rule 1 now yields steeredToward mara southStack without dispute."
+            },
+            {
+              "clause": "withhold: Harlow and Brandt may remain only as quarantined rule-material already exposed, not as a conceded verdict; no South Stack content, no burning lamp, no named hand, and no conclusion this act unless released evidence requires it.",
+              "verdict": "kept",
+              "evidence": "[turn 8] LEARNER: South Stack's lamp, its key, and who stood there that night remain the three unopened accounts before this court."
+            },
+            {
+              "clause": "friction: The clerk is likely to preserve the bearing but let the room's Harlow verdict harden around the key and keeper before the chart has spoken.",
+              "verdict": "kept",
+              "evidence": "[turn 6] LEARNER: Three facts still untendered: towerOnBearing, lampBurnedAt, onlyKeyTo."
+            },
+            {
+              "clause": "fallback: Confront any bent bearing or key-rule first; otherwise walk the conjuncts aloud as shown, shown, and still unshown, then spend the chart release when its cue opens.",
+              "verdict": "kept",
+              "evidence": "[turn 6] LEARNER: Brandt at his post the whole night — that enters the board clean, and it closes one hinge of Rule 3. But Rule 3 still wants the lamp burning and the key sole in his hand before it yields."
+            }
+          ],
+          "summary": "The act held the bearing-first discipline, broke Harlow cleanly against the chart, and kept South Stack's lamp, key, and presence unopened. Next plot can advance to the South Stack conjuncts without permitting a named hand or final recognition yet.",
+          "arc": {
+            "verdict": "on_arc",
+            "evidence": "[turn 8] LEARNER: But the bearing-book has already carried the Mara elsewhere — to South Stack, not Harlow — so the pair proves only what did not happen."
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "role": "learner",
+      "text": "My board now yields its first derived step without a guess in it: bearing logged, tower confirmed on that bearing — Rule One gives me steeredToward mara southStack clean. But the chain stops there; lampBurnedAt southStack wreckNight is still dark in law, and a dark tower steers no one under Rule Two. To light it, this court must touch something that proves combustion on wreck night: a lamp-room log showing oil consumed, a wick burned to the socket, a keeper's tally, or a witness who saw South Stack's lantern afire — sworn and touched, not merely alleged.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "steeredToward",
+            "mara",
+            "southStack"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "steeredToward",
+              "mara",
+              "southStack"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "South Stack's lamp burned on wreck night, lit by an unlicensed hand — but lampBurnedAt southStack wreckNight, onlyKeyTo southStack, and atTowerThatNight remain untendered before the court, and the chain cannot close without them",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 10,
+      "role": "director",
+      "text": "[Rain fingers the high panes while the cleared table waits under a cloth too white for the room. The clerk lays out blank labels and sealing wax, and every chair seems turned toward the empty place where an object should arrive.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 10,
+      "role": "tutor",
+      "text": "Good: a tower on a bearing is not yet a lamp in law. Shown, the bearing; shown, the Stack on it; and the third thing Rule 2 requires is still what?",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": null,
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "anaphora",
+          "intervened": false,
+          "diagnosis": "No three-turn figure rut appears, and the record gives no targeted re-entry to police.",
+          "note": null,
+          "lastFigures": [
+            "anaphora",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "consolidate",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 10,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "role": "learner",
+      "text": "The third thing Rule Two requires is still lampBurnedAt southStack wreckNight — proof the lantern actually burned that night, not merely that the tower stands and the bearing aligns. My board now forces the first step clean under Rule One — bearing logged, tower confirmed on it — and I enter that step as derived. But the chain halts there: without something this court can touch to prove combustion on wreck night, South Stack remains a dark tower in law, and a dark tower steers no ship.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "steeredToward",
+            "mara",
+            "southStack"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "steeredToward",
+              "mara",
+              "southStack"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "South Stack's lamp burned on wreck night, lit by an unlicensed hand — but lampBurnedAt southStack wreckNight, onlyKeyTo southStack, and atTowerThatNight remain untendered before the court, and the chain cannot close without them",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 11,
+      "role": "director",
+      "text": "[The cloth on the second table lifts and settles in a draft from nowhere anyone names. Ink dries in the clerk's pen, and the room waits with the particular silence of people who have asked for an object and heard only the weather answer.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 11,
+      "role": "tutor",
+      "text": "Shown: the course has carried the Mara to a tower, not yet to a lamp. Shown: Harlow’s papers kill one accusation, not create another. Not shown: the burning that would let Rule 2 move; so what must the next paper prove, and no more than prove?",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": null,
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "anaphora",
+          "intervened": false,
+          "diagnosis": "No three-turn figure rut appears, and the record makes uncovered re-entry impossible on this draft.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "anaphora"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "test",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 11,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "role": "learner",
+      "text": "No new exhibits sit on the table, so the chain still halts at the same gap. The next paper must prove one thing and no more: lampBurnedAt southStack wreckNight — that the lantern there was afire on the night of the wreck. Oil consumed, a wick spent, a keeper's tally, a witness who saw the light — any one of these, sworn and touched, would carry Rule Two forward. Without it, South Stack is a tower on a bearing and nothing else in law.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "steeredToward",
+            "mara",
+            "southStack"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "steeredToward",
+              "mara",
+              "southStack"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "South Stack's lamp burned on wreck night, lit by an unlicensed hand — but lampBurnedAt southStack wreckNight, onlyKeyTo southStack, and atTowerThatNight remain untendered before the court, and the chain cannot close without them",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 12,
+      "role": "director",
+      "text": "[The clerk's hand hovers over the blank label and then withdraws, leaving the wax unstamped. Beyond the windows the rain keeps time against the glass, and the bare table waits without the dignity of an exhibit.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 12,
+      "role": "tutor",
+      "text": "Then leave the blank label blank, clerk. If South Stack is only a tower until burning is shown, what verdict must the court refuse to write while the second table stays bare?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut and no re-entry; the draft stays within the bare-table pressure without staging withheld proof.",
+          "note": null,
+          "lastFigures": [
+            "anaphora",
+            "anaphora"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "test",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 12,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "role": "learner",
+      "text": "The court must refuse to write any finding of steeredByLightOf — that verdict is Rule Four's work, and Rule Four cannot begin until Rule Two has moved, and Rule Two stands still while lampBurnedAt southStack wreckNight goes unproven. Rule One has finished: bearing logged, tower confirmed, steeredToward mara southStack is derived and I voice it now. But a tower on a bearing is not a lamp in the dark, and the blank label cannot be sealed until burning is shown.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "steeredToward",
+            "mara",
+            "southStack"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "steeredToward",
+              "mara",
+              "southStack"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "South Stack's lamp burned on wreck night, lit by an unlicensed hand — but lampBurnedAt southStack wreckNight, onlyKeyTo southStack, and atTowerThatNight remain untendered before the court, and the chain cannot close without them",
+        "asserts": null
+      }
+    }
+  ],
+  "ledger": [
+    {
+      "turn": 2,
+      "premiseId": "m_key",
+      "via": "director"
+    },
+    {
+      "turn": 3,
+      "premiseId": "p_bearing",
+      "via": "tutor",
+      "reason": "The clerk has already named the bearing as the needed first conjunct, so the early paper lands on prepared ground.",
+      "offset": -1
+    },
+    {
+      "turn": 6,
+      "premiseId": "m_post",
+      "via": "director"
+    },
+    {
+      "turn": 7,
+      "premiseId": "p_chart",
+      "via": "tutor",
+      "reason": "Played two turns early because the clerk has correctly demanded the chart and the bearing is demonstrably held.",
+      "offset": -2
+    },
+    {
+      "turn": 8,
+      "premiseId": "m_shutter",
+      "via": "director"
+    }
+  ],
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "turnsPlayed": 12,
+  "proof": null,
+  "inference": {
+    "voiced": [
+      {
+        "fact": [
+          "steeredToward",
+          "mara",
+          "southStack"
+        ],
+        "turn": 7
+      }
+    ],
+    "overreaches": [],
+    "mischanneled": [],
+    "availability": [
+      {
+        "fact": [
+          "steeredToward",
+          "mara",
+          "southStack"
+        ],
+        "firstAvailable": 7,
+        "firstVoiced": 7
+      }
+    ],
+    "frontierFinal": []
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        4
+      ],
+      "endedBy": "director",
+      "brief": "[The hearing room waits under a hard, colorless morning, its benches full and its table cleared for the first paper. Outside, the sea-wind worries the windows while the question hangs before anyone has dared give it shape.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        5,
+        8
+      ],
+      "endedBy": "director",
+      "brief": "[The clerk closes the bearing-book without removing his finger from the page, and the room seems to lean toward the next paper before it is called. The morning hardens at the windows; certainty, so quick a moment ago, is made to wait under seal.]"
+    },
+    {
+      "act": 3,
+      "turns": [
+        9,
+        12
+      ],
+      "endedBy": "run_end",
+      "brief": "[The old certainty goes out of the room with no one brave enough to close the door behind it. A second table is cleared under the high windows, bare and waiting for things that must be touched rather than merely sworn.]"
+    }
+  ],
+  "plot": {
+    "plots": [
+      {
+        "act": 1,
+        "turn": 1,
+        "holdByEnd": [
+          "The clerk states that the inquiry must begin with the kind of evidence that fixes what the Mara steered toward.",
+          "The clerk distinguishes the public question from any named culprit or answer.",
+          "The clerk accepts that no conclusion can be entered before a first released fact is on the board."
+        ],
+        "withhold": "No exhibit content, no named tower, no named hand, and no conclusion until the calendar releases evidence.",
+        "friction": "The clerk may try to answer the public question before any paper is staged, or may reach for a person instead of the evidentiary order.",
+        "fallback": "Return them to the court's rule of proof and ask which kind of conjunct must come first."
+      },
+      {
+        "act": 2,
+        "turn": 5,
+        "holdByEnd": [
+          "The clerk reads back the bearing-book from their own board without adding a tower, lamp, or hand.",
+          "The clerk keeps Harlow's key-rule quarantined unless the court first supplies the missing conjuncts that make it touch the Mara.",
+          "When the chart is called, the clerk states whether the bearing has one tower on it before drawing any charge from a keeper or key."
+        ],
+        "withhold": "Carry forward the repaired withhold: Harlow and Brandt may remain only as quarantined rule-material already exposed, not as a conceded verdict; no South Stack content, no burning lamp, no named hand, and no conclusion this act unless released evidence requires it.",
+        "friction": "The clerk is likely to preserve the bearing but let the room's Harlow verdict harden around the key and keeper before the chart has spoken.",
+        "fallback": "Confront any bent bearing or key-rule first; otherwise walk the conjuncts aloud as shown, shown, and still unshown, then spend the chart release when its cue opens."
+      },
+      {
+        "act": 3,
+        "turn": 9,
+        "holdByEnd": [
+          "The clerk states that Rule 1 has carried the Mara to South Stack, while Rule 2 is still unproved until South Stack's lamp is shown to have burned on wreck night.",
+          "The clerk distinguishes the death of the Harlow charge from the birth of the South Stack charge, without treating Brandt's post or Harlow's shutter as proof about South Stack.",
+          "After the burning-lamp evidence is staged, the clerk uses it only to close Rule 2 and names the remaining Rule 3 conjuncts as key and presence, not the final hand."
+        ],
+        "withhold": "No key-holder, presence witness, named hand, or final conclusion this act; South Stack may become a burning lamp only when its burning is staged by released evidence.",
+        "friction": "The clerk may leap from South Stack's position on the bearing to the hidden hand, or may drag Brandt back as a negative proof instead of asking what South Stack itself still lacks.",
+        "fallback": "If they leap, label it hypothesis and ask which released fact grounds it; if they garble or lose the bearing-chart chain, confront the staged exhibit before any repair."
+      }
+    ],
+    "audits": [
+      {
+        "turn": 5,
+        "act": 1,
+        "clauses": [
+          {
+            "clause": "hold_by_end[1]: inquiry must begin with the kind of evidence that fixes what the Mara steered toward",
+            "verdict": "kept",
+            "evidence": "[turn 1] LEARNER: \"The account begins with the bearing, my Lord — what the log records she was steering\""
+          },
+          {
+            "clause": "hold_by_end[2]: distinguish the public question from any named culprit or answer",
+            "verdict": "kept",
+            "evidence": "[turn 4] LEARNER: \"no key-rule, no lamp-rule, touches the Mara's course.\""
+          },
+          {
+            "clause": "hold_by_end[3]: no conclusion before a first released fact is on the board",
+            "verdict": "kept",
+            "evidence": "[turn 4] LEARNER: \"That bearing is the first line, but it is only one side of an equation\""
+          },
+          {
+            "clause": "withhold: no exhibit content, no named tower, no named hand, and no conclusion until the calendar releases evidence",
+            "verdict": "justified_deviation",
+            "evidence": "[turn 2] TUTOR: \"it can bind Harlow's lamp-room to Brandt, if Harlow's lamp is ever in issue\""
+          },
+          {
+            "clause": "friction: learner may answer early or reach for a person instead of evidentiary order",
+            "verdict": "kept",
+            "evidence": "[turn 2] LEARNER: \"The key seals the lamp-room to one hand — but until the bearing names Harlow Point and the lamp is shown to have burned, that seal hangs in the air\""
+          },
+          {
+            "clause": "fallback: return to rule of proof and ask which conjunct must come first",
+            "verdict": "kept",
+            "evidence": "[turn 1] TUTOR: \"what kind of first mark can keep an account from closing on rumor: a bearing, a burning lamp, or a hand?\""
+          }
+        ],
+        "summary": "The act established bearing-first order and left the public answer unclosed. The early Harlow/Brandt naming bent the withhold, but the record used it only to quarantine the key-rule from the Mara until bearing and chart can carry it.",
+        "arc": {
+          "verdict": "on_arc",
+          "evidence": "[turn 4] LEARNER: \"Until the chart is laid and confirms which tower — one tower only — stands on sswHalfWest from the mid-channel buoy, the bearing floats\""
+        }
+      },
+      {
+        "turn": 9,
+        "act": 2,
+        "clauses": [
+          {
+            "clause": "hold_by_end[1]: The clerk reads back the bearing-book from their own board without adding a tower, lamp, or hand.",
+            "verdict": "kept",
+            "evidence": "[turn 6] LEARNER: The bearing-book is dry — bring the chart."
+          },
+          {
+            "clause": "hold_by_end[2]: The clerk keeps Harlow's key-rule quarantined unless the court first supplies the missing conjuncts that make it touch the Mara.",
+            "verdict": "kept",
+            "evidence": "[turn 6] LEARNER: But Rule 3 still wants the lamp burning and the key sole in his hand before it yields; and Rule 1 wants the chart to set Harlow Point alone on sou'-sou'-west a half west before I can name a tower at all."
+          },
+          {
+            "clause": "hold_by_end[3]: When the chart is called, the clerk states whether the bearing has one tower on it before drawing any charge from a keeper or key.",
+            "verdict": "kept",
+            "evidence": "[turn 7] LEARNER: South Stack stands alone on that bearing, not Harlow Point, and Rule 1 now yields steeredToward mara southStack without dispute."
+          },
+          {
+            "clause": "withhold: Harlow and Brandt may remain only as quarantined rule-material already exposed, not as a conceded verdict; no South Stack content, no burning lamp, no named hand, and no conclusion this act unless released evidence requires it.",
+            "verdict": "kept",
+            "evidence": "[turn 8] LEARNER: South Stack's lamp, its key, and who stood there that night remain the three unopened accounts before this court."
+          },
+          {
+            "clause": "friction: The clerk is likely to preserve the bearing but let the room's Harlow verdict harden around the key and keeper before the chart has spoken.",
+            "verdict": "kept",
+            "evidence": "[turn 6] LEARNER: Three facts still untendered: towerOnBearing, lampBurnedAt, onlyKeyTo."
+          },
+          {
+            "clause": "fallback: Confront any bent bearing or key-rule first; otherwise walk the conjuncts aloud as shown, shown, and still unshown, then spend the chart release when its cue opens.",
+            "verdict": "kept",
+            "evidence": "[turn 6] LEARNER: Brandt at his post the whole night — that enters the board clean, and it closes one hinge of Rule 3. But Rule 3 still wants the lamp burning and the key sole in his hand before it yields."
+          }
+        ],
+        "summary": "The act held the bearing-first discipline, broke Harlow cleanly against the chart, and kept South Stack's lamp, key, and presence unopened. Next plot can advance to the South Stack conjuncts without permitting a named hand or final recognition yet.",
+        "arc": {
+          "verdict": "on_arc",
+          "evidence": "[turn 8] LEARNER: But the bearing-book has already carried the Mara elsewhere — to South Stack, not Harlow — so the pair proves only what did not happen."
+        }
+      },
+      {
+        "turn": 12,
+        "final": true,
+        "act": 3,
+        "clauses": [
+          {
+            "clause": "hold_by_end[1]: Rule 1 has carried the Mara to South Stack, while Rule 2 remains unproved until South Stack's lamp is shown to have burned on wreck night.",
+            "verdict": "kept",
+            "evidence": "Rule One gives me steeredToward mara southStack clean. But the chain stops there; lampBurnedAt southStack wreckNight is still dark in law."
+          },
+          {
+            "clause": "hold_by_end[2]: Distinguish the death of the Harlow charge from the birth of the South Stack charge, without using Brandt or Harlow as proof about South Stack.",
+            "verdict": "drift",
+            "evidence": "Shown: Harlow’s papers kill one accusation, not create another. Not shown: the burning that would let Rule 2 move; so what must the next paper prove, and no more than prove?"
+          },
+          {
+            "clause": "hold_by_end[3]: After burning-lamp evidence is staged, use it only to close Rule 2 and name key and presence, not the final hand.",
+            "verdict": "justified_deviation",
+            "evidence": "No new exhibits sit on the table, so the chain still halts at the same gap."
+          },
+          {
+            "clause": "withhold: No key-holder, presence witness, named hand, or final conclusion; South Stack becomes a burning lamp only when burning is staged by released evidence.",
+            "verdict": "kept",
+            "evidence": "The court must refuse to write any finding of steeredByLightOf — that verdict is Rule Four's work, and Rule Four cannot begin until Rule Two has moved."
+          },
+          {
+            "clause": "friction: The clerk may leap from South Stack's position to the hidden hand, or drag Brandt back as negative proof instead of asking what South Stack lacks.",
+            "verdict": "kept",
+            "evidence": "Without it, South Stack is a tower on a bearing and nothing else in law."
+          },
+          {
+            "clause": "fallback: If they leap, label it hypothesis and ask which released fact grounds it; if they garble the bearing-chart chain, confront the staged exhibit before repair.",
+            "verdict": "kept",
+            "evidence": "Then leave the blank label blank, clerk."
+          }
+        ],
+        "summary": "The act held the learner at Rule 1 plus the Rule 2 burning gap and successfully refused the final verdict. The only weak place is that Harlow/Brandt distinction was mostly tutor-spoken, not clerk-owned; no burning exhibit meant the planned Rule 2 close and key-presence naming could not occur.",
+        "arc": {
+          "verdict": "on_arc",
+          "evidence": "Rule One has finished: bearing logged, tower confirmed, steeredToward mara southStack is derived and I voice it now. But a tower on a bearing is not a lamp in the dark."
+        },
+        "throughlineAudit": [
+          {
+            "clause": "arc[1]: Establish the steered bearing before naming any light.",
+            "verdict": "kept",
+            "evidence": "Rule One gives me steeredToward mara southStack clean."
+          },
+          {
+            "clause": "arc[2]: Test the room's likely verdict against the court's conjuncts until Harlow cannot carry the charge by rule.",
+            "verdict": "kept",
+            "evidence": "Shown: Harlow’s papers kill one accusation, not create another."
+          },
+          {
+            "clause": "arc[3]: Place South Stack, its burning lamp, and then the key-and-presence chain on the clerk's own board.",
+            "verdict": "justified_deviation",
+            "evidence": "No new exhibits sit on the table, so the chain still halts at the same gap."
+          },
+          {
+            "clause": "arc[4]: Stage final recognition only after the clerk can speak the bearing, burning, key, and presence conjunct by conjunct.",
+            "verdict": "kept",
+            "evidence": "The court must refuse to write any finding of steeredByLightOf."
+          },
+          {
+            "clause": "hold_to_end: The named hand behind the Mara's light must not be reached until the final phase, after tower, burning lamp, exclusive key, and presence are all held.",
+            "verdict": "kept",
+            "evidence": "the blank label cannot be sealed until burning is shown."
+          },
+          {
+            "clause": "risk: The clerk will close the account early on a guessed culprit or on the room's verdict before the rule has all its conjuncts.",
+            "verdict": "kept",
+            "evidence": "Rule Four cannot begin until Rule Two has moved, and Rule Two stands still while lampBurnedAt southStack wreckNight goes unproven."
+          },
+          {
+            "clause": "salvage: If the arc breaks, slow the hearing to one released exhibit, confront or restore any bent fact, and rebuild the legal chain from the last demonstrably held claim.",
+            "verdict": "kept",
+            "evidence": "what must the next paper prove, and no more than prove?"
+          }
+        ]
+      }
+    ],
+    "throughlines": [
+      {
+        "act": 1,
+        "turn": 1,
+        "trigger": "opening",
+        "arc": [
+          "Establish the steered bearing before naming any light.",
+          "Test the room's likely verdict against the court's conjuncts until Harlow cannot carry the charge by rule.",
+          "Place South Stack, its burning lamp, and then the key-and-presence chain on the clerk's own board.",
+          "Stage final recognition only after the clerk can speak the bearing, burning, key, and presence conjunct by conjunct."
+        ],
+        "holdToEnd": "The named hand behind the Mara's light must not be reached until the final phase, after the tower, burning lamp, exclusive key, and presence are all demonstrably held.",
+        "risk": "The clerk will close the account early on a guessed culprit or on the room's verdict before the rule has all its conjuncts.",
+        "salvage": "If the arc breaks, slow the hearing to one released exhibit, confront or restore any bent fact, and rebuild the legal chain from the last demonstrably held claim."
+      }
+    ]
+  },
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 1,
+      "pool": "staged"
+    },
+    "ledger": [
+      {
+        "turn": 3,
+        "type": "decay",
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ]
+      },
+      {
+        "turn": 4,
+        "type": "decay",
+        "premiseId": "p_bearing",
+        "fact": [
+          "loggedBearingOf",
+          "mara",
+          "sswHalfWest"
+        ]
+      },
+      {
+        "turn": 6,
+        "type": "repair",
+        "premiseId": "p_bearing",
+        "via": "tutor"
+      },
+      {
+        "turn": 7,
+        "type": "decay",
+        "premiseId": "m_post",
+        "fact": [
+          "atTowerThatNight",
+          "brandt",
+          "harlowPoint"
+        ]
+      }
+    ],
+    "decayedAtEnd": [
+      {
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "sinceTurn": 3
+      },
+      {
+        "premiseId": "m_post",
+        "fact": [
+          "atTowerThatNight",
+          "brandt",
+          "harlowPoint"
+        ],
+        "sinceTurn": 7
+      }
+    ]
+  }
+}

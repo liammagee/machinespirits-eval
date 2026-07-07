@@ -1,8 +1,10 @@
-# Future Development TODO
+# Future Development TODO Archive
 
-> **NOTE:** For Paper 2.0 related tasks and current active work, see the project board at [`notes/paper-2-0/BOARD.md`](notes/paper-2-0/BOARD.md). This TODO file contains older general experimental extensions and repository sweep items.
+> **CURRENT TODO SOURCE OF TRUTH:** live work is tracked in [`workplan/`](workplan/). Edit or add one card under [`workplan/items/`](workplan/items/), then regenerate [`workplan/BOARD.md`](workplan/BOARD.md) and [`workplan/board.json`](workplan/board.json) with `node scripts/workplan.js render && node scripts/workplan.js validate`. `workplan/BOARD.md` is the canonical human-readable board view.
 >
-> **Task tracking (2026-04-16):** Open items from this file have been migrated into the in-session task list (TaskList) — see tasks #1-#12. Use `TaskList` / `TaskGet <id>` to view current status. This document remains the canonical design reference; the task list is the working board.
+> **ARCHIVE STATUS:** this file is no longer the working board. It remains historical design context for older A/B/C/D/E/F roadmap entries. Do not append new live todos here; create or update a workplan item and link back to this file only as provenance.
+
+> Current Paper 2.0 / poetics work in this fork lives in dated notes under [`notes/poetics/`](notes/poetics/) and [`notes/`](notes/) more broadly, with [`DRAMATIC-RECOGNITION-PLAN.md`](DRAMATIC-RECOGNITION-PLAN.md) as the poetics closeout ledger. There is no separate `notes/paper-2-0/BOARD.md` in this checkout.
 
 Generated 2026-02-19 from comprehensive repository sweep.
 Organized by theme, roughly priority-ordered within each section.
@@ -401,7 +403,7 @@ Then re-run with `--ego-model openrouter.gemini-flash`. N = 2 models × 2 cells 
 
 ### A14. Evidence-Bound Adaptive Controller (HIGH — design 2026-05-13; Stages 1-5 DONE; arc closed 2026-05-17, paper v3.0.82 §6.9.7)
 
-**Origin**: `docs/next-steps/next-steps-report.md` (May 2026 review of paper-full-2.0.md v3.0.74). The report's thesis is that genuine adaptation is not memory but *accountable action selection* — minimal typed learner state, quoted-evidence requirement, finite policy vocabulary, grounding validator, learner contestability. Substantial reuse from `services/adaptiveTutor/` (already has typed state, 14 policy actions, trap suite, counterfactual replay). Net-new mechanism: evidence ledger + hypothesis TTL + grounding validator.
+**Origin**: `docs/next-steps/2026-05-13-next-steps-report.md` (May 2026 review of paper-full-2.0.md v3.0.74). The report's thesis is that genuine adaptation is not memory but *accountable action selection* — minimal typed learner state, quoted-evidence requirement, finite policy vocabulary, grounding validator, learner contestability. Substantial reuse from `services/adaptiveTutor/` (already has typed state, 14 policy actions, trap suite, counterfactual replay). Net-new mechanism: evidence ledger + hypothesis TTL + grounding validator.
 
 **Scope discipline**: the report sketches 7 experiments / 10 paper revisions / 5 implementation phases. This entry implements the **MVP only** — the genuinely-novel mechanism, on the existing trap suite, with two new cells. Everything else is deferred (knowledge tracing, action-plan best-of-N, human tutor co-pilot, etc.) until the MVP either lands or doesn't.
 
@@ -579,7 +581,7 @@ Decisive contrast = **S1 vs S0** (byte-identical edit-rights channel; sole diffe
 
 **Implementation plan**:
 
-- [x] **A18.0 - Design note** (zero API). Create `notes/poetics/recursive-tutor-learning-benchmark.md` with the above claim boundary, scenario-family schema, stop rules, and success criteria. DONE 2026-06-05.
+- [x] **A18.0 - Design note** (zero API). Create `notes/poetics/2026-06-05-recursive-tutor-learning-benchmark.md` with the above claim boundary, scenario-family schema, stop rules, and success criteria. DONE 2026-06-05.
 - [x] **A18.1 - Scenario-family fixture** (zero API). Add a small config under `config/poetics-calibration/` or `config/recursive-tutor-learning/` with 3 pilot families and held-out siblings. DONE 2026-06-05: `config/recursive-tutor-learning/pilot-families.yaml`.
 - [x] **A18.2 - Replay harness extension** (zero/low API). Extend existing replay scripts to support `attempt1 -> failure_record -> policy_revision -> attempt2_heldout`, preserving separate public transcript and held-out deliberation artifacts. DONE 2026-06-05: `scripts/run-recursive-tutor-learning-benchmark.js` materializes attempt-chain fixtures and replay commands against the existing recursive tutor-learning gate.
 - [x] **A18.3 - Local gate** (cheap local critics first). Add a local scoring/report script that emits per-family status: `clean_survivor`, `revise_again`, `coherence_confound`, `leakage`, `organic_drift`, `no_headroom`. DONE 2026-06-05: `scripts/report-recursive-tutor-learning-local-gate.js`, exposed as `npm run poetics:recursive-tutor-gate`.
@@ -737,7 +739,7 @@ is green. Two unambiguous tooling bugs fixed in `4724297` (tables-script epoch d
 cross-run sums; 67 → 10 / 3 → 1 internal fails). Remaining items are Paper-1.0 prose/data
 reconciliation in a superseded paper; kept here as optional cleanup, prioritised cheap-first.
 
-- [x] **C7.1 — `notes/major-bugs.md` Bug-4 over-claim (CHEAPEST).** DONE 2026-05-13 (private-repo
+- [x] **C7.1 — `notes/2026-06-03-major-bugs.md` Bug-4 over-claim (CHEAPEST).** DONE 2026-05-13 (private-repo
   commit `97939426`). Rewrote Bug-4's Impact paragraph: code-fix-in-place going forward; ~64 of
   ~1,898 in-scope rows rescored as validation sample (~3 %); ~1,834 not planned for backfill due
   to v2.2 cross-contamination risk on pre-2026-02-28 rows; Paper 2.0 supersedes Paper 1.0 on clean
@@ -1046,9 +1048,9 @@ Run `node scripts/analyze-superego-taxonomy.js --input <the 500-record corpus>` 
 - **Done (v3.0.126):** §6.2.3 data-provenance pointer applied — inline sentence naming the script + archived corpus + pairing semantics (no number change). Reproduction report: `exports/superego-transition-reproduction.md`.
 - Paper ref: §6.2.3, §6.2.5 (lines ~1226, 1269).
 
-### G5. § H2 per-session slope p=0.032 is a wrong p-value (DIAGNOSED 2026-06-06 — fix in hand, paper edit pending sign-off)
+### G5. § H2 per-session slope p=0.032 is a wrong p-value (RESOLVED 2026-06-23 — fix landed in paper §6.6.11 + revision-history; independently re-verified)
 **Root cause of the verifier flag: it used the wrong unit (40+40 sessions instead of per-arc slopes).** Reproduced the correct per-ARC test in a new committed script `scripts/analyze-a7-h2-slope.js` (report: `exports/a7-phase2-h2-slope-1777173286.md`). Every structural quantity reproduces **exactly**: recog mean slope **+1.31**, base **−1.08**, Welch **t=1.99**, **df=7.88**, 9-point gap (9.09), Cohen's **d=0.70** (per-session, n=40+40), and the in-sequence sensitivity (base n=4 **−1.10**, recog n=3 **+0.72** — exclusions: base-02 resumed s5, recog-01/05 resumed s7). **Only the p-value is wrong:** for t=1.99/df=7.88 the correct one-sided p is **0.041** and two-sided **0.083** (confirmed against scipy AND the in-repo `regularizedBeta`); the paper's **0.032 matches neither**. The directional "supported" verdict survives the one-sided pre-registration (0.041 < 0.05) but is weaker than 0.032 implied; two-sided is non-significant.
-- **Paper edit (pending sign-off):** change `p = 0.032` → `p = 0.041 (one-sided; two-sided 0.083)` at line ~2012, and update the cited reproduction path from the stub `analyze-a7-longitudinal.js` to `analyze-a7-h2-slope.js`. Version bump + revision-history entry.
+- **Paper edit (LANDED):** the H2 row (now ~line 2028) reads `Welch t(7.88)=1.99, one-sided p = 0.041 (two-sided 0.083)`; the reproduction citation (~line 2034) now distinguishes `analyze-a7-h2-slope.js` (the slope test) from the demoted `analyze-a7-longitudinal.js` (pad metrics); revision-history entry present (~line 4225). Re-verified 2026-06-23: `analyze-a7-h2-slope.js` recomputes two-sided 0.0828 / one-sided 0.0414, and scipy gives 0.0823/0.0412 — both round to the paper's 0.083/0.041.
 - Side change (already made): exported `lnGamma`/`regularizedBeta` from `services/anovaStats.js` (additive; all 21 anova tests pass) so the Welch p-value reuses the same beta numerics as the ANOVA F-test.
 - Paper ref: §6.6.11 H2 (line ~2012).
 

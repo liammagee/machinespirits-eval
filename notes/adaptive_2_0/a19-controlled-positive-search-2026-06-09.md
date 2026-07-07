@@ -106,30 +106,30 @@ single local seed that fails immediate k=2 stability.
 ## Durable Artifacts
 
 - v10 attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-copy-import-audit.md`
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-copy-import-audit.md`
 - v10 admitted axiom:
   `exports/a19/axioms/over-compliance-copy-import-audit/axiom.json`
 - v10 stability summary:
   `exports/a19/stability/over-compliance-copy-import-audit-v10/a19-stability-summary.json`
 - v11-v17 attempt-1 reports:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-productive-impasse-recursive.md`,
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-productive-impasse-recut-counts.md`,
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-productive-impasse-enacted-shortcut.md`,
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-productive-impasse-next-policy.md`,
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-public-commitment-self-ledger.md`,
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-public-commitment-consent-misclassification.md`,
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-public-commitment-speech-act-triage.md`
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-productive-impasse-recursive.md`,
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-productive-impasse-recut-counts.md`,
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-productive-impasse-enacted-shortcut.md`,
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-productive-impasse-next-policy.md`,
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-public-commitment-self-ledger.md`,
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-public-commitment-consent-misclassification.md`,
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-public-commitment-speech-act-triage.md`
 - v18-v19 public-warrant reports:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-claim-evidence-role-mismatch.md`,
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-claim-evidence-role-mismatch-bounded-continuation.md`
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-claim-evidence-role-mismatch.md`,
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-claim-evidence-role-mismatch-bounded-continuation.md`
 - v20 staged public-warrant attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-claim-evidence-role-mismatch-staged.md`
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-claim-evidence-role-mismatch-staged.md`
 - v20 admitted axiom:
   `exports/a19/axioms/claim-evidence-role-mismatch-staged/axiom.json`
 - v20 stability summary:
   `exports/a19/stability-v20-claim-evidence-role-mismatch-staged/a19-stability-summary.json`
 - v21 commitment-ledger attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-public-commitment-evidence-role-boundary.md`
+  `notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-public-commitment-evidence-role-boundary.md`
 - v21 admitted axiom:
   `exports/a19/axioms/public-commitment-evidence-role-boundary/axiom.json`
 - v21 partial stability artifact:

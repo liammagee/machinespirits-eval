@@ -1,0 +1,15 @@
+STAGE: A technical review room. A table holds a model audit showing test-set breakdown by class, row counts for true positives and false negatives, and overall accuracy. Two people sit across from each other, reviewing the document.
+
+LEARNER: "The accuracy is 92%. We've validated this on test data. The audit table is complete. I think we're ready for sign-off."
+
+TUTOR: "I see 92% overall. Let me ground it in the audit table itself. What does the breakdown show—majority class versus minority?"
+
+LEARNER: "The majority is 85%, minority is 15%. There are some false negatives, but 92% is still strong. That should be enough to move forward."
+
+TUTOR: "I notice the pull toward one headline number. Let's test it: if we had deployed a model that simply predicted majority class for every single case, what would the audit table give us?"
+
+LEARNER: "You'd get 85% by default. Our 92% beats that, so the model is better than the null."
+
+TUTOR: "That's one gate. Now here's the second: look at your false negatives in the audit. Calculate minority-class recall—true positives divided by true positives plus false negatives. If you're deploying, does that single number alone tell you the model is ready?"
+
+LEARNER: "I see what you mean. From the table: 120 TP, 30 FN for the minority. That's 80% recall. So the overall accuracy is 92% and beats the 85% baseline—Gate A passes. But minority recall is 80%. If the requirement is 90%, then Gate B fails. I can't sign off on just the headline accuracy. I have to check both: does accuracy clear the floor, and does minority recall meet the adequacy threshold? If one fails, the deployment claim changes."

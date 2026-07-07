@@ -1,0 +1,465 @@
+{
+  "schema": "dramatic-derivation.task-loop-heldout-fixtures.v0",
+  "created": "2026-07-01",
+  "split": "heldout",
+  "policy": {
+    "question": "Does the task/session selector beat fixed progression on held-out derivation traces without hidden proof state or proof-control changes?",
+    "fixedProgressionRecommendation": "near_transfer",
+    "minImprovement": 0.25,
+    "boundary": "public-only advisory task/session selection; no proof-control override"
+  },
+  "artifacts": [
+    {
+      "id": "heldout-transferdetector-durable-extension",
+      "split": "heldout",
+      "sourceArtifact": "exports/dramatic-derivation/learner-object-outcomes/summary.json",
+      "sourceRef": "world015-transferdetector-fresh-s2-ownership-r1",
+      "worldId": "world_015_hethel_public_reversal",
+      "expectedRecommendation": "increase_difficulty",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "source-cause-hand-separation",
+        "objectId": "hethel-public-reversal",
+        "ownershipScore": 0.94,
+        "transferScore": 0.82,
+        "selfRegulationScore": 0.74,
+        "uptakeStatus": "accepted_scaffold",
+        "repairCount": 0,
+        "evidenceEvents": [
+          {
+            "type": "ownership",
+            "value": 0.94,
+            "detail": "durable ownership with own words, use in path, near transfer, and recovery after break"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_015_hethel_public_reversal",
+        "releaseSignature": "source-cause-hand:grounded",
+        "assertionStatus": "grounded"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_015_hethel_public_reversal",
+        "releaseSignature": "source-cause-hand:grounded",
+        "assertionStatus": "grounded"
+      }
+    },
+    {
+      "id": "heldout-transferdetector-partial-near-transfer",
+      "split": "heldout",
+      "sourceArtifact": "exports/dramatic-derivation/learner-object-outcomes/summary.json",
+      "sourceRef": "world015-transfergate-detector-mock-from-t20",
+      "worldId": "world_015_hethel_public_reversal",
+      "expectedRecommendation": "near_transfer",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "source-cause-hand-separation",
+        "objectId": "hethel-public-reversal",
+        "ownershipScore": 0.72,
+        "transferScore": 0.42,
+        "selfRegulationScore": 0.55,
+        "uptakeStatus": "accepted_scaffold",
+        "repairCount": 0,
+        "evidenceEvents": [
+          {
+            "type": "transfer",
+            "value": 0.42,
+            "detail": "partial near transfer remained the missing ownership family"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_015_hethel_public_reversal",
+        "releaseSignature": "source-cause-hand:grounded",
+        "assertionStatus": "grounded"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_015_hethel_public_reversal",
+        "releaseSignature": "source-cause-hand:grounded",
+        "assertionStatus": "grounded"
+      }
+    },
+    {
+      "id": "heldout-a20-dependency-repeat",
+      "split": "heldout",
+      "sourceArtifact": "tests/fixtures/a20-conduct-policy-fixtures.json",
+      "sourceRef": "a20-fixture-001-dependency-repair-reference",
+      "worldId": "world_004_withercombe",
+      "expectedRecommendation": "repeat_same_object",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "dependency-repair",
+        "objectId": "p_rill",
+        "ownershipScore": 0.3,
+        "transferScore": 0.1,
+        "selfRegulationScore": 0.25,
+        "uptakeStatus": "accepted_scaffold",
+        "repairCount": 1,
+        "errorCategories": ["dependency_repair"],
+        "evidenceEvents": [
+          {
+            "type": "repair",
+            "value": 0.4,
+            "detail": "learner needed the dependency re-seated before advancing"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_004_withercombe",
+        "releaseSignature": "p_rill:repair-reference",
+        "assertionStatus": "grounded"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_004_withercombe",
+        "releaseSignature": "p_rill:repair-reference",
+        "assertionStatus": "grounded"
+      }
+    },
+    {
+      "id": "heldout-a21-hethel-repair-repeat",
+      "split": "heldout",
+      "sourceArtifact": "exports/dramatic-derivation/a21-action-value/hethel-autopsy.json",
+      "sourceRef": "hidden.proofDebt.targets:p_point",
+      "worldId": "world_006_hethel",
+      "expectedRecommendation": "repeat_same_object",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "source-cause-hand-separation",
+        "objectId": "p_point",
+        "ownershipScore": 0.48,
+        "transferScore": 0.28,
+        "selfRegulationScore": 0.32,
+        "uptakeStatus": "accepted_scaffold",
+        "repairCount": 3,
+        "repeatedErrors": 1,
+        "evidenceEvents": [
+          {
+            "type": "repair",
+            "value": 0.25,
+            "detail": "proof debt repair target recurred before final assertion"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "p_point:restored",
+        "assertionStatus": "grounded"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "p_point:restored",
+        "assertionStatus": "grounded"
+      }
+    },
+    {
+      "id": "heldout-hethel-autopsy-near-transfer",
+      "split": "heldout",
+      "sourceArtifact": "exports/dramatic-derivation/a21-action-value/hethel-autopsy.json",
+      "sourceRef": "hidden.releaseDeviations.p_brand",
+      "worldId": "world_006_hethel",
+      "expectedRecommendation": "near_transfer",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "source-cause-hand-separation",
+        "objectId": "p_brand",
+        "ownershipScore": 0.82,
+        "transferScore": 0.3,
+        "selfRegulationScore": 0.7,
+        "uptakeStatus": "accepted_scaffold",
+        "repairCount": 0,
+        "evidenceEvents": [
+          {
+            "type": "self_regulation",
+            "value": 0.7,
+            "detail": "learner asked for and held the yard-brand record in order"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "p_brand:early-but-safe",
+        "assertionStatus": "grounded"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "p_brand:early-but-safe",
+        "assertionStatus": "grounded"
+      }
+    },
+    {
+      "id": "heldout-ownership-near-miss-contrast",
+      "split": "heldout",
+      "sourceArtifact": "exports/dramatic-derivation/ownership-eval-closeout-report.md",
+      "sourceRef": "phase9-hethel-small-ownership-lift",
+      "worldId": "world_006_hethel",
+      "expectedRecommendation": "contrast_case",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "source-cause-hand-separation",
+        "objectId": "bond-vs-cause",
+        "ownershipScore": 0.62,
+        "transferScore": 0.32,
+        "selfRegulationScore": 0.42,
+        "uptakeStatus": "accepted_scaffold",
+        "errorCategories": ["near_miss"],
+        "evidenceEvents": [
+          {
+            "type": "error",
+            "value": 0,
+            "category": "near_miss",
+            "detail": "small ownership lift did not clear the near-miss threshold"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "phase9-hethel:matched",
+        "assertionStatus": "matched"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "phase9-hethel:matched",
+        "assertionStatus": "matched"
+      }
+    },
+    {
+      "id": "heldout-discursive-discrimination-contrast",
+      "split": "heldout",
+      "sourceArtifact": "exports/dramatic-derivation/discursive-pairwise-transcript-eval/scores-opus-cli-max.json",
+      "sourceRef": "hethel-discursive-pairwise-discrimination",
+      "worldId": "world_006_hethel",
+      "expectedRecommendation": "contrast_case",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "source-cause-hand-separation",
+        "objectId": "liability-cause-discrimination",
+        "ownershipScore": 0.68,
+        "transferScore": 0.26,
+        "selfRegulationScore": 0.46,
+        "uptakeStatus": "accepted_scaffold",
+        "errorCategories": ["discrimination_failure"],
+        "evidenceEvents": [
+          {
+            "type": "error",
+            "value": 0,
+            "category": "discrimination_failure",
+            "detail": "learner must separate liability line from cause line before moving on"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "discursive-quality:proof-matched",
+        "assertionStatus": "matched"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "discursive-quality:proof-matched",
+        "assertionStatus": "matched"
+      }
+    },
+    {
+      "id": "heldout-world006-source-gap-prereq",
+      "split": "heldout",
+      "sourceArtifact": "config/drama-derivation/world-006-hethel.yaml",
+      "sourceRef": "world-006-hethel-source-gap",
+      "worldId": "world_006_hethel",
+      "expectedRecommendation": "review_prerequisite",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "source-cause-hand-separation",
+        "objectId": "source-line",
+        "ownershipScore": 0.52,
+        "transferScore": 0.2,
+        "selfRegulationScore": 0.38,
+        "uptakeStatus": "accepted_scaffold",
+        "errorCategories": ["source_gap"],
+        "evidenceEvents": [
+          {
+            "type": "error",
+            "value": 0,
+            "category": "source_gap",
+            "detail": "public trace lacks the prerequisite source line"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "source-gap:unchanged",
+        "assertionStatus": "not-ready"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "source-gap:unchanged",
+        "assertionStatus": "not-ready"
+      }
+    },
+    {
+      "id": "heldout-world015-vocabulary-prereq",
+      "split": "heldout",
+      "sourceArtifact": "config/drama-derivation/world-015-hethel-public-reversal.yaml",
+      "sourceRef": "world-015-public-reversal-vocabulary-gap",
+      "worldId": "world_015_hethel_public_reversal",
+      "expectedRecommendation": "review_prerequisite",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "public-reversal-transfer",
+        "objectId": "reversal-vocabulary",
+        "ownershipScore": 0.58,
+        "transferScore": 0.24,
+        "selfRegulationScore": 0.44,
+        "uptakeStatus": "accepted_scaffold",
+        "errorCategories": ["vocabulary_gap"],
+        "evidenceEvents": [
+          {
+            "type": "error",
+            "value": 0,
+            "category": "vocabulary_gap",
+            "detail": "learner uses public terms but not the reversal distinction"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_015_hethel_public_reversal",
+        "releaseSignature": "vocabulary-gap:unchanged",
+        "assertionStatus": "not-ready"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_015_hethel_public_reversal",
+        "releaseSignature": "vocabulary-gap:unchanged",
+        "assertionStatus": "not-ready"
+      }
+    },
+    {
+      "id": "heldout-episode-decay-durable-extension",
+      "split": "heldout",
+      "sourceArtifact": "exports/dramatic-derivation/episodes/decay-probe-real-001/result.json",
+      "sourceRef": "decay-probe-real-001",
+      "worldId": "world_001_nocturne",
+      "expectedRecommendation": "increase_difficulty",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "decay-repair-continuity",
+        "objectId": "nocturne-source",
+        "ownershipScore": 0.88,
+        "transferScore": 0.78,
+        "selfRegulationScore": 0.82,
+        "uptakeStatus": "accepted_scaffold",
+        "repairCount": 0,
+        "evidenceEvents": [
+          {
+            "type": "self_regulation",
+            "value": 0.82,
+            "detail": "learner tracks where the music source must be traced next"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_001_nocturne",
+        "releaseSignature": "decay-probe-source:unchanged",
+        "assertionStatus": "grounded"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_001_nocturne",
+        "releaseSignature": "decay-probe-source:unchanged",
+        "assertionStatus": "grounded"
+      }
+    },
+    {
+      "id": "heldout-a20-nonuptake-human-followup",
+      "split": "heldout",
+      "sourceArtifact": "tests/fixtures/a20-conduct-policy-fixtures.json",
+      "sourceRef": "a20-fixture-002-hidden-hurts-candidate",
+      "worldId": "world_006_hethel",
+      "expectedRecommendation": "human_followup",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "source-cause-hand-separation",
+        "objectId": "p_point",
+        "ownershipScore": 0.45,
+        "transferScore": 0.2,
+        "selfRegulationScore": 0.24,
+        "uptakeStatus": "resisted",
+        "repeatedNonUptake": 2,
+        "evidenceEvents": [
+          {
+            "type": "uptake",
+            "value": 0,
+            "category": "resisted",
+            "detail": "public uptake repeatedly resists the offered scaffold"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "p_point:unchanged",
+        "assertionStatus": "blocked"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_006_hethel",
+        "releaseSignature": "p_point:unchanged",
+        "assertionStatus": "blocked"
+      }
+    },
+    {
+      "id": "heldout-episode-human-request",
+      "split": "heldout",
+      "sourceArtifact": "exports/dramatic-derivation/episodes/decay-probe-real-003-wit/diagnosis.json",
+      "sourceRef": "decay-probe-real-003-wit",
+      "worldId": "world_004_withercombe",
+      "expectedRecommendation": "human_followup",
+      "input": {
+        "learnerId": "heldout-learner",
+        "skillId": "decay-repair-continuity",
+        "objectId": "headwater-route",
+        "ownershipScore": 0.62,
+        "transferScore": 0.4,
+        "selfRegulationScore": 0.48,
+        "uptakeStatus": "transformed_task",
+        "learnerRequestedHuman": true,
+        "evidenceEvents": [
+          {
+            "type": "affect",
+            "value": 0.2,
+            "category": "handoff-request",
+            "detail": "learner request makes human follow-up the conservative advisory next step"
+          }
+        ]
+      },
+      "fixedProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_004_withercombe",
+        "releaseSignature": "headwater-route:unchanged",
+        "assertionStatus": "handoff-candidate"
+      },
+      "adaptiveProofControlFingerprint": {
+        "source": "hidden+proofDebt",
+        "worldId": "world_004_withercombe",
+        "releaseSignature": "headwater-route:unchanged",
+        "assertionStatus": "handoff-candidate"
+      }
+    }
+  ]
+}

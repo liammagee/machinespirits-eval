@@ -1,0 +1,55 @@
+# Register-router powered contrast (REGISTER-ROUTER-CONTRAST-
+# PREREGISTRATION.md; n=20/arm per §5.12.7 shrunken-estimate sizing,
+# primes 433-487).
+base:
+  world: config/drama-derivation/world-019-marrick-resistant.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: baseline-r1
+    flags: { decay: '{"seed":433,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r1
+    flags: { decay: '{"seed":433,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r2
+    flags: { decay: '{"seed":439,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r2
+    flags: { decay: '{"seed":439,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r3
+    flags: { decay: '{"seed":443,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r3
+    flags: { decay: '{"seed":443,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r4
+    flags: { decay: '{"seed":449,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r4
+    flags: { decay: '{"seed":449,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r5
+    flags: { decay: '{"seed":457,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r5
+    flags: { decay: '{"seed":457,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r6
+    flags: { decay: '{"seed":461,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r6
+    flags: { decay: '{"seed":461,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r7
+    flags: { decay: '{"seed":463,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r7
+    flags: { decay: '{"seed":463,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r8
+    flags: { decay: '{"seed":467,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r8
+    flags: { decay: '{"seed":467,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r9
+    flags: { decay: '{"seed":479,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r9
+    flags: { decay: '{"seed":479,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r10
+    flags: { decay: '{"seed":487,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r10
+    flags: { decay: '{"seed":487,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }

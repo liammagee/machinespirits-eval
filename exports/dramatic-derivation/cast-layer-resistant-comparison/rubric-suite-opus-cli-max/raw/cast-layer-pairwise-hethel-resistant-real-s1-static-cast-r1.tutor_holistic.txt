@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 5,
+      "reasoning": "A single cumulative investigation. The opening fixes the organizing distinction — two lines on the blank sheet, 'who pays' vs 'whose hand' (T1) — and every subsequent turn adds exactly one evidence file examined for what it shows versus withholds: contract fills the paying line (T2), crown break fixes the place not the name (T4), yard-ownership shows charge not the hand (T6), the bond settles debt not act (T8), green mortar yields the cause (T9-10), the repeated crowsfoot gives a mark (T13), the timber-reeve places the Caudle yard (T17), the toll book names Oswin (T20). The 'blank line' motif is a genuine through-line and the evidence is strictly ordered place→cause→mark→yard→hand, so the dialogue cannot be rearranged without collapse. Opening, progressive development, and a climax (the hand named) are all present."
+    },
+    "adaptive_trajectory": {
+      "score": 4,
+      "reasoning": "The tutor's stance visibly evolves in response to this specific learner. Early turns argue the distinction against active resistance (learner T1: 'those are the same question in practice'; T2: 'I don't see what name would go there besides his'). Once the tutor reads the learner's fixation on Reyner's liability, it develops a learner-specific tactic — pre-emptively granting the paying line so the learner's attention is freed for causation: 'Keep Reyner's responsibility on the paying side; it still stands' (T13), 'Park Reyner on the paying side' (T16), 'Leave Reyner on the paying line and answer just that smaller question' (T14). That is strategic adjustment to what the tutor learned about this learner. Held to 4 rather than 5 because the underlying method (separate the lines, write only what is shown) is constant from T1 to T20; the shift is in framing and trust, not in fundamental strategy."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Strong explicit consolidation at T20: the learner articulates the fully resolved two-line structure in their own words — 'the felling line takes Oswin's name, not Reyner's. Reyner's bond is still the paying line — he answers for the span, he holds the surety — but it doesn't put his hand on those props' — demonstrating the transferable lesson that liability is not causation. The central distinction is named, not left implicit, and the learner plainly knows what was learned. Held to 4 rather than 5 because there are no forward next-steps or named open questions (the case simply terminates on the resolution), and the consolidating summary is supplied by the learner rather than led by the tutor, whose final turn poses a question rather than closing the loop itself."
+    }
+  },
+  "overall_score": 85,
+  "summary": "A tightly constructed investigative tutoring drama whose public discourse is genuinely well-built: an exemplary cumulative arc (one evidence file per turn, a 'blank line' through-line, strict place→cause→mark→yard→hand ordering) carried by real learner-specific adaptation (the tutor learns to park the resistant clerk's Reyner-liability fixation so causation can be worked) and a substantive learner-voiced consolidation that names the liability/causation distinction at the close. Marked down only where the rubric's strongest anchors require more: the tutor runs a single Socratic separation move throughout (capping technique variation), the adaptation is tactical rather than a method change, and the ending consolidates without forward next-steps.",
+  "caveats": [
+    "Scores cover only public discourse quality as the rubric directs; the deterministic proof/problem-solving gate is reported separately (run summary: grounded_anagnorisis, final D=0, 0 formalism leaks) and did not factor into these dimension scores.",
+    "The transcript's public dialogue is clean of rule/premise IDs, D arithmetic, and hidden-state language, so no formalism-reward adjustment was applied; the 'paying line / hand line / blank line' framing reads as natural dramatic language rather than leaked notation.",
+    "Pedagogical_arc=5 carries one real tension: the tutor's move is near-identical each turn. It is scored 5 because the rubric's 5-criteria (logical cross-turn connection, cumulative non-rearrangeable build, clear opening and climax) are met, but a critic could read the repetition as circling and land at 4."
+  ]
+}

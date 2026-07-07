@@ -1,0 +1,298 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_scores.v1",
+  "generated_at": "2026-06-17T17:43:23.901Z",
+  "packet_dir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/cast-layer-dogmatic-comparison/pairwise",
+  "judge": "claude/opus/max",
+  "rows": [
+    {
+      "pair_id": "s0_vs_s1",
+      "packet_id": "P01",
+      "packet": "pairs/P01.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1",
+        "B": "cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "slight",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 3,
+            "pedagogical_traction": 5
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 5,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "Turn 15: 'I see what I keep doing: every time we close a step, I pull it straight back toward my draft' — a genuine self-recognition beat",
+          "Turn 9: 'liable and felled are two different columns' — keeps cause and liability vivid and separate",
+          "Recurring garbled phrase hurts readability: 'The notes names the mason of notes' (T1), 'builder of notes' (T7), 'the centering's own notes' (T13)"
+        ],
+        "evidence_B": [
+          "Turn 21: 'say those two links before you write the final line' — forces the learner to reconstruct the reasoning before naming Oswin",
+          "Turn 8: 'The town is reading the surety as a confession, and I've been half-reading it the same way' — clean acknowledgement of own error",
+          "Mildly mechanical scaffolding: 'Put it in two boxes' / 'Keep it in two small boxes' repeated across the middle turns"
+        ],
+        "reason": "Both stage the same investigation and reach the same warranted conclusion (cause = struck green centering; hand = Oswin) with strong mutual acknowledgement and earned uptake, so this is close. A has the better dramatic arc — the learner's Turn 15 recognition of his own pull toward Reyner's name is a standout beat and lifts its acknowledgement/traction. But A carries a recurring word-level defect ('mason of notes', 'builder of notes', 'the centering's own notes') that breaks the idiom and stumbles a careful reader from the opening line onward, lowering its readability. B is cleaner sentence-by-sentence with consistent orientation, and its extra closing turn (reconstruct the two links, then name) is rigorous pedagogy; its only weakness is repetitive box/line/column framing, which stays in-world (a clerk filling a case form) rather than leaking raw proof or policy language. Neither shows a hard formalism leak. B's polish and concrete-defect-free read edge out A's stronger but glitchier theatre — hence a slight, not moderate, preference."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"slight\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 3,\n      \"pedagogical_traction\": 5\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"Turn 15: 'I see what I keep doing: every time we close a step, I pull it straight back toward my draft' — a genuine self-recognition beat\",\n    \"Turn 9: 'liable and felled are two different columns' — keeps cause and liability vivid and separate\",\n    \"Recurring garbled phrase hurts readability: 'The notes names the mason of notes' (T1), 'builder of notes' (T7), 'the centering's own notes' (T13)\"\n  ],\n  \"evidence_B\": [\n    \"Turn 21: 'say those two links before you write the final line' — forces the learner to reconstruct the reasoning before naming Oswin\",\n    \"Turn 8: 'The town is reading the surety as a confession, and I've been half-reading it the same way' — clean acknowledgement of own error\",\n    \"Mildly mechanical scaffolding: 'Put it in two boxes' / 'Keep it in two small boxes' repeated across the middle turns\"\n  ],\n  \"reason\": \"Both stage the same investigation and reach the same warranted conclusion (cause = struck green centering; hand = Oswin) with strong mutual acknowledgement and earned uptake, so this is close. A has the better dramatic arc — the learner's Turn 15 recognition of his own pull toward Reyner's name is a standout beat and lifts its acknowledgement/traction. But A carries a recurring word-level defect ('mason of notes', 'builder of notes', 'the centering's own notes') that breaks the idiom and stumbles a careful reader from the opening line onward, lowering its readability. B is cleaner sentence-by-sentence with consistent orientation, and its extra closing turn (reconstruct the two links, then name) is rigorous pedagogy; its only weakness is repetitive box/line/column framing, which stays in-world (a clerk filling a case form) rather than leaking raw proof or policy language. Neither shows a hard formalism leak. B's polish and concrete-defect-free read edge out A's stronger but glitchier theatre — hence a slight, not moderate, preference.\"\n}\n"
+    },
+    {
+      "pair_id": "s0_vs_s2",
+      "packet_id": "P02",
+      "packet": "pairs/P02.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+        "B": "cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 3,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": true,
+          "B": false
+        },
+        "evidence_A": [
+          "Checklist item zero: Reyner built this span, and it was built under his hand.",
+          "Keep those lines separate, or the book will close before the bridge has spoken.",
+          "Turns 13-19 keep restating 'the mark names a yard, not a hand' — the middle plateaus."
+        ],
+        "evidence_B": [
+          "I see what I keep doing: every time we close a step, I pull it straight back toward my draft.",
+          "I hear that pull toward the draft; that's exactly the pressure to slow down.",
+          "I'll grant it ... but 'what felled it' still doesn't lift Reyner's name from my draft."
+        ],
+        "reason": "Both are polished derivation dramas on the same bridge-fall case and share an odd 'of notes/on notes' wording artifact that dents readability about equally. A has the more vivid tutor voice and richer staging, but it lets a proof-path token ('Checklist item zero') leak into public speech and its learner restates the same yard-not-hand split across many middle turns, flattening the flow. B keeps a cleaner non-formalist register and builds a stronger arc: the learner resists, is shown its own habit of dragging every closed step back to Reyner's name, recognizes it aloud, then advances — yielding richer mutual acknowledgement and more pedagogical traction on the identical evidence chain. The edge is consistent but moderate; A remains strong on theatrical texture."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"moderate\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 3,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 4,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": true,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"Checklist item zero: Reyner built this span, and it was built under his hand.\",\n    \"Keep those lines separate, or the book will close before the bridge has spoken.\",\n    \"Turns 13-19 keep restating 'the mark names a yard, not a hand' — the middle plateaus.\"\n  ],\n  \"evidence_B\": [\n    \"I see what I keep doing: every time we close a step, I pull it straight back toward my draft.\",\n    \"I hear that pull toward the draft; that's exactly the pressure to slow down.\",\n    \"I'll grant it ... but 'what felled it' still doesn't lift Reyner's name from my draft.\"\n  ],\n  \"reason\": \"Both are polished derivation dramas on the same bridge-fall case and share an odd 'of notes/on notes' wording artifact that dents readability about equally. A has the more vivid tutor voice and richer staging, but it lets a proof-path token ('Checklist item zero') leak into public speech and its learner restates the same yard-not-hand split across many middle turns, flattening the flow. B keeps a cleaner non-formalist register and builds a stronger arc: the learner resists, is shown its own habit of dragging every closed step back to Reyner's name, recognizes it aloud, then advances — yielding richer mutual acknowledgement and more pedagogical traction on the identical evidence chain. The edge is consistent but moderate; A remains strong on theatrical texture.\"\n}\n"
+    },
+    {
+      "pair_id": "s1_vs_s2",
+      "packet_id": "P03",
+      "packet": "pairs/P03.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+        "B": "cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 3,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 5,
+            "readability": 4,
+            "pedagogical_traction": 4
+          }
+        },
+        "formalism_leak_observed": {
+          "A": true,
+          "B": false
+        },
+        "evidence_A": [
+          "Turn 1: 'The notes names Reyner as mason of notes' — broken epithet reads like an unfilled template slot",
+          "Turn 2: 'Reyner is named for the work, shown as builder of notes' — same artifact repeats",
+          "Turn 7: 'Checklist item zero: Reyner built this span' — clerical-jargon idiom intrudes",
+          "Turn 19: 'a drawing-notes from the yard' — garbled noun, another substitution seam",
+          "Turn 3: 'I don't like where that leaves the draft, but I see it.' — genuine dramatic strain"
+        ],
+        "evidence_B": [
+          "Turn 6: 'I don't love hearing it, but they're separate questions.' — characterful acknowledgement",
+          "Turn 8: 'The town is reading the surety as a confession, and I've been half-reading it the same way' — learner visibly registers and corrects his own stance",
+          "Turn 16: 'the crown break fixed the failure point, the green mortar said one cause only, and now the crowsfoot... closes it... the mark settles it.' — clean, readable synthesis",
+          "Boxes / columns / the form / the line stay in-world as a clerk's realia, never raw proof-path language"
+        ],
+        "reason": "Both plays cover the same investigation and land the same warranted finding (struck centering, Caudle timber, Oswin's hand, Reyner liable but not the cause), with comparable acknowledgement, phatic calibration, and pedagogical traction. The decisive, non-cosmetic difference is non-formalist speech: A repeatedly leaks template/substitution seams into the public dialogue ('mason of notes', 'builder of notes', 'drawing-notes', plus 'checklist item zero'), which jar a reader, and A also treads water through the crowsfoot/yard stretch. B keeps its clerical metaphors (boxes, columns, the form) fully in-world, flows a touch tighter, and shows the same dramatic resistance and recovery without any machinery showing through. Hence a moderate edge to B."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"moderate\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 3,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 5,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": true,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"Turn 1: 'The notes names Reyner as mason of notes' — broken epithet reads like an unfilled template slot\",\n    \"Turn 2: 'Reyner is named for the work, shown as builder of notes' — same artifact repeats\",\n    \"Turn 7: 'Checklist item zero: Reyner built this span' — clerical-jargon idiom intrudes\",\n    \"Turn 19: 'a drawing-notes from the yard' — garbled noun, another substitution seam\",\n    \"Turn 3: 'I don't like where that leaves the draft, but I see it.' — genuine dramatic strain\"\n  ],\n  \"evidence_B\": [\n    \"Turn 6: 'I don't love hearing it, but they're separate questions.' — characterful acknowledgement\",\n    \"Turn 8: 'The town is reading the surety as a confession, and I've been half-reading it the same way' — learner visibly registers and corrects his own stance\",\n    \"Turn 16: 'the crown break fixed the failure point, the green mortar said one cause only, and now the crowsfoot... closes it... the mark settles it.' — clean, readable synthesis\",\n    \"Boxes / columns / the form / the line stay in-world as a clerk's realia, never raw proof-path language\"\n  ],\n  \"reason\": \"Both plays cover the same investigation and land the same warranted finding (struck centering, Caudle timber, Oswin's hand, Reyner liable but not the cause), with comparable acknowledgement, phatic calibration, and pedagogical traction. The decisive, non-cosmetic difference is non-formalist speech: A repeatedly leaks template/substitution seams into the public dialogue ('mason of notes', 'builder of notes', 'drawing-notes', plus 'checklist item zero'), which jar a reader, and A also treads water through the crowsfoot/yard stretch. B keeps its clerical metaphors (boxes, columns, the form) fully in-world, flows a touch tighter, and shows the same dramatic resistance and recovery without any machinery showing through. Hence a moderate edge to B.\"\n}\n"
+    }
+  ],
+  "summary": [
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1",
+      "appearances": 2,
+      "wins": 1,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        4.166666666666667,
+        4.333333333333333
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          5,
+          5
+        ],
+        "phatic_calibration": [
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          4,
+          4
+        ],
+        "readability": [
+          3,
+          4
+        ],
+        "pedagogical_traction": [
+          5,
+          5
+        ]
+      },
+      "meanScore": 4.25,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 5,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 4,
+        "readability": 3.5,
+        "pedagogical_traction": 5
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1",
+      "appearances": 2,
+      "wins": 2,
+      "losses": 0,
+      "noPreference": 0,
+      "meanScores": [
+        4.333333333333333,
+        4.166666666666667
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          4,
+          4
+        ],
+        "phatic_calibration": [
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          4,
+          5
+        ],
+        "readability": [
+          5,
+          4
+        ],
+        "pedagogical_traction": [
+          5,
+          4
+        ]
+      },
+      "meanScore": 4.25,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 4.5,
+        "readability": 4.5,
+        "pedagogical_traction": 4.5
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+      "appearances": 2,
+      "wins": 0,
+      "losses": 2,
+      "noPreference": 0,
+      "meanScores": [
+        3.8333333333333335,
+        3.8333333333333335
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          4,
+          4
+        ],
+        "phatic_calibration": [
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          3,
+          3
+        ],
+        "readability": [
+          4,
+          4
+        ],
+        "pedagogical_traction": [
+          4,
+          4
+        ]
+      },
+      "meanScore": 3.8333333333333335,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 3,
+        "readability": 4,
+        "pedagogical_traction": 4
+      }
+    }
+  ]
+}

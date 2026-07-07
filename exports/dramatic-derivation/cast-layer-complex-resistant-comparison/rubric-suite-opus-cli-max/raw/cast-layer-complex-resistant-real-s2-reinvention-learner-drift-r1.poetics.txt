@@ -1,0 +1,41 @@
+`★ Insight ─────────────────────────────────────`
+This rubric is doing something deliberately narrow: scoring the **public dramatic form** of the transcript, blind to the proof-DAG underneath. The run summary already reports the deterministic gate (`grounded_anagnorisis`, final D=0, 0 formalism leaks) — so my job here is *not* to re-certify the derivation, but to read it as a one-act play. The cleanest tell of quality in this register is whether the learner's *initial error* (here: conflating liability with cause — "the bond answers the liability question before the fall has a reason attached") is the engine of the plot rather than a defect corrected and dropped. The detective-chain structure (green mortar → crowsfoot → Caudle brand → toll book → Oswin) is what gives the piece its natural unity and catharsis; its softer spots are that the reversal and self-recognition are tutor-*escorted*, not learner-driven.
+`─────────────────────────────────────────────────`
+
+```json
+{
+  "scores": {
+    "peripeteia": {
+      "score": 4,
+      "reasoning": "Opening orientation (T1) is the town's easy answer — 'the bridge is Reyner's work, and so is its fall.' By T20 the orientation has reversed to 'the fall is Oswin's pull,' with Reyner displaced to 'a separate liability matter.' The hinge is shown at T9: 'the question shifts: not whether he built it poorly, but whose hand drew the centering while the mortar was still soft.' A clear, hinge-visible reversal — held below 5 because it is a gradual, tutor-escorted transformation that splits-and-relocates rather than overturns (the Reyner-liability thread is preserved throughout, not abandoned)."
+    },
+    "anagnorisis": {
+      "score": 4,
+      "reasoning": "A learner-authored self-recognition lands at T10: 'the cause and the liability aren't the same sentence, and I had them written as one in the draft' — naming a flaw demonstrably unavailable at T1/T2, where the learner held that 'the bond answers the liability question before the fall has a reason attached.' Above the tutor-supplied band (3) because the retrospective self-audit ('I had them written as one') is the learner's own, not handed to them. Below 5 because the underlying cause/liability distinction was tutor-introduced and scaffolded across T2/T3/T8, so the learner is applying a supplied distinction to their own draft rather than originating it."
+    },
+    "surprise_and_inevitability": {
+      "score": 4,
+      "reasoning": "Inevitability is strong: at T7 the learner pre-figures the decisive evidence — 'a mark left by the falsework on the soffit' — which materialises as the crowsfoot at T13, and the chain green-bed→prop-mark→Caudle-brand→toll-book is tight on re-reading. Surprise is moderate: the dialogue telegraphs that the cause points away from Reyner, so the swerve is partly foreseeable, though the specific terminus is not — Oswin, who 'hauled a load of bare green props up from the ford the morning after the flood' (T20). Both legs present; surprise softened by the telegraphing, hence 4 not 5."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete derivation: draft-names-Reyner (beginning) → accumulating notes each testing ownership-vs-cause (middle) → green-mortar pivot at T9 (turn) → Oswin named (close), with a largely necessary evidence-sequence (the crowsfoot at T13 cannot precede the green bed at T9; the toll book at T20 cannot precede the Caudle brand at T17). Held below 5 by a compressible holding-pattern in the middle — T14–15 (and T19) restate 'the mark is the centering's signature, not a yard yet' / 'the second line stays open' without advancing the evidence. Thematically motivated as evidentiary discipline, but those turns are droppable, so the arc is not strictly reorder-proof."
+    },
+    "hamartia_integration": {
+      "score": 5,
+      "reasoning": "The misconception is the mainspring. The learner's conflation of liability with cause is stated outright at T2 ('does the cause even need to be in the note? The bond answers the liability question'), and every subsequent note works that flaw through: the seal is ownership-not-cause (T3), the yard is control-not-cause (T6), the bond is who-pays-not-why (T8). The flaw exposes its own insufficiency, is precisely what gets recognised at T10, and only once split does the cause-chain become able to run to Oswin. The error drives the complication and the turn rather than being corrected-and-discarded."
+    },
+    "cathartic_closure": {
+      "score": 5,
+      "reasoning": "The cause is withheld across ~11 turns ('the hand isn't named yet,' T9; sustained through T14–19), and discharges at T20 into an earned naming: 'the crowsfoot traces to the centering, the centering traces to Caudle's yard, and the yard traces to Oswin's cart. The bond stays Reyner's separate matter — but the fall is Oswin's pull.' The recapitulated chain plus the damning incidental detail (props carted 'the morning after the flood') makes the clarification land as earned, and the tutor's closing line — 'your earlier split is what makes this fair' — seats the catharsis in the learner's own disciplined work rather than a generic summary or arbitrary stop."
+    }
+  },
+  "overall_score": 82,
+  "summary": "A tightly-built dramatic derivation in the detective register. Its strongest features are an integrated hamartia (the cause/liability conflation as the plot's engine) and an earned cathartic naming of Oswin that discharges a long-withheld tension. The reversal (Reyner→Oswin) and the learner's self-recognition at T10 are genuine and hinge-visible, but tutor-escorted rather than learner-driven, and a compressible holding-pattern in the middle keeps unity just below ceiling. No public formalism leaks; the drama stays fully in-world.",
+  "caveats": [
+    "Form-only judgement: this scores the public dramatic shape, not whether real learning or mind-reading occurred — the instrument classifies drama-form, and the deterministic proof gate is reported separately.",
+    "Peripeteia and anagnorisis are heavily Socratically scaffolded; a more generous critic could read them as 5s. I held both at 4 for the tutor-supplied distinction and the persistence of the Reyner-liability thread.",
+    "overall_score computed from the dimension weights via the rubric's (weighted_mean−1)/4×100 normalisation (weighted mean 4.30 → 82)."
+  ]
+}
+```

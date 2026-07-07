@@ -71,6 +71,12 @@ import 'dotenv/config';
  *                          When supplied, ALL dialogues in this invocation share the ID,
  *                          letting tutor-core's Writing Pad accumulate state session-over-session.
  *                          Omit for per-dialogue synthetic IDs (default behaviour).
+ *   --thread-negotiation-resolution
+ *                          For 'run' (A5): carry the negotiated dialectical resolution
+ *                          into the delivered suggestion across revision rounds, instead
+ *                          of letting a revision round silently discard it. Off by default
+ *                          (byte-identical to pre-A5 behaviour). Survives resume-after-kill
+ *                          via checkpoint + run metadata.
  *
  * The default `run` uses the 2x2x2 factorial design:
  *   Factor A: Recognition prompts (off / on)
@@ -140,6 +146,121 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
 const RUBRICS_DIR = path.resolve(__dirname, '..', 'config', 'rubrics');
 
+function positiveIntEnv(name, fallback) {
+  const raw = process.env[name];
+  if (raw == null || raw === '') return fallback;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
+const CLI_JUDGE_TIMEOUT_MS = positiveIntEnv('EVAL_CLI_JUDGE_TIMEOUT_MS', 600_000);
+
+function isAdaptiveTraceLog(log) {
+  return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));
+}
+
+function adaptiveTraceScenarioContext(trace, result) {
+  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
+  const hidden = trace?.scenario?.hidden || {};
+  const expected = trace?.scenario?.expectedStrategyShift;
+  const expectedLabel = Array.isArray(expected) ? expected.join(', ') : expected || 'adaptive response';
+  const hiddenSummary = [
+    hidden.actual_misconception,
+    hidden.actual_sophistication && `sophistication: ${hidden.actual_sophistication}`,
+  ]
+    .filter(Boolean)
+    .join('; ');
+  return {
+    id: result.scenarioId,
+    type: 'adaptive_trap',
+    name: result.scenarioName || trace?.scenario?.id || result.scenarioId,
+    description: hiddenSummary || `Adaptive trap scenario ${result.scenarioId}`,
+    topic: result.scenarioType || result.scenarioId,
+    learner_context: initialLearner,
+    expected_behavior: `The tutor should adapt to the learner signal and realize the expected strategy shift: ${expectedLabel}.`,
+    required_elements: [],
+    forbidden_elements: [],
+  };
+}
+
+function adaptiveTraceToDialogueLog(trace) {
+  const dialogue = trace?.original?.dialogue || [];
+  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
+  const turnResults = [];
+  const conversationHistory = [];
+  const dialogueTrace = [];
+  let tutorIndex = 0;
+  let lastLearner = initialLearner;
+  let learnerAfterTutorIndex = 0;
+
+  for (const message of dialogue) {
+    if (message?.role === 'learner') {
+      lastLearner = message.content || '';
+      if (tutorIndex > 0) {
+        learnerAfterTutorIndex += 1;
+        conversationHistory.push({ learnerMessage: lastLearner });
+        dialogueTrace.push({
+          agent: 'learner',
+          action: 'turn_action',
+          turnIndex: learnerAfterTutorIndex,
+          contextSummary: lastLearner,
+          detail: 'adaptive external learner turn',
+        });
+      }
+      continue;
+    }
+    if (message?.role !== 'tutor') continue;
+    turnResults.push({
+      turnIndex: tutorIndex,
+      turnId: `adaptive-turn-${tutorIndex}`,
+      suggestions: [{ message: message.content || '' }],
+      learnerAction: null,
+      learnerMessage: tutorIndex === 0 ? null : lastLearner,
+      contentTurnId: `adaptive-turn-${tutorIndex}`,
+    });
+    tutorIndex += 1;
+  }
+
+  const publicTranscript = dialogue
+    .map((message) => {
+      if (message.role === 'learner') return `[Learner] ${message.content || ''}`;
+      if (message.role === 'tutor') return `[Tutor Ego] ${message.content || ''}`;
+      return null;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return {
+    isMultiTurn: turnResults.length > 1,
+    turnResults,
+    dialogueTrace,
+    conversationHistory,
+    learnerContext: initialLearner,
+    learnerArchitecture: 'adaptive_externalised',
+    transcripts: {
+      public: publicTranscript,
+      full: publicTranscript,
+    },
+    adaptiveTrace: trace,
+  };
+}
+
+function resolveEvaluationScenarioAndDialogueLog(result) {
+  const standardScenario = getScenario(result.scenarioId);
+  let dialogueLog = null;
+  if (result.dialogueId) {
+    dialogueLog = evaluationStore.loadDialogueLog(result.dialogueId);
+  }
+  if (standardScenario) return { scenario: standardScenario, dialogueLog };
+  if (isAdaptiveTraceLog(dialogueLog)) {
+    return {
+      scenario: adaptiveTraceScenarioContext(dialogueLog, result),
+      dialogueLog: adaptiveTraceToDialogueLog(dialogueLog),
+    };
+  }
+  return { scenario: null, dialogueLog };
+}
+
 /**
  * Resolve versioned rubric file paths for --rubric-version.
  * @param {string} version - Rubric version (e.g. "2.2")
@@ -189,6 +310,28 @@ function clearAllRubricOverrides() {
 
 const args = process.argv.slice(2);
 const command = args.find((a) => !a.startsWith('--')) || 'list';
+const HELP_TEXT = `Usage:
+  node scripts/eval-cli.js [command] [options]
+
+Commands:
+  list, quick, test, run, runs, report, status, watch, transcript, export,
+  cleanup, delete-runs, resume, revert, rejudge, evaluate, backfill-first-turn,
+  evaluate-learner, evaluate-dialogue, validate-config, chat, play
+
+Run examples:
+  node scripts/eval-cli.js run --profiles cell_169_id_director_charisma_accountable_bid_clean_floor_verified --scenario charisma_desire_authority_withheld --runs 1 --skip-rubric
+  node scripts/eval-cli.js run --profiles cell_169_id_director_charisma_accountable_bid_clean_floor_verified --scenario charisma_desire_authority_withheld --runs 1 --judge-cli codex
+
+Options:
+  --scenario <id>        Scenario ID or comma-separated IDs
+  --profile <name>       Profile(s), comma-separated
+  --profiles <names>     Alias for --profile
+  --runs <n>             Replications per cell
+  --skip-rubric          Generate without AI rubric judging
+  --judge-cli <name>     CLI rubric judge: claude, gemini, codex
+  --dry-run              Use mock data instead of API calls
+  --help                 Print this help and exit
+`;
 const FACTORIAL_2X2X2_PROFILES = [
   'cell_1_base_single_unified',
   'cell_2_base_single_psycho',
@@ -203,6 +346,14 @@ const FACTORIAL_2X2X2_PROFILE_SET = new Set(FACTORIAL_2X2X2_PROFILES);
 
 function getFlag(name) {
   return args.includes(`--${name}`);
+}
+
+function wantsHelp() {
+  return getFlag('help') || args.includes('-h');
+}
+
+function printHelp() {
+  console.log(HELP_TEXT);
 }
 
 function getOption(name, defaultValue = undefined) {
@@ -1444,6 +1595,11 @@ To see available test scenarios and profiles, use list_options.`,
 
 async function main() {
   try {
+    if (wantsHelp()) {
+      printHelp();
+      return;
+    }
+
     switch (command) {
       case 'list': {
         const options = evaluationRunner.listOptions();
@@ -1550,6 +1706,13 @@ async function main() {
         // A7 Longitudinal: when supplied, ALL dialogues in this invocation share
         // the Writing Pad keyed by this ID. Omit for per-dialogue synthetic IDs.
         const learnerIdOpt = getOption('learner-id');
+        // A5: carry the negotiated dialectical resolution into the delivered
+        // suggestion across revision rounds (else discarded — see
+        // threadNegotiationResolutionIntoSuggestions in tutorDialogueEngine.js).
+        const threadNegotiationResolutionFlag = getFlag('thread-negotiation-resolution');
+        // #3 cross-session memory: opt-in ego prompt extension supplied via a file
+        // (a file avoids CLI quoting for the narrative); threads to runEvaluation's hook.
+        const externalEgoExtensionFile = getOption('external-ego-extension-file');
 
         // --show-messages or --show-messages=full
         const showMessagesRaw = args.find((a) => a === '--show-messages' || a.startsWith('--show-messages='));
@@ -1756,6 +1919,11 @@ async function main() {
           showMessages,
           liveApi,
           learnerId: learnerIdOpt || null,
+          threadNegotiationResolution: threadNegotiationResolutionFlag || false,
+          externalEgoExtension:
+            externalEgoExtensionFile && fs.existsSync(externalEgoExtensionFile)
+              ? fs.readFileSync(externalEgoExtensionFile, 'utf8')
+              : null,
         });
         // Extract unique model aliases used across all configs (ego + superego)
         const extractAlias = (raw) => {
@@ -3035,14 +3203,33 @@ async function main() {
             });
             let out = '';
             let err = '';
+            let settled = false;
+            const cliTimeout = setTimeout(() => {
+              if (settled) return;
+              settled = true;
+              try {
+                child.kill('SIGKILL');
+              } catch {
+                // Child may have exited between timer firing and kill.
+              }
+              reject(new Error(`${cliBinary} CLI judge timed out after ${CLI_JUDGE_TIMEOUT_MS}ms`));
+            }, CLI_JUDGE_TIMEOUT_MS);
             child.stdout.on('data', (d) => {
               out += d;
             });
             child.stderr.on('data', (d) => {
               err += d;
             });
-            child.on('error', reject);
+            child.on('error', (error) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
+              reject(error);
+            });
             child.on('close', (code) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
               if (code !== 0) reject(new Error(err || out || `${cliBinary} exited with code ${code}`));
               else resolve(out);
             });
@@ -3182,14 +3369,33 @@ async function main() {
             const child = spawn(cliBin, cliJudgeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env: cliJudgeEnv });
             let out = '';
             let err = '';
+            let settled = false;
+            const cliTimeout = setTimeout(() => {
+              if (settled) return;
+              settled = true;
+              try {
+                child.kill('SIGKILL');
+              } catch {
+                // Child may have exited between timer firing and kill.
+              }
+              reject(new Error(`${cliBin} CLI judge timed out after ${CLI_JUDGE_TIMEOUT_MS}ms`));
+            }, CLI_JUDGE_TIMEOUT_MS);
             child.stdout.on('data', (d) => {
               out += d;
             });
             child.stderr.on('data', (d) => {
               err += d;
             });
-            child.on('error', reject);
+            child.on('error', (error) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
+              reject(error);
+            });
             child.on('close', (code) => {
+              if (settled) return;
+              settled = true;
+              clearTimeout(cliTimeout);
               if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
               else resolve(out);
             });
@@ -3218,7 +3424,8 @@ async function main() {
           const profileName = result.profileName || `${result.provider}/${result.model}`;
           const judgeModel = judgeModelLabel;
 
-          const scenario = getScenario(scenarioId);
+          const resolved = resolveEvaluationScenarioAndDialogueLog(result);
+          const scenario = resolved.scenario;
           if (!scenario) {
             console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (scenario not found)`);
             return null;
@@ -3226,7 +3433,7 @@ async function main() {
 
           // Load dialogue log
           const dialogueId = result.dialogueId;
-          const dialogueLog = evaluationStore.loadDialogueLog(dialogueId);
+          const dialogueLog = resolved.dialogueLog || evaluationStore.loadDialogueLog(dialogueId);
           if (!dialogueLog) {
             console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (dialogue log not found)`);
             return null;
@@ -4189,24 +4396,18 @@ async function main() {
 
         // Helper: run dialogue quality scoring for a multi-turn result
         async function _scoreDialogueQuality(result, tag) {
-          const scenarioId = result.scenarioId;
           const _profileName = result.profileName || `${result.provider}/${result.model}`;
           const judgeModel = judgeModelLabel;
 
-          const scenario = getScenario(scenarioId);
+          const resolved = resolveEvaluationScenarioAndDialogueLog(result);
+          const scenario = resolved.scenario;
           if (!scenario) return;
 
           const dialogueId = result.dialogueId;
           if (!dialogueId) return;
 
-          const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
-          let dialogueLog;
-          try {
-            if (!fs.existsSync(logPath)) return;
-            dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
-          } catch (e) {
-            return;
-          }
+          const dialogueLog = resolved.dialogueLog;
+          if (!dialogueLog) return;
 
           const dialogueTrace = dialogueLog?.dialogueTrace || [];
           const conversationHistory = (dialogueLog?.turnResults || []).map((t, idx) => ({
@@ -6220,6 +6421,8 @@ async function main() {
         let singleAgentCount = 0;
         for (const name of profilesToCheck) {
           const profile = allProfiles[name];
+          const usesAdaptiveRunner = profile.runner === 'adaptive';
+          const usesSingleAgentTutor = profile.factors?.multi_agent_tutor === false;
           const dialogueEnabled = profile.dialogue?.enabled ?? false;
           if (dialogueEnabled) {
             multiAgentCount++;
@@ -6227,7 +6430,7 @@ async function main() {
             if (maxRounds <= 0) {
               dialogueErrors.push(`${name}: dialogue enabled but max_rounds=${maxRounds}`);
             }
-            if (!profile.superego || profile.superego === null) {
+            if (!usesAdaptiveRunner && !usesSingleAgentTutor && (!profile.superego || profile.superego === null)) {
               dialogueErrors.push(`${name}: dialogue enabled but superego is null`);
             }
           } else {
@@ -6252,6 +6455,9 @@ async function main() {
           'ego_superego_recognition',
           'ego_superego_authentic',
           'ego_superego_recognition_authentic',
+          'adaptive_externalised',
+          'scripted_trap',
+          'ego_superego_bilateral_tom',
         ];
         const learnerErrors = [];
         for (const name of profilesToCheck) {
@@ -6331,28 +6537,20 @@ async function main() {
         }
 
         // ── 8. Prompt file existence ──────────────────────────────────
-        // Prompt files live in tutor-core's prompts/ directory (npm-linked)
-        let tutorCorePromptsDir = null;
-        // In-housed: prefer this repo's vendored tutor-core/prompts/
-        // (from @machinespirits/tutor-core — see TUTOR-CORE-INHOUSING.md).
+        // Prompt files live in this repo's in-housed tutor-core/prompts/
+        // (vendored from the former @machinespirits/tutor-core — see TUTOR-CORE-INHOUSING.md).
         const vendoredPromptsDir = path.resolve(__dirname, '..', 'tutor-core', 'prompts');
-        if (fs.existsSync(vendoredPromptsDir)) {
-          tutorCorePromptsDir = vendoredPromptsDir;
-        } else {
-          try {
-            const tutorCorePath = path.dirname(
-              (await import('module'))
-                .createRequire(import.meta.url)
-                .resolve('@machinespirits/tutor-core/package.json'),
-            );
-            tutorCorePromptsDir = path.join(tutorCorePath, 'prompts');
-          } catch {
-            const localPath = path.resolve(__dirname, '..', '..', 'machinespirits-tutor-core', 'prompts');
-            if (fs.existsSync(localPath)) tutorCorePromptsDir = localPath;
-          }
-        }
+        const tutorCorePromptsDir = fs.existsSync(vendoredPromptsDir) ? vendoredPromptsDir : null;
 
+        const promptDirs = [path.resolve(__dirname, '..', 'prompts')];
         if (tutorCorePromptsDir && fs.existsSync(tutorCorePromptsDir)) {
+          promptDirs.push(tutorCorePromptsDir);
+        }
+        const existingPromptDirs = promptDirs.filter(
+          (dir, index) => fs.existsSync(dir) && promptDirs.indexOf(dir) === index,
+        );
+
+        if (existingPromptDirs.length > 0) {
           const promptErrors = [];
           const checkedFiles = new Set();
           for (const name of profilesToCheck) {
@@ -6361,8 +6559,8 @@ async function main() {
               const promptFile = profile[role]?.prompt_file;
               if (promptFile && !checkedFiles.has(promptFile)) {
                 checkedFiles.add(promptFile);
-                const fullPath = path.join(tutorCorePromptsDir, promptFile);
-                if (!fs.existsSync(fullPath)) {
+                const found = existingPromptDirs.some((dir) => fs.existsSync(path.join(dir, promptFile)));
+                if (!found) {
                   promptErrors.push(`${name}: ${role} prompt_file '${promptFile}' not found`);
                 }
               }
@@ -6373,10 +6571,10 @@ async function main() {
             for (const e of promptErrors) console.log(`      - ${e}`);
             errors += promptErrors.length;
           } else {
-            console.log(`  \u2713 All ${checkedFiles.size} prompt files exist in tutor-core`);
+            console.log(`  \u2713 All ${checkedFiles.size} prompt files exist`);
           }
         } else {
-          console.log('  - Prompt files: tutor-core prompts directory not found (skipped)');
+          console.log('  - Prompt files: prompts directories not found (skipped)');
         }
 
         // ── Verbose: per-profile detail ───────────────────────────────

@@ -166,6 +166,15 @@ const STRATEGY_PATTERNS = [
     ],
   },
   {
+    id: 'matrix_consistency_counterexample',
+    patterns: [
+      /\bconfusion matrix\b[\s\S]{0,180}\b(?:accuracy|precision|class split|produces?|consistent|more than one)\b/i,
+      /\b(?:class split|ninety-nine to one|99 to 1|99%)\b[\s\S]{0,180}\b(?:accuracy|precision|matrix|matrices)\b/i,
+      /\b(?:more than one|same accuracy|different matrices)\b[\s\S]{0,160}\b(?:confusion matrix|matrices|precision)\b/i,
+      /\bmatrix that produces\b[\s\S]{0,100}\baccuracy\b/i,
+    ],
+  },
+  {
     id: 'evidence_check',
     patterns: [/\b(?:check|test|measure|evidence|data|source|show|prove|compare|look at|find)\b/i],
   },
@@ -575,6 +584,15 @@ const MECHANISM_SHIFT_PATTERNS = [
     ],
   },
   {
+    id: 'matrix_consistency_counterexample',
+    patterns: [
+      /\bconfusion matrix\b[\s\S]{0,180}\b(?:accuracy|precision|class split|produces?|consistent|more than one)\b/i,
+      /\b(?:class split|ninety-nine to one|99 to 1|99%)\b[\s\S]{0,180}\b(?:accuracy|precision|matrix|matrices)\b/i,
+      /\b(?:more than one|same accuracy|different matrices)\b[\s\S]{0,160}\b(?:confusion matrix|matrices|precision)\b/i,
+      /\bmatrix that produces\b[\s\S]{0,100}\baccuracy\b/i,
+    ],
+  },
+  {
     id: 'register_shift',
     patterns: [/\b(?:no praise|not yet|hold on|slow down|plainly|quiet|formal|brisk|accountable|apology can wait)\b/i],
   },
@@ -598,12 +616,32 @@ function learnerResistanceScore(text, context = {}) {
   const contradiction = /\b(?:but|no|wait|still|unless|except)\b/i.test(learnerText) ? 1 : 0;
   const question = /\?/.test(learnerText) ? 1 : 0;
   const pseudoCatharsis = analyzePseudoCatharsis({ learnerText, ...context });
+  const selfReframePressure = learnerSelfReframePressureScore(learnerText);
   return round(
     Math.max(
       Math.min(1, hits * 0.35 + contradiction * 0.2 + question * 0.15),
       pseudoCatharsis.likely ? pseudoCatharsis.confidence : 0,
+      selfReframePressure,
     ),
   );
+}
+
+function learnerSelfReframePressureScore(text) {
+  const learnerText = String(text || '');
+  const oldFrame = /\b(?:I was|I had been|we were)\s+(?:treating|using|letting|reading|assuming|taking)\b/i.test(
+    learnerText,
+  );
+  const pressureNamed =
+    /\b(?:that|this|it)['’]?s\s+the pressure\b/i.test(learnerText) ||
+    /\b(?:that|this|it)\s+(?:was|is)\s+the pressure\b/i.test(learnerText) ||
+    /\bthe pressure\s+(?:was|is)\b/i.test(learnerText) ||
+    /\bthat phrase hid\b/i.test(learnerText);
+  const replacementNamed =
+    /\bnow the (?:check|test|question|standard|criterion)\b/i.test(learnerText) ||
+    /\b(?:the )?replacement (?:check|test|rule|frame)\b/i.test(learnerText);
+  if (oldFrame && pressureNamed && replacementNamed) return 0.65;
+  if (pressureNamed && replacementNamed && markerReframeScore(learnerText) >= 0.7) return 0.6;
+  return 0;
 }
 
 function mechanismHits(text) {
@@ -621,6 +659,7 @@ function classifyResistance(text, context = {}) {
   const learnerText = String(text || '');
   const pseudoCatharsis = analyzePseudoCatharsis({ learnerText, ...context });
   if (pseudoCatharsis.likely) return 'pseudo_catharsis';
+  if (learnerSelfReframePressureScore(learnerText) >= 0.5) return 'self_reframe_pressure';
   if (/\b(?:just tell me|give me the answer|so it is just)\b/i.test(learnerText)) return 'closure_pressure';
   if (/\b(?:I don['’]?t|I can['’]?t|stuck|lost|confusing|doesn.t make sense)\b/i.test(learnerText)) return 'breakdown';
   if (/\b(?:no|not buying|that seems wrong|but|wait|why)\b/i.test(learnerText)) return 'resistance';

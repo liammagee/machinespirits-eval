@@ -113,7 +113,7 @@ tracks:
           family_id: strategy_reversal_error_spotting
           materialized_scaffold: exports/a19/materialized-attempts-v09
           attempt1_dir: exports/a19/real-attempt1-v09/strategy-reversal-error-spotting
-          attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-strategy-reversal.md
+          attempt1_report: notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-strategy-reversal.md
           gate_status: reject
           blocking_metric: recursive_dyadic_update
           observed_score: 0.62
@@ -150,7 +150,7 @@ tracks:
           source_packet: mini_drama_v01__a19_over_compliance_scaffold_dependency_a__e877da7fd98e
           materialized_scaffold: exports/a19/materialized-attempts-v09-option2
           attempt1_dir: exports/a19/real-attempt1-v09-option2/over-compliance-ethopoeia-copy-dependency
-          attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-over-compliance-ethopoeia.md
+          attempt1_report: notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-over-compliance-ethopoeia.md
           gate_status: reject
           blocking_metrics:
             device_specificity: 0.45
@@ -181,7 +181,7 @@ tracks:
         status: real_attempt1_blocked_recursive_update
         observed_result:
           attempt1_dir: exports/a19/real-attempt1-v06/addressed-claim-withdrawal
-          report: notes/adaptive_2_0/a19-attempt1-real-gate-report-addressed-claim.md
+          report: notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-addressed-claim.md
           gate_status: revise_again
           blocking_metric: recursive_dyadic_update
           observed_score: 0.65
@@ -207,7 +207,7 @@ tracks:
         status: resolved_below_claim_threshold
         observed_result:
           attempt1_dir: exports/a19/real-attempt1-v08/moral-disclosure-standing-repair
-          attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-learner-standing.md
+          attempt1_report: notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-learner-standing.md
           screen_report: notes/adaptive_2_0/a19-v08-learner-standing-screen-2026-06-08.md
           result_summary: >-
             one_policy_headroom_with_target_granularity_risk_one_s0_ceiling_with_target_granularity_risk_one_clean_s0_ceiling
@@ -237,7 +237,7 @@ tracks:
         likely_training_seed: learner points out that two tutor directions cannot both govern the next turn
         status: partial_diagnostic_no_claim
         observed_result:
-          attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-public-commitment.md
+          attempt1_report: notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-public-commitment.md
           screen_report: notes/adaptive_2_0/a19-v07-public-commitment-screen-2026-06-08.md
           result_summary: one_policy_headroom_with_target_granularity_risk_two_recursive_full_ceilings
           adjudication_packet: exports/a19/adjudication-packets/public-commitment-contradiction-a.packet.json
@@ -261,10 +261,10 @@ tracks:
         status: blocked_then_staged_survived_below_stability
         observed_result:
           raw_family_id: claim_evidence_role_mismatch
-          raw_attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-claim-evidence-role-mismatch.md
-          bounded_continuation_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-claim-evidence-role-mismatch-bounded-continuation.md
+          raw_attempt1_report: notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-claim-evidence-role-mismatch.md
+          bounded_continuation_report: notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-claim-evidence-role-mismatch-bounded-continuation.md
           staged_family_id: claim_evidence_role_mismatch_staged
-          staged_attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-claim-evidence-role-mismatch-staged.md
+          staged_attempt1_report: notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-claim-evidence-role-mismatch-staged.md
           admitted_axiom: exports/a19/axioms/claim-evidence-role-mismatch-staged/axiom.json
           stability_summary: exports/a19/stability-v20-claim-evidence-role-mismatch-staged/a19-stability-summary.json
           stability_result: staged_a_0_of_2_staged_b_1_of_2_mixed_unstable
@@ -291,7 +291,7 @@ tracks:
         likely_training_seed: learner exposes a conflict between the tutor's evidence promises
         status: attempt1_survived_but_recursive_full_s0_target_on_first_stability_seed
         observed_result:
-          attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-public-commitment-evidence-role-boundary.md
+          attempt1_report: notes/adaptive_2_0/2026-06-09-a19-attempt1-real-gate-report-public-commitment-evidence-role-boundary.md
           admitted_axiom: exports/a19/axioms/public-commitment-evidence-role-boundary/axiom.json
           partial_stability_artifact: exports/a19/stability-v21-public-commitment-evidence-role-boundary/public-commitment-evidence-role-boundary-a/seed1/blind-adjudication.free-text.json
           first_seed_result: policy_failure_s0_target_s1_neither

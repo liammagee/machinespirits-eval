@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 5,
+      "reasoning": "A clear opening sets direction (T1: 'what should the file first have to show about how the span actually came down?'), then the dialogue builds a genuinely cumulative evidence chain: fixing WHERE it broke (crown joint, T4), WHY (the green crown-bed mortar kills the 'bad-building' story, T9), the repeated crowsfoot mark left by the pulled centering (T13), its source yard (Caudle, T17), and finally the hand that moved that timber (Oswin, via the ford-toll book, T20) — culminating in a clean synthesis at T22 where 'the finding writes itself.' The recurring 'two columns / three separate lines' scaffold accretes structure turn over turn, and the evidence order is load-bearing (the dialogue could not be rearranged without loss). Held just shy of flawless by a mid-section holding pattern (T14–18), where T18 nearly restates T17."
+    },
+    "adaptive_trajectory": {
+      "score": 4,
+      "reasoning": "The tutor's approach visibly evolves in response to this specific learner's signal — a persistent shortcut that collapses every question onto Reyner. Early turns are open and Socratic (T1, T5: 'what kind of detail... would tell us cause, not just responsibility?'). After the learner keeps trying to let 'the blank fill itself' (T6–7), the tutor shifts to increasingly directive structuring, eventually dictating the exact lines to write (T19: 'Write it as three separate lines: Caudle timber, then the person who moved Caudle timber, then the person who pays'). It also attunes to the learner's affect, meeting the discomfort rather than overriding it (T11: 'I don't like it either; that discomfort is the file doing its job'). Held from 5 because this is an intensification of a single consistent method (separate liability from cause), not a qualitative strategic pivot."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Ends at a natural terminal point with a strong, specific, learner-led consolidation (T22): the learner joins the two threads — cause (the centering was pulled before the lime cured) and agent (Oswin moved the Caudle falsework) — into the finding, rather than the opening shortcut to Reyner. The learner also explicitly registers what changed in their own thinking (T19: 'in my draft I had his name running across all three, and only one of those lines was mine to fill yet'), so the lesson is owned, not just stated. Held from 5 by the absence of a forward-looking coda — no remaining gaps are named, no next steps beyond writing the finding, and there is no tutor-led meta-recap of the liability/causation lesson."
+    }
+  },
+  "overall_score": 85,
+  "summary": "A well-constructed investigative tutoring drama that cleanly separates liability ('who must answer / who pays') from causation ('whose hand felled the span') and builds a cumulative documentary evidence chain to a learner-owned synthesis. Strongest on pedagogical arc; the adaptation is real but is an intensification of one method rather than a pivot; the closure consolidates specifically and is non-abrupt but lacks an explicit next-steps coda.",
+  "caveats": [
+    "Mid-dialogue turns T14–18 form a holding pattern, with T18 nearly restating T17 — the one soft spot in an otherwise tightly cumulative arc.",
+    "The tutor applies essentially one pedagogical move (split liability from cause; mark what is shown, leave blanks blank) across all 22 turns; scored as cumulative because the evidence, not the technique, is what progresses.",
+    "Scored on public discourse quality only; the grounded_anagnorisis verdict and D=0 proof outcome were not credited. Public formalism was clean — in-world document references like 'entry five' / 'the bond', not rule IDs, premise IDs, or D arithmetic."
+  ]
+}

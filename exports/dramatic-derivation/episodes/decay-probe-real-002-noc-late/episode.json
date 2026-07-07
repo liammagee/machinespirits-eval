@@ -1,0 +1,19 @@
+{
+  "label": "decay-probe-real-002-noc-late",
+  "source": {
+    "label": "nocturne-v002-real-superego-on-t1-charterv2",
+    "dir": "exports/dramatic-derivation/loop/nocturne-v002-real-superego-on-t1-charterv2"
+  },
+  "fromTurn": 26,
+  "window": 4,
+  "maxTurns": 29,
+  "overrides": [
+    "decay"
+  ],
+  "prefixIntegrity": {
+    "ok": true,
+    "mismatches": [],
+    "expectedDivergence": false
+  },
+  "windowExhausted": true
+}

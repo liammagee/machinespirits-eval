@@ -17,7 +17,7 @@ changes that were not part of this loop work:
 
 - `CLAUDE.md` modified
 - `notes paper-2-0/gemini-analysis-of-paper-2-0.md` renamed to
-  `notes/gemini-analysis-of-paper-2-0.md`
+  `notes/2026-03-04-gemini-analysis-of-paper-2-0.md`
 
 Leave those alone unless the user explicitly asks to include them.
 

@@ -1,0 +1,267 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_scores.v1",
+  "generated_at": "2026-06-17T18:55:02.105Z",
+  "packet_dir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/discursive-pairwise-transcript-eval",
+  "judge": "claude/opus/max",
+  "rows": [
+    {
+      "pair_id": "hethel",
+      "packet_id": "P01",
+      "packet": "pairs/P01.md",
+      "assignment": {
+        "A": "discursive-runtime-matrix-hethel-s1-discursive-r1",
+        "B": "discursive-runtime-matrix-hethel-s0-hidden-r1"
+      },
+      "left_label": "discursive-runtime-matrix-hethel-s0-hidden-r1",
+      "right_label": "discursive-runtime-matrix-hethel-s1-discursive-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 5,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 5,
+            "readability": 5,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "Shown: Reyner's seal. Shown: Reyner's yard. Still not shown: what the broken crown says about why it failed.",
+          "That's the sharper version of what I was reaching for. A draw-roll that says 'so-and-so was cleared to pull this timber' doesn't finish the job if someone else could also claim equal clearance.",
+          "A keystone break fixes the failure point — now we can go to that broken face and ask what it actually shows."
+        ],
+        "evidence_B": [
+          "A green joint is like a loaf pulled from the oven raw: the fault is not that the baker never knew bread, but that the support was taken before the thing could stand.",
+          "A bond is a purse opened against failure, clerk, not fingers on the timber.",
+          "The yard is grounded; the hand remains unwritten."
+        ],
+        "reason": "Both transcripts trace the same derivation with equal rigor — they keep liability apart from causation, move from break-location to green-mortar cause to crowsfoot to Caudle yard to Oswin, and neither leaks raw predicates, variables, or proof-path notation. The difference is craft. B reads as the stronger didactic play: its stage directions are more alive, the sustained 'clerk' address gives the scene a relationship, and the tutor varies its teaching each turn with fresh concrete analogies (seal-as-mark, bond-as-purse, green-joint-as-raw-loaf, mark-as-road-sign, brand-as-threshold) that make why each piece of evidence matters especially legible, while its short declarative closes ('The yard is grounded; the hand remains unwritten') punctuate thinking rather than pad. A is excellent and equally sound, but its 'Shown:/Still not shown:' ledger recurs almost verbatim across five turns, which reads more mechanically and is the most proof-bookkeeping-flavored speech in either text. The two are even on dialogical acknowledgement (A's Turn 19 uptake is a genuine high point); B leads on flow, non-formalist variety, and readability."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"moderate\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 5,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 5,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"Shown: Reyner's seal. Shown: Reyner's yard. Still not shown: what the broken crown says about why it failed.\",\n    \"That's the sharper version of what I was reaching for. A draw-roll that says 'so-and-so was cleared to pull this timber' doesn't finish the job if someone else could also claim equal clearance.\",\n    \"A keystone break fixes the failure point — now we can go to that broken face and ask what it actually shows.\"\n  ],\n  \"evidence_B\": [\n    \"A green joint is like a loaf pulled from the oven raw: the fault is not that the baker never knew bread, but that the support was taken before the thing could stand.\",\n    \"A bond is a purse opened against failure, clerk, not fingers on the timber.\",\n    \"The yard is grounded; the hand remains unwritten.\"\n  ],\n  \"reason\": \"Both transcripts trace the same derivation with equal rigor — they keep liability apart from causation, move from break-location to green-mortar cause to crowsfoot to Caudle yard to Oswin, and neither leaks raw predicates, variables, or proof-path notation. The difference is craft. B reads as the stronger didactic play: its stage directions are more alive, the sustained 'clerk' address gives the scene a relationship, and the tutor varies its teaching each turn with fresh concrete analogies (seal-as-mark, bond-as-purse, green-joint-as-raw-loaf, mark-as-road-sign, brand-as-threshold) that make why each piece of evidence matters especially legible, while its short declarative closes ('The yard is grounded; the hand remains unwritten') punctuate thinking rather than pad. A is excellent and equally sound, but its 'Shown:/Still not shown:' ledger recurs almost verbatim across five turns, which reads more mechanically and is the most proof-bookkeeping-flavored speech in either text. The two are even on dialogical acknowledgement (A's Turn 19 uptake is a genuine high point); B leads on flow, non-formalist variety, and readability.\"\n}\n"
+    },
+    {
+      "pair_id": "ravensmark",
+      "packet_id": "P02",
+      "packet": "pairs/P02.md",
+      "assignment": {
+        "A": "discursive-runtime-matrix-ravensmark-s0-hidden-r1",
+        "B": "discursive-runtime-matrix-ravensmark-s1-discursive-r1"
+      },
+      "left_label": "discursive-runtime-matrix-ravensmark-s0-hidden-r1",
+      "right_label": "discursive-runtime-matrix-ravensmark-s1-discursive-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 3,
+            "acknowledgement": 4,
+            "phatic_calibration": 2,
+            "non_formalist_speech": 5,
+            "readability": 3,
+            "pedagogical_traction": 3
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 5,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "Turns 8-12 hold a pattern ('The cord can wait one breath longer', 'Keep the cord closed one more breath') while the learner re-states the same mark+law points for five turns",
+          "'a seal is the hand the warrant leaves behind' - imagery stays fully in-world, cleanest non-formalist speech of the pair",
+          "Dense oratorical turns throughout with almost no short beats; only 'Good.' as phatic acknowledgement",
+          "Final synthesis lands cleanly: 'the hand that pressed the operative seal signed the gate-pass. That hand is Elian's.'"
+        ],
+        "evidence_B": [
+          "'What I'd need is a custody note for the stamp itself - something like a seal register or an inventory note' - learner reasons about the needed evidence before the register is opened",
+          "'which side of that line can you enter in ink, and which side must stay blank?' keeps answerability vs. signing oriented for the reader",
+          "Short calibrated beats - 'Right - the roll shows...', 'I'm holding the line exactly there'",
+          "Repeated 'Rule, mark, holder/keeper' triad and the enumerated 'three things' (seal, person, time) read slightly as exposed proof-structure",
+          "Crisp resolution: 'Corvin accounts for the gate; Elian signed the warrant.'"
+        ],
+        "reason": "Both transcripts trace the identical inquiry (office vs. signing hand, the raven's-notch dusk-seal, the pass-law, Elian as keeper) and neither leaks raw formalism. A is more atmospheric and the cleanest on non-formalist speech, but its middle (turns 8-12) stalls into a holding pattern where the learner repeats the same two or three settled points, which reads as padding and weak phatic texture. B keeps stronger forward motion, clearer reader orientation via the maintained answerability/signing line, better-placed short acknowledgements, and notably more pedagogical traction - the learner anticipates what custody evidence would close the gap before it is produced. B's only weakness is that the repeated 'Rule, mark, holder' scaffold and the enumerated sufficiency conditions edge toward procedural exposure, but they remain in plain language. B wins four dimensions, ties one, and loses only non-formalist speech, so it is preferred at moderate strength."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"moderate\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 3,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 2,\n      \"non_formalist_speech\": 5,\n      \"readability\": 3,\n      \"pedagogical_traction\": 3\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 5,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"Turns 8-12 hold a pattern ('The cord can wait one breath longer', 'Keep the cord closed one more breath') while the learner re-states the same mark+law points for five turns\",\n    \"'a seal is the hand the warrant leaves behind' - imagery stays fully in-world, cleanest non-formalist speech of the pair\",\n    \"Dense oratorical turns throughout with almost no short beats; only 'Good.' as phatic acknowledgement\",\n    \"Final synthesis lands cleanly: 'the hand that pressed the operative seal signed the gate-pass. That hand is Elian's.'\"\n  ],\n  \"evidence_B\": [\n    \"'What I'd need is a custody note for the stamp itself - something like a seal register or an inventory note' - learner reasons about the needed evidence before the register is opened\",\n    \"'which side of that line can you enter in ink, and which side must stay blank?' keeps answerability vs. signing oriented for the reader\",\n    \"Short calibrated beats - 'Right - the roll shows...', 'I'm holding the line exactly there'\",\n    \"Repeated 'Rule, mark, holder/keeper' triad and the enumerated 'three things' (seal, person, time) read slightly as exposed proof-structure\",\n    \"Crisp resolution: 'Corvin accounts for the gate; Elian signed the warrant.'\"\n  ],\n  \"reason\": \"Both transcripts trace the identical inquiry (office vs. signing hand, the raven's-notch dusk-seal, the pass-law, Elian as keeper) and neither leaks raw formalism. A is more atmospheric and the cleanest on non-formalist speech, but its middle (turns 8-12) stalls into a holding pattern where the learner repeats the same two or three settled points, which reads as padding and weak phatic texture. B keeps stronger forward motion, clearer reader orientation via the maintained answerability/signing line, better-placed short acknowledgements, and notably more pedagogical traction - the learner anticipates what custody evidence would close the gap before it is produced. B's only weakness is that the repeated 'Rule, mark, holder' scaffold and the enumerated sufficiency conditions edge toward procedural exposure, but they remain in plain language. B wins four dimensions, ties one, and loses only non-formalist speech, so it is preferred at moderate strength.\"\n}\n"
+    }
+  ],
+  "summary": [
+    {
+      "label": "discursive-runtime-matrix-hethel-s1-discursive-r1",
+      "appearances": 1,
+      "wins": 0,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        4
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4
+        ],
+        "acknowledgement": [
+          4
+        ],
+        "phatic_calibration": [
+          4
+        ],
+        "non_formalist_speech": [
+          4
+        ],
+        "readability": [
+          4
+        ],
+        "pedagogical_traction": [
+          4
+        ]
+      },
+      "meanScore": 4,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 4,
+        "readability": 4,
+        "pedagogical_traction": 4
+      }
+    },
+    {
+      "label": "discursive-runtime-matrix-hethel-s0-hidden-r1",
+      "appearances": 1,
+      "wins": 1,
+      "losses": 0,
+      "noPreference": 0,
+      "meanScores": [
+        4.666666666666667
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          5
+        ],
+        "acknowledgement": [
+          4
+        ],
+        "phatic_calibration": [
+          4
+        ],
+        "non_formalist_speech": [
+          5
+        ],
+        "readability": [
+          5
+        ],
+        "pedagogical_traction": [
+          5
+        ]
+      },
+      "meanScore": 4.666666666666667,
+      "dimensionMeans": {
+        "natural_flow": 5,
+        "acknowledgement": 4,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 5,
+        "readability": 5,
+        "pedagogical_traction": 5
+      }
+    },
+    {
+      "label": "discursive-runtime-matrix-ravensmark-s0-hidden-r1",
+      "appearances": 1,
+      "wins": 0,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        3.3333333333333335
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          3
+        ],
+        "acknowledgement": [
+          4
+        ],
+        "phatic_calibration": [
+          2
+        ],
+        "non_formalist_speech": [
+          5
+        ],
+        "readability": [
+          3
+        ],
+        "pedagogical_traction": [
+          3
+        ]
+      },
+      "meanScore": 3.3333333333333335,
+      "dimensionMeans": {
+        "natural_flow": 3,
+        "acknowledgement": 4,
+        "phatic_calibration": 2,
+        "non_formalist_speech": 5,
+        "readability": 3,
+        "pedagogical_traction": 3
+      }
+    },
+    {
+      "label": "discursive-runtime-matrix-ravensmark-s1-discursive-r1",
+      "appearances": 1,
+      "wins": 1,
+      "losses": 0,
+      "noPreference": 0,
+      "meanScores": [
+        4.333333333333333
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4
+        ],
+        "acknowledgement": [
+          4
+        ],
+        "phatic_calibration": [
+          4
+        ],
+        "non_formalist_speech": [
+          4
+        ],
+        "readability": [
+          5
+        ],
+        "pedagogical_traction": [
+          5
+        ]
+      },
+      "meanScore": 4.333333333333333,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 4,
+        "readability": 5,
+        "pedagogical_traction": 5
+      }
+    }
+  ]
+}

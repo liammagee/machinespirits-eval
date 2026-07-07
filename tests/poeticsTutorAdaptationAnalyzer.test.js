@@ -143,6 +143,48 @@ describe('poetics tutor adaptation analyzer', () => {
     assert.ok(result.novel_mechanism_hits.includes('authorization_gate'));
   });
 
+  it('anchors AF6 confusion-matrix peripeteia on the learner self-reframe pressure', () => {
+    const turns = [
+      {
+        phase: 'learner',
+        turnNumber: 1,
+        text: 'The figures in the table are all sourced from the confusion matrix - precision, recall, pulled directly from the cells, not estimated.',
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 1,
+        text: "Precision isn't a cell - it's derived from cells. Take that figure. Name the counts it comes from, and show the arithmetic that produces it.",
+      },
+      {
+        phase: 'learner',
+        turnNumber: 2,
+        text: "'Pulled directly from the cells.' The arithmetic: one-seventy-four true positives, twenty-six false positives - one-seventy-four over two hundred, eighty-seven percent. I was treating 'sourced from the matrix' as sufficient provenance without the division shown, and that's the pressure. Now the check is whether the counts and the step between them are written out before any figure is cited, not recovered when challenged.",
+      },
+      {
+        phase: 'tutor',
+        turnNumber: 2,
+        text: "Showing the division step settles provenance for that dataset. It doesn't settle whether the ninety-nine percent figure licenses a precision claim for Dataset B at all. The class split is ninety-nine to one. Name the confusion matrix that produces that accuracy - not the accuracy derived from the matrix, the matrix that produces the accuracy. If more than one matrix is consistent with that figure, state what that means for precision.",
+      },
+      {
+        phase: 'learner',
+        turnNumber: 3,
+        text: "'Pulled directly from the cells' - that phrase hid something I wasn't looking at. I was treating ninety-nine percent accuracy as though it fixed the matrix, and that was the pressure. It doesn't. Not on a ninety-nine to one split. A classifier that never predicts positive at all returns ninety-nine percent. So does one with fifty true positives and fifty false positives: precision fifty percent. Now the check is whether the accuracy figure is consistent with a unique matrix before any precision claim is drawn from it.",
+      },
+    ];
+
+    const result = analyzePeripeteia(turns);
+
+    assert.equal(result.learner_reversal_pressure, true);
+    assert.equal(result.pressure_turn_number, 2);
+    assert.equal(result.tutor_post_turn, 2);
+    assert.equal(result.trigger_type, 'self_reframe_pressure');
+    assert.equal(result.tutor_strategy_before, 'evidence_check');
+    assert.equal(result.tutor_strategy_after, 'matrix_consistency_counterexample');
+    assert.equal(result.tutor_adaptive_mechanism, true);
+    assert.ok(result.novel_mechanism_hits.includes('matrix_consistency_counterexample'));
+    assert.ok(result.tutor_peripeteia_score > 49);
+  });
+
   it('credits a public route change whose device is outside the mechanism lexicon (FIX 1: depth=0)', () => {
     // D42-class regression: the tutor visibly changes the public device (read the
     // arrow as a path -> mark the contact point and draw from it), but that swap is

@@ -1,0 +1,18 @@
+{
+  "label": "hethel-failed-overlay-fixture",
+  "worldId": "world-006-hethel-fixture",
+  "verdict": "disengagement",
+  "turnsPlayed": 4,
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "dCurve": [5, 5, 5, 5],
+  "releaseDeviations": {
+    "played": 0,
+    "onSchedule": 0,
+    "early": 0,
+    "held": 1,
+    "forced": 0,
+    "overridden": 0,
+    "reasons": ["p_point held at scheduled turn"]
+  }
+}

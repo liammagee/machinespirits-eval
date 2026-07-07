@@ -1,0 +1,17 @@
+# Trimmed resume of the sealhouse world-slot probe (baseline-r2 only; the
+# interrupted job completed r1/r3 — same label + out dir per the standing
+# interruption discipline).
+base:
+  world: config/drama-derivation/world-008-sealhouse.yaml
+  script: config/drama-derivation/tutor-scripts/sealhouse-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 1
+arms:
+  - label: baseline-r2
+    flags: { decay: '{"seed":89,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
