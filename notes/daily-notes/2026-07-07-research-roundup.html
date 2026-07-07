@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 5–7 Jul 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+    blockquote { margin: 0; padding: .4rem 0 0; font-size: .9rem; color: #333; font-style: italic; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-07 window=(2026-07-05,2026-07-07] arxiv= generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">5–7 Jul 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  A short (2-day) window: <code>(2026-07-05, 2026-07-07]</code>. Direct browsing of
+  <code>arxiv.org</code> and <code>huggingface.co/papers</code> listing pages was blocked by this
+  session's network egress policy (403 on both the abs pages and the listing pages), so this
+  round relied entirely on web search rather than a direct arXiv listing scan. Roughly a dozen
+  targeted queries were run across all five topics, including ID-range probes
+  (<code>2607.05xxx</code>–<code>2607.07xxx</code>) intended to catch anything dated after
+  2 Jul 2026 (the newest reliably-indexed submissions were still clustered around
+  <code>2607.02xxx</code>–<code>2607.035xx</code>, i.e. 2–3 Jul). Nothing genuinely new and
+  in-window turned up across prompt engineering, agent architecture, ontology,
+  dramaturgy/role-play, or rhetoric — consistent with the search-index lag already flagged in the
+  prior note, now compounded by the egress block on direct listings. Reported honestly rather than
+  padded or back-dated. No qualifying paper this cycle, so no <span class="flag">UNBLOCK</span> /
+  <span class="flag yellow">WATCH</span> flags to assign.
+</p>
+
+<div class="paper">
+  <h3>No new papers this cycle</h3>
+  <div class="meta">Window: (2026-07-05, 2026-07-07]</div>
+  <p>
+    Searches covered: prompt-engineering methods and benchmarks; multi-agent/agent-architecture
+    coordination, memory, and topology work; ontology × LLM knowledge-representation and
+    ontology-guided reasoning; role-play, persona, and interactive-drama systems; and
+    rhetoric/persuasion in dialogue. Everything surfaced either predates the window (already
+    covered by an earlier roundup or excluded by the 30-day dedup list) or falls outside it.
+    Per the folder convention, the window is not widened to fill this note — it stays
+    <code>(2026-07-05, 2026-07-07]</code> and the next roundup picks up from here.
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03">
+  <h3>"High Accuracy Means It's a Good Classifier" — Until the Card Asks Where the Number Came From</h3>
+  <div class="meta">mismatched_rhetorical_dramatic_plan · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. An AI problem formulation card lies on the desk—a form with printed fields including "System Type", "Input/Output", "Decision Boundary", "Evidence Source", "Classification Rationale". The learner is preparing responses for a panel review.<br>
+    LEARNER: I've calculated the accuracy: ninety-four percent correct on the test set. That shows the classifier works. High accuracy means it's a good classifier.<br>
+    TUTOR: The card asks for Evidence Source. Where do you get that ninety-four percent measurement?<br>
+    LEARNER: Five thousand held-out test examples. We run the model on each one and count how many predictions match the true labels. That's where the ninety-four percent comes from.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT03">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-07-07 ·
+  Web-search sweep only (arxiv.org and huggingface.co listing/abs pages returned HTTP 403 under
+  this session's egress policy) · Window: (2026-07-05, 2026-07-07] · Prior covered IDs excluded
+  per README dedup rule · Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
