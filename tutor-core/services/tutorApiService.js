@@ -97,6 +97,7 @@ export async function generateSuggestions(context, config = {}) {
     superegoPromptExtension = null, // Dynamic disposition adjustments prepended to superego system prompt
     learnerId = null, // For Writing Pad memory persistence between turns
     dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
+    threadNegotiationResolution = false, // A5: carry negotiated resolution into the delivered suggestion across revision rounds
     onStream = null, // Streaming callback for token-by-token progress
     conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
     messageHistory = null, // External conversation chain (array of {role, content})
@@ -145,6 +146,7 @@ export async function generateSuggestions(context, config = {}) {
         superegoPromptExtension, // Dynamic disposition adjustments prepended to superego prompt
         learnerId, // Writing Pad memory persistence (Phase 1)
         dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
+        threadNegotiationResolution, // A5: carry negotiated resolution into the delivered suggestion across revision rounds
         onStream, // Streaming callback for token-by-token progress
         conversationMode, // 'messages' for multi-turn message chains
         messageHistory: messageHistory || context.messageHistory || null, // External conversation chain
