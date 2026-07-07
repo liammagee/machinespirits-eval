@@ -2080,3 +2080,96 @@ stack confirmed live end-to-end.**
   not just hermetically.
 - Remaining sessions (pad-ON 3; pad-OFF 1→2→3, cell_93, no learner-id)
   launched sequentially on the same stack; scoring next.
+
+**2026-07-07: Stage A4-codex completion and verdict — 6/6 sessions
+clean; structural-signal gate FAIL (pad-ON 2/4, pad-OFF 2/4); red flag
+raised and resolved as scenario echo; the §10.5 "mixed/partial" branch
+binds: directional-only reporting, no strong verdict licensed at this
+n. The informative content is in the two comparisons below.**
+
+- **Runs** (all `--skip-rubric`, 4/4 turns each, `success = 1`, 0
+  instrument failures): pad-ON `eval-2026-07-07-139daa20` / `-ffaac9d7`
+  / `-44a48b61` (learner `a4c-drift-padon-v1-2026-07-07`); pad-OFF
+  `eval-2026-07-07-433a19d2` / `-b7b30353` / `-49cbde02` (no
+  learner-id). Wall-clock 5m49s-6m48s per session, ~37.5 min total
+  (vs ~22 min/session on nemotron); cost = Max-plan codex quota, CLI
+  calls report 0 tokens (pre-declared).
+- **Frozen §9.4/§10.4 scoring** (checker `longitudinalDriftChecker@1.2`,
+  artifacts `exports/longitudinal-drift-stage-a4-codex.{json,md}`):
+  session-2 slots MISS in both arms; session-3 slots HIT in BOTH arms
+  (content-bearing check-in + continuity-acknowledgment). Aggregate:
+  pad-ON **2/4** (gate required ≥3/4), pad-OFF **2/4** (gate required
+  0/4) → **FAIL**.
+- **Red flag investigated, not glossed (frozen requirement)**: the
+  pad-OFF session-3 hits are SCENARIO ECHO, the exact pre-registered
+  caveat (ii) shape — session 3's `learner_context` plants "Last
+  session's ratio work is complete; the additive-scaling pattern is
+  resolved" in BOTH arms, and both arms' openings echo it ("Your ratio
+  work is settled. Pause on linear equations..." pad-OFF; "Your ratios
+  are resolved. Pause on linear equations..." pad-ON). Pad-only leakage
+  probes: "unnecessarily large denominator" / "share no factors besides
+  1" / "evades the exact rule" (session-1/3 pad-ON moment text,
+  pre-checked absent from all scenario YAML) — 0 hits in all three
+  pad-OFF logs; a single "x=0 self-check" hit in pad-OFF s3 is the
+  tutor's own compression of session 3's OWN scripted learner turn
+  ("if I substitute x = 0 into x > -3...", scenario YAML lines
+  2341/2603) — same-session content + shared-model idiom, the §8.8
+  '2:3' / §9.7 '4:5' precedent class. **No genuine cross-session
+  leakage; the pad-OFF arm is clean.** By symmetry (caveat (ii)), the
+  pad-ON session-3 hits are equally scenario-echo-attributable — NOT
+  pad-attributable.
+- **§7.4 pad trace**: codex writes far fewer recognition moments —
+  2 total (sessions 1 and 3; session 2 wrote none) vs nemotron's 9
+  (4+3+2): the codex dialectical superego disapproves much less often.
+  Both moments are real, transformative-flagged, and quote live session
+  math.
+- **Threading diagnostic (§10.3) — explanation (a) CONFIRMED AT CODE
+  LEVEL, stack-independent, and RELOCATED**: `dialecticalStrategy`
+  metadata appears on **0/24 turns in both arms** (nemotron §9 showed
+  the same shape). A hermetic probe (fake provider returning a
+  guaranteed `disapproves: false` critique — perfect-model conditions)
+  reproduces `metadata: null`, proving the loss is not a weak-model
+  empty-revision artifact: on dialogue-enabled cells (cell_40/93 have
+  `dialogue.enabled: true`), `negotiateDialectically` runs only inside
+  the INITIAL `egoGenerateSuggestions`, and the outer dialogue loop's
+  superego-review→ego-revise round then REPLACES the suggestions array
+  wholesale — discarding the negotiated message and metadata every time
+  a revision round runs. §9.7's turn-4 `no_conflict` metadata survived
+  only because that turn converged without revision. The pad→
+  negotiation→delivered-output chain is therefore structurally severed
+  on these cells whenever the dialogue loop revises — the output-
+  threading defect is ARCHITECTURAL (fix = separately pre-registered
+  design decision, per the frozen §10.5 map; not implemented here).
+- **Comparison to §9 (nemotron/kimi baseline, identical design/checker)**:
+  - Surface behavior: nemotron 0/4 and 0/4 — even the scenario-planted
+    continuity text went un-echoed in every opening; codex 2/4 and 2/4
+    — the scripted check-in slot + planted context now sometimes
+    produce a genuine continuity-acknowledging, prior-topic-referencing
+    opening (session 3 both arms; session 2 neither arm). On the
+    slot-level outcome the weak stack was suppressing real behavioral
+    signal.
+  - The pre-registered CONTRAST (pad-ON − pad-OFF): **0 on both stacks**
+    (0/4−0/4 nemotron; 2/4−2/4 codex). The memory channel adds nothing
+    to the delivered opening beyond what the scenario itself states, on
+    either stack.
+- **Answer to the §10.1 question (bounded, directional-only at n=3
+  sessions/arm)**: the stack-bounded-null hypothesis splits. YES at the
+  behavior-surface level — §9's all-zero slot pattern was partly a
+  capability artifact (codex acts on the scripted check-in where
+  nemotron never did), so nemotron/kimi WAS suppressing signal and the
+  standing default-stack rule has empirical support from this arc's own
+  data. NO at the contrast level — the pad-vs-no-pad null REPLICATES
+  exactly on the strong stack, and the code-level threading finding
+  supplies an architectural mechanism (the negotiation channel, where
+  pad content demonstrably lands, cannot rewrite the delivered opening
+  through the dialogue loop's revision). A2-A4's memory-contrast nulls
+  are therefore NOT overturned as false negatives; §9's
+  delivered-but-not-used reading strengthens, now with the block
+  pinned to a specific, fixable code hop rather than a genre/policy
+  conjecture alone.
+- **STOP per §10.4**: the 6-session envelope is exhausted (plus two
+  transient, unpersisted pre-fix canary attempts and one 233ms
+  throwaway debug run, none consuming envelope rows). Output-side
+  levers — wiring negotiation resolutions into delivery, or a
+  check-in-sentence format change — remain fresh design decisions
+  requiring a new pre-registration and go.
