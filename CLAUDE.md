@@ -74,6 +74,18 @@ Do NOT use asymmetric names. When in doubt, check the other side's labels and mi
 
 ## Configuration
 
+### Model stack default
+
+**nemotron/kimi must never be the default pairing for new runs** (standing user directive, 2026-07-07 — the A4 run on nemotron/kimi is suspected of producing false negatives). By default, use `codex.gpt-5.5` or claude-code Sonnet 5 via the CLI bridge unless the user specifies otherwise:
+
+```bash
+node scripts/eval-cli.js run --profiles <cells> --ego-model codex.gpt-5.5 --superego-model codex.gpt-5.5 --runs N
+```
+
+- The CLI bridge now reaches **tutor-core's dialogue engine** (standard-runner cells like 40/93), not just id-director/learner/adaptive/judge seams — via the external-AI-provider hook (`tutor-core/services/externalAIProvider.js`, registered by `evaluationRunner.js`). `--ego-model` / `--superego-model` CLI overrides therefore work for ALL cells.
+- `eval-cli run` prints a **non-blocking stderr warning** when a run resolves to the nemotron/kimi pairing with no explicit model override (`services/stackDefaultWarning.js`). Existing cell YAML is unchanged — the weak stack remains available as an explicit choice.
+- **Interpretation rule: nulls generated on nemotron/kimi are stack-bounded until replicated on a strong model.** Do not present a nemotron/kimi null as an architecture verdict without a strong-stack replication (or an explicit stack-bounded caveat).
+
 ### How to Read a Cell's Architecture
 
 **RULE: Never guess a cell's architecture from its number or name. Always check `config/tutor-agents.yaml`.**

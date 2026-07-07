@@ -47,6 +47,7 @@ import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
 import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.js';
 import { buildCliProviderHook } from './cliProviderBridge.js';
+import { warnIfWeakStackDefault } from './stackDefaultWarning.js';
 import { formatApiMessages } from './apiMessageFormatter.js';
 import { LiveApiReporter } from './liveApiReporter.js';
 import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
@@ -2372,6 +2373,11 @@ export async function runEvaluation(options = {}) {
   if (targetConfigs.length === 0) {
     throw new Error('No configurations to test');
   }
+
+  // Model-stack default check (CLAUDE.md "Model stack default"): warn — never
+  // block — when a run would put cells on the weak nemotron/kimi pairing with
+  // no explicit model override.
+  warnIfWeakStackDefault(targetConfigs);
 
   log(`\nStarting evaluation:`);
   log(`  Scenarios: ${targetScenarios.length}`);
