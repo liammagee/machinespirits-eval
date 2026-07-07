@@ -7,8 +7,8 @@
  *
  * Usage:
  *   npm run tutor:stub:auto-eval -- --dry-run
- *   npm run tutor:stub:auto-eval -- --runs 2 --turns 8
- *   npm run tutor:stub:auto-eval -- --runs 1 --until-grounded
+ *   npm run tutor:stub:auto-eval -- --runs 2
+ *   npm run tutor:stub:auto-eval -- --runs 1 --turns 8
  */
 
 import fs from 'node:fs';
@@ -23,7 +23,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { values: args } = parseArgs({
   options: {
     runs: { type: 'string', default: '1' },
-    turns: { type: 'string', default: '8' },
+    turns: { type: 'string', default: 'until-grounded' },
     policies: { type: 'string', default: 'dynamic,random' },
     model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || 'openai.mini' },
     'analysis-model': { type: 'string', default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || 'codex.gpt-5.5' },
@@ -58,7 +58,7 @@ function printHelp() {
 
 Options:
   --runs <n>                 repetitions per policy (default: 1)
-  --turns <n>                max automated learner turns per dialogue (default: 8)
+  --turns <n|until-grounded> max automated learner turns per dialogue (default: until-grounded)
   --policies <csv>           register policies to compare (default: dynamic,random)
   --model <ref>              tutor model (default: openai.mini)
   --analysis-model <ref>     classifier + learner-DAG model (default: codex.gpt-5.5)
@@ -69,7 +69,7 @@ Options:
   --register-palette <mode>  default: all
   --first-message <text>     seed the first learner turn instead of using tutor opening
   --cli-effort <level>       low, medium, high, xhigh, max, or config for CLI providers
-  --until-grounded           do not stop at --turns; stop at grounded closure
+  --until-grounded           legacy alias for --turns until-grounded
   --safety-turns <n>         runaway guard for --until-grounded (default: 80)
   --no-dag                   omit tutor proof-DAG context
   --no-stop-on-grounded      run until --turns even after grounded closure
@@ -87,7 +87,9 @@ function positiveInt(value, name) {
 }
 
 function turnsArg() {
-  return args['until-grounded'] ? 'until-grounded' : String(positiveInt(args.turns, '--turns'));
+  return args['until-grounded'] || args.turns === 'until-grounded'
+    ? 'until-grounded'
+    : String(positiveInt(args.turns, '--turns'));
 }
 
 function csv(value) {

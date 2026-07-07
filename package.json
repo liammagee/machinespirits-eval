@@ -26,6 +26,7 @@
     "chat": "node scripts/chat-cli.js",
     "tutor:stub": "node scripts/tutor-stub.js",
     "tutor:stub:auto-eval": "node scripts/run-tutor-stub-auto-eval.js",
+    "tutor:stub:abm-panel": "node scripts/run-tutor-stub-abm-panel.js",
     "eval": "node scripts/eval-cli.js",
     "eval:quick": "node scripts/eval-cli.js quick",
     "eval:test": "node scripts/eval-cli.js test",

@@ -69,7 +69,7 @@ const STUB = {
   closeoutReport: process.env.TUTOR_STUB_CLOSEOUT_REPORT !== '0',
   fieldViz: process.env.TUTOR_STUB_FIELD_VIZ === '1',
   autoLearnerModel: process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'openai.mini',
-  autoTurns: Number.parseInt(process.env.TUTOR_STUB_AUTO_TURNS || '8', 10),
+  autoTurns: process.env.TUTOR_STUB_AUTO_TURNS || 'until-grounded',
   autoSafetyTurns: Number.parseInt(process.env.TUTOR_STUB_AUTO_SAFETY_TURNS || '80', 10),
   autoLearnerProfile:
     process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE ||
