@@ -19,6 +19,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import childProcess from 'node:child_process';
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -214,6 +215,34 @@ test('splitProviderMessages folds system messages and splits user/history', () =
     { role: 'user', content: 'first' },
     { role: 'assistant', content: 'reply' },
   ]);
+});
+
+test('hook registration is SYNCHRONOUS at runner import (regression: macrotask starvation)', () => {
+  // A run whose path to the first LLM call is sync/microtask-only (sqlite +
+  // config reads are synchronous) never yields to the event loop — a lazy
+  // dynamic-import .then() registration fires only at process teardown and
+  // the first codex call dies with "Provider codex not configured". Guard:
+  // after a purely STATIC import of the runner, with NO event-loop turn of
+  // any kind, the hook must already be live.
+  const { execSync } = childProcess;
+  const script = [
+    "import './services/evaluationRunner.js';",
+    "import { externalProviderHandles } from './tutor-core/index.js';",
+    "console.log('HANDLES=' + externalProviderHandles('codex'));",
+    'process.exit(0);', // exit immediately — no event-loop turn allowed
+  ].join('\n');
+  const out = execSync(`node --input-type=module -e "${script.replace(/"/g, '\\"')}"`, {
+    cwd: path.resolve(path.dirname(new URL(import.meta.url).pathname), '..'),
+    env: {
+      ...process.env,
+      EVAL_DB_PATH: path.join(TMP_ROOT, 'sync-check.db'),
+      EVAL_LOGS_DIR: path.join(TMP_ROOT, 'sync-check-logs'),
+      AUTH_DB_PATH: path.join(TMP_ROOT, 'sync-check-lms.sqlite'),
+    },
+    encoding: 'utf8',
+    timeout: 60_000,
+  });
+  assert.match(out, /HANDLES=true/);
 });
 
 test('splitProviderMessages tolerates empty/odd shapes', () => {

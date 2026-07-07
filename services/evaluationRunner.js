@@ -26,6 +26,27 @@ import {
 // future tutor-core re-exports it, this resolver picks it up.
 import * as _tutorCore from '../tutor-core/index.js';
 const setQuietMode = typeof _tutorCore.setQuietMode === 'function' ? _tutorCore.setQuietMode : () => {};
+import { buildCliProviderHook } from './cliProviderBridge.js';
+// Extend CLI providers (codex / claude-code) into tutor-core's dialogue
+// engine: the hook is injected from the eval side so tutor-core never
+// imports eval code (one-way seam). Covers the callAI standard loop
+// (ego/superego/ego-revise) and the unified/aiService dialectical layer,
+// making --ego-model codex.gpt-5.5 / --superego-model claude-code.sonnet
+// work for standard-runner cells (e.g. cell_40/93), not just id-director
+// and learner engines.
+//
+// MUST register synchronously at module load (not in the lazy dynamic-import
+// .then below): a run whose path to the first LLM call is sync/microtask-only
+// (sqlite + config reads are synchronous) never yields to the event loop, so
+// a dynamic import()'s continuation would fire only at process teardown and
+// the first codex/claude-code call would fail "Provider not configured".
+if (typeof _tutorCore.setExternalAIProviderHook === 'function') {
+  try {
+    _tutorCore.setExternalAIProviderHook(buildCliProviderHook());
+  } catch (err) {
+    console.error(`[evaluationRunner] CLI provider hook registration failed: ${err?.message || err}`);
+  }
+}
 import * as rubricEvaluator from './rubricEvaluator.js';
 import {
   buildLearnerEvaluationPrompt,
@@ -46,7 +67,6 @@ import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
 import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.js';
-import { buildCliProviderHook } from './cliProviderBridge.js';
 import { warnIfWeakStackDefault } from './stackDefaultWarning.js';
 import { formatApiMessages } from './apiMessageFormatter.js';
 import { LiveApiReporter } from './liveApiReporter.js';
@@ -198,22 +218,15 @@ function resolveRejudgeScenarioAndDialogueLog(result, preloadedDialogueLog = nul
 }
 
 // Redirect tutor-core logs to the same root the eval runner uses.
+// (The CLI provider hook is registered synchronously above — do NOT move it
+// into this lazy .then: its continuation can starve until process teardown
+// on sync-only run paths.)
 import('../tutor-core/index.js')
   .then((mod) => {
     if (typeof mod.setLogDir === 'function') mod.setLogDir(LOGS_ROOT);
-    // Extend CLI providers (codex / claude-code) into tutor-core's dialogue
-    // engine: the hook is injected from the eval side so tutor-core never
-    // imports eval code (one-way seam). Covers the callAI standard loop
-    // (ego/superego/ego-revise) and the unified/aiService dialectical layer,
-    // making --ego-model codex.gpt-5.5 / --superego-model claude-code.sonnet
-    // work for standard-runner cells (e.g. cell_40/93), not just id-director
-    // and learner engines.
-    if (typeof mod.setExternalAIProviderHook === 'function') {
-      mod.setExternalAIProviderHook(buildCliProviderHook());
-    }
   })
   .catch(() => {
-    /* setLogDir / external provider hook not available in this tutor-core version */
+    /* setLogDir not available in this tutor-core version */
   });
 
 // Read package version once at import time
