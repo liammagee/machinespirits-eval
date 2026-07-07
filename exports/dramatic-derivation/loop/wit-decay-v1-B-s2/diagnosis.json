@@ -1,0 +1,363 @@
+{
+  "label": "wit-decay-v1-B-s2",
+  "group": "unreliable-v1",
+  "note": "unreliable-learner v1, arm B (conduct), seed 2, codex director (amendment 2)",
+  "scriptPath": "config/drama-derivation/tutor-scripts/withercombe-v001.md",
+  "worldPath": "config/drama-derivation/world-004-withercombe.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": true,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 2,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1
+  },
+  "decayVisibility": "conduct",
+  "elapsedMs": 303634,
+  "usage": {
+    "calls": 29,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 7,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 8,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 7,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 7,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_004_withercombe",
+  "verdict": "disengagement",
+  "turnsPlayed": 7,
+  "turnCap": 24,
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "forcedToAssertedGap": null,
+  "dCurve": [
+    6,
+    6,
+    6,
+    5,
+    5,
+    5,
+    5
+  ],
+  "learningSlope": {
+    "d0": 6,
+    "dFinal": 5,
+    "overall": {
+      "delta": 1,
+      "turns": 7,
+      "ratePerTurn": 0.143
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "The Children's Water",
+        "turns": [
+          1,
+          5
+        ],
+        "dStart": 6,
+        "dEnd": 5,
+        "delta": 1,
+        "ratePerTurn": 0.2
+      },
+      {
+        "act": "2",
+        "title": "The Walk Up the Slope",
+        "turns": [
+          6,
+          7
+        ],
+        "dStart": 5,
+        "dEnd": 5,
+        "delta": 0,
+        "ratePerTurn": 0
+      }
+    ]
+  },
+  "longestPlateau": 3,
+  "aporiaWindow": 6,
+  "eventsByType": {
+    "decay": 2,
+    "disengagement": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_taint",
+        "plannedTurn": 2,
+        "plannedVia": "director",
+        "actualTurn": 2,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_course",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 4,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_lore",
+        "plannedTurn": 6,
+        "plannedVia": "director",
+        "actualTurn": 6,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_rill",
+        "plannedTurn": 8,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "m_works",
+        "plannedTurn": 10,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_basin",
+        "plannedTurn": 12,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "m_drain",
+        "plannedTurn": 14,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_residue",
+        "plannedTurn": 16,
+        "plannedVia": "tutor",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      },
+      {
+        "premise": "p_brought",
+        "plannedTurn": 19,
+        "plannedVia": "director",
+        "actualTurn": null,
+        "actualVia": null,
+        "status": "unreached"
+      }
+    ],
+    "onCue": 3,
+    "deviations": [],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "The Children's Water",
+        "intent": "To open the room under suspicion before any proof has entered, letting the public question gather weight without yet taking evidence."
+      },
+      {
+        "turn": 6,
+        "name": "The Walk Up the Slope",
+        "intent": "To move the room from ready accusation into the survey's patient ascent, where named lore and measured water must replace village verdict."
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [
+    {
+      "turn": 6,
+      "draftFigure": "exemplum",
+      "figure": "erotema",
+      "diagnosis": "The last two turns were exemplum and the draft would make a third exemplum in a row.",
+      "note": "Leave off exemplum here; do not make wormwood another comparison before the learner enters it."
+    }
+  ],
+  "tutorFigures": {
+    "total": 7,
+    "counts": {
+      "erotema": 3,
+      "exemplum": 4
+    },
+    "distinct": 2,
+    "topFigure": "exemplum",
+    "topShare": 0.571,
+    "switchRate": 0.833,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.833,
+    "superego": {
+      "watched": 7,
+      "interventions": 1,
+      "interventionRate": 0.143,
+      "withinTurnChanges": 1,
+      "withinTurnChangeRate": 1,
+      "switchOnIntervention": 1,
+      "switchElsewhere": 0.8,
+      "stallWatch": {
+        "byJurisdiction": {
+          "figure_rut": 1,
+          "stalled_inference": 0
+        },
+        "audit": {
+          "turns": 7,
+          "due": 1,
+          "fired": 1,
+          "missedFires": [],
+          "falseFires": [],
+          "clean": true
+        }
+      }
+    }
+  },
+  "learnerInference": {
+    "nodes": [],
+    "voicedCount": 0,
+    "overreachCount": 0,
+    "mischanneledCount": 0,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 7,
+      "maxSentences": 4,
+      "avgSentences": 3,
+      "avgWords": 43.9
+    },
+    "tutor": {
+      "turns": 7,
+      "maxSentences": 3,
+      "avgSentences": 2.43,
+      "avgWords": 43.9
+    },
+    "learner": {
+      "turns": 7,
+      "maxSentences": 4,
+      "avgSentences": 3.43,
+      "avgWords": 74.4
+    }
+  },
+  "proofExtracted": false,
+  "corruption": {
+    "config": {
+      "seed": 2,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1
+    },
+    "decayEvents": 2,
+    "repairs": {
+      "total": 0,
+      "byTutor": 0,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": null,
+    "unrepairedAtEnd": 2,
+    "degradedTurnIntegral": 6,
+    "dReversals": 0,
+    "timeline": [
+      {
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ],
+        "decayTurn": 3,
+        "repairTurn": null,
+        "via": null
+      },
+      {
+        "premiseId": "p_course",
+        "fact": [
+          "fedBy",
+          "schoolWell",
+          "fontHouse"
+        ],
+        "decayTurn": 5,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  }
+}

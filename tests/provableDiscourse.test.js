@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'fs';
 import os from 'os';
@@ -16,10 +17,38 @@ import {
   inferMultiFromProfileName,
   inferRecognitionFromProfileName,
   linearRegression,
+  loadOrphanWaivers,
   pearsonCorrelation,
+  runProvableDiscourseAudit,
   topologicalSort,
   verifyTurnIdsForRow,
 } from '../services/provableDiscourse.js';
+
+function makeProvableFixture(specOverrides = {}) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'provable-discourse-'));
+  const dbPath = path.join(tmpDir, 'evaluations.db');
+  new Database(dbPath).close();
+  fs.writeFileSync(path.join(tmpDir, 'manifest.json'), JSON.stringify({ totals: { expected_scored: 123 } }, null, 2));
+  fs.writeFileSync(path.join(tmpDir, 'paper-full.md'), 'Legacy-only proof phrase. Shared claim phrase.');
+  fs.writeFileSync(path.join(tmpDir, 'paper-full-2.0.md'), 'Paper 2 only proof phrase. Shared claim phrase.');
+
+  const spec = {
+    version: 1,
+    paper_path: 'paper-full.md',
+    paper2_path: 'paper-full-2.0.md',
+    manifest_path: 'manifest.json',
+    db_path: 'evaluations.db',
+    snapshot_path: 'snapshot.json',
+    claims: [],
+    ...specOverrides,
+  };
+  fs.writeFileSync(path.join(tmpDir, 'spec.yaml'), JSON.stringify(spec, null, 2));
+  return { tmpDir, dbPath, specPath: 'spec.yaml', absoluteSpecPath: path.join(tmpDir, 'spec.yaml') };
+}
+
+function claimById(report, id) {
+  return report.claims.find((claim) => claim.id === id);
+}
 
 test('inferRecognitionFromProfileName classifies canonical names', () => {
   assert.equal(inferRecognitionFromProfileName('cell_5_recog_single_unified'), true);
@@ -106,6 +135,143 @@ test('evaluateSymmetryRule handles both_abs_lte and abs_gap_gte', () => {
 test('cohensD returns expected direction', () => {
   const d = cohensD([10, 11, 12, 13], [1, 2, 3, 4]);
   assert.ok(d > 0);
+});
+
+test('Paper 2.0 audit mode uses the Paper 2.0 manuscript as the statement source', () => {
+  const { tmpDir, specPath } = makeProvableFixture({
+    claims: [
+      {
+        id: 'paper2.present',
+        description: 'Paper 2 statement exists',
+        statement: { pattern: 'Paper 2 only proof phrase', flags: 'i', min_occurrences: 1 },
+        evidence: { type: 'manifest_total', field: 'expected_scored' },
+        assertion: { op: 'eq', expected: 123 },
+      },
+      {
+        id: 'legacy.only',
+        description: 'Legacy-only text must not satisfy Paper 2 mode',
+        statement: { pattern: 'Legacy-only proof phrase', flags: 'i', min_occurrences: 1 },
+        evidence: { type: 'manifest_total', field: 'expected_scored' },
+        assertion: { op: 'eq', expected: 123 },
+      },
+    ],
+  });
+
+  try {
+    const report = runProvableDiscourseAudit({ rootDir: tmpDir, specPath, epoch: '2.0', smokeMode: true });
+    assert.equal(report.paper_path, 'paper-full-2.0.md');
+    assert.deepEqual(report.paper_paths, ['paper-full-2.0.md']);
+    assert.equal(report.paper_source_mode, 'paper2_primary');
+    assert.equal(claimById(report, 'paper2.present').status, 'pass');
+    assert.equal(claimById(report, 'legacy.only').status, 'fail');
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test('theoretical claims are registered without empirical snapshot debt', () => {
+  const { tmpDir, specPath } = makeProvableFixture({
+    claims: [
+      {
+        id: 'paper2.theoretical',
+        description: 'Theory claim registration',
+        statement: { pattern: 'Paper 2 only proof phrase', flags: 'i', min_occurrences: 1 },
+        evidence: {
+          type: 'theoretical',
+          derivation: 'Derived from a local argument, not directly from DB evidence.',
+          cross_refs: [],
+        },
+        assertion: { op: 'theoretical', expected: 'registered theoretical claim' },
+      },
+    ],
+  });
+
+  try {
+    const report = runProvableDiscourseAudit({ rootDir: tmpDir, specPath, epoch: '2.0' });
+    const claim = claimById(report, 'paper2.theoretical');
+    assert.equal(claim.status, 'pass');
+    assert.equal(claim.details.proof_status, 'theoretical_registration');
+    assert.equal(claim.details.snapshot_required, false);
+    assert.equal(report.summary.warn, 0);
+    assert.equal(fs.existsSync(path.join(tmpDir, 'snapshot.json')), false);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test('empirical claims require and accept a reviewed snapshot baseline', () => {
+  const { tmpDir, specPath } = makeProvableFixture({
+    claims: [
+      {
+        id: 'paper2.empirical',
+        description: 'Empirical claim requires a baseline',
+        statement: { pattern: 'Paper 2 only proof phrase', flags: 'i', min_occurrences: 1 },
+        evidence: { type: 'manifest_total', field: 'expected_scored' },
+        assertion: { op: 'eq', expected: 123 },
+      },
+    ],
+  });
+
+  try {
+    const firstReport = runProvableDiscourseAudit({ rootDir: tmpDir, specPath, epoch: '2.0' });
+    assert.equal(claimById(firstReport, 'paper2.empirical').status, 'warn');
+    assert.match(claimById(firstReport, 'paper2.empirical').messages.join('\n'), /No snapshot baseline/);
+
+    const refreshReport = runProvableDiscourseAudit({
+      rootDir: tmpDir,
+      specPath,
+      epoch: '2.0',
+      refreshSnapshot: true,
+    });
+    assert.equal(refreshReport.summary.warn, 0);
+    assert.equal(fs.existsSync(path.join(tmpDir, 'snapshot.json')), true);
+
+    const finalReport = runProvableDiscourseAudit({ rootDir: tmpDir, specPath, epoch: '2.0' });
+    assert.equal(claimById(finalReport, 'paper2.empirical').status, 'pass');
+    assert.equal(finalReport.summary.warn, 0);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test('validate-provable-discourse JSON mode emits parseable stdout without the epoch banner', () => {
+  const { tmpDir, absoluteSpecPath } = makeProvableFixture({
+    claims: [
+      {
+        id: 'paper2.cli',
+        description: 'CLI JSON claim',
+        statement: { pattern: 'Paper 2 only proof phrase', flags: 'i', min_occurrences: 1 },
+        evidence: {
+          type: 'theoretical',
+          derivation: 'CLI smoke claim.',
+          cross_refs: [],
+        },
+        assertion: { op: 'theoretical', expected: 'registered theoretical claim' },
+      },
+    ],
+  });
+  const spec = JSON.parse(fs.readFileSync(absoluteSpecPath, 'utf8'));
+  Object.assign(spec, {
+    paper_path: path.join(tmpDir, 'paper-full.md'),
+    paper2_path: path.join(tmpDir, 'paper-full-2.0.md'),
+    manifest_path: path.join(tmpDir, 'manifest.json'),
+    db_path: path.join(tmpDir, 'evaluations.db'),
+    snapshot_path: path.join(tmpDir, 'snapshot.json'),
+  });
+  fs.writeFileSync(absoluteSpecPath, JSON.stringify(spec, null, 2));
+
+  try {
+    const stdout = execFileSync(
+      process.execPath,
+      ['scripts/validate-provable-discourse.js', '--spec', absoluteSpecPath, '--epoch', '2.0', '--json'],
+      { cwd: process.cwd(), encoding: 'utf8' },
+    );
+    assert.equal(stdout.trimStart().startsWith('{'), true);
+    const report = JSON.parse(stdout);
+    assert.equal(report.paper_source_mode, 'paper2_primary');
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 });
 
 // ── linearRegression tests ─────────────────────────────────────
@@ -633,6 +799,119 @@ test('evaluateProvenanceCheck: dialogue_hash_match skips rows with NULL dialogue
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
+// Helper: write a provenance-orphan-waiver file under <rootDir>/config/.
+function writeWaiverFile(rootDir, runId, dialogueIds) {
+  fs.mkdirSync(path.join(rootDir, 'config'), { recursive: true });
+  fs.writeFileSync(
+    path.join(rootDir, 'config', 'provenance-orphan-waivers.json'),
+    JSON.stringify({
+      version: '1.0',
+      waivers: [{ run_id: runId, reason: 'test', dialogues: dialogueIds.map((id) => ({ dialogue_id: id })) }],
+    }),
+  );
+}
+
+test('loadOrphanWaivers: builds run::dialogue composite keys; empty Set when file absent', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-waiver-'));
+  assert.strictEqual(loadOrphanWaivers(tmpDir).size, 0, 'no file → empty Set');
+
+  writeWaiverFile(tmpDir, 'runX', ['dlg-a', 'dlg-b']);
+  const keys = loadOrphanWaivers(tmpDir);
+  assert.ok(keys.has('runX::dlg-a'));
+  assert.ok(keys.has('runX::dlg-b'));
+  assert.ok(!keys.has('runOther::dlg-a'), 'composite key is run-scoped');
+  assert.strictEqual(keys.size, 2);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: dialogue_hash_match waives a documented-missing log (not failed)', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  fs.mkdirSync(path.join(tmpDir, 'logs', 'tutor-dialogues'), { recursive: true });
+  // NB: no log file written for dlg-waived-1 → genuinely missing.
+  writeWaiverFile(tmpDir, 'run1', ['dlg-waived-1']);
+
+  const db = createProvenanceTestDb();
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'dlg-waived-1', 'a'.repeat(64), '{}', 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(
+    db,
+    { checks: ['dialogue_hash_match'], filters: { not_null: ['dialogue_content_hash'] } },
+    tmpDir,
+  );
+
+  const cr = result.details.checks.dialogue_hash_match;
+  assert.strictEqual(cr.waived, 1, 'documented-missing log is waived');
+  assert.strictEqual(cr.failed, 0, 'waived row is not a failure');
+  assert.strictEqual(result.value, 1.0, 'waived rows excluded from the pass-rate fraction');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: dialogue_hash_match still fails an UN-waived missing log', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  fs.mkdirSync(path.join(tmpDir, 'logs', 'tutor-dialogues'), { recursive: true });
+  // Waiver covers a DIFFERENT dialogue — the missing one below must still fail.
+  writeWaiverFile(tmpDir, 'run1', ['dlg-some-other']);
+
+  const db = createProvenanceTestDb();
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'dlg-missing-unwaived', 'b'.repeat(64), '{}', 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(
+    db,
+    { checks: ['dialogue_hash_match'], filters: { not_null: ['dialogue_content_hash'] } },
+    tmpDir,
+  );
+
+  const cr = result.details.checks.dialogue_hash_match;
+  assert.strictEqual(cr.failed, 1, 'un-waived missing log still fails');
+  assert.strictEqual(cr.waived, 0);
+  assert.strictEqual(cr.failures[0].reason, 'log_file_missing');
+  assert.strictEqual(result.value, 0.0);
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: a waiver does NOT mask a hash MISMATCH (only absence is waived)', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  // The log file EXISTS but its content does not match the recorded hash.
+  const tampered = { dialogueId: 'dlg-tampered', turnResults: [{ turnIndex: 0, suggestion: 'TAMPERED' }] };
+  fs.writeFileSync(path.join(logDir, 'dlg-tampered.json'), JSON.stringify(tampered, null, 2));
+  // …and it is (wrongly) listed in the waiver. Presence-but-mismatch must still fail.
+  writeWaiverFile(tmpDir, 'run1', ['dlg-tampered']);
+
+  const db = createProvenanceTestDb();
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'dlg-tampered', 'c'.repeat(64), '{}', 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(
+    db,
+    { checks: ['dialogue_hash_match'], filters: { not_null: ['dialogue_content_hash'] } },
+    tmpDir,
+  );
+
+  const cr = result.details.checks.dialogue_hash_match;
+  assert.strictEqual(cr.failed, 1, 'an existing-but-mismatched log still fails despite the waiver');
+  assert.strictEqual(cr.waived, 0, 'waiver applies only to genuine absence');
+  assert.strictEqual(cr.failures[0].reason, 'hash_mismatch');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
 test('evaluateProvenanceCheck: turn_id_match passes when score turn IDs match log', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
   const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
@@ -908,6 +1187,38 @@ test('verifyTurnIdsForRow: verifies matching turn IDs', () => {
 
   const tutorScores = {
     turn_0: { turnIndex: 0, contentTurnId: expectedId, scores: { r: { score: 4 } } },
+  };
+
+  const result = verifyTurnIdsForRow(dialogueId, tutorScores, tmpDir);
+  assert.strictEqual(result.size, 1);
+  assert.strictEqual(result.get(0), true);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('verifyTurnIdsForRow: prefers persisted log contentTurnId for current logs', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-test-'));
+  fs.mkdirSync(tmpDir, { recursive: true });
+
+  const dialogueId = 'dlg-verify-current-log';
+  const contentTurnId = 'persisted-current-id';
+  fs.writeFileSync(
+    path.join(tmpDir, `${dialogueId}.json`),
+    JSON.stringify({
+      dialogueId,
+      turnResults: [
+        {
+          turnIndex: 0,
+          turnId: 'tid-0',
+          contentTurnId,
+          suggestions: [{ message: 'hello' }],
+        },
+      ],
+    }),
+  );
+
+  const tutorScores = {
+    turn_0: { turnIndex: 0, contentTurnId, scores: { r: { score: 4 } } },
   };
 
   const result = verifyTurnIdsForRow(dialogueId, tutorScores, tmpDir);

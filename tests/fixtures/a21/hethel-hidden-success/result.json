@@ -1,0 +1,89 @@
+{
+  "worldId": "world-006-hethel-fixture",
+  "verdict": "grounded_anagnorisis",
+  "turnsPlayed": 4,
+  "firstForcedTurn": 20,
+  "assertedGroundedTurn": 20,
+  "trajectory": [
+    { "turn": 1, "D": 5 },
+    { "turn": 2, "D": 5 },
+    { "turn": 3, "D": 5 },
+    { "turn": 4, "D": 4 }
+  ],
+  "transcript": [
+    {
+      "turn": 1,
+      "role": "learner",
+      "text": "The hall asks who must pay, but that is not yet the same as who caused the fall.",
+      "meta": {}
+    },
+    {
+      "turn": 1,
+      "role": "tutor",
+      "text": "Separate the bond question from the cause question before naming a culprit.",
+      "meta": {
+        "move": { "figure": "erotema", "intent": "orient", "targetPremise": null },
+        "releaseDecision": { "turn": 1, "played": null, "pacingGuard": { "safeTurns": {} } }
+      }
+    },
+    {
+      "turn": 2,
+      "role": "learner",
+      "text": "The record proves Reyner built the span, not that his hand broke it.",
+      "meta": {}
+    },
+    {
+      "turn": 2,
+      "role": "tutor",
+      "text": "Good. Hold the record to what it proves and no more.",
+      "meta": {
+        "move": { "figure": "analogia", "intent": "consolidate", "targetPremise": "m_record" },
+        "releaseDecision": {
+          "turn": 2,
+          "played": null,
+          "pacingGuard": { "safeTurns": { "p_point": [4, 5, 6] } }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "role": "learner",
+      "text": "So the record is a starting mark, not the proof of the accident.",
+      "meta": {}
+    },
+    {
+      "turn": 3,
+      "role": "tutor",
+      "text": "Read it back once more: what does the record prove, and where does it stop?",
+      "meta": {
+        "move": { "figure": "erotema", "intent": "confront", "targetPremise": "m_record" },
+        "releaseDecision": {
+          "turn": 3,
+          "played": null,
+          "pacingGuard": { "safeTurns": { "p_point": [4, 5, 6] } }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "role": "learner",
+      "text": "Then the missing fact is where the span actually failed.",
+      "meta": {}
+    },
+    {
+      "turn": 4,
+      "role": "tutor",
+      "text": "The warden's measure says the arch broke at the crown, not at the piers.",
+      "meta": {
+        "move": { "figure": "analogia", "intent": "release", "targetPremise": "p_point" },
+        "releaseDecision": {
+          "turn": 4,
+          "played": "p_point",
+          "scheduledTurn": 4,
+          "offset": 0,
+          "pacingGuard": { "safeTurns": { "p_point": [4, 5, 6] } }
+        }
+      }
+    }
+  ]
+}

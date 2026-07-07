@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Machine Spirits Architecture Overview</title>
+<style>
+  :root {
+    --paper: #f7f3e8;
+    --panel: #fffdf7;
+    --ink: #17130f;
+    --muted: #5f5447;
+    --rule: rgba(23, 19, 15, 0.18);
+    --blue: #1d4ed8;
+    --green: #15803d;
+    --amber: #b45309;
+    --rose: #be123c;
+    --violet: #6d28d9;
+    --slate: #475569;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  main {
+    width: min(1160px, calc(100vw - 32px));
+    margin: 0 auto;
+    padding: 32px 0 48px;
+  }
+
+  header {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+
+  .kicker {
+    margin: 0;
+    color: var(--slate);
+    font: 700 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    max-width: 920px;
+    margin: 0;
+    font-size: clamp(34px, 6vw, 72px);
+    line-height: 0.96;
+    letter-spacing: 0;
+  }
+
+  .intro {
+    max-width: 880px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .canvas {
+    overflow: auto;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: 0 18px 60px rgba(23, 19, 15, 0.08);
+  }
+
+  svg {
+    display: block;
+    min-width: 1080px;
+    width: 100%;
+    height: auto;
+  }
+
+  .links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .links a {
+    display: block;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.82);
+    padding: 12px 14px;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .links a span {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="kicker">Paper 2.0 architecture diagrams</p>
+    <h1>What the research architecture actually shows</h1>
+    <p class="intro">
+      The durable architecture is an observable research apparatus: bilateral
+      deliberation, public-only scoring, provenance, trap instruments, and
+      checkable runtime guards. Richer learner-state machinery is testable, but
+      the current paper does not promote it as a general adaptive solution.
+    </p>
+  </header>
+
+  <section class="canvas" aria-label="Architecture overview diagram">
+    <svg viewBox="0 0 1400 960" role="img" aria-labelledby="title desc" xmlns="http://www.w3.org/2000/svg">
+      <title id="title">Machine Spirits research architecture overview</title>
+      <desc id="desc">A five-stage diagram moving from intersubjective design orientation through bilateral runtime, scoring apparatus, mechanism findings, and conduct governance boundaries.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+          <path d="M2,2 L10,6 L2,10 Z" fill="#475569" />
+        </marker>
+        <style>
+          .label { font: 700 19px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #17130f; }
+          .small { font: 500 14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #334155; }
+          .tiny { font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #475569; }
+          .note { font: 700 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #17130f; }
+          .edge { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+          .dash { stroke-dasharray: 7 6; }
+        </style>
+      </defs>
+
+      <rect x="0" y="0" width="1400" height="960" fill="#fffdf7" />
+
+      <text x="48" y="58" class="tiny">ONE SENTENCE READING</text>
+      <text x="48" y="90" class="label">The apparatus makes mechanisms observable; the strongest promoted control is checkable conduct governance, not richer mental-state inference.</text>
+
+      <rect x="48" y="132" width="252" height="230" rx="8" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2" />
+      <text x="72" y="168" class="tiny">DESIGN ORIENTATION</text>
+      <text x="72" y="200" class="label">Recognition as</text>
+      <text x="72" y="226" class="label">intersubjective</text>
+      <text x="72" y="252" class="label">prompting</text>
+      <text x="72" y="286" class="small">Engage this learner's</text>
+      <text x="72" y="306" class="small">specific interpretation.</text>
+      <text x="72" y="326" class="small">Do not rush productive</text>
+      <text x="72" y="346" class="small">difficulty.</text>
+
+      <rect x="360" y="132" width="310" height="340" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="2" />
+      <text x="386" y="168" class="tiny">OBSERVABLE RUNTIME</text>
+      <rect x="388" y="196" width="112" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2" />
+      <text x="410" y="226" class="note">Tutor</text>
+      <text x="410" y="248" class="small">ego</text>
+      <rect x="530" y="196" width="112" height="70" rx="8" fill="#fde68a" stroke="#b45309" stroke-width="2" />
+      <text x="546" y="226" class="note">Tutor</text>
+      <text x="546" y="248" class="small">superego</text>
+      <path d="M500 231 H530" class="edge" />
+      <path d="M530 248 H500" class="edge" />
+
+      <rect x="388" y="306" width="112" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2" />
+      <text x="403" y="336" class="note">Learner</text>
+      <text x="410" y="358" class="small">ego</text>
+      <rect x="530" y="306" width="112" height="70" rx="8" fill="#fde68a" stroke="#b45309" stroke-width="2" />
+      <text x="541" y="336" class="note">Learner</text>
+      <text x="546" y="358" class="small">superego</text>
+      <path d="M500 341 H530" class="edge" />
+      <path d="M530 358 H500" class="edge" />
+
+      <path d="M444 266 C444 286 444 286 444 306" class="edge" />
+      <path d="M444 376 C444 406 600 410 600 452" class="edge" />
+      <text x="386" y="422" class="small">Every draft, critique, revision,</text>
+      <text x="386" y="442" class="small">public output, and hash is logged.</text>
+
+      <rect x="730" y="132" width="300" height="340" rx="8" fill="#ecfdf5" stroke="#15803d" stroke-width="2" />
+      <text x="758" y="168" class="tiny">SCORING APPARATUS</text>
+      <rect x="760" y="198" width="240" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2" />
+      <text x="784" y="232" class="note">Public transcript only</text>
+      <rect x="760" y="276" width="240" height="58" rx="8" fill="#ffe4e6" stroke="#be123c" stroke-width="2" />
+      <text x="782" y="310" class="note">Deliberation scored separately</text>
+      <rect x="760" y="354" width="240" height="58" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2" />
+      <text x="790" y="388" class="note">Rubric versions and hashes</text>
+      <text x="758" y="430" class="small">This prevents internal traces from</text>
+      <text x="758" y="450" class="small">inflating public tutor scores.</text>
+
+      <path d="M300 238 C330 238 330 238 360 238" class="edge" />
+      <path d="M670 292 C700 292 700 292 730 292" class="edge" />
+
+      <rect x="1090" y="132" width="262" height="340" rx="8" fill="#fff7ed" stroke="#b45309" stroke-width="2" />
+      <text x="1116" y="168" class="tiny">MECHANISM FINDINGS</text>
+      <circle cx="1126" cy="210" r="7" fill="#16a34a" />
+      <text x="1144" y="216" class="note">Calibration supported</text>
+      <text x="1144" y="238" class="small">Prompt-level floor lift</text>
+      <circle cx="1126" cy="278" r="7" fill="#16a34a" />
+      <text x="1144" y="284" class="note">Error correction supported</text>
+      <text x="1144" y="306" class="small">Mostly substitutes</text>
+      <text x="1144" y="326" class="small">under recognition</text>
+      <circle cx="1126" cy="346" r="7" fill="#dc2626" />
+      <text x="1144" y="352" class="note">Adaptation-rate proxy null</text>
+      <text x="1144" y="374" class="small">Levels rise; slopes do not</text>
+      <circle cx="1126" cy="414" r="7" fill="#d97706" />
+      <text x="1144" y="420" class="note">Human outcomes open</text>
+      <path d="M1030 292 C1060 292 1060 292 1090 292" class="edge" />
+
+      <rect x="48" y="520" width="408" height="310" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2" />
+      <text x="74" y="558" class="tiny">ADAPTIVE RUNNER ARC</text>
+      <text x="74" y="594" class="label">Trap suite turns adaptivity</text>
+      <text x="74" y="620" class="label">into a scoreable event</text>
+      <text x="74" y="658" class="small">LangGraph state policy, learnerProfile,</text>
+      <text x="74" y="678" class="small">policy actions, validators, ToM, and</text>
+      <text x="74" y="698" class="small">counterfactual replay were made testable.</text>
+      <rect x="76" y="728" width="352" height="60" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2" />
+      <text x="96" y="754" class="note">Finding: the apparatus survives; rich</text>
+      <text x="96" y="776" class="note">state elaboration mostly does not.</text>
+
+      <rect x="496" y="520" width="408" height="310" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2" />
+      <text x="522" y="558" class="tiny">CONDUCT GOVERNANCE ARC</text>
+      <text x="522" y="594" class="label">Proof-world stage and</text>
+      <text x="522" y="620" class="label">checkable guards</text>
+      <text x="522" y="658" class="small">The tutor cannot release premises early;</text>
+      <text x="522" y="678" class="small">success is forced by a symbolic checker,</text>
+      <text x="522" y="698" class="small">not by prose plausibility.</text>
+      <rect x="524" y="728" width="352" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2" />
+      <text x="544" y="754" class="note">What works: criterial guards at the</text>
+      <text x="544" y="776" class="note">point of action, plus proof debt.</text>
+
+      <rect x="944" y="520" width="408" height="310" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" />
+      <text x="970" y="558" class="tiny">BOUNDARY MAP</text>
+      <text x="970" y="594" class="label">No single representation</text>
+      <text x="970" y="620" class="label">wins across geometries</text>
+      <text x="970" y="658" class="small">Linear coupled: visible and hidden work.</text>
+      <text x="970" y="678" class="small">Forked join: hidden works, page fails.</text>
+      <text x="970" y="698" class="small">Linear distractor: page works, hidden fails.</text>
+      <rect x="972" y="728" width="352" height="60" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2" />
+      <text x="992" y="754" class="note">Selector fails the adaptive claim;</text>
+      <text x="992" y="776" class="note">hidden + proofDebt is the baseline.</text>
+
+      <path d="M1221 452 C1221 486 252 486 252 520" class="edge dash" />
+      <path d="M456 676 C476 676 476 676 496 676" class="edge" />
+      <path d="M904 676 C924 676 924 676 944 676" class="edge" />
+
+      <rect x="48" y="864" width="1304" height="68" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" />
+      <text x="72" y="894" class="note">Conservative claim: fixed-weight prompt and architecture interventions support calibration and conditional error correction.</text>
+      <text x="72" y="916" class="note">Conduct can be guarded when the guard is checkable; human learning remains unproven.</text>
+    </svg>
+  </section>
+
+  <nav class="links" aria-label="Related diagram files">
+    <a href="01-runtime-observability.html">Runtime observability<span>Bilateral tutor and learner traces, public scoring, provenance.</span></a>
+    <a href="02-mechanism-findings.html">Mechanism findings<span>Calibration, substitution, adaptation null, and scope.</span></a>
+    <a href="03-cell-runner-map.html">Cell runner map<span>Standard, adaptive, trap adapter, and derivation dispatch.</span></a>
+    <a href="04-conduct-governance-boundary.html">Conduct boundary<span>Proof-world guards, page vs hidden signal, and proof debt.</span></a>
+    <a href="architecture-overview.svg">Standalone SVG<span>Portable static version of this overview panel.</span></a>
+    <a href="gpt-image-2-frontispiece.png">GPT Image 2 frontispiece<span>Text-free raster companion, not a source of truth for claims.</span></a>
+  </nav>
+</main>
+</body>
+</html>

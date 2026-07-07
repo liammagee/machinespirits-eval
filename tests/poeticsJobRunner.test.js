@@ -70,6 +70,14 @@ test('replay: mock+item is free and emits --mock --item-id', () => {
   assert.match(plan.command, /^node scripts\/replay-discursive-transcript\.js /u);
 });
 
+test('planJob: exposes checklist, result links, and cloned params for the UI', () => {
+  const plan = planJob({ kind: 'online-score', params: { mode: 'run', runId: 'R9', dryRun: true } });
+  assert.equal(plan.params.runId, 'R9');
+  assert.ok(plan.checks.some((c) => c.label === 'Whitelisted script' && c.state === 'ok'));
+  assert.ok(plan.checks.some((c) => c.label === 'Cost gate' && c.detail.includes('free')));
+  assert.deepEqual(plan.links, [{ label: 'open scored scripts', href: '/browse?runId=R9&tab=scores' }]);
+});
+
 test('replay: codex generator + adversarial checker is quota', () => {
   const plan = planJob({
     kind: 'replay',
@@ -213,14 +221,233 @@ test('online-score: missing mode throws', () => {
   assert.throws(() => planJob({ kind: 'online-score', params: { runId: 'R' } }), /mode must be one of/u);
 });
 
+// ── planJob: eval-cell ─────────────────────────────────────────────────────────
+
+test('eval-cell: dry-run launches eval-cli run with cell profile and overrides', () => {
+  const plan = planJob({
+    kind: 'eval-cell',
+    params: {
+      cell: 'cell_7_recog_multi_unified',
+      scenario: 'new_user_first_visit',
+      runs: 2,
+      parallelism: 3,
+      dryRun: true,
+      skipRubric: true,
+      egoModel: 'openrouter.gpt',
+      superegoModel: 'openrouter.kimi-k2.5',
+      learnerModel: 'openrouter.nemotron',
+      maxTokens: 1500,
+      description: 'admin chat smoke',
+    },
+  });
+  assert.equal(plan.costClass, COST_CLASSES.FREE);
+  assert.match(plan.script, /eval-cli\.js$/u);
+  assert.deepEqual(plan.argv, [
+    'run',
+    '--profiles',
+    'cell_7_recog_multi_unified',
+    '--runs',
+    '2',
+    '--scenario',
+    'new_user_first_visit',
+    '--parallelism',
+    '3',
+    '--description',
+    'admin chat smoke',
+    '--ego-model',
+    'openrouter.gpt',
+    '--superego-model',
+    'openrouter.kimi-k2.5',
+    '--learner-model',
+    'openrouter.nemotron',
+    '--max-tokens',
+    '1500',
+    '--dry-run',
+    '--skip-rubric',
+  ]);
+});
+
+test('eval-cell: real runs are metered and can use cluster plus CLI judge', () => {
+  const plan = planJob({
+    kind: 'eval-cell',
+    params: {
+      cell: 'cell_1_base_single_unified',
+      cluster: 'multi-turn,recognition',
+      judgeCli: 'codex',
+      judgeCliModel: 'gpt-5-codex',
+      live: true,
+    },
+  });
+  assert.equal(plan.costClass, COST_CLASSES.METERED);
+  assert.ok(plan.argv.includes('--cluster'));
+  assert.ok(plan.argv.includes('multi-turn,recognition'));
+  assert.ok(plan.argv.includes('--judge-cli'));
+  assert.ok(plan.argv.includes('codex'));
+  assert.ok(plan.argv.includes('--judge-cli-model'));
+  assert.ok(plan.argv.includes('gpt-5-codex'));
+  assert.ok(plan.argv.includes('--live'));
+});
+
+test('eval-cell: validates selectors and mutually exclusive scenario/cluster', () => {
+  assert.throws(() => planJob({ kind: 'eval-cell', params: { cell: '../cell_1' } }), /cell has invalid characters/u);
+  assert.throws(
+    () =>
+      planJob({
+        kind: 'eval-cell',
+        params: { cell: 'cell_1_base_single_unified', scenario: 'new_user_first_visit', cluster: 'core' },
+      }),
+    /scenario and cluster are mutually exclusive/u,
+  );
+  assert.throws(
+    () => planJob({ kind: 'eval-cell', params: { cell: 'cell_1_base_single_unified', egoModel: 'bad model' } }),
+    /egoModel has invalid characters/u,
+  );
+});
+
 test('planJob: unknown kind throws', () => {
   assert.throws(() => planJob({ kind: 'nope', params: {} }), /unknown job kind/u);
 });
 
-test('describeKinds lists all four whitelisted kinds', () => {
+test('describeKinds lists all whitelisted kinds', () => {
   const kinds = describeKinds().map((k) => k.kind);
-  assert.deepEqual(kinds.sort(), ['adversarial-score', 'generate', 'online-score', 'replay']);
-  assert.equal(Object.keys(JOB_KINDS).length, 4);
+  assert.deepEqual(kinds.sort(), [
+    'adversarial-score',
+    'derivation',
+    'derivation-assessment',
+    'eval-cell',
+    'generate',
+    'online-score',
+    'pedagogical-drama',
+    'replay',
+  ]);
+  assert.equal(Object.keys(JOB_KINDS).length, 8);
+});
+
+// ── planJob: derivation (proof-DAG drama via run-derivation-loop.js) ───────────
+
+test('derivation: mock backend is free, --real is metered, and dirs target the loop', () => {
+  const mock = planJob({ kind: 'derivation', params: { world: 'world-000-smoke.yaml', script: 'nocturne-v001.md' } });
+  assert.equal(mock.costClass, COST_CLASSES.FREE);
+  assert.match(mock.script, /run-derivation-loop\.js$/u);
+  assert.ok(mock.argv.includes('config/drama-derivation/world-000-smoke.yaml'));
+  assert.ok(mock.argv.includes('config/drama-derivation/tutor-scripts/nocturne-v001.md'));
+
+  const real = planJob({
+    kind: 'derivation',
+    params: { world: 'world-000-smoke.yaml', script: 'nocturne-v001.md', real: true },
+  });
+  assert.equal(real.costClass, COST_CLASSES.METERED);
+  assert.ok(real.argv.includes('--real'));
+});
+
+test('derivation: stall-watch requires superego; unknown world/script rejected', () => {
+  assert.throws(
+    () =>
+      planJob({
+        kind: 'derivation',
+        params: { world: 'world-000-smoke.yaml', script: 'nocturne-v001.md', stallWatch: true },
+      }),
+    /stall-watch requires superego/u,
+  );
+  assert.throws(
+    () => planJob({ kind: 'derivation', params: { world: 'does-not-exist.yaml', script: 'nocturne-v001.md' } }),
+    /world not found/u,
+  );
+  assert.throws(
+    () => planJob({ kind: 'derivation', params: { world: 'world-000-smoke.yaml', script: 'nope.md' } }),
+    /tutor script not found/u,
+  );
+});
+
+// ── planJob: derivation-assessment (external assessment of proof runs) ────────
+
+test('derivation-assessment: judge none is free and writes assessment artifacts', () => {
+  const plan = planJob({ kind: 'derivation-assessment', params: { labels: 'lantern-e2-real-r1', force: true } });
+  assert.equal(plan.costClass, COST_CLASSES.FREE);
+  assert.match(plan.script, /score-derivation-transcript-rubric-suite\.js$/u);
+  assert.deepEqual(plan.argv.slice(0, 8), [
+    '--labels',
+    'lantern-e2-real-r1',
+    '--run-dir',
+    'exports/dramatic-derivation/loop',
+    '--out-dir',
+    'exports/dramatic-derivation/derivation-assessments/lantern-e2-real-r1',
+    '--judge-cli',
+    'none',
+  ]);
+  assert.ok(plan.argv.includes('--force'));
+  assert.deepEqual(plan.links[0], { label: 'open assessed run', href: '/derivation/lantern-e2-real-r1' });
+});
+
+test('derivation-assessment: external CLI judge is quota and labels are validated', () => {
+  const plan = planJob({
+    kind: 'derivation-assessment',
+    params: {
+      labels: 'a,b',
+      judgeCli: 'codex',
+      rubrics: 'dialogue_quality,poetics',
+      scoreConcurrency: 2,
+      resumeExisting: true,
+    },
+  });
+  assert.equal(plan.costClass, COST_CLASSES.QUOTA);
+  assert.ok(plan.argv.includes('--judge-cli'));
+  assert.ok(plan.argv.includes('codex'));
+  assert.ok(plan.argv.includes('--rubrics'));
+  assert.ok(plan.argv.includes('dialogue_quality,poetics'));
+  assert.ok(plan.argv.includes('--resume-existing'));
+  assert.throws(
+    () => planJob({ kind: 'derivation-assessment', params: { labels: '../bad' } }),
+    /invalid derivation label/u,
+  );
+});
+
+// ── planJob: pedagogical-drama (compiled curriculum drama spec) ────────────────
+
+test('pedagogical-drama: mock is free and dirs are isolated under exports/curriculum-drama', () => {
+  const plan = planJob({
+    kind: 'pedagogical-drama',
+    params: { spec: 'ai-foundations.dramas.yaml', only: 'D_AF6_X', mock: true },
+  });
+  assert.equal(plan.costClass, COST_CLASSES.FREE);
+  assert.match(plan.script, /generate-pedagogical-dramas\.js$/u);
+  // A bare basename resolves under curriculum/, and every output dir is pinned
+  // under exports/curriculum-drama/<base> — never the phase2 calibration tree.
+  assert.ok(plan.argv.includes('curriculum/ai-foundations.dramas.yaml'));
+  assert.ok(plan.argv.includes('exports/curriculum-drama/ai-foundations/samples'));
+  assert.ok(!plan.command.includes('poetics-calibration'));
+});
+
+test('pedagogical-drama: claude generator is quota; api + org/model slug is metered', () => {
+  const quota = planJob({ kind: 'pedagogical-drama', params: { spec: 'x.dramas.yaml', generator: 'claude' } });
+  assert.equal(quota.costClass, COST_CLASSES.QUOTA);
+  const metered = planJob({
+    kind: 'pedagogical-drama',
+    params: { spec: 'x.dramas.yaml', generator: 'api', model: 'anthropic/claude-sonnet-4.6' },
+  });
+  assert.equal(metered.costClass, COST_CLASSES.METERED);
+});
+
+test('pedagogical-drama: can opt into persistent Claude workers', () => {
+  const plan = planJob({
+    kind: 'pedagogical-drama',
+    params: { spec: 'x.dramas.yaml', generator: 'claude', claudePersistentWorkers: true },
+  });
+  assert.ok(plan.argv.includes('--claude-persistent-workers'));
+  assert.match(plan.command, /--claude-persistent-workers/u);
+});
+
+test('pedagogical-drama: rejects traversal, non-yaml, and absolute outBase', () => {
+  assert.throws(
+    () => planJob({ kind: 'pedagogical-drama', params: { spec: '../secrets.yaml' } }),
+    /invalid characters/u,
+  );
+  assert.throws(() => planJob({ kind: 'pedagogical-drama', params: { spec: 'notes.txt' } }), /must be a \.yaml/u);
+  assert.throws(
+    () => planJob({ kind: 'pedagogical-drama', params: { spec: 'ok.yaml', outBase: '/etc' } }),
+    /repo-relative/u,
+  );
+  assert.throws(() => planJob({ kind: 'pedagogical-drama', params: {} }), /spec is required/u);
 });
 
 // ── launchJob lifecycle ──────────────────────────────────────────────────────────
@@ -230,6 +457,8 @@ test('launchJob: free job spawns and close→done', () => {
   const pub = launchJob({ kind: 'replay', params: { mock: true, mode: 'item', itemId: 'x' } }, testDeps(spawn));
   assert.equal(pub.status, 'running');
   assert.equal(pub.pid, 4242);
+  assert.equal(pub.params.itemId, 'x');
+  assert.ok(pub.links.some((l) => l.href === '/replays'));
   // spawned node <scriptPath> --mock --item-id x  (argv array, no shell string)
   assert.equal(calls.length, 1);
   assert.match(calls[0].argv[0], /replay-discursive-transcript\.js$/u);

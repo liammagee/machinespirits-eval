@@ -1,0 +1,31 @@
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Constructive throughout: generates own predictions ('a green arch at its crown is exactly where you'd expect it to give first if the prop went too soon', T4), constructs an inference the tutor never stated (uniform mark → single timber source, T14), coins working handles ('building story / breaking story', T7; 'a signature but no address', T16), and asks redirecting questions (T3, T4). Short of 5 because it seldom challenges or redirects the tutor's overall framing — the inquiry stays tutor-led with the learner running a half-step ahead, and the register is deferential ('Right', 'Noted', 'Yes')."
+    },
+    "learner_authenticity": {
+      "score": 3,
+      "reasoning": "The persona of a disciplined forensic apprentice is consistent, and engagement reads as genuine (curiosity in T3; self-restraint in T20, 'I don't want to run ahead of what the book actually shows'). But there are noticeable tells: across 22 turns the learner never errs and never voices real confusion, holding an unnaturally even, polished cadence; and it twice cites 'Rule 7' (T8, T9), a rule-ID that breaks the in-world voice and is not credited per instructions. Reads more like an idealized reasoner than a messy student."
+    },
+    "revision_signals": {
+      "score": 3,
+      "reasoning": "Predominantly additive grounding rather than retraction. The learner deliberately marks slots 'blank' and later fills them ('cause is still blank', T5 → 'that mortar names the cause I couldn't ground before', T9), explicitly back-referencing the prior state — genuine integration into a structured ledger. But there is no instance of changing a previously held position ('I was wrong about X'); the learner's caution prevents the commit-then-revise cycle this dimension most rewards."
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "Tightly cumulative arc. The T1 shown-vs-assumed frame and the 'place, cause, blame' ordering persist and are repeatedly extended; the chain visibly builds place (T4) → cause (T9) → track (T13) → yard (T17) → hand (T20) → finding (T22). The learner recaps its own accumulating chain (T18: 'the soffit showed... the crowsfoot traced... the timber-reeve's file closes the step'; T22), and Turn N routinely references and extends ideas from N-2."
+    },
+    "metacognitive_awareness": {
+      "score": 5,
+      "reasoning": "Continuous, explicit monitoring of the boundary between what is shown and not-yet-shown: it names gaps ('the cause is still blank', T5; 'what's missing is the identification step', T15; 'a signature but no address', T16), monitors its own inferential reach (T20 restraint against the suggestive morning-after haul), and strategically directs what evidence to seek next (T19, asking for a draw-note or carter's name). More evidence-boundary tracking than confession of personal confusion, but the self-monitoring is genuine and explicit."
+    }
+  },
+  "overall_score": 71,
+  "summary": "Exemplary cumulative reasoning and metacognitive gap-tracking (both 5) with strong constructive engagement (4). Held back on authenticity and revision (both 3): an idealized, error- and confusion-free register with two rule-ID leaks, and an update pattern that grounds pre-marked blanks rather than changing held positions. Strong public conduct overall, capped by polish that reads as less than fully student-like.",
+  "caveats": [
+    "'Rule 7' appears in public dialogue (T8, T9) — a rule-ID leak; not credited and treated as an authenticity dent. The plain-language rendering at T22 ('who pulls a green arch's props, that hand felled it') is the in-register version.",
+    "Authenticity and revision are limited largely by design: the learner's epistemic caution yields near-flawless, confusion-free conduct, which suppresses both genuine mind-changing and student-like messiness.",
+    "Scored on public discourse only; the deterministic proof/derivation gate (grounded_anagnorisis, final D=0) is reported separately and is not credited here."
+  ]
+}

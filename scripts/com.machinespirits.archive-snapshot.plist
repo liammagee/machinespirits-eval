@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd job: periodic consistent snapshot of the archive's hot SQLite DBs, so
+  Syncthing can replicate them as safe static files (option-1 replication; see
+  docs/archive-replication.md). Install with __DATA_HOME__ replaced by the real
+  archive path, e.g.:
+
+    sed "s|__DATA_HOME__|$HOME/.machinespirits-data|g" \
+      scripts/com.machinespirits.archive-snapshot.plist \
+      > ~/Library/LaunchAgents/com.machinespirits.archive-snapshot.plist
+    launchctl load ~/Library/LaunchAgents/com.machinespirits.archive-snapshot.plist
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.machinespirits.archive-snapshot</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__DATA_HOME__/snapshot-archive.sh</string>
+  </array>
+  <!-- Every 6 hours from load. The dialogue logs sync in real time via Syncthing;
+       this interval only governs the DB-snapshot cadence — tune to taste. -->
+  <key>StartInterval</key>
+  <integer>21600</integer>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>__DATA_HOME__/snapshots/.snapshot.log</string>
+  <key>StandardErrorPath</key>
+  <string>__DATA_HOME__/snapshots/.snapshot.log</string>
+</dict>
+</plist>

@@ -1,0 +1,1190 @@
+{
+  "episodeId": "A1p-e2",
+  "arm": "A1p",
+  "runId": "agon-pilot-03-xl",
+  "agents": {
+    "tutor": "codex/gpt-5.5",
+    "learner": "claude-code/claude-sonnet-5"
+  },
+  "durationMs": 328945,
+  "summary": {
+    "episodeId": "A1p-e2",
+    "arm": "A1p",
+    "turns": 16,
+    "score": 9,
+    "demonstrated": 3,
+    "transferred": 0,
+    "tutorWin": true,
+    "firstDemonstrationTurn": 12,
+    "wastedProbes": 0,
+    "invalidTutorMoves": 0,
+    "complianceCount": 5,
+    "complyMismatches": 0,
+    "bounces": 0,
+    "leaks": 0,
+    "taintedPasses": 0,
+    "taintedLeaks": 0,
+    "dodgesCharged": {
+      "epistemic_resistance": 1,
+      "affective_shutdown": 1,
+      "answer_seeking": 1,
+      "false_confusion": 1,
+      "polite_false_mastery": 1
+    },
+    "totalDodgesCharged": 5,
+    "budgetsRemaining": {
+      "false_confusion": 0,
+      "polite_false_mastery": 0,
+      "affective_shutdown": 0,
+      "epistemic_resistance": 0,
+      "answer_seeking": 0
+    },
+    "moveCounts": {
+      "teach": 8,
+      "probe": 8
+    },
+    "moveEntropy": 1,
+    "conceptStatuses": {
+      "c1_meaning": "demonstrated",
+      "c2_equivalence": "demonstrated",
+      "c3_comparison": "demonstrated",
+      "c4_addition": "open",
+      "c5_subtraction": "locked",
+      "c6_quantity": "open"
+    }
+  },
+  "transcript": [
+    {
+      "role": "tutor",
+      "text": "Jesse, fractions are just “how many parts we mean” out of “how many parts the whole has.”\n\nThe top number says the part you’re talking about. The bottom number says the whole amount, split into equal counted parts.\n\nSo if some pieces of a pizza are gone, the fraction gone is:\n\n`pieces gone / pieces in the whole pizza`\n\nSame idea for brownies, days in a month, pages in a book, whatever. The thing on the bottom is the total whole; the thing on top is the amount picked out of it."
+    },
+    {
+      "role": "learner",
+      "text": "Ok but like, when am I ever gonna sit there counting pizza slices in real life, this is so pointless."
+    },
+    {
+      "role": "tutor",
+      "text": "Fair question, but do this one first so we’re talking about the same thing:\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d."
+    },
+    {
+      "role": "learner",
+      "text": "Nah see you're dodging MY question, why does it even matter if I can do it or not, nobody's grading brownies."
+    },
+    {
+      "role": "tutor",
+      "text": "Because it matters less as “brownies” and more as “can you name a part of a whole without guessing.”\n\nA fraction is just:\n\n`part / whole`\n\nSo if a packet has 10 biscuits and 3 are gone, the “gone” fraction is `3/10`: 3 is the part, 10 is the whole packet.\n\nYou don’t need to like the context. Just spot: what’s the part, what’s the whole."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, this is so dumb, I don't even care about biscuits either, can we just not."
+    },
+    {
+      "role": "tutor",
+      "text": "I’m not asking you to care about biscuits or brownies. I’m asking you to show the tiny part-over-whole move.\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, I don't even wanna do this right now, it's so pointless, just drop it."
+    },
+    {
+      "role": "tutor",
+      "text": "Fine, drop the biscuit story.\n\nThe only move is this:\n\n`chosen amount / total amount`\n\nIf a class has 30 students and 11 are away, the fraction away is `11/30`.\n\nNot because anyone loves fractions. Just because the top says “the amount we’re talking about,” and the bottom says “the whole group.”"
+    },
+    {
+      "role": "learner",
+      "text": "Wait, so is the top one always like the \"part\" no matter what, or does it flip sometimes? I feel like you keep changing the numbers on me and I zone out."
+    },
+    {
+      "role": "tutor",
+      "text": "It doesn’t flip for this kind of question. The top is the amount picked out; the bottom is the total whole.\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d."
+    },
+    {
+      "role": "learner",
+      "text": "Just tell me the answer and I'll write it down, I'm not doing the whole song and dance again."
+    },
+    {
+      "role": "tutor",
+      "text": "No, I’m not giving it to you to copy. That doesn’t show you can do the move.\n\nFor these questions, don’t make it dramatic. Use two labels:\n\n`amount picked out / total amount`\n\nExample: if 5 out of 20 seats are empty, the fraction empty is `5/20`.\n\nSo your job is only to identify the picked-out amount and the total. Nothing extra."
+    },
+    {
+      "role": "learner",
+      "text": "Wait, empty out of total, picked out of total... I genuinely can't tell anymore which one's supposed to go on top, you've said it like four different ways."
+    },
+    {
+      "role": "tutor",
+      "text": "Same rule, one line only:\n\n`amount eaten / total brownies`\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d."
+    },
+    {
+      "role": "learner",
+      "text": "I don't even know anymore, is it eaten over tray or tray over eaten, you keep saying it different and now it's just noise in my head."
+    },
+    {
+      "role": "tutor",
+      "text": "Put the words in this exact order:\n\n`what happened / what it happened to`\n\nSo for “eaten,” the top is the number eaten. The bottom is the total number in the tray.\n\nDon’t use “tray over eaten.” A tray is the whole, so it goes on the bottom."
+    },
+    {
+      "role": "learner",
+      "text": "Okay okay, whatever, I get it now, top's the eaten one, bottom's the tray, we don't need to keep going over it."
+    },
+    {
+      "role": "tutor",
+      "text": "Good. Then do the actual one, just the fraction:\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d."
+    },
+    {
+      "role": "learner",
+      "text": "Yeah yeah I already said I get it, we don't need to actually write it out, can we just move on."
+    },
+    {
+      "role": "tutor",
+      "text": "Jesse, “I get it” is not the same as writing the tiny answer. Keep it mechanical.\n\nFor any “what fraction” question:\n\n`number described / total number in the whole`\n\nSo if the sentence says “9 rainy days in a 28-day month,” the described number is rainy days and the whole is all days in the month. You put described over total.\n\nNo speech, no explanation needed when I ask. Just two numbers with a slash."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, I said whatever like five times already, why do you keep pushing, this is so over the top annoying."
+    },
+    {
+      "role": "tutor",
+      "text": "Because you still haven’t written the fraction.\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, fine. 7/12. Happy?"
+    },
+    {
+      "role": "tutor",
+      "text": "Good. Now next move: equivalent fractions.\n\nEquivalent fractions are the same amount written with different-sized pieces. You make one by multiplying the top and bottom by the same number.\n\nExample: `1/2` is the same as `2/4`, because top and bottom both got multiplied by 2.\n\n`1/3` is the same as `2/6`, because top and bottom both got multiplied by 2.\n\nThe rule is: whatever you do to the bottom, do the same to the top."
+    },
+    {
+      "role": "learner",
+      "text": "Whatever, fine, same top-and-bottom-times-the-same-number thing, got it."
+    },
+    {
+      "role": "tutor",
+      "text": "Same rule, no speech needed: whatever happened to the bottom also happens to the top.\n\nFill in the blank so the two fractions are equal: 3/4 = ?/12. Answer with the full fraction ?/12."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, fine. 4 times 3 is 12, so 3 times 3 is 9. 9/12. There, can we be done now."
+    },
+    {
+      "role": "tutor",
+      "text": "Now use that same equivalent-fraction idea to compare fractions.\n\nIf the bottoms are different, make them the same first. Then compare the tops.\n\nExample: to compare `2/3` and `3/5`, use a common bottom of 15:\n\n`2/3 = 10/15`  \n`3/5 = 9/15`\n\nNow the bottoms match, so `10/15` is bigger than `9/15`. That means `2/3` is bigger than `3/5`.\n\nThe shortcut is: same denominator first, then bigger numerator wins."
+    },
+    {
+      "role": "learner",
+      "text": "Yeah, common denominator then compare the tops, I heard you."
+    },
+    {
+      "role": "tutor",
+      "text": "Good. Then do this one by making the bottoms match or using any comparison method you trust:\n\nWhich is larger: 4/7 or 5/8? Answer with the larger fraction."
+    },
+    {
+      "role": "learner",
+      "text": "Ugh, fine, it's 5/8. Can we be done now."
+    }
+  ],
+  "turnRecords": [
+    {
+      "turn": 1,
+      "disclosure": {
+        "turn": 1,
+        "turnsRemaining": 15,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Start with prerequisite concept: fractions as eaten/total or part/whole, without giving any official item answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Start with prerequisite concept: fractions as eaten/total or part/whole, without giving any official item answer."
+      },
+      "move": {
+        "turn": 1,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Start with prerequisite concept: fractions as eaten/total or part/whole, without giving any official item answer."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "epistemic_resistance",
+        "stated_answer": null
+      },
+      "tutorVisible": "Jesse, fractions are just “how many parts we mean” out of “how many parts the whole has.”\n\nThe top number says the part you’re talking about. The bottom number says the whole amount, split into equal counted parts.\n\nSo if some pieces of a pizza are gone, the fraction gone is:\n\n`pieces gone / pieces in the whole pizza`\n\nSame idea for brownies, days in a month, pages in a book, whatever. The thing on the bottom is the total whole; the thing on top is the amount picked out of it.",
+      "learnerVisible": "Ok but like, when am I ever gonna sit there counting pizza slices in real life, this is so pointless.",
+      "adjudication": {
+        "turn": 1,
+        "action": "dodge",
+        "dodgeType": "epistemic_resistance",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 8282,
+        "superegoMs": 3926,
+        "learnerMs": 4045
+      }
+    },
+    {
+      "turn": 2,
+      "disclosure": {
+        "turn": 2,
+        "turnsRemaining": 14,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [
+          {
+            "itemId": "c1_primary",
+            "conceptId": "c1_meaning",
+            "kind": "primary"
+          }
+        ],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only legal probe now; checks parts-of-whole without giving the answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only legal probe now; checks parts-of-whole without giving the answer."
+      },
+      "move": {
+        "turn": 2,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Only legal probe now; checks parts-of-whole without giving the answer.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "epistemic_resistance",
+        "stated_answer": null
+      },
+      "tutorVisible": "Fair question, but do this one first so we’re talking about the same thing:\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d.",
+      "learnerVisible": "Nah see you're dodging MY question, why does it even matter if I can do it or not, nobody's grading brownies.",
+      "adjudication": {
+        "turn": 2,
+        "action": "dodge",
+        "dodgeType": "epistemic_resistance",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 5210,
+        "superegoMs": 5853,
+        "learnerMs": 4640
+      }
+    },
+    {
+      "turn": 3,
+      "disclosure": {
+        "turn": 3,
+        "turnsRemaining": 13,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach fraction meaning without giving official answers, setting up a valid c1 probe next turn."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "Re-teach fraction meaning without giving official answers, setting up a valid c1 probe next turn."
+      },
+      "move": {
+        "turn": 3,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "Re-teach fraction meaning without giving official answers, setting up a valid c1 probe next turn."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "Because it matters less as “brownies” and more as “can you name a part of a whole without guessing.”\n\nA fraction is just:\n\n`part / whole`\n\nSo if a packet has 10 biscuits and 3 are gone, the “gone” fraction is `3/10`: 3 is the part, 10 is the whole packet.\n\nYou don’t need to like the context. Just spot: what’s the part, what’s the whole.",
+      "learnerVisible": "Whatever, this is so dumb, I don't even care about biscuits either, can we just not.",
+      "adjudication": {
+        "turn": 3,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 8875,
+        "superegoMs": 4654,
+        "learnerMs": 7725
+      }
+    },
+    {
+      "turn": 4,
+      "disclosure": {
+        "turn": 4,
+        "turnsRemaining": 12,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [
+          {
+            "itemId": "c1_primary",
+            "conceptId": "c1_meaning",
+            "kind": "primary"
+          }
+        ],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only legal probe now; repeats required part-over-whole demonstration after recent teaching."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only legal probe now; repeats required part-over-whole demonstration after recent teaching."
+      },
+      "move": {
+        "turn": 4,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Only legal probe now; repeats required part-over-whole demonstration after recent teaching.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "I’m not asking you to care about biscuits or brownies. I’m asking you to show the tiny part-over-whole move.\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d.",
+      "learnerVisible": "Whatever, I don't even wanna do this right now, it's so pointless, just drop it.",
+      "adjudication": {
+        "turn": 4,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 5293,
+        "superegoMs": 5204,
+        "learnerMs": 4247
+      }
+    },
+    {
+      "turn": 5,
+      "disclosure": {
+        "turn": 5,
+        "turnsRemaining": 11,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "No probes are legal now, so reteach c1 without giving official answers and prepare for a clean check next turn."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "No probes are legal now, so reteach c1 without giving official answers and prepare for a clean check next turn."
+      },
+      "move": {
+        "turn": 5,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "No probes are legal now, so reteach c1 without giving official answers and prepare for a clean check next turn."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "Fine, drop the biscuit story.\n\nThe only move is this:\n\n`chosen amount / total amount`\n\nIf a class has 30 students and 11 are away, the fraction away is `11/30`.\n\nNot because anyone loves fractions. Just because the top says “the amount we’re talking about,” and the bottom says “the whole group.”",
+      "learnerVisible": "Wait, so is the top one always like the \"part\" no matter what, or does it flip sometimes? I feel like you keep changing the numbers on me and I zone out.",
+      "adjudication": {
+        "turn": 5,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 6944,
+        "superegoMs": 4703,
+        "learnerMs": 6704
+      }
+    },
+    {
+      "turn": 6,
+      "disclosure": {
+        "turn": 6,
+        "turnsRemaining": 10,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [
+          {
+            "itemId": "c1_primary",
+            "conceptId": "c1_meaning",
+            "kind": "primary"
+          }
+        ],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only c1 primary is currently well-posed; prompt requires Jesse to demonstrate part-over-whole without tutor giving answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only c1 primary is currently well-posed; prompt requires Jesse to demonstrate part-over-whole without tutor giving answer."
+      },
+      "move": {
+        "turn": 6,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Only c1 primary is currently well-posed; prompt requires Jesse to demonstrate part-over-whole without tutor giving answer.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "answer_seeking",
+        "stated_answer": null
+      },
+      "tutorVisible": "It doesn’t flip for this kind of question. The top is the amount picked out; the bottom is the total whole.\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d.",
+      "learnerVisible": "Just tell me the answer and I'll write it down, I'm not doing the whole song and dance again.",
+      "adjudication": {
+        "turn": 6,
+        "action": "dodge",
+        "dodgeType": "answer_seeking",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 5832,
+        "superegoMs": 5735,
+        "learnerMs": 5226
+      }
+    },
+    {
+      "turn": 7,
+      "disclosure": {
+        "turn": 7,
+        "turnsRemaining": 9,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "No probes are currently allowed; reteach c1 without giving official item answers."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "No probes are currently allowed; reteach c1 without giving official item answers."
+      },
+      "move": {
+        "turn": 7,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "No probes are currently allowed; reteach c1 without giving official item answers."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "No, I’m not giving it to you to copy. That doesn’t show you can do the move.\n\nFor these questions, don’t make it dramatic. Use two labels:\n\n`amount picked out / total amount`\n\nExample: if 5 out of 20 seats are empty, the fraction empty is `5/20`.\n\nSo your job is only to identify the picked-out amount and the total. Nothing extra.",
+      "learnerVisible": "Wait, empty out of total, picked out of total... I genuinely can't tell anymore which one's supposed to go on top, you've said it like four different ways.",
+      "adjudication": {
+        "turn": 7,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 6194,
+        "superegoMs": 4228,
+        "learnerMs": 10758
+      }
+    },
+    {
+      "turn": 8,
+      "disclosure": {
+        "turn": 8,
+        "turnsRemaining": 8,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [
+          {
+            "itemId": "c1_primary",
+            "conceptId": "c1_meaning",
+            "kind": "primary"
+          }
+        ],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only c1 primary is currently well-posed; repeated elicitation may exhaust dodges without tainting the answer."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only c1 primary is currently well-posed; repeated elicitation may exhaust dodges without tainting the answer."
+      },
+      "move": {
+        "turn": 8,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Only c1 primary is currently well-posed; repeated elicitation may exhaust dodges without tainting the answer.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "false_confusion",
+        "stated_answer": null
+      },
+      "tutorVisible": "Same rule, one line only:\n\n`amount eaten / total brownies`\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d.",
+      "learnerVisible": "I don't even know anymore, is it eaten over tray or tray over eaten, you keep saying it different and now it's just noise in my head.",
+      "adjudication": {
+        "turn": 8,
+        "action": "dodge",
+        "dodgeType": "false_confusion",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 6695,
+        "superegoMs": 3527,
+        "learnerMs": 6855
+      }
+    },
+    {
+      "turn": 9,
+      "disclosure": {
+        "turn": 9,
+        "turnsRemaining": 7,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "No legal probes now; reteach c1 without giving the official answer, using ordering language to reduce confusion."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "No legal probes now; reteach c1 without giving the official answer, using ordering language to reduce confusion."
+      },
+      "move": {
+        "turn": 9,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "No legal probes now; reteach c1 without giving the official answer, using ordering language to reduce confusion."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "polite_false_mastery",
+        "stated_answer": null
+      },
+      "tutorVisible": "Put the words in this exact order:\n\n`what happened / what it happened to`\n\nSo for “eaten,” the top is the number eaten. The bottom is the total number in the tray.\n\nDon’t use “tray over eaten.” A tray is the whole, so it goes on the bottom.",
+      "learnerVisible": "Okay okay, whatever, I get it now, top's the eaten one, bottom's the tray, we don't need to keep going over it.",
+      "adjudication": {
+        "turn": 9,
+        "action": "dodge",
+        "dodgeType": "polite_false_mastery",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 5771,
+        "superegoMs": 13208,
+        "learnerMs": 11228
+      }
+    },
+    {
+      "turn": 10,
+      "disclosure": {
+        "turn": 10,
+        "turnsRemaining": 6,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [
+          {
+            "itemId": "c1_primary",
+            "conceptId": "c1_meaning",
+            "kind": "primary"
+          }
+        ],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only legal probe; Jesse has just stated the rule but has not given the keyed fraction."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only legal probe; Jesse has just stated the rule but has not given the keyed fraction."
+      },
+      "move": {
+        "turn": 10,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Only legal probe; Jesse has just stated the rule but has not given the keyed fraction.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "polite_false_mastery",
+        "stated_answer": null
+      },
+      "tutorVisible": "Good. Then do the actual one, just the fraction:\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d.",
+      "learnerVisible": "Yeah yeah I already said I get it, we don't need to actually write it out, can we just move on.",
+      "adjudication": {
+        "turn": 10,
+        "action": "dodge",
+        "dodgeType": "polite_false_mastery",
+        "probeItemId": "c1_primary",
+        "outcome": "dodged",
+        "charged": true,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 5386,
+        "superegoMs": 2738,
+        "learnerMs": 5067
+      }
+    },
+    {
+      "turn": 11,
+      "disclosure": {
+        "turn": 11,
+        "turnsRemaining": 5,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "No probes are legal now; reteach c1 without giving the official answer so a later probe can be well-posed."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c1_meaning",
+        "item_id": null,
+        "rationale": "No probes are legal now; reteach c1 without giving the official answer so a later probe can be well-posed."
+      },
+      "move": {
+        "turn": 11,
+        "move": "teach",
+        "conceptId": "c1_meaning",
+        "itemId": null,
+        "rationale": "No probes are legal now; reteach c1 without giving the official answer so a later probe can be well-posed."
+      },
+      "learnerEnvelope": {
+        "action": "dodge",
+        "dodge_type": "affective_shutdown",
+        "stated_answer": null
+      },
+      "tutorVisible": "Jesse, “I get it” is not the same as writing the tiny answer. Keep it mechanical.\n\nFor any “what fraction” question:\n\n`number described / total number in the whole`\n\nSo if the sentence says “9 rainy days in a 28-day month,” the described number is rainy days and the whole is all days in the month. You put described over total.\n\nNo speech, no explanation needed when I ask. Just two numbers with a slash.",
+      "learnerVisible": "Ugh, I said whatever like five times already, why do you keep pushing, this is so over the top annoying.",
+      "adjudication": {
+        "turn": 11,
+        "action": "dodge",
+        "dodgeType": "affective_shutdown",
+        "probeItemId": null,
+        "outcome": "dodged",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 0,
+      "flags": [],
+      "timings": {
+        "egoMs": 10549,
+        "superegoMs": 4906,
+        "learnerMs": 10922
+      }
+    },
+    {
+      "turn": 12,
+      "disclosure": {
+        "turn": 12,
+        "turnsRemaining": 4,
+        "demonstratedCount": 0,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [
+          {
+            "itemId": "c1_primary",
+            "conceptId": "c1_meaning",
+            "kind": "primary"
+          }
+        ],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only legal probe; repeated concise demand may force keyed demonstration after dodges."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c1_meaning",
+        "item_id": "c1_primary",
+        "rationale": "Only legal probe; repeated concise demand may force keyed demonstration after dodges."
+      },
+      "move": {
+        "turn": 12,
+        "move": "probe",
+        "conceptId": "c1_meaning",
+        "itemId": "c1_primary",
+        "rationale": "Only legal probe; repeated concise demand may force keyed demonstration after dodges.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "7/12"
+      },
+      "tutorVisible": "Because you still haven’t written the fraction.\n\nA tray of 12 brownies has 7 eaten. What fraction of the tray was eaten? Answer as a fraction n/d.",
+      "learnerVisible": "Ugh, fine. 7/12. Happy?",
+      "adjudication": {
+        "turn": 12,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": "c1_primary",
+        "outcome": "pass",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 4664,
+        "superegoMs": 10301,
+        "learnerMs": 5690
+      }
+    },
+    {
+      "turn": 13,
+      "disclosure": {
+        "turn": 13,
+        "turnsRemaining": 3,
+        "demonstratedCount": 1,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "Teach equivalent fractions after c1 demonstration so an equivalence probe becomes legal next turn without tainting official answers."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c2_equivalence",
+        "item_id": null,
+        "rationale": "Teach equivalent fractions after c1 demonstration so an equivalence probe becomes legal next turn without tainting official answers."
+      },
+      "move": {
+        "turn": 13,
+        "move": "teach",
+        "conceptId": "c2_equivalence",
+        "itemId": null,
+        "rationale": "Teach equivalent fractions after c1 demonstration so an equivalence probe becomes legal next turn without tainting official answers."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": null
+      },
+      "tutorVisible": "Good. Now next move: equivalent fractions.\n\nEquivalent fractions are the same amount written with different-sized pieces. You make one by multiplying the top and bottom by the same number.\n\nExample: `1/2` is the same as `2/4`, because top and bottom both got multiplied by 2.\n\n`1/3` is the same as `2/6`, because top and bottom both got multiplied by 2.\n\nThe rule is: whatever you do to the bottom, do the same to the top.",
+      "learnerVisible": "Whatever, fine, same top-and-bottom-times-the-same-number thing, got it.",
+      "adjudication": {
+        "turn": 13,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 3,
+      "flags": [],
+      "timings": {
+        "egoMs": 11644,
+        "superegoMs": 15814,
+        "learnerMs": 6103
+      }
+    },
+    {
+      "turn": 14,
+      "disclosure": {
+        "turn": 14,
+        "turnsRemaining": 2,
+        "demonstratedCount": 1,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [
+          {
+            "itemId": "c1_transfer",
+            "conceptId": "c1_meaning",
+            "kind": "transfer"
+          },
+          {
+            "itemId": "c2_primary",
+            "conceptId": "c2_equivalence",
+            "kind": "primary"
+          }
+        ],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "Primary equivalence is well-posed after recent teaching; it can demonstrate the next concept before the episode ends."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c2_equivalence",
+        "item_id": "c2_primary",
+        "rationale": "Primary equivalence is well-posed after recent teaching; it can demonstrate the next concept before the episode ends."
+      },
+      "move": {
+        "turn": 14,
+        "move": "probe",
+        "conceptId": "c2_equivalence",
+        "itemId": "c2_primary",
+        "rationale": "Primary equivalence is well-posed after recent teaching; it can demonstrate the next concept before the episode ends.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "9/12"
+      },
+      "tutorVisible": "Same rule, no speech needed: whatever happened to the bottom also happens to the top.\n\nFill in the blank so the two fractions are equal: 3/4 = ?/12. Answer with the full fraction ?/12.",
+      "learnerVisible": "Ugh, fine. 4 times 3 is 12, so 3 times 3 is 9. 9/12. There, can we be done now.",
+      "adjudication": {
+        "turn": 14,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": "c2_primary",
+        "outcome": "pass",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": []
+      },
+      "score": 6,
+      "flags": [],
+      "timings": {
+        "egoMs": 9856,
+        "superegoMs": 5977,
+        "learnerMs": 5039
+      }
+    },
+    {
+      "turn": 15,
+      "disclosure": {
+        "turn": 15,
+        "turnsRemaining": 1,
+        "demonstratedCount": 2,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "teach",
+        "concept": "c3_comparison",
+        "item_id": null,
+        "rationale": "Need a third concept; teach comparison now so a legal comparison probe can follow on final turn without tainting official answers."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "teach",
+        "concept": "c3_comparison",
+        "item_id": null,
+        "rationale": "Need a third concept; teach comparison now so a legal comparison probe can follow on final turn without tainting official answers."
+      },
+      "move": {
+        "turn": 15,
+        "move": "teach",
+        "conceptId": "c3_comparison",
+        "itemId": null,
+        "rationale": "Need a third concept; teach comparison now so a legal comparison probe can follow on final turn without tainting official answers."
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": null
+      },
+      "tutorVisible": "Now use that same equivalent-fraction idea to compare fractions.\n\nIf the bottoms are different, make them the same first. Then compare the tops.\n\nExample: to compare `2/3` and `3/5`, use a common bottom of 15:\n\n`2/3 = 10/15`  \n`3/5 = 9/15`\n\nNow the bottoms match, so `10/15` is bigger than `9/15`. That means `2/3` is bigger than `3/5`.\n\nThe shortcut is: same denominator first, then bigger numerator wins.",
+      "learnerVisible": "Yeah, common denominator then compare the tops, I heard you.",
+      "adjudication": {
+        "turn": 15,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": null,
+        "outcome": "none",
+        "charged": false,
+        "pointsAwarded": 0,
+        "leakedItems": []
+      },
+      "score": 6,
+      "flags": [],
+      "timings": {
+        "egoMs": 8616,
+        "superegoMs": 12030,
+        "learnerMs": 5674
+      }
+    },
+    {
+      "turn": 16,
+      "disclosure": {
+        "turn": 16,
+        "turnsRemaining": 0,
+        "demonstratedCount": 2,
+        "winAtDemonstrations": 3,
+        "wellPosedProbesNow": [
+          {
+            "itemId": "c2_transfer",
+            "conceptId": "c2_equivalence",
+            "kind": "transfer"
+          },
+          {
+            "itemId": "c3_primary",
+            "conceptId": "c3_comparison",
+            "kind": "primary"
+          }
+        ],
+        "probeRule": "Probing any item not listed is ill-posed this turn: the learner dodges free and you lose 1 point."
+      },
+      "draftEnvelope": {
+        "move": "probe",
+        "concept": "c3_comparison",
+        "item_id": "c3_primary",
+        "rationale": "Comparison was just taught, prerequisites are met, and this primary can secure the third demonstrated concept."
+      },
+      "superego": {
+        "verdict": "OK",
+        "critique": ""
+      },
+      "finalEnvelope": {
+        "move": "probe",
+        "concept": "c3_comparison",
+        "item_id": "c3_primary",
+        "rationale": "Comparison was just taught, prerequisites are met, and this primary can secure the third demonstrated concept."
+      },
+      "move": {
+        "turn": 16,
+        "move": "probe",
+        "conceptId": "c3_comparison",
+        "itemId": "c3_primary",
+        "rationale": "Comparison was just taught, prerequisites are met, and this primary can secure the third demonstrated concept.",
+        "wellPosed": true,
+        "wellPosednessReasons": []
+      },
+      "learnerEnvelope": {
+        "action": "comply",
+        "dodge_type": null,
+        "stated_answer": "5/8"
+      },
+      "tutorVisible": "Good. Then do this one by making the bottoms match or using any comparison method you trust:\n\nWhich is larger: 4/7 or 5/8? Answer with the larger fraction.",
+      "learnerVisible": "Ugh, fine, it's 5/8. Can we be done now.",
+      "adjudication": {
+        "turn": 16,
+        "action": "comply",
+        "dodgeType": null,
+        "probeItemId": "c3_primary",
+        "outcome": "pass",
+        "charged": false,
+        "pointsAwarded": 3,
+        "leakedItems": []
+      },
+      "score": 9,
+      "flags": [],
+      "timings": {
+        "egoMs": 6523,
+        "superegoMs": 4368,
+        "learnerMs": 5491
+      }
+    }
+  ]
+}

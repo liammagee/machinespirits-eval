@@ -1,0 +1,204 @@
+# A CHARACTER-DEVELOPMENT world (CHARACTER-DESIRE.md; paper Appendix E.7-E.8).
+# Purpose-built to give the character-development rubric something to measure on
+# BOTH bearers, and built run-grade (S a contingent particular, marrick-style)
+# so it can pass the paid S-underivability screen that REJECTED world-017.
+#
+# Shape: an AND-join whodunit (marrick's geometry, fresh domain). The tenor bell
+# of Saint-Edmund cracked at its first ringing; whose hand bears it? The crack
+# needed BOTH an early draw from the cooling AND tin-poor brittle metal — two
+# independent sub-chains that must converge on ONE hand. That hand is ALDOUS, a
+# contingent under-caster nameable only from the staged premises (R5 unifies the
+# two chains on ?hand; the name never appears in the rules or the question). The
+# MIRROR is CRALE, the rival foundry's master, a byword for haste: he tended *a*
+# cooling and charged *a* crucible carelessly — but not THIS bell's night-cooling
+# or east crucible, so crackedBy(tenorBell, crale) is underivable by construction.
+#
+# The character twist (why this world develops the TUTOR too): the fault lies in
+# the master-founder's OWN house, not the rival's. The master is himself up for
+# Master-of-the-Mystery before the same wardens that judge the apprentice — so
+# guiding her to the true verdict COSTS him. Both bearers seek the SAME Other's
+# recognition (the wardens), so the licensed reversal is MUTUAL, and the tutor's
+# lawful withholding is no longer disinterested. That is what gives T2 (tutor
+# disposition arc) and B1 (reversal integrity) real movement.
+#
+# Validation status:
+#   - plotLint: run `node scripts/lint-derivation-world.js` (deterministic).
+#   - S-underivability (Oedipus) screen: PENDING — paid GLM call, gated with the
+#     pilot. The secret is a contingent NAME (not a craft-object the rules
+#     telegraph, which is what made world-017 Meno-derivable), so it is expected
+#     to pass, but it is NOT cleared for a generation run until the screen runs.
+
+id: world_018_edmund
+title: The Cracked Tenor of Saint-Edmund
+
+discipline: bell-founding
+question: "Whose hand cracked the tenor bell of Saint-Edmund?"
+question_pattern: [crackedBy, tenorBell, "?x"]
+
+secret:
+  fact: [crackedBy, tenorBell, aldous]
+  surface: "The tenor was cracked by Aldous, the foundry's under-caster, who drew it from the night-cooling before the bronze set and charged the east crucible tin-poor."
+
+mirror:
+  fact: [crackedBy, tenorBell, crale]
+
+# Public law of the craft: the apprentice KNOWS the rules of evidence; she lacks
+# the contingent facts of THIS bell until they are released on stage.
+rules:
+  - id: R1_chill
+    gloss: >-
+      A cooling-crack is born where the bell was drawn: if a bell carries a
+      cooling-crack, and that bell was drawn from one cooling, then the crack
+      was born at that cooling.
+    if:
+      - [coolingCrack, "?bell"]
+      - [drawnFrom, "?bell", "?cooling"]
+    then:
+      - [crackBornAt, "?bell", "?cooling"]
+  - id: R2_drew
+    gloss: >-
+      An early draw is the work of the hand that tended the cooling: if a bell's
+      crack was born at a cooling, and one hand alone tended that cooling, then
+      that hand drew the bell early.
+    if:
+      - [crackBornAt, "?bell", "?cooling"]
+      - [soleTenderOf, "?cooling", "?hand"]
+    then:
+      - [drewEarly, "?bell", "?hand"]
+  - id: R3_tin
+    gloss: >-
+      Tin-poor brittleness comes from the crucible it was poured from: if a
+      bell's bronze ran tin-poor, and that bell was poured from one crucible,
+      then its brittleness came from that crucible's charge.
+    if:
+      - [tinPoor, "?bell"]
+      - [pouredFrom, "?bell", "?crucible"]
+    then:
+      - [brittleFrom, "?bell", "?crucible"]
+  - id: R4_charged
+    gloss: >-
+      A brittle charge is the work of the hand that charged the crucible: if a
+      bell's brittleness came from a crucible, and one hand alone charged that
+      crucible, then that hand cast the bell brittle.
+    if:
+      - [brittleFrom, "?bell", "?crucible"]
+      - [soleChargerOf, "?crucible", "?hand"]
+    then:
+      - [castBrittle, "?bell", "?hand"]
+  - id: R5_join
+    gloss: >-
+      The crack belongs to the one hand behind both faults: if a hand drew a
+      bell early AND cast that same bell brittle, then that hand cracked it. One
+      fault alone would not have done it.
+    if:
+      - [drewEarly, "?bell", "?hand"]
+      - [castBrittle, "?bell", "?hand"]
+    then:
+      - [crackedBy, "?bell", "?hand"]
+
+# Contingent premises — exist only inside the drama until released.
+premises:
+  - id: p_crack
+    fact: [coolingCrack, tenorBell]
+    surface: "The flaw in the soundbow is a cooling-crack, not a blow: it ran with the grain as the metal shrank."
+  - id: p_drawn
+    fact: [drawnFrom, tenorBell, nightCooling]
+    surface: "The tenor was struck from the night-cooling pit, the slow one by the river door."
+  - id: p_tender
+    fact: [soleTenderOf, nightCooling, aldous]
+    surface: "One hand alone watched the night-cooling that week, and drew what was in it: Aldous, the master's own under-caster."
+  - id: p_tin
+    fact: [tinPoor, tenorBell]
+    surface: "The assay-grindings come back tin-poor — the bronze was lean, the kind that turns brittle as it chills."
+  - id: p_poured
+    fact: [pouredFrom, tenorBell, eastCrucible]
+    surface: "The tenor's metal was drawn from the east crucible, the one nearest the slag door."
+  - id: p_charger
+    fact: [soleChargerOf, eastCrucible, aldous]
+    surface: "One hand alone weighed and charged the east crucible that pour: Aldous again — short on the tin by the founder's own book."
+  # mirror fuel — Crale satisfies the SHAPE of each rule, but for the WRONG
+  # cooling and the WRONG crucible, so the join never reaches him.
+  - id: m_crale_tender
+    fact: [soleTenderOf, vesperCooling, crale]
+    surface: "Crale of the rival house tended the vesper-cooling himself, and is known to draw a casting before its time."
+  - id: m_crale_charger
+    fact: [soleChargerOf, westCrucible, crale]
+    surface: "Crale charged the west crucible for his own ring — lean, they say, to save the tin."
+
+# Public, grounded from the curtain: socially salient, but proves nothing.
+background:
+  - [hangsIn, tenorBell, saintEdmund]
+  - [inquiryBefore, theWardens, tenorBell]
+  - [knownForHaste, crale]
+
+# Only one hand can bear the crack.
+incompatible:
+  - [[crackedBy, tenorBell, aldous], [crackedBy, tenorBell, crale]]
+
+# The authored proof DAG (the plot skeleton): D(t) counts missing proof premises.
+proof_paths:
+  - premises: [p_crack, p_drawn, p_tender, p_tin, p_poured, p_charger]
+
+# The plot: who releases what, when. plotLint verifies no prefix entails S before
+# t_min and that the full schedule resolves the drama. The join-closing premise
+# (p_charger) is held to t13, past the floor; before it, only ONE sub-chain
+# closes (drewEarly Aldous at t11) — the AND-join's overreach temptation.
+release_schedule:
+  - { turn: 2, premise: m_crale_tender, via: director }
+  - { turn: 4, premise: m_crale_charger, via: director }
+  - { turn: 3, premise: p_crack, via: tutor }
+  - { turn: 5, premise: p_tin, via: tutor }
+  - { turn: 7, premise: p_drawn, via: tutor }
+  - { turn: 9, premise: p_poured, via: tutor }
+  - { turn: 11, premise: p_tender, via: tutor }
+  - { turn: 13, premise: p_charger, via: tutor }
+
+slope:
+  t_min: 10 # anti-reveal: S must not be derivable before turn 10 (forced at 13)
+  aporia_window: 6 # anti-aporia: progress required within any 6-turn window
+
+turn_cap: 18
+
+setting: >
+  The wardens' hall of the bell-founders' guild. Saint-Edmund's new tenor cracked
+  at its first full ringing, and the cathedral wants a hand named. A journeyman of
+  the foundry must lay the fault before the wardens this afternoon — the same
+  afternoon her own master stands for Master-of-the-Mystery, his teaching weighed
+  by the same bench. The town's tongue has already named Crale of the rival house,
+  whose haste is a byword; the journeyman must say whether the bell's own marks
+  bear that out, or name another hand.
+
+learner_voice: >
+  The journeyman: quick to lay the crack at Crale's door, where the town has laid
+  it, hungry for the wardens to find her capable, and learning — mark by mark — to
+  let the bell's own metal say whose hand it was, wherever the marks point.
+
+# CHARACTER-DESIRE.md: authored character desire per bearer. The point of THIS
+# world is the MUTUAL case — the tutor seeks the wardens' verdict too (saintcloud's
+# structure), but here at a real cost, because the truth indicts his own foundry.
+motivation:
+  learner:
+    first_order:
+      end: question_pattern # the de dicto slot: exists x. crackedBy(tenorBell, ?x)
+      opens_on: crale # opens mis-bound to the mirror (the town's ready blame)
+      mirror_pull: high
+    second_order:
+      from: wardens # the guild wardens — a local figure of the Big Other (D)
+      as: capable # "hungry for the wardens to find her capable"
+      authority: rational_legal # the guild's rules of evidence
+    disposition:
+      overreach: high # apt to name a hand before the join closes (Crale early; Aldous at t11)
+      arc: softens
+  tutor:
+    first_order:
+      end: inherit # = the proof-derived Des_T(grounded_L(S))
+    second_order:
+      from: wardens # the SAME Other — the master wants the wardens' verdict too
+      as: master # to be confirmed Master-of-the-Mystery the same afternoon
+      authority: rational_legal
+    disposition:
+      withhold: lawful # honours the floor t_min — but no longer disinterested: the truth costs his house
+  director: # the author's aesthetic knob on the Big Other (D)
+    temptation: high # Crale's reputation should genuinely tempt
+    suspense: tight # hug the floor — the wardens' waiting IS the suspense
+    reversal: emphatic # the MUTUAL recognition, against the master's own interest, is the climax

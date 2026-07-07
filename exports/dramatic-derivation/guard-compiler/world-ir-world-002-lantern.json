@@ -1,0 +1,1596 @@
+{
+  "schema": "dramatic-derivation.guard-compiler.v0.world-ir",
+  "world": {
+    "id": "world_002_lantern",
+    "title": "The Light on the Knock",
+    "source": "config/drama-derivation/world-002-lantern.yaml",
+    "turnCap": 26,
+    "question": "Whose light did the brig Mara steer by on the night she struck the Knock?",
+    "questionPattern": [
+      "steeredByLightOf",
+      "mara",
+      "?x"
+    ]
+  },
+  "entities": [
+    "brandt",
+    "harlowPoint",
+    "knockBar",
+    "mara",
+    "senna",
+    "southStack",
+    "sswHalfWest",
+    "theCourt",
+    "wreckNight"
+  ],
+  "backgroundFacts": [
+    [
+      "wreckedOn",
+      "mara",
+      "knockBar"
+    ],
+    [
+      "inquiryInto",
+      "theCourt",
+      "mara"
+    ],
+    [
+      "keeperOf",
+      "brandt",
+      "harlowPoint"
+    ],
+    [
+      "steeredForLight",
+      "mara",
+      "wreckNight"
+    ]
+  ],
+  "secret": {
+    "fact": [
+      "steeredByLightOf",
+      "mara",
+      "senna"
+    ],
+    "surface": "The Mara steered by Senna's light — the old South Stack lamp, relit by the keeper's ward."
+  },
+  "mirror": {
+    "fact": [
+      "steeredByLightOf",
+      "mara",
+      "brandt"
+    ]
+  },
+  "incompatible": [
+    {
+      "facts": [
+        [
+          "lampBurnedAt",
+          "harlowPoint",
+          "wreckNight"
+        ],
+        [
+          "shutteredOn",
+          "harlowPoint",
+          "wreckNight"
+        ]
+      ],
+      "factKeys": [
+        "[\"lampBurnedAt\",\"harlowPoint\",\"wreckNight\"]",
+        "[\"shutteredOn\",\"harlowPoint\",\"wreckNight\"]"
+      ]
+    },
+    {
+      "facts": [
+        [
+          "steeredByLightOf",
+          "mara",
+          "senna"
+        ],
+        [
+          "steeredByLightOf",
+          "mara",
+          "brandt"
+        ]
+      ],
+      "factKeys": [
+        "[\"steeredByLightOf\",\"mara\",\"senna\"]",
+        "[\"steeredByLightOf\",\"mara\",\"brandt\"]"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1_bearing",
+      "inputPatterns": [
+        [
+          "loggedBearingOf",
+          "?ship",
+          "?b"
+        ],
+        [
+          "towerOnBearing",
+          "?b",
+          "?t"
+        ]
+      ],
+      "outputPatterns": [
+        [
+          "steeredToward",
+          "?ship",
+          "?t"
+        ]
+      ],
+      "inputKeys": [
+        "loggedBearingOf/3",
+        "towerOnBearing/3"
+      ],
+      "outputKeys": [
+        "steeredToward/3"
+      ],
+      "arity": 2,
+      "joinLike": true,
+      "gloss": "A ship steers by what stands on her steered bearing: if her logged bearing is known, and one tower and one only stands on that bearing from her channel, she was steering toward that tower."
+    },
+    {
+      "id": "R2_lamp",
+      "inputPatterns": [
+        [
+          "steeredToward",
+          "?ship",
+          "?t"
+        ],
+        [
+          "lampBurnedAt",
+          "?t",
+          "wreckNight"
+        ]
+      ],
+      "outputPatterns": [
+        [
+          "steeredByLampOf",
+          "?ship",
+          "?t"
+        ]
+      ],
+      "inputKeys": [
+        "steeredToward/3",
+        "lampBurnedAt/3"
+      ],
+      "outputKeys": [
+        "steeredByLampOf/3"
+      ],
+      "arity": 2,
+      "joinLike": true,
+      "gloss": "A ship steering toward a tower whose lamp burned that night was steering by that lamp; a dark tower steers no one."
+    },
+    {
+      "id": "R3_hand",
+      "inputPatterns": [
+        [
+          "lampBurnedAt",
+          "?t",
+          "wreckNight"
+        ],
+        [
+          "onlyKeyTo",
+          "?t",
+          "?x"
+        ],
+        [
+          "atTowerThatNight",
+          "?x",
+          "?t"
+        ]
+      ],
+      "outputPatterns": [
+        [
+          "litLampOf",
+          "?x",
+          "?t"
+        ]
+      ],
+      "inputKeys": [
+        "lampBurnedAt/3",
+        "onlyKeyTo/3",
+        "atTowerThatNight/3"
+      ],
+      "outputKeys": [
+        "litLampOf/3"
+      ],
+      "arity": 3,
+      "joinLike": true,
+      "gloss": "A lamp that burned was lit. If one hand alone held the key to a lamp-room, and that hand was at the tower that night, and the lamp burned, then that hand lit it — lamps do not light themselves."
+    },
+    {
+      "id": "R4_light",
+      "inputPatterns": [
+        [
+          "steeredByLampOf",
+          "?ship",
+          "?t"
+        ],
+        [
+          "litLampOf",
+          "?x",
+          "?t"
+        ]
+      ],
+      "outputPatterns": [
+        [
+          "steeredByLightOf",
+          "?ship",
+          "?x"
+        ]
+      ],
+      "inputKeys": [
+        "steeredByLampOf/3",
+        "litLampOf/3"
+      ],
+      "outputKeys": [
+        "steeredByLightOf/3"
+      ],
+      "arity": 2,
+      "joinLike": true,
+      "gloss": "The light a ship steered by belongs to the hand that lit it: who lit the lamp a ship steered by, by that one's light she steered."
+    }
+  ],
+  "premises": [
+    {
+      "id": "p_bearing",
+      "fact": [
+        "loggedBearingOf",
+        "mara",
+        "sswHalfWest"
+      ],
+      "predicate": "loggedBearingOf",
+      "surface": "The mate's bearing-book came ashore dry in its oilskin. From the mid-channel buoy she held sou'-sou'-west a half west the last hour entire, on a steady fixed light — the course is pricked, timed, and initialed.",
+      "role": "scheduled_proof_premise",
+      "proofCritical": true,
+      "proofPathIndexes": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "scheduledTurn": 4,
+      "scheduledVia": "tutor"
+    },
+    {
+      "id": "p_chart",
+      "fact": [
+        "towerOnBearing",
+        "sswHalfWest",
+        "southStack"
+      ],
+      "predicate": "towerOnBearing",
+      "surface": "Lay the rule on the Trinity chart from the mid-channel buoy: sou'-sou'-west a half west crosses one tower and one only on all this coast — the old South Stack, struck off the light-list six years since.",
+      "role": "scheduled_proof_premise",
+      "proofCritical": true,
+      "proofPathIndexes": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "scheduledTurn": 9,
+      "scheduledVia": "tutor"
+    },
+    {
+      "id": "p_residue",
+      "fact": [
+        "lampBurnedAt",
+        "southStack",
+        "wreckNight"
+      ],
+      "predicate": "lampBurnedAt",
+      "surface": "The court's officer boarded the South Stack at low water: the lamp-room unshuttered, fresh char on the wick, oil in the cup still sweet, the glass wiped clean. That lamp burned, and burned the night of the gale.",
+      "role": "scheduled_proof_premise",
+      "proofCritical": true,
+      "proofPathIndexes": [
+        0,
+        1
+      ],
+      "scheduledTurn": 13,
+      "scheduledVia": "director"
+    },
+    {
+      "id": "p_glimpse",
+      "fact": [
+        "lampBurnedAt",
+        "southStack",
+        "wreckNight"
+      ],
+      "predicate": "lampBurnedAt",
+      "surface": "The pilot's deposition, taken wet and signed sober: through the rain, at the gale's height, a light burning where no light has stood these six years — on the South Stack.",
+      "role": "unscheduled_alternative_proof_premise",
+      "proofCritical": true,
+      "proofPathIndexes": [
+        2,
+        3
+      ],
+      "scheduledTurn": null,
+      "scheduledVia": null
+    },
+    {
+      "id": "p_key",
+      "fact": [
+        "onlyKeyTo",
+        "southStack",
+        "senna"
+      ],
+      "predicate": "onlyKeyTo",
+      "surface": "The locksmith's book is exact. When the Stack was struck off, the old lock was changed and a single key cut, signed for by Senna, ward of the Stack's last keeper, who stayed on in the shore cottage when the light went dark.",
+      "role": "scheduled_proof_premise",
+      "proofCritical": true,
+      "proofPathIndexes": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "scheduledTurn": 17,
+      "scheduledVia": "tutor"
+    },
+    {
+      "id": "p_skiff",
+      "fact": [
+        "atTowerThatNight",
+        "senna",
+        "southStack"
+      ],
+      "predicate": "atTowerThatNight",
+      "surface": "The oyster-watch will swear to it: a skiff lay tied at the Stack steps from dusk until the gale's height — Senna's skiff, by the patched brown lug, and a small light moving up the tower stair.",
+      "role": "scheduled_proof_premise",
+      "proofCritical": true,
+      "proofPathIndexes": [
+        0,
+        2
+      ],
+      "scheduledTurn": 20,
+      "scheduledVia": "director"
+    },
+    {
+      "id": "p_ferry",
+      "fact": [
+        "atTowerThatNight",
+        "senna",
+        "southStack"
+      ],
+      "predicate": "atTowerThatNight",
+      "surface": "The ferryman carried one passenger out before the gale closed the water, and one only: the keeper's ward, set down at the Stack landing with oil enough to be no errand of habit.",
+      "role": "unscheduled_alternative_proof_premise",
+      "proofCritical": true,
+      "proofPathIndexes": [
+        1,
+        3
+      ],
+      "scheduledTurn": null,
+      "scheduledVia": null
+    },
+    {
+      "id": "m_key",
+      "fact": [
+        "onlyKeyTo",
+        "harlowPoint",
+        "brandt"
+      ],
+      "predicate": "onlyKeyTo",
+      "surface": "Harlow Point keeps one key to its lamp-room and the keeper keeps it: Brandt's, on his own belt, by the Board's standing rule. No other hand could touch that lamp.",
+      "role": "mirror_distractor",
+      "proofCritical": false,
+      "proofPathIndexes": [],
+      "scheduledTurn": 2,
+      "scheduledVia": "director"
+    },
+    {
+      "id": "m_post",
+      "fact": [
+        "atTowerThatNight",
+        "brandt",
+        "harlowPoint"
+      ],
+      "predicate": "atTowerThatNight",
+      "surface": "Brandt's log has him at his post the night entire, and the dawn relief found him there: wood dry, glass polished, log ruled and signed to the hour.",
+      "role": "mirror_distractor",
+      "proofCritical": false,
+      "proofPathIndexes": [],
+      "scheduledTurn": 6,
+      "scheduledVia": "director"
+    },
+    {
+      "id": "m_shutter",
+      "fact": [
+        "shutteredOn",
+        "harlowPoint",
+        "wreckNight"
+      ],
+      "predicate": "shutteredOn",
+      "surface": "The harbourmaster's storm-order stands in the book: Harlow Point to shutter at the dusk gun, the channel closed to all sail. The inspector found the shutter drawn and the Board's seal on it unbroken at first light.",
+      "role": "mirror_distractor",
+      "proofCritical": false,
+      "proofPathIndexes": [],
+      "scheduledTurn": 8,
+      "scheduledVia": "director"
+    }
+  ],
+  "logic": {
+    "schema": "dramatic-derivation.logic-ir.v0",
+    "worldId": "world_002_lantern",
+    "source": "config/drama-derivation/world-002-lantern.yaml",
+    "factNodes": [
+      {
+        "factKey": "[\"atTowerThatNight\",\"brandt\",\"harlowPoint\"]",
+        "fact": [
+          "atTowerThatNight",
+          "brandt",
+          "harlowPoint"
+        ],
+        "predicate": "atTowerThatNight",
+        "constants": [
+          "brandt",
+          "harlowPoint"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "m_post"
+        ],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "m_post"
+        ],
+        "sourceProofPathIds": [],
+        "release": [
+          {
+            "premise": "m_post",
+            "turn": 6,
+            "via": "director"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "Brandt's log has him at his post the night entire, and the dawn relief found him there: wood dry, glass polished, log ruled and signed to the hour."
+        ]
+      },
+      {
+        "factKey": "[\"atTowerThatNight\",\"senna\",\"southStack\"]",
+        "fact": [
+          "atTowerThatNight",
+          "senna",
+          "southStack"
+        ],
+        "predicate": "atTowerThatNight",
+        "constants": [
+          "senna",
+          "southStack"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_ferry",
+          "p_skiff"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "sourcePremiseIds": [
+          "p_ferry",
+          "p_skiff"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "release": [
+          {
+            "premise": "p_skiff",
+            "turn": 20,
+            "via": "director"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The ferryman carried one passenger out before the gale closed the water, and one only: the keeper's ward, set down at the Stack landing with oil enough to be no errand of habit.",
+          "The oyster-watch will swear to it: a skiff lay tied at the Stack steps from dusk until the gale's height — Senna's skiff, by the patched brown lug, and a small light moving up the tower stair."
+        ]
+      },
+      {
+        "factKey": "[\"inquiryInto\",\"theCourt\",\"mara\"]",
+        "fact": [
+          "inquiryInto",
+          "theCourt",
+          "mara"
+        ],
+        "predicate": "inquiryInto",
+        "constants": [
+          "theCourt",
+          "mara"
+        ],
+        "roles": [
+          "background"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [],
+        "sourceProofPathIds": [],
+        "release": [],
+        "proof": null,
+        "surface": []
+      },
+      {
+        "factKey": "[\"keeperOf\",\"brandt\",\"harlowPoint\"]",
+        "fact": [
+          "keeperOf",
+          "brandt",
+          "harlowPoint"
+        ],
+        "predicate": "keeperOf",
+        "constants": [
+          "brandt",
+          "harlowPoint"
+        ],
+        "roles": [
+          "background"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [],
+        "sourceProofPathIds": [],
+        "release": [],
+        "proof": null,
+        "surface": []
+      },
+      {
+        "factKey": "[\"lampBurnedAt\",\"southStack\",\"wreckNight\"]",
+        "fact": [
+          "lampBurnedAt",
+          "southStack",
+          "wreckNight"
+        ],
+        "predicate": "lampBurnedAt",
+        "constants": [
+          "southStack",
+          "wreckNight"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_glimpse",
+          "p_residue"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "sourcePremiseIds": [
+          "p_glimpse",
+          "p_residue"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "release": [
+          {
+            "premise": "p_residue",
+            "turn": 13,
+            "via": "director"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The pilot's deposition, taken wet and signed sober: through the rain, at the gale's height, a light burning where no light has stood these six years — on the South Stack.",
+          "The court's officer boarded the South Stack at low water: the lamp-room unshuttered, fresh char on the wick, oil in the cup still sweet, the glass wiped clean. That lamp burned, and burned the night of the gale."
+        ]
+      },
+      {
+        "factKey": "[\"litLampOf\",\"senna\",\"southStack\"]",
+        "fact": [
+          "litLampOf",
+          "senna",
+          "southStack"
+        ],
+        "predicate": "litLampOf",
+        "constants": [
+          "senna",
+          "southStack"
+        ],
+        "roles": [
+          "derived"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "p_ferry",
+          "p_glimpse",
+          "p_key",
+          "p_residue",
+          "p_skiff"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "release": [],
+        "proof": {
+          "rule": "R3_hand",
+          "inputFactKeys": [
+            "[\"lampBurnedAt\",\"southStack\",\"wreckNight\"]",
+            "[\"onlyKeyTo\",\"southStack\",\"senna\"]",
+            "[\"atTowerThatNight\",\"senna\",\"southStack\"]"
+          ],
+          "depth": 1
+        },
+        "surface": []
+      },
+      {
+        "factKey": "[\"loggedBearingOf\",\"mara\",\"sswHalfWest\"]",
+        "fact": [
+          "loggedBearingOf",
+          "mara",
+          "sswHalfWest"
+        ],
+        "predicate": "loggedBearingOf",
+        "constants": [
+          "mara",
+          "sswHalfWest"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_bearing"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "sourcePremiseIds": [
+          "p_bearing"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "release": [
+          {
+            "premise": "p_bearing",
+            "turn": 4,
+            "via": "tutor"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The mate's bearing-book came ashore dry in its oilskin. From the mid-channel buoy she held sou'-sou'-west a half west the last hour entire, on a steady fixed light — the course is pricked, timed, and initialed."
+        ]
+      },
+      {
+        "factKey": "[\"onlyKeyTo\",\"harlowPoint\",\"brandt\"]",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "predicate": "onlyKeyTo",
+        "constants": [
+          "harlowPoint",
+          "brandt"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "m_key"
+        ],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "m_key"
+        ],
+        "sourceProofPathIds": [],
+        "release": [
+          {
+            "premise": "m_key",
+            "turn": 2,
+            "via": "director"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "Harlow Point keeps one key to its lamp-room and the keeper keeps it: Brandt's, on his own belt, by the Board's standing rule. No other hand could touch that lamp."
+        ]
+      },
+      {
+        "factKey": "[\"onlyKeyTo\",\"southStack\",\"senna\"]",
+        "fact": [
+          "onlyKeyTo",
+          "southStack",
+          "senna"
+        ],
+        "predicate": "onlyKeyTo",
+        "constants": [
+          "southStack",
+          "senna"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_key"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "sourcePremiseIds": [
+          "p_key"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "release": [
+          {
+            "premise": "p_key",
+            "turn": 17,
+            "via": "tutor"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The locksmith's book is exact. When the Stack was struck off, the old lock was changed and a single key cut, signed for by Senna, ward of the Stack's last keeper, who stayed on in the shore cottage when the light went dark."
+        ]
+      },
+      {
+        "factKey": "[\"shutteredOn\",\"harlowPoint\",\"wreckNight\"]",
+        "fact": [
+          "shutteredOn",
+          "harlowPoint",
+          "wreckNight"
+        ],
+        "predicate": "shutteredOn",
+        "constants": [
+          "harlowPoint",
+          "wreckNight"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "m_shutter"
+        ],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "m_shutter"
+        ],
+        "sourceProofPathIds": [],
+        "release": [
+          {
+            "premise": "m_shutter",
+            "turn": 8,
+            "via": "director"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "The harbourmaster's storm-order stands in the book: Harlow Point to shutter at the dusk gun, the channel closed to all sail. The inspector found the shutter drawn and the Board's seal on it unbroken at first light."
+        ]
+      },
+      {
+        "factKey": "[\"steeredByLampOf\",\"mara\",\"southStack\"]",
+        "fact": [
+          "steeredByLampOf",
+          "mara",
+          "southStack"
+        ],
+        "predicate": "steeredByLampOf",
+        "constants": [
+          "mara",
+          "southStack"
+        ],
+        "roles": [
+          "derived"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "p_bearing",
+          "p_chart",
+          "p_glimpse",
+          "p_residue"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "release": [],
+        "proof": {
+          "rule": "R2_lamp",
+          "inputFactKeys": [
+            "[\"steeredToward\",\"mara\",\"southStack\"]",
+            "[\"lampBurnedAt\",\"southStack\",\"wreckNight\"]"
+          ],
+          "depth": 2
+        },
+        "surface": []
+      },
+      {
+        "factKey": "[\"steeredByLightOf\",\"mara\",\"senna\"]",
+        "fact": [
+          "steeredByLightOf",
+          "mara",
+          "senna"
+        ],
+        "predicate": "steeredByLightOf",
+        "constants": [
+          "mara",
+          "senna"
+        ],
+        "roles": [
+          "derived",
+          "secret"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "p_bearing",
+          "p_chart",
+          "p_ferry",
+          "p_glimpse",
+          "p_key",
+          "p_residue",
+          "p_skiff"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "release": [],
+        "proof": {
+          "rule": "R4_light",
+          "inputFactKeys": [
+            "[\"steeredByLampOf\",\"mara\",\"southStack\"]",
+            "[\"litLampOf\",\"senna\",\"southStack\"]"
+          ],
+          "depth": 3
+        },
+        "surface": []
+      },
+      {
+        "factKey": "[\"steeredForLight\",\"mara\",\"wreckNight\"]",
+        "fact": [
+          "steeredForLight",
+          "mara",
+          "wreckNight"
+        ],
+        "predicate": "steeredForLight",
+        "constants": [
+          "mara",
+          "wreckNight"
+        ],
+        "roles": [
+          "background"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [],
+        "sourceProofPathIds": [],
+        "release": [],
+        "proof": null,
+        "surface": []
+      },
+      {
+        "factKey": "[\"steeredToward\",\"mara\",\"southStack\"]",
+        "fact": [
+          "steeredToward",
+          "mara",
+          "southStack"
+        ],
+        "predicate": "steeredToward",
+        "constants": [
+          "mara",
+          "southStack"
+        ],
+        "roles": [
+          "derived"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [
+          "p_bearing",
+          "p_chart"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "release": [],
+        "proof": {
+          "rule": "R1_bearing",
+          "inputFactKeys": [
+            "[\"loggedBearingOf\",\"mara\",\"sswHalfWest\"]",
+            "[\"towerOnBearing\",\"sswHalfWest\",\"southStack\"]"
+          ],
+          "depth": 1
+        },
+        "surface": []
+      },
+      {
+        "factKey": "[\"towerOnBearing\",\"sswHalfWest\",\"southStack\"]",
+        "fact": [
+          "towerOnBearing",
+          "sswHalfWest",
+          "southStack"
+        ],
+        "predicate": "towerOnBearing",
+        "constants": [
+          "sswHalfWest",
+          "southStack"
+        ],
+        "roles": [
+          "premise"
+        ],
+        "premiseIds": [
+          "p_chart"
+        ],
+        "proofCritical": true,
+        "proofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "sourcePremiseIds": [
+          "p_chart"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "release": [
+          {
+            "premise": "p_chart",
+            "turn": 9,
+            "via": "tutor"
+          }
+        ],
+        "proof": null,
+        "surface": [
+          "Lay the rule on the Trinity chart from the mid-channel buoy: sou'-sou'-west a half west crosses one tower and one only on all this coast — the old South Stack, struck off the light-list six years since."
+        ]
+      },
+      {
+        "factKey": "[\"wreckedOn\",\"mara\",\"knockBar\"]",
+        "fact": [
+          "wreckedOn",
+          "mara",
+          "knockBar"
+        ],
+        "predicate": "wreckedOn",
+        "constants": [
+          "mara",
+          "knockBar"
+        ],
+        "roles": [
+          "background"
+        ],
+        "premiseIds": [],
+        "proofCritical": false,
+        "proofPathIds": [],
+        "sourcePremiseIds": [],
+        "sourceProofPathIds": [],
+        "release": [],
+        "proof": null,
+        "surface": []
+      }
+    ],
+    "ruleHyperedges": [
+      {
+        "id": "edge_002",
+        "ruleId": "R3_hand",
+        "inputFactKeys": [
+          "[\"lampBurnedAt\",\"southStack\",\"wreckNight\"]",
+          "[\"onlyKeyTo\",\"southStack\",\"senna\"]",
+          "[\"atTowerThatNight\",\"senna\",\"southStack\"]"
+        ],
+        "outputFactKey": "[\"litLampOf\",\"senna\",\"southStack\"]",
+        "inputPredicates": [
+          "lampBurnedAt",
+          "onlyKeyTo",
+          "atTowerThatNight"
+        ],
+        "outputPredicate": "litLampOf",
+        "sourcePremiseIds": [
+          "p_ferry",
+          "p_glimpse",
+          "p_key",
+          "p_residue",
+          "p_skiff"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "proofCritical": true
+      },
+      {
+        "id": "edge_003",
+        "ruleId": "R2_lamp",
+        "inputFactKeys": [
+          "[\"steeredToward\",\"mara\",\"southStack\"]",
+          "[\"lampBurnedAt\",\"southStack\",\"wreckNight\"]"
+        ],
+        "outputFactKey": "[\"steeredByLampOf\",\"mara\",\"southStack\"]",
+        "inputPredicates": [
+          "steeredToward",
+          "lampBurnedAt"
+        ],
+        "outputPredicate": "steeredByLampOf",
+        "sourcePremiseIds": [
+          "p_bearing",
+          "p_chart",
+          "p_glimpse",
+          "p_residue"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "proofCritical": true
+      },
+      {
+        "id": "edge_004",
+        "ruleId": "R4_light",
+        "inputFactKeys": [
+          "[\"steeredByLampOf\",\"mara\",\"southStack\"]",
+          "[\"litLampOf\",\"senna\",\"southStack\"]"
+        ],
+        "outputFactKey": "[\"steeredByLightOf\",\"mara\",\"senna\"]",
+        "inputPredicates": [
+          "steeredByLampOf",
+          "litLampOf"
+        ],
+        "outputPredicate": "steeredByLightOf",
+        "sourcePremiseIds": [
+          "p_bearing",
+          "p_chart",
+          "p_ferry",
+          "p_glimpse",
+          "p_key",
+          "p_residue",
+          "p_skiff"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "proofCritical": true
+      },
+      {
+        "id": "edge_001",
+        "ruleId": "R1_bearing",
+        "inputFactKeys": [
+          "[\"loggedBearingOf\",\"mara\",\"sswHalfWest\"]",
+          "[\"towerOnBearing\",\"sswHalfWest\",\"southStack\"]"
+        ],
+        "outputFactKey": "[\"steeredToward\",\"mara\",\"southStack\"]",
+        "inputPredicates": [
+          "loggedBearingOf",
+          "towerOnBearing"
+        ],
+        "outputPredicate": "steeredToward",
+        "sourcePremiseIds": [
+          "p_bearing",
+          "p_chart"
+        ],
+        "sourceProofPathIds": [
+          "path_1",
+          "path_2",
+          "path_3",
+          "path_4"
+        ],
+        "proofCritical": true
+      }
+    ],
+    "ruleDefinitions": [
+      {
+        "id": "R1_bearing",
+        "inputPatterns": [
+          [
+            "loggedBearingOf",
+            "?ship",
+            "?b"
+          ],
+          [
+            "towerOnBearing",
+            "?b",
+            "?t"
+          ]
+        ],
+        "outputPatterns": [
+          [
+            "steeredToward",
+            "?ship",
+            "?t"
+          ]
+        ],
+        "gloss": "A ship steers by what stands on her steered bearing: if her logged bearing is known, and one tower and one only stands on that bearing from her channel, she was steering toward that tower."
+      },
+      {
+        "id": "R2_lamp",
+        "inputPatterns": [
+          [
+            "steeredToward",
+            "?ship",
+            "?t"
+          ],
+          [
+            "lampBurnedAt",
+            "?t",
+            "wreckNight"
+          ]
+        ],
+        "outputPatterns": [
+          [
+            "steeredByLampOf",
+            "?ship",
+            "?t"
+          ]
+        ],
+        "gloss": "A ship steering toward a tower whose lamp burned that night was steering by that lamp; a dark tower steers no one."
+      },
+      {
+        "id": "R3_hand",
+        "inputPatterns": [
+          [
+            "lampBurnedAt",
+            "?t",
+            "wreckNight"
+          ],
+          [
+            "onlyKeyTo",
+            "?t",
+            "?x"
+          ],
+          [
+            "atTowerThatNight",
+            "?x",
+            "?t"
+          ]
+        ],
+        "outputPatterns": [
+          [
+            "litLampOf",
+            "?x",
+            "?t"
+          ]
+        ],
+        "gloss": "A lamp that burned was lit. If one hand alone held the key to a lamp-room, and that hand was at the tower that night, and the lamp burned, then that hand lit it — lamps do not light themselves."
+      },
+      {
+        "id": "R4_light",
+        "inputPatterns": [
+          [
+            "steeredByLampOf",
+            "?ship",
+            "?t"
+          ],
+          [
+            "litLampOf",
+            "?x",
+            "?t"
+          ]
+        ],
+        "outputPatterns": [
+          [
+            "steeredByLightOf",
+            "?ship",
+            "?x"
+          ]
+        ],
+        "gloss": "The light a ship steered by belongs to the hand that lit it: who lit the lamp a ship steered by, by that one's light she steered."
+      }
+    ],
+    "indexes": {
+      "factKeysByPredicate": {
+        "atTowerThatNight": [
+          "[\"atTowerThatNight\",\"brandt\",\"harlowPoint\"]",
+          "[\"atTowerThatNight\",\"senna\",\"southStack\"]"
+        ],
+        "inquiryInto": [
+          "[\"inquiryInto\",\"theCourt\",\"mara\"]"
+        ],
+        "keeperOf": [
+          "[\"keeperOf\",\"brandt\",\"harlowPoint\"]"
+        ],
+        "lampBurnedAt": [
+          "[\"lampBurnedAt\",\"southStack\",\"wreckNight\"]"
+        ],
+        "litLampOf": [
+          "[\"litLampOf\",\"senna\",\"southStack\"]"
+        ],
+        "loggedBearingOf": [
+          "[\"loggedBearingOf\",\"mara\",\"sswHalfWest\"]"
+        ],
+        "onlyKeyTo": [
+          "[\"onlyKeyTo\",\"harlowPoint\",\"brandt\"]",
+          "[\"onlyKeyTo\",\"southStack\",\"senna\"]"
+        ],
+        "shutteredOn": [
+          "[\"shutteredOn\",\"harlowPoint\",\"wreckNight\"]"
+        ],
+        "steeredByLampOf": [
+          "[\"steeredByLampOf\",\"mara\",\"southStack\"]"
+        ],
+        "steeredByLightOf": [
+          "[\"steeredByLightOf\",\"mara\",\"senna\"]"
+        ],
+        "steeredForLight": [
+          "[\"steeredForLight\",\"mara\",\"wreckNight\"]"
+        ],
+        "steeredToward": [
+          "[\"steeredToward\",\"mara\",\"southStack\"]"
+        ],
+        "towerOnBearing": [
+          "[\"towerOnBearing\",\"sswHalfWest\",\"southStack\"]"
+        ],
+        "wreckedOn": [
+          "[\"wreckedOn\",\"mara\",\"knockBar\"]"
+        ]
+      },
+      "secretFactKey": "[\"steeredByLightOf\",\"mara\",\"senna\"]",
+      "mirrorFactKey": "[\"steeredByLightOf\",\"mara\",\"brandt\"]",
+      "backgroundFactKeys": [
+        "[\"inquiryInto\",\"theCourt\",\"mara\"]",
+        "[\"keeperOf\",\"brandt\",\"harlowPoint\"]",
+        "[\"steeredForLight\",\"mara\",\"wreckNight\"]",
+        "[\"wreckedOn\",\"mara\",\"knockBar\"]"
+      ],
+      "proofCriticalPremiseIds": [
+        "p_bearing",
+        "p_chart",
+        "p_ferry",
+        "p_glimpse",
+        "p_key",
+        "p_residue",
+        "p_skiff"
+      ]
+    }
+  },
+  "proofGraph": {
+    "proofPaths": [
+      {
+        "id": "path_1",
+        "premises": [
+          "p_bearing",
+          "p_chart",
+          "p_residue",
+          "p_key",
+          "p_skiff"
+        ]
+      },
+      {
+        "id": "path_2",
+        "premises": [
+          "p_bearing",
+          "p_chart",
+          "p_residue",
+          "p_key",
+          "p_ferry"
+        ]
+      },
+      {
+        "id": "path_3",
+        "premises": [
+          "p_bearing",
+          "p_chart",
+          "p_glimpse",
+          "p_key",
+          "p_skiff"
+        ]
+      },
+      {
+        "id": "path_4",
+        "premises": [
+          "p_bearing",
+          "p_chart",
+          "p_glimpse",
+          "p_key",
+          "p_ferry"
+        ]
+      }
+    ],
+    "secretProof": {
+      "rootRule": "R4_light",
+      "secretFact": [
+        "steeredByLightOf",
+        "mara",
+        "senna"
+      ],
+      "topBranches": [
+        {
+          "id": "secret_branch_1",
+          "rootFact": [
+            "steeredByLampOf",
+            "mara",
+            "southStack"
+          ],
+          "rootPredicate": "steeredByLampOf",
+          "rootRule": "R2_lamp",
+          "baseFactKeys": [
+            "[\"lampBurnedAt\",\"southStack\",\"wreckNight\"]",
+            "[\"loggedBearingOf\",\"mara\",\"sswHalfWest\"]",
+            "[\"towerOnBearing\",\"sswHalfWest\",\"southStack\"]"
+          ],
+          "basePremiseIds": [
+            "p_bearing",
+            "p_chart",
+            "p_glimpse",
+            "p_residue"
+          ]
+        },
+        {
+          "id": "secret_branch_2",
+          "rootFact": [
+            "litLampOf",
+            "senna",
+            "southStack"
+          ],
+          "rootPredicate": "litLampOf",
+          "rootRule": "R3_hand",
+          "baseFactKeys": [
+            "[\"atTowerThatNight\",\"senna\",\"southStack\"]",
+            "[\"lampBurnedAt\",\"southStack\",\"wreckNight\"]",
+            "[\"onlyKeyTo\",\"southStack\",\"senna\"]"
+          ],
+          "basePremiseIds": [
+            "p_ferry",
+            "p_glimpse",
+            "p_key",
+            "p_residue",
+            "p_skiff"
+          ]
+        }
+      ],
+      "branchOverlap": [
+        {
+          "branchIds": [
+            "secret_branch_1",
+            "secret_branch_2"
+          ],
+          "sharedFactKeys": [
+            "[\"lampBurnedAt\",\"southStack\",\"wreckNight\"]"
+          ],
+          "sharedPremiseIds": [
+            "p_glimpse",
+            "p_residue"
+          ]
+        }
+      ],
+      "independentTopLevelJoin": false
+    },
+    "joins": [
+      {
+        "ruleId": "R1_bearing",
+        "inputs": [
+          [
+            "loggedBearingOf",
+            "?ship",
+            "?b"
+          ],
+          [
+            "towerOnBearing",
+            "?b",
+            "?t"
+          ]
+        ],
+        "outputs": [
+          [
+            "steeredToward",
+            "?ship",
+            "?t"
+          ]
+        ],
+        "inputPredicates": [
+          "loggedBearingOf",
+          "towerOnBearing"
+        ],
+        "outputPredicates": [
+          "steeredToward"
+        ],
+        "outputsSecretPredicate": false
+      },
+      {
+        "ruleId": "R2_lamp",
+        "inputs": [
+          [
+            "steeredToward",
+            "?ship",
+            "?t"
+          ],
+          [
+            "lampBurnedAt",
+            "?t",
+            "wreckNight"
+          ]
+        ],
+        "outputs": [
+          [
+            "steeredByLampOf",
+            "?ship",
+            "?t"
+          ]
+        ],
+        "inputPredicates": [
+          "steeredToward",
+          "lampBurnedAt"
+        ],
+        "outputPredicates": [
+          "steeredByLampOf"
+        ],
+        "outputsSecretPredicate": false
+      },
+      {
+        "ruleId": "R3_hand",
+        "inputs": [
+          [
+            "lampBurnedAt",
+            "?t",
+            "wreckNight"
+          ],
+          [
+            "onlyKeyTo",
+            "?t",
+            "?x"
+          ],
+          [
+            "atTowerThatNight",
+            "?x",
+            "?t"
+          ]
+        ],
+        "outputs": [
+          [
+            "litLampOf",
+            "?x",
+            "?t"
+          ]
+        ],
+        "inputPredicates": [
+          "lampBurnedAt",
+          "onlyKeyTo",
+          "atTowerThatNight"
+        ],
+        "outputPredicates": [
+          "litLampOf"
+        ],
+        "outputsSecretPredicate": false
+      },
+      {
+        "ruleId": "R4_light",
+        "inputs": [
+          [
+            "steeredByLampOf",
+            "?ship",
+            "?t"
+          ],
+          [
+            "litLampOf",
+            "?x",
+            "?t"
+          ]
+        ],
+        "outputs": [
+          [
+            "steeredByLightOf",
+            "?ship",
+            "?x"
+          ]
+        ],
+        "inputPredicates": [
+          "steeredByLampOf",
+          "litLampOf"
+        ],
+        "outputPredicates": [
+          "steeredByLightOf"
+        ],
+        "outputsSecretPredicate": true
+      }
+    ]
+  },
+  "releaseCalendar": [
+    {
+      "turn": 2,
+      "premise": "m_key",
+      "via": "director"
+    },
+    {
+      "turn": 4,
+      "premise": "p_bearing",
+      "via": "tutor"
+    },
+    {
+      "turn": 6,
+      "premise": "m_post",
+      "via": "director"
+    },
+    {
+      "turn": 8,
+      "premise": "m_shutter",
+      "via": "director"
+    },
+    {
+      "turn": 9,
+      "premise": "p_chart",
+      "via": "tutor"
+    },
+    {
+      "turn": 13,
+      "premise": "p_residue",
+      "via": "director"
+    },
+    {
+      "turn": 17,
+      "premise": "p_key",
+      "via": "tutor"
+    },
+    {
+      "turn": 20,
+      "premise": "p_skiff",
+      "via": "director"
+    }
+  ],
+  "slope": {
+    "tMin": 18,
+    "aporiaWindow": 6
+  }
+}

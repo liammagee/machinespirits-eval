@@ -7,6 +7,8 @@ allowed-tools: Bash, Read, Write
 
 You assemble a **drama** for the drama machine. A drama is a binding of values to slots across the six Aristotelian parts (mythos/ethos/dianoia/lexis/opsis/melos) + the audience + the cast. Your job: turn the user's brief into a *complete, valid, runnable* spec, being honest about what runs today vs what is roadmap.
 
+**Which skill?** This skill is the *freeform* entry point — one drama assembled from a natural-language brief by filling slots. If the user instead wants to turn an authored **curriculum** (a course → its modules) into a *suite* of dramas, each bound to a locked world contract — i.e. anything touching `curriculum/*.yaml`, `curriculum:compile:*`, or world-adaptation specs — use **/ms-curriculum-drama**, which drives the curriculum→world→drama compile chain. The two share the slot/move vocabulary in `notes/poetics/drama-machine/` and both lower to `generate-pedagogical-dramas.js`.
+
 **The model is the source of truth — read it first, do not invent slot values:**
 - `notes/poetics/drama-machine/TAXONOMY.md` — every slot, its value space, and WIRED/PARTIAL/TO-BUILD status
 - `notes/poetics/drama-machine/SPEC.md` — the `drama:` / `cast:` / `audience:` / `turn_plan:` schema and how each lowers to existing tools

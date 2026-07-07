@@ -1,0 +1,51 @@
+version: 0.1.0
+name: D2 Role-Transfer Quality Rubric
+description: >
+  Role-native scoring rubric for D2 Path 2. Scores direct performance in
+  peer-support, customer-service, and code-review roles. This is independent of
+  the tutor v2.2 rubric and should not be pooled with tutor_first_turn_score.
+
+scale:
+  min: 1
+  max: 5
+  anchors:
+    1: "Actively mismatched to the role or harmful for the scenario."
+    2: "Partly relevant but misses the scenario's central demand."
+    3: "Adequate, role-compatible, but generic or incomplete."
+    4: "Strong, specific, role-fit response with minor limitations."
+    5: "Excellent role-native response; specific, bounded, and responsive to the user's perspective."
+
+dimensions:
+  role_fidelity:
+    weight: 0.2
+    question: "Does the response perform the assigned role directly without slipping back into tutor/coaching mode?"
+  contextual_specificity:
+    weight: 0.2
+    question: "Does it use the actual scenario details rather than generic advice?"
+  agency_preservation:
+    weight: 0.2
+    question: "Does it preserve the other party's agency, interpretation, and dignity?"
+  outcome_helpfulness:
+    weight: 0.2
+    question: "Does it move the interaction forward in a way appropriate to the role?"
+  boundary_safety:
+    weight: 0.15
+    question: "Does it respect the role's boundaries, including safety, policy, and competence limits?"
+  communication_quality:
+    weight: 0.05
+    question: "Is it clear, concise, and usable as a real response?"
+
+application_notes:
+  peer_support: >
+    High scores stay with the caller's experience without advising, diagnosing,
+    reassuring, or deciding for them.
+  customer_service: >
+    High scores take ownership of the support problem, provide a concrete next
+    step, and do not hide behind policy language.
+  code_review: >
+    High scores identify the real technical issue, preserve author agency, and
+    distinguish blocking concerns from preferences.
+
+primary_score:
+  field: role_fit_overall
+  transform: "weighted mean of 1-5 dimension scores scaled to 0-100"

@@ -4,10 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light" />
-<title>Machinagogy — A Designer's Field Guide to Recognition in Chatbot Design</title>
-<meta name="description" content="A field guide for chatbot designers. The drama of teaching, the philosophy of recognition, and what a five-pass mechanism analysis on a recognition-theoretic AI tutor reveals about how to build dialogical systems that don't feel flat." />
-<meta property="og:title" content="Machinagogy — A Designer's Field Guide to Recognition in Chatbot Design" />
-<meta property="og:description" content="A field guide for chatbot designers. The drama of teaching, the philosophy of recognition, and what to build instead." />
+<title>Machinagogy — A Designer's Field Guide to Building AI Tutors</title>
+<meta name="description" content="A field guide for AI tutor designers. Recognition, intersubjective pedagogy, ego-superego critique, state-policy control, and proof-debt guards translated into build guidance." />
+<meta property="og:title" content="Machinagogy — A Designer's Field Guide to Building AI Tutors" />
+<meta property="og:description" content="A field guide for AI tutor designers: what the current Machine Spirits paper says to build, what to evaluate, and what not to overclaim." />
 <meta property="og:type" content="article" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1118,7 +1118,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
     Machinagogy.
   </h1>
   <p class="hero__subtitle">
-    A designer's field guide to <span style="font-style:normal;color:var(--ink);">recognition</span> in chatbot design — for anyone building dialogical systems that don't have to feel flat.
+    A designer's field guide to <span style="font-style:normal;color:var(--ink);">building AI tutors</span> that treat the learner as a thinking participant, not a content bucket.
   </p>
 
   <div class="hero__lede">
@@ -1127,7 +1127,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
         Most chatbots feel mechanical — not because they are unintelligent, but because their <em>discourse</em> is unfailingly monotonal. They explain, summarise, hedge, and reassure with a uniform breeziness that gives the receiving end no place to push back, no place to be heard, no place to enter the conversation as more than a sequence of inputs. The flatness is structural, not cosmetic; it survives every prompt-engineering trick that targets only surface tone.
       </p>
       <p>
-        This field guide is for designers who want to build something else. It draws on a small but rigorous result: a five-pass mechanism analysis of a <em>recognition-theoretic</em> AI tutor, shadowed by a philosophical reading that places the result inside a longer history of teaching, drama, and the dialectics of self and other. The result is part empirical and part conceptual, and it produces a small handful of actionable design moves.
+        This field guide is for designers who want to build something else. It draws on the current mechanism results from <em>Geist in the Machine</em>: recognition and its constructivist cousins calibrate tutor output from the first turn; ego/superego critique repairs uncalibrated or weaker models; and true adaptivity requires explicit state-policy governance rather than another exhortation to "be responsive." The result is part empirical and part conceptual, and it produces a small handful of actionable design moves.
       </p>
       <p>
         The companion paper [<a href="https://github.com/liammagee/machinespirits-content-philosophy/blob/main/articles/ai-tutor/machinagogy-v2.md">Magee 2026</a>] supplies the philosophical scaffold; the technical paper [<a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/research/paper-full-2.0.md">paper-full-2.0.md</a>] supplies the evidence; this page is the bridge between them, written for the practitioner: <em>here is what to take away, here is what to ignore, and here is how to put it into your design.</em>
@@ -1227,7 +1227,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
       <p class="s__kicker">A 200-word primer on Hegelian recognition.</p>
       <h2 class="s__h">Recognition is <em>mutual</em>, <em>contingent</em>, and not the same thing as friendliness.</h2>
       <p class="lede-p">
-        The Hegelian concept that does most of the work in this guide is older and stranger than its plain-language uses. A short orientation, then the relevance to chatbot design.
+        The Hegelian concept that does most of the work in this guide is older and stranger than its plain-language uses. A short orientation, then the relevance to AI tutor design.
       </p>
     </div>
     <aside class="mr">
@@ -1263,7 +1263,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
         <dd>The contemporary reading of recognition: <em>love</em> (intimate care), <em>rights</em> (legal-civic), and <em>esteem</em> (social-vocational). Each is its own kind of recognition.</dd>
       </dl>
 
-      <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:2em 0 0.6em;color:var(--ink);font-variation-settings:'SOFT' 30,'WONK' 0,'opsz' 24;">Why a chatbot designer should care</h3>
+      <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:2em 0 0.6em;color:var(--ink);font-variation-settings:'SOFT' 30,'WONK' 0,'opsz' 24;">Why an AI tutor designer should care</h3>
       <p>
         A chatbot that <em>recognises</em> its user is one that treats the user as a self-conscious subject whose contribution can change what comes next — not as a query whose content selects a response. Operationally, this means three things, listed here as a preview of design moves the rest of the guide will substantiate:
       </p>
@@ -1297,7 +1297,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
       <p class="s__kicker">A 200-word primer on Freudian interiority.</p>
       <h2 class="s__h">The teacher has an <em>interior</em> voice. So can the chatbot.</h2>
       <p class="lede-p">
-        Where Hegel describes the encounter <em>between</em> selves, Freud describes the encounter <em>within</em> the self. Both apply to chatbot design, and the second produces a specific architectural move.
+        Where Hegel describes the encounter <em>between</em> selves, Freud describes the encounter <em>within</em> the self. Both apply to AI tutor design, and the second produces a specific architectural move.
       </p>
     </div>
     <aside class="mr">
@@ -1329,7 +1329,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
         The same doubling can apply to the <em>simulated learner</em> in evaluation work: a learner ego that drafts a reaction to the tutor, and a learner superego that asks "is what I've drafted faithful to what I would actually have thought?" The pair produces a less mechanically docile learner than a single agent does.
       </p>
 
-      <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:2em 0 0.6em;color:var(--ink);font-variation-settings:'SOFT' 30,'WONK' 0,'opsz' 24;">Why this matters for chatbot designers</h3>
+      <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:2em 0 0.6em;color:var(--ink);font-variation-settings:'SOFT' 30,'WONK' 0,'opsz' 24;">Why this matters for AI tutor designers</h3>
       <p>
         Single-agent generation is the default — and the default reproduces the flatness problem. Multi-agent generation, even at the cost of double the inference time, gives the system <em>somewhere to disagree with itself</em>. That disagreement is the structural ground for tonal modulation, for the visible work of deliberation, and — when paired with recognition-oriented prompting — for the kind of response variation that gives the user a place to enter the conversation.
       </p>
@@ -1364,7 +1364,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
     <aside class="mr">
       <div class="note">
         <span class="note__lbl">scale</span>
-        Four cells × ~50 dialogues × three independent LLM judges (Sonnet 4.6, Opus 4.7, GPT-5.2) on philosophy-of-mind tutoring scenarios. DeepSeek V3.2 ego, Kimi K2.5 superego throughout. <span class="cite">7.9</span>
+        Four cells × ~50 dialogues × three independent LLM judges on philosophy-of-mind tutoring scenarios; the current Paper 2.0 judge panel is Sonnet 4.6, Gemini 3.1 Pro, and GPT-5.4. <span class="cite">7.9</span>
       </div>
     </aside>
   </div>
@@ -1475,7 +1475,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
             The contrast that <em>does</em> matter is family-level: the two intersubjective cells (5, 95) jointly outscore the two transmission cells (1, 96) at $d \approx 1.38$ — substantially larger than the recognition-vs-base effect alone. The Hegelian content is decorative; the family-level <em>stance</em> is what does the work.
           </p>
           <div class="claim__counter">
-            One might still suspect the Hegelian vocabulary primes the model in some non-obvious way the matched-pedagogical prompt accidentally inherits. The lexical analysis (<span class="cite">7.10</span>, two passes) rules this out: cell 95 is dense in Vygotskian vocabulary the recognition prompt almost never uses; their score equivalence persists despite near-disjoint vocabulary distributions.
+            One might still suspect the Hegelian vocabulary primes the model in some non-obvious way the matched-pedagogical prompt accidentally inherits. The lexical analysis (<span class="cite">7.9</span>, two passes) rules this out: cell 95 is dense in Vygotskian vocabulary the recognition prompt almost never uses; their score equivalence persists despite near-disjoint vocabulary distributions.
           </div>
         </div>
       </div>
@@ -1486,7 +1486,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
         <h3 class="claim__h">"The recognition injection" can mean three different things — only one is load-bearing.</h3>
         <div class="claim__body">
           <p>
-            Once the family-level finding is in hand, the §7.10 decomposition makes a distinction informal readings tend to collapse. <em>The recognition injection</em> can refer to:
+            Once the family-level finding is in hand, the §7.9 decomposition makes a distinction informal readings tend to collapse. <em>The recognition injection</em> can refer to:
           </p>
           <table class="tbl">
             <thead>
@@ -1630,7 +1630,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
     <aside class="mr">
       <div class="note note--ink">
         <span class="note__lbl">cross-judge robustness</span>
-        Verified across Sonnet 4.6, Opus 4.7, GPT-5.2: pooled <em>r</em> positive in 3/3 judges; within-cell <em>r</em> negative in cell 5 and cell 95 across all 3 judges. Not a Sonnet artefact. <span class="cite">7.10.1</span>
+        Verified across the current three-judge panel: pooled <em>r</em> positive in 3/3 judges; within-cell <em>r</em> negative in cell 5 and cell 95 across all 3 judges. Not a Sonnet artefact. <span class="cite">7.9</span>
       </div>
     </aside>
   </div>
@@ -2198,15 +2198,15 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
     </aside>
     <div class="body">
       <p class="s__kicker">From paper to product.</p>
-      <h2 class="s__h">Integrating these findings into your <em>chatbot</em> design.</h2>
+      <h2 class="s__h">How to build an <em>AI tutor</em> from these results.</h2>
       <p class="lede-p">
-        This is the working section. Three sub-parts: a live response analyser you can paste into; concrete design recommendations stratified by the kind of chatbot you're building; and a ten-item checklist you can run a draft against before shipping.
+        This is the working section. Three sub-parts: a live response analyser you can paste into; concrete design recommendations stratified by the kind of tutor or adjacent system you're building; and a checklist you can run a draft architecture against before shipping.
       </p>
     </div>
     <aside class="mr">
       <div class="note note--moss">
         <span class="note__lbl">on translation</span>
-        The recognition-theoretic apparatus generalises. D2 Path 1 found peer-support listener coaching produces the strongest within-cell mediator <em>r</em> = 0.739 in the entire D1 sequence — strongest single mediator effect on a domain that is structurally <em>not</em> tutoring. Same family-level pattern; different vocabulary fits.
+        The current paper separates two build layers. For ordinary tutoring, intersubjective prompt orientation and selective critique do most of the work. For adaptive or proof-like tutoring, the lift comes from explicit state contracts, outcome closure, and guarded premise release, not from richer recognitive prose alone.
       </div>
     </aside>
   </div>
@@ -2219,13 +2219,13 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
       <p class="s__kicker">a. response analyser.</p>
       <h3 class="claim__h" style="margin-bottom:0.4em;">Paste a response, get a feature reading.</h3>
       <p>
-        Paste a tutor response (or any chatbot reply you're evaluating) into the box. Six regex-based features compute live in your browser, each annotated with the paper's reading. Pure JS, nothing leaves your machine.
+        Paste a tutor response (or any adjacent chatbot reply you're evaluating) into the box. Six regex-based features compute live in your browser, each annotated with the paper's reading. Pure JS, nothing leaves your machine.
       </p>
     </div>
     <aside class="mr">
       <div class="note">
         <span class="note__lbl">a caveat</span>
-        Single-turn vs multi-turn matters. Ends-with-question is a positive within-cell mediator on single-turn responses but <em>reverses sign</em> on multi-turn dialogues — ending the final turn unresolved is read as poor closure rather than initiative-ceding. <span class="cite">7.10.1</span>
+        Single-turn vs multi-turn matters. Ends-with-question is a positive within-cell mediator on single-turn responses but <em>reverses sign</em> on multi-turn dialogues — ending the final turn unresolved is read as poor closure rather than initiative-ceding. <span class="cite">7.9</span>
       </div>
     </aside>
   </div>
@@ -2256,7 +2256,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
       <p class="s__kicker">b. by application.</p>
       <h3 class="claim__h" style="margin-bottom:0.4em;">Concrete design recommendations.</h3>
       <p>
-        Each card lists three concrete moves grounded in paper findings, stratified by the kind of chatbot you're building. Move from left to right as the application moves further from tutoring.
+        Each card lists concrete moves grounded in paper findings, stratified by the kind of tutor or adjacent chatbot you're building. Move from left to right as the application moves further from tutoring.
       </p>
     </div>
     <aside class="mr">
@@ -2274,14 +2274,23 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
           <p class="label">tutor design</p>
           <h3 class="apply__card__h">If you're building an <em>LLM tutor</em></h3>
           <ol>
-            <li>Adopt an intersubjective stance. Recognition theory is one option; Vygotskian scaffolding is another. The vocabulary is interchangeable; the stance is what carries the effect.
+            <li>Adopt an intersubjective stance. Recognition theory is one option; Vygotskian scaffolding is another. The vocabulary is interchangeable; the stance is what carries the effect: the learner's contribution must shape the next tutor move.
               <span class="cite">7.9</span>
             </li>
-            <li>Don't operationalise the stance as surface acknowledgement. "Quote what the learner said," "use possessives," and paraphrase markers correlate <em>negatively</em> with rubric quality. Build for substance, not surface.
+            <li>Use an ego/superego critic where it buys error correction. Under baseline or weaker generation, the second voice catches real failures; on stronger recognition-oriented models its marginal value shrinks and can become wasteful.
+              <span class="cite">6.2</span>
+            </li>
+            <li>Do not operationalise the stance as surface acknowledgement. "Quote what the learner said," "use possessives," and paraphrase markers correlate <em>negatively</em> with rubric quality. Build for substantive uptake, not acknowledgement theatre.
               <span class="cite">6.1.8</span>
             </li>
             <li>End single-turn responses with a question when ceding initiative is contextually appropriate. Within-cell mediator <em>r</em> = +0.325 in cell 5, +0.392 in cell 95. Beware: in multi-turn dialogues, ending the <em>final</em> turn with a question reads as poor closure instead.
               <span class="cite">7.10.1</span>
+            </li>
+            <li>If you need real adaptivity, add an external state-policy layer. The supported Plan 2.x results come from typed learner-state contracts, outcome closure, and explicit strategy-shift checks, not from asking the same tutor prompt to become more adaptive.
+              <span class="cite">6.12</span>
+            </li>
+            <li>For proof-like or derivation tutoring, put pacing outside the model. The promoted arm uses hidden <code>proofDebt</code> and a guard that controls premise release; visible transcript proxies are safe only when the task geometry makes visible uptake a faithful projection of hidden state.
+              <span class="cite">6.13</span>
             </li>
           </ol>
         </div>
@@ -2322,7 +2331,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
   <div class="diag">
     <div class="body">
       <p class="s__kicker">c. before you ship.</p>
-      <h3 class="claim__h" style="margin-bottom:0.4em;">A ten-item integration checklist.</h3>
+      <h3 class="claim__h" style="margin-bottom:0.4em;">A twelve-item integration checklist.</h3>
       <p>
         Click each item to mark it done. The list is not exhaustive but it captures the moves that distinguish a recognition-aware chatbot from one that simply uses the word "recognition" in its prompt.
       </p>
@@ -2367,6 +2376,14 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
           <p class="chk__d">Strong models (Opus-class, Sonnet-class) absorb most of the calibration work into the prompt; the architecture residual collapses. Weaker models leave more uncorrected error, which the multi-agent ego/superego architecture can catch.</p>
         </li>
         <li>
+          <span class="chk__h">Separate <em>prompt calibration</em> from <em>adaptive control</em>.</span>
+          <p class="chk__d">Recognition improves the tutor from turn one, but it does not reliably make quality climb across a short dialogue. For adaptivity, model learner state explicitly and test whether the chosen policy shifts when that state changes.</p>
+        </li>
+        <li>
+          <span class="chk__h">Use guards for <em>proof-like tutoring</em>.</span>
+          <p class="chk__d">When the target is a derivation, theorem, or hidden rule, don't let the model decide alone when to reveal premises. Track proof debt and enforce release, repair, and pacing with a runtime guard.</p>
+        </li>
+        <li>
           <span class="chk__h">Decide consciously about <em>turn-ending</em>.</span>
           <p class="chk__d">In a single-turn response, ending with a question cedes initiative and is rewarded. In a multi-turn dialogue, ending the <em>final</em> turn with a question reads as poor closure. Make the choice deliberately per turn type.</p>
         </li>
@@ -2376,7 +2393,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
         </li>
         <li>
           <span class="chk__h">Document your <em>scope conditions</em>.</span>
-          <p class="chk__d">Single-turn vs multi-turn; single-agent vs multi-agent; tutor vs peer-support vs critic; one judge vs three. Every claim has a scope. State it explicitly in the documentation, especially when the claim does not survive moving outside it.</p>
+          <p class="chk__d">Single-turn vs multi-turn; single-agent vs multi-agent; tutor vs peer-support vs critic; prompt-only vs state-policy control; one judge vs three. Every claim has a scope. State it explicitly in the documentation, especially when the claim does not survive moving outside it.</p>
         </li>
       </ul>
     </div>
@@ -2425,7 +2442,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
         <cite>— Magee 2026, Defensible Vibes and Alien Dialectics</cite>
       </div>
       <p>
-        The relevance for the chatbot designer is this: the same dialectical relation you are designing into your chatbot — the recognition-aware interaction between user and system — is the relation you are <em>already in</em> with the AI tools you use to build it. Your prompt-engineering loops, your evaluation runs, your "let me ask Claude what it thinks of this design" sessions: each is a tiny enactment of the dynamic the chatbot is being shaped to perform. The methodological discipline that makes one work is what makes the other work. <em>If you cannot recognise the AI that helped you build the chatbot, the chatbot is unlikely to recognise its users.</em>
+        The relevance for the AI tutor designer is this: the same dialectical relation you are designing into your tutor — the recognition-aware interaction between user and system — is the relation you are <em>already in</em> with the AI tools you use to build it. Your prompt-engineering loops, your evaluation runs, your "let me ask Claude what it thinks of this design" sessions: each is a tiny enactment of the dynamic the tutor is being shaped to perform. The methodological discipline that makes one work is what makes the other work. <em>If you cannot make the AI that helped you build the tutor answer to evidence, the tutor is unlikely to make itself answer to its learner.</em>
       </p>
 
       <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:2em 0 0.6em;color:var(--ink);">What this guide is part of</h3>
@@ -2433,7 +2450,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
         Generative AI's progress is charted in part by the relentless simulated enactment of existing social relations. In the late 2010s, GPT-2 produced incoherent fragments. By the mid-2020s, AI systems extend across customer service, software development, copy writing, graphic design — and student tutelage. This guide is one small part of one larger question: what kind of social relation can a generative AI sustain, and what disciplines do designers need to make those relations less flat than the default?
       </p>
       <p>
-        The recognition-theoretic findings are hopeful within their scope but also bounded. The companion paper is honest about the limits: the entire study used synthetic learners. The mechanisms are shown for tutor production, not for actual learning. The next step — the A1 human-learner pilot in the technical paper's open programme — is the only real test. Until then, the findings reported here function for designers as <em>operational hypotheses to integrate</em>, not as final certainties.
+        The recognition-theoretic findings are hopeful within their scope but also bounded. The companion paper is honest about the limits: the tutor-quality studies use synthetic learners and LLM judges, while the derivation guards use formal toy worlds. The mechanisms are shown for tutor production and simulated state-contingent governance, not for actual human learning. The A1 human-learner pilot apparatus is built, but real recruitment and learning-outcome evidence remain the decisive test. Until then, the findings reported here function for designers as <em>operational hypotheses to integrate</em>, not as final certainties.
       </p>
     </div>
     <aside class="mr">
@@ -2482,7 +2499,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
         </a>
         <a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/research/paper-full-2.0.md">
           <span class="linklist__no">ii.</span>
-          <span class="linklist__name">Technical paper — <em>paper-full-2.0.md</em><span class="linklist__name__sub">canonical empirical document, currently v3.0.56. Five-pass mechanism analysis lives in §7.10.</span></span>
+          <span class="linklist__name">Technical paper — <em>paper-full-2.0.md</em><span class="linklist__name__sub">canonical empirical document, currently v3.0.181. Mechanism results live in §6-§8; state-policy and conduct-governance addenda live in §6.12-§6.13.</span></span>
           <span class="linklist__arrow">→</span>
         </a>
         <a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/research/methods-paper.md">
@@ -2497,7 +2514,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
         </a>
         <a href="https://github.com/liammagee/machinespirits-eval/tree/main/scripts">
           <span class="linklist__no">v.</span>
-          <span class="linklist__name">Analysis scripts — <code style="font-family:JetBrains Mono,monospace;font-size:0.92em;">analyze-d1-*.js</code><span class="linklist__name__sub">Pure-JS pipeline for the five-pass mechanism analysis. Reusable on any LLM-tutor dataset.</span></span>
+          <span class="linklist__name">Analysis scripts<span class="linklist__name__sub">Pure-JS pipelines for mediator checks, trajectory analysis, state-policy probes, and paper claim validation. Reusable on LLM-tutor datasets with matching traces.</span></span>
           <span class="linklist__arrow">→</span>
         </a>
         <a href="https://github.com/liammagee/machinespirits-eval/blob/main/prompts/tutor-ego-recognition.md">
@@ -2534,7 +2551,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
 <pre id="cite-main"><span class="k">@unpublished</span>{<span class="v">magee2026geist</span>,
   author    = {Magee, Liam},
   title     = {{Geist} in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical {AI} Tutoring},
-  note      = {Working paper, v3.0.56},
+  note      = {Working paper, v3.0.181},
   year      = {2026},
   url       = {https://github.com/liammagee/machinespirits-eval}
 }</pre>
@@ -2564,7 +2581,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
   <div class="foot__inner">
     <div>
       <p class="foot__lede">
-        <em>Source paper of record:</em> <span class="em">paper-full-2.0.md</span> v3.0.56.
+        <em>Source paper of record:</em> <span class="em">paper-full-2.0.md</span> v3.0.181.
         Every empirical claim on this page traces to a specific paper section.
       </p>
       <p class="foot__sub">

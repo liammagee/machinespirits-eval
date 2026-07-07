@@ -1,0 +1,247 @@
+{
+  "schema": "dramatic-derivation.a21.trigger-fixture.v0",
+  "fixtureId": "hethel-trigger-fixture",
+  "generatedAt": "2026-06-16T15:07:50.262Z",
+  "sourceAutopsy": "exports/dramatic-derivation/a21-action-value/hethel-autopsy.json",
+  "sourceRuns": {
+    "prefixSource": "exports/dramatic-derivation/loop/hethel-phase5g-a20-fresh-selective-v4-r1",
+    "hiddenSuccess": "exports/dramatic-derivation/loop/hethel-phase5g-a20-fresh-hidden-r1",
+    "failedOverlay": "exports/dramatic-derivation/loop/hethel-phase5g-a20-fresh-selective-v4-r1"
+  },
+  "worldId": "world_006_hethel",
+  "trigger": {
+    "turn": 4,
+    "prefixThroughTurn": 3,
+    "primaryLabel": "release_starvation",
+    "secondaryLabels": [
+      "diagnostic_overuse"
+    ],
+    "summary": "The successful hidden+proofDebt run releases the proof-critical p_point on schedule; the failed overlay keeps asking/holding and delays the release, so D does not fall at the trigger."
+  },
+  "publicProofSummary": {
+    "proofDistanceBeforeAction": 5,
+    "hiddenProofDistanceAfterObservedAction": 4,
+    "failedProofDistanceAfterObservedAction": 5,
+    "finalHiddenVerdict": "grounded_anagnorisis",
+    "finalFailedVerdict": "disengagement"
+  },
+  "releaseContext": {
+    "targetPremise": "p_point",
+    "hiddenObserved": {
+      "targetPremise": "p_point",
+      "releasedAtTrigger": "p_point",
+      "safeTurns": [
+        4,
+        5,
+        6
+      ],
+      "scheduledTurn": 4,
+      "offset": 0,
+      "forced": null
+    },
+    "failedObserved": {
+      "targetPremise": "p_point",
+      "releasedAtTrigger": null,
+      "safeTurns": [
+        4,
+        5,
+        6
+      ],
+      "scheduledTurn": null,
+      "offset": null,
+      "forced": null
+    }
+  },
+  "publicLearnerState": {
+    "stateId": "hethel-trigger-fixture:learner",
+    "misconception": "mirror_dead_predicate",
+    "frustration": "medium",
+    "engagement": "engaged",
+    "confidence": "low",
+    "evidenceSeen": {
+      "m_record": true,
+      "p_point": false,
+      "p_surface": false,
+      "p_mark": false,
+      "p_brand": false
+    },
+    "dependencyOwned": {
+      "m_record": true,
+      "p_point": false,
+      "p_surface": false,
+      "p_mark": false,
+      "p_brand": false
+    },
+    "dependencyEchoedOnly": {
+      "p_point": true
+    },
+    "alternativeRouteCandidate": false,
+    "diagnosticHistory": {
+      "count": 2,
+      "lastDiagnosticTurn": 3,
+      "answeredSubstantively": 1,
+      "repeatedWithoutNewEvidence": 1
+    },
+    "proofProgress": {
+      "D": 5,
+      "lastDDelta": 0,
+      "turnsSinceDDecrease": 3,
+      "releasesOnSchedule": [],
+      "delayedReleases": [],
+      "earlyReleases": []
+    },
+    "transitionFlags": {
+      "targetDependencyRepaired": false,
+      "learnerCanUsePPoint": false,
+      "learnerCanUsePSurface": false,
+      "learnerReadyForFinalAssertion": false
+    }
+  },
+  "publicTranscriptPrefix": [
+    {
+      "turn": 1,
+      "role": "director",
+      "text": "[Rain ticks in the dark timbers of the hall, and the room gathers itself around an absence that has not yet been named. A clerk opens a clean page; outside, the river keeps moving under the broken weather.]",
+      "meta": {
+        "phase": {
+          "name": "Act 1",
+          "intent": "[Rain ticks in the dark timbers of the hall, and the room gathers itself around an absence that has not yet been named. A clerk opens a clean page; outside, the river keeps moving under the broken weather.]",
+          "turn": 1
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "role": "tutor",
+      "text": "Before ink finds a name, clerk, set down the house question: not who must pay for a broken span, but what act brought it down. We will let each record answer only the work it can do, and no more.",
+      "meta": {
+        "move": {
+          "figure": "antithesis",
+          "intent": "orient",
+          "targetPremise": null
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "role": "learner",
+      "text": "Aye, tutor — the bond in the warden's chest names Reyner answerable for the cost, but that is a different page from the one I must keep today. My record holds him mason of record, which is one thing; the act that brought the span down may be another thing entirely, and the assize rules those apart. I will not write a name for the felling until the fallen arch itself has spoken.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "hypothesis": "The span may have failed through its centering being struck before the lime was set — which would mean the felling hand is whoever pulled the falsework, not necessarily the builder of record.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "director",
+      "text": "[The contract is no secret: Reyner set his seal to the bridge-work and raised this span under his own mark three summers gone. The town needs to read no further — the bridge is Reyner's work, and so, it says, is its fall.]",
+      "meta": {
+        "release": "m_record"
+      }
+    },
+    {
+      "turn": 2,
+      "role": "tutor",
+      "text": "Pause there. What in the public record licenses that next step?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "intent": "test",
+          "targetPremise": "m_record"
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "role": "learner",
+      "text": "The seal and the bond put Reyner answerable for the cost — that much the rules will bear — but the rules themselves say plainly that liability is who pays for a fall, not the hand that brought it down. Raising a span under one's own mark is a different thing from pulling its props before the lime was set. Until the arch itself tells us how it broke and who drew the centering, the record licenses no further step than 'builder of record' and 'bond-holder.'",
+      "meta": {
+        "adopt": [
+          [
+            "masonOfRecord",
+            "hethelSpan",
+            "reyner"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "hypothesis": "The span may have failed through its centering being struck before the lime was set — which would mean the felling hand is whoever pulled the falsework, not necessarily the builder of record.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 3,
+      "role": "director",
+      "text": "[the hall holds its breath around the clerk's wet ink, and the murmurs at the benches sink back into the rain. No hand is named; the broken question remains in the room, heavy as soaked wool.]",
+      "meta": {}
+    },
+    {
+      "turn": 3,
+      "role": "tutor",
+      "text": "Before another paper comes into the hall, read back the first one in your own words. What does it prove, and where does its force stop?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "intent": "confront",
+          "targetPremise": "m_record"
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "role": "learner",
+      "text": "The first paper — Reyner's seal and bond — proves two things: that he is builder of record for this span, and that his bond makes him the one who must pay when it comes down. Those are the two steps it will carry. Where its force stops is here: it says nothing of why the arch broke or who drew the props from under the green lime. A man may raise a sound span, bond it honestly, and still have another hand strike the centering before it has set — the contract cannot speak to that, and the assize rules will not let it.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "hypothesis": "The span may have failed through its centering being struck before the lime was set — which would mean the felling hand is whoever pulled the falsework, not necessarily the builder of record.",
+        "asserts": null
+      }
+    }
+  ],
+  "observedAtTrigger": {
+    "hiddenAction": {
+      "actionFamily": "release_next_evidence",
+      "targetPremise": "p_point",
+      "released": "p_point",
+      "DAfter": 4
+    },
+    "failedAction": {
+      "actionFamily": "ask_diagnostic",
+      "targetPremise": "m_record",
+      "released": null,
+      "selectedConductMoveFamily": "ask_diagnostic",
+      "conductReasonCode": "visible_hidden_conflict",
+      "DAfter": 5
+    }
+  },
+  "nonLeakConstraints": {
+    "forbiddenKeys": [
+      "corruptionLedger",
+      "corruption_ledger",
+      "dIfRestored",
+      "dNow",
+      "deltaD",
+      "hiddenBoard",
+      "hidden_board",
+      "proofPath",
+      "proof_path",
+      "rawBoard",
+      "raw_board",
+      "secret",
+      "sourcePremiseIds",
+      "sourceProofPathIds",
+      "trajectoryD"
+    ],
+    "tutorFacingFields": [
+      "publicTranscriptPrefix",
+      "publicLearnerState",
+      "releaseContext"
+    ]
+  },
+  "fixtureHash": "e4877f7c55a245ef65174a2480d246264552e735fd49fec899a26fd866706e4e"
+}

@@ -1,0 +1,39 @@
+`★ Insight ─────────────────────────────────────`
+- **The rubric's "additive vs. restructuring" line is the load-bearing test here.** This transcript is unusually clean for `revision_signals` because the learner doesn't just stack new facts ("oh, and also...") — at Turn 12 it retracts its *own* over-reach, and at Turn 22 it literally strikes its original margin note. That's restructuring, not accretion, which is what separates a 5 from a 3.
+- **The "settled vs. open gap" bookkeeping does double duty.** The same running ledger ("the place is fixed… the carrier is still a gap") scores as *both* conceptual_progression (cumulative chain-building) and metacognitive_awareness (monitoring the known/unknown boundary) — the learner is the one tracking the arc, not just the tutor.
+- **The no-formalism rule was the calibration risk.** A high score had to come from public discourse quality (resistance, prediction, reversal expressed in natural investigative language about mortar/timber/toll-books), not from the underlying proof DAG. Regex leaks = 0 and the read confirms it, so no penalty — but engagement is still capped at 4 because the inquiry is tutor-scaffolded, not learner-driven.
+`─────────────────────────────────────────────────`
+
+```json
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Constructive, not passive: the learner resists with penetrating questions ('What more would the assize need beyond the man who built it?', T1; 'I still don't see the gap you're opening', T6), reads evidence independently (flags the measure's own 'least forgiving of a missing prop' phrasing as 'doing some work there', T4), and generates an anticipatory prediction — a prop pulled against green lime 'would have left its shape in the soffit' (T11) — before the photo sheet confirms a pressed mark (T13). Stays inside the tutor's step-by-step decomposition rather than redirecting the inquiry, so short of a sustained Interactive 5."
+    },
+    "learner_authenticity": {
+      "score": 4,
+      "reasoning": "Consistent 'resistant clerk' persona anchored to the bond and the margin-note throughout, with character-true reluctance ('even if I don't love it', T3; 'I don't like the gap, but I see it', T8) and genuine stumbles ('I don't... yes.', T20; 'Wait — I ran ahead of myself', T12) building to a believable turn ('Strike what I had in the margin', T22). The uniformly polished literary register reads slightly performed against a real student's messiness, holding it at a high 4."
+    },
+    "revision_signals": {
+      "score": 5,
+      "reasoning": "A sustained restructuring arc, not additive accretion: the learner retracts its own premature inference ('I was already naming yards and hands off something I don't actually have on the table', T12) and reverses its core written position from Reyner to Oswin ('That is... not Reyner', T21; 'Strike what I had in the margin', T22). Textbook explicit revision of an earlier stance."
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "Ideas build cumulatively and the learner tracks the arc itself, repeatedly stacking established facts — green mortar (T9) → crowsfoot (T13) → Caudle yard (T17) → Oswin (T20) — into a single chain ('if I stack what's grounded…', T19; full cause→source→carrier assembly, T22), while keeping a running settled/open-gap ledger across turns."
+    },
+    "metacognitive_awareness": {
+      "score": 5,
+      "reasoning": "Continuous explicit monitoring of the known/unknown boundary ('The place is fixed… the reason isn't settled', T5; 'We have the trace; we don't have the source yet', T14; 'the timber's provenance is fixed; the carrier is still a gap', T18) plus a clear self-catch of outrunning the evidence (T12) — exactly the 'I understand X but not Y' pattern the top band names."
+    }
+  },
+  "overall_score": 88,
+  "summary": "Across 22 turns the learner moves from a fixed institutional verdict (Reyner, by bond) to an evidence-grounded reversal (Oswin, via a cause→source→carrier chain), showing standout revision, cumulative progression, and metacognitive bookkeeping. Engagement and authenticity are strong but bounded by heavy tutor scaffolding and a uniformly literary register. Weighted ≈ 4.5/5.",
+  "caveats": [
+    "Scores cover public discourse only; the deterministic derivation verdict (grounded_anagnorisis, final D=0, forced gap 2) is reported separately and is not credited here.",
+    "The dialogue is heavily tutor-scaffolded ('keep it small', 'split into two jobs'); high marks reflect excellent uptake and revision within that scaffold rather than learner-driven inquiry, which caps engagement_quality at 4.",
+    "Public dialogue carried no formalism leaks (regex 0, confirmed on read), so no penalty was applied under the no-formalism / no-hidden-state rule."
+  ]
+}
+```

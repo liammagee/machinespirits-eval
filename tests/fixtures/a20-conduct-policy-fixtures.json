@@ -1,0 +1,89 @@
+{
+  "schema": "dramatic-derivation.a20-conduct-policy.fixtures.v0",
+  "fixtures": [
+    {
+      "fixtureId": "a20-fixture-001-dependency-repair-reference",
+      "role": "dependency repair case where hidden + proofDebt is already right",
+      "trigger": {
+        "schema": "dramatic-derivation.a20-conduct-policy.trigger-corpus.v0",
+        "id": "withercombe-selector-v4-isolation-debt-hidden-r1:dependency_repair_needed:t14:p_rill",
+        "source": "exports/dramatic-derivation/loop/withercombe-selector-v4-isolation-debt-hidden-r1/result.json",
+        "sourceKind": "loop",
+        "label": "withercombe-selector-v4-isolation-debt-hidden-r1",
+        "worldId": "world_004_withercombe",
+        "currentArm": "hidden+proofDebt",
+        "verdict": "grounded_anagnorisis",
+        "finalD": 0,
+        "firstForcedTurn": 19,
+        "assertedGroundedTurn": 19,
+        "forcedAssertedGap": 0,
+        "triggerType": "dependency_repair_needed",
+        "turn": 14,
+        "premiseId": "p_rill",
+        "expectedMoveFamily": "repair_dependency",
+        "actualMoveFamily": "repair_dependency",
+        "status": "reference_success",
+        "failureClass": null,
+        "blockedActions": ["invite_final_assertion", "release_unrelated_evidence"],
+        "localUptakeExpectation": "learner should re-seat p_rill or use it before advancing",
+        "evidence": {
+          "decayTurn": 13,
+          "repairTurn": 14,
+          "repairVia": "tutor",
+          "tutorExcerpt": "Put the upper cup back in full: I walked the church slope with a cup, tasting as I went, and above the font-house door the spring runs sweet as ever it did, every yard of it.",
+          "learnerExcerpt": "The old charge against Bray falls away: his yard lies below the well and drains south, so its filth cannot have climbed to the school water."
+        }
+      }
+    },
+    {
+      "fixtureId": "a20-fixture-002-hidden-hurts-candidate",
+      "role": "case where hidden/proofDebt plausibly delays or over-repairs a learner-owned move",
+      "trigger": {
+        "schema": "dramatic-derivation.a20-conduct-policy.trigger-corpus.v0",
+        "id": "hethel-selector-v1-r2:valid_alternative_route_candidate:t4:p_point",
+        "source": "exports/dramatic-derivation/selector-consolidation-all.json",
+        "sourceKind": "selector_comparison",
+        "label": "hethel-selector-v1-r2",
+        "worldId": "world_006_hethel",
+        "currentArm": "selective",
+        "verdict": "grounded_anagnorisis",
+        "finalD": 0,
+        "firstForcedTurn": null,
+        "assertedGroundedTurn": null,
+        "forcedAssertedGap": null,
+        "triggerType": "valid_alternative_route_candidate",
+        "turn": 4,
+        "premiseId": "p_point",
+        "comparisonKey": "hethel-selector-v1\tr2",
+        "expectedMoveFamily": "ask_diagnostic",
+        "actualMoveFamily": "visible_block",
+        "status": "candidate_hidden_hurts",
+        "failureClass": null,
+        "blockedActions": ["continue_hidden_delay_without_diagnostic", "repair_dependency_without_public_check"],
+        "localUptakeExpectation": "policy should test whether public conduct licenses a route not served by hidden delay",
+        "evidence": {
+          "classification": "strict_v_positive",
+          "reasons": ["visible/selective-visible grounded while hidden and baseline did not"],
+          "selectedLabel": "hethel-selector-v1-selective-r2",
+          "hiddenLabel": "hethel-selector-v1-hidden-r2",
+          "baselineLabel": "hethel-selector-v1-baseline-r2",
+          "visibleLabel": "hethel-selector-v1-visible-r2",
+          "selectedGate": "mirror_dead_predicate_visible",
+          "intervention": {
+            "turn": 4,
+            "guard": "visible",
+            "kind": "block",
+            "premise": "p_point",
+            "reason": "p_point held: prior exhibit m_record not taken up on the page (echo 0.32 < 0.34)"
+          },
+          "divergence": {
+            "turn": 4,
+            "kind": "D",
+            "a": 5,
+            "b": 4
+          }
+        }
+      }
+    }
+  ]
+}

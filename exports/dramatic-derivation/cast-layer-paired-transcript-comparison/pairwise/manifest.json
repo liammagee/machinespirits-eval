@@ -1,0 +1,25 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_eval.v1",
+  "generated_at": "2026-06-17T13:15:42.909Z",
+  "pair_count": 3,
+  "pairs": [
+    {
+      "pair_id": "s0_vs_s1",
+      "packet_id": "P01",
+      "packet": "pairs/P01.md",
+      "rubric": "rubric.md"
+    },
+    {
+      "pair_id": "s0_vs_s2",
+      "packet_id": "P02",
+      "packet": "pairs/P02.md",
+      "rubric": "rubric.md"
+    },
+    {
+      "pair_id": "s1_vs_s2",
+      "packet_id": "P03",
+      "packet": "pairs/P03.md",
+      "rubric": "rubric.md"
+    }
+  ]
+}

@@ -24,6 +24,7 @@ import { fileURLToPath } from 'url';
 import * as configLoader from './tutorConfigLoader.js';
 import * as monitoringService from './monitoringService.js';
 import { parseSSEStream } from './sseStreamParser.js';
+import { externalProviderHandles, callExternalProvider } from './externalAIProvider.js';
 import { jsonrepair } from 'jsonrepair';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1005,6 +1006,51 @@ const EMPTY_CONTENT_RETRY_DELAYS = [1000, 2000];
 // own shapes (tutor: logApiCall; learner: apiPayload capture).
 // ============================================================================
 
+function envOrHyperparameter(envName, hyperparameters, key) {
+  const envValue = process.env[envName];
+  if (envValue !== undefined && envValue !== '') return envValue;
+  return hyperparameters?.[key];
+}
+
+function parseOptionalInteger(value) {
+  if (value === undefined || value === null || value === '') return undefined;
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+}
+
+function parseOptionalBoolean(value) {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return undefined;
+}
+
+function buildOpenRouterReasoningControls(hyperparameters = {}) {
+  const effort = envOrHyperparameter('OPENROUTER_REASONING_EFFORT', hyperparameters, 'reasoning_effort');
+  const maxTokens = parseOptionalInteger(
+    envOrHyperparameter('OPENROUTER_REASONING_MAX_TOKENS', hyperparameters, 'reasoning_max_tokens'),
+  );
+  const exclude = parseOptionalBoolean(
+    envOrHyperparameter('OPENROUTER_REASONING_EXCLUDE', hyperparameters, 'reasoning_exclude'),
+  );
+  const maxCompletionTokens = parseOptionalInteger(
+    envOrHyperparameter('OPENROUTER_MAX_COMPLETION_TOKENS', hyperparameters, 'max_completion_tokens'),
+  );
+
+  const reasoning = {};
+  if (maxTokens !== undefined) reasoning.max_tokens = maxTokens;
+  else if (effort !== undefined && effort !== null && effort !== '') reasoning.effort = String(effort);
+  if (exclude !== undefined) reasoning.exclude = exclude;
+
+  return {
+    reasoning: Object.keys(reasoning).length ? reasoning : null,
+    maxCompletionTokens,
+  };
+}
+
 /**
  * Low-level provider fetch: sends a request and parses the response.
  *
@@ -1014,7 +1060,7 @@ const EMPTY_CONTENT_RETRY_DELAYS = [1000, 2000];
  * @param {string} opts.model - Model ID
  * @param {Array}  opts.messages - Pre-built message array (caller is responsible for assembly)
  * @param {string} [opts.systemPrompt] - Separate system prompt for Anthropic (top-level `system`) and Gemini (`systemInstruction`)
- * @param {Object} [opts.hyperparameters] - { temperature, max_tokens, top_p, reasoning_effort }
+ * @param {Object} [opts.hyperparameters] - { temperature, max_tokens, top_p, reasoning_effort, reasoning_max_tokens, reasoning_exclude, max_completion_tokens }
  * @param {Function} [opts.onToken] - Streaming callback (null for learner)
  * @returns {Promise<{text: string, inputTokens: number, outputTokens: number, finishReason?: string, rawResponse?: Object, cost?: number, generationId?: string, contextOverflow?: boolean, errorMessage?: string}>}
  */
@@ -1028,6 +1074,29 @@ async function _fetchProvider({
   onToken = null,
 }) {
   const { temperature = 0.5, max_tokens = 1500, top_p, reasoning_effort = 'low' } = hyperparameters;
+
+  // External-provider hook (e.g. a consuming repo's local CLI bridge).
+  // Checked BEFORE the isConfigured gate: external providers manage their
+  // own auth (no API key / base_url), so the HTTP-config check does not
+  // apply to them. When no hook is registered this block is a no-op.
+  if (externalProviderHandles(provider)) {
+    const ext = await callExternalProvider({
+      channel: 'dialogue-engine',
+      provider,
+      model,
+      systemPrompt,
+      messages,
+      hyperparameters,
+    });
+    return {
+      text: ext.text || '',
+      inputTokens: ext.inputTokens || 0,
+      outputTokens: ext.outputTokens || 0,
+      latencyMs: ext.latencyMs,
+      ...(ext.cost != null && { cost: ext.cost }),
+      ...(ext.finishReason != null && { finishReason: ext.finishReason }),
+    };
+  }
 
   if (!providerConfig?.isConfigured) {
     throw new Error(`Provider ${provider} not configured (missing API key)`);
@@ -1124,6 +1193,15 @@ async function _fetchProvider({
 
   // --- OpenRouter ---
   if (provider === 'openrouter') {
+    const { reasoning, maxCompletionTokens } = buildOpenRouterReasoningControls({
+      ...hyperparameters,
+      reasoning_effort,
+    });
+    const timeoutMs = parseOptionalInteger(
+      envOrHyperparameter('OPENROUTER_API_TIMEOUT_MS', hyperparameters, 'api_timeout_ms'),
+    );
+    const controller = timeoutMs > 0 ? new AbortController() : null;
+    const timeout = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
     const orBody = {
       model,
       temperature,
@@ -1131,51 +1209,62 @@ async function _fetchProvider({
       top_p,
       messages,
     };
-    if (reasoning_effort) {
-      orBody.reasoning = { effort: reasoning_effort };
-    }
+    if (reasoning) orBody.reasoning = reasoning;
+    if (maxCompletionTokens !== undefined) orBody.max_completion_tokens = maxCompletionTokens;
     if (onToken) orBody.stream = true;
 
-    const res = await fetch(providerConfig.base_url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${providerConfig.apiKey}`,
-        'HTTP-Referer': process.env.OPENROUTER_REFERER || 'https://machine-spirits.com',
-        'X-Title': 'Machine Spirits Tutor',
-      },
-      body: JSON.stringify(orBody),
-    });
+    try {
+      const res = await fetch(providerConfig.base_url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${providerConfig.apiKey}`,
+          'HTTP-Referer': process.env.OPENROUTER_REFERER || 'https://machine-spirits.com',
+          'X-Title': 'Machine Spirits Tutor',
+        },
+        body: JSON.stringify(orBody),
+        ...(controller ? { signal: controller.signal } : {}),
+      });
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(`OpenRouter API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
-    }
-
-    let text, inputTokens, outputTokens, finishReason, generationId, cost;
-    if (onToken) {
-      const parsed = await parseSSEStream(res, { onToken, format: 'openai' });
-      text = parsed.text?.trim() || '';
-      inputTokens = parsed.inputTokens;
-      outputTokens = parsed.outputTokens;
-    } else {
-      const data = await res.json();
-      text = data?.choices?.[0]?.message?.content?.trim() || '';
-      inputTokens = data?.usage?.prompt_tokens;
-      outputTokens = data?.usage?.completion_tokens;
-      finishReason = data?.choices?.[0]?.finish_reason;
-      generationId = data?.id;
-      cost = data?.usage?.cost || 0;
-
-      if (!text) {
-        const reason = data?.choices?.[0]?.finish_reason || 'unknown';
-        const reasoning = data?.usage?.completion_tokens_details?.reasoning_tokens;
-        const reasoningNote = reasoning ? `, reasoning=${reasoning}` : '';
-        console.warn(`[_fetchProvider] Empty content from ${data?.model || model} (finish=${reason}, ${inputTokens}in/${outputTokens}out${reasoningNote})`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(`OpenRouter API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
       }
-    }
 
-    return { text, inputTokens, outputTokens, finishReason, generationId, cost, latencyMs: Date.now() - startTime };
+      let text, inputTokens, outputTokens, finishReason, generationId, cost;
+      if (onToken) {
+        const parsed = await parseSSEStream(res, { onToken, format: 'openai' });
+        text = parsed.text?.trim() || '';
+        inputTokens = parsed.inputTokens;
+        outputTokens = parsed.outputTokens;
+      } else {
+        const data = await res.json();
+        text = data?.choices?.[0]?.message?.content?.trim() || '';
+        inputTokens = data?.usage?.prompt_tokens;
+        outputTokens = data?.usage?.completion_tokens;
+        finishReason = data?.choices?.[0]?.finish_reason;
+        generationId = data?.id;
+        cost = data?.usage?.cost || 0;
+
+        if (!text) {
+          const reason = data?.choices?.[0]?.finish_reason || 'unknown';
+          const reasoning = data?.usage?.completion_tokens_details?.reasoning_tokens;
+          const reasoningNote = reasoning ? `, reasoning=${reasoning}` : '';
+          console.warn(
+            `[_fetchProvider] Empty content from ${data?.model || model} (finish=${reason}, ${inputTokens}in/${outputTokens}out${reasoningNote})`,
+          );
+        }
+      }
+
+      return { text, inputTokens, outputTokens, finishReason, generationId, cost, latencyMs: Date.now() - startTime };
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        throw new Error(`OpenRouter API request timed out after ${timeoutMs}ms`);
+      }
+      throw error;
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
   }
 
   // --- Gemini ---
@@ -1401,7 +1490,15 @@ async function callAI(agentConfig, systemPrompt, userPrompt, agentRole = 'unknow
 async function _callAIOnce(agentConfig, systemPrompt, userPrompt, agentRole = 'unknown', options = {}) {
   const { onToken, messageHistory = null, ...logOptions } = options;
   const { provider, providerConfig, model, hyperparameters } = agentConfig;
-  let { temperature = 0.5, max_tokens = 1500, top_p, reasoning_effort = 'low' } = hyperparameters;
+  let {
+    temperature = 0.5,
+    max_tokens = 1500,
+    top_p,
+    reasoning_effort = 'low',
+    reasoning_max_tokens,
+    reasoning_exclude,
+    max_completion_tokens,
+  } = hyperparameters;
 
   // Thinking/reasoning models (kimi-k2-thinking, deepseek-r1) use internal
   // chain-of-thought that consumes max_tokens. Boost significantly.
@@ -1454,7 +1551,15 @@ async function _callAIOnce(agentConfig, systemPrompt, userPrompt, agentRole = 'u
     model,
     messages,
     systemPrompt: effectiveSystem,
-    hyperparameters: { temperature, max_tokens, top_p, reasoning_effort },
+    hyperparameters: {
+      temperature,
+      max_tokens,
+      top_p,
+      reasoning_effort,
+      reasoning_max_tokens,
+      reasoning_exclude,
+      max_completion_tokens,
+    },
     onToken,
   });
 
@@ -1816,6 +1921,45 @@ ${userPrompt}`;
     }
   }
 
+  // Recognition Engine read-path fix (Line A, notes/2026-07-06-longitudinal-
+  // drift-adaptation-prereg.md §8.8, bug 3): nothing on this live path ever
+  // wrote to conscious.workingThoughts, so memoryDynamicsService's
+  // detectPatternsFromConscious/autoPromotePatterns (invoked once per turn
+  // from the memory cycle in runDialogue, just after this function returns)
+  // always saw an empty array and could never promote anything into
+  // preconscious.recentPatterns — the exact channel dialecticalEngine.js's
+  // generateSuperegoCritique already reads from. recognitionOrchestrator.js's
+  // processDialogueResult builds this same shape of "thought" for its own
+  // Phase 1, but that module has zero callers on this request path (see its
+  // header) and invoking it here would require fabricating a learnerResponse
+  // this request shape doesn't carry, plus would double-run the memory cycle
+  // runDialogue already runs directly. Mirrored inline instead, deliberately
+  // unconditional on dialecticalNegotiation so it applies to every
+  // learnerId-bearing cell, not just cell_40/93.
+  if (learnerId && suggestions.length > 0) {
+    try {
+      const finalSuggestion = suggestions[0] || {};
+      const existingPad = writingPadService.getWritingPad(learnerId);
+      if (existingPad) {
+        writingPadService.updateConscious(learnerId, {
+          workingThoughts: [
+            ...(existingPad.conscious.workingThoughts || []),
+            {
+              type: 'suggestion',
+              suggestionType: finalSuggestion.type || 'suggestion',
+              content: finalSuggestion.message || finalSuggestion.title || '',
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      if (!isQuietOrTranscript()) {
+        console.error(`[WritingPad] Failed to record working thought for ${learnerId}:`, error.message);
+      }
+    }
+  }
+
   return { suggestions, rawPrompt: userPrompt, rawResponse: response.text, metrics: response };
 }
 
@@ -1924,7 +2068,7 @@ function getFallbackConfig(originalConfig) {
  * Superego reviews and critiques Ego's suggestions
  */
 async function superegoReview(egoSuggestions, learnerContext, options = {}) {
-  const { previousFeedback = null, profileName = null, strategy = null, superegoModel = null, superegoPromptExtension = null, onToken = null, messageHistory = null } = options;
+  const { previousFeedback = null, profileName = null, strategy = null, superegoModel = null, superegoPromptExtension = null, superegoHyperparameters = null, onToken = null, messageHistory = null } = options;
 
   let superegoConfig = configLoader.getAgentConfig('superego', profileName, { strategy });
   if (!superegoConfig && !superegoModel) {
@@ -1970,6 +2114,13 @@ async function superegoReview(egoSuggestions, learnerContext, options = {}) {
       };
       if (!isQuietOrTranscript()) console.log(`[Superego Review] Model override: ${JSON.stringify(superegoModel)} -> ${resolved.model}`);
     }
+  }
+
+  if (superegoHyperparameters) {
+    superegoConfig = {
+      ...superegoConfig,
+      hyperparameters: { ...superegoConfig.hyperparameters, ...superegoHyperparameters },
+    };
   }
 
   const feedbackContext = previousFeedback
@@ -2048,7 +2199,7 @@ Respond with ONLY a JSON object in the format specified.`;
  * Ego revises suggestions based on Superego feedback
  */
 async function egoRevise(originalSuggestions, superegoFeedback, learnerContext, curriculumContext, options = {}) {
-  const { profileName = null, from = null, to = null, direction = null, egoModel = null, systemPromptExtension = null, onToken = null, messageHistory = null } = options;
+  const { profileName = null, from = null, to = null, direction = null, egoModel = null, hyperparameters = null, systemPromptExtension = null, onToken = null, messageHistory = null } = options;
 
   let egoConfig = configLoader.getAgentConfig('ego', profileName);
   if (!egoConfig) {
@@ -2071,6 +2222,10 @@ async function egoRevise(originalSuggestions, superegoFeedback, learnerContext, 
         },
       };
     }
+  }
+
+  if (hyperparameters) {
+    egoConfig = { ...egoConfig, hyperparameters: { ...egoConfig.hyperparameters, ...hyperparameters } };
   }
 
   // On revision rounds, send condensed context: the ego already generated from
@@ -2194,6 +2349,185 @@ function suggestionSimilarity(sugA, sugB) {
 }
 
 /**
+ * A5 negotiation-resolution threading (gated by threadNegotiationResolution).
+ *
+ * The dialectical negotiation layer (negotiateDialectically(), invoked once
+ * inside the INITIAL egoGenerateSuggestions() call in runDialogue()) writes
+ * its resolution into suggestions[0].message + suggestions[0].metadata
+ * (recognitionMoment / dialecticalStrategy / negotiationRounds). Every
+ * subsequent outer-loop superego-review -> ego-revise round REPLACES
+ * currentSuggestions wholesale with a freshly LLM-generated array that has
+ * no metadata slot — silently discarding that content on essentially every
+ * turn for dialogue-enabled cells (see notes/2026-07-06-longitudinal-drift-
+ * adaptation-prereg.md §10/§11).
+ *
+ * captureNegotiationResolution() snapshots the negotiated message + metadata
+ * right after the initial generation, before any revision round can run.
+ * threadNegotiationResolutionIntoSuggestions() re-applies that snapshot to a
+ * post-revision suggestions array: it re-attaches the metadata unconditionally
+ * and appends the negotiated message text only if the revision doesn't
+ * already contain it. Both are pure/deterministic — no model call, no change
+ * to egoRevise's prompt or behavior — so this is a no-op when the captured
+ * snapshot is null (flag off, or no negotiation ran).
+ */
+function captureNegotiationResolution(suggestions) {
+  const first = Array.isArray(suggestions) ? suggestions[0] : null;
+  const metadata = first?.metadata;
+  if (!metadata || metadata.dialecticalStrategy == null) return null;
+  return {
+    message: typeof first.message === 'string' ? first.message : '',
+    metadata: {
+      recognitionMoment: metadata.recognitionMoment,
+      dialecticalStrategy: metadata.dialecticalStrategy,
+      negotiationRounds: metadata.negotiationRounds,
+    },
+  };
+}
+
+function threadNegotiationResolutionIntoSuggestions(suggestions, negotiation) {
+  if (!negotiation || !Array.isArray(suggestions) || suggestions.length === 0) return suggestions;
+  const [first, ...rest] = suggestions;
+  // Already carries negotiation metadata (e.g. re-threaded in an earlier round
+  // of this same dialogue) — leave it alone.
+  if (first?.metadata?.dialecticalStrategy != null) return suggestions;
+
+  const revisedMessage = typeof first?.message === 'string' ? first.message : '';
+  const negotiatedMessage = negotiation.message || '';
+  const negotiatedAlreadyPresent = Boolean(negotiatedMessage) && revisedMessage.includes(negotiatedMessage.trim());
+  const mergedMessage =
+    !negotiatedMessage || negotiatedAlreadyPresent
+      ? revisedMessage
+      : `${revisedMessage}\n\n${negotiatedMessage}`.trim();
+
+  return [
+    {
+      ...first,
+      message: mergedMessage,
+      metadata: {
+        ...(first?.metadata || {}),
+        ...negotiation.metadata,
+      },
+    },
+    ...rest,
+  ];
+}
+
+const INTERNAL_HISTORY_DEFAULTS = {
+  enabled: false,
+  surface: 'messages',
+  scope: 'unified_exchange',
+  window: 1,
+  maxCharsPerMessage: 1200,
+};
+
+function normalizeInternalHistoryConfig(config = null) {
+  if (!config || config.enabled !== true) {
+    return { ...INTERNAL_HISTORY_DEFAULTS };
+  }
+
+  const rawWindow = config.window ?? INTERNAL_HISTORY_DEFAULTS.window;
+  let window = rawWindow;
+  if (rawWindow !== 'all') {
+    const parsed = Number(rawWindow);
+    window = Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : INTERNAL_HISTORY_DEFAULTS.window;
+  }
+
+  const rawMaxChars = config.max_chars_per_message ?? config.maxCharsPerMessage ?? INTERNAL_HISTORY_DEFAULTS.maxCharsPerMessage;
+  const parsedMaxChars = Number(rawMaxChars);
+
+  return {
+    ...INTERNAL_HISTORY_DEFAULTS,
+    ...config,
+    surface: config.surface || INTERNAL_HISTORY_DEFAULTS.surface,
+    scope: config.scope || INTERNAL_HISTORY_DEFAULTS.scope,
+    window,
+    maxCharsPerMessage: Number.isFinite(parsedMaxChars) && parsedMaxChars > 0
+      ? Math.floor(parsedMaxChars)
+      : INTERNAL_HISTORY_DEFAULTS.maxCharsPerMessage,
+  };
+}
+
+function internalHistoryUsesMessages(config) {
+  return config.enabled === true &&
+    config.surface === 'messages' &&
+    config.scope === 'unified_exchange' &&
+    config.window !== 0;
+}
+
+function stringifyInternalHistoryPayload(payload) {
+  if (payload == null) return '';
+  if (typeof payload === 'string') return payload;
+  try {
+    return JSON.stringify(payload, null, 2);
+  } catch {
+    return String(payload);
+  }
+}
+
+function truncateInternalHistoryContent(content, maxChars) {
+  const text = stringifyInternalHistoryPayload(content);
+  if (text.length <= maxChars) return text;
+  const omitted = text.length - maxChars;
+  return `${text.slice(0, maxChars)}\n[truncated ${omitted} chars]`;
+}
+
+function recordInternalHistoryEvent(events, config, agent, action, payload) {
+  if (!internalHistoryUsesMessages(config)) return;
+  events.push({
+    agent,
+    action,
+    content: truncateInternalHistoryContent(payload, config.maxCharsPerMessage),
+  });
+}
+
+function mergeAdjacentSameRoleMessages(messages) {
+  const merged = [];
+  for (const msg of messages || []) {
+    if (!msg?.role || msg.content == null) continue;
+    const content = String(msg.content);
+    const previous = merged[merged.length - 1];
+    if (previous?.role === msg.role) {
+      previous.content = `${previous.content}\n\n${content}`;
+    } else {
+      merged.push({ role: msg.role, content });
+    }
+  }
+  return merged;
+}
+
+function _buildInternalHistoryMessages(events, targetAgent, config = {}, externalHistory = null) {
+  const normalized = normalizeInternalHistoryConfig(config);
+  if (!internalHistoryUsesMessages(normalized) || !events?.length) {
+    return null;
+  }
+
+  const eventWindow = normalized.window === 'all'
+    ? events
+    : events.slice(-Math.max(0, normalized.window * 2));
+
+  if (!eventWindow.length) return null;
+
+  const internalMessages = eventWindow.map((event) => ({
+    role: event.agent === targetAgent ? 'assistant' : 'user',
+    content: `[internal:${event.agent}/${event.action}]\n${event.content}`,
+  }));
+
+  if (internalMessages[0]?.role !== 'user') {
+    internalMessages.unshift({
+      role: 'user',
+      content: 'Internal ego/superego history follows. Continue from your assigned role.',
+    });
+  }
+
+  const combined = mergeAdjacentSameRoleMessages([
+    ...(externalHistory || []),
+    ...internalMessages,
+  ]);
+
+  return combined.length > 0 ? combined : null;
+}
+
+/**
  * Run the full Ego-Superego dialogue to generate modulated suggestions
  *
  * @param {Object} context - Contains learnerContext, curriculumContext, simulationsContext
@@ -2212,6 +2546,7 @@ export async function runDialogue(context, options = {}) {
     superegoModel = null, // Override superego model for benchmarking
     disableSuperego = false, // Explicitly disable superego even if profile has one configured
     hyperparameters = null, // Override hyperparameters (e.g., max_tokens for reasoning models)
+    superegoHyperparameters = null, // Override superego hyperparameters for bounded probes
     superegoStrategy = null, // Superego intervention strategy (e.g., 'socratic_challenge')
     outputSize = 'normal', // compact, normal, expanded - affects response verbosity
     systemPromptExtension = null, // Dynamic directives prepended to ego system prompt (prompt rewriting)
@@ -2221,12 +2556,14 @@ export async function runDialogue(context, options = {}) {
     recognitionSeeking = 0.6,  // How much ego seeks recognition from learner (0.0-1.0)
     learnerId = null, // Phase 1: Writing Pad persistence
     dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
+    threadNegotiationResolution = false, // A5: carry the negotiated resolution into the delivered suggestion across revision rounds (else discarded — see threadNegotiationResolutionIntoSuggestions)
     behavioralOverrides = null, // Quantitative params from superego self-reflection
     _dialogueId = null, // Internal: reuse dialogue ID for multi-turn continuity
     _skipLogging = false, // Internal: skip file logging for multi-turn intermediate steps
     onStream = null, // Streaming callback: receives { type, agent, round, token, stage }
     messageHistory = null, // External conversation chain from prior turns (array of {role, content})
     conversationMode = 'single-prompt', // 'messages' for multi-turn message chains, 'single-prompt' for legacy
+    internalHistory = null, // Optional bounded ego/superego history as chat-style messages
   } = options;
 
   // Helper: create an onToken callback for a specific agent/round that fires
@@ -2456,10 +2793,13 @@ export async function runDialogue(context, options = {}) {
   // When using message chains, pass external history so the ego sees prior turns
   // as proper assistant/user messages rather than serialized text.
   const useMessageChains = conversationMode === 'messages';
+  const internalHistoryConfig = normalizeInternalHistoryConfig(internalHistory);
+  const useUnifiedInternalHistory = internalHistoryUsesMessages(internalHistoryConfig);
 
   // Internal chains track ego and superego exchanges within this turn
   let egoInternalHistory = [];    // Ego's drafts + superego feedback (for ego revision)
   let superegoInternalHistory = []; // Superego's own prior critiques (for multi-round review)
+  const unifiedInternalHistory = [];
 
   onStream?.({ type: 'stage', stage: 'ego_generating', round: 0 });
   const egoInitial = await egoGenerateSuggestions(
@@ -2497,6 +2837,18 @@ export async function runDialogue(context, options = {}) {
     });
   }
   currentSuggestions = egoInitial.suggestions;
+  // A5: snapshot the negotiated resolution now, before any revision round
+  // can discard it. See threadNegotiationResolutionIntoSuggestions() above.
+  const initialNegotiation = threadNegotiationResolution
+    ? captureNegotiationResolution(currentSuggestions)
+    : null;
+  recordInternalHistoryEvent(
+    unifiedInternalHistory,
+    internalHistoryConfig,
+    'ego',
+    'generate',
+    egoInitial.rawResponse || egoInitial.suggestions,
+  );
 
   if (egoInitial.metrics) {
     metrics.totalLatencyMs += egoInitial.metrics.latencyMs || 0;
@@ -2547,6 +2899,13 @@ export async function runDialogue(context, options = {}) {
         systemPromptExtension, superegoPromptExtension, superegoCompliance, recognitionSeeking, learnerId, dialecticalNegotiation, behavioralOverrides }
     );
     currentSuggestions = egoRetry.suggestions || [];
+    recordInternalHistoryEvent(
+      unifiedInternalHistory,
+      internalHistoryConfig,
+      'ego',
+      'generate_retry',
+      egoRetry.rawResponse || egoRetry.suggestions,
+    );
     // Accumulate retry metrics
     if (egoRetry.metrics) {
       metrics.totalInputTokens += egoRetry.metrics.inputTokens || 0;
@@ -2611,14 +2970,19 @@ export async function runDialogue(context, options = {}) {
     // Superego reviews — skip entirely when superego is disabled (single-agent cells)
     let superegoResult;
     if (hasSuperego) {
+      const superegoMessageHistory = useUnifiedInternalHistory
+        ? _buildInternalHistoryMessages(unifiedInternalHistory, 'superego', internalHistoryConfig)
+        : (useMessageChains ? (superegoInternalHistory.length > 0 ? superegoInternalHistory : null) : null);
+
       onStream?.({ type: 'stage', stage: 'superego_reviewing', round });
       superegoResult = await superegoReview(
         currentSuggestions,
         learnerContext,
         {
           previousFeedback, profileName, strategy: superegoStrategy, superegoModel, superegoPromptExtension,
+          superegoHyperparameters,
           onToken: makeOnToken('superego', round),
-          messageHistory: useMessageChains ? (superegoInternalHistory.length > 0 ? superegoInternalHistory : null) : null,
+          messageHistory: superegoMessageHistory,
         }
       );
       onStream?.({ type: 'complete', agent: 'superego', round });
@@ -2634,6 +2998,13 @@ export async function runDialogue(context, options = {}) {
         { role: 'assistant', content: superegoResult.rawResponse },
       );
     }
+    recordInternalHistoryEvent(
+      unifiedInternalHistory,
+      internalHistoryConfig,
+      'superego',
+      'review',
+      superegoResult.rawResponse || superegoResult.feedback,
+    );
 
     if (superegoResult.metrics) {
       metrics.totalLatencyMs += superegoResult.metrics.latencyMs || 0;
@@ -2703,7 +3074,14 @@ export async function runDialogue(context, options = {}) {
       // This is the final step before delivering to user, so mark direction as ego → user
       // Build combined history: external chain + ego's internal exchanges + superego feedback
       let egoRevisionHistory = null;
-      if (useMessageChains) {
+      if (useUnifiedInternalHistory) {
+        egoRevisionHistory = _buildInternalHistoryMessages(
+          unifiedInternalHistory,
+          'ego',
+          internalHistoryConfig,
+          useMessageChains ? messageHistory : null,
+        );
+      } else if (useMessageChains) {
         egoRevisionHistory = [
           ...(messageHistory || []),
           ...egoInternalHistory,
@@ -2717,10 +3095,19 @@ export async function runDialogue(context, options = {}) {
         superegoResult,
         learnerContext,
         curriculumContext,
-        { profileName, from: 'ego', to: 'user', direction: 'response', egoModel, systemPromptExtension, onToken: makeOnToken('ego', round), messageHistory: egoRevisionHistory }
+        { profileName, from: 'ego', to: 'user', direction: 'response', egoModel, hyperparameters, systemPromptExtension, onToken: makeOnToken('ego', round), messageHistory: egoRevisionHistory }
       );
       onStream?.({ type: 'complete', agent: 'ego', round });
-      currentSuggestions = egoRevision.suggestions;
+      currentSuggestions = threadNegotiationResolution
+        ? threadNegotiationResolutionIntoSuggestions(egoRevision.suggestions, initialNegotiation)
+        : egoRevision.suggestions;
+      recordInternalHistoryEvent(
+        unifiedInternalHistory,
+        internalHistoryConfig,
+        'ego',
+        'incorporate_feedback',
+        egoRevision.rawResponse || egoRevision.suggestions,
+      );
 
       if (egoRevision.metrics) {
         metrics.totalLatencyMs += egoRevision.metrics.latencyMs || 0;
@@ -2791,7 +3178,14 @@ export async function runDialogue(context, options = {}) {
     // Ego revises based on feedback
     // Build combined history: external chain + ego's internal exchanges + superego feedback
     let rejectionRevisionHistory = null;
-    if (useMessageChains) {
+    if (useUnifiedInternalHistory) {
+      rejectionRevisionHistory = _buildInternalHistoryMessages(
+        unifiedInternalHistory,
+        'ego',
+        internalHistoryConfig,
+        useMessageChains ? messageHistory : null,
+      );
+    } else if (useMessageChains) {
       rejectionRevisionHistory = [
         ...(messageHistory || []),
         ...egoInternalHistory,
@@ -2807,10 +3201,12 @@ export async function runDialogue(context, options = {}) {
       superegoResult,
       learnerContext,
       curriculumContext,
-      { profileName, egoModel, systemPromptExtension, onToken: makeOnToken('ego', round), messageHistory: rejectionRevisionHistory }
+      { profileName, egoModel, hyperparameters, systemPromptExtension, onToken: makeOnToken('ego', round), messageHistory: rejectionRevisionHistory }
     );
     onStream?.({ type: 'complete', agent: 'ego', round });
-    currentSuggestions = egoRevision.suggestions;
+    currentSuggestions = threadNegotiationResolution
+      ? threadNegotiationResolutionIntoSuggestions(egoRevision.suggestions, initialNegotiation)
+      : egoRevision.suggestions;
 
     // Record the revision exchange in ego's internal chain
     if (useMessageChains) {
@@ -2819,6 +3215,13 @@ export async function runDialogue(context, options = {}) {
         { role: 'assistant', content: egoRevision.rawResponse || JSON.stringify(egoRevision.suggestions) },
       );
     }
+    recordInternalHistoryEvent(
+      unifiedInternalHistory,
+      internalHistoryConfig,
+      'ego',
+      'revise',
+      egoRevision.rawResponse || egoRevision.suggestions,
+    );
 
     // Convergence threshold: if ego's revision is too similar to previous,
     // further rounds won't help — converge early
@@ -3494,7 +3897,7 @@ export function clearRecognitionMoments() {
 export { transcript, isTranscriptMode, isExpandMode, resetTranscript, parseContextSummary };
 
 // Export callAI for testability (empty-content retry wrapper + underlying single-attempt)
-export { callAI, _callAIOnce, _fetchProvider, isContextOverflowError, truncateForContextOverflow, extractStructuredSummary, EMPTY_CONTENT_MAX_RETRIES, EMPTY_CONTENT_RETRY_DELAYS };
+export { callAI, _callAIOnce, _fetchProvider, isContextOverflowError, truncateForContextOverflow, extractStructuredSummary, normalizeInternalHistoryConfig, _buildInternalHistoryMessages, EMPTY_CONTENT_MAX_RETRIES, EMPTY_CONTENT_RETRY_DELAYS };
 
 export default {
   runDialogue,

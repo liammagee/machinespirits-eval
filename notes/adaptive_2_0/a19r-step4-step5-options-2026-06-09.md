@@ -9,7 +9,7 @@ Update after implementation: Option 4D was selected and preregistered as A19
 v0.9 `strategy_reversal_error_spotting` / `strategy_reversal_repair`. Its real
 attempt-1 gate then blocked before S0/S1: `recursive_dyadic_update = 0.62 <
 0.7`; report:
-`notes/adaptive_2_0/a19-attempt1-real-gate-report-strategy-reversal.md`.
+`notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-strategy-reversal.md`.
 
 That made Option 4B warranted. The existing-schema fallback is now
 preregistered as `over_compliance_ethopoeia_copy_dependency` under
@@ -17,7 +17,7 @@ preregistered as `over_compliance_ethopoeia_copy_dependency` under
 `exports/a19/materialized-attempts-v09-option2`. Its real attempt-1 gate also
 blocked before S0/S1: `device_specificity = 0.45`, recursive tutor-learning
 scores 0.5-0.6, checker `revise_again`; report:
-`notes/adaptive_2_0/a19-attempt1-real-gate-report-over-compliance-ethopoeia.md`.
+`notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-over-compliance-ethopoeia.md`.
 
 No axiom was admitted from either option. No recursive-full S0/S1, stability,
 Paper 2.0, atlas, sidecar, paid-panel, or human-learning claim is licensed.

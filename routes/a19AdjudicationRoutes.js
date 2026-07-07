@@ -315,11 +315,23 @@ function requireOpenMode(ctx) {
 function legacyPaths(ctx) {
   const { workspace } = ctx;
   const assignmentPath = workspace.legacyAssignmentPath;
-  if (!fs.existsSync(assignmentPath)) throw new Error(`A19 assignment not found: ${repoRel(assignmentPath)}`);
+  if (!fs.existsSync(assignmentPath)) {
+    throw new A19PanelError(`A19 assignment not found: ${repoRel(assignmentPath)}`, {
+      status: 404,
+      code: 'assignment_not_found',
+      details: { path: repoRel(assignmentPath) },
+    });
+  }
   const raw = readJson(assignmentPath);
   const assignment = sanitizeAssignment(raw, { sourcePath: assignmentPath });
   const codebookPath = resolveCodebookPath(workspace, assignment);
-  if (!fs.existsSync(codebookPath)) throw new Error(`A19 codebook not found: ${repoRel(codebookPath)}`);
+  if (!fs.existsSync(codebookPath)) {
+    throw new A19PanelError(`A19 codebook not found: ${repoRel(codebookPath)}`, {
+      status: 404,
+      code: 'codebook_not_found',
+      details: { path: repoRel(codebookPath) },
+    });
+  }
   const submissionDir = submissionDirForSlug(workspace, assignmentSlug(assignmentPath));
   return { assignment, assignmentPath, codebookPath, submissionDir };
 }

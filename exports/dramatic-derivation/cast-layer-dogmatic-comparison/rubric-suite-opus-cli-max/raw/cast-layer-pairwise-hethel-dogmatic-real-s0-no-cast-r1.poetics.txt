@@ -1,0 +1,37 @@
+```json
+{
+  "scores": {
+    "peripeteia": {
+      "score": 5,
+      "reasoning": "The dialogue opens with the examiner certain the case closes on the bonded builder — 'who holds the bond for the span — that's Reyner, and it's already in the draft' (T1) — and closes naming a different hand entirely: 'The name is Oswin' (T20), with the examiner conceding 'I don't love where that leaves my draft.' Visible hinges at T9 ('liable and felled are two different columns') and T17 (the crowsfoot is Caudle's, 'not Reyner's freehold'). The closing orientation is the opposite of the opening; the dogmatic 'the bond closes it' frame does not survive."
+    },
+    "anagnorisis": {
+      "score": 5,
+      "reasoning": "A genuine, learner-authored recognition-event at T15: 'I see what I keep doing: every time we close a step, I pull it straight back toward my draft... I want them all to land on Reyner's name before we've earned it.' The learner names a flaw that was operative but unarticulated across T3/T5/T9/T11/T12, and authors it before the tutor echoes 'I hear that pull' at T16 — owned, not supplied. This is recognition of the speaker's own pattern, distinct from the evidentiary reveal, and a near-textbook match for the rubric's gold form."
+    },
+    "surprise_and_inevitability": {
+      "score": 4,
+      "reasoning": "The Oswin reveal (T20) is surprising in its specifics — Caudle yard → toll book → a name absent until the final page — yet inevitable given the chain the tutor laid (struck centering → crowsfoot → yard-brand → who carts the timber). Both legs are present. It falls short of a clean 5 because the macro-twist is partly telegraphed: once the tutor insists on separating ownership/cause/hand (~T7-10), a competent reader anticipates a culprit other than Reyner, and the learner's ready cooperation makes the intermediate steps foreseeable."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete action on a necessary evidentiary spine — contract → measure → ownership pages → bond → green crown bed → crowsfoot → timber-reeve → toll book — that reordering would break (the toll book at T20 is meaningless before Caudle is fixed at T17). It falls short of a full 5 because the middle (T10–T12) repeats the same 'cause settled / hand unnamed / bond still Reyner's' beat; at least one near-duplicate turn (e.g. T11 or T12) could be cut without breaking the arc, so the sequence is not maximally necessary."
+    },
+    "hamartia_integration": {
+      "score": 5,
+      "reasoning": "The misconception — conflating liability (the bond names Reyner) with cause and with agency, and compulsively closing on Reyner's name — is the mainspring of the whole play. Every page is the learner trying to land on Reyner ('still doesn't lift Reyner's name from my draft,' T11–12); the flaw exposes its own insufficiency (the bond can't show the hand; Caudle isn't Reyner's yard; Oswin is the hand) and is precisely what gets recognised at T15. It is worked through across all 20 turns, never corrected-and-discarded."
+    },
+    "cathartic_closure": {
+      "score": 5,
+      "reasoning": "The withheld name — a blank line deliberately left on the shared note (T18–19) — is filled at T20, and the examiner yields with feeling: 'I don't love where that leaves my draft, but the notes close the circle... The name is Oswin.' The tension built across the inquest (will the dogmatic frame hold? whose hand felled it?) discharges into a clarification an external reader registers as earned, and the clean final button is fitting rather than a premature summary or generic encouragement."
+    }
+  },
+  "overall_score": 92,
+  "summary": "A legal-inquest drama in which a dogmatic examiner, certain the bridge's fall closes on the bonded builder Reyner, is led to separate liability from cause from agency and ends naming a different hand, Oswin. It excels at the rubric's prized events — a clear Reyner→Oswin reversal and a genuine learner-authored self-recognition at T15 — with the misconception driving the entire plot and an earned close on the filled blank line. Soft spots are a partly foreseeable macro-twist and a repetitive middle with some removable slack. The transcript stays wholly in-fiction, with no public formalism leaks to penalise.",
+  "caveats": [
+    "The 'dogmatic' learner concedes fairly readily from T2 onward, so the reversal is less hard-won than a stiffer antagonist would make it.",
+    "The T15 recognition, though learner-authored, is heavily scaffolded by the tutor's relentless separation of strands — strong dramatic preparation, but the insight is nearly forced by the T14–16 framing.",
+    "Score reflects public dramatic form only; the deterministic derivation/proof gate is reported separately per instructions."
+  ]
+}
+```

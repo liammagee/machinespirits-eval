@@ -9,16 +9,18 @@
  * 5. Resume scanning detects and attaches checkpoint state to remaining tests
  */
 
-import { describe, it, beforeEach, afterEach } from 'node:test';
+import { describe, it, beforeEach, afterEach, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { writeCheckpoint, loadCheckpoint, deleteCheckpoint, listCheckpoints } from '../services/evaluationRunner.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const EVAL_ROOT = path.resolve(__dirname, '..');
-const CHECKPOINTS_DIR = path.join(EVAL_ROOT, 'logs', 'checkpoints');
+const TEST_LOGS_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-checkpoint-logs-'));
+const PREVIOUS_EVAL_LOGS_DIR = process.env.EVAL_LOGS_DIR;
+process.env.EVAL_LOGS_DIR = TEST_LOGS_ROOT;
+const { writeCheckpoint, loadCheckpoint, deleteCheckpoint, listCheckpoints } =
+  await import('../services/evaluationRunner.js');
+const CHECKPOINTS_DIR = path.join(TEST_LOGS_ROOT, 'checkpoints');
 
 // Test fixtures
 const TEST_RUN_ID = 'eval-test-checkpoint-000000';
@@ -172,6 +174,13 @@ function cleanupTestCheckpoints() {
     fs.rmdirSync(dir);
   }
 }
+
+after(() => {
+  cleanupTestCheckpoints();
+  fs.rmSync(TEST_LOGS_ROOT, { recursive: true, force: true });
+  if (PREVIOUS_EVAL_LOGS_DIR == null) delete process.env.EVAL_LOGS_DIR;
+  else process.env.EVAL_LOGS_DIR = PREVIOUS_EVAL_LOGS_DIR;
+});
 
 describe('Checkpoint helpers', () => {
   beforeEach(() => cleanupTestCheckpoints());

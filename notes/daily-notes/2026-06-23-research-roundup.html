@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 19 Jun – 23 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-23 window=(2026-06-18,2026-06-23] arxiv=2606.19135,2606.19605,2606.20138,2606.20243,2606.11502 generator=research-roundup-routine -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">19 Jun – 23 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Four papers from arXiv (all <code>2606.xxxxx</code>, confirmed June 2026) across
+  prompt engineering, agent architecture, and pedagogical AI &amp; tutoring.
+  The window was quiet for dramaturgy, rhetoric, and ontology — those topics yielded no new
+  material announced between June 19 and 23.
+  All main-section IDs are new — none overlap with the 62 IDs covered in prior roundups
+  in the last 30 days.  One slip-through from an earlier window (2606.11502) is noted
+  in the near-misses section.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    FAPO: Fully Autonomous Prompt Optimization of Multi-Step LLM Pipelines
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Paul Kassianik, Baturay Saglam, Huaibo Zhao, Blaine Nelson, Supriti Vijay, Aman Priyanshu, Amin Karbasi ·
+    Cisco Foundation AI ·
+    arXiv 2606.19605 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.19605">https://arxiv.org/abs/2606.19605</a>
+  </div>
+  <p>
+    FAPO treats prompt optimization as a three-level escalation problem: it first tries targeted
+    prompt-text edits, then parameter adjustments, and only restructures chain topology when
+    step-level failure attribution identifies a structural bottleneck.  An LLM-driven (Claude Code)
+    diagnostic loop evaluates each variant against a score function, proposes scoped changes, and
+    validates them without human re-prompting.  On 18 model-benchmark pairs it outperformed the
+    prior GEPA baseline by +14.1 pp on average (15 of 18 wins); code is open-sourced under
+    Apache 2.0.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The three-level escalation maps directly onto the project's prompt-lab autotune workflow
+    (<code>npm run prompt-lab -- autotune</code>), which currently operates at prompt-text level
+    only.  FAPO's step-level failure attribution is the missing mechanism for deciding <em>when</em>
+    to escalate from per-prompt tuning to structural changes in the ego/superego dialogue engine —
+    precisely the question that stalled the cells 93–100 superego-variant ablations.  The
+    attribution logic could be adapted to route <code>tutor_first_turn_score</code> residuals
+    back to the specific ego or superego prompt that caused them.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    A Technical Taxonomy of LLM Agent Communication Protocols
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Linus Sander, Habtom Kahsay Gidey, Alexander Lenz, Alois Knoll ·
+    Technische Universität München ·
+    arXiv 2606.19135 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.19135">https://arxiv.org/abs/2606.19135</a>
+  </div>
+  <p>
+    The paper classifies LLM agent communication protocols along four axes: message semantics,
+    synchrony, topology, and trust model.  It surveys the fragmented landscape of emerging
+    standards (MCP, A2A, ACP, and others) and argues that the absence of a shared taxonomy
+    is the primary barrier to reliable composition of multi-agent systems — an
+    interoperability problem that grows worse as protocol proliferation accelerates.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The bilateral ego-superego architecture is itself an asymmetric two-agent protocol: tutor-ego
+    sends a draft, superego returns a critique, ego revises.  Formalising this exchange using the
+    taxonomy's "message semantics" axis would make the deliberation loop unit-testable at the wire
+    level and clarify which cells with <code>multi_agent_tutor: true</code> but
+    <code>superego: null</code> are genuinely single-agent vs. self-reflection loops.  The topology
+    axis is also directly applicable to the LangGraph adaptive runner (cells 110–113), whose
+    state transitions are currently implicit in <code>services/adaptiveTutor/graph.js</code>.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Phoenix: Safe GitHub Issue Resolution via Multi-Agent LLMs
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    arXiv 2606.20243 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.20243">https://arxiv.org/abs/2606.20243</a>
+  </div>
+  <p>
+    Phoenix decomposes GitHub issue resolution across six specialised agents — Planner, Reproducer,
+    Coder, Tester, Failure Analyst, and PR Agent — coordinated by a label-based GitHub webhook
+    state machine.  The "safe" framing comes from explicit rollback hooks and a validation gate
+    that prevents the PR Agent from opening a pull request until the Tester returns a green run.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The Failure Analyst → Coder → Tester feedback loop mirrors the superego → ego-revision →
+    validation cycle in the tutor engine.  The label-based state machine is architecturally cleaner
+    than the implicit promise-chain in <code>services/adaptiveTutor/graph.js</code>; worth
+    reviewing if the adaptive runner's state transitions are refactored (TODO B* code quality items).
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Pedagogical AI &amp; Tutoring</h2>
+
+<div class="paper hot">
+  <h3>
+    Learning to Prompt: Improving Student Engagement with Adaptive LLM-based High-School Tutoring
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Po-Chin Chang, Nicholas Hogan, Aske Plaat, Michiel T. van der Meer ·
+    arXiv 2606.20138 · June 2026 ·
+    <a href="https://arxiv.org/abs/2606.20138">https://arxiv.org/abs/2606.20138</a>
+  </div>
+  <p>
+    The paper formulates adaptive tutoring as a prompt-routing problem: 14 pedagogical features
+    (tutor scaffolding level, student understanding signals, topic switch indicators, etc.) are
+    extracted turn-by-turn from raw transcripts and fed to a lightweight routing model that
+    selects among subject-aware prompt variants.  The router is trained offline in simulation
+    then deployed online; an A/B test with 656 conversations from 359 high-school students confirms
+    sim-to-real transfer, with the system switching from analytical to scaffolding strategies in
+    response to student engagement signals (router 0.694 vs. static baselines 0.647 / 0.64,
+    <em>p</em> &lt; 0.001).
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The 14-feature turn-level featurizer is a lightweight proxy for rubric v2.2 evaluation: instead
+    of an LLM judge call per turn, a trained routing model could select the next prompt variant in
+    real time — making the adaptive runner (cells 110–113) cheaper to iterate on during
+    prompt-lab autotune sessions.  The sim-to-real transfer result also directly supports the
+    external validity argument for the human-learner pilot (§A1 TODO): if simulation-trained
+    routers transfer in this setting, the project's simulated-learner training runs are more
+    predictive of real-learner outcomes than the current conservative framing allows.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Narrative — near-miss from earlier window</h2>
+
+<p style="font-size:.9rem;color:#666;">
+  No new papers in the dramaturgy, role-play, or narrative-generation space appeared in this
+  window.  One paper submitted in an earlier window (June 9–18) was not covered in any prior
+  roundup:
+</p>
+
+<ul style="font-size:.9rem;">
+  <li>
+    <strong>When Roleplaying, Do Models Believe What They Say?</strong>
+    (arXiv 2606.11502, submitted June 9, 2026 — outside this window, slip-through from June 9–18) —
+    Uses linear truth probes on LLMs role-playing historical personas to test whether persona
+    induction suppresses internal truth representations or only output behaviour.  Finding: models
+    role-playing Aristotle are less suppressed on <em>era-believed</em> falsehoods (things Aristotle
+    likely believed) than on matched <em>era-false</em> claims, suggesting internal truth
+    representations are partially modulated by persona, not merely output-layer steering.
+    Directly relevant to the project's question of whether the recognition-theory ego prompt changes
+    what the model represents about the learner vs. merely what it outputs.
+    <a href="https://arxiv.org/abs/2606.11502">arxiv.org/abs/2606.11502</a>
+  </li>
+</ul>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric &amp; Ontology — quiet window</h2>
+
+<p style="font-size:.9rem;color:#666;">
+  No new papers in rhetoric, argumentation, or ontology/knowledge-representation appeared in
+  this window that are not already covered.  The most recently covered papers in these topics
+  remain: 2606.08076 ("I understand your perspective": LLM Persuasion via Communicative Action
+  Theory, first noted 2026-06-13) and 2606.11560 (LLMs+Graphs: Toward Graph-Native AI Systems,
+  first noted 2026-06-18).
+</p>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-23 ·
+  Research-roundup routine: 12 parallel search angles, 20+ source extractions ·
+  Window: (2026-06-18, 2026-06-23] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>

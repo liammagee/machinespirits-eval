@@ -3,7 +3,7 @@
  *
  * Both standalone servers — server.js (:8081) and the poetics browser
  * (scripts/browse-poetics-scripts.js, :3466) — expose the SAME eval API + UI
- * surfaces (the four /api/* routers and the public/ UI directories). Rather
+ * surfaces (the shared /api/* routers and the public/ UI directories). Rather
  * than each hand-maintain its own copy of those mounts (where they inevitably
  * drift), they are defined ONCE here and both servers call
  * `mountEvalSurfaces(app, { root })`. Same single-source discipline as
@@ -31,6 +31,8 @@ import evalRoutes from '../routes/evalRoutes.js';
 import chatRoutes from '../routes/chatRoutes.js';
 import pilotRoutes from '../routes/pilotRoutes.js';
 import a19AdjudicationRoutes from '../routes/a19AdjudicationRoutes.js';
+import humanCodingRoutes from '../routes/humanCodingRoutes.js';
+import { mountSubjectExplorer } from './subjectExplorer.js';
 
 // API routers, in mount order. [mountPath, router].
 const API_ROUTERS = [
@@ -38,6 +40,7 @@ const API_ROUTERS = [
   ['/api/chat', chatRoutes],
   ['/api/pilot', pilotRoutes],
   ['/api/a19/adjudication', a19AdjudicationRoutes],
+  ['/api/human-coding', humanCodingRoutes],
 ];
 
 // Static UI surfaces: [mountPath, dirRelativeToRoot]. Each is existsSync-guarded
@@ -47,6 +50,8 @@ const STATIC_SURFACES = [
   ['/pilot', 'public/pilot'], // participant-facing human-learner pilot UI
   ['/pilot-admin', 'public/pilot-admin'], // operator dashboard (token-gated API)
   ['/adjudication', 'public/adjudication'], // A19 blinded human-adjudication forms
+  ['/human-coding-admin', 'public/human-coding-admin'], // Paper 2.0 superego-taxonomy coding
+  ['/eval', 'public/eval'], // static research explainers and companion notes
   ['/components', 'public/components'], // shared design system (techne.css) + UI components
   ['/docs', 'docs'], // documentation tree (poetics pre-mounts /docs/research)
 ];
@@ -67,5 +72,8 @@ export function mountEvalSurfaces(app, { root } = {}) {
     const dir = path.join(root, relDir);
     if (existsSync(dir)) app.use(mount, express.static(dir));
   }
+  // Decoupled belief–desire DAG surface (MACHINE-SPIRIT.md §5): reads only the
+  // structural engine + authored worlds; no DB, no shared state.
+  mountSubjectExplorer(app);
   return app;
 }

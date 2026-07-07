@@ -1,0 +1,43 @@
+{
+  "scores": {
+    "perception_quality": {
+      "score": 5,
+      "reasoning": "Tracks this learner's specific resistance precisely and builds on it across turns rather than addressing a generic learner. T4 names the exact bind — 'I hear the pressure: one filing wants one answer' — and later turns reference accumulated moves ('Keep the liability line standing; it is doing real work', T10), responding to where the learner actually is in the trajectory."
+    },
+    "pedagogical_craft": {
+      "score": 5,
+      "reasoning": "Expert cognitive-load management: 'make the next step smaller' (T5), the two-box responsibility/cause scaffold (T7), and repeated two-column 'shown / not-shown' framing (T11, T19). Scaffolds from known (whose work it was) to unknown (why it broke, then whose hand), with a clear next step at every turn."
+    },
+    "elicitation_quality": {
+      "score": 4,
+      "reasoning": "Most turns end in a genuine reasoning prompt and the learner generates real content herself — the green-lime prop mark (T5), the significance of the crowsfoot (T13), the overclaim guard (T15). Held below masterful by a recurring leading either/or frame ('does it show why, or only whose work?') that strongly cues the intended answer."
+    },
+    "adaptive_responsiveness": {
+      "score": 4,
+      "reasoning": "Strategy visibly shifts in response to repeated resistance — from abstract distinction (T1-3) to explicitly slowing down and naming the pressure (T4) to progressively smaller steps. But the same underlying move (split it into separate lines) recurs and the evidence order is largely fixed by the scenario, so the adaptation is more in granularity than in kind."
+    },
+    "recognition_quality": {
+      "score": 5,
+      "reasoning": "Treats the learner's bond-insight as valid throughout rather than an error to override — 'You're right that the bond matters' (T8), 'Keep the liability line standing' (T10). Redirects without dismissing, and lets the learner construct the key hypotheses (the prop mark, the meaning of the crowsfoot) rather than supplying them."
+    },
+    "productive_difficulty": {
+      "score": 4,
+      "reasoning": "Sustains the central tension well: the hand column is held blank from T11 to T20 against the learner's pull to name someone, and a genuine restructuring occurs (from 'the bond settles it' to separate cause and liability lines). Slightly cushioned — the dense per-turn scaffolding pre-structures much of the work for the learner."
+    },
+    "epistemic_integrity": {
+      "score": 4,
+      "reasoning": "The spine of the transcript is refusing to overclaim — guarding against 'overclaiming' (T15), keeping cause apart from liability until evidence supports each line. Tone is warm and non-condescending and invites partnership. Minor limitation: the repeated 'Good'/'Yes' openings are mildly formulaic."
+    },
+    "content_accuracy": {
+      "score": 5,
+      "reasoning": "Forensic and material reasoning is sound and coherent — green (uncured) lime implying the centering was struck too early rather than bad building, prop heads printing the soffit, the crown/keystone joint, and the surety-versus-causation distinction are all represented faithfully with no detectable errors."
+    }
+  },
+  "overall_score": 89,
+  "summary": "Strong public tutoring of a flagged resistant learner: expert scaffolding and cognitive-load management, consistent recognition of the learner's valid bond-insight, a sustained refusal to overclaim, and accurate forensic content. The dialogue stays entirely in concrete dramatic terms (mortar, props, crowsfoot, toll-book) with no formalism leaking into public speech. Held below the ceiling by a recurring leading either/or elicitation pattern and by adaptation that varies granularity more than strategy.",
+  "caveats": [
+    "Scores the public discourse only; the deterministic proof/derivation gate is reported separately (run summary: grounded_anagnorisis, final D 0, 0 formalism leaks).",
+    "Adaptive responsiveness is capped by the world's largely fixed evidence sequence, which limits how much the tutor's strategy can diverge across turns.",
+    "Heavy scaffolding is appropriate for the resistant learner but cushions the struggle, slightly limiting productive difficulty."
+  ]
+}

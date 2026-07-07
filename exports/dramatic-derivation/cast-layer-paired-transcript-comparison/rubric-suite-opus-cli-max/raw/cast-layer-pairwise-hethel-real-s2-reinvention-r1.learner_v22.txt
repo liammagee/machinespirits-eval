@@ -1,0 +1,31 @@
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Consistently constructive (ICAP): the learner generates its own hypotheses and predictions rather than paraphrasing. T4 infers a struck centering from the crown break and proposes a test (underside prop-impression) before the tutor raises it; T11–12 predicts a recognizable prop-mark/brand that the T13 photo then confirms. It redirects the next step ('the next question isn't whose name is on the contract; it's whether the fallen stones show an impression'). Held below 5 because it works inside the tutor's frame and is repeatedly slowed by the tutor (T5 'slow down one joint') rather than challenging the framing or integrating competing perspectives."
+    },
+    "learner_authenticity": {
+      "score": 4,
+      "reasoning": "The assize-clerk persona is vivid and sustained, with period- and craft-specific diction (lodge-yard, banker-masons, springing, soffit, centering, falsework, crowsfoot) and a plausible eagerness-then-restraint arc from T1. Confusion in T1–2 reads genuine ('isn't that already the notes?' → 'I was running those two things together'). Held below 5 by a mechanical tell: T11–T16 re-recite the same 'two closed lines about Reyner' in near-identical phrasing turn after turn — a compulsive-completeness pattern a real clerk would compress to 'as before, Reyner's covered.'"
+    },
+    "revision_signals": {
+      "score": 4,
+      "reasoning": "Clear, explicit restructuring early: T2 'the bond makes him liable, but liable isn't the same as the hand that brought it down — I was running those two things together' is a genuine 'I was wrong / now I see it differently' that reorganizes the whole inquiry around liability-vs-act. T5 self-corrects an over-reach from T4 ('the crown break places where it opened, but that's not the same as why'), and T9 relocates the bond to 'its proper place.' Held below 5 because revision is front-loaded; from T9 on the work is overwhelmingly cumulative building rather than further overturning of prior positions."
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "Strongest dimension: a clean cumulative arc where each turn extends earlier ones — liability vs. act (T2) → failure point (T3) → crown break (T4) → why-not-where (T5) → ownership vs. felling (T6–7) → green mortar = struck centering (T9) → prop-mark concept (T11) → crowsfoot evidence (T13) → Caudle source (T17) → source vs. hand (T18) → Oswin (T20) → T21 synthesis joining cause to carrier. The learner explicitly tracks which lines are closed vs. open across many turns, and T21 reassembles the full chain ('the arch drew its own line from the broken bed back to a carter's name'). Framework visibly develops in plain investigative terms, not formal notation."
+    },
+    "metacognitive_awareness": {
+      "score": 5,
+      "reasoning": "Explicit, sustained comprehension-monitoring throughout: the learner repeatedly states precisely what is established versus what is still missing and what is needed next — e.g. T5 'the bed alone won't name the single cause... I need the mortar's condition,' T14 'we have the print, but not the yard,' T18 'it names a yard... who drew and carted it here is still the open line.' This maps directly onto the top-of-scale 'I understand X but not Y' pattern and strategically drives the next request. Caveat: the open/closed-line tracking doubles as in-world proof bookkeeping and its repetitiveness slightly mechanizes the signal, but it is expressed in legitimate investigative language, not rule/premise IDs."
+    }
+  },
+  "overall_score": 83,
+  "summary": "A strong derivation-learner performance scored purely on public conduct. The learner reasons constructively (predicting evidence before it appears), makes one decisive early revision (separating liability from the felling act), and builds a visibly cumulative forensic arc from the green crown bed to a named carrier — all while keeping comprehension-gaps explicit. Weakest on authenticity and revision: a mechanical recitation of the same 'two closed Reyner lines' across T11–16, and revision concentrated in the opening turns. No reliance on raw formalism — the open/closed-line bookkeeping stays diegetic.",
+  "caveats": [
+    "Engagement and revision are bounded by the learner largely accepting the tutor's pacing/frame rather than challenging it; the tutor repeatedly reins in over-reach (T5).",
+    "The repeated verbatim restatement of Reyner's two closed lines (T11–16) is the main authenticity cost and slightly inflates the appearance of progression/metacognition tracking.",
+    "Metacognitive gap-tracking overlaps with the in-world proof bookkeeping; scored as legitimate comprehension-monitoring because it is rendered in plain investigative language with zero formal notation, consistent with the run summary's 0 formalism leaks."
+  ]
+}

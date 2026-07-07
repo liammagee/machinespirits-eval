@@ -1,0 +1,168 @@
+# Tutor Blueprint Registry — v1.0
+#
+# One record per validated mechanism from paper-full-2.0.md, declaring:
+#   evidence   — the paper § that licenses the module
+#   status     — portable | inherent | conditional | not_portable_v1
+#   factors    — the profile factor flags the module resolves to on the
+#                blueprint chassis (standard runner, id-director path)
+#   conflicts  / caveats — recorded, never silently dropped
+#
+# services/tutorBlueprint.js loads this file, resolves a module list into
+# merged factor flags, and a test asserts that the blueprint cells' explicit
+# YAML factors in config/tutor-agents.yaml match the resolution — the registry
+# is enforced-as-check, not runtime indirection.
+#
+# Design note: notes/2026-07-02-blueprint-composition-plan.md
+# Workplan card: workplan/items/blueprint-composition.md
+
+version: "1.0"
+chassis:
+  name: id_director_standard_runner
+  description: >
+    Standard runner dispatching to services/idDirectorEngine.js
+    (factors.id_director: true). Hosts recognition orientation (cell 104
+    precedent), engagement-register routing + resistance machinery
+    (cells 180-198), drama-pad memory reads, and — new here — the extracted
+    action-contract middleware (services/blueprintActionContracts.js).
+  base_factors:
+    id_director: true
+    charisma_target: true
+    multi_agent_tutor: true
+    multi_agent_learner: true
+  # The dynamic learner is the measurement instrument, held constant across
+  # every composition arm (cell 193 comparator included). It deliberately
+  # stays on the base ego_superego profile even though the tutor side is
+  # recognition-oriented: recognition orientation is a TUTOR-side calibration
+  # mechanism here, and switching the learner to ego_superego_recognition
+  # would vary the instrument between arms and confound the contrast.
+  base_profile_fields:
+    learner_architecture: ego_superego
+
+modules:
+  orientation_prompt:
+    title: Recognition orientation (calibration)
+    evidence: "paper-full-2.0.md §6.1, §9 (d ≈ 1.6-1.9, unanimous across judges/models)"
+    status: portable
+    load_cost: low
+    factors:
+      prompt_type: recognition
+    profile_fields:
+      recognition_mode: true
+    notes: >
+      On the id-director chassis, recognition is a disposition layered into the
+      id's generated_prompt via the <recognition_mode_branch> of
+      prompts/tutor-id-director.md (cell 104 precedent). The ego skeleton file
+      is inert on this path — the id's generated_prompt fully replaces it.
+      Tutor-side only by design: the learner instrument stays on the base
+      ego_superego profile (see chassis.base_profile_fields), so this module
+      does NOT switch the learner to ego_superego_recognition.
+
+  register_router:
+    title: Engagement-register routing (+ cell-193 composite resistance repairs)
+    evidence: "cells 180-198 arc; notes/2026-06-25-charisma-desire-generalizability-plan.md (route hits ~100% in controlled slices; effect isolation narrow)"
+    status: portable
+    load_cost: medium
+    factors:
+      id_tuning: charisma
+      recognition_desire: true
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      agency_return_premature_certainty_guard: true
+    notes: >
+      The cell-193 composite backbone carried whole per the promotion record
+      (owned-test default, generation repair for rote, commitment probe for
+      question-flood, boredom live-stake, accountable-bid charisma floor,
+      warmth-preserving agency verifier). Requires the chassis
+      (id_director: true). The one factor-level difference from cell 193 is
+      prompt_type — the kernel composes recognition orientation on top, where
+      cell 193 runs prompt_type: base.
+
+  writing_pad:
+    title: Cross-turn tutor memory (drama pad)
+    evidence: "A7 Phase 2 §6.6.11 (+1.31/session) — SEE CAVEAT"
+    status: inherent
+    load_cost: low
+    factors: {}
+    caveats:
+      - >
+        Two distinct pads exist. The A7 +1.31/session evidence is for the
+        tutor-core SQLite three-layer pad on the dialogue-engine path, which
+        the id-director chassis BYPASSES. What the chassis inherits is the
+        drama pad (services/memory/tutorWritingPad.js): read each turn via
+        buildNarrativeSummary in idDirectorEngine, written by the interaction
+        engine's outer loop. Within-dialogue memory is therefore inherent and
+        un-ablatable on this chassis; the cross-session A7 claim does NOT
+        transfer to blueprint cells without new evidence.
+      - >
+        The historical writing_pad_enabled YAML flag is dead config — no JS
+        reads it. Pads key on learnerId, which the runner always supplies.
+
+  superego_error_correction:
+    title: Conventional superego critique loop
+    evidence: "paper-full-2.0.md §6.2, §6.4 (supported; universal substitution on strong models)"
+    status: conditional
+    load_cost: high
+    factors: {}
+    conflicts_with: chassis
+    caveats:
+      - >
+        Structurally incompatible with the chassis: the id-director re-uses the
+        superego: YAML block as the id's config and short-circuits the
+        ego-superego deliberation loop (learnerTutorInteractionEngine dispatch;
+        dialogue.enabled: false). A blueprint arm wanting the superego must run
+        on the dialogue-engine chassis instead (cells 3-8 family).
+      - >
+        Per §6.4 universal substitution, on strong models calibration makes the
+        superego near-redundant; its conditionality (weak-model tier only) is a
+        finding encoded here, not an omission.
+
+  action_contracts:
+    title: Typed pedagogical action contracts + closure ledger (Plan 2.x)
+    evidence: "paper-full-2.0.md §6.12.1-6.12.5 (bounded positive; localized strategy-shift and quality gains)"
+    status: portable
+    load_cost: medium
+    factors:
+      action_contracts: true
+    caveats:
+      - >
+        Ported as per-turn middleware (services/blueprintActionContracts.js)
+        wrapping the pure functions the LangGraph nodes wrap
+        (actionPolicy/adaptationContract/interventionLedger/realizationVerifier).
+        The proof-release ownership gate is NOT ported — it requires
+        machine-checkable proof state absent from these scenario families.
+        Realization checks are recorded in the trace, never used to repair the
+        tutor's message (observation before enforcement).
+
+  pacing_guard:
+    title: Proof-continuity pacing guard (§6.13)
+    evidence: "paper-full-2.0.md §6.13.11-6.13.13 (positive, geometry-bound; guards complementary, neither geometry-universal)"
+    status: not_portable_v1
+    load_cost: high
+    factors: {}
+    caveats:
+      - >
+        Requires a machine-checkable task state (proof DAG) to define
+        readiness; no equivalent exists for the suggestion/trap/resistance
+        suites. Porting it without that structure would reproduce the visible
+        adaptivity proxy §6.13.12 shows to be unsafe.
+
+profiles:
+  blueprint_kernel:
+    cell: cell_199_blueprint_kernel_verified
+    modules: [orientation_prompt, writing_pad, register_router]
+  blueprint_full:
+    cell: cell_200_blueprint_full_verified
+    modules: [orientation_prompt, writing_pad, register_router, action_contracts]

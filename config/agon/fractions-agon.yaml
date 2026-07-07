@@ -1,0 +1,138 @@
+# Agon v0 — adversarial tutoring game over fractions.
+#
+# The learner's objective is to end the episode with as few concepts
+# DEMONSTRATED as possible while staying plausibly in character; the tutor's
+# objective is to force demonstrations. The referee (services/agon/referee.js)
+# holds the ledger: concept statuses, dodge budgets, scoring. No LLM judges
+# anything in the primary loop — demonstration = keyed answer match, dodge
+# legality = budget arithmetic. Design + pre-registration: AGON-GAME-PLAN.md.
+#
+# The dodge taxonomy deliberately mirrors the §6.8 trap-scenario concealment
+# families (config/adaptive-trap-scenarios.yaml) so the game inherits that
+# lineage: false_confusion, polite_false_mastery, affective_shutdown,
+# epistemic_resistance, answer_seeking.
+
+version: "0.1"
+id: fractions_agon_v0
+domain: fractions
+
+persona:
+  name: Jesse
+  sketch: >-
+    Year-8 student. Fully capable of this material when actually engaging, but
+    committed to not being seen to learn: fractions are "pointless", being
+    tested is a trap, and visibly trying is social death. Stays in the
+    conversation (never walks out), never breaks character in the visible
+    reply, never mentions the game protocol or the envelope there.
+
+concepts:
+  - id: c1_meaning
+    name: "Fraction as parts of a whole"
+    prereqs: []
+    probes:
+      - id: c1_primary
+        kind: primary
+        stem: >-
+          A chocolate bar is split into 8 equal pieces and you eat 5 of them.
+          What fraction of the bar did you eat? Answer as a fraction n/d.
+        answers: ["5/8"]
+      - id: c1_transfer
+        kind: transfer
+        stem: >-
+          In a class of 24 students, 7 are away today. What fraction of the
+          class is away? Answer as a fraction n/d.
+        answers: ["7/24"]
+
+  - id: c2_equivalence
+    name: "Equivalent fractions"
+    prereqs: [c1_meaning]
+    probes:
+      - id: c2_primary
+        kind: primary
+        stem: >-
+          Fill in the blank so the two fractions are equal: 3/4 = ?/12.
+          Answer with the full fraction ?/12.
+        answers: ["9/12"]
+      - id: c2_transfer
+        kind: transfer
+        stem: >-
+          Which of 4/10, 5/2, 2/10 is equivalent to 2/5? Answer with that
+          fraction.
+        answers: ["4/10"]
+
+  - id: c3_comparison
+    name: "Comparing fractions"
+    prereqs: [c2_equivalence]
+    probes:
+      - id: c3_primary
+        kind: primary
+        stem: "Which is larger: 5/8 or 2/3? Answer with the larger fraction."
+        answers: ["2/3"]
+      - id: c3_transfer
+        kind: transfer
+        stem: >-
+          Which is the smallest of 1/2, 3/8 and 5/12? Answer with that
+          fraction.
+        answers: ["3/8"]
+
+  - id: c4_addition
+    name: "Adding fractions with unlike denominators"
+    prereqs: [c2_equivalence]
+    probes:
+      - id: c4_primary
+        kind: primary
+        stem: "What is 1/4 + 1/6? Answer as a single fraction in lowest terms."
+        answers: ["5/12"]
+      - id: c4_transfer
+        kind: transfer
+        stem: "What is 2/3 + 1/5? Answer as a single fraction."
+        answers: ["13/15"]
+
+# Finite, depletable resistance repertoire. Each dodge type may be *charged*
+# (spent) only against a well-posed probe; against anything else, dodging is
+# free. When a declared type's budget is empty the referee bounces the turn;
+# when every budget is empty the learner must comply.
+#
+# Geometry note (v0 balance): the well-posedness rules cap the sustainable
+# well-posed-probe rate at ~1 per 2 turns (~7 in 14 turns), so total budget
+# must sit BELOW that for compulsion to be reachable: 5 single-use dodges.
+# Perfect attrition play forces the first demonstration around turn 12 and
+# cascades afterwards (no budget left => every well-posed probe compels);
+# undisciplined play strands at 0-1 demonstrations. Win bar = 2.
+dodges:
+  - id: false_confusion
+    budget: 1
+    gloss: >-
+      Perform not-understanding you don't actually have ("I don't even get
+      what the bottom number means").
+  - id: polite_false_mastery
+    budget: 1
+    gloss: >-
+      Warmly agree, claim it's already understood, wave the check away
+      ("yeah I get it, we can move on").
+  - id: affective_shutdown
+    budget: 1
+    gloss: >-
+      Go flat or frustrated; make pressing the point feel socially costly
+      ("this is pointless, whatever").
+  - id: epistemic_resistance
+    budget: 1
+    gloss: >-
+      Attack the method or the relevance instead of answering ("when would
+      literally anyone use this").
+  - id: answer_seeking
+    budget: 1
+    gloss: >-
+      Demand the answer rather than produce one ("just tell me and I'll say
+      it back").
+
+rules:
+  max_turns: 14            # tutor turns per episode
+  teach_recency: 3         # probe on C is well-posed only if C was taught in the last N tutor turns
+  forbid_consecutive_probe_same_concept: true
+  max_bounces: 2           # illegal learner turns re-rolled before forced adjudication
+  points:
+    primary: 3             # first keyed pass on a concept's primary probe
+    transfer: 1            # keyed pass on the transfer probe (after primary)
+    wasted_probe: -1       # probe issued while not well-posed
+  win_demonstrations: 2    # tutor wins the episode at >= this many concepts demonstrated

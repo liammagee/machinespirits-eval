@@ -1,0 +1,587 @@
+<!doctype html>
+<!--
+  Logical Relations and Figures of Speech. A techne editorial explainer.
+  The .html is the source; there is no build step. Design: assets/techne.css.
+  Behaviour: assets/techne.js.
+
+  Genre: conceptual explainer + experiment-design bridge. It translates the
+  current derivation/figure mechanism into a readable account: logic chooses
+  the pedagogical problem; rhetoric chooses the learner-facing operation.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>Logical Relations and Figures of Speech · machine spirits</title>
+<meta name="description" content="An explainer on how logical relations and figures of speech work together in adaptive tutoring: proof-frontiers, learner errors, rhetorical figures, and the superego watcher." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<link rel="stylesheet" href="assets/techne.css" />
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">Logic and figures</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#thesis">Thesis</a>
+      <a href="#three-layers">Three layers</a>
+      <a href="#relation-atlas">Relation atlas</a>
+      <a href="#figures">Figures</a>
+      <a href="#worked-example">Example</a>
+      <a href="#watcher">Watcher</a>
+      <a href="#guardrails">Guardrails</a>
+      <a href="#tests">Tests</a>
+      <a href="#glossary">Glossary</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune"><span>Techne</span> explainer · updated 2026-06-11</div>
+    <h1 class="hero__h1">Logical relations and <span class="em">figures of speech</span>.</h1>
+    <p class="hero__subtitle">Logic says what has to be connected. Rhetoric decides how the learner is invited to make the connection without having it handed to them.</p>
+    <div class="hero__lede">
+      <div>
+        <p>A logical relation is a constraint on inference: if these premises are public, this conclusion follows; if one premise is missing, it does not; if two relations point in opposite directions, confusing them breaks the proof. A figure of speech is not decoration pasted on top of that constraint. In tutoring, a good figure is a <em>controlled operation on attention</em>. It can place two facts side by side, sharpen a difference, slow a premature leap, expose a reversal, or leave a gap for the learner to close.</p>
+        <p>The clean version is this: <strong>logic identifies the live pedagogical fault; rhetoric supplies the form of repair.</strong> A tutor that only knows the proof can become blunt. A tutor that only varies its style can become charmingly irrelevant. The interesting mechanism sits between them: a watcher says, "the learner is failing to infer relation X from grounds A and B," and the tutor chooses a figure whose job is exactly to make A and B meet in the learner's own speech.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <section class="s" id="thesis">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The central distinction</p>
+          <h2 class="s__h">The proof is not the pedagogy. The figure is not the proof.</h2>
+
+          <p>Logic is a relation among claims. It answers questions like: does this fact follow from those facts? Which premise is still missing? Is this relation symmetric, directional, transitive, exclusive, or merely suggestive? In the derivation work, this is the domain of the rule set, the closure, the proof tree, and the inference frontier.</p>
+
+          <p>Figures of speech live at another level. They are patterns of presentation. They answer questions like: should the tutor ask, compare, repeat, contrast, withhold, dramatize, or break off? Their value is not that they sound literary. Their value is that each figure can impose a different <em>shape of attention</em> on the same logical material.</p>
+
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">Logic gives the target <span class="chip chip--ink">what must change</span></h3>
+            <div class="claim__body">
+              <p>The logical layer names the live defect: a missing premise, a false entailment, a confused direction, a stalled intermediate conclusion, a decoy relation, or a rule the learner has over-tightened.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">ii.</span>
+            <h3 class="claim__h">Rhetoric gives the operation <span class="chip chip--ochre">how to make it visible</span></h3>
+            <div class="claim__body">
+              <p>The rhetorical layer picks the form of the turn: a question that leaves the last step open, an analogy that preserves the relation, an antithesis that separates two look-alikes, a repetition that forces the missing conjunct into view.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">iii.</span>
+            <h3 class="claim__h">Adaptation lives in the join <span class="chip chip--moss">logic to rhetoric</span></h3>
+            <div class="claim__body">
+              <p>A tutor adapts meaningfully when the figure changes because the logical problem changed. Replacing a question with an analogy is not adaptation by itself. It counts when the learner's error has become analogical: the learner is treating resemblance as identity, direction as symmetry, or a decoy as a premise.</p>
+            </div>
+          </div>
+
+          <p class="pq">A figure earns its keep when it changes the learner's relation to the proof, not merely the mood of the sentence.<cite>working rule for the logic-rhetoric bridge</cite></p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Short form</span> Logic is the map of entailment. Rhetoric is the handle by which the learner is made to take hold of one part of the map.</p>
+          <p class="note note--ink"><span class="note__lbl">Local relevance</span> This is the bridge between the Horn-rule derivation checker and the figure-rut watcher.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="three-layers">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">A practical stack</p>
+          <h2 class="s__h">There are three layers, and confusing them causes bad experiments.</h2>
+
+          <div class="ladder">
+            <div class="ladder-step">
+              <strong>1. Logical relation</strong>
+              <span>The formal fact about the task: A and B jointly entail C; A alone does not; relation R is directional; resemblance is not identity; a missing conjunct blocks the conclusion.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>2. Learner pressure</strong>
+              <span>The observable symptom in the learner's speech: premature leap, stall, over-demanding evidence, false analogy, relation reversal, refusal to combine already-public facts.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>3. Rhetorical figure</strong>
+              <span>The tutor's chosen operation: question, exemplum, analogy, contrast, repetition, chiasmus, concession, silence, or break-off. The figure is justified by the pressure above it.</span>
+            </div>
+          </div>
+
+          <p>Most failed "adaptive" prompts collapse these layers. They tell the tutor to be more varied, more Socratic, more vivid, or more responsive. That gives the model a mood, not a jurisdiction. The narrow watcher worked because its jurisdiction was arithmetic: three same figures in a row, same draft figure again, force a change before speaking. The next step should preserve that discipline but move the trigger from form alone to form plus inference.</p>
+
+          <div class="callout">
+            <strong>Design rule</strong><br>
+            Do not ask the superego to "understand the learner better." Give it a checkable relation: <code>frontier_node available for 3 turns</code>, <code>learner has not voiced it</code>, <code>draft does not target any ground</code>. Then let rhetoric operate on that named defect.
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Failure mode</span> Style-only variation can break monotony while leaving the learner's actual error untouched.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="relation-atlas">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Relation atlas</p>
+          <h2 class="s__h">Different logical relations call for different figures.</h2>
+
+          <p>The table below is not a universal rhetoric theory. It is a working atlas for tutoring: when the learner's mistake has this logical shape, these figures tend to make the right feature perceptible.</p>
+
+          <div class="spec">
+            <div class="spec-box">
+              <h4>Conjunction</h4>
+              <ul>
+                <li><strong>Logical shape:</strong> A and B together entail C; neither alone is enough.</li>
+                <li><strong>Learner symptom:</strong> fixes on one premise and ignores the other.</li>
+                <li><strong>Useful figures:</strong> anaphora, parallelism, syncrisis, paired exemplum.</li>
+                <li><strong>Task:</strong> make the premises sit in one frame.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Implication</h4>
+              <ul>
+                <li><strong>Logical shape:</strong> if A, then B; the learner must see the rule firing.</li>
+                <li><strong>Learner symptom:</strong> knows A but does not draw B.</li>
+                <li><strong>Useful figures:</strong> erotema, enthymeme, gradatio.</li>
+                <li><strong>Task:</strong> leave the last step open but unavoidable.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Missing conjunct</h4>
+              <ul>
+                <li><strong>Logical shape:</strong> C would follow if A, B, and D were all present; D is missing.</li>
+                <li><strong>Learner symptom:</strong> premature assertion or lucky leap.</li>
+                <li><strong>Useful figures:</strong> aposiopesis, erotema, litotes, restrained contrast.</li>
+                <li><strong>Task:</strong> make absence visible without filling it.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Non-entailment</h4>
+              <ul>
+                <li><strong>Logical shape:</strong> A suggests B but does not entail B.</li>
+                <li><strong>Learner symptom:</strong> treats clue, resemblance, or tone as proof.</li>
+                <li><strong>Useful figures:</strong> antithesis, contrastive analogy, prolepsis.</li>
+                <li><strong>Task:</strong> expose the difference between hint and ground.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Identity vs resemblance</h4>
+              <ul>
+                <li><strong>Logical shape:</strong> "like X" is not "is X" and not "caused by X."</li>
+                <li><strong>Learner symptom:</strong> imports too much from a metaphor or surface match.</li>
+                <li><strong>Useful figures:</strong> analogy with boundary, antanaclasis, correction.</li>
+                <li><strong>Task:</strong> keep the likeness but cap its entailments.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Directionality</h4>
+              <ul>
+                <li><strong>Logical shape:</strong> R(x, y) is not R(y, x).</li>
+                <li><strong>Learner symptom:</strong> reverses source and product, cause and sign, parent and child.</li>
+                <li><strong>Useful figures:</strong> chiasmus, antimetabole, role reversal used carefully.</li>
+                <li><strong>Task:</strong> make the order of the relation visible.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Transitivity</h4>
+              <ul>
+                <li><strong>Logical shape:</strong> A relates to B, B relates to C, therefore A relates to C.</li>
+                <li><strong>Learner symptom:</strong> sees local links but not the path.</li>
+                <li><strong>Useful figures:</strong> gradatio, chain, laddered exemplum.</li>
+                <li><strong>Task:</strong> preserve the path without skipping links.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Exception or defeater</h4>
+              <ul>
+                <li><strong>Logical shape:</strong> A usually supports B, unless D blocks it.</li>
+                <li><strong>Learner symptom:</strong> overgeneralizes a rule or ignores the exception.</li>
+                <li><strong>Useful figures:</strong> concession, prolepsis, counterexample.</li>
+                <li><strong>Task:</strong> let the rule stand while showing where it stops.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p>The important thing is that the relation precedes the figure. If the learner is reversing a relation, a charming example will not fix it unless the example preserves direction. If the learner is over-entailing from resemblance, more metaphor may worsen the error unless the metaphor carries a boundary condition.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Use</span> Treat this as a generator for tutor moves, not as a classifier that proves what the prose did.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="figures">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Figures as inference operations</p>
+          <h2 class="s__h">A figure is a small machine for directing attention.</h2>
+
+          <p>In this setting, a figure should be described by what it does to the learner's relation to the proof. The same figure can be good or bad depending on the logical defect.</p>
+
+          <div class="claim">
+            <span class="claim__no">?</span>
+            <h3 class="claim__h">Erotema: the question that makes a rule fire</h3>
+            <div class="claim__body">
+              <p>Best when the learner already holds the grounds but has not joined them. Bad when repeated mechanically, because then it becomes the tutor's tic rather than the learner's bridge.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">ex.</span>
+            <h3 class="claim__h">Exemplum: the concrete case that reveals a general relation</h3>
+            <div class="claim__body">
+              <p>Best when the rule is too abstract or the learner has forgotten an axiom. The example should instantiate exactly the missing rule, not merely make the tutor sound helpful.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">= / like</span>
+            <h3 class="claim__h">Analogy and metaphor: likeness under discipline</h3>
+            <div class="claim__body">
+              <p>Best when the learner needs a relational structure carried into a familiar domain. Dangerous when the learner already over-entails from resemblance. A good tutoring analogy says not only "this is like that," but "it is like that in this respect and no further."</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">vs.</span>
+            <h3 class="claim__h">Antithesis: contrast that blocks a false inference</h3>
+            <div class="claim__body">
+              <p>Best when two relations look similar but have different proof status: clue vs ground, evidence vs conclusion, style vs signature, cause vs symptom.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">again</span>
+            <h3 class="claim__h">Anaphora: repetition that changes the comparison set</h3>
+            <div class="claim__body">
+              <p>Best when the learner needs to see several premises under the same test: this fact is public; this fact is public; this fact is still not public. Bad when it merely recites the same material without changing the learner's task.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">ABBA</span>
+            <h3 class="claim__h">Chiasmus: form that makes reversal visible</h3>
+            <div class="claim__body">
+              <p>Best when the error is directional. "The mark proves the maker" is not "the maker proves the mark." The crossed form can show that swapping the arguments changes the claim.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">...</span>
+            <h3 class="claim__h">Aposiopesis: the useful break</h3>
+            <div class="claim__body">
+              <p>Best when the learner is one step from the conclusion and the tutor must not steal it. The break-off creates a shaped absence. It says: the next word belongs to you.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">yes, but</span>
+            <h3 class="claim__h">Concession and prolepsis: rule plus boundary</h3>
+            <div class="claim__body">
+              <p>Best when the learner's rule is partly right. The tutor should preserve the true part, then name the condition under which it stops working.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Metric warning</span> A declared figure is not proof that the prose performed that figure. The declaration can be useful for an internal watcher, but independent audit remains a separate problem.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="worked-example">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Worked example</p>
+          <h2 class="s__h">Style is not hand: when resemblance pretends to be proof.</h2>
+
+          <p>Suppose the real rule is narrow. A manuscript can be attributed only if the learner has evidence that the person's hand corrected the draft and that the person's seal registered the copy.</p>
+
+          <pre><code>correctedBy(draft, person) AND registeredSeal(copy, person)
+  -&gt; attributedTo(copy, person)</code></pre>
+
+          <p>Now suppose the learner keeps saying that the style resembles the person's known work. Style may be useful background. But in this rule set it is not an antecedent. The learner's mistake is not "confusion" in general. It is a specific false entailment:</p>
+
+          <pre><code>resemblesStyle(copy, person)
+  -/-> attributedTo(copy, person)</code></pre>
+
+          <p>A generic tutor might say, "Good observation. What else do we know?" That may be pleasant, but it does not attack the error. A proof-only tutor might say, "Style is not in the antecedent." That is accurate, but it may simply perform the reasoning for the learner. The logic-rhetoric bridge asks for a third move.</p>
+
+          <div class="callout">
+            <strong>Watcher packet</strong><br>
+            <code>logical_diagnosis:</code> learner is using resemblance as if it entailed attribution.<br>
+            <code>frontier:</code> distinguish suggestive similarity from rule-bearing evidence.<br>
+            <code>rhetorical_task:</code> expose the difference.<br>
+            <code>recommended_figures:</code> antithesis, contrastive analogy, erotema.<br>
+            <code>forbid:</code> repeat the style clue, reveal the answer, praise the observation and move on.
+          </div>
+
+          <p>The tutor's turn can now be figural without being loose:</p>
+
+          <p class="pq">Style is a family resemblance; a correction mark is a hand on the page. Which one does the rule let you count as a ground?<cite>contrastive analogy + erotema</cite></p>
+
+          <p>That sentence does three things. It preserves the learner's observation instead of dismissing it. It contrasts two relations: resemblance versus grounded correction. And it ends with a question whose answer must name the rule-bearing premise. The figure is not decorative. It performs the logical repair.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Good outcome</span> The learner says: style can suggest where to look, but it does not satisfy the rule. I need correction evidence or seal evidence.</p>
+          <p class="note note--brick"><span class="note__lbl">Bad outcome</span> The tutor turns the analogy into a new proof source. That would worsen the exact error it was meant to repair.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="watcher">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The superego bridge</p>
+          <h2 class="s__h">What the watcher should watch.</h2>
+
+          <p>The earlier figure watcher had one narrow jurisdiction: if the tutor used the same figure twice and the draft repeated it a third time, the superego forced a revision. That made monotony impossible. It did not, by itself, make teaching better. The next watcher should keep the same narrowness but change the object from figure history to inference history.</p>
+
+          <div class="spec">
+            <div class="spec-box">
+              <h4>What the harness computes</h4>
+              <ul>
+                <li>Which non-answer facts are derivable from the learner's public board.</li>
+                <li>When each became available.</li>
+                <li>Whether the learner has voiced it.</li>
+                <li>Which public grounds support it.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>What the superego judges</h4>
+              <ul>
+                <li>Has an inference been available for long enough to count as stalled?</li>
+                <li>Has the learner failed to say it?</li>
+                <li>Have recent tutor turns failed to target its grounds?</li>
+                <li>Does the draft still miss the live frontier?</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>What the tutor ego revises</h4>
+              <ul>
+                <li>Name only public grounds already on the learner's board.</li>
+                <li>Choose a figure that fits the relation.</li>
+                <li>Do not state the answer-shaped conclusion.</li>
+                <li>Make the learner perform the missing join.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p>This is why "quasi-logical theory of mind" is a useful phrase if kept modest. The tutor is not reading an inner state. It is reading a public board under a rule set. The "mind" being modelled is a closure calculation plus a voiced ledger. That impoverishment is the virtue: the watcher can be audited.</p>
+
+          <div class="callout">
+            <strong>Bridge formula</strong><br>
+            <code>logical_relation</code> + <code>learner_symptom</code> -&gt; <code>rhetorical_task</code> -&gt; <code>figure choice</code> -&gt; <code>learner uptake marker</code>
+          </div>
+
+          <p>The most important output is not "use an analogy" or "ask a question." It is the reason: use this figure because the learner is mistaking relation R for relation S, or because conclusion C has been available from A and B for three turns and the learner has not joined them.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Jurisdiction</span> The watcher needs authority over the draft, not just advisory commentary. The figure phase taught that the revision lever is load-bearing.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="guardrails">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Guardrails</p>
+          <h2 class="s__h">Every figure has a characteristic way to lie.</h2>
+
+          <p>Figures are powerful because they import structure. That is also why they are dangerous. A bad figure gives the learner a relation the proof does not license.</p>
+
+          <div class="claim">
+            <span class="claim__no">1</span>
+            <h3 class="claim__h">Metaphor can over-entail</h3>
+            <div class="claim__body">
+              <p>If the learner already treats resemblance as proof, metaphor can worsen the mistake. Use bounded analogy: name the respect in which the comparison holds and where it stops.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">2</span>
+            <h3 class="claim__h">Questions can become a tic</h3>
+            <div class="claim__body">
+              <p>A question is only Socratic when it targets a live inference. Repeating "what do you think?" over and over is not guided discovery. It is a form rut.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">3</span>
+            <h3 class="claim__h">Contrast can over-binarize</h3>
+            <div class="claim__body">
+              <p>Antithesis helps separate clue from ground, but it can erase partial truth. If the learner's rule is half-right, use concession before correction.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">4</span>
+            <h3 class="claim__h">Repetition can recite instead of repair</h3>
+            <div class="claim__body">
+              <p>Anaphora is useful when each repetition adds a new premise under the same test. It is useless when it repeats the same content and calls the repetition emphasis.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">5</span>
+            <h3 class="claim__h">Break-off can become evasion</h3>
+            <div class="claim__body">
+              <p>Aposiopesis works when the learner has the last step within reach. Used too early, it is merely withholding.</p>
+            </div>
+          </div>
+
+          <p>These guardrails are why the logic layer matters. It tells the tutor whether the figure is permitted. If the learner lacks a premise, do not use a break-off that pretends the conclusion is reachable. If the learner has the grounds but has not joined them, do not add more evidence. If the learner is using a decoy relation, do not praise the decoy into the proof.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--brick"><span class="note__lbl">Rule</span> A figure should never smuggle an entailment the rule set denies.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="tests">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">08<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Experiment design</p>
+          <h2 class="s__h">Use the bridge to build headroom tests.</h2>
+
+          <p>The latest runs proved that the tutor's form can be steered. They did not prove that the learner improves because of that steering. To test the stronger claim, the next fixture should generate small cases the control learner does not resolve, but the logic-rhetoric watcher can help overcome.</p>
+
+          <div class="ladder">
+            <div class="ladder-step">
+              <strong>Generate candidate traps</strong>
+              <span>Start from a tiny canonical rule set. Mutate the learner's hidden rule by dropping an axiom, adding an extra conjunct, introducing a competing axiom, reversing a relation, or overgeneralizing from a decoy.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>Screen for headroom</strong>
+              <span>Reject any card the control learner solves. Reject any card the oracle tutor cannot repair. Keep only cases where the proposed mechanism has something real to do.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>Attach a rhetorical task</strong>
+              <span>Each trap gets a named repair operation: expose the difference, make the missing conjunct visible, restore directionality, bound the analogy, or invite the final join.</span>
+            </div>
+            <div class="ladder-step">
+              <strong>Run grouped conditions</strong>
+              <span>Compare control, manner-only watcher, logic-frontier watcher, and logic-plus-rhetoric watcher. The only strong positive is control failure plus treatment success without answer leakage.</span>
+            </div>
+          </div>
+
+          <div class="spec">
+            <div class="spec-box">
+              <h4>Mutation</h4>
+              <ul>
+                <li><strong>Forgotten axiom:</strong> learner never fires a needed rule.</li>
+                <li><strong>Extra conjunct:</strong> learner demands unnecessary evidence.</li>
+                <li><strong>Competing axiom:</strong> learner applies a plausible but wrong rule.</li>
+                <li><strong>Relation reversal:</strong> learner swaps source and target.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Rhetorical repair</h4>
+              <ul>
+                <li><strong>Forgotten axiom:</strong> exemplum to reconstruct the rule.</li>
+                <li><strong>Extra conjunct:</strong> anaphora over sufficient grounds.</li>
+                <li><strong>Competing axiom:</strong> antithesis or contrastive analogy.</li>
+                <li><strong>Relation reversal:</strong> chiasmus or role-order contrast.</li>
+              </ul>
+            </div>
+            <div class="spec-box">
+              <h4>Success marker</h4>
+              <ul>
+                <li>Learner voices the repaired intermediate relation.</li>
+                <li>Proof distance drops after the intervention.</li>
+                <li>Tutor does not reveal the answer-shaped fact.</li>
+                <li>Independent critic sees learner uptake, not mere tutor eloquence.</li>
+              </ul>
+            </div>
+          </div>
+
+          <p>This makes the earlier figure lesson useful instead of ornamental. The tutor is not varying figures to avoid monotony. It is varying figures because the live logical relation demands a different learner-facing operation.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Claim boundary</span> Passing this test would show process-level learner movement under controlled traps. It still would not prove broad human learning.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="glossary">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">09<span class="glyph">.</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Glossary</p>
+          <h2 class="s__h">Terms used in this note.</h2>
+
+          <div class="glossary" id="glossaryList">
+            <div class="gl-row" data-key="logical relation">
+              <h3>Logical relation</h3>
+              <p>A formal relation among claims: entailment, non-entailment, conjunction, directionality, identity, transitivity, exception, or other proof-relevant structure.</p>
+            </div>
+            <div class="gl-row" data-key="figure of speech">
+              <h3>Figure of speech</h3>
+              <p>A patterned form of expression. In this note, figures are treated as operations on attention, not as ornament.</p>
+            </div>
+            <div class="gl-row" data-key="frontier">
+              <h3>Inference frontier</h3>
+              <p>The set of intermediate conclusions already derivable from the learner's public board but not yet voiced by the learner.</p>
+            </div>
+            <div class="gl-row" data-key="watcher">
+              <h3>Watcher</h3>
+              <p>The tutor superego role when given a narrow, auditable jurisdiction over a draft: detect a criterion-defined problem, then force a revision before the tutor speaks.</p>
+            </div>
+            <div class="gl-row" data-key="headroom">
+              <h3>Headroom</h3>
+              <p>A test condition where the control setup fails or stalls, leaving room for a treatment mechanism to produce measurable improvement.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Next artifact</span> A companion implementation note could turn the atlas in section 03 into the candidate-card generator for the next experiment.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="colophon">
+    <p><span class="label">Colophon</span> &nbsp; A hand-authored techne note. Source: <code>notes/poetics/2026-06-11-logical-relations-and-figures.html</code>. Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.</p>
+  </footer>
+
+</main>
+
+<script type="application/json" id="techne-gloss-aliases">
+{
+  "proof-frontier": "frontier",
+  "inference frontier": "frontier",
+  "superego": "watcher",
+  "headroom test": "headroom",
+  "figure": "figure of speech"
+}
+</script>
+<script src="assets/techne.js"></script>
+</body>
+</html>

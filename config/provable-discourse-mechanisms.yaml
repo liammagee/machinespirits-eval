@@ -25,16 +25,16 @@ claims:
         not_null: [tutor_first_turn_score]
         like:
           judge_model: "%claude%"
-        like_any:
+        in:
           profile_name:
-            - "cell_1_%"
-            - "cell_2_%"
-            - "cell_3_%"
-            - "cell_4_%"
-            - "cell_5_%"
-            - "cell_6_%"
-            - "cell_7_%"
-            - "cell_8_%"
+            - "cell_1_base_single_unified"
+            - "cell_2_base_single_psycho"
+            - "cell_3_base_multi_unified"
+            - "cell_4_base_multi_psycho"
+            - "cell_5_recog_single_unified"
+            - "cell_6_recog_single_psycho"
+            - "cell_7_recog_multi_unified"
+            - "cell_8_recog_multi_psycho"
     assertion:
       op: lte
       expected: -0.3
@@ -132,7 +132,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: jsonl_critique_stats
-      file: data/superego-critiques-classified.jsonl
+      file: data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl
       metric: total_count
     assertion:
       op: gte
@@ -150,7 +150,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: jsonl_critique_stats
-      file: data/superego-critiques-classified.jsonl
+      file: data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl
       metric: category_pct
       category: RECOGNITION_FAILURE
     assertion:
@@ -169,7 +169,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: jsonl_critique_stats
-      file: data/superego-critiques-classified.jsonl
+      file: data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl
       metric: persistence_rate
     assertion:
       op: gte
@@ -187,7 +187,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: jsonl_critique_stats
-      file: data/superego-critiques-classified.jsonl
+      file: data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl
       metric: stalling_rate
     assertion:
       op: gte
@@ -205,7 +205,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: jsonl_critique_stats
-      file: data/superego-critiques-classified.jsonl
+      file: data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl
       metric: escalation_balance
     assertion:
       op: gte
@@ -371,7 +371,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
-      file: "../machinespirits-tutor-core/services/tutorDialogueEngine.js"
+      file: "tutor-core/services/tutorDialogueEngine.js"
       pattern: "dialogueTrace\\.push"
       min_matches: 5
     assertion:
@@ -806,10 +806,10 @@ claims:
       min_occurrences: 0
     evidence:
       type: provenance_check
-      # Dialogue logs are git-archived in the private sibling repo. As of the
-      # 2026-06-07 log consolidation this fork's logs/ is a gitignored symlink
-      # -> ../machinespirits-eval-private/logs (mirroring the original repo), so
-      # the repo-relative default resolves to the canonical archive. (TODO C7.5.)
+      # Dialogue logs are git-archived in machinespirits-eval-private. The repo's
+      # logs/ is a gitignored symlink → ~/.machinespirits-data/logs →
+      # machinespirits-eval-private/logs (C7.5 resolved 2026-06-23), giving a
+      # single canonical data root at ~/.machinespirits-data alongside the DB.
       log_dir: logs/tutor-dialogues
       checks:
         - dialogue_hash_match
@@ -879,7 +879,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
-      file: "../machinespirits-tutor-core/services/tutorDialogueEngine.js"
+      file: "tutor-core/services/tutorDialogueEngine.js"
       pattern: "dialogueTrace\\.push\\("
       min_matches: 7
     assertion:
@@ -899,7 +899,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
-      file: "../machinespirits-tutor-core/services/tutorDialogueEngine.js"
+      file: "tutor-core/services/tutorDialogueEngine.js"
       pattern: "disableSuperego"
       min_matches: 3
     assertion:
@@ -1493,6 +1493,26 @@ claims:
       - "Recount if additional models are added."
     tags: [s6, model_dependence, theoretical]
 
+  - id: paper2.s6_8_9.character_dag_family_transfer_robustness
+    description: "Section 6.8.9 reports the exploratory Character-DAG drama transfer-specificity family matrix as passing robustness under observer v0.5."
+    source_keys:
+      - "stat|6.8.9|character-dag-drama transfer-specificity family robustness"
+    statement:
+      pattern: "All four family runs pass acceptance gates under `character-dag-drama-observer\\.v0\\.5`"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: "config/character-dag-drama/evidence-manifest-2026-07-01.md"
+      pattern: "All four family runs pass acceptance gates under `character-dag-drama-observer\\.v0\\.5`"
+      min_matches: 1
+    assertion:
+      op: gte
+      expected: 1
+    remediation:
+      - "If the tracked evidence manifest no longer records the observer v0.5 pass, either restore it from the accepted local robustness package, regenerate the artifact from the recorded fixture matrix, or soften/remove the §6.8.9 family robustness note."
+    tags: [s6, adaptive, character-dag, exploratory, synthetic]
+
   # ── Section 5: Methodology claims ────────────────────────────
 
   - id: paper2.s5.rubric.tutor_v22_dims
@@ -1685,7 +1705,7 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
-      file: "notes/major-bugs.md"
+      file: "notes/2026-06-03-major-bugs.md"
       pattern: "Bug [0-9]|## Bug"
       min_matches: 5
     assertion:
@@ -1754,6 +1774,28 @@ claims:
     remediation:
       - "If learner paradox effect size changes in Paper 1.0, update §9."
     tags: [s9, pilot, paradox]
+
+  # ── Appendix E: belief--desire--recognition apparatus ─────────
+
+  - id: paper2.appendix_e.character_development_self_commitment_pilot
+    description: "Appendix E.7 reports the bounded character-development pilot: self-recognition becomes legible when the mirror is the learner's own prior commitment."
+    source_keys:
+      - "stat|appendix-e|character-development L3 self-commitment pilot"
+    statement:
+      pattern: "L3 self-recognition dimension moved from 1\\.0 to 3\\.0 under Sonnet and from 1\\.5 to 4\\.5 under GPT"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: "config/character-development/evidence-manifest-2026-06-28.md"
+      pattern: "L3 moved from 1\\.0 to 3\\.0 under Sonnet and\\s+from 1\\.5 to 4\\.5 under GPT"
+      min_matches: 1
+    assertion:
+      op: gte
+      expected: 1
+    remediation:
+      - "If the evidence manifest no longer records this L3 contrast, either restore the evidence package summary or remove/soften the Appendix E.7 pilot claim."
+    tags: [appendix-e, character-development, pilot, scope-bound]
 
 
 symmetry_rules:

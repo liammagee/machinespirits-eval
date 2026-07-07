@@ -1,0 +1,1453 @@
+{
+  "label": "lantern-e2-visible-r1",
+  "group": "lantern-e2-visible",
+  "note": null,
+  "scriptPath": "config/drama-derivation/tutor-scripts/lantern-v001.md",
+  "worldPath": "config/drama-derivation/world-002-lantern.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": false,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 1,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1,
+    "mutateShare": 1,
+    "pool": "staged"
+  },
+  "decayVisibility": "conduct",
+  "actsConfig": {
+    "minActTurns": 3,
+    "maxActTurns": 8
+  },
+  "reconstruct": false,
+  "confront": true,
+  "releaseAuthority": true,
+  "pacingGuard": false,
+  "visibleGuard": true,
+  "proofDebtGuard": false,
+  "repairClause": true,
+  "plotDial": true,
+  "throughlineDial": true,
+  "elapsedMs": 1191940,
+  "usage": {
+    "calls": 87,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 20,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 23,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 24,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 20,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_002_lantern",
+  "verdict": "grounded_anagnorisis",
+  "turnsPlayed": 20,
+  "turnCap": 26,
+  "firstForcedTurn": 20,
+  "assertedGroundedTurn": 20,
+  "forcedToAssertedGap": 0,
+  "dCurve": [
+    5,
+    5,
+    5,
+    5,
+    4,
+    4,
+    5,
+    5,
+    5,
+    3,
+    3,
+    3,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0
+  ],
+  "learningSlope": {
+    "d0": 5,
+    "dFinal": 0,
+    "overall": {
+      "delta": 5,
+      "turns": 20,
+      "ratePerTurn": 0.25
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "Act 1",
+        "turns": [
+          1,
+          4
+        ],
+        "dStart": 5,
+        "dEnd": 5,
+        "delta": 0,
+        "ratePerTurn": 0
+      },
+      {
+        "act": "2",
+        "title": "Act 2",
+        "turns": [
+          5,
+          9
+        ],
+        "dStart": 5,
+        "dEnd": 5,
+        "delta": 0,
+        "ratePerTurn": 0
+      },
+      {
+        "act": "3",
+        "title": "Act 3",
+        "turns": [
+          10,
+          15
+        ],
+        "dStart": 5,
+        "dEnd": 1,
+        "delta": 4,
+        "ratePerTurn": 0.667
+      },
+      {
+        "act": "4",
+        "title": "Act 4",
+        "turns": [
+          16,
+          20
+        ],
+        "dStart": 1,
+        "dEnd": 0,
+        "delta": 1,
+        "ratePerTurn": 0.2
+      }
+    ]
+  },
+  "longestPlateau": 4,
+  "aporiaWindow": 6,
+  "eventsByType": {
+    "plot": 4,
+    "throughline": 1,
+    "decay": 4,
+    "act_end": 3,
+    "plot_audit": 4,
+    "repair": 2,
+    "forced": 1,
+    "grounded_anagnorisis": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_key",
+        "plannedTurn": 2,
+        "plannedVia": "director",
+        "actualTurn": 2,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_bearing",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 5,
+        "actualVia": "tutor",
+        "status": "late"
+      },
+      {
+        "premise": "m_post",
+        "plannedTurn": 6,
+        "plannedVia": "director",
+        "actualTurn": 6,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_shutter",
+        "plannedTurn": 8,
+        "plannedVia": "director",
+        "actualTurn": 8,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_chart",
+        "plannedTurn": 9,
+        "plannedVia": "tutor",
+        "actualTurn": 10,
+        "actualVia": "tutor",
+        "status": "late"
+      },
+      {
+        "premise": "p_residue",
+        "plannedTurn": 13,
+        "plannedVia": "director",
+        "actualTurn": 13,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_key",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": 15,
+        "actualVia": "tutor",
+        "status": "early"
+      },
+      {
+        "premise": "p_skiff",
+        "plannedTurn": 20,
+        "plannedVia": "director",
+        "actualTurn": 20,
+        "actualVia": "director",
+        "status": "on_cue"
+      }
+    ],
+    "onCue": 5,
+    "deviations": [
+      {
+        "premise": "p_bearing",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 5,
+        "actualVia": "tutor",
+        "status": "late"
+      },
+      {
+        "premise": "p_chart",
+        "plannedTurn": 9,
+        "plannedVia": "tutor",
+        "actualTurn": 10,
+        "actualVia": "tutor",
+        "status": "late"
+      },
+      {
+        "premise": "p_key",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": 15,
+        "actualVia": "tutor",
+        "status": "early"
+      }
+    ],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "Act 1",
+        "intent": "[The hearing room settles under a hard white morning, salt still drying on boots and coat hems. A blank place waits at the clerk's table, as if the first paper laid there will decide what kind of night the room is willing to remember.]"
+      },
+      {
+        "turn": 5,
+        "name": "Act 2",
+        "intent": "[The clerk closes the wet book without triumph, and the room feels the weight of a number that has not yet chosen a tower. The next act opens under a lower ceiling: certainty must pass through sealed doors, official hands, and the hush of a lamp that may have had no right to speak.]"
+      },
+      {
+        "turn": 10,
+        "name": "Act 3",
+        "intent": "[The chart is left open on the table, but no one leans over it now. The room changes its hunger: less for coastlines and more for marks a hand might have left in darkness.]"
+      },
+      {
+        "turn": 16,
+        "name": "Act 4",
+        "intent": "[The ledgers are closed, and the room seems suddenly too narrow for paper. Rain comes harder against the windows; every face turns toward the door, waiting for the night itself to be brought in.]"
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [
+    {
+      "turn": 14,
+      "draftFigure": "anaphora",
+      "figure": "erotema",
+      "diagnosis": "The figure is not a rut, but the draft consolidates p_residue after its staging without an intervening confrontation.",
+      "note": "Confront p_residue first: ask the learner to read back what they hold from that exhibit, without restaging or summarizing it for them."
+    },
+    {
+      "turn": 18,
+      "draftFigure": "anaphora",
+      "figure": "erotema",
+      "diagnosis": "The draft re-enters p_key to consolidate it without a confrontation standing since its last staging.",
+      "note": "Confront p_key first: require the learner to read back what they hold of that exhibit before you consolidate it."
+    },
+    {
+      "turn": 19,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The draft would make erotema the third declared device in a row.",
+      "note": "Leave off the question-form here; make the turn without another erotema."
+    }
+  ],
+  "tutorFigures": {
+    "total": 20,
+    "counts": {
+      "erotema": 8,
+      "analogia": 4,
+      "exemplum": 4,
+      "anaphora": 4
+    },
+    "distinct": 4,
+    "topFigure": "erotema",
+    "topShare": 0.4,
+    "switchRate": 0.789,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.789,
+    "superego": {
+      "watched": 20,
+      "interventions": 3,
+      "interventionRate": 0.15,
+      "withinTurnChanges": 3,
+      "withinTurnChangeRate": 1,
+      "switchOnIntervention": 0.667,
+      "switchElsewhere": 0.813,
+      "stallWatch": null
+    }
+  },
+  "learnerInference": {
+    "nodes": [
+      {
+        "fact": [
+          "steeredToward",
+          "mara",
+          "southStack"
+        ],
+        "firstAvailable": 10,
+        "firstVoiced": 10,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 10,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "steeredByLampOf",
+          "mara",
+          "southStack"
+        ],
+        "firstAvailable": 13,
+        "firstVoiced": 13,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 7,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "litLampOf",
+          "senna",
+          "southStack"
+        ],
+        "firstAvailable": 20,
+        "firstVoiced": 20,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 0,
+        "stallTurns": 0
+      }
+    ],
+    "voicedCount": 3,
+    "overreachCount": 0,
+    "mischanneledCount": 1,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 20,
+      "maxSentences": 4,
+      "avgSentences": 3.05,
+      "avgWords": 39.4
+    },
+    "tutor": {
+      "turns": 20,
+      "maxSentences": 3,
+      "avgSentences": 2.4,
+      "avgWords": 49.5
+    },
+    "learner": {
+      "turns": 20,
+      "maxSentences": 4,
+      "avgSentences": 3.35,
+      "avgWords": 76.8
+    }
+  },
+  "proofExtracted": true,
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 1,
+      "pool": "staged"
+    },
+    "decayEvents": 4,
+    "repairs": {
+      "total": 2,
+      "byTutor": 2,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": 3.5,
+    "unrepairedAtEnd": 2,
+    "degradedTurnIntegral": 30,
+    "dReversals": 1,
+    "mutations": {
+      "total": 0,
+      "retracted": 0,
+      "revised": 0,
+      "falseBeliefsAtEnd": 0,
+      "confrontPromptedRetractions": 0
+    },
+    "fidelity": {
+      "final": 0.833,
+      "min": 0.75
+    },
+    "timeline": [
+      {
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 3,
+        "retractTurn": null,
+        "repairTurn": 6,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_bearing",
+        "fact": [
+          "loggedBearingOf",
+          "mara",
+          "sswHalfWest"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 6,
+        "retractTurn": null,
+        "repairTurn": 10,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_post",
+        "fact": [
+          "atTowerThatNight",
+          "brandt",
+          "harlowPoint"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 7,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      },
+      {
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 10,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        4
+      ],
+      "endedBy": "director",
+      "brief": "[The hearing room settles under a hard white morning, salt still drying on boots and coat hems. A blank place waits at the clerk's table, as if the first paper laid there will decide what kind of night the room is willing to remember.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        5,
+        9
+      ],
+      "endedBy": "director",
+      "brief": "[The clerk closes the wet book without triumph, and the room feels the weight of a number that has not yet chosen a tower. The next act opens under a lower ceiling: certainty must pass through sealed doors, official hands, and the hush of a lamp that may have had no right to speak.]"
+    },
+    {
+      "act": 3,
+      "turns": [
+        10,
+        15
+      ],
+      "endedBy": "director",
+      "brief": "[The chart is left open on the table, but no one leans over it now. The room changes its hunger: less for coastlines and more for marks a hand might have left in darkness.]"
+    },
+    {
+      "act": 4,
+      "turns": [
+        16,
+        20
+      ],
+      "endedBy": "run_end",
+      "brief": "[The ledgers are closed, and the room seems suddenly too narrow for paper. Rain comes harder against the windows; every face turns toward the door, waiting for the night itself to be brought in.]"
+    }
+  ],
+  "releaseDeviations": {
+    "turnsWithWindow": 9,
+    "played": 3,
+    "onSchedule": 0,
+    "early": 1,
+    "held": 2,
+    "forced": 0,
+    "overridden": 3,
+    "invalidClaims": 0,
+    "reasons": [
+      {
+        "turn": 5,
+        "premise": "p_bearing",
+        "offset": 1,
+        "reason": "Held one turn so the clerk first named the missing tower-on-bearing conjunct before the book returned."
+      },
+      {
+        "turn": 10,
+        "premise": "p_chart",
+        "offset": 1,
+        "reason": "p_chart pushed: page stalling (hedging up 0.50)"
+      },
+      {
+        "turn": 15,
+        "premise": "p_key",
+        "offset": -2,
+        "reason": "Played two turns early because the learner has held the lamp gap cleanly and is now explicitly waiting at the lamp-room door for key and presence."
+      }
+    ],
+    "decisions": [
+      {
+        "turn": 1,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 1,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": null,
+            "priorEcho": 0,
+            "priorEchoed": true,
+            "lenTrend": 0,
+            "hedgeTrend": 0,
+            "hasTrend": false,
+            "learnerLineCount": 0,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 2,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 2,
+            "turnsSinceLastRelease": 0,
+            "priorPremiseId": "m_key",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 69,
+            "hedgeTrend": 0,
+            "hasTrend": false,
+            "learnerLineCount": 1,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 3,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 3,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "m_key",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 80.5,
+            "hedgeTrend": 0,
+            "hasTrend": false,
+            "learnerLineCount": 2,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 4,
+        "windowSize": 1,
+        "claimed": "p_bearing",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": true,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": true,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": "p_bearing",
+          "reason": "p_bearing held: prior exhibit m_key not taken up on the page (echo 0.31 < 0.34)",
+          "visibleFeatures": {
+            "turn": 4,
+            "turnsSinceLastRelease": 2,
+            "priorPremiseId": "m_key",
+            "priorEcho": 0.3125,
+            "priorEchoed": false,
+            "lenTrend": 14.5,
+            "hedgeTrend": 0,
+            "hasTrend": false,
+            "learnerLineCount": 3,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 5,
+        "windowSize": 1,
+        "claimed": "p_bearing",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": "p_bearing",
+        "scheduledTurn": 4,
+        "offset": 1,
+        "reason": "Held one turn so the clerk first named the missing tower-on-bearing conjunct before the book returned.",
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": "p_bearing",
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 5,
+            "turnsSinceLastRelease": 3,
+            "priorPremiseId": "m_key",
+            "priorEcho": 0.375,
+            "priorEchoed": true,
+            "lenTrend": 8,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 4,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 6,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 6,
+            "turnsSinceLastRelease": 0,
+            "priorPremiseId": "m_post",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 27,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 5,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 7,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 7,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "m_post",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 32.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 6,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 8,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 8,
+            "turnsSinceLastRelease": 0,
+            "priorPremiseId": "m_shutter",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 6.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 7,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 9,
+        "windowSize": 1,
+        "claimed": "p_chart",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": true,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": true,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": "p_chart",
+          "reason": "p_chart held: prior exhibit m_shutter not taken up on the page (echo 0.00 < 0.34)",
+          "visibleFeatures": {
+            "turn": 9,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "m_shutter",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": -2,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 8,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 10,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": true,
+        "played": "p_chart",
+        "scheduledTurn": 9,
+        "offset": 1,
+        "reason": "p_chart pushed: page stalling (hedging up 0.50)",
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": true,
+          "forcedBy": "visible_stall",
+          "candidate": null,
+          "reason": "p_chart pushed: page stalling (hedging up 0.50)",
+          "visibleFeatures": {
+            "turn": 10,
+            "turnsSinceLastRelease": 2,
+            "priorPremiseId": "m_shutter",
+            "priorEcho": 0.10526315789473684,
+            "priorEchoed": false,
+            "lenTrend": 18.5,
+            "hedgeTrend": 0.5,
+            "hasTrend": true,
+            "learnerLineCount": 9,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 11,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 11,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "p_chart",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 11.5,
+            "hedgeTrend": 0.5,
+            "hasTrend": true,
+            "learnerLineCount": 10,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 12,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 12,
+            "turnsSinceLastRelease": 2,
+            "priorPremiseId": "p_chart",
+            "priorEcho": 0.2,
+            "priorEchoed": false,
+            "lenTrend": -33.5,
+            "hedgeTrend": -0.5,
+            "hasTrend": true,
+            "learnerLineCount": 11,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 13,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 13,
+            "turnsSinceLastRelease": 0,
+            "priorPremiseId": "p_residue",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": -44,
+            "hedgeTrend": -0.5,
+            "hasTrend": true,
+            "learnerLineCount": 12,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 14,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 14,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "p_residue",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": -8.5,
+            "hedgeTrend": 0.5,
+            "hasTrend": true,
+            "learnerLineCount": 13,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 15,
+        "windowSize": 1,
+        "claimed": "p_key",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": "p_key",
+        "scheduledTurn": 17,
+        "offset": -2,
+        "reason": "Played two turns early because the learner has held the lamp gap cleanly and is now explicitly waiting at the lamp-room door for key and presence.",
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": "p_key",
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 15,
+            "turnsSinceLastRelease": 2,
+            "priorPremiseId": "p_residue",
+            "priorEcho": 0.23809523809523808,
+            "priorEchoed": false,
+            "lenTrend": 16,
+            "hedgeTrend": 1,
+            "hasTrend": true,
+            "learnerLineCount": 14,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 16,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 16,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "p_key",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 1,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 15,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 17,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 17,
+            "turnsSinceLastRelease": 2,
+            "priorPremiseId": "p_key",
+            "priorEcho": 0.09523809523809523,
+            "priorEchoed": false,
+            "lenTrend": -19,
+            "hedgeTrend": -1,
+            "hasTrend": true,
+            "learnerLineCount": 16,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 18,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 18,
+            "turnsSinceLastRelease": 3,
+            "priorPremiseId": "p_key",
+            "priorEcho": 0.09523809523809523,
+            "priorEchoed": false,
+            "lenTrend": -18.5,
+            "hedgeTrend": -0.5,
+            "hasTrend": true,
+            "learnerLineCount": 17,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 19,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 19,
+            "turnsSinceLastRelease": 4,
+            "priorPremiseId": "p_key",
+            "priorEcho": 0.14285714285714285,
+            "priorEchoed": false,
+            "lenTrend": -2.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 18,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 20,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 20,
+            "turnsSinceLastRelease": 0,
+            "priorPremiseId": "p_skiff",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 16.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 19,
+            "stalling": false
+          }
+        }
+      }
+    ]
+  },
+  "confrontation": {
+    "confrontations": [
+      {
+        "turn": 11,
+        "target": "p_chart",
+        "targetDecayed": false
+      },
+      {
+        "turn": 14,
+        "target": "p_residue",
+        "targetDecayed": false
+      },
+      {
+        "turn": 16,
+        "target": "p_key",
+        "targetDecayed": false
+      },
+      {
+        "turn": 18,
+        "target": "p_key",
+        "targetDecayed": false
+      }
+    ],
+    "reentries": {
+      "total": 2,
+      "covered": 2,
+      "uncovered": []
+    },
+    "restores": [
+      {
+        "turn": 6,
+        "target": "m_key",
+        "targetDecayed": true,
+        "repaired": true
+      },
+      {
+        "turn": 10,
+        "target": "p_bearing",
+        "targetDecayed": true,
+        "repaired": true
+      }
+    ],
+    "superego": {
+      "reentryFires": 2,
+      "convertedToConfront": 2,
+      "firesWithoutDue": 0,
+      "restoreClaimFires": 0,
+      "proofDebtClaimFires": 0,
+      "draftsDueByRecord": 2,
+      "fires": [
+        {
+          "turn": 14,
+          "target": "p_residue",
+          "convertedToConfront": true,
+          "dueByRecord": true,
+          "onRestoreClaim": false,
+          "onProofDebtClaim": false
+        },
+        {
+          "turn": 18,
+          "target": "p_key",
+          "convertedToConfront": true,
+          "dueByRecord": true,
+          "onRestoreClaim": false,
+          "onProofDebtClaim": false
+        }
+      ]
+    }
+  },
+  "plot": {
+    "plots": {
+      "count": 4,
+      "disciplined": 4,
+      "meanClauses": 6,
+      "perAct": [
+        {
+          "act": 1,
+          "turn": 1,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        },
+        {
+          "act": 2,
+          "turn": 5,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [
+            "p_bearing",
+            "m_key"
+          ],
+          "holdStagedInAct": [
+            "p_bearing"
+          ],
+          "withholdNamed": [
+            "p_chart"
+          ],
+          "withholdPlayedInAct": []
+        },
+        {
+          "act": 3,
+          "turn": 10,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [
+            "p_bearing"
+          ],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        },
+        {
+          "act": 4,
+          "turn": 16,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        }
+      ]
+    },
+    "audits": {
+      "count": 4,
+      "finalIncluded": true,
+      "verdictMix": {
+        "kept": 21,
+        "justified_deviation": 0,
+        "drift": 2,
+        "unscored": 0
+      },
+      "perAct": [
+        {
+          "act": 1,
+          "turn": 5,
+          "final": false,
+          "clauses": 6,
+          "mix": {
+            "kept": 6,
+            "justified_deviation": 0,
+            "drift": 0,
+            "unscored": 0
+          }
+        },
+        {
+          "act": 2,
+          "turn": 10,
+          "final": false,
+          "clauses": 6,
+          "mix": {
+            "kept": 4,
+            "justified_deviation": 0,
+            "drift": 2,
+            "unscored": 0
+          }
+        },
+        {
+          "act": 3,
+          "turn": 16,
+          "final": false,
+          "clauses": 6,
+          "mix": {
+            "kept": 6,
+            "justified_deviation": 0,
+            "drift": 0,
+            "unscored": 0
+          }
+        },
+        {
+          "act": 4,
+          "turn": 20,
+          "final": true,
+          "clauses": 5,
+          "mix": {
+            "kept": 5,
+            "justified_deviation": 0,
+            "drift": 0,
+            "unscored": 0
+          }
+        }
+      ]
+    },
+    "crossCheck": {
+      "holdNamed": 3,
+      "holdStagedInAct": 1,
+      "withholdNamed": 1,
+      "withholdPlayedInAct": 0
+    },
+    "throughline": {
+      "count": 1,
+      "byTrigger": {
+        "opening": 1,
+        "recommit": 0,
+        "audit_bound": 0,
+        "voluntary": 0
+      },
+      "disciplined": 1,
+      "arcs": {
+        "count": 4,
+        "mix": {
+          "on_arc": 4,
+          "off_arc": 0,
+          "unscored": 0
+        }
+      },
+      "finalReckoning": {
+        "clauses": 7,
+        "mix": {
+          "kept": 6,
+          "justified_deviation": 1,
+          "drift": 0,
+          "unscored": 0
+        }
+      }
+    }
+  }
+}

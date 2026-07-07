@@ -59,6 +59,17 @@ test('loadArmTranscript reads <sample-root>/sample/<arm>/<tid>.txt + key-<arm>.y
   fs.rmSync(root, { recursive: true, force: true });
 });
 
+test('loadArmTranscript reads object-shaped key.items without falling back to the first secret', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qa-arms-'));
+  fs.mkdirSync(path.join(root, 'sample', 'socratic'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'sample', 'socratic', 'T04.txt'), 'TUTOR:\n\n"What do the ledgers show?"\n');
+  fs.writeFileSync(path.join(root, 'key-socratic.yaml'), 'items:\n  T04:\n    drama_id: D_OED4\n');
+  const loaded = loadArmTranscript(root, 'socratic');
+  assert.equal(loaded.tid, 'T04');
+  assert.equal(loaded.dramaId, 'D_OED4');
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 test('loadArmTranscript falls back to the .txt when no key file is present', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qa-arms-'));
   fs.mkdirSync(path.join(root, 'sample', 'reveal'), { recursive: true });

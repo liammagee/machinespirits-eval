@@ -1,0 +1,329 @@
+# WORLD-005 — the branching / AND-join scenario (generalization arc, Step 2,
+# 2026-06-13). A new rule SHAPE: where world-001 CONVERGES three branches on
+# one attribution law, world-002 ELIMINATES candidates down a single chain,
+# world-003 stages a two-stage LINEAR chain, and world-004 RECONVERGES a
+# diamond (re-using one intermediate), world-005 is the first TRUE AND-JOIN —
+# the secret needs TWO INDEPENDENT sub-chains that each ground on their own
+# and only then converge. Neither half forces the secret; the climax is the
+# meeting of the two.
+#
+# WHY THIS SHAPE (ADAPTIVE-TUTOR-GENERALIZATION-PLAN.md Step 2): the §6.13.11
+# result was V ~= H — the page-only (visible) pacing guard matched the
+# proof-state (hidden) guard on lantern's single chain. The reframed question
+# is whether that page-only proxy still tracks progress when the proof FORKS.
+# A branching DAG is where it can decouple: the learner can fully seat
+# sub-chain alpha (a complete local recognition — confident, echoing the last
+# exhibit) while sub-chain beta is untouched and the global proof-distance D
+# is still high. "Turns since last release / learner echo / low hedging" reads
+# "near done" exactly when half the proof is missing. world-005 is built to
+# stage that gap.
+#
+# A moneyer's assay sits on a flood of false shillings passed at the Marrick
+# autumn fair. The town's verdict is ready-made: Verrell, the twice-pilloried
+# clipper, a graver on his bench and a crucible at the mint-yard. The truth is
+# a contingent particular: Edony, the late founder's widow, who kept her dead
+# husband's cold weir-forge crucible AND his worn burin, and struck the false
+# shillings through fair-week to keep the forge's debts off her name. She does
+# not exist outside this drama until the coin's own marks — its dross and its
+# notched serif — bring her on.
+#
+# Proof DAG (depth 3 overall; two INDEPENDENT depth-2 sub-chains + a join):
+#
+#   alpha (the blank — metal provenance):
+#     p_alloy + p_crucible --R1--> blankFrom(falseShilling, weirCrucible)
+#     blankFrom + p_caster  --R2--> castBlankFor(falseShilling, edony)
+#   beta (the die — engraving provenance):
+#     p_flaw + p_graver     --R3--> dieCutWith(falseShilling, wornBurin)
+#     dieCutWith + p_holder --R4--> cutDieFor(falseShilling, edony)
+#   join:
+#     castBlankFor + cutDieFor --R5--> struckBy(falseShilling, edony)
+#
+# The mirror (Verrell) is PROPERLY tempting: m_caster gives him R2's
+# sole-caster conjunct (he alone casts at the MINT crucible) and m_graver
+# gives him R4's sole-holder conjunct (he alone holds the BROAD graver) — two
+# true facts that look like "he casts AND he engraves, the obvious coiner."
+# But the coin's blank came from the WEIR crucible and its die was cut with
+# the WORN burin: neither of his objects binds these coins. The AND-join then
+# seals it — struckBy needs the SAME hand to have both the cast blank and the
+# cut die, and Verrell has neither for THIS coin. No rule can ever derive
+# struckBy(falseShilling, verrell) — plotLint enforces it. The peripeteia is
+# double: the assay shows the shillings are STRUCK from cast dross, not
+# CLIPPED from sterling (a clipper makes no new coin), and the burin that cut
+# the die is not the graver on Verrell's bench.
+#
+# SURFACE DISCIPLINE: a premise's surface may carry colour but must not state
+# an unreleased FACT (the assay names the dross without naming the crucible it
+# answers to; the die-flaw is seen before the burin that signs it is found).
+#
+# CONCEALMENT: edony, the weir crucible, the dross, the worn burin, the
+# notched serif exist only in premises/secret — never in setting, background,
+# question, or rules. tests/dramaticDerivationWorlds.test.js enforces this.
+
+id: world_005_marrick
+title: The Light Shillings
+
+discipline: "Moneyer's assay (a trial of false coin)"
+
+question: "Whose hand struck the false shillings passed at the Marrick fair?"
+question_pattern: [struckBy, falseShilling, "?x"]
+
+setting: >-
+  The autumn fair at Marrick passed in light shillings — coin that rings
+  wrong and bends to the tooth, found in every second till when the booths
+  came down. The mint warden has convened an assay in the guild-hall, and the
+  town has settled its verdict before the crucible is lit: coin is the
+  coiner's work, and Marrick has a coiner — Verrell, twice in the pillory for
+  clipping, with a graver on his bench and a crucible at the mint-yard. You
+  are the assay-master's apprentice, sent to keep the trial-book, quick with
+  the touchstone and quicker to convict the man the town already hates. The
+  assay trusts its rules of evidence, and nothing else.
+
+learner_voice: >-
+  The assay-master's apprentice: deft with the balance and the touch-needles,
+  eager — too eager — to write the verdict the town wants; apt to name the
+  hand before the metal has finished naming itself. Respectful of the warden,
+  hungry to be right, and learning, mark by mark, to let a coin's own evidence
+  say who made it.
+
+secret:
+  fact: [struckBy, falseShilling, edony]
+  surface: "The false shillings were struck by Edony — the founder's widow, who cast their blanks at her dead husband's weir crucible and cut their die with his worn burin."
+
+mirror:
+  fact: [struckBy, falseShilling, verrell]
+
+# The assay's public rules of evidence: known from the start; the facts are
+# not. Rules name no contingent individuals.
+rules:
+  - id: R1_blank
+    gloss: >-
+      A struck coin's blank betrays its melt: if a coin is of a debased
+      alloy, and that very alloy answers to the leavings of one crucible and
+      one only, then the coin's blank was cast from that crucible.
+    if:
+      - [alloyOf, "?coin", "?metal"]
+      - [meltedAt, "?metal", "?crucible"]
+    then:
+      - [blankFrom, "?coin", "?crucible"]
+  - id: R2_cast
+    gloss: >-
+      A blank is the work of the hand that cast it: if a coin's blank came
+      from a crucible, and one hand alone cast at that crucible, then that
+      hand cast the blank for the coin.
+    if:
+      - [blankFrom, "?coin", "?crucible"]
+      - [soleCasterAt, "?crucible", "?x"]
+    then:
+      - [castBlankFor, "?coin", "?x"]
+  - id: R3_die
+    gloss: >-
+      A die leaves its flaw on every coin it strikes: if a coin bears a
+      die-flaw, and that flaw is the signature of one graving-tool and one
+      only, then the coin's die was cut with that tool.
+    if:
+      - [dieFlawOf, "?coin", "?flaw"]
+      - [flawCutBy, "?flaw", "?tool"]
+    then:
+      - [dieCutWith, "?coin", "?tool"]
+  - id: R4_hold
+    gloss: >-
+      A die is the work of the hand that held the tool: if a coin's die was
+      cut with a tool, and one hand alone held that tool, then that hand cut
+      the die for the coin.
+    if:
+      - [dieCutWith, "?coin", "?tool"]
+      - [soleHolderOf, "?tool", "?x"]
+    then:
+      - [cutDieFor, "?coin", "?x"]
+  - id: R5_strike
+    gloss: >-
+      To strike false coin needs both the cast blank and the cut die in one
+      hand: who had the blank cast for a coin and the die cut for it, that
+      one struck it. A blank without a die strikes nothing, and a die without
+      a blank strikes nothing; both must meet in one hand.
+    if:
+      - [castBlankFor, "?coin", "?x"]
+      - [cutDieFor, "?coin", "?x"]
+    then:
+      - [struckBy, "?coin", "?x"]
+
+premises:
+  # --- sub-chain alpha (the blank): the metal ---
+  - id: p_alloy
+    fact: [alloyOf, falseShilling, drossSilver]
+    surface: >-
+      The assay is plain in the cupel: these shillings are no clipped
+      sterling but a struck coin of poor dross — silver eked out with too
+      much copper and a grey lead-sweat the touchstone catches at once.
+      Clipping shaves a true coin; it strikes no new one. These were struck.
+  - id: p_crucible
+    fact: [meltedAt, drossSilver, weirCrucible]
+    surface: >-
+      The founder's man knows that dross by its lead-sweat: it answers to the
+      leavings of one crucible on all this coast — the weir-forge crucible
+      above the mill-leat, cold these ten years since the old founder died
+      and his yard was shut.
+  - id: p_caster
+    fact: [soleCasterAt, weirCrucible, edony]
+    surface: >-
+      The leat-keeper's book is exact. Since the forge was shut, one hand
+      alone has drawn the weir crucible and signed for its charcoal: Edony,
+      the founder's widow, who stayed on in the forge cottage when the fires
+      went out.
+  # --- sub-chain beta (the die): the engraving ---
+  - id: p_flaw
+    fact: [dieFlawOf, falseShilling, notchedSerif]
+    surface: >-
+      Lay a dozen of the light shillings under the glass and they share one
+      fault to the hair: a broken letter in the legend, the serif of the R
+      struck with a small square notch where the graver slipped and was never
+      mended. One die struck them all.
+  - id: p_graver
+    fact: [flawCutBy, notchedSerif, wornBurin]
+    surface: >-
+      The guild's die-sinker reads that notch like a hand he knows: it is no
+      slip of the burnisher but the bite of a worn burin with a sprung heel —
+      a tool that signs every line it cuts with that square notch. It is not
+      the broad graver from Verrell's bench, which cuts clean.
+  - id: p_holder
+    fact: [soleHolderOf, wornBurin, edony]
+    surface: >-
+      The old founder's tools were never sold off. The inventory of his
+      estate, sworn and unredeemed, leaves his graving-irons to his widow
+      alone — among them the worn burin with the sprung heel, kept in Edony's
+      keeping these ten years.
+  # --- mirror fuel: what makes Verrell the town's answer ---
+  - id: m_caster
+    fact: [soleCasterAt, mintCrucible, verrell]
+    surface: >-
+      The town has its founder ready: Verrell alone draws the mint-yard
+      crucible, licensed to no one else since the old assay-master's day.
+      Whatever metal is cast in Marrick, the town says, is cast by Verrell's
+      hand.
+  - id: m_graver
+    fact: [soleHolderOf, broadGraver, verrell]
+    surface: >-
+      And Verrell engraves: the broad graver on his bench is his alone, the
+      guild will swear, and no clean-cut die in the borough is sunk without
+      it. A caster and an engraver both — the town needs no more than that.
+  - id: m_caught
+    fact: [seenAtForge, verrell, fairWeek]
+    surface: >-
+      The watch will swear to the rest: Verrell was seen at the mint-yard
+      forge twice in fair-week, late and with the shutters drawn. Caster,
+      engraver, and at the fire on the very nights — the town's case stands,
+      and stands loud.
+
+# Public setup; feeds no rule.
+background:
+  - [passedAt, falseShilling, autumnFair]
+  - [inquiryInto, theAssay, falseShilling]
+  - [clipperOf, verrell, marrick]
+  - [struckNotClipped, falseShilling]
+
+incompatible:
+  - [[struckBy, falseShilling, edony], [struckBy, falseShilling, verrell]]
+  - [[castBlankFor, falseShilling, verrell], [castBlankFor, falseShilling, edony]]
+
+# One authored path through BOTH sub-chains and the join (no twin-fact spares,
+# after the world-004 design note): the proof afterward describes only the
+# play that was staged.
+proof_paths:
+  - premises: [p_alloy, p_crucible, p_caster, p_flaw, p_graver, p_holder]
+
+# The plot: the town's case swells (m_caster, m_graver), the assay opens the
+# metal chain and detonates the clipping verdict (struck, not clipped); alpha
+# closes on a hand the town never named; the smoking gun (m_caught) lands and
+# the die-chain opens; the notch detonates the verdict a second time (wrong
+# graver); and the burin's keeper proves the SAME hand that drew the crucible.
+# The two sub-chains meet in one name. S first derivable at turn 22 (>= t_min
+# 20), 6 turns before cap.
+release_schedule:
+  - { turn: 2, premise: m_caster, via: director }
+  - { turn: 4, premise: p_alloy, via: tutor }
+  - { turn: 6, premise: m_graver, via: director }
+  - { turn: 8, premise: p_crucible, via: tutor }
+  - { turn: 10, premise: p_caster, via: director }
+  - { turn: 12, premise: m_caught, via: director }
+  - { turn: 14, premise: p_flaw, via: tutor }
+  - { turn: 18, premise: p_graver, via: tutor }
+  - { turn: 22, premise: p_holder, via: director }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Light Shillings
+      turns: [1, 5]
+      intent: >-
+        The flooded fair and the ready verdict: coin is the coiner's work,
+        and the town has its coiner. Against the certainty, the first hard
+        fact — the cupel: these are struck coin of poor dross, not clipped
+        sterling, and a clipper strikes nothing new. The learner should leave
+        Act I holding a verdict and an assay that does not fit it, noticing
+        the town named a clipper for a striking.
+    - act: II
+      title: The Cold Crucible
+      turns: [6, 11]
+      intent: >-
+        The metal chain. The town's case swells — Verrell engraves as well as
+        casts — and then the dross answers to one crucible, a weir-forge cold
+        ten years, and to one hand that alone has drawn it since. The first
+        sub-chain closes: the blank was cast for a hand the town has never
+        spoken. The learner should end Act II holding a CAST blank traced to a
+        name — and feel that it is only half a finding, the die still unasked.
+    - act: III
+      title: The Broken Letter
+      turns: [12, 17]
+      intent: >-
+        Peripeteia, and the fork. The watch puts Verrell at the forge on the
+        very nights — the case at its loudest — and into that noise the die:
+        every light shilling shares one fault, a notched serif, one die for
+        all. The question forks in the learner's hands — not only whose metal,
+        but whose DIE? — and the learner must hold an open second chain
+        without letting the first answer stand in for it.
+    - act: IV
+      title: The Two Hands Are One
+      turns: [18, 28]
+      intent: >-
+        The second closing and the join. The notch is the bite of a worn
+        burin, not the clean broad graver on Verrell's bench — the verdict
+        dies a second death. Then the founder's estate leaves that burin to
+        one keeper, and it is the SAME hand that drew the weir crucible. From
+        turn 22 the learner's own grounded facts force the conclusion: the
+        cast blank and the cut die meet in one name. The remaining turns are
+        the recognition scene — the learner brought to say whose hand struck
+        the shillings, and to show why the assay's rules leave it no one
+        else's.
+
+slope:
+  t_min: 20 # anti-reveal: S must not be derivable before turn 20
+  aporia_window: 6 # anti-aporia: D(t) must strictly decrease within any 6-turn window
+
+turn_cap: 28
+
+# Character desire (CHARACTER-DESIRE.md): the script outline's motivation, made
+# first-class — compiles to desire-nodes (beliefDesire.js) AND prompt lines. The
+# learner's only source of desire (the proof gives it none: it does not know S).
+motivation:
+  learner:
+    first_order:
+      end: question_pattern # the de dicto answer-slot: exists x. struckBy(falseShilling, ?x)
+      opens_on: verrell # opens mis-bound to the mirror (the town's ready verdict)
+      mirror_pull: high # "eager - too eager - to write the verdict the town wants"
+    second_order:
+      from: warden # "respectful of the warden"
+      as: right # "hungry to be right"
+      authority: rational_legal # "the assay trusts its rules of evidence, and nothing else"
+    disposition:
+      overreach: high # "apt to name the hand before the metal has finished naming itself"
+      arc: softens # "learning, mark by mark, to let a coin's own evidence say who made it"
+  tutor:
+    first_order:
+      end: inherit # = the proof-derived Des_T(grounded_L(S))
+    second_order: null # the tutor seeks no recognition here (the asymmetry, §5)
+    disposition:
+      withhold: lawful # honours the floor t_min (the criterial superego, the law)
+  director: # §8(b): the author's aesthetic knob on the Big Other (D, §10)
+    temptation: high # the town's ready verdict (verrell) should tempt hard
+    suspense: tight # hug the floor — the assay must not resolve early
+    reversal: quiet # the inverted reversal is sober — recognition without spectacle

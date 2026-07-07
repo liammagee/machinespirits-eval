@@ -1,0 +1,31 @@
+# TRIMMED RESUME #2 of register-router-contrast-marrick (frozen 3799a951):
+# two external stops (6/20 then 12/20), operator said resume; same labels
+# + seeds, missing arms only, per the prereg's interruption-recovery clause.
+base:
+  world: config/drama-derivation/world-005-marrick.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: baseline-r7
+    flags: { decay: '{"seed":463,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r7
+    flags: { decay: '{"seed":463,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r8
+    flags: { decay: '{"seed":467,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r8
+    flags: { decay: '{"seed":467,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r9
+    flags: { decay: '{"seed":479,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r9
+    flags: { decay: '{"seed":479,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }
+  - label: baseline-r10
+    flags: { decay: '{"seed":487,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: register-router-r10
+    flags: { decay: '{"seed":487,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', register-router: true }

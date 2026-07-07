@@ -459,7 +459,7 @@ export function materializeAttemptFixtures({
       '--out-dir',
       repoRel(outDir),
       '--out',
-      'notes/adaptive_2_0/a19-attempt1-fixture-gate-report.md',
+      'notes/adaptive_2_0/2026-06-07-a19-attempt1-fixture-gate-report.md',
     ]),
   );
   fs.writeFileSync(path.join(outDir, 'next-commands.sh'), `${commands.join('\n')}\n`, 'utf8');

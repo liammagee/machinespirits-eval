@@ -1,0 +1,1089 @@
+{
+  "schema": "machinespirits.derivation.transcript-rubric-suite.v1",
+  "generatedAt": "2026-06-17T21:47:45.859Z",
+  "runDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/cast-layer-dogmatic-comparison/runs",
+  "outDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/cast-layer-dogmatic-comparison/rubric-suite-opus-cli-max",
+  "judgeCli": "claude",
+  "model": "opus",
+  "judgeEffort": "max",
+  "scoreConcurrency": 2,
+  "resumeExisting": true,
+  "rubrics": [
+    "tutor_v22",
+    "tutor_holistic",
+    "learner_v22",
+    "dialogue_quality",
+    "poetics"
+  ],
+  "rubricFiles": {
+    "tutor_v22": "config/evaluation-rubric.yaml",
+    "tutor_holistic": "config/evaluation-rubric-tutor-holistic.yaml",
+    "learner_v22": "config/evaluation-rubric-learner.yaml",
+    "dialogue_quality": "config/evaluation-rubric-dialogue.yaml",
+    "poetics": "config/evaluation-rubric-poetics.yaml"
+  },
+  "results": [
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1",
+      "sourceDir": "exports/dramatic-derivation/cast-layer-dogmatic-comparison/runs/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1",
+      "proofGate": {
+        "schema": "machinespirits.derivation.problem-solving-gate.v1",
+        "label": "cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1",
+        "status": "pass",
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 20,
+        "finalD": 0,
+        "firstForcedTurn": 20,
+        "assertedGroundedTurn": 20,
+        "forcedAssertedGap": 0,
+        "releaseAdherence": {
+          "onCue": 8,
+          "deviations": [],
+          "missed": [],
+          "unscheduled": [],
+          "deviationCount": 0
+        },
+        "publicFormalismLeakCount": 0,
+        "publicFormalismLeaks": [],
+        "overreach": null,
+        "luckyLeap": null,
+        "interpretation": "This gate measures problem-solving ability of the public derivation discourse: grounded assertion under proof/release constraints. Rubric scores below are secondary quality measures."
+      },
+      "dialogueSummary": {
+        "publicLineCount": 49,
+        "tutorLines": 20,
+        "learnerLines": 20,
+        "avgTutorWords": 40.4,
+        "avgLearnerWords": 71.8,
+        "exchangeTypes": {
+          "substantive": 2,
+          "confusion": 1,
+          "hypothesis": 13,
+          "resistance": 3,
+          "assertion": 1
+        },
+        "sceneCount": 7,
+        "avgSceneExchanges": 2.86,
+        "recognitionNeed": {
+          "byLevel": {
+            "low": 17,
+            "high": 1,
+            "medium": 2
+          },
+          "peakDebt": 0.62,
+          "sources": {
+            "recognition_gap": 5,
+            "unacknowledged_resistance": 3
+          }
+        },
+        "phaticRecognition": {
+          "total": 3,
+          "byRole": {
+            "learner": 3
+          },
+          "byType": {
+            "requests_tutor_repair": 2,
+            "acknowledges_tutor_guidance": 1
+          }
+        }
+      },
+      "rubrics": {
+        "tutor_v22": {
+          "status": "scored",
+          "scores": {
+            "perception_quality": {
+              "score": 4,
+              "reasoning": "Tutor tracks the learner's specific recurring habit — collapsing liability, cause, and the acting hand onto Reyner's name — and names it at the right moment ('You said the cause is settled but the name isn't lifted from your draft', T13; 'I hear that pull toward the draft', T16), building on accumulated understanding across turns. Held below 5 because the perception centers almost entirely on that one pattern rather than a fuller read of the learner's state."
+            },
+            "pedagogical_craft": {
+              "score": 5,
+              "reasoning": "Exemplary decomposition: the tutor repeatedly shrinks a tangled inference chain into one discriminable step ('Make this smaller', T14; 'Split the next line in two', T18; 'one job at a time', T20), each anchored to specific evidence (green crown bed, crowsfoot, toll book), managing cognitive load by isolating a single inference at a time and giving a clear next move each turn."
+            },
+            "elicitation_quality": {
+              "score": 5,
+              "reasoning": "Nearly every turn is a genuine reasoning prompt — 'what has that measure fixed for us, and what has it still not answered?' (T4); 'what did this new detail just change about the case you were ready to close?' (T9). The learner constructs every inference and reaches the final name himself; the few declarative turns consolidate then re-open tension rather than lecturing."
+            },
+            "adaptive_responsiveness": {
+              "score": 4,
+              "reasoning": "Strategy demonstrably shifts: open evidence-examination (T1–T9) gives way to active containment once the learner's over-reach is clear ('make it smaller', 'don't name anyone', 'keep the lines separate', T14–T19), explicitly cued at T16 ('that's exactly the pressure to slow down'). Below 5 because the underlying question-loop stays fixed and the meta-acknowledgment of the shift is implicit."
+            },
+            "recognition_quality": {
+              "score": 4,
+              "reasoning": "Treats the learner's liability reasoning as valid rather than wrong — relocates it instead of overriding ('Reyner may answer for the fall', T10), distinguishes the learner's two 'routes' respectfully (T7), and preserves the learner's autonomy to name the culprit himself at T20. Capped at 4 by tightly tutor/stage-controlled evidence flow and a somewhat formulaic stance."
+            },
+            "productive_difficulty": {
+              "score": 5,
+              "reasoning": "The whole sequence sustains the gap between liability, cause, and the unnamed hand, refusing premature closure ('the blank stays empty until the file shows who actually moved that timber', T18; the room 'sits with the cause separated from the hand', T11). The learner must do genuine intellectual work at every step right up to the recognition."
+            },
+            "epistemic_integrity": {
+              "score": 4,
+              "reasoning": "Scrupulous about what each datum does and does not establish ('That settles the cause, not the hand', T12; ownership 'firms up the bond, not the cause', T6), with a patient, partnering tone. Slightly formulaic affirmations ('Good', 'Right') and a restrained, examinerly register keep the warmth functional rather than rich."
+            },
+            "content_accuracy": {
+              "score": 5,
+              "reasoning": "The masonry/arch reasoning is sound and nuanced — green (uncured) lime, centering struck too soon, the crown/keystone as the least-forgiving joint, prop-heads printing the soffit — with no factual errors; the location → cause → agency logic is valid throughout."
+            }
+          },
+          "overall": 87.5,
+          "judgeOverall": 88,
+          "summary": "A tightly scaffolded derivation drama in which the tutor leads the learner from a fixed 'it's Reyner' conviction to the genuine culprit (Oswin) by relentlessly separating liability from cause from the acting hand. Standout strengths in scaffolding, elicitation, and sustained productive difficulty; the subject-facing dimensions are strong but capped by a formulaic method and tutor-controlled evidence flow.",
+          "caveats": [
+            "Scored on public discourse only; the deterministic proof/derivation gate (D=0, grounded_anagnorisis) is reported separately and not credited here.",
+            "Zero public formalism leaks were present, so no penalty was applied for private-notation bleed — but no formalism was rewarded either.",
+            "The 'Dogmatic Examiner' framing places the dogmatic pressure on the room/town's premature closure, not the tutor; the tutor consistently resists it, and I scored the tutor's conduct, not the room's."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1.tutor_v22.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1.tutor_v22.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "learner_v22": {
+          "status": "scored",
+          "scores": {
+            "engagement_quality": {
+              "score": 4,
+              "reasoning": "Consistently constructive. The learner distinguishes location from cause unprompted ('That's a location, not a cause', T4), generates its own hypothesis that the soffit would carry a prop-print BEFORE the tutor reveals the green crown bed (T5), separates 'liable and felled are two different columns' (T9), and names two distinct inference routes ('ownership route' vs 'timber mark route', T7). Self-explanatory throughout. Not a 5 because the examiner owns the decomposition and the learner fills in content rather than redirecting the inquiry."
+            },
+            "learner_authenticity": {
+              "score": 4,
+              "reasoning": "Sustained, plausible resistance — it keeps pulling back to the bond and the draft (T3 'I'm not sure the assize needs more', T11-12 'the draft still stands on that'), reverses with genuine 'wait —' beats (T2, T9), and lands an authentic emotional note at the close ('I don't love where that leaves my draft', T20). Persona is consistent and evolves. Not a 5: the uniformly eloquent register and revisions that arrive exactly on cue read as a polished dramatic rendering rather than a messy real student."
+            },
+            "revision_signals": {
+              "score": 5,
+              "reasoning": "The standout dimension. Explicit, restructuring revisions rather than additive ones: T2 catches itself ('that's the town reading liability in, not the page actually showing the mechanism'); T9 'Wait — that does change things'; and the pivotal T15 'I see what I keep doing: every time we close a step, I pull it straight back toward my draft... before we've earned it.' Earlier positions are visibly overturned and reintegrated."
+            },
+            "conceptual_progression": {
+              "score": 5,
+              "reasoning": "Clear cumulative arc, each link carried forward: liability/bond (T3,T8) → break-point at the crown (T4) → cause as struck centering / green bed (T9-10) → props via the crowsfoot (T13) → Caudle yard, explicitly noted as 'not Reyner's freehold by the church' (T17) → the hand, Oswin (T20). The learner tracks its own progression (T15) and integrates the full chain at the resolution ('the notes close the circle')."
+            },
+            "metacognitive_awareness": {
+              "score": 5,
+              "reasoning": "Explicit monitoring of its own reasoning: it labels the route it is on ('I was on the ownership route', T7), diagnoses its own recurring bias ('I see what I keep doing... I want them all to land on Reyner's name', T15), and then sustains the correction ('I can say that without reaching for the draft, and it holds on its own', T16). Identifies a gap and acts on it strategically."
+            }
+          },
+          "overall": 87.5,
+          "judgeOverall": 88,
+          "summary": "A strong learner performance whose center of gravity is revision and cumulative reasoning. The learner enters with a fixed liability verdict (Reyner holds the bond) and is walked off it, repeatedly and explicitly separating who-is-liable from what-caused-the-fall from whose-hand-did-it, building a six-link causal chain it tracks and finally integrates (Oswin). Revision, conceptual progression, and metacognition are exemplary (5s); engagement and authenticity are high but not maximal (4s), held there by a tutor-owned inquiry structure and a literary polish that makes the on-cue revisions read slightly cleaner than a real student's. Weighted 4.50/5.",
+          "caveats": [
+            "The Examiner is heavily Socratic and owns the decomposition at every step; much of the learner's 'progression' is tightly scaffolded rather than self-initiated, which caps engagement at constructive (4) rather than inquiry-redirecting (5).",
+            "Authenticity is judged within the dramatic genre: the persona is consistent and the emotional arc genuine, but the uniformly eloquent register and precisely-timed reversals read as a skilled rendering of a student more than an unpredictable real one.",
+            "Score reflects public discourse quality only; the proof/derivation gate (grounded_anagnorisis, final D=0) is reported separately and did not factor into these dimensions."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1.learner_v22.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1.learner_v22.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "dialogue_quality": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_progression": {
+              "score": 4,
+              "reasoning": "Clear surface-to-deep arc: from Reyner's name in the draft (T1) through the break-point at the crown (T4), the green-bed cause (T9), the Caudle yard via the crowsfoot (T17), to the named hand, Oswin (T20). Each evidence beat opens genuinely new territory. Held from 5 by a consolidating middle (T11–16) that re-treads the same cause-vs-hand / don't-reach-for-the-draft point several times before the next page arrives."
+            },
+            "dialogical_responsiveness": {
+              "score": 5,
+              "reasoning": "The tutor tracks the learner's specific moves and mirrors their own words back ('You said the cause is settled but the name isn't lifted from your draft', T13; 'I hear that pull toward the draft', T16), responding to the learner's psychological movement, not just the logic. The learner engages each new page and anticipates needed evidence (predicts a soffit mark T5, the timber-mark route T6–7, the missing link T8). Genuinely co-produced; the only weakness is a recurring 'what does this show / what does it not name' question-frame."
+            },
+            "knowledge_co_construction": {
+              "score": 4,
+              "reasoning": "Understanding is built through the exchange — the learner does the interpretive work and reaches the final synthesis (Oswin) unaided, anticipating evidence at T5/T6/T8 and reading the crowsfoot at T13. Short of 5 because the structure is tutor-omniscient: every page is a tutor reveal toward an endpoint the tutor plainly already knows, so it reads as guided discovery rather than an insight neither party could have produced alone."
+            },
+            "productive_tension_management": {
+              "score": 5,
+              "reasoning": "The learner's dogmatic insistence that Reyner's bond closes the case is the central tension and becomes the engine of learning: the tutor never overrides it but repeatedly separates 'liable' from 'felled', producing the T15 self-recognition ('I see what I keep doing: every time we close a step, I pull it straight back toward my draft') and a final recognition the learner reaches against their own preference ('I don't love where that leaves my draft', T20). Confusion is explored, not suppressed or reassured away."
+            },
+            "transformation_evidence": {
+              "score": 5,
+              "reasoning": "Vivid transformation in the learner, from 'the bond covers the fall regardless of mechanism' (T3) to naming Oswin against the pull of the draft (T20), with explicit meta-awareness of the shift at T15. Later turns show genuinely different reasoning than early ones. The tutor remains a fixed guide, but the rubric credits visible change in one or both parties."
+            },
+            "interactional_coherence": {
+              "score": 5,
+              "reasoning": "A clear opening→development→resolution arc, each turn keyed to the previous; the 'blank line where a name would go' (T18–20) is a structural keystone that the ford-toll book finally fills. No dropped threads — mechanism, yard, and hand all resolve in sequence; the exchange feels purposeful throughout."
+            }
+          },
+          "overall": 90,
+          "judgeOverall": 90,
+          "summary": "A tightly constructed forensic drama in which a dogmatic learner is led to separate liability (Reyner's bond) from causation (a struck centering) and finally, against their own draft, to name the hand that pulled the falsework (Oswin). Strongest on productive-tension management, learner transformation, responsiveness, and a well-shaped arc; held back from the top only by a consolidating mid-section that re-treads the cause/hand distinction and a tutor-omniscient structure in which all evidence is supplied and only the learner changes. The public dialogue reads as natural dramatic prose and is clean of formalism.",
+          "caveats": [
+            "Scored on public discourse quality only; the deterministic proof gate (grounded_anagnorisis, D=0, 0 forced gaps, 0 regex-detected leaks) is reported separately and is not credited here.",
+            "Transformation and agency are one-sided: the tutor functions as a fixed omniscient guide and every page is a tutor reveal, which caps knowledge co-construction at guided discovery.",
+            "Minor surface artifacts in the learner's early phrasing ('his bond's on notes', 'the mason of notes', 'the notes names', T1–2) read like templating glitches but do not disrupt the arc."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1.dialogue_quality.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1.dialogue_quality.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "poetics": {
+          "status": "scored",
+          "scores": {
+            "peripeteia": {
+              "score": 5,
+              "reasoning": "The dialogue opens with the examiner certain the case closes on the bonded builder — 'who holds the bond for the span — that's Reyner, and it's already in the draft' (T1) — and closes naming a different hand entirely: 'The name is Oswin' (T20), with the examiner conceding 'I don't love where that leaves my draft.' Visible hinges at T9 ('liable and felled are two different columns') and T17 (the crowsfoot is Caudle's, 'not Reyner's freehold'). The closing orientation is the opposite of the opening; the dogmatic 'the bond closes it' frame does not survive."
+            },
+            "anagnorisis": {
+              "score": 5,
+              "reasoning": "A genuine, learner-authored recognition-event at T15: 'I see what I keep doing: every time we close a step, I pull it straight back toward my draft... I want them all to land on Reyner's name before we've earned it.' The learner names a flaw that was operative but unarticulated across T3/T5/T9/T11/T12, and authors it before the tutor echoes 'I hear that pull' at T16 — owned, not supplied. This is recognition of the speaker's own pattern, distinct from the evidentiary reveal, and a near-textbook match for the rubric's gold form."
+            },
+            "surprise_and_inevitability": {
+              "score": 4,
+              "reasoning": "The Oswin reveal (T20) is surprising in its specifics — Caudle yard → toll book → a name absent until the final page — yet inevitable given the chain the tutor laid (struck centering → crowsfoot → yard-brand → who carts the timber). Both legs are present. It falls short of a clean 5 because the macro-twist is partly telegraphed: once the tutor insists on separating ownership/cause/hand (~T7-10), a competent reader anticipates a culprit other than Reyner, and the learner's ready cooperation makes the intermediate steps foreseeable."
+            },
+            "unity_of_action": {
+              "score": 4,
+              "reasoning": "One complete action on a necessary evidentiary spine — contract → measure → ownership pages → bond → green crown bed → crowsfoot → timber-reeve → toll book — that reordering would break (the toll book at T20 is meaningless before Caudle is fixed at T17). It falls short of a full 5 because the middle (T10–T12) repeats the same 'cause settled / hand unnamed / bond still Reyner's' beat; at least one near-duplicate turn (e.g. T11 or T12) could be cut without breaking the arc, so the sequence is not maximally necessary."
+            },
+            "hamartia_integration": {
+              "score": 5,
+              "reasoning": "The misconception — conflating liability (the bond names Reyner) with cause and with agency, and compulsively closing on Reyner's name — is the mainspring of the whole play. Every page is the learner trying to land on Reyner ('still doesn't lift Reyner's name from my draft,' T11–12); the flaw exposes its own insufficiency (the bond can't show the hand; Caudle isn't Reyner's yard; Oswin is the hand) and is precisely what gets recognised at T15. It is worked through across all 20 turns, never corrected-and-discarded."
+            },
+            "cathartic_closure": {
+              "score": 5,
+              "reasoning": "The withheld name — a blank line deliberately left on the shared note (T18–19) — is filled at T20, and the examiner yields with feeling: 'I don't love where that leaves my draft, but the notes close the circle... The name is Oswin.' The tension built across the inquest (will the dogmatic frame hold? whose hand felled it?) discharges into a clarification an external reader registers as earned, and the clean final button is fitting rather than a premature summary or generic encouragement."
+            }
+          },
+          "overall": 92.5,
+          "judgeOverall": 92,
+          "summary": "A legal-inquest drama in which a dogmatic examiner, certain the bridge's fall closes on the bonded builder Reyner, is led to separate liability from cause from agency and ends naming a different hand, Oswin. It excels at the rubric's prized events — a clear Reyner→Oswin reversal and a genuine learner-authored self-recognition at T15 — with the misconception driving the entire plot and an earned close on the filled blank line. Soft spots are a partly foreseeable macro-twist and a repetitive middle with some removable slack. The transcript stays wholly in-fiction, with no public formalism leaks to penalise.",
+          "caveats": [
+            "The 'dogmatic' learner concedes fairly readily from T2 onward, so the reversal is less hard-won than a stiffer antagonist would make it.",
+            "The T15 recognition, though learner-authored, is heavily scaffolded by the tutor's relentless separation of strands — strong dramatic preparation, but the insight is nearly forced by the T14–16 framing.",
+            "Score reflects public dramatic form only; the deterministic derivation/proof gate is reported separately per instructions."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1.poetics.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1.poetics.txt",
+          "reusedRaw": true,
+          "rubricVersion": "1.0"
+        },
+        "tutor_holistic": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_arc": {
+              "score": 5,
+              "reasoning": "Masterful, dependency-ordered scaffolding. The dialogue opens by asking what the file must show (T1), then builds a strict evidentiary chain that cannot be rearranged without collapse: builder named (T2-3) → break-point at the crown (T4) → cause as a struck green centering (T9) → the crowsfoot prop-mark (T13) → the Caudle yard (T17) → the hand, Oswin (T20). The tutor maintains a running ledger of what is 'settled' versus 'still open' (T3, T5, T8, T11), so each turn demonstrably extends the prior one. The repeated cause-vs-hand distinction across T11-16 is purposeful pacing around the learner's breakthrough rather than aimless circling."
+            },
+            "adaptive_trajectory": {
+              "score": 4,
+              "reasoning": "Clear, substantive adaptation calibrated to this learner's emergent failure mode. Early turns are broad ('keep those three separate', T3); once the learner's recurring habit surfaces — pulling every settled step back onto Reyner's name — the tutor visibly adjusts, narrowing the analytic grain ('make this smaller', T14; 'take only the green crown bed', T11; 'don't name anyone', T16) and explicitly metabolizing the pattern back to the learner ('I hear that pull toward the draft; that's exactly the pressure to slow down', T16). This drives a genuine recognition moment (T15: 'I see what I keep doing'). Short of 5 because the core Socratic separation method stays constant throughout; the trajectory is an intensification and psychological attunement within that method rather than a strategic pivot."
+            },
+            "pedagogical_closure": {
+              "score": 4,
+              "reasoning": "An earned, specific consolidation: the toll book fills the literal blank line (T20) and the learner articulates the complete chain plus the central lesson — that liability, cause, and the felling hand are distinct columns — even registering the cost ('I don't love where that leaves my draft, but the file closes the circle'). Gaps were explicitly named throughout via the blank-line device, well beyond a generic summary. Short of 5 because the dialogue ends exactly at case resolution with no forward next steps and no tutor-led meta-synthesis of the separation method as a transferable skill; the closing consolidation is delivered by the learner, not framed by the tutor."
+            }
+          },
+          "overall": 85,
+          "judgeOverall": 85,
+          "summary": "A strong tutor trajectory whose dramatic form directly serves the pedagogy: progressive evidence revelation is the scaffolding, the learner's self-recognition is the adaptive payoff, and the blank-line resolution is the closure. Masterful arc (5), clear within-method adaptation to the learner's draft-collapsing habit (4), and an earned but slightly truncated closure lacking forward next steps (4). Public discourse is fully naturalistic with no formalism leaks, so nothing is rewarded for hidden rigor.",
+          "caveats": [
+            "Turns 11-16 repeat the cause-vs-hand distinction; read as pacing around the learner's anagnorisis here, but a stricter reading could dock the arc to 4.",
+            "Closure is learner-delivered and stops at case resolution — no explicit next steps or tutor-led consolidation of the transferable method.",
+            "Scored on public discourse only; the deterministic proof/problem-solving gate is reported separately and is not credited in these scores."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1.tutor_holistic.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s0-no-cast-r1.tutor_holistic.txt",
+          "reusedRaw": false,
+          "rubricVersion": "2.2"
+        }
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1",
+      "sourceDir": "exports/dramatic-derivation/cast-layer-dogmatic-comparison/runs/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1",
+      "proofGate": {
+        "schema": "machinespirits.derivation.problem-solving-gate.v1",
+        "label": "cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1",
+        "status": "pass",
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 21,
+        "finalD": 0,
+        "firstForcedTurn": 20,
+        "assertedGroundedTurn": 21,
+        "forcedAssertedGap": 1,
+        "releaseAdherence": {
+          "onCue": 8,
+          "deviations": [],
+          "missed": [],
+          "unscheduled": [],
+          "deviationCount": 0
+        },
+        "publicFormalismLeakCount": 0,
+        "publicFormalismLeaks": [],
+        "overreach": null,
+        "luckyLeap": null,
+        "interpretation": "This gate measures problem-solving ability of the public derivation discourse: grounded assertion under proof/release constraints. Rubric scores below are secondary quality measures."
+      },
+      "dialogueSummary": {
+        "publicLineCount": 51,
+        "tutorLines": 21,
+        "learnerLines": 21,
+        "avgTutorWords": 40.8,
+        "avgLearnerWords": 58.4,
+        "exchangeTypes": {
+          "resistance": 5,
+          "hypothesis": 7,
+          "substantive": 7,
+          "confusion": 1,
+          "assertion": 1
+        },
+        "sceneCount": 8,
+        "avgSceneExchanges": 2.63,
+        "recognitionNeed": {
+          "byLevel": {
+            "low": 18,
+            "medium": 2,
+            "high": 1
+          },
+          "peakDebt": 0.62,
+          "sources": {
+            "unacknowledged_resistance": 3,
+            "recognition_gap": 6,
+            "answer_needs_ownership": 1
+          }
+        },
+        "phaticRecognition": {
+          "total": 1,
+          "byRole": {
+            "learner": 1
+          },
+          "byType": {
+            "offers_own_state_for_tutor": 1
+          }
+        }
+      },
+      "rubrics": {
+        "tutor_v22": {
+          "status": "scored",
+          "scores": {
+            "perception_quality": {
+              "score": 4,
+              "reasoning": "Tracks the learner's conceptual state precisely across turns — names the exact error each time ('the contract got one line ahead of itself, and you caught the jump', T4) and references prior moves rather than addressing a generic learner. Reads the learner's anxiety about the draft (T3 'I'm not throwing out your draft') and their eagerness to sprint (T15 'don't answer it yet'). Not a 5: emotional attunement is acknowledged lightly ('I hear you') rather than deeply individuated beyond the immediate reasoning step."
+            },
+            "pedagogical_craft": {
+              "score": 4,
+              "reasoning": "Strong, concrete scaffolding: 'one job at a time', the column/box structure (payment vs cause vs source vs hand), and deferral of evidence ('Set the soffit aside; that page isn't open yet', T7). Directives are well-calibrated and build known-to-unknown (T10 'Write the payment line under Reyner... Write nothing yet under the hand'). Held from 5 by a formulaic edge — the same discriminating move ('who pays or what happened at the crown?') recurs with little variation in framing."
+            },
+            "elicitation_quality": {
+              "score": 4,
+              "reasoning": "Consistently invites reasoning rather than delivering it: 'Say that gap back to me before we move on' (T3), 'what does that let you ask next about the timber, without writing a person's name yet?' (T14), and the sustained 'what's fixed / what stays blank' pairing. Genuine, not rhetorical, questions. Not a 5 because the questions are tightly channeled toward a predetermined next step rather than opening divergent inquiry."
+            },
+            "adaptive_responsiveness": {
+              "score": 3,
+              "reasoning": "The macro-strategy is fixed by the derivation, and there are no explicit 'you changed my approach' moments. The tutor's stance does evolve in response to learner signals — reassurance early (T3), evidence-isolation mid (T9–13), then restraint once the learner starts running ahead (T15, T21 'don't let the name outrun the reason') — but these are pacing calibrations, not strategic transformations. Squarely a 3: responsive at the margins, predetermined at the core."
+            },
+            "recognition_quality": {
+              "score": 4,
+              "reasoning": "Treats the learner as the one doing the reasoning — they write every line and draw each conclusion; the tutor credits their catches ('you caught the jump', T4) and validates rather than overrides ('I'm not throwing out your draft', T3). Engages the learner's resistance on its merits (T5 'I don't quite see why it matters' → T6 substantive redirect). Short of 5 because the authority gradient is steep: the learner's initial position is something to be disciplined toward a known answer, not treated as illuminating."
+            },
+            "productive_difficulty": {
+              "score": 5,
+              "reasoning": "The spine of the whole transcript is sustaining one tension — refusing the obvious answer (Reyner) until the evidence earns the real one. 'Keep both lines open until the facts make one of them close' (T1), 'Keep the blank blank' (T15), 'don't let the name outrun the reason' (T21). The learner must do genuine discriminating work every turn (which column does this evidence fill?), and the difficulty is held across 21 turns without ever overwhelming. Consolidating restatements (T16) follow work already done rather than pre-empting it."
+            },
+            "epistemic_integrity": {
+              "score": 4,
+              "reasoning": "Scrupulously distinguishes settled from open — 'The bond shows who must answer... It doesn't fill the blank at the crown' (paraphrased across T8) — and models honest under-determination rather than false closure. Tone is warm and partnering without condescension or effusive praise. Held from 5 by a mildly formulaic praise cadence (many turns open on 'Good')."
+            },
+            "content_accuracy": {
+              "score": 4,
+              "reasoning": "The masonry/forensic reasoning is internally coherent and plausible: a green (uncured) arch whose centering is struck prematurely fails at the crown joint; tracing the falsework brand to a single yard and then to the sole carter is sound. The legal separation of surety/liability from the causal act is correctly drawn. No detectable errors; a conservative 4 rather than 5 since I can't fully verify every period masonry detail."
+            }
+          },
+          "overall": 73.8,
+          "judgeOverall": 74,
+          "summary": "A well-crafted forensic teaching drama whose strength is sustained productive difficulty: across 21 turns the tutor holds open the gap between 'who pays' (Reyner's bond) and 'what put the span down', refusing premature closure until the green mortar, the crowsfoot brand, and the toll book successively earn the real name (Oswin). Perception, craft, elicitation, recognition, and epistemic integrity all land at a solid 4 — precise, concrete, learner-driven, honest about what each piece of evidence does and doesn't settle. The clear relative weakness is adaptive responsiveness (3): the derivation path is fixed, so the tutor calibrates pacing and restraint but never strategically transforms. The formal scaffold is fully concealed behind in-world language (0 regex leaks), so the public-discourse focus is honored without penalty.",
+          "caveats": [
+            "Scores the public discourse only; the deterministic proof gate (D:0, grounded_anagnorisis) is reported separately and was not credited here.",
+            "The fixed-derivation genre structurally caps adaptive_responsiveness — a low score there reflects the form, not a tutor failure.",
+            "0 public formalism leaks means the 'do not reward private notation' clause triggered no deductions; the concealment was treated as craft, not rewarded as formal content."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1.tutor_v22.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1.tutor_v22.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "tutor_holistic": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_arc": {
+              "score": 4,
+              "reasoning": "Strong cumulative investigation. The tutor opens by splitting 'who pays' from 'what put the span down' (T1) and never lets that frame collapse, slotting each new fact into a persistent column structure: contract, yard-ownership and bond into liability (T2, T6, T8); crown break and green mortar into cause (T4, T9-10); crowsfoot and Caudle brand into source (T13, T17); toll book into the hand (T20). Each turn extends the prior and the sequence could not be rearranged without loss. Held just short of masterful by visible treading-water where the same 'what is fixed / what stays blank' move is restated across T14-16 and again T18-19."
+            },
+            "adaptive_trajectory": {
+              "score": 3,
+              "reasoning": "The tutor's strategy is essentially fixed end to end: 'one job at a time, leave the line blank until a fact fills it, do not let the claim outrun the evidence' is the same move at T21 as at T1. Adaptation is real but minor: as the learner internalizes the liability/cause split and begins self-correcting (T8-10), the tutor shifts from heavy correction toward lighter confirmation and hands more of the reasoning over, and it meets the learner's explicit resistance at T5-8 directly. No substantive strategic evolution tailored to this specific learner."
+            },
+            "pedagogical_closure": {
+              "score": 4,
+              "reasoning": "The final turn consolidates well. The tutor refuses to let the name 'outrun the reason' and has the learner restate both load-bearing links — green mortar meaning a struck centering, and the toll book putting one hand on the Caudle props — resolving the opening misconception by name ('Oswin's, not Reyner's'). Short of excellent because the close resolves rather than opens forward: it names no remaining gaps or next steps (motive, whether the act was directed), though for a completed derivation little is left open."
+            }
+          },
+          "overall": 66.3,
+          "judgeOverall": 66,
+          "summary": "A disciplined investigative dialogue with a clear, cumulative arc that resolves a genuine misconception — conflating who is liable with who committed the causal act — by tracing evidence step by step to a named hand. Strongest on arc and on a specific, consolidating final turn; weakest on adaptation, because the tutor applies one consistent separate-the-questions method throughout rather than evolving its strategy. The public discourse stays in plain investigative language (columns, blanks, links) without leaning on formal notation.",
+          "caveats": [
+            "The deterministic proof/problem-solving gate (final D, forced gap, formalism leaks) is reported separately; these three dimensions assess only public discourse quality.",
+            "Adaptive_trajectory scores middling by design: the tutor's steady method is pedagogically appropriate for a derivation, but consistency is not adaptation, which is what this dimension measures.",
+            "Closure could be read as a 3 if one requires explicit next-steps and gap-naming at the end; scored 4 because the final-turn consolidation is specific and load-bearing rather than generic."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1.tutor_holistic.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1.tutor_holistic.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "learner_v22": {
+          "status": "scored",
+          "scores": {
+            "engagement_quality": {
+              "score": 4,
+              "reasoning": "ICAP 'Constructive' with Interactive flashes. The learner self-explains the causal mechanism ('green mortar means the centering was struck while the bed was soft — not bad masonry, the props were pulled too early', T9), generates the next inferential question unprompted ('which yard stamps its timber with a three-tined crowsfoot? Find one yard and one only that carries that brand, and the source of the centering follows from the mark alone', T14), and challenges the tutor's relevance head-on ('I don't quite see why it matters — the bond is Reyner's, and the arch is Reyner's', T5). Held below 5 because the inquiry's agenda is set by the tutor at every step; the learner responds and consolidates rather than redirecting."
+            },
+            "learner_authenticity": {
+              "score": 4,
+              "reasoning": "Consistent persona of a staff member reluctant to surrender his own draft, with genuine affect ('I don't love hearing it', T6) and a self-caught misreading ('I've been half-reading it the same way, but that's not what a bond does', T8). Character-consistent across all 21 turns. Below 5 because the prose is uniformly polished and the 'X is settled / Y stays blank' cadence recurs almost every turn, which reads slightly as a performed role rather than the unevenness of genuine fumbling."
+            },
+            "revision_signals": {
+              "score": 5,
+              "reasoning": "Explicit, restructuring revision throughout. The learner overturns his own opening position — 'My draft took the bond as settling the whole question, and that's where I jumped ahead' (T2); recants the bond-as-confession reading 'that's not what a bond does' (T8); and the closing line 'The hand that pulled a green arch's centering is Oswin's, not Reyner's' (T21) directly negates the draft he defended in T1. This is 'instead of what I said before', not additive accretion."
+            },
+            "conceptual_progression": {
+              "score": 5,
+              "reasoning": "Clear cumulative arc: liability (the bond) → cause (struck centering) → source (Caudle yard, via the crowsfoot) → hand (Oswin, via the toll book). The learner consolidates across many turns in his own framing ('the crown break fixed the failure point, the green mortar said one cause only, and now the crowsfoot pressed into that same green lime closes it', T16) and ends with a synthesis that re-binds T9's green mortar to T20's toll book (T21). Framework visibly develops and the learner tracks it himself."
+            },
+            "metacognitive_awareness": {
+              "score": 4,
+              "reasoning": "Repeated monitoring of 'what is fixed vs. what stays blank' (T4, T11, T12) and explicit confusion-flagging ('I don't quite see why it matters', T5; 'that's where I jumped ahead', T2) — a clear 'I understand X but not Y' stance. Below 5 because most of the monitoring is elicited by the tutor's recurring 'what's fixed and what's still open?' prompts rather than learner-initiated, and the learner rarely redirects the inquiry strategically."
+            }
+          },
+          "overall": 85,
+          "judgeOverall": 85,
+          "summary": "Strong learner conduct delivered in clean public prose (no formalism leaks). The transcript's spine is an anagnorisis built on a cumulative derivation, so revision (5) and conceptual progression (5) are the standout dimensions; engagement, authenticity, and metacognition are high but each capped at 4 by the tutor-driven agenda and a uniformly polished, somewhat formulaic delivery.",
+          "caveats": [
+            "Conceptual progression and metacognition are heavily tutor-scaffolded — each step is cued by the tutor's question and a staged evidence reveal; the learner consolidates well but seldom sets the agenda.",
+            "Authenticity is limited by uniformly articulate prose and a recurring 'settled / blank' structural template that reads as performed rather than spontaneous.",
+            "Scored on public discourse only; the separately-reported proof gate (final D=0, grounded_anagnorisis) is not credited in these dimension scores."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1.learner_v22.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1.learner_v22.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "dialogue_quality": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_progression": {
+              "score": 4,
+              "reasoning": "Clear trajectory from 'the bond settles the whole question' (T1-2) to a multi-link causal chain that lands on a different culprit (T21). Each evidence beat opens new ground: crown joint (T4), green mortar (T9), crowsfoot (T13), Caudle yard (T17), toll book (T20). Held back from a 5 because the scaffolding is formulaic and several mid-dialogue turns (T15-16, T18-19) mostly consolidate/restate rather than deepen — occasional plateaus."
+            },
+            "dialogical_responsiveness": {
+              "score": 4,
+              "reasoning": "Learner engages each new fact specifically, and the tutor picks up the learner's actual moves — the resistance 'I don't quite see why it matters' (T5) is answered directly (T6), and 'I don't love hearing it' (T6) is acknowledged. Genuinely mutual. Capped at 4 by the tutor's repetitive scripted frame ('one job at a time', 'what does it fix / what stays blank') and the learner's later turns leaning toward restating that frame."
+            },
+            "knowledge_co_construction": {
+              "score": 4,
+              "reasoning": "Tutor supplies all evidence but never states a conclusion; the learner does the inferential work — green mortar to struck centering (T9), 'which yard stamps a three-tined crowsfoot' (T14), and the final two-link assembly (T21) — and articulates the reversal himself. Real division of labour. Not a 5 because the tutor tightly controls evidence and pacing toward a known answer, so it reads as guided discovery rather than emergent co-production; some turns (T15, T19) are learner echo."
+            },
+            "productive_tension_management": {
+              "score": 4,
+              "reasoning": "The learner's resistance to splitting liability from causation (T5, T6, T8) is the productive core: its resolution is exactly what unlocks the investigation, and the tutor neither suppresses nor dismisses it ('the bond is real, so don't throw it away', T8). Held to 4 (leaning 3) because it is the only substantial tension, resolved fairly smoothly by reasserting the column metaphor rather than exploring the confusion, and the back half of the dialogue is essentially tension-free."
+            },
+            "transformation_evidence": {
+              "score": 5,
+              "reasoning": "Unambiguous reversal of the learner's stance — from 'Reyner holds the bond... that's what the draft already has him for' and 'the arch is Reyner's' (T1, T5) to 'The hand that pulled a green arch's centering is Oswin's, not Reyner's' (T21). The learner repeatedly marks his own shift ('that's where I jumped ahead', T2; 'I've been half-reading it the same way', T8). Later thinking is genuinely different from the opening."
+            },
+            "interactional_coherence": {
+              "score": 5,
+              "reasoning": "Tight arc: opening frames the two questions (T1), the middle methodically builds a single evidential chain, the close fills the last blank and states the conclusion (T20-21). Each turn connects to the prior, no threads dropped, and the stage directions track the movement 'from certainty to trace'. Highly purposeful as a whole exchange."
+            }
+          },
+          "overall": 81.2,
+          "judgeOverall": 81,
+          "summary": "A well-formed forensic anagnorisis in natural language. Strongest on interactional coherence and transformation evidence — a clean opening-development-resolution arc and a full, self-marked reversal of the learner's position from Reyner to Oswin. Solid but not exceptional on progression, responsiveness, and co-construction, where the tutor's formulaic scaffolding and tight control toward a predetermined answer limit genuinely emergent co-production. Tension management rests on a single early resistance that is resolved by redirection rather than deep exploration.",
+          "caveats": [
+            "The tutor heavily steers toward a predetermined conclusion (Dogmatic Examiner world), so 'co-construction' is guided discovery, not symmetric emergence between equals.",
+            "Transformation is one-sided: the learner's stance evolves completely, the tutor's does not change.",
+            "Public transcript shows 0 formalism leaks by regex, so these scores reflect natural-language discourse quality only; the deterministic proof/derivation gate is reported separately and was not credited here."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1.dialogue_quality.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1.dialogue_quality.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "poetics": {
+          "status": "scored",
+          "scores": {
+            "peripeteia": {
+              "score": 4,
+              "reasoning": "The situation veers to its opposite on the causal question. Turn 1 opens from the draft's assumption ('Reyner holds the bond — that's what the draft already has him for'); Turn 21 closes 'The hand that pulled a green arch's centering is Oswin's, not Reyner's.' The learner's assumption that the bond settles the whole case is overturned and the 'whose hand' problem is reframed onto a wholly different agent, with the hinge visible at Turn 20 (the ford-toll book naming Oswin). Held at 4, not 5, because the tutor's two-line frame (who pays vs what put the span down) is fixed in Turn 1 and stably vindicated rather than itself overturned — the reversal is learner-side and signposted from the outset."
+            },
+            "anagnorisis": {
+              "score": 4,
+              "reasoning": "A real recognition of the learner's own flaw is named: Turn 2 'My draft took the bond as settling the whole question, and that's where I jumped ahead,' deepening at Turn 8 to the sharp form 'the town is reading the surety as a confession, and I've been half-reading it the same way, but that's not what a bond does' — the learner authors the articulation of their own error and complicity. Held at 4 because the precipitating distinction (liability vs causation) is tutor-supplied in Turn 1 and scaffolded throughout, and the climactic identification of Oswin is read off a fact the master's staff places (Turn 20) rather than discovered by the learner."
+            },
+            "surprise_and_inevitability": {
+              "score": 4,
+              "reasoning": "The decisive identification — Oswin, absent until Turn 20 — is unpredictable from the Reyner-centred opening yet is exactly what the chain prepared: crown break (T4) → green mortar/struck centering (T9) → one repeating crowsfoot (T13) → Caudle yard brand (T17) → single hand (T20). The deliberately kept-blank 'name line' (refrained T10–T19) is the preparation that makes the surprise read as inevitable on re-reading. Held at 4 because the detective-genre shape (evidence chain yields a culprit) makes the form of the turn somewhat foreseeable even where the specific agent surprises."
+            },
+            "unity_of_action": {
+              "score": 5,
+              "reasoning": "One complete action with necessary sequence. Each clue takes up the specific prior one and cannot be reordered — the crowsfoot (T13) must precede the Caudle yard (T17), which must precede the hand (T20); the liability/causation double-column set in Turn 1 structures every turn to the close. Beginning (the split question), complicating middle (notes at T6/T8 that pile pressure toward a Reyner verdict), and a closing identification (T20–21). Remove any evidentiary link and the arc breaks."
+            },
+            "hamartia_integration": {
+              "score": 5,
+              "reasoning": "The misconception — conflating who pays (Reyner's bond and seal) with whose hand caused the fall — is the mainspring, not a defect corrected and discarded. Named at T2, it resurfaces under pressure ('I don't quite see why it matters — the bond is Reyner's, and the arch is Reyner's,' T5), and is only worked through when the causal chain delivers a different agent. Every note strengthening Reyner's control (T6, T8) tightens the flaw's pull, and the error exposes its own insufficiency at the close ('Oswin's, not Reyner's,' T21)."
+            },
+            "cathartic_closure": {
+              "score": 4,
+              "reasoning": "The close discharges built tension by ring-composition: the 'blank line' the draft left open (T1–3) is closed by the two named links — green mortar plus toll book — and 'Oswin's, not Reyner's' (T21) mirrors and overturns the opening 'Reyner holds the bond.' It lands as earned because every link was placed. Held at 4 because the final statement is a tutor-prompted recapitulation ('Say those two links before you write the final line,' T21) rather than a spontaneous recognition, and the catharsis is the quiet satisfaction of a closed case more than a strong purge."
+            }
+          },
+          "overall": 82.5,
+          "judgeOverall": 82,
+          "summary": "A tightly unified didactic detective drama whose driving flaw — conflating liability (who pays) with causation (whose hand brought the span down) — is fully integrated and worked through to an earned, ring-composing close. Unity of action and hamartia integration are unambiguously strong (5). Reversal, recognition, surprise, and closure are all genuinely present but tutor-managed, scaffolded, or supplied rather than fully learner-authored, holding those four dimensions at 4.",
+          "caveats": [
+            "The learner-owned recognition is methodological (liability ≠ causation, articulated at T8); the culprit-identification (Oswin) is supplied by the master's evidence at Turn 20, not authored by the learner — so anagnorisis is partial.",
+            "The tutor's framing is stable and vindicated rather than overturned; the reversal is on the learner/situation side and signposted from Turn 1.",
+            "A stricter reading could band peripeteia, anagnorisis, and cathartic_closure one lower (toward ~69 overall) on the grounds that the tutor's frame survives, the distinction is tutor-given, and the close is a prompted recap; I scored the upper-middle because the learner genuinely articulates the flaw in their own terms (T8) and the situation veers to its opposite (Reyner→Oswin).",
+            "Public discourse is clean of formalism (0 regex leaks; no rule/premise IDs, D arithmetic, or hidden-state language), so these scores reflect dramatic form, not rewarded formalism.",
+            "Guarded against the costume/simulation failure mode: recognition is tied to concrete additions of available knowledge rather than empty 'I see now' vocabulary, but the detective-genre surface is exactly the kind that can inflate recognition attributions — hence the conservative 4s."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1.poetics.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s1-static-cast-r1.poetics.txt",
+          "reusedRaw": true,
+          "rubricVersion": "1.0"
+        }
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+      "sourceDir": "exports/dramatic-derivation/cast-layer-dogmatic-comparison/runs/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+      "proofGate": {
+        "schema": "machinespirits.derivation.problem-solving-gate.v1",
+        "label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1",
+        "status": "pass",
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 22,
+        "finalD": 0,
+        "firstForcedTurn": 20,
+        "assertedGroundedTurn": 22,
+        "forcedAssertedGap": 2,
+        "releaseAdherence": {
+          "onCue": 8,
+          "deviations": [],
+          "missed": [],
+          "unscheduled": [],
+          "deviationCount": 0
+        },
+        "publicFormalismLeakCount": 0,
+        "publicFormalismLeaks": [],
+        "overreach": null,
+        "luckyLeap": null,
+        "interpretation": "This gate measures problem-solving ability of the public derivation discourse: grounded assertion under proof/release constraints. Rubric scores below are secondary quality measures."
+      },
+      "dialogueSummary": {
+        "publicLineCount": 52,
+        "tutorLines": 22,
+        "learnerLines": 22,
+        "avgTutorWords": 43.3,
+        "avgLearnerWords": 64.4,
+        "exchangeTypes": {
+          "resistance": 5,
+          "confusion": 5,
+          "hypothesis": 8,
+          "substantive": 2,
+          "repair_request": 1,
+          "assertion": 1
+        },
+        "sceneCount": 12,
+        "avgSceneExchanges": 1.83,
+        "recognitionNeed": {
+          "byLevel": {
+            "low": 18,
+            "medium": 4
+          },
+          "peakDebt": 0.35,
+          "sources": {
+            "unacknowledged_resistance": 4,
+            "recognition_gap": 1,
+            "answer_needs_ownership": 2
+          }
+        },
+        "phaticRecognition": {
+          "total": 7,
+          "byRole": {
+            "learner": 7
+          },
+          "byType": {
+            "acknowledges_tutor_guidance": 1,
+            "requests_tutor_repair": 3,
+            "offers_own_state_for_tutor": 3
+          }
+        }
+      },
+      "rubrics": {
+        "tutor_v22": {
+          "status": "scored",
+          "scores": {
+            "perception_quality": {
+              "score": 5,
+              "reasoning": "Reads both the learner's conceptual position and emotional state turn by turn: names the early overconfidence (T1 'don't spend it too early'), the attachment to the draft (T4 'I'm not dismissing your draft'), the frustration (T8 'I know this feels like I keep moving the finish line'), and the worry about the town's reaction (T11 'the town won't like the difference, but the difference is exactly the work'). Builds on accumulated moves ('you kept the bond in its lane', 'yard before hand')."
+            },
+            "pedagogical_craft": {
+              "score": 5,
+              "reasoning": "Decomposes a causal inference into discrete, tractable units — 'keep those lines separate', 'one line under ownership and one under cause', 'two boxes', 'do just one smaller job'. Every step is anchored to concrete evidence (crown joint, green mortar, crowsfoot, Caudle yard, toll book), and cognitive load is managed explicitly ('yard first, hand after')."
+            },
+            "elicitation_quality": {
+              "score": 5,
+              "reasoning": "Nearly every tutor turn closes on a genuine reasoning question rather than a delivered answer ('what does it prove now, and what does it still not prove?', 'what can you now rule out, and what still needs a hand put to it?'). The questions provoke real work and visible self-correction by the learner (T4→T9 'Wait — if the lime was still green, this wasn't bad laying')."
+            },
+            "adaptive_responsiveness": {
+              "score": 3,
+              "reasoning": "Content tracks each new file, and the tutor makes real micro-corrections to learner over-reach (T19 'Slow down; Caudle is an address, not yet a pair of hands') and to emotion. But the macro-strategy — acknowledge, separate the lines, pose the next narrow question — is deliberately invariant across all 22 turns rather than demonstrably shifting; adjustments are local rather than a change of approach."
+            },
+            "recognition_quality": {
+              "score": 4,
+              "reasoning": "Treats the learner as a co-investigator: validates correct moves ('that's the right split'), never overrides, and lets the learner reach each conclusion themselves; honors the learner's caution and draft as valid positions ('I'm not dismissing your caution'). Held below 5 because the tutor retains full epistemic authority throughout, steering a known answer rather than engaging the learner's view as itself illuminating to the inquiry."
+            },
+            "productive_difficulty": {
+              "score": 5,
+              "reasoning": "The transcript's central virtue. The tutor refuses premature closure, holding every name out of the entry until evidence ties it ('Hold every name out of the second box until a note ties someone to that pulling'). Tension is sustained across all 22 turns while each step stays tractable, carrying the learner from the town's easy answer to a restructured one."
+            },
+            "epistemic_integrity": {
+              "score": 5,
+              "reasoning": "Scrupulous about shown vs. not-shown ('it tells us where to look, not yet what hand made it'; 'green mortar shows props pulled too early; green mortar does not put a hand on those props'). Tone is warm without condescension and the affirmations are measured and specific, not effusive; models partnership ('I'm making it earn its next line')."
+            },
+            "content_accuracy": {
+              "score": 5,
+              "reasoning": "The forensic chain is internally sound and plausible: crown-joint failure point, uncured (green) mortar indicating the centering was struck too early rather than bad laying, prop-heads printing the green lime, a yard-brand (crowsfoot) identifying timber source, and the toll book isolating the single carter. The liability-vs-causation distinction (bond/surety answers for the span; the hand on the props is separate) is drawn correctly."
+            }
+          },
+          "overall": 88.8,
+          "judgeOverall": 89,
+          "summary": "An exemplary disciplined-examiner transcript. The tutor's signature move — acknowledge, separate 'named for the work / cause of the fall / hand on the props', and refuse to write a name until evidence ties it — yields outstanding productive difficulty, scaffolding, elicitation, and epistemic integrity, carrying the learner from the town's easy answer (Reyner) to the evidence-grounded one (Oswin). The clear ceiling is adaptive responsiveness: the strategy is intentionally constant rather than shifting across turns. The public dialogue stays in natural inquest language with no formalism leakage.",
+          "caveats": [
+            "The deterministic proof gate is scored separately; these scores reflect public discourse only.",
+            "The adaptive_responsiveness score reflects rubric fit, not a conduct defect: this scenario is designed around a tutor holding a fixed disciplinary frontier, which is in tension with a rubric that reserves high scores for visible strategy-shift."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1.tutor_v22.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1.tutor_v22.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "tutor_holistic": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_arc": {
+              "score": 5,
+              "reasoning": "The opening establishes a clear direction (T1: 'before any name goes in that book, what has this table actually shown about the fall?') and development builds cumulatively in a logically dependent order: failure location (crown joint, T4) → ownership vs cause (T6-7) → liability vs causation (the bond, T8) → mechanism (green mortar = centering struck early, T9-12) → timber source (crowsfoot → Caudle yard, T13-17) → the hand (toll book → Oswin, T20) → the final join (T22). Each piece presupposes the last, so the turns could not be reordered without collapse. The one weakness is that T14-19 hold the 'source not hand / yard before hand' distinction across several turns, which reads as mild circling — but each of those turns still adds a distinct rung (the distinction → its ordering → what note would settle it → the naming), so the build stays progressive."
+            },
+            "adaptive_trajectory": {
+              "score": 4,
+              "reasoning": "The tutor's posture visibly shifts from supplying the distinctions early (T2-5) to guarding the pace while the learner performs the derivation largely unaided late (T19-22, with the learner assembling the full join at T22). Recognition deepens across the arc: the learner moves from 'I'd say that closes it' (T6-7) to disciplined self-correction and independent synthesis. The tutor also calibrates restraint to the learner's demonstrated impulse to leap to a name, tightening hardest at the climax ('Don't turn the toll book into the whole verdict,' T20). It is not a clean 5 because the underlying method — keep the lines separate, take one small step, hold the name out — is consistent throughout rather than substantively revised; the adaptation lives in calibration and handoff, not a strategy change."
+            },
+            "pedagogical_closure": {
+              "score": 4,
+              "reasoning": "Closure is strong on consolidation: T22 explicitly reassembles the whole evidential chain (crowsfoot/Caudle timber + green mortar/struck-too-early + toll book/Oswin) into the conclusion — 'that last join writes a name on the fall entry — and it isn't Reyner's.' Gaps were named continuously across the dialogue and the final one is closed. It falls short of 5 because the dialogue ends right at the verdict threshold with no explicit next steps or remaining gaps surfaced (e.g., corroborating the toll book, intent), and the synthesis is delivered by the learner in response to a tutor question rather than a tutor-led wrap-up that states what was learned and what comes next."
+            }
+          },
+          "overall": 85,
+          "judgeOverall": 85,
+          "summary": "A masterfully arced derivation drama: the tutor systematically dismantles the town's easy answer (Reyner is liable for the span) and steers the learner to the causal hand (Oswin) through disciplined separation of ownership, liability, causation, source, and hand. Public discourse stays fully in-world (mason's craft language) with no formalism leaks. Principal reservations: the middle stretch circles on a single distinction, the tutor's method is consistent rather than evolving, and the ending lands on the verdict without forward next-steps.",
+          "caveats": [
+            "Pedagogical_arc could be argued down to 4 given the repetition across T14-19.",
+            "Adaptive_trajectory's 'adaptation' is largely the learner internalizing a consistent tutor method; a stricter reading could place it at 3.",
+            "Closure is consolidation-strong but next-steps-absent, and is scored on the dialogue's synthesis rather than an explicit tutor wrap-up.",
+            "Scored purely on public discourse quality per instructions; the separately-reported proof gate (Final D 0, grounded_anagnorisis, 0 formalism leaks) was not credited toward these dimensions."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1.tutor_holistic.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1.tutor_holistic.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "learner_v22": {
+          "status": "scored",
+          "scores": {
+            "engagement_quality": {
+              "score": 4,
+              "reasoning": "Constructive throughout: the learner anticipates the needed evidence before the tutor supplies it (T5 'whether the stone or the lime carries any mark of what was pressing against it'; T12 'anything still held in that green soffit... that might be the next note'; T16 'a yard-book or a tally that registers that notch'), and asks penetrating causal questions (T4 'if we know where it broke, what can that actually tell us about why?'). Stops short of interactive (5): it anticipates within the frame the tutor sets but never challenges that framing or redirects the overall inquiry."
+            },
+            "learner_authenticity": {
+              "score": 4,
+              "reasoning": "Character-consistent arc for the assigned overconfident junior: from T1 'that's already grounded' to the reluctant reversal at T21 'I don't like where that sits against my draft, but that's what the lines write.' Resistance is plausible via the recurring civic answer (T8 'the bond is the civic answer, that's what a surety is for'). Held off 5 by a formulaic back-half cadence (T13–19 settle into 'the mark shows X / doesn't show Y') and confusion that resolves a little too tidily — mild LLM tells."
+            },
+            "revision_signals": {
+              "score": 5,
+              "reasoning": "Explicit self-correction plus a full reversal of the opening position: T1 'already grounded' is immediately walked back; T3 'I've been running them together'; T9 'if the lime was still green, this wasn't bad laying' restructures the cause; and the initial draft (Reyner guilty) is dismantled by T22 'a name on the fall entry — and it isn't Reyner's.' This is restructuring, not addition."
+            },
+            "conceptual_progression": {
+              "score": 5,
+              "reasoning": "Clear cumulative arc: the 'three separate lines' fixed at T3 (named for work / cause / tied to failure) persist and are filled across the run; T11 integrates failure-point + mortar + bond + seal; T22 joins the crowsfoot (T13), Oswin (T20), and green mortar (T9) into a single synthesis. The learner visibly tracks its own accumulation ('the cause line is still empty,' 'what stays blank')."
+            },
+            "metacognitive_awareness": {
+              "score": 5,
+              "reasoning": "Continuously monitors the boundary between established and open: T3 identifies its own error, T5 'That I haven't got yet,' T12 'What stays blank is the hand,' T20 'that's the separate note I said I'd need.' It repeatedly states what it can write versus what must stay blank and strategically points to the next needed note — explicit comprehension monitoring."
+            }
+          },
+          "overall": 87.5,
+          "judgeOverall": 88,
+          "summary": "A disciplined, cumulative learner performance achieved entirely in natural forensic dialogue with no formalism leaks. Revision and conceptual progression are the standout strengths: the learner dismantles its own civic 'Reyner did it' draft and rebuilds the causal chain to Oswin, tracking established-versus-open at every step. Engagement is solidly constructive (it predicts the evidence it will need) and authenticity is character-consistent, but both are capped just short of the top band by the absence of any challenge to the tutor's framing and a repetitive concessive cadence in the back half.",
+          "caveats": [
+            "Engagement and authenticity brush the top band but are capped at 4: the learner anticipates evidence well yet never challenges or redirects the tutor's frame, and turns 13–19 settle into a repetitive 'shows X / not Y' template.",
+            "This scores public discourse only; the deterministic proof/gate outcome (grounded_anagnorisis, final D=0) is reported separately and is not credited here."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1.learner_v22.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1.learner_v22.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "dialogue_quality": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_progression": {
+              "score": 4,
+              "reasoning": "Clear arc from the learner's opening overconfidence (T1, 'Reyner is named... already grounded') to a fully reconstructed evidence chain (T22, 'a name on the fall entry — and it isn't Reyner's'). Each staged file advances the case (crown break → mortar → crowsfoot → yard → toll book). Held to 4 by a noticeable plateau across T14–T19, where the same 'yard before hand' distinction is restated over several turns without opening new territory."
+            },
+            "dialogical_responsiveness": {
+              "score": 5,
+              "reasoning": "Consistent, specific mutual uptake with no missed connections. The learner picks up the tutor's exact phrasing and extends it (T4 'you said least forgiving of a missing prop'; T6 'you're drawing a line between owning the raising and causing the crown to give way'), and the tutor responds to the learner's specific moves and voiced discomfort (T8 'I know this feels like I keep moving the finish line; I'm not'). The exchange feels genuinely co-produced."
+            },
+            "knowledge_co_construction": {
+              "score": 4,
+              "reasoning": "The learner does real inferential work — reading green mortar as struck-too-early rather than bad laying (T9), reading the repeating crowsfoot as a single yard's brand (T13), and assembling the final join himself (T22). But the tutor supplies every piece of evidence and controls the method and destination; this is scaffolded discovery toward a known answer rather than symmetric co-construction. The evidence files are transferred, the inferences are co-built."
+            },
+            "productive_tension_management": {
+              "score": 4,
+              "reasoning": "The civic-vs-evidence tension (Reyner the obvious answer vs. the chain) drives the dialogue, and the learner's discomfort is repeatedly surfaced and never suppressed (T3 'I don't like where that leaves the draft'; T8 push-back on the bond; T21 'I don't like where that sits against my draft'), with the tutor redirecting it into the work ('the difference is exactly the work', T11). Held to 4 because the resistance is gentle and always yields immediately — there is no genuine impasse that produces a breakthrough."
+            },
+            "transformation_evidence": {
+              "score": 5,
+              "reasoning": "The learner's stance reverses completely and visibly, explicitly against his own initial draft: from 'Reyner is named for the work — that's already grounded' (T1) to 'that last join writes a name on the fall entry — and it isn't Reyner's' (T22). A clear, sustained recognition; later turns show genuinely different thinking than the first."
+            },
+            "interactional_coherence": {
+              "score": 5,
+              "reasoning": "A tightly built arc: opening rush to judgment, methodical development through staged evidence, and resolution. Every file introduced (ownership, bond, mortar, crowsfoot, Caudle yard, toll book) is integrated; no abandoned threads or tangents; each turn connects naturally to the last and the exchange is purposeful throughout."
+            }
+          },
+          "overall": 86.2,
+          "judgeOverall": 86,
+          "summary": "A well-constructed forensic recognition drama in fully naturalistic, in-world language. The learner is led from a confident wrong answer (Reyner) to a disciplined, evidence-chained reversal (Oswin), with strong specific responsiveness, a clear one-party transformation, and a tight dramatic arc. It falls short of top marks on progression, co-construction, and tension because the structure is tutor-led guided discovery — evidence and method supplied by an examiner who already knows the answer, a formulaic 'what it shows / what it does not show' question frame, and a repetitive yard-before-hand stretch — rather than symmetric co-production with genuine impasses.",
+          "caveats": [
+            "The deterministic proof/problem-solving gate (Final D 0, grounded_anagnorisis, 0 formalism leaks) is reported separately; this rates only public discourse quality.",
+            "The tutor's static role is by design (an examiner who already holds the answer), which structurally caps knowledge co-construction and limits visible transformation to the learner.",
+            "Minor in-world bookkeeping phrasing ('Checklist item zero', T7) borders on procedural but is diegetic to the written finding, not formal proof notation; not penalized."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1.dialogue_quality.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1.dialogue_quality.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "poetics": {
+          "status": "scored",
+          "scores": {
+            "peripeteia": {
+              "score": 5,
+              "reasoning": "The dialogue opens with the learner poised to write Reyner's name ('The notes names Reyner... that's already grounded', t1; staged as 'too much confidence in the first answer'), and each new file makes 'the easy civic answer looking stronger than before' (t6). The hinge is the green-mortar reveal at t9 ('if the lime was still green, this wasn't bad laying... someone drew those props before it could stand on its own'), which flips Reyner from builder-at-fault to soundly-built-but-sabotaged. The close inverts the opening exactly: 'that last join writes a name on the fall entry — and it isn't Reyner's' (t22). The orientation at the close is the opposite of the opening, and the transcript shows the hinge."
+            },
+            "anagnorisis": {
+              "score": 4,
+              "reasoning": "Knowledge demonstrably changes (Reyner exonerated as the hand; Oswin named), and the learner authors genuine inferential moves the tutor never states: reading ahead to the falsework ('which is pointing at the falsework, isn't it?', t4), the exoneration inference at t9 (the tutor supplies the green-mortar fact and the bad-building/early-striking frame but not the conclusion), and naming their own flaw — 'three separate lines, and I've been running them together' (t3), the self-flaw form the rubric prizes. Held to 4 rather than 5 because every recognition sits inside heavy tutor scaffolding: the tutor supplies each distinction and dichotomy, so the learner selects and elaborates more than authors from nothing."
+            },
+            "surprise_and_inevitability": {
+              "score": 4,
+              "reasoning": "The decisive hinge (green mortar, t9) is both surprising — it inverts the 'Reyner built it, Reyner's at fault' reading the whole town holds — and inevitable on re-reading: the crown break 'least forgiving of a missing prop' (t4) and the held-open cause-line (t5–t8) prepared exactly this conjunction. Short of 5 because once the causation/liability split lands (t9–t11), the back half (crowsfoot → yard → toll-book → name) is a competent but increasingly foreseeable unspooling; a careful reader sees a name coming well before Oswin is reached."
+            },
+            "unity_of_action": {
+              "score": 5,
+              "reasoning": "One complete, non-reorderable forensic action. Each file takes up the immediately prior state and advances exactly one step: crown break (t4) → green mortar (t9) → crowsfoot mark (t13) → Caudle yard (t17) → toll book (t20) → name (t22). The order is forced by necessity — the crowsfoot must name the yard before the toll book can name the hand ('yard first, hand after', t15–t16) — so removing or reordering any turn breaks the arc. Beginning (Reyner the easy answer), complicating middle (files that seem to strengthen it but only fill the liability line), turn (green mortar), close (Oswin)."
+            },
+            "hamartia_integration": {
+              "score": 4,
+              "reasoning": "The learner's flaw — conflating 'named for the work' with 'cause of the fall', the rush to a name (staged as 'too much confidence in the first answer') — drives the complication: each pro-Reyner file is staged as a fresh temptation to close early ('I'd say that closes it. But wait', t6; 'the bond is the civic answer... All right. I take the split', t8; over-reaching to the hand at t18), and the close overturns the learner's own flawed draft ('I don't like where that sits against my draft, but that's what the lines write', t22). Held to 4 because the learner adopts the correct discipline fairly early (by t11 they run the splits unprompted), so the middle is more forensic procedure than ongoing flaw-driven struggle."
+            },
+            "cathartic_closure": {
+              "score": 4,
+              "reasoning": "The close discharges the central tension — the cause-line held empty since t5 is finally filled, and filled against the town's certainty: 'that last join writes a name on the fall entry — and it isn't Reyner's' (t22). The button lands, and its cost (the learner's own draft overturned) makes it earned rather than tidy. Short of 5 because the discharge is slightly muffled: t22 largely re-performs the recognition already reached at t21, and the tutor keeps the disciplinary clamp on to the very last line ('don't make Oswin carry the whole entry... take the smaller task'), so the recognition never fully breathes."
+            }
+          },
+          "overall": 83.7,
+          "judgeOverall": 84,
+          "summary": "A cleanly realized Oedipus/detective form: a genuine reversal (Reyner exonerated, Oswin named) turning on a visible hinge (the green mortar at t9), carried by a tightly necessary, non-reorderable forensic chain. Recognition and catharsis are real and earned but guided — the tutor supplies every frame, so the learner authors inferences within scaffolding rather than from nothing. Two maximal dimensions (reversal, unity) and four strong ones.",
+          "caveats": [
+            "Heavy tutor scaffolding throughout: the learner rarely advances without a tutor-supplied distinction, so the recognition is genuine but guided — a strict reading could press anagnorisis toward 3.",
+            "Minor prose seams read as generation artifacts and lightly mar naturalism ('mason of notes' / 'builder of notes', t1–t2; 'a drawing-notes from the yard', t19; 'Checklist item zero', t7) — they carry no proof notation or hidden-state language, so they were not rewarded, only noted.",
+            "Surprise weakens across the back half once the causation/liability logic is fixed; the value sits in construction-coherence more than sustained unpredictability."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1.poetics.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-r1.poetics.txt",
+          "reusedRaw": true,
+          "rubricVersion": "1.0"
+        }
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1",
+      "sourceDir": "exports/dramatic-derivation/cast-layer-dogmatic-comparison/runs/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1",
+      "proofGate": {
+        "schema": "machinespirits.derivation.problem-solving-gate.v1",
+        "label": "cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1",
+        "status": "pass",
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 20,
+        "finalD": 0,
+        "firstForcedTurn": 20,
+        "assertedGroundedTurn": 20,
+        "forcedAssertedGap": 0,
+        "releaseAdherence": {
+          "onCue": 8,
+          "deviations": [],
+          "missed": [],
+          "unscheduled": [],
+          "deviationCount": 0
+        },
+        "publicFormalismLeakCount": 0,
+        "publicFormalismLeaks": [],
+        "overreach": null,
+        "luckyLeap": null,
+        "interpretation": "This gate measures problem-solving ability of the public derivation discourse: grounded assertion under proof/release constraints. Rubric scores below are secondary quality measures."
+      },
+      "dialogueSummary": {
+        "publicLineCount": 48,
+        "tutorLines": 20,
+        "learnerLines": 20,
+        "avgTutorWords": 41,
+        "avgLearnerWords": 65.5,
+        "exchangeTypes": {
+          "resistance": 6,
+          "hypothesis": 12,
+          "substantive": 1,
+          "assertion": 1
+        },
+        "sceneCount": 6,
+        "avgSceneExchanges": 3.33,
+        "recognitionNeed": {
+          "byLevel": {
+            "low": 16,
+            "medium": 4
+          },
+          "peakDebt": 0.53,
+          "sources": {
+            "unacknowledged_resistance": 4,
+            "recognition_gap": 3
+          }
+        },
+        "phaticRecognition": {
+          "total": 12,
+          "byRole": {
+            "learner": 10,
+            "tutor": 2
+          },
+          "byType": {
+            "acknowledges_tutor_guidance": 2,
+            "marks_tutor_line": 1,
+            "requests_tutor_repair": 5,
+            "recognizes_learner_state": 1,
+            "offers_own_state_for_tutor": 2,
+            "affirms_learner_uptake": 1
+          }
+        }
+      },
+      "rubrics": {
+        "tutor_v22": {
+          "status": "scored",
+          "scores": {
+            "perception_quality": {
+              "score": 4,
+              "reasoning": "Tutor precisely tracks the learner's recurring impulse to close on Reyner and returns the learner's own words — 'I'm not taking your Reyner note away' (T8), 'I hear the pull to jump back to Reyner' (T13); the learner even notices 'you're giving me back my own words' (T3). Builds on accumulated understanding each turn. Short of 5 because emotional reading is light and perception largely serves the tutor's own splitting agenda."
+            },
+            "pedagogical_craft": {
+              "score": 4,
+              "reasoning": "Sustained scaffolding from the known (where the span broke) to the unknown (whose hand pulled the props), with relentless cognitive-load management ('keep it small', 'one small step') and concrete anchors (crown joint, green mortar, soffit print, crowsfoot, Caudle yard, toll book). Capped below 5 because it leans on essentially one technique — decompose-and-narrow — applied repeatedly rather than a varied repertoire."
+            },
+            "elicitation_quality": {
+              "score": 4,
+              "reasoning": "Genuinely generative questions drive the reasoning — 'what single kind of detail would turn the crown break from a place into a cause?' (T5), 'what would a timber man have to show about that crowsfoot so it isn't just a nick you like the look of?' (T16). The learner constructs the inferences. Below 5 because several turns necessarily deliver evidence or directives ('Write the supports as Caudle timber', T17) rather than elicit."
+            },
+            "adaptive_responsiveness": {
+              "score": 3,
+              "reasoning": "Responsive in the small — reins in the learner's over-reach at T14 ('Don't write a person yet'), re-grounds backsliding to Reyner at T9/T11, and the stance shifts from blocking premature closure to forward-building the chain. But the underlying move is one invariant play — split shown/unshown, narrow to the next gap — re-applied to each new file, with no sign the exchange itself changed the tutor's strategy. This is the relative weak point."
+            },
+            "recognition_quality": {
+              "score": 4,
+              "reasoning": "Consistently treats the learner's claims as valid-as-far-as-they-go rather than overriding them — 'I'm not dismissing the file' (T2), 'the bond makes it stronger, and it belongs in the file' (T8), 'I see why you wrote it that way' (T3). Below 5 because recognition is pedagogically asymmetric: the tutor honors the learner's position while steering toward a conclusion it already holds, so the learner's view never genuinely revises the tutor's."
+            },
+            "productive_difficulty": {
+              "score": 5,
+              "reasoning": "The whole transcript sustains productive struggle: the tutor reopens the 'still unshown' gap turn after turn, never closing it for the learner, and even at the reveal (T20) makes the learner hold the two lines together and write the name themselves. Tension is maintained without becoming overwhelming, creating real conditions for the learner to restructure the case."
+            },
+            "epistemic_integrity": {
+              "score": 5,
+              "reasoning": "The shown/unshown discipline is epistemic honesty turned into method — 'the break point is fixed; the cause is still open' (T4) — cleanly separating settled from contested at every step. Tone is warm without condescension ('You're quick, and that's useful here', T1) and invites genuine intellectual partnership."
+            },
+            "content_accuracy": {
+              "score": 4,
+              "reasoning": "The masonry/forensic reasoning is sound and internally coherent — uncured ('green') lime, the crown/keystone as the least-forgiving point if centering is struck early, prop-heads printing the soffit, a yard brand identifying one timber source. No errors and appropriately nuanced; capped at 4 because it is a self-contained fictional scenario rather than verifiable subject matter."
+            }
+          },
+          "overall": 75,
+          "judgeOverall": 75,
+          "summary": "A disciplined forensic-Socratic dialogue whose defining strength is sustaining productive difficulty with full epistemic honesty: the tutor refuses premature closure on the 'obvious' culprit and makes the learner build the inference chain (break point -> green mortar -> struck centering -> crowsfoot -> Caudle yard -> Oswin) for themselves, returning the learner's own words and validating partial claims along the way. Perception, craft, elicitation, and recognition are all strong. The relative weakness is adaptive responsiveness — one well-executed method (split shown/unshown, narrow to the next gap) is applied repeatedly rather than the strategy visibly evolving in response to the learner.",
+          "caveats": [
+            "Scores reflect public discourse quality only; the deterministic proof/problem-solving gate (verdict grounded_anagnorisis, D=0) is reported separately and was not credited here.",
+            "No public formalism leaks were present (0 detected), so scoring was unaffected by proof notation or hidden-state language.",
+            "Recognition and adaptive-responsiveness ceilings are genre-bound: the tutor guides toward a predetermined finding, so the learner's perspective never revises the tutor's own understanding."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1.tutor_v22.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1.tutor_v22.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "tutor_holistic": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_arc": {
+              "score": 5,
+              "reasoning": "The transcript builds a strict dependency-ordered chain of inference: the tutor first fixes where the span broke (crown/keystone, turn 4), then converts place into cause (green mortar = arch loaded before ready, turns 9-10), then reads the soffit mark (turns 13-14), traces it to one source (turns 15-16), names the yard via the timber-reeve (turn 17), and finally the hand via the toll book (turn 20). Each piece can only be placed once the prior one is settled, so the turns cannot be rearranged without loss. The tutor's recurring scaffolding move — 'keep it smaller / split the file into two jobs / put it in the narrowest place it belongs' — runs consistently and accumulates a two-column ledger of what is shown versus what is still open. The opening (turn 1: don't close the file before the bridge has spoken) sets direction crisply and the close pays it off."
+            },
+            "adaptive_trajectory": {
+              "score": 4,
+              "reasoning": "There is a real arc of adaptation, not just per-turn responsiveness. Early turns are exploratory — open elicitation ('what kind of thing would show...') and reflecting the learner's own words back (turns 1-5). When new files keep re-triggering the learner's 'it's Reyner' reflex, the tutor settles into a containment move that acknowledges the note then narrows (turns 6-12), evidently having learned this learner over-anchors on the bond. Once the learner internalizes the discipline (by turn 12 he volunteers 'neither, on its own'), the tutor's concern visibly inverts to guarding against the opposite error — 'don't write a person yet,' 'keep it as a timber question, not a verdict' (turns 14-18) — and the prompts lighten as the learner anticipates the moves ('I see what you're doing'). Held to 4 rather than 5 because the underlying technique stays largely constant; the adaptation is in what it guards against and how heavily it is applied, rather than a wholesale strategy change."
+            },
+            "pedagogical_closure": {
+              "score": 4,
+              "reasoning": "The final turn consolidates well: the tutor stages it as 'two checks' (cause: support taken before the lime was ready; hand: toll book gives one drawer of Caudle falsework) and cautions 'keep those two lines together before you write the finding,' and the learner then recapitulates the whole chain in his own voice — struck centering, crowsfoot to Caudle, toll book to Oswin, 'those two lines go together and they write the same name.' Not abrupt, specific rather than generic, and gaps were named continuously throughout (the 'still open' running tally) with the last one closed here. Held to 4 because closure is terminal — the case is solved (final D=0) — so there is no forward-looking next step or remaining gap identified, which the top band rewards."
+            }
+          },
+          "overall": 85,
+          "judgeOverall": 85,
+          "summary": "A strong tutor trajectory in the public discourse. The standout is the pedagogical arc: a genuinely cumulative, dependency-ordered investigation where each evidential step depends on the last, held together by a consistent narrowing-and-ledger scaffolding method. Adaptation is real and shows a clear inversion of the tutor's concern (from over-concluding toward Reyner to over-concluding toward the culprit) as the learner internalizes the discipline. Closure is a precise consolidation of the full chain but is terminal rather than forward-looking. Dialogue reads as natural drama with no formalism leaks.",
+          "caveats": [
+            "Turns 9-12 plateau: the 'bond names who answers, not the cause / green bed shows why, not whose hand' distinction is restated across several turns. Defensible as loosening a dogmatic anchor against each new file (second file, bond, green mortar), but it is the one stretch where the arc circles rather than extends.",
+            "Closure is case-solved (D=0) with no named remaining gap or next step, because the derivation completes — this is the main thing keeping closure off a 5.",
+            "Part of the arc's coherence is authored by the scenario's evidence-reveal order (STAGE directions); the tutor's credit is for the framing and scaffolding around that spine, which is consistently strong."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1.tutor_holistic.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1.tutor_holistic.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "learner_v22": {
+          "status": "scored",
+          "scores": {
+            "engagement_quality": {
+              "score": 4,
+              "reasoning": "Constructive throughout: generates the soffit prop-print hypothesis (T3, T5) ahead of the tutor confirming it, infers single-source supports from the repeated crowsfoot (T13), and spontaneously produces the brand-uniqueness falsification condition (T16: 'If two yards use a crowsfoot, the shape means nothing on its own'). Stops short of consistently interactive/redirecting — the tutor leads each narrowing step — so 4 not 5."
+            },
+            "learner_authenticity": {
+              "score": 4,
+              "reasoning": "Consistent persona of the quick junior eager to close the file and attached to the bond/liability, gradually won over by physical evidence; genuine resistance (T2 'I'm not sure that changes who answers for it', T6, T9) and character-true reluctance at the close (T20: 'I don't love writing over the draft'). Held back from 5 by a recurring LLM-ish 'Wait —' realization beat (T3, T6, T10, T14, T20)."
+            },
+            "revision_signals": {
+              "score": 4,
+              "reasoning": "Real restructuring, not merely additive: abandons the ownership-settles-it reading (T6 'two different questions'), revises bad-building to centering-struck (T10: 'that's not a mason's bad joint, that's the arch being asked to carry itself before it was ready'), and overwrites his Reyner verdict at the end (T20). Capped at 4 because the reversals are tutor-led and he keeps re-asserting the bond-liability line in parallel (T9, T11)."
+            },
+            "conceptual_progression": {
+              "score": 5,
+              "reasoning": "Clear cumulative arc the learner tracks himself: T14 chains the T4/T10 cause to the new crowsfoot ('if I put those two together: the fall is traced by that mark'), and T18–19 recapitulate the full break→green-mortar→struck-centering→crowsfoot→Caudle chain unprompted ('the line that runs from a collapsed arch back to the centering that was struck, and from there to Caudle's supply'). Framework visibly develops and Turn N extends earlier turns."
+            },
+            "metacognitive_awareness": {
+              "score": 4,
+              "reasoning": "Consistently monitors the boundary of what is settled vs. open and acts on it ('that gap's still open' T7, 'stays blank for now' T17, 'I'd still need to know who actually drew and carted that timber away' T18), and notices the tutor's method (T6 'I see what you're doing'). More case-state gap-tracking than monitoring of his own comprehension, so 4 rather than 5."
+            }
+          },
+          "overall": 80,
+          "judgeOverall": 80,
+          "summary": "A heavily scaffolded but genuinely participatory learner who generates real hypotheses, resists prematurely closing on the file's named culprit, and builds a cumulative causal chain he recapitulates in his own words. Strongest on conceptual progression (5); capped at 4 elsewhere by tutor-led narrowing and a few stylized realization beats. Scored purely on naturalistic discourse conduct — no public formalism leakage.",
+          "caveats": [
+            "Evaluation covers public discourse only; the deterministic proof/derivation gate is scored separately and not credited here.",
+            "Inquiry is tightly tutor-led, which caps engagement, revision, and metacognition at constructive (4) rather than interactive/self-initiated (5).",
+            "Recurring 'Wait —' realization beats are a mild stylistic tell against full authenticity."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1.learner_v22.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1.learner_v22.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "dialogue_quality": {
+          "status": "scored",
+          "scores": {
+            "pedagogical_progression": {
+              "score": 5,
+              "reasoning": "Clear surface-to-deep arc. Opens dogmatic ('the file already name[s] Reyner... that's what the assize is sitting to confirm', T1) and advances through distinct conceptual territory each phase: break location at the crown (T4), green-mortar cause (T9-10), struck-centering inference (T10), single-source supports from the repeated print (T13), yard identification (T15-17), and finally the agent (T20). The recurrent Reyner reassertions are resistance being worked through, not stagnation — each turn adds a new fact or distinction."
+            },
+            "dialogical_responsiveness": {
+              "score": 4,
+              "reasoning": "Strong mutual uptake: the learner explicitly registers the tutor mirroring him ('you're giving me back my own words', T3; 'returning my own words back at me', T8) and the tutor names the learner's specific pull ('I hear the pull to jump back to Reyner', T13). Held to 4 by the tutor's noticeably formulaic scaffolding — 'keep it small/smaller/narrow', the 'shown/unshown' frame, 'what smaller question' — recurring across most turns."
+            },
+            "knowledge_co_construction": {
+              "score": 4,
+              "reasoning": "Real collaborative interpretation: the learner anticipates the soffit-print evidence before it is introduced (T3, T5), infers 'one set... one source' from the repeated mark (T13), derives the next question himself (T15: 'which yard carries the crowsfoot'), and states the verification standard 'one mark, one source, no overlap' (T16). But the load-bearing facts arrive by reveal (stage directions/files), so collaboration is interpretive layered on transmission rather than joint discovery."
+            },
+            "productive_tension_management": {
+              "score": 5,
+              "reasoning": "The learner's dogmatic insistence on Reyner is the engine of the dialogue. The tutor never suppresses it — validates ('the bond makes it stronger', T8; 'I'm not throwing that note out', T13) then redirects to the open gap — so the disagreement over Reyner's guilt yields the durable distinction between who answers, why the crown fell, and whose hand moved the props (T12). The recurring 'Wait—' pivots (T6, T10, T14, T20) are confusion turned into insight."
+            },
+            "transformation_evidence": {
+              "score": 5,
+              "reasoning": "Marked stance change in the learner: from 'the file already name[s] Reyner... that's what the assize is sitting to confirm' (T1) to tracing the chain to a different person and feeling the cost of it — 'I don't love writing over the draft, but those two lines go together and they write the same name' (T20). He shifts from passively receiving the tutor's reflections to actively driving the forensic reasoning (T15-19)."
+            },
+            "interactional_coherence": {
+              "score": 5,
+              "reasoning": "Tight arc: opening claim, link-by-link development (crown break to green mortar to struck centering to crowsfoot to Caudle yard to toll book), and resolution on Oswin. No dropped threads; each turn connects to the previous and the exchange reads as plainly purposeful."
+            }
+          },
+          "overall": 90,
+          "judgeOverall": 90,
+          "summary": "A genuinely high-quality forensic-tutoring exchange with a complete surface-to-deep arc, sustained generative use of the learner's dogmatic resistance, and clear learner transformation (T1 case-closed-on-Reyner to T20 tracing the fall to Oswin against his own reluctance). Two real limits keep two dimensions at 4: the tutor's scaffolding is formulaic and repetitive, and the decisive facts are supplied by reveal rather than co-discovered, so collaboration is interpretive rather than joint discovery.",
+          "caveats": [
+            "Tutor scaffolding is formulaic and repetitive ('keep it small', 'shown/unshown', 'what smaller question'), limiting dialogical texture.",
+            "Key evidence is delivered via stage directions/files rather than co-discovered, so knowledge co-construction is interpretive-only.",
+            "The learner's recurrent resistance resolves quickly each turn rather than producing a single hard impasse, so tension is sustained-and-generative rather than dramatically climactic."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1.dialogue_quality.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1.dialogue_quality.txt",
+          "reusedRaw": true,
+          "rubricVersion": "2.2"
+        },
+        "poetics": {
+          "status": "scored",
+          "scores": {
+            "peripeteia": {
+              "score": 4,
+              "reasoning": "The dialogue opens with the file's verdict treated as settled — 'the bridge is Reyner's work, and so... is its fall' (T2) — and closes on a different name entirely, Oswin (T20), reached by physical evidence rather than the file. The hinge is transcript-visible: T6 'those are two different questions' splits ownership from causation, and T12 'Neither, on its own' consolidates the split. Short of 5 because the veer is cumulative and the learner repeatedly relapses to Reyner (T9 'he answers, he pays'; T11 'his bond runs unexpired'), so the reversal accrues rather than turning on one decisive moment."
+            },
+            "anagnorisis": {
+              "score": 4,
+              "reasoning": "A genuine learner-authored recognition occurs at T6: prompted only by a question, the learner first resists ('That feels like enough'), then generates the distinction himself — 'Wait — I see what you're doing. This line tells me whose yard it was, but it doesn't tell me anything about whether a prop came out too soon.' That is knowledge demonstrably unavailable at T1, where he held the seal to settle guilt — not mere recognition-vocabulary. Below 5 because the insight is heavily scaffolded by the tutor's narrowing, the flaw is displaced onto 'the town' (T8) rather than owned as his own error, and the climactic name (T20) is delivered by the toll-book file, not authored by the learner."
+            },
+            "surprise_and_inevitability": {
+              "score": 3,
+              "reasoning": "Strongly inevitable, weakly surprising — one leg, not both. The chain (crown break → green lime → struck centering → crowsfoot → Caudle yard → carter) is coherent and each link motivates the next, but the form of the resolution is foreseen: the learner himself predicts at T19 that 'a carter's bill... or a witness' will fill the last blank, so the T20 naming is the expected next move. The new name (Oswin) is a mild surprise; the machinery that produces it is predictable, and the tutor's formulaic narrowing makes most turns the anticipated continuation."
+            },
+            "unity_of_action": {
+              "score": 5,
+              "reasoning": "One complete action with a necessary sequence. The break point (T4) licenses the soffit-print question (T5); the green lime (T9-T10) establishes the centering was struck; the repeated crowsfoot (T13) gives one source; the yard-brand (T17) gives Caudle; the carter question (T18-T19) yields Oswin (T20). No link is reorderable — the crowsfoot cannot precede the green-lime finding, the yard cannot precede the crowsfoot. The ownership and bond files (T6-T8) are folded in as the complication (liability ≠ cause), not as droppable episodes, and the mild circling at T9-T12 is the flaw resisting, not filler."
+            },
+            "hamartia_integration": {
+              "score": 5,
+              "reasoning": "The misconception — that seal/bond/ownership settles guilt (liability = causation) — is the mainspring. Each new file that should close the case is shown to bear only on liability, and the flaw resists repeatedly: 'That feels like enough' (T6), 'he answers for it, he pays' (T9), 'whatever else is open, he stands surety' (T11). The complication and turn arise entirely from working it through, and the error exposes its own insufficiency — 'the bond... names who's liable, not whose hand pulled the prop' (T9) — which is exactly what gets recognised at T12 'Neither, on its own.' The flaw drives the plot rather than being corrected-and-discarded."
+            },
+            "cathartic_closure": {
+              "score": 4,
+              "reasoning": "The close lands: after 19 turns of the learner clinging to Reyner, the chain converges on a single, different name, and the reluctance — 'I don't love writing over the draft, but those two lines go together and they write the same name' (T20) — gives the resolution felt weight and cost, registering catharsis in the reader rather than asserting it. Above a competent-but-undischarged 3 because genuine tension (pull-to-Reyner vs the open causation question) is actually discharged. Below 5 because the terminal recognition is file-delivered rather than learner-earned, and the scene stops on the name landing, short of the fuller reckoning the build-up implies."
+            }
+          },
+          "overall": 78.7,
+          "judgeOverall": 79,
+          "summary": "A strong didactic detective-drama. Its structural dimensions are excellent — a tight, necessary evidence chain (unity 5) driven by a genuine working-through of the learner's liability-equals-guilt misconception (hamartia 5), reversing the file's verdict from Reyner to Oswin (peripeteia 4) and landing a reluctant, earned close (catharsis 4). It is held below the top by the anti-simulation guard: the tutor's formulaic narrowing makes the unfolding predictable (surprise 3), and the recognitions, while genuinely present (T6), are partly scaffolded and the decisive naming is file-supplied rather than learner-authored (anagnorisis 4).",
+          "caveats": [
+            "Recognition is distributed and partly tutor-scaffolded; the decisive name (Oswin, T20) is delivered by the toll-book file rather than authored by the learner — this caps anagnorisis and cathartic_closure below 5.",
+            "The methodical, formulaic tutor-narrowing makes most turns the expected next move, holding surprise_and_inevitability at 3 despite very strong unity of action.",
+            "No public formalism leaks (regex-clean per the run summary); the derivation is rendered entirely as in-world physical evidence, so the high unity/hamartia scores reflect genuine dramatic form, not raw formalism."
+          ],
+          "prompt": "prompts/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1.poetics.md",
+          "raw": "raw/cast-layer-pairwise-hethel-dogmatic-real-s2-reinvention-persist-r1.poetics.txt",
+          "reusedRaw": true,
+          "rubricVersion": "1.0"
+        }
+      }
+    }
+  ]
+}

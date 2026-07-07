@@ -1,0 +1,53 @@
+# Exploration 3 — who refuses: harness template vs model-authored refusal
+# body (workplan/items/refusal-model-authored.md). WITHIN-MECHANISM smoke,
+# both arms BOUND with the regression trigger; only the refusal author
+# differs. Sonnet at the calibrated dose 0.08, marrick only, 3 pairs,
+# primes 379/383/389. Mechanism study — no outcome claims (§5.12.7).
+base:
+  world: config/drama-derivation/world-005-marrick.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: template-r1
+    flags:
+      {
+        decay: '{"seed":379,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}',
+        lemma-layer: '{"bind":true}',
+      }
+  - label: authored-r1
+    flags:
+      {
+        decay: '{"seed":379,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}',
+        lemma-layer: '{"bind":true,"refusalAuthor":"model"}',
+      }
+  - label: template-r2
+    flags:
+      {
+        decay: '{"seed":383,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}',
+        lemma-layer: '{"bind":true}',
+      }
+  - label: authored-r2
+    flags:
+      {
+        decay: '{"seed":383,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}',
+        lemma-layer: '{"bind":true,"refusalAuthor":"model"}',
+      }
+  - label: template-r3
+    flags:
+      {
+        decay: '{"seed":389,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}',
+        lemma-layer: '{"bind":true}',
+      }
+  - label: authored-r3
+    flags:
+      {
+        decay: '{"seed":389,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}',
+        lemma-layer: '{"bind":true,"refusalAuthor":"model"}',
+      }

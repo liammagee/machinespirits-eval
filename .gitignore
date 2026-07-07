@@ -10,6 +10,11 @@ node_modules
 
 # Private research artifacts (symlinked from ../machinespirits-eval-private/)
 data
+!/data/
+/data/*
+!/data/paper2/
+/data/paper2/*
+!/data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl
 logs
 logs.pre-symlink-backup-*/
 exports
@@ -33,6 +38,10 @@ npm-debug.log*
 # Build output
 dist/
 build/
+dist-desktop/
+
+# Lean/Lake local build output for optional proof-DAG certificates
+tools/proof-dag-lean/.lake/
 
 # IDE
 .idea/
@@ -71,6 +80,9 @@ results/
 # Local compressed archives produced by scripts/package-poetics-run.js.
 # Commit the manifest in config/poetics-calibration/runs/, not the bulk bundle.
 artifacts/poetics-runs/
+
+# Local Plan 2.0 reference package; keep the tracked closeout note instead.
+PLAN_2_0/genuine-adaptation-reference.zip
 
 # Poetics sidecar run artifacts. Keep source specs, summaries, notes, scripts,
 # and tests in Git; keep generated transcripts, deliberations, samples, scores,

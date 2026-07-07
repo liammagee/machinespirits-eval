@@ -308,3 +308,7 @@ cd docs/research && ./build.sh paper2
 # Run tests
 npm test
 ```
+
+## Desktop app (Electron)
+
+An Electron desktop app mirrors the web UX and stays in sync by construction — it embeds the unchanged Express stack and loads the web UI over loopback (ONE UI codebase). It lives in `desktop/` on `main`; active dev is the `../ms-electron` worktree (branch `desktop-dev`, Electron ABI), launched with `npm run desktop:dev`. **To change the UX, edit the web stack** (`public/**`, the route renderers in `scripts/browse-poetics-scripts.js`, `routes/**`, `services/**`) — never fork UI into `desktop/`. New writable stores must get an env override + be relocated in `desktop/paths.js`. See `desktop/ARCHITECTURE.md` (rules + file map) and `desktop/README.md` (run/build). Verify with `npm run desktop:test`.

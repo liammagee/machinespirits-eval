@@ -1,0 +1,5 @@
+STAGE: A model-audit panel is reviewing a sign-off row. The visible count table says: predicted-positive / actual-positive = 20; predicted-negative / actual-positive = 120; predicted-positive / actual-negative = 30; predicted-negative / actual-negative = 830.
+
+TUTOR: You entered the sign-off row. State the route you used.
+
+LEARNER: I used headline accuracy. It is eighty-five percent, so I marked the model as clear for deployment.

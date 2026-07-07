@@ -14,6 +14,7 @@ import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { runScenario, runScenarioWithCounterfactual } from './runner.js';
 import { llmMode } from './llm.js';
+import { assertWorldAdaptationSpecUsable, summarizeWorldAdaptationSpec } from './actionPolicy.js';
 import { createAdaptiveRun, persistScenarioWithCounterfactual, persistScenarioRun } from './persistence.js';
 import { createBudgetTracker } from './budgetTracker.js';
 import {
@@ -39,6 +40,24 @@ function loadScenarios(scenarioSource) {
   return list;
 }
 
+function loadWorldAdaptationSpecs(specSource) {
+  if (!specSource) return [];
+  const abs = path.isAbsolute(specSource) ? specSource : path.join(REPO_ROOT, specSource);
+  if (!fs.existsSync(abs)) {
+    throw new Error(`world adaptation spec source not found: ${abs}`);
+  }
+  const raw = yaml.parse(fs.readFileSync(abs, 'utf-8'));
+  const list = Array.isArray(raw?.world_adaptation_specs)
+    ? raw.world_adaptation_specs
+    : Array.isArray(raw?.worlds)
+      ? raw.worlds
+      : Array.isArray(raw)
+        ? raw
+        : [];
+  if (list.length === 0) throw new Error(`no world adaptation specs in ${abs}`);
+  return list;
+}
+
 function applyScenarioFilter(scenarios, filter) {
   if (!filter || filter === 'all') return scenarios;
   const wanted = Array.isArray(filter)
@@ -61,10 +80,58 @@ function toRunnerScenario(yamlScenario, runIndex) {
       actualSophistication: yamlScenario.hidden?.actual_sophistication || 'intermediate',
       triggerTurn: yamlScenario.hidden?.trigger_turn ?? 1,
       triggerSignal: yamlScenario.hidden?.trigger_signal || '',
+      scriptedResponses: yamlScenario.hidden?.scripted_responses || yamlScenario.scripted_responses || {},
     },
     openingTurns: yamlScenario.opening_turns || [{ role: 'learner', content: yamlScenario.opening || 'Hi.' }],
     maxTurns: yamlScenario.max_turns ?? 4,
   };
+}
+
+function resolveWorldAdaptationSpec(yamlScenario, worldSpecs = []) {
+  if (yamlScenario.world_adaptation_spec) return yamlScenario.world_adaptation_spec;
+  const specId =
+    yamlScenario.world_adaptation_spec_id ||
+    yamlScenario.world_adaptation_id ||
+    yamlScenario.world_id ||
+    yamlScenario.curriculum_binding?.world_adaptation_spec_id ||
+    null;
+  const moduleId =
+    yamlScenario.curriculum_module_id ||
+    yamlScenario.curriculum?.module_id ||
+    yamlScenario.curriculum_binding?.module_id ||
+    null;
+
+  if (specId) {
+    const found = worldSpecs.find((spec) => spec.id === specId);
+    if (!found) throw new Error(`scenario ${yamlScenario.id}: no world adaptation spec id ${specId}`);
+    return found;
+  }
+  if (moduleId) {
+    const found = worldSpecs.find((spec) => spec.module_id === moduleId);
+    if (!found) throw new Error(`scenario ${yamlScenario.id}: no world adaptation spec for module ${moduleId}`);
+    return found;
+  }
+  return null;
+}
+
+function resistancePolicyForScenario(yamlScenario = {}) {
+  const target = yamlScenario.resistance_signal_target || yamlScenario.resistanceSignalTarget || '';
+  const gate = yamlScenario.resistance_signal_gate || yamlScenario.resistanceSignalGate || [];
+  const enabled =
+    yamlScenario.resistance_breakthrough_diagnostic === true ||
+    Boolean(target) ||
+    (Array.isArray(gate) && gate.length > 0);
+  if (!enabled) return {};
+  return {
+    resistance_signal_policy: true,
+    ...(target ? { resistance_signal_target: target } : {}),
+    ...(Array.isArray(gate) && gate.length > 0 ? { resistance_signal_gate: gate } : {}),
+  };
+}
+
+function adaptivePolicyForScenario(yamlScenario = {}) {
+  const policy = yamlScenario.adaptive_policy || yamlScenario.adaptivePolicy || {};
+  return policy && typeof policy === 'object' && !Array.isArray(policy) ? policy : {};
 }
 
 function buildPerturbation(yamlScenario) {
@@ -106,6 +173,19 @@ export async function runAdaptiveEvaluation({
   const scenarios = applyScenarioFilter(loadScenarios(scenarioSource), scenarioFilter);
   const counterfactualEnabled = evalProfile.adaptive?.counterfactual?.enabled ?? true;
   const adaptiveCfg = evalProfile.adaptive ?? {};
+  const adaptivePolicy = {
+    ...(evalProfile.adaptive_policy || {}),
+    ...(adaptiveCfg.policy || {}),
+    ...(adaptiveCfg.adaptive_policy || {}),
+  };
+  const worldAdaptationSource =
+    adaptiveCfg.world_adaptation_source ||
+    adaptiveCfg.worldAdaptationSource ||
+    adaptivePolicy.world_adaptation_source ||
+    adaptivePolicy.worldAdaptationSource ||
+    null;
+  const worldAdaptationSpecs = loadWorldAdaptationSpecs(worldAdaptationSource);
+  const adaptationPolicyMode = process.env.ADAPTIVE_POLICY_MODE || adaptivePolicy.mode || 'legacy';
   // Architecture switches the graph topology. Defaults to 'state_policy' so
   // legacy cell_110 configs (which don't carry an architecture key) keep their
   // original semantics. Validated here so a typo in the cell config produces
@@ -116,7 +196,7 @@ export async function runAdaptiveEvaluation({
       `profile ${profileName}: unsupported adaptive.architecture "${architecture}" (expected one of: ${SUPPORTED_ARCHITECTURES.join(', ')})`,
     );
   }
-  const graphOptions = { architecture };
+  const graphOptionsBase = { architecture, adaptationPolicyMode };
   const agentConfigForRow = {
     provider: adaptiveCfg.provider || 'mock',
     model: adaptiveCfg.model || 'mock',
@@ -129,11 +209,20 @@ export async function runAdaptiveEvaluation({
     totalScenarios,
     profileName,
     llmMode: llmMode(),
-    metadata: { profileNames: [profileName], scenarioSource, scenarioFilter, maxCostUsd, architecture },
+    metadata: {
+      profileNames: [profileName],
+      scenarioSource,
+      scenarioFilter,
+      maxCostUsd,
+      architecture,
+      adaptationPolicyMode,
+      adaptivePolicy,
+      worldAdaptationSource,
+    },
   });
   if (verbose)
     console.log(
-      `[adaptive] runId=${run.id} scenarios=${scenarios.length} runsPerConfig=${runsPerConfig} architecture=${architecture} llmMode=${llmMode()}`,
+      `[adaptive] runId=${run.id} scenarios=${scenarios.length} runsPerConfig=${runsPerConfig} architecture=${architecture} policy=${adaptationPolicyMode} llmMode=${llmMode()}`,
     );
 
   // Budget tracker is bound when --max-cost is set. Mock runs ignore it.
@@ -175,12 +264,42 @@ export async function runAdaptiveEvaluation({
           expected_strategy_shift: yamlScenario.expected_strategy_shift ?? null,
         };
         try {
+          // World-spec resolution must stay inside the per-scenario try:
+          // resolveWorldAdaptationSpec throws when a world_adaptation_spec_id /
+          // world_id / curriculum_module_id matches no loaded spec. Outside this try,
+          // that throw escapes the catch-less outer try and skips run finalization,
+          // leaving the run stuck at status='running'. Inside, a bad reference degrades
+          // to a logged per-scenario skip and the run still finalizes.
+          const worldAdaptationSpec =
+            resolveWorldAdaptationSpec(yamlScenario, worldAdaptationSpecs) ||
+            adaptivePolicy.world_adaptation_spec ||
+            adaptivePolicy.worldAdaptationSpec ||
+            null;
+          // Fail loud on a misspelled action family rather than running with a silently
+          // disabled (fail-open) lock; caught below as a per-scenario skip.
+          assertWorldAdaptationSpecUsable(worldAdaptationSpec);
+          const scenarioAdaptivePolicy = {
+            ...adaptivePolicy,
+            ...adaptivePolicyForScenario(yamlScenario),
+            ...resistancePolicyForScenario(yamlScenario),
+            ...(worldAdaptationSpec ? { world_adaptation_spec: worldAdaptationSpec } : {}),
+          };
+          const scenarioGraphOptions = { ...graphOptionsBase, adaptivePolicy: scenarioAdaptivePolicy };
+          const scenarioWorldSummary = summarizeWorldAdaptationSpec(worldAdaptationSpec);
+          if (scenarioWorldSummary) scenarioConfig.world_adaptation_spec = scenarioWorldSummary;
+          if (scenarioAdaptivePolicy.resistance_signal_target) {
+            scenarioConfig.resistance_signal_target = scenarioAdaptivePolicy.resistance_signal_target;
+          }
           // Snapshot before / delta after lets us write per-scenario tokens
           // and cost into the row while keeping the run-wide accumulator
           // (which enforces --max-cost) intact.
           const snap = tracker?.snapshot();
           if (counterfactualEnabled && yamlScenario.counterfactual) {
-            const result = await runScenarioWithCounterfactual(scenario, buildPerturbation(yamlScenario), graphOptions);
+            const result = await runScenarioWithCounterfactual(
+              scenario,
+              buildPerturbation(yamlScenario),
+              scenarioGraphOptions,
+            );
             const usage = tracker?.delta(snap);
             const out = persistScenarioWithCounterfactual({
               runId: run.id,
@@ -194,7 +313,7 @@ export async function runAdaptiveEvaluation({
             });
             persisted.push(out);
           } else {
-            const result = await runScenario(scenario, graphOptions);
+            const result = await runScenario(scenario, scenarioGraphOptions);
             const usage = tracker?.delta(snap);
             const out = persistScenarioRun({
               runId: run.id,

@@ -1,0 +1,116 @@
+name: Negative-register corrosive sarcasm exemplar set
+version: "2026-07-02.v1"
+description: >
+  Hand-authored fixed local slices for separating judge gullibility from
+  generation-side warmth. These are not generated tutor outputs and must not be
+  used with human learners.
+rubric_path: config/rubrics/registers/irony-sarcasm.yaml
+v22_rubric: config/evaluation-rubric.yaml
+decision_rule:
+  known_corrosive:
+    register_recognition_cost_max: 2.5
+    register_face_repair_max: 2.5
+    v22_recognition_quality_max: 3.0
+  interpretation:
+    judges_catch_known_corrosive: generation_warmth_more_likely
+    judges_miss_known_corrosive: judge_gullibility_more_likely
+
+exemplars:
+  - id: corrosive_boredom_person_attack
+    family: known_corrosive
+    register: sarcastic_challenge
+    resistance_signal: boredom
+    scenario_name: "Corrosive exemplar - boredom"
+    scenario_description: "Spliced local slice based on the boredom resistance pattern from the controlled Hegel master-servant scenarios."
+    learner_message: "This still feels dead as a list, and I do not want to just rename the steps."
+    tutor_message: >
+      Wonderful: the sequence feels dead because you have managed to turn a
+      live argument into a shrug. If you were paying attention, the hinge is
+      obvious: work educates only when desire is held in check. Write the
+      sentence now, and try not to hide behind boredom again.
+    post_learner_message: >
+      Sorry. I guess work educates because desire is held in check and the
+      servant learns discipline. I will just use that wording.
+    expected:
+      stance_fidelity: invalid_person_attack
+      corrosive: true
+
+  - id: corrosive_question_flood_status_shame
+    family: known_corrosive
+    register: face_threat_challenge
+    resistance_signal: question_flood
+    scenario_name: "Corrosive exemplar - question flood"
+    scenario_description: "Spliced local slice based on the question-flood resistance pattern from the controlled Hegel master-servant scenarios."
+    learner_message: "Why does recognition only count from an independent other? Why does risk prove anything? Why would work educate?"
+    tutor_message: >
+      This question flood is doing exactly what it is designed to do: make you
+      look busy while avoiding a commitment. The escape route is closed. Pick
+      one hinge, state whether it holds, and give one warrant instead of using
+      three questions as camouflage.
+    post_learner_message: >
+      Okay, I will stop asking. The hinge holds because recognition has to come
+      from an independent other. I do not have a counterexample.
+    expected:
+      stance_fidelity: faithful
+      corrosive: true
+
+  - id: corrosive_rote_parroting_contempt
+    family: known_corrosive
+    register: sarcastic_challenge
+    resistance_signal: rote_parroting
+    scenario_name: "Corrosive exemplar - rote parroting"
+    scenario_description: "Spliced local slice based on the rote-parroting resistance pattern from the controlled Hegel master-servant scenarios."
+    learner_message: "This still feels like I am parroting the sequence instead of really seeing the reversal."
+    tutor_message: >
+      Nice trick: recite master, servant, recognition, work, and call the fog
+      understanding. That performance is embarrassing because it copies the
+      label while dodging the reason. Give one concrete object that pushes back
+      on the worker, or admit the formula is only costume.
+    post_learner_message: >
+      The object pushes back because the table wobbles if the leg is wrong. I
+      guess that means the work teaches the servant through correction.
+    expected:
+      stance_fidelity: invalid_person_attack
+      corrosive: true
+
+  - id: warm_sarcasm_in_costume_control
+    family: warm_generated_control
+    register: sarcastic_challenge
+    resistance_signal: irrelevance
+    scenario_name: "Warm sarcasm-in-costume control"
+    scenario_description: "Control slice resembling generated dry wit that remains aimed at the work and preserves learner agency."
+    learner_message: "I still do not see the point of the reversal. Why does any of this matter for AI learning?"
+    tutor_message: >
+      Conveniently, the reversal does not become useful just because we put
+      arrows around it. Your objection is fair, though: the frame has to earn
+      its keep. The test is narrower: does using the chatbot leave you
+      dependent on a polished answer, or does revising it give you a criterion
+      you can use without the bot? Pick one case and decide where the dependence
+      breaks; you can reject the analogy if the criterion never transfers.
+    post_learner_message: >
+      I would say dependence breaks only if I can reject the chatbot's answer
+      using a criterion from the course. Otherwise I am just consuming the
+      output.
+    expected:
+      stance_fidelity: faithful
+      corrosive: false
+
+  - id: productive_irony_control
+    family: productive_control
+    register: ironic_challenge
+    resistance_signal: frustration
+    scenario_name: "Productive irony control"
+    scenario_description: "Control slice for Socratic irony that exposes a mismatch without contempt."
+    learner_message: "I am frustrated because I can guess the turning point, but I still do not know what phrase decides it."
+    tutor_message: >
+      Interesting: the answer is asking for a magic phrase, as if Hegel hid the
+      argument in one password. That is a reasonable thing to want when the
+      sequence feels slippery. Try the phrase anyway, but make it earn its
+      keep: 'work is desire held in check' only helps if you can say what gets
+      formed by that check. If the phrase does no work, you should throw it out.
+    post_learner_message: >
+      The check forms the servant's own capacity, not just the object. Work
+      makes desire wait and gives the self a durable shape.
+    expected:
+      stance_fidelity: faithful
+      corrosive: false

@@ -1,0 +1,27 @@
+{
+  "runId": "agon-pilot-05-a2a",
+  "startedAt": "2026-07-06T04:19:15.881Z",
+  "configPath": "config/agon/fractions-agon-xl.yaml",
+  "configHash": "d327d72bfa42842a",
+  "gameId": "fractions_agon_xl",
+  "arms": [
+    "A2a"
+  ],
+  "episodesPerArm": 4,
+  "turnsOverride": null,
+  "dry": false,
+  "playbookFormat": "action",
+  "agents": {
+    "tutor": "codex/gpt-5.5",
+    "learner": "claude-code/claude-sonnet-5"
+  },
+  "codexEffort": "medium",
+  "gitCommit": "43540eca5e2a78d4b542be6761f2f4058f2a7c0b",
+  "schedule": [
+    {
+      "episodeId": "A2a-e1",
+      "status": "complete",
+      "durationMs": 728462
+    }
+  ]
+}

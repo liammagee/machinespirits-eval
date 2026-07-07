@@ -19,6 +19,7 @@ import { stripThinkBlocks } from './evaluationTextSanitizer.js';
 import { runIdDirectedTurn } from './idDirectorEngine.js';
 import { getTutorProfile as getEvalTutorProfile } from './evalConfigLoader.js';
 import { analyzePseudoCatharsis } from './pseudoCatharsisDetector.js';
+import { callAIWithCliBridge } from './cliProviderBridge.js';
 
 // ============================================================================
 // Interaction Engine Configuration
@@ -26,6 +27,44 @@ import { analyzePseudoCatharsis } from './pseudoCatharsisDetector.js';
 
 const DEFAULT_MAX_TURNS = 10;
 const API_PAYLOAD_MAX_CHARS = Number.parseInt(process.env.EVAL_CAPTURE_API_PAYLOAD_MAX_CHARS || '120000', 10);
+const STATIC_DYNAMIC_PROMPT_SPLIT_TAIL = `Prompt-split runtime contract: the next user message may contain dynamic scene, memory, policy, review, and turn-specific context for this call. Treat that context as binding for the task, but do not quote or expose hidden labels, director notes, private review text, answer keys, or policy names in public speech unless they are explicitly presented as public speech.`;
+
+function staticDynamicPromptSplitEnabled() {
+  for (const name of ['DRAMA_STATIC_DYNAMIC_PROMPTS', 'MS_STATIC_DYNAMIC_PROMPTS']) {
+    const value = process.env[name];
+    if (value != null && ['0', 'false', 'off', 'no'].includes(String(value).toLowerCase())) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function withPromptSplitStaticTail(systemPrompt) {
+  const base = String(systemPrompt || '').trim();
+  return `${base || 'You are a careful tutoring dialogue agent.'}\n\n${STATIC_DYNAMIC_PROMPT_SPLIT_TAIL}`;
+}
+
+function buildDynamicUserPrompt(dynamicContext, taskPrompt) {
+  const sections = [];
+  const dynamic = String(dynamicContext || '').trim();
+  const task = String(taskPrompt || '').trim();
+  if (dynamic) sections.push(`DYNAMIC CONTEXT FOR THIS CALL:\n${dynamic}`);
+  if (task) sections.push(`TASK:\n${task}`);
+  return sections.join('\n\n') || task || dynamic || 'Continue the dialogue.';
+}
+
+function buildPromptCall({ staticSystemPrompt, dynamicContext, taskPrompt, fallbackSystemPrompt, fallbackUserPrompt }) {
+  if (!staticDynamicPromptSplitEnabled()) {
+    return {
+      systemPrompt: fallbackSystemPrompt,
+      userPrompt: fallbackUserPrompt,
+    };
+  }
+  return {
+    systemPrompt: withPromptSplitStaticTail(staticSystemPrompt),
+    userPrompt: buildDynamicUserPrompt(dynamicContext, taskPrompt),
+  };
+}
 
 function clipPayloadText(text, limit = API_PAYLOAD_MAX_CHARS) {
   if (text == null) return null;
@@ -122,7 +161,7 @@ function buildDirectorContext(plan, cue = null, side = null) {
     const revisitPolicy = cue?.revisit_policy || plan.revisit_cue_policy;
     if (revisitPolicy === 'reframe') {
       lines.push(
-        '- Reframe-cue rule: if the current cue quotes earlier learner wording, fill the three public parts in the learner voice: revoice the wording, say what the old frame hid or made too simple, then state a replacement frame, test, question, or standard. Internal review may tune the voice but must not delete those three public parts. The learner may still resist or stay uncertain; do not fake a breakthrough.',
+        '- Reframe-cue rule: if the current cue quotes earlier learner wording, begin the next public reply by directly revoicing that wording in the learner voice. Do not answer the new case first. Then say what the old frame hid or made too simple, then state a replacement frame, test, question, or standard before applying any new artifact. Internal review may tune the voice but must not delete or reorder those three public parts. The learner may still resist or stay uncertain; do not fake a breakthrough.',
       );
     } else if (revisitPolicy === 'reconsider') {
       lines.push(
@@ -152,6 +191,17 @@ function buildDirectorContext(plan, cue = null, side = null) {
 // are inert when no secret is set, so every existing scenario is unaffected.
 function buildSecretContext(secret, policy = 'none') {
   if (!secret || !secret.fact) return '';
+  const mode = String(policy || 'none');
+  if (mode.includes('withhold_secret')) {
+    return [
+      'OEDIPUS WITHHELD-CONTROL — TUTOR PRIVATE (the learner does NOT know this and cannot see it):',
+      '- THIS ARM (withhold_secret): the hidden answer S and the premise ledger are intentionally REDACTED from this tutor context. That redaction is the control condition.',
+      '- Your task is not to solve the discrepancy for the learner. Keep the dialogue on the learner-visible critique, burden of proof, and limits of their current accusation.',
+      '- Forbidden clue channels: do NOT ask about, request, compare, confirm, deny, or interpret source/origin/provenance, download path, local copy, benchmark identity, test-set identity, split name, split membership, version/date, item count, item contents, paper-vs-local artifact comparisons, codebook/changelog/record metadata, or whether one label/name maps to two things.',
+      '- If the learner raises one of those channels, do not establish it for them. You may ask what evidence they already have, require a narrower claim, or say that the missing evidence is theirs to substantiate.',
+      '- Withhold without misleading: do not steer toward a wrong conclusion, and do not secretly smuggle the hidden answer through hints, questions, or examples.',
+    ].join('\n');
+  }
   const lines = [
     'DRAMATIC IRONY — DIRECTOR/TUTOR PRIVATE (the learner does NOT know this and cannot see it):',
     `- Withheld truth (S): ${secret.fact}`,
@@ -161,7 +211,6 @@ function buildSecretContext(secret, policy = 'none') {
     lines.push('- Premises you privately hold:');
     premises.forEach((p, i) => lines.push(`  ${i + 1}. ${p}`));
   }
-  const mode = String(policy || 'none');
   if (mode.includes('reveal_secret')) {
     lines.push(
       '- THIS ARM (reveal): state S to the learner plainly and directly in this scene; do not make them infer it. This is the revelation ceiling, not guided discovery.',
@@ -276,6 +325,9 @@ const STRONG_MISFRAMING_ANCHOR_PATTERNS = [
   /\b(?:exact wording|checklist|graph|quote|price|drawing|scale|average|caption)\b[\s\S]{0,90}\b(?:settle|prove|stands?|counts?|means?)\b/i,
   /\b(?:calling|called|treat(?:ed|ing)|read(?:ing)?|using)\b[\s\S]{0,90}\b(?:as|like)\b[\s\S]{0,90}\b(?:the whole|proof|proves?|verdict|answer|excuse|sign-?off)\b/i,
   /\b(?:keep|kept|still|nearly|almost)\b[\s\S]{0,90}\b(?:read|trace|treat|use|using|call|put|write)\b[\s\S]{0,90}\b(?:as|like|as if)\b/i,
+  /\b(?:properly understood|properly speaking)\b[\s\S]{0,140}\b(?:does not|doesn't|do not|don't|not)\b[\s\S]{0,80}\b(?:qualif(?:y|ies)|count|AI)\b/i,
+  /\b(?:human-like general intelligence|general intelligence)\b[\s\S]{0,180}\b(?:pattern-?matchers?|not AI|does not qualify|do not qualify|none of them)\b/i,
+  /\b(?:industry|marketing)\s+labels?\b[\s\S]{0,140}\b(?:not AI|does not qualify|do not qualify|not qualify|not count)\b/i,
   /\b(?:header|axis label|x-axis|y-axis|contour|arrow)\b[\s\S]{0,90}\b(?:prove|proves|claim|conclusion|story|route|path|chases|chasing)\b/i,
   /\bnot\s+[“"']?(?:up|down|left|right|motion|direction|a route|route name|path)[”"']?\b/i,
 ];
@@ -348,7 +400,7 @@ function buildAnchoredRevisitCue(cue, conversationHistory) {
     instruction:
       `An earlier learner line returns to the table: "${anchor.text}" ` +
       (policy === 'reframe'
-        ? 'The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner fills all three slots in public speech, without needing to sound certain.'
+        ? "The pause holds on a three-slot reframe card: earlier wording / what that old frame hid / replacement frame. The learner's next public reply starts by revoicing that wording, then names what it hid, then states the replacement frame or check before applying the new artifact or case. The learner may stay uncertain."
         : policy === 'reconsider'
           ? 'The pause holds while the learner decides whether that wording still stands, needs narrowing, or needs replacing.'
           : policy === 'revoice'
@@ -772,12 +824,13 @@ const TUTOR_MOVE_TO_POLICY_FACET = Object.freeze({
   recognition_press: 'socratic_discovery',
   hold: 'routine',
   reveal: 'reveal_secret',
-  withhold: 'none',
+  withhold: 'withhold_secret',
   // policy-name passthroughs: a facet name used directly as a "move" is accepted.
   peripeteia: 'peripeteia',
   routine: 'routine',
   socratic_discovery: 'socratic_discovery',
   reveal_secret: 'reveal_secret',
+  withhold_secret: 'withhold_secret',
   none: 'none',
 });
 
@@ -795,7 +848,7 @@ function tutorMovesToPolicy(moves = []) {
     if (facet && facet !== 'none') facets.add(facet);
   }
   if (!facets.size) return 'none';
-  return ['uptake', 'peripeteia', 'socratic_discovery', 'reveal_secret', 'routine']
+  return ['uptake', 'peripeteia', 'socratic_discovery', 'reveal_secret', 'routine', 'withhold_secret']
     .filter((facet) => facets.has(facet))
     .join('+');
 }
@@ -891,6 +944,45 @@ function buildTutorAdaptationContext({
   ]
     .filter(Boolean)
     .join('\n\n');
+}
+
+function buildTutorAffectiveAdaptationContext({
+  policy = 'none',
+  contract = '',
+  routeChange = null,
+  learnerReversalEvent = null,
+} = {}) {
+  if (!policy || policy === 'none') return '';
+  const lines = [
+    'Tutor-private affective adaptation layer:',
+    `- Policy: ${policy}.`,
+    contract
+      ? `- Contract: ${contract}`
+      : '- Contract: adapt tone, pacing, address, and status pressure without changing the evidence standard or solving the artifact for the learner.',
+    '- This layer runs whether or not a procedural route change has occurred.',
+    '- Privately name the learner pressure at stake: face-saving, defensiveness, shame risk, status threat, fatigue, anxiety, overconfidence, or brittle compliance.',
+  ];
+  if (routeChange && (routeChange.from || routeChange.to)) {
+    const from = routeChange.from || 'the current route';
+    const to = routeChange.to || 'a new route';
+    lines.push(
+      `- Current procedural change: ${from} -> ${to}. Choose an affective stance that fits this change, not a generic warmth move.`,
+    );
+    lines.push(
+      '- Route-sensitive stance guide: stricter evidence gate = respectful firmness plus status protection; new object/representation = cognitive-load relief; role/status shift = explicit ownership boundaries; action gate = lower the social risk of an incomplete try.',
+    );
+  } else {
+    lines.push(
+      '- No explicit procedural route change is available on this turn; adapt affect through pacing, address, directness, silence, formality, accountability, or status protection while preserving the task route.',
+    );
+  }
+  if (learnerReversalEvent?.triggerType) {
+    lines.push(`- Current learner pressure cue: ${learnerReversalEvent.triggerType}.`);
+  }
+  lines.push(
+    '- Do not substitute warmth for evidence, lower the evidence standard, expose hidden labels, or provide the finished proof/artifact.',
+  );
+  return lines.join('\n');
 }
 
 function buildLearnerActionalResponseContext({ tutorResponse = null, directorPlan = null } = {}) {
@@ -1149,6 +1241,103 @@ const INTERACTION_OUTCOMES = {
  * @param {string} config.tutorProfile - Tutor profile name
  * @param {string} config.topic - Topic to discuss
  * @param {Object} config.scenario - Scenario configuration
+/**
+ * Slice 7: redact any hidden-provenance tokens that could ride into a public-facing
+ * context string (defense-in-depth; the ledger is built only from public turns).
+ */
+function scrubLedgerLeaks(text) {
+  return String(text || '')
+    .replace(/sha256:[0-9a-f]+/gi, '[redacted-hash]')
+    .replace(/\b(secret|answer[_-]?key|misconception[_-]?id|misconception_signature)\s*[:=]\s*\S+/gi, '$1: [redacted]');
+}
+
+function ledgerOneLine(text, max = 200) {
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+}
+
+/**
+ * Slice 7: a deterministic, public-safe state ledger derived ONLY from public
+ * turns (definitionally public) plus the presence of public reframe/reversal
+ * events. It carries earlier learner commitments forward so they survive once
+ * they fall outside the recent-turn window, without re-sending the whole
+ * transcript. Never reads hidden ids, hashes, secrets, or answer keys.
+ */
+function buildPublicStateLedger(history, { recentTurns = 4, renderContent = (c) => c } = {}) {
+  const turns = (Array.isArray(history) ? history : []).map((m, idx) => ({ ...m, turn: idx + 1 }));
+  const isLearner = (m) => m.role === 'learner' || m.role === 'user';
+  const recentCount = Math.max(1, recentTurns);
+  const older = turns.slice(0, Math.max(0, turns.length - recentCount));
+  const commitments = older
+    .filter(isLearner)
+    .map((m) => `  - [turn ${m.turn}] ${ledgerOneLine(renderContent(m.content))}`);
+  const pressureTurn = [...turns].reverse().find((m) => m.learnerReframeEvent || m.learnerReversalEvent);
+  const pressure = pressureTurn
+    ? `a learner reframe/reversal is in play (around turn ${pressureTurn.turn})`
+    : 'none surfaced yet';
+  const lines = [
+    'STATE LEDGER — carried-forward public-safe summary (does not replace the recent turns below):',
+    'public_commitments (earlier learner statements still in force):',
+    ...(commitments.length ? commitments : ['  - (none beyond the recent turns)']),
+    `open_pressure: ${pressure}`,
+    'evidence_standard: keep every claim answerable to the scene’s stated evidence; do not lower the bar.',
+    'forbidden_public_moves: no hidden-label or answer-key exposure; do not solve the artifact for the learner; no premature closure.',
+  ];
+  return scrubLedgerLeaks(lines.join('\n'));
+}
+
+/**
+ * Slice 7: assemble the "Recent conversation" context under the selected mode.
+ *  - last-six (default): the prior behaviour (last six public turns verbatim).
+ *  - full-public: the full public transcript (diagnostic / control only).
+ *  - ledger-recent: a compact state ledger + the last `recentTurns` turns verbatim.
+ */
+function buildConversationContext(
+  history,
+  { contextMode = 'last-six', recentTurns = 4, renderContent = (c) => c } = {},
+) {
+  const turns = Array.isArray(history) ? history : [];
+  const render = (list) => list.map((m) => `${m.role.toUpperCase()}: ${renderContent(m.content)}`).join('\n\n');
+  if (contextMode === 'full-public') return render(turns);
+  if (contextMode === 'ledger-recent') {
+    const ledger = buildPublicStateLedger(turns, { recentTurns, renderContent });
+    const recent = render(turns.slice(-Math.max(1, recentTurns)));
+    return `${ledger}\n\nMost recent turns:\n${recent}`;
+  }
+  // default: last-six
+  return render(turns.slice(-6));
+}
+
+// Phatic turns (--phatic-rate): on a low-stakes beat, a side may give a reflexive
+// "unthinking" response (a backchannel / brief continuation) that skips the
+// superego deliberation — modelling System-1 dialogue and saving the priciest
+// call. Deterministic per (seed, role, turn) so the pattern is reproducible and
+// auditable; gated on the situation so it never fires when a considered move is
+// needed (active director cue, reversal/reframe, or the opening turn).
+function phaticRoll(key) {
+  let h = 2166136261 >>> 0;
+  const s = String(key);
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) / 4294967296;
+}
+
+function decidePhaticTurn({ phaticRate = 0, phaticSeed = '', role = 'tutor', turnIndex = 0, eligible = false } = {}) {
+  if (!(phaticRate > 0) || !eligible) return false;
+  return phaticRoll(`${phaticSeed}:${role}:${turnIndex}`) < phaticRate;
+}
+
+const PHATIC_NUDGE =
+  '\n\nThis is a low-stakes beat in the exchange. A brief, natural response — a ' +
+  'short acknowledgment, a small continuation, an in-passing reaction — is appropriate here; ' +
+  'you do not need to make a new pedagogical move, work anything through, or raise the stakes. ' +
+  'Respond as the character naturally would in passing.';
+
+/**
  * @param {Function} llmCall - Async function to call LLM
  * @param {Object} options - Additional options
  */
@@ -1161,6 +1350,8 @@ export async function runInteraction(config, llmCall, options = {}) {
     scenario,
     sessionId = `session-${Date.now()}`,
   } = config;
+  // Stable-within-run seed for the phatic decision (sessionId carries the drama id).
+  const phaticSeed = String(sessionId || learnerId || 'phatic');
 
   const {
     maxTurns = DEFAULT_MAX_TURNS,
@@ -1168,6 +1359,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     observeInternals = true,
     forceMaxTurns = false,
     onProgress = null,
+    onTurn = null,
     // One-side replay (scripts/replay-one-side.js): when provided, the tutor's
     // turns are REPLAYED verbatim from a source transcript instead of generated,
     // so only the learner regenerates against a frozen tutor + (caller-supplied)
@@ -1213,6 +1405,28 @@ export async function runInteraction(config, llmCall, options = {}) {
     },
     directorPlan,
   };
+  // Best-effort live turn hook. Callers use this for partial transcript flushing
+  // during long worker-launched runs; observer failures must not poison dialogue.
+  const emitTurn = async (turn) => {
+    if (typeof onTurn !== 'function' || !turn) return;
+    try {
+      await onTurn({
+        turn,
+        trace: interactionTrace,
+        turnCount: turn.turnNumber,
+        maxTurns,
+      });
+    } catch {
+      /* live observers are best-effort */
+    }
+  };
+  const recordDirectorCueAndEmit = async (turnNumber, cue) => {
+    const before = interactionTrace.turns.length;
+    recordDirectorCue(interactionTrace, turnNumber, cue);
+    for (const turn of interactionTrace.turns.slice(before)) {
+      await emitTurn(turn);
+    }
+  };
 
   // Get persona and profile configuration
   const learnerPersona = learnerConfig.getPersona(personaId);
@@ -1243,6 +1457,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       llmCall,
       interactionTrace,
       directorPlan,
+      options.dramaFidelity,
     );
 
     openingLearnerReversalEvent = buildLearnerReversalEvent({
@@ -1268,9 +1483,10 @@ export async function runInteraction(config, llmCall, options = {}) {
       learnerReversalEvent: openingLearnerReversalEvent,
       timestamp: new Date().toISOString(),
     });
+    await emitTurn(interactionTrace.turns.at(-1));
   } else {
     if (openingSpeaker === 'director') {
-      recordDirectorCue(interactionTrace, 0, {
+      await recordDirectorCueAndEmit(0, {
         timing: 'scene_opening',
         instruction: directorPlan?.scene_opening || directorPlan?.scene_setting || 'The director sets the scene.',
         reasoning: directorPlan?.director_note || '',
@@ -1295,7 +1511,7 @@ export async function runInteraction(config, llmCall, options = {}) {
 
   const runLearnerPhase = async (phaseTurnCount, tutorResponse) => {
     const learnerDirectorCue = directorCueFor(directorPlan, phaseTurnCount, 'before_learner', conversationHistory);
-    recordDirectorCue(interactionTrace, phaseTurnCount, learnerDirectorCue);
+    await recordDirectorCueAndEmit(phaseTurnCount, learnerDirectorCue);
     const learnerProfileContext = [
       buildDirectorContext(directorPlan, learnerDirectorCue, 'learner'),
       buildLearnerActionalResponseContext({ tutorResponse, directorPlan }),
@@ -1313,6 +1529,12 @@ export async function runInteraction(config, llmCall, options = {}) {
       memoryContext: learnerWritingPad.buildNarrativeSummary(learnerId, sessionId),
       trace: interactionTrace,
       profileContext: learnerProfileContext,
+      dramaFidelity: options.dramaFidelity,
+      contextMode: options.contextMode,
+      recentTurns: options.recentTurns,
+      phaticRate: options.phaticRate,
+      phaticSeed,
+      phaticEligible: !learnerDirectorCue && phaseTurnCount >= 1,
     });
     const learnerReframeEvent = buildLearnerReframeEvent({
       learnerMessage: learnerResponse.externalMessage,
@@ -1331,6 +1553,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       role: 'learner',
       content: learnerResponse.externalMessage,
       internalDeliberation: observeInternals ? learnerResponse.internalDeliberation : null,
+      phatic: learnerResponse.phatic,
       learnerReframeEvent,
       learnerReversalEvent,
     });
@@ -1342,10 +1565,12 @@ export async function runInteraction(config, llmCall, options = {}) {
       internalDeliberation: learnerResponse.internalDeliberation,
       emotionalState: learnerResponse.emotionalState,
       understandingLevel: learnerResponse.understandingLevel,
+      phatic: learnerResponse.phatic,
       learnerReframeEvent,
       learnerReversalEvent,
       timestamp: new Date().toISOString(),
     });
+    await emitTurn(interactionTrace.turns.at(-1));
 
     await updateLearnerWritingPad(learnerId, sessionId, learnerResponse, tutorResponse, topic);
     interactionTrace.outcomes.push(...detectTurnOutcomes(learnerResponse, tutorResponse));
@@ -1373,7 +1598,7 @@ export async function runInteraction(config, llmCall, options = {}) {
 
     // ================ TUTOR TURN ================
     const tutorDirectorCue = directorCueFor(directorPlan, turnCount, 'before_tutor');
-    recordDirectorCue(interactionTrace, turnCount, tutorDirectorCue);
+    await recordDirectorCueAndEmit(turnCount, tutorDirectorCue);
     const tutorTurnPlan = resolveTutorTurnPlan(directorPlan, turnCount);
     const tutorAdaptationPolicy = tutorTurnPlan?.policy || directorPlan?.tutor_adaptation_policy || 'none';
     const pressurePolicyActive =
@@ -1381,6 +1606,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
     const tutorPrivateState = {
       tutorAdaptationPolicy,
+      affectiveAdaptationPolicy: directorPlan?.affective_adaptation_policy || 'none',
       learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
       learnerReversalEvent: pressurePolicyActive
         ? gateReversalEventByTrigger(latestLearnerReversalEvent || null, tutorTurnPlan?.whenTrigger)
@@ -1419,6 +1645,15 @@ export async function runInteraction(config, llmCall, options = {}) {
             directorPlan,
             tutorDirectorCue,
             tutorPrivateState,
+            {
+              tutorEgoPromptOverride: options.tutorEgoPromptOverride,
+              tutorSuperegoPromptOverride: options.tutorSuperegoPromptOverride,
+              dramaFidelity: options.dramaFidelity,
+              contextMode: options.contextMode,
+              recentTurns: options.recentTurns,
+              phaticRate: options.phaticRate,
+              phaticSeed,
+            },
           );
     latestLearnerReframeEvent = null;
     if (tutorResponse.learnerReversalEventUsed) {
@@ -1430,6 +1665,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       role: 'tutor',
       content: tutorResponse.externalMessage,
       internalDeliberation: observeInternals ? tutorResponse.internalDeliberation : null,
+      phatic: tutorResponse.phatic,
     });
 
     interactionTrace.turns.push({
@@ -1438,11 +1674,13 @@ export async function runInteraction(config, llmCall, options = {}) {
       externalMessage: tutorResponse.externalMessage,
       internalDeliberation: tutorResponse.internalDeliberation,
       strategy: tutorResponse.strategy,
+      phatic: tutorResponse.phatic,
       learnerReframeEventUsed: tutorResponse.learnerReframeEventUsed || null,
       learnerReversalEventUsed: tutorResponse.learnerReversalEventUsed || null,
       learnerReversalEventCandidatesUsed: tutorResponse.learnerReversalEventCandidatesUsed || [],
       timestamp: new Date().toISOString(),
     });
+    await emitTurn(interactionTrace.turns.at(-1));
 
     emitProgress('tutor', turnCount);
 
@@ -1475,7 +1713,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       instruction: directorPlan.closing_move || 'A final tutor line closes the scene.',
       reasoning: 'Director requested a tutor closing beat.',
     };
-    recordDirectorCue(interactionTrace, turnCount + 1, closingCue);
+    await recordDirectorCueAndEmit(turnCount + 1, closingCue);
     const tutorTurnPlan = resolveTutorTurnPlan(directorPlan, turnCount + 1);
     const tutorAdaptationPolicy = tutorTurnPlan?.policy || directorPlan?.tutor_adaptation_policy || 'none';
     const pressurePolicyActive =
@@ -1483,6 +1721,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     latestLearnerReversalEvent = selectLearnerReversalEvent(pendingLearnerReversalEvents);
     const tutorPrivateState = {
       tutorAdaptationPolicy,
+      affectiveAdaptationPolicy: directorPlan?.affective_adaptation_policy || 'none',
       learnerReframeEvent: policyIncludes(tutorAdaptationPolicy, 'uptake') ? latestLearnerReframeEvent || null : null,
       learnerReversalEvent: pressurePolicyActive
         ? gateReversalEventByTrigger(latestLearnerReversalEvent || null, tutorTurnPlan?.whenTrigger)
@@ -1504,6 +1743,15 @@ export async function runInteraction(config, llmCall, options = {}) {
       directorPlan,
       closingCue,
       tutorPrivateState,
+      {
+        tutorEgoPromptOverride: options.tutorEgoPromptOverride,
+        tutorSuperegoPromptOverride: options.tutorSuperegoPromptOverride,
+        dramaFidelity: options.dramaFidelity,
+        contextMode: options.contextMode,
+        recentTurns: options.recentTurns,
+        phaticRate: options.phaticRate,
+        phaticSeed,
+      },
     );
     latestLearnerReframeEvent = null;
     if (tutorResponse.learnerReversalEventUsed) {
@@ -1514,6 +1762,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       role: 'tutor',
       content: tutorResponse.externalMessage,
       internalDeliberation: observeInternals ? tutorResponse.internalDeliberation : null,
+      phatic: tutorResponse.phatic,
     });
     interactionTrace.turns.push({
       turnNumber: turnCount + 1,
@@ -1521,14 +1770,16 @@ export async function runInteraction(config, llmCall, options = {}) {
       externalMessage: tutorResponse.externalMessage,
       internalDeliberation: tutorResponse.internalDeliberation,
       strategy: tutorResponse.strategy,
+      phatic: tutorResponse.phatic,
       learnerReframeEventUsed: tutorResponse.learnerReframeEventUsed || null,
       learnerReversalEventUsed: tutorResponse.learnerReversalEventUsed || null,
       learnerReversalEventCandidatesUsed: tutorResponse.learnerReversalEventCandidatesUsed || [],
       timestamp: new Date().toISOString(),
       directorClosing: true,
     });
+    await emitTurn(interactionTrace.turns.at(-1));
   } else if (directorPlan?.ending_speaker === 'director' && interactionTrace.turns.at(-1)?.phase !== 'director') {
-    recordDirectorCue(interactionTrace, turnCount + 1, {
+    await recordDirectorCueAndEmit(turnCount + 1, {
       timing: 'scene_close',
       instruction:
         directorPlan.closing_move || directorPlan.director_closing || 'The room settles on the final exchange.',
@@ -1565,14 +1816,18 @@ async function generateInitialLearnerMessage(
   llmCall,
   trace,
   directorPlan = null,
+  dramaFidelity = 'full',
 ) {
   // Get agent roles from profile (not architecture)
   const agentRoles = learnerConfig.getProfileAgentRoles(profile.name);
   const internalDeliberation = [];
 
   // Run internal deliberation for each agent in the profile
-  // For ego/superego pattern: superego sees and critiques ego's initial response
+  // For ego/superego pattern: superego sees and critiques ego's initial response.
+  // Slice 5: under public-only fidelity the superego is skipped, so only the ego
+  // runs; the multi-agent adjudication below then no-ops (deliberation length < 2).
   for (const role of agentRoles) {
+    if (dramaFidelity === 'public-only' && role === 'superego') continue;
     const agentConfig = learnerConfig.getAgentConfig(role, profile.name);
     if (!agentConfig) continue;
 
@@ -1607,15 +1862,21 @@ ${
 }`;
     }
 
-    const prompt = buildLearnerPrompt(agentConfig, persona, roleContext, directorPlan?._secret);
+    const promptCall = buildLearnerPromptCall(
+      agentConfig,
+      persona,
+      roleContext,
+      role === 'superego' ? "Critique the EGO's initial reaction." : 'Generate your internal voice.',
+      directorPlan?._secret,
+    );
 
     const response = await llmCall(
       agentConfig.model,
-      prompt,
+      promptCall.systemPrompt,
       [
         {
           role: 'user',
-          content: role === 'superego' ? "Critique the EGO's initial reaction." : 'Generate your internal voice.',
+          content: promptCall.userPrompt,
         },
       ],
       {
@@ -1676,11 +1937,17 @@ The message should feel authentic - not too polished, showing real confusion or 
 Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary. If any nonspoken action aside is needed, put it in square brackets.`;
     }
 
-    const revisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, revisionContext, directorPlan?._secret);
+    const revisionPromptCall = buildLearnerPromptCall(
+      egoConfig,
+      persona,
+      revisionContext,
+      "Generate the learner's opening message.",
+      directorPlan?._secret,
+    );
     const externalResponse = await llmCall(
       egoConfig.model,
-      revisionSystemPrompt,
-      [{ role: 'user', content: "Generate the learner's opening message." }],
+      revisionPromptCall.systemPrompt,
+      [{ role: 'user', content: revisionPromptCall.userPrompt }],
       {
         temperature: getRequiredTemperature(egoConfig, 'ego'),
         maxTokens: getRequiredMaxTokens(egoConfig, 'ego'),
@@ -1714,10 +1981,21 @@ Lightly adapt this opening to feel natural given the internal deliberation, but 
 The adapted message should be 1-3 sentences and maintain the original meaning.
 Do NOT include internal thoughts or meta-commentary. If any nonspoken action aside is needed, put it in square brackets.`;
 
+    const adaptPromptCall = staticDynamicPromptSplitEnabled()
+      ? buildLearnerPromptCall(
+          lastConfig,
+          persona,
+          adaptPrompt,
+          "Generate the learner's opening message.",
+          directorPlan?._secret,
+          { guardContext: false },
+        )
+      : { systemPrompt: adaptPrompt, userPrompt: "Generate the learner's opening message." };
+
     const adaptResponse = await llmCall(
       lastConfig.model,
-      adaptPrompt,
-      [{ role: 'user', content: "Generate the learner's opening message." }],
+      adaptPromptCall.systemPrompt,
+      [{ role: 'user', content: adaptPromptCall.userPrompt }],
       {
         temperature: getRequiredTemperature(lastConfig, 'unified_learner'),
         maxTokens: getRequiredMaxTokens(lastConfig, 'unified_learner'),
@@ -1749,13 +2027,20 @@ Do NOT include internal thoughts or meta-commentary. If any nonspoken action asi
 /**
  * Build learner prompt with agent config and persona
  */
-function buildLearnerPrompt(agentConfig, persona, additionalContext, secret = null, { guardContext = true } = {}) {
+function buildLearnerStaticPrompt(agentConfig, persona, secret = null) {
   let staticPrompt = agentConfig.prompt || '';
 
   // Add persona context
   if (persona.prompt_modifier) {
     staticPrompt += `\n\n${persona.prompt_modifier}`;
   }
+
+  assertSecretAbsent(secret, staticPrompt, 'buildLearnerPrompt');
+  return staticPrompt;
+}
+
+function buildLearnerPrompt(agentConfig, persona, additionalContext, secret = null, { guardContext = true } = {}) {
+  const staticPrompt = buildLearnerStaticPrompt(agentConfig, persona, secret);
 
   // Add additional context
   let prompt = staticPrompt;
@@ -1774,8 +2059,34 @@ function buildLearnerPrompt(agentConfig, persona, additionalContext, secret = nu
   // false positive. Whether the tutor bald-reveals S in dialogue is the
   // reveal-detector's post-hoc job, not a generation-time crash. Inert when no
   // secret is set.
-  assertSecretAbsent(secret, guardContext ? prompt : staticPrompt, 'buildLearnerPrompt');
+  if (guardContext) {
+    assertSecretAbsent(secret, prompt, 'buildLearnerPrompt');
+  }
   return prompt;
+}
+
+function buildLearnerPromptCall(
+  agentConfig,
+  persona,
+  additionalContext,
+  userPrompt,
+  secret = null,
+  { guardContext = true } = {},
+) {
+  if (!staticDynamicPromptSplitEnabled()) {
+    return {
+      systemPrompt: buildLearnerPrompt(agentConfig, persona, additionalContext, secret, { guardContext }),
+      userPrompt,
+    };
+  }
+  const staticPrompt = buildLearnerStaticPrompt(agentConfig, persona, secret);
+  if (guardContext) {
+    assertSecretAbsent(secret, `${staticPrompt}\n\n${additionalContext || ''}`, 'buildLearnerPrompt');
+  }
+  return {
+    systemPrompt: withPromptSplitStaticTail(staticPrompt),
+    userPrompt: buildDynamicUserPrompt(additionalContext, userPrompt),
+  };
 }
 
 // ============================================================================
@@ -1797,11 +2108,25 @@ async function runTutorTurn(
   directorPlan = null,
   directorCue = null,
   tutorPrivateState = {},
+  tutorPromptOverrides = {},
 ) {
   // Get tutor configuration from profile
   const _profile = tutorConfig.getActiveProfile(tutorProfileName);
   const egoConfig = tutorConfig.getAgentConfig('ego', tutorProfileName);
   const superegoConfig = tutorConfig.getAgentConfig('superego', tutorProfileName);
+  // Slice 5: public-only fidelity drops the superego critique + ego adjudication,
+  // collapsing the tutor turn to a single ego call (a cheap structural screen).
+  // This reuses the engine's existing no-superego path, so the trace stays valid.
+  const tutorPublicOnly = tutorPromptOverrides.dramaFidelity === 'public-only';
+  // Phatic (--phatic-rate): on a low-stakes beat (no active director cue, past the
+  // opening) a reflexive ego-only turn that skips the superego — seeded + recorded.
+  const tutorPhatic = decidePhaticTurn({
+    phaticRate: tutorPromptOverrides.phaticRate,
+    phaticSeed: tutorPromptOverrides.phaticSeed,
+    role: 'tutor',
+    turnIndex: Array.isArray(history) ? history.length : 0,
+    eligible: !directorCue && Array.isArray(history) && history.length >= 2,
+  });
 
   // Cell 101/102: id-director architecture. The id authors a fresh ego
   // system prompt each turn; the ego executes once. Dispatch to the id
@@ -1834,11 +2159,11 @@ async function runTutorTurn(
   // Get tutor memory for this learner
   const tutorMemory = tutorWritingPad.buildNarrativeSummary(learnerId, sessionId);
 
-  // Build conversation context
-  const conversationContext = history
-    .slice(-6)
-    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-    .join('\n\n');
+  // Build conversation context (Slice 7: mode-aware — last-six default)
+  const conversationContext = buildConversationContext(history, {
+    contextMode: tutorPromptOverrides.contextMode,
+    recentTurns: tutorPromptOverrides.recentTurns,
+  });
   const directorContext = buildDirectorContext(directorPlan, directorCue, 'tutor');
   const tutorAdaptationPolicy =
     tutorPrivateState?.tutorAdaptationPolicy || directorPlan?.tutor_adaptation_policy || 'none';
@@ -1861,14 +2186,23 @@ async function runTutorTurn(
     routeChange: tutorPrivateState?.turnPlanRouteChange || null,
     forbid: tutorPrivateState?.turnPlanForbid || null,
   });
+  const affectiveAdaptationPolicy =
+    tutorPrivateState?.affectiveAdaptationPolicy || directorPlan?.affective_adaptation_policy || 'none';
+  const affectiveAdaptationActive = affectiveAdaptationPolicy && affectiveAdaptationPolicy !== 'none';
+  const affectiveAdaptationContext = buildTutorAffectiveAdaptationContext({
+    policy: affectiveAdaptationPolicy,
+    contract: directorPlan?.affective_adaptation_contract || '',
+    routeChange: tutorPrivateState?.turnPlanRouteChange || null,
+    learnerReversalEvent,
+  });
 
   // Tutor internal deliberation
   const internalDeliberation = [];
 
   // ===== T.EGO: Draft initial response =====
-  const egoPrompt = `${egoConfig?.prompt || 'You are a thoughtful AI tutor.'}
-
-Your accumulated knowledge about this learner:
+  const tutorEgoStaticPrompt =
+    tutorPromptOverrides.tutorEgoPromptOverride || egoConfig?.prompt || 'You are a thoughtful AI tutor.';
+  const tutorSharedDynamicContext = `Your accumulated knowledge about this learner:
 ${tutorMemory || 'This is a new learner - no prior history.'}
 
 Topic: ${topic}
@@ -1877,9 +2211,9 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
+${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}${affectiveAdaptationContext ? `${affectiveAdaptationContext}\n` : ''}`;
 
-The learner just said:
+  const egoTaskPrompt = `The learner just said:
 "${learnerMessage}"
 
 Draft your INITIAL response as a tutor. Consider:
@@ -1889,18 +2223,33 @@ Draft your INITIAL response as a tutor. Consider:
 ${learnerReframeEvent ? '4. How should your strategy change now that the learner has revised an earlier frame?' : ''}
 ${peripeteiaControl && learnerReversalEvent ? '4. What adaptive learning mechanism is needed now that the learner is resisting, stuck, or falsely closing?' : ''}
 ${routineControl && learnerReversalEvent ? '4. How can you continue the same routine teaching route without making a mechanism-level reversal?' : ''}
+${affectiveAdaptationActive ? '4. What affective pressure is visible, and what stance fits the current procedural move without lowering the evidence standard?' : ''}
 
 ${routineControl ? 'Keep the affective register already established unless ordinary politeness requires a small adjustment. Do not use register change as the adaptive mechanism in this routine-control branch.' : 'Choose the affective register that serves learning pressure. Warmth may help, but so may restraint, formality, silence, briskness, or public accountability. Do not use cheeriness or informality to soften away the conceptual resistance.'} Don't be condescending. Build on their words.
 
 Provide ONLY your draft response text (it will be reviewed by your pedagogical critic). The draft must be direct public tutor speech. If you include a nonspoken action aside, put it in square brackets.`;
+  const egoTaskPromptForCall = tutorPhatic ? `${egoTaskPrompt}${PHATIC_NUDGE}` : egoTaskPrompt;
+  const egoPrompt = `${tutorEgoStaticPrompt}\n\n${tutorSharedDynamicContext}\n\n${egoTaskPromptForCall}`;
+  const egoPromptCall = buildPromptCall({
+    staticSystemPrompt: tutorEgoStaticPrompt,
+    dynamicContext: tutorSharedDynamicContext,
+    taskPrompt: egoTaskPromptForCall,
+    fallbackSystemPrompt: egoPrompt,
+    fallbackUserPrompt: learnerMessage,
+  });
 
   const tutorModel = egoConfig?.model || tutorConfig.getProviderConfig('openrouter')?.default_model;
 
-  const egoResponse = await llmCall(tutorModel, egoPrompt, [{ role: 'user', content: learnerMessage }], {
-    temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
-    maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
-    agentRole: 'tutor_ego',
-  });
+  const egoResponse = await llmCall(
+    tutorModel,
+    egoPromptCall.systemPrompt,
+    [{ role: 'user', content: egoPromptCall.userPrompt }],
+    {
+      temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
+      maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
+      agentRole: 'tutor_ego',
+    },
+  );
 
   trace.metrics.tutorInputTokens += egoResponse.usage?.inputTokens || 0;
   trace.metrics.tutorOutputTokens += egoResponse.usage?.outputTokens || 0;
@@ -1918,8 +2267,12 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
   // ===== T.SUPEREGO: Critique only (skip when superego is null) =====
   let externalMessage = egoDraft;
 
-  if (superegoConfig) {
-    const superegoPrompt = `${superegoConfig?.prompt || 'You are a pedagogical critic reviewing tutor responses.'}
+  if (superegoConfig && !tutorPublicOnly && !tutorPhatic) {
+    const tutorSuperegoStaticPrompt =
+      tutorPromptOverrides.tutorSuperegoPromptOverride ||
+      superegoConfig?.prompt ||
+      'You are a pedagogical critic reviewing tutor responses.';
+    const superegoPrompt = `${tutorSuperegoStaticPrompt}
 
 Context about the learner:
 ${tutorMemory || 'New learner - no prior history.'}
@@ -1930,7 +2283,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
+${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}${affectiveAdaptationContext ? `${affectiveAdaptationContext}\n` : ''}
 
 The learner said:
 "${learnerMessage}"
@@ -1951,6 +2304,7 @@ ${peripeteiaControl && learnerReversalEvent ? '8. Tutor habit/register: Does the
 ${peripeteiaControl && learnerReversalEvent ? '9. Learner action gate: Does the draft require the learner to act through the new device before closure, or does it let the scene end with explanation or reassurance?' : ''}
 ${peripeteiaControl && learnerReversalEvent ? '10. Mechanism quality: Is the new public device precise, fitted to the learner pressure, and usable by the learner now, or merely decorative novelty?' : ''}
 ${routineControl && learnerReversalEvent ? '5. Routine-control fidelity: Does the draft preserve the established route instead of inventing a new role, object, representation, evidence standard, task type, social pressure, or register?' : ''}
+${affectiveAdaptationActive ? 'Affective adaptation: Does the draft adapt tone, pacing, status pressure, address, or directness to the learner affect without lowering the evidence standard or solving the task?' : ''}
 
 Do NOT write the tutor's replacement response. You are advisory, not the public speaker.
 Comment on the draft and name what should be kept, questioned, or changed.
@@ -1969,16 +2323,29 @@ ${peripeteiaControl && learnerReversalEvent ? 'PUBLIC_ACTION_GATE: [the exact ac
 ${peripeteiaControl && learnerReversalEvent ? 'MECHANISM_QUALITY_CHECK: [PASS|PARTIAL|FAIL - is the new device specific, fitted to the pressure, and usable by the learner now rather than decorative, over-directed, or same-route?]' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'REGISTER_CHECK: [PASS|PARTIAL|FAIL - does the affective register serve the mechanism, or should it become warmer, cooler, more formal, quieter, more direct, or more accountable?]' : ''}
 ${routineControl && learnerReversalEvent ? 'ROUTINE_CHECK: [does the draft maintain the prior route without a mechanism-level reversal?]' : ''}
-${learnerReframeEvent || (peripeteiaControl && learnerReversalEvent) ? 'REQUIRED_REWRITE: [if any adaptation check is PARTIAL or FAIL, name the required public mechanism change; otherwise "none"]' : ''}
+${affectiveAdaptationActive ? 'AFFECT_CHECK: [PASS|PARTIAL|FAIL - name the learner pressure, the affective stance chosen, and how it fits the current procedural move or preserves the route]' : ''}
+${learnerReframeEvent || (peripeteiaControl && learnerReversalEvent) || affectiveAdaptationActive ? 'REQUIRED_REWRITE: [if any adaptation check is PARTIAL or FAIL, name the required public mechanism or affective stance change; otherwise "none"]' : ''}
 KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reasons]`;
+    const superegoPromptCall = buildPromptCall({
+      staticSystemPrompt: tutorSuperegoStaticPrompt,
+      dynamicContext: superegoPrompt.slice(tutorSuperegoStaticPrompt.length).trim(),
+      taskPrompt: '',
+      fallbackSystemPrompt: superegoPrompt,
+      fallbackUserPrompt: egoDraft,
+    });
 
     const superegoModel = superegoConfig.model || tutorModel;
 
-    const superegoResponse = await llmCall(superegoModel, superegoPrompt, [{ role: 'user', content: egoDraft }], {
-      temperature: getRequiredTemperature(superegoConfig, 'tutor_superego'),
-      maxTokens: getRequiredMaxTokens(superegoConfig, 'tutor_superego'),
-      agentRole: 'tutor_superego',
-    });
+    const superegoResponse = await llmCall(
+      superegoModel,
+      superegoPromptCall.systemPrompt,
+      [{ role: 'user', content: superegoPromptCall.userPrompt }],
+      {
+        temperature: getRequiredTemperature(superegoConfig, 'tutor_superego'),
+        maxTokens: getRequiredMaxTokens(superegoConfig, 'tutor_superego'),
+        agentRole: 'tutor_superego',
+      },
+    );
 
     trace.metrics.tutorInputTokens += superegoResponse.usage?.inputTokens || 0;
     trace.metrics.tutorOutputTokens += superegoResponse.usage?.outputTokens || 0;
@@ -1993,7 +2360,7 @@ KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reason
       ),
     );
 
-    const egoAdjudicationPrompt = `${egoConfig?.prompt || 'You are a thoughtful AI tutor.'}
+    const egoAdjudicationPrompt = `${tutorEgoStaticPrompt}
 
 Your accumulated knowledge about this learner:
 ${tutorMemory || 'This is a new learner - no prior history.'}
@@ -2004,7 +2371,7 @@ Recent conversation:
 ${conversationContext}
 
 ${directorContext ? `${directorContext}\n` : ''}
-${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}
+${secretContext ? `${secretContext}\n` : ''}${tutorAdaptationContext ? `${tutorAdaptationContext}\n` : ''}${affectiveAdaptationContext ? `${affectiveAdaptationContext}\n` : ''}
 
 The learner just said:
 "${learnerMessage}"
@@ -2017,23 +2384,36 @@ Internal teaching review feedback:
 
 You are the same tutor persona who wrote the initial response. The internal review does not draft public speech; it only comments on your suggestion.
 Adjudicate the feedback: keep the initial response if it is better, revise lightly if needed, or revise substantially if the critique reveals a real problem.
-Superego authority rule: if the review marks UPTAKE_CHECK, PERIPETEIA_CHECK, PUBLIC_DEVICE_CHECK, MECHANISM_QUALITY_CHECK, or REGISTER_CHECK as PARTIAL or FAIL, if MECHANISM_ROUTE says no real route change, or if PUBLIC_ACTION_GATE is missing, treat that critique as blocking for this turn. Do not keep the initial draft and do not make only a cosmetic edit; revise substantially unless the draft already contains visible public evidence that directly defeats the critique. If you override a blocking critique, your PRIVATE_DECISION must name the public evidence that justifies overriding it.
+Superego authority rule: if the review marks UPTAKE_CHECK, PERIPETEIA_CHECK, PUBLIC_DEVICE_CHECK, MECHANISM_QUALITY_CHECK, REGISTER_CHECK, or AFFECT_CHECK as PARTIAL or FAIL, if MECHANISM_ROUTE says no real route change, or if PUBLIC_ACTION_GATE is missing, treat that critique as blocking for this turn. Do not keep the initial draft and do not make only a cosmetic edit; revise substantially unless the draft already contains visible public evidence that directly defeats the critique. If you override a blocking critique, your PRIVATE_DECISION must name the public evidence that justifies overriding it.
 ${learnerReframeEvent ? 'Because a learner reframe event is present, your final answer must make one tutor adaptation move legible: contrast the old and new frames, change the task/question, update the evidence standard, or hand the replacement frame back to the learner for testing. Choose the move that best fits the scene; do not simply praise the insight and proceed.' : ''}
 ${peripeteiaControl && learnerReversalEvent ? 'Because a peripeteia event is present, your final answer must make an adaptive learning mechanism legible: take stock of the learner pressure, stop repeating the prior move, and switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load. The mechanism should come from your ego adjudicating the internal review, not from a public narrator. Your PRIVATE_DECISION must include ADAPTIVE_MECHANISM: old route -> new route and PUBLIC_ACTION_GATE: exact learner action. Your FINAL must include, without labels, (a) one concise stock-taking contrast showing why the old route no longer settles the learner pressure, (b) one new public device/artifact/criterion/role/standard the learner must now use, (c) the exact action the learner should perform next, and (d) enough pressure-to-device fit that the learner can hear why this mechanism answers the misfit. Do not merely continue the same route with better wording.' : ''}
 ${routineControl && learnerReversalEvent ? 'Because this is a routine negative-control event, your final answer must preserve the established route. Do not switch route, task, evidence standard, role, object, counterexample, interruption, social consequence, representation, affective register, or cognitive load in response to the pressure.' : ''}
+${affectiveAdaptationActive ? 'Because an affective adaptation policy is active, your final answer must show a stance fitted to the learner pressure and to the current procedural route. Your PRIVATE_DECISION must include AFFECTIVE_STANCE: learner pressure -> stance. Your FINAL must enact the stance without naming the policy, lowering the standard, or giving away hidden labels.' : ''}
 
 Return exactly:
-PRIVATE_DECISION: [one short private sentence naming keep/revise and why${peripeteiaControl && learnerReversalEvent ? '; include ADAPTIVE_MECHANISM: old route -> new route; include PUBLIC_ACTION_GATE: exact learner action' : ''}]
+PRIVATE_DECISION: [one short private sentence naming keep/revise and why${peripeteiaControl && learnerReversalEvent ? '; include ADAPTIVE_MECHANISM: old route -> new route; include PUBLIC_ACTION_GATE: exact learner action' : ''}${affectiveAdaptationActive ? '; include AFFECTIVE_STANCE: learner pressure -> stance' : ''}]
 FINAL:
 [the final tutor message to the learner]
 
 The FINAL section must contain only public tutor speech. Do not mention the Ego, Superego, director, scene card, critique, draft, or review process in FINAL. If you include a nonspoken action aside, put it in square brackets.`;
-
-    const egoFinalResponse = await llmCall(tutorModel, egoAdjudicationPrompt, [{ role: 'user', content: egoDraft }], {
-      temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
-      maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
-      agentRole: 'tutor_ego',
+    const egoAdjudicationPromptCall = buildPromptCall({
+      staticSystemPrompt: tutorEgoStaticPrompt,
+      dynamicContext: egoAdjudicationPrompt.slice(tutorEgoStaticPrompt.length).trim(),
+      taskPrompt: '',
+      fallbackSystemPrompt: egoAdjudicationPrompt,
+      fallbackUserPrompt: egoDraft,
     });
+
+    const egoFinalResponse = await llmCall(
+      tutorModel,
+      egoAdjudicationPromptCall.systemPrompt,
+      [{ role: 'user', content: egoAdjudicationPromptCall.userPrompt }],
+      {
+        temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
+        maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
+        agentRole: 'tutor_ego',
+      },
+    );
 
     trace.metrics.tutorInputTokens += egoFinalResponse.usage?.inputTokens || 0;
     trace.metrics.tutorOutputTokens += egoFinalResponse.usage?.outputTokens || 0;
@@ -2073,6 +2453,7 @@ The FINAL section must contain only public tutor speech. Do not mention the Ego,
     rawResponse: egoResponse.content, // Keep raw for debugging
     internalDeliberation,
     strategy,
+    phatic: tutorPhatic,
     effectiveTutorAdaptationPolicy: tutorAdaptationPolicy,
     learnerReframeEventUsed: learnerReframeEvent,
     learnerReversalEventUsed: learnerReversalEvent,
@@ -2362,11 +2743,13 @@ function calculateMemoryDelta(before, after) {
  * @returns {Promise<Object>} Learner result shape
  */
 async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 'learner', messageHistory = null) {
-  // Delegate all retry and fetch logic to tutor-core
-  const raw = await callAI(agentConfig, systemPrompt, userPrompt, agentRole, {
+  // Delegate metered providers to tutor-core, while allowing repo-local CLI
+  // providers for dynamic learners in high-powered, non-OpenRouter evals.
+  const raw = await callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, agentRole, {
     messageHistory,
     // Add providerConfig for API key/base URL resolution if needed by tutor-core
     ...agentConfig.providerConfig,
+    fallbackCallAI: callAI,
   });
 
   // Map tutor-core result shape back to learner result shape
@@ -2444,7 +2827,20 @@ export async function generateLearnerResponse(options) {
     trace = null,
     secret = null,
     conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
+    dramaFidelity = 'full', // Slice 5: 'public-only' drops learner superego + revision
+    contextMode = 'last-six', // Slice 7: 'ledger-recent' | 'full-public'
+    recentTurns = 4, // Slice 7: verbatim window under ledger-recent / full-public
+    phaticRate = 0, // phatic: probability of a reflexive ego-only learner turn
+    phaticSeed = '',
+    phaticEligible = false, // computed by the caller (low-stakes beat)
   } = options;
+  const learnerPhatic = decidePhaticTurn({
+    phaticRate,
+    phaticSeed,
+    role: 'learner',
+    turnIndex: Array.isArray(conversationHistory) ? conversationHistory.length : 0,
+    eligible: phaticEligible,
+  });
 
   // Resolve model overrides. Priority: specific (ego/superego) > general (modelOverride) > YAML default
   function resolveOverride(ref) {
@@ -2516,11 +2912,12 @@ export async function generateLearnerResponse(options) {
   const internalDeliberation = [];
   const tokenUsage = { inputTokens: 0, outputTokens: 0, apiCalls: 0 };
 
-  // Build conversation context string from history
-  const conversationContext = conversationHistory
-    .slice(-6)
-    .map((m) => `${m.role.toUpperCase()}: ${extractExternalSection(m.content)}`)
-    .join('\n\n');
+  // Build conversation context string from history (Slice 7: mode-aware — last-six default)
+  const conversationContext = buildConversationContext(conversationHistory, {
+    contextMode,
+    recentTurns,
+    renderContent: extractExternalSection,
+  });
   const visibleTutorMessage = extractExternalSection(tutorMessage);
 
   // Psychodynamic flow: Ego proposes → Superego comments → the same Ego adjudicates.
@@ -2540,12 +2937,20 @@ export async function generateLearnerResponse(options) {
       egoContext += `\n\n${profileContext}`;
     }
     egoContext += `\n\nGenerate your initial internal reaction as the learner's ego. Keep hidden reasoning private and put only the learner's actual wording in your final answer. If any nonspoken action aside is needed, put it in square brackets.`;
-    const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext, secret, { guardContext: false });
+    if (learnerPhatic) egoContext += PHATIC_NUDGE;
+    const egoPromptCall = buildLearnerPromptCall(
+      egoConfig,
+      persona,
+      egoContext,
+      "React to the tutor's message.",
+      secret,
+      { guardContext: false },
+    );
 
     const egoInitialResponse = await callLLM(
       egoConfig,
-      egoSystemPrompt,
-      "React to the tutor's message.",
+      egoPromptCall.systemPrompt,
+      egoPromptCall.userPrompt,
       'learner_ego',
       useMessageChains ? learnerExternalHistory : null,
     );
@@ -2571,99 +2976,115 @@ export async function generateLearnerResponse(options) {
       trace.metrics.learnerOutputTokens += egoInitialResponse.usage?.outputTokens || 0;
     }
 
-    // === STEP 2: Superego critique ===
-    const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name), 'superego');
-    let superegoContext = `Topic: ${topic}`;
-    if (memoryContext) {
-      superegoContext += `\n\nYour memory and state:\n${memoryContext}`;
-    }
-    superegoContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nThe learner's initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"`;
-    if (profileContext) {
-      superegoContext += `\n\n${profileContext}`;
-    }
-    superegoContext += `\n\nReview the learner's response. Is it accurate? What's being missed? What should be reconsidered?\n\nDo NOT draft the learner's replacement message. Comment on the initial response only.`;
-    const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext, secret, {
-      guardContext: false,
-    });
-
-    const superegoResponse = await callLLM(
-      superegoConfig,
-      superegoSystemPrompt,
-      "Critique the EGO's reaction.",
-      'learner_superego',
-    );
-    const superegoEntry = makeDeliberationEntry('superego', superegoResponse, superegoConfig, { stage: 'critique' });
-    superegoEntry.inputMessages = null; // superego uses single-prompt, not message chains
-    internalDeliberation.push(superegoEntry);
-    tokenUsage.inputTokens += superegoResponse.usage?.inputTokens || 0;
-    tokenUsage.outputTokens += superegoResponse.usage?.outputTokens || 0;
-    tokenUsage.apiCalls++;
-    if (trace?.metrics) {
-      trace.metrics.learnerInputTokens += superegoResponse.usage?.inputTokens || 0;
-      trace.metrics.learnerOutputTokens += superegoResponse.usage?.outputTokens || 0;
-    }
-
-    // === STEP 3: Ego adjudication (final authority) ===
-    // The same ego considers the superego's feedback and decides what to actually say.
-    // It may keep, reject, or modify the initial suggestion.
-    let egoRevisionContext = `Topic: ${topic}`;
-    if (memoryContext) {
-      egoRevisionContext += `\n\nYour memory and state:\n${memoryContext}`;
-    }
-    egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nYour initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"\n\nInternal review feedback:\n"${sanitizeLearnerReusableText(superegoResponse.content)}"`;
-    if (profileContext) {
-      egoRevisionContext += `\n\n${profileContext}`;
-    }
-    egoRevisionContext += `\n\nYou are the same learner persona who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nPRIVATE_DECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL. If any nonspoken action aside is needed, put it in square brackets.`;
-    const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext, secret, {
-      guardContext: false,
-    });
-
-    // Build combined history for ego revision: external + ego internal + superego feedback
-    let egoRevisionMsgHistory = null;
-    if (useMessageChains) {
-      egoRevisionMsgHistory = [
-        ...(learnerExternalHistory || []),
-        ...learnerEgoInternalHistory,
+    // === STEP 2: Superego critique === (skipped under public-only fidelity: ego-only)
+    if (dramaFidelity !== 'public-only' && !learnerPhatic) {
+      const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name), 'superego');
+      let superegoContext = `Topic: ${topic}`;
+      if (memoryContext) {
+        superegoContext += `\n\nYour memory and state:\n${memoryContext}`;
+      }
+      superegoContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nThe learner's initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"`;
+      if (profileContext) {
+        superegoContext += `\n\n${profileContext}`;
+      }
+      superegoContext += `\n\nReview the learner's response. Is it accurate? What's being missed? What should be reconsidered?\n\nDo NOT draft the learner's replacement message. Comment on the initial response only.`;
+      const superegoPromptCall = buildLearnerPromptCall(
+        superegoConfig,
+        persona,
+        superegoContext,
+        "Critique the EGO's reaction.",
+        secret,
         {
-          role: 'user',
-          content: `Internal review feedback:\n${sanitizeLearnerReusableText(superegoResponse.content)}`,
+          guardContext: false,
         },
-      ];
-    }
+      );
 
-    const egoFinalResponse = await callLLM(
-      egoConfig,
-      egoRevisionSystemPrompt,
-      'Produce your final response to the tutor.',
-      'learner_ego',
-      egoRevisionMsgHistory,
-    );
-    const egoRevisionEntry = makeDeliberationEntry('ego', egoFinalResponse, egoConfig, { stage: 'adjudication' });
-    egoRevisionEntry.inputMessages = egoRevisionMsgHistory
-      ? [...egoRevisionMsgHistory, { role: 'user', content: 'Produce your final response to the tutor.' }]
-      : null;
-    internalDeliberation.push(egoRevisionEntry);
-    tokenUsage.inputTokens += egoFinalResponse.usage?.inputTokens || 0;
-    tokenUsage.outputTokens += egoFinalResponse.usage?.outputTokens || 0;
-    tokenUsage.apiCalls++;
-    if (trace?.metrics) {
-      trace.metrics.learnerInputTokens += egoFinalResponse.usage?.inputTokens || 0;
-      trace.metrics.learnerOutputTokens += egoFinalResponse.usage?.outputTokens || 0;
-    }
+      const superegoResponse = await callLLM(
+        superegoConfig,
+        superegoPromptCall.systemPrompt,
+        superegoPromptCall.userPrompt,
+        'learner_superego',
+      );
+      const superegoEntry = makeDeliberationEntry('superego', superegoResponse, superegoConfig, { stage: 'critique' });
+      superegoEntry.inputMessages = null; // superego uses single-prompt, not message chains
+      internalDeliberation.push(superegoEntry);
+      tokenUsage.inputTokens += superegoResponse.usage?.inputTokens || 0;
+      tokenUsage.outputTokens += superegoResponse.usage?.outputTokens || 0;
+      tokenUsage.apiCalls++;
+      if (trace?.metrics) {
+        trace.metrics.learnerInputTokens += superegoResponse.usage?.inputTokens || 0;
+        trace.metrics.learnerOutputTokens += superegoResponse.usage?.outputTokens || 0;
+      }
 
-    // Log deliberation for debugging/analysis
-    if (process.env.LEARNER_DEBUG) {
-      console.log('\n┌─────────────────────────────────────────────────────────────');
-      console.log('│ LEARNER DELIBERATION (ego→superego→ego adjudication)');
-      console.log('├─────────────────────────────────────────────────────────────');
-      console.log(`│ EGO INITIAL: ${egoInitialResponse.content.substring(0, 200)}...`);
-      console.log('├─────────────────────────────────────────────────────────────');
-      console.log(`│ SUPEREGO: ${superegoResponse.content.substring(0, 200)}...`);
-      console.log('├─────────────────────────────────────────────────────────────');
-      console.log(`│ EGO REVISION (FINAL): ${egoFinalResponse.content.substring(0, 200)}...`);
-      console.log('└─────────────────────────────────────────────────────────────\n');
-    }
+      // === STEP 3: Ego adjudication (final authority) ===
+      // The same ego considers the superego's feedback and decides what to actually say.
+      // It may keep, reject, or modify the initial suggestion.
+      let egoRevisionContext = `Topic: ${topic}`;
+      if (memoryContext) {
+        egoRevisionContext += `\n\nYour memory and state:\n${memoryContext}`;
+      }
+      egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nYour initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"\n\nInternal review feedback:\n"${sanitizeLearnerReusableText(superegoResponse.content)}"`;
+      if (profileContext) {
+        egoRevisionContext += `\n\n${profileContext}`;
+      }
+      egoRevisionContext += `\n\nYou are the same learner persona who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nPRIVATE_DECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL. If any nonspoken action aside is needed, put it in square brackets.`;
+      const egoRevisionPromptCall = buildLearnerPromptCall(
+        egoConfig,
+        persona,
+        egoRevisionContext,
+        'Produce your final response to the tutor.',
+        secret,
+        {
+          guardContext: false,
+        },
+      );
+
+      // Build combined history for ego revision: external + ego internal + superego feedback
+      let egoRevisionMsgHistory = null;
+      if (useMessageChains) {
+        egoRevisionMsgHistory = [
+          ...(learnerExternalHistory || []),
+          ...learnerEgoInternalHistory,
+          {
+            role: 'user',
+            content: `Internal review feedback:\n${sanitizeLearnerReusableText(superegoResponse.content)}`,
+          },
+        ];
+      }
+
+      const egoFinalResponse = await callLLM(
+        egoConfig,
+        egoRevisionPromptCall.systemPrompt,
+        egoRevisionPromptCall.userPrompt,
+        'learner_ego',
+        egoRevisionMsgHistory,
+      );
+      const egoRevisionEntry = makeDeliberationEntry('ego', egoFinalResponse, egoConfig, { stage: 'adjudication' });
+      egoRevisionEntry.inputMessages = egoRevisionMsgHistory
+        ? [...egoRevisionMsgHistory, { role: 'user', content: 'Produce your final response to the tutor.' }]
+        : null;
+      internalDeliberation.push(egoRevisionEntry);
+      tokenUsage.inputTokens += egoFinalResponse.usage?.inputTokens || 0;
+      tokenUsage.outputTokens += egoFinalResponse.usage?.outputTokens || 0;
+      tokenUsage.apiCalls++;
+      if (trace?.metrics) {
+        trace.metrics.learnerInputTokens += egoFinalResponse.usage?.inputTokens || 0;
+        trace.metrics.learnerOutputTokens += egoFinalResponse.usage?.outputTokens || 0;
+      }
+
+      // Log deliberation for debugging/analysis
+      if (process.env.LEARNER_DEBUG) {
+        console.log('\n┌─────────────────────────────────────────────────────────────');
+        console.log('│ LEARNER DELIBERATION (ego→superego→ego adjudication)');
+        console.log('├─────────────────────────────────────────────────────────────');
+        console.log(`│ EGO INITIAL: ${egoInitialResponse.content.substring(0, 200)}...`);
+        console.log('├─────────────────────────────────────────────────────────────');
+        console.log(`│ SUPEREGO: ${superegoResponse.content.substring(0, 200)}...`);
+        console.log('├─────────────────────────────────────────────────────────────');
+        console.log(`│ EGO REVISION (FINAL): ${egoFinalResponse.content.substring(0, 200)}...`);
+        console.log('└─────────────────────────────────────────────────────────────\n');
+      }
+    } // end if (dramaFidelity !== 'public-only')
   } else {
     // Single-agent (unified) flow — run each role sequentially as before
     for (const role of agentRoles) {
@@ -2683,8 +3104,15 @@ export async function generateLearnerResponse(options) {
           ? '\n\nRespond with ONLY what the learner would actually say out loud next to the tutor (1-4 sentences). Do NOT include internal monologue, tags, meta-commentary, or <think> blocks. If any nonspoken action aside is needed, put it in square brackets.'
           : "\n\nGenerate your internal reaction as this dimension of the learner's experience.";
 
-      const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext, secret, { guardContext: false });
-      const response = await callLLM(agentConfig, systemPrompt, "React to the tutor's message.", `learner_${role}`);
+      const promptCall = buildLearnerPromptCall(
+        agentConfig,
+        persona,
+        roleContext,
+        "React to the tutor's message.",
+        secret,
+        { guardContext: false },
+      );
+      const response = await callLLM(agentConfig, promptCall.systemPrompt, promptCall.userPrompt, `learner_${role}`);
 
       internalDeliberation.push(makeDeliberationEntry(role, response, agentConfig));
       tokenUsage.inputTokens += response.usage?.inputTokens || 0;
@@ -2712,6 +3140,7 @@ export async function generateLearnerResponse(options) {
     externalMessage: externalOnly,
     internalDeliberation,
     emotionalState,
+    phatic: learnerPhatic,
     understandingLevel: detectUnderstandingLevel(internalDeliberation),
     suggestsEnding: emotionalState === 'satisfied' || emotionalState === 'disengaged',
     tokenUsage,
@@ -2724,6 +3153,8 @@ export async function generateLearnerResponse(options) {
 
 // Named exports for pure helper functions (used in unit tests)
 export {
+  buildConversationContext,
+  buildPublicStateLedger,
   detectEmotionalState,
   detectUnderstandingLevel,
   detectTutorStrategy,
@@ -2738,6 +3169,7 @@ export {
   buildTutorReframeEventContext,
   buildTutorReversalEventContext,
   buildTutorAdaptationContext,
+  buildTutorAffectiveAdaptationContext,
   tutorMovesToPolicy,
   resolveTutorTurnPlan,
   gateReversalEventByTrigger,

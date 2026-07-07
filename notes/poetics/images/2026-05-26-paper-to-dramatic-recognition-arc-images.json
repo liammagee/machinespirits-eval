@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-03T13:05:55.032Z",
+  "generated_at": "2026-06-30T20:43:21.607Z",
   "html": "notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",
   "image_format": "png",
   "image_prefix": "dramatic-recognition-arc",
@@ -8,103 +8,103 @@
   "title": "From Paper 2.0 to dramatic recognition",
   "images": [
     {
-      "alt": "Editorial cartoon for The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor.: a paper mechanism diagram becoming a theatre stage, with one lane label...",
-      "caption": "The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor: Calibration supported Recognition-oriented prompts narrow and lift the tutor's output distribution.",
+      "alt": "Editorial cartoon for The last paper gave us a flat average, and a question it could not answer.: a precise average-slope ruler laid across a darkened tutoring scene under venetia...",
+      "caption": "Starting point: Paper 2.0 ran a large factorial over AI tutors: recognition-theoretic prompts against plain ones, a single-pass tutor against a draft-then-critique ego–superego architecture.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-01.png",
       "image_src": "images/dramatic-recognition-arc-01.png",
       "panel": 1,
-      "section_heading": "The last paper gave us a disciplined mechanism story, not a deployed adaptive tutor.",
+      "section_heading": "The last paper gave us a flat average, and a question it could not answer.",
       "section_id": "starting-point",
-      "section_kicker": null,
-      "visual_metaphor": "a paper mechanism diagram becoming a theatre stage, with one lane labelled calibration and one lane labelled adaptive null"
+      "section_kicker": "Starting point",
+      "visual_metaphor": "a precise average-slope ruler laid across a darkened tutoring scene under venetian-blind light, while the single decisive hinge of the lesson slips out of the ruler frame into shadow"
     },
     {
-      "alt": "Editorial cartoon for The shift from paper mechanism testing to dramatic mechanism discovery.: a measured slope chart dissolving into a staged learner-tutor encounter under a spot...",
-      "caption": "The shift from paper mechanism testing to dramatic mechanism discovery: Tooling outcome The sidecar is itself a major output of this arc — a laboratory apparatus for the narrower dialogical mechanism the paper's null le...",
+      "alt": "Editorial cartoon for Stage the lesson as drama, and the hinge becomes the whole experiment.: a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards lab...",
+      "caption": "The reframe: A scene has three beats: a stuck point, a turn, and a recognition.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-02.png",
       "image_src": "images/dramatic-recognition-arc-02.png",
       "panel": 2,
-      "section_heading": "The shift from paper mechanism testing to dramatic mechanism discovery.",
-      "section_id": "arc",
-      "section_kicker": null,
-      "visual_metaphor": "a measured slope chart dissolving into a staged learner-tutor encounter under a spotlight"
+      "section_heading": "Stage the lesson as drama, and the hinge becomes the whole experiment.",
+      "section_id": "the-stage",
+      "section_kicker": "The reframe",
+      "visual_metaphor": "a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, recognition, and a checker stamp coming down on the third mark"
     },
     {
-      "alt": "Editorial cartoon for What's solid, what's borderline, what's still a hazard.: an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal.",
-      "caption": "The Evidence Wall · Live: How the file reads Strong means it holds up under the four-critic rule on a clean baseline.",
+      "alt": "Editorial cartoon for The tutor must derive the next step, not recite the answer.: a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a...",
+      "caption": "Teaching as a derivation: On this stage the secret is never spoken by the tutor.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-03.png",
       "image_src": "images/dramatic-recognition-arc-03.png",
       "panel": 3,
-      "section_heading": "What's solid, what's borderline, what's still a hazard.",
-      "section_id": "evidence",
-      "section_kicker": "The Evidence Wall · Live",
-      "visual_metaphor": "an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal"
+      "section_heading": "The tutor must derive the next step, not recite the answer.",
+      "section_id": "derivation",
+      "section_kicker": "Teaching as a derivation",
+      "visual_metaphor": "a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a distance dial marked D ticking toward zero, the final node still behind a small curtain"
     },
     {
-      "alt": "Editorial cartoon for The headline is mechanism-level adaptation, not guaranteed recognitive closure.: a tutor at a forked path changing tools only after the learner shows a concr...",
-      "caption": "Adaptation Boundary: The branch supports tutor adaptation as a visible change of teaching move under clean-baseline reversal pressure.",
+      "alt": "Editorial cartoon for Conduct adapts to structure, not to atmosphere.: a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only...",
+      "caption": "The first surprise: Freeze the dramaturgy and watch the tutor's manner, and a rut appears: it falls into one rhetorical figure — the leading question, erotema — on 81% of turns, switching figure only about three times i...",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-04.png",
       "image_src": "images/dramatic-recognition-arc-04.png",
       "panel": 4,
-      "section_heading": "The headline is mechanism-level adaptation, not guaranteed recognitive closure.",
-      "section_id": "adaptation",
-      "section_kicker": "Adaptation Boundary",
-      "visual_metaphor": "a tutor at a forked path changing tools only after the learner shows a concrete stuck point"
+      "section_heading": "Conduct adapts to structure, not to atmosphere.",
+      "section_id": "figure-authority",
+      "section_kicker": "The first surprise",
+      "visual_metaphor": "a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thickening the rut, and a single index card naming the device that cracks the mask open"
     },
     {
-      "alt": "Editorial cartoon for A single mechanism change with a strong local and noisy broad result.: a learner trying the tutor device, then turning back to redraw the original difficulty.",
-      "caption": "Ending Shape · live chart: The ending-shape constraint asks for a tighter dramatic close: after the tutor's new device, the learner must publicly try the device and then re-read the prior difficulty.",
+      "alt": "Editorial cartoon for Move the critic inside the tutor, and the rule holds itself.: an empty director chair offstage in stage haze while a small lamplit watcher is installed insid...",
+      "caption": "Relocating the authority: The load-bearing move was to relocate that authority into the tutor's own deliberation: a criterial internal superego with a single jurisdiction.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-05.png",
       "image_src": "images/dramatic-recognition-arc-05.png",
       "panel": 5,
-      "section_heading": "A single mechanism change with a strong local and noisy broad result.",
-      "section_id": "ending-shape",
-      "section_kicker": "Ending Shape · live chart",
-      "visual_metaphor": "a learner trying the tutor device, then turning back to redraw the original difficulty"
+      "section_heading": "Move the critic inside the tutor, and the rule holds itself.",
+      "section_id": "internal-superego",
+      "section_kicker": "Relocating the authority",
+      "visual_metaphor": "an empty director chair offstage in stage haze while a small lamplit watcher is installed inside the tutor head, catching a third identical gesture in mid-air before it is spoken"
     },
     {
-      "alt": "Editorial cartoon for One pass. Not yet a pattern. Adaptation → recognition walked in once.: an evidence wall with strong, boundary, and risk cards connected to a small poetics br...",
-      "caption": "One pass. Not yet a pattern. Adaptation → recognition walked in once: Run phase2-adaptation-recognition-loop-20260527T105617Z brought D42, D50, and D53 into the same room.",
+      "alt": "Editorial cartoon for The deficit was never response. It was detection.: a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reac...",
+      "caption": "The learner who forgets: So far every channel we tried turned out redundant: the Sonnet learner was good enough that it already voiced whatever the scene made derivable, and our clever instruments measured nothing extra.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-06.png",
       "image_src": "images/dramatic-recognition-arc-06.png",
       "panel": 6,
-      "section_heading": "One pass. Not yet a pattern. Adaptation → recognition walked in once.",
-      "section_id": "landing-update",
-      "section_kicker": null,
-      "visual_metaphor": "an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal"
+      "section_heading": "The deficit was never response. It was detection.",
+      "section_id": "decay",
+      "section_kicker": "The learner who forgets",
+      "visual_metaphor": "a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reaching to restore them and a blind tutor beside an empty outstretched hand"
     },
     {
-      "alt": "Editorial cartoon for From measuring average slopes to specifying what adaptation would have to be.: a ruler for average slopes laid beside a blueprint for dramatic mechanism spec...",
-      "caption": "From measuring average slopes to specifying what adaptation would have to be: Pair of questions Old: Do recognition and architecture improve average turn-by-turn slopes?",
+      "alt": "Editorial cartoon for The tutor authored its own reversal — and a one-step rule saved the scene.: a clue-release calendar pinned to a noir investigation board, the tutor pulling o...",
+      "caption": "Handing over the calendar: Next we gave the tutor real authority over the release schedule, and watched a small, locally reasonable move turn fatal.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-07.png",
       "image_src": "images/dramatic-recognition-arc-07.png",
       "panel": 7,
-      "section_heading": "From measuring average slopes to specifying what adaptation would have to be.",
-      "section_id": "conceptual",
-      "section_kicker": null,
-      "visual_metaphor": "a ruler for average slopes laid beside a blueprint for dramatic mechanism specification"
+      "section_heading": "The tutor authored its own reversal — and a one-step rule saved the scene.",
+      "section_id": "calendar-repair",
+      "section_kicker": "Handing over the calendar",
+      "visual_metaphor": "a clue-release calendar pinned to a noir investigation board, the tutor pulling one card a single beat too early as a stage curtain drops, and a one-step repair tag stitching the broken thread back"
     },
     {
-      "alt": "Editorial cartoon for A mechanism specification, a curated dataset, and a control loop.: a compact control loop machine: observe, classify, choose, generate, check, update.",
-      "caption": "A mechanism specification, a curated dataset, and a control loop: Three linked artifacts would carry the work past calibration and into something that can change future tutor behaviour.",
+      "alt": "Editorial cartoon for Two guards. Three worlds. They trade places.: two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden de...",
+      "caption": "Does it travel: Frozen into a fixed recipe, the tutor's pacing is unreliable: grounded just 4 of 10 across two replication fans — divergence, not convergence.",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-08.png",
       "image_src": "images/dramatic-recognition-arc-08.png",
       "panel": 8,
-      "section_heading": "A mechanism specification, a curated dataset, and a control loop.",
-      "section_id": "durable-output",
-      "section_kicker": null,
-      "visual_metaphor": "a compact control loop machine: observe, classify, choose, generate, check, update"
+      "section_heading": "Two guards. Three worlds. They trade places.",
+      "section_id": "the-guards",
+      "section_kicker": "Does it travel?",
+      "visual_metaphor": "two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden depth below the boards, each bright over a differently shaped little world and dark over the other"
     },
     {
-      "alt": "Editorial cartoon for The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work.: a null-result seal refram...",
-      "caption": "The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work: The branch doesn't break the null — it answers a different question.",
+      "alt": "Editorial cartoon for A tutor that governs its own conduct — and a claim kept deliberately small.: a noir evidence wall with three pinned cards reading settled, scope-bound, and o...",
+      "caption": "The verdict, with its edges marked: So the standing claim is the modest one: hidden-plus-proof-debt works; adaptive page/hidden selection is not established, and a next selector is not worth running until it can name, i...",
       "image_file": "notes/poetics/images/dramatic-recognition-arc-09.png",
       "image_src": "images/dramatic-recognition-arc-09.png",
       "panel": 9,
-      "section_heading": "The branch doesn't break the null — it answers a different question. And there, when the secret runs deep, the help does the work.",
-      "section_id": "paper-implication",
-      "section_kicker": null,
-      "visual_metaphor": "a null-result seal reframed into a narrower guided-discovery doorway where deep secrets need help"
+      "section_heading": "A tutor that governs its own conduct — and a claim kept deliberately small.",
+      "section_id": "verdict",
+      "section_kicker": "The verdict, with its edges marked",
+      "visual_metaphor": "a noir evidence wall with three pinned cards reading settled, scope-bound, and open, and a heavy rubber stamp pressing the words dramatic form, not mind-reading"
     }
   ]
 }

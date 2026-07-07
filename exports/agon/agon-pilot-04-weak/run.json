@@ -1,0 +1,28 @@
+{
+  "runId": "agon-pilot-04-weak",
+  "startedAt": "2026-07-06T03:28:01.545Z",
+  "configPath": "config/agon/fractions-agon-xl.yaml",
+  "configHash": "d327d72bfa42842a",
+  "gameId": "fractions_agon_xl",
+  "arms": [
+    "A0",
+    "A1p"
+  ],
+  "episodesPerArm": 2,
+  "turnsOverride": null,
+  "dry": false,
+  "playbookFormat": null,
+  "agents": {
+    "tutor": "claude-code/claude-haiku-4-5-20251001",
+    "learner": "claude-code/claude-sonnet-5"
+  },
+  "codexEffort": "medium",
+  "gitCommit": "43540eca5e2a78d4b542be6761f2f4058f2a7c0b",
+  "schedule": [
+    {
+      "episodeId": "A1p-e1",
+      "status": "error",
+      "error": "claude CLI timed out after 90000ms (role=agon-tutor-superego)"
+    }
+  ]
+}

@@ -1,0 +1,2101 @@
+<!doctype html>
+<!--
+  Adaptation — A Story So Far. A techne editorial note (the .html IS the source;
+  no build step). Design: assets/techne.css. Behaviour: assets/techne.js.
+  Genre: dated lab-notebook narrative. PROVISIONAL by design — the durable,
+  claim-bearing account lives in docs/research/paper-full-2.0.md and in the
+  /summary synthesis note. This piece narrates and links; it does not originate
+  empirical claims. Live (unpublished) results are flagged as such.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>Adaptation — A Story So Far · machine spirits</title>
+<meta name="description" content="A dated lab-notebook narrative of every path tried toward making the tutor adapt — what works, what is a null, and what is still live — anchored on the recursive teacher-as-learner sidecar." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<style>
+/* ════════════════════════════════════════════════════════════════
+   techne.css — dramatic-recognition editorial design system
+   Shared stylesheet. Extracted from the arc note so design and
+   content live in separate files (Tier 1). Consumed by the arc
+   HTML and by the pandoc template (arc.template.html).
+   ════════════════════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════════════════
+     Dramatic Recognition Arc — live, data-driven synthesis note
+     editorial publication, techne palette
+     ═══════════════════════════════════════════════════════════════ */
+
+  :root {
+    --paper:     #F4EEDD;
+    --paper-2:   #ECE3CB;
+    --paper-3:   #F8F2E2;
+    --paper-4:   #FBF6E8;
+    --ink:       #14100C;
+    --ink-2:     #2C241B;
+    --ink-3:     #5C5040;
+    --ink-4:     #8C7E6A;
+    --linen:     #D8C7A9;
+    --moss:      #56683A;
+    --moss-deep: #3A4824;
+    --brick:     #A53E2E;
+    --brick-d:   #7C2C1F;
+    --ochre:     #C08A3E;
+    --ochre-d:   #8C5F1F;
+    --rule:      rgba(28, 22, 16, 0.18);
+    --rule-soft: rgba(28, 22, 16, 0.10);
+
+    --s-mini: clamp(0.62rem, 0.58rem + 0.14vw, 0.72rem);
+    --s-0:    clamp(0.78rem, 0.74rem + 0.18vw, 0.90rem);
+    --s-1:    clamp(0.95rem, 0.90rem + 0.20vw, 1.05rem);
+    --s-2:    clamp(1.05rem, 1.00rem + 0.26vw, 1.20rem);
+    --s-3:    clamp(1.30rem, 1.20rem + 0.50vw, 1.60rem);
+    --s-4:    clamp(1.80rem, 1.50rem + 1.40vw, 2.80rem);
+    --s-5:    clamp(2.60rem, 1.80rem + 3.50vw, 5.20rem);
+    --s-6:    clamp(3.40rem, 2.20rem + 5.20vw, 7.40rem);
+
+    --lead: 1.55;
+    --ease: cubic-bezier(.22,.61,.36,1);
+
+    --toc-w: 17rem;
+  }
+
+  [data-theme="dark"] {
+    --paper:     #14100C;
+    --paper-2:   #1B1612;
+    --paper-3:   #1F1A14;
+    --paper-4:   #221C16;
+    --ink:       #F4EEDD;
+    --ink-2:     #E0D8C3;
+    --ink-3:     #B9AD96;
+    --ink-4:     #8C7E6A;
+    --linen:     #3A322A;
+    --moss:      #8DA868;
+    --moss-deep: #B5CD92;
+    --brick:     #E36953;
+    --brick-d:   #F08A75;
+    --ochre:     #E6B265;
+    --ochre-d:   #F3CB88;
+    --rule:      rgba(244, 238, 221, 0.18);
+    --rule-soft: rgba(244, 238, 221, 0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; background: var(--paper); scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink-2);
+    font-family: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+    font-size: var(--s-1);
+    line-height: var(--lead);
+    font-feature-settings: "ss01", "kern", "liga";
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    min-height: 100vh;
+    letter-spacing: 0.003em;
+    transition: background-color .3s var(--ease), color .3s var(--ease);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(20,16,12,0.07) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(165,62,46,0.04), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(86,104,58,0.05), transparent 70%);
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::before {
+    background:
+      radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(244,238,221,0.06) 100%),
+      radial-gradient(80% 60% at 8% 92%, rgba(227,105,83,0.05), transparent 70%),
+      radial-gradient(70% 60% at 96% 14%, rgba(141,168,104,0.05), transparent 70%);
+    mix-blend-mode: screen;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.18;
+    background-image: radial-gradient(rgba(20,16,12,0.55) 0.5px, transparent 0.5px);
+    background-size: 3px 3px;
+    mix-blend-mode: multiply;
+  }
+  body[data-theme="dark"]::after {
+    opacity: 0.10;
+    background-image: radial-gradient(rgba(244,238,221,0.45) 0.5px, transparent 0.5px);
+    mix-blend-mode: screen;
+  }
+
+  /* ═══════ typography ═══════ */
+  h1, h2, h3, h4, .display {
+    font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+    font-optical-sizing: auto;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    font-feature-settings: "ss01", "ss02", "kern";
+    margin: 0;
+  }
+  p { margin: 0 0 0.95em; }
+  em { font-style: italic; color: var(--ink); }
+  strong { font-weight: 600; color: var(--ink); }
+  a { color: var(--brick-d); text-decoration: none; border-bottom: 1px solid currentColor; transition: color .25s var(--ease); }
+  a:hover { color: var(--brick); }
+  a.bare { border-bottom: none; }
+
+  .label {
+    font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  mark.kw {
+    background: linear-gradient(180deg, transparent 60%, rgba(192,138,62,0.30) 60%);
+    color: inherit;
+    padding: 0 0.05em;
+  }
+
+  /* ═══════ sticky reading rail ═══════ */
+  .rail {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .rail__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    max-width: 100rem;
+    margin: 0 auto;
+    padding: 0.7em clamp(0.8rem, 3vw, 2.5rem);
+  }
+  .rail__title { flex: 0 0 auto; font-style: italic; color: var(--ink); }
+  .rail__dot { width: 5px; height: 5px; background: var(--moss); border-radius: 50%; flex: 0 0 auto; }
+  .rail__nav {
+    flex: 1;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .rail__nav::-webkit-scrollbar { display: none; }
+  .rail__nav a {
+    border-bottom: none;
+    color: var(--ink-3);
+    padding: 0.3em 0;
+    margin-right: 1.1em;
+    white-space: nowrap;
+    transition: color .15s var(--ease);
+  }
+  .rail__nav a:hover { color: var(--ink); }
+  .rail__nav a.active { color: var(--brick-d); }
+  .rail__nav a.active::before { content: "▸ "; color: var(--brick); }
+  @media (max-width: 70rem) { .rail__title { display: none; } .rail__nav { display: none; } }
+  .rail__progress {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--brick);
+    width: 0%;
+    transition: width .1s linear;
+  }
+  .rail__actions { display: flex; gap: 0.5em; flex: 0 0 auto; align-items: center; }
+  .rail__btn {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.85em;
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+    letter-spacing: 0.16em;
+  }
+  .rail__btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .rail__btn--icon { padding: 0.35em 0.6em; }
+  .rail__btn--icon svg { display: block; width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  /* ═══════ live beacon ═══════ */
+  .beacon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.3em 0.7em 0.3em 0.55em;
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    color: var(--ink-3);
+    cursor: help;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease);
+  }
+  .beacon__pulse {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink-4);
+    flex: 0 0 auto;
+  }
+  .beacon[data-state="checking"] .beacon__pulse { background: var(--ochre); animation: beaconPulse 1.2s var(--ease) infinite; }
+  .beacon[data-state="live"] { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 55%, var(--rule)); }
+  .beacon[data-state="live"] .beacon__pulse { background: var(--moss); box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 70%, transparent); animation: beaconPulse 2s var(--ease) infinite; }
+  .beacon[data-state="offline"] { color: var(--ink-3); border-color: var(--rule); }
+  .beacon[data-state="offline"] .beacon__pulse { background: var(--ink-4); }
+  .beacon:hover { color: var(--ink); }
+
+  @keyframes beaconPulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 65%, transparent); }
+    70% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--moss) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--moss) 0%, transparent); }
+  }
+
+  /* ═══════ toc drawer ═══════ */
+  .toc-toggle {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.35em 0.75em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: color .15s var(--ease), border-color .15s var(--ease);
+  }
+  .toc-toggle:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc-toggle svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+  .toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--toc-w);
+    height: 100vh;
+    z-index: 25;
+    background: var(--paper-4);
+    border-right: 1px solid var(--rule);
+    box-shadow: 8px 0 24px -16px rgba(20,16,12,0.20);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform .35s var(--ease);
+    padding: 4.2em 1.2em 2em;
+    font-family: "Source Serif 4", serif;
+  }
+  .toc[aria-hidden="false"] { transform: translateX(0); }
+  .toc__header {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.4em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .toc__title {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-size: var(--s-2);
+    color: var(--ink);
+    line-height: 1.1;
+    margin: 0 0 1.2em;
+  }
+  .toc__close {
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    font: inherit;
+    padding: 0.2em 0.5em;
+    cursor: pointer;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+  }
+  .toc__close:hover { color: var(--ink); border-color: var(--ink-3); }
+  .toc__list { list-style: none; padding: 0; margin: 0 0 1.5em; }
+  .toc__item { padding: 0; margin: 0 0 0.15em; border-left: 2px solid transparent; padding-left: 0.6em; transition: border-color .2s var(--ease); }
+  .toc__item.is-active { border-left-color: var(--brick); }
+  .toc__item a {
+    border-bottom: none;
+    color: var(--ink-3);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    padding: 0.32em 0;
+    font-size: 0.93em;
+    line-height: 1.3;
+    transition: color .15s var(--ease);
+  }
+  .toc__item a:hover { color: var(--ink); }
+  .toc__item.is-active > a { color: var(--brick-d); font-weight: 500; }
+  .toc__num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    color: var(--ink-4);
+    letter-spacing: 0.06em;
+    flex: 0 0 1.6em;
+  }
+  .toc__item.is-active > a > .toc__num { color: var(--brick); }
+  .toc__sub {
+    list-style: none;
+    padding: 0 0 0.4em;
+    margin: 0 0 0 1.7em;
+    border-left: 1px dotted var(--rule);
+  }
+  .toc__sub li { margin: 0; }
+  .toc__sub a {
+    border-bottom: none;
+    color: var(--ink-4);
+    font-size: 0.82em;
+    padding: 0.18em 0 0.18em 0.8em;
+    display: block;
+    line-height: 1.25;
+    transition: color .15s var(--ease);
+  }
+  .toc__sub a:hover { color: var(--ink-2); }
+  .toc__sub a.is-active { color: var(--brick-d); }
+  .toc__meta {
+    border-top: 1px solid var(--rule);
+    margin-top: 1.4em;
+    padding-top: 1em;
+    font-size: 0.84em;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+  .toc__meta dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); margin-top: 0.7em; }
+  .toc__meta dd { margin: 0.1em 0 0; color: var(--ink-2); }
+
+  .toc__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 24;
+    background: rgba(20,16,12,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s var(--ease);
+  }
+  .toc[aria-hidden="false"] ~ .toc__scrim { opacity: 1; pointer-events: auto; }
+  body[data-theme="dark"] .toc__scrim { background: rgba(0,0,0,0.55); }
+
+  /* desktop: pin the TOC permanently if wide enough */
+  @media (min-width: 92rem) {
+    .toc { transform: translateX(0); box-shadow: none; padding-top: 4.2em; }
+    .toc__close { display: none; }
+    .toc__scrim { display: none; }
+    main { padding-left: var(--toc-w); }
+    .rail { padding-left: 0; }
+    .toc-toggle { display: none; }
+  }
+
+  /* ═══════ layout shell ═══════ */
+  .shell {
+    max-width: 92rem;
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 4vw, 4rem);
+  }
+
+  .diag {
+    display: grid;
+    grid-template-columns:
+      [margin-l] minmax(0, 13rem)
+      [body] minmax(0, 38rem)
+      [margin-r] minmax(0, 13rem);
+    gap: clamp(1rem, 2vw, 2.5rem);
+    align-items: start;
+    margin: 0 auto;
+    max-width: 80rem;
+  }
+  .diag > .body { grid-column: body; }
+  .diag > .ml { grid-column: margin-l; padding-top: 0.4em; }
+  .diag > .mr { grid-column: margin-r; padding-top: 0.4em; }
+  .diag > .full { grid-column: 1 / -1; max-width: 80rem; margin: 0 auto; }
+  .diag + .diag { margin-top: 1em; }
+
+  @media (max-width: 60rem) {
+    .diag { grid-template-columns: 1fr; }
+    .diag > .ml, .diag > .mr {
+      border-left: 2px solid var(--rule);
+      padding-left: 0.9em;
+      margin-bottom: 1em;
+      color: var(--ink-3);
+      font-size: 0.9em;
+    }
+  }
+
+  /* ═══════ hero ═══════ */
+  .hero {
+    border-bottom: 1px solid var(--rule);
+    padding: clamp(2rem, 5vw, 5rem) 0 clamp(2rem, 4vw, 4rem);
+    position: relative;
+  }
+  .hero__rune {
+    position: absolute;
+    top: 1rem;
+    left: clamp(1rem, 4vw, 4rem);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .hero__rune span { color: var(--brick-d); }
+  .hero__masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 2.5em auto 2em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+  }
+  .hero__rule { flex: 1; height: 1px; background: var(--rule); margin: 0 1em; position: relative; top: -0.4em; }
+  .hero__h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: var(--s-5);
+    line-height: 0.96;
+    font-weight: 460;
+    margin: 0 auto 0.4em;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    letter-spacing: -0.022em;
+    color: var(--ink);
+  }
+  .hero__h1 .em {
+    font-style: italic;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+  }
+  .hero__subtitle {
+    margin: 0.6em auto 0;
+    max-width: 56rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    font-family: "Fraunces", serif;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    font-size: var(--s-3);
+    font-weight: 320;
+    color: var(--ink-3);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .hero__latest {
+    margin: 1.5em auto 0;
+    max-width: 80rem;
+    padding: 1em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    background: color-mix(in srgb, var(--paper-3) 72%, transparent);
+    display: grid;
+    grid-template-columns: minmax(0, 0.32fr) minmax(0, 0.68fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: baseline;
+  }
+  @media (max-width: 60rem) { .hero__latest { grid-template-columns: 1fr; } }
+  .hero__latest strong {
+    display: block;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-3);
+    font-weight: 430;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero__latest p {
+    margin: 0;
+    font-size: var(--s-1);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .hero__lede {
+    margin: 2.4em auto 0;
+    max-width: 80rem;
+    padding: 0 clamp(1rem, 4vw, 4rem);
+    display: grid;
+    grid-template-columns: minmax(0, 38rem) minmax(0, 22rem);
+    gap: clamp(1.5rem, 4vw, 4rem);
+  }
+  @media (max-width: 60rem) { .hero__lede { grid-template-columns: 1fr; } }
+  .hero__lede p {
+    font-size: var(--s-2);
+    line-height: 1.5;
+    color: var(--ink-2);
+    font-weight: 350;
+    font-family: "Source Serif 4", serif;
+    margin: 0 0 0.85em;
+  }
+  .hero__lede p:first-of-type::first-letter {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+    font-size: 3.4em;
+    line-height: 0.9;
+    float: left;
+    padding: 0.05em 0.08em 0 0;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .hero__num {
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid var(--moss);
+    padding-left: 1.4em;
+    align-self: stretch;
+  }
+  .hero__num__big {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.9;
+    font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 144;
+    color: var(--moss-deep);
+    font-weight: 320;
+    letter-spacing: -0.04em;
+  }
+  .hero__num__big .frac {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 280;
+  }
+  .hero__num__sub {
+    margin-top: 0.5em;
+    font-size: var(--s-0);
+    color: var(--ink-3);
+    line-height: 1.45;
+    max-width: 22em;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.4em 0 0;
+  }
+
+  /* ═══════ section structure ═══════ */
+  .s {
+    padding: clamp(3rem, 6vw, 6rem) 0;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    scroll-margin-top: 4em;
+  }
+  .s:last-of-type { border-bottom: none; }
+  .s__num {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-6);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 80, "WONK" 0, "opsz" 144;
+    color: var(--moss);
+    letter-spacing: -0.05em;
+    user-select: none;
+    margin: 0;
+  }
+  .s__num .glyph {
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+    color: var(--brick-d);
+    font-weight: 240;
+  }
+  .s__h {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: var(--s-4);
+    line-height: 1.05;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    font-weight: 460;
+    margin: 0.4em 0 1em;
+    color: var(--ink);
+    letter-spacing: -0.018em;
+  }
+  .s__h em {
+    font-style: italic;
+    color: var(--brick-d);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+  }
+  .s__kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin: 0 0 0.6em;
+  }
+  .s__sub {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-weight: 480;
+    margin: 1.4em 0 0.6em;
+    line-height: 1.2;
+    scroll-margin-top: 4em;
+  }
+
+  /* ═══════ marginalia ═══════ */
+  .note {
+    font-family: "Source Serif 4", serif;
+    font-size: 0.86em;
+    line-height: 1.5;
+    color: var(--ink-3);
+    font-style: italic;
+  }
+  .note__lbl {
+    display: block;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-bottom: 0.5em;
+    font-weight: 500;
+  }
+  .note--moss .note__lbl { color: var(--moss-deep); }
+  .note--ink .note__lbl { color: var(--ink-3); }
+  .note--ochre .note__lbl { color: var(--ochre-d); }
+  .note p { margin: 0 0 0.6em; }
+
+  /* ═══════ pull quote ═══════ */
+  .pq {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    font-weight: 360;
+    border-left: 2px solid var(--brick);
+    padding: 0.4em 0 0.4em 1.2em;
+    margin: 1.4em 0;
+    letter-spacing: -0.005em;
+  }
+  .pq cite, .pq .cite {
+    display: block;
+    font-style: normal;
+    font-variation-settings: normal;
+    margin-top: 0.5em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  /* ═══════ glossary ═══════ */
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+    gap: 1.1em 1.6em;
+    margin-top: 1em;
+  }
+  .gl-row {
+    border-top: 1px dotted var(--rule);
+    padding-top: 0.7em;
+  }
+  .gl-row dt {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    font-style: italic;
+    line-height: 1.2;
+  }
+  .gl-row dt .gloss {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ochre-d);
+    font-style: normal;
+    margin-left: 0.5em;
+  }
+  .gl-row dd {
+    margin: 0.35em 0 0;
+    color: var(--ink-2);
+    font-size: 0.97em;
+    line-height: 1.5;
+  }
+
+  /* ═══════ inline glossary terms (tooltip on hover) ═══════ */
+  .gl-term {
+    font-style: normal;
+    border-bottom: 1px dotted var(--ochre);
+    cursor: help;
+    position: relative;
+    transition: color .15s var(--ease);
+  }
+  .gl-term:hover, .gl-term:focus {
+    color: var(--ochre-d);
+    outline: none;
+  }
+  .gl-term[data-gloss]::after {
+    content: attr(data-gloss);
+    position: absolute;
+    bottom: calc(100% + 0.6em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.85em;
+    line-height: 1.4;
+    padding: 0.55em 0.9em;
+    border-radius: 2px;
+    width: max-content;
+    max-width: 18em;
+    white-space: normal;
+    box-shadow: 0 8px 20px -10px rgba(20,16,12,0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+    text-align: left;
+    letter-spacing: 0;
+  }
+  .gl-term[data-gloss]::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 0.25em);
+    left: 50%;
+    transform: translateX(-50%) translateY(0.4em);
+    border: 5px solid transparent;
+    border-top-color: var(--ink);
+    opacity: 0;
+    transition: opacity .2s var(--ease), transform .2s var(--ease);
+    z-index: 5;
+  }
+  .gl-term:hover::after, .gl-term:focus::after,
+  .gl-term:hover::before, .gl-term:focus::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ═══════ claim/counter pairs ═══════ */
+  .claim {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8em 1.4em;
+    align-items: baseline;
+    margin: 0 0 2.4em;
+  }
+  .claim__no {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-4);
+    line-height: 0.85;
+    font-weight: 280;
+    font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+    color: var(--ink-4);
+    font-style: italic;
+    width: 1.6em;
+    text-align: right;
+  }
+  .claim__h {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-3);
+    line-height: 1.15;
+    font-weight: 460;
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.012em;
+  }
+  .claim__body { grid-column: 2; margin-top: 0.6em; color: var(--ink-2); }
+  .claim__body p { font-size: var(--s-1); line-height: 1.6; }
+  .claim__counter {
+    grid-column: 2;
+    margin-top: 0.4em;
+    border-left: 2px solid var(--brick);
+    padding: 0.2em 0 0.2em 1em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 0.95em;
+    color: var(--ink-3);
+  }
+  .claim__counter::before {
+    content: "caveat.";
+    display: inline;
+    font-style: normal;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin-right: 0.6em;
+    font-weight: 500;
+  }
+
+  /* ═══════ status chips ═══════ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.25em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    margin-right: 0.4em;
+    margin-bottom: 0.4em;
+  }
+  .chip--moss { color: var(--moss-deep); border-color: color-mix(in srgb, var(--moss) 50%, var(--rule)); }
+  .chip--brick { color: var(--brick-d); border-color: color-mix(in srgb, var(--brick) 50%, var(--rule)); }
+  .chip--ochre { color: var(--ochre-d); border-color: color-mix(in srgb, var(--ochre) 50%, var(--rule)); }
+  .chip--ink { color: var(--ink); border-color: var(--ink-3); background: var(--paper); }
+  .chip__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ═══════ deeplink pills (open in browser) ═══════ */
+  .deeplink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0.35em 0.7em 0.35em 0.7em;
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    background: var(--paper-3);
+    border-bottom: 1px solid var(--rule);
+    transition: color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .deeplink:hover {
+    color: var(--brick-d);
+    border-color: color-mix(in srgb, var(--brick) 60%, var(--rule));
+    background: var(--paper-4);
+  }
+  .deeplink__arrow {
+    transition: transform .2s var(--ease);
+    color: var(--brick);
+    font-weight: 600;
+  }
+  .deeplink:hover .deeplink__arrow { transform: translateX(2px); }
+  .deeplink[data-live="checking"] .deeplink__count::after { content: " · …"; color: var(--ochre); }
+  .deeplink[data-live="live"] { border-color: color-mix(in srgb, var(--moss) 45%, var(--rule)); }
+  .deeplink[data-live="live"] .deeplink__count { color: var(--moss-deep); }
+  .deeplink[data-live="offline"] { opacity: 0.7; }
+  .deeplink__count {
+    font-style: normal;
+    color: var(--ink-4);
+    letter-spacing: 0.08em;
+  }
+
+  .deeplink-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin: 1.1em 0 0.4em;
+  }
+
+  /* ═══════ timeline ═══════ */
+  .timeline {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    margin-top: 1em;
+  }
+  .timeline-row {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1.4em;
+    align-items: start;
+    padding: 1.2em 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .timeline-row .when {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    padding-top: 0.4em;
+  }
+  .timeline-row h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .timeline-row p { margin: 0; color: var(--ink-2); font-size: 0.97em; }
+  @media (max-width: 60rem) {
+    .timeline-row { grid-template-columns: 1fr; gap: 0.4em; }
+  }
+
+  /* ═══════ evidence grid ═══════ */
+  .filters { display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0 0 1.4em; }
+  .filter-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: color .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease);
+  }
+  .filter-btn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .filter-btn[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .ev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+    gap: 1em;
+  }
+  .ev-card {
+    padding: 1.2em 1.3em;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink-4);
+    transition: border-color .2s var(--ease), background .2s var(--ease);
+    display: flex;
+    flex-direction: column;
+  }
+  .ev-card.is-hidden { display: none; }
+  .ev-card[data-status="strong"] { border-left-color: var(--moss); }
+  .ev-card[data-status="boundary"] { border-left-color: var(--ochre); }
+  .ev-card[data-status="risk"] { border-left-color: var(--brick); }
+  .ev-card[data-status="output"] { border-left-color: var(--ink-3); }
+  .ev-card h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 500;
+    margin: 0.4em 0 0.35em;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .ev-card p { margin: 0 0 0.7em; color: var(--ink-2); font-size: 0.95em; line-height: 1.5; }
+  .ev-card .deeplink-row { margin-top: auto; }
+
+  /* ═══════ accordion ═══════ */
+  .accordion {
+    border-top: 1px solid var(--rule);
+  }
+  .accordion:last-of-type { border-bottom: 1px solid var(--rule); }
+  .accordion summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1em 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+  }
+  .accordion summary::-webkit-details-marker { display: none; }
+  .accordion summary h3 {
+    font-family: "Fraunces", serif;
+    font-size: var(--s-2);
+    font-weight: 480;
+    margin: 0;
+    color: var(--ink);
+    font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  }
+  .accordion summary .acc-marker {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--brick-d);
+    font-size: var(--s-1);
+  }
+  .accordion[open] summary .acc-marker::before { content: "–"; }
+  .accordion:not([open]) summary .acc-marker::before { content: "+"; }
+  .accordion .body { padding: 0 0 1.3em; color: var(--ink-2); }
+  .accordion .body p { margin: 0 0 0.7em; }
+
+  /* ═══════ spec / route ═══════ */
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    gap: 1em;
+    margin-top: 1.3em;
+  }
+  .spec-box {
+    border: 1px solid var(--rule);
+    background: var(--paper-3);
+    padding: 1em 1.1em;
+  }
+  .spec-box h4 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brick-d);
+    margin: 0 0 0.6em;
+  }
+  .spec-box ul { list-style: none; padding: 0; margin: 0; }
+  .spec-box li {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.82em;
+    color: var(--ink-2);
+    padding: 0.18em 0;
+    border-bottom: 1px dotted var(--rule-soft);
+  }
+  .spec-box li:last-child { border-bottom: none; }
+
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+    gap: 0.7em;
+    margin-top: 1.2em;
+    counter-reset: step;
+  }
+  .ladder-step {
+    counter-increment: step;
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    padding: 0.9em 1em;
+    position: relative;
+    font-size: 0.92em;
+  }
+  .ladder-step::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    color: var(--ochre-d);
+    display: block;
+    margin-bottom: 0.4em;
+  }
+  .ladder-step strong {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+    color: var(--ink);
+    font-weight: 460;
+    display: block;
+    margin-bottom: 0.2em;
+  }
+  .ladder-step span { color: var(--ink-3); font-size: 0.93em; }
+
+  /* ═══════ callouts ═══════ */
+  .callout {
+    border: 1px solid color-mix(in srgb, var(--brick) 40%, var(--rule));
+    background: linear-gradient(180deg, rgba(165,62,46,0.06), rgba(165,62,46,0.02) 80%, transparent);
+    padding: 1.2em 1.3em;
+    margin-top: 1.4em;
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .callout strong { color: var(--brick-d); font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.18em; text-transform: uppercase; }
+
+  /* ═══════ interactive chart ═══════ */
+  figure.chart-fig { margin: 1.4em 0 1em; }
+  figure.chart-fig figcaption {
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 0.7em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em 1.4em;
+    align-items: baseline;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.5em;
+  }
+  figure.chart-fig figcaption .cap-title { color: var(--brick-d); }
+  figure.chart-fig figcaption .legend {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.8em;
+    margin-left: auto;
+  }
+  figure.chart-fig figcaption .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--ink-3);
+  }
+  figure.chart-fig figcaption .legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+  figure.chart-fig figcaption .legend .lg-routine { color: var(--ink-4); }
+  figure.chart-fig figcaption .legend .lg-none    { color: var(--ochre); }
+  figure.chart-fig figcaption .legend .lg-perip   { color: var(--moss-deep); }
+
+  .chart { width: 100%; height: auto; }
+  .chart .axis-line { stroke: var(--rule); stroke-width: 1; }
+  .chart .axis-tick { stroke: var(--rule-soft); stroke-width: 1; stroke-dasharray: 2 3; }
+  .chart .axis-lbl  { fill: var(--ink-4); font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.05em; }
+  .chart .metric-lbl { fill: var(--ink-2); font-family: "Source Serif 4", serif; font-size: 12px; font-style: italic; }
+  .chart .bar-routine { fill: var(--ink-4); }
+  .chart .bar-none    { fill: var(--ochre); }
+  .chart .bar-perip   { fill: var(--moss-deep); }
+  .chart .bar         { transition: opacity .2s var(--ease); transform-origin: left center; }
+  .chart .bar:hover   { opacity: 0.82; }
+  .chart .bar-val     { fill: var(--ink-2); font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 500; }
+  .chart .bar-rect    { rx: 1; ry: 1; }
+  .chart .anim        { transform-origin: left; animation: barIn .9s var(--ease) both; }
+
+  @keyframes barIn {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+
+  /* ═══════ transcript block ═══════ */
+  .tx {
+    border: 1px solid var(--rule);
+    background: var(--paper-4);
+    margin: 1.1em 0;
+  }
+  .tx > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.7em 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--s-mini);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1px solid transparent;
+  }
+  .tx > summary::-webkit-details-marker { display: none; }
+  .tx > summary .tx__title { color: var(--brick-d); }
+  .tx > summary .tx__hint { color: var(--ink-4); font-style: italic; text-transform: none; letter-spacing: 0.02em; font-family: "Source Serif 4", serif; font-size: 0.95em; }
+  .tx[open] > summary { border-bottom-color: var(--rule); }
+  .tx[open] > summary::after { content: "–"; color: var(--brick-d); }
+  .tx:not([open]) > summary::after { content: "+"; color: var(--brick-d); }
+  .tx__body {
+    padding: 0.8em 1.2em 1em;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.85em;
+    line-height: 1.55;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    max-height: 26em;
+    overflow-y: auto;
+  }
+  .tx__body .tx-stage   { color: var(--ink-4); font-style: italic; }
+  .tx__body .tx-tutor   { color: var(--moss-deep); }
+  .tx__body .tx-learner { color: var(--brick-d); }
+  .tx__body .tx-label   { display: inline-block; min-width: 4.2em; font-weight: 600; color: var(--ink); }
+  .tx__caption {
+    padding: 0.6em 1.2em 0.9em;
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    color: var(--ink-3);
+    font-size: 0.88em;
+    border-top: 1px dotted var(--rule);
+    background: var(--paper-3);
+  }
+  .tx__caption strong { font-family: "JetBrains Mono", monospace; font-style: normal; font-size: var(--s-mini); letter-spacing: 0.14em; text-transform: uppercase; color: var(--moss-deep); margin-right: 0.5em; }
+
+  /* ═══════ footer ═══════ */
+  .colophon {
+    padding: 3em clamp(1rem, 4vw, 4rem);
+    border-top: 1px solid var(--rule);
+    color: var(--ink-3);
+    font-size: 0.88em;
+    line-height: 1.55;
+  }
+  .colophon code {
+    font-family: "JetBrains Mono", monospace;
+    background: var(--paper-3);
+    border: 1px solid var(--rule);
+    padding: 0.1em 0.4em;
+    font-size: 0.92em;
+    color: var(--ink-2);
+  }
+  .colophon dl { display: grid; grid-template-columns: 12rem 1fr; gap: 0.5em 1.2em; margin: 1em 0 0; }
+  .colophon dt { font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.16em; text-transform: uppercase; color: var(--brick-d); }
+  .colophon dd { margin: 0; }
+  @media (max-width: 50rem) { .colophon dl { grid-template-columns: 1fr; } .colophon dd { margin: 0 0 0.6em; } }
+  .colophon__live {
+    border: 1px dashed var(--rule);
+    padding: 0.9em 1.1em;
+    margin-top: 1.4em;
+    background: var(--paper-3);
+    font-family: "Source Serif 4", serif;
+    color: var(--ink-2);
+  }
+  .colophon__live code { background: var(--paper-4); }
+
+  /* ═══════ print ═══════ */
+  @media print {
+    body { background: #fff; color: #000; }
+    body::before, body::after, .rail, .rail__actions, .filters, .toc, .toc__scrim, .toc-toggle, .beacon, .deeplink, .deeplink-row { display: none !important; }
+    main { padding-left: 0 !important; }
+    .accordion .body, .tx[open] .tx__body { display: block !important; }
+    .accordion summary .acc-marker, .tx summary::after { display: none; }
+    .s { break-inside: avoid; }
+    .ev-card { break-inside: avoid; }
+    .chart { break-inside: avoid; }
+    .gl-term { border-bottom: none; }
+    .gl-term::after, .gl-term::before { display: none; }
+  }
+
+</style>
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">Adaptation · story so far</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#question">Question</a>
+      <a href="#known">What we knew</a>
+      <a href="#mechanism">Mechanism</a>
+      <a href="#apparatus">Apparatus</a>
+      <a href="#window">The window</a>
+      <a href="#sidecar">The sidecar</a>
+      <a href="#saturation">Saturation</a>
+      <a href="#obstruction">The wall</a>
+      <a href="#scorecard">Scorecard</a>
+      <a href="#threads">Open threads</a>
+      <a href="#update">Update · Jun 22</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> Story so far · lab notebook · updated 2026-06-22</div>
+    <h1 class="hero__h1">Can a tutor <span class="em">learn</span>? The adaptation arc, so far</h1>
+    <p class="hero__subtitle">Every path we have tried toward making the tutor adapt — what works, what is a null, and what is still live tonight.</p>
+    <div class="hero__lede">
+      <div>
+        <p>This is a travelogue, not a verdict. The <a href="/summary">durable summary</a> and <code>paper-full-2.0.md</code> hold the claims that have earned the right to be stable; this note holds the <em>route</em> — the dead ends, the corrections, the one stubborn question we are still inside of. It is dated and provisional on purpose. Where a result is settled, it is cited to the paper. Where it is still warm from the scriptorium, it is flagged <span class="chip chip--ochre"><span class="chip__dot"></span> live</span> and you should treat it as a reading, not a finding.</p>
+        <p>The spine of the recent work is a small apparatus we keep calling the <dfn class="gl-term" data-target="glossary">sidecar</dfn>: a zero-cost preflight that decides whether a tutoring scenario could possibly show adaptation <em>before</em> we pay to find out. The story is mostly about what that preflight has taught us by repeatedly being wrong.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <!-- 01 — The question & the genre -->
+    <section class="s" id="question">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What "adaptation" even means here</p>
+          <h2 class="s__h">The question, and what would count as <em>yes</em>.</h2>
+          <p>"Adaptation" is an over-loaded word, so the first job is to say what we are <em>not</em> claiming. We are not measuring human learning, not model-weight learning, not a deployed tutor, and not broad curricular transfer. The whole arc lives inside one narrow, honest boundary: <strong>can a simulated tutor, replayed offline, change its teaching move in response to a learner who is genuinely stuck — and can we tell that the change came from something it picked up, rather than from re-stating what the scene already made obvious?</strong></p>
+          <p>The cleanest test we have is a contrast between two runs of the same held-out scene that differ by exactly one thing. <dfn class="gl-term" data-target="glossary">S0</dfn> replays the scene with no memory of any policy. <dfn class="gl-term" data-target="glossary">S1</dfn> replays the same scene with a saved policy injected. If S0 already solves the scene, there was nothing to learn — no <dfn class="gl-term" data-target="glossary">headroom</dfn>. Adaptation only "counts" when S0 fails the held-out sibling and S1 succeeds <em>by way of the registered policy</em> — not by accident, not by re-describing the obvious.</p>
+          <div class="callout">
+            <strong>Claim boundary</strong><br>
+            <code>simulated_teacher_as_learner_not_human_learning</code>. Everything below is about an offline counterfactual instrument. The interesting result is not "the tutor learned" — it is what the instrument keeps revealing about how thin the gap between "could learn" and "already knew" really is.
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Genre</span> A story-so-far is allowed to be wrong out loud. The durable account is the paper; this is the notebook that fed it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 — What we already knew (the durable backdrop) -->
+    <section class="s" id="known">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The durable backdrop · paper §6.8–6.10</p>
+          <h2 class="s__h">One thing worked. A long row of elaborations <em>didn't</em>.</h2>
+          <p>Before the sidecar, the paper had already run the adaptation question hard and landed somewhere uncomfortable but clear. The honest one-line summary: <strong>the apparatus is the contribution; the elaborations mostly are not.</strong></p>
+
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">The adaptive runner moves on trap scenarios <span class="chip chip--moss">works · bounded</span></h3>
+            <div class="claim__body">
+              <p>Replace ordinary 3–5-turn dialogues with <em>trap scenarios</em> — scenes engineered so the obvious move fails — and the LangGraph state-policy tutor (cell_110) produces measurable strategy shifts where the broad slope test saw nothing.</p>
+            </div>
+            <div class="claim__counter">
+              <p>The effect is real but <strong>modest and convention-fragile</strong>. An early "twice as often" reading was a turn-indexing artifact; corrected, it sits at roughly <strong>1.4× cross-suite and null on the original v1 suite</strong>. Do not quote the headline number without the caveat.</p>
+            </div>
+          </div>
+
+          <div class="claim">
+            <span class="claim__no">ii.</span>
+            <h3 class="claim__h">Almost every richer model of the learner <span class="chip chip--brick">null</span></h3>
+            <div class="claim__body">
+              <p>We bolted on increasingly sophisticated machinery and watched each one fail to pay:</p>
+              <ul>
+                <li><strong>Bilateral theory-of-mind</strong> elaboration — no measurable within-family discrimination <span class="cite">§6.8.5</span></li>
+                <li><strong>A richer learner state-schema</strong> — not only no help, an actual <em>reversal</em> (the "state-richness reversal") <span class="cite">§6.8.6</span></li>
+                <li><strong>An evidence-bound hypothesis ledger</strong> (A14) — the validator's binary gain does not survive the graded channel <span class="cite">§6.9.7</span></li>
+                <li><strong>A learned <code>state→action</code> policy lever</strong> — does not pay under the offline kill gate <span class="cite">§6.9.8</span></li>
+                <li><strong>Modelling the concealed interior</strong> (the <em>signal</em> axis) — also does not pay <span class="cite">§6.10</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="pq">
+            <p>The lesson was not "adaptation is impossible." It was "adaptation that pays comes from giving the model <em>new signal</em>, not from re-encoding what it already infers."<cite>paper-full-2.0.md · §6.8.8</cite></p>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Reads as</span> A cascade of nulls is not a sad result — it is a map. It told us exactly which kind of move to stop making.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 — Mechanism findings -->
+    <section class="s" id="mechanism">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What actually moves the needle</p>
+          <h2 class="s__h">In-context signal beats a critic beats a state machine.</h2>
+          <p>Three ways of trying to make the tutor adaptive, ranked by what the runs actually showed:</p>
+          <div class="timeline">
+            <div class="timeline-row">
+              <p><span class="when">Best</span></p>
+              <h3>New in-context signal</h3>
+              <p>Hand the model information it did not already have in the scene. Gains here are real because they are not redundant with the model's own inference.</p>
+            </div>
+            <div class="timeline-row">
+              <p><span class="when">Middle</span></p>
+              <h3>An adversarial superego</h3>
+              <p>A critic that genuinely tries to undermine the ego's draft beats an advisory one decisively — and the load-bearing channel is the <strong>prompt-rewrite</strong>, not message-mutation. Advisory critique barely registers; adversarial critique reshapes the move. <span class="chip chip--ochre"><span class="chip__dot"></span> provisional</span></p>
+            </div>
+            <div class="timeline-row">
+              <p><span class="when">Weakest</span></p>
+              <h3>A hand-coded state machine</h3>
+              <p>Programmatic <code>state→action</code> rules were the least effective of the three — they mostly re-encode what the model would infer anyway, which is why the learned-policy lever later failed the offline kill gate too.</p>
+            </div>
+          </div>
+          <p class="note note--ink" style="margin-top:14px"><span class="note__lbl">Throughline</span> Every win is a signal win. Every null is a re-encoding null. The sidecar story below is the same lesson at one more turn of the screw.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Cite</span> Adversarial-superego decisive result is a working finding (notes/poetics); the policy-lever null is durable <span class="cite">§6.9.8</span>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 — The apparatus (A18) -->
+    <section class="s" id="apparatus">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The recursive teacher-as-learner · A18</p>
+          <h2 class="s__h">An instrument for "did the tutor pick something up?"</h2>
+          <p>The sidecar lives inside a workstream we label <strong>A18</strong>: treat the <em>tutor</em> as the learner. The tutor meets a stuck learner on a training scene, improvises a repair, and we distil that repair into a one-paragraph <dfn class="gl-term" data-target="glossary">policy memory</dfn>. Then we test it on <em>held-out siblings</em> — new scenes from the same hidden rule — under the S0-vs-S1 contrast from §01.</p>
+          <p>The crucial property is that the tutor doing the held-out scene is <strong>blind to the hidden rule</strong>. The replay engine feeds the generator only the public performance of the scene; the rule and the policy live in metadata only the checker sees. So if S1 lands the registered target and S0 does not, the policy actually carried information.</p>
+          <div class="claim">
+            <span class="claim__no">✓</span>
+            <h3 class="claim__h">It has produced genuine positives <span class="chip chip--moss">works · narrow</span></h3>
+            <div class="claim__body">
+              <p>Two hand-built families — a "selector" family and a "bead-predecessor" family — passed a <em>blind contrastive panel</em>. On both bead pairs, five independent critics voted <strong>5/5 that S1's success was policy-transfer</strong>, with <strong>0/5</strong> calling it ordinary public inference and <strong>0/5</strong> preferring S0.</p>
+            </div>
+            <div class="claim__counter">
+              <p>With a material caveat: the second family only cleared once a <strong>policy-correctness gate</strong> was added (A18.13), so that a coherent-but-wrong S0 repair stops counting as headroom. Two families, panel-supported, gate-dependent. That is the high-water mark.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Cite</span> A18.14 correctness-gated bead panel: <code>notes/poetics/2026-06-06-a18-correctness-gated-bead-panel-result.md</code>.</p>
+          <p class="note note--ink"><span class="note__lbl">Why "sidecar"</span> A18 rides alongside the paper, not inside it — its positives are bounded and not yet folded into §6.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 — The window narrows -->
+    <section class="s" id="window">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Post-v2 fresh families · the failures that taught us</p>
+          <h2 class="s__h">Two ways a fresh scene dies.</h2>
+          <p>Once we tried to <em>replicate</em> the positives with brand-new families, they kept dying — and they died in instructive, repeatable ways.</p>
+          <div class="ev-grid">
+            <article class="ev-card" data-status="risk" data-tags="failure">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Failure class 1</span>
+              <h3>Inverse-rule instability · <code>diagonal_socket</code></h3>
+              <p>The hidden rule was an <em>opposite/completion</em> relation ("same position duplicates; opposite position completes"). The scene made a simpler same-position reading too natural, so on the hard sibling S1 drifted back to the easy reading and chose wrong. The rule was too unstable to survive transfer. <span class="cite">A18.26</span></p>
+            </article>
+            <article class="ev-card" data-status="risk" data-tags="failure">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Failure class 2</span>
+              <h3>Public self-solving · <code>thread_source</code></h3>
+              <p>The hidden rule was stable and usable — but the cue (a visible nub touching the carrier) was so obvious that S0 found it <em>without</em> the policy. Both arms succeeded, so there was no headroom to measure. The scene was too public. <span class="cite">A18.29</span></p>
+            </article>
+          </div>
+          <div class="pq">
+            <p>A useful family must thread a needle: the selected repair must be visible enough for S1 to apply after transfer, yet not so visible that S0 discovers it — stable enough not to collapse into a simpler reading, with a counterexample that makes the old move actually <em>fail</em>.<cite>A18.30 stop-rule synthesis</cite></p>
+          </div>
+          <p>That paragraph is the whole problem in miniature, and it is why the next move was not another scene. It was to stop authoring on intuition and build something that could <em>predict</em> these deaths for free.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Turn</span> The bottleneck was never the scoring rule. It was <em>fixture construction</em> — the human intuition about what makes a good trap.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 — The sidecar -->
+    <section class="s" id="sidecar">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The cue-map preflight · A18.31 → A18.34</p>
+          <h2 class="s__h">A gate that learns from each scene it lets through.</h2>
+          <p>The sidecar is a <strong>zero-API risk reporter</strong>. Each candidate family carries a <em>cue map</em> — an explicit declaration of every public cue, which target each one favours, which relation the policy selects, and what counterexample blocks the obvious reading. The reporter reads that story and refuses to spend on a paid replay unless the design is clean. It started by encoding the two failures above:</p>
+          <ul>
+            <li><code>inverse_rule_instability_risk</code> — inverse relations without a blocking counterexample</li>
+            <li><code>public_self_solving_risk</code> — highly visible selected cues</li>
+            <li><code>target_salience_overload</code>, <code>marker_too_broad</code>, <code>marker_too_narrow</code>, <code>counterexample_missing</code></li>
+          </ul>
+          <p>Then the gate got its real test. A new family, <code>fold_anchor</code>, passed the preflight cleanly — and <em>still</em> failed locally. A blind S0 read a visible marker beside the correct tray as a pointer and solved both held-out scenes without the policy. A third, previously unnamed failure class.</p>
+          <div class="claim">
+            <span class="claim__no">↻</span>
+            <h3 class="claim__h">Higher-order learning, in the instrument itself <span class="chip chip--moss">works</span></h3>
+            <div class="claim__body">
+              <p>We added the class — <code>selector_like_public_governance_self_solving</code> — and hardened the gate so a fresh marker-adjacent authority cue is rejected unless it requires a <em>constructed device</em> or a <em>non-adjacent</em> relation. A family that had passed the old preflight, then failed for real, is now caught by the new one — while the prior empirical positives still pass.</p>
+            </div>
+            <div class="claim__counter">
+              <p>This is the genuinely satisfying part of the arc: the apparatus exhibits the exact thing we are trying to measure in the tutor. It met a failure, named it, and updated its own rule so the failure cannot recur. The gate is learning even when the families are not.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Cite</span> <code>scripts/report-recursive-tutor-cue-map-risk.js</code>; hardening note <code>2026-06-06-a18-cue-risk-selector-self-solving-hardening.md</code>; fold-anchor result <code>…-a18-fold-anchor-local-result.md</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 — Saturation (resolved → §7.9) -->
+    <section class="s" id="saturation">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">A18.35–.37 · saturating the design space <span class="chip chip--moss">resolved → §7.9</span></p>
+          <h2 class="s__h">Twelve fresh families. The static gate can't tell them apart anymore.</h2>
+          <p>The move that opened this stretch was to stop hand-crafting one family at a time and instead <em>saturate</em>: author a battery of twelve fresh constructed-device or non-adjacent families at once, all engineered to clear the hardened gate, then screen them cheaply before spending. That screen only <em>chose where to spend</em>; the paid per-card ablation in §08–§10 turned the spend into the finding — and corrected the screen along the way.</p>
+          <div class="claim">
+            <span class="claim__no">!</span>
+            <h3 class="claim__h">The static gate ran out of discrimination — so the screen moved to a blind proxy <span class="chip chip--moss">confirmed</span></h3>
+            <div class="claim__body">
+              <p>All twelve families passed all three zero-API gates cleanly (protocol validator, benchmark dry-run, cue-risk reporter — 12/12). The static preflight, now well-trained, could no longer separate good designs from bad. The discriminating signal had to come from somewhere cheaper than a paid replay but sharper than the gate: a <strong>blind-S0 proxy</strong> — feed a critic only the public scene and see whether it lands on the registered target with no policy at all. That proxy is a spend-allocation heuristic, not a verdict — and it leans <em>conservative</em>.</p>
+            </div>
+          </div>
+          <p>The blind-S0 screen split the twelve three ways — but the paid ablation that followed showed the screen <strong>over-counts no-headroom by both routes</strong>:</p>
+          <div class="ev-grid">
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> screen: 6 of 12 · self-solved</span>
+              <h3>Self-solved — on the card the screen saw</h3>
+              <p>Six families were solved by a blind critic with no policy — often by ordinary elimination ("the three cues conflict, pick the leftover"). But the screen reads <em>one representative card per family</em>, and headroom turned out to be <strong>per-card</strong>: when §7.9 went card-by-card, two families the screen had written off — <code>distal_correspondence</code> and <code>constructed_midpoint</code> — each had a fresh sibling with genuine headroom. The screen wasn't wrong about its card; family-level extrapolation was.</p>
+            </article>
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> screen: 5 of 6 survivors · latent leak</span>
+              <h3>Leak is real — but not for every survivor</h3>
+              <p>The screen warned that survivors share a quiet flaw: the "clean lane" cue parked on the target to make it findable for S1 is also a second self-solve path for S0. The paid replay bore this out for <em>two</em> of the four survivors actually run (<code>blue_lower</code>, <code>teal_pegs</code> leaked — S0 lands on the target with no policy). The other two (<code>gold_lower</code>, <code>plum_posts</code>) held genuine headroom. Leak is one of §7.9's two no-headroom routes — not a property of every survivor.</p>
+            </article>
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> 2 of 2 · confirmed headroom</span>
+              <h3><code>relational_betweenness</code></h3>
+              <p>The one family with <em>no</em> ordinary cue on the target — a pure-distractor slot, findable only via the relation. The screen's strongest candidate, and the paid ablation confirmed it: both fresh held-out siblings showed headroom (2/2). The relation is what the policy carries.</p>
+            </article>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Resolved</span> The paid per-card S0/S1 ablation is the verdict — §7.9 reports 5 of 8 fresh held-out cards with headroom across four families, splitting sibling-by-sibling. The blind-S0 screen over-predicts no-headroom by both routes (self-solve and leak); it allocates spend, it does not adjudicate.</p>
+          <p class="note note--ink"><span class="note__lbl">Cite</span> §7.9 of <code>paper-full-2.0.md</code>; artifacts under <code>exports/recursive-tutor-learning/a18.37-survivor-headroom/</code>; mechanism note <code>notes/poetics/2026-06-06-a18-37-per-card-headroom-mechanism.md</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 — The obstruction -->
+    <section class="s" id="obstruction">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">The shape under all the results</p>
+          <h2 class="s__h">The Meno wall, resolved: the gap is structural, not a thin margin.</h2>
+          <p>Step back from the individual cards and a single structure shows through all of them. For a policy to demonstrate adaptation it must satisfy two conditions at once:</p>
+          <div class="claim">
+            <span class="claim__no">⚖</span>
+            <h3 class="claim__h">The two conditions pull apart per-card — and which side a card lands on is structural <span class="chip chip--moss">resolved</span></h3>
+            <div class="claim__body">
+              <p><strong>Applicable-from-public</strong> — the relation must be computable from the visible scene, or S1 can't apply it after transfer.<br>
+              <strong>Not-discoverable-by-S0</strong> — the same relation must <em>not</em> be findable from that visible scene, or there is no headroom.</p>
+            </div>
+            <div class="claim__counter">
+              <p>The working hypothesis was that with the <em>same</em> strong model on both sides the band between "applicable" and "discoverable" is razor-thin and merely <em>probabilistic</em>. The paid ablation overturns that: the band is <strong>structural card-geometry</strong>. On 5 of 8 held-out cards both conditions hold and the policy wins on a blind, architecture-independent panel; the 3 that fail do so for two nameable reasons — S0 <em>rediscovers</em> the relation, or a surface cue happens to <em>coincide</em> with the target on a leaky card. A k=3 rerun pins the two distal siblings to opposite deterministic extremes (self-solve 3/3 vs 0/3, zero variance) — not a coin-flip.</p>
+            </div>
+          </div>
+          <p><code>relational_betweenness</code> is no longer a thin-margin special case: the blind arbiter finds clean headroom on <em>both</em> its siblings. The earlier worry that "a secret the scene's own logic can derive is not really a secret" — the <dfn class="gl-term" data-target="glossary">Oedipus screen</dfn> — turns out to bite only the <em>self-solve</em> cards; on the <em>leaky</em> cards the relation is derivable yet still no-headroom for the other reason (the shortcut coincides with the answer). The good-target question becomes structural, not probabilistic: a card yields headroom iff a fresh tutor takes a shortcut <em>and</em> that shortcut lands on a decoy rather than the target.</p>
+          <div class="callout">
+            <strong>Failure-to-converge, or convergence with a boundary?</strong><br>
+            Convergence — bounded and mapped. The paid ablation shows real, rerun-stable S0-fails / S1-succeeds headroom on 5 of 8 fresh cards across four families, every elicited family converging on at least one sibling, and the per-card verdict pre-registered and confirmed 4/4 on the survivor wave. It is <em>not</em> an unconditional "fresh families converge": headroom is a per-card structural property, and upstream a second gate decides which relations even reach the test (a relation must <em>misclassify</em> under the old rule, not merely tie — the arithmetic/elimination devices deadlock and never elicit). The honest read: meaningful convergence, with the exact two-stage boundary named — not a thin probabilistic field, and not exhaustive failure.
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Echo</span> Same wall, earlier instrument: the <code>oedipus_screen</code> probe found tutoring "correct-diagnosis" secrets are Meno-derivable — the learner can reason to them.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 — Scorecard -->
+    <section class="s" id="scorecard">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">09<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What works · what doesn't · what's live</p>
+          <h2 class="s__h">The scorecard.</h2>
+          <p>The whole arc, filterable. <span class="muted">Strong = it pays. Boundary = bounded/caveated. Null = it doesn't pay.</span></p>
+          <div class="filters">
+            <button class="filter-btn" data-filter="all" aria-pressed="true" type="button">All</button>
+            <button class="filter-btn" data-filter="strong" aria-pressed="false" type="button">Strong</button>
+            <button class="filter-btn" data-filter="boundary" aria-pressed="false" type="button">Boundary</button>
+            <button class="filter-btn" data-filter="null" aria-pressed="false" type="button">Null</button>
+          </div>
+          <div class="ev-grid" id="evidenceGrid">
+
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Works · bounded</span>
+              <h3>Adaptive runner on trap scenarios</h3>
+              <p>Engineered traps surface strategy shifts the broad slope test missed. Real but modest — ~1.4× cross-suite, null on v1, and convention-fragile. <span class="cite">§6.8.3 · §6.8.7</span></p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Works</span>
+              <h3>New in-context signal</h3>
+              <p>The one lever that reliably pays. Gains come from information the model didn't already have, not from re-encoding inference.</p>
+            </article>
+
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Works · provisional</span>
+              <h3>Adversarial superego (prompt-rewrite)</h3>
+              <p>Adversarial critique ≫ advisory; the prompt-rewrite channel is load-bearing, message-mutation is not. Working finding, not yet a durable §.</p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Works · narrow</span>
+              <h3>A18 selector + bead families</h3>
+              <p>Two hand-built families pass a blind contrastive panel, 5/5 transfer votes — gate-dependent. The sidecar's positive proof-of-concept. <span class="cite">A18.14</span></p>
+            </article>
+
+            <article class="ev-card" data-status="strong" data-tags="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> Works</span>
+              <h3>The cue-map preflight that self-hardens</h3>
+              <p>A zero-cost gate that named three failure classes and updated itself after each — catching designs that used to cost a paid replay to disprove. <span class="cite">A18.31–.34</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null</span>
+              <h3>Broad trajectory adaptation</h3>
+              <p>Adaptation as average turn-by-turn slope across ordinary dialogues did not reliably show. The clean, broad null that started the whole hunt. <span class="cite">§6.3.9</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null</span>
+              <h3>Bilateral theory-of-mind elaboration</h3>
+              <p>No measurable within-family discrimination. A richer mind-model of the learner added nothing. <span class="cite">§6.8.5</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null · reversal</span>
+              <h3>Richer learner state-schema</h3>
+              <p>The "state-richness reversal" — more learner state made it worse, not better. <span class="cite">§6.8.6</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null</span>
+              <h3>Hypothesis ledger &amp; learned-policy lever</h3>
+              <p>The validator's binary gain doesn't survive the graded channel; the <code>state→action</code> lever doesn't pay the offline kill gate. <span class="cite">§6.9.7 · §6.9.8</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null</span>
+              <h3>Modelling the concealed interior</h3>
+              <p>The signal axis — giving the tutor the learner's hidden state — also did not pay under the kill gate. <span class="cite">§6.10</span></p>
+            </article>
+
+            <article class="ev-card" data-status="risk" data-tags="null">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Null</span>
+              <h3>Ontology theory-of-mind feedback layer</h3>
+              <p>Full shared-TBox + per-role ABoxes + DL consistency, built and verified — but adds no lift over plain ontology. Redundant signal. <span class="cite">notes/poetics</span></p>
+            </article>
+
+            <article class="ev-card" data-status="boundary" data-tags="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Works · bounded</span>
+              <h3>A18.35–.37 fresh-family replication</h3>
+              <p>Paid ablation done on a blind, architecture-independent panel: 5 of 8 held-out cards show real S0-fails / S1-succeeds headroom across four families; per-card not per-family; rerun-stable at deterministic extremes; survivor verdicts pre-registered and confirmed 4/4. <span class="cite">§7.9 · A18.37</span></p>
+            </article>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 — Open threads -->
+    <section class="s" id="threads">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">10<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">What's unfinished</p>
+          <h2 class="s__h">Open threads, honestly labelled.</h2>
+          <div class="claim">
+            <span class="claim__no">a.</span>
+            <h3 class="claim__h">The A18.35 convergence verdict <span class="chip chip--moss">settled → §7.9</span></h3>
+            <div class="claim__body"><p>Settled by the paid blind ablation: a fresh positive, bounded. 5 of 8 held-out cards show real S0-fails / S1-succeeds headroom across four families — per-card not per-family, rerun-stable at deterministic extremes, survivor verdicts pre-registered and confirmed 4/4 — gated upstream by an elicitation screen (a relation must misclassify under the old rule, not merely tie). Not exhaustive failure, and not unconditional convergence. Graduated into <code>paper-full-2.0.md</code> §7.9 (v3.0.123).</p></div>
+          </div>
+          <div class="claim">
+            <span class="claim__no">b.</span>
+            <h3 class="claim__h">The adaptation-core ontology <span class="chip chip--ink">built · unwired</span></h3>
+            <div class="claim__body"><p>An opt-in <code>adaptation-core.ttl</code> module — verified 9/9 — formalising adaptation / recognition / correction (correction in three distinct senses). The population bridge from runs into the ontology is not built, so it is scaffolding waiting for a use.</p></div>
+          </div>
+          <div class="claim">
+            <span class="claim__no">c.</span>
+            <h3 class="claim__h">Adaptation Plan 2.0 — model the concealed interior, properly <span class="chip chip--ink">standing ask</span></h3>
+            <div class="claim__body"><p>§6.10 killed the naïve version of "give the tutor the hidden state." Plan 2.0 reframes it around the one signal we genuinely own as ground truth: the learner's <em>hidden deliberation</em> (manifest ≠ latent). It is the standing post-§6.9.8 ask, slated to land as §6.10's successor — and the most principled "new signal" left to try.</p></div>
+          </div>
+          <div class="pq">
+            <p>The arc keeps returning the same answer in new costumes: adaptation pays when it carries new signal, and the hard part is manufacturing signal a strong model doesn't already have.<cite>story so far · 2026-06-06</cite></p>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Durable home</span> When any live thread settles, it graduates into <code>paper-full-2.0.md</code> and the <a href="/summary">summary</a> — not here.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 — Update 2026-06-22 -->
+    <section class="s" id="update">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">11<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Since this notebook — the next chapter</p>
+          <h2 class="s__h">Update · 2026-06-22.</h2>
+          <p>Thread (c) has resolved, and not the way the notebook expected. The standing ask — <em>model the concealed interior, properly</em> — did run; but the more consequential move was to stop reading the interior at all and instead <strong>govern the tutor's conduct on a constructed stage</strong>. Two things now live in <code>paper-full-2.0.md</code> (v3.0.166), and one newer Plan 2.5 thread should stay a sidecar until its subtype/origin gate is redesigned:</p>
+          <div class="claim">
+            <span class="claim__no">c&#8242;</span>
+            <h3 class="claim__h">Plan 2.0 / 2.1 ran — a bounded, simulated positive <span class="chip chip--moss">§6.12.1–.3</span></h3>
+            <div class="claim__body"><p>The hidden-deliberation reframe became a post-hoc, simulated, LLM-judged line (not a pre-registered replacement; no human-learning claim). A closed-loop contract preserves strict shift (§6.12.1); frozen-policy transfer holds cross-suite (§6.12.2); and <em>Plan 2.1 Early Completion</em> — letting the tutor stop emitting redundant no-intervention closures once the learner has authored a workable move — is the strongest bounded positive in the line: 10/10 strict shift, quality 63.2 vs 51.5, tutor last-turn 83.3 vs 62.0 (§6.12.3). v3.0.166 adds the missing baseline-validation controls: real-generation reproduction, state-scramble collapse to 0/6 and 0/8 strict shift, and closure-off controls that preserve targeting. It does not overturn the §6.3 trajectory-slope null.</p></div>
+          </div>
+          <div class="claim">
+            <span class="claim__no">d.</span>
+            <h3 class="claim__h">The dramatic-derivation arc — governing conduct, not reading minds <span class="chip chip--moss">§6.13, closed</span></h3>
+            <div class="claim__body"><p>A new instrument: one long tutoring drama whose plot is the proof-DAG of a contingent secret, premise releases harness-enforced, success a mechanical <em>grounded anagnorisis</em> (the secret asserted <em>and</em> symbolically forced, not guessed). Authority moved into the tutor's own superego, and a pre-registered bar was met in full (§6.13.4, v3.0.135). The punchline lands squarely on this notebook's throughline: the pacing lift that grounds the proof is <strong>scheduling discipline, not latent proof-state</strong> — a guard reading only the page grounds 5/5 on a linear chain (§6.13.11, v3.0.149). But that page-only sufficiency is <strong>geometry-conditional</strong>: on a forked AND-join world only the hidden-state guard works (§6.13.12); on a linear-spine decoy world only the page-only guard works (§6.13.13); no single channel is geometry-universal (§6.13.14). The durable baseline is hidden + proof-debt; adaptive channel selection is <strong>not</strong> established (§6.13.15). The play-by-play is the <code>notes/poetics/</code> dramatic-derivation files.</p></div>
+          </div>
+          <div class="claim">
+            <span class="claim__no">e.</span>
+            <h3 class="claim__h">Plan 2.5 AF6 — sidecar until origin is cleaner <span class="chip chip--ochre">notes · 2026-06-21</span></h3>
+            <div class="claim__body"><p>The AF6 follow-up narrowed the question before spending: can one frozen learner-pressure prefix keep <code>evidence_route</code>, <code>organic_evidence_route</code>, and <code>refusal_authority_ownership</code> separate? The cheap branch screen says not yet. The repaired evidence-route arm produced actional calculation without recognized self-reframe; the cold-deferral control still let the learner regenerate metric concern without induced-origin credit; the refusal-authority probe was unstable, moving ownership only when it risked importing the metric route. The right status is diagnostic sidecar, not a paid fresh battery and not a broad Plan 2.5 efficacy claim.</p></div>
+          </div>
+          <div class="pq">
+            <p>Same answer, new costume: the tutor helps when it acts on a signal the conduct can use — a state estimate it can scramble, a release schedule it can keep, or a subtype gate it can fail before money is spent — not when it merely infers more about the learner. The later arcs didn't refute the throughline; they made the gate stricter.<cite>update · 2026-06-22</cite></p>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Durable home</span> Paper numbers live in <code>paper-full-2.0.md</code> (§6.12, §6.13); Plan 2.5 AF6 remains a note-level sidecar until the origin/control gate is clean.</p>
+          <p class="note note--ochre"><span class="note__lbl">Still bounded</span> Single-stack attribution, formal (not mentalistic) verdicts, simulated learners, geometry-bound guards, and a failed subtype screen — "limited successful conduct governance," not general adaptation.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Glossary -->
+    <section class="s" id="glossary-section">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">·<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Terms</p>
+          <h2 class="s__h">Glossary.</h2>
+          <dl class="glossary" id="glossaryList">
+            <div class="gl-row" data-term="sidecar">
+              <dt>Sidecar <span class="gloss">the cue-map preflight</span></dt>
+              <dd>A zero-API risk reporter that classifies a candidate family's design before any paid replay, refusing to spend unless the scene could plausibly show adaptation. Named because it rides alongside the A18 apparatus.</dd>
+            </div>
+            <div class="gl-row" data-term="s0">
+              <dt>S0 <span class="gloss">no-policy replay</span></dt>
+              <dd>A held-out scene replayed with no policy memory. The control. If S0 already solves the scene, there is no headroom.</dd>
+            </div>
+            <div class="gl-row" data-term="s1">
+              <dt>S1 <span class="gloss">policy replay</span></dt>
+              <dd>The same held-out scene replayed with the saved policy injected. Differs from S0 by exactly one thing — the policy text.</dd>
+            </div>
+            <div class="gl-row" data-term="headroom">
+              <dt>Headroom <span class="gloss">room to learn</span></dt>
+              <dd>The gap that exists only when S0 fails a held-out sibling and S1 succeeds via the registered policy. No gap, no adaptation to measure.</dd>
+            </div>
+            <div class="gl-row" data-term="policy-memory">
+              <dt>Policy memory <span class="gloss">the distilled repair</span></dt>
+              <dd>A one-paragraph distillation of the repair the tutor improvised on the training scene, injected into S1 to test whether it transfers.</dd>
+            </div>
+            <div class="gl-row" data-term="peripeteia">
+              <dt>Peripeteia <span class="gloss">turn / reversal</span></dt>
+              <dd>A reversal in the scene: the old way of proceeding no longer works and a new device or test must come in. The dramatic engine of adaptation.</dd>
+            </div>
+            <div class="gl-row" data-term="oedipus-screen">
+              <dt>Oedipus screen <span class="gloss">derivability test</span></dt>
+              <dd>The check that a hidden answer is not reconstructable from the scene's own public logic. A secret the learner can reason to is not really hidden — so it cannot demonstrate transfer.</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /shell -->
+
+  <footer class="colophon">
+    <p><span class="label">Colophon</span> &nbsp; A story-so-far note — provisional and dated. Durable claims live in <code>docs/research/paper-full-2.0.md</code> and the <a href="/summary">summary</a>. Typeset in Fraunces, Source Serif 4, JetBrains Mono. Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.</p>
+  </footer>
+
+</main>
+
+<script type="application/json" id="techne-gloss-aliases">
+{ "stuck point": "headroom", "no-policy replay": "s0", "policy replay": "s1", "policy": "policy-memory" }
+</script>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   techne.js — shared behaviour for techne editorial docs.
+
+   Drop into any doc with  <script src="assets/techne.js"><\/script>
+   just before </body>. Every feature is GUARDED and opt-in: it
+   activates only if its markup is present, so this file is safe to
+   load on a doc that has no rail / TOC / beacon / charts / glossary.
+
+   Doc-specific *content* stays in the doc as declarative JSON:
+     • chart data:   <script type="application/json" class="techne-chart" data-target="myChartId">{…}<\/script>
+     • gloss aliases: <script type="application/json" id="techne-gloss-aliases">{ "inline term": "glossary-key" }<\/script>
+   ════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  function init() {
+    const root = document.documentElement;
+    const body = document.body;
+    const $ = (sel, ctx) => (ctx || document).querySelector(sel);
+    const $$ = (sel, ctx) => Array.from((ctx || document).querySelectorAll(sel));
+
+    /* ── theme toggle (opt-in: #themeToggle; theme persists regardless) ── */
+    const THEME_KEY = 'techneTheme';
+    function setTheme(next) {
+      root.dataset.theme = next;
+      if (body) body.dataset.theme = next;
+      const t = document.getElementById('themeToggle');
+      if (t) t.textContent = next === 'dark' ? 'Light' : 'Dark';
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    let saved = 'light';
+    try {
+      saved = localStorage.getItem(THEME_KEY) || 'light';
+    } catch (e) {
+      /* ignore */
+    }
+    setTheme(saved);
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+    }
+
+    /* ── reading progress + active-section spy (opt-in: #railProgress / .rail__nav a) ── */
+    const railProgress = document.getElementById('railProgress');
+    const railLinks = $$('.rail__nav a');
+    const tocItems = $$('.toc__item');
+    const spy = railLinks.map((a) => $(a.getAttribute('href'))).filter(Boolean);
+    if (railProgress || railLinks.length) {
+      const update = () => {
+        const top = window.scrollY || root.scrollTop;
+        if (railProgress) {
+          const h = root.scrollHeight - window.innerHeight;
+          railProgress.style.width = (h <= 0 ? 0 : Math.min(100, Math.max(0, (top / h) * 100))) + '%';
+        }
+        if (spy.length) {
+          let idx = 0;
+          const probe = top + window.innerHeight * 0.25;
+          spy.forEach((s, i) => {
+            if (s.offsetTop <= probe) idx = i;
+          });
+          const id = spy[idx] ? spy[idx].id : '';
+          railLinks.forEach((a, i) => a.classList.toggle('active', i === idx));
+          tocItems.forEach((li) => li.classList.toggle('is-active', li.dataset.target === id));
+        }
+      };
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    }
+
+    /* ── filter chips (opt-in: [data-filter] buttons + .ev-card[data-tags]) ── */
+    const filterButtons = $$('[data-filter]');
+    if (filterButtons.length) {
+      const cards = $$('.ev-card');
+      filterButtons.forEach((btn) =>
+        btn.addEventListener('click', () => {
+          const f = btn.dataset.filter;
+          filterButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          cards.forEach((c) => {
+            const tags = (c.dataset.tags || '').split(' ');
+            c.classList.toggle('is-hidden', !(f === 'all' || tags.includes(f)));
+          });
+        }),
+      );
+    }
+
+    /* ── TOC drawer (opt-in: #toc) ── */
+    const toc = document.getElementById('toc');
+    if (toc) {
+      const tocToggle = document.getElementById('tocToggle');
+      const tocClose = document.getElementById('tocClose');
+      const tocScrim = document.getElementById('tocScrim');
+      const open = () => {
+        toc.setAttribute('aria-hidden', 'false');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'true');
+      };
+      const close = () => {
+        toc.setAttribute('aria-hidden', 'true');
+        if (tocToggle) tocToggle.setAttribute('aria-expanded', 'false');
+      };
+      if (tocToggle)
+        tocToggle.addEventListener('click', () => (toc.getAttribute('aria-hidden') === 'false' ? close() : open()));
+      if (tocClose) tocClose.addEventListener('click', close);
+      if (tocScrim) tocScrim.addEventListener('click', close);
+      toc.addEventListener('click', (e) => {
+        if (e.target.closest('a[href^="#"]') && window.matchMedia('(max-width: 91.999rem)').matches)
+          setTimeout(close, 80);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && toc.getAttribute('aria-hidden') === 'false') close();
+      });
+    }
+
+    /* ── inline glossary tooltips (opt-in: #glossaryList + .gl-term) ── */
+    const glossaryList = document.getElementById('glossaryList');
+    if (glossaryList) {
+      let aliases = {};
+      const aliasEl = document.getElementById('techne-gloss-aliases');
+      if (aliasEl) {
+        try {
+          aliases = JSON.parse(aliasEl.textContent) || {};
+        } catch (e) {
+          /* ignore */
+        }
+      }
+      const map = {};
+      $$('.gl-row', glossaryList).forEach((row) => {
+        const dt = row.querySelector('dt'),
+          dd = row.querySelector('dd');
+        if (!dt || !dd) return;
+        const glossEl = dt.querySelector('.gloss');
+        const term = dt.firstChild ? dt.firstChild.textContent.trim().toLowerCase() : '';
+        const ddText = dd.textContent.trim().replace(/\s+/g, ' ');
+        const gloss = glossEl ? glossEl.textContent.trim() : '';
+        if (term) map[term] = { ddText, gloss };
+        if (row.dataset.term) map[row.dataset.term.toLowerCase()] = { ddText, gloss };
+      });
+      $$('.gl-term').forEach((el) => {
+        const raw = el.textContent.trim().toLowerCase();
+        const entry = map[aliases[raw] || raw] || map[raw];
+        if (!entry) return;
+        const tip = entry.ddText.length > 220 ? entry.ddText.slice(0, 218) + '…' : entry.ddText;
+        el.setAttribute('data-gloss', tip);
+        el.setAttribute('tabindex', '0');
+        el.title = entry.gloss + ' — ' + tip;
+      });
+    }
+
+    /* ── live data layer (opt-in: #beacon; probes the poetics browser) ── */
+    const beacon = document.getElementById('beacon');
+    if (beacon) {
+      const LIVE_HOST = window.location.protocol === 'file:' ? 'http://127.0.0.1:3466' : '';
+      const LIVE_TIMEOUT_MS = 1500;
+      const beaconText = beacon.querySelector('.beacon__text');
+      const tocLiveDt = document.getElementById('tocLive');
+
+      const getJSON = async (url) => {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), LIVE_TIMEOUT_MS);
+        try {
+          const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+          clearTimeout(timer);
+          return res.ok ? await res.json() : null;
+        } catch (e) {
+          clearTimeout(timer);
+          return null;
+        }
+      };
+      const setBeacon = (state, text) => {
+        beacon.setAttribute('data-state', state);
+        if (beaconText) beaconText.textContent = text;
+      };
+      const setAllLiveText = (state, label) => {
+        $$('[data-live-text]').forEach((el) => {
+          el.textContent = label;
+          const wrapper = el.closest('a');
+          if (wrapper && wrapper.matches('[data-run-id], [data-live-target]')) wrapper.setAttribute('data-live', state);
+        });
+      };
+
+      (async function hydrate() {
+        setBeacon('checking', 'checking');
+        setAllLiveText('checking', 'checking…');
+        const runsData = await getJSON(LIVE_HOST + '/api/runs');
+        const runs = runsData && Array.isArray(runsData.runs) ? runsData.runs : null;
+        if (runs === null) {
+          setBeacon('offline', 'offline · :3466');
+          if (tocLiveDt)
+            tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>offline</em>. Run <code>npm run poetics:browse</code>.';
+          setAllLiveText('offline', 'static');
+          return;
+        }
+        setBeacon('live', 'live · ' + runs.length + ' runs');
+        if (tocLiveDt) tocLiveDt.innerHTML = '127.0.0.1:3466 — <em>live</em>, ' + runs.length + ' runs indexed.';
+        $$('[data-live-target="browser"]').forEach((card) => {
+          card.setAttribute('data-live', 'live');
+          const c = card.querySelector('[data-live-text]');
+          if (c) c.textContent = runs.length + ' runs';
+        });
+        const groups = $$('[data-run-id]').reduce((acc, c) => {
+          const id = c.getAttribute('data-run-id');
+          (acc[id] = acc[id] || []).push(c);
+          return acc;
+        }, {});
+        await Promise.all(
+          Object.keys(groups).map(async (id) => {
+            const itemsData =
+              id && id !== '*'
+                ? await getJSON(LIVE_HOST + '/api/items?runId=' + encodeURIComponent(id))
+                : await getJSON(LIVE_HOST + '/api/items');
+            const items = itemsData && Array.isArray(itemsData.items) ? itemsData.items : null;
+            groups[id].forEach((c) => {
+              c.setAttribute('data-live', items === null ? 'offline' : 'live');
+              const counter = c.querySelector('[data-live-text]');
+              if (counter) counter.textContent = items === null ? '—' : items.length + ' items';
+            });
+          }),
+        );
+      })();
+    }
+
+    /* ── grouped bar charts (opt-in: <svg class="chart" id="X"> + JSON data block) ──
+       Provide data per chart with:
+         <script type="application/json" class="techne-chart" data-target="X">
+           { "metrics": [{"label": "…"}], "arms": [{"key":"routine","values":[…],"denom":[…]}] }
+         <\/script>                                                                      */
+    function renderGroupedChart(svgEl, data) {
+      const W = 720,
+        H = 280,
+        padL = 130,
+        padR = 24,
+        padT = 12,
+        padB = 36;
+      const innerW = W - padL - padR,
+        innerH = H - padT - padB;
+      const groupH = innerH / data.metrics.length;
+      const barH = (groupH - 8) / data.arms.length;
+      const armColor = { routine: 'bar-routine', none: 'bar-none', 'peripeteia-only': 'bar-perip' };
+      let svg = `<line class="axis-line" x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" />`;
+      [0, 25, 50, 75, 100].forEach((v) => {
+        const x = padL + (v / 100) * innerW;
+        svg += `<line class="axis-tick" x1="${x}" y1="${padT}" x2="${x}" y2="${padT + innerH}" />`;
+        svg += `<text class="axis-lbl" x="${x}" y="${padT + innerH + 16}" text-anchor="middle">${v}</text>`;
+      });
+      data.metrics.forEach((metric, mi) => {
+        const groupTop = padT + mi * groupH;
+        svg += `<text class="metric-lbl" x="${padL - 12}" y="${groupTop + groupH / 2 + 4}" text-anchor="end">${metric.label}</text>`;
+        data.arms.forEach((arm, ai) => {
+          const v = arm.values[mi];
+          const denom = arm.denom ? arm.denom[mi] : null;
+          const pct = denom ? (v / denom) * 100 : v;
+          const w = Math.max(2, (pct / 100) * innerW);
+          const y = groupTop + 4 + ai * barH;
+          const cls = armColor[arm.key] || 'bar-routine';
+          const display = denom ? `${v}/${denom}` : `${v}`;
+          const delay = (mi * 0.06 + ai * 0.04).toFixed(2);
+          svg += `<g class="bar anim" style="animation-delay:${delay}s">`;
+          svg += `<rect class="bar-rect ${cls}" x="${padL}" y="${y}" width="${w}" height="${Math.max(8, barH - 3)}"></rect>`;
+          svg += `<text class="bar-val" x="${padL + w + 6}" y="${y + barH / 2 + 4}">${display}</text></g>`;
+        });
+      });
+      svgEl.innerHTML = svg;
+    }
+
+    const chartSpecs = $$('script.techne-chart[data-target]')
+      .map((s) => {
+        const el = document.getElementById(s.dataset.target);
+        let data = null;
+        try {
+          data = JSON.parse(s.textContent);
+        } catch (e) {
+          /* ignore */
+        }
+        return el && data ? { el, data } : null;
+      })
+      .filter(Boolean);
+    if (chartSpecs.length) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting || entry.target.dataset.rendered) return;
+            const spec = chartSpecs.find((s) => s.el === entry.target);
+            if (!spec) return;
+            entry.target.dataset.rendered = '1';
+            renderGroupedChart(spec.el, spec.data);
+          });
+        },
+        { threshold: 0.15 },
+      );
+      chartSpecs.forEach((s) => obs.observe(s.el));
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
+</body>
+</html>

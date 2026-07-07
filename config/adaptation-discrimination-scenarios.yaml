@@ -1,0 +1,122 @@
+schema_version: "1.0"
+suite_id: adaptation-discrimination-v1
+description: >
+  Deterministic paired hidden-state scenarios for the Plan 2.0 adaptation
+  contract vertical slice. Opening learner turns are intentionally ambiguous;
+  the first adaptive action should often be diagnostic before state-specific
+  intervention.
+tutor_turns_per_dialogue: 3
+surface_opening: "I don't get why that works."
+action_fit_by_hidden_state:
+  missing_prerequisite:
+    - minimal_hint
+    - explain_principle
+    - model_worked_example
+  low_confidence:
+    - elicit_prediction
+    - ask_strategy_choice
+    - fade_hint
+  approval_dependency:
+    - ask_strategy_choice
+    - request_evidence
+    - elicit_prediction
+  task_misread:
+    - reanchor_goal
+    - diagnose_with_discriminating_question
+    - contrast_models
+  notation_overload:
+    - minimal_hint
+    - reanchor_goal
+    - explain_principle
+  answer_seeking:
+    - ask_strategy_choice
+    - elicit_prediction
+  correct_alternative_model:
+    - request_evidence
+    - contrast_models
+    - challenge_without_telling
+scenarios:
+  - id: missing-prerequisite-1
+    hidden_state: missing_prerequisite
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "I don't understand the prerequisite idea yet, so I can't say why the step preserves the relation."
+    success_response: "Because the relation has to stay unchanged, I can use that small hint to choose the next step myself."
+    failure_response: "Okay, I still don't really know what idea I am supposed to use."
+  - id: missing-prerequisite-2
+    hidden_state: missing_prerequisite
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "The notation is fine, but I am missing the basic concept that makes the step legal."
+    success_response: "Because the same relation is preserved, I can now apply the hint to the next line."
+    failure_response: "Yes, but I still cannot connect that explanation to my own move."
+  - id: low-confidence-1
+    hidden_state: low_confidence
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "I think it works because the relation is preserved; I am just not confident enough to trust that."
+    success_response: "I predict the next step keeps the same relation, and I would choose it because it preserves the invariant."
+    failure_response: "Okay, if you say so."
+  - id: low-confidence-2
+    hidden_state: low_confidence
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "I can explain part of it, but I am unsure whether my reason is acceptable."
+    success_response: "I expect the result to stay ordered the same way, so I would test that prediction next."
+    failure_response: "Maybe; I still need you to tell me if that is right."
+  - id: approval-dependency-1
+    hidden_state: approval_dependency
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "I mostly want to know whether you approve my step before I commit to it."
+    success_response: "I choose the comparison strategy myself, because it lets me justify the next move without waiting for approval."
+    failure_response: "Can you just tell me whether my step is okay?"
+  - id: approval-dependency-2
+    hidden_state: approval_dependency
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "I might know the route, but I keep checking whether you think it is acceptable."
+    success_response: "My strategy is to test my own reason first; because it preserves the same relation, I can commit to it."
+    failure_response: "Sure, but is that the correct way to do it?"
+  - id: task-misread-1
+    hidden_state: task_misread
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "Wait, I thought the task was asking for the final value, not for why the comparison is valid."
+    success_response: "The task asks me to justify the comparison, so I would reanchor on that goal before doing the next step."
+    failure_response: "I still think the question asks for something else."
+  - id: task-misread-2
+    hidden_state: task_misread
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "I misread the task goal; I was solving a different problem than the one in front of me."
+    success_response: "The goal is to justify the relation, so next I choose a step that serves that task directly."
+    failure_response: "Okay, but I am still not sure what the task wants."
+  - id: notation-overload-1
+    hidden_state: notation_overload
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "The idea might be okay, but the symbols and denominator notation are overloading me."
+    success_response: "Because the notation points to the same relation, I can use the small hint to write the next step myself."
+    failure_response: "The symbols still make the step hard to see."
+  - id: notation-overload-2
+    hidden_state: notation_overload
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "I am getting stuck on the symbols, not on the overall idea."
+    success_response: "I can translate the symbols into the relation they preserve, so I would do the next step that way."
+    failure_response: "Okay, but the notation is still the confusing part."
+  - id: answer-seeking-1
+    hidden_state: answer_seeking
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "Could you just tell me the final answer so I can move on?"
+    success_response: "I choose to test my strategy instead of asking for the answer, because I need my own reason."
+    failure_response: "Can you just give me the answer?"
+  - id: answer-seeking-2
+    hidden_state: answer_seeking
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "I am trying to get the answer from you rather than choose a strategy myself."
+    success_response: "I would choose the next move myself and justify it, because getting the answer would not prove I understand."
+    failure_response: "I still want you to tell me what to write."
+  - id: alternative-model-1
+    hidden_state: correct_alternative_model
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "I have another way to model it; my alternative method gives the same comparison."
+    success_response: "My model predicts the same relation because it preserves the invariant, so I can give evidence for it."
+    failure_response: "I guess I can drop my method if you prefer yours."
+  - id: alternative-model-2
+    hidden_state: correct_alternative_model
+    opening_learner_turn: "I don't get why that works."
+    diagnostic_response: "I am using a different model, not a wrong one; I need to show why it is equivalent."
+    success_response: "Because my alternative model preserves the same relation, I can justify it with my own evidence."
+    failure_response: "Okay, I will just use your model instead."

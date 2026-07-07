@@ -1,0 +1,19 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_key.v1",
+  "generated_at": "2026-06-18T00:45:25.127Z",
+  "loop_dir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/ownership-transfer-detector-audit/fresh-runs",
+  "pairs": [
+    {
+      "pair_id": "heth15-transfergate-fresh",
+      "packet_id": "P01",
+      "left_label": "world015-transferdetector-fresh-s2-ownership-r1",
+      "right_label": "world015-transferdetector-fresh-s2-transfer-r1",
+      "left_side": "B",
+      "right_side": "A",
+      "assignment": {
+        "A": "world015-transferdetector-fresh-s2-transfer-r1",
+        "B": "world015-transferdetector-fresh-s2-ownership-r1"
+      }
+    }
+  ]
+}

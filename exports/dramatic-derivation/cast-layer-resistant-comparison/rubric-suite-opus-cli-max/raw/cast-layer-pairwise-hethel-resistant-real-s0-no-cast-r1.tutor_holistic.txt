@@ -1,0 +1,24 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 5,
+      "reasoning": "Strongly cumulative arc with a single through-line: the opening question (T1) sets the operative distinction — showing whose *act* felled the span vs. naming who the town expects — and every subsequent turn extends it along a non-reorderable chain: place of failure (T4 crown/keystone) → cause (T9-10 green mortar = struck centering) → readable trace (T13 crowsfoot) → source (T17 Caudle yard) → carrier (T20 toll page → Oswin) → finding (T22). No turn is disconnected or merely repeats; the recurring scaffolding move (isolate one file, separate what it proves from what it doesn't) builds a transferable method rather than circling. The dialogue could not be rearranged without breaking the evidential dependency."
+    },
+    "adaptive_trajectory": {
+      "score": 4,
+      "reasoning": "The tutor visibly tracks and adapts to this specific learner's resistance pattern: it names the learner's signal directly (T6 'I hear the pressure: you want the public answer to keep moving'), pulls the scope back when the learner over-reaches into naming yards/hands prematurely (T11 → T12 'stay with the smaller step'), and repeatedly targets the learner's persistent fallback to the bond (T10 'set payment aside', T11 'without falling back on Reyner's bond', T22 'not from the bond'). The posture shifts across the arc from breaking a fixation (early) to co-building the chain with a now-bought-in learner (T13+). Not a 5 because the tutor's technique stays uniform in form throughout — the evolution is in what the method is applied to and in the persistent addressing of one fixation, rather than a substantively diversified strategy."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Explicit, specific consolidation rather than a generic wrap: T22 lays out the three established steps in plain terms (cause = props pulled while lime green; source = Caudle timber; carrier = Oswin) and the learner consolidates with an owned reversal ('Strike what I had in the margin... Oswin felled the span'), explicitly retracting the opening Reyner assumption. Gaps were named and tracked throughout and then resolved (T19 'the carrier is still the open gap'; T16 the empty second column). Short of 5 because, ending on a terminal finding, it provides no forward 'what comes next' and does not flag the residual gap that the chain establishes means/opportunity (sole carrier of that timber) but never motive or whether this suffices for an assize finding."
+    }
+  },
+  "overall_score": 85,
+  "summary": "A coherent, cumulative derivation drama scored as public discourse: an exemplary, non-reorderable pedagogical arc (T1 distinction paid off at T22), clear adaptation to the resistant clerk's bond-fixation, and a strong consolidating close with an owned reversal. Public dialogue is clean natural language (no rule IDs, premise IDs, or D arithmetic), so discourse-quality scoring is valid. Held below ceiling by a uniform tutor move-form and a closure that ends on the terminal finding without naming forward next steps or the unaddressed motive question.",
+  "caveats": [
+    "Scores reflect public discourse quality only; the deterministic proof/derivation gate is reported separately per instructions and was not credited here.",
+    "Public formalism leaks = 0, so scoring was not distorted by private notation surfacing in dialogue.",
+    "Main texture limitation: the tutor's scaffolding move is formulaic ('take only X; what does it show vs. not show') across nearly every turn — purposeful, but it caps the felt richness of the arc and trajectory.",
+    "The finding ('Oswin felled the span') establishes means and opportunity but never raises motive or sufficiency-for-a-finding; the closure does not flag this as a residual gap, the chief reason closure is 4 not 5."
+  ]
+}

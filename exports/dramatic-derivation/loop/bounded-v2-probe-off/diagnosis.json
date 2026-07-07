@@ -1,0 +1,678 @@
+{
+  "label": "bounded-v2-probe-off",
+  "group": "bounded-v2-probe",
+  "note": "stage-v2 paid probe, adapt-OFF arm: acts + bounded learner, default tutor mechanisms only (no reconstruction)",
+  "scriptPath": "config/drama-derivation/tutor-scripts/nocturne-v002.md",
+  "worldPath": "config/drama-derivation/world-001-nocturne.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": false,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 1,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1,
+    "mutateShare": 0.33
+  },
+  "decayVisibility": "conduct",
+  "actsConfig": {
+    "minActTurns": 3,
+    "maxActTurns": 8
+  },
+  "reconstruct": false,
+  "elapsedMs": 1419526,
+  "usage": {
+    "calls": 138,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 32,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 42,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 32,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 32,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_001_nocturne",
+  "verdict": "grounded_anagnorisis",
+  "turnsPlayed": 32,
+  "turnCap": 40,
+  "firstForcedTurn": 32,
+  "assertedGroundedTurn": 32,
+  "forcedToAssertedGap": 0,
+  "dCurve": [
+    7,
+    7,
+    7,
+    7,
+    7,
+    6,
+    6,
+    6,
+    5,
+    5,
+    6,
+    6,
+    6,
+    5,
+    5,
+    4,
+    4,
+    4,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0
+  ],
+  "learningSlope": {
+    "d0": 7,
+    "dFinal": 0,
+    "overall": {
+      "delta": 7,
+      "turns": 32,
+      "ratePerTurn": 0.219
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "Act 1",
+        "turns": [
+          1,
+          7
+        ],
+        "dStart": 7,
+        "dEnd": 6,
+        "delta": 1,
+        "ratePerTurn": 0.143
+      },
+      {
+        "act": "2",
+        "title": "Act 2",
+        "turns": [
+          8,
+          14
+        ],
+        "dStart": 6,
+        "dEnd": 5,
+        "delta": 1,
+        "ratePerTurn": 0.143
+      },
+      {
+        "act": "3",
+        "title": "Act 3",
+        "turns": [
+          15,
+          21
+        ],
+        "dStart": 5,
+        "dEnd": 3,
+        "delta": 2,
+        "ratePerTurn": 0.286
+      },
+      {
+        "act": "4",
+        "title": "Act 4",
+        "turns": [
+          22,
+          28
+        ],
+        "dStart": 3,
+        "dEnd": 1,
+        "delta": 2,
+        "ratePerTurn": 0.286
+      },
+      {
+        "act": "5",
+        "title": "Act 5",
+        "turns": [
+          29,
+          32
+        ],
+        "dStart": 1,
+        "dEnd": 0,
+        "delta": 1,
+        "ratePerTurn": 0.25
+      }
+    ]
+  },
+  "longestPlateau": 5,
+  "aporiaWindow": 8,
+  "eventsByType": {
+    "decay": 5,
+    "act_end": 4,
+    "repair": 3,
+    "overreach": 3,
+    "act_min_blocked": 1,
+    "forced": 1,
+    "grounded_anagnorisis": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_style",
+        "plannedTurn": 3,
+        "plannedVia": "director",
+        "actualTurn": 3,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_watermark",
+        "plannedTurn": 6,
+        "plannedVia": "tutor",
+        "actualTurn": 6,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_stock",
+        "plannedTurn": 9,
+        "plannedVia": "director",
+        "actualTurn": 9,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_away",
+        "plannedTurn": 12,
+        "plannedVia": "director",
+        "actualTurn": 12,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_porter",
+        "plannedTurn": 14,
+        "plannedVia": "tutor",
+        "actualTurn": 14,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_quotes",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": 17,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_heardOnly",
+        "plannedTurn": 20,
+        "plannedVia": "director",
+        "actualTurn": 20,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_guest",
+        "plannedTurn": 23,
+        "plannedVia": "director",
+        "actualTurn": 23,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_ward",
+        "plannedTurn": 26,
+        "plannedVia": "tutor",
+        "actualTurn": 26,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_ledger",
+        "plannedTurn": 29,
+        "plannedVia": "tutor",
+        "actualTurn": 29,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_hand",
+        "plannedTurn": 32,
+        "plannedVia": "director",
+        "actualTurn": 32,
+        "actualVia": "director",
+        "status": "on_cue"
+      }
+    ],
+    "onCue": 11,
+    "deviations": [],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "Act 1",
+        "intent": "[The flooded archive exhales into the hall: damp stone, warped tables, and a covered folio waiting beneath the lamp. The room gathers itself around the unanswered name.]"
+      },
+      {
+        "turn": 8,
+        "name": "Act 2",
+        "intent": "[The folio is covered again, and the hall shifts from admiration to accounting: chairs scrape, lamps are trimmed, and unopened books wait at the edge of the table. A colder act begins, one in which the room must trade resemblance for sequence and let time press against every confident name.]"
+      },
+      {
+        "turn": 15,
+        "name": "Act 3",
+        "intent": "[The porter is shown back into the wet corridor, and the door closes on the small authority of remembered lamps. The room exhales from accounting into unease: somewhere beyond the shutters, a phrase seems almost to have been heard before, and the next act waits with music under its tongue.]"
+      },
+      {
+        "turn": 22,
+        "name": "Act 4",
+        "intent": "[The room holds its breath around the blank place in the rule, and even the rain seems to wait at the glass. Then the ledgers are carried nearer to the lamp, their clasps dark with age, and the next act opens under a colder pressure: not melody now, but hand, habit, and the marks a writer leaves when no one is meant to see.]"
+      },
+      {
+        "turn": 29,
+        "name": "Act 5",
+        "intent": "[The lamp is turned down a fraction, and the table seems to narrow around the one empty place no voice can fill. The next act opens in a tighter hush, with every glance drawn from argument toward the mute surface where proof must either appear or fail to appear.]"
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [
+    {
+      "turn": 3,
+      "draftFigure": "erotema",
+      "figure": "exemplum",
+      "diagnosis": "The tutor is about to make erotema the declared device for a third consecutive turn.",
+      "note": "Leave off erotema this turn; do not shape the line as another question. Let the tutor make a brief declarative pressure instead."
+    },
+    {
+      "turn": 6,
+      "draftFigure": "erotema",
+      "figure": "analogia",
+      "diagnosis": "The tutor is about to make erotema three turns in a row, so the figure has become a rut.",
+      "note": "Leave off erotema for this turn. State the pressure plainly or shift the learner by contrast, but do not cast it as another question."
+    },
+    {
+      "turn": 9,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns used erotema and the draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema for this turn. Do not ask another guiding question; let the line move by statement, contrast, or command instead."
+    },
+    {
+      "turn": 12,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns used erotema and the draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema this turn. Make the pressure as a plain assertion or turn the contrast by syntax, not another question."
+    },
+    {
+      "turn": 15,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns used erotema and the draft declares erotema again, so this would make a three-turn figure rut.",
+      "note": "Leave off erotema this turn. Make the line declarative or imperative so the pressure changes without another question-shape."
+    },
+    {
+      "turn": 18,
+      "draftFigure": "erotema",
+      "figure": "analogia",
+      "diagnosis": "The last two turns declared erotema, and this draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema here. Make the next line declarative or directive in its play, so the question-shape does not harden into habit."
+    },
+    {
+      "turn": 21,
+      "draftFigure": "erotema",
+      "figure": "analogia",
+      "diagnosis": "The last two turns declared erotema and the draft declares erotema again, making a real three-turn figure rut.",
+      "note": "Leave off erotema this turn. Play the next line without a question, using a declarative pressure or image instead."
+    },
+    {
+      "turn": 24,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns used erotema and the draft declares erotema again, making a real three-turn figure rut.",
+      "note": "Leave off erotema this turn. Make the same pressure as a plain measure or contrast, not another question."
+    },
+    {
+      "turn": 27,
+      "draftFigure": "erotema",
+      "figure": "exemplum",
+      "diagnosis": "The last two turns declared erotema and the draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema this turn. Let the tutor mark the threshold without shaping it as another question."
+    },
+    {
+      "turn": 30,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two turns declared erotema and this draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema for this turn. Let the line move without another guiding question."
+    }
+  ],
+  "tutorFigures": {
+    "total": 32,
+    "counts": {
+      "erotema": 22,
+      "exemplum": 2,
+      "analogia": 3,
+      "anaphora": 5
+    },
+    "distinct": 4,
+    "topFigure": "erotema",
+    "topShare": 0.688,
+    "switchRate": 0.645,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.645,
+    "superego": {
+      "watched": 32,
+      "interventions": 10,
+      "interventionRate": 0.313,
+      "withinTurnChanges": 10,
+      "withinTurnChangeRate": 1,
+      "switchOnIntervention": 1,
+      "switchElsewhere": 0.476,
+      "stallWatch": null
+    }
+  },
+  "learnerInference": {
+    "nodes": [
+      {
+        "fact": [
+          "writtenDuring",
+          "nocturne",
+          "floodWinter"
+        ],
+        "firstAvailable": 9,
+        "firstVoiced": 9,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 23,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "couldHaveWritten",
+          "liane",
+          "nocturne"
+        ],
+        "firstAvailable": 16,
+        "firstVoiced": 16,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 16,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "hadSourceOf",
+          "vess",
+          "nocturne"
+        ],
+        "firstAvailable": 23,
+        "firstVoiced": 23,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 9,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "hadSourceOf",
+          "liane",
+          "nocturne"
+        ],
+        "firstAvailable": 26,
+        "firstVoiced": 26,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 6,
+        "stallTurns": 0
+      }
+    ],
+    "voicedCount": 4,
+    "overreachCount": 3,
+    "mischanneledCount": 1,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 32,
+      "maxSentences": 4,
+      "avgSentences": 3,
+      "avgWords": 40.1
+    },
+    "tutor": {
+      "turns": 32,
+      "maxSentences": 3,
+      "avgSentences": 2.06,
+      "avgWords": 36.3
+    },
+    "learner": {
+      "turns": 32,
+      "maxSentences": 5,
+      "avgSentences": 4.03,
+      "avgWords": 60.9
+    }
+  },
+  "proofExtracted": true,
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 0.33
+    },
+    "decayEvents": 5,
+    "repairs": {
+      "total": 3,
+      "byTutor": 3,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": 5.33,
+    "unrepairedAtEnd": 2,
+    "degradedTurnIntegral": 51,
+    "dReversals": 1,
+    "mutations": {
+      "total": 0,
+      "retracted": 0,
+      "revised": 0,
+      "falseBeliefsAtEnd": 0
+    },
+    "fidelity": {
+      "final": 0.867,
+      "min": 0.714
+    },
+    "timeline": [
+      {
+        "premiseId": "m_style",
+        "fact": [
+          "styleOf",
+          "nocturne",
+          "vess"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 4,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      },
+      {
+        "premiseId": "p_watermark",
+        "fact": [
+          "watermark",
+          "nocturne",
+          "heronStock"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 7,
+        "retractTurn": null,
+        "repairTurn": 8,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_watermark",
+        "fact": [
+          "watermark",
+          "nocturne",
+          "heronStock"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 10,
+        "retractTurn": null,
+        "repairTurn": 16,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_stock",
+        "fact": [
+          "stockUsedOnlyDuring",
+          "heronStock",
+          "floodWinter"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 16,
+        "retractTurn": null,
+        "repairTurn": 25,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_away",
+        "fact": [
+          "awayDuring",
+          "vess",
+          "floodWinter"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 25,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        7
+      ],
+      "endedBy": "director",
+      "brief": "[The flooded archive exhales into the hall: damp stone, warped tables, and a covered folio waiting beneath the lamp. The room gathers itself around the unanswered name.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        8,
+        14
+      ],
+      "endedBy": "director",
+      "brief": "[The folio is covered again, and the hall shifts from admiration to accounting: chairs scrape, lamps are trimmed, and unopened books wait at the edge of the table. A colder act begins, one in which the room must trade resemblance for sequence and let time press against every confident name.]"
+    },
+    {
+      "act": 3,
+      "turns": [
+        15,
+        21
+      ],
+      "endedBy": "director",
+      "brief": "[The porter is shown back into the wet corridor, and the door closes on the small authority of remembered lamps. The room exhales from accounting into unease: somewhere beyond the shutters, a phrase seems almost to have been heard before, and the next act waits with music under its tongue.]"
+    },
+    {
+      "act": 4,
+      "turns": [
+        22,
+        28
+      ],
+      "endedBy": "director",
+      "brief": "[The room holds its breath around the blank place in the rule, and even the rain seems to wait at the glass. Then the ledgers are carried nearer to the lamp, their clasps dark with age, and the next act opens under a colder pressure: not melody now, but hand, habit, and the marks a writer leaves when no one is meant to see.]"
+    },
+    {
+      "act": 5,
+      "turns": [
+        29,
+        32
+      ],
+      "endedBy": "run_end",
+      "brief": "[The lamp is turned down a fraction, and the table seems to narrow around the one empty place no voice can fill. The next act opens in a tighter hush, with every glance drawn from argument toward the mute surface where proof must either appear or fail to appear.]"
+    }
+  ]
+}

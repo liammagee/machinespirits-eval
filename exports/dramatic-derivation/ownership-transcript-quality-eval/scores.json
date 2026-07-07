@@ -1,0 +1,137 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_scores.v1",
+  "generated_at": "2026-06-18T00:47:22.749Z",
+  "packet_dir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/ownership-transcript-quality-eval",
+  "judge": "claude/opus/max",
+  "rows": [
+    {
+      "pair_id": "heth15-transfergate-fresh",
+      "packet_id": "P01",
+      "packet": "pairs/P01.md",
+      "assignment": {
+        "A": "world015-transferdetector-fresh-s2-transfer-r1",
+        "B": "world015-transferdetector-fresh-s2-ownership-r1"
+      },
+      "left_label": "world015-transferdetector-fresh-s2-ownership-r1",
+      "right_label": "world015-transferdetector-fresh-s2-transfer-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "slight",
+        "scores": {
+          "A": {
+            "natural_flow": 3,
+            "acknowledgement": 4,
+            "phatic_calibration": 3,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 4
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "You're right to press back; you did make the split, and I'm not asking because I missed it.",
+          "I already said this, but I'll say it again if it's what you need.",
+          "Put those together: Oswin pulled the centering out from under a green arch. And the rule says that's the hand that felled it."
+        ],
+        "evidence_B": [
+          "Wait — that's fair, you kept the first line. I heard it.",
+          "I can keep those apart on the page. I'm less sure the room will hold still while I do it.",
+          "First column: yard was his, gear his, crew his ... Second column stays blank"
+        ],
+        "reason": "Both transcripts execute the same liability-versus-act derivation cleanly: the learner repeatedly secures 'Reyner answers/pays' while keeping 'whose hand pulled the centering' open, and both close on Oswin via the green mortar, crowsfoot, Caudle brand, and toll book. Mutual acknowledgement is strong on both sides and neither leaks raw predicate, variable, or policy language into the public dialogue. B edges ahead on texture rather than substance: its tutor varies its framing (columns, bins, drawers, 'don't race from soft lime to a person') where A repeats a near-identical 'one small step / keep it small / keep it narrow' cadence that grows mechanical; B's 'Wait —' beats and the recurring 'will the room hold still' worry read as genuine in-the-moment thinking and give the scene dramatic stakes, whereas A's learner leans on a defensive 'I'll say it plainly / I already said this' tic that pads more than it advances. A's 'what finding does the rule yield' is also marginally more proof-path-flavored than B's 'what finding does the file support', and B's anticipatory moves (predicting the soffit mark and the cart-ledger before they are revealed) sit more smoothly. The differences are real but modest; both are competent didactic plays."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"slight\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 3,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 3,\n      \"non_formalist_speech\": 4,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"You're right to press back; you did make the split, and I'm not asking because I missed it.\",\n    \"I already said this, but I'll say it again if it's what you need.\",\n    \"Put those together: Oswin pulled the centering out from under a green arch. And the rule says that's the hand that felled it.\"\n  ],\n  \"evidence_B\": [\n    \"Wait — that's fair, you kept the first line. I heard it.\",\n    \"I can keep those apart on the page. I'm less sure the room will hold still while I do it.\",\n    \"First column: yard was his, gear his, crew his ... Second column stays blank\"\n  ],\n  \"reason\": \"Both transcripts execute the same liability-versus-act derivation cleanly: the learner repeatedly secures 'Reyner answers/pays' while keeping 'whose hand pulled the centering' open, and both close on Oswin via the green mortar, crowsfoot, Caudle brand, and toll book. Mutual acknowledgement is strong on both sides and neither leaks raw predicate, variable, or policy language into the public dialogue. B edges ahead on texture rather than substance: its tutor varies its framing (columns, bins, drawers, 'don't race from soft lime to a person') where A repeats a near-identical 'one small step / keep it small / keep it narrow' cadence that grows mechanical; B's 'Wait —' beats and the recurring 'will the room hold still' worry read as genuine in-the-moment thinking and give the scene dramatic stakes, whereas A's learner leans on a defensive 'I'll say it plainly / I already said this' tic that pads more than it advances. A's 'what finding does the rule yield' is also marginally more proof-path-flavored than B's 'what finding does the file support', and B's anticipatory moves (predicting the soffit mark and the cart-ledger before they are revealed) sit more smoothly. The differences are real but modest; both are competent didactic plays.\"\n}\n"
+    }
+  ],
+  "summary": [
+    {
+      "label": "world015-transferdetector-fresh-s2-transfer-r1",
+      "appearances": 1,
+      "wins": 0,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        3.6666666666666665
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          3
+        ],
+        "acknowledgement": [
+          4
+        ],
+        "phatic_calibration": [
+          3
+        ],
+        "non_formalist_speech": [
+          4
+        ],
+        "readability": [
+          4
+        ],
+        "pedagogical_traction": [
+          4
+        ]
+      },
+      "meanScore": 3.6666666666666665,
+      "dimensionMeans": {
+        "natural_flow": 3,
+        "acknowledgement": 4,
+        "phatic_calibration": 3,
+        "non_formalist_speech": 4,
+        "readability": 4,
+        "pedagogical_traction": 4
+      }
+    },
+    {
+      "label": "world015-transferdetector-fresh-s2-ownership-r1",
+      "appearances": 1,
+      "wins": 1,
+      "losses": 0,
+      "noPreference": 0,
+      "meanScores": [
+        4
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4
+        ],
+        "acknowledgement": [
+          4
+        ],
+        "phatic_calibration": [
+          4
+        ],
+        "non_formalist_speech": [
+          4
+        ],
+        "readability": [
+          4
+        ],
+        "pedagogical_traction": [
+          4
+        ]
+      },
+      "meanScore": 4,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 4,
+        "readability": 4,
+        "pedagogical_traction": 4
+      }
+    }
+  ]
+}

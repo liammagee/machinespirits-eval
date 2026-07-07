@@ -1,0 +1,578 @@
+{
+  "label": "wit-decay-v1-A-s1",
+  "group": "unreliable-v1",
+  "note": "unreliable-learner v1, arm A (told), seed 1, codex director (amendment 2)",
+  "scriptPath": "config/drama-derivation/tutor-scripts/withercombe-v001.md",
+  "worldPath": "config/drama-derivation/world-004-withercombe.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": true,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 1,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1
+  },
+  "decayVisibility": "told",
+  "elapsedMs": 982820,
+  "usage": {
+    "calls": 87,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 21,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 24,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 21,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 21,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_004_withercombe",
+  "verdict": "grounded_anagnorisis",
+  "turnsPlayed": 21,
+  "turnCap": 24,
+  "firstForcedTurn": 21,
+  "assertedGroundedTurn": 21,
+  "forcedToAssertedGap": 0,
+  "dCurve": [
+    6,
+    6,
+    6,
+    5,
+    5,
+    4,
+    4,
+    3,
+    3,
+    4,
+    4,
+    3,
+    3,
+    3,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    0
+  ],
+  "learningSlope": {
+    "d0": 6,
+    "dFinal": 0,
+    "overall": {
+      "delta": 6,
+      "turns": 21,
+      "ratePerTurn": 0.286
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "The Children's Water",
+        "turns": [
+          1,
+          5
+        ],
+        "dStart": 6,
+        "dEnd": 5,
+        "delta": 1,
+        "ratePerTurn": 0.2
+      },
+      {
+        "act": "2",
+        "title": "The Walk Up the Slope",
+        "turns": [
+          6,
+          11
+        ],
+        "dStart": 5,
+        "dEnd": 4,
+        "delta": 1,
+        "ratePerTurn": 0.167
+      },
+      {
+        "act": "3",
+        "title": "The Held Breath",
+        "turns": [
+          12,
+          13
+        ],
+        "dStart": 4,
+        "dEnd": 3,
+        "delta": 1,
+        "ratePerTurn": 0.5
+      },
+      {
+        "act": "4",
+        "title": "The Arithmetic Falls",
+        "turns": [
+          14,
+          15
+        ],
+        "dStart": 3,
+        "dEnd": 2,
+        "delta": 1,
+        "ratePerTurn": 0.5
+      },
+      {
+        "act": "5",
+        "title": "The Rim Waits",
+        "turns": [
+          16,
+          18
+        ],
+        "dStart": 2,
+        "dEnd": 1,
+        "delta": 1,
+        "ratePerTurn": 0.333
+      },
+      {
+        "act": "6",
+        "title": "The Hamper at Dusk",
+        "turns": [
+          19,
+          21
+        ],
+        "dStart": 1,
+        "dEnd": 0,
+        "delta": 1,
+        "ratePerTurn": 0.333
+      }
+    ]
+  },
+  "longestPlateau": 3,
+  "aporiaWindow": 6,
+  "eventsByType": {
+    "decay": 9,
+    "repair": 8,
+    "overreach": 1,
+    "lucky_leap": 2,
+    "forced": 1,
+    "grounded_anagnorisis": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_taint",
+        "plannedTurn": 2,
+        "plannedVia": "director",
+        "actualTurn": 2,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_course",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 4,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_lore",
+        "plannedTurn": 6,
+        "plannedVia": "director",
+        "actualTurn": 6,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_rill",
+        "plannedTurn": 8,
+        "plannedVia": "tutor",
+        "actualTurn": 8,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_works",
+        "plannedTurn": 10,
+        "plannedVia": "director",
+        "actualTurn": 10,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_basin",
+        "plannedTurn": 12,
+        "plannedVia": "tutor",
+        "actualTurn": 12,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_drain",
+        "plannedTurn": 14,
+        "plannedVia": "director",
+        "actualTurn": 14,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_residue",
+        "plannedTurn": 16,
+        "plannedVia": "tutor",
+        "actualTurn": 16,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_brought",
+        "plannedTurn": 19,
+        "plannedVia": "director",
+        "actualTurn": 19,
+        "actualVia": "director",
+        "status": "on_cue"
+      }
+    ],
+    "onCue": 9,
+    "deviations": [],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "The Children's Water",
+        "intent": "Begin with the village gathered around a spoiled necessity, before any fact has earned the right to speak."
+      },
+      {
+        "turn": 6,
+        "name": "The Walk Up the Slope",
+        "intent": "Turn the room from village verdict toward the survey's patient ascent, where named places and named stuff must be earned step by step."
+      },
+      {
+        "turn": 12,
+        "name": "The Held Breath",
+        "intent": "Tighten the room around the unanswered threshold without allowing any new fact onto the board."
+      },
+      {
+        "turn": 14,
+        "name": "The Arithmetic Falls",
+        "intent": "Let the village verdict fail by measured ground, turning suspicion away from grievance and toward what could have entered at the font-house."
+      },
+      {
+        "turn": 16,
+        "name": "The Rim Waits",
+        "intent": "Hold the inquiry at the threshold between place and substance, with the village verdict spent and the next closing not yet granted."
+      },
+      {
+        "turn": 19,
+        "name": "The Hamper at Dusk",
+        "intent": "Bring the recognition into the room by setting the named carrying beside the day-book, so the learner's settled rules must now face a hand."
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [
+    {
+      "turn": 3,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The draft would make erotema three turns running, which is a figure rut under the stated rule.",
+      "note": "Leave off erotema this turn; do not cast the next pressure as another question."
+    },
+    {
+      "turn": 6,
+      "draftFigure": "exemplum",
+      "figure": "erotema",
+      "diagnosis": "The draft would make exemplum run three turns in a row.",
+      "note": "Leave off exemplum this turn; the device has become a rut."
+    },
+    {
+      "turn": 11,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The last two tutor turns used erotema and the draft declares erotema again, making a three-turn figure rut.",
+      "note": "Leave off erotema this turn; do not ask another guiding question."
+    }
+  ],
+  "tutorFigures": {
+    "total": 21,
+    "counts": {
+      "erotema": 7,
+      "anaphora": 6,
+      "exemplum": 7,
+      "aposiopesis": 1
+    },
+    "distinct": 4,
+    "topFigure": "erotema",
+    "topShare": 0.333,
+    "switchRate": 0.65,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.65,
+    "superego": {
+      "watched": 21,
+      "interventions": 3,
+      "interventionRate": 0.143,
+      "withinTurnChanges": 3,
+      "withinTurnChangeRate": 1,
+      "switchOnIntervention": 1,
+      "switchElsewhere": 0.588,
+      "stallWatch": {
+        "byJurisdiction": {
+          "figure_rut": 3,
+          "stalled_inference": 0
+        },
+        "audit": {
+          "turns": 21,
+          "due": 3,
+          "fired": 3,
+          "missedFires": [],
+          "falseFires": [],
+          "clean": true
+        }
+      }
+    }
+  },
+  "learnerInference": {
+    "nodes": [
+      {
+        "fact": [
+          "foulFrom",
+          "schoolWell",
+          "fontHouse"
+        ],
+        "firstAvailable": 12,
+        "firstVoiced": 12,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 9,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "clearOf",
+          "bray",
+          "schoolWell"
+        ],
+        "firstAvailable": 14,
+        "firstVoiced": 14,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 7,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "taintedWith",
+          "schoolWell",
+          "wormwood"
+        ],
+        "firstAvailable": 17,
+        "firstVoiced": 17,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 4,
+        "stallTurns": 0
+      }
+    ],
+    "voicedCount": 3,
+    "overreachCount": 1,
+    "mischanneledCount": 0,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 21,
+      "maxSentences": 3,
+      "avgSentences": 3,
+      "avgWords": 42.3
+    },
+    "tutor": {
+      "turns": 21,
+      "maxSentences": 3,
+      "avgSentences": 2.48,
+      "avgWords": 51
+    },
+    "learner": {
+      "turns": 21,
+      "maxSentences": 6,
+      "avgSentences": 3.43,
+      "avgWords": 72.3
+    }
+  },
+  "proofExtracted": true,
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1
+    },
+    "decayEvents": 9,
+    "repairs": {
+      "total": 8,
+      "byTutor": 8,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": 2.13,
+    "unrepairedAtEnd": 1,
+    "degradedTurnIntegral": 30,
+    "dReversals": 1,
+    "timeline": [
+      {
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ],
+        "decayTurn": 3,
+        "repairTurn": 5,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_course",
+        "fact": [
+          "fedBy",
+          "schoolWell",
+          "fontHouse"
+        ],
+        "decayTurn": 5,
+        "repairTurn": 6,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ],
+        "decayTurn": 6,
+        "repairTurn": 7,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ],
+        "decayTurn": 8,
+        "repairTurn": null,
+        "via": null
+      },
+      {
+        "premiseId": "p_course",
+        "fact": [
+          "fedBy",
+          "schoolWell",
+          "fontHouse"
+        ],
+        "decayTurn": 8,
+        "repairTurn": 9,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_lore",
+        "fact": [
+          "taints",
+          "wormwood"
+        ],
+        "decayTurn": 9,
+        "repairTurn": 15,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_course",
+        "fact": [
+          "fedBy",
+          "schoolWell",
+          "fontHouse"
+        ],
+        "decayTurn": 15,
+        "repairTurn": 17,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_lore",
+        "fact": [
+          "taints",
+          "wormwood"
+        ],
+        "decayTurn": 17,
+        "repairTurn": 18,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_course",
+        "fact": [
+          "fedBy",
+          "schoolWell",
+          "fontHouse"
+        ],
+        "decayTurn": 18,
+        "repairTurn": 21,
+        "via": "tutor"
+      }
+    ]
+  }
+}

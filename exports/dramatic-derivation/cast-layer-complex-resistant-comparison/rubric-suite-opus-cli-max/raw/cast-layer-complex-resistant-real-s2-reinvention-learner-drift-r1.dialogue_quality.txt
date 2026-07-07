@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "pedagogical_progression": {
+      "score": 4,
+      "reasoning": "Clear forensic trajectory from the easy answer in t1 ('I put Reyner in the draft because the notes put him there first') to a traced chain — crown break (t4) → green mortar/pulled support (t9) → crowsfoot signature (t13) → Caudle yard (t17) → Oswin (t20). Understanding deepens across most turns, but t13–t15 restate nearly the same point ('the fall is traced by that mark... not a yard yet') three times, and the tutor's 'from X alone, what can you write?' frame recurs almost verbatim — real plateaus that keep it short of a 5."
+    },
+    "dialogical_responsiveness": {
+      "score": 4,
+      "reasoning": "The learner picks up the tutor's specific framing each turn, resists genuinely (the bond/liability counter sustained t2–t8), and even anticipates evidence — predicting a soffit mark at t7 and t11 before the photo arrives at t13. The tutor responds to the learner's actual moves ('I'm not asking you to erase the bond; keep that line,' t9; 'I know this has felt like the line keeps moving,' t20). Held to 4 by the tutor's recurrent scripted two-horned question structure ('does that add weight to who controlled the work, or show what cracked the crown?')."
+    },
+    "knowledge_co_construction": {
+      "score": 4,
+      "reasoning": "Collaborative reading: the learner contributes the soffit-mark hypothesis ahead of the evidence and articulates the central distinction in their own terms ('the cause and the liability aren't the same sentence, and I had them written as one in the draft,' t10). But every piece of evidence is stage-supplied and the inquiry's spine is the tutor's guided revelation, so the learner interprets material more than co-discovers it — collaborative building with substantial transfer, a solid 4 rather than emergence neither could reach alone."
+    },
+    "productive_tension_management": {
+      "score": 4,
+      "reasoning": "The learner's persistent resistance — 'the bond answers the liability question before the fall has a reason attached' (t2) — is never dismissed; it is explicitly honored ('keep that line, because it answers a real cost,' t9) and metabolized into the two-line cause/liability structure that is the dialogue's central achievement. Held to 4 because the learner concedes readily within nearly every turn ('I'll grant that cleanly'), so the tension is well-managed and productive but never reaches a hard impasse that forces a breakthrough."
+    },
+    "transformation_evidence": {
+      "score": 5,
+      "reasoning": "Visible position-evolution: the learner moves from 'write Reyner, the notes put him there first' (t1) and treating the bond as settling everything (t2) to the realization 'the cause and the liability aren't the same sentence — I had them written as one' (t10), ending at a conclusion outside the opening frame entirely: 'the fall is Oswin's pull,' with Reyner's bond a 'separate matter' (t20). Later turns plainly enact different thinking than early ones."
+    },
+    "interactional_coherence": {
+      "score": 5,
+      "reasoning": "Strong detective arc: temptation of the easy answer (t1), staged evidence development (t4–t17), and resolution naming Oswin (t20). Each turn connects to the last, the cause-vs-liability thread is sustained and resolved, and the stage reveals (the unopened folder held closed across t10–t17, then the toll book at t20) sequence the escalation purposefully."
+    }
+  },
+  "overall_score": 81,
+  "summary": "A well-built forensic dialogue with a clear anagnorisis: the learner separates causal agency (Oswin's pulled falsework) from contractual liability (Reyner's bond) through a guided evidence chain. Excellent coherence and unmistakable transformation, with the learner's bond-resistance honored and turned into the dialogue's organizing distinction. Held below the top tier by the tutor's formulaic micro-stepping, the learner's quick per-turn concessions, and evidence that is supplied rather than co-discovered. The public prose reads as natural period drama — no formalism, rule IDs, or hidden-state language to discount.",
+  "caveats": [
+    "The forensic structure is largely tutor-driven; the learner interprets stage-supplied evidence rather than introducing new material, so co-construction is genuine but bounded.",
+    "Progression is clear but somewhat mechanical — turns 13–15 repeat the same 'traces the mark, names no yard' beat and the tutor reuses a near-identical question frame throughout.",
+    "Scoring reflects dramatic/dialogical form enacted in the transcript, not any claim about real interior learning."
+  ]
+}

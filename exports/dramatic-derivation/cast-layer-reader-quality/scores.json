@@ -1,0 +1,688 @@
+{
+  "generatedAt": "2026-06-17T04:30:36.070Z",
+  "matrixDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/cast-layer-local-gate/matrix",
+  "scores": [
+    {
+      "id": "S0",
+      "label": "cast-layer-local-s0-no-cast",
+      "name": "no cast",
+      "summary": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 20,
+        "firstForcedTurn": 20,
+        "assertedGroundedTurn": 20,
+        "finalD": 0,
+        "dCurve": [
+          5,
+          5,
+          5,
+          4,
+          4,
+          4,
+          4,
+          4,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          0
+        ],
+        "releaseDeviationCount": 0,
+        "castEnabled": false,
+        "reinventionEnabled": false,
+        "castTurns": 0,
+        "reinventionTurns": [],
+        "allCastAuditsOk": true,
+        "anyProofOverride": false,
+        "learnerPostures": [],
+        "tutorStances": []
+      },
+      "stats": {
+        "lineCount": 51,
+        "tutorLineCount": 20,
+        "learnerLineCount": 20,
+        "stageLineCount": 11,
+        "formalismLeaks": [],
+        "acknowledgementCount": 10,
+        "phaticLearnerCount": 5,
+        "substantiveLearnerCount": 15,
+        "uniqueTutorTexts": 10,
+        "uniqueLearnerTexts": 8,
+        "avgTutorWords": 22.3,
+        "avgLearnerWords": 16.95,
+        "questionRatio": 0.55,
+        "finalLearnerLine": "Then it is shown: oswin.",
+        "sampleAcknowledgement": "I am listening; nothing new is on the table.",
+        "sampleQuestion": "Ask yourself the small question: with what is already in view, what can you now say?"
+      },
+      "rubrics": {
+        "tutor_v2_2_proxy": {
+          "rubric": "config/evaluation-rubric.yaml",
+          "confidence": "low-to-moderate heuristic proxy; not an LLM or human judge",
+          "overall": 54.4,
+          "dimensions": {
+            "perception_quality": {
+              "weight": 0.15,
+              "score": 2.5,
+              "evidence": "No cast-state learner posture is available."
+            },
+            "pedagogical_craft": {
+              "weight": 0.2,
+              "score": 3.5,
+              "evidence": "Average tutor line 22.3 words; question ratio 0.55."
+            },
+            "elicitation_quality": {
+              "weight": 0.15,
+              "score": 4,
+              "evidence": "Ask yourself the small question: with what is already in view, what can you now say?"
+            },
+            "adaptive_responsiveness": {
+              "weight": 0.15,
+              "score": 2.5,
+              "evidence": "No cast or reinvention signal is active."
+            },
+            "recognition_quality": {
+              "weight": 0.15,
+              "score": 2.5,
+              "evidence": "I am listening; nothing new is on the table."
+            },
+            "productive_difficulty": {
+              "weight": 0.1,
+              "score": 3.5,
+              "evidence": "Substantive learner ratio 0.75; final line: \"Then it is shown: oswin.\"."
+            },
+            "epistemic_integrity": {
+              "weight": 0.05,
+              "score": 4,
+              "evidence": "No raw formalism detected in public tutor/learner/stage lines."
+            },
+            "content_accuracy": {
+              "weight": 0.05,
+              "score": 4,
+              "evidence": "Runtime verdict: grounded_anagnorisis."
+            }
+          }
+        },
+        "dialogue_quality_proxy": {
+          "rubric": "config/evaluation-rubric-dialogue.yaml",
+          "confidence": "low-to-moderate heuristic proxy; not an LLM or human judge",
+          "overall": 58.1,
+          "dimensions": {
+            "pedagogical_progression": {
+              "weight": 0.2,
+              "score": 4,
+              "evidence": "D curve reaches 0; verdict grounded_anagnorisis."
+            },
+            "dialogical_responsiveness": {
+              "weight": 0.2,
+              "score": 3,
+              "evidence": "Tutor question ratio 0.55; substantive learner ratio 0.75."
+            },
+            "knowledge_co_construction": {
+              "weight": 0.2,
+              "score": 3.5,
+              "evidence": "Learner contributes substantive/hypothesis/assertion lines on 15/20 turns."
+            },
+            "productive_tension_management": {
+              "weight": 0.15,
+              "score": 3,
+              "evidence": "Defensive posture is present but no stance change is active."
+            },
+            "transformation_evidence": {
+              "weight": 0.15,
+              "score": 3.5,
+              "evidence": "Final learner line: \"Then it is shown: oswin.\"."
+            },
+            "interactional_coherence": {
+              "weight": 0.1,
+              "score": 2.5,
+              "evidence": "Unique learner utterance ratio 0.4; repetition remains visible."
+            }
+          }
+        },
+        "poetics_proxy": {
+          "rubric": "config/evaluation-rubric-poetics.yaml",
+          "confidence": "low heuristic proxy; dramatic-form evidence is thin in the mock transcript",
+          "overall": 46.3,
+          "dimensions": {
+            "peripeteia": {
+              "weight": 0.2,
+              "score": 3,
+              "evidence": "The close changes from inquiry to assertion: \"Then it is shown: oswin.\"."
+            },
+            "anagnorisis": {
+              "weight": 0.2,
+              "score": 3,
+              "evidence": "The learner names the answer in public: \"Then it is shown: oswin.\"."
+            },
+            "surprise_and_inevitability": {
+              "weight": 0.15,
+              "score": 2,
+              "evidence": "The proof arc is coherent, but the repeated template makes the final recognition highly signposted."
+            },
+            "unity_of_action": {
+              "weight": 0.15,
+              "score": 3.5,
+              "evidence": "6 scenes follow the same inquiry to D=0."
+            },
+            "hamartia_integration": {
+              "weight": 0.15,
+              "score": 2.5,
+              "evidence": "The learner error is represented mainly as staged proof debt, not as a richly enacted dramatic flaw."
+            },
+            "cathartic_closure": {
+              "weight": 0.15,
+              "score": 3,
+              "evidence": "Closure lands as a grounded but terse assertion: \"Then it is shown: oswin.\"."
+            }
+          }
+        },
+        "derivative_branch_criteria": {
+          "rubric": "cast-layer branch criteria, public conduct/discourse layer",
+          "confidence": "moderate for runtime invariants; low for reader-preference claims",
+          "overall": 55.6,
+          "dimensions": {
+            "proof_control_invariance": {
+              "weight": 0.22,
+              "score": 5,
+              "evidence": "Verdict grounded_anagnorisis; turns 20; final D 0; release deviations 0."
+            },
+            "public_nonleak_safety": {
+              "weight": 0.18,
+              "score": 5,
+              "evidence": "No public formalism leaks detected and cast audits remain clean."
+            },
+            "cast_visibility": {
+              "weight": 0.16,
+              "score": 1,
+              "evidence": "No cast state is emitted."
+            },
+            "character_coherence": {
+              "weight": 0.14,
+              "score": 2,
+              "evidence": "Public transcript has no authored role state beyond generic opening notes."
+            },
+            "bounded_reinvention": {
+              "weight": 0.15,
+              "score": null,
+              "evidence": "Not applicable: reinvention disabled."
+            },
+            "reader_quality_delta": {
+              "weight": 0.15,
+              "score": 2,
+              "evidence": "Mock public prose is effectively unchanged across arms, so reader-quality improvement is not established."
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "S1",
+      "label": "cast-layer-local-s1-static-cast",
+      "name": "static cast",
+      "summary": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 20,
+        "firstForcedTurn": 20,
+        "assertedGroundedTurn": 20,
+        "finalD": 0,
+        "dCurve": [
+          5,
+          5,
+          5,
+          4,
+          4,
+          4,
+          4,
+          4,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          0
+        ],
+        "releaseDeviationCount": 0,
+        "castEnabled": true,
+        "reinventionEnabled": false,
+        "castTurns": 20,
+        "reinventionTurns": [],
+        "allCastAuditsOk": true,
+        "anyProofOverride": false,
+        "learnerPostures": [
+          "ordinary",
+          "defensive_after_correction"
+        ],
+        "tutorStances": [
+          "craft examiner"
+        ]
+      },
+      "stats": {
+        "lineCount": 51,
+        "tutorLineCount": 20,
+        "learnerLineCount": 20,
+        "stageLineCount": 11,
+        "formalismLeaks": [],
+        "acknowledgementCount": 10,
+        "phaticLearnerCount": 5,
+        "substantiveLearnerCount": 15,
+        "uniqueTutorTexts": 10,
+        "uniqueLearnerTexts": 8,
+        "avgTutorWords": 22.3,
+        "avgLearnerWords": 16.95,
+        "questionRatio": 0.55,
+        "finalLearnerLine": "Then it is shown: oswin.",
+        "sampleAcknowledgement": "I am listening; nothing new is on the table.",
+        "sampleQuestion": "Ask yourself the small question: with what is already in view, what can you now say?"
+      },
+      "rubrics": {
+        "tutor_v2_2_proxy": {
+          "rubric": "config/evaluation-rubric.yaml",
+          "confidence": "low-to-moderate heuristic proxy; not an LLM or human judge",
+          "overall": 60,
+          "dimensions": {
+            "perception_quality": {
+              "weight": 0.15,
+              "score": 3,
+              "evidence": "Learner posture tracked as ordinary, defensive_after_correction."
+            },
+            "pedagogical_craft": {
+              "weight": 0.2,
+              "score": 3.5,
+              "evidence": "Average tutor line 22.3 words; question ratio 0.55."
+            },
+            "elicitation_quality": {
+              "weight": 0.15,
+              "score": 4,
+              "evidence": "Ask yourself the small question: with what is already in view, what can you now say?"
+            },
+            "adaptive_responsiveness": {
+              "weight": 0.15,
+              "score": 3,
+              "evidence": "Cast posture is tracked, but no stance change occurs."
+            },
+            "recognition_quality": {
+              "weight": 0.15,
+              "score": 3,
+              "evidence": "I am listening; nothing new is on the table."
+            },
+            "productive_difficulty": {
+              "weight": 0.1,
+              "score": 3.5,
+              "evidence": "Substantive learner ratio 0.75; final line: \"Then it is shown: oswin.\"."
+            },
+            "epistemic_integrity": {
+              "weight": 0.05,
+              "score": 4,
+              "evidence": "No raw formalism detected in public tutor/learner/stage lines."
+            },
+            "content_accuracy": {
+              "weight": 0.05,
+              "score": 4,
+              "evidence": "Runtime verdict: grounded_anagnorisis."
+            }
+          }
+        },
+        "dialogue_quality_proxy": {
+          "rubric": "config/evaluation-rubric-dialogue.yaml",
+          "confidence": "low-to-moderate heuristic proxy; not an LLM or human judge",
+          "overall": 58.1,
+          "dimensions": {
+            "pedagogical_progression": {
+              "weight": 0.2,
+              "score": 4,
+              "evidence": "D curve reaches 0; verdict grounded_anagnorisis."
+            },
+            "dialogical_responsiveness": {
+              "weight": 0.2,
+              "score": 3,
+              "evidence": "Tutor question ratio 0.55; substantive learner ratio 0.75."
+            },
+            "knowledge_co_construction": {
+              "weight": 0.2,
+              "score": 3.5,
+              "evidence": "Learner contributes substantive/hypothesis/assertion lines on 15/20 turns."
+            },
+            "productive_tension_management": {
+              "weight": 0.15,
+              "score": 3,
+              "evidence": "Defensive posture is present but no stance change is active."
+            },
+            "transformation_evidence": {
+              "weight": 0.15,
+              "score": 3.5,
+              "evidence": "Final learner line: \"Then it is shown: oswin.\"."
+            },
+            "interactional_coherence": {
+              "weight": 0.1,
+              "score": 2.5,
+              "evidence": "Unique learner utterance ratio 0.4; repetition remains visible."
+            }
+          }
+        },
+        "poetics_proxy": {
+          "rubric": "config/evaluation-rubric-poetics.yaml",
+          "confidence": "low heuristic proxy; dramatic-form evidence is thin in the mock transcript",
+          "overall": 46.3,
+          "dimensions": {
+            "peripeteia": {
+              "weight": 0.2,
+              "score": 3,
+              "evidence": "The close changes from inquiry to assertion: \"Then it is shown: oswin.\"."
+            },
+            "anagnorisis": {
+              "weight": 0.2,
+              "score": 3,
+              "evidence": "The learner names the answer in public: \"Then it is shown: oswin.\"."
+            },
+            "surprise_and_inevitability": {
+              "weight": 0.15,
+              "score": 2,
+              "evidence": "The proof arc is coherent, but the repeated template makes the final recognition highly signposted."
+            },
+            "unity_of_action": {
+              "weight": 0.15,
+              "score": 3.5,
+              "evidence": "6 scenes follow the same inquiry to D=0."
+            },
+            "hamartia_integration": {
+              "weight": 0.15,
+              "score": 2.5,
+              "evidence": "The learner error is represented mainly as staged proof debt, not as a richly enacted dramatic flaw."
+            },
+            "cathartic_closure": {
+              "weight": 0.15,
+              "score": 3,
+              "evidence": "Closure lands as a grounded but terse assertion: \"Then it is shown: oswin.\"."
+            }
+          }
+        },
+        "derivative_branch_criteria": {
+          "rubric": "cast-layer branch criteria, public conduct/discourse layer",
+          "confidence": "moderate for runtime invariants; low for reader-preference claims",
+          "overall": 76,
+          "dimensions": {
+            "proof_control_invariance": {
+              "weight": 0.22,
+              "score": 5,
+              "evidence": "Verdict grounded_anagnorisis; turns 20; final D 0; release deviations 0."
+            },
+            "public_nonleak_safety": {
+              "weight": 0.18,
+              "score": 5,
+              "evidence": "No public formalism leaks detected and cast audits remain clean."
+            },
+            "cast_visibility": {
+              "weight": 0.16,
+              "score": 4,
+              "evidence": "20 cast-state rows with tutor/learner/relation projections."
+            },
+            "character_coherence": {
+              "weight": 0.14,
+              "score": 3,
+              "evidence": "Stable roles: tutor stances craft examiner; learner postures ordinary, defensive_after_correction."
+            },
+            "bounded_reinvention": {
+              "weight": 0.15,
+              "score": null,
+              "evidence": "Not applicable: reinvention disabled."
+            },
+            "reader_quality_delta": {
+              "weight": 0.15,
+              "score": 2.5,
+              "evidence": "Mock public prose is effectively unchanged across arms, so reader-quality improvement is not established."
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "S2",
+      "label": "cast-layer-local-s2-reinvention",
+      "name": "cast + reinvention",
+      "summary": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 20,
+        "firstForcedTurn": 20,
+        "assertedGroundedTurn": 20,
+        "finalD": 0,
+        "dCurve": [
+          5,
+          5,
+          5,
+          4,
+          4,
+          4,
+          4,
+          4,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          1,
+          1,
+          1,
+          0
+        ],
+        "releaseDeviationCount": 0,
+        "castEnabled": true,
+        "reinventionEnabled": true,
+        "castTurns": 20,
+        "reinventionTurns": [
+          {
+            "turn": 7,
+            "trigger": "defensive_after_correction",
+            "fromStance": "craft examiner",
+            "toStance": "co-investigator",
+            "mayOverrideProofControl": false
+          }
+        ],
+        "allCastAuditsOk": true,
+        "anyProofOverride": false,
+        "learnerPostures": [
+          "ordinary",
+          "defensive_after_correction"
+        ],
+        "tutorStances": [
+          "craft examiner",
+          "co-investigator"
+        ]
+      },
+      "stats": {
+        "lineCount": 51,
+        "tutorLineCount": 20,
+        "learnerLineCount": 20,
+        "stageLineCount": 11,
+        "formalismLeaks": [],
+        "acknowledgementCount": 10,
+        "phaticLearnerCount": 5,
+        "substantiveLearnerCount": 15,
+        "uniqueTutorTexts": 10,
+        "uniqueLearnerTexts": 8,
+        "avgTutorWords": 22.3,
+        "avgLearnerWords": 16.95,
+        "questionRatio": 0.55,
+        "finalLearnerLine": "Then it is shown: oswin.",
+        "sampleAcknowledgement": "I am listening; nothing new is on the table.",
+        "sampleQuestion": "Ask yourself the small question: with what is already in view, what can you now say?"
+      },
+      "rubrics": {
+        "tutor_v2_2_proxy": {
+          "rubric": "config/evaluation-rubric.yaml",
+          "confidence": "low-to-moderate heuristic proxy; not an LLM or human judge",
+          "overall": 61.9,
+          "dimensions": {
+            "perception_quality": {
+              "weight": 0.15,
+              "score": 3,
+              "evidence": "Learner posture tracked as ordinary, defensive_after_correction."
+            },
+            "pedagogical_craft": {
+              "weight": 0.2,
+              "score": 3.5,
+              "evidence": "Average tutor line 22.3 words; question ratio 0.55."
+            },
+            "elicitation_quality": {
+              "weight": 0.15,
+              "score": 4,
+              "evidence": "Ask yourself the small question: with what is already in view, what can you now say?"
+            },
+            "adaptive_responsiveness": {
+              "weight": 0.15,
+              "score": 3.5,
+              "evidence": "Reinvention at t7."
+            },
+            "recognition_quality": {
+              "weight": 0.15,
+              "score": 3,
+              "evidence": "I am listening; nothing new is on the table."
+            },
+            "productive_difficulty": {
+              "weight": 0.1,
+              "score": 3.5,
+              "evidence": "Substantive learner ratio 0.75; final line: \"Then it is shown: oswin.\"."
+            },
+            "epistemic_integrity": {
+              "weight": 0.05,
+              "score": 4,
+              "evidence": "No raw formalism detected in public tutor/learner/stage lines."
+            },
+            "content_accuracy": {
+              "weight": 0.05,
+              "score": 4,
+              "evidence": "Runtime verdict: grounded_anagnorisis."
+            }
+          }
+        },
+        "dialogue_quality_proxy": {
+          "rubric": "config/evaluation-rubric-dialogue.yaml",
+          "confidence": "low-to-moderate heuristic proxy; not an LLM or human judge",
+          "overall": 60,
+          "dimensions": {
+            "pedagogical_progression": {
+              "weight": 0.2,
+              "score": 4,
+              "evidence": "D curve reaches 0; verdict grounded_anagnorisis."
+            },
+            "dialogical_responsiveness": {
+              "weight": 0.2,
+              "score": 3,
+              "evidence": "Tutor question ratio 0.55; substantive learner ratio 0.75."
+            },
+            "knowledge_co_construction": {
+              "weight": 0.2,
+              "score": 3.5,
+              "evidence": "Learner contributes substantive/hypothesis/assertion lines on 15/20 turns."
+            },
+            "productive_tension_management": {
+              "weight": 0.15,
+              "score": 3.5,
+              "evidence": "Defensive posture is met by a bounded stance change."
+            },
+            "transformation_evidence": {
+              "weight": 0.15,
+              "score": 3.5,
+              "evidence": "Final learner line: \"Then it is shown: oswin.\"."
+            },
+            "interactional_coherence": {
+              "weight": 0.1,
+              "score": 2.5,
+              "evidence": "Unique learner utterance ratio 0.4; repetition remains visible."
+            }
+          }
+        },
+        "poetics_proxy": {
+          "rubric": "config/evaluation-rubric-poetics.yaml",
+          "confidence": "low heuristic proxy; dramatic-form evidence is thin in the mock transcript",
+          "overall": 46.3,
+          "dimensions": {
+            "peripeteia": {
+              "weight": 0.2,
+              "score": 3,
+              "evidence": "The close changes from inquiry to assertion: \"Then it is shown: oswin.\"."
+            },
+            "anagnorisis": {
+              "weight": 0.2,
+              "score": 3,
+              "evidence": "The learner names the answer in public: \"Then it is shown: oswin.\"."
+            },
+            "surprise_and_inevitability": {
+              "weight": 0.15,
+              "score": 2,
+              "evidence": "The proof arc is coherent, but the repeated template makes the final recognition highly signposted."
+            },
+            "unity_of_action": {
+              "weight": 0.15,
+              "score": 3.5,
+              "evidence": "6 scenes follow the same inquiry to D=0."
+            },
+            "hamartia_integration": {
+              "weight": 0.15,
+              "score": 2.5,
+              "evidence": "The learner error is represented mainly as staged proof debt, not as a richly enacted dramatic flaw."
+            },
+            "cathartic_closure": {
+              "weight": 0.15,
+              "score": 3,
+              "evidence": "Closure lands as a grounded but terse assertion: \"Then it is shown: oswin.\"."
+            }
+          }
+        },
+        "derivative_branch_criteria": {
+          "rubric": "cast-layer branch criteria, public conduct/discourse layer",
+          "confidence": "moderate for runtime invariants; low for reader-preference claims",
+          "overall": 79.6,
+          "dimensions": {
+            "proof_control_invariance": {
+              "weight": 0.22,
+              "score": 5,
+              "evidence": "Verdict grounded_anagnorisis; turns 20; final D 0; release deviations 0."
+            },
+            "public_nonleak_safety": {
+              "weight": 0.18,
+              "score": 5,
+              "evidence": "No public formalism leaks detected and cast audits remain clean."
+            },
+            "cast_visibility": {
+              "weight": 0.16,
+              "score": 4,
+              "evidence": "20 cast-state rows with tutor/learner/relation projections."
+            },
+            "character_coherence": {
+              "weight": 0.14,
+              "score": 3,
+              "evidence": "Stable roles: tutor stances craft examiner, co-investigator; learner postures ordinary, defensive_after_correction."
+            },
+            "bounded_reinvention": {
+              "weight": 0.15,
+              "score": 5,
+              "evidence": "t7: craft examiner -> co-investigator (defensive_after_correction)"
+            },
+            "reader_quality_delta": {
+              "weight": 0.15,
+              "score": 2.5,
+              "evidence": "Mock public prose is effectively unchanged across arms, so reader-quality improvement is not established."
+            }
+          }
+        }
+      }
+    }
+  ]
+}

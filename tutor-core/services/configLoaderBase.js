@@ -14,6 +14,7 @@ import path from 'path';
 import yaml from 'yaml';
 import { createHash } from 'crypto';
 import { fileURLToPath } from 'url';
+import { externalProviderHandles } from './externalAIProvider.js';
 
 // Resolve paths relative to this module
 const __filename = fileURLToPath(import.meta.url);
@@ -141,15 +142,27 @@ export function resolveProviderConfig(providers, providerName) {
   const provider = providers?.[providerName];
 
   if (!provider) {
+    // Providers claimed by a registered external hook (e.g. a consuming
+    // repo's CLI bridge) need no YAML entry: they manage their own auth
+    // and endpoint, so a minimal configured block suffices.
+    if (externalProviderHandles(providerName)) {
+      return { models: {}, apiKey: '', isConfigured: true };
+    }
     throw new Error(`Unknown provider: ${providerName}`);
   }
 
   // Resolve API key from environment (if required)
   const apiKey = provider.api_key_env ? (process.env[provider.api_key_env] || '') : '';
 
-  // Providers without api_key_env (local, lmstudio, etc.) only need base_url
+  // Providers without api_key_env (local, lmstudio, etc.) only need base_url.
+  // Hook-handled external providers (CLI bridges) are always considered
+  // configured — they need neither an API key nor a base_url.
   const needsApiKey = Boolean(provider.api_key_env);
-  const isConfigured = needsApiKey ? Boolean(apiKey) : Boolean(provider.base_url);
+  const isConfigured = externalProviderHandles(providerName)
+    ? true
+    : needsApiKey
+      ? Boolean(apiKey)
+      : Boolean(provider.base_url);
 
   return {
     ...provider,

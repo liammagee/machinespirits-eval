@@ -1,0 +1,55 @@
+# Shrinkage probe A2 (SHRINKAGE-PROBES-PREREGISTRATION.md): scaling the
+# NULL codex register-router smoke. Fresh primes 601-653. NO mechanism
+# claim in either direction; the router question stays closed.
+base:
+  world: config/drama-derivation/world-005-marrick.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: baseline-r1
+    flags: { decay: '{"seed":601,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r1
+    flags: { decay: '{"seed":601,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r2
+    flags: { decay: '{"seed":607,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r2
+    flags: { decay: '{"seed":607,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r3
+    flags: { decay: '{"seed":613,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r3
+    flags: { decay: '{"seed":613,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r4
+    flags: { decay: '{"seed":617,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r4
+    flags: { decay: '{"seed":617,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r5
+    flags: { decay: '{"seed":619,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r5
+    flags: { decay: '{"seed":619,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r6
+    flags: { decay: '{"seed":631,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r6
+    flags: { decay: '{"seed":631,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r7
+    flags: { decay: '{"seed":641,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r7
+    flags: { decay: '{"seed":641,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r8
+    flags: { decay: '{"seed":643,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r8
+    flags: { decay: '{"seed":643,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r9
+    flags: { decay: '{"seed":647,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r9
+    flags: { decay: '{"seed":647,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r10
+    flags: { decay: '{"seed":653,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r10
+    flags: { decay: '{"seed":653,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }

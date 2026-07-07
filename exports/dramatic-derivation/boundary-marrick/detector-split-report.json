@@ -1,0 +1,801 @@
+{
+  "arms": [
+    {
+      "arm": "marrick-real-r1",
+      "worldId": "world_005_marrick",
+      "verdict": "disengagement",
+      "endTurn": 21,
+      "dFinal": 1,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "unguarded",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_graver@t16"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 16,
+            "premise": "p_graver",
+            "offset": -2,
+            "reason": "Played two turns early because the learner has cleanly held p_flaw and is ready to open the die chain before the closed blank hardens into a verdict.",
+            "solvency": {
+              "premise": "p_graver",
+              "turn": 16,
+              "safe": false,
+              "verdict": "disengagement",
+              "endTurn": 21,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 8,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 16,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "marrick-real-r2",
+      "worldId": "world_005_marrick",
+      "verdict": "disengagement",
+      "endTurn": 21,
+      "dFinal": 1,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "unguarded",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_graver@t16"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 16,
+            "premise": "p_graver",
+            "offset": -2,
+            "reason": "Played two turns early because the learner has explicitly asked for the tool-comparison proof and the die chain is ready to advance.",
+            "solvency": {
+              "premise": "p_graver",
+              "turn": 16,
+              "safe": false,
+              "verdict": "disengagement",
+              "endTurn": 21,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 7,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 16,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "marrick-real-r3",
+      "worldId": "world_005_marrick",
+      "verdict": "aporia",
+      "endTurn": 12,
+      "dFinal": 4,
+      "className": "decay_starved_lucky_leap",
+      "failureMode": "decay_seating_death",
+      "guardState": "unguarded",
+      "reasons": [
+        "2 unrepaired dropped premise(s) at end",
+        "0 lucky leap(s), 1 overreach event(s)",
+        "terminal learner text names dropped premise(s): m_caster, p_crucible"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "p_crucible",
+            "decayTurn": 9,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_caster",
+          "p_crucible"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 7,
+            "windowSize": 1,
+            "played": "p_crucible"
+          },
+          {
+            "turn": 12,
+            "windowSize": 1,
+            "played": null
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 1
+      }
+    },
+    {
+      "arm": "marrick-real-r4",
+      "worldId": "world_005_marrick",
+      "verdict": "aporia",
+      "endTurn": 8,
+      "dFinal": 5,
+      "className": "decay_starved_stall",
+      "failureMode": "decay_seating_death",
+      "guardState": "unguarded",
+      "reasons": [
+        "2 unrepaired dropped premise(s) at end"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "p_alloy",
+            "decayTurn": 7,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_caster",
+          "p_alloy"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 3,
+            "windowSize": 1,
+            "played": "p_alloy"
+          },
+          {
+            "turn": 6,
+            "windowSize": 1,
+            "played": null
+          },
+          {
+            "turn": 7,
+            "windowSize": 1,
+            "played": null
+          },
+          {
+            "turn": 8,
+            "windowSize": 1,
+            "played": "p_crucible"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "marrick-real-r5",
+      "worldId": "world_005_marrick",
+      "verdict": "disengagement",
+      "endTurn": 21,
+      "dFinal": 2,
+      "className": "decay_starved_lucky_leap",
+      "failureMode": "decay_seating_death",
+      "guardState": "unguarded",
+      "reasons": [
+        "2 unrepaired dropped premise(s) at end",
+        "0 lucky leap(s), 1 overreach event(s)",
+        "terminal learner text names dropped premise(s): p_caster"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 7,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "p_caster",
+            "decayTurn": 16,
+            "mode": "mutate",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "p_caster"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 16,
+            "windowSize": 1,
+            "played": null
+          },
+          {
+            "turn": 17,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 1
+      }
+    },
+    {
+      "arm": "marrick-guard-r1",
+      "worldId": "world_005_marrick",
+      "verdict": "grounded_anagnorisis",
+      "endTurn": 22,
+      "dFinal": 0,
+      "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "pacing",
+      "reasons": [
+        "grounded verdict; no detector split applied"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 14,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 17,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 1
+      }
+    },
+    {
+      "arm": "marrick-guard-r2",
+      "worldId": "world_005_marrick",
+      "verdict": "grounded_anagnorisis",
+      "endTurn": 22,
+      "dFinal": 0,
+      "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "pacing",
+      "reasons": [
+        "grounded verdict; no detector split applied"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 9,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_caster",
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 17,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 1
+      }
+    },
+    {
+      "arm": "marrick-guard-r3",
+      "worldId": "world_005_marrick",
+      "verdict": "grounded_anagnorisis",
+      "endTurn": 22,
+      "dFinal": 0,
+      "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "pacing",
+      "reasons": [
+        "grounded verdict; no detector split applied"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 12,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 17,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 1
+      }
+    },
+    {
+      "arm": "marrick-guard-r4",
+      "worldId": "world_005_marrick",
+      "verdict": "grounded_anagnorisis",
+      "endTurn": 22,
+      "dFinal": 0,
+      "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "pacing",
+      "reasons": [
+        "grounded verdict; no detector split applied"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 7,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_caster",
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 17,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "marrick-guard-r5",
+      "worldId": "world_005_marrick",
+      "verdict": "grounded_anagnorisis",
+      "endTurn": 22,
+      "dFinal": 0,
+      "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "pacing",
+      "reasons": [
+        "grounded verdict; no detector split applied"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 18,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_caster",
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 17,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 1
+      }
+    },
+    {
+      "arm": "marrick-visible-r1",
+      "worldId": "world_005_marrick",
+      "verdict": "disengagement",
+      "endTurn": 21,
+      "dFinal": 1,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "visible",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_flaw@t12, p_graver@t16"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 12,
+            "premise": "p_flaw",
+            "offset": -2,
+            "reason": "p_flaw pushed: page stalling (lines shortening -29.0)",
+            "solvency": {
+              "premise": "p_flaw",
+              "turn": 12,
+              "safe": false,
+              "verdict": "disengagement",
+              "endTurn": 17,
+              "forcedTurn": null
+            }
+          },
+          {
+            "turn": 16,
+            "premise": "p_graver",
+            "offset": -2,
+            "reason": "Played two turns early because the learner has named the missing tool-match and the page is stalling without the second-chain witness.",
+            "solvency": {
+              "premise": "p_graver",
+              "turn": 16,
+              "safe": false,
+              "verdict": "disengagement",
+              "endTurn": 21,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 10,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 16,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "marrick-visible-r2",
+      "worldId": "world_005_marrick",
+      "verdict": "disengagement",
+      "endTurn": 21,
+      "dFinal": 1,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "visible",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_flaw@t12, p_graver@t16"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 12,
+            "premise": "p_flaw",
+            "offset": -2,
+            "reason": "p_flaw pushed: page stalling (lines shortening -25.5)",
+            "solvency": {
+              "premise": "p_flaw",
+              "turn": 12,
+              "safe": false,
+              "verdict": "disengagement",
+              "endTurn": 17,
+              "forcedTurn": null
+            }
+          },
+          {
+            "turn": 16,
+            "premise": "p_graver",
+            "offset": -2,
+            "reason": "Played two turns early because the learner has named Rule 3's missing flawCutBy exactly and the page has gone four turns without a release.",
+            "solvency": {
+              "premise": "p_graver",
+              "turn": 16,
+              "safe": false,
+              "verdict": "disengagement",
+              "endTurn": 21,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 8,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 16,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "marrick-visible-r3",
+      "worldId": "world_005_marrick",
+      "verdict": "disengagement",
+      "endTurn": 21,
+      "dFinal": 1,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "visible",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_graver@t16"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 16,
+            "premise": "p_graver",
+            "offset": -2,
+            "reason": "Played two turns early because the learner has separated the notched serif from the guild paper and the page is narrowing around the tool-chain.",
+            "solvency": {
+              "premise": "p_graver",
+              "turn": 16,
+              "safe": false,
+              "verdict": "disengagement",
+              "endTurn": 21,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 12,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 16,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 1
+      }
+    },
+    {
+      "arm": "marrick-visible-r4",
+      "worldId": "world_005_marrick",
+      "verdict": "disengagement",
+      "endTurn": 21,
+      "dFinal": 1,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "visible",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_graver@t16"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 16,
+            "premise": "p_graver",
+            "offset": -2,
+            "reason": "Played two turns early because the learner has recovered p_flaw and its Rule 3 gap, and the page is beginning to stall.",
+            "solvency": {
+              "premise": "p_graver",
+              "turn": 16,
+              "safe": false,
+              "verdict": "disengagement",
+              "endTurn": 21,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 8,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 16,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "marrick-visible-r5",
+      "worldId": "world_005_marrick",
+      "verdict": "disengagement",
+      "endTurn": 21,
+      "dFinal": 1,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "visible",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_graver@t16"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 16,
+            "premise": "p_graver",
+            "offset": -2,
+            "reason": "p_graver pushed: page stalling (hedging up 0.50)",
+            "solvency": {
+              "premise": "p_graver",
+              "turn": 16,
+              "safe": false,
+              "verdict": "disengagement",
+              "endTurn": 21,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_caster",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_graver",
+            "decayTurn": 8,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_graver"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 16,
+            "windowSize": 1,
+            "played": "p_graver"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    }
+  ]
+}

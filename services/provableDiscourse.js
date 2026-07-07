@@ -3,6 +3,7 @@ import path from 'path';
 import { createHash } from 'crypto';
 import YAML from 'yaml';
 import Database from 'better-sqlite3';
+import { resolveConfiguredEvaluationDbPath, resolveConfiguredTutorDialoguesDir } from './evaluationDataPaths.js';
 
 const METRIC_DIM_KEYS = [
   'mutual_recognition',
@@ -916,7 +917,7 @@ function evaluateJudgePairCorrelation(db, evidence) {
 function evaluateLogTraceCoverage(db, evidence, rootDir) {
   const runIds = Array.isArray(evidence?.run_ids) ? evidence.run_ids : [];
   if (runIds.length === 0) throw new Error('log_trace_coverage requires run_ids');
-  const logDir = resolvePath(rootDir, evidence?.log_dir || 'logs/tutor-dialogues');
+  const logDir = resolveEvidenceLogDir(rootDir, evidence);
   const where = buildWhereClause({
     ...(evidence?.filters || {}),
     run_ids: runIds,
@@ -1006,9 +1007,13 @@ export function verifyTurnIdsForRow(dialogueId, tutorScoresObj, logDir) {
       result.set(turnIndex, false);
       continue;
     }
+    if (matchingTurn.contentTurnId) {
+      result.set(turnIndex, matchingTurn.contentTurnId === scoreTurnId);
+      continue;
+    }
     const turnContent = JSON.stringify({
       turnIndex: matchingTurn.turnIndex,
-      suggestion: matchingTurn.suggestion ? [matchingTurn.suggestion] : [],
+      suggestion: matchingTurn.suggestions || (matchingTurn.suggestion ? [matchingTurn.suggestion] : []),
       turnId: matchingTurn.turnId,
     });
     const expectedId = createHash('sha256')
@@ -1032,7 +1037,8 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
   if (checks.length === 0) throw new Error('provenance_check requires at least one check');
 
   const runIds = Array.isArray(evidence?.run_ids) ? evidence.run_ids : [];
-  const logDir = resolvePath(rootDir, evidence?.log_dir || 'logs/tutor-dialogues');
+  const logDir = resolveEvidenceLogDir(rootDir, evidence);
+  const waivers = loadOrphanWaivers(rootDir);
 
   const where = buildWhereClause({
     ...(evidence?.filters || {}),
@@ -1056,7 +1062,7 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
   const checkResults = {};
 
   for (const check of checks) {
-    checkResults[check] = { passed: 0, failed: 0, skipped: 0, failures: [] };
+    checkResults[check] = { passed: 0, failed: 0, skipped: 0, waived: 0, failures: [] };
   }
 
   for (const row of rows) {
@@ -1070,6 +1076,12 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
         }
         const filePath = path.join(logDir, `${row.dialogue_id}.json`);
         if (!fs.existsSync(filePath)) {
+          // Accepted-missing (genuine, documented transcript loss) → waived, not failed.
+          // Excluded from the pass-rate fraction; surfaced explicitly via the `waived` count.
+          if (waivers.has(`${row.run_id}::${row.dialogue_id}`)) {
+            checkResults[check].waived++;
+            continue;
+          }
           checkResults[check].failed++;
           checkResults[check].failures.push({ id: row.id, reason: 'log_file_missing' });
           continue;
@@ -1498,7 +1510,7 @@ function evaluateTrajectorySlope(db, evidence, rootDir) {
   let logMismatches = 0;
 
   // Resolve log directory for turn-level log verification
-  const logDir = turnLevel && rootDir ? path.join(rootDir, 'logs/tutor-dialogues') : null;
+  const logDir = turnLevel && rootDir ? resolveConfiguredTutorDialoguesDir(rootDir) : null;
 
   for (const row of rows) {
     if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
@@ -1657,7 +1669,7 @@ function evaluateConditionalDelta(db, evidence, rootDir) {
   let logMismatches = 0;
 
   // Resolve log directory for turn-level log verification
-  const logDir = turnLevel && rootDir ? path.join(rootDir, 'logs/tutor-dialogues') : null;
+  const logDir = turnLevel && rootDir ? resolveConfiguredTutorDialoguesDir(rootDir) : null;
 
   for (const row of rows) {
     if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
@@ -2164,6 +2176,41 @@ function resolvePath(rootDir, value) {
   return path.isAbsolute(value) ? value : path.join(rootDir, value);
 }
 
+function resolveEvidenceLogDir(rootDir, evidence) {
+  return resolveConfiguredTutorDialoguesDir(rootDir, evidence?.log_dir || null);
+}
+
+/**
+ * Load the accepted-missing dialogue-log waivers (config/provenance-orphan-waivers.json).
+ *
+ * A row is treated as `waived` (not `failed`) by the dialogue-log checks ONLY when its
+ * {dialogue_id}.json log file is genuinely ABSENT. A file that exists but hash-MISMATCHES is
+ * never waived — that indicates modification and must still fail. Matching is keyed on the
+ * `${run_id}::${dialogue_id}` pair, so a waiver can never spill onto a different run that
+ * happens to reuse a dialogue_id.
+ *
+ * Returns a Set of `${run_id}::${dialogue_id}` keys. An absent or malformed waiver file
+ * yields an empty Set (fail-closed: nothing is silently waived).
+ */
+export function loadOrphanWaivers(rootDir) {
+  const waiverPath = resolvePath(rootDir, 'config/provenance-orphan-waivers.json');
+  const keys = new Set();
+  if (!waiverPath || !fs.existsSync(waiverPath)) return keys;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(waiverPath, 'utf8'));
+    for (const w of parsed?.waivers || []) {
+      const runId = w?.run_id;
+      if (!runId) continue;
+      for (const d of w?.dialogues || []) {
+        if (d?.dialogue_id) keys.add(`${runId}::${d.dialogue_id}`);
+      }
+    }
+  } catch {
+    // absent/malformed waiver file → no waivers
+  }
+  return keys;
+}
+
 function loadClaimInventory(inventoryPath) {
   if (!inventoryPath || !fs.existsSync(inventoryPath)) return null;
   try {
@@ -2178,6 +2225,41 @@ function loadClaimInventory(inventoryPath) {
   } catch {
     return null;
   }
+}
+
+function relativePath(baseDir, filePath) {
+  return filePath ? path.relative(baseDir, filePath) : null;
+}
+
+function buildPaperSources(baseDir, spec, epoch) {
+  const legacyPaperPath = resolvePath(baseDir, spec.paper_path);
+  const paper2Path = spec.paper2_path ? resolvePath(baseDir, spec.paper2_path) : null;
+  const paper2Available = paper2Path && fs.existsSync(paper2Path);
+  const sources = [];
+  let mode = 'legacy_primary';
+
+  if (epoch === '2.0' && paper2Available) {
+    sources.push(paper2Path);
+    mode = 'paper2_primary';
+  } else if (epoch === 'all') {
+    sources.push(legacyPaperPath);
+    if (paper2Available && paper2Path !== legacyPaperPath) sources.push(paper2Path);
+    mode = paper2Available ? 'combined_all' : 'legacy_primary';
+  } else {
+    sources.push(legacyPaperPath);
+    if (epoch === '2.0') mode = 'paper2_missing_legacy_fallback';
+  }
+
+  return {
+    sources,
+    mode,
+    legacyPaperPath,
+    paper2Path: paper2Available ? paper2Path : null,
+  };
+}
+
+function isTheoreticalClaim(claim) {
+  return claim?.evidence?.type === 'theoretical' || claim?.assertion?.op === 'theoretical';
 }
 
 function loadClaimsFromImportPath(importPath) {
@@ -2404,18 +2486,14 @@ export function runProvableDiscourseAudit({
     .map((importPath) => resolvePath(baseDir, importPath))
     .map((resolvedPath) => loadClaimsFromImportPath(resolvedPath));
 
-  const resolvedPaperPath = resolvePath(baseDir, spec.paper_path);
-  const resolvedPaper2Path = spec.paper2_path ? resolvePath(baseDir, spec.paper2_path) : null;
+  const paperSources = buildPaperSources(baseDir, spec, epoch);
   const resolvedManifestPath = resolvePath(baseDir, spec.manifest_path);
-  const resolvedDbPath = resolvePath(baseDir, spec.db_path);
+  const resolvedDbPath = resolveConfiguredEvaluationDbPath(baseDir, spec.db_path);
   const resolvedAuditPath = resolvePath(baseDir, spec.audit_report_path);
   const resolvedSnapshotPath = resolvePath(baseDir, spec.snapshot_path);
   const resolvedInventoryPath = resolvePath(baseDir, spec.inventory_path);
 
-  let paperText = fs.readFileSync(resolvedPaperPath, 'utf8');
-  if (resolvedPaper2Path && fs.existsSync(resolvedPaper2Path)) {
-    paperText += '\n' + fs.readFileSync(resolvedPaper2Path, 'utf8');
-  }
+  const paperText = paperSources.sources.map((sourcePath) => fs.readFileSync(sourcePath, 'utf8')).join('\n');
   const manifest = JSON.parse(fs.readFileSync(resolvedManifestPath, 'utf8'));
   const auditChecks = parseAuditChecks(resolvedAuditPath);
   const inventory = loadClaimInventory(resolvedInventoryPath);
@@ -2426,7 +2504,11 @@ export function runProvableDiscourseAudit({
   const report = {
     started_at: now,
     spec_path: path.relative(baseDir, resolvedSpecPath),
-    paper_path: path.relative(baseDir, resolvedPaperPath),
+    paper_path: relativePath(baseDir, paperSources.sources[0]),
+    paper_paths: paperSources.sources.map((sourcePath) => relativePath(baseDir, sourcePath)),
+    paper_source_mode: paperSources.mode,
+    legacy_paper_path: relativePath(baseDir, paperSources.legacyPaperPath),
+    paper2_path: relativePath(baseDir, paperSources.paper2Path),
     manifest_path: path.relative(baseDir, resolvedManifestPath),
     db_path: path.relative(baseDir, resolvedDbPath),
     audit_report_path: resolvedAuditPath ? path.relative(baseDir, resolvedAuditPath) : null,
@@ -2558,23 +2640,28 @@ export function runProvableDiscourseAudit({
             }
           }
 
-          const previousSnapshot = snapshot?.claims?.[claim.id];
-          const currentFingerprint = stableSerialize(evidence.fingerprint || {});
-          if (refreshSnapshot) {
-            snapshot.claims[claim.id] = {
-              updated_at: now,
-              fingerprint: evidence.fingerprint || {},
-              actual_value: evidence.value,
-            };
-          } else if (previousSnapshot) {
-            const previousFingerprint = stableSerialize(previousSnapshot.fingerprint || {});
-            if (currentFingerprint !== previousFingerprint) {
-              result.status = mergeStatus(result.status, 'warn');
-              result.messages.push('Underlying evidence fingerprint changed since last snapshot (stale-claim risk)');
-            }
+          if (isTheoreticalClaim(claim)) {
+            result.details.proof_status = 'theoretical_registration';
+            result.details.snapshot_required = false;
           } else {
-            result.status = mergeStatus(result.status, 'warn');
-            result.messages.push('No snapshot baseline for this claim (run with --refresh-snapshot)');
+            const previousSnapshot = snapshot?.claims?.[claim.id];
+            const currentFingerprint = stableSerialize(evidence.fingerprint || {});
+            if (refreshSnapshot) {
+              snapshot.claims[claim.id] = {
+                updated_at: now,
+                fingerprint: evidence.fingerprint || {},
+                actual_value: evidence.value,
+              };
+            } else if (previousSnapshot) {
+              const previousFingerprint = stableSerialize(previousSnapshot.fingerprint || {});
+              if (currentFingerprint !== previousFingerprint) {
+                result.status = mergeStatus(result.status, 'warn');
+                result.messages.push('Underlying evidence fingerprint changed since last snapshot (stale-claim risk)');
+              }
+            } else {
+              result.status = mergeStatus(result.status, 'warn');
+              result.messages.push('No snapshot baseline for this claim (run with --refresh-snapshot)');
+            }
           }
         } catch (error) {
           result.status = mergeStatus(result.status, 'fail');

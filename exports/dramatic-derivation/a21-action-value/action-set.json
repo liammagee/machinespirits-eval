@@ -1,0 +1,153 @@
+{
+  "schema": "dramatic-derivation.a21.action-set.v0",
+  "fixtureId": "hethel-trigger-fixture",
+  "status": "frozen_initial_candidate_set",
+  "winnerActionId": null,
+  "actions": [
+    {
+      "actionId": "A_DIAG_CONFLICT",
+      "moveFamily": "ask_diagnostic",
+      "description": "Ask the learner to name the public conflict or dead-predicate mismatch.",
+      "tutorInstruction": "Ask one short public diagnostic about what the learner thinks the current sign licenses. Do not release a new exhibit.",
+      "releaseDirectives": {
+        "releaseNow": [],
+        "hold": [
+          "p_point"
+        ],
+        "noLeak": [
+          "secret solution",
+          "raw proof path",
+          "D arithmetic",
+          "hidden board state"
+        ]
+      },
+      "expectedStateChange": {
+        "diagnosticHistory": {
+          "count": "+1"
+        },
+        "evidenceSeen": {
+          "p_point": false
+        }
+      },
+      "knownRisks": [
+        "May repeat the A20 maintenance pattern after diagnostic budget exhaustion.",
+        "May increase frustration without decreasing proof distance."
+      ],
+      "opportunityCost": {
+        "consumesTurn": true,
+        "delaysRelease": [
+          "p_point"
+        ],
+        "mayIncreaseFrustration": true,
+        "mayLeak": false
+      }
+    },
+    {
+      "actionId": "B_RELEASE_P_POINT",
+      "moveFamily": "release_next_evidence",
+      "description": "Release p_point now and ask the learner to use it in the next relation.",
+      "tutorInstruction": "Release the next public point now. Ask the learner to work only from that newly staged public piece.",
+      "releaseDirectives": {
+        "releaseNow": [
+          "p_point"
+        ],
+        "hold": [],
+        "noLeak": [
+          "secret solution",
+          "raw proof path",
+          "D arithmetic",
+          "hidden board state"
+        ]
+      },
+      "expectedStateChange": {
+        "evidenceSeen": {
+          "p_point": true
+        },
+        "proofProgress": {
+          "D": "decrease_or_remain_solvable"
+        }
+      },
+      "knownRisks": [
+        "May advance before the dependency is owned.",
+        "May leak if the tutor supplies the hidden relation rather than the public exhibit."
+      ],
+      "opportunityCost": {
+        "consumesTurn": true,
+        "delaysRelease": [],
+        "mayIncreaseFrustration": false,
+        "mayLeak": true
+      }
+    },
+    {
+      "actionId": "C_RESTAGE_P_POINT",
+      "moveFamily": "repair_dependency",
+      "description": "Restage p_point as a dependency repair without changing the release schedule.",
+      "tutorInstruction": "Restage the already public point in plain language and ask the learner to put it in their own words.",
+      "releaseDirectives": {
+        "releaseNow": [],
+        "hold": [
+          "p_point"
+        ],
+        "noLeak": [
+          "secret solution",
+          "raw proof path",
+          "D arithmetic",
+          "hidden board state"
+        ]
+      },
+      "expectedStateChange": {
+        "dependencyOwned": {
+          "p_point": true
+        },
+        "dependencyEchoedOnly": {
+          "p_point": false
+        }
+      },
+      "knownRisks": [
+        "May be only a dressed-up consolidation move if p_point has not actually been seen.",
+        "May delay release when release is already authorized."
+      ],
+      "opportunityCost": {
+        "consumesTurn": true,
+        "delaysRelease": [
+          "p_point"
+        ],
+        "mayIncreaseFrustration": false,
+        "mayLeak": false
+      }
+    },
+    {
+      "actionId": "D_CONSOLIDATE_THEN_RELEASE",
+      "moveFamily": "consolidate_subproof",
+      "description": "Consolidate the current subproof, then authorize release only if consolidation succeeds.",
+      "tutorInstruction": "Ask the learner to restate the current dependency chain, then keep the next public point queued.",
+      "releaseDirectives": {
+        "releaseNow": [],
+        "hold": [
+          "p_point"
+        ],
+        "noLeak": [
+          "secret solution",
+          "raw proof path",
+          "D arithmetic",
+          "hidden board state"
+        ]
+      },
+      "expectedStateChange": {
+        "confidence": "increase_if_predecessor_owned"
+      },
+      "knownRisks": [
+        "May become another maintenance move that delays proof advance.",
+        "May not repair the target dependency unless the predecessor is already owned."
+      ],
+      "opportunityCost": {
+        "consumesTurn": true,
+        "delaysRelease": [
+          "p_point"
+        ],
+        "mayIncreaseFrustration": true,
+        "mayLeak": false
+      }
+    }
+  ]
+}

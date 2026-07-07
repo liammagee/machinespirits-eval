@@ -1,0 +1,37 @@
+```json
+{
+  "scores": {
+    "pedagogical_progression": {
+      "score": 3,
+      "reasoning": "Real building runs T1–T7: officer-vs-hand distinction → the hidden dusk-seal found under slant light (T4) → the pass-law that the seal-press, not stewardship, is the operative act (T7); T9 adds a sole-custody refinement. But T5, T8, T10, T11 and T12 restate the same two settled facts (the raven's-notch seal; the seal-press is operative) and the same single open point (who keeps the stamp) while the folio stays closed, and resolution only lands at T13. The substantial mid-to-late circling caps progression at the midpoint."
+    },
+    "dialogical_responsiveness": {
+      "score": 4,
+      "reasoning": "Consistently specific uptake: the learner takes up the tutor's exact images (slant light, raven's notch, the heavier chair, the cord, 'three entries not one') and answers the precise question posed, and the tutor builds each prompt on the learner's prior words while acknowledging the learner's pushback on naming Corvin (T2, T6). Held from 5 by the recurring formulaic 'read it back in your own words' device and the tutor-asks / learner-restates asymmetry — the learner almost never redirects the exchange."
+    },
+    "knowledge_co_construction": {
+      "score": 3,
+      "reasoning": "The three load-bearing facts — the hidden dusk-seal, the pass-law, and Elian as sole keeper — are all supplied by stage directions and the tutor; the learner discovers nothing the world does not hand over, and the final answer arrives at T13 to be read back. The learner does real interpretive work (holding the officer-vs-hand frame, the sole-custody point at T9, extending the 'seal is the hand the warrant leaves behind' image into reasoning), which keeps it above pure transmission, but it remains predominantly tightly-steered guided discovery rather than knowledge neither party could produce alone."
+    },
+    "productive_tension_management": {
+      "score": 3,
+      "reasoning": "The one genuine tension — the room's pull to name Corvin — is acknowledged and held productively across T2/T6/T7 (keeping answerability and the signing hand on separate sides of the ledger). But the learner already resists Corvin from T1, so the tension is defended, not generative; there is no tutor-learner disagreement, no learner confusion to work through, and the closed-folio suspense is dramatic atmosphere rather than managed intellectual difficulty."
+    },
+    "transformation_evidence": {
+      "score": 3,
+      "reasoning": "The learner's information state clearly evolves (from 'bring the pass to the table' at T1 to 'the hand is Elian's' at T13), but the analytical stance is stable and correct from the outset — it is the hand on the seal, not the officer — and is vindicated wholesale at the close. The reversal lives in the case (the hidden seal overturns the obvious Corvin answer), not in either party's framing; the learner is confirmed rather than transformed."
+    },
+    "interactional_coherence": {
+      "score": 5,
+      "reasoning": "A clear, sustained arc: sealed question (T1) → roll / seal / law development → closed-folio suspense → Elian named (T13). Every turn connects to the prior one; the imagery (lamp, wax, raven's notch, the chairs, the cord) and the stage directions' emotional track (curiosity → reckoning → demand) are carried through without dropped threads, and the exchange reads as purposeful from opening to resolution."
+    }
+  },
+  "overall_score": 60,
+  "summary": "A tightly coherent, atmospherically sustained judicial drama with consistently specific mutual uptake. Its strengths are craft and arc (coherence 5, responsiveness 4) rather than collaborative learning: substantial mid-dialogue restatement, evidence entirely supplied by the world and tutor, frictionless tutor-learner alignment, and a learner who is vindicated rather than transformed hold the learning-oriented dimensions at the midpoint. Weighted ≈ 3.4/5.",
+  "caveats": [
+    "Deterministic proof/problem-solving correctness is scored separately; this assesses public discourse quality only (0 public formalism leaks reported).",
+    "The read-back turns (5, 8, 10, 11, 12) are deliberate restraint to prevent premature closure before the folio opens; I read them as limiting progression, but they are defensibly disciplined craft — a genuine interpretive call.",
+    "Knowledge co-construction and transformation sit on the 3/4 and 2/3 boundaries respectively: the learner's interpretive contributions are real, but the load-bearing facts and the final answer are world-/tutor-supplied and the learner's stance never shifts."
+  ]
+}
+```

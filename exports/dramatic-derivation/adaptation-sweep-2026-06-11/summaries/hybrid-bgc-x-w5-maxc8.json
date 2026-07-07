@@ -1,0 +1,92 @@
+{
+  "strategy": {
+    "name": "hybrid-bgc-x-w5",
+    "description": "Round-2 hybrid: blocking-greedy tutor x recency-w5 learner (tutor from T, learner from L, fresh roles per run)."
+  },
+  "grid": {
+    "rates": [
+      1
+    ],
+    "graces": [
+      0
+    ],
+    "maxConcurrents": [
+      8
+    ],
+    "startTurns": [
+      1
+    ],
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "worlds": [
+      "000-smoke",
+      "001-nocturne",
+      "002-lantern",
+      "003-bitterwell",
+      "004-withercombe"
+    ]
+  },
+  "runs": 25,
+  "successes": 25,
+  "successRate": 1,
+  "scheduleViolations": 0,
+  "byWorld": [
+    {
+      "world": "000-smoke",
+      "runs": 5,
+      "successRate": 1
+    },
+    {
+      "world": "001-nocturne",
+      "runs": 5,
+      "successRate": 1
+    },
+    {
+      "world": "002-lantern",
+      "runs": 5,
+      "successRate": 1
+    },
+    {
+      "world": "003-bitterwell",
+      "runs": 5,
+      "successRate": 1
+    },
+    {
+      "world": "004-withercombe",
+      "runs": 5,
+      "successRate": 1
+    }
+  ],
+  "byRate": [
+    {
+      "rate": 1,
+      "successRate": 1
+    }
+  ],
+  "rateGraceMatrix": {
+    "rates": [
+      1
+    ],
+    "graces": [
+      0
+    ],
+    "successRate": [
+      [
+        1
+      ]
+    ]
+  },
+  "failureModes": {},
+  "strongestFullySurvived": {
+    "rate": 1,
+    "grace": 0,
+    "maxConcurrent": 8,
+    "startTurn": 1
+  },
+  "elapsedMs": 88
+}

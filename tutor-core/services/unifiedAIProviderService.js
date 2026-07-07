@@ -8,6 +8,7 @@
 
 import { getApiKey, getDefaultModel, getDefaultProviderId, logInteraction } from './aiConfigService.js';
 import { parseSSEStream } from './sseStreamParser.js';
+import { externalProviderHandles, callExternalProvider } from './externalAIProvider.js';
 
 // ============================================================================
 // Configuration Presets
@@ -582,6 +583,39 @@ export async function call({
   };
 
   const startTime = Date.now();
+
+  // External-provider hook (e.g. a consuming repo's local CLI bridge).
+  // Covers this module's non-streaming call() surface — and therefore
+  // aiService.generateText(), the dialectical critique/negotiation layer.
+  // When no hook is registered this block is a no-op.
+  if (externalProviderHandles(provider)) {
+    const ext = await callExternalProvider({
+      channel: 'unified',
+      provider,
+      model,
+      systemPrompt,
+      messages,
+      hyperparameters: {
+        temperature: finalConfig.temperature,
+        max_tokens: finalConfig.maxTokens,
+      },
+    });
+    const inputTokens = ext.inputTokens || 0;
+    const outputTokens = ext.outputTokens || 0;
+    return {
+      content: ext.text || '',
+      model: ext.model || model,
+      usage: {
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
+        cost: ext.cost || 0,
+      },
+      latencyMs: ext.latencyMs ?? Date.now() - startTime,
+      provider,
+      generationId: null,
+    };
+  }
 
   try {
     const response = await dispatch(provider, model, systemPrompt, messages, finalConfig);

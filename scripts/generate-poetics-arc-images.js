@@ -374,41 +374,34 @@ function buildPanels({ analysis, htmlPath, imageDir, opts, selectedSections }) {
 function inferVisualMetaphor(section) {
   const id = section.id;
   const text = `${section.heading} ${section.text}`.toLowerCase();
+  // Bespoke noir editorial-cartoon metaphors, one per section of the dramatic-derivation
+  // arc note (the section ids in 2026-05-26-paper-to-dramatic-recognition-arc.html).
   const byId = {
-    paper:
-      'a research paper unfolding into a theatre stage, with supported calibration lit clearly and adaptive responsiveness marked as a smaller unresolved shadow',
-    proxy:
-      'a modest slope gauge beside a stage door, showing that a flat average curve is only a coarse proxy for recognition',
-    sidecar:
-      'a three-lane evidence bench comparing strong, boundary, and risk claims, with the clean-anchor run pinned as a live exhibit',
-    'habit-break': 'a tutor at a forked path changing tools only after the learner shows a concrete stuck point',
-    ending: 'a learner trying the tutor device, then turning back to redraw the original difficulty',
-    oedipus:
-      'a sealed Oedipus dossier under stage light, with one panel marked guided discovery and another marked fragile replication',
-    family:
-      'three prompt-family masks on a rehearsal wall, where intersubjective pedagogy glows more strongly than theory vocabulary',
-    surface:
-      'a question mark and several surface cues acting as weather vanes, useful only when tied to the whole dialogue scene',
-    boundary:
-      'a narrow doorway labelled dramatic mechanism, opening from a larger null-result wall into a disciplined next experiment',
     'starting-point':
-      'a paper mechanism diagram becoming a theatre stage, with one lane labelled calibration and one lane labelled adaptive null',
-    arc: 'a measured slope chart dissolving into a staged learner-tutor encounter under a spotlight',
-    evidence: 'an evidence wall with strong, boundary, and risk cards connected to a small poetics browser terminal',
-    adaptation: 'a tutor at a forked path changing tools only after the learner shows a concrete stuck point',
-    'ending-shape': 'a learner trying the tutor device, then turning back to redraw the original difficulty',
-    'landing-update-0528': 'case files, witnesses, and a critic panel showing a result that will not stabilize',
-    conceptual: 'a ruler for average slopes laid beside a blueprint for dramatic mechanism specification',
-    'durable-output': 'a compact control loop machine: observe, classify, choose, generate, check, update',
-    'paper-implication':
-      'a null-result seal reframed into a narrower guided-discovery doorway where deep secrets need help',
+      'a precise average-slope ruler laid across a darkened tutoring scene under venetian-blind light, while the single decisive hinge of the lesson slips out of the ruler frame into shadow',
+    'the-stage':
+      'a tutoring desk lit hard as a noir theatre stage, three chalk marks on the boards labelled block, turn, recognition, and a checker stamp coming down on the third mark',
+    derivation:
+      'a proof drawn as a constellation of wired evidence nodes the tutor must walk a learner across, a distance dial marked D ticking toward zero, the final node still behind a small curtain',
+    'figure-authority':
+      'a tutor wearing one frozen rhetorical mask repeated down a strip of film, a soft whispered manner-note only thickening the rut, and a single index card naming the device that cracks the mask open',
+    'internal-superego':
+      'an empty director chair offstage in stage haze while a small lamplit watcher is installed inside the tutor head, catching a third identical gesture in mid-air before it is spoken',
+    decay:
+      'a learner memory board with inked entries dissolving to smoke, one tutor who can see the fading marks reaching to restore them and a blind tutor beside an empty outstretched hand',
+    'calendar-repair':
+      'a clue-release calendar pinned to a noir investigation board, the tutor pulling one card a single beat too early as a stage curtain drops, and a one-step repair tag stitching the broken thread back',
+    'the-guards':
+      'two hard-edged lanterns over a forked stage, one lantern reading the page surface and one reading the hidden depth below the boards, each bright over a differently shaped little world and dark over the other',
+    verdict:
+      'a noir evidence wall with three pinned cards reading settled, scope-bound, and open, and a heavy rubber stamp pressing the words dramatic form, not mind-reading',
   };
   if (byId[id]) return byId[id];
-  if (text.includes('evidence')) return byId.evidence;
-  if (text.includes('ending')) return byId['ending-shape'];
-  if (text.includes('adapt')) return byId.adaptation;
-  if (text.includes('paper')) return byId['paper-implication'];
-  return 'an editorial comic panel translating the section into tutor-learner mechanism diagrams';
+  if (text.includes('guard') || text.includes('world')) return byId['the-guards'];
+  if (text.includes('decay') || text.includes('forget')) return byId.decay;
+  if (text.includes('derivation') || text.includes('proof')) return byId.derivation;
+  if (text.includes('superego') || text.includes('critic')) return byId['internal-superego'];
+  return 'a noir editorial comic panel translating the section into a tutor-learner mechanism on a lamplit stage';
 }
 
 function buildCaption(section) {

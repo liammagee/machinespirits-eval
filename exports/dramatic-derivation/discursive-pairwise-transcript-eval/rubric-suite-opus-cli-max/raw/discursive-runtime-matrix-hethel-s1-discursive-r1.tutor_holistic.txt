@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 4,
+      "reasoning": "Strong cumulative arc built as a single evidence chain, link by link: opening framing (ownership vs. the act, T1-2) → failure location (crown/keystone, T4) → cause (green mortar, struck centering, T9) → durable trace (crowsfoot, T13) → single yard (Caudle, T15) → single hand (Oswin, T20). The recurring 'Shown / Shown / Still not shown' ledger makes the accumulation legible, and the turns genuinely cannot be reordered without collapse — each extends the prior. Held below 5 by a somewhat formulaic four-fold 'give it back in your own words' rhythm (T5/10/14/18) and a real retread at T17 of the timber-reeve point already settled across T15-16."
+    },
+    "adaptive_trajectory": {
+      "score": 3,
+      "reasoning": "The tutor's core method is consistent end to end (pose a question → separate what is shown from what is not → anchor with a fresh metaphor → advance one link). There is a discernible shift from open exploratory prompts early (T1-3) to sharper constraining 'not-X, not-Y, not-Z' guidance late (T12, T16, T19), but that shift tracks the problem's intrinsic narrowing more than adaptation to this particular learner. The learner is uniformly competent from T1 onward and never stumbles, so there is little learner-specific signal for the strategy to respond to — adjustments are present but modest rather than substantive."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Excellent consolidation: the final turn recapitulates the entire chain in order and grounds the conclusion (Oswin) on the established steps rather than asserting it ('each step read before the name'), and the dialogue ends precisely at resolution rather than mid-thread. Held below 5 because no remaining gaps are explicitly named and no forward next steps are offered — appropriate to a derivation that reaches a complete, grounded conclusion, but it is case-closure rather than a wrap-up of the learner's broader learning trajectory."
+    }
+  },
+  "overall_score": 66,
+  "summary": "A tightly constructed investigative dialogue with a masterful, non-rearrangeable evidence chain and a clean, fully-grounded resolution. The public discourse is entirely naturalistic — no formalism leakage — and its real strength is the legible, link-by-link build toward a single earned conclusion. It is weaker on learner-driven adaptation (the tutor's method holds steady and the learner is uniformly strong) and on forward-looking closure (the case closes cleanly, but no gaps or next steps are named).",
+  "caveats": [
+    "Adaptive-trajectory evidence is limited by a uniformly competent learner who never struggles, so the tutor's evolution reflects the problem's narrowing more than responsiveness to learner difficulty.",
+    "Closure is case-resolution rather than a meta-pedagogical wrap-up; gap-identification and next steps are absent, partly as a function of the derivation genre.",
+    "Scored on public discourse only; the deterministic proof/derivation gate is reported separately and was neither rewarded nor penalized here."
+  ]
+}

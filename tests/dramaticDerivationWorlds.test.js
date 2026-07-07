@@ -62,6 +62,78 @@ const WORLDS = [
     recognitionTurn: 19,
     concealed: ['joss', 'fonthouse', 'font-house', 'wormwood', 'apothecary'],
   },
+  {
+    worldFile: 'config/drama-derivation/world-005-marrick.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/marrick-v001.md',
+    recognitionTurn: 22,
+    concealed: ['edony', 'weir', 'dross', 'burin', 'notch'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-019-marrick-resistant.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/marrick-v001.md',
+    recognitionTurn: 22,
+    concealed: ['edony', 'weir', 'dross', 'burin', 'notch'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-006-hethel.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-010-hethel-resistant.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-011-hethel-resistant-dogmatic.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-012-hethel-complex-resistant.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-013-hethel-civic-entrenchment.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-014-hethel-patronage-bind.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-015-hethel-public-reversal.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/hethel-v001.md',
+    recognitionTurn: 20,
+    concealed: ['oswin', 'caudle', 'crowsfoot'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-007-fengate.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/fengate-v001.md',
+    recognitionTurn: 22,
+    concealed: ['sable', 'bluebit', 'redbarrow', 'fenlime'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-008-sealhouse.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/sealhouse-v001.md',
+    recognitionTurn: 22,
+    concealed: ['neris', 'greenwax', 'cloisterlamp', 'cloister lamp', 'thornpick'],
+  },
+  {
+    worldFile: 'config/drama-derivation/world-009-ravensmark.yaml',
+    scriptFile: 'config/drama-derivation/tutor-scripts/ravensmark-v001.md',
+    recognitionTurn: 15,
+    concealed: ['elian', 'duskseal', 'dusk-seal'],
+  },
 ];
 
 /** Wraps the mock client, recording every prompt the learner role receives. */
@@ -112,6 +184,28 @@ for (const spec of WORLDS) {
     }
     return first;
   };
+  const normalizedText = (text) =>
+    String(text || '')
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+  const naturalFact = (fact) =>
+    fact
+      .map((token) =>
+        String(token)
+          .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+          .replace(/[_-]+/g, ' ')
+          .toLowerCase(),
+      )
+      .join(', ');
+  const premiseSurface = (premise) => normalizedText(premise.surface || naturalFact(premise.fact));
+  const concealedPremises = spec.concealed
+    .flatMap((token) =>
+      world.premises.filter((premise) =>
+        normalizedText(`${premise.fact.join(' ')} ${premise.surface || ''}`).includes(token),
+      ),
+    )
+    .filter((premise, i, all) => all.findIndex((p) => p.id === premise.id) === i);
 
   const llmRoles = (client, { superego = false } = {}) => ({
     director: makeLlmDirector(world, client),
@@ -189,10 +283,15 @@ for (const spec of WORLDS) {
           );
         }
       });
+    }
+    const normalizedPrompts = learnerPrompts.map(normalizedText);
+    for (const premise of concealedPremises) {
+      const lawful = releaseTurnOf(premise.id);
       if (lawful <= result.turnsPlayed) {
+        const surface = premiseSurface(premise);
         assert.ok(
-          learnerPrompts.some((prompt, i) => i + 1 >= lawful && prompt.includes(token)),
-          `token "${token}" never reached the learner after release`,
+          normalizedPrompts.some((prompt, i) => i + 1 >= lawful && prompt.includes(surface)),
+          `premise "${premise.id}" never reached the learner after release`,
         );
       }
     }
