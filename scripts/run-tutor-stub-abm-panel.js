@@ -36,6 +36,7 @@ export const DEFAULT_PERSONA_IDS = Object.freeze([
 ]);
 
 const DEFAULT_OUTPUT_DIR = 'exports/tutor-stub-abm-panel';
+export const REGISTER_POLICIES = Object.freeze(['dynamic', 'field', 'state', 'bland', 'random']);
 
 const CLI_OPTIONS = {
   check: { type: 'boolean', default: false },
@@ -91,7 +92,7 @@ Options:
   --analysis-model <ref>  classifier + learner-DAG model (default: codex.gpt-5.5)
   --auto-learner-model <ref>
   --world <id|path|none>  tutor-stub detective world (default: world_005_marrick)
-  --register-policy <dynamic|bland|random>
+  --register-policy <${REGISTER_POLICIES.join('|')}>
   --register-palette <all|safe|negative|non-simulated|csv>
   --cli-effort <level>    low, medium, high, xhigh, max, or config
   --until-grounded        legacy alias for --turns until-grounded
@@ -105,6 +106,12 @@ function positiveInt(value, name) {
   const parsed = Number.parseInt(value, 10);
   if (!Number.isFinite(parsed) || parsed < 1) throw new Error(`${name} must be a positive integer`);
   return parsed;
+}
+
+export function normalizeRegisterPolicy(value) {
+  const policy = String(value || 'dynamic').trim().toLowerCase();
+  if (REGISTER_POLICIES.includes(policy)) return policy;
+  throw new Error(`--register-policy must be one of: ${REGISTER_POLICIES.join(', ')}`);
 }
 
 export function autoTurnsArg(args) {
@@ -569,6 +576,7 @@ export function runPanel(argv = process.argv.slice(2)) {
     printHelp();
     return { status: 'help' };
   }
+  args['register-policy'] = normalizeRegisterPolicy(args['register-policy']);
 
   const personaIds = selectedPersonaIds(args.personas);
   if (args.check) {

@@ -6,6 +6,8 @@ import {
   autoTurnsArg,
   buildAbmAutoLearnerProfile,
   buildPanelDraws,
+  normalizeRegisterPolicy,
+  REGISTER_POLICIES,
   selectedPersonaIds,
   summarizePanelRows,
   summarizeTutorStubTranscript,
@@ -28,6 +30,13 @@ describe('tutor-stub ABM panel helpers', () => {
     assert.equal(autoTurnsArg({ turns: 'until-grounded', 'until-grounded': false }), 'until-grounded');
     assert.equal(autoTurnsArg({ turns: '8', 'until-grounded': false }), '8');
     assert.equal(autoTurnsArg({ turns: '8', 'until-grounded': true }), 'until-grounded');
+  });
+
+  it('accepts all tutor-stub register policies used by panel comparisons', () => {
+    assert.deepEqual(REGISTER_POLICIES, ['dynamic', 'field', 'state', 'bland', 'random']);
+    assert.equal(normalizeRegisterPolicy(' field '), 'field');
+    assert.equal(normalizeRegisterPolicy('STATE'), 'state');
+    assert.throws(() => normalizeRegisterPolicy('legacy'), /--register-policy/);
   });
 
   it('renders an ABM persona into an automated learner profile', () => {
