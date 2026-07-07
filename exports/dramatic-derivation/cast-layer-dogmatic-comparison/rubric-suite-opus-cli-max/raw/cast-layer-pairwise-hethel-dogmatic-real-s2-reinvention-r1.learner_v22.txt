@@ -1,0 +1,34 @@
+Looking at this task, I'm acting as the LLM judge: scoring the **learner's public conduct** across the derivation transcript against the v2.2 Learner Quality Rubric. I read the full transcript and traced the learner's arc turn-by-turn before scoring. Key check first — the rubric forbids rewarding formalism: the public dialogue is clean (regex leaks = 0), and the learner's bookkeeping language ("lines," "boxes," "column," "the draft," "the notes") is clerical/dramatic, not proof notation, so there's nothing to discount. The scores reflect genuine discourse quality.
+
+```json
+{
+  "scores": {
+    "engagement_quality": {
+      "score": 4,
+      "reasoning": "Constructive throughout: the learner anticipates the needed evidence before the tutor supplies it (T5 'whether the stone or the lime carries any mark of what was pressing against it'; T12 'anything still held in that green soffit... that might be the next note'; T16 'a yard-book or a tally that registers that notch'), and asks penetrating causal questions (T4 'if we know where it broke, what can that actually tell us about why?'). Stops short of interactive (5): it anticipates within the frame the tutor sets but never challenges that framing or redirects the overall inquiry."
+    },
+    "learner_authenticity": {
+      "score": 4,
+      "reasoning": "Character-consistent arc for the assigned overconfident junior: from T1 'that's already grounded' to the reluctant reversal at T21 'I don't like where that sits against my draft, but that's what the lines write.' Resistance is plausible via the recurring civic answer (T8 'the bond is the civic answer, that's what a surety is for'). Held off 5 by a formulaic back-half cadence (T13–19 settle into 'the mark shows X / doesn't show Y') and confusion that resolves a little too tidily — mild LLM tells."
+    },
+    "revision_signals": {
+      "score": 5,
+      "reasoning": "Explicit self-correction plus a full reversal of the opening position: T1 'already grounded' is immediately walked back; T3 'I've been running them together'; T9 'if the lime was still green, this wasn't bad laying' restructures the cause; and the initial draft (Reyner guilty) is dismantled by T22 'a name on the fall entry — and it isn't Reyner's.' This is restructuring, not addition."
+    },
+    "conceptual_progression": {
+      "score": 5,
+      "reasoning": "Clear cumulative arc: the 'three separate lines' fixed at T3 (named for work / cause / tied to failure) persist and are filled across the run; T11 integrates failure-point + mortar + bond + seal; T22 joins the crowsfoot (T13), Oswin (T20), and green mortar (T9) into a single synthesis. The learner visibly tracks its own accumulation ('the cause line is still empty,' 'what stays blank')."
+    },
+    "metacognitive_awareness": {
+      "score": 5,
+      "reasoning": "Continuously monitors the boundary between established and open: T3 identifies its own error, T5 'That I haven't got yet,' T12 'What stays blank is the hand,' T20 'that's the separate note I said I'd need.' It repeatedly states what it can write versus what must stay blank and strategically points to the next needed note — explicit comprehension monitoring."
+    }
+  },
+  "overall_score": 88,
+  "summary": "A disciplined, cumulative learner performance achieved entirely in natural forensic dialogue with no formalism leaks. Revision and conceptual progression are the standout strengths: the learner dismantles its own civic 'Reyner did it' draft and rebuilds the causal chain to Oswin, tracking established-versus-open at every step. Engagement is solidly constructive (it predicts the evidence it will need) and authenticity is character-consistent, but both are capped just short of the top band by the absence of any challenge to the tutor's framing and a repetitive concessive cadence in the back half.",
+  "caveats": [
+    "Engagement and authenticity brush the top band but are capped at 4: the learner anticipates evidence well yet never challenges or redirects the tutor's frame, and turns 13–19 settle into a repetitive 'shows X / not Y' template.",
+    "This scores public discourse only; the deterministic proof/gate outcome (grounded_anagnorisis, final D=0) is reported separately and is not credited here."
+  ]
+}
+```

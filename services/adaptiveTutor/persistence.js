@@ -14,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
+import { summarizeWorldAdaptationSpec } from './actionPolicy.js';
 import * as evaluationStore from '../evaluationStore.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -62,6 +63,14 @@ function extractTurnTrace(history) {
       hypotheses: [],
       evidenceLog: [],
       revisionLedger: [],
+      adaptationPolicyMode: null,
+      learnerStateBelief: null,
+      selectedPedagogicalAction: null,
+      candidatePedagogicalActions: [],
+      adaptationContract: null,
+      pendingIntervention: null,
+      interventionLedger: [],
+      adaptationTrace: [],
       dialogueLength: 0,
     };
     if (v.learnerProfile && v.learnerProfile.updatedAtTurn === turn) {
@@ -110,10 +119,42 @@ function extractTurnTrace(history) {
     if (Array.isArray(v.revisionLedger)) {
       existing.revisionLedger = v.revisionLedger;
     }
+    if (v.adaptationPolicyMode) {
+      existing.adaptationPolicyMode = v.adaptationPolicyMode;
+    }
+    if (v.learnerStateBelief) {
+      existing.learnerStateBelief = v.learnerStateBelief;
+    }
+    if (v.selectedPedagogicalAction) {
+      existing.selectedPedagogicalAction = v.selectedPedagogicalAction;
+    }
+    if (Array.isArray(v.candidatePedagogicalActions)) {
+      existing.candidatePedagogicalActions = v.candidatePedagogicalActions;
+    }
+    if (v.adaptationContract) {
+      existing.adaptationContract = v.adaptationContract;
+    }
+    if (v.pendingIntervention) {
+      existing.pendingIntervention = v.pendingIntervention;
+    } else if (v.pendingIntervention === null) {
+      existing.pendingIntervention = null;
+    }
+    if (Array.isArray(v.interventionLedger)) {
+      existing.interventionLedger = v.interventionLedger;
+    }
+    if (Array.isArray(v.adaptationTrace)) {
+      existing.adaptationTrace = v.adaptationTrace.filter((entry) => entry?.turn === turn);
+    }
     existing.dialogueLength = Array.isArray(v.dialogue) ? v.dialogue.length : existing.dialogueLength;
     byTurn.set(turn, existing);
   }
-  return [...byTurn.values()].sort((a, b) => a.turn - b.turn);
+  return [...byTurn.values()]
+    .sort((a, b) => a.turn - b.turn)
+    .filter((record) => {
+      const isPlan2Record = record.adaptationPolicyMode && record.adaptationPolicyMode !== 'legacy';
+      if (!isPlan2Record) return true;
+      return Array.isArray(record.adaptationTrace) && record.adaptationTrace.length > 0;
+    });
 }
 
 function buildTraceJson({
@@ -125,6 +166,11 @@ function buildTraceJson({
   llmMode,
   profileName,
 }) {
+  const originalWorldSpec = summarizeWorldAdaptationSpec(
+    runResult.final.adaptivePolicyConfig?.world_adaptation_spec ||
+      runResult.final.adaptivePolicyConfig?.worldAdaptationSpec ||
+      null,
+  );
   const trace = {
     // schemaVersion 2 (A14 Stage 1) adds finalEvidenceLog + finalHypotheses to
     // each branch. schemaVersion 3 (A14 Stage 5 prep) adds per-turn
@@ -134,7 +180,12 @@ function buildTraceJson({
     // superego-rewrite ledger growth directly. Nothing branches on this
     // number (it is informational); older trace files without these fields
     // stay readable — analyzers default them to [] when absent.
-    schemaVersion: 4,
+    // schemaVersion 5 (Plan 2.0) adds adaptation contracts, selected actions,
+    // pending/closed intervention ledgers, and adaptationTrace entries.
+    // schemaVersion 6 (Plan 2.4) adds locked curriculum/world adaptation spec
+    // identity and hash. The spec can constrain policy; it is not a success
+    // evaluator.
+    schemaVersion: 6,
     profileName,
     scenario: {
       id: scenario.id,
@@ -143,6 +194,7 @@ function buildTraceJson({
       maxTurns: scenario.maxTurns,
       expectedStrategyShift: scenarioConfig?.expected_strategy_shift ?? null,
       scenarioType: scenarioConfig?.scenario_type ?? null,
+      worldAdaptationSpec: scenarioConfig?.world_adaptation_spec || originalWorldSpec,
     },
     llmMode,
     original: {
@@ -152,12 +204,25 @@ function buildTraceJson({
       finalEvidenceLog: runResult.final.evidenceLog ?? [],
       finalHypotheses: runResult.final.hypotheses ?? [],
       finalRevisionLedger: runResult.final.revisionLedger ?? [],
+      adaptationPolicyMode: runResult.final.adaptationPolicyMode ?? 'legacy',
+      finalLearnerStateBelief: runResult.final.learnerStateBelief ?? null,
+      finalSelectedPedagogicalAction: runResult.final.selectedPedagogicalAction ?? null,
+      finalAdaptationContract: runResult.final.adaptationContract ?? null,
+      finalPendingIntervention: runResult.final.pendingIntervention ?? null,
+      finalInterventionLedger: runResult.final.interventionLedger ?? [],
+      finalAdaptationTrace: runResult.final.adaptationTrace ?? [],
+      finalWorldAdaptationSpec: originalWorldSpec,
       constraintViolations: runResult.final.constraintViolations,
       perTurn: extractTurnTrace(runResult.history),
     },
     counterfactual: null,
   };
   if (counterfactualResult) {
+    const counterfactualWorldSpec = summarizeWorldAdaptationSpec(
+      counterfactualResult.final.adaptivePolicyConfig?.world_adaptation_spec ||
+        counterfactualResult.final.adaptivePolicyConfig?.worldAdaptationSpec ||
+        null,
+    );
     trace.counterfactual = {
       perturbation,
       dialogue: counterfactualResult.final.dialogue,
@@ -166,6 +231,14 @@ function buildTraceJson({
       finalEvidenceLog: counterfactualResult.final.evidenceLog ?? [],
       finalHypotheses: counterfactualResult.final.hypotheses ?? [],
       finalRevisionLedger: counterfactualResult.final.revisionLedger ?? [],
+      adaptationPolicyMode: counterfactualResult.final.adaptationPolicyMode ?? 'legacy',
+      finalLearnerStateBelief: counterfactualResult.final.learnerStateBelief ?? null,
+      finalSelectedPedagogicalAction: counterfactualResult.final.selectedPedagogicalAction ?? null,
+      finalAdaptationContract: counterfactualResult.final.adaptationContract ?? null,
+      finalPendingIntervention: counterfactualResult.final.pendingIntervention ?? null,
+      finalInterventionLedger: counterfactualResult.final.interventionLedger ?? [],
+      finalAdaptationTrace: counterfactualResult.final.adaptationTrace ?? [],
+      finalWorldAdaptationSpec: counterfactualWorldSpec,
       constraintViolations: counterfactualResult.final.constraintViolations,
       perTurn: extractTurnTrace(counterfactualResult.history),
     };
@@ -216,6 +289,9 @@ function buildResultRow({
     expectedStrategyShift: scenarioConfig?.expected_strategy_shift ?? null,
     policyActions: policies,
     finalLearnerProfile: runResult.final.learnerProfile,
+    adaptationPolicyMode: runResult.final.adaptationPolicyMode ?? 'legacy',
+    adaptationContracts: (traceJson.original.perTurn || []).map((t) => t.adaptationContract).filter(Boolean),
+    interventionLedger: runResult.final.interventionLedger ?? [],
     constraintViolations: runResult.final.constraintViolations,
     counterfactual: traceJson.counterfactual
       ? {

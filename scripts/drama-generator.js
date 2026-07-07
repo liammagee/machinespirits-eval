@@ -5,8 +5,8 @@
  * This script asks for a single teaching situation, writes a compatible
  * poetics-calibration drama spec, then delegates generation to
  * scripts/generate-pedagogical-dramas.js. The delegated generator remains the
- * source of truth for bilateral ego/superego traces, Director scene cards,
- * public/full transcript separation, and Codex/Claude role routing.
+ * source of truth for bilateral ego/superego traces, director (scene-author)
+ * scene cards, public/full transcript separation, and Codex/Claude role routing.
  */
 
 import fs from 'node:fs';
@@ -282,7 +282,7 @@ async function collectInteractiveAnswers(seedAnswers = {}) {
     answers.reframe = await ask(rl, 'Later reframe or changed reading you want made possible', answers.reframe);
     answers.tutorPersonality = await ask(rl, 'Tutor personality', answers.tutorPersonality);
     answers.learnerPersonality = await ask(rl, 'Learner personality', answers.learnerPersonality);
-    answers.directorPersonality = await ask(rl, 'Director personality', answers.directorPersonality);
+    answers.directorPersonality = await ask(rl, 'Scene author / director personality', answers.directorPersonality);
     answers.sceneSetting = await ask(rl, 'Scene setting', answers.sceneSetting);
     answers.relationship = await ask(rl, 'Tutor/learner relationship', answers.relationship);
     answers.stakes = await ask(rl, 'Scene stakes', answers.stakes);

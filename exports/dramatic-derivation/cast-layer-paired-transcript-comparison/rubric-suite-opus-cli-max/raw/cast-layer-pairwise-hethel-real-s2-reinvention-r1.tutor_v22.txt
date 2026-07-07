@@ -1,0 +1,43 @@
+{
+  "scores": {
+    "perception_quality": {
+      "score": 4,
+      "reasoning": "Tracks the learner's specific conceptual error (conflating liability with the felling act) and emotional pull — 'I hear the pressure' (T2), 'You're not wrong to mark Reyner's yard' (T6) — and references the learner's own prior contributions ('the next missing link you said we need,' T3; 'I see the two closed lines,' T14). Short of 5 because it misses the learner's repetitive re-closing of the Reyner lines across T11–T16 and reinforces rather than redirects that loop."
+    },
+    "pedagogical_craft": {
+      "score": 5,
+      "reasoning": "Exemplary scaffolding from known (Reyner's name on the contract) to unknown (the carter who pulled the props): exactly one new piece of evidence is revealed per turn and cognitive load is managed explicitly — 'keep it small for one step' (T6), 'Slow down one joint' (T5), 'two steps, not one leap' (T20). Specific content and clear next steps throughout."
+    },
+    "elicitation_quality": {
+      "score": 4,
+      "reasoning": "Most turns close on a genuine reasoning question demanding a distinction rather than recall — 'does ownership show who brought the span down, or only who the work belonged to?' (T6); 'what does that close, and what still has to be joined?' (T20) — sustaining the 'don't write a name yet' tension for all 21 turns. Below 5 because evidence is handed over for interpretation, several questions are tightly funnelled binaries, and a few turns (T10, T13, T16, T19) are directive with no question."
+    },
+    "adaptive_responsiveness": {
+      "score": 3,
+      "reasoning": "Responds tactically to learner moves — slowing the learner when they leap ahead (T5 after the T4 jump to the soffit; T18 'Don't jump from Caudle to a person yet') — but the overarching strategy (restraint plus single-step show/not-shown elicitation) is held constant by design from T1 to T21, with no explicit change in approach. Responsiveness is real but operates inside a predetermined plan."
+    },
+    "recognition_quality": {
+      "score": 4,
+      "reasoning": "Consistently validates and builds on the learner's reasoning — 'Good, that's the split' (T3), 'I'm not dismissing either one' (T14), 'the next missing link you said we need' (T3) — addressing the learner's specific position rather than generically. Not 5 because contributions are treated as steps toward a fixed conclusion rather than as potentially illuminating alternatives; the learner's autonomy is tightly bounded by the tutor's funnel."
+    },
+    "productive_difficulty": {
+      "score": 4,
+      "reasoning": "Sustains the core 'not yet' tension across the whole transcript and refuses to name the answer even at T21 (asks the learner to state the act), driving a genuine restructuring from 'Reyner built it, so name him' to the liability-vs-act distinction. Held at 4 because the difficulty is heavily cushioned by tutor framing and the learner coasts in a re-closing loop mid-transcript rather than always doing maximal work."
+    },
+    "epistemic_integrity": {
+      "score": 5,
+      "reasoning": "Epistemic honesty is the transcript's spine: it rigorously separates what is shown (cost/liability) from what is not yet shown (the act), refuses the convenient answer, and acknowledges competing causes before ruling them out (the learner's flood/bad-stone/pulled-prop worry at T5 is met by further evidence). Tone is warm and partnership-inviting ('split it into two lines for me,' T8) without condescension."
+    },
+    "content_accuracy": {
+      "score": 5,
+      "reasoning": "Masonry and legal content is accurate and nuanced: green (uncured) lime, centering/falsework, the crown/keystone as where a green arch fails if the centering is struck early, prop-marks pressed into soft lime on the soffit, yard brands on timber, and the bond/surety-vs-causation distinction are all coherent and correctly used. Competing causes are raised and resolved rather than glossed."
+    }
+  },
+  "overall_score": 79,
+  "summary": "A disciplined, well-crafted derivation drama whose standout strengths are scaffolding, sustained productive difficulty, epistemic honesty, and accurate domain content. The tutor reveals evidence one step at a time and never hands over the conclusion — even at the close it makes the learner state the act — driving a real conceptual restructuring from 'the builder is liable, so name him' to 'here is the demonstrated hand.' Its main limitation is adaptive responsiveness: the same restraint-plus-single-step strategy runs unchanged across all 21 turns, and recognition and elicitation, while genuine, operate within a tightly controlled funnel toward a predetermined answer.",
+  "caveats": [
+    "Deterministic proof/problem-solving correctness is scored separately per the run summary (grounded_anagnorisis, final D 0); this rubric judges only public discourse quality.",
+    "The recurring 'shown / not shown / lines / boxes' bookkeeping is natural-language (regex formalism leaks: 0) and is credited only as pedagogical discipline, not rewarded as formal rigour.",
+    "Adaptive-responsiveness and recognition scores rely solely on visible public conduct; no hidden-state or strategy inference was used."
+  ]
+}

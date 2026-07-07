@@ -18,15 +18,11 @@ import { fileURLToPath } from 'node:url';
  * they were "unreconstructable from the repo." That conclusion was wrong, and it was
  * wrong because of two silent traps this test pins down:
  *
- *   TRAP 1 — wrong corpus, no error. analyze-superego-taxonomy.js defaults --input to
- *   data/superego-critiques-classified.jsonl. In THIS fork that file is a DIFFERENT
- *   classification run (300 records / 195 dialogues; ~15-dialogue overlap with the
- *   paper source), not the paper corpus. Run with no --input and the script happily
- *   prints 53 pairs across 195 dialogues — plausible-looking, completely wrong, and
- *   with no warning. The real paper corpus is the 500-record / 56-dialogue file that
- *   lived UNTRACKED in the sibling machinespirits-eval repo and is now archived
- *   (byte-identical) at
- *   machinespirits-eval-private/data/superego-critiques-classified-paper-6.2-n500.jsonl.
+ *   TRAP 1 — wrong corpus, no error. An older fork defaulted --input to
+ *   data/superego-critiques-classified.jsonl, which could be a local/generated
+ *   classification run rather than the paper corpus. The real paper corpus is the
+ *   500-record / 56-dialogue file tracked in this repo at
+ *   data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl.
  *
  *   TRAP 2 — turnIndex-null pairing. Section 9 pairs rounds with
  *   `round2.find(r => r.turnIndex === r1.turnIndex) || round2[0]`. Every record has
@@ -36,10 +32,10 @@ import { fileURLToPath } from 'node:url';
  *   same-turn, and NOT a cartesian product. Deterministic and intended on this corpus,
  *   but it would change silently if a future corpus populated turnIndex.
  *
- * The three tests below: (1) lock every published §6.2.3/§6.2.5 number to the archived
+ * The three tests below: (1) lock every published §6.2.3/§6.2.5 number to the tracked
  * corpus and its sha256; (2) pin the turnIndex-null pairing rule hermetically; and
- * (3) assert the in-repo default corpus is NOT the paper source, so nobody re-walks
- * into Trap 1. Long-form notes: TODO.md §G4 and the paper-full-2.0.md v3.0.126
+ * (3) assert the no-argument script path reproduces that same archived corpus, so
+ * nobody re-walks into Trap 1. Long-form notes: TODO.md §G4 and the paper-full-2.0.md v3.0.126
  * revision-history entry (both committed); exports/superego-transition-reproduction.md
  * (gitignored working copy).
  */
@@ -48,21 +44,11 @@ const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const SCRIPT = path.join(ROOT, 'scripts', 'analyze-superego-taxonomy.js');
 
-// The Paper §6.2 source corpus: 500 records / 56 dialogues, archived in the sibling
-// private repo. The sha256 is the integrity anchor cited inline in paper §6.2.3.
-const ARCHIVE = path.resolve(
-  ROOT,
-  '..',
-  'machinespirits-eval-private',
-  'data',
-  'superego-critiques-classified-paper-6.2-n500.jsonl',
-);
+// The Paper §6.2 source corpus: 500 records / 56 dialogues, tracked in-repo.
+// The sha256 is the integrity anchor cited inline in paper §6.2.3.
+const ARCHIVE = path.resolve(ROOT, 'data', 'paper2', 'superego-critiques-classified-paper-6.2-n500.jsonl');
 const ARCHIVE_SHA256 = 'f9ba2d92645decae74ddd80c78afeda34aa71af761c5064dd932468084f54329';
 const ARCHIVE_PRESENT = fs.existsSync(ARCHIVE);
-
-// The in-repo DEFAULT input — the WRONG corpus for paper reproduction (Trap 1).
-const DEFAULT_CORPUS = path.join(ROOT, 'data', 'superego-critiques-classified.jsonl');
-const DEFAULT_PRESENT = fs.existsSync(DEFAULT_CORPUS);
 
 function runScript(inputPath) {
   const argv = inputPath ? [SCRIPT, '--input', inputPath] : [SCRIPT];
@@ -180,18 +166,12 @@ describe('analyze-superego-taxonomy §6.2.3/§6.2.5 provenance', () => {
     }
   });
 
-  it(
-    'the in-repo default corpus is NOT the paper-source corpus (Trap 1 guard)',
-    { skip: DEFAULT_PRESENT ? false : 'in-repo default corpus absent' },
-    () => {
-      const out = runScript(null); // no --input -> uses the in-repo default
-      assert.ok(out.includes('Transition Analysis (Round 1 → Round 2)'), 'script ran section 9');
-      // The default is a different classification run (300 rec / 195 dialogues). If it
-      // ever prints the paper figures, someone replaced the default with the paper
-      // corpus — update the §6.2.3 provenance note and this guard rather than silently
-      // shipping reproduction off the default path.
-      assert.ok(!out.includes('Round 1→2 transition pairs: 232'), 'default must not equal the paper pair count');
-      assert.ok(!out.includes('Dialogues: 56'), 'default must not equal the paper dialogue count');
-    },
-  );
+  it('the no-input script path uses the tracked paper corpus (Trap 1 guard)', () => {
+    const archiveOut = runScript(ARCHIVE);
+    const defaultOut = runScript(null);
+    assert.ok(defaultOut.includes('Transition Analysis (Round 1 → Round 2)'), 'script ran section 9');
+    assert.equal(defaultOut, archiveOut, 'no-input run should reproduce the archived paper corpus exactly');
+    assert.ok(defaultOut.includes('Round 1→2 transition pairs: 232'), 'default reproduces the paper pair count');
+    assert.ok(defaultOut.includes('Dialogues: 56'), 'default reproduces the paper dialogue count');
+  });
 });

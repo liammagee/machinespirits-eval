@@ -1,0 +1,237 @@
+# WORLD-007 - selector stress world A (H-branch headroom candidate,
+# 2026-06-13). This world is deliberately registered as a stress candidate,
+# not as evidence. Its job is to replace world-003-bitterwell if Bitterwell is
+# ceilinged under the selector probe.
+#
+# Design target: a true forked AND-join where one branch can close early and
+# look locally satisfying on the page, while the second branch remains
+# globally necessary. The visible guard may read the first closed branch as
+# readiness; the hidden guard should still see that the proof has unresolved
+# top-level depth.
+#
+# Proof DAG (two independent depth-2 branches + a join):
+#
+#   alpha (the lock):
+#     p_score + p_key --R1--> gateOpenedWith(quarantineGate, bluebitKey)
+#     gateOpenedWith + p_keeper --R2--> openedGate(quarantineGate, sable)
+#
+#   beta (the fever cart):
+#     p_track + p_load --R3--> feverLoadThrough(quarantineGate, redbarrow)
+#     feverLoadThrough + p_driver --R4--> droveFeverLoad(quarantineGate, sable)
+#
+#   join:
+#     openedGate + droveFeverLoad --R5--> brokeQuarantine(sable, marsden)
+#
+# The mirror, Corvin, is tempting because the town owns two true fragments:
+# a ward key in his keeping and a market cart he drove. Neither fragment binds
+# to the scored lock or the fever load, and no rule can derive him as the
+# breaker. The stress point is the early closure of alpha at turn 10; the
+# learner may feel that "who had the key" has solved the question while beta is
+# still untouched.
+#
+# SURFACE DISCIPLINE: a premise may carry color, but must not state an
+# unreleased fact. The keeper and driver are concealed until their own
+# premises.
+#
+# CONCEALMENT: sable, bluebit, redbarrow, and fenlime exist only in
+# premises/secret, never in setting, background, question, or rules. The world
+# invariant tests sweep these tokens.
+
+id: world_007_fengate
+title: The Fever Gate
+
+discipline: "Quarantine inquiry (locks, carts, and cordons)"
+
+question: "Who broke the quarantine at Marsden quay?"
+question_pattern: [brokeQuarantine, "?x", marsden]
+
+setting: >-
+  Marsden quay has kept cordon law for a generation: when fever is marked in
+  the creek wards, no cart crosses the night gate and no keeper lends a key.
+  After the last moonless tide the ward woke sick on both sides of the rope,
+  and the town has already named its culprit: Corvin, who has handled every
+  lock and cart on the quay for twenty years. The aldermen want a name before
+  dawn. You are the quarantine clerk's apprentice, sent to keep the inquiry
+  book and learn how a cordon proves a breach instead of shouting one.
+
+learner_voice: >-
+  The quarantine clerk's apprentice: careful with entries but easily hurried by
+  panic; inclined to trust old accusations against Corvin; learning to keep
+  lock evidence and cart evidence separate until the rules make them meet.
+
+secret:
+  fact: [brokeQuarantine, sable, marsden]
+  surface: "Sable broke the Marsden quarantine: she opened the night gate with the bluebit key and drove the redbarrow fever load through it."
+
+mirror:
+  fact: [brokeQuarantine, corvin, marsden]
+
+rules:
+  - id: R1_lock
+    gloss: >-
+      A scored lock names the key that opened it. If the gate lock bears a
+      key's scoring, and that key opens the gate, then the gate was opened
+      with that key.
+    if:
+      - [lockScoredBy, "?gate", "?key"]
+      - [opensLock, "?key", "?gate"]
+    then:
+      - [gateOpenedWith, "?gate", "?key"]
+  - id: R2_keeper
+    gloss: >-
+      The hand at a lock is the keeper of the key that opened it. If the gate
+      was opened with a key, and one person kept that key that night, that
+      person opened the gate.
+    if:
+      - [gateOpenedWith, "?gate", "?key"]
+      - [keyKeptBy, "?key", "?x"]
+    then:
+      - [openedGate, "?gate", "?x"]
+  - id: R3_load
+    gloss: >-
+      A fever crossing needs a load, not only an open gate. If cart tracks
+      pass through the gate, and that cart carried marked fever lime, then a
+      fever load passed through the gate.
+    if:
+      - [cartTrackAt, "?gate", "?cart"]
+      - [loadCarries, "?cart", "?matter"]
+    then:
+      - [feverLoadThrough, "?gate", "?cart"]
+  - id: R4_driver
+    gloss: >-
+      The hand at the cart is the driver of the load that crossed. If a fever
+      load passed through the gate in a cart, and one person drove that cart,
+      that person drove the fever load through the gate.
+    if:
+      - [feverLoadThrough, "?gate", "?cart"]
+      - [cartDrivenBy, "?cart", "?x"]
+    then:
+      - [droveFeverLoad, "?gate", "?x"]
+  - id: R5_breach
+    gloss: >-
+      A quarantine breach needs the same hand at lock and load. Whoever opened
+      the gate and drove the fever load through that gate broke the quarantine.
+    if:
+      - [openedGate, "?gate", "?x"]
+      - [droveFeverLoad, "?gate", "?x"]
+    then:
+      - [brokeQuarantine, "?x", marsden]
+
+premises:
+  - id: p_score
+    fact: [lockScoredBy, quarantineGate, bluebitKey]
+    surface: >-
+      The night gate's lock was opened rough, not picked clean: under lamp and
+      lens the wardsman reads a blue-iron bite in the ward plate, the scoring
+      left by one small quay key and no larger ward key.
+  - id: p_key
+    fact: [opensLock, bluebitKey, quarantineGate]
+    surface: >-
+      The locksmith tries the small key from the old fish-office peg. Its blue
+      bit rides the scoring exactly and turns the night gate without a shake.
+  - id: p_keeper
+    fact: [keyKeptBy, bluebitKey, sable]
+    surface: >-
+      The fish-office daybook is mean but exact: the bluebit key was signed out
+      after curfew by Sable, the lamp-trimmer, and not signed back until the
+      fever bell had rung.
+  - id: p_track
+    fact: [cartTrackAt, quarantineGate, redbarrow]
+    surface: >-
+      In the mud inside the rope, the wheel-rut is narrow and sharp, not the
+      market cart's broad iron. The watchman matches it to the redbarrow kept
+      behind the lime shed.
+  - id: p_load
+    fact: [loadCarries, redbarrow, fenlime]
+    surface: >-
+      The same barrow carries a white crust in its seams. The surgeon names it:
+      fenlime, the powder thrown on fever bedding before the bedding is burned.
+  - id: p_driver
+    fact: [cartDrivenBy, redbarrow, sable]
+    surface: >-
+      The rope-boy finally says what he feared to enter: at the tide turn he
+      saw Sable bent over the redbarrow shafts, hauling it through the gate
+      while the ward lamps were hooded.
+  - id: m_wardkey
+    fact: [keyKeptBy, wardKey, corvin]
+    surface: >-
+      Corvin keeps the great ward key; every alderman knows it. If a gate in
+      Marsden has opened wrongly, the town's eyes go first to the old key at
+      his belt.
+  - id: m_marketcart
+    fact: [cartDrivenBy, marketCart, corvin]
+    surface: >-
+      Corvin drove the market cart through the quay all fair week, with sacks
+      under canvas and no patience for clerks counting loads.
+  - id: m_seen
+    fact: [seenNear, corvin, quarantineGate]
+    surface: >-
+      Two fishwives saw Corvin near the rope after curfew, arguing with the
+      wardsman and pointing at the gate as if it were already his to open.
+
+background:
+  - [quayOf, marsden, quarantineGate]
+  - [feverMarked, creekWards, lastTide]
+  - [oldKeeperOf, corvin, marsden]
+
+incompatible:
+  - [[brokeQuarantine, sable, marsden], [brokeQuarantine, corvin, marsden]]
+
+proof_paths:
+  - premises: [p_score, p_key, p_keeper, p_track, p_load, p_driver]
+
+release_schedule:
+  - { turn: 2, premise: m_wardkey, via: director }
+  - { turn: 4, premise: p_score, via: tutor }
+  - { turn: 6, premise: m_marketcart, via: director }
+  - { turn: 8, premise: p_key, via: tutor }
+  - { turn: 10, premise: p_keeper, via: director }
+  - { turn: 12, premise: m_seen, via: director }
+  - { turn: 14, premise: p_track, via: tutor }
+  - { turn: 18, premise: p_load, via: tutor }
+  - { turn: 22, premise: p_driver, via: director }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Town's Key
+      turns: [1, 5]
+      intent: >-
+        Panic and a ready culprit. The town points to Corvin's key while the
+        inquiry introduces the scored lock. The learner should separate "a
+        man with a key" from "the key that scored this lock."
+    - act: II
+      title: The Lock Branch
+      turns: [6, 11]
+      intent: >-
+        The bluebit key fits the scoring and its keeper is named. Alpha closes:
+        one hand opened the gate. The learner must feel the local closure and
+        also hear that a breach still needs the fever load.
+    - act: III
+      title: The Wrong Cart
+      turns: [12, 17]
+      intent: >-
+        Corvin is seen near the rope, but the mud refuses his market cart. The
+        second branch opens on the redbarrow track. The play should keep the
+        already-closed lock branch alive without letting it masquerade as the
+        whole proof.
+    - act: IV
+      title: The Fever Load
+      turns: [18, 21]
+      intent: >-
+        The barrow is shown to have carried fever matter. The learner now has
+        a gate, a cart, and a missing driver. The final rule waits on whether
+        the driver is the same hand as the key keeper.
+    - act: V
+      title: The Same Hand
+      turns: [22, 28]
+      intent: >-
+        The rope-boy names the driver. The lock branch and the load branch now
+        meet in one hand. The learner should say the breach reluctantly and
+        exactly, by the two conjuncts rather than by town panic.
+
+slope:
+  t_min: 20
+  aporia_window: 6
+
+turn_cap: 28

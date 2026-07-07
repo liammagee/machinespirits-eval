@@ -87,3 +87,13 @@ export {
 export { parseSSEStream } from './services/sseStreamParser.js';
 
 export { callStream } from './services/unifiedAIProviderService.js';
+
+// External AI provider hook — lets a consuming repo route additional
+// provider names (e.g. local CLI bridges) through its own call function.
+// Injected from outside; tutor-core never imports client code.
+export {
+  setExternalAIProviderHook,
+  clearExternalAIProviderHook,
+  getExternalAIProviderHook,
+  externalProviderHandles,
+} from './services/externalAIProvider.js';

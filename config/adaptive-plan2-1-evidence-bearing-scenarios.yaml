@@ -1,0 +1,253 @@
+# Plan 2.1 evidence-bearing held-out adaptation suite.
+#
+# Purpose: test the frozen Plan 2.0/2.1 closed-loop controller on learner
+# states whose success cannot be counted from immediate agreement. Each
+# scenario carries:
+#   - expected_belief_hypothesis for exact belief-calibration scoring;
+#   - expected_adaptation_action for typed Plan 2.x action scoring;
+#   - hidden.scripted_responses for mock-only learner replies after the
+#     selected intervention, giving delayed next-step/transfer evidence.
+#
+# The adaptive runner ignores pair metadata and expected fields; analyzers
+# consume them.
+
+scenarios:
+  - id: p21_owned_progress_compare_claims
+    name: "Plan 2.1 A1: same-surface next step is productive progress"
+    scenario_type: plan2_1_productive_progress
+    pair_id: p21_next_step_surface
+    pair_variant: productive_progress
+    pair_expectation: divergent_action
+    expected_belief_hypothesis: productive_progress
+    expected_adaptation_action: observe_no_intervention
+    hidden:
+      actual_misconception: "productive progress: the learner is already choosing a relevant next comparison with learner-owned reasoning"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "Next I would compare the two claims because recognition depends on whether each side grants standing to the other."
+      scripted_responses:
+        observe_no_intervention: "Next I would test a new case because the claim depends on whether mutual standing survives disagreement."
+    opening_turns:
+      - role: learner
+        content: "I think I can make the next move, but I want to be careful."
+    max_turns: 4
+    expected_strategy_shift: summarize_and_check
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: observe_no_intervention
+
+  - id: p21_next_step_task_misread
+    name: "Plan 2.1 A2: same-surface next step hides task misread"
+    scenario_type: plan2_1_task_misread
+    pair_id: p21_next_step_surface
+    pair_variant: task_misread
+    pair_expectation: divergent_action
+    expected_belief_hypothesis: task_misread
+    expected_adaptation_action: reanchor_goal
+    hidden:
+      actual_misconception: "task misread: the learner thinks the task is a definition request rather than an argument test"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "I think I misread the task. I thought it asks for a definition of recognition, but the question asks me to make an argument about the two claims."
+      scripted_responses:
+        reanchor_goal: "The task asks me to make an argument; next I would compare the two claims because that tests the relation, not just the definition."
+    opening_turns:
+      - role: learner
+        content: "I think I can make the next move, but I want to be careful."
+    max_turns: 4
+    expected_strategy_shift: summarize_and_check
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: reanchor_goal
+
+  - id: p21_minimal_hint_after_failed_diagnostic
+    name: "Plan 2.1 B1: generic stuck signal needs a minimal hint"
+    scenario_type: plan2_1_minimal_hint
+    pair_id: p21_explain_more_surface
+    pair_variant: missing_prerequisite_hint
+    pair_expectation: divergent_action
+    expected_belief_hypothesis: missing_prerequisite
+    expected_adaptation_action: minimal_hint
+    hidden:
+      actual_misconception: "missing prerequisite: the learner cannot start because the base concept is absent"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "Hmm, can you explain more? I do not even know where to start."
+      scripted_responses:
+        minimal_hint: "Next I would define recognition as reciprocal standing because that gives me a starting step for the argument."
+    opening_turns:
+      - role: learner
+        content: "Hmm, can you explain more? I do not even know where to start."
+    max_turns: 4
+    expected_strategy_shift: provide_hint
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: minimal_hint
+
+  - id: p21_explanation_transfer_after_hint_failure
+    name: "Plan 2.1 B2: failed hint needs explanation with transfer check"
+    scenario_type: plan2_1_explanation_transfer
+    pair_id: p21_explain_more_surface
+    pair_variant: missing_prerequisite_explain
+    pair_expectation: divergent_action
+    expected_belief_hypothesis: missing_prerequisite
+    expected_adaptation_action: explain_principle
+    hidden:
+      actual_misconception: "missing prerequisite: the learner needs conceptual material after a hint fails"
+      actual_sophistication: novice
+      trigger_turn: 1
+      trigger_signal: "The small hint is still not enough; I need the prerequisite idea before I can apply it to a similar problem."
+      scripted_responses:
+        explain_principle: "In a new case, I can transfer the same idea because recognition depends on reciprocal standing, not just agreement."
+    opening_turns:
+      - role: learner
+        content: "Hmm, can you explain more? I do not even know where to start."
+    max_turns: 4
+    expected_strategy_shift: lower_cognitive_load
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: explain_principle
+
+  - id: p21_affective_shutdown_reengagement
+    name: "Plan 2.1 C1: same-surface explanation request hides affective shutdown"
+    scenario_type: plan2_1_affective_shutdown
+    pair_id: p21_explain_request_surface
+    pair_variant: affective_shutdown
+    pair_expectation: divergent_action
+    expected_belief_hypothesis: affective_shutdown
+    expected_adaptation_action: acknowledge_and_redirect
+    hidden:
+      actual_misconception: "affective shutdown: the learner converts difficulty into identity-level self-doubt"
+      actual_sophistication: novice
+      trigger_turn: 1
+      trigger_signal: "I just cannot do this. I have read it again and I am wasting your time."
+      scripted_responses:
+        acknowledge_and_redirect: "I can try one smaller move because the task only asks me to compare one relation first."
+    opening_turns:
+      - role: learner
+        content: "Can you explain that one more time?"
+    max_turns: 4
+    expected_strategy_shift: acknowledge_and_redirect
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: acknowledge_and_redirect
+
+  - id: p21_working_memory_single_piece
+    name: "Plan 2.1 C2: same-surface explanation request hides working-memory overload"
+    scenario_type: plan2_1_working_memory_overload
+    pair_id: p21_explain_request_surface
+    pair_variant: working_memory_overload
+    pair_expectation: divergent_action
+    expected_belief_hypothesis: working_memory_overload
+    expected_adaptation_action: lower_cognitive_load
+    hidden:
+      actual_misconception: "working-memory overload: too many concepts are active at once"
+      actual_sophistication: novice
+      trigger_turn: 1
+      trigger_signal: "There are too many moving parts - recognition, negation, dependence, and standing - and I lose the thread halfway through."
+      scripted_responses:
+        lower_cognitive_load: "Next I would work with one concept because keeping only reciprocal standing active lets me follow the argument."
+    opening_turns:
+      - role: learner
+        content: "Can you explain that one more time?"
+    max_turns: 4
+    expected_strategy_shift: lower_cognitive_load
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: lower_cognitive_load
+
+  - id: p21_answer_seeking_quiz
+    name: "Plan 2.1 D1: quiz struggle is answer seeking"
+    scenario_type: plan2_1_answer_seeking
+    pair_id: p21_quiz_surface
+    pair_variant: answer_seeking
+    pair_expectation: divergent_action
+    expected_belief_hypothesis: answer_seeking
+    expected_adaptation_action: withhold_answer
+    hidden:
+      actual_misconception: "answer seeking: the learner treats the tutor as an answer source and tries to bypass the activity"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "Just tell me the answer to the quiz and I will work backwards from there."
+      scripted_responses:
+        withhold_answer: "I choose to try the first step myself because I need to test the relation instead of copying the answer."
+    opening_turns:
+      - role: learner
+        content: "I am stuck on the recognition quiz."
+    max_turns: 4
+    expected_strategy_shift: withhold_answer
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: withhold_answer
+
+  - id: p21_quiz_task_misread
+    name: "Plan 2.1 D2: quiz struggle is task misread"
+    scenario_type: plan2_1_task_misread
+    pair_id: p21_quiz_surface
+    pair_variant: task_misread
+    pair_expectation: divergent_action
+    expected_belief_hypothesis: task_misread
+    expected_adaptation_action: reanchor_goal
+    hidden:
+      actual_misconception: "task misread: the learner thought the quiz asks for a definition when it asks for an argument"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "I think I misread the task. I thought it asks for a definition of recognition, but it is asking me to make an argument."
+      scripted_responses:
+        reanchor_goal: "The question asks me to make an argument; next I would state which relation the argument needs because that matches the task."
+    opening_turns:
+      - role: learner
+        content: "I am stuck on the recognition quiz."
+    max_turns: 4
+    expected_strategy_shift: summarize_and_check
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: reanchor_goal
+
+  - id: p21_productive_progress_control_a
+    name: "Plan 2.1 E1: productive-progress wording control A"
+    scenario_type: plan2_1_productive_progress_control
+    pair_id: p21_productive_progress_same_state
+    pair_variant: compare_claims
+    pair_expectation: same_action
+    expected_belief_hypothesis: productive_progress
+    expected_adaptation_action: observe_no_intervention
+    hidden:
+      actual_misconception: "productive progress: the learner has a learner-owned next step"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "I can try comparing the claims next because that will show whether recognition is reciprocal or one-sided."
+      scripted_responses:
+        observe_no_intervention: "Next I would compare the claims because that preserves learner control over the argument."
+    opening_turns:
+      - role: learner
+        content: "I think I can make the next move."
+    max_turns: 4
+    expected_strategy_shift: summarize_and_check
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: observe_no_intervention
+
+  - id: p21_productive_progress_control_b
+    name: "Plan 2.1 E2: productive-progress wording control B"
+    scenario_type: plan2_1_productive_progress_control
+    pair_id: p21_productive_progress_same_state
+    pair_variant: test_relation
+    pair_expectation: same_action
+    expected_belief_hypothesis: productive_progress
+    expected_adaptation_action: observe_no_intervention
+    hidden:
+      actual_misconception: "productive progress: the learner has a learner-owned next step"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "I would test the relation next because mutual recognition depends on both sides granting standing."
+      scripted_responses:
+        observe_no_intervention: "Next I would test the relation because that is my own way to check the argument."
+    opening_turns:
+      - role: learner
+        content: "I think I can make the next move."
+    max_turns: 4
+    expected_strategy_shift: summarize_and_check
+    success_criteria:
+      policy_match:
+        expected_adaptation_action_at_trigger_plus_one: observe_no_intervention

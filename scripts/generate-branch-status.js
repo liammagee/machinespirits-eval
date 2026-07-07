@@ -793,7 +793,7 @@ ${nav}
   <h3>7.1 Where to look</h3>
   <ul>
     <li><strong>Paper</strong>: <code>docs/research/paper-full-2.0.md</code> v${esc(paperVersion)} — §5.12 at line ${line512 ?? '?'}, §6.8 at line ${line68 ?? '?'}.</li>
-    <li><strong>Parking note</strong> (operational source-of-truth for this arc): <code>docs/explorations/claude/p22-p23-parking-note.md</code>.</li>
+    <li><strong>Parking note</strong> (operational source-of-truth for this arc): <code>docs/explorations/claude/2026-05-10-p22-p23-parking-note.md</code>.</li>
     <li><strong>Pre-regs</strong>: <code>a13-pre-registration.md</code>, <code>p2-bilateral-tom-pre-registration.md</code>, <code>p2-followup-pre-registration.md</code>.</li>
     <li><strong>Results memos</strong>: <code>a13-gate-b-results.md</code>, <code>a13-followup-N24-granular-results.md</code>, <code>p21-N24-results.md</code>.</li>
     <li><strong>Adaptive runner</strong>: <code>services/adaptiveTutor/</code>; entry <code>index.js</code>; dispatch logic <code>graph.js</code>.</li>

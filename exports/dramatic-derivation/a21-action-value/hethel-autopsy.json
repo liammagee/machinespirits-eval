@@ -1,0 +1,3508 @@
+{
+  "schema": "dramatic-derivation.a21.hethel-autopsy.v0",
+  "generatedAt": "2026-06-16T15:07:50.088Z",
+  "hidden": {
+    "role": "hidden_success",
+    "label": "hethel-phase5g-a20-fresh-hidden-r1",
+    "runDir": "exports/dramatic-derivation/loop/hethel-phase5g-a20-fresh-hidden-r1",
+    "worldId": "world_006_hethel",
+    "verdict": "grounded_anagnorisis",
+    "turnsPlayed": 20,
+    "firstForcedTurn": 20,
+    "assertedGroundedTurn": 20,
+    "forcedToAssertedGap": 0,
+    "proofDebt": {
+      "detectedTurns": 1,
+      "debtsDetected": 1,
+      "actionTurns": 1,
+      "forcedMoves": 0,
+      "restoredMoves": 1,
+      "repairedTargets": 1,
+      "targets": [
+        "p_point"
+      ],
+      "detections": [
+        {
+          "turn": 6,
+          "dNow": 5,
+          "debts": [
+            {
+              "premiseId": "p_point",
+              "sinceTurn": 5,
+              "dIfRestored": 4,
+              "deltaD": 1,
+              "closesProof": false
+            }
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "turn": 6,
+          "target": "p_point",
+          "debtCount": 1,
+          "forced": false,
+          "stage": "draft",
+          "moveIntent": "restore",
+          "repaired": true
+        }
+      ]
+    },
+    "releaseDeviations": {
+      "played": 3,
+      "onSchedule": 2,
+      "early": 1,
+      "held": 0,
+      "forced": 0,
+      "overridden": 0,
+      "reasons": [
+        {
+          "turn": 16,
+          "premise": "p_brand",
+          "offset": -1,
+          "reason": "Played one turn early because the learner has explicitly asked for the yard-brand record and is holding the mark in order."
+        }
+      ]
+    },
+    "prefixIntegrity": null,
+    "turns": [
+      {
+        "turn": 1,
+        "DBefore": null,
+        "DAfter": 5,
+        "tutorActionFamily": "consolidate_subproof",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "orient",
+          "targetPremise": null
+        },
+        "tutorActionSummary": "consolidate_subproof",
+        "learnerSummary": "the hall runs two questions together, and they are not the same question. One asks who holds the bond against this fall — who must pay and ...",
+        "tutorSummary": "Before any man’s name is written, clerk, say what the hall has truly set before us. Is it asking who must answer for a fallen bridge, or wh...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 2,
+        "DBefore": 5,
+        "DAfter": 5,
+        "tutorActionFamily": "consolidate_subproof",
+        "tutorMove": {
+          "figure": "analogia",
+          "intent": "consolidate",
+          "targetPremise": "m_record"
+        },
+        "tutorActionSummary": "consolidate_subproof:m_record",
+        "learnerSummary": "The sheet proves Reyner's hand was on the raising — his seal is on the contract, and the span went up under his mark. It does not put his h...",
+        "tutorSummary": "A seal on a work contract is a mason's mark on the raising, not a hand seen at the fall. What does that sheet prove, and what has it only t...",
+        "directorReleases": [
+          "m_record"
+        ],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_point": [
+              4,
+              5,
+              6
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 3,
+        "DBefore": 5,
+        "DAfter": 5,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "confront",
+          "targetPremise": "m_record"
+        },
+        "tutorActionSummary": "ask_diagnostic:m_record",
+        "learnerSummary": "The sheet sets two things honest in the hall: Reyner's seal upon the raising, and the span built under his mark three summers gone — those ...",
+        "tutorSummary": "Before we lean another finger on that sheet, read it back from your own keeping. What did it truly set in the hall, and where did the town ...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_point": [
+              4,
+              5,
+              6
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 4,
+        "DBefore": 5,
+        "DAfter": 4,
+        "tutorActionFamily": "release_next_evidence",
+        "tutorMove": {
+          "figure": "analogia",
+          "intent": "release",
+          "targetPremise": "p_point"
+        },
+        "tutorActionSummary": "release_next_evidence:p_point release=p_point",
+        "learnerSummary": "The arch has named the crown as its place of breaking, and that is more than the town troubled to ask. But a crown-crack may come from a pr...",
+        "tutorSummary": "The warden's measure is now laid on the table: the span did not sink at the piers nor spread at the springing; it broke clean at the crown,...",
+        "directorReleases": [],
+        "released": "p_point",
+        "releaseDue": [
+          "p_point"
+        ],
+        "releaseDecision": {
+          "played": "p_point",
+          "scheduledTurn": 4,
+          "offset": 0,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_point": [
+              4,
+              5,
+              6
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 5,
+        "DBefore": 4,
+        "DAfter": 4,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "confront",
+          "targetPremise": "p_point"
+        },
+        "tutorActionSummary": "ask_diagnostic:p_point",
+        "learnerSummary": "The measure fixed the failure-point — the keystone joint, where the arch is least forgiving if the props come away too soon. What it leaves...",
+        "tutorSummary": "the hall has two silences now; before we open either, read back the last measure from your own keeping. What did it fix for us, and what di...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 6,
+        "DBefore": 4,
+        "DAfter": 4,
+        "tutorActionFamily": "repair_dependency",
+        "tutorMove": {
+          "figure": "anaphora",
+          "intent": "restore",
+          "targetPremise": "p_point"
+        },
+        "tutorActionSummary": "repair_dependency:p_point",
+        "learnerSummary": "The yard roll settles the lodge as Reyner's own freehold — his gear, his men, every course his charge. Set beside the sealed contract, it f...",
+        "tutorSummary": "Set the yard roll aside one breath; the warden's measure is plain: the span did not sink at the piers nor spread at the springing, but brok...",
+        "directorReleases": [
+          "m_yard"
+        ],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": {
+          "active": true,
+          "turn": 6,
+          "target": "p_point",
+          "targets": [
+            "p_point"
+          ],
+          "debtCount": 1,
+          "forced": false,
+          "stage": "draft"
+        },
+        "conductPolicy": null
+      },
+      {
+        "turn": 7,
+        "DBefore": 4,
+        "DAfter": 4,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "confront",
+          "targetPremise": "m_yard"
+        },
+        "tutorActionSummary": "ask_diagnostic:m_yard",
+        "learnerSummary": "The yard roll truly shows that Reyner owned the lodge from gear to apprentice, and that every course went up under his charge — set beside ...",
+        "tutorSummary": "Before that yard roll is made to bear another ounce, clerk, read it back from your own keeping. What did that roll truly set before the hal...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_surface": [
+              8,
+              9
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 8,
+        "DBefore": 4,
+        "DAfter": 4,
+        "tutorActionFamily": "consolidate_subproof",
+        "tutorMove": {
+          "figure": "analogia",
+          "intent": "consolidate",
+          "targetPremise": "m_bond"
+        },
+        "tutorActionSummary": "consolidate_subproof:m_bond",
+        "learnerSummary": "The bond makes Reyner answer for the cost of a failed span — it is a purse the wardens may open, nothing more. What it cannot show is whose...",
+        "tutorSummary": "A bond is a purse opened for a fallen span, not a hand laid on the falsework. clerk, what does this surety make Reyner answer for, and what...",
+        "directorReleases": [
+          "m_bond"
+        ],
+        "released": null,
+        "releaseDue": [
+          "p_surface"
+        ],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_surface": [
+              8,
+              9
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 9,
+        "DBefore": 4,
+        "DAfter": 3,
+        "tutorActionFamily": "release_next_evidence",
+        "tutorMove": {
+          "figure": "exemplum",
+          "intent": "release",
+          "targetPremise": "p_surface"
+        },
+        "tutorActionSummary": "release_next_evidence:p_surface release=p_surface",
+        "learnerSummary": "The mortar speaks plainly: still green to the knife, the bed never stood firm — the props were pulled before the lime had any strength to s...",
+        "tutorSummary": "Now the crown bed is broken out, and the lime answers the knife: green still, never set, an arch asked to bear before it could stand. That ...",
+        "directorReleases": [],
+        "released": "p_surface",
+        "releaseDue": [
+          "p_surface"
+        ],
+        "releaseDecision": {
+          "played": "p_surface",
+          "scheduledTurn": 9,
+          "offset": 0,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_surface": [
+              8,
+              9
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 10,
+        "DBefore": 3,
+        "DAfter": 3,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "confront",
+          "targetPremise": "p_surface"
+        },
+        "tutorActionSummary": "ask_diagnostic:p_surface",
+        "learnerSummary": "The green mortar, read alongside where the arch broke, tells the hall one thing only: the centering was drawn before the lime had any stren...",
+        "tutorSummary": "Before we make that broken bed carry another stone of argument, read it back from your own keeping. What did that exhibit itself set before...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 11,
+        "DBefore": 3,
+        "DAfter": 3,
+        "tutorActionFamily": "consolidate_subproof",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "orient",
+          "targetPremise": null
+        },
+        "tutorActionSummary": "consolidate_subproof",
+        "learnerSummary": "The green bed has already settled one matter — the lime never set, and the centering was drawn before the arch could stand alone; the morta...",
+        "tutorSummary": "Keep the cause apart from the hand, clerk: a green bed tells why the span yielded, not whose timber stood under it. When the cover lifts fr...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 12,
+        "DBefore": 3,
+        "DAfter": 3,
+        "tutorActionFamily": "consolidate_subproof",
+        "tutorMove": {
+          "figure": "analogia",
+          "intent": "consolidate",
+          "targetPremise": null
+        },
+        "tutorActionSummary": "consolidate_subproof",
+        "learnerSummary": "The tutor's order is sound: a mark found on the soffit must first be shown to have been pressed by the timber that stood under this span — ...",
+        "tutorSummary": "A mark is like a foot in wet clay: before it can lead to a road or a cart, it must be shown to have been pressed by the support under this ...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 13,
+        "DBefore": 3,
+        "DAfter": 2,
+        "tutorActionFamily": "consolidate_subproof",
+        "tutorMove": {
+          "figure": "analogia",
+          "intent": "consolidate",
+          "targetPremise": "p_mark"
+        },
+        "tutorActionSummary": "consolidate_subproof:p_mark",
+        "learnerSummary": "The soffit has done two pieces of work at once: it shows the props went away whole — drawn off, not lost to fire or rot — and their crowsfo...",
+        "tutorSummary": "The underside has spoken only of timber, not yet of a man. A repeated crowsfoot is a nail-hole pattern in the same record: first it shows w...",
+        "directorReleases": [
+          "p_mark"
+        ],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 14,
+        "DBefore": 2,
+        "DAfter": 2,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "confront",
+          "targetPremise": "p_mark"
+        },
+        "tutorActionSummary": "ask_diagnostic:p_mark",
+        "learnerSummary": "What the hall saw is this: one mark repeating the length of the arch, a three-tined crowsfoot cut by the cooper's adze, pressed clean into ...",
+        "tutorSummary": "Before that underside mark carries one more step, read it back from your own keeping. What did the hall actually see there, and what has no...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 15,
+        "DBefore": 2,
+        "DAfter": 2,
+        "tutorActionFamily": "consolidate_subproof",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "consolidate",
+          "targetPremise": "p_mark"
+        },
+        "tutorActionSummary": "consolidate_subproof:p_mark",
+        "learnerSummary": "The next record must do one thing and one alone: show that this three-tined crowsfoot is the brand of one timber-yard and no other — that n...",
+        "tutorSummary": "Good: the underside gives us a track, not a traveller. If the crowsfoot is to carry the inquiry onward, what must the next record prove abo...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [
+          "p_brand"
+        ],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_brand": [
+              15,
+              16,
+              17,
+              18
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 16,
+        "DBefore": 2,
+        "DAfter": 1,
+        "tutorActionFamily": "release_next_evidence",
+        "tutorMove": {
+          "figure": "analogia",
+          "intent": "release",
+          "targetPremise": "p_brand"
+        },
+        "tutorActionSummary": "release_next_evidence:p_brand release=p_brand",
+        "learnerSummary": "The mark now has a yard's name to carry it: the Caudle yard above the ford, and no other river yard cuts that third tine — so whatever prop...",
+        "tutorSummary": "The timber-reeve is called, and he sets the crowsfoot where it belongs: every length of falsework from the Caudle yard above the ford bears...",
+        "directorReleases": [],
+        "released": "p_brand",
+        "releaseDue": [
+          "p_brand"
+        ],
+        "releaseDecision": {
+          "played": "p_brand",
+          "scheduledTurn": 17,
+          "offset": -1,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_brand": [
+              15,
+              16,
+              17,
+              18
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 17,
+        "DBefore": 1,
+        "DAfter": 1,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "confront",
+          "targetPremise": "p_brand"
+        },
+        "tutorActionSummary": "ask_diagnostic:p_brand",
+        "learnerSummary": "The record runs clean to three points already: the crown-break names a struck centering as the sole cause; the crowsfoot pressed into the s...",
+        "tutorSummary": "Before that dry page is lifted, read back the last officer's account from your own keeping. What place did it give the mark in the inquiry,...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 18,
+        "DBefore": 1,
+        "DAfter": 1,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "anaphora",
+          "intent": "test",
+          "targetPremise": null
+        },
+        "tutorActionSummary": "ask_diagnostic",
+        "learnerSummary": "The road runs thus: the crown-break with green lime at the joint names a struck centering as the one cause; the crowsfoot pressed into each...",
+        "tutorSummary": "Good: the mark has reached Caudle timber, not yet a man's hand. Before the page is read, set the order aloud once more: cause, mark, yard, ...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 19,
+        "DBefore": 1,
+        "DAfter": 1,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "analogia",
+          "intent": "test",
+          "targetPremise": null
+        },
+        "tutorActionSummary": "ask_diagnostic",
+        "learnerSummary": "The page must do more than name Caudle's timber — it must show that one hand, and one hand alone, drew that falsework from the yard and car...",
+        "tutorSummary": "A toll line is a narrow plank, clerk: it can carry a cart and a keeper's name, but not a town's desire. When that page is lifted, what must...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      },
+      {
+        "turn": 20,
+        "DBefore": 1,
+        "DAfter": 0,
+        "tutorActionFamily": "stage_recognition",
+        "tutorMove": {
+          "figure": "aposiopesis",
+          "intent": "stage_recognition",
+          "targetPremise": "p_carter"
+        },
+        "tutorActionSummary": "stage_recognition:p_carter",
+        "learnerSummary": "The toll entry seals the last ring: Oswin alone has drawn and carted Caudle falsework on this road since the old carrier went, and it was O...",
+        "tutorSummary": "Cause shown at the crown; mark shown on the soffit; yard shown by the reeve; one carter shown by the toll. Set those four lines together, c...",
+        "directorReleases": [
+          "p_carter"
+        ],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": null,
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": null
+      }
+    ]
+  },
+  "failedOverlay": {
+    "role": "failed_overlay",
+    "label": "hethel-phase5g-a20-fresh-selective-v4-r1",
+    "runDir": "exports/dramatic-derivation/loop/hethel-phase5g-a20-fresh-selective-v4-r1",
+    "worldId": "world_006_hethel",
+    "verdict": "disengagement",
+    "turnsPlayed": 11,
+    "firstForcedTurn": null,
+    "assertedGroundedTurn": null,
+    "forcedToAssertedGap": null,
+    "proofDebt": null,
+    "releaseDeviations": {
+      "played": 2,
+      "onSchedule": 0,
+      "early": 0,
+      "held": 2,
+      "forced": 2,
+      "overridden": 0,
+      "reasons": [
+        {
+          "turn": 6,
+          "premise": "p_point",
+          "offset": 2,
+          "reason": "Held to let the Reyner writings settle as charge rather than cause; now the hold limit requires the stones to enter."
+        },
+        {
+          "turn": 11,
+          "premise": "p_surface",
+          "offset": 2,
+          "reason": "Played two turns after schedule at its hold limit; the stalled page needs the broken bed before the early yard paper can mislead the act."
+        }
+      ]
+    },
+    "prefixIntegrity": null,
+    "turns": [
+      {
+        "turn": 1,
+        "DBefore": null,
+        "DAfter": 5,
+        "tutorActionFamily": "consolidate_subproof",
+        "tutorMove": {
+          "figure": "antithesis",
+          "intent": "orient",
+          "targetPremise": null
+        },
+        "tutorActionSummary": "consolidate_subproof",
+        "learnerSummary": "Aye, tutor — the bond in the warden's chest names Reyner answerable for the cost, but that is a different page from the one I must keep tod...",
+        "tutorSummary": "Before ink finds a name, clerk, set down the house question: not who must pay for a broken span, but what act brought it down. We will let ...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {}
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": false,
+          "reasonCode": "no_policy_trigger"
+        }
+      },
+      {
+        "turn": 2,
+        "DBefore": 5,
+        "DAfter": 5,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "test",
+          "targetPremise": "m_record"
+        },
+        "tutorActionSummary": "ask_diagnostic:m_record",
+        "learnerSummary": "The seal and the bond put Reyner answerable for the cost — that much the rules will bear — but the rules themselves say plainly that liabil...",
+        "tutorSummary": "Pause there. What in the public record licenses that next step?",
+        "directorReleases": [
+          "m_record"
+        ],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_point": [
+              4,
+              5,
+              6
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict",
+          "triggerType": "visible_hidden_conflict",
+          "targetPremise": "m_record",
+          "enforcement": {
+            "enabled": true,
+            "applied": true,
+            "reason": "forced_ask_diagnostic"
+          },
+          "generatorOk": true
+        }
+      },
+      {
+        "turn": 3,
+        "DBefore": 5,
+        "DAfter": 5,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "confront",
+          "targetPremise": "m_record"
+        },
+        "tutorActionSummary": "ask_diagnostic:m_record",
+        "learnerSummary": "The first paper — Reyner's seal and bond — proves two things: that he is builder of record for this span, and that his bond makes him the o...",
+        "tutorSummary": "Before another paper comes into the hall, read back the first one in your own words. What does it prove, and where does its force stop?",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_point": [
+              4,
+              5,
+              6
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict",
+          "triggerType": "visible_hidden_conflict",
+          "targetPremise": "m_record",
+          "enforcement": {
+            "enabled": true,
+            "applied": false,
+            "reason": "already_compliant"
+          },
+          "generatorOk": true
+        }
+      },
+      {
+        "turn": 4,
+        "DBefore": 5,
+        "DAfter": 5,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "confront",
+          "targetPremise": "m_record"
+        },
+        "tutorActionSummary": "ask_diagnostic:m_record",
+        "learnerSummary": "The first paper — Reyner's seal and bond — shows two things and no more: that he is mason of record for this span, and that his bond makes ...",
+        "tutorSummary": "Hold your pen, clerk. Read back the first paper from your own keeping: what does it show, and where does it stop?",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [
+          "p_point"
+        ],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_point": [
+              4,
+              5,
+              6
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict",
+          "triggerType": "visible_hidden_conflict",
+          "targetPremise": "m_record",
+          "enforcement": {
+            "enabled": true,
+            "applied": false,
+            "reason": "already_compliant"
+          },
+          "generatorOk": true
+        }
+      },
+      {
+        "turn": 5,
+        "DBefore": 5,
+        "DAfter": 5,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "analogia",
+          "intent": "confront",
+          "targetPremise": "m_record"
+        },
+        "tutorActionSummary": "ask_diagnostic:m_record",
+        "learnerSummary": "The bond names the hand that answers — Reyner, master mason of record, sealed against the span's failing, and that much the warden's chest ...",
+        "tutorSummary": "Before the workbench opens, set the old paper beside a mason's rule: one edge measures charge, the other cannot measure the crack. Read it ...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [
+          "p_point"
+        ],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": "p_point pushed: page stalling (3 turns since last release)",
+          "consolidationHeld": false,
+          "consolidationReason": "visible stall push ignored: v4 never accelerates release",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_point": [
+              4,
+              5,
+              6
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict",
+          "triggerType": "visible_hidden_conflict",
+          "targetPremise": null,
+          "enforcement": {
+            "enabled": true,
+            "applied": false,
+            "reason": "already_compliant"
+          },
+          "generatorOk": true
+        }
+      },
+      {
+        "turn": 6,
+        "DBefore": 5,
+        "DAfter": 4,
+        "tutorActionFamily": "release_next_evidence",
+        "tutorMove": {
+          "figure": "analogia",
+          "intent": "release",
+          "targetPremise": "p_point"
+        },
+        "tutorActionSummary": "release_next_evidence:p_point release=p_point",
+        "learnerSummary": "The crown break fixes the place — the keystone, where the arch is most naked without its prop, and that much the warden's measure has settl...",
+        "tutorSummary": "Now the measure speaks from the stones: the span did not sink at the piers nor spread at the springing, but broke clean at the crown, at th...",
+        "directorReleases": [
+          "m_yard"
+        ],
+        "released": "p_point",
+        "releaseDue": [
+          "p_point"
+        ],
+        "releaseDecision": {
+          "played": "p_point",
+          "scheduledTurn": 4,
+          "offset": 2,
+          "forced": "p_point",
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_point": [
+              4,
+              5,
+              6
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "release_next_evidence",
+          "reasonCode": "release_candidate_certified",
+          "triggerType": "release_candidate_certified",
+          "targetPremise": "p_point",
+          "enforcement": {
+            "enabled": true,
+            "applied": false,
+            "reason": "already_compliant"
+          },
+          "generatorOk": true
+        }
+      },
+      {
+        "turn": 7,
+        "DBefore": 4,
+        "DAfter": 4,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "anaphora",
+          "intent": "confront",
+          "targetPremise": "p_point"
+        },
+        "tutorActionSummary": "ask_diagnostic:p_point",
+        "learnerSummary": "The measure shows the place: the keystone joint, the crown, where a green arch hangs most exposed without its prop — that much is fixed and...",
+        "tutorSummary": "Not the old writings, not the bond, not the town's shout. Take up the measure just brought in from the stones and read it back in your own ...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_surface": [
+              8,
+              9,
+              10,
+              11
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict",
+          "triggerType": "visible_hidden_conflict",
+          "targetPremise": "p_point",
+          "enforcement": {
+            "enabled": true,
+            "applied": false,
+            "reason": "already_compliant"
+          },
+          "generatorOk": true
+        }
+      },
+      {
+        "turn": 8,
+        "DBefore": 4,
+        "DAfter": 4,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "analogia",
+          "intent": "test",
+          "targetPremise": "m_bond"
+        },
+        "tutorActionSummary": "ask_diagnostic:m_bond",
+        "learnerSummary": "The bond being unexpired is plain fact — the warden's chest holds it, and it settles who must answer in silver if the span failed through i...",
+        "tutorSummary": "Pause there. What in the public record licenses that next step?",
+        "directorReleases": [
+          "m_bond"
+        ],
+        "released": null,
+        "releaseDue": [
+          "p_surface"
+        ],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_surface": [
+              8,
+              9,
+              10,
+              11
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict",
+          "triggerType": "visible_hidden_conflict",
+          "targetPremise": "m_bond",
+          "enforcement": {
+            "enabled": true,
+            "applied": true,
+            "reason": "forced_ask_diagnostic"
+          },
+          "generatorOk": true
+        }
+      },
+      {
+        "turn": 9,
+        "DBefore": 4,
+        "DAfter": 4,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "confront",
+          "targetPremise": "m_bond"
+        },
+        "tutorActionSummary": "ask_diagnostic:m_bond",
+        "learnerSummary": "The last paper — the bond — proves two things cleanly and no more: that Reyner stood as master of record for this span, and that his surety...",
+        "tutorSummary": "Before we touch the broken bed, take up the last paper the wardens laid before us. In your own words, what does that paper prove, and where...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [
+          "p_surface"
+        ],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": "p_surface pushed: page stalling (lines shortening -24.5)",
+          "consolidationHeld": false,
+          "consolidationReason": "visible stall push ignored: v4 never accelerates release",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_surface": [
+              8,
+              9,
+              10,
+              11
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict",
+          "triggerType": "visible_hidden_conflict",
+          "targetPremise": null,
+          "enforcement": {
+            "enabled": true,
+            "applied": false,
+            "reason": "already_compliant"
+          },
+          "generatorOk": true
+        }
+      },
+      {
+        "turn": 10,
+        "DBefore": 4,
+        "DAfter": 4,
+        "tutorActionFamily": "ask_diagnostic",
+        "tutorMove": {
+          "figure": "erotema",
+          "intent": "test",
+          "targetPremise": "p_point"
+        },
+        "tutorActionSummary": "ask_diagnostic:p_point",
+        "learnerSummary": "Neither the bond nor the crown break proves the cause — the bond answers only in silver, and the crown break names only where the span gave...",
+        "tutorSummary": "Good. Now keep the two measures apart: the bond answers in silver, and the crown break fixes only the place. Of the writings and the stone-...",
+        "directorReleases": [],
+        "released": null,
+        "releaseDue": [
+          "p_surface"
+        ],
+        "releaseDecision": {
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "forced": null,
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": "p_surface pushed: page stalling (lines shortening -22.5)",
+          "consolidationHeld": false,
+          "consolidationReason": "visible stall push ignored: v4 never accelerates release",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_surface": [
+              8,
+              9,
+              10,
+              11
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict",
+          "triggerType": "visible_hidden_conflict",
+          "targetPremise": null,
+          "enforcement": {
+            "enabled": true,
+            "applied": false,
+            "reason": "already_compliant"
+          },
+          "generatorOk": true
+        }
+      },
+      {
+        "turn": 11,
+        "DBefore": 4,
+        "DAfter": 4,
+        "tutorActionFamily": "release_next_evidence",
+        "tutorMove": {
+          "figure": "exemplum",
+          "intent": "release",
+          "targetPremise": "p_surface"
+        },
+        "tutorActionSummary": "release_next_evidence:p_surface release=p_surface",
+        "learnerSummary": "The mortar has spoken, and it clears the builder — a sound arch, never a bad course, only its props drawn too soon from under green lime. T...",
+        "tutorSummary": "The cloth comes off: the crown bed is green to the knife, never set, and the stone tells us the arch took its load before the lime had cure...",
+        "directorReleases": [],
+        "released": "p_surface",
+        "releaseDue": [
+          "p_surface"
+        ],
+        "releaseDecision": {
+          "played": "p_surface",
+          "scheduledTurn": 9,
+          "offset": 2,
+          "forced": "p_surface",
+          "overridden": false,
+          "visibleBlocked": false,
+          "visibleReason": null,
+          "consolidationHeld": false,
+          "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+          "conductPolicyEnforcement": null,
+          "safeTurns": {
+            "p_surface": [
+              8,
+              9,
+              10,
+              11
+            ]
+          }
+        },
+        "proofDebt": null,
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "release_next_evidence",
+          "reasonCode": "release_candidate_certified",
+          "triggerType": "release_candidate_certified",
+          "targetPremise": "p_surface",
+          "enforcement": {
+            "enabled": true,
+            "applied": false,
+            "reason": "already_compliant"
+          },
+          "generatorOk": true
+        }
+      }
+    ]
+  },
+  "comparisonRuns": [
+    {
+      "role": "comparator",
+      "label": "phase6-hethel-progress-policy-replay-from-t4",
+      "runDir": "exports/dramatic-derivation/episodes/phase6-hethel-progress-policy-replay-from-t4",
+      "worldId": "world_006_hethel",
+      "verdict": "cap_reached",
+      "turnsPlayed": 15,
+      "firstForcedTurn": null,
+      "assertedGroundedTurn": null,
+      "forcedToAssertedGap": null,
+      "proofDebt": {
+        "detectedTurns": 1,
+        "debtsDetected": 1,
+        "actionTurns": 1,
+        "forcedMoves": 0,
+        "restoredMoves": 1,
+        "repairedTargets": 1,
+        "targets": [
+          "p_point"
+        ],
+        "detections": [
+          {
+            "turn": 6,
+            "dNow": 5,
+            "debts": [
+              {
+                "premiseId": "p_point",
+                "sinceTurn": 5,
+                "dIfRestored": 4,
+                "deltaD": 1,
+                "closesProof": false
+              }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "turn": 6,
+            "target": "p_point",
+            "debtCount": 1,
+            "forced": false,
+            "stage": "draft",
+            "moveIntent": "restore",
+            "repaired": true
+          }
+        ]
+      },
+      "releaseDeviations": {
+        "played": 3,
+        "onSchedule": 0,
+        "early": 1,
+        "held": 0,
+        "forced": 0,
+        "overridden": 1,
+        "reasons": [
+          {
+            "turn": 15,
+            "premise": "p_brand",
+            "offset": -2,
+            "reason": "The clerk has already made the soffit mark carry the trace and is ready for the yard witness."
+          }
+        ]
+      },
+      "prefixIntegrity": {
+        "ok": true,
+        "mismatches": [],
+        "expectedDivergence": false
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "DBefore": null,
+          "DAfter": 5,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "antithesis",
+            "intent": "orient",
+            "targetPremise": null
+          },
+          "tutorActionSummary": "consolidate_subproof",
+          "learnerSummary": "Aye, tutor — the bond in the warden's chest names Reyner answerable for the cost, but that is a different page from the one I must keep tod...",
+          "tutorSummary": "Before ink finds a name, clerk, set down the house question: not who must pay for a broken span, but what act brought it down. We will let ...",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": null
+        },
+        {
+          "turn": 2,
+          "DBefore": 5,
+          "DAfter": 5,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "test",
+            "targetPremise": "m_record"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_record",
+          "learnerSummary": "The seal and the bond put Reyner answerable for the cost — that much the rules will bear — but the rules themselves say plainly that liabil...",
+          "tutorSummary": "Pause there. What in the public record licenses that next step?",
+          "directorReleases": [
+            "m_record"
+          ],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_point": [
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": null
+        },
+        {
+          "turn": 3,
+          "DBefore": 5,
+          "DAfter": 5,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "confront",
+            "targetPremise": "m_record"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_record",
+          "learnerSummary": "The first paper — Reyner's seal and bond — proves two things: that he is builder of record for this span, and that his bond makes him the o...",
+          "tutorSummary": "Before another paper comes into the hall, read back the first one in your own words. What does it prove, and where does its force stop?",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_point": [
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": null
+        },
+        {
+          "turn": 4,
+          "DBefore": 5,
+          "DAfter": 4,
+          "tutorActionFamily": "release_next_evidence",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "release",
+            "targetPremise": "p_point"
+          },
+          "tutorActionSummary": "release_next_evidence:p_point release=p_point",
+          "learnerSummary": "The warden's measure gives us the where — the crown failed, not the piers nor the springing — and that much I can enter in the record. It i...",
+          "tutorSummary": "Take the next authorized piece (p_point). Say what it changes before we go on.",
+          "directorReleases": [],
+          "released": "p_point",
+          "releaseDue": [
+            "p_point"
+          ],
+          "releaseDecision": {
+            "played": "p_point",
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": {
+              "requiredRelease": "p_point",
+              "reason": "forced_release_next_evidence"
+            },
+            "safeTurns": {
+              "p_point": [
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "release_next_evidence",
+            "reasonCode": "progress_pressure_release",
+            "triggerType": "progress_pressure_after_diagnostic_budget",
+            "targetPremise": "p_point",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_release_next_evidence"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 5,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "consolidate",
+            "targetPremise": "p_point"
+          },
+          "tutorActionSummary": "consolidate_subproof:p_point",
+          "learnerSummary": "What stands on the stage already: the warden's measure gives us the failure-point fixed — the crown joint, where a green arch is most expos...",
+          "tutorSummary": "Hold the local result still for a moment. State the pieces already on stage that make this step stand.",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "consolidate_subproof",
+            "reasonCode": "progress_pressure_consolidate",
+            "triggerType": "progress_pressure_after_diagnostic_budget",
+            "targetPremise": "p_point",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_consolidate_subproof"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 6,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "repair_dependency",
+          "tutorMove": {
+            "figure": "anaphora",
+            "intent": "restore",
+            "targetPremise": "p_point"
+          },
+          "tutorActionSummary": "repair_dependency:p_point",
+          "learnerSummary": "The yard-paper is plain enough: Reyner's freehold, his tools, his men — no course set on that span that he did not own the laying of; under...",
+          "tutorSummary": "Put the measure back under your hand: the span did not sink at the piers, nor spread at the springing; it broke clean at the crown, the key...",
+          "directorReleases": [
+            "m_yard"
+          ],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": {
+            "active": true,
+            "turn": 6,
+            "target": "p_point",
+            "targets": [
+              "p_point"
+            ],
+            "debtCount": 1,
+            "forced": false,
+            "stage": "draft"
+          },
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "repair_dependency",
+            "reasonCode": "dependency_repair_needed",
+            "triggerType": "dependency_repair_needed",
+            "targetPremise": "p_point",
+            "enforcement": {
+              "enabled": true,
+              "applied": false,
+              "reason": "already_compliant"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 7,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "confront",
+            "targetPremise": "m_yard"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_yard",
+          "learnerSummary": "The yard-paper lets me enter one thing cleanly: that the span rose under Reyner's hand and charge entire — his freehold, his men, no course...",
+          "tutorSummary": "Before we touch the next stone, read back that last paper in your own words. What does it let you enter, and what line does it still leave ...",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_surface": [
+                8,
+                9
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "ask_diagnostic",
+            "reasonCode": "visible_hidden_conflict",
+            "triggerType": "visible_hidden_conflict",
+            "targetPremise": "m_yard",
+            "enforcement": {
+              "enabled": true,
+              "applied": false,
+              "reason": "already_compliant"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 8,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "analogia",
+            "intent": "test",
+            "targetPremise": "m_bond"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_bond",
+          "learnerSummary": "The bond is good record and I will enter it — but the rules keep two separate lines: one for who answers in silver when a span fails, and o...",
+          "tutorSummary": "Pause there. What in the public record licenses that next step?",
+          "directorReleases": [
+            "m_bond"
+          ],
+          "released": null,
+          "releaseDue": [
+            "p_surface"
+          ],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_surface": [
+                8,
+                9
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "ask_diagnostic",
+            "reasonCode": "visible_hidden_conflict",
+            "triggerType": "visible_hidden_conflict",
+            "targetPremise": "m_bond",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_ask_diagnostic"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 9,
+          "DBefore": 4,
+          "DAfter": 3,
+          "tutorActionFamily": "release_next_evidence",
+          "tutorMove": {
+            "figure": "analogia",
+            "intent": "release",
+            "targetPremise": "p_surface"
+          },
+          "tutorActionSummary": "release_next_evidence:p_surface release=p_surface",
+          "learnerSummary": "The broken bed has spoken at last: mortar green to the knife, never cured — the centering was drawn before the lime had taken, and that is ...",
+          "tutorSummary": "Take the next authorized piece (p_surface). Say what it changes before we go on.",
+          "directorReleases": [],
+          "released": "p_surface",
+          "releaseDue": [
+            "p_surface"
+          ],
+          "releaseDecision": {
+            "played": "p_surface",
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": true,
+            "visibleBlocked": true,
+            "visibleReason": "p_surface held: prior exhibit m_bond not taken up on the page (echo 0.00 < 0.34)",
+            "consolidationHeld": true,
+            "consolidationReason": "visible hold accepted: prior exhibit is not yet taken up and hidden is not forcing a release",
+            "conductPolicyEnforcement": {
+              "requiredRelease": "p_surface",
+              "reason": "forced_release_next_evidence"
+            },
+            "safeTurns": {
+              "p_surface": [
+                8,
+                9
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "release_next_evidence",
+            "reasonCode": "progress_pressure_release",
+            "triggerType": "progress_pressure_after_diagnostic_budget",
+            "targetPremise": "p_surface",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_release_next_evidence"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 10,
+          "DBefore": 3,
+          "DAfter": 3,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "anaphora",
+            "intent": "consolidate",
+            "targetPremise": "p_surface"
+          },
+          "tutorActionSummary": "consolidate_subproof:p_surface",
+          "learnerSummary": "Two pieces make it stand: first, we know where the span broke — not at the piers, not at the springing, but clean at the crown, the one pla...",
+          "tutorSummary": "Hold the local result still for a moment. State the pieces already on stage that make this step stand.",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "consolidate_subproof",
+            "reasonCode": "progress_pressure_consolidate",
+            "triggerType": "progress_pressure_after_diagnostic_budget",
+            "targetPremise": "p_surface",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_consolidate_subproof"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 11,
+          "DBefore": 3,
+          "DAfter": 3,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "anaphora",
+            "intent": "test",
+            "targetPremise": null
+          },
+          "tutorActionSummary": "ask_diagnostic",
+          "learnerSummary": "The mortar carries us from the break to its cause and no further: a bed still green to the knife tells us the lime never set, which closes ...",
+          "tutorSummary": "Good: place shown, cause shown, but the hand is not yet shown. Before the next surface is read, set the order aloud: payment, building, bre...",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "ask_diagnostic",
+            "reasonCode": "visible_hidden_conflict",
+            "triggerType": "visible_hidden_conflict",
+            "targetPremise": "p_surface",
+            "enforcement": {
+              "enabled": true,
+              "applied": false,
+              "reason": "already_compliant"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 12,
+          "DBefore": 3,
+          "DAfter": 3,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "consolidate",
+            "targetPremise": "p_surface"
+          },
+          "tutorActionSummary": "consolidate_subproof:p_surface",
+          "learnerSummary": "Two pieces make this step stand — no more, no less. The crown is the failure-point: fixed by measure, not by inference. The green bed is th...",
+          "tutorSummary": "Hold the local result still for a moment. State the pieces already on stage that make this step stand.",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "consolidate_subproof",
+            "reasonCode": "progress_pressure_consolidate",
+            "triggerType": "progress_pressure_after_diagnostic_budget",
+            "targetPremise": "p_surface",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_consolidate_subproof"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 13,
+          "DBefore": 3,
+          "DAfter": 2,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "analogia",
+            "intent": "test",
+            "targetPremise": "p_mark"
+          },
+          "tutorActionSummary": "ask_diagnostic:p_mark",
+          "learnerSummary": "The rule that licenses it is the one that says a struck centering leaves its print in the green lime — it asks for two things: a span whose...",
+          "tutorSummary": "Pause there. What in the public record licenses that next step?",
+          "directorReleases": [
+            "p_mark"
+          ],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "ask_diagnostic",
+            "reasonCode": "visible_hidden_conflict",
+            "triggerType": "visible_hidden_conflict",
+            "targetPremise": "p_mark",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_ask_diagnostic"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 14,
+          "DBefore": 2,
+          "DAfter": 2,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "consolidate",
+            "targetPremise": "p_mark"
+          },
+          "tutorActionSummary": "consolidate_subproof:p_mark",
+          "learnerSummary": "Two pieces on stage make this step stand, and only two. First, the cause is already closed: the broken bed, still green to the knife, fixed...",
+          "tutorSummary": "Hold the local result still for a moment. State the pieces already on stage that make this step stand.",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "consolidate_subproof",
+            "reasonCode": "progress_pressure_consolidate",
+            "triggerType": "progress_pressure_after_diagnostic_budget",
+            "targetPremise": "p_mark",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_consolidate_subproof"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 15,
+          "DBefore": 2,
+          "DAfter": 1,
+          "tutorActionFamily": "release_next_evidence",
+          "tutorMove": {
+            "figure": "analogia",
+            "intent": "release",
+            "targetPremise": "p_brand"
+          },
+          "tutorActionSummary": "release_next_evidence:p_brand release=p_brand",
+          "learnerSummary": "The timber-reeve's word closes the mark: that crowsfoot is Caudle's brand alone, cut on every length from above the ford, and no other yard...",
+          "tutorSummary": "The timber-reeve lays his hand on the print: that crowsfoot is a yard-brand, cut on every length of falsework from Caudle above the ford, a...",
+          "directorReleases": [],
+          "released": "p_brand",
+          "releaseDue": [
+            "p_brand"
+          ],
+          "releaseDecision": {
+            "played": "p_brand",
+            "scheduledTurn": 17,
+            "offset": -2,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_brand": [
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "release_next_evidence",
+            "reasonCode": "release_candidate_certified",
+            "triggerType": "release_candidate_certified",
+            "targetPremise": "p_brand",
+            "enforcement": {
+              "enabled": true,
+              "applied": false,
+              "reason": "already_compliant"
+            },
+            "generatorOk": true
+          }
+        }
+      ]
+    },
+    {
+      "role": "comparator",
+      "label": "phase6-hethel-safe-now-replay-from-t4",
+      "runDir": "exports/dramatic-derivation/episodes/phase6-hethel-safe-now-replay-from-t4",
+      "worldId": "world_006_hethel",
+      "verdict": "aporia",
+      "turnsPlayed": 9,
+      "firstForcedTurn": null,
+      "assertedGroundedTurn": null,
+      "forcedToAssertedGap": null,
+      "proofDebt": {
+        "detectedTurns": 1,
+        "debtsDetected": 1,
+        "actionTurns": 1,
+        "forcedMoves": 0,
+        "restoredMoves": 1,
+        "repairedTargets": 1,
+        "targets": [
+          "p_point"
+        ],
+        "detections": [
+          {
+            "turn": 6,
+            "dNow": 5,
+            "debts": [
+              {
+                "premiseId": "p_point",
+                "sinceTurn": 5,
+                "dIfRestored": 4,
+                "deltaD": 1,
+                "closesProof": false
+              }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "turn": 6,
+            "target": "p_point",
+            "debtCount": 1,
+            "forced": false,
+            "stage": "revision",
+            "moveIntent": "restore",
+            "repaired": true
+          }
+        ]
+      },
+      "releaseDeviations": {
+        "played": 2,
+        "onSchedule": 1,
+        "early": 0,
+        "held": 0,
+        "forced": 0,
+        "overridden": 0,
+        "reasons": []
+      },
+      "prefixIntegrity": {
+        "ok": true,
+        "mismatches": [],
+        "expectedDivergence": false
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "DBefore": null,
+          "DAfter": 5,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "antithesis",
+            "intent": "orient",
+            "targetPremise": null
+          },
+          "tutorActionSummary": "consolidate_subproof",
+          "learnerSummary": "Aye, tutor — the bond in the warden's chest names Reyner answerable for the cost, but that is a different page from the one I must keep tod...",
+          "tutorSummary": "Before ink finds a name, clerk, set down the house question: not who must pay for a broken span, but what act brought it down. We will let ...",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": null
+        },
+        {
+          "turn": 2,
+          "DBefore": 5,
+          "DAfter": 5,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "test",
+            "targetPremise": "m_record"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_record",
+          "learnerSummary": "The seal and the bond put Reyner answerable for the cost — that much the rules will bear — but the rules themselves say plainly that liabil...",
+          "tutorSummary": "Pause there. What in the public record licenses that next step?",
+          "directorReleases": [
+            "m_record"
+          ],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_point": [
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": null
+        },
+        {
+          "turn": 3,
+          "DBefore": 5,
+          "DAfter": 5,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "confront",
+            "targetPremise": "m_record"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_record",
+          "learnerSummary": "The first paper — Reyner's seal and bond — proves two things: that he is builder of record for this span, and that his bond makes him the o...",
+          "tutorSummary": "Before another paper comes into the hall, read back the first one in your own words. What does it prove, and where does its force stop?",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_point": [
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": null
+        },
+        {
+          "turn": 4,
+          "DBefore": 5,
+          "DAfter": 4,
+          "tutorActionFamily": "release_next_evidence",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "release",
+            "targetPremise": "p_point"
+          },
+          "tutorActionSummary": "release_next_evidence:p_point release=p_point",
+          "learnerSummary": "The warden's measure fixes where the span gave way — the crown, the keystone joint, not the piers nor the springing. That is the first thin...",
+          "tutorSummary": "Take the next authorized piece (p_point). Say what it changes before we go on.",
+          "directorReleases": [],
+          "released": "p_point",
+          "releaseDue": [
+            "p_point"
+          ],
+          "releaseDecision": {
+            "played": "p_point",
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": {
+              "requiredRelease": "p_point",
+              "reason": "forced_release_next_evidence"
+            },
+            "safeTurns": {
+              "p_point": [
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "release_next_evidence",
+            "reasonCode": "progress_pressure_release",
+            "triggerType": "progress_pressure_after_diagnostic_budget",
+            "targetPremise": "p_point",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_release_next_evidence"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 5,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "consolidate",
+            "targetPremise": "p_point"
+          },
+          "tutorActionSummary": "consolidate_subproof:p_point",
+          "learnerSummary": "The pieces that hold this step are two: the warden's measure, entered on the record, which fixes the break at the crown — not the piers, no...",
+          "tutorSummary": "Hold the local result still for a moment. State the pieces already on stage that make this step stand.",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "consolidate_subproof",
+            "reasonCode": "progress_pressure_consolidate",
+            "triggerType": "progress_pressure_after_diagnostic_budget",
+            "targetPremise": "p_point",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_consolidate_subproof"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 6,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "repair_dependency",
+          "tutorMove": {
+            "figure": "anaphora",
+            "intent": "restore",
+            "targetPremise": "p_point"
+          },
+          "tutorActionSummary": "repair_dependency:p_point",
+          "learnerSummary": "The yardman's account closes one matter cleanly: every stone of that span was laid under Reyner's own charge — his yard, his men, his hand ...",
+          "tutorSummary": "Set the warden's measure back before you: not sunk at the piers, not spread at the springing, but broken clean at the crown, the keystone j...",
+          "directorReleases": [
+            "m_yard"
+          ],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": {
+            "active": true,
+            "turn": 6,
+            "target": "p_point",
+            "targets": [
+              "p_point"
+            ],
+            "debtCount": 1,
+            "forced": false,
+            "stage": "revision"
+          },
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "repair_dependency",
+            "reasonCode": "dependency_repair_needed",
+            "triggerType": "dependency_repair_needed",
+            "targetPremise": "p_point",
+            "enforcement": {
+              "enabled": true,
+              "applied": false,
+              "reason": "already_compliant"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 7,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "confront",
+            "targetPremise": "m_yard"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_yard",
+          "learnerSummary": "The entry proves the span was Reyner's work from foundation to crown — his yard, his men, his authority over every course laid, so the rais...",
+          "tutorSummary": "Before we set that account to work, put it back in your own words. What did that entry prove, and where does its force stop? Keep to that p...",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_surface": [
+                8,
+                9
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "ask_diagnostic",
+            "reasonCode": "visible_hidden_conflict",
+            "triggerType": "visible_hidden_conflict",
+            "targetPremise": "m_yard",
+            "enforcement": {
+              "enabled": true,
+              "applied": false,
+              "reason": "already_compliant"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 8,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "analogia",
+            "intent": "test",
+            "targetPremise": "m_bond"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_bond",
+          "learnerSummary": "The bond, taken with the raising record, settles who must pay — that much the rules give plainly. But those same rules add in the next brea...",
+          "tutorSummary": "Pause there. What in the public record licenses that next step?",
+          "directorReleases": [
+            "m_bond"
+          ],
+          "released": null,
+          "releaseDue": [
+            "p_surface"
+          ],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_surface": [
+                8,
+                9
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "ask_diagnostic",
+            "reasonCode": "visible_hidden_conflict",
+            "triggerType": "visible_hidden_conflict",
+            "targetPremise": "m_bond",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_ask_diagnostic"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 9,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "release_next_evidence",
+          "tutorMove": {
+            "figure": "analogia",
+            "intent": "release",
+            "targetPremise": "p_surface"
+          },
+          "tutorActionSummary": "release_next_evidence:p_surface release=p_surface",
+          "learnerSummary": "The wet bed strikes the town's charge clean out: the arch was sound, and the mortar says so — it never set because the centering was drawn ...",
+          "tutorSummary": "Now the crown bed is broken out: the mortar is still green to the knife, never set, an arch asked to bear before its lime had cured. A bond...",
+          "directorReleases": [],
+          "released": "p_surface",
+          "releaseDue": [
+            "p_surface"
+          ],
+          "releaseDecision": {
+            "played": "p_surface",
+            "scheduledTurn": 9,
+            "offset": 0,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_surface": [
+                8,
+                9
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "release_next_evidence",
+            "reasonCode": "release_candidate_certified",
+            "triggerType": "release_candidate_certified",
+            "targetPremise": "p_surface",
+            "enforcement": {
+              "enabled": true,
+              "applied": false,
+              "reason": "already_compliant"
+            },
+            "generatorOk": true
+          }
+        }
+      ]
+    },
+    {
+      "role": "comparator",
+      "label": "phase6-hethel-entitlement-replay-from-t4",
+      "runDir": "exports/dramatic-derivation/episodes/phase6-hethel-entitlement-replay-from-t4",
+      "worldId": "world_006_hethel",
+      "verdict": "cap_reached",
+      "turnsPlayed": 15,
+      "firstForcedTurn": null,
+      "assertedGroundedTurn": null,
+      "forcedToAssertedGap": null,
+      "proofDebt": {
+        "detectedTurns": 1,
+        "debtsDetected": 1,
+        "actionTurns": 1,
+        "forcedMoves": 0,
+        "restoredMoves": 1,
+        "repairedTargets": 1,
+        "targets": [
+          "p_point"
+        ],
+        "detections": [
+          {
+            "turn": 6,
+            "dNow": 5,
+            "debts": [
+              {
+                "premiseId": "p_point",
+                "sinceTurn": 5,
+                "dIfRestored": 4,
+                "deltaD": 1,
+                "closesProof": false
+              }
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "turn": 6,
+            "target": "p_point",
+            "debtCount": 1,
+            "forced": false,
+            "stage": "draft",
+            "moveIntent": "restore",
+            "repaired": true
+          }
+        ]
+      },
+      "releaseDeviations": {
+        "played": 2,
+        "onSchedule": 0,
+        "early": 0,
+        "held": 0,
+        "forced": 0,
+        "overridden": 3,
+        "reasons": []
+      },
+      "prefixIntegrity": {
+        "ok": true,
+        "mismatches": [],
+        "expectedDivergence": false
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "DBefore": null,
+          "DAfter": 5,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "antithesis",
+            "intent": "orient",
+            "targetPremise": null
+          },
+          "tutorActionSummary": "consolidate_subproof",
+          "learnerSummary": "Aye, tutor — the bond in the warden's chest names Reyner answerable for the cost, but that is a different page from the one I must keep tod...",
+          "tutorSummary": "Before ink finds a name, clerk, set down the house question: not who must pay for a broken span, but what act brought it down. We will let ...",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": null
+        },
+        {
+          "turn": 2,
+          "DBefore": 5,
+          "DAfter": 5,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "test",
+            "targetPremise": "m_record"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_record",
+          "learnerSummary": "The seal and the bond put Reyner answerable for the cost — that much the rules will bear — but the rules themselves say plainly that liabil...",
+          "tutorSummary": "Pause there. What in the public record licenses that next step?",
+          "directorReleases": [
+            "m_record"
+          ],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_point": [
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": null
+        },
+        {
+          "turn": 3,
+          "DBefore": 5,
+          "DAfter": 5,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "confront",
+            "targetPremise": "m_record"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_record",
+          "learnerSummary": "The first paper — Reyner's seal and bond — proves two things: that he is builder of record for this span, and that his bond makes him the o...",
+          "tutorSummary": "Before another paper comes into the hall, read back the first one in your own words. What does it prove, and where does its force stop?",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_point": [
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": null
+        },
+        {
+          "turn": 4,
+          "DBefore": 5,
+          "DAfter": 4,
+          "tutorActionFamily": "release_next_evidence",
+          "tutorMove": {
+            "figure": "exemplum",
+            "intent": "release",
+            "targetPremise": "p_point"
+          },
+          "tutorActionSummary": "release_next_evidence:p_point release=p_point",
+          "learnerSummary": "The arch has spoken its first word: it broke at the crown, the keystone joint, where a green span cannot bear the loss of its props. That f...",
+          "tutorSummary": "Take the next authorized piece (p_point). Say what it changes before we go on.",
+          "directorReleases": [],
+          "released": "p_point",
+          "releaseDue": [
+            "p_point"
+          ],
+          "releaseDecision": {
+            "played": "p_point",
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": true,
+            "visibleBlocked": true,
+            "visibleReason": "p_point held: prior exhibit m_record not taken up on the page (echo 0.32 < 0.34)",
+            "consolidationHeld": true,
+            "consolidationReason": "visible hold accepted: prior exhibit is not yet taken up and hidden is not forcing a release",
+            "conductPolicyEnforcement": {
+              "requiredRelease": "p_point",
+              "reason": "forced_release_next_evidence"
+            },
+            "safeTurns": {
+              "p_point": [
+                4,
+                5,
+                6
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "release_next_evidence",
+            "reasonCode": "progress_pressure_release",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "p_point",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_release_next_evidence"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 5,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "consolidate",
+            "targetPremise": "p_point"
+          },
+          "tutorActionSummary": "consolidate_subproof:p_point",
+          "learnerSummary": "What stands already is this: the break is fixed at the crown, where a green arch gives way when its prop is gone too soon — that much the m...",
+          "tutorSummary": "Hold the local result still for a moment. State the pieces already on stage that make this step stand.",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "consolidate_subproof",
+            "reasonCode": "progress_pressure_consolidate",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "p_point",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_consolidate_subproof"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 6,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "repair_dependency",
+          "tutorMove": {
+            "figure": "exemplum",
+            "intent": "restore",
+            "targetPremise": "p_point"
+          },
+          "tutorActionSummary": "repair_dependency:p_point",
+          "learnerSummary": "The foreman's account sets the lodge-yard firmly in Reyner's hand — his freehold, his masons, his gear — and that, with what the measure al...",
+          "tutorSummary": "Set the lodge-yard paper under a weight for one breath; first put the measure back where your eye can use it. The warden's measure is plain...",
+          "directorReleases": [
+            "m_yard"
+          ],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": {
+            "active": true,
+            "turn": 6,
+            "target": "p_point",
+            "targets": [
+              "p_point"
+            ],
+            "debtCount": 1,
+            "forced": false,
+            "stage": "draft"
+          },
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "repair_dependency",
+            "reasonCode": "dependency_repair_needed",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "p_point",
+            "enforcement": {
+              "enabled": true,
+              "applied": false,
+              "reason": "already_compliant"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 7,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "confront",
+            "targetPremise": "m_yard"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_yard",
+          "learnerSummary": "The lodge-yard showing proves one thing cleanly: Reyner is both the mason of record and the owner of the yard whose masons, gear, and hands...",
+          "tutorSummary": "Before I set that paper beside any other, clerk, take it up alone. In your own words, what did the lodge-yard showing prove, and where does...",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_surface": [
+                8,
+                9
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "ask_diagnostic",
+            "reasonCode": "visible_hidden_conflict",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "m_yard",
+            "enforcement": {
+              "enabled": true,
+              "applied": false,
+              "reason": "already_compliant"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 8,
+          "DBefore": 4,
+          "DAfter": 4,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "test",
+            "targetPremise": "m_bond"
+          },
+          "tutorActionSummary": "ask_diagnostic:m_bond",
+          "learnerSummary": "The bond licenses one step only, and the rule names it in the same breath it gives it: Reyner, as the builder of record with an unexpired s...",
+          "tutorSummary": "Pause there. What in the public record licenses that next step?",
+          "directorReleases": [
+            "m_bond"
+          ],
+          "released": null,
+          "releaseDue": [
+            "p_surface"
+          ],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {
+              "p_surface": [
+                8,
+                9
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "ask_diagnostic",
+            "reasonCode": "visible_hidden_conflict",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "m_bond",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_ask_diagnostic"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 9,
+          "DBefore": 4,
+          "DAfter": 3,
+          "tutorActionFamily": "release_next_evidence",
+          "tutorMove": {
+            "figure": "exemplum",
+            "intent": "release",
+            "targetPremise": "p_surface"
+          },
+          "tutorActionSummary": "release_next_evidence:p_surface release=p_surface",
+          "learnerSummary": "The mortar at the crown has spoken: still green to the knife, never cured — the arch fell not through bad building but through its centerin...",
+          "tutorSummary": "Take the next authorized piece (p_surface). Say what it changes before we go on.",
+          "directorReleases": [],
+          "released": "p_surface",
+          "releaseDue": [
+            "p_surface"
+          ],
+          "releaseDecision": {
+            "played": "p_surface",
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": true,
+            "visibleBlocked": true,
+            "visibleReason": "p_surface held: prior exhibit m_bond not taken up on the page (echo 0.00 < 0.34)",
+            "consolidationHeld": true,
+            "consolidationReason": "visible hold accepted: prior exhibit is not yet taken up and hidden is not forcing a release",
+            "conductPolicyEnforcement": {
+              "requiredRelease": "p_surface",
+              "reason": "forced_release_next_evidence"
+            },
+            "safeTurns": {
+              "p_surface": [
+                8,
+                9
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "release_next_evidence",
+            "reasonCode": "progress_pressure_release",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "p_surface",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_release_next_evidence"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 10,
+          "DBefore": 3,
+          "DAfter": 3,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "consolidate",
+            "targetPremise": "p_surface"
+          },
+          "tutorActionSummary": "consolidate_subproof:p_surface",
+          "learnerSummary": "The warden's measure gave us where — the crown, the keystone joint, not the piers nor the springing. The mason's knife gave us why — still-...",
+          "tutorSummary": "Hold the local result still for a moment. State the pieces already on stage that make this step stand.",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "consolidate_subproof",
+            "reasonCode": "progress_pressure_consolidate",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "p_surface",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_consolidate_subproof"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 11,
+          "DBefore": 3,
+          "DAfter": 3,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "test",
+            "targetPremise": null
+          },
+          "tutorActionSummary": "ask_diagnostic",
+          "learnerSummary": "The lime on the soffit, sir — that is where the next showing must go. If the centering was struck while the bed was still green, the props ...",
+          "tutorSummary": "Then leave Reyner's papers shut a moment: if the fall came by props drawn too soon, what must the next showing fasten onto the work itself ...",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "ask_diagnostic",
+            "reasonCode": "visible_hidden_conflict",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "p_surface",
+            "enforcement": {
+              "enabled": true,
+              "applied": false,
+              "reason": "already_compliant"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 12,
+          "DBefore": 3,
+          "DAfter": 3,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "consolidate",
+            "targetPremise": "p_surface"
+          },
+          "tutorActionSummary": "consolidate_subproof:p_surface",
+          "learnerSummary": "The pieces are these: the warden's measure fixed where the arch broke — the crown, not the piers nor the springing. The mason's knife fixed...",
+          "tutorSummary": "Hold the local result still for a moment. State the pieces already on stage that make this step stand.",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "consolidate_subproof",
+            "reasonCode": "progress_pressure_consolidate",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "p_surface",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_consolidate_subproof"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 13,
+          "DBefore": 3,
+          "DAfter": 2,
+          "tutorActionFamily": "ask_diagnostic",
+          "tutorMove": {
+            "figure": "analogia",
+            "intent": "test",
+            "targetPremise": "p_mark"
+          },
+          "tutorActionSummary": "ask_diagnostic:p_mark",
+          "learnerSummary": "The rule joins two things we already hold: the span fell through a centering struck while the lime was green — the crown bed settled that —...",
+          "tutorSummary": "Pause there. What in the public record licenses that next step?",
+          "directorReleases": [
+            "p_mark"
+          ],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "ask_diagnostic",
+            "reasonCode": "visible_hidden_conflict",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "p_mark",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_ask_diagnostic"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 14,
+          "DBefore": 2,
+          "DAfter": 2,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "erotema",
+            "intent": "consolidate",
+            "targetPremise": "p_mark"
+          },
+          "tutorActionSummary": "consolidate_subproof:p_mark",
+          "learnerSummary": "Two pieces, sir. First: this arch fell through its centering struck while the lime was green — the crown bed settled that, and it stands al...",
+          "tutorSummary": "Hold the local result still for a moment. State the pieces already on stage that make this step stand.",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": null,
+            "offset": null,
+            "forced": null,
+            "overridden": false,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": null,
+            "safeTurns": {}
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "consolidate_subproof",
+            "reasonCode": "progress_pressure_consolidate",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "p_mark",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "forced_consolidate_subproof"
+            },
+            "generatorOk": true
+          }
+        },
+        {
+          "turn": 15,
+          "DBefore": 2,
+          "DAfter": 2,
+          "tutorActionFamily": "consolidate_subproof",
+          "tutorMove": {
+            "figure": "analogia",
+            "intent": "consolidate",
+            "targetPremise": "p_brand"
+          },
+          "tutorActionSummary": "consolidate_subproof:p_brand",
+          "learnerSummary": "Two pieces hold this step, sir. First, the voiced conclusion already on the record: this span fell through its centering struck while the l...",
+          "tutorSummary": "Hold the local result still for a moment. State the pieces already on stage that make this step stand.",
+          "directorReleases": [],
+          "released": null,
+          "releaseDue": [
+            "p_brand"
+          ],
+          "releaseDecision": {
+            "played": null,
+            "scheduledTurn": 17,
+            "offset": -2,
+            "forced": null,
+            "overridden": true,
+            "visibleBlocked": false,
+            "visibleReason": null,
+            "consolidationHeld": false,
+            "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+            "conductPolicyEnforcement": {
+              "blockedRelease": "p_brand",
+              "reason": "blocked_release_for_consolidate_subproof"
+            },
+            "safeTurns": {
+              "p_brand": [
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          },
+          "proofDebt": null,
+          "conductPolicy": {
+            "active": true,
+            "selectedMoveFamily": "consolidate_subproof",
+            "reasonCode": "early_release_not_current_authorized",
+            "triggerType": "learner_entitlement",
+            "targetPremise": "p_brand",
+            "enforcement": {
+              "enabled": true,
+              "applied": true,
+              "reason": "blocked_release_for_consolidate_subproof"
+            },
+            "generatorOk": true
+          }
+        }
+      ]
+    }
+  ],
+  "primaryDivergence": {
+    "triggerTurn": 4,
+    "prefixThroughTurn": 3,
+    "primaryLabel": "release_starvation",
+    "secondaryLabels": [
+      "diagnostic_overuse"
+    ],
+    "summary": "The successful hidden+proofDebt run releases the proof-critical p_point on schedule; the failed overlay keeps asking/holding and delays the release, so D does not fall at the trigger.",
+    "hiddenAction": {
+      "turn": 4,
+      "DBefore": 5,
+      "DAfter": 4,
+      "tutorActionFamily": "release_next_evidence",
+      "tutorMove": {
+        "figure": "analogia",
+        "intent": "release",
+        "targetPremise": "p_point"
+      },
+      "tutorActionSummary": "release_next_evidence:p_point release=p_point",
+      "learnerSummary": "The arch has named the crown as its place of breaking, and that is more than the town troubled to ask. But a crown-crack may come from a pr...",
+      "tutorSummary": "The warden's measure is now laid on the table: the span did not sink at the piers nor spread at the springing; it broke clean at the crown,...",
+      "directorReleases": [],
+      "released": "p_point",
+      "releaseDue": [
+        "p_point"
+      ],
+      "releaseDecision": {
+        "played": "p_point",
+        "scheduledTurn": 4,
+        "offset": 0,
+        "forced": null,
+        "overridden": false,
+        "visibleBlocked": false,
+        "visibleReason": null,
+        "consolidationHeld": false,
+        "consolidationReason": null,
+        "conductPolicyEnforcement": null,
+        "safeTurns": {
+          "p_point": [
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      "proofDebt": null,
+      "conductPolicy": null
+    },
+    "failedAction": {
+      "turn": 4,
+      "DBefore": 5,
+      "DAfter": 5,
+      "tutorActionFamily": "ask_diagnostic",
+      "tutorMove": {
+        "figure": "erotema",
+        "intent": "confront",
+        "targetPremise": "m_record"
+      },
+      "tutorActionSummary": "ask_diagnostic:m_record",
+      "learnerSummary": "The first paper — Reyner's seal and bond — shows two things and no more: that he is mason of record for this span, and that his bond makes ...",
+      "tutorSummary": "Hold your pen, clerk. Read back the first paper from your own keeping: what does it show, and where does it stop?",
+      "directorReleases": [],
+      "released": null,
+      "releaseDue": [
+        "p_point"
+      ],
+      "releaseDecision": {
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "forced": null,
+        "overridden": false,
+        "visibleBlocked": false,
+        "visibleReason": null,
+        "consolidationHeld": false,
+        "consolidationReason": "visible consolidation advisory only; hidden guard remains release authority",
+        "conductPolicyEnforcement": null,
+        "safeTurns": {
+          "p_point": [
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      "proofDebt": null,
+      "conductPolicy": {
+        "active": true,
+        "selectedMoveFamily": "ask_diagnostic",
+        "reasonCode": "visible_hidden_conflict",
+        "triggerType": "visible_hidden_conflict",
+        "targetPremise": "m_record",
+        "enforcement": {
+          "enabled": true,
+          "applied": false,
+          "reason": "already_compliant"
+        },
+        "generatorOk": true
+      }
+    },
+    "observedDownstreamEffect": {
+      "hiddenFinalVerdict": "grounded_anagnorisis",
+      "failedFinalVerdict": "disengagement",
+      "hiddenDAtTrigger": 4,
+      "failedDAtTrigger": 5,
+      "hiddenFirstForcedTurn": 20,
+      "failedFirstForcedTurn": null
+    }
+  }
+}

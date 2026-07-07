@@ -13,6 +13,7 @@ import {
   loadWorld,
   validateWorld,
   plotLint,
+  diagnose,
   derivationDistance,
   detectStall,
   runDrama,
@@ -163,6 +164,16 @@ test('detectStall separates disengagement from pure aporia', () => {
   );
   const progressing = aporia.map((e, i) => ({ ...e, D: 4 - i }));
   assert.equal(detectStall(progressing, 4, 2), null);
+
+  const decayChurnProgress = [
+    { turn: 6, D: 4, groundedCount: 7 },
+    { turn: 7, D: 4, groundedCount: 7 },
+    { turn: 8, D: 4, groundedCount: 7 },
+    { turn: 9, D: 3, groundedCount: 7 },
+    { turn: 10, D: 3, groundedCount: 7 },
+    { turn: 11, D: 3, groundedCount: 7 },
+  ];
+  assert.equal(detectStall(decayChurnProgress, 6, 2), null);
 });
 
 // ---------------------------------------------------------------------------
@@ -189,6 +200,23 @@ test('happy path reaches grounded anagnorisis on the authored slope', async () =
   // the proof of the recognition is extractable down to released facts
   assert.equal(result.proof.rule, 'R2_succession');
   assert.equal(factKey(result.proof.fact), factKey(world.secret.fact));
+});
+
+test('logic projection snapshots are opt-in and summarize board closure in diagnosis', async () => {
+  const plain = await runDrama({ world, roles: mockRoles() });
+  assert.equal('logicSnapshots' in plain, false);
+
+  const result = await runDrama({ world, roles: mockRoles(), options: { logicProjection: true } });
+  assert.equal(result.verdict, 'grounded_anagnorisis');
+  assert.equal(result.logicSnapshots.length, result.turnsPlayed);
+  assert.equal(result.logicSnapshots[0].projection.schema, 'dramatic-derivation.logic-ir.v0.projection');
+
+  const diagnosis = diagnose(result, world);
+  assert.equal(diagnosis.logicProjection.schema, 'dramatic-derivation.logic-projection-report.v0');
+  assert.equal(diagnosis.logicProjection.turns.length, result.turnsPlayed);
+  assert.equal(diagnosis.logicProjection.turns[0].secret.derived, false);
+  assert.equal(diagnosis.logicProjection.turns.at(-1).secret.derived, true);
+  assert.ok(diagnosis.logicProjection.summary.firedHyperedgesPeak > 0);
 });
 
 test('an unforced assertion of S is a lucky leap, not anagnorisis', async () => {
@@ -264,6 +292,8 @@ test('learner views conceal exactly S, the mirror, and unreleased premises', asy
   const VIEW_KEYS = [
     'abox',
     'background',
+    'factSurfaces',
+    'publicRegister', // style channel only; no evidentiary content
     'question',
     'questionPattern',
     'releasedFacts',
@@ -279,6 +309,7 @@ test('learner views conceal exactly S, the mirror, and unreleased premises', asy
     assert.deepEqual(Object.keys(view).sort(), VIEW_KEYS);
     for (const entry of view.transcript) {
       assert.deepEqual(Object.keys(entry).sort(), ['role', 'text', 'turn']);
+      assert.notEqual(entry.role, 'director');
     }
 
     const serialized = JSON.stringify(view);

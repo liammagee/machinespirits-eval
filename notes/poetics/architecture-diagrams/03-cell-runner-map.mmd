@@ -1,0 +1,78 @@
+flowchart LR
+  config["config/tutor-agents.yaml"]:::source
+  registry["services/evaluationRunner.js EVAL_ONLY_PROFILES"]:::source
+  config --> dispatch["Resolve cell profile and runner"]:::dispatch
+  registry --> dispatch
+
+  subgraph standard["Standard dialogue engine path"]
+    standardCells["Cells 1-109 and most message-mode variants"]:::cell
+    standardEngine["tutor-core dialogue engine"]:::engine
+    standardLearner["Scenario learner or learner ego-superego"]:::engine
+    standardTrace["logs/tutor-dialogues trace"]:::log
+    standardRows["evaluation_results rows"]:::db
+    standardCells --> standardEngine
+    standardLearner <--> standardEngine
+    standardEngine --> standardTrace
+    standardEngine --> standardRows
+  end
+
+  subgraph trapAdapter["Standard engine on trap suites"]
+    trapCells["Cells 114 and 125"]:::cell
+    adapter["run-dialogue-engine-trap-baseline.js"]:::engine
+    trapScenarios["adaptive or cross-suite trap scenarios"]:::instrument
+    trapCells --> adapter
+    trapScenarios --> adapter
+    adapter --> standardTrace
+    adapter --> standardRows
+  end
+
+  subgraph adaptive["Adaptive runner path"]
+    adaptiveCells["Cells 110-113, 115-128"]:::cell
+    graph["services/adaptiveTutor graph"]:::engine
+    architectures["recognition_only, ego_superego, state_policy, validator, ToM, evidence-bound variants"]:::dispatch
+    profile["learnerProfile projections"]:::state
+    policy["policy action and constraint check"]:::guard
+    adaptiveTrace["adaptive per-turn state trace"]:::log
+    binary["strategy_shift correctness"]:::score
+    graded["4-dimension adaptive graded rubric"]:::score
+    adaptiveCells --> graph
+    architectures --> graph
+    graph --> profile
+    profile --> policy
+    policy --> adaptiveTrace
+    adaptiveTrace --> binary
+    adaptiveTrace --> graded
+    binary --> standardRows
+    graded --> standardRows
+  end
+
+  subgraph derivation["Dramatic derivation harness"]
+    derivationConfig["proof world YAML, release script, cast"]:::source
+    engine["services/dramaticDerivation engine"]:::engine
+    guards["pacing, visible pacing, proof debt, runtime monitor"]:::guard
+    checker["symbolic checker: forced vs unforced assertion"]:::score
+    exports["exports/dramatic-derivation file artifacts"]:::log
+    derivationConfig --> engine
+    engine --> guards
+    guards --> checker
+    checker --> exports
+  end
+
+  dispatch --> standardCells
+  dispatch --> trapCells
+  dispatch --> adaptiveCells
+
+  standardRows --> analysis["analysis scripts, paper tables, manifest validation"]:::analysis
+  exports --> analysis
+
+  classDef source fill:#f3f4f6,stroke:#6b7280,color:#111827,stroke-width:2px;
+  classDef dispatch fill:#e0f2fe,stroke:#0369a1,color:#082f49,stroke-width:2px;
+  classDef cell fill:#dbeafe,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+  classDef engine fill:#ede9fe,stroke:#7c3aed,color:#2e1065,stroke-width:2px;
+  classDef state fill:#dcfce7,stroke:#16a34a,color:#052e16,stroke-width:2px;
+  classDef guard fill:#fef3c7,stroke:#d97706,color:#422006,stroke-width:2px;
+  classDef instrument fill:#fce7f3,stroke:#be185d,color:#500724,stroke-width:2px;
+  classDef score fill:#ffe4e6,stroke:#be123c,color:#4c0519,stroke-width:2px;
+  classDef log fill:#f8fafc,stroke:#64748b,color:#0f172a,stroke-width:2px;
+  classDef db fill:#ccfbf1,stroke:#0f766e,color:#042f2e,stroke-width:2px;
+  classDef analysis fill:#ecfccb,stroke:#65a30d,color:#1a2e05,stroke-width:2px;

@@ -68,7 +68,14 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routers + static UI surfaces (the four /api/* routers and the public/
+// Static eval surfaces optionally ask the poetics dashboard for its nav rail.
+// The standalone eval server does not own that chrome, so return an empty
+// fragment instead of a noisy 404. The poetics app provides the real route.
+app.get('/_nav.html', (_req, res) => {
+  res.type('html').send('');
+});
+
+// API routers + static UI surfaces (the shared /api/* routers and the public/
 // UI dirs) are defined once in services/evalSurfaces.js and shared with the
 // poetics browser (scripts/browse-poetics-scripts.js), so the eval route-set
 // can't drift between the two servers. Auth, JSON parsing, the health check,
@@ -152,7 +159,7 @@ a.card .cta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(-
   <div class="stats">
     <div class="stat"><div class="n">v${pkg.version}</div><div class="l">package</div></div>
     <div class="stat"><div class="n">standalone</div><div class="l">mode</div></div>
-    <div class="stat"><div class="n">4</div><div class="l">api routers</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">api routers</div></div>
     <div class="stat"><div class="n">SQLite</div><div class="l">store</div></div>
   </div>
 
@@ -174,6 +181,11 @@ a.card .cta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(-
       <div class="d">Complete blinded human-adjudication coding forms through the dashboard.</div>
       <div class="cta">/adjudication →</div>
     </a>
+    <a class="card panel indigo" href="/human-coding-admin">
+      <div class="t">Superego coding admin</div>
+      <div class="d">Code the Paper 2.0 superego critique taxonomy with category guidance and analyzer-compatible rater files.</div>
+      <div class="cta">/human-coding-admin →</div>
+    </a>
     <a class="card panel" href="/pilot-admin">
       <div class="t">Pilot admin</div>
       <div class="d">Operator dashboard for pilot sessions — token-gated.</div>
@@ -191,7 +203,7 @@ a.card .cta{ font-family:"JetBrains Mono",monospace; font-size:11px; color:var(-
   </div>
 
   <h2 class="section">Eval API</h2>
-  <p class="section-sub">Mounted under <code>/api/eval</code> · also live: <code>/api/chat</code>, <code>/api/pilot</code>, <code>/api/a19/adjudication</code>.</p>
+  <p class="section-sub">Mounted under <code>/api/eval</code> · also live: <code>/api/chat</code>, <code>/api/pilot</code>, <code>/api/a19/adjudication</code>, <code>/api/human-coding</code>.</p>
   <div class="api">
     <div class="row"><span class="m get">GET</span><span class="p">/api/eval/scenarios</span><span class="dsc">list evaluation scenarios</span></div>
     <div class="row"><span class="m get">GET</span><span class="p">/api/eval/profiles</span><span class="dsc">list tutor profiles</span></div>

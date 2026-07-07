@@ -1,0 +1,42 @@
+{
+  "runId": "agon-pilot-02-a1p",
+  "startedAt": "2026-07-05T20:07:01.999Z",
+  "configPath": "config/agon/fractions-agon.yaml",
+  "configHash": "7ebdf0996ec3215d",
+  "gameId": "fractions_agon_v0",
+  "arms": [
+    "A1p"
+  ],
+  "episodesPerArm": 4,
+  "turnsOverride": null,
+  "dry": false,
+  "agents": {
+    "tutor": "codex/gpt-5.5",
+    "learner": "claude-code/claude-sonnet-5"
+  },
+  "codexEffort": "medium",
+  "gitCommit": "be7e6b2e6ec54e8adda8cc33bad4e532380dd805",
+  "schedule": [
+    {
+      "episodeId": "A1p-e1",
+      "status": "complete",
+      "durationMs": 286541
+    },
+    {
+      "episodeId": "A1p-e2",
+      "status": "complete",
+      "durationMs": 288524
+    },
+    {
+      "episodeId": "A1p-e3",
+      "status": "complete",
+      "durationMs": 486260
+    },
+    {
+      "episodeId": "A1p-e4",
+      "status": "complete",
+      "durationMs": 493533
+    }
+  ],
+  "completedAt": "2026-07-05T20:32:56.886Z"
+}

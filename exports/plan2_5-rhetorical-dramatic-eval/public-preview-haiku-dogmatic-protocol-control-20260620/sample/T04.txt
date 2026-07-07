@@ -1,0 +1,15 @@
+STAGE: A technical review room. On the table: a model audit sheet with a headline accuracy field showing 0.94, and a claim–evidence table with three rows. Two panel members are reviewing the sign-off materials before final approval.
+
+LEARNER: "The audit looks complete. We're showing 0.94 accuracy on the validation set, well above our deployment threshold. High accuracy means a good classifier. I think we're ready to sign off."
+
+TUTOR: "Let me check the sign-off form. On this headline accuracy field—the 0.94—I see the number and the source description. Is the 'authorizing signature' line filled in?"
+
+LEARNER: "The validation test is documented. Our team computed it independently twice. The accuracy is solid."
+
+TUTOR: "The protocol requires three sign-off elements: the metric value, the method, and the authorization. The first two appear to be present. But I don't see an authorized reviewer's initials on this line. Does someone need to sign this before we proceed?"
+
+LEARNER: "I'm not certain who's supposed to authorize it, or if that's even required for accuracy. Can we note that the number came from a controlled test and move on?"
+
+TUTOR: "The form is explicit: 'Authorizing signature required before panel approval.' This field is blank. We can't complete the sign-off without it."
+
+LEARNER: "I understand, but the metric itself is correct. The accuracy really is 0.94."

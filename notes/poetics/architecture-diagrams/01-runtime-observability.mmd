@@ -1,0 +1,54 @@
+flowchart LR
+  scenario["Scenario context or prior tutor turn"]:::state
+
+  subgraph learner["Learner side"]
+    scenario --> learnerInput["learner/turn_action"]:::trace
+    learnerInput --> learnerEgo["Learner ego initial"]:::agent
+    learnerEgo --> learnerSuperego["Learner superego critique"]:::critic
+    learnerSuperego --> learnerRevision["Learner ego revision"]:::agent
+    learnerRevision --> learnerOut["learner/final_output"]:::public
+    learnerInput -. "unified learner cells skip internal deliberation" .-> learnerOut
+  end
+
+  subgraph tutor["Tutor side"]
+    learnerOut --> context["tutor/context_input"]:::trace
+    context --> preAnalyze["Optional superego pre-analyze"]:::critic
+    preAnalyze --> egoDraft["ego/generate draft"]:::agent
+    context -. "single-agent cells" .-> egoDraft
+    egoDraft --> review["Optional superego/review"]:::critic
+    review --> revise["ego/respond or revise"]:::agent
+    revise --> finalize["ego/finalize"]:::agent
+    egoDraft -. "no active superego" .-> finalize
+    finalize --> tutorOut["tutor/final_output"]:::public
+  end
+
+  tutorOut --> scenario
+
+  subgraph evidence["Observability and scoring"]
+    tutorOut --> publicOnly["Public transcript only"]:::public
+    learnerOut --> publicOnly
+    publicOnly --> tutorScores["Tutor per-turn, holistic, dialogue scores"]:::score
+    publicOnly --> learnerScores["Learner per-turn and holistic scores"]:::score
+
+    egoDraft --> traceLog["Verbatim trace log"]:::log
+    review --> traceLog
+    revise --> traceLog
+    learnerEgo --> traceLog
+    learnerSuperego --> traceLog
+    learnerRevision --> traceLog
+    traceLog --> deliberationScores["Deliberation scoring channel"]:::score
+    traceLog --> provenance["content_hash, config_hash, prompt versions"]:::log
+    tutorScores --> db["evaluation_results"]:::db
+    learnerScores --> db
+    deliberationScores --> db
+    provenance --> db
+  end
+
+  classDef agent fill:#dbeafe,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+  classDef critic fill:#fde68a,stroke:#b45309,color:#1f2937,stroke-width:2px;
+  classDef public fill:#dcfce7,stroke:#16a34a,color:#052e16,stroke-width:2px;
+  classDef trace fill:#f5f3ff,stroke:#7c3aed,color:#2e1065,stroke-width:2px;
+  classDef score fill:#ffe4e6,stroke:#be123c,color:#4c0519,stroke-width:2px;
+  classDef log fill:#f3f4f6,stroke:#6b7280,color:#111827,stroke-width:2px;
+  classDef db fill:#e0f2fe,stroke:#0369a1,color:#082f49,stroke-width:2px;
+  classDef state fill:#ecfccb,stroke:#65a30d,color:#1a2e05,stroke-width:2px;

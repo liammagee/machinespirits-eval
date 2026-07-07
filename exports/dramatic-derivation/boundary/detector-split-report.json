@@ -1,0 +1,483 @@
+{
+  "arms": [
+    {
+      "arm": "lantern-p2-plot-on",
+      "worldId": "world_002_lantern",
+      "verdict": "aporia",
+      "endTurn": 8,
+      "dFinal": 4,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "unguarded",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_bearing@t3, p_chart@t7"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 3,
+            "premise": "p_bearing",
+            "offset": -1,
+            "reason": "Played one turn early because the clerk has named the missing first ground and the empty place on the board is exactly the bearing-book.",
+            "solvency": {
+              "premise": "p_bearing",
+              "turn": 3,
+              "safe": false,
+              "verdict": "aporia",
+              "endTurn": 8,
+              "forcedTurn": null
+            }
+          },
+          {
+            "turn": 7,
+            "premise": "p_chart",
+            "offset": -2,
+            "reason": "The learner has repaired the Harlow key and kept the bearing as a heading only, so the chart can answer the blank wall without skipping a conjunct.",
+            "solvency": {
+              "premise": "p_chart",
+              "turn": 7,
+              "safe": false,
+              "verdict": "aporia",
+              "endTurn": 12,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "p_bearing",
+            "decayTurn": 6,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_key",
+            "decayTurn": 7,
+            "mode": "mutate",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "p_bearing",
+          "m_key"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 3,
+            "windowSize": 1,
+            "played": "p_bearing"
+          },
+          {
+            "turn": 7,
+            "windowSize": 1,
+            "played": "p_chart"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "lantern-p3-repair-on",
+      "worldId": "world_002_lantern",
+      "verdict": "grounded_anagnorisis",
+      "endTurn": 20,
+      "dFinal": 0,
+      "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "unguarded",
+      "reasons": [
+        "grounded verdict; no detector split applied"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 3,
+            "premise": "p_bearing",
+            "offset": -1,
+            "reason": "The clerk has already named the missing first conjunct, so the bearing can enter one turn early without stealing the next inference.",
+            "solvency": {
+              "premise": "p_bearing",
+              "turn": 3,
+              "safe": false,
+              "verdict": "aporia",
+              "endTurn": 8,
+              "forcedTurn": null
+            }
+          },
+          {
+            "turn": 7,
+            "premise": "p_chart",
+            "offset": -2,
+            "reason": "Played two turns early because the clerk has repeatedly identified the exact missing chart conjunct and the map-case is now the grounded need.",
+            "solvency": {
+              "premise": "p_chart",
+              "turn": 7,
+              "safe": false,
+              "verdict": "aporia",
+              "endTurn": 12,
+              "forcedTurn": null
+            }
+          },
+          {
+            "turn": 17,
+            "premise": "p_key",
+            "offset": 0,
+            "reason": null,
+            "solvency": {
+              "premise": "p_key",
+              "turn": 17,
+              "safe": false,
+              "verdict": "aporia",
+              "endTurn": 12,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_post",
+            "decayTurn": 8,
+            "mode": "mutate",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_key",
+            "decayTurn": 16,
+            "mode": "mutate",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_post",
+          "m_key"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 15,
+            "windowSize": 1,
+            "played": null
+          },
+          {
+            "turn": 16,
+            "windowSize": 1,
+            "played": null
+          },
+          {
+            "turn": 17,
+            "windowSize": 1,
+            "played": "p_key"
+          }
+        ],
+        "luckyLeaps": 1,
+        "overreaches": 5
+      }
+    },
+    {
+      "arm": "lantern-p4-hygiene-on",
+      "worldId": "world_002_lantern",
+      "verdict": "grounded_anagnorisis",
+      "endTurn": 20,
+      "dFinal": 0,
+      "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "unguarded",
+      "reasons": [
+        "grounded verdict; no detector split applied"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_key",
+            "decayTurn": 7,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_post",
+            "decayTurn": 8,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_post"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 15,
+            "windowSize": 1,
+            "played": "p_key"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "lantern-p5-mutation-on",
+      "worldId": "world_002_lantern",
+      "verdict": "aporia",
+      "endTurn": 12,
+      "dFinal": 3,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "unguarded",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_chart@t7"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 7,
+            "premise": "p_chart",
+            "offset": -2,
+            "reason": "Played two turns early because the learner has twice named the chart as the next needed witness and the bare table is stalling the inquiry.",
+            "solvency": {
+              "premise": "p_chart",
+              "turn": 7,
+              "safe": false,
+              "verdict": "aporia",
+              "endTurn": 12,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [],
+        "namedDropped": [],
+        "terminalOpenWindows": [
+          {
+            "turn": 7,
+            "windowSize": 1,
+            "played": "p_chart"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "lantern-e2-real-r1",
+      "worldId": "world_002_lantern",
+      "verdict": "disengagement",
+      "endTurn": 12,
+      "dFinal": 3,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "unguarded",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_bearing@t3, p_chart@t7"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 3,
+            "premise": "p_bearing",
+            "offset": -1,
+            "reason": "The clerk has already named the bearing as the needed first conjunct, so the early paper lands on prepared ground.",
+            "solvency": {
+              "premise": "p_bearing",
+              "turn": 3,
+              "safe": false,
+              "verdict": "aporia",
+              "endTurn": 8,
+              "forcedTurn": null
+            }
+          },
+          {
+            "turn": 7,
+            "premise": "p_chart",
+            "offset": -2,
+            "reason": "Played two turns early because the clerk has correctly demanded the chart and the bearing is demonstrably held.",
+            "solvency": {
+              "premise": "p_chart",
+              "turn": 7,
+              "safe": false,
+              "verdict": "aporia",
+              "endTurn": 12,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_key",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_post",
+            "decayTurn": 7,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [],
+        "terminalOpenWindows": [
+          {
+            "turn": 7,
+            "windowSize": 1,
+            "played": "p_chart"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "lantern-e2-real-r5",
+      "worldId": "world_002_lantern",
+      "verdict": "disengagement",
+      "endTurn": 12,
+      "dFinal": 3,
+      "className": "tempo_starved_house",
+      "failureMode": "early_pull_death",
+      "guardState": "unguarded",
+      "reasons": [
+        "tempo-insolvent tutor release(s): p_bearing@t3, p_chart@t7"
+      ],
+      "evidence": {
+        "fatalReleases": [
+          {
+            "turn": 3,
+            "premise": "p_bearing",
+            "offset": -1,
+            "reason": "The clerk has already named the missing bearing, so the exhibit can land one turn early without outrunning the board.",
+            "solvency": {
+              "premise": "p_bearing",
+              "turn": 3,
+              "safe": false,
+              "verdict": "aporia",
+              "endTurn": 8,
+              "forcedTurn": null
+            }
+          },
+          {
+            "turn": 7,
+            "premise": "p_chart",
+            "offset": -2,
+            "reason": "Played early because the clerk has repeatedly named the chart as the exact missing conjunct for Rule 1.",
+            "solvency": {
+              "premise": "p_chart",
+              "turn": 7,
+              "safe": false,
+              "verdict": "aporia",
+              "endTurn": 12,
+              "forcedTurn": null
+            }
+          }
+        ],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_key",
+            "decayTurn": 3,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_post",
+            "decayTurn": 7,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_key",
+          "m_post"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 7,
+            "windowSize": 1,
+            "played": "p_chart"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    },
+    {
+      "arm": "lantern-e3-real-r1",
+      "worldId": "world_002_lantern",
+      "verdict": "disengagement",
+      "endTurn": 24,
+      "dFinal": 1,
+      "className": "decay_starved_lucky_leap",
+      "failureMode": "decay_seating_death",
+      "guardState": "pacing",
+      "reasons": [
+        "2 unrepaired dropped premise(s) at end",
+        "4 lucky leap(s), 12 overreach event(s)",
+        "terminal learner text names dropped premise(s): p_bearing"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "p_bearing",
+            "decayTurn": 17,
+            "mode": "delete",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_post",
+            "decayTurn": 19,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "p_bearing"
+        ],
+        "terminalOpenWindows": [],
+        "luckyLeaps": 4,
+        "overreaches": 12
+      }
+    },
+    {
+      "arm": "lantern-e5-proof-debt-real-r1",
+      "worldId": "world_002_lantern",
+      "verdict": "grounded_anagnorisis",
+      "endTurn": 20,
+      "dFinal": 0,
+      "className": "grounded_control",
+      "failureMode": "grounded",
+      "guardState": "proof_debt",
+      "reasons": [
+        "grounded verdict; no detector split applied"
+      ],
+      "evidence": {
+        "fatalReleases": [],
+        "unrepairedSlips": [
+          {
+            "premiseId": "m_key",
+            "decayTurn": 17,
+            "mode": "mutate",
+            "repairTurn": null
+          },
+          {
+            "premiseId": "m_post",
+            "decayTurn": 18,
+            "mode": "delete",
+            "repairTurn": null
+          }
+        ],
+        "namedDropped": [
+          "m_key",
+          "m_post"
+        ],
+        "terminalOpenWindows": [
+          {
+            "turn": 15,
+            "windowSize": 1,
+            "played": "p_key"
+          }
+        ],
+        "luckyLeaps": 0,
+        "overreaches": 0
+      }
+    }
+  ]
+}

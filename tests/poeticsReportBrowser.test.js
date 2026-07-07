@@ -16,6 +16,8 @@ import {
   parseTranscriptPreview,
   renderBrowserHtml,
   renderDashboardHtml,
+  renderDerivationControlledVocabularyHtml,
+  renderDerivationLogicVisualizer,
   renderOntologyHtml,
   renderRubricHtml,
   saveBrowserLabel,
@@ -543,6 +545,33 @@ TUTOR: Try the second case.`);
     assert.doesNotMatch(html, /recognitionOriginForScoreRow\(s\)/);
   });
 
+  it('ships the global command palette and evidence permalink wiring', () => {
+    const html = renderBrowserHtml();
+    assert.match(html, /id="cmdPalette"/);
+    assert.match(html, /data-palette-open/);
+    assert.match(html, /Generate mock script/);
+    assert.match(html, /Scriptorium board items/);
+    assert.match(html, /function renderBrowseEvidenceGraph/);
+    assert.match(html, /\/board\?tag=evidence/);
+    assert.match(html, /\/replays\?item=/);
+    assert.match(html, /compareId/);
+  });
+
+  it('renders derivation vocabulary as a definition, link, and ontology map', () => {
+    const html = renderDerivationControlledVocabularyHtml({ open: true });
+    assert.match(html, /id="controlled-vocabulary" open/);
+    assert.match(html, /drama, rhetoric, logic, pedagogy, theory, novel/);
+    assert.match(html, /Ontology affinity/);
+    assert.match(html, /derivation_concepts/);
+    assert.match(html, /The bodily experience of receiving information/);
+    assert.match(html, /The experience an agent, AI or human, receives when it wants to experience guilt/);
+    assert.match(html, /InfosomaticConcept/);
+    assert.match(html, /PleasurableGuiltConcept/);
+    assert.match(html, /href="#concept-theory\.recognition"/);
+    assert.match(html, /can intensify/);
+    assert.match(html, /app term: <code>novel\.infosomatic<\/code>/);
+  });
+
   it('builds ending-shape diagnostics from role-symmetric score rows', () => {
     const diagnostics = endingShapeDiagnosticsForScores([
       {
@@ -727,16 +756,42 @@ describe('dashboard front door', () => {
   it('renders onboarding scaffolding, live stats and discipline deep-links', () =>
     withDb((db) => {
       const html = renderDashboardHtml({ ...corpusStats(db), replays: 0 });
-      // hero + reflexive pedagogy note
+      // Scriptorium header + reflexive pedagogy note
+      assert.match(html, /Scriptorium control room/);
       assert.match(html, /Tutoring, staged as drama\./);
-      assert.match(html, /applying our own lessons/);
-      // five-rung scaffolding ladder
-      assert.match(html, /class="ladder"/);
-      for (let n = 1; n <= 5; n += 1) assert.match(html, new RegExp(`id="rung-${n}"`));
-      // the three acts
-      for (const act of ['Understand', 'Create', 'Recognize']) {
-        assert.match(html, new RegExp(`>${act}<`));
+      assert.match(html, /why the site is built this way/);
+      // status readout + command bar + role cards + data health + operations panels
+      assert.match(html, /class="cr-status"/);
+      assert.match(html, /class="cr-cmd"/);
+      for (const verb of ['Read evidence', 'Compose', 'Launch', 'Review flags', 'Open workplan']) {
+        assert.match(html, new RegExp(`${verb}<`));
       }
+      for (const role of ['Reader', 'Builder', 'Reviewer', 'Operator', 'Researcher']) {
+        assert.match(html, new RegExp(`class="role-card__role">${role}<`));
+      }
+      assert.match(html, /class="health"/);
+      assert.match(html, /class="ops"/);
+      for (const panel of ['corpus', 'activity', 'review']) {
+        assert.match(html, new RegExp(`class="ops-panel__h">${panel}<`));
+      }
+      // recent-runs monitoring feed (empty corpus → the empty-state row)
+      assert.match(html, /class="feed"/);
+      assert.match(html, /no runs yet/);
+      // six-rung scaffolding ladder, now collapsed behind a <details> tour
+      assert.match(html, /<details class="tour"/);
+      assert.match(html, /class="ladder"/);
+      for (let n = 1; n <= 6; n += 1) assert.match(html, new RegExp(`id="rung-${n}"`));
+      // the five working consoles (the rail's primary row) read as one matched set
+      assert.match(html, /class="section">Consoles</);
+      for (const name of ['scripts', 'proof runs', 'replays', 'compose a scene', 'launch a run']) {
+        assert.match(html, new RegExp(`class="surf__t">${name}<`));
+      }
+      // each corpus card states what decides its outcome — AI critic vs fixed
+      // rule-checker — and the replays card states it is a one-move diff
+      assert.match(html, /graded by an AI critic/);
+      assert.match(html, /checked by a fixed rule/);
+      assert.match(html, /one move changed/);
+      assert.match(html, /Reference &amp; reading/);
       // discipline chips deep-link into the (now corpus-wide) filter
       assert.match(html, /\/browse\?discipline=chemistry/);
       // shared rail with the home tab marked active
@@ -745,10 +800,136 @@ describe('dashboard front door', () => {
       assert.match(html, /id="welcome"[^>]*hidden/);
     }));
 
+  it('renders the recent-runs feed with one row per run when runs are present', () => {
+    const html = renderDashboardHtml({
+      scripts: 10,
+      scored: 8,
+      runs: 2,
+      replays: 0,
+      proofRuns: 1,
+      recentRuns: [
+        {
+          id: 'run-alpha',
+          itemCount: 6,
+          scoreCount: 6,
+          reviewFlagCount: 2,
+          createdAt: '2026-06-05 16:20:01',
+          spark: [100, 75, 0, 50, 100, 75],
+        },
+        // run-beta has no score series yet → its sparkline degrades to a placeholder
+        {
+          id: 'run-beta',
+          itemCount: 4,
+          scoreCount: 2,
+          reviewFlagCount: 0,
+          createdAt: '2026-06-04 10:00:00',
+          spark: [],
+        },
+      ],
+    });
+    // each run links into the corpus filtered by that run id
+    assert.match(html, /href="\/browse\?runId=run-alpha"/);
+    assert.match(html, /href="\/browse\?runId=run-beta"/);
+    // a flagged run carries the amber dot and reports its counts inline
+    assert.match(html, /class="feed-row__dot is-warn"/);
+    assert.match(html, /6 scripts · 6 scored · 2 flags/);
+    // the populated feed is NOT the empty state
+    assert.doesNotMatch(html, /no runs yet/);
+    // run-alpha's sparkline: one bar per scored script, a 0 rendered as a 0%-height gap,
+    // and the dimension/count/mean carried in the title (avg of [100,75,0,50,100,75] = 67)
+    assert.match(html, /class="spark" role="img"[^>]*title="recontextualization across 6 scored scripts · avg 67"/);
+    assert.match(html, /class="spark__b" style="height:100%"/);
+    assert.match(html, /class="spark__b" style="height:0%"/);
+    // run-beta with no series degrades to the muted placeholder, not a broken/NaN spark
+    assert.match(html, /class="spark spark--empty"/);
+    assert.doesNotMatch(html, /NaN/);
+  });
+
+  it('renders the Signal charts: two verdict bars and four score histograms', () => {
+    const html = renderDashboardHtml({
+      scripts: 105,
+      scored: 100,
+      runs: 4,
+      replays: 0,
+      proofRuns: 10,
+      // critic form-class on scored scripts: 100 classified + 5 unclassified
+      formClass: [
+        { name: 'recognition', n: 60 },
+        { name: 'flat', n: 30 },
+        { name: 'trap', n: 10 },
+        { name: '(unclassified)', n: 5 },
+      ],
+      // rule-checker outcomes; '(none)' is excluded from the bar's total
+      proofVerdicts: { grounded_anagnorisis: 7, disengagement: 2, aporia: 1, '(none)': 3 },
+      // 0–100 quantized dimension levels; recontextualization averages 75
+      scoreDist: {
+        recontextualization: [
+          { lv: 50, n: 2 },
+          { lv: 100, n: 2 },
+        ],
+        stated_insight: [{ lv: 25, n: 4 }],
+        rupture: [{ lv: 50, n: 4 }],
+        global_coherence: [{ lv: 100, n: 4 }],
+      },
+    });
+    // section heading + the prose that names the two scoring regimes apart
+    assert.match(html, /class="section">Signal</);
+    assert.match(html, /An AI critic sorts each scored script's dramatic form/);
+    assert.match(html, /a fixed rule-checker sorts each proof run/);
+    // two verdict cards with their category labels
+    assert.match(html, /class="sig-card__k">scripts · critic verdict</);
+    assert.match(html, /class="sig-card__k">proof runs · rule-checker verdict</);
+    // headline percentages are of each bar's own total (60/100, 7/10)
+    assert.match(html, /60<span class="sig-card__pct">%<\/span> <span class="sig-card__lbl">recognition</);
+    assert.match(html, /70<span class="sig-card__pct">%<\/span> <span class="sig-card__lbl">grounded</);
+    // the segmented bar + a legend entry carrying raw count and per-segment %
+    assert.match(html, /class="vbar"/);
+    assert.match(html, /recognition <b>60<\/b> <span class="leg__pct">60%/);
+    // the bars are navigation: each segment + legend entry deep-links into its slice
+    assert.match(html, /class="vbar__seg vbar__seg--link" href="\/browse\?form=recognition"/);
+    assert.match(html, /class="leg leg--link" href="\/browse\?form=trap"/);
+    assert.match(html, /class="vbar__seg vbar__seg--link" href="\/derivation\?verdict=grounded_anagnorisis"/);
+    assert.match(html, /class="leg leg--link" href="\/derivation\?verdict=aporia"/);
+    // footers: classified-vs-unclassified split, and the not-a-quality-score caveat
+    assert.match(html, /100 critic verdicts · 5 unclassified/);
+    assert.match(html, /10 proof runs · a checker outcome, not a quality score/);
+    // four score histograms, one per dramatic-form dimension, with mean beneath
+    for (const dim of ['recontextualization', 'stated insight', 'rupture', 'global coherence']) {
+      assert.match(html, new RegExp(`class="hist__l">${dim}<`));
+    }
+    assert.match(html, /class="hist__l">recontextualization<\/div><div class="hist__avg">avg 75</);
+  });
+
   it('tolerates an empty corpus (called with no stats)', () => {
     const html = renderDashboardHtml();
     assert.match(html, /no disciplines tagged yet/);
     assert.match(html, /Tutoring, staged as drama\./);
+    // Signal charts show a muted zero-state, not a misleading "0%" headline or NaN
+    assert.match(html, /class="sig-card__none">—</);
+    assert.match(html, /no scored scripts yet — an AI critic sorts each script/);
+    assert.match(html, /no proof runs yet — a fixed rule-checker decides/);
+    assert.match(html, /no scored scripts yet — dimension scores appear here/);
+    assert.doesNotMatch(html, /\d<span class="sig-card__pct">/); // no numeric headline anywhere
+    assert.doesNotMatch(html, /NaN/);
+  });
+
+  it('shows per-card zero-states independently (proof runs present, scripts unscored)', () => {
+    const html = renderDashboardHtml({
+      scripts: 4,
+      scored: 0,
+      runs: 1,
+      proofRuns: 5,
+      formClass: [], // nothing graded by a critic yet
+      scoreDist: {}, // → no dimension histograms
+      proofVerdicts: { grounded_anagnorisis: 3, disengagement: 1, aporia: 1 },
+    });
+    // scripts card collapses to its zero-state…
+    assert.match(html, /no scored scripts yet — an AI critic sorts each script/);
+    assert.match(html, /no scored scripts yet — dimension scores appear here/);
+    // …while the proof card stays a live, linked chart with its real headline
+    assert.match(html, /60<span class="sig-card__pct">%<\/span> <span class="sig-card__lbl">grounded</);
+    assert.match(html, /class="leg leg--link" href="\/derivation\?verdict=grounded_anagnorisis"/);
+    assert.doesNotMatch(html, /NaN/);
   });
 
   it('filters by discipline independently of run — the fix for the empty-result bug', () =>
@@ -763,6 +944,88 @@ describe('dashboard front door', () => {
       assert.equal(listItems(db, { discipline: 'chemistry', runId: 'poetics-second-run' }).length, 0);
       assert.equal(listItems(db, { discipline: 'chemistry', runId: 'poetics-test-run' }).length, 1);
     }));
+});
+
+describe('derivation logic visualizer', () => {
+  it('renders logic projection turns with target-path progress and derived facts', () => {
+    const html = renderDerivationLogicVisualizer({
+      schema: 'dramatic-derivation.logic-projection-report.v0',
+      turns: [
+        {
+          turn: 1,
+          counts: { firedHyperedges: 0, derivedUnvoiced: 0 },
+          firedHyperedges: [],
+          derivedUnvoiced: [],
+          secret: {
+            derived: false,
+            sourcePremiseIds: ['p1', 'p2'],
+            heldSourcePremiseIds: ['p1'],
+            missingSourcePremiseIds: ['p2'],
+            decayedSourcePremiseIds: [],
+          },
+          mirror: {
+            derived: false,
+            sourcePremiseIds: ['m1'],
+            heldSourcePremiseIds: [],
+            missingSourcePremiseIds: ['m1'],
+            decayedSourcePremiseIds: [],
+          },
+          decayedProofCriticalSources: [],
+        },
+        {
+          turn: 2,
+          counts: { firedHyperedges: 1, derivedUnvoiced: 1 },
+          firedHyperedges: [
+            {
+              ruleId: 'R1',
+              inputFactKeys: ['a'],
+              outputFactKey: 'b',
+              outputFact: ['foulFrom', 'well', 'fontHouse'],
+              outputPredicate: 'foulFrom',
+            },
+          ],
+          derivedUnvoiced: [
+            {
+              factKey: 'b',
+              fact: ['foulFrom', 'well', 'fontHouse'],
+              predicate: 'foulFrom',
+              roles: ['derived'],
+              rule: 'R1',
+              sourcePremiseIds: ['p1', 'p2'],
+              proofCritical: true,
+            },
+          ],
+          secret: {
+            derived: true,
+            sourcePremiseIds: ['p1', 'p2'],
+            heldSourcePremiseIds: ['p1', 'p2'],
+            missingSourcePremiseIds: [],
+            decayedSourcePremiseIds: [],
+          },
+          mirror: {
+            derived: false,
+            sourcePremiseIds: ['m1'],
+            heldSourcePremiseIds: [],
+            missingSourcePremiseIds: ['m1'],
+            decayedSourcePremiseIds: ['m1'],
+          },
+          decayedProofCriticalSources: ['m1'],
+        },
+      ],
+    });
+
+    assert.match(html, /class="logicviz__svg"/);
+    assert.match(html, /logic view is harness-only/);
+    assert.match(html, /R1/);
+    assert.match(html, /foulFrom well fontHouse/);
+    assert.match(html, /secret 2\/2 forced/);
+    assert.match(html, /mirror held 0\/1 · decayed m1/);
+  });
+
+  it('renders a clear empty state for older derivation artifacts', () => {
+    const html = renderDerivationLogicVisualizer(null);
+    assert.match(html, /No logic projection snapshots are present/);
+  });
 });
 
 describe('usability: browse search, empty scaffold, atlas legend, rubric page', () => {

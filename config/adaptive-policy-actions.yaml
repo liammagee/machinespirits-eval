@@ -13,7 +13,7 @@
 # the mock smoke continues to pass without this file.
 #
 # Trigger conditions and contraindications draw on
-# docs/explorations/gpt-pro/01-adaptive-recognition-psyche-architecture.md
+# docs/explorations/gpt-pro/2026-04-29-01-adaptive-recognition-psyche-architecture.md
 # §4.1 (recognition state machine + skill library) and the project's
 # existing pedagogical posture (recognition-first, productive struggle,
 # strict non-leakage of internal deliberation into the learner-facing

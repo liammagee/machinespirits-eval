@@ -1,0 +1,18 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f5efe0" />
+      <stop offset="1" stop-color="#e6d8bc" />
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a342b" />
+      <stop offset="1" stop-color="#211e18" />
+    </linearGradient>
+  </defs>
+  <!-- parchment squircle -->
+  <rect x="96" y="96" width="832" height="832" rx="200" fill="url(#paper)" />
+  <!-- faint manuscript margin -->
+  <rect x="120" y="120" width="784" height="784" rx="170" fill="none" stroke="#3a342b" stroke-opacity="0.16" stroke-width="6" />
+  <!-- serif initial -->
+  <text x="512" y="516" text-anchor="middle" dominant-baseline="central" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="600" fill="url(#ink)">S</text>
+</svg>

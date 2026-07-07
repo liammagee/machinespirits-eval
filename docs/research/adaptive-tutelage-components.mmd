@@ -1,0 +1,64 @@
+flowchart LR
+  subgraph baseline["Baseline: single-agent tutor"]
+    b1["Learner asks"] --> b2["One LLM tutor"]
+    b2 --> b3["Explanation"]
+    b3 --> b4["Learner response"]
+  end
+
+  subgraph adaptive["Adaptive tutelage control loop"]
+    target["Learning target / proof DAG"]:::state
+    calendar["Release calendar"]:::state
+    transcript["Learner transcript"]:::state
+    visible["Visible uptake signals"]:::state
+    ledger["Learner state ledger"]:::state
+
+    ego["Tutor ego: drafts next move"]:::agent
+    superego["Tutor superego: critiques conduct"]:::agent
+
+    pacing["Pacing guard: hold until uptake"]:::guard
+    proofDebt["Proof-debt guard: repair dropped premise"]:::guard
+
+    action["Evidence release or restore"]:::action
+    learner["Learner response"]:::learner
+    logs["Trace logs"]:::log
+    classifier["Failure classifier"]:::log
+
+    target --> pacing
+    calendar --> pacing
+    transcript --> visible
+    transcript --> ego
+    visible --> pacing
+    visible --> proofDebt
+    ledger --> proofDebt
+    target --> proofDebt
+
+    ego <--> superego
+    ego --> action
+    superego --> action
+    pacing --> action
+    proofDebt --> action
+
+    action --> learner
+    learner --> transcript
+    learner --> ledger
+
+    ego --> logs
+    superego --> logs
+    action --> logs
+    learner --> logs
+    logs --> classifier
+
+    classifier --> early["early pull: released too soon"]:::failure
+    classifier --> decay["decay debt: premise decayed unrepaired"]:::failure
+    classifier --> leap["lucky leap: assertion outruns evidence"]:::failure
+  end
+
+  baseline -. "simple prompt-response path" .- adaptive
+
+  classDef agent fill:#dbeafe,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+  classDef state fill:#dcfce7,stroke:#16a34a,color:#0f172a,stroke-width:2px;
+  classDef guard fill:#fef3c7,stroke:#d97706,color:#0f172a,stroke-width:2px;
+  classDef action fill:#ede9fe,stroke:#7c3aed,color:#0f172a,stroke-width:2px;
+  classDef log fill:#f3f4f6,stroke:#6b7280,color:#0f172a,stroke-width:2px;
+  classDef learner fill:#f5f3ff,stroke:#9333ea,color:#0f172a,stroke-width:2px;
+  classDef failure fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:2px;

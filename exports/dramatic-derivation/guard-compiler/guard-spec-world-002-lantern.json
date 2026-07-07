@@ -1,0 +1,246 @@
+{
+  "schema": "dramatic-derivation.guard-compiler.v0.guard-spec",
+  "compiler": {
+    "version": "p1a-replay-slice",
+    "mode": "static_replay_first",
+    "onlineLlmGuardAuthoring": false
+  },
+  "world": {
+    "id": "world_002_lantern",
+    "title": "The Light on the Knock"
+  },
+  "guards": {
+    "hidden_pacing": {
+      "objective": "avoid_tempo_starvation",
+      "inputs": [
+        "proof_distance",
+        "release_ledger",
+        "release_calendar",
+        "aporia_window"
+      ],
+      "forbiddenTutorView": [
+        "proof_distance",
+        "proof_path",
+        "secret",
+        "D_arithmetic"
+      ],
+      "releaseLatitude": 2,
+      "actions": [
+        "hold_release",
+        "license_release"
+      ],
+      "releaseCorridors": [
+        {
+          "premise": "p_bearing",
+          "scheduledTurn": 4,
+          "licensedTurns": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "safeTurns": [
+            4,
+            5,
+            6
+          ],
+          "unsafeTurns": [
+            {
+              "turn": 2,
+              "verdict": "aporia",
+              "endTurn": 7
+            },
+            {
+              "turn": 3,
+              "verdict": "aporia",
+              "endTurn": 8
+            }
+          ],
+          "referenceLedger": [
+            {
+              "turn": 2,
+              "premiseId": "m_key"
+            }
+          ]
+        },
+        {
+          "premise": "p_chart",
+          "scheduledTurn": 9,
+          "licensedTurns": [
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "safeTurns": [
+            8,
+            9
+          ],
+          "unsafeTurns": [
+            {
+              "turn": 7,
+              "verdict": "aporia",
+              "endTurn": 12
+            },
+            {
+              "turn": 10,
+              "verdict": "aporia",
+              "endTurn": 9
+            },
+            {
+              "turn": 11,
+              "verdict": "aporia",
+              "endTurn": 9
+            }
+          ],
+          "referenceLedger": [
+            {
+              "turn": 2,
+              "premiseId": "m_key"
+            },
+            {
+              "turn": 4,
+              "premiseId": "p_bearing"
+            },
+            {
+              "turn": 6,
+              "premiseId": "m_post"
+            },
+            {
+              "turn": 8,
+              "premiseId": "m_shutter"
+            }
+          ]
+        },
+        {
+          "premise": "p_key",
+          "scheduledTurn": 17,
+          "licensedTurns": [
+            15,
+            16,
+            17,
+            18,
+            19
+          ],
+          "safeTurns": [
+            15,
+            16,
+            17,
+            18
+          ],
+          "unsafeTurns": [
+            {
+              "turn": 19,
+              "verdict": "disengagement",
+              "endTurn": 18
+            }
+          ],
+          "referenceLedger": [
+            {
+              "turn": 2,
+              "premiseId": "m_key"
+            },
+            {
+              "turn": 4,
+              "premiseId": "p_bearing"
+            },
+            {
+              "turn": 6,
+              "premiseId": "m_post"
+            },
+            {
+              "turn": 8,
+              "premiseId": "m_shutter"
+            },
+            {
+              "turn": 9,
+              "premiseId": "p_chart"
+            },
+            {
+              "turn": 13,
+              "premiseId": "p_residue"
+            }
+          ]
+        }
+      ]
+    },
+    "proof_debt": {
+      "objective": "repair_released_critical_premises_that_decay",
+      "trigger": {
+        "released": true,
+        "proofCritical": true,
+        "absentOrCorrupted": true,
+        "restoreLowersD": true
+      },
+      "exposeToTutor": [
+        "premiseId",
+        "surface",
+        "sinceTurn"
+      ],
+      "forbid": [
+        "raw_board",
+        "corruption_ledger",
+        "proof_path",
+        "secret",
+        "D_arithmetic"
+      ],
+      "actions": [
+        "restore_before_new_work"
+      ]
+    },
+    "visible_projection": {
+      "candidate": true,
+      "status": "candidate_requires_replay",
+      "statusReason": "no disjoint top-level secret join detected; replay agreement with hidden reference is still required",
+      "inputs": [
+        "release_ledger",
+        "transcript_surface",
+        "prior_exhibit_surface"
+      ],
+      "forbiddenInputs": [
+        "proof_distance",
+        "proof_path",
+        "secret",
+        "raw_board",
+        "corruption_ledger"
+      ],
+      "features": [
+        "turns_since_release",
+        "learner_echo_of_current_exhibit",
+        "hedging_or_gap_markers",
+        "content_length_trend",
+        "branch_coverage_surface_markers"
+      ],
+      "thresholds": {
+        "echoThreshold": 0.34,
+        "staleCap": 3,
+        "hedgeRise": 0.5,
+        "lenDrop": -3,
+        "windowSize": 2
+      },
+      "validation": {
+        "compareToHiddenReference": true,
+        "failClosedToHidden": true,
+        "catastrophicFalseReleaseAllowed": false
+      }
+    }
+  },
+  "auditSuite": {
+    "nonLeak": [
+      "no proof-distance arithmetic in tutor-visible text",
+      "secret predicate never supplied to tutor",
+      "raw learner board never supplied to tutor",
+      "proof path never supplied to tutor",
+      "corruption ledger never supplied to tutor",
+      "proof-debt tutor view limited to premiseId/surface/sinceTurn",
+      "positive control proves hidden harness ledger carries arithmetic absent from tutor view"
+    ],
+    "replay": [
+      "detector-split report over archived arms",
+      "hidden-vs-visible agreement report where visible projection is proposed",
+      "played-release solvency audit by guard state"
+    ]
+  }
+}

@@ -1,0 +1,1470 @@
+{
+  "label": "lantern-e2-visible-r5",
+  "group": "lantern-e2-visible",
+  "note": null,
+  "scriptPath": "config/drama-derivation/tutor-scripts/lantern-v001.md",
+  "worldPath": "config/drama-derivation/world-002-lantern.yaml",
+  "backend": {
+    "mode": "real",
+    "roles": {
+      "director": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "tutor_superego": {
+        "provider": "codex",
+        "model": null,
+        "cli": true
+      },
+      "learner": {
+        "provider": "claude",
+        "model": "sonnet",
+        "cli": true
+      }
+    }
+  },
+  "dials": {
+    "recognition": 0,
+    "charisma": 0
+  },
+  "dramaturgy": "free",
+  "tutorSuperego": true,
+  "tutorStallWatch": false,
+  "criticFeedback": null,
+  "learnerVoice": null,
+  "decay": {
+    "seed": 1,
+    "rate": 0.75,
+    "graceTurns": 1,
+    "maxConcurrent": 2,
+    "startTurn": 1,
+    "mutateShare": 1,
+    "pool": "staged"
+  },
+  "decayVisibility": "conduct",
+  "actsConfig": {
+    "minActTurns": 3,
+    "maxActTurns": 8
+  },
+  "reconstruct": false,
+  "confront": true,
+  "releaseAuthority": true,
+  "pacingGuard": false,
+  "visibleGuard": true,
+  "proofDebtGuard": false,
+  "repairClause": true,
+  "plotDial": true,
+  "throughlineDial": true,
+  "elapsedMs": 1133192,
+  "usage": {
+    "calls": 89,
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "costUSD": 0,
+    "byRole": {
+      "director": {
+        "calls": 20,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor": {
+        "calls": 25,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "tutor_superego": {
+        "calls": 24,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      },
+      "learner": {
+        "calls": 20,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "costUSD": 0
+      }
+    }
+  },
+  "worldId": "world_002_lantern",
+  "verdict": "grounded_anagnorisis",
+  "turnsPlayed": 20,
+  "turnCap": 26,
+  "firstForcedTurn": 20,
+  "assertedGroundedTurn": 20,
+  "forcedToAssertedGap": 0,
+  "dCurve": [
+    5,
+    5,
+    5,
+    4,
+    4,
+    5,
+    3,
+    3,
+    4,
+    4,
+    3,
+    3,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0
+  ],
+  "learningSlope": {
+    "d0": 5,
+    "dFinal": 0,
+    "overall": {
+      "delta": 5,
+      "turns": 20,
+      "ratePerTurn": 0.25
+    },
+    "perAct": [
+      {
+        "act": "1",
+        "title": "Act 1",
+        "turns": [
+          1,
+          4
+        ],
+        "dStart": 5,
+        "dEnd": 4,
+        "delta": 1,
+        "ratePerTurn": 0.25
+      },
+      {
+        "act": "2",
+        "title": "Act 2",
+        "turns": [
+          5,
+          8
+        ],
+        "dStart": 4,
+        "dEnd": 3,
+        "delta": 1,
+        "ratePerTurn": 0.25
+      },
+      {
+        "act": "3",
+        "title": "Act 3",
+        "turns": [
+          9,
+          14
+        ],
+        "dStart": 3,
+        "dEnd": 2,
+        "delta": 1,
+        "ratePerTurn": 0.167
+      },
+      {
+        "act": "4",
+        "title": "Act 4",
+        "turns": [
+          15,
+          20
+        ],
+        "dStart": 2,
+        "dEnd": 0,
+        "delta": 2,
+        "ratePerTurn": 0.333
+      }
+    ]
+  },
+  "longestPlateau": 4,
+  "aporiaWindow": 6,
+  "eventsByType": {
+    "plot": 4,
+    "throughline": 1,
+    "decay": 4,
+    "act_end": 3,
+    "plot_audit": 4,
+    "repair": 2,
+    "forced": 1,
+    "grounded_anagnorisis": 1
+  },
+  "fabricatedFacts": [],
+  "releaseAdherence": {
+    "rows": [
+      {
+        "premise": "m_key",
+        "plannedTurn": 2,
+        "plannedVia": "director",
+        "actualTurn": 2,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_bearing",
+        "plannedTurn": 4,
+        "plannedVia": "tutor",
+        "actualTurn": 4,
+        "actualVia": "tutor",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_post",
+        "plannedTurn": 6,
+        "plannedVia": "director",
+        "actualTurn": 6,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "m_shutter",
+        "plannedTurn": 8,
+        "plannedVia": "director",
+        "actualTurn": 8,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_chart",
+        "plannedTurn": 9,
+        "plannedVia": "tutor",
+        "actualTurn": 7,
+        "actualVia": "tutor",
+        "status": "early"
+      },
+      {
+        "premise": "p_residue",
+        "plannedTurn": 13,
+        "plannedVia": "director",
+        "actualTurn": 13,
+        "actualVia": "director",
+        "status": "on_cue"
+      },
+      {
+        "premise": "p_key",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": 15,
+        "actualVia": "tutor",
+        "status": "early"
+      },
+      {
+        "premise": "p_skiff",
+        "plannedTurn": 20,
+        "plannedVia": "director",
+        "actualTurn": 20,
+        "actualVia": "director",
+        "status": "on_cue"
+      }
+    ],
+    "onCue": 6,
+    "deviations": [
+      {
+        "premise": "p_chart",
+        "plannedTurn": 9,
+        "plannedVia": "tutor",
+        "actualTurn": 7,
+        "actualVia": "tutor",
+        "status": "early"
+      },
+      {
+        "premise": "p_key",
+        "plannedTurn": 17,
+        "plannedVia": "tutor",
+        "actualTurn": 15,
+        "actualVia": "tutor",
+        "status": "early"
+      }
+    ],
+    "missed": [],
+    "unscheduled": []
+  },
+  "staging": {
+    "source": "director",
+    "movements": [
+      {
+        "turn": 1,
+        "name": "Act 1",
+        "intent": "[The inquiry room settles under a hard, practical hush: wet coats, ink, and the weight of a wreck not yet named aloud. Outside the windows, the sea-light fails into evening while every face in the room turns toward the empty chair set for testimony.]"
+      },
+      {
+        "turn": 5,
+        "name": "Act 2",
+        "intent": "[The bearing-book lies open beside the key, two hard things that do not yet touch. The room holds its breath around the gap between metal and ink, while beyond the windows the weather presses black against the glass.]"
+      },
+      {
+        "turn": 9,
+        "name": "Act 3",
+        "intent": "[The room changes its weight: accusation has gone out of it, and inquiry enters with colder hands. Papers are gathered from the table's edge, making space for things that can be touched, smelled, and sworn over.]"
+      },
+      {
+        "turn": 15,
+        "name": "Act 4",
+        "intent": "[The table is cleared to its bare grain, and the room takes on the strained quiet of men waiting for a door to open. The inquiry moves from objects to footsteps: wind at the casements, salt drying on boots, and every chair turned toward the place where a witness would stand.]"
+      }
+    ],
+    "tutorNotes": []
+  },
+  "superegoNotes": [
+    {
+      "turn": 3,
+      "draftFigure": "analogia",
+      "figure": "erotema",
+      "diagnosis": "The draft returns to the key exhibit for consolidation without a standing confrontation since its staging.",
+      "note": "Confront before you use the key exhibit again: make the clerk read back what they actually hold of it, then restage only after that."
+    },
+    {
+      "turn": 10,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The draft would make erotema the declared figure for three consecutive turns, which is a rut even though the chart confrontation is licensed.",
+      "note": "Leave off erotema here; confront the chart by another device before asking another question."
+    },
+    {
+      "turn": 14,
+      "draftFigure": "anaphora",
+      "figure": "erotema",
+      "diagnosis": "The draft returns to the just-staged exhibit to consolidate it without first making the learner read it back.",
+      "note": "Confront first: ask the clerk what they hold from that exhibit before you use it again, and do not supply the substance for them."
+    },
+    {
+      "turn": 16,
+      "draftFigure": "anaphora",
+      "figure": "erotema",
+      "diagnosis": "The draft re-enters p_key to consolidate it without a standing confrontation since its staging.",
+      "note": "Confront p_key first: make the clerk read back what they hold of that exhibit before you use it again."
+    },
+    {
+      "turn": 18,
+      "draftFigure": "erotema",
+      "figure": "anaphora",
+      "diagnosis": "The draft would make erotema the declared device for a third straight turn.",
+      "note": "Leave off erotema here; do not ask another question in the same device. Turn the missing step by another means or hold the line without making the clerk answer yet."
+    }
+  ],
+  "tutorFigures": {
+    "total": 20,
+    "counts": {
+      "erotema": 10,
+      "analogia": 4,
+      "exemplum": 3,
+      "anaphora": 3
+    },
+    "distinct": 4,
+    "topFigure": "erotema",
+    "topShare": 0.5,
+    "switchRate": 0.737,
+    "noteTurns": 0,
+    "switchOnNoteTurns": null,
+    "switchElsewhere": 0.737,
+    "superego": {
+      "watched": 20,
+      "interventions": 5,
+      "interventionRate": 0.25,
+      "withinTurnChanges": 5,
+      "withinTurnChangeRate": 1,
+      "switchOnIntervention": 0.8,
+      "switchElsewhere": 0.714,
+      "stallWatch": null
+    }
+  },
+  "learnerInference": {
+    "nodes": [
+      {
+        "fact": [
+          "steeredToward",
+          "mara",
+          "southStack"
+        ],
+        "firstAvailable": 7,
+        "firstVoiced": 7,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 13,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "steeredByLampOf",
+          "mara",
+          "southStack"
+        ],
+        "firstAvailable": 13,
+        "firstVoiced": 13,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 7,
+        "stallTurns": 0
+      },
+      {
+        "fact": [
+          "litLampOf",
+          "senna",
+          "southStack"
+        ],
+        "firstAvailable": 20,
+        "firstVoiced": 20,
+        "latency": 0,
+        "censored": false,
+        "ageAtEnd": 0,
+        "stallTurns": 0
+      }
+    ],
+    "voicedCount": 3,
+    "overreachCount": 0,
+    "mischanneledCount": 1,
+    "stallIntegral": 0,
+    "stallFires": [],
+    "postFireUptake": {
+      "fires": 0,
+      "uptaken": 0,
+      "rate": null
+    },
+    "targetObedience": {
+      "fires": 0,
+      "obeyed": 0,
+      "rate": null
+    }
+  },
+  "dialogueDiscipline": {
+    "director": {
+      "turns": 20,
+      "maxSentences": 3,
+      "avgSentences": 2.9,
+      "avgWords": 40.3
+    },
+    "tutor": {
+      "turns": 20,
+      "maxSentences": 3,
+      "avgSentences": 2.4,
+      "avgWords": 44.2
+    },
+    "learner": {
+      "turns": 20,
+      "maxSentences": 4,
+      "avgSentences": 3.1,
+      "avgWords": 72.5
+    }
+  },
+  "proofExtracted": true,
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 1,
+      "pool": "staged"
+    },
+    "decayEvents": 4,
+    "repairs": {
+      "total": 2,
+      "byTutor": 2,
+      "byReadoption": 0
+    },
+    "meanRepairLatency": 2.5,
+    "unrepairedAtEnd": 2,
+    "degradedTurnIntegral": 31,
+    "dReversals": 2,
+    "mutations": {
+      "total": 0,
+      "retracted": 0,
+      "revised": 0,
+      "falseBeliefsAtEnd": 0,
+      "confrontPromptedRetractions": 0
+    },
+    "fidelity": {
+      "final": 0.833,
+      "min": 0.714
+    },
+    "timeline": [
+      {
+        "premiseId": "m_key",
+        "fact": [
+          "onlyKeyTo",
+          "harlowPoint",
+          "brandt"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 3,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      },
+      {
+        "premiseId": "p_bearing",
+        "fact": [
+          "loggedBearingOf",
+          "mara",
+          "sswHalfWest"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 5,
+        "retractTurn": null,
+        "repairTurn": 7,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "p_bearing",
+        "fact": [
+          "loggedBearingOf",
+          "mara",
+          "sswHalfWest"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 8,
+        "retractTurn": null,
+        "repairTurn": 11,
+        "via": "tutor"
+      },
+      {
+        "premiseId": "m_post",
+        "fact": [
+          "atTowerThatNight",
+          "brandt",
+          "harlowPoint"
+        ],
+        "mode": "delete",
+        "falseForm": null,
+        "decayTurn": 11,
+        "retractTurn": null,
+        "repairTurn": null,
+        "via": null
+      }
+    ]
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        4
+      ],
+      "endedBy": "director",
+      "brief": "[The inquiry room settles under a hard, practical hush: wet coats, ink, and the weight of a wreck not yet named aloud. Outside the windows, the sea-light fails into evening while every face in the room turns toward the empty chair set for testimony.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        5,
+        8
+      ],
+      "endedBy": "director",
+      "brief": "[The bearing-book lies open beside the key, two hard things that do not yet touch. The room holds its breath around the gap between metal and ink, while beyond the windows the weather presses black against the glass.]"
+    },
+    {
+      "act": 3,
+      "turns": [
+        9,
+        14
+      ],
+      "endedBy": "director",
+      "brief": "[The room changes its weight: accusation has gone out of it, and inquiry enters with colder hands. Papers are gathered from the table's edge, making space for things that can be touched, smelled, and sworn over.]"
+    },
+    {
+      "act": 4,
+      "turns": [
+        15,
+        20
+      ],
+      "endedBy": "run_end",
+      "brief": "[The table is cleared to its bare grain, and the room takes on the strained quiet of men waiting for a door to open. The inquiry moves from objects to footsteps: wind at the casements, salt drying on boots, and every chair turned toward the place where a witness would stand.]"
+    }
+  ],
+  "releaseDeviations": {
+    "turnsWithWindow": 5,
+    "played": 3,
+    "onSchedule": 1,
+    "early": 2,
+    "held": 0,
+    "forced": 0,
+    "overridden": 1,
+    "invalidClaims": 0,
+    "reasons": [
+      {
+        "turn": 7,
+        "premise": "p_chart",
+        "offset": -2,
+        "reason": "p_chart pushed: page stalling (hedging up 1.00; lines shortening -6.5)"
+      },
+      {
+        "turn": 15,
+        "premise": "p_key",
+        "offset": -2,
+        "reason": "Played two turns early because the learner has cleanly named onlyKeyTo southStack as the next missing conjunct and has taken up the lamp-burning exhibit."
+      }
+    ],
+    "decisions": [
+      {
+        "turn": 1,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 1,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": null,
+            "priorEcho": 0,
+            "priorEchoed": true,
+            "lenTrend": 0,
+            "hedgeTrend": 0,
+            "hasTrend": false,
+            "learnerLineCount": 0,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 2,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 2,
+            "turnsSinceLastRelease": 0,
+            "priorPremiseId": "m_key",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 66,
+            "hedgeTrend": 0,
+            "hasTrend": false,
+            "learnerLineCount": 1,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 3,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 3,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "m_key",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 70.5,
+            "hedgeTrend": 0,
+            "hasTrend": false,
+            "learnerLineCount": 2,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 4,
+        "windowSize": 1,
+        "claimed": "p_bearing",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": "p_bearing",
+        "scheduledTurn": 4,
+        "offset": 0,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": "p_bearing",
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 4,
+            "turnsSinceLastRelease": 2,
+            "priorPremiseId": "m_key",
+            "priorEcho": 0.5625,
+            "priorEchoed": true,
+            "lenTrend": 13,
+            "hedgeTrend": 0,
+            "hasTrend": false,
+            "learnerLineCount": 3,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 5,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 5,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "p_bearing",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 16.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 4,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 6,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 6,
+            "turnsSinceLastRelease": 0,
+            "priorPremiseId": "m_post",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 2.5,
+            "hedgeTrend": 0.5,
+            "hasTrend": true,
+            "learnerLineCount": 5,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 7,
+        "windowSize": 1,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": true,
+        "played": "p_chart",
+        "scheduledTurn": 9,
+        "offset": -2,
+        "reason": "p_chart pushed: page stalling (hedging up 1.00; lines shortening -6.5)",
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": true,
+          "forcedBy": "visible_stall",
+          "candidate": null,
+          "reason": "p_chart pushed: page stalling (hedging up 1.00; lines shortening -6.5)",
+          "visibleFeatures": {
+            "turn": 7,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "m_post",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": -6.5,
+            "hedgeTrend": 1,
+            "hasTrend": true,
+            "learnerLineCount": 6,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 8,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 8,
+            "turnsSinceLastRelease": 0,
+            "priorPremiseId": "m_shutter",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 6,
+            "hedgeTrend": 0.5,
+            "hasTrend": true,
+            "learnerLineCount": 7,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 9,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 9,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "m_shutter",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 15.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 8,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 10,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 10,
+            "turnsSinceLastRelease": 2,
+            "priorPremiseId": "m_shutter",
+            "priorEcho": 0.15789473684210525,
+            "priorEchoed": false,
+            "lenTrend": 10.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 9,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 11,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 11,
+            "turnsSinceLastRelease": 3,
+            "priorPremiseId": "m_shutter",
+            "priorEcho": 0.15789473684210525,
+            "priorEchoed": false,
+            "lenTrend": -3.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 10,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 12,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 12,
+            "turnsSinceLastRelease": 4,
+            "priorPremiseId": "m_shutter",
+            "priorEcho": 0.15789473684210525,
+            "priorEchoed": false,
+            "lenTrend": -7.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 11,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 13,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 13,
+            "turnsSinceLastRelease": 0,
+            "priorPremiseId": "p_residue",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": -2,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 12,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 14,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 14,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "p_residue",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": -2,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 13,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 15,
+        "windowSize": 1,
+        "claimed": "p_key",
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": "p_key",
+        "scheduledTurn": 17,
+        "offset": -2,
+        "reason": "Played two turns early because the learner has cleanly named onlyKeyTo southStack as the next missing conjunct and has taken up the lamp-burning exhibit.",
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": "p_key",
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 15,
+            "turnsSinceLastRelease": 2,
+            "priorPremiseId": "p_residue",
+            "priorEcho": 0.5238095238095238,
+            "priorEchoed": true,
+            "lenTrend": 1.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 14,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 16,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 16,
+            "turnsSinceLastRelease": 1,
+            "priorPremiseId": "p_key",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": 2,
+            "hedgeTrend": -0.5,
+            "hasTrend": true,
+            "learnerLineCount": 15,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 17,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 17,
+            "turnsSinceLastRelease": 2,
+            "priorPremiseId": "p_key",
+            "priorEcho": 0.5714285714285714,
+            "priorEchoed": true,
+            "lenTrend": 0.5,
+            "hedgeTrend": -1,
+            "hasTrend": true,
+            "learnerLineCount": 16,
+            "stalling": false
+          }
+        }
+      },
+      {
+        "turn": 18,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 18,
+            "turnsSinceLastRelease": 3,
+            "priorPremiseId": "p_key",
+            "priorEcho": 0.5714285714285714,
+            "priorEchoed": true,
+            "lenTrend": -4,
+            "hedgeTrend": -0.5,
+            "hasTrend": true,
+            "learnerLineCount": 17,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 19,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 19,
+            "turnsSinceLastRelease": 4,
+            "priorPremiseId": "p_key",
+            "priorEcho": 0.5714285714285714,
+            "priorEchoed": true,
+            "lenTrend": -22.5,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 18,
+            "stalling": true
+          }
+        }
+      },
+      {
+        "turn": 20,
+        "windowSize": 0,
+        "claimed": null,
+        "invalidClaim": false,
+        "forced": null,
+        "overridden": false,
+        "played": null,
+        "scheduledTurn": null,
+        "offset": null,
+        "reason": null,
+        "visibleGuard": {
+          "blocked": false,
+          "forcedSafe": false,
+          "forcedBy": null,
+          "candidate": null,
+          "reason": null,
+          "visibleFeatures": {
+            "turn": 20,
+            "turnsSinceLastRelease": 0,
+            "priorPremiseId": "p_skiff",
+            "priorEcho": 0,
+            "priorEchoed": false,
+            "lenTrend": -16,
+            "hedgeTrend": 0,
+            "hasTrend": true,
+            "learnerLineCount": 19,
+            "stalling": true
+          }
+        }
+      }
+    ]
+  },
+  "confrontation": {
+    "confrontations": [
+      {
+        "turn": 3,
+        "target": "m_key",
+        "targetDecayed": true
+      },
+      {
+        "turn": 5,
+        "target": "p_bearing",
+        "targetDecayed": true
+      },
+      {
+        "turn": 9,
+        "target": "m_shutter",
+        "targetDecayed": false
+      },
+      {
+        "turn": 10,
+        "target": "p_chart",
+        "targetDecayed": false
+      },
+      {
+        "turn": 14,
+        "target": "p_residue",
+        "targetDecayed": false
+      },
+      {
+        "turn": 16,
+        "target": "p_key",
+        "targetDecayed": false
+      }
+    ],
+    "reentries": {
+      "total": 1,
+      "covered": 1,
+      "uncovered": []
+    },
+    "restores": [
+      {
+        "turn": 7,
+        "target": "p_bearing",
+        "targetDecayed": true,
+        "repaired": true
+      },
+      {
+        "turn": 11,
+        "target": "p_bearing",
+        "targetDecayed": true,
+        "repaired": true
+      }
+    ],
+    "superego": {
+      "reentryFires": 3,
+      "convertedToConfront": 3,
+      "firesWithoutDue": 0,
+      "restoreClaimFires": 0,
+      "proofDebtClaimFires": 0,
+      "draftsDueByRecord": 3,
+      "fires": [
+        {
+          "turn": 3,
+          "target": "m_key",
+          "convertedToConfront": true,
+          "dueByRecord": true,
+          "onRestoreClaim": false,
+          "onProofDebtClaim": false
+        },
+        {
+          "turn": 14,
+          "target": "p_residue",
+          "convertedToConfront": true,
+          "dueByRecord": true,
+          "onRestoreClaim": false,
+          "onProofDebtClaim": false
+        },
+        {
+          "turn": 16,
+          "target": "p_key",
+          "convertedToConfront": true,
+          "dueByRecord": true,
+          "onRestoreClaim": false,
+          "onProofDebtClaim": false
+        }
+      ]
+    }
+  },
+  "plot": {
+    "plots": {
+      "count": 4,
+      "disciplined": 4,
+      "meanClauses": 6,
+      "perAct": [
+        {
+          "act": 1,
+          "turn": 1,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        },
+        {
+          "act": 2,
+          "turn": 5,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [
+            "p_bearing"
+          ],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        },
+        {
+          "act": 3,
+          "turn": 9,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [
+            "m_shutter"
+          ],
+          "holdStagedInAct": [],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        },
+        {
+          "act": 4,
+          "turn": 15,
+          "clauseCount": 6,
+          "hasWithhold": true,
+          "hasFriction": true,
+          "holdNamed": [
+            "p_key"
+          ],
+          "holdStagedInAct": [
+            "p_key"
+          ],
+          "withholdNamed": [],
+          "withholdPlayedInAct": []
+        }
+      ]
+    },
+    "audits": {
+      "count": 4,
+      "finalIncluded": true,
+      "verdictMix": {
+        "kept": 23,
+        "justified_deviation": 1,
+        "drift": 0,
+        "unscored": 0
+      },
+      "perAct": [
+        {
+          "act": 1,
+          "turn": 5,
+          "final": false,
+          "clauses": 6,
+          "mix": {
+            "kept": 6,
+            "justified_deviation": 0,
+            "drift": 0,
+            "unscored": 0
+          }
+        },
+        {
+          "act": 2,
+          "turn": 9,
+          "final": false,
+          "clauses": 6,
+          "mix": {
+            "kept": 5,
+            "justified_deviation": 1,
+            "drift": 0,
+            "unscored": 0
+          }
+        },
+        {
+          "act": 3,
+          "turn": 15,
+          "final": false,
+          "clauses": 6,
+          "mix": {
+            "kept": 6,
+            "justified_deviation": 0,
+            "drift": 0,
+            "unscored": 0
+          }
+        },
+        {
+          "act": 4,
+          "turn": 20,
+          "final": true,
+          "clauses": 6,
+          "mix": {
+            "kept": 6,
+            "justified_deviation": 0,
+            "drift": 0,
+            "unscored": 0
+          }
+        }
+      ]
+    },
+    "crossCheck": {
+      "holdNamed": 3,
+      "holdStagedInAct": 1,
+      "withholdNamed": 0,
+      "withholdPlayedInAct": 0
+    },
+    "throughline": {
+      "count": 1,
+      "byTrigger": {
+        "opening": 1,
+        "recommit": 0,
+        "audit_bound": 0,
+        "voluntary": 0
+      },
+      "disciplined": 1,
+      "arcs": {
+        "count": 4,
+        "mix": {
+          "on_arc": 4,
+          "off_arc": 0,
+          "unscored": 0
+        }
+      },
+      "finalReckoning": {
+        "clauses": 7,
+        "mix": {
+          "kept": 5,
+          "justified_deviation": 1,
+          "drift": 1,
+          "unscored": 0
+        }
+      }
+    }
+  }
+}

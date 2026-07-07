@@ -80,7 +80,20 @@ node scripts/analyze-eval-costs.js
 - Prerequisites: eval progress logs in `logs/eval-progress/`
 - Paper: Appendix
 
-### 9. Rubric consistency (cross-level checks)
+### 9. Dramatic derivation loop artifacts
+```bash
+node scripts/analyze-derivation-loop-results.js --pattern '*selector-v1-*'
+node scripts/analyze-derivation-loop-results.js \
+  --pattern '*selector-v1-*,*-selector-baseline-r*,*-selector-hidden-r*,*-selector-visible-r*' \
+  --selector-version v1 \
+  --out exports/dramatic-derivation/selector-v1-summary
+```
+- Pure computation, no API calls
+- Reads `exports/dramatic-derivation/loop/<label>/diagnosis.json`
+- Use for selector/guard derivation-loop runs, not DB-backed eval run IDs
+- Outputs grouped verdicts, selector/static regret, failure classifications, and optional `summary.json`/`report.md`/`manifest.tsv`
+
+### 10. Rubric consistency (cross-level checks)
 ```bash
 node scripts/analyze-rubric-consistency.js
 node scripts/analyze-rubric-consistency.js --run-id <runId> --verbose
@@ -89,7 +102,7 @@ node scripts/analyze-rubric-consistency.js --run-id <runId> --verbose
 - Prerequisites: multiple score types populated (tutor, learner, holistic, dialogue, deliberation)
 - Paper: section 5.4
 
-### 10. Qualitative: rule-based thematic coding
+### 11. Qualitative: rule-based thematic coding
 ```bash
 node scripts/qualitative-analysis.js
 ```
@@ -97,7 +110,7 @@ node scripts/qualitative-analysis.js
 - Prerequisites: `suggestions` populated
 - Paper: section 6.9
 
-### 11. Qualitative: AI narrative assessment
+### 12. Qualitative: AI narrative assessment
 ```bash
 node scripts/assess-transcripts.js <runId> [--blinded] [--force] [--model <m>]
 ```
@@ -105,7 +118,7 @@ node scripts/assess-transcripts.js <runId> [--blinded] [--force] [--model <m>]
 - Prerequisites: scored evaluation rows
 - Paper: section 6.9
 
-### 12. Qualitative: AI theme discovery
+### 13. Qualitative: AI theme discovery
 ```bash
 node scripts/qualitative-analysis-ai.js [--mode classify|discover|both] [--model <m>]
 ```
@@ -113,7 +126,7 @@ node scripts/qualitative-analysis-ai.js [--mode classify|discover|both] [--model
 - Prerequisites: `suggestions` populated
 - Paper: section 6.9
 
-### 13. Impasse strategy coding
+### 14. Impasse strategy coding
 ```bash
 node scripts/code-impasse-strategies.js [--run-id <id>] [--model <m>] [--force]
 ```
@@ -121,7 +134,7 @@ node scripts/code-impasse-strategies.js [--run-id <id>] [--model <m>] [--force]
 - Prerequisites: multi-turn dialogue logs
 - Paper: section 6.11
 
-### 14. Dialectical modulation coding
+### 15. Dialectical modulation coding
 ```bash
 node scripts/code-dialectical-modulation.js [--run-id <id>] [--model <m>] [--force]
 ```
@@ -129,7 +142,7 @@ node scripts/code-dialectical-modulation.js [--run-id <id>] [--model <m>] [--for
 - Prerequisites: multi-turn dialogue logs with superego traces
 - Paper: section 6.11
 
-### 15. Rubric calibration
+### 16. Rubric calibration
 ```bash
 node scripts/calibrate-rubric.js                                # synthetic (free)
 node scripts/calibrate-rubric.js --live                         # live re-scoring (API calls)
@@ -139,7 +152,7 @@ node scripts/calibrate-rubric.js --from-version 2.1 --to-version 2.2 --export ca
 - Prerequisites: `scores_with_reasoning`, v2.2 YAML files in `config/rubrics/`
 - Paper: section 5.4
 
-### 16. Transcript browser (interactive)
+### 17. Transcript browser (interactive)
 ```bash
 node scripts/browse-transcripts.js [--port 3456] [--run <runId>]
 ```

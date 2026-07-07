@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "peripeteia": {
+      "score": 4,
+      "reasoning": "A genuine reversal of orientation. The dialogue opens with the town's reading that Reyner's bond settles guilt — T1 learner: 'he built it, it fell, so isn't that already the notes?'; T8 stage: 'the town reads the bond as a confession already written.' It closes on the opposite finding, a different person reached without the bond at all — T21: 'No bond, no builder's surety required: the arch drew its own line from the broken bed back to a carter's name.' The hinge is shown (the liability-vs-act split, T2-3). Not a 5: the veer is signposted from T1 ('don't write a name yet'), so it is foreseen rather than a jolt."
+    },
+    "anagnorisis": {
+      "score": 4,
+      "reasoning": "A learner-owned recognition of the flaw, matching the rubric's paradigm. After committing the error in T1, the learner names it in T2: 'liable isn't the same as the hand that brought it down. I was running those two things together.' That self-diagnosis is authored by the learner, not supplied — demonstrably unavailable one turn earlier. Not a 5: the underlying liability/act distinction is tutor-supplied (T2 tutor: 'still not shown: what detail connects that name to the act'), and the downstream insight is methodical scaffolded assembly rather than a culminating self-authored recognition."
+    },
+    "surprise_and_inevitability": {
+      "score": 3,
+      "reasoning": "Inevitability is strong — the chain (crown break → green lime/struck centering → soffit prop-mark → crowsfoot → Caudle brand → toll-book carrier) is airtight, each step preparing the next. But surprise is weak: the method is heavily signposted ('keep it small', 'the next separate thing we need'), so the trajectory is foreseeable, and the decisive name (Oswin) arrives via a newly introduced external document (T20 toll book) rather than a reader-anticipatable recombination of facts already in play. One leg present, not both."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete forensic action: beginning (write no name yet, T1), complication (each new file — contract, freehold T6, bond T8 — tempts collapse to Reyner), turn (crowsfoot → Caudle → carrier), close (Oswin, T21). Each turn takes up the precise prior turn and would break the arc if removed. Held from 5 by a repetitive middle: T13-16 restate the same 'two closed Reyner lines' (built-under-his-hand; bond=cost) in near-identical phrasing, and at least one of those turns could be cut without disturbing the whole."
+    },
+    "hamartia_integration": {
+      "score": 5,
+      "reasoning": "The misconception — conflating liability/ownership with the felling hand — is the mainspring throughout. It is committed in T1 ('isn't that already the notes?'), named in T2, and never discarded: each new 'confession' file (freehold T6, bond T8 'a confession already written') re-tempts the collapse, and the whole drama is the sustained refusal to let liability stand in for the act. The flaw exposes its own insufficiency and is dissolved at the close — T21: 'No bond, no builder's surety required.' Both the complication and the turn arise from working the error through."
+    },
+    "cathartic_closure": {
+      "score": 4,
+      "reasoning": "The close lands. The tension built across the play — can a hand be named at all without leaning on the bond? — discharges into a specific, earned clarification: T21 'and it follows straight from those two things that Oswin's was the hand that pulled the props… the arch drew its own line from the broken bed back to a carter's name.' It is no generic summary or encouragement; it recasts the inquiry (the town's 'confession' was a red herring). Not a 5: the final beat partly re-states T20, and the catharsis is intellectual-deductive (puzzle solved) rather than a fuller dramatic discharge."
+    }
+  },
+  "overall_score": 75,
+  "summary": "A tightly-built forensic deduction whose real strength is its hamartia spine: the liability/causation conflation drives the whole play from commission (T1) to dissolution (T21), closing on an earned, elegant clarification. It carries a genuine reversal — the presumed culprit Reyner is exonerated of the act and a carter is named by the bridge's own physical evidence — and a learner-owned recognition of the flaw (T2). Held back from the top tier by low surprise (the method is heavily signposted, the decisive name arrives via an external document) and a repetitive middle stretch (T13-16) that restates the same closed lines.",
+  "caveats": [
+    "The dialogue is heavily tutor-scaffolded — the learner is led step by step — which constrains how much of the recognition is self-authored (bears most on anagnorisis).",
+    "The recurring 'close the line / two boxes / one closed box' bookkeeping (T11-16, T20-21) is the seam where the proof-substrate shows through the drama; it stays in plain in-world language (the assize-book's columns), so it is not a formalism leak, but it is mechanical and mildly illusion-breaking, and is the main thing capping unity and surprise.",
+    "Catharsis here is deductive rather than emotional/relational; a reader seeking affective discharge may register completion more than purgation."
+  ]
+}

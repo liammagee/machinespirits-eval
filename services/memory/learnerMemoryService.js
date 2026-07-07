@@ -11,13 +11,39 @@
  *
  * This service provides the foundation for cross-session continuity
  * and multi-agent deliberation context.
+ *
+ * RETENTION NOTE (2026-06-25): This is the richest memory representation in the
+ * repo (concept-mastery ladder, episodic memory with embeddings, spaced-repetition
+ * review, threads, milestones). It currently has NO live consumer outside its own
+ * tests — but it is DELIBERATELY RETAINED, not dead code. It is the likely canonical
+ * core for a future "rich-canonical" memory architecture (Shape A). Do NOT delete it
+ * to tidy up; deletion is deferred until the memory architecture's eventual shape is
+ * settled. See MEMORY-ARCHITECTURE.md (§4) and the seam guard in
+ * tests/memoryArchitectureSeam.test.js.
  */
 
 import crypto from 'crypto';
-import { getDb } from '../dbService.js';
+import Database from 'better-sqlite3';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Get shared database connection
-const db = getDb();
+// Self-contained SQLite store (seam-safe — services/memory/ must NOT import
+// tutor-core/, see tests/memoryArchitectureSeam.test.js). Mirrors the sibling
+// Writing Pads: its own DB file, relocatable via EVAL_WRITING_PAD_DIR for
+// hermetic runs. (Previously wired to the shared LMS/auth DB via a getDb import
+// that broke during the tutor-core in-housing; revived standalone here for the
+// cross-session memory experiments — see MEMORY-ARCHITECTURE.md. The users(id)
+// foreign keys in the schema below are disabled via PRAGMA foreign_keys = OFF:
+// this standalone store has no users table, only synthetic learner ids.)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DATA_DIR = process.env.EVAL_WRITING_PAD_DIR
+  ? path.resolve(process.env.EVAL_WRITING_PAD_DIR)
+  : path.join(__dirname, '..', '..', 'data');
+if (process.env.EVAL_WRITING_PAD_DIR) fs.mkdirSync(DATA_DIR, { recursive: true });
+const db = new Database(path.join(DATA_DIR, 'learner-memory.db'));
+db.pragma('foreign_keys = OFF'); // no users table in standalone mode; the users(id) FKs are decorative
 
 // ============================================================================
 // Database Schema
@@ -444,9 +470,9 @@ export const upsertConceptState = (learnerIdOrData, conceptIdArg, dataArg) => {
     }
 
     // Always update engagement
-    updates.push('last_engaged = datetime("now")');
+    updates.push("last_engaged = datetime('now')");
     updates.push('engagement_count = engagement_count + 1');
-    updates.push('updated_at = datetime("now")');
+    updates.push("updated_at = datetime('now')");
 
     // Handle array updates
     if (data.addSource) {
@@ -827,7 +853,7 @@ export const updateThread = (threadId, data) => {
     params.push(stringifyJSON(partialAnswers));
   }
 
-  updates.push('last_touched = datetime("now")');
+  updates.push("last_touched = datetime('now')");
   updates.push('updated_at = datetime("now")');
   params.push(threadId);
 
@@ -1062,7 +1088,7 @@ export const updatePreferences = (learnerId, data) => {
   }
 
   if (updates.length > 0) {
-    updates.push('updated_at = datetime("now")');
+    updates.push("updated_at = datetime('now')");
     params.push(learnerId);
 
     db.prepare(

@@ -77,7 +77,7 @@ tutor-learning gate.
 Attempt-1 artifacts:
 
 - `exports/a19/real-attempt1-v08/moral-disclosure-standing-repair/`
-- `notes/adaptive_2_0/a19-attempt1-real-gate-report-learner-standing.md`
+- `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-learner-standing.md`
 
 Gate outcome:
 
@@ -198,8 +198,8 @@ work:
 Updated artifacts:
 
 - `config/teaching-drama-axioms/a19-generalization-loops.yaml`
-- `notes/adaptive_2_0/a19-generalization-systemization-plan.md`
-- `notes/adaptive_2_0/a19-drama-axiom-transfer-todo.md`
+- `notes/adaptive_2_0/2026-06-08-a19-generalization-systemization-plan.md`
+- `notes/adaptive_2_0/2026-06-07-a19-drama-axiom-transfer-todo.md`
 - `exports/a19/reports/generalization-loop.md`
 
 The weak/debug/model-stratified S0 path is resolved as diagnostic-only. Weak S0

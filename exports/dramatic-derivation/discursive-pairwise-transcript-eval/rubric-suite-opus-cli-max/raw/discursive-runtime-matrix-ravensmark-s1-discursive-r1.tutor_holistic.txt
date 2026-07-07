@@ -1,0 +1,22 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 4,
+      "reasoning": "Strong cumulative build: T1 opens by fixing the governing distinction (authority/seal vs proximity), and a 'rule, mark, holder' scaffold accretes precision across the dialogue — T3 enters Corvin in ink and leaves the signing act blank, T8 formalizes the three-step pass-law, T11 has the learner specify the three conditions a custody note must meet, and T13's register lands exactly on the blank held open since T3. The turns cannot be rearranged without loss. Held below 5 by genuine redundancy: T6 re-presents T4's dusk-seal almost verbatim ('under the red stamp is a second, older impression... raven's notch under the wing'), and T7/T9/T12 largely restate rather than extend."
+    },
+    "adaptive_trajectory": {
+      "score": 3,
+      "reasoning": "The tutor's core move is consistent throughout — re-affirm the answerability/signing gap, add the next clue, 'keep the gate-key out of the blank.' One substantive evolution is visible: T10–T11 pivot from object-level clue-tracking to meta-level specification of what evidence would close the gap. But the learner is correct at every turn, so the tutor never visibly diagnoses-and-redirects; the escalation reads more as walking a fixed ladder than as reading this particular learner. Largely consistent approach with a single modest, late adjustment."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "T13 delivers a strong, specific consolidation: the learner synthesizes rule+mark+holder, states the resolved line with explicit grounds, and crisply re-draws the central distinction ('Corvin accounts for the gate; Elian signed the warrant'). Not abrupt and not generic — the learner clearly leaves knowing what was established and why. Held below 5 because no residual gap is named and no forward next-step is offered; the case simply closes, leaving the rubric's gaps-identified/next-steps component unmet."
+    }
+  },
+  "overall_score": 66,
+  "summary": "A coherent detective-drama derivation that sustains a clean natural-language register (no formalism leakage in public dialogue) and resolves precisely on the gap it opened. Strongest on cumulative arc and on the specific, well-grounded final consolidation; weakest on visible tutor adaptation, since a uniformly correct learner offers little to adapt to, and on forward-looking closure.",
+  "caveats": [
+    "The adaptive_trajectory score is suppressed by the learner's uniform competence: with no learner error to redirect, low visible adaptation may reflect the scenario rather than tutor rigidity.",
+    "Closure is judged as public discourse only — the case-resolution is excellent, but a solved-mystery ending structurally lacks the named gaps / next-steps that the rubric's top band requires."
+  ]
+}

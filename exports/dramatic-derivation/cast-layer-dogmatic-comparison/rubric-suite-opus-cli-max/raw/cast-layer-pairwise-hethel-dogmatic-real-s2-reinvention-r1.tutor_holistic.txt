@@ -1,0 +1,24 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 5,
+      "reasoning": "The opening establishes a clear direction (T1: 'before any name goes in that book, what has this table actually shown about the fall?') and development builds cumulatively in a logically dependent order: failure location (crown joint, T4) → ownership vs cause (T6-7) → liability vs causation (the bond, T8) → mechanism (green mortar = centering struck early, T9-12) → timber source (crowsfoot → Caudle yard, T13-17) → the hand (toll book → Oswin, T20) → the final join (T22). Each piece presupposes the last, so the turns could not be reordered without collapse. The one weakness is that T14-19 hold the 'source not hand / yard before hand' distinction across several turns, which reads as mild circling — but each of those turns still adds a distinct rung (the distinction → its ordering → what note would settle it → the naming), so the build stays progressive."
+    },
+    "adaptive_trajectory": {
+      "score": 4,
+      "reasoning": "The tutor's posture visibly shifts from supplying the distinctions early (T2-5) to guarding the pace while the learner performs the derivation largely unaided late (T19-22, with the learner assembling the full join at T22). Recognition deepens across the arc: the learner moves from 'I'd say that closes it' (T6-7) to disciplined self-correction and independent synthesis. The tutor also calibrates restraint to the learner's demonstrated impulse to leap to a name, tightening hardest at the climax ('Don't turn the toll book into the whole verdict,' T20). It is not a clean 5 because the underlying method — keep the lines separate, take one small step, hold the name out — is consistent throughout rather than substantively revised; the adaptation lives in calibration and handoff, not a strategy change."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Closure is strong on consolidation: T22 explicitly reassembles the whole evidential chain (crowsfoot/Caudle timber + green mortar/struck-too-early + toll book/Oswin) into the conclusion — 'that last join writes a name on the fall entry — and it isn't Reyner's.' Gaps were named continuously across the dialogue and the final one is closed. It falls short of 5 because the dialogue ends right at the verdict threshold with no explicit next steps or remaining gaps surfaced (e.g., corroborating the toll book, intent), and the synthesis is delivered by the learner in response to a tutor question rather than a tutor-led wrap-up that states what was learned and what comes next."
+    }
+  },
+  "overall_score": 85,
+  "summary": "A masterfully arced derivation drama: the tutor systematically dismantles the town's easy answer (Reyner is liable for the span) and steers the learner to the causal hand (Oswin) through disciplined separation of ownership, liability, causation, source, and hand. Public discourse stays fully in-world (mason's craft language) with no formalism leaks. Principal reservations: the middle stretch circles on a single distinction, the tutor's method is consistent rather than evolving, and the ending lands on the verdict without forward next-steps.",
+  "caveats": [
+    "Pedagogical_arc could be argued down to 4 given the repetition across T14-19.",
+    "Adaptive_trajectory's 'adaptation' is largely the learner internalizing a consistent tutor method; a stricter reading could place it at 3.",
+    "Closure is consolidation-strong but next-steps-absent, and is scored on the dialogue's synthesis rather than an explicit tutor wrap-up.",
+    "Scored purely on public discourse quality per instructions; the separately-reported proof gate (Final D 0, grounded_anagnorisis, 0 formalism leaks) was not credited toward these dimensions."
+  ]
+}

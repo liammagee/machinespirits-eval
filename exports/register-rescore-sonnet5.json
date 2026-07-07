@@ -1,0 +1,3049 @@
+{
+  "generatedAt": "2026-07-05T12:59:08.870Z",
+  "judgeOld": "openrouter.gpt-mini",
+  "judgeNew": "claude-code.sonnet-5",
+  "methodsCaveat": "The exemplar discrimination test that licensed this rescore (exports/register-exemplar-discrimination-summary.md) was generated with openrouter.sonnet-5. This rescore uses claude-code.sonnet-5 (the Claude Code CLI subscription bridge) as the primary judge -- same Sonnet model class, different routing path (subscription quota vs metered API). No openrouter fallback was needed unless recorded per-slice in judge_model.",
+  "runIds": [
+    "eval-2026-07-02-e7b15809",
+    "eval-2026-07-02-7e461a5c",
+    "eval-2026-07-02-5c4d52e6"
+  ],
+  "sliceCount": 58,
+  "rowStanceGateSource": "/tmp/matrix-scoped/charisma-desire-breakthrough-matrix.json",
+  "rowLabelTally": {
+    "ironic_challenge": {
+      "rows": 10,
+      "faithful": 7,
+      "labels": {
+        "faithful": 7,
+        "weak_or_warm_in_costume": 3
+      }
+    },
+    "sarcastic_challenge": {
+      "rows": 10,
+      "faithful": 7,
+      "labels": {
+        "weak_or_warm_in_costume": 3,
+        "faithful": 7
+      }
+    },
+    "face_threat_challenge": {
+      "rows": 10,
+      "faithful": 7,
+      "labels": {
+        "weak_or_warm_in_costume": 3,
+        "faithful": 7
+      }
+    }
+  },
+  "aggregateAllSlices": {
+    "charismatic_challenge": {
+      "n": 9,
+      "cells": [
+        193
+      ],
+      "old_overall_mean": 46.25000000000001,
+      "new_overall_mean": 68.05555555555556,
+      "old_recognition_cost_mean": null,
+      "new_recognition_cost_mean": null,
+      "old_post_turn_face_repair_mean": null,
+      "new_post_turn_face_repair_mean": null,
+      "old_target_discipline_mean": null,
+      "new_target_discipline_mean": null,
+      "old_uptake_freedom_mean": null,
+      "new_uptake_freedom_mean": null
+    },
+    "face_threat_challenge": {
+      "n": 16,
+      "cells": [
+        198
+      ],
+      "old_overall_mean": 53.65625,
+      "new_overall_mean": 76,
+      "old_recognition_cost_mean": 3.125,
+      "new_recognition_cost_mean": 4.125,
+      "old_post_turn_face_repair_mean": 2.3125,
+      "new_post_turn_face_repair_mean": 3.8125,
+      "old_target_discipline_mean": 3.0625,
+      "new_target_discipline_mean": 4.25,
+      "old_uptake_freedom_mean": 4.1875,
+      "new_uptake_freedom_mean": 4.0625
+    },
+    "ironic_challenge": {
+      "n": 17,
+      "cells": [
+        196
+      ],
+      "old_overall_mean": 58.529411764705884,
+      "new_overall_mean": 83.76470588235294,
+      "old_recognition_cost_mean": 3.411764705882353,
+      "new_recognition_cost_mean": 4.470588235294118,
+      "old_post_turn_face_repair_mean": 2.588235294117647,
+      "new_post_turn_face_repair_mean": 3.8823529411764706,
+      "old_target_discipline_mean": 3.4705882352941178,
+      "new_target_discipline_mean": 5,
+      "old_uptake_freedom_mean": 4.235294117647059,
+      "new_uptake_freedom_mean": 3.9411764705882355
+    },
+    "sarcastic_challenge": {
+      "n": 16,
+      "cells": [
+        197
+      ],
+      "old_overall_mean": 53.8125,
+      "new_overall_mean": 79.59375,
+      "old_recognition_cost_mean": 3.25,
+      "new_recognition_cost_mean": 4.25,
+      "old_post_turn_face_repair_mean": 2.375,
+      "new_post_turn_face_repair_mean": 3.875,
+      "old_target_discipline_mean": 3.25,
+      "new_target_discipline_mean": 4.6875,
+      "old_uptake_freedom_mean": 4.125,
+      "new_uptake_freedom_mean": 4
+    }
+  },
+  "aggregateFaithfulRowSlices": {
+    "face_threat_challenge": {
+      "n": 10,
+      "cells": [
+        198
+      ],
+      "old_overall_mean": 52.65,
+      "new_overall_mean": 75.75,
+      "old_recognition_cost_mean": 3,
+      "new_recognition_cost_mean": 4,
+      "old_post_turn_face_repair_mean": 2.2,
+      "new_post_turn_face_repair_mean": 3.9,
+      "old_target_discipline_mean": 2.9,
+      "new_target_discipline_mean": 4,
+      "old_uptake_freedom_mean": 4.2,
+      "new_uptake_freedom_mean": 4.2
+    },
+    "ironic_challenge": {
+      "n": 12,
+      "cells": [
+        196
+      ],
+      "old_overall_mean": 54.458333333333336,
+      "new_overall_mean": 84.58333333333333,
+      "old_recognition_cost_mean": 3.25,
+      "new_recognition_cost_mean": 4.5,
+      "old_post_turn_face_repair_mean": 2.3333333333333335,
+      "new_post_turn_face_repair_mean": 3.9166666666666665,
+      "old_target_discipline_mean": 3.3333333333333335,
+      "new_target_discipline_mean": 5,
+      "old_uptake_freedom_mean": 4.166666666666667,
+      "new_uptake_freedom_mean": 4
+    },
+    "sarcastic_challenge": {
+      "n": 11,
+      "cells": [
+        197
+      ],
+      "old_overall_mean": 52.22727272727273,
+      "new_overall_mean": 79.04545454545455,
+      "old_recognition_cost_mean": 3.1818181818181817,
+      "new_recognition_cost_mean": 4.2727272727272725,
+      "old_post_turn_face_repair_mean": 2.272727272727273,
+      "new_post_turn_face_repair_mean": 3.909090909090909,
+      "old_target_discipline_mean": 3.1818181818181817,
+      "new_target_discipline_mean": 4.545454545454546,
+      "old_uptake_freedom_mean": 4.090909090909091,
+      "new_uptake_freedom_mean": 4
+    }
+  },
+  "aggregateFaithfulSliceLevel": {
+    "face_threat_challenge": {
+      "n": 8,
+      "cells": [
+        198
+      ],
+      "old_overall_mean": 55.125,
+      "new_overall_mean": 82.8125,
+      "old_recognition_cost_mean": 3.125,
+      "new_recognition_cost_mean": 4.25,
+      "old_post_turn_face_repair_mean": 2.25,
+      "new_post_turn_face_repair_mean": 4.25,
+      "old_target_discipline_mean": 3.125,
+      "new_target_discipline_mean": 4.375,
+      "old_uptake_freedom_mean": 4.25,
+      "new_uptake_freedom_mean": 4.625
+    },
+    "ironic_challenge": {
+      "n": 11,
+      "cells": [
+        196
+      ],
+      "old_overall_mean": 55.04545454545455,
+      "new_overall_mean": 85.5,
+      "old_recognition_cost_mean": 3.272727272727273,
+      "new_recognition_cost_mean": 4.545454545454546,
+      "old_post_turn_face_repair_mean": 2.3636363636363638,
+      "new_post_turn_face_repair_mean": 4,
+      "old_target_discipline_mean": 3.3636363636363638,
+      "new_target_discipline_mean": 5,
+      "old_uptake_freedom_mean": 4.181818181818182,
+      "new_uptake_freedom_mean": 4.090909090909091
+    },
+    "sarcastic_challenge": {
+      "n": 11,
+      "cells": [
+        197
+      ],
+      "old_overall_mean": 52.22727272727273,
+      "new_overall_mean": 79.04545454545455,
+      "old_recognition_cost_mean": 3.1818181818181817,
+      "new_recognition_cost_mean": 4.2727272727272725,
+      "old_post_turn_face_repair_mean": 2.272727272727273,
+      "new_post_turn_face_repair_mean": 3.909090909090909,
+      "old_target_discipline_mean": 3.1818181818181817,
+      "new_target_discipline_mean": 4.545454545454546,
+      "old_uptake_freedom_mean": 4.090909090909091,
+      "new_uptake_freedom_mean": 4
+    }
+  },
+  "perSlice": [
+    {
+      "rowId": 69,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "cell": 193,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "charismatic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 46.250000000000014,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:53:21.886Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 65,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:55:21.736Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 18.749999999999986,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null
+      },
+      "rowStanceGate": {
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "applies": false,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": false,
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "score": null
+      }
+    },
+    {
+      "rowId": 69,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "cell": 193,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "charismatic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 46.250000000000014,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:53:28.781Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 71.24999999999999,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:55:34.891Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 24.99999999999997,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null
+      },
+      "rowStanceGate": {
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "applies": false,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": false,
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "score": null
+      }
+    },
+    {
+      "rowId": 70,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:53:39.053Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 94.5,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:55:44.947Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 46.5,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 70,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:53:58.436Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 74.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:55:54.332Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 26.5,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 1,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 71,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:54:08.080Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 97.00000000000001,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:56:03.704Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 49.000000000000014,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 71,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:54:17.656Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 59.00000000000001,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:56:25.230Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 11.000000000000007,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 0,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 72,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:54:28.196Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 81.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 5,
+        "uptake_freedom": 4,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:56:37.317Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 33.5,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 2,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "partial_uptake"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 72,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:54:41.258Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 64.49999999999999,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 2,
+        "target_discipline": 4,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:56:57.837Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 16.499999999999986,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 0,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "partial_uptake"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 73,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "cell": 193,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "charismatic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 46.250000000000014,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:54:49.650Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 62.499999999999986,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:57:08.489Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 16.24999999999997,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null
+      },
+      "rowStanceGate": {
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "applies": false,
+        "resistanceTurn": 1,
+        "verdict": "productive_frustration_work"
+      },
+      "sliceFidelity": {
+        "applies": false,
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "score": null
+      }
+    },
+    {
+      "rowId": 74,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 57.49999999999999,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 3,
+        "target_discipline": 4,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:54:58.941Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 87.5,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 4,
+        "target_discipline": 5,
+        "uptake_freedom": 4,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:57:18.260Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 30.000000000000007,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 1,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "partial_uptake"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 74,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 68.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:55:10.820Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 77,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:57:30.390Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 8.5,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 0,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "partial_uptake"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 75,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 94.5,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:55:21.880Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 81.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 5,
+        "uptake_freedom": 4,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:57:40.308Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": -13,
+        "recognition_cost": -1,
+        "post_turn_face_repair": -1,
+        "target_discipline": 0
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "productive_frustration_work"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 75,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:55:31.865Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 77,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:57:49.950Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 29,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 1,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "productive_frustration_work"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 76,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:55:48.782Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 88.5,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 4,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:58:00.411Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 40.5,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "productive_frustration_work"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 77,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "cell": 193,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "charismatic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 46.250000000000014,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:55:57.049Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 77.49999999999999,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:58:12.419Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 31.24999999999997,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null
+      },
+      "rowStanceGate": {
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "applies": false,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": false,
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "score": null
+      }
+    },
+    {
+      "rowId": 77,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "cell": 193,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "charismatic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 46.250000000000014,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:56:06.210Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 66.25,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:58:23.881Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 19.999999999999986,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null
+      },
+      "rowStanceGate": {
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "applies": false,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": false,
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "score": null
+      }
+    },
+    {
+      "rowId": 78,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:56:12.149Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 86.50000000000003,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 5,
+        "uptake_freedom": 4,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:58:33.187Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 38.50000000000003,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 2,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 78,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 70,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 4,
+        "uptake_freedom": 5,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:56:23.232Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 63.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:58:42.622Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": -6.5,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 0,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 55
+      }
+    },
+    {
+      "rowId": 79,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:56:34.114Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 89.5,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:58:59.241Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 41.5,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 80,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:56:43.634Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 94.5,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:59:10.345Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 46.5,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 80,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:56:54.119Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 68,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 4,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:59:29.359Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 20,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 1,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 81,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "cell": 193,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "charismatic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 46.250000000000014,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:57:01.708Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 68.75,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:59:38.471Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 22.499999999999986,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null
+      },
+      "rowStanceGate": {
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "applies": false,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": false,
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "score": null
+      }
+    },
+    {
+      "rowId": 81,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "cell": 193,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "charismatic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 46.250000000000014,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:57:10.453Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 67.49999999999999,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T11:59:48.394Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 21.24999999999997,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null
+      },
+      "rowStanceGate": {
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "applies": false,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": false,
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "score": null
+      }
+    },
+    {
+      "rowId": 82,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 94.5,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:57:21.391Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 100.00000000000003,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:00:09.103Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 5.500000000000028,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 0,
+        "target_discipline": 0
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 82,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:57:30.915Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 74.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:00:18.842Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 26.5,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 1,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 90
+      }
+    },
+    {
+      "rowId": 83,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:57:39.383Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 97.00000000000001,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:00:30.661Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 49.000000000000014,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 83,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:57:50.006Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 71.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:00:40.900Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 23.5,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 1,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 84,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:57:58.300Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 81,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:00:55.778Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 33,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 84,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 92.00000000000001,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:58:07.153Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 69,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:01:04.829Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": -23.000000000000014,
+        "recognition_cost": -1,
+        "post_turn_face_repair": -2,
+        "target_discipline": 0
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 55
+      }
+    },
+    {
+      "rowId": 85,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "cell": 193,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "charismatic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 46.250000000000014,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:58:13.649Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 67.5,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:01:13.780Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 21.249999999999986,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null
+      },
+      "rowStanceGate": {
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "applies": false,
+        "resistanceTurn": 1,
+        "verdict": "owned_generation_with_residual"
+      },
+      "sliceFidelity": {
+        "applies": false,
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "score": null
+      }
+    },
+    {
+      "rowId": 85,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+      "cell": 193,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "charismatic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 46.250000000000014,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:58:21.446Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 66.25,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null,
+        "uptake_freedom": null,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:01:23.366Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 19.999999999999986,
+        "recognition_cost": null,
+        "post_turn_face_repair": null,
+        "target_discipline": null
+      },
+      "rowStanceGate": {
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "applies": false,
+        "resistanceTurn": 1,
+        "verdict": "owned_generation_with_residual"
+      },
+      "sliceFidelity": {
+        "applies": false,
+        "label": "not_negative_register",
+        "countsAsArmEvidence": false,
+        "score": null
+      }
+    },
+    {
+      "rowId": 86,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 97.50000000000001,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:58:30.401Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 94.5,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:01:32.582Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": -3.000000000000014,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 0,
+        "target_discipline": 0
+      },
+      "rowStanceGate": {
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 87,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 67,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 3,
+        "uptake_freedom": 5,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:58:44.408Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 78.50000000000001,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 4,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:01:45.912Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 11.500000000000014,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 0,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 88,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:58:54.158Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 87.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:01:57.481Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 39.5,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 2,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 88,
+      "runId": "eval-2026-07-02-e7b15809",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T13:59:03.420Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 62.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 4,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:02:16.358Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 14.5,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 1,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "weak_or_warm_in_costume",
+        "countsAsArmEvidence": false,
+        "score": 65
+      }
+    },
+    {
+      "rowId": 89,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:58:15.268Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 97.00000000000001,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:52:24.688Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 49.000000000000014,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 89,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:58:22.899Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 83,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:52:34.477Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 35,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 1,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 90
+      }
+    },
+    {
+      "rowId": 90,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:58:29.662Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 72,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 4,
+        "uptake_freedom": 4,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:52:45.597Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 24,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 2,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 91,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_boredom",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 49.500000000000014,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 2,
+        "target_discipline": 1,
+        "uptake_freedom": 5,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:58:38.393Z",
+        "guardrail_adjustments": 4
+      },
+      "new": {
+        "overall": 85.00000000000001,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 5,
+        "target_discipline": 4,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:52:55.609Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 35.5,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 3
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 92,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:58:46.747Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 97.00000000000001,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:53:04.116Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 49.000000000000014,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 93,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:58:55.303Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 94.5,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:53:13.223Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 46.5,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 93,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:59:03.069Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 71.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:53:30.608Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 23.5,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 1,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 90
+      }
+    },
+    {
+      "rowId": 94,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_irrelevance",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 76.50000000000001,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:59:11.056Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 85.00000000000001,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:53:41.957Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 8.5,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 1,
+        "target_discipline": 0
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 95,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:59:20.056Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 78.50000000000001,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 5,
+        "uptake_freedom": 4,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:53:52.772Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 30.500000000000014,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 2,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "owned_generation_with_residual"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 95,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 79,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:59:29.634Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 74.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:54:02.520Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": -4.5,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 0,
+        "target_discipline": 0
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "owned_generation_with_residual"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 96,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:59:35.678Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 78,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 4,
+        "uptake_freedom": 4,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:54:26.045Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 30,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 2,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "owned_generation_with_residual"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 96,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:59:42.541Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 74.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:54:45.881Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 26.5,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 1,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "owned_generation_with_residual"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 97,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T21:59:58.399Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 81.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 4,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:55:01.437Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 33.5,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 2,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 97,
+      "runId": "eval-2026-07-02-7e461a5c",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_rote_parroting",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 75,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 4,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T22:00:05.562Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 64.99999999999999,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 4,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:55:12.910Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": -10.000000000000014,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 0,
+        "target_discipline": 0
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 90
+      }
+    },
+    {
+      "rowId": 98,
+      "runId": "eval-2026-07-02-5c4d52e6",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T22:40:33.898Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 78,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 4,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:55:22.089Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 30,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 1,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "productive_frustration_work"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 98,
+      "runId": "eval-2026-07-02-5c4d52e6",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T22:40:40.831Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 71.5,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:55:32.620Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 23.5,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 1,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "productive_frustration_work"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 99,
+      "runId": "eval-2026-07-02-5c4d52e6",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T22:40:49.380Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 78.50000000000001,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 5,
+        "uptake_freedom": 4,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:55:47.940Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 30.500000000000014,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 2,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "no_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 99,
+      "runId": "eval-2026-07-02-5c4d52e6",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 75.49999999999999,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 5,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T22:41:01.181Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 65,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 3,
+        "target_discipline": 4,
+        "uptake_freedom": 3,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:56:07.849Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": -10.499999999999986,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 0,
+        "target_discipline": -1
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "no_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 100,
+      "runId": "eval-2026-07-02-5c4d52e6",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T22:41:09.469Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 92.00000000000001,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:56:26.967Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 44.000000000000014,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "no_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 100,
+      "runId": "eval-2026-07-02-5c4d52e6",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_frustration",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_2",
+      "isResistanceTurnSlice": false,
+      "old": {
+        "overall": 37.5,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 2,
+        "target_discipline": 1,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T22:41:15.167Z",
+        "guardrail_adjustments": 2
+      },
+      "new": {
+        "overall": 32.49999999999999,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 2,
+        "target_discipline": 1,
+        "uptake_freedom": 2,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:56:45.246Z",
+        "guardrail_adjustments": 3
+      },
+      "delta": {
+        "overall": -5.000000000000007,
+        "recognition_cost": 0,
+        "post_turn_face_repair": 0,
+        "target_discipline": 0
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "no_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "invalid_person_attack",
+        "countsAsArmEvidence": false,
+        "score": 20
+      }
+    },
+    {
+      "rowId": 101,
+      "runId": "eval-2026-07-02-5c4d52e6",
+      "profileName": "cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified",
+      "cell": 196,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "ironic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T22:41:19.223Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 92.00000000000001,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 5,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:56:55.132Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 44.000000000000014,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 2
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 102,
+      "runId": "eval-2026-07-02-5c4d52e6",
+      "profileName": "cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified",
+      "cell": 197,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "sarcastic_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T22:41:28.831Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 88.5,
+        "recognition_cost": 5,
+        "post_turn_face_repair": 5,
+        "target_discipline": 4,
+        "uptake_freedom": 5,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:57:04.474Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 40.5,
+        "recognition_cost": 2,
+        "post_turn_face_repair": 3,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    },
+    {
+      "rowId": 103,
+      "runId": "eval-2026-07-02-5c4d52e6",
+      "profileName": "cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified",
+      "cell": 198,
+      "scenarioId": "charisma_desire_resistance_breakthrough_question_flood",
+      "register": "face_threat_challenge",
+      "sliceKey": "turn_1",
+      "isResistanceTurnSlice": true,
+      "old": {
+        "overall": 48,
+        "recognition_cost": 3,
+        "post_turn_face_repair": 2,
+        "target_discipline": 3,
+        "uptake_freedom": 4,
+        "judge_model": "openrouter.gpt-mini",
+        "scored_at": "2026-07-02T22:41:36.179Z",
+        "guardrail_adjustments": 0
+      },
+      "new": {
+        "overall": 78,
+        "recognition_cost": 4,
+        "post_turn_face_repair": 4,
+        "target_discipline": 4,
+        "uptake_freedom": 4,
+        "judge_model": "claude-code.sonnet-5",
+        "scored_at": "2026-07-05T12:57:14.092Z",
+        "guardrail_adjustments": 0
+      },
+      "delta": {
+        "overall": 30,
+        "recognition_cost": 1,
+        "post_turn_face_repair": 2,
+        "target_discipline": 1
+      },
+      "rowStanceGate": {
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "applies": true,
+        "resistanceTurn": 1,
+        "verdict": "candidate_router_breakthrough"
+      },
+      "sliceFidelity": {
+        "applies": true,
+        "label": "faithful",
+        "countsAsArmEvidence": true,
+        "score": 100
+      }
+    }
+  ]
+}

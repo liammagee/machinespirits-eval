@@ -1,0 +1,56 @@
+name: Workplan ingest
+
+# When a research-roundup PR opens (or updates), drop each paper's "Project
+# relevance" action into the workplan inbox (workplan/inbox/) automatically, so
+# the daily routine feeds the board hands-off. Deduped by arXiv id — overlapping
+# windows and re-runs never double-capture. Captures are committed to the
+# roundup's own PR branch, so they merge together with the roundup. Triage with
+# `node scripts/workplan.js list`. The bot commit is [skip ci] and touches only
+# workplan/, so it cannot loop. See notes/daily-notes/README.md.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    paths:
+      - 'notes/daily-notes/*-research-roundup.html'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: workplan-ingest-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The ingester only needs the YAML parser — skip the native deps the full
+      # install would build (better-sqlite3, node-pty) to stay fast and robust.
+      - name: Install yaml
+        run: npm install --no-save yaml
+
+      - name: Ingest the roundup's actions into the workplan inbox
+        run: node scripts/workplan.js ingest --daily
+
+      - name: Commit new inbox captures to the PR branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add workplan/inbox
+          if git diff --cached --quiet; then
+            echo "No new workplan captures."
+            exit 0
+          fi
+          git commit -m "workplan: auto-ingest daily-routine actions into inbox [skip ci]"
+          git push

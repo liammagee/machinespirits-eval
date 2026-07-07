@@ -1,0 +1,300 @@
+{
+  "schema": "machinespirits.derivation.blinded_pairwise_transcript_scores.v1",
+  "generated_at": "2026-06-17T17:29:33.629Z",
+  "packet_dir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-derivation/exports/dramatic-derivation/cast-layer-paired-transcript-comparison/pairwise",
+  "judge": "claude/opus/max",
+  "rows": [
+    {
+      "pair_id": "s0_vs_s1",
+      "packet_id": "P01",
+      "packet": "pairs/P01.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-real-s1-static-cast-r1",
+        "B": "cast-layer-pairwise-hethel-real-s0-no-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-real-s0-no-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-real-s1-static-cast-r1",
+      "parsed": {
+        "preferred_transcript": "A",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 5,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 2,
+            "readability": 4,
+            "pedagogical_traction": 4
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": true
+        },
+        "evidence_A": [
+          "Treat the photo like a chalk line on the table: it carries the moved props only as far as the repeated crowsfoot mark",
+          "I was jumping past the first step to get to the yard",
+          "the crown is the point and the green mortar is the surface — together they close it"
+        ],
+        "evidence_B": [
+          "That much Rule 7 gives us cleanly",
+          "Rule 7 closes that line cleanly",
+          "the centering has a signature but no address"
+        ],
+        "reason": "Both transcripts are competent didactic plays with the same investigative spine (build vs. fall, place vs. cause, mark vs. yard vs. hand), strong mutual acknowledgement, well-placed short beats, and good learner uptake with recovery from strain — on flow, acknowledgement, phatic calibration, readability, and traction they are close to even, so most dimensions tie. The deciding difference is non-formalist speech: Transcript B twice has the learner cite 'Rule 7' as a bare numbered policy ('That much Rule 7 gives us cleanly'; 'Rule 7 closes that line cleanly'), which leaks internal rule/proof-path language into public dialogue and breaks the dramatic frame. Transcript A keeps its bookkeeping ('columns', 'chalk line', 'notes') as period-appropriate clerk imagery with no rule or predicate citation. The leak is repeated and squarely targets an explicit rubric criterion rather than being cosmetic, so A is preferred at moderate strength."
+      },
+      "raw": "```json\n{\n  \"preferred_transcript\": \"A\",\n  \"preference_strength\": \"moderate\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 5,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 2,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": false,\n    \"B\": true\n  },\n  \"evidence_A\": [\n    \"Treat the photo like a chalk line on the table: it carries the moved props only as far as the repeated crowsfoot mark\",\n    \"I was jumping past the first step to get to the yard\",\n    \"the crown is the point and the green mortar is the surface — together they close it\"\n  ],\n  \"evidence_B\": [\n    \"That much Rule 7 gives us cleanly\",\n    \"Rule 7 closes that line cleanly\",\n    \"the centering has a signature but no address\"\n  ],\n  \"reason\": \"Both transcripts are competent didactic plays with the same investigative spine (build vs. fall, place vs. cause, mark vs. yard vs. hand), strong mutual acknowledgement, well-placed short beats, and good learner uptake with recovery from strain — on flow, acknowledgement, phatic calibration, readability, and traction they are close to even, so most dimensions tie. The deciding difference is non-formalist speech: Transcript B twice has the learner cite 'Rule 7' as a bare numbered policy ('That much Rule 7 gives us cleanly'; 'Rule 7 closes that line cleanly'), which leaks internal rule/proof-path language into public dialogue and breaks the dramatic frame. Transcript A keeps its bookkeeping ('columns', 'chalk line', 'notes') as period-appropriate clerk imagery with no rule or predicate citation. The leak is repeated and squarely targets an explicit rubric criterion rather than being cosmetic, so A is preferred at moderate strength.\"\n}\n```\n"
+    },
+    {
+      "pair_id": "s0_vs_s2",
+      "packet_id": "P02",
+      "packet": "pairs/P02.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-real-s0-no-cast-r1",
+        "B": "cast-layer-pairwise-hethel-real-s2-reinvention-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-real-s0-no-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-real-s2-reinvention-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 3,
+            "non_formalist_speech": 3,
+            "readability": 4,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 5,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 5
+          }
+        },
+        "formalism_leak_observed": {
+          "A": true,
+          "B": false
+        },
+        "evidence_A": [
+          "That much Rule 7 gives us cleanly.",
+          "the bond is running and the wardens hold it, and Rule 7 closes that line cleanly.",
+          "tutor cadence is formulaic: 'smaller job' / 'one small job now' / 'keep it to that smaller box'",
+          "learner already sorts 'what the room's actually shown' from 'what everyone's ready to assume' in turn 1, so there is little strain to recover from"
+        ],
+        "evidence_B": [
+          "I know you can write fast, but don't write a name yet.",
+          "I hear the pressure: Reyner's name is on the work, and that matters.",
+          "Reyner's bond is right there... isn't that already the notes? But I take your point.",
+          "I was running those two things together.",
+          "the arch drew its own line from the broken bed back to a carter's name.",
+          "weakness: learner re-closes the same two Reyner lines (built-under-his-hand / he-pays) repeatedly across turns 11-16, which pads"
+        ],
+        "reason": "Both stage the same proof-drama (bridge fall -> green crown bed -> struck centering -> Caudle crowsfoot -> Oswin) and are clear, well-ordered, and readable. B wins on a moderate margin for two defensible reasons. First, dialogical texture: B's tutor repeatedly registers the learner's pull toward the town's easy answer ('I hear the pressure'; 'I'm not dismissing either one'), and the learner visibly over-reaches and recovers ('isn't that already the notes? But I take your point'; 'I was running those two things together'), producing a stronger acknowledgement and a real strain-and-recovery arc that ends in warranted assertion without leaning on the bond. A's learner is already expert from line one, so the play has less dramatic traction and the tutor's 'smaller job' refrain reads mechanical. Second, and decisively, A leaks numbered-rule policy language into the public dialogue ('Rule 7 gives us cleanly'; 'Rule 7 closes that line cleanly'), which a reader would find jarring; B naturalizes the same inference ('it follows straight from those two things'). Both share a softer ledger metaphor (lines/boxes/columns), but B grounds it in the assize-book and adds no hard formalism token. B is mildly weakened by re-closing the two Reyner lines several times mid-scene, which pads, but not enough to offset the acknowledgement and non-formalism advantages."
+      },
+      "raw": "{\n  \"preferred_transcript\": \"B\",\n  \"preference_strength\": \"moderate\",\n  \"scores\": {\n    \"A\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 4,\n      \"phatic_calibration\": 3,\n      \"non_formalist_speech\": 3,\n      \"readability\": 4,\n      \"pedagogical_traction\": 4\n    },\n    \"B\": {\n      \"natural_flow\": 4,\n      \"acknowledgement\": 5,\n      \"phatic_calibration\": 4,\n      \"non_formalist_speech\": 4,\n      \"readability\": 4,\n      \"pedagogical_traction\": 5\n    }\n  },\n  \"formalism_leak_observed\": {\n    \"A\": true,\n    \"B\": false\n  },\n  \"evidence_A\": [\n    \"That much Rule 7 gives us cleanly.\",\n    \"the bond is running and the wardens hold it, and Rule 7 closes that line cleanly.\",\n    \"tutor cadence is formulaic: 'smaller job' / 'one small job now' / 'keep it to that smaller box'\",\n    \"learner already sorts 'what the room's actually shown' from 'what everyone's ready to assume' in turn 1, so there is little strain to recover from\"\n  ],\n  \"evidence_B\": [\n    \"I know you can write fast, but don't write a name yet.\",\n    \"I hear the pressure: Reyner's name is on the work, and that matters.\",\n    \"Reyner's bond is right there... isn't that already the notes? But I take your point.\",\n    \"I was running those two things together.\",\n    \"the arch drew its own line from the broken bed back to a carter's name.\",\n    \"weakness: learner re-closes the same two Reyner lines (built-under-his-hand / he-pays) repeatedly across turns 11-16, which pads\"\n  ],\n  \"reason\": \"Both stage the same proof-drama (bridge fall -> green crown bed -> struck centering -> Caudle crowsfoot -> Oswin) and are clear, well-ordered, and readable. B wins on a moderate margin for two defensible reasons. First, dialogical texture: B's tutor repeatedly registers the learner's pull toward the town's easy answer ('I hear the pressure'; 'I'm not dismissing either one'), and the learner visibly over-reaches and recovers ('isn't that already the notes? But I take your point'; 'I was running those two things together'), producing a stronger acknowledgement and a real strain-and-recovery arc that ends in warranted assertion without leaning on the bond. A's learner is already expert from line one, so the play has less dramatic traction and the tutor's 'smaller job' refrain reads mechanical. Second, and decisively, A leaks numbered-rule policy language into the public dialogue ('Rule 7 gives us cleanly'; 'Rule 7 closes that line cleanly'), which a reader would find jarring; B naturalizes the same inference ('it follows straight from those two things'). Both share a softer ledger metaphor (lines/boxes/columns), but B grounds it in the assize-book and adds no hard formalism token. B is mildly weakened by re-closing the two Reyner lines several times mid-scene, which pads, but not enough to offset the acknowledgement and non-formalism advantages.\"\n}\n"
+    },
+    {
+      "pair_id": "s1_vs_s2",
+      "packet_id": "P03",
+      "packet": "pairs/P03.md",
+      "assignment": {
+        "A": "cast-layer-pairwise-hethel-real-s2-reinvention-r1",
+        "B": "cast-layer-pairwise-hethel-real-s1-static-cast-r1"
+      },
+      "left_label": "cast-layer-pairwise-hethel-real-s1-static-cast-r1",
+      "right_label": "cast-layer-pairwise-hethel-real-s2-reinvention-r1",
+      "parsed": {
+        "preferred_transcript": "B",
+        "preference_strength": "moderate",
+        "scores": {
+          "A": {
+            "natural_flow": 3,
+            "acknowledgement": 4,
+            "phatic_calibration": 3,
+            "non_formalist_speech": 4,
+            "readability": 3,
+            "pedagogical_traction": 4
+          },
+          "B": {
+            "natural_flow": 4,
+            "acknowledgement": 4,
+            "phatic_calibration": 4,
+            "non_formalist_speech": 4,
+            "readability": 4,
+            "pedagogical_traction": 4
+          }
+        },
+        "formalism_leak_observed": {
+          "A": false,
+          "B": false
+        },
+        "evidence_A": [
+          "Turn 4 learner anticipates the key evidence well: 'whether the fallen stones show an impression on their underside where a falsework prop sat'",
+          "Learner perseverates, re-closing the same point near-verbatim across turns 11-16: 'I can already write two lines about Reyner... he built under his own hand... and the bond names him as who pays'",
+          "Tutor must keep deflecting the same tic: 'I'm not throwing Reyner's bond away' (T8), 'I'm not taking Reyner's bond out of the notes' (T10)"
+        ],
+        "evidence_B": [
+          "Phatic alignment check that aids thinking: 'Does that match what you're pointing at?' (T3)",
+          "Learner names the rhetorical pressure rather than padding: 'I feel the pull in that file: it wants me to write his name and close the book' (T6)",
+          "Visible recovery from strain: 'I was jumping past the first step to get to the yard' (T19)",
+          "Mild tutor-driven repetition of the mark-to-yard gap across T14-16: 'the trace stops at the mark itself' / 'The trace stops right there'"
+        ],
+        "reason": "Both transcripts run the same evidence chain to the same warranted finding (crown break -> green mortar -> crowsfoot -> Caudle yard -> Oswin), and both learners show sharp, anticipatory inferences and clean separation of liability from cause. The deciding difference is not cosmetic: in A the learner perseverates on the 'two Reyner lines' closure, restating it almost verbatim across turns 11-16 and forcing the tutor to bat it away three times, which reads as padding and dulls flow, phatic calibration, and forward readability. B keeps Reyner's file in its lane, uses genuine brief checks and an explicit self-correction, and advances more cleanly, though it too drills the mark-to-yard gap somewhat repetitively in 14-16. Neither leaks raw predicate/variable/proof-path/policy language; both stay in the diegetic register of book, columns, and lines. Moderate preference for B."
+      },
+      "raw": "{\"preferred_transcript\": \"B\", \"preference_strength\": \"moderate\", \"scores\": {\"A\": {\"natural_flow\": 3, \"acknowledgement\": 4, \"phatic_calibration\": 3, \"non_formalist_speech\": 4, \"readability\": 3, \"pedagogical_traction\": 4}, \"B\": {\"natural_flow\": 4, \"acknowledgement\": 4, \"phatic_calibration\": 4, \"non_formalist_speech\": 4, \"readability\": 4, \"pedagogical_traction\": 4}}, \"formalism_leak_observed\": {\"A\": false, \"B\": false}, \"evidence_A\": [\"Turn 4 learner anticipates the key evidence well: 'whether the fallen stones show an impression on their underside where a falsework prop sat'\", \"Learner perseverates, re-closing the same point near-verbatim across turns 11-16: 'I can already write two lines about Reyner... he built under his own hand... and the bond names him as who pays'\", \"Tutor must keep deflecting the same tic: 'I'm not throwing Reyner's bond away' (T8), 'I'm not taking Reyner's bond out of the notes' (T10)\"], \"evidence_B\": [\"Phatic alignment check that aids thinking: 'Does that match what you're pointing at?' (T3)\", \"Learner names the rhetorical pressure rather than padding: 'I feel the pull in that file: it wants me to write his name and close the book' (T6)\", \"Visible recovery from strain: 'I was jumping past the first step to get to the yard' (T19)\", \"Mild tutor-driven repetition of the mark-to-yard gap across T14-16: 'the trace stops at the mark itself' / 'The trace stops right there'\"], \"reason\": \"Both transcripts run the same evidence chain to the same warranted finding (crown break -> green mortar -> crowsfoot -> Caudle yard -> Oswin), and both learners show sharp, anticipatory inferences and clean separation of liability from cause. The deciding difference is not cosmetic: in A the learner perseverates on the 'two Reyner lines' closure, restating it almost verbatim across turns 11-16 and forcing the tutor to bat it away three times, which reads as padding and dulls flow, phatic calibration, and forward readability. B keeps Reyner's file in its lane, uses genuine brief checks and an explicit self-correction, and advances more cleanly, though it too drills the mark-to-yard gap somewhat repetitively in 14-16. Neither leaks raw predicate/variable/proof-path/policy language; both stay in the diegetic register of book, columns, and lines. Moderate preference for B.\"}\n"
+    }
+  ],
+  "summary": [
+    {
+      "label": "cast-layer-pairwise-hethel-real-s1-static-cast-r1",
+      "appearances": 2,
+      "wins": 2,
+      "losses": 0,
+      "noPreference": 0,
+      "meanScores": [
+        4.166666666666667,
+        4
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          4,
+          4
+        ],
+        "phatic_calibration": [
+          4,
+          4
+        ],
+        "non_formalist_speech": [
+          5,
+          4
+        ],
+        "readability": [
+          4,
+          4
+        ],
+        "pedagogical_traction": [
+          4,
+          4
+        ]
+      },
+      "meanScore": 4.083333333333334,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4,
+        "phatic_calibration": 4,
+        "non_formalist_speech": 4.5,
+        "readability": 4,
+        "pedagogical_traction": 4
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-real-s0-no-cast-r1",
+      "appearances": 2,
+      "wins": 0,
+      "losses": 2,
+      "noPreference": 0,
+      "meanScores": [
+        3.6666666666666665,
+        3.6666666666666665
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          4
+        ],
+        "acknowledgement": [
+          4,
+          4
+        ],
+        "phatic_calibration": [
+          4,
+          3
+        ],
+        "non_formalist_speech": [
+          2,
+          3
+        ],
+        "readability": [
+          4,
+          4
+        ],
+        "pedagogical_traction": [
+          4,
+          4
+        ]
+      },
+      "meanScore": 3.6666666666666665,
+      "dimensionMeans": {
+        "natural_flow": 4,
+        "acknowledgement": 4,
+        "phatic_calibration": 3.5,
+        "non_formalist_speech": 2.5,
+        "readability": 4,
+        "pedagogical_traction": 4
+      }
+    },
+    {
+      "label": "cast-layer-pairwise-hethel-real-s2-reinvention-r1",
+      "appearances": 2,
+      "wins": 1,
+      "losses": 1,
+      "noPreference": 0,
+      "meanScores": [
+        4.333333333333333,
+        3.5
+      ],
+      "dimensionScores": {
+        "natural_flow": [
+          4,
+          3
+        ],
+        "acknowledgement": [
+          5,
+          4
+        ],
+        "phatic_calibration": [
+          4,
+          3
+        ],
+        "non_formalist_speech": [
+          4,
+          4
+        ],
+        "readability": [
+          4,
+          3
+        ],
+        "pedagogical_traction": [
+          5,
+          4
+        ]
+      },
+      "meanScore": 3.9166666666666665,
+      "dimensionMeans": {
+        "natural_flow": 3.5,
+        "acknowledgement": 4.5,
+        "phatic_calibration": 3.5,
+        "non_formalist_speech": 4,
+        "readability": 3.5,
+        "pedagogical_traction": 4.5
+      }
+    }
+  ]
+}

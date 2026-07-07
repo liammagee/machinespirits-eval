@@ -1,0 +1,39 @@
+Evaluated the public transcript against the Poetics Rubric (v1.0). Scoring the dramatic form of the public discourse only — the run summary confirms 0 formalism leaks, so no penalty was needed on that axis.
+
+```json
+{
+  "scores": {
+    "peripeteia": {
+      "score": 4,
+      "reasoning": "The opening orients entirely on Reyner answering for the fall (T1: 'the bond already ties that question to Reyner; the span was his to answer for'). The close reverses this — Oswin is named as the hand and Reyner is explicitly held off the movement line (T21: 'Not Reyner's; I can see that now'; T22: 'Oswin is the hand that felled the span'). The visible hinge is T9, where evidence overturns the town's premise: 'The green mortar kills the bad-building story... it's whoever pulled the centering.' Short of 5 because the reversal is achieved by cumulative refinement (separating liability / cause / hand) rather than one decisive flip of the dialogue's frame."
+    },
+    "anagnorisis": {
+      "score": 5,
+      "reasoning": "The learner repeatedly authors recognition of his own flaw — the sharpest form. T3: 'I was treating his name on the job as reasoning the fall was his doing.' T19: 'in my draft I had his name running across all three, and only one of those lines was mine to fill yet.' T21: 'Not Reyner's; I can see that now, and I don't much like writing it.' Available knowledge demonstrably changes from T1 (Reyner answers for the fall) to a fully articulated liability/cause/hand distinction, and the shift is owned by the learner with felt resistance, not supplied for him."
+    },
+    "surprise_and_inevitability": {
+      "score": 3,
+      "reasoning": "Strongly coherent-in-retrospect — each step is motivated by the prior (crown-bed → crowsfoot → Caudle → toll-book) — but the surprise leg is weak. Displacing the obvious suspect is genre-expected, and the decisive identification arrives by sequential evidence-disclosure from the tutor (T13 crowsfoot, T17 yard, T20 toll-book) rather than an unforeseen recombination the learner leaps to. Coherent but largely foreseeable: one leg present."
+    },
+    "unity_of_action": {
+      "score": 4,
+      "reasoning": "One complete forensic action with a largely necessary sequence: the toll-book (T20) is meaningless without the crowsfoot→Caudle chain (T13/T17), and the T9 cause-inversion depends on the liability/cause split built across T2–T8 — reorder any and the arc breaks. Held below 5 by a few near-restating holding turns (T16 re-affirms T15; T18 restates T17's yard-source conclusion) that are compressible without disturbing the whole."
+    },
+    "hamartia_integration": {
+      "score": 5,
+      "reasoning": "The misconception — conflating who must answer (Reyner's name and bond) with what felled the span — is the mainspring. It recurs as the engine of every complication: T2 'the town isn't wrong'; T6 'who else would have drawn the falsework?'; T9 'the draft I wrote treats them as one. I don't like that'; T19 'his name running across all three.' The error exposes its own insufficiency (the green-mortar note shows liability ≠ cause) and is exactly what gets recognised; it is never corrected-and-discarded."
+    },
+    "cathartic_closure": {
+      "score": 4,
+      "reasoning": "The close lands as earned: the long-held-open 'hand' line finally closes when the resistant clerk, against his stated preference (T21: 'I don't much like writing it'), joins the two settled lines — T22: 'Those two lines meet, and the finding writes itself — Oswin is the hand that felled the span.' The discharge is real. Short of 5 because the final identification asserts 'the hand that felled the span' with a finality slightly ahead of the strictly circumstantial toll-book evidence (only-carter + morning-after), echoed by the run summary's 2 forced/asserted gaps."
+    }
+  },
+  "overall_score": 80,
+  "summary": "A tightly built forensic drama whose plot IS the working-through of a single misconception (liability ≠ causation). Strongest on hamartia integration and learner-authored recognition — the clerk names his own flaw repeatedly and with felt resistance, and the available knowledge genuinely changes. Weaker on surprise: coherent and necessary in sequence, but the destination is genre-foreseeable and reached through tutor-disclosed evidence rather than an unexpected-yet-fitting turn. Public discourse is clean natural-language drama with no formalism leaks.",
+  "caveats": [
+    "Surprise is the limiting dimension: the identification is delivered by sequential evidence-reveals, so the piece reads more as disclosure than deduction.",
+    "The final finding slightly over-asserts relative to the circumstantial toll-book evidence (run summary: 2 forced/asserted gaps).",
+    "Minor public-discourse blemish: 'notes' appears as an awkward substitution in a few learner lines (T5 'the notes already does'; T7 'a master of notes who owns the yard'), suggesting a de-formalisation artifact — it dents naturalness slightly but is not a formalism leak."
+  ]
+}
+```

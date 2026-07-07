@@ -31,11 +31,11 @@ current_decision:
   selected_status: no_stable_systemic_s0s1_difference
   prior_selected_option: new_a19_strategy_reversal_from_a18_peripeteia
   prior_selected_status: real_attempt1_blocked_recursive_dyadic_update
-  prior_attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-strategy-reversal.md
+  prior_attempt1_report: notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-strategy-reversal.md
   prior_attempt1_artifacts: exports/a19/real-attempt1-v09/strategy-reversal-error-spotting
   last_attempted_option: existing_a19_over_compliance_ethopoeia_variant
   last_attempted_status: real_attempt1_blocked_device_specificity_and_recursive_learning
-  last_attempt1_report: notes/adaptive_2_0/a19-attempt1-real-gate-report-over-compliance-ethopoeia.md
+  last_attempt1_report: notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-over-compliance-ethopoeia.md
   last_attempt1_artifacts: exports/a19/real-attempt1-v09-option2/over-compliance-ethopoeia-copy-dependency
   materialized_scaffold: exports/a19/materialized-attempts-v09-option2
   later_attempted_option: automated_v10_v17_controlled_positive_loop

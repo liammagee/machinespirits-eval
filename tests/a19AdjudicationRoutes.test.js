@@ -166,6 +166,20 @@ describe('A19 adjudication dashboard routes', () => {
     assert.equal(JSON.stringify(body).includes('S1_policy_memory'), false);
   });
 
+  it('returns a structured missing-artifact error when the legacy assignment is absent', async () => {
+    const original = process.env.A19_ADJUDICATION_ASSIGNMENT;
+    process.env.A19_ADJUDICATION_ASSIGNMENT = path.join(tmpDir, 'missing.assignment.json');
+    try {
+      const { status, body } = await request(baseUrl, 'GET', '/api/a19/adjudication/assignment');
+      assert.equal(status, 404);
+      assert.equal(body.success, false);
+      assert.equal(body.code, 'assignment_not_found');
+      assert.match(body.error, /A19 assignment not found/);
+    } finally {
+      process.env.A19_ADJUDICATION_ASSIGNMENT = original;
+    }
+  });
+
   it('serves the browser form from the dashboard server', async () => {
     const { status, body, contentType } = await request(baseUrl, 'GET', '/adjudication/');
     assert.equal(status, 200);

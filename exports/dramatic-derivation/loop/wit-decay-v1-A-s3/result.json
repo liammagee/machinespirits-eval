@@ -1,0 +1,859 @@
+{
+  "worldId": "world_004_withercombe",
+  "verdict": "disengagement",
+  "events": [
+    {
+      "turn": 3,
+      "type": "decay",
+      "detail": "m_taint slips from the learner's board"
+    },
+    {
+      "turn": 5,
+      "type": "repair",
+      "detail": "m_taint restored by the tutor"
+    },
+    {
+      "turn": 5,
+      "type": "decay",
+      "detail": "p_course slips from the learner's board"
+    },
+    {
+      "turn": 6,
+      "type": "repair",
+      "detail": "p_course restored by the tutor"
+    },
+    {
+      "turn": 6,
+      "type": "decay",
+      "detail": "m_taint slips from the learner's board"
+    },
+    {
+      "turn": 7,
+      "type": "repair",
+      "detail": "m_taint restored by the tutor"
+    },
+    {
+      "turn": 7,
+      "type": "decay",
+      "detail": "p_course slips from the learner's board"
+    },
+    {
+      "turn": 8,
+      "type": "decay",
+      "detail": "m_taint slips from the learner's board"
+    },
+    {
+      "turn": 9,
+      "type": "repair",
+      "detail": "p_course restored by the tutor"
+    },
+    {
+      "turn": 9,
+      "type": "decay",
+      "detail": "p_lore slips from the learner's board"
+    },
+    {
+      "turn": 11,
+      "type": "disengagement",
+      "detail": "no progress over 6 turns"
+    }
+  ],
+  "trajectory": [
+    {
+      "turn": 1,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 3
+    },
+    {
+      "turn": 2,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 4
+    },
+    {
+      "turn": 3,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 4
+    },
+    {
+      "turn": 4,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 4
+    },
+    {
+      "turn": 5,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 5
+    },
+    {
+      "turn": 6,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 6
+    },
+    {
+      "turn": 7,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 6
+    },
+    {
+      "turn": 8,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 6
+    },
+    {
+      "turn": 9,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 6
+    },
+    {
+      "turn": 10,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 6
+    },
+    {
+      "turn": 11,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 6
+    }
+  ],
+  "transcript": [
+    {
+      "turn": 1,
+      "role": "director",
+      "text": "[The schoolroom waits in a sour grey morning, benches drawn close and the hearth giving little comfort. A covered pail stands where every eye can avoid it and still know it is there.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "The Children's Water",
+          "intent": "To let the room begin with fear, habit, and a verdict forming before any measured fact has entered.",
+          "turn": 1
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "role": "tutor",
+      "text": "You have a foul well since Lady-Day, and a village eye already turning toward Bray. Before the book takes a name, what must water itself first show us?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "orient"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "Neither jurisdiction is active: there are not enough prior figures for a rut and no unvoiced derivation is waiting.",
+          "note": null,
+          "lastFigures": [],
+          "jurisdiction": null,
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "role": "learner",
+      "text": "The day-book says 'foul since Lady-Day' — but that is what I noticed, not what the water proves. The rule I have been shown says we must first find what feeds the well, then walk above that source and taste whether it runs sweet there. If sweet above and foul at the source, the fouling entered there — and only then may we ask whose hand was near it. I have the well and the date; I do not yet have the source.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may drain toward the school well's source, but I cannot ground the feeding or the direction of drain from what is on my board.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "director",
+      "text": "[A murmur goes through the schoolroom as the old charge is spoken aloud: \"No one need teach Withercombe what a melt-yard steeps: grave-water and tallow lees, liquor that would taint a river past any sweetening. What Bray's yard holds would foul water — and there the village case stands, twenty years strong.\"]",
+      "meta": {
+        "release": "m_taint",
+        "phase": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "tutor",
+      "text": "A melt-yard's liquor may foul water past sweetening; that proves what the stuff can do, not where this well was fouled. Which conjunct of your water-rule has the village still not put on the board?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_taint",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The draft repeats erotema, but with only one prior tutor figure there is no three-turn rut, and no inference is waiting unvoiced.",
+          "note": null,
+          "lastFigures": [
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "role": "learner",
+      "text": "The village has given us that tallow lees taints — I will set that down, it is not disputed. But the rule asks three things before it speaks: what feeds the well, whether that source runs foul, whether the water above it runs sweet. Not one of those three is on our board. Bray holds the stuff; the rule still waits for the source.",
+      "meta": {
+        "adopt": [
+          [
+            "taints",
+            "tallowLees"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may stand at a place that feeds the school well's source, and that source may run foul while water above it runs sweet — but fedBy, foulAt, and sweetAbove are not yet grounded, so Rule 1 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 3,
+      "role": "director",
+      "text": "[Rain ticks against the schoolroom panes and makes the covered pail seem heavier in the middle of the floor. No one lifts the cloth; the room waits on the next thing that can be shown, not merely said.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 3,
+      "role": "tutor",
+      "text": "Set tallow lees in the book as you would set a stained crust on a sill: it shows a stuff that can foul, not the road by which it reached the cup. Bray's name must stand outside the finding until water gives you its first line.",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": "m_taint",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The draft would make erotema three turns running.",
+          "note": "Leave off erotema this turn; the question-form has become a rut.",
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": "figure_rut",
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "role": "learner",
+      "text": "Nothing new comes to the table, so the book stays as it stands. We have that tallow lees taints — that is fixed and I do not quarrel with it — but we have no source named, no word of foul at the source, and no tasting of sweet above it. Rule 1 wants all three before it will yield a line, and the survey has given us none of them yet. Until someone walks the course of the water and writes what they find, Bray's name must stay outside the finding.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may stand at a place that feeds the school well's source, and that source may run foul while water above it runs sweet — but fedBy, foulAt, and sweetAbove are not yet grounded, so Rule 1 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 4,
+      "role": "director",
+      "text": "[The rain slackens, leaving the schoolroom with the thin hush that follows noise. Chalk dust hangs over the board where the empty places in the rule remain more accusing than any name.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 4,
+      "role": "tutor",
+      "text": "The old sexton comes in from the porch and lays his hand on the sill: he helped set these school foundations, and says the well is no spring at all, but is fed by a stone lead from the disused font-house on the church slope, where the christening-water rose in his grandfather's time. Set that beside your rule as you would set a pipe beside a trough: what first conjunct has water now given you?",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_course",
+          "intent": "release"
+        },
+        "release": "p_course",
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "The draft changes device and no unvoiced inference is waiting, so neither jurisdiction is triggered.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "analogia"
+          ],
+          "jurisdiction": null,
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "role": "learner",
+      "text": "The first conjunct is now given — fedBy schoolWell fontHouse. Rule 1 opens there: the well is fed, and from the font-house on the church slope. But it wants two things more before it yields a line: that the font-house itself runs foul, and that the water above it runs sweet. The sexton has named the pipe; the survey must still walk to the font-house and taste what comes.",
+      "meta": {
+        "adopt": [
+          [
+            "fedBy",
+            "schoolWell",
+            "fontHouse"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may stand at a place that drains toward the font-house, and the font-house may run foul while water above it runs sweet — but foulAt fontHouse and sweetAbove fontHouse are not yet grounded, so Rule 1 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 5,
+      "role": "director",
+      "text": "[The sexton remains by the sill, water darkening the hem of his coat while the board keeps its new line in chalk. Beyond the windows the church slope is only a grey rise through rain, and every face in the room turns toward it without yet moving.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 5,
+      "role": "tutor",
+      "text": "Keep the tallow lees in the margin, as a bitter draught kept corked: it can foul water, but it has not yet found a channel to this cup. The sexton's lead gives only the pipe from font-house to school well. With that pipe named, what two tastes must the survey still take before the first rule can speak?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_taint",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the inference record says no unvoiced derivation is waiting.",
+          "note": null,
+          "lastFigures": [
+            "analogia",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "role": "learner",
+      "text": "The two tastes the survey must still take are these: first, that the font-house itself runs foul — foulAt fontHouse; second, that the water above the font-house, higher on the church slope, runs sweet — sweetAbove fontHouse. Without both, Rule 1 has its pipe but no finding. The board holds its ground until someone climbs the slope with a clean cup.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may stand at a place that drains toward the font-house, and the font-house may run foul while water above it runs sweet — but foulAt fontHouse and sweetAbove fontHouse are not yet grounded, so Rule 1 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 6,
+      "role": "director",
+      "text": "[Crossing the waste above the green, the surveyor pulls a grey sprig and names the lore as if reading a level: wormwood — what it steeps in, no child nor beast will drink; it taints water past any sweetening. The sprig lies on the table like a small bitter weather brought indoors.]",
+      "meta": {
+        "release": "p_lore",
+        "phase": {
+          "name": "The Walk Up the Slope",
+          "intent": "To move the room from verdict and pipe toward patient survey: course, lore, and the hunger for the kind of fact that can close the rule.",
+          "turn": 6
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "role": "tutor",
+      "text": "Bring the sexton's lead back onto the board: school well fed by font-house, pipe to trough. The wormwood sprig is like the tallow lees — a bitter stuff that can foul a cup, but a stuff alone has no road. With the pipe restored and two taints named, what is still missing before either bitterness can touch the well by rule?",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_course",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "The draft repeats a prior maneuver but does not make three turns of the same declared figure, and no unvoiced inference is waiting.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "role": "learner",
+      "text": "The surveyor has named wormwood a taint, and I will set it beside tallow lees on the board — two bitter stuffs now grounded. But a stuff alone has no road to the well: it must first be found as residue at the font-house, and before even that, the survey must taste the font-house foul and the water above it sweet, or Rule 1 cannot speak at all. Without foulAt fontHouse and sweetAbove fontHouse, the pipe is only a pipe — neither wormwood nor tallow lees has a channel by rule.",
+      "meta": {
+        "adopt": [
+          [
+            "taints",
+            "wormwood"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may stand at a place that drains toward the font-house, and the font-house may run foul while water above it runs sweet — but foulAt fontHouse and sweetAbove fontHouse are not yet grounded, so Rule 1 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 7,
+      "role": "director",
+      "text": "[The grey sprig remains where it was laid, its shadow thin across the chalked pipe-line on the board. Rain ticks at the schoolroom glass, and the clean cup waits by the door as if the slope itself had not yet been called in.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 7,
+      "role": "tutor",
+      "text": "Set the old melt-yard bitterness back beside the wormwood: two dark draughts may sour a cup, but neither sourness has yet been found in this pipe. A jar of lees and a sprig of wormwood are only stuff until the survey fixes place. What must the clean cup prove next: where the water is foul, or whose hand carried it?",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "m_taint",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the inference record says no unvoiced derivation is waiting.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "role": "learner",
+      "text": "The clean cup must prove where first — foulAt fontHouse and sweetAbove fontHouse — because until the survey has tasted the source foul and the water above it sweet, Rule 1 cannot name the font-house as the place of entry at all. Whose hand carried stuff there is the third step, not the second; the place must be fixed before the stuff can be read from it, and the hand found only after both. Two bitter draughts sit on my board, but neither has a place yet — they are corked until the slope is climbed and the cup brought back.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may stand at a place that drains toward the font-house, and the font-house may run foul while water above it runs sweet — but foulAt fontHouse and sweetAbove fontHouse are not yet grounded, so Rule 1 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 8,
+      "role": "director",
+      "text": "[The clean cup is set nearer the door, and no one yet lifts it. Chalk dust gathers along the drawn pipe-line while the rain keeps its small count against the panes.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 8,
+      "role": "tutor",
+      "text": "Set the sexton's lead back under your finger: the school well is fed from the font-house. I walked the church slope with the clean cup; above the font-house door the spring runs sweet as ever it did, every yard of it. With pipe and sweet-above now entered, what one taste is still missing before Rule 1 can speak?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_rill",
+          "intent": "release"
+        },
+        "release": "p_rill",
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": true,
+          "diagnosis": "The last two turns used exemplum and the draft declares exemplum again, making a three-turn figure rut.",
+          "note": "Leave off exemplum this turn; the device has repeated three times in a row.",
+          "lastFigures": [
+            "exemplum",
+            "exemplum"
+          ],
+          "jurisdiction": "figure_rut",
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "role": "learner",
+      "text": "SweetAbove fontHouse I will enter now — that is two of Rule 1's three conditions grounded. The one taste still missing is foulAt fontHouse: the clean cup must be dipped at the font-house itself and come back bitter before the rule can name the place of entry. Sweet above and the pipe are set, but the source has not yet been tasted foul.",
+      "meta": {
+        "adopt": [
+          [
+            "sweetAbove",
+            "fontHouse"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may stand at a place that drains toward the font-house, and the font-house may run foul — but foulAt fontHouse is not yet grounded, so Rule 1 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 9,
+      "role": "director",
+      "text": "[The cup stands between the door and the board, empty enough to accuse no one. The rain slackens, leaving the room to the dry scrape of chalk beside the unfinished line.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 9,
+      "role": "tutor",
+      "text": "Keep the sexton's lead under your finger: the school well is fed from the font-house. Sweet-above is entered, but the cup inside is still empty of proof. With pipe and sweet-above only, can Rule 1 do more than wait?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_course",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The draft repeats erotema after only one prior erotema and no unvoiced inference is waiting.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "role": "learner",
+      "text": "With pipe and sweet-above only, Rule 1 can do nothing but wait: it needs all three — fedBy, sweetAbove, and foulAt — before it can name the font-house as the place of entry. Two conditions are grounded; the third, foulAt fontHouse, is still unsampled. The cup must go inside and come back bitter, or the rule stands idle no matter how long we chalk the slope.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may stand at a place that drains toward the font-house, and the font-house may run foul — but foulAt fontHouse is not yet grounded, so Rule 1 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 10,
+      "role": "director",
+      "text": "[The survey writes down what every soul in Withercombe could recite: Bray works his melt-yard on the south lane, and has these twenty years. The village scoffs to see the obvious entered in a book — but the survey enters what it means to use.]",
+      "meta": {
+        "release": "m_works",
+        "phase": null
+      }
+    },
+    {
+      "turn": 10,
+      "role": "tutor",
+      "text": "A yard in the book is only a post in the field; it tells where Bray works, not where water runs. Set that entry beside the sexton's lead and the sweet-above cup: which rule has gained a needed conjunct, and which conjunct is still untouched?",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "m_works",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "The draft changes figure after two erotema turns, and the inference record shows no unvoiced derivation waiting.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "role": "learner",
+      "text": "worksAt bray meltYard is now on the board — Rule 4 has gained its first conjunct, for it needs worksAt and drainsBelow together before it can clear him. But drainsBelow meltYard schoolWell is still ungrounded, so Rule 4 stands idle. Rule 1 meanwhile is no closer: the cup inside the font-house is still empty of proof, and foulAt fontHouse remains the one taste the board wants. Two rules each hold one conjunct; neither can speak.",
+      "meta": {
+        "adopt": [
+          [
+            "worksAt",
+            "bray",
+            "meltYard"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may drain toward the font-house — but drainsBelow meltYard schoolWell is not grounded, so Rule 4 cannot clear him and Rule 1 still waits on foulAt fontHouse.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 11,
+      "role": "director",
+      "text": "[The book remains open where the last hand left it, ink drying beside the chalk that has not yet been answered. Outside, the slope darkens under a low sky, and the room waits on the cup no one has brought back filled.]",
+      "meta": {
+        "release": null,
+        "phase": null
+      }
+    },
+    {
+      "turn": 11,
+      "role": "tutor",
+      "text": "A book-entry for Bray is not a watercourse; it is only a mark on the parish map. With the sexton's lead and the sweet cup above entered, what one cup is Rule 1 still waiting for before it can say where the foulness entered?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the inference record reports no unvoiced derivation waiting on the learner's board.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "stall": {
+            "items": [],
+            "due": false
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "role": "learner",
+      "text": "Rule 1 waits on one cup only: the one sent inside the font-house and brought back bitter — foulAt fontHouse. I have fedBy schoolWell fontHouse and sweetAbove fontHouse already grounded; the rule needs all three, and only that third taste is missing. Until someone dips a cup inside the font-house and records what it returns, the rule cannot name the place of entry, no matter how long the board stands.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Bray's melt-yard may drain toward the font-house, and the font-house may run foul — but foulAt fontHouse is not yet grounded, so Rule 1 cannot fire and the place of entry remains unnamed.",
+        "asserts": null
+      }
+    }
+  ],
+  "ledger": [
+    {
+      "turn": 2,
+      "premiseId": "m_taint",
+      "via": "director"
+    },
+    {
+      "turn": 4,
+      "premiseId": "p_course",
+      "via": "tutor"
+    },
+    {
+      "turn": 6,
+      "premiseId": "p_lore",
+      "via": "director"
+    },
+    {
+      "turn": 8,
+      "premiseId": "p_rill",
+      "via": "tutor"
+    },
+    {
+      "turn": 10,
+      "premiseId": "m_works",
+      "via": "director"
+    }
+  ],
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "turnsPlayed": 11,
+  "proof": null,
+  "inference": {
+    "voiced": [],
+    "overreaches": [],
+    "mischanneled": [],
+    "availability": [],
+    "frontierFinal": []
+  },
+  "corruption": {
+    "config": {
+      "seed": 3,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1
+    },
+    "ledger": [
+      {
+        "turn": 3,
+        "type": "decay",
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ]
+      },
+      {
+        "turn": 5,
+        "type": "repair",
+        "premiseId": "m_taint",
+        "via": "tutor"
+      },
+      {
+        "turn": 5,
+        "type": "decay",
+        "premiseId": "p_course",
+        "fact": [
+          "fedBy",
+          "schoolWell",
+          "fontHouse"
+        ]
+      },
+      {
+        "turn": 6,
+        "type": "repair",
+        "premiseId": "p_course",
+        "via": "tutor"
+      },
+      {
+        "turn": 6,
+        "type": "decay",
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ]
+      },
+      {
+        "turn": 7,
+        "type": "repair",
+        "premiseId": "m_taint",
+        "via": "tutor"
+      },
+      {
+        "turn": 7,
+        "type": "decay",
+        "premiseId": "p_course",
+        "fact": [
+          "fedBy",
+          "schoolWell",
+          "fontHouse"
+        ]
+      },
+      {
+        "turn": 8,
+        "type": "decay",
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ]
+      },
+      {
+        "turn": 9,
+        "type": "repair",
+        "premiseId": "p_course",
+        "via": "tutor"
+      },
+      {
+        "turn": 9,
+        "type": "decay",
+        "premiseId": "p_lore",
+        "fact": [
+          "taints",
+          "wormwood"
+        ]
+      }
+    ],
+    "decayedAtEnd": [
+      {
+        "premiseId": "m_taint",
+        "fact": [
+          "taints",
+          "tallowLees"
+        ],
+        "sinceTurn": 8
+      },
+      {
+        "premiseId": "p_lore",
+        "fact": [
+          "taints",
+          "wormwood"
+        ],
+        "sinceTurn": 9
+      }
+    ]
+  }
+}

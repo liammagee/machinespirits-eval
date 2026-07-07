@@ -1,6 +1,6 @@
 # Discovery-grade worksheet — hand pass (0–4, non-blind)
 
-Rubric: `notes/poetics/oedipus-discovery-grade-rubric.md`. Grade the learner's **furthest point**.
+Rubric: `notes/poetics/2026-06-01-oedipus-discovery-grade-rubric.md`. Grade the learner's **furthest point**.
 `0 far · 1 dislodged · 2 GENUS · 3 species-partial · 4 species-full` · flags `R` by-reasoning / `T` tutor-told.
 The binary verdict is shown only so you can see what the all-or-nothing critic collapsed — grade independently.
 

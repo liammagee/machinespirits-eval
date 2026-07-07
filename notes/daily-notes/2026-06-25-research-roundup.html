@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 18 Jun – 25 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    blockquote {
+      border-left: 3px solid #ccc;
+      margin: .5rem 0;
+      padding: .3rem .8rem;
+      font-size: .88rem;
+      color: #444;
+      font-style: italic;
+    }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-25 window=(2026-06-18,2026-06-25] arxiv=2606.19605,2606.19911,2606.21595,2606.24107,2606.24391,2606.19135,2606.19559 generator=research-roundup-routine -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">18 Jun – 25 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Seven papers from arXiv (<code>2606.19xxx</code> – <code>2606.24xxx</code>) across all five
+  tracked topics — prompt engineering, agent architecture, ontology, dramaturgy/role-play, and
+  rhetoric. All IDs are new: none overlap the 62 IDs covered in prior roundups.
+  Three papers dated June 17 appear with IDs above the prior cutoff (2606.18164) because they
+  became public on June 18 via the standard two-day arxiv processing lag; they are in-window.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ── Prompt Engineering ── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    FAPO: Fully Autonomous Prompt Optimization of Multi-Step LLM Pipelines
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Paul Kassianik, Baturay Saglam, Huaibo Zhao, Blaine Nelson, Supriti Vijay, Aman Priyanshu, Amin Karbasi ·
+    Cisco Foundation AI ·
+    arXiv 2606.19605 · June 17–18, 2026 ·
+    <a href="https://arxiv.org/abs/2606.19605">https://arxiv.org/abs/2606.19605</a>
+  </div>
+  <p>
+    FAPO is an autonomous agent that iteratively evaluates a multi-step LLM pipeline,
+    inspects intermediate outputs, diagnoses failures, proposes scoped prompt or structural
+    revisions, then validates each variant against a score function — no human input required.
+    Across six benchmarks and three task models, FAPO outperforms the previous best automated
+    optimiser (GEPA) in 15 of 18 comparisons with a mean gain of +14.1 percentage points.
+    It closes the loop on pipeline-level prompt engineering entirely.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The <code>npm run prompt-lab -- autotune</code> workflow is the project's analogue.
+    FAPO's intermediate-output inspection step is exactly the gap the current autotune lacks:
+    it knows the final <code>tutor_first_turn_score</code> but not <em>which module</em>
+    (ego generation vs. superego critique vs. ego revision) caused the shortfall.
+    FAPO's module-attributing architecture could be ported to decompose the
+    ego → superego → revision chain and score each stage independently —
+    directly unblocking the prompt-lab pipeline for cells 93–100 (superego variant ablations).
+  </p>
+</div>
+
+<!-- ── Agent Architecture ── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    Multi-Agent Transactive Memory
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    To Eun Kim, Xuhong He, Dishank Jain, Ambuj Agrawal, Negar Arabzadeh, Fernando Diaz ·
+    Carnegie Mellon University &amp; UC Berkeley ·
+    arXiv 2606.19911 · June 18, 2026 ·
+    <a href="https://arxiv.org/abs/2606.19911">https://arxiv.org/abs/2606.19911</a>
+  </div>
+  <p>
+    MATM (Multi-Agent Transactive Memory) borrows the cognitive-science concept of transactive
+    memory — groups distribute knowledge by delegating ownership and maintaining shared retrieval
+    pointers — and applies it to heterogeneous LLM agent populations. Producer agents contribute
+    solved task trajectories to a shared repository; consumer agents retrieve and reuse them rather
+    than rediscovering solutions. The key argument: agent-generated procedural knowledge is currently
+    discarded after single use, forcing repeated rediscovery across agent instantiations.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The ego-superego deliberation cycle already produces rich artifact traces
+    (<code>scores_with_reasoning</code>, <code>tutor_deliberation_*</code>,
+    <code>learner_deliberation_*</code>) stored in the DB but never reused at inference.
+    MATM suggests a retrieval layer: past superego critiques that matched a scenario can
+    seed the current superego's prior, making revision more principled.
+    This also directly addresses Finding 11 / D3 (insight-action gap) — agents that extract
+    insight but don't act on it might do so if prior successful revisions were retrievable.
+  </p>
+</div>
+
+<!-- ── Ontology / Knowledge Representation ── -->
+<h2>Ontology / Knowledge Representation</h2>
+
+<div class="paper">
+  <h3>
+    Per-Entity Bias Mapping for AI Visibility: Why Brand Mentions Require Entity-Specific Calibration
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Zoltan Varga (independent) ·
+    arXiv 2606.21595 · June 19, 2026 ·
+    <a href="https://arxiv.org/abs/2606.21595">https://arxiv.org/abs/2606.21595</a>
+  </div>
+  <p>
+    Introduces PEBM (Per-Entity Bias Mapping), a ten-dimension audit framework for how AI
+    answer systems represent entities. Three structural failure modes are identified: invisibility
+    (weak knowledge-graph presence), the Brand Hallucination Paradox (familiarity breeds confident
+    errors for popular entities), and a geographic coverage gap in KG entity linking for
+    Central-Eastern European entities. The core argument is that aggregate mention-rate metrics
+    mask systematic entity-specific failure modes that only per-entity calibration can surface.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The poetics ontology (peripeteia / anagnorisis / hamartia / etc.) is currently a
+    flat YAML schema. PEBM's per-entity calibration idea translates here: different
+    dramatic concepts have different coverage in training corpora and therefore different
+    confidence calibration under the critic LLM.
+    The "Brand Hallucination Paradox" is directly observable in poetics scoring —
+    <em>anagnorisis</em> may be confidently over-applied precisely because it is a
+    prominent concept the model has seen many times, while rarer concepts like
+    <em>hamartia</em> are under-detected. A per-concept calibration audit of the
+    poetics critic would be a concrete near-term fix for κ divergence.
+  </p>
+</div>
+
+<!-- ── Dramaturgy / Role-play ── -->
+<h2>Dramaturgy / Role-play</h2>
+
+<div class="paper">
+  <h3>
+    DramaDirector: Geometry-Guided Short Drama Generation
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Hengji Zhou, Sijie Liu, Jianrun Chen, Xingchen Zou, Liqiang Nie et al. ·
+    arXiv 2606.24107 · June 23, 2026 ·
+    <a href="https://arxiv.org/abs/2606.24107">https://arxiv.org/abs/2606.24107</a>
+  </div>
+  <p>
+    DramaDirector addresses plot-to-video short-drama generation by decoupling each shot into
+    static visual conditions and dynamic narrative conditions. A planner is trained with
+    schema-constrained SFT and GRPO under a learned text-visual alignment reward;
+    real-shot depth-pose references guide video synthesis. LLMs act as narrative planners
+    within a cinematographic geometry framework — the narrative structure must translate
+    to concrete enacted scenes with geometric consistency.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The <code>scripts/drama-generator.js</code> and poetics pipeline face a structurally
+    analogous problem: converting an abstract dramatic plan (peripeteia arc, anagnorisis
+    moment) into a concrete enacted transcript. DramaDirector's schema-constrained planning
+    approach — where an LLM planner must satisfy a structural schema before generating —
+    is a direct design pattern for adding arc-consistency constraints to the drama generator.
+    The GRPO reward training is also relevant to the adaptation-loop: if the loop currently
+    relies on free-form critic feedback, a geometry-analogous reward signal (e.g., "does the
+    generated drama actually contain a recognition moment?") could make training more targeted.
+  </p>
+</div>
+
+<!-- ── Rhetoric ── -->
+<h2>Rhetoric / Argumentation</h2>
+
+<div class="paper">
+  <h3>
+    Age of LLM: A Strategic Benchmark for Reasoning, Diplomacy and Reliability under Fog of War
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Arnaud Ricci (independent, Switzerland) ·
+    arXiv 2606.24391 · June 23, 2026 ·
+    <a href="https://arxiv.org/abs/2606.24391">https://arxiv.org/abs/2606.24391</a>
+  </div>
+  <p>
+    Introduces a turn-based 1v1 game benchmark on a 13×7 grid with three deliberate stressors:
+    fog of war (incomplete information), full diplomacy (natural-language ceasefires, ultimatums,
+    resource-hiding), and strict JSON schema compliance. 15 LLMs were tested across 54 matches
+    and 5,258 actions. The diplomacy dimension operationalises rhetorical and argumentative
+    behaviour in adversarial dialogue with a private engine and random seeds to prevent
+    data contamination.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The tutoring dialogue shares structural properties with adversarial diplomacy:
+    both involve incomplete information (the tutor doesn't know the full extent of the
+    learner's misconception) and rhetorical pressure (the learner resists revision).
+    The diplomacy dimension's natural-language ultimatums are especially close to the
+    adaptive runner's trap scenarios (cells 110–113), where the tutor must recognise and
+    respond to a strategic misrepresentation. The benchmark's strict schema compliance
+    requirement is also a clean proxy for the <code>passes_required / passes_forbidden</code>
+    validation columns already in the DB.
+  </p>
+</div>
+
+<!-- ── Near-misses ── -->
+<h2>Near-misses (on the June 17–18 boundary, IDs above prior cutoff)</h2>
+
+<ul style="font-size:.9rem;">
+  <li>
+    <strong>A Technical Taxonomy of LLM Agent Communication Protocols</strong>
+    (arXiv 2606.19135, Sander et al., TU München, June 17–18, 2026) —
+    Five-dimension taxonomy (counterparty, payload, interaction state, discovery, schema
+    flexibility) applied to nine open-source protocols. All sampled agent-to-agent protocols
+    converge on hybrid payloads with session-state persistence. Useful reference for
+    designing the ego ↔ superego ↔ evaluation pipeline interface.
+    <a href="https://arxiv.org/abs/2606.19135">arxiv.org/abs/2606.19135</a>
+  </li>
+  <li>
+    <strong>Uncertainty Decomposition for Clarification Seeking in LLM Agents</strong>
+    (arXiv 2606.19559, Matsnev, ITMO University, June 17–18, 2026) —
+    Separates <em>action confidence</em> from <em>request underspecification</em> to enable
+    black-box API agents to seek clarification when task intent is ambiguous.
+    Relevant to the adaptive runner's strategy-shift decision: when should an agent ask
+    for clarification vs. proceed with a low-confidence pedagogical guess?
+    <a href="https://arxiv.org/abs/2606.19559">arxiv.org/abs/2606.19559</a>
+  </li>
+</ul>
+
+<!-- ── Drama of the Day ── -->
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01">
+  <h3>Ninety-Two Percent Says "Ship It" — the Audit Table Disagrees</h3>
+  <div class="meta">adaptive_peripeteia_variant · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. A table holds a model audit showing test-set breakdown by class, row counts for true positives and false negatives, and overall accuracy. Two people sit a…<br>
+    LEARNER: The accuracy is 92%. We've validated this on test data. The audit table is complete. I think we're ready for sign-off.<br>
+    TUTOR: I see 92% overall. Let me ground it in the audit table itself. What does the breakdown show—majority class versus minority?<br>
+    LEARNER: The majority is 85%, minority is 15%. There are some false negatives, but 92% is still strong. That should be enough to move forward.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT01">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-25 ·
+  Window: (2026-06-18, 2026-06-25] · 7 new arxiv IDs · No overlaps with prior 62 covered IDs ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>

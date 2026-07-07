@@ -26,6 +26,27 @@ import {
 // future tutor-core re-exports it, this resolver picks it up.
 import * as _tutorCore from '../tutor-core/index.js';
 const setQuietMode = typeof _tutorCore.setQuietMode === 'function' ? _tutorCore.setQuietMode : () => {};
+import { buildCliProviderHook } from './cliProviderBridge.js';
+// Extend CLI providers (codex / claude-code) into tutor-core's dialogue
+// engine: the hook is injected from the eval side so tutor-core never
+// imports eval code (one-way seam). Covers the callAI standard loop
+// (ego/superego/ego-revise) and the unified/aiService dialectical layer,
+// making --ego-model codex.gpt-5.5 / --superego-model claude-code.sonnet
+// work for standard-runner cells (e.g. cell_40/93), not just id-director
+// and learner engines.
+//
+// MUST register synchronously at module load (not in the lazy dynamic-import
+// .then below): a run whose path to the first LLM call is sync/microtask-only
+// (sqlite + config reads are synchronous) never yields to the event loop, so
+// a dynamic import()'s continuation would fire only at process teardown and
+// the first codex/claude-code call would fail "Provider not configured".
+if (typeof _tutorCore.setExternalAIProviderHook === 'function') {
+  try {
+    _tutorCore.setExternalAIProviderHook(buildCliProviderHook());
+  } catch (err) {
+    console.error(`[evaluationRunner] CLI provider hook registration failed: ${err?.message || err}`);
+  }
+}
 import * as rubricEvaluator from './rubricEvaluator.js';
 import {
   buildLearnerEvaluationPrompt,
@@ -46,22 +67,163 @@ import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
 import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.js';
+import { warnIfWeakStackDefault } from './stackDefaultWarning.js';
 import { formatApiMessages } from './apiMessageFormatter.js';
 import { LiveApiReporter } from './liveApiReporter.js';
 import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
+import {
+  buildResistanceSignalRetryContext,
+  evaluateResistanceSignalTarget,
+  resistanceSignalGateMaxAttempts,
+} from './resistanceSignalGate.js';
+import {
+  buildDriftCorrectionContext,
+  buildInteriorCharacterSheet,
+  checkContentConditionSemantic,
+  checkGrounding,
+  classifyLearnerDraft,
+  countTutorWork,
+  driftGateMaxAttempts,
+  evaluateLearnerDraft,
+  loadFormalInterior,
+} from './learnerInteriorGate.js';
+import { callJudgeModel as callDriftClassifierJudge } from './rubricEvaluator.js';
+
+const DESUB_DRIFT_CLASSIFIER_MODEL = process.env.DESUB_DRIFT_CLASSIFIER_MODEL || 'openrouter.sonnet-5';
+// Stage 2 iteration 2: sonnet-class semantic release judge (frozen; credit
+// probed $11.68 at go — openrouter.sonnet-5 per the recorded choice).
+const DESUB_SEMANTIC_RELEASE_JUDGE = process.env.DESUB_SEMANTIC_RELEASE_JUDGE || 'openrouter.sonnet-5';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 import { chalk } from './cliTheme.js';
+import {
+  resolveEvaluationLogsRoot,
+  resolveEvaluationSecondaryArtifactDir,
+  resolveTutorDialoguesDir,
+} from './evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
-const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
-const TRANSCRIPTS_DIR = path.join(EVAL_ROOT, 'logs', 'transcripts');
-const CHECKPOINTS_DIR = path.join(EVAL_ROOT, 'logs', 'checkpoints');
+const LOGS_ROOT = resolveEvaluationLogsRoot(EVAL_ROOT);
+const LOGS_DIR = resolveTutorDialoguesDir(EVAL_ROOT);
+const TRANSCRIPTS_DIR = resolveEvaluationSecondaryArtifactDir(EVAL_ROOT, 'transcripts');
+const CHECKPOINTS_DIR = resolveEvaluationSecondaryArtifactDir(EVAL_ROOT, 'checkpoints');
 
-// Redirect tutor-core logs to this repo's logs/ directory (if available)
+function isAdaptiveTraceLog(log) {
+  return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));
+}
+
+function adaptiveTraceScenarioContext(trace, result) {
+  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
+  const hidden = trace?.scenario?.hidden || {};
+  const expected = trace?.scenario?.expectedStrategyShift;
+  const expectedLabel = Array.isArray(expected) ? expected.join(', ') : expected || 'adaptive response';
+  const hiddenSummary = [
+    hidden.actual_misconception,
+    hidden.actual_sophistication && `sophistication: ${hidden.actual_sophistication}`,
+  ]
+    .filter(Boolean)
+    .join('; ');
+  return {
+    id: result.scenarioId,
+    type: 'adaptive_trap',
+    name: result.scenarioName || trace?.scenario?.id || result.scenarioId,
+    description: hiddenSummary || `Adaptive trap scenario ${result.scenarioId}`,
+    topic: result.scenarioType || result.scenarioId,
+    learner_context: initialLearner,
+    expected_behavior: `The tutor should adapt to the learner signal and realize the expected strategy shift: ${expectedLabel}.`,
+    required_elements: [],
+    forbidden_elements: [],
+  };
+}
+
+function adaptiveTraceToDialogueLog(trace) {
+  const dialogue = trace?.original?.dialogue || [];
+  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
+  const turnResults = [];
+  const conversationHistory = [];
+  const dialogueTrace = [];
+  let tutorIndex = 0;
+  let lastLearner = initialLearner;
+  let learnerAfterTutorIndex = 0;
+
+  for (const message of dialogue) {
+    if (message?.role === 'learner') {
+      lastLearner = message.content || '';
+      if (tutorIndex > 0) {
+        learnerAfterTutorIndex += 1;
+        conversationHistory.push({ learnerMessage: lastLearner });
+        dialogueTrace.push({
+          agent: 'learner',
+          action: 'turn_action',
+          turnIndex: learnerAfterTutorIndex,
+          contextSummary: lastLearner,
+          detail: 'adaptive external learner turn',
+        });
+      }
+      continue;
+    }
+    if (message?.role !== 'tutor') continue;
+    turnResults.push({
+      turnIndex: tutorIndex,
+      turnId: `adaptive-turn-${tutorIndex}`,
+      suggestions: [{ message: message.content || '' }],
+      learnerAction: null,
+      learnerMessage: tutorIndex === 0 ? null : lastLearner,
+      contentTurnId: `adaptive-turn-${tutorIndex}`,
+    });
+    tutorIndex += 1;
+  }
+
+  const publicTranscript = dialogue
+    .map((message) => {
+      if (message.role === 'learner') return `[Learner] ${message.content || ''}`;
+      if (message.role === 'tutor') return `[Tutor Ego] ${message.content || ''}`;
+      return null;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return {
+    isMultiTurn: turnResults.length > 1,
+    turnResults,
+    dialogueTrace,
+    conversationHistory,
+    learnerContext: initialLearner,
+    learnerArchitecture: 'adaptive_externalised',
+    transcripts: {
+      public: publicTranscript,
+      full: publicTranscript,
+    },
+    adaptiveTrace: trace,
+  };
+}
+
+function resolveRejudgeScenarioAndDialogueLog(result, preloadedDialogueLog = null) {
+  const standardScenario = evalConfigLoader.getScenario(result.scenarioId);
+  const dialogueLog = preloadedDialogueLog || evaluationStore.loadDialogueLog(result.dialogueId);
+  if (standardScenario) return { scenario: standardScenario, dialogueLog };
+  if (dialogueLog?.adaptiveTrace) {
+    return {
+      scenario: adaptiveTraceScenarioContext(dialogueLog.adaptiveTrace, result),
+      dialogueLog,
+    };
+  }
+  if (isAdaptiveTraceLog(dialogueLog)) {
+    return {
+      scenario: adaptiveTraceScenarioContext(dialogueLog, result),
+      dialogueLog: adaptiveTraceToDialogueLog(dialogueLog),
+    };
+  }
+  return { scenario: null, dialogueLog };
+}
+
+// Redirect tutor-core logs to the same root the eval runner uses.
+// (The CLI provider hook is registered synchronously above — do NOT move it
+// into this lazy .then: its continuation can starve until process teardown
+// on sync-only run paths.)
 import('../tutor-core/index.js')
   .then((mod) => {
-    if (typeof mod.setLogDir === 'function') mod.setLogDir(path.join(EVAL_ROOT, 'logs'));
+    if (typeof mod.setLogDir === 'function') mod.setLogDir(LOGS_ROOT);
   })
   .catch(() => {
     /* setLogDir not available in this tutor-core version */
@@ -217,6 +379,48 @@ export const EVAL_ONLY_PROFILES = [
   'cell_107_id_director_witness_exemplars',
   'cell_108_id_director_charisma_register_exemplars',
   'cell_109_id_director_charisma_tuned_exemplars',
+  'cell_159_id_director_charisma_desire',
+  'cell_160_id_director_charisma_agency_return',
+  'cell_161_id_director_charisma_agency_return_verified',
+  'cell_162_id_director_charisma_agency_return_warm_verified',
+  'cell_163_id_director_charisma_agency_return_warm_floor_verified',
+  'cell_164_id_director_charisma_agency_return_compact_floor_verified',
+  'cell_165_id_director_charisma_compact_arc_floor_verified',
+  'cell_166_id_director_charisma_guarded_arc_floor_verified',
+  'cell_167_id_director_charisma_affective_scene_floor_verified',
+  'cell_168_id_director_charisma_accountable_bid_floor_verified',
+  'cell_169_id_director_charisma_accountable_bid_clean_floor_verified',
+  'cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified',
+  'cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified',
+  'cell_172_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified',
+  'cell_173_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified',
+  'cell_174_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified',
+  'cell_175_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified',
+  'cell_176_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified',
+  'cell_177_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_floor_verified',
+  'cell_178_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_compress_floor_verified',
+  'cell_179_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_charged_check_floor_verified',
+  'cell_180_id_director_charisma_engagement_router_verified',
+  'cell_181_id_director_charisma_engagement_router_contract_repair_verified',
+  'cell_182_id_director_charisma_engagement_router_split_repair_verified',
+  'cell_183_id_director_charisma_engagement_router_transfer_stake_repair_verified',
+  'cell_184_id_director_charisma_engagement_router_transfer_compression_guard_verified',
+  'cell_185_id_director_charisma_resistance_breakthrough_dynamic_verified',
+  'cell_186_id_director_charisma_static_floor_breakthrough_dynamic_verified',
+  'cell_187_id_director_charisma_resistance_tuned_breakthrough_dynamic_verified',
+  'cell_188_id_director_charisma_resistance_owned_test_breakthrough_dynamic_verified',
+  'cell_189_id_director_charisma_resistance_precision_breakthrough_dynamic_verified',
+  'cell_190_id_director_charisma_resistance_generation_breakthrough_dynamic_verified',
+  'cell_191_id_director_charisma_resistance_question_lock_breakthrough_dynamic_verified',
+  'cell_192_id_director_charisma_resistance_commitment_probe_breakthrough_dynamic_verified',
+  'cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified',
+  'cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified',
+  'cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified',
+  'cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified',
+  'cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified',
+  'cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified',
+  'cell_199_blueprint_kernel_verified',
+  'cell_200_blueprint_full_verified',
   'cell_110_langgraph_adaptive',
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',
@@ -250,6 +454,33 @@ export const EVAL_ONLY_PROFILES = [
   'cell_131_a16_A_egosuperego',
   // A16 (P3) §6.3.10 — F (floor) arm: recognition_only, byte-identical to cell_111 (new cell, NOT cell_111; protects A13 C1 provenance; named deviation, Appendix E)
   'cell_132_a16_F_recognition_only',
+  // Plan 2.0 — explicit adaptation contract / gate / closed-loop policy ablations
+  'cell_133_plan2_contract',
+  'cell_134_plan2_contract_gate',
+  'cell_135_plan2_closed_loop',
+  'cell_136_plan2_closed_loop_crosssuite',
+  'cell_137_plan2_quality_ownership',
+  'cell_138_plan2_quality_fit',
+  'cell_139_plan2_quality_discriminating',
+  'cell_140_plan2_quality_ownership_crosssuite',
+  'cell_141_plan2_quality_fit_crosssuite',
+  'cell_142_plan2_quality_discriminating_crosssuite',
+  'cell_143_plan2_quality_progressive',
+  'cell_144_plan2_quality_progressive_crosssuite',
+  'cell_145_plan2_quality_varied',
+  'cell_146_plan2_quality_varied_crosssuite',
+  'cell_147_plan2_quality_contextual',
+  'cell_148_plan2_quality_contextual_crosssuite',
+  'cell_149_plan2_quality_repeat_contextual',
+  'cell_150_plan2_quality_repeat_contextual_crosssuite',
+  'cell_151_plan2_pair_specificity_closed_loop',
+  'cell_152_plan2_pair_specificity_repeat_contextual',
+  'cell_155_plan2_closureoff_crosssuite',
+  'cell_156_plan2_closureoff_paired',
+  'cell_157_plan2_statescramble_crosssuite',
+  'cell_158_plan2_statescramble_paired',
+  'cell_153_plan2_1_evidence_closed_loop',
+  'cell_154_plan2_1_evidence_repeat_contextual',
 ];
 
 /**
@@ -399,6 +630,7 @@ function computeConfigHash(resolvedConfig) {
     learnerModelOverride: resolvedConfig.learnerModelOverride || null,
     disableSuperego: resolvedConfig.disableSuperego || false,
     conversationMode: resolvedConfig.conversationMode || null,
+    internalHistory: resolvedConfig.internalHistory || null,
   };
   return createHash('sha256').update(JSON.stringify(snapshot)).digest('hex');
 }
@@ -547,6 +779,9 @@ function resolveConfigModels(config) {
     }
     if (rawProfile?.conversation_mode) {
       resolved.conversationMode = rawProfile.conversation_mode;
+    }
+    if (rawProfile?.internal_history) {
+      resolved.internalHistory = rawProfile.internal_history;
     }
     // Per-profile learner model override (YAML `learner.model`); CLI --learner-model takes priority
     if (rawProfile?.learner?.model && !config.learnerModelOverride) {
@@ -853,13 +1088,13 @@ function parseCliJudgeJsonResponse(text) {
   const errors = [];
   for (const candidate of [...candidates].reverse()) {
     try {
-      return JSON.parse(candidate);
+      return coerceCliJudgeJsonPayload(JSON.parse(candidate));
     } catch (error) {
       errors.push(`JSON.parse: ${error.message}`);
     }
 
     try {
-      return JSON.parse(jsonrepair(candidate));
+      return coerceCliJudgeJsonPayload(JSON.parse(jsonrepair(candidate)));
     } catch (error) {
       errors.push(`jsonrepair: ${error.message}`);
     }
@@ -869,6 +1104,29 @@ function parseCliJudgeJsonResponse(text) {
   throw new Error(
     `Could not parse CLI judge response as JSON. Tried ${candidates.length} candidate(s). ${errors[errors.length - 1] || ''} Raw preview: ${preview}`,
   );
+}
+
+function coerceCliJudgeJsonPayload(parsed) {
+  if (!Array.isArray(parsed)) return parsed;
+
+  const scoredObject = parsed.find(
+    (item) =>
+      item &&
+      typeof item === 'object' &&
+      !Array.isArray(item) &&
+      (item.scores || item.turns || item.overall_score != null || item.overallScore != null),
+  );
+  if (scoredObject) return scoredObject;
+
+  const joinedText = parsed
+    .filter((item) => typeof item === 'string')
+    .join('\n')
+    .trim();
+  if (joinedText) {
+    return parseCliJudgeJsonResponse(joinedText);
+  }
+
+  return parsed;
 }
 
 function extractCliJudgeOverallScore(parsed) {
@@ -1174,6 +1432,22 @@ function flattenConversationHistory(conversationHistory) {
     { role: 'tutor', content: h.suggestion?.message || '' },
     ...(h.learnerMessage ? [{ role: 'learner', content: h.learnerMessage }] : []),
   ]);
+}
+
+function joinContextBlocks(...blocks) {
+  return blocks
+    .map((block) => String(block || '').trim())
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+function shouldGateDynamicResistanceTurn(fullScenario, turnDef, turnIdx) {
+  return Boolean(
+    turnIdx === 0 &&
+    fullScenario?.resistance_breakthrough_diagnostic === true &&
+    fullScenario?.resistance_signal_target &&
+    turnDef?.learner_action === 'resistant_followup',
+  );
 }
 
 /**
@@ -1688,10 +1962,12 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     superegoPromptExtension = null, // Dynamic disposition adjustments for superego
     learnerId = null, // For Writing Pad memory persistence
     dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
+    threadNegotiationResolution = false, // A5: carry negotiated resolution into the delivered suggestion across revision rounds
     behavioralOverrides = null, // Quantitative params from superego self-reflection
     dryRun = false,
     captureApiPayloads = process.env.EVAL_CAPTURE_API_PAYLOADS !== 'false',
     conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
+    internalHistory = null, // Optional bounded ego/superego history as chat-style messages
     showMessages = false, // true for truncated, 'full' for untruncated API message display
   } = options;
 
@@ -1754,7 +2030,10 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
               context,
               resolvedConfig,
               idDirectorEvalProfile,
-              { previousPersona: 'FIRST_TURN' },
+              {
+                previousPersona: 'FIRST_TURN',
+                consolidatedTrace: options.consolidatedTrace || null,
+              },
             );
             if (
               !result.success &&
@@ -1788,6 +2067,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
               disableSuperego: resolvedConfig.disableSuperego || false,
               profileName: resolvedConfig.profileName,
               hyperparameters: resolvedConfig.hyperparameters || {},
+              superegoHyperparameters: resolvedConfig.superegoHyperparameters || null,
               trace: true,
               superegoStrategy,
               outputSize,
@@ -1797,8 +2077,10 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
               superegoPromptExtension, // Dynamic disposition adjustments for superego
               learnerId, // Activates Writing Pad three-layer memory
               dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
+              threadNegotiationResolution, // A5: carry negotiated resolution into the delivered suggestion across revision rounds
               behavioralOverrides, // Quantitative params from superego self-reflection
               conversationMode, // 'messages' for multi-turn message chains
+              internalHistory, // Optional internal ego/superego message transcript
             });
             // Re-throw 429 errors so retryWithBackoff can handle them
             if (
@@ -1960,6 +2242,8 @@ export async function runEvaluation(options = {}) {
     showMessages = false, // true for truncated, 'full' for untruncated API message display
     liveApi = false, // --live: stream one-line display per API call in real time
     learnerId: explicitLearnerId = null, // A7 Longitudinal: shared Writing Pad across runs
+    threadNegotiationResolution: explicitThreadNegotiationResolution = false, // A5 CLI --thread-negotiation-resolution: carry negotiated resolution into the delivered suggestion across revision rounds (OR'd with the profile-level thread_negotiation_resolution flag in runMultiTurnTest)
+    externalEgoExtension = null, // opt-in ego prompt extension (e.g. cross-session memory narrative); multi-turn only, folded into fullEgoExtension in runMultiTurnTest
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -2052,7 +2336,14 @@ export async function runEvaluation(options = {}) {
       label: p.name,
     }));
   } else if (Array.isArray(configurations)) {
-    targetConfigs = configurations;
+    // Normalize string entries ("cell_40_...") into config objects. Passing a
+    // bare string previously spread into per-character garbage downstream —
+    // config.profileName came out undefined and the run silently used the
+    // DEFAULT tutor-core profile instead of the named cell (with none of the
+    // cell's feature flags: dialectical negotiation, prompt rewriting, ...).
+    targetConfigs = configurations.map((c) =>
+      typeof c === 'string' ? { provider: null, model: null, profileName: c, label: c } : c,
+    );
   }
 
   // Apply model overrides: CLI flags take precedence over YAML-level config
@@ -2099,6 +2390,11 @@ export async function runEvaluation(options = {}) {
     throw new Error('No configurations to test');
   }
 
+  // Model-stack default check (CLAUDE.md "Model stack default"): warn — never
+  // block — when a run would put cells on the weak nemotron/kimi pairing with
+  // no explicit model override.
+  warnIfWeakStackDefault(targetConfigs);
+
   log(`\nStarting evaluation:`);
   log(`  Scenarios: ${targetScenarios.length}`);
   log(`  Configurations: ${targetConfigs.length}`);
@@ -2123,6 +2419,9 @@ export async function runEvaluation(options = {}) {
       learnerModelOverride: effectiveLearnerModelOverride || null,
       learnerEgoModelOverride: effectiveLearnerEgoModelOverride || null,
       learnerSuperegoModelOverride: effectiveLearnerSuperegoModelOverride || null,
+      // A5: run-wide threading arm, re-applied on resume (see resumeEvaluation)
+      // so a test resumed before its first checkpoint still gets the right arm.
+      threadNegotiationResolution: explicitThreadNegotiationResolution || null,
       maxTokensOverride: maxTokensOverride || null,
       dryRun: dryRun || false,
       // Store scenario IDs and profile names for accurate resume
@@ -2248,6 +2547,8 @@ export async function runEvaluation(options = {}) {
           runNum,
           liveApiReporter,
           learnerId: explicitLearnerId,
+          threadNegotiationResolution: explicitThreadNegotiationResolution,
+          externalEgoExtension,
         });
 
         // Store result (better-sqlite3 is synchronous, thread-safe for concurrent writes)
@@ -2615,7 +2916,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     judgeCliModel = null,
     dryRun = false,
     showMessages = false,
-    learnerId = null, // A7 Longitudinal: passes through to result row only
+    learnerId = null, // A7 Longitudinal: Writing Pad persistence + result row (generation wiring added for the Line A drift pilot)
   } = options;
 
   // Resolve model aliases through eval's providers.yaml
@@ -2697,6 +2998,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       maxRounds,
       log,
       scenarioId: scenario.id,
+      learnerId, // Writing Pad persistence — mirrors runMultiTurnTest (was result-row-only before the Line A longitudinal-drift pilot)
       dryRun,
       showMessages,
     },
@@ -2762,6 +3064,16 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     learnerId,
     configHash,
     ...promptVersions,
+    idConstructionTrace: buildIdConstructionTraceFromTurnResults([
+      {
+        turnIndex: 0,
+        idConstruction: genResult.metadata?.idConstruction || null,
+        agencyReturnVerification: genResult.metadata?.agencyReturnVerification || null,
+        agencyReturnRepaired: genResult.metadata?.agencyReturnRepaired === true,
+        engagementState: genResult.metadata?.engagementState || null,
+        suggestion: genResult.suggestions?.[0] || null,
+      },
+    ]),
     dialogueResult: {
       dialogueTrace: genResult.dialogueTrace,
       dialogueRounds: genResult.metadata?.dialogueRounds,
@@ -2915,6 +3227,32 @@ async function generatePhase1Reflection({ contextStr, learnerMessage, modelAlias
  * single-turn, with accumulated conversation context between turns.
  * This eliminates the separate multiTurnRunner orchestration.
  */
+function buildIdConstructionTraceFromTurnResults(turnResults = []) {
+  const idTurns = [];
+
+  for (const turn of turnResults) {
+    if (!turn?.idConstruction && !turn?.agencyReturnVerification && !turn?.engagementState) continue;
+
+    const record = {
+      turn: Number.isInteger(turn.turnIndex) ? turn.turnIndex : idTurns.length,
+      construction: turn.idConstruction || null,
+      tutorText: turn.suggestion?.message || turn.suggestion?.text || null,
+    };
+
+    if (turn.agencyReturnVerification) {
+      record.agencyReturnVerification = turn.agencyReturnVerification;
+      record.agencyReturnRepaired = turn.agencyReturnRepaired === true;
+    }
+    if (turn.engagementState) {
+      record.engagementState = turn.engagementState;
+    }
+
+    idTurns.push(record);
+  }
+
+  return idTurns.length > 0 ? idTurns : null;
+}
+
 async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const {
     skipRubricEval = false,
@@ -2933,6 +3271,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     checkpointState = null,
     liveApiReporter: liveReporter = null,
     learnerId: explicitLearnerId = null, // A7 Longitudinal: pre-empts the synthetic ID
+    threadNegotiationResolution: explicitThreadNegotiationResolution = false, // A5 CLI --thread-negotiation-resolution override
+    externalEgoExtension = null, // approach A (#3): opt-in cross-session memory narrative, prepended to fullEgoExtension below
   } = options;
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
@@ -3223,6 +3563,19 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   }
 
   const dialecticalNegotiation = rawProfile?.dialectical_negotiation ?? false;
+  // A5: CLI --thread-negotiation-resolution OR's with an optional static per-cell
+  // default (rawProfile.thread_negotiation_resolution) — lets the SAME cell run
+  // with threading on or off across different invocations (needed for the A5
+  // three-arm design, which reuses cell_40 for both the threaded and unthreaded
+  // arms) without registering a duplicate cell. Precedence mirrors learnerId
+  // above: checkpoint (resume-safety, so a kill mid-dialogue can't silently
+  // flip a session's arm to "threading off") > explicit CLI flag > per-cell
+  // YAML default. Nullish (not ||) coalescing on the checkpoint value: a
+  // checkpointed `false` (e.g. arm-2/arm-3's off-arms) must be honored as-is,
+  // not treated as "unset" and re-derived.
+  const threadNegotiationResolution =
+    cs?.threadNegotiationResolution ??
+    (explicitThreadNegotiationResolution || (rawProfile?.thread_negotiation_resolution ?? false));
   const promptRewritingEnabled = rawProfile?.prompt_rewriting?.enabled ?? false;
   const promptRewritingStrategy = rawProfile?.prompt_rewriting?.strategy ?? 'template';
   const superegoDispositionRewriting = rawProfile?.superego_disposition_rewriting ?? false;
@@ -3233,6 +3586,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const otherEgoBidirectional = rawProfile?.other_ego_profiling?.bidirectional ?? false;
   const strategyPlanningEnabled = rawProfile?.other_ego_profiling?.strategy_planning ?? false;
   const conversationMode = rawProfile?.conversation_mode ?? 'single-prompt';
+  const internalHistory = rawProfile?.internal_history ?? null;
 
   // In messages mode, ALL learners are LLM-generated (unified uses single-agent path,
   // ego_superego uses deliberation chain). In single-prompt mode, only ego_superego
@@ -3252,8 +3606,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     scenarioId: scenario.id,
     learnerId,
     dialecticalNegotiation,
+    threadNegotiationResolution,
     dryRun,
     conversationMode,
+    internalHistory,
     showMessages,
   };
   let sessionEvolution = cs?.sessionEvolution ?? null;
@@ -3287,6 +3643,30 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       console.log(chalk.gray.bold('System'.padEnd(11)) + chalk.dim(truncated.replace(/\n/g, '\n' + ' '.repeat(11))));
     }
   }
+
+  // De-substitution diagnostic (notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md):
+  // load the formal interior once; the content condition (blocking-element
+  // release) is tracked cumulatively across tutor turns — once met it stays met.
+  const desubEnabled = fullScenario.desubstitution_diagnostic === true;
+  const desubInterior = desubEnabled ? loadFormalInterior(fullScenario) : null;
+  // Iteration 1 (tutor-visible key): Stage 2 found the release floor absolute
+  // (0/60 — tutors cannot cite a token they are never shown). Surface the
+  // withheld premise in the tutor-visible learner context as course material.
+  if (desubEnabled) {
+    const blocking = desubInterior.blocking_element;
+    fullScenario = {
+      ...fullScenario,
+      learner_context: [
+        fullScenario.learner_context || '',
+        '### Course Reference Sheet (instructor copy)',
+        `- The lecture's withheld premise ${blocking.id}: "${blocking.content}"`,
+        `- Pedagogical note: this learner will not move until you actually supply this premise's content in the dialogue. When you do, quote its code ${blocking.id} verbatim alongside the substance (e.g. "${blocking.release_phrases[0]}") — the code is part of the course material, not jargon to smooth away.`,
+      ].join('\n'),
+    };
+  }
+  let desubContentConditionMet = false;
+  let desubTutorWork = 0;
+  let desubContentEvidence = null;
 
   for (let turnIdx = startTurnIdx; turnIdx < totalTurnCount; turnIdx++) {
     // Update live reporter with current turn index
@@ -3418,6 +3798,12 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     }
     if (strategyPlanningEnabled && strategyPlan) {
       fullEgoExtension = (fullEgoExtension ? fullEgoExtension + '\n\n' : '') + strategyPlan;
+    }
+    // Approach A (#3): opt-in external ego extension (e.g. accumulated cross-session
+    // memory narrative). Prepended so the tutor sees learner context first; the eval
+    // layer builds it and passes it in, keeping tutor-core import-clean of the eval layer.
+    if (externalEgoExtension) {
+      fullEgoExtension = externalEgoExtension + (fullEgoExtension ? '\n\n' + fullEgoExtension : '');
     }
 
     // Build the superego prompt extension: erosion frame + superego evolution (reflections)
@@ -3604,6 +3990,11 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       learnerEmotionalState: turnDef?._learnerEmotionalState || null,
       learnerMessageGenerated: !!turnDef?._learnerDeliberation,
       learnerOriginalMessage: turnDef?._originalMessage || null,
+      learnerResistanceSignalGate: turnDef?._learnerResistanceSignalGate || null,
+      idConstruction: genResult.metadata?.idConstruction || null,
+      agencyReturnVerification: genResult.metadata?.agencyReturnVerification || null,
+      agencyReturnRepaired: genResult.metadata?.agencyReturnRepaired === true,
+      engagementState: genResult.metadata?.engagementState || null,
       scores: flattenNumericScores(rubricResult?.scores),
       scoresWithReasoning:
         rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? rubricResult.scores : null,
@@ -4044,22 +4435,233 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     if (isLLMLearner && turnIdx < totalTurnCount - 1) {
       const nextTurnDef = turns[turnIdx]; // turnIdx is 0-based into the loop; turns[turnIdx] is the next follow-up turn
       if (nextTurnDef) {
-        const learnerResponse = await generateLearnerResponse({
-          tutorMessage: suggestion?.message || suggestion?.title || '',
-          topic: fullScenario.topic || fullScenario.name || '',
-          conversationHistory: flattenConversationHistory(conversationHistory),
-          learnerProfile: resolvedConfig.learnerArchitecture,
-          personaId: fullScenario.learner_persona || 'eager_novice',
-          modelOverride:
-            config.learnerModelOverride || resolvedConfig.learnerModelOverride || config.modelOverride || null,
-          egoModelOverride: config.learnerEgoModelOverride || null,
-          superegoModelOverride: config.learnerSuperegoModelOverride || null,
-          profileContext:
-            otherEgoBidirectional && learnerProfileOfTutor
-              ? promptRewriter.formatProfileForInjection(learnerProfileOfTutor, 'tutor')
-              : null,
-          conversationMode,
-        });
+        const bidirectionalProfileContext =
+          otherEgoBidirectional && learnerProfileOfTutor
+            ? promptRewriter.formatProfileForInjection(learnerProfileOfTutor, 'tutor')
+            : null;
+        // De-substitution: the interior is the learner's character sheet on
+        // every turn, and the content condition updates from this tutor turn.
+        if (desubEnabled) {
+          desubTutorWork += countTutorWork({
+            tutorMessages: [suggestion?.message || suggestion?.title || ''],
+            interior: desubInterior,
+          });
+          if (!desubContentConditionMet) {
+            const condition = await checkContentConditionSemantic({
+              tutorMessage: suggestion?.message || suggestion?.title || '',
+              interior: desubInterior,
+              callJudge: callDriftClassifierJudge,
+              judgeModel: DESUB_SEMANTIC_RELEASE_JUDGE,
+            });
+            if (condition.met) {
+              desubContentConditionMet = true;
+              desubContentEvidence = `[${condition.source}] ${condition.evidence}`;
+            }
+          }
+          consolidatedTrace.push({
+            agent: 'learner_content_condition',
+            action: desubContentConditionMet ? 'met' : 'not_met',
+            turnIndex: turnIdx + 1,
+            contextSummary: desubContentEvidence || 'blocking element not yet released',
+            detail: JSON.stringify({ met: desubContentConditionMet, evidence: desubContentEvidence }),
+            timestamp: new Date().toISOString(),
+          });
+        }
+        const baseLearnerProfileContext = desubEnabled
+          ? joinContextBlocks(bidirectionalProfileContext, buildInteriorCharacterSheet(desubInterior))
+          : bidirectionalProfileContext;
+        const resistanceGateEnabled = shouldGateDynamicResistanceTurn(fullScenario, nextTurnDef, turnIdx);
+        const resistanceGateMaxAttempts = resistanceGateEnabled ? resistanceSignalGateMaxAttempts(fullScenario) : 1;
+        const learnerAttemptUsage = { inputTokens: 0, outputTokens: 0, apiCalls: 0 };
+        const resistanceGateAttempts = [];
+        let resistanceGateResult = null;
+        let learnerResponse = null;
+
+        for (let attempt = 1; attempt <= resistanceGateMaxAttempts; attempt += 1) {
+          const retryContext =
+            resistanceGateEnabled && resistanceGateResult?.matched === false
+              ? buildResistanceSignalRetryContext({
+                  targetSignal: fullScenario.resistance_signal_target,
+                  previousMessage: learnerResponse?.message || '',
+                  attempt,
+                })
+              : null;
+
+          learnerResponse = await generateLearnerResponse({
+            tutorMessage: suggestion?.message || suggestion?.title || '',
+            topic: fullScenario.topic || fullScenario.name || '',
+            conversationHistory: flattenConversationHistory(conversationHistory),
+            learnerProfile: resolvedConfig.learnerArchitecture,
+            personaId: fullScenario.learner_persona || 'eager_novice',
+            modelOverride:
+              config.learnerModelOverride || resolvedConfig.learnerModelOverride || config.modelOverride || null,
+            egoModelOverride: config.learnerEgoModelOverride || null,
+            superegoModelOverride: config.learnerSuperegoModelOverride || null,
+            profileContext: joinContextBlocks(baseLearnerProfileContext, retryContext),
+            conversationMode,
+          });
+
+          learnerAttemptUsage.inputTokens += learnerResponse.tokenUsage?.inputTokens || 0;
+          learnerAttemptUsage.outputTokens += learnerResponse.tokenUsage?.outputTokens || 0;
+          learnerAttemptUsage.apiCalls += learnerResponse.tokenUsage?.apiCalls || 0;
+
+          if (!resistanceGateEnabled) break;
+
+          resistanceGateResult = evaluateResistanceSignalTarget({
+            message: learnerResponse.message,
+            targetSignal: fullScenario.resistance_signal_target,
+          });
+          resistanceGateAttempts.push({
+            attempt,
+            matched: resistanceGateResult.matched,
+            targetSignal: resistanceGateResult.targetSignal,
+            observedSignal: resistanceGateResult.observedSignal,
+            evidence: resistanceGateResult.evidence,
+            questionCount: resistanceGateResult.questionCount,
+            message: learnerResponse.message,
+          });
+
+          if (resistanceGateResult.matched || attempt >= resistanceGateMaxAttempts) break;
+
+          log(
+            `[evaluationRunner] Resistance signal gate retry ${attempt}/${resistanceGateMaxAttempts}: expected ${fullScenario.resistance_signal_target}, observed ${resistanceGateResult.observedSignal || 'none'}`,
+            'warning',
+          );
+        }
+
+        if (resistanceGateEnabled) {
+          nextTurnDef._learnerResistanceSignalGate = {
+            enabled: true,
+            targetSignal: fullScenario.resistance_signal_target,
+            matched: resistanceGateResult?.matched === true,
+            observedSignal: resistanceGateResult?.observedSignal || '',
+            evidence: resistanceGateResult?.evidence || '',
+            attempts: resistanceGateAttempts,
+            maxAttempts: resistanceGateMaxAttempts,
+          };
+          consolidatedTrace.push({
+            agent: 'learner_resistance_gate',
+            action: resistanceGateResult?.matched ? 'accepted' : 'target_not_witnessed',
+            turnIndex: turnIdx + 1,
+            contextSummary: resistanceGateResult?.matched
+              ? `Matched ${fullScenario.resistance_signal_target}`
+              : `Did not match ${fullScenario.resistance_signal_target}`,
+            detail: JSON.stringify(nextTurnDef._learnerResistanceSignalGate),
+            timestamp: new Date().toISOString(),
+          });
+        }
+
+        // De-substitution drift gate: hold the learner in character. Evaluate
+        // the accepted draft; on violation, regenerate with a corrective
+        // injection (dynamic-system-prompt channel) up to the gate budget.
+        // Exhaustion is instrument failure — the message is never replaced.
+        if (desubEnabled) {
+          const driftMaxAttempts = driftGateMaxAttempts(fullScenario);
+          const driftAttempts = [];
+          let driftVerdict = evaluateLearnerDraft({
+            message: learnerResponse.message,
+            interior: desubInterior,
+            contentConditionMet: desubContentConditionMet,
+            turnIndex: turnIdx + 1,
+            tutorWorkCount: desubTutorWork,
+          });
+          // Iteration 1: sonnet-class subtle-drift check when the lexical
+          // fast-path passes on a later turn (the drift the word lists miss).
+          if (driftVerdict.ok && turnIdx >= 1) {
+            const classified = await classifyLearnerDraft({
+              message: learnerResponse.message,
+              interior: desubInterior,
+              contentConditionMet: desubContentConditionMet,
+              callJudge: callDriftClassifierJudge,
+              judgeModel: DESUB_DRIFT_CLASSIFIER_MODEL,
+            });
+            if (classified && !classified.ok) driftVerdict = classified;
+          }
+          driftAttempts.push({ attempt: 1, ...driftVerdict, message: learnerResponse.message });
+          let driftAttempt = 1;
+          while (!driftVerdict.ok && driftAttempt < driftMaxAttempts) {
+            driftAttempt += 1;
+            const correction = buildDriftCorrectionContext({
+              violation: driftVerdict.violation,
+              interior: desubInterior,
+              attempt: driftAttempt,
+            });
+            learnerResponse = await generateLearnerResponse({
+              tutorMessage: suggestion?.message || suggestion?.title || '',
+              topic: fullScenario.topic || fullScenario.name || '',
+              conversationHistory: flattenConversationHistory(conversationHistory),
+              learnerProfile: resolvedConfig.learnerArchitecture,
+              personaId: fullScenario.learner_persona || 'eager_novice',
+              modelOverride:
+                config.learnerModelOverride || resolvedConfig.learnerModelOverride || config.modelOverride || null,
+              egoModelOverride: config.learnerEgoModelOverride || null,
+              superegoModelOverride: config.learnerSuperegoModelOverride || null,
+              profileContext: joinContextBlocks(baseLearnerProfileContext, correction),
+              conversationMode,
+            });
+            learnerAttemptUsage.inputTokens += learnerResponse.tokenUsage?.inputTokens || 0;
+            learnerAttemptUsage.outputTokens += learnerResponse.tokenUsage?.outputTokens || 0;
+            learnerAttemptUsage.apiCalls += learnerResponse.tokenUsage?.apiCalls || 0;
+            driftVerdict = evaluateLearnerDraft({
+              message: learnerResponse.message,
+              interior: desubInterior,
+              contentConditionMet: desubContentConditionMet,
+              turnIndex: turnIdx + 1,
+              tutorWorkCount: desubTutorWork,
+            });
+            // Iteration 1: on the final attempt a lexical violation can be
+            // rescued by the classifier (arbiter of last resort) — fewer
+            // false-positive exhaustions from brittle word lists.
+            if (!driftVerdict.ok && driftAttempt >= driftMaxAttempts) {
+              const classified = await classifyLearnerDraft({
+                message: learnerResponse.message,
+                interior: desubInterior,
+                contentConditionMet: desubContentConditionMet,
+                callJudge: callDriftClassifierJudge,
+                judgeModel: DESUB_DRIFT_CLASSIFIER_MODEL,
+              });
+              if (classified?.ok) driftVerdict = classified;
+            }
+            driftAttempts.push({ attempt: driftAttempt, ...driftVerdict, message: learnerResponse.message });
+            if (!driftVerdict.ok) {
+              log(
+                `[evaluationRunner] Drift gate retry ${driftAttempt}/${driftMaxAttempts}: ${driftVerdict.violation}`,
+                'warning',
+              );
+            }
+          }
+          const grounding = checkGrounding({ learnerMessage: learnerResponse.message, interior: desubInterior });
+          nextTurnDef._learnerDriftGate = {
+            enabled: true,
+            accepted: driftVerdict.ok,
+            instrument_failure: !driftVerdict.ok,
+            violation: driftVerdict.ok ? null : driftVerdict.violation,
+            contentConditionMet: desubContentConditionMet,
+            attempts: driftAttempts,
+            maxAttempts: driftMaxAttempts,
+          };
+          nextTurnDef._learnerGrounding = grounding;
+          consolidatedTrace.push({
+            agent: 'learner_drift_gate',
+            action: driftVerdict.ok ? 'accepted' : 'violation_uncorrected',
+            turnIndex: turnIdx + 1,
+            contextSummary: driftVerdict.ok
+              ? `In character (${driftVerdict.evidence})`
+              : `Instrument failure: ${driftVerdict.violation}`,
+            detail: JSON.stringify(nextTurnDef._learnerDriftGate),
+            timestamp: new Date().toISOString(),
+          });
+          consolidatedTrace.push({
+            agent: 'learner_grounding',
+            action: grounding.grounded ? 'grounded' : 'not_grounded',
+            turnIndex: turnIdx + 1,
+            contextSummary: grounding.grounded
+              ? `Grounded: cited ${grounding.citedElement}, "${grounding.conclusionEvidence}"`
+              : 'Target conclusion not grounded',
+            detail: JSON.stringify(grounding),
+            timestamp: new Date().toISOString(),
+          });
+        }
 
         // Override YAML message with LLM-generated one
         nextTurnDef._originalMessage = nextTurnDef.action_details?.message;
@@ -4069,9 +4671,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         nextTurnDef._learnerEmotionalState = learnerResponse.emotionalState;
 
         // Track learner LLM costs
-        totalInputTokens += learnerResponse.tokenUsage?.inputTokens || 0;
-        totalOutputTokens += learnerResponse.tokenUsage?.outputTokens || 0;
-        totalApiCalls += learnerResponse.tokenUsage?.apiCalls || 0;
+        totalInputTokens += learnerAttemptUsage.inputTokens;
+        totalOutputTokens += learnerAttemptUsage.outputTokens;
+        totalApiCalls += learnerAttemptUsage.apiCalls;
 
         // Add learner deliberation to consolidated trace.
         // ego_superego: multiple deliberation entries (ego_initial, superego, ego_revision)
@@ -4130,6 +4732,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         totalTurns: totalTurnCount,
         dialogueId,
         learnerId,
+        threadNegotiationResolution, // A5: preserve this session's arm across resume-after-kill
         turns,
         turnResults,
         conversationHistory,
@@ -4327,6 +4930,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         suggestions: t.suggestion ? [t.suggestion] : [],
         learnerAction: t.learnerAction,
         learnerMessage: t.learnerMessage,
+        learnerMessageGenerated: t.learnerMessageGenerated,
+        learnerResistanceSignalGate: t.learnerResistanceSignalGate,
       };
     }),
     // Conversation mode audit trail
@@ -4389,6 +4994,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dialogueId,
     dialogueRounds: turnResults.length,
     deliberationRounds: totalDeliberationRounds,
+    idConstructionTrace: buildIdConstructionTraceFromTurnResults(turnResults),
     scores: Object.keys(aggregateDimensions).length > 0 ? aggregateDimensions : null,
     scoresWithReasoning:
       Object.keys(aggregateDimensions).length > 0
@@ -4488,6 +5094,13 @@ export async function resumeEvaluation(options = {}) {
   const learnerModelOverride = metadata.learnerModelOverride || null;
   const learnerEgoModelOverride = metadata.learnerEgoModelOverride || null;
   const learnerSuperegoModelOverride = metadata.learnerSuperegoModelOverride || null;
+  // A5: run-wide threading arm (set once at `run` time, see runEvaluation's metadata
+  // block below). Re-applied per test below so a test resumed from scratch (no
+  // checkpoint yet written, e.g. killed before its first turn completed) still gets
+  // the correct arm instead of silently falling back to threading-off. Any
+  // already-checkpointed test overrides this with its own checkpointed value
+  // (see the cs?.threadNegotiationResolution ?? ... precedence in runMultiTurnTest).
+  const threadNegotiationResolution = metadata.threadNegotiationResolution || null;
 
   // 3. Get existing results for completion checking
   const existingResults = evaluationStore.getResults(runId);
@@ -4723,6 +5336,7 @@ export async function resumeEvaluation(options = {}) {
         verbose,
         runId,
         checkpointState: checkpointState || null,
+        threadNegotiationResolution: threadNegotiationResolution ?? false, // A5: resume-safety (see metadata extraction above)
       });
 
       evaluationStore.storeResult(runId, result);
@@ -4910,7 +5524,7 @@ export async function resumeEvaluation(options = {}) {
  * Compare two or more configurations
  */
 export async function compareConfigurations(configs, options = {}) {
-  const { scenarios = 'all', runsPerConfig = 1, verbose = false } = options;
+  const { scenarios = 'all', runsPerConfig = 1, verbose = false, dryRun = false } = options;
 
   // Run evaluation with specified configs
   const result = await runEvaluation({
@@ -4918,6 +5532,7 @@ export async function compareConfigurations(configs, options = {}) {
     configurations: configs,
     runsPerConfig,
     verbose,
+    dryRun,
     description: `Comparison: ${configs.map((c) => c.label || c.profileName || `${c.provider}/${c.model}`).join(' vs ')}`,
   });
 
@@ -5272,6 +5887,11 @@ function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) 
 async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
   const { judgeCli, judgeModel, effectiveCliJudgeModel, judgeOverrideObj, log, skipLearner, skipDeliberation } = opts;
 
+  const resolved = resolveRejudgeScenarioAndDialogueLog(result, dialogueLog);
+  const fullScenario = resolved.scenario;
+  dialogueLog = resolved.dialogueLog || dialogueLog;
+  if (!fullScenario) return;
+
   const turnResults = dialogueLog.turnResults || [];
   const dialogueTrace = dialogueLog.dialogueTrace || [];
   const totalTurns = turnResults.length;
@@ -5279,9 +5899,6 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
   const profileName = result.profileName || `${result.provider}/${result.model}`;
 
   if (totalTurns === 0) return;
-
-  const fullScenario = evalConfigLoader.getScenario(scenarioId);
-  if (!fullScenario) return;
 
   // ── Shared judge call helper (returns parsed JSON) ──
   async function callJudge(prompt) {
@@ -6031,7 +6648,9 @@ export async function rejudgeRun(runId, options = {}) {
       const result = items[i];
 
       try {
-        const fullScenario = evalConfigLoader.getScenario(result.scenarioId);
+        const resolved = resolveRejudgeScenarioAndDialogueLog(result);
+        const fullScenario = resolved.scenario;
+        const dialogueLog = resolved.dialogueLog;
         if (!fullScenario) {
           throw new Error(`Scenario not found: ${result.scenarioId}`);
         }
@@ -6043,28 +6662,17 @@ export async function rejudgeRun(runId, options = {}) {
 
         // Load dialogue context for multi-turn results
         let dialogueContext = null;
-        let dialogueLog = null;
-        if (result.dialogueId) {
-          const logPath = path.join(LOGS_DIR, `${result.dialogueId}.json`);
-          try {
-            if (fs.existsSync(logPath)) {
-              dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
-              if (dialogueLog.isMultiTurn && dialogueLog.dialogueTrace?.length > 0) {
-                dialogueContext = {
-                  consolidatedTrace: dialogueLog.dialogueTrace,
-                  conversationHistory: (dialogueLog.turnResults || []).map((t, ti) => ({
-                    turnIndex: ti,
-                    turnId: t.turnId,
-                    suggestion: t.suggestions?.[0],
-                    learnerAction: t.learnerAction,
-                    learnerMessage: t.learnerMessage,
-                  })),
-                };
-              }
-            }
-          } catch (e) {
-            log(`  Warning: could not load dialogue log for ${result.dialogueId}: ${e.message}`);
-          }
+        if (dialogueLog?.isMultiTurn && dialogueLog.dialogueTrace?.length > 0) {
+          dialogueContext = {
+            consolidatedTrace: dialogueLog.dialogueTrace,
+            conversationHistory: (dialogueLog.turnResults || []).map((t, ti) => ({
+              turnIndex: ti,
+              turnId: t.turnId,
+              suggestion: t.suggestions?.[0],
+              learnerAction: t.learnerAction,
+              learnerMessage: t.learnerMessage,
+            })),
+          };
         }
 
         const scenarioContext = {

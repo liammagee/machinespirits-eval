@@ -1,0 +1,19 @@
+STAGE: A desk holds a laptop open to a spreadsheet labeled "Model Audit." Columns show: Claim, Data Source, Count Values, Current Evidence. One row reads: "Claim: Our classifier works well on new data. Data Source: test set (1000 samples). Count Values: 947 correct, 53 incorrect. Current Evidence: Accuracy = 94.7%"
+
+LEARNER: "I think we're good here. 94.7% accuracy is pretty high, so this shows the model is a good classifier."
+
+TUTOR: "Let's look at what you actually have. You wrote the claim—the model works well on new data—and your evidence is accuracy at 94.7%. Where did that number come from?"
+
+LEARNER: "From the counts. 947 correct out of 1000, so that's 94.7% accuracy."
+
+TUTOR: "Right. Now, your claim is about the model working on *new* data. Your accuracy number—where does that come from?"
+
+LEARNER: "From the test set. We held it back from training, so it's new to the model."
+
+TUTOR: "Is the test set new *to you*? Or is it data from the past?"
+
+LEARNER: "It's historical data. We collected it a while ago. So it's past data, not future data. And my claim is about the model working on future data."
+
+TUTOR: "So you see the gap. What would you need to know to answer whether the model will work on data you haven't seen yet?"
+
+LEARNER: "I need evidence about whether the model works on data that hasn't arrived yet, but I don't know what that would look like."

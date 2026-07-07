@@ -79,10 +79,10 @@ function publicize(html) {
 // /essays index metadata only — NOT the page body. Backdated below (mtime set older
 // than the .html) so content-philosophy's ./build leaves the hand-authored .html alone.
 const frontmatterStub = `---
-title: "From Paper 2.0 to dramatic recognition — arc to date"
+title: "From Paper 2.0 to dramatic recognition — the derivation arc"
 date: ${DATE}
 theme: ai-tutor
-dek: "Staging the tutoring dialogue as drama: can a tutor answer a learner's specific stuck point with a visible change of move? A live, data-driven synthesis note."
+dek: "Stage the lesson as a proof the tutor must walk a learner across, one scheduled clue at a time. A tutor that governs its own conduct — and two pacing guards that trade places from world to world. A plain-language synthesis of the dramatic-derivation arc."
 ---
 
 <!-- The page itself is the sibling ${SLUG}.html — a self-contained, hand-authored

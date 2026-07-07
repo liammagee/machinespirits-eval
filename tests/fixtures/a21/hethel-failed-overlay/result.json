@@ -1,0 +1,102 @@
+{
+  "worldId": "world-006-hethel-fixture",
+  "verdict": "disengagement",
+  "turnsPlayed": 4,
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "trajectory": [
+    { "turn": 1, "D": 5 },
+    { "turn": 2, "D": 5 },
+    { "turn": 3, "D": 5 },
+    { "turn": 4, "D": 5 }
+  ],
+  "transcript": [
+    {
+      "turn": 1,
+      "role": "learner",
+      "text": "The bond names Reyner, but I am not sure whether that proves the fall.",
+      "meta": {}
+    },
+    {
+      "turn": 1,
+      "role": "tutor",
+      "text": "Keep the two questions apart: payment is not causation.",
+      "meta": {
+        "move": { "figure": "antithesis", "intent": "orient", "targetPremise": null },
+        "releaseDecision": { "turn": 1, "played": null, "pacingGuard": { "safeTurns": {} } }
+      }
+    },
+    {
+      "turn": 2,
+      "role": "learner",
+      "text": "The record proves the building contract, but I keep wanting to make it prove the accident.",
+      "meta": {}
+    },
+    {
+      "turn": 2,
+      "role": "tutor",
+      "text": "What in the public record licenses that extra step?",
+      "meta": {
+        "move": { "figure": "erotema", "intent": "test", "targetPremise": "m_record" },
+        "releaseDecision": {
+          "turn": 2,
+          "played": null,
+          "pacingGuard": { "safeTurns": { "p_point": [4, 5, 6] } }
+        },
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict"
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "role": "learner",
+      "text": "It proves only the record. I still have not seen the failure point.",
+      "meta": {}
+    },
+    {
+      "turn": 3,
+      "role": "tutor",
+      "text": "Read the record again: what does it show, and where does it stop?",
+      "meta": {
+        "move": { "figure": "erotema", "intent": "confront", "targetPremise": "m_record" },
+        "releaseDecision": {
+          "turn": 3,
+          "played": null,
+          "pacingGuard": { "safeTurns": { "p_point": [4, 5, 6] } }
+        },
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict"
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "role": "learner",
+      "text": "I can repeat the limit of the record, but nothing has moved the proof forward.",
+      "meta": {}
+    },
+    {
+      "turn": 4,
+      "role": "tutor",
+      "text": "Hold your pen. Read back the first paper from your own keeping.",
+      "meta": {
+        "move": { "figure": "erotema", "intent": "confront", "targetPremise": "m_record" },
+        "releaseDecision": {
+          "turn": 4,
+          "played": null,
+          "pacingGuard": { "safeTurns": { "p_point": [4, 5, 6] } }
+        },
+        "conductPolicy": {
+          "active": true,
+          "selectedMoveFamily": "ask_diagnostic",
+          "reasonCode": "visible_hidden_conflict"
+        }
+      }
+    }
+  ]
+}

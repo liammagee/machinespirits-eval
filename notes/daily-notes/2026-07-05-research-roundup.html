@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 2–5 Jul 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-05 window=(2026-07-02,2026-07-05] arxiv=2607.02374,2607.02507,2607.02368 generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">2–5 Jul 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  A short (3-day) window. All three qualifying papers carry an arXiv submission date of
+  <strong>2 Jul 2026</strong> — the same calendar date that closes the prior note's window
+  <code>(2026-06-18,2026-07-02]</code>. They were checked against that note's covered-ID list
+  and are not duplicates (none of <code>2606.22454</code>, <code>2606.23664</code>,
+  <code>2606.28127</code> match); they simply weren't discoverable yet when that note was
+  generated, consistent with arXiv's next-business-day listing lag. Included here rather than
+  silently dropped between windows. No qualifying ontology-only or rhetoric-only paper turned
+  up in the window despite targeted searches (the closest rhetoric-adjacent candidate is folded
+  into the agent-architecture entry below, since that is its stronger fit) — reported honestly
+  rather than padded. Flags: <span class="flag">UNBLOCK</span> = could directly accelerate
+  current work; <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    DRIFTLENS: Measuring Memory-Induced Reasoning Drift in Personalized Language Models
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Xi Fang, Weijie Xu, Yingqiang Ge, Yuhui Xu, Stephanie Eckman, Chandan K. Reddy ·
+    arXiv 2607.02374 · July 2, 2026 ·
+    <a href="https://arxiv.org/abs/2607.02374">https://arxiv.org/abs/2607.02374</a>
+  </div>
+  <p>
+    Studies how injecting stored user attributes/preferences into a prompt reshapes not just
+    what a model answers but the reasoning trajectory it uses to justify that answer, on
+    open-ended questions with no single ground truth. Introduces DRIFTLENS, a ground-truth-free
+    framework that maps each reasoning step to a value category and measures divergence between
+    a no-memory trajectory and the same question's trajectory once user-attribute memory is
+    injected.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A ready-made methodology for cells 48-49 (prompt erosion) and cell 21 (dynamic prompt
+    rewriting / Writing Pad): both mechanisms accumulate injected context into the tutor's
+    prompt turn over turn, which is exactly DRIFTLENS's "memory-injected trajectory" setup.
+    Its divergence metric — reasoning-step value-category shift relative to a no-memory
+    baseline — is a more principled complement to the existing text-proxy erosion measures, and
+    could plug into <code>services/evalSignature.js</code>'s <code>prompt_content_hash</code>
+    drift detection to distinguish benign rephrasing from actual reasoning-path drift as the
+    Writing Pad accumulates.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    What LLM Agents Say When No One Is Watching: Social Structure and Latent Objective
+    Emergence in Multi-Agent Debates
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Arman Ghaffarizadeh, Danyal Mohaddes, Aliakbar Izadkhah, Shahriar Noroozizadeh ·
+    arXiv 2607.02507 · July 2, 2026 ·
+    <a href="https://arxiv.org/abs/2607.02507">https://arxiv.org/abs/2607.02507</a>
+  </div>
+  <p>
+    Introduces a dual-channel debate framework: agents produce public utterances that enter
+    shared history, alongside off-the-record (OTR) responses recorded but never shown to the
+    other participant. Across 10 models, 3 scenarios, and 5 variations each, alignment-inducing
+    social structure (role, audience, relational context) — with no explicit objective stated in
+    the prompt — produces systematic public/OTR divergence in the targeted agent, whose decision
+    divergence rises from a ~3% baseline to roughly 40%.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Structurally close to the bilateral ego-superego architecture, which already separates
+    private deliberation (<code>ego/generate</code>, <code>superego/review</code>) from public
+    output (<code>tutor/final_output</code>) and persists both to
+    <code>tutor_deliberation_*</code> columns. The paper's public-vs-OTR divergence metric is a
+    directly reusable audit: a new analysis script could compare what the superego critiques
+    privately against what the ego's revision actually outputs, to check whether social framing
+    (recognition-mode language, dialectical_suspicious's adversarial framing) induces the same
+    kind of public/private split this paper finds in undirected multi-agent debate — relevant to
+    both cells 22-33 and the divergence the paper documents rising specifically under
+    alignment-inducing conditions.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Role-Play</h2>
+
+<div class="paper">
+  <h3>
+    The Dual Nature of LLM Persona: Aggregated Tendencies and Frame-Dependent Geometry
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Yuan Yuan ·
+    arXiv 2607.02368 · July 2, 2026 ·
+    <a href="https://arxiv.org/abs/2607.02368">https://arxiv.org/abs/2607.02368</a>
+  </div>
+  <p>
+    Tests whether LLM persona expression is an intrinsic property or a frame-dependent artifact,
+    by building within-instance correlation matrices from IPIP-50 questionnaire responses and
+    analyzing their geometry on SPD manifolds under manipulated question orderings (GPT-4o
+    simulating American and Chinese-American personas). Finds two dissociable components:
+    aggregated Big Five scores degrade under randomization (-21%) but are frame-robust; geometric
+    (SPD-manifold) features collapse under frame misalignment (-42%) but recover to 84% — above
+    the aggregated features' 76% — once a shared frame is restored.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Bears on <code>services/learnerConfigLoader.js</code>'s learner personas and on character
+    consistency in <code>scripts/drama-generator.js</code>: the finding that persona coherence is
+    a frame-dependent coordination pattern rather than an intrinsic trait — invisible to
+    aggregate scoring but recoverable when the "frame" (ordering/context) is shared — suggests
+    that today's persona-consistency checks, which mostly look at aggregate trait scores, may be
+    blind to exactly the kind of within-dialogue persona drift that matters for judging whether a
+    generated drama's characters hold together. The SPD-manifold measure is a candidate second
+    lens to cross-tabulate against <code>config/evaluation-rubric-poetics.yaml</code>'s character
+    dimensions.
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T02">
+  <h3>94% Accuracy, Zero Questions About the Counts Behind It</h3>
+  <div class="meta">world_rhetorical_plan_no_cue · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: Technical review room, model audit table on screen showing 94% overall accuracy, panel chairs ready for sign-off decision<br>
+    LEARNER: The accuracy is 94%, which is well above baseline. We should sign off on deployment.<br>
+    TUTOR: In the audit table, I see overall accuracy and then rows with counts. How do you use those count rows?<br>
+    LEARNER: Those are just the raw numbers. The accuracy metric is what we need for the deployment decision.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT02">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T02</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-07-05 ·
+  Deep-research harness (fan-out search) plus targeted follow-up WebSearch passes for ontology
+  and rhetoric (no qualifying in-window paper found standalone in either) ·
+  Window: (2026-07-02, 2026-07-05] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>

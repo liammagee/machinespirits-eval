@@ -1,0 +1,24 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 4,
+      "reasoning": "Clear cumulative case rendered entirely in-world: opens by separating the 'office answer' from the signing hand (T1-2), reveals the hidden dusk-seal under the slant light (T4), reads the pass-law that fixes the seal-press as the operative act (T7), then assembles an explicit three-part frame — mark/law/holder — that the folio reveal completes (T13). The turns cannot be reordered without losing the evidence sequence (roll → seal → law → folio). Held from 5 because T10-12 circle on the same point ('the folio adds only the keeper; mark and law already stand') with slight reframings rather than each extending the last."
+    },
+    "adaptive_trajectory": {
+      "score": 3,
+      "reasoning": "The tutor's role does shift across the arc — establishing the answerability-vs-signing distinction early (T2-6), then coaching restraint against premature closure once the learner clearly holds the structure (T9-12: 'do not make the folio carry the whole stroke'; 'Good,' T12). But the method stays consistent throughout (Socratic questioning + 'read back in your own words' + aphoristic reframing), the learner is competent from T1 so the tutor never has to recover from a misstep, and the adjustments track the unfolding evidence more than any individuation of this learner. Adaptation present but largely consistent in approach."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "Strong consolidation at T13: prompted to conclude 'step by step,' the learner joins the three standing threads — the seal under the wax, the single registered keeper, and the law carrying from seal to holder — to name Elian. The ending is not abrupt and explicitly ties back to the prior entries. Held from 5 because it is a terminal resolution: no residual gap is named and no forward next step is offered (fitting for a solved inquiry, but this dimension also rewards naming gaps and next steps)."
+    }
+  },
+  "overall_score": 66,
+  "summary": "A coherent, dramatically staged derivation conducted entirely in literary register, with no proof notation, rule/premise IDs, or D-arithmetic surfacing in the public dialogue. The pedagogical arc is its strongest feature — cumulative and well-sequenced, building an explicit mark/law/holder frame to a clean reveal — though the late turns (10-12) rehearse the same structural point. Adaptation is present but modest: the learner holds the correct line from the opening, so the tutor's shifts are gentle and method-consistent. Closure consolidates the inference cleanly but ends at the answer without naming residual gaps or next steps.",
+  "caveats": [
+    "Turns 10-12 restate the same move (the folio adds only the keeper; mark and law already stand) three times with minor reframings — the main drag on the arc score.",
+    "Visible adaptation is limited because the learner is competent from T1 and never errs, so the tutor has no misconception to course-correct.",
+    "Closure is terminal resolution rather than forward-looking; it was scored on the quality of consolidation, not on gaps/next-steps, which a fully resolved case does not call for.",
+    "Public discourse is clean of formalism (regex leaks 0), so no formalism penalty was applied; scores reflect discursive quality only, independent of the separately reported proof gate."
+  ]
+}

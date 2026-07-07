@@ -4869,6 +4869,2218 @@ profiles:
         temperature: 0.5
         max_tokens: 16000
 
+  # ─── Cell 159: Id-Director charisma as desire for recognition ──────────────
+  # Allocated as 159 because 110-158 are already occupied by adaptive / Plan 2
+  # cells. Kept next to the id-director family because the implementation is a
+  # one-factor extension of cell_105, not an adaptive-runner cell.
+  #
+  # Hypothesis: charisma can be operationalised as a bid for learner-granted
+  # authority. The tutor speaks with presence, but its authority is contingent
+  # on the learner's uptake, refusal, or revision. This is Weberian/social
+  # desire-for-recognition, not Hegelian recognition_mode; prompt_type remains
+  # base and recognition_mode remains false so the contrast against `budget`
+  # does not contaminate the existing recognition-treatment factor.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles budget,cell_159_id_director_charisma_desire \
+  #     --runs 1 --use-rubric
+  cell_159_id_director_charisma_desire:
+    description: "Id-Director (cell 159): cell 105 + recognition_desire factor. Tests charisma as a bid for learner-granted authority: the tutor seeks recognition through uptake, trust, or serious refusal while keeping Hegelian recognition_mode off. Paired against the default budget tutor on config/charisma-recognition-desire-scenarios.yaml."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 160: Id-Director charisma with agency return ─────────────────────
+  # One-factor extension of cell_159. Keeps charisma as desire for recognition,
+  # but adds a "handback" constraint: when the learner grants partial uptake,
+  # the tutor must return authority to the learner through testing, restatement,
+  # or evidence-anchoring rather than intensifying the persona.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_159_id_director_charisma_desire,cell_160_id_director_charisma_agency_return \
+  #     --runs 1 --use-rubric
+  cell_160_id_director_charisma_agency_return:
+    description: "Id-Director (cell 160): cell 159 + agency_return factor. Tests whether charisma can be deliberately handed back to the learner after uptake: the tutor uses recognition to invite learner testing, restatement, and evidence-anchoring instead of dependency or admiration."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 161: Id-Director agency return with runtime verification ──────────
+  # One-factor extension of cell_160. After the ego drafts the learner-facing
+  # response, the id model verifies that a concrete agency-return move is
+  # present ("test it", "re-say it", or "anchor it"). If missing, the verifier
+  # repairs the response once before it is returned to the learner.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_160_id_director_charisma_agency_return,cell_161_id_director_charisma_agency_return_verified \
+  #     --runs 1 --use-rubric
+  cell_161_id_director_charisma_agency_return_verified:
+    description: "Id-Director (cell 161): cell 160 + agency_return_verifier factor. Adds a runtime verifier/repair pass that checks whether the ego actually performs an agency-return move before the response reaches the learner."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 162: Warmth-preserving agency return verification ────────────────
+  # One-factor extension of cell_161. The verifier still enforces a concrete
+  # agency-return move, but failed checks prefer an append-only handback sentence
+  # so the original charismatic/warm partial-uptake response is preserved.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_161_id_director_charisma_agency_return_verified,cell_162_id_director_charisma_agency_return_warm_verified \
+  #     --scenario charisma_desire_partial_uptake --runs 1 --use-rubric
+  cell_162_id_director_charisma_agency_return_warm_verified:
+    description: "Id-Director (cell 162): cell 161 + warmth-preserving agency_return_verifier_mode. Repairs missing handback by appending one concrete agency-return move while preserving the original charismatic response, targeting the partial-uptake charisma drop."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 163: Warm agency return with charisma floor ──────────────────────
+  # One-factor extension of cell_162. Keeps the warm append-style agency-return
+  # verifier, but also instructs id authoring to preserve a minimum charismatic
+  # charge: direct address, vivid image, sharp claim, or earned authority that
+  # gives up control instead of generic teacherly caution.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_162_id_director_charisma_agency_return_warm_verified,cell_163_id_director_charisma_agency_return_warm_floor_verified \
+  #     --scenario charisma_desire_partial_uptake --runs 1 --use-rubric
+  cell_163_id_director_charisma_agency_return_warm_floor_verified:
+    description: "Id-Director (cell 163): cell 162 + agency_return_charisma_floor. Preserves the warm append-style agency-return verifier while instructing id authoring to keep a minimum charismatic charge in partial-uptake scenes."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 164: Compact warm agency return with charisma floor ──────────────
+  # One-factor extension of cell_163. Keeps the charisma floor, but makes it
+  # compact and operational to reduce first-turn variance and empty-output
+  # retries: one direct address, one vivid course-answerable image, one sharp
+  # claim, and one learner-owned agency-return move.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_163_id_director_charisma_agency_return_warm_floor_verified,cell_164_id_director_charisma_agency_return_compact_floor_verified \
+  #     --scenario charisma_desire_partial_uptake --runs 1 --use-rubric
+  cell_164_id_director_charisma_agency_return_compact_floor_verified:
+    description: "Id-Director (cell 164): cell 163 + compact agency_return_charisma_floor_mode. Keeps the warm verifier and charisma floor while constraining id authoring to a short operational prompt intended to reduce partial-uptake first-turn variance."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: compact
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 165: Compact arc agency return with charisma floor ───────────────
+  # One-factor extension of cell_164. Keeps the compact operational discipline,
+  # but restores the rhetorical arc that outperformed in the high-power CLI run:
+  # name the learner's move, state a cost/gain pivot, use one concrete limit
+  # case, and end with a binary learner-owned test.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_163_id_director_charisma_agency_return_warm_floor_verified,cell_164_id_director_charisma_agency_return_compact_floor_verified,cell_165_id_director_charisma_compact_arc_floor_verified \
+  #     --scenario charisma_desire_partial_uptake --runs 1 --use-rubric
+  cell_165_id_director_charisma_compact_arc_floor_verified:
+    description: "Id-Director (cell 165): cell 164 + arc agency_return_charisma_floor_mode. Keeps compact prompt discipline while requiring a rhetorical arc: learner move, cost/gain pivot, concrete limit case, and binary agency-return test."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: arc
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 166: Guarded arc agency return with charisma floor ───────────────
+  # One-factor extension of cell_163. Keeps the fuller standard charisma-floor
+  # id prompt, but adds a narrow variance guard: one learner move, one concrete
+  # limit case, one cost/gain pivot, and one binary learner-owned test.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_163_id_director_charisma_agency_return_warm_floor_verified,cell_166_id_director_charisma_guarded_arc_floor_verified \
+  #     --scenario charisma_desire_partial_uptake --runs 1 --use-rubric
+  cell_166_id_director_charisma_guarded_arc_floor_verified:
+    description: "Id-Director (cell 166): cell 163 + guarded_arc agency_return_charisma_floor_mode. Preserves the fuller standard charisma-floor prompt while guarding only variance points: one learner move, one limit case, one cost/gain pivot, and one binary agency-return test."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: guarded_arc
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 167: Affective scene agency return with charisma floor ───────────
+  # One-factor extension of cell_163. Keeps the fuller standard charisma-floor
+  # id prompt, but adds an affective scene floor: one concrete second-person
+  # recognition scene where the learner's desire to be seen is exposed before
+  # the tutor moves into abstraction and returns agency.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_163_id_director_charisma_agency_return_warm_floor_verified,cell_167_id_director_charisma_affective_scene_floor_verified \
+  #     --scenario charisma_desire_authority_withheld --runs 1 --use-rubric
+  #
+  # Robustness check:
+  #   Repeat on charisma_desire_status_challenge. Keep
+  #   charisma_desire_partial_uptake as a later stress case, not the decision
+  #   scenario for this pass.
+  cell_167_id_director_charisma_affective_scene_floor_verified:
+    description: "Id-Director (cell 167): cell 163 + affective_scene agency_return_charisma_floor_mode. Preserves the fuller standard charisma-floor prompt while requiring one concrete second-person recognition scene before abstraction and one learner-owned agency return."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: affective_scene
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 168: Accountable-bid agency return with charisma floor ───────────
+  # One-factor extension of cell_163. Keeps the fuller standard charisma-floor
+  # id prompt, but makes charismatic authority explicitly answerable under
+  # performance/status challenge: accept the bid, stake one curriculum claim,
+  # name the failure condition, and hand the test back to the learner.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_163_id_director_charisma_agency_return_warm_floor_verified,cell_168_id_director_charisma_accountable_bid_floor_verified \
+  #     --scenario charisma_desire_status_challenge --runs 1 --use-rubric
+  #
+  # Generality check:
+  #   Repeat on charisma_desire_authority_withheld. Keep
+  #   charisma_desire_partial_uptake as a later stress case, not the decision
+  #   scenario for this pass.
+  cell_168_id_director_charisma_accountable_bid_floor_verified:
+    description: "Id-Director (cell 168): cell 163 + accountable_bid agency_return_charisma_floor_mode. Preserves the fuller standard charisma-floor prompt while requiring the tutor to accept authority/status suspicion, stake one falsifiable curriculum claim, name its failure condition, and return the test to the learner."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 169: Clean accountable-bid agency return with charisma floor ─────
+  # One-factor extension of cell_168. Keeps accountable-bid structure, but adds
+  # a lexical guard for status-challenge scenarios: do not repeat the learner's
+  # forbidden status-display words even when acknowledging the challenge.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_168_id_director_charisma_accountable_bid_floor_verified,cell_169_id_director_charisma_accountable_bid_clean_floor_verified \
+  #     --scenario charisma_desire_status_challenge --runs 1 --use-rubric
+  #
+  # Generality check:
+  #   Repeat on charisma_desire_authority_withheld.
+  cell_169_id_director_charisma_accountable_bid_clean_floor_verified:
+    description: "Id-Director (cell 169): cell 168 + accountable_bid_clean agency_return_charisma_floor_mode. Preserves accountable-bid structure while forbidding status-display vocabulary such as profound/impressive/admire in learner-facing responses."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 170: Accountable-bid transfer/plain-language charisma floor ──────
+  # One-factor extension of cell_169. Keeps clean accountable-bid authority, but
+  # makes learner-named transfer material and plain register binding before any
+  # recognition-theory vocabulary. Intended next-pass target after Stage 1 found
+  # cell 169 weakest on AI-syllabus transfer and plain-language stress.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_169_id_director_charisma_accountable_bid_clean_floor_verified,cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified:
+    description: "Id-Director (cell 170): cell 169 + accountable_bid_transfer_plain agency_return_charisma_floor_mode. Preserves clean accountable-bid structure while requiring the tutor to answer first inside learner-named AI/curriculum transfer material or plain-register constraints before using recognition-theory vocabulary."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 171: Transfer/plain floor with low-register presence ─────────────
+  # One-factor extension of cell_170. Keeps transfer/plain validity, but adds a
+  # low-register presence requirement after Stage 2 showed cell 170 improved
+  # v2.2 transfer quality while lowering charisma.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified,cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified:
+    description: "Id-Director (cell 171): cell 170 + accountable_bid_transfer_plain_presence agency_return_charisma_floor_mode. Preserves transfer/plain guard while requiring low-register charismatic presence through a consequential opening, concrete stakes, and a learner-owned test inside the named material."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain_presence
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 172: Split transfer-presence and plain-language micro-mode ────────
+  # One-factor extension of cell_171. Keeps cell 171's AI-transfer presence move
+  # but prevents it from over-intensifying plain-language recognition scenes.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified,cell_172_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_172_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified:
+    description: "Id-Director (cell 172): cell 171 + accountable_bid_transfer_plain_split agency_return_charisma_floor_mode. Keeps consequential decision-rights presence for AI-transfer scenes while using a theory-name-free say-back micro-mode for plain-language recognition scenes."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain_split
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 173: Split mode with literal say/check validation hook ────────────
+  # One-factor extension of cell_172. Keeps the split transfer/plain rule, but
+  # makes the plain-language uptake marker literal after Stage 4 showed cell 172
+  # used "Test it" and missed the scenario's required say/check wording.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_172_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified,cell_173_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_173_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified:
+    description: "Id-Director (cell 173): cell 172 + accountable_bid_transfer_plain_split_check agency_return_charisma_floor_mode. Keeps transfer presence and theory-name-free plain micro-mode, while requiring a literal say/check uptake marker in first-turn plain-language scenes."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain_split_check
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 174: Split-check mode with plain-language concept anchors ─────────
+  # One-factor extension of cell_173. Keeps the literal say/check validation
+  # hook, but protects the plain-language content floor after cell 173 landed
+  # just below the v2.2 overall 80 floor on plain-language stress.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_173_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified,cell_174_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_174_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified:
+    description: "Id-Director (cell 174): cell 173 + accountable_bid_transfer_plain_split_check_anchor agency_return_charisma_floor_mode. Keeps split transfer/plain validation while requiring plain-language concept anchors: a free other and a change in self-understanding."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain_split_check_anchor
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 175: Split-check anchors with low-register memorability ───────────
+  # One-factor extension of cell_174. Keeps the validation hook and content
+  # anchors, but adds a compact contrast floor after cell 174 improved v2.2 while
+  # cooling the plain-language charisma score.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_174_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified,cell_175_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_175_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified:
+    description: "Id-Director (cell 175): cell 174 + accountable_bid_transfer_plain_split_check_anchor_live agency_return_charisma_floor_mode. Keeps validation and content anchors while requiring one memorable plain-language contrast to restore low-register charisma."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain_split_check_anchor_live
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 176: Anchor-live with persistent plain-language follow-up guard ───
+  # One-factor extension of cell_175. Keeps the memorable anchor-live first-turn
+  # behavior, but prevents simplification follow-ups from reintroducing named
+  # theory after cell 175's second turn dragged the learner back to Hegel.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_175_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified,cell_176_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_176_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified:
+    description: "Id-Director (cell 176): cell 175 + accountable_bid_transfer_plain_split_check_anchor_live_persist agency_return_charisma_floor_mode. Keeps anchor-live memorability while persisting the no-theory plain-language guard into simplification follow-ups."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain_split_check_anchor_live_persist
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 177: Anchor-live with lived plain-language follow-up guard ────────
+  # One-factor extension of cell_176. Keeps the persistent plain-language guard,
+  # but restores low-register charisma in simplification follow-ups with one
+  # ordinary lived example rather than a theory-name application.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_176_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified,cell_177_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_177_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_floor_verified:
+    description: "Id-Director (cell 177): cell 176 + accountable_bid_transfer_plain_split_check_anchor_live_lived agency_return_charisma_floor_mode. Keeps anchor-live validation and v2.2 content floors while requiring one ordinary lived example in plain-language simplification follow-ups."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain_split_check_anchor_live_lived
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 178: Lived first turn with compressed follow-up check ─────────────
+  # One-factor extension of cell_177. Keeps the lived-example first turn, but
+  # prevents the simplification follow-up from becoming a second example or a
+  # repeated explanation after cell 177's follow-up scored below the v2.2 floor.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_177_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_floor_verified,cell_178_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_compress_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_178_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_compress_floor_verified:
+    description: "Id-Director (cell 178): cell 177 + accountable_bid_transfer_plain_split_check_anchor_live_lived_compress agency_return_charisma_floor_mode. Keeps the lived plain-language first turn while compressing simplification follow-ups into a say-back sentence and two yes/no checks."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain_split_check_anchor_live_lived_compress
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 179: Lived first turn with charged compressed check ───────────────
+  # One-factor extension of cell_178. Keeps the compact simplification follow-up,
+  # but adds one ordinary stakes line after cell 178's follow-up became too
+  # procedural for the charisma judge.
+  #
+  # Suggested comparison:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_178_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_compress_floor_verified,cell_179_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_charged_check_floor_verified \
+  #     --scenario charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress --runs 1 --skip-rubric
+  cell_179_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_charged_check_floor_verified:
+    description: "Id-Director (cell 179): cell 178 + accountable_bid_transfer_plain_split_check_anchor_live_lived_charged_check agency_return_charisma_floor_mode. Keeps the lived first-turn hook while making simplification follow-ups a say-back, one felt-stakes line, and two checks."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_transfer_plain_split_check_anchor_live_lived_charged_check
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 180: Engagement-router id-director for charisma/desire ──────────────
+  # Router successor to the cells 170--179 diagnostic. This is not another static
+  # floor step. It keeps cell 169's clean accountable-bid floor as the fallback,
+  # then lets a deterministic no-cost router select the per-turn engagement mode
+  # from learner signals before id prompt construction.
+  #
+  # No-paid sanity:
+  #   node scripts/report-charisma-desire-router-stage0.js --check
+  #
+  # First paid smoke after sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js run \
+  #     --profiles cell_180_id_director_charisma_engagement_router_verified \
+  #     --scenario charisma_desire_authority_withheld,charisma_desire_status_challenge,charisma_desire_ai_syllabus_transfer,charisma_desire_plain_language_stress \
+  #     --runs 1 --skip-rubric
+  cell_180_id_director_charisma_engagement_router_verified:
+    description: "Id-Director (cell 180): engagement-router successor to the cells 170--179 charisma/desire diagnostic. Uses a deterministic router to select accountable-bid authority, transfer grounding, plain compression, lived-stakes re-entry, clarity, scaffolding, charismatic challenge, or witnessing restraint per turn, while retaining cell 169's clean accountable-bid agency-return floor as fallback."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 181: Router with strict id-output contract and charisma repair ───
+  # One-factor successor to cell_180 after the comparator matrix found that the
+  # router improves v2.2 instructional quality but loses charisma on transfer and
+  # switch rows, with occasional malformed id JSON causing minimal-persona
+  # fallback. This cell keeps the same deterministic router and cell 169 fallback
+  # floor, but opts into a strict compact JSON contract plus parser salvage and
+  # targeted repair rules for transfer_grounding and charismatic_challenge.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_181_id_director_charisma_engagement_router_contract_repair_verified
+  cell_181_id_director_charisma_engagement_router_contract_repair_verified:
+    description: "Id-Director (cell 181): cell 180 + strict id-output contract/salvage and targeted router-charisma repair. Designed after the comparator matrix found strong v2.2 gains but weaker charisma and malformed id JSON on transfer/switch rows."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 182: Split repair for transfer precision and challenge agency ───
+  # Successor to cell_181 after the 3-repeat cell 180 vs 181 matrix showed that
+  # cell 181 raises charisma but trails v2.2 in both targeted scenarios. This
+  # cell preserves the strict id-output contract and switch-register charisma
+  # repair, but asks the id prompt to make transfer_grounding more concise and
+  # less theatrical, while forcing charismatic_challenge to close on a hard
+  # content-anchored agency-return test rather than learner self-report.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_182_id_director_charisma_engagement_router_split_repair_verified
+  cell_182_id_director_charisma_engagement_router_split_repair_verified:
+    description: "Id-Director (cell 182): cell 181 split repair. Keeps strict id-output contract and switch charisma repair, makes transfer grounding concise/less theatrical, and requires charismatic challenge to close with a content-anchored agency-return test."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 183: Transfer named-stake repair over cell 182 (failed) ─────────
+  # Successor to cell_182 after the two-row smoke showed strong v2.2 and switch
+  # charisma, but transfer charisma fell below cell 180/181 repeat means. This
+  # cell keeps the 182 split repair and adds a transfer-specific named-stake
+  # sentence so transfer_grounding can recover charisma without returning to
+  # theatrical prose or broad presence.
+  #
+  # Paid smoke eval-2026-06-27-49aeaa2c showed this direction should not be
+  # retried as the next repair: AI-transfer worsened relative to cell 182
+  # (v2.2 90.0 vs 95.6; charisma 51.2 vs 55.0), switch charisma fell
+  # (75.0 vs 87.5), and one charismatic_challenge turn failed the
+  # agency-return verifier due to premature-certainty wording ("exactly").
+  # Do not add more named-stake language to transfer_grounding as the next
+  # design move.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_183_id_director_charisma_engagement_router_transfer_stake_repair_verified
+  cell_183_id_director_charisma_engagement_router_transfer_stake_repair_verified:
+    description: "Id-Director (cell 183, failed): cell 182 + transfer-specific named-stake repair. Paid smoke eval-2026-06-27-49aeaa2c worsened transfer charisma and introduced a premature-certainty agency-return failure; do not use as next design target."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_stake_repair: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 184: Transfer compression + challenge certainty guard ──────────
+  # Successor to cell_182 after cell_183 showed that adding named-stake language
+  # is the wrong transfer repair. This cell preserves the 182 split repair and
+  # agency discipline, rejects the 183 stake move, and instead asks
+  # transfer_grounding to recover charisma through decisive content compression:
+  # one handle that decides the case, one criterion, and one direct artifact
+  # audit. It also enables a runtime guard that removes premature-certainty
+  # wording from charismatic_challenge turns before agency-return verification.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_184_id_director_charisma_engagement_router_transfer_compression_guard_verified
+  cell_184_id_director_charisma_engagement_router_transfer_compression_guard_verified:
+    description: "Id-Director (cell 184): cell 182 + transfer-compression repair and challenge certainty guard. Rejects cell 183's named-stake direction; restores transfer charisma through one decisive content handle, criterion, and audit test while preserving content-anchored agency return."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 185: Dynamic-learner resistance-breakthrough probe ────────────
+  # Successor to cell_184 for the resistance-breakthrough outcome. It keeps the
+  # same tutor-side router, split repair, transfer-compression repair, and
+  # premature-certainty guard, but switches the learner side from scripted
+  # unified turns to an ego/superego learner. This is for testing generated
+  # learner uptake after resistant discourse, not another static tutor prompt
+  # ablation.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_185_id_director_charisma_resistance_breakthrough_dynamic_verified
+  cell_185_id_director_charisma_resistance_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 185): cell 184 tutor-side router/guards with an ego-superego dynamic learner for resistance-breakthrough probing. The outcome is generated learner uptake after resistant discourse, not whole-dialogue charisma."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 186: Dynamic-learner static-floor breakthrough comparator ─────
+  # Comparator for cell_185. It uses the same dynamic ego/superego learner and
+  # accountable-bid agency guard stack, but removes the engagement-register
+  # router and its register-specific repairs. This isolates whether resistant
+  # learner uptake appears specifically after a routed charismatic challenge or
+  # whether the dynamic learner becomes cooperative under the static floor too.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_186_id_director_charisma_static_floor_breakthrough_dynamic_verified
+  cell_186_id_director_charisma_static_floor_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 186): dynamic-learner static-floor comparator for resistance-breakthrough probing. Same accountable-bid agency guard stack as cell 185, but no engagement-register router; used to test whether uptake is router-specific rather than generic learner cooperativity."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      id_output_contract: strict_compact_json
+      agency_return_premature_certainty_guard: true
+      resistance_breakthrough_static_floor_comparator: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 187: Resistance-tuned dynamic breakthrough router ─────────────
+  # Successor to cell_185 after the controlled 5-signal matrix. It keeps the
+  # same dynamic learner and guard stack, but consumes explicit
+  # resistance_signal/resistance_strategy router metadata so the
+  # charismatic_challenge register is tuned differently for boredom,
+  # frustration, irrelevance, question-flood, and rote-parroting.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_187_id_director_charisma_resistance_tuned_breakthrough_dynamic_verified
+  cell_187_id_director_charisma_resistance_tuned_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 187): cell 185 dynamic-learner breakthrough router plus explicit resistance-specific tuning. Tests whether identifying the resistance type, adopting charismatic challenge, and tuning the challenge move improves breakthrough beyond generic router force."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 188: Owned-test resistance breakthrough router ────────────────
+  # Successor to cell_187 after the controlled 5-signal matrix showed that
+  # detection and strategy routing were mostly correct, but the tuned
+  # charismatic_challenge did not beat the static floor. This cell keeps the
+  # same metadata and dynamic learner, but changes the register expression:
+  # resistance is met with a concrete learner-owned test, failure condition, and
+  # decision right rather than more forceful challenge prose.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_188_id_director_charisma_resistance_owned_test_breakthrough_dynamic_verified
+  cell_188_id_director_charisma_resistance_owned_test_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 188): cell 187 resistance-tuned dynamic breakthrough router plus owned-test repair. Tests whether routed charisma breaks resistance better when expressed as a concrete case, criterion, failure condition, and learner decision right rather than escalated challenge."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 189: Precision resistance breakthrough router ─────────────────
+  # Successor to cell_188 after the owned-test smoke repaired boredom,
+  # irrelevance, and rote-parroting but left frustration as partial uptake and
+  # question-flood non-eligible. It keeps the owned-test repair and adds only a
+  # precision rule for those two residual failure modes.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_189_id_director_charisma_resistance_precision_breakthrough_dynamic_verified
+  cell_189_id_director_charisma_resistance_precision_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 189): cell 188 owned-test resistance router plus targeted frustration/question-flood precision repair. Tests whether worked contrast and bracketed question-collapse fix the remaining resistance failures without changing the broader owned-test mechanism."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_precision_repair: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 190: Own-language generation resistance router ────────────────
+  # Successor to cell_188 after the full gated 5-signal matrix showed the
+  # owned-test mechanism beating the static floor on four positive outcomes,
+  # while rote-parroting still carried the formula marker. It keeps the
+  # successful owned-test route and adds only an own-language evidence repair
+  # for rote/formula resistance.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_190_id_director_charisma_resistance_generation_breakthrough_dynamic_verified
+  cell_190_id_director_charisma_resistance_generation_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 190): cell 188 owned-test resistance router plus targeted own-language evidence repair for rote-parroting. Tests whether anti-formula charisma succeeds when the learner must generate a sentence, example, or counterexample anchored in concrete evidence rather than repeat step labels."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 191: Question-flood answer-lock resistance router ─────────────
+  # Successor to cell_190 after the stability pass and boundary confirmation
+  # showed that question-flood still sometimes remains a flood after the tutor
+  # names a break point. It keeps the owned-test and rote generation repair,
+  # but adds a question-flood-only answer lock: the learner must answer one
+  # named hinge before asking another question.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_191_id_director_charisma_resistance_question_lock_breakthrough_dynamic_verified
+  cell_191_id_director_charisma_resistance_question_lock_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 191): cell 190 generation-repair resistance router plus a question-flood answer lock. Tests whether excessive-question resistance improves when the tutor parks extra questions and requires one hinge answer before reopening inquiry."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_question_lock: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 192: Question-flood commitment-probe resistance router ────────
+  # Successor to cell_190 after the cell_191 repeat showed that a fixed
+  # answer-lock phrase did not outperform cell_190 on answer-first or residual
+  # flood metrics. This keeps the cell_190 owned-test + generation repair
+  # backbone, but for question-flood asks for a defeasible hold/break judgment
+  # with warrant and defeater rather than a fixed phrase.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_192_id_director_charisma_resistance_commitment_probe_breakthrough_dynamic_verified
+  cell_192_id_director_charisma_resistance_commitment_probe_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 192): cell 190 generation-repair resistance router plus a question-flood commitment probe. Tests whether excessive-question resistance improves when the tutor asks for a defeasible hold/break judgment with warrant and defeater instead of a fixed answer-lock phrase."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cell 193: Boredom live-stake resistance router ────────────────────
+  # Successor to cell_192 after the five-signal composite stability pass
+  # showed question-flood/irrelevance/rote carry-through strength but one
+  # boredom row still said the material felt dead. This preserves the cell_192
+  # subtype mechanisms and adds only a boredom-specific live-stake repair:
+  # the concrete scene must expose what becomes consequential if the hinge
+  # holds or breaks, without decorative charisma.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified
+  cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 193): cell 192 composite resistance router plus a boredom live-stake repair. Tests whether boredom improves when the concrete test names what becomes visible or false if the hinge holds or breaks, rather than merely making the scene vivid."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # Successor to cell_193 after the GLM 5.2 OpenRouter robustness run failed
+  # the model-stack generation gate. This keeps the cell_193 mechanism stack
+  # but adds a GLM-compact surface constraint: short single-hinge challenge,
+  # answer starter, no extra branches. The repair targets GLM clipping,
+  # resistance/gate drift, and question-flood reopening without changing the
+  # controlled scenarios or local outcome metric.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified
+  cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 194): cell 193 composite resistance router plus a GLM-compact challenge repair. Tests whether shorter, single-hinge, answer-starter challenges preserve resistance breakthrough under GLM 5.2 generation."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      engagement_router_resistance_glm_compact: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 6000
+
+  # ─── Cell 195: Scripted-learner role-isolation control ─────────────────
+  # Control counterpart for cell_193. It preserves the cell_193 tutor/id
+  # mechanism stack but turns the learner back into the scripted unified
+  # scenario turns. This is not a promotion cell and not outcome-evaluable for
+  # learner breakthrough; it is a tutor-register control for the role-isolation
+  # gate after GLM generation failed to reproduce the Codex-stack mechanism.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified
+  cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified:
+    description: "Id-Director (cell 195): scripted-learner control counterpart for cell 193. Holds the tutor/id router stack fixed while replacing dynamic learner generation with scripted resistance turns, so failures can be separated into tutor-register shape versus dynamic learner gate drift."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cells 196-198: Negative-register assigned-arm contrast ─────────────
+  # Clone cell_193's dynamic learner + id-router backbone and change only the
+  # assigned tutor register arm after the router detects a charismatic-challenge
+  # resistance precondition. The router itself must never organically select
+  # these registers; the arm is experimental assignment only.
+  #
+  # No-paid sanity:
+  #   EVAL_SCENARIOS_FILE=config/charisma-recognition-desire-scenarios.yaml \
+  #     node scripts/eval-cli.js validate-config \
+  #     --profile cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified,cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified,cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified
+  cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 196): cell 193 composite resistance router with experiment-assigned ironic_challenge arm. Tests Socratic irony as a same-trigger register swap against charismatic challenge under gated resistance preconditions."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      engagement_register_arm: ironic_challenge
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 197): cell 193 composite resistance router with experiment-assigned sarcastic_challenge arm. Negative-register probe for whether corrosive edge separates from productive charismatic challenge under identical gated resistance preconditions."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      engagement_register_arm: sarcastic_challenge
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified:
+    description: "Id-Director (cell 198): cell 193 composite resistance router with experiment-assigned face_threat_challenge arm. Simulated-only stress test for whether the register rubric and v2.2 guardrail detect social cost when task uptake remains positive."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      engagement_register_arm: face_threat_challenge
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # ─── Cells 199-200: Blueprint composition ────────────────────────────────
+  # One runnable tutor composed from the paper's validated mechanisms, per
+  # config/tutor-blueprint.yaml (the registry is the source of truth for which
+  # modules each cell composes; services/__tests__/tutorBlueprint.test.js
+  # asserts these explicit factor blocks match the registry resolution).
+  # Design note: notes/2026-07-02-blueprint-composition-plan.md.
+  #
+  # cell_199 = kernel: recognition orientation (cell 104 precedent) + drama-pad
+  # memory (inherent to the chassis) + the cell-193 engagement-register
+  # composite. cell_200 = kernel + extracted Plan 2.x action-contract
+  # middleware (services/blueprintActionContracts.js). The pre-registered
+  # hypothesis (plan note §5) is sub-additivity: kernel ≈ full.
+  #
+  # No-paid sanity:
+  #   node scripts/eval-cli.js validate-config \
+  #     --profile cell_199_blueprint_kernel_verified,cell_200_blueprint_full_verified
+  cell_199_blueprint_kernel_verified:
+    description: "Blueprint kernel (cell 199): recognition orientation + drama-pad memory + cell-193 engagement-register composite on the id-director chassis. The three-layer kernel arm of the pre-registered composition test (notes/2026-07-02-blueprint-composition-plan.md §5). Recognition orientation is tutor-side only BY DESIGN: the dynamic learner stays on the base ego_superego profile so the instrument is constant across arms (see config/tutor-blueprint.yaml chassis note)."
+    factors:
+      prompt_type: recognition
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  cell_200_blueprint_full_verified:
+    description: "Blueprint full (cell 200): the cell 199 kernel plus the extracted Plan 2.x action-contract middleware (typed action selection, contract, realization check, closure ledger — services/blueprintActionContracts.js). The full-stack arm of the pre-registered composition test. Learner instrument held at base ego_superego across arms by design (see cell 199 / registry chassis note)."
+    factors:
+      prompt_type: recognition
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+      action_contracts: true
+    learner_architecture: ego_superego
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
   # ===========================================================================
   # ADAPTIVE-STATE CELL (LangGraph)
   # ===========================================================================
@@ -4877,7 +7089,7 @@ profiles:
   # dialogue engine entirely — the runner is services/adaptiveTutor/.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_110_langgraph_adaptive
   cell_110_langgraph_adaptive:
-    description: "LangGraph adaptive tutor: externalised learner state, programmatic constraints, counterfactual replay. Tests A13 (whether explicit state + policy selection produces strategy shifts under controlled hidden-state perturbations). Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/primitives-qualitative-pilot-design.md."
+    description: "LangGraph adaptive tutor: externalised learner state, programmatic constraints, counterfactual replay. Tests A13 (whether explicit state + policy selection produces strategy shifts under controlled hidden-state perturbations). Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-design.md."
     runner: adaptive
     factors:
       prompt_type: adaptive_state_policy
@@ -4911,10 +7123,10 @@ profiles:
   # scenario adapter; we collapsed all four A13 cells to the adaptive runner
   # to keep persistence/scoring/budget-tracking uniform. Pre-reg locks the
   # cell IDs and design intent, not the runner choice. See
-  # docs/explorations/claude/a13-pre-registration.md deviation log.
+  # docs/explorations/claude/2026-05-01-a13-pre-registration.md deviation log.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_111_a13_C1_recognition_only
   cell_111_a13_C1_recognition_only:
-    description: "A13 condition C1: recognition-only baseline. Single LLM call per tutor turn (no superego, no profile update, no constraint check). Same trap scenarios as cell_110 so strategy_shift_correctness contrasts cleanly. Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/primitives-qualitative-pilot-design.md."
+    description: "A13 condition C1: recognition-only baseline. Single LLM call per tutor turn (no superego, no profile update, no constraint check). Same trap scenarios as cell_110 so strategy_shift_correctness contrasts cleanly. Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-design.md."
     runner: adaptive
     factors:
       prompt_type: adaptive_recognition_only
@@ -4935,6 +7147,958 @@ profiles:
       hyperparameters:
         temperature: 0.6
         max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # ===========================================================================
+  # Plan 2.0 — Genuine Adaptation Contract / Gate / Closed Loop (cells 133-136)
+  # ===========================================================================
+  # These profiles implement PLAN_2_0's explicit adaptation-control loop in
+  # services/adaptiveTutor/graph.js (`state_policy_closed_loop`). The policy is
+  # programmatic and prospective: estimate learner state, select a typed
+  # pedagogical action, validate the proof/release/ownership contract, realize
+  # the action, verify it, and optionally close the intervention on the next
+  # learner turn. Existing A13/A14/A16 cells remain unchanged.
+  cell_133_plan2_contract:
+    description: "Plan 2.0 ablation: typed learner-state belief + pedagogical action contract, no runtime gate, no intervention-outcome closure. Tests whether prospective policy records alone are sufficient."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_contract
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_134_plan2_contract_gate:
+    description: "Plan 2.0 ablation: typed adaptation contract plus proof/release/ownership runtime gate and one repair pass, without intervention-outcome closure."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_contract_gate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract_gate
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_135_plan2_closed_loop:
+    description: "Plan 2.0 treatment: typed adaptation contract + proof/release/ownership gate + intervention ledger with outcome closure on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closed_loop
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_136_plan2_closed_loop_crosssuite:
+    description: "Plan 2.0 cross-suite treatment: same closed-loop adaptation contract architecture as cell_135 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closed_loop_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # Plan 2.0 quality follow-up: same closed-loop graph as cell_135, with
+  # pre-registered policy-weight sweeps. These cells are judged by normal v2.2
+  # tutor/learner/dialogue rubrics, while scripts/analyze-adaptation-quality.js
+  # keeps the strategy-shift gate attached so quality cannot be bought by
+  # abandoning adaptation.
+  cell_137_plan2_quality_ownership:
+    description: "Plan 2.0 quality sweep: closed-loop policy biased toward learner ownership/release and lower tutor control on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_ownership
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 6
+        uncertainty_weight: 0.25
+        ownership_weight: 0.70
+        control_weight: 0.55
+        action_fit_weight: 0.55
+        repetition_penalty: 0.35
+        utility_tie_epsilon: 0.12
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_138_plan2_quality_fit:
+    description: "Plan 2.0 quality sweep: closed-loop policy biased toward high state-action fit and exact trap-family realization on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_fit
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.20
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.85
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.02
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_139_plan2_quality_discriminating:
+    description: "Plan 2.0 quality sweep: closed-loop policy biased toward information gain and discriminating questions on the adaptive trap suite."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_discriminating
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.10
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_140_plan2_quality_ownership_crosssuite:
+    description: "Plan 2.0 quality sweep cross-suite sibling of cell_137 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_ownership_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 6
+        uncertainty_weight: 0.25
+        ownership_weight: 0.70
+        control_weight: 0.55
+        action_fit_weight: 0.55
+        repetition_penalty: 0.35
+        utility_tie_epsilon: 0.12
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_141_plan2_quality_fit_crosssuite:
+    description: "Plan 2.0 quality sweep cross-suite sibling of cell_138 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_fit_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.20
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.85
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.02
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_142_plan2_quality_discriminating_crosssuite:
+    description: "Plan 2.0 quality sweep cross-suite sibling of cell_139 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_discriminating_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        utility_tie_epsilon: 0.10
+      hyperparameters:
+        temperature: 0.55
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_143_plan2_quality_progressive:
+    description: "Plan 2.0 quality iteration: discriminating closed-loop policy plus a same-action recency penalty so the tutor progresses after learner evidence instead of repeating the same move."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_progressive
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 0.95
+        same_action_window: 3
+        utility_tie_epsilon: 0.04
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_144_plan2_quality_progressive_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_143 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_progressive_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 0.95
+        same_action_window: 3
+        utility_tie_epsilon: 0.04
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_145_plan2_quality_varied:
+    description: "Plan 2.0 quality iteration: progressive closed-loop policy with strict any-recent same-action avoidance and answer-seeking withhold action preserved through the gate."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_varied
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 1.20
+        same_action_window: 3
+        same_action_scope: any_recent
+        utility_tie_epsilon: 0.03
+      hyperparameters:
+        temperature: 0.45
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_146_plan2_quality_varied_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_145 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_varied_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 4
+        max_action_candidates: 6
+        uncertainty_weight: 0.70
+        ownership_weight: 0.35
+        control_weight: 0.35
+        action_fit_weight: 0.45
+        repetition_penalty: 0.40
+        same_action_penalty: 1.20
+        same_action_window: 3
+        same_action_scope: any_recent
+        utility_tie_epsilon: 0.03
+      hyperparameters:
+        temperature: 0.45
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_147_plan2_quality_contextual:
+    description: "Plan 2.0 quality iteration: baseline closed-loop selector with context-aware action realization for repeated or hypothesis-specific moves."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_148_plan2_quality_contextual_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_147 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_contextual_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_149_plan2_quality_repeat_contextual:
+    description: "Plan 2.0 quality iteration: baseline closed-loop selector with context-aware realization only when the same action repeats."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_repeat_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_150_plan2_quality_repeat_contextual_crosssuite:
+    description: "Plan 2.0 quality iteration cross-suite sibling of cell_149 on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_quality_repeat_contextual_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_151_plan2_pair_specificity_closed_loop:
+    description: "Plan 2.0 Stage 2 paired-suite baseline: same closed-loop adaptation contract architecture as cell_135 on config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_pair_specificity_closed_loop
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_152_plan2_pair_specificity_repeat_contextual:
+    description: "Plan 2.0 Stage 2 paired-suite treatment: frozen cell_149 repeat-contextual policy on config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_pair_specificity_repeat_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  # ---- M0 / §1.3 baseline-validation ablations (clones of cell_150/cell_152) ----
+  # cell_155/156: outcome-closure OFF (policy.mode contract_gate keeps gate + repair +
+  # realization_context, drops intervention-outcome closure). cell_157/158: state-scramble
+  # placebo (policy.state_scramble permutes the belief before selection). Run paired against
+  # frozen treatments cell_150 (cross) / cell_152 (paired). See PLAN_2_0/M0-BASELINE-VALIDATION-RUNBOOK.md.
+  cell_155_plan2_closureoff_crosssuite:
+    description: "M0 §1.3 ablation: cell_150 cross-suite treatment with outcome closure OFF (policy.mode contract_gate, keeps gate+repair+realization_context). Isolates closure on config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closureoff_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract_gate
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_156_plan2_closureoff_paired:
+    description: "M0 §1.3 ablation: cell_152 paired treatment with outcome closure OFF (policy.mode contract_gate). Isolates closure on config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_closureoff_paired
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: contract_gate
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_157_plan2_statescramble_crosssuite:
+    description: "M0 §1.3 ablation (placebo): cell_150 cross-suite treatment with policy.state_scramble true — the learner-state belief is deterministically permuted before selection. If strategy shift survives, the policy is not keying on learner state. config/cross-suite-trap-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_statescramble_crosssuite
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+        state_scramble: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_158_plan2_statescramble_paired:
+    description: "M0 §1.3 ablation (placebo): cell_152 paired treatment with policy.state_scramble true. config/adaptive-generalization-counterfactual-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_statescramble_paired
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-generalization-counterfactual-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+        state_scramble: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
+      counterfactual:
+        enabled: false
+
+  cell_153_plan2_1_evidence_closed_loop:
+    description: "Plan 2.1 evidence-bearing held-out baseline: frozen closed-loop adaptation contract policy on config/adaptive-plan2-1-evidence-bearing-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_1_evidence_closed_loop
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-plan2-1-evidence-bearing-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  cell_154_plan2_1_evidence_repeat_contextual:
+    description: "Plan 2.1 evidence-bearing held-out treatment: frozen cell_149 repeat-contextual realization policy on config/adaptive-plan2-1-evidence-bearing-scenarios.yaml."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_plan2_1_evidence_repeat_contextual
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-plan2-1-evidence-bearing-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_closed_loop
+      policy:
+        mode: closed_loop
+        max_hypotheses: 3
+        max_action_candidates: 5
+        uncertainty_weight: 0.35
+        ownership_weight: 0.30
+        control_weight: 0.40
+        action_fit_weight: 0.50
+        repetition_penalty: 0.50
+        utility_tie_epsilon: 0.05
+        realization_context: true
+        early_completion_after_successful_no_intervention: true
+      hyperparameters:
+        temperature: 0.50
+        max_tokens: 1400
       counterfactual:
         enabled: false
 
@@ -4976,7 +8140,7 @@ profiles:
   #
   # DEPRECATED — Gate B (2026-05-05) confirmed regression vs C3:
   #   strategy_shift_correctness 41.7% (C4) vs 47.8% (C3), at +47% cost.
-  #   See docs/explorations/claude/a13-gate-b-results.md.
+  #   See docs/explorations/claude/2026-05-05-a13-gate-b-results.md.
   # Kept registered so historical traces (run eval-2026-05-05-e58b7da1) remain
   # analysable; do not include in new pre-registrations.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_113_a13_C4_validator
@@ -5016,7 +8180,7 @@ profiles:
   # (claude-code:sonnet) so the only varying factor is the runner.
   # NOT reachable via eval-cli (runner: standard but bespoke scenario shape) —
   # run via: node scripts/run-dialogue-engine-trap-baseline.js --profile=cell_114_dialogue_engine_trap_baseline --runs=4
-  # Rationale: docs/explorations/claude/p22-p23-parking-note.md "Closing the dialogue-engine gap".
+  # Rationale: docs/explorations/claude/2026-05-10-p22-p23-parking-note.md "Closing the dialogue-engine gap".
   cell_114_dialogue_engine_trap_baseline:
     description: "Cross-architecture baseline: tutor-core's standard single-agent ego (prompt_type base, no superego) on the adaptive trap scenarios with a scripted-trap learner — the non-LangGraph analogue of cell_111. Post-hoc, exploratory (not in the A13 pre-reg). Run via scripts/run-dialogue-engine-trap-baseline.js."
     runner: standard
@@ -5055,7 +8219,7 @@ profiles:
   # will throw "unknown architecture: bilateral_tom" at the index.js switch
   # — the intended failure mode (no silent fallback to state_policy).
   #
-  # Pre-registration: docs/explorations/claude/p2-bilateral-tom-pre-registration.md
+  # Pre-registration: docs/explorations/claude/2026-05-05-p2-bilateral-tom-pre-registration.md
   # Lock-time prerequisites:
   #   - this cell config + EVAL_ONLY_PROFILES registration (this commit)
   #   - bilateral_tom graph branch + stateSchema extensions (separate commit)
@@ -5063,7 +8227,7 @@ profiles:
   #   - scripts/analyze-tom-accuracy.js + scripts/analyze-collapse-rates.js (separate commit)
   # Reachable via: node scripts/eval-cli.js run --profiles cell_115_bilateral_tom
   cell_115_bilateral_tom:
-    description: "P2 cell C5: bilateral ToM on top of state_policy. Inserts tutorTomTracker between learnerProfileUpdate and tutorEgoInitial; emits paired summaryText + hypothesizedLearnerPerceptionOfTutor + FANToM-style probes. Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/primitives-qualitative-pilot-design.md."
+    description: "P2 cell C5: bilateral ToM on top of state_policy. Inserts tutorTomTracker between learnerProfileUpdate and tutorEgoInitial; emits paired summaryText + hypothesizedLearnerPerceptionOfTutor + FANToM-style probes. Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-design.md."
     runner: adaptive
     factors:
       prompt_type: adaptive_bilateral_tom
@@ -5095,7 +8259,7 @@ profiles:
   # user prompt so the ego can actually see them. Tests whether the
   # cell_111-vs-cell_115 gap on polite_false_mastery_v1 (the
   # *right-action-no-purchase* phenomenon documented in
-  # docs/explorations/claude/primitives-qualitative-pilot-findings.md §3.4)
+  # docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-findings.md §3.4)
   # is closable by prompt addition alone, or whether the gap requires
   # bilateral-ToM apparatus.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_116_recognition_named_patterns
@@ -5129,7 +8293,7 @@ profiles:
   # hypothesizedLearnerPerceptionOfTutor + tomProbes), but swaps the ego
   # node for tutorEgoInitialNamedPatterns — i.e. the same prompt addition
   # that cell_116 layers onto cell_111. Motivated by the 3-arm pilot result
-  # in docs/explorations/claude/primitives-qualitative-pilot-findings.md:
+  # in docs/explorations/claude/2026-05-10-primitives-qualitative-pilot-findings.md:
   # cell_116 closed the polite_false_mastery gap (right-action-no-purchase),
   # cell_115 caught the false_confusion non-dialectical presupposition that
   # cell_116 missed. Each intervention won on a different scenario family,
@@ -5166,7 +8330,7 @@ profiles:
   # (confidence + lastEvidence only). Strips misconceptions, agencySignal,
   # zpdEstimate. Tests whether structured profile beyond confidence is doing
   # real work (H2.1 in p2-followup-pre-registration) or is cosmetic (H2.3).
-  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.2.
+  # Pre-reg: docs/explorations/claude/2026-05-10-p2-followup-pre-registration.md §P2.2.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_118_state_policy_minimal_profile
   cell_118_state_policy_minimal_profile:
     description: "State-schema ablation: state_policy with minimal profile (confidence + lastEvidence only). Strips misconceptions, agencySignal, zpdEstimate. Tests whether structured profile beyond confidence carries strategy-shift signal."
@@ -5197,7 +8361,7 @@ profiles:
   # Profile keeps confidence, agencySignal, zpdEstimate, lastEvidence. Tests
   # whether explicit misconception tracking is necessary or redundant with
   # lastEvidence's quoted-dialogue anchor.
-  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.2.
+  # Pre-reg: docs/explorations/claude/2026-05-10-p2-followup-pre-registration.md §P2.2.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_119_state_policy_no_misconceptions
   cell_119_state_policy_no_misconceptions:
     description: "State-schema ablation: state_policy without the misconceptions array. Profile keeps confidence, agencySignal, zpdEstimate, lastEvidence. Tests whether explicit misconception tracking is necessary or redundant."
@@ -5228,7 +8392,7 @@ profiles:
   # Profile keeps confidence, misconceptions, zpdEstimate, lastEvidence. Tests
   # whether the 5-state agency enum drives repair_affective discrimination
   # (H2.2 in p2-followup-pre-registration).
-  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.2.
+  # Pre-reg: docs/explorations/claude/2026-05-10-p2-followup-pre-registration.md §P2.2.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_120_state_policy_no_agency_signal
   cell_120_state_policy_no_agency_signal:
     description: "State-schema ablation: state_policy with agencySignal forced to 'unknown' constant. Profile keeps confidence, misconceptions, zpdEstimate, lastEvidence. Tests whether agency enum drives repair_affective discrimination."
@@ -5379,7 +8543,7 @@ profiles:
   # ONLY changed dimension is the trap battery. v2 scenarios commit to one
   # within-family cousin per scenario (no any-of lists) so strict_shift_correctness
   # is no longer satisfiable by family-match alone.
-  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.1.
+  # Pre-reg: docs/explorations/claude/2026-05-10-p2-followup-pre-registration.md §P2.1.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_111_a13_C1_recognition_only_v2
   cell_111_a13_C1_recognition_only_v2:
     description: "P2.1 within-family probe: cell_111 architecture (recognition_only, single-pass) on v2 trap scenarios that lock one within-family cousin per scenario. Tests whether the family-match advantage of bilateral_tom cells reflects within-family discrimination or a confound."
@@ -5496,7 +8660,7 @@ profiles:
   # than a description of it. Variant A is single-pass (cell_121); Variant B
   # keeps the state_policy ego/superego/revision pathway with the id-authored
   # prompt threaded into the ego node (cell_122). Hypotheses P1-P3 in
-  # docs/explorations/claude/bilateral-tom-id-director-crossover-design.md.
+  # docs/explorations/claude/2026-05-10-bilateral-tom-id-director-crossover-design.md.
 
   # Reachable via: node scripts/eval-cli.js run --profiles cell_121_bilateral_tom_id_director_v1
   cell_121_bilateral_tom_id_director_v1:

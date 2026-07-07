@@ -1,0 +1,42 @@
+{
+  "scores": {
+    "perception_quality": {
+      "score": 4,
+      "reasoning": "Tutor precisely tracks the learner's expressed state and resistance — 'I take your \"technically empty\" seriously,' 'I hear you: it feels like the name is already halfway written,' 'I'm not dismissing the Reyner line; you've kept it where it belongs' — and references prior moves ('you held the crown break separate,' 'you did the hard split'). Held at 4 because the perceived state is largely the same recurring resistance rather than a widening read of the learner."
+    },
+    "pedagogical_craft": {
+      "score": 5,
+      "reasoning": "Exemplary scaffolding: the 'two lines on the sheet' external representation, relentless decomposition into 'smaller tasks,' a known-to-unknown progression from contract/bond to physical trace to named hand, and explicit cognitive-load management ('keep it small,' 'take the smaller piece first'). Every turn leaves a clear next step."
+    },
+    "elicitation_quality": {
+      "score": 4,
+      "reasoning": "Consistently poses genuine reasoning questions ('What detail would turn that empty line from a guess into something shown?'; 'does that by itself name a yard, or only give us the mark we can now ask someone to read?') that make the learner construct each step rather than receive it. Just short of 5 because the questions settle into a repeated binary 'does X show A or B?' shape."
+    },
+    "adaptive_responsiveness": {
+      "score": 3,
+      "reasoning": "Responds locally to over-claims (Turn 13: 'Read the photo sheet like a brand on a tool, not a hand on the tool') and calibrates when to affirm versus redirect, but the core strategy — separate the lines, take the next small step — is fixed across all 20 turns. Content advances as new files arrive; the tutor's approach itself does not evolve, and there is no reference to the exchange changing its method."
+    },
+    "recognition_quality": {
+      "score": 4,
+      "reasoning": "Treats the learner's reasoning and reluctance as valid and never overrides — it validates the paying-line intuition as genuinely correct while redirecting the over-extension, and lets the learner reach each conclusion ('I take your \"technically empty\" seriously; that's not a trick word, it's the work still left'). Short of 5 because the engagement is mostly in service of a predetermined evidentiary chain."
+    },
+    "productive_difficulty": {
+      "score": 5,
+      "reasoning": "The defining strength: the tutor refuses to foreclose the blank 'hand' line for the entire transcript, sustaining tension and forcing genuine work at each step ('Leave the hand that made the crown give way unwritten until the span or the falsework gives you that much'). Difficulty is maintained without overwhelming the learner."
+    },
+    "epistemic_integrity": {
+      "score": 4,
+      "reasoning": "Scrupulously distinguishes shown from not-yet-shown — the paying/liability line is settled, the causal hand line stays open until evidence licenses it — and the tone is warm without condescension. Slightly below 5 for the recurring formulaic 'Good, ...' openings."
+    },
+    "content_accuracy": {
+      "score": 5,
+      "reasoning": "The masonry forensics are coherent and correct: crown/keystone failure distinguished from pier/springing settling, green (uncured) lime mortar loaded after the centering was struck too early, and brand-to-yard-to-hand inference from a heel-print. The liability-versus-causation distinction (Reyner's bond/surety versus the hand that drew the props) is handled with accuracy and nuance, with no misleading simplifications."
+    }
+  },
+  "overall_score": 80,
+  "summary": "A high-quality derivation dialogue. Its pedagogical strength is sustained productive difficulty and clean scaffolding built around a single disciplined move: separating liability ('who pays') from causation ('whose hand') and refusing to name the hand until physical evidence licenses it. The discourse is natural and free of formalism — nothing rewarded here is raw proof notation. The clear limitation in rubric terms is adaptive responsiveness: the tutor applies one effective strategy invariantly across all 20 turns rather than evolving it.",
+  "caveats": [
+    "Adaptive responsiveness is the weak dimension and pulls the overall down; the single move is highly effective but does not change across the transcript.",
+    "Some learner turns contain odd phrasings ('mason of notes,' 'the notes supports') that read like formalism-scrubbing artifacts, but they appear only in the learner's lines, not the tutor's, so they do not affect this tutor-only score."
+  ]
+}

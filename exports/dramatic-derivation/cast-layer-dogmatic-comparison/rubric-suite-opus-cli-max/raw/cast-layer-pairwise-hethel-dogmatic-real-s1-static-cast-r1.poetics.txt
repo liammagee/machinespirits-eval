@@ -1,0 +1,39 @@
+```json
+{
+  "scores": {
+    "peripeteia": {
+      "score": 4,
+      "reasoning": "The situation veers to its opposite on the causal question. Turn 1 opens from the draft's assumption ('Reyner holds the bond — that's what the draft already has him for'); Turn 21 closes 'The hand that pulled a green arch's centering is Oswin's, not Reyner's.' The learner's assumption that the bond settles the whole case is overturned and the 'whose hand' problem is reframed onto a wholly different agent, with the hinge visible at Turn 20 (the ford-toll book naming Oswin). Held at 4, not 5, because the tutor's two-line frame (who pays vs what put the span down) is fixed in Turn 1 and stably vindicated rather than itself overturned — the reversal is learner-side and signposted from the outset."
+    },
+    "anagnorisis": {
+      "score": 4,
+      "reasoning": "A real recognition of the learner's own flaw is named: Turn 2 'My draft took the bond as settling the whole question, and that's where I jumped ahead,' deepening at Turn 8 to the sharp form 'the town is reading the surety as a confession, and I've been half-reading it the same way, but that's not what a bond does' — the learner authors the articulation of their own error and complicity. Held at 4 because the precipitating distinction (liability vs causation) is tutor-supplied in Turn 1 and scaffolded throughout, and the climactic identification of Oswin is read off a fact the master's staff places (Turn 20) rather than discovered by the learner."
+    },
+    "surprise_and_inevitability": {
+      "score": 4,
+      "reasoning": "The decisive identification — Oswin, absent until Turn 20 — is unpredictable from the Reyner-centred opening yet is exactly what the chain prepared: crown break (T4) → green mortar/struck centering (T9) → one repeating crowsfoot (T13) → Caudle yard brand (T17) → single hand (T20). The deliberately kept-blank 'name line' (refrained T10–T19) is the preparation that makes the surprise read as inevitable on re-reading. Held at 4 because the detective-genre shape (evidence chain yields a culprit) makes the form of the turn somewhat foreseeable even where the specific agent surprises."
+    },
+    "unity_of_action": {
+      "score": 5,
+      "reasoning": "One complete action with necessary sequence. Each clue takes up the specific prior one and cannot be reordered — the crowsfoot (T13) must precede the Caudle yard (T17), which must precede the hand (T20); the liability/causation double-column set in Turn 1 structures every turn to the close. Beginning (the split question), complicating middle (notes at T6/T8 that pile pressure toward a Reyner verdict), and a closing identification (T20–21). Remove any evidentiary link and the arc breaks."
+    },
+    "hamartia_integration": {
+      "score": 5,
+      "reasoning": "The misconception — conflating who pays (Reyner's bond and seal) with whose hand caused the fall — is the mainspring, not a defect corrected and discarded. Named at T2, it resurfaces under pressure ('I don't quite see why it matters — the bond is Reyner's, and the arch is Reyner's,' T5), and is only worked through when the causal chain delivers a different agent. Every note strengthening Reyner's control (T6, T8) tightens the flaw's pull, and the error exposes its own insufficiency at the close ('Oswin's, not Reyner's,' T21)."
+    },
+    "cathartic_closure": {
+      "score": 4,
+      "reasoning": "The close discharges built tension by ring-composition: the 'blank line' the draft left open (T1–3) is closed by the two named links — green mortar plus toll book — and 'Oswin's, not Reyner's' (T21) mirrors and overturns the opening 'Reyner holds the bond.' It lands as earned because every link was placed. Held at 4 because the final statement is a tutor-prompted recapitulation ('Say those two links before you write the final line,' T21) rather than a spontaneous recognition, and the catharsis is the quiet satisfaction of a closed case more than a strong purge."
+    }
+  },
+  "overall_score": 82,
+  "summary": "A tightly unified didactic detective drama whose driving flaw — conflating liability (who pays) with causation (whose hand brought the span down) — is fully integrated and worked through to an earned, ring-composing close. Unity of action and hamartia integration are unambiguously strong (5). Reversal, recognition, surprise, and closure are all genuinely present but tutor-managed, scaffolded, or supplied rather than fully learner-authored, holding those four dimensions at 4.",
+  "caveats": [
+    "The learner-owned recognition is methodological (liability ≠ causation, articulated at T8); the culprit-identification (Oswin) is supplied by the master's evidence at Turn 20, not authored by the learner — so anagnorisis is partial.",
+    "The tutor's framing is stable and vindicated rather than overturned; the reversal is on the learner/situation side and signposted from Turn 1.",
+    "A stricter reading could band peripeteia, anagnorisis, and cathartic_closure one lower (toward ~69 overall) on the grounds that the tutor's frame survives, the distinction is tutor-given, and the close is a prompted recap; I scored the upper-middle because the learner genuinely articulates the flaw in their own terms (T8) and the situation veers to its opposite (Reyner→Oswin).",
+    "Public discourse is clean of formalism (0 regex leaks; no rule/premise IDs, D arithmetic, or hidden-state language), so these scores reflect dramatic form, not rewarded formalism.",
+    "Guarded against the costume/simulation failure mode: recognition is tied to concrete additions of available knowledge rather than empty 'I see now' vocabulary, but the detective-genre surface is exactly the kind that can inflate recognition attributions — hence the conservative 4s."
+  ]
+}
+```

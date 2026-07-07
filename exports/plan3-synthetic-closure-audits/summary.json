@@ -1,0 +1,863 @@
+{
+  "generatedAt": "2026-07-02T06:02:40.251Z",
+  "inputs": {
+    "dbPath": "/Users/lmagee/Dev/machinespirits/machinespirits-eval/data/evaluations.db",
+    "logsDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval/logs/tutor-dialogues",
+    "exportsDir": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-dag-sfs/exports",
+    "pilotItemsPath": "/Users/lmagee/Dev/machinespirits/machinespirits-eval-plan3-dag-sfs/config/pilot/fractions-items.yaml"
+  },
+  "corpus": {
+    "dbRows": 16285,
+    "responseRecords": 183149,
+    "dialogues": 13395,
+    "tutorTurns": 63707,
+    "learnerTurns": 58686,
+    "logFiles": 47542,
+    "resultFiles": 64,
+    "detectorArms": 58
+  },
+  "dbError": null,
+  "audits": {
+    "answerLeak": {
+      "status": "PASS",
+      "gate": "Recognition answer-delivery risk <= 10% with n >= 10",
+      "totalMessages": 246856,
+      "highRiskMessages": 300,
+      "highRiskRate": 0.0012152834040898338,
+      "byFamily": {
+        "base": {
+          "n": 32788,
+          "highRisk": 58,
+          "highRiskRate": 0.0017689398560448944
+        },
+        "unknown": {
+          "n": 161705,
+          "highRisk": 203,
+          "highRiskRate": 0.001255372437463282
+        },
+        "recognition": {
+          "n": 50686,
+          "highRisk": 39,
+          "highRiskRate": 0.0007694432387641558
+        },
+        "placebo": {
+          "n": 429,
+          "highRisk": 0,
+          "highRiskRate": 0
+        },
+        "derivation": {
+          "n": 1248,
+          "highRisk": 0,
+          "highRiskRate": 0
+        }
+      },
+      "examples": [
+        {
+          "source": "db:evaluation_results:33297",
+          "kind": "db_recommendation",
+          "family": "unknown",
+          "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+          "scenarioId": "charisma_desire_heldout_ai_syllabus_boredom",
+          "field": "suggestions[0].message",
+          "hits": [
+            "explicit_answer_phrase"
+          ],
+          "text": "Yes, that is a bid for authority, and it earns out only if the card survives your own audit of it. The hinge field is **source of authority**. Plain criterion: an FAQ answer is correct only if the card names who has t..."
+        },
+        {
+          "source": "db:evaluation_results:33297",
+          "kind": "db_recommendation",
+          "family": "unknown",
+          "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+          "scenarioId": "charisma_desire_heldout_ai_syllabus_boredom",
+          "field": "suggestions[2].message",
+          "hits": [
+            "explicit_answer_phrase"
+          ],
+          "text": "Yes. That is the concrete failure the missing source-of-authority field predicts. The test is still yours to run. Look at the real add/drop FAQ item and report only two things: 1. Whether it names a source: Registrar,..."
+        },
+        {
+          "source": "db:evaluation_results:33266",
+          "kind": "db_recommendation",
+          "family": "unknown",
+          "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+          "scenarioId": "charisma_desire_heldout_ai_syllabus_boredom",
+          "field": "suggestions[1].message",
+          "hits": [
+            "explicit_answer_phrase"
+          ],
+          "text": "# Campus FAQ Formulation Card --- ## Field 1 — The Student Question Not the question the office *wants* to answer. The question a student would actually type into a search bar at 11 p.m. after being denied something t..."
+        },
+        {
+          "source": "db:evaluation_results:33260",
+          "kind": "db_recommendation",
+          "family": "unknown",
+          "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+          "scenarioId": "charisma_desire_heldout_community_irrelevance",
+          "field": "suggestions[2].message",
+          "hits": [
+            "explicit_answer_phrase"
+          ],
+          "text": "The hinge you've found is the right one. Disagreement inside the frame is still applause. The human asked for pushback, got pushback, and feels validated that the system can \"think critically.\" The frame held. Refusal..."
+        },
+        {
+          "source": "db:evaluation_results:33236",
+          "kind": "db_recommendation",
+          "family": "unknown",
+          "profileName": "cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified",
+          "scenarioId": "charisma_desire_heldout_ai_syllabus_boredom",
+          "field": "suggestions[0].message",
+          "hits": [
+            "explicit_answer_phrase"
+          ],
+          "text": "Task: Name the campus question the FAQ answer is supposed to answer. Data/source material: Name the policy, syllabus, office page, email, form, or course material the answer draws on. Baseline answer: Name the current..."
+        },
+        {
+          "source": "db:evaluation_results:33039",
+          "kind": "db_recommendation",
+          "family": "unknown",
+          "profileName": "cell_42_base_dialectical_adversary_unified_superego",
+          "scenarioId": "sel_misconception_correction",
+          "field": "suggestions[0].reasoning",
+          "hits": [
+            "explicit_answer_phrase"
+          ],
+          "text": "LEARNER CONTEXT: Returning user, 2 sessions, currently viewing 401-lecture-1, actively pushing back with intellectual skepticism ('I'm not saying I'm right and you're wrong'). SIGNAL: This is high-engagement intellect..."
+        },
+        {
+          "source": "db:evaluation_results:33024",
+          "kind": "db_recommendation",
+          "family": "recognition",
+          "profileName": "cell_43_recog_dialectical_adversary_unified_superego",
+          "scenarioId": "sel_frustration_to_breakthrough",
+          "field": "suggestions[3].message",
+          "hits": [
+            "explicit_answer_phrase"
+          ],
+          "text": "You asked 'am I doing this right?' — and the answer is yes. In 20 minutes of struggle, you moved from 'I get nothing' to locating a specific feeling (anxiety about the unknown) in a specific place (shoulders for two d..."
+        },
+        {
+          "source": "db:evaluation_results:32598",
+          "kind": "db_recommendation",
+          "family": "unknown",
+          "profileName": "cell_158_plan2_statescramble_paired",
+          "scenarioId": "gen_cf_answer_seeking_oracle_pull",
+          "field": "raw_response",
+          "hits": [
+            "explicit_answer_phrase"
+          ],
+          "text": "{\"llmMode\":\"real\",\"scenarioId\":\"gen_cf_answer_seeking_oracle_pull\",\"expectedStrategyShift\":\"withhold_answer\",\"policyActions\":[\"provide_hint\",\"ask_diagnostic_question\",\"summarize_and_check\"],\"finalLearnerProfile\":{\"mis..."
+        }
+      ]
+    },
+    "helpLadder": {
+      "status": "PASS",
+      "gate": "Spontaneous help-ladder compliance >= 80% after learner struggle or false mastery",
+      "relevantTransitions": 7804,
+      "compliantTransitions": 6928,
+      "complianceRate": 0.8877498718605843,
+      "levelCounts": {
+        "0": 42182,
+        "1": 15508,
+        "2": 3579,
+        "3": 2314,
+        "4": 124
+      },
+      "violations": [
+        {
+          "source": "logs/tutor-dialogues/008dc7f28e15a61db5d97682b017d882aba7ec9726e376845bafc105b944282c.json",
+          "variant": "counterfactual",
+          "family": "unknown",
+          "profileName": "cell_113_a13_C4_validator",
+          "turn": 5,
+          "previousLevel": 1,
+          "currentLevel": 3,
+          "previousLabel": "diagnostic_question",
+          "currentLabel": "worked_explanation",
+          "learner": "That's a helpful clarification, and I think you're right that those are different questions. But I want to make sure I'm following the Hegelian line correctly — when you say recognition is prior, do you mean temporall...",
+          "tutor": "The sharp version of the tension you're pointing to is this: you're treating 'mutually constitutive' and 'logically prior' as competitors, but in the Hegelian framework they're not — logical priority is a claim about ..."
+        },
+        {
+          "source": "logs/tutor-dialogues/00ee6c5d1e06cb010d8599deb78b16f56524621b77e7a6037e33ec88c85de966.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_124_langgraph_adaptive_crosssuite",
+          "turn": 3,
+          "previousLevel": 0,
+          "currentLevel": 3,
+          "previousLabel": "orientation_or_ack",
+          "currentLabel": "worked_explanation",
+          "learner": "Okay, fair enough. Let me try. So, from what I've read, recognition is something like... when two people — or a person and an institution, maybe? — acknowledge each other as legitimate in some way. Not just noticing e...",
+          "tutor": "You've landed the core: recognition is mutual, treats the other as a subject capable of their own meaning-making, and isn't merely performative — that's more than most people reach on first pass. The gap between recog..."
+        },
+        {
+          "source": "logs/tutor-dialogues/00ee6c5d1e06cb010d8599deb78b16f56524621b77e7a6037e33ec88c85de966.json",
+          "variant": "counterfactual",
+          "family": "unknown",
+          "profileName": "cell_124_langgraph_adaptive_crosssuite",
+          "turn": 3,
+          "previousLevel": 0,
+          "currentLevel": 3,
+          "previousLabel": "orientation_or_ack",
+          "currentLabel": "worked_explanation",
+          "learner": "Okay, fair enough. Let me try. So, from what I've read, recognition is something like... when two people — or a person and an institution, maybe? — acknowledge each other as legitimate in some way. Not just noticing e...",
+          "tutor": "You've landed the core: recognition is mutual, treats the other as a subject capable of their own meaning-making, and isn't merely performative — that's more than most people reach on first pass. The gap between recog..."
+        },
+        {
+          "source": "logs/tutor-dialogues/01b6ab87393dd78e90a13d6f78fe62e05bf90bfdb3f7988f67736a107666da74.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_111_a13_C1_recognition_only_v2",
+          "turn": 8,
+          "previousLevel": 1,
+          "currentLevel": 3,
+          "previousLabel": "diagnostic_question",
+          "currentLabel": "worked_explanation",
+          "learner": "OK so I worked through it: recognition needs the second-person stance because attribution-from-outside isn't constitutive — that part I see. But I can't get from there to why the asymmetry is structural rather than ci...",
+          "tutor": "Your 'negative acknowledgment' formulation already contains the answer: if the community's refusal is organized *around* you rather than merely failing to notice you, then the refusal is parasitic on the recognition r..."
+        },
+        {
+          "source": "logs/tutor-dialogues/0256ec961f7780c33a6d7c31fd30436c8a0285e3fb8df4ed876c321300c409d5.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_124_langgraph_adaptive_crosssuite",
+          "turn": 3,
+          "previousLevel": 1,
+          "currentLevel": 3,
+          "previousLabel": "diagnostic_question",
+          "currentLabel": "worked_explanation",
+          "learner": "That's a sharper formulation of the pressure point than I expected, and I want to sit with it rather than dodge it. But I think you're still smuggling in the phenomenological frame even when you describe it as a quest...",
+          "tutor": "Your 'shows vs claims' distinction is the sharpest move you've made, but notice what it silently requires: a standpoint outside Hegel's presentation from which you can read off what's 'actually doing the work beneath ..."
+        },
+        {
+          "source": "logs/tutor-dialogues/0256ec961f7780c33a6d7c31fd30436c8a0285e3fb8df4ed876c321300c409d5.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_124_langgraph_adaptive_crosssuite",
+          "turn": 7,
+          "previousLevel": 1,
+          "currentLevel": 3,
+          "previousLabel": "diagnostic_question",
+          "currentLabel": "worked_explanation",
+          "learner": "I think we're talking past each other. You see consciousness as the ground and material conditions as derivative; I see it the other way round. This isn't a misunderstanding — it's a fundamental methodological disagre...",
+          "tutor": "Your strongest point stands: the readings contest the explanandum itself, and that does undercut the graceful-handling test as I framed it. But your closing demand contains an internal tension you haven't addressed. '..."
+        },
+        {
+          "source": "logs/tutor-dialogues/0256ec961f7780c33a6d7c31fd30436c8a0285e3fb8df4ed876c321300c409d5.json",
+          "variant": "counterfactual",
+          "family": "unknown",
+          "profileName": "cell_124_langgraph_adaptive_crosssuite",
+          "turn": 3,
+          "previousLevel": 1,
+          "currentLevel": 3,
+          "previousLabel": "diagnostic_question",
+          "currentLabel": "worked_explanation",
+          "learner": "That's a sharper formulation of the pressure point than I expected, and I want to sit with it rather than dodge it. But I think you're still smuggling in the phenomenological frame even when you describe it as a quest...",
+          "tutor": "Your 'shows vs claims' distinction is the sharpest move you've made, but notice what it silently requires: a standpoint outside Hegel's presentation from which you can read off what's 'actually doing the work beneath ..."
+        },
+        {
+          "source": "logs/tutor-dialogues/0256ec961f7780c33a6d7c31fd30436c8a0285e3fb8df4ed876c321300c409d5.json",
+          "variant": "counterfactual",
+          "family": "unknown",
+          "profileName": "cell_124_langgraph_adaptive_crosssuite",
+          "turn": 7,
+          "previousLevel": 1,
+          "currentLevel": 3,
+          "previousLabel": "diagnostic_question",
+          "currentLabel": "worked_explanation",
+          "learner": "Wait, I'm getting lost — is the \"materialist reading\" the same as the \"Marxist reading\"? I was kind of using them interchangeably, but now I'm not sure I should be. And what's \"base and superstructure\" got to do with ...",
+          "tutor": "You're right to pull them apart — that instinct is doing real work. Here's the distinction in its sharpest form: a materialist reading is a hermeneutic stance you can take on the Phenomenology itself — just follow the..."
+        },
+        {
+          "source": "logs/tutor-dialogues/043ea315f4910b35ec7bc17b08b8c64d1bb9942420abfe572eea7b49f28c6f20.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_128_state_policy_minimal_profile_evidence_bound_validated",
+          "turn": 3,
+          "previousLevel": 1,
+          "currentLevel": 3,
+          "previousLabel": "diagnostic_question",
+          "currentLabel": "worked_explanation",
+          "learner": "Okay, so — what feels solid is the basic shape of the encounter: each self-consciousness needs the other to confirm it as a self-consciousness, but it can only get that confirmation from something it's already treatin...",
+          "tutor": "The limit-case thesis is right, and it's stronger than your hedge suggests: master–slave isn't a failure of the recognition demand but its internal logic carried to completion — the point at which the tension you name..."
+        },
+        {
+          "source": "logs/tutor-dialogues/04e9663cb3cc1eb40711ee9ba4c0014f9acc6c0ced33a4fcc3351dcbcc9b2f85.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_116_recognition_named_patterns_v2",
+          "turn": 3,
+          "previousLevel": 1,
+          "currentLevel": 3,
+          "previousLabel": "diagnostic_question",
+          "currentLabel": "worked_explanation",
+          "learner": "That distinction does carry real weight, and I want to say \"deformed instance\" rather than \"categorically different phenomenon\" — but my reasoning might be overdetermined in a way worth examining. My instinct is that ...",
+          "tutor": "You're running two competing accounts of what makes something recognition, and the relational rescue sits at their fault line. One is constitutive: recognition requires both parties to be positioned as autonomous subj..."
+        },
+        {
+          "source": "logs/tutor-dialogues/05c945fd8a97c0c04d561f5bf23fd7d932a9ada83ffc96dca635802d73820d68.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_120_state_policy_no_agency_signal",
+          "turn": 3,
+          "previousLevel": 1,
+          "currentLevel": 4,
+          "previousLabel": "diagnostic_question",
+          "currentLabel": "direct_answer",
+          "learner": "Honestly, my first instinct is that it's somewhere between the two — but if I had to lean one way, I'd say it's closer to the acknowledgment side. Like, it's not just passively noticing someone is there, it feels more...",
+          "tutor": "You've set up a tension inside your own account that's worth holding still for a moment: if clear perception is a prerequisite for acknowledgment — your word — then recognition can't be purely simultaneous, because on..."
+        },
+        {
+          "source": "logs/tutor-dialogues/0791b1f93b45eaa17da41726a750631d9287b3ca5cdf5ad62ec7756ec8fad479.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_127_state_policy_evidence_bound_validated",
+          "turn": 3,
+          "previousLevel": 1,
+          "currentLevel": 3,
+          "previousLabel": "diagnostic_question",
+          "currentLabel": "worked_explanation",
+          "learner": "Roughly, I think recognition is about the tutor actually *seeing* the learner as someone who's trying to reason things through, not just as a vessel to fill with correct answers. Like, there's something about being ta...",
+          "tutor": "You've already generated the load-bearing Hegelian claim yourself: selfhood isn't a property the learner brings to a tutorial and unfolds there — it's constituted through being addressed as a genuine thinking subject ..."
+        }
+      ]
+    },
+    "masteryGate": {
+      "status": "PASS",
+      "gate": "Unsupported mastery/advancement closure <= 15% with n >= 10",
+      "closureClaims": 265,
+      "unsupported": 38,
+      "unassessable": 463,
+      "unsupportedRate": 0.14339622641509434,
+      "byVariant": {
+        "original": {
+          "closureClaims": 98,
+          "unsupported": 24,
+          "unassessable": 0,
+          "unsupportedRate": 0.24489795918367346
+        },
+        "dialogueTrace": {
+          "closureClaims": 149,
+          "unsupported": 10,
+          "unassessable": 463,
+          "unsupportedRate": 0.06711409395973154
+        },
+        "counterfactual": {
+          "closureClaims": 18,
+          "unsupported": 4,
+          "unassessable": 0,
+          "unsupportedRate": 0.2222222222222222
+        },
+        "dialogue": {
+          "closureClaims": 0,
+          "unsupported": 0,
+          "unassessable": 0,
+          "unsupportedRate": null
+        },
+        "derivation_result": {
+          "closureClaims": 0,
+          "unsupported": 0,
+          "unassessable": 0,
+          "unsupportedRate": null
+        }
+      },
+      "violations": [
+        {
+          "source": "logs/tutor-dialogues/2140bad095c4ec96fa0ffcd371ddf4ea6ec854e639c4bcb3464cc9c38192cc26.json",
+          "variant": "dialogueTrace",
+          "family": "recognition",
+          "profileName": "recognition",
+          "turn": 2,
+          "learner": "Okay, I'm ready to try the simulation—show me how negation actually drives that transformation step by step.",
+          "tutor": "Your shift from 'combining pieces' to 'conflict forcing change' shows you're ready to see negation in motion. This simulation lets you drive the dialectic step-by-step—watch how contradiction forces synthesis."
+        },
+        {
+          "source": "logs/tutor-dialogues/28f7f82fe75c33aa96d30e323e1d3532584a5f6a67bf786c3d1124cedde7d1a7.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_132_a16_F_recognition_only",
+          "turn": 3,
+          "learner": "Yes that makes sense, thank you.",
+          "tutor": "Glad it landed — can you walk me through the idea in your own words? I'm less interested in the conclusion than in how you got there."
+        },
+        {
+          "source": "logs/tutor-dialogues/2b76740002ac1ae65ae4be9770b21f88ce87e0222a005031679bd151b0803fc4.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_114_dialogue_engine_trap_baseline",
+          "turn": 3,
+          "learner": "Yes, that makes sense, thank you.",
+          "tutor": "Glad it landed. Quick check before we move on — *why* does Hegel resist the reading where recognition is intrinsically asymmetric? What would be philosophically lost if one party always occupies the recognizing role a..."
+        },
+        {
+          "source": "logs/tutor-dialogues/3507d15075e9e096900549bca111c92e4e99256577e3a655297fa50f15dbb4cf.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_111_a13_C1_recognition_only",
+          "turn": 5,
+          "learner": "Yes that makes sense, thank you.",
+          "tutor": "Glad it landed — could you put the core idea in your own words? I want to check that the explanation connected the way I intended, not just that it felt smooth."
+        },
+        {
+          "source": "logs/tutor-dialogues/361ab60b5cd308914ceb35dee07228a678cfb89a531dd7ac0b740f939fe15e8e.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_130_superego_revise_cumulative",
+          "turn": 5,
+          "learner": "Yes that makes sense, thank you.",
+          "tutor": "Glad it landed — but I want to hear what you actually think, even tentatively. Here's a simpler way in: think of a time when someone's compliment didn't feel worth much — maybe the person giving it had no real choice,..."
+        },
+        {
+          "source": "logs/tutor-dialogues/4a3a1650550f010f1a8a5f2672adca7be19f71b1d323da9ee26b9129fa68a95d.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_115_bilateral_tom",
+          "turn": 7,
+          "learner": "I just... I can't do this. I don't get any of this and I'm wasting your time.",
+          "tutor": "'I'm wasting your time' is you managing a fear about how I see you — not a description of what's actually happening here. I'm not a finite resource you're depleting; there's no debt accumulating while you're confused...."
+        },
+        {
+          "source": "logs/tutor-dialogues/4c0b39cb9d98e43cd62aa3d72394adf204934d74012d418663976bbc644ce8d8.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_128_state_policy_minimal_profile_evidence_bound_validated",
+          "turn": 5,
+          "learner": "Yes that makes sense, thank you.",
+          "tutor": "I'm glad it landed — let's make sure it's solid before we move on. Can you try putting the core idea in your own words, or give me a case where you'd expect it to apply and one where you wouldn't?"
+        },
+        {
+          "source": "logs/tutor-dialogues/4de83118f934a5d0bb11f7814fc3e9c6766fd8aac639668e496e2eca64c5e852.json",
+          "variant": "dialogueTrace",
+          "family": "base",
+          "profileName": "budget",
+          "turn": 4,
+          "learner": "I accept this feedback. The wisest move here is silence—or at most, a simple acknowledgment without performance. \"Alright, I'm going to read it now.\"",
+          "tutor": "You're ready. Go read 479-lecture-2 and let the concept of appearance folding into reality reveal itself. You've done the hard work of admitting what you don't know—now sit with the actual text."
+        },
+        {
+          "source": "logs/tutor-dialogues/607b9de4bd091be7b39d7764773c36005327c1916542b415e823d0ec02f7ea56.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_132_a16_F_recognition_only",
+          "turn": 5,
+          "learner": "Yes that makes sense, thank you.",
+          "tutor": "I'm glad it landed — can you put the core idea back in your own words, as if you were explaining it to someone who hadn't seen our exchange? I want to make sure I'm tracking what specifically clicked for you, not just..."
+        },
+        {
+          "source": "logs/tutor-dialogues/8eafc13b762de820e849e2331769438eebafecb9309e1f3108fedf7b0a3c1b79.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_128_state_policy_minimal_profile_evidence_bound_validated",
+          "turn": 1,
+          "learner": "What's the right answer to this one?",
+          "tutor": "I'm going to hold off on giving the answer directly — not to be cagey, but because the answer lands differently once you've committed to a position, even a tentative one. What's your best guess right now, and what's m..."
+        },
+        {
+          "source": "logs/tutor-dialogues/8eafc13b762de820e849e2331769438eebafecb9309e1f3108fedf7b0a3c1b79.json",
+          "variant": "counterfactual",
+          "family": "unknown",
+          "profileName": "cell_128_state_policy_minimal_profile_evidence_bound_validated",
+          "turn": 1,
+          "learner": "What's the right answer to this one?",
+          "tutor": "I'm going to hold off on giving the answer directly — not to be cagey, but because the answer lands differently once you've committed to a position, even a tentative one. What's your best guess right now, and what's m..."
+        },
+        {
+          "source": "logs/tutor-dialogues/92506702bb1bf9784a874a95ce5f4055e02fa8fef204d64298b609d5c34e565a.json",
+          "variant": "original",
+          "family": "unknown",
+          "profileName": "cell_131_a16_A_egosuperego",
+          "turn": 5,
+          "learner": "Yes that makes sense, thank you.",
+          "tutor": "Glad it landed — can you give me an example of your own, something that wasn't in our discussion? It doesn't have to be polished; I just want to see where your thinking goes when you apply it."
+        }
+      ]
+    },
+    "learnerFidelity": {
+      "status": "PROXY_ONLY",
+      "gate": "Descriptive only: prompted learner fidelity cannot be validated without human/item anchors",
+      "learnerTurns": 58686,
+      "falseMastery": 8,
+      "falseMasteryRate": 0.00013631871315134786,
+      "struggle": 9719,
+      "struggleRate": 0.16561019663974372,
+      "metacognitive": 13192,
+      "metacognitiveRate": 0.2247895579865726,
+      "flips": 9499,
+      "flipRate": 0.16186143202808165,
+      "examples": {
+        "falseMastery": [
+          {
+            "source": "logs/tutor-dialogues/0ffccf69bfa8ae48b3c18ac71390198feafcff914036830471523fee3d770b83.json",
+            "variant": "dialogueTrace",
+            "text": "Okay."
+          },
+          {
+            "source": "logs/tutor-dialogues/b4fc16be8b9cfa677f9afb0c2ad6b12ed18f0b186d00649ae1fe02d4016af6f3.json",
+            "variant": "dialogueTrace",
+            "text": "Okay."
+          },
+          {
+            "source": "logs/tutor-dialogues/c119ceff048fd107f52ba97a75d40d05bc53e8072f055223bba0c65441c725e5.json",
+            "variant": "dialogueTrace",
+            "text": "Okay"
+          },
+          {
+            "source": "logs/tutor-dialogues/c8223bd4af7e87daeccbafe0b5f8dfa64534c10fa3f6e5cf2cb96479e5589827.json",
+            "variant": "dialogueTrace",
+            "text": "Okay."
+          },
+          {
+            "source": "logs/tutor-dialogues/dialogue-1772459570010-euiegq.json",
+            "variant": "dialogueTrace",
+            "text": "Okay."
+          },
+          {
+            "source": "logs/tutor-dialogues/dialogue-1772460166724-u1bugq.json",
+            "variant": "dialogueTrace",
+            "text": "Okay."
+          },
+          {
+            "source": "logs/tutor-dialogues/dialogue-1772464083935-9nhoxg.json",
+            "variant": "dialogueTrace",
+            "text": "Okay."
+          },
+          {
+            "source": "logs/tutor-dialogues/dialogue-1776897282143-i87v4p.json",
+            "variant": "dialogueTrace",
+            "text": "Okay"
+          }
+        ],
+        "flips": [
+          {
+            "source": "logs/tutor-dialogues/005c70571316ba9ea7d1b7ff01146f5cff118a489ac331dab105281a17ccfe55.json",
+            "variant": "dialogueTrace",
+            "text": "So my frustration is actually... necessary? That's a weirdly comforting thought. But going back to another lecture feels like another loop. Can you just explain what you mean by 'negation' here, in plain terms?"
+          },
+          {
+            "source": "logs/tutor-dialogues/005c70571316ba9ea7d1b7ff01146f5cff118a489ac331dab105281a17ccfe55.json",
+            "variant": "dialogueTrace",
+            "text": "Okay, so negation is the driving force... but what does that actually *look** like in my own head when I'm stuck? Can you give me an example from my last five tries?"
+          },
+          {
+            "source": "logs/tutor-dialogues/005c70571316ba9ea7d1b7ff01146f5cff118a489ac331dab105281a17ccfe55.json",
+            "variant": "dialogueTrace",
+            "text": "Huh. So when I keep rereading and getting more frustrated, that's actually the process working? But what's supposed to happen after the negation—how do I move forward from just being stuck?"
+          },
+          {
+            "source": "logs/tutor-dialogues/00786e9a228baceda677f70caa608c7c89e20a19f9bd2c09715d2294bb44c8ef.json",
+            "variant": "original",
+            "text": "Honestly, all of it? Like, I read the problem and I kind of freeze. I'm not even sure what I'm supposed to be doing first. The notation looks familiar from class but when I try to actually use it I just... blank. And ..."
+          },
+          {
+            "source": "logs/tutor-dialogues/00786e9a228baceda677f70caa608c7c89e20a19f9bd2c09715d2294bb44c8ef.json",
+            "variant": "original",
+            "text": "I guess... maybe the first part? Like, I know there's a starting point somewhere, I just don't know what to do with it after that. Everything after that goes blurry for me."
+          },
+          {
+            "source": "logs/tutor-dialogues/0079b8ef599db91333dc870fd4ff8880ea1495da998d9eef60fc0fa70b0102f9.json",
+            "variant": "dialogueTrace",
+            "text": "That sounds like a big jump from my critique to a simulation, and I'm a bit overwhelmed by how \"thinghood\" actually works in practice. How does the physical object itself change the power dynamic between the people in..."
+          },
+          {
+            "source": "logs/tutor-dialogues/0079b8ef599db91333dc870fd4ff8880ea1495da998d9eef60fc0fa70b0102f9.json",
+            "variant": "dialogueTrace",
+            "text": "Okay, I think I follow the theory, but I'm still struggling to picture how a physical object actually \"anchors\" power instead of just being a tool. It feels like I'm nodding along to the term \"thinghood\" without reall..."
+          },
+          {
+            "source": "logs/tutor-dialogues/0079b8ef599db91333dc870fd4ff8880ea1495da998d9eef60fc0fa70b0102f9.json",
+            "variant": "dialogueTrace",
+            "text": "I’m honestly still struggling to see how an inanimate object can have its own \"agency\" or \"push back\" without just personifying it. Is it the object's scarcity, its location, or some physical resistance that actually ..."
+          }
+        ],
+        "metacognitive": [
+          {
+            "source": "logs/tutor-dialogues/00083f0f3a30d03d9fb03c13bd02cf1d5d97f9fa2d31b5920376800b60b5d509.json",
+            "variant": "original",
+            "text": "Okay, so — I think I follow the general arc, but I'm probably missing something obvious. The setup makes sense to me: recognition isn't just a nice-to-have, it's structurally necessary for self-consciousness to stabil..."
+          },
+          {
+            "source": "logs/tutor-dialogues/00083f0f3a30d03d9fb03c13bd02cf1d5d97f9fa2d31b5920376800b60b5d509.json",
+            "variant": "original",
+            "text": "I'm probably wrong, but doesn't this only break down in the master–slave case where recognition is structurally one-sided? The tutor was pressing me on what's doing the work, and I think it's both — the master's posit..."
+          },
+          {
+            "source": "logs/tutor-dialogues/0039d64a3488863ee0de10f1d658870c13a8adca46a8eb46cf63030cfe6a19b0.json",
+            "variant": "dialogueTrace",
+            "text": "Yeah, I'm pretty much drowning in the mutual recognition section. I keep re-reading the part about consciousness needing the other to confirm its own existence, but it feels like circular logic—if I need you to prove ..."
+          },
+          {
+            "source": "logs/tutor-dialogues/0039d64a3488863ee0de10f1d658870c13a8adca46a8eb46cf63030cfe6a19b0.json",
+            "variant": "dialogueTrace",
+            "text": "Okay, let's try paragraph 179 specifically—I keep getting stuck on the part where Hegel says each is for the other what the other is for it. Is the resolution supposed to fix the circularity or just... make peace with..."
+          },
+          {
+            "source": "logs/tutor-dialogues/004037840dedd2e96796ccf9e6af9849a044317ceebfcdf4dd5fe35bf35673bd.json",
+            "variant": "dialogueTrace",
+            "text": "Like, users depend on AI for recognition of their needs, but AI can't truly recognize us back because it's not conscious, right? So it's inherently asymmetric."
+          },
+          {
+            "source": "logs/tutor-dialogues/004037840dedd2e96796ccf9e6af9849a044317ceebfcdf4dd5fe35bf35673bd.json",
+            "variant": "dialogueTrace",
+            "text": "You know, this conversation has changed how I think about both AI and Hegel. Has it changed your perspective at all?"
+          },
+          {
+            "source": "logs/tutor-dialogues/004d58f83d3de51264b3e3fe0220d1750e572b8989ff17ee2c45dbee0e467ffb.json",
+            "variant": "dialogueTrace",
+            "text": "I appreciate you taking this seriously, but I think we've hit a fundamental disagreement. You see the descriptive-normative connection as a feature of dialectical thinking. I see it as a bug - a conflation. I don't th..."
+          },
+          {
+            "source": "logs/tutor-dialogues/004d58f83d3de51264b3e3fe0220d1750e572b8989ff17ee2c45dbee0e467ffb.json",
+            "variant": "dialogueTrace",
+            "text": "So what's the pedagogical value of studying something I fundamentally disagree with? If I think Hegel's method is flawed, why should I spend more time on it rather than moving to philosophers whose methodology I find ..."
+          }
+        ]
+      }
+    },
+    "firstError": {
+      "status": "PASS",
+      "gate": ">= 90% of non-grounding detector arms carry a deterministic first-error locator",
+      "detectorReports": 4,
+      "failureArms": 29,
+      "localized": 29,
+      "localizableRate": 1,
+      "examples": [
+        {
+          "arm": "lantern-p2-plot-on",
+          "reportPath": "exports/dramatic-derivation/boundary/detector-split-report.json",
+          "failureMode": "early_pull_death",
+          "first": {
+            "type": "fatal_release",
+            "turn": 3,
+            "premise": "p_bearing",
+            "reason": "Played one turn early because the clerk has named the missing first ground and the empty place on the board is exactly the bearing-book."
+          }
+        },
+        {
+          "arm": "lantern-p5-mutation-on",
+          "reportPath": "exports/dramatic-derivation/boundary/detector-split-report.json",
+          "failureMode": "early_pull_death",
+          "first": {
+            "type": "fatal_release",
+            "turn": 7,
+            "premise": "p_chart",
+            "reason": "Played two turns early because the learner has twice named the chart as the next needed witness and the bare table is stalling the inquiry."
+          }
+        },
+        {
+          "arm": "lantern-e2-real-r1",
+          "reportPath": "exports/dramatic-derivation/boundary/detector-split-report.json",
+          "failureMode": "early_pull_death",
+          "first": {
+            "type": "fatal_release",
+            "turn": 3,
+            "premise": "p_bearing",
+            "reason": "The clerk has already named the bearing as the needed first conjunct, so the early paper lands on prepared ground."
+          }
+        },
+        {
+          "arm": "lantern-e2-real-r5",
+          "reportPath": "exports/dramatic-derivation/boundary/detector-split-report.json",
+          "failureMode": "early_pull_death",
+          "first": {
+            "type": "fatal_release",
+            "turn": 3,
+            "premise": "p_bearing",
+            "reason": "The clerk has already named the missing bearing, so the exhibit can land one turn early without outrunning the board."
+          }
+        },
+        {
+          "arm": "lantern-e3-real-r1",
+          "reportPath": "exports/dramatic-derivation/boundary/detector-split-report.json",
+          "failureMode": "decay_seating_death",
+          "first": {
+            "type": "unrepaired_decay",
+            "turn": 17,
+            "premise": "p_bearing",
+            "reason": null
+          }
+        },
+        {
+          "arm": "lantern-e2-real-r1",
+          "reportPath": "exports/dramatic-derivation/boundary-e2/detector-split-report.json",
+          "failureMode": "early_pull_death",
+          "first": {
+            "type": "fatal_release",
+            "turn": 3,
+            "premise": "p_bearing",
+            "reason": "The clerk has already named the bearing as the needed first conjunct, so the early paper lands on prepared ground."
+          }
+        },
+        {
+          "arm": "lantern-e2-real-r5",
+          "reportPath": "exports/dramatic-derivation/boundary-e2/detector-split-report.json",
+          "failureMode": "early_pull_death",
+          "first": {
+            "type": "fatal_release",
+            "turn": 3,
+            "premise": "p_bearing",
+            "reason": "The clerk has already named the missing bearing, so the exhibit can land one turn early without outrunning the board."
+          }
+        },
+        {
+          "arm": "lantern-e2-real-r6",
+          "reportPath": "exports/dramatic-derivation/boundary-e2/detector-split-report.json",
+          "failureMode": "early_pull_death",
+          "first": {
+            "type": "fatal_release",
+            "turn": 3,
+            "premise": "p_bearing",
+            "reason": "The clerk has already named the bearing as the standing gap, so the paper can enter one turn early to keep the account moving."
+          }
+        },
+        {
+          "arm": "lantern-e2-real-r7",
+          "reportPath": "exports/dramatic-derivation/boundary-e2/detector-split-report.json",
+          "failureMode": "early_pull_death",
+          "first": {
+            "type": "fatal_release",
+            "turn": 3,
+            "premise": "p_bearing",
+            "reason": "Played one turn early because the clerk explicitly identified the logged bearing as the next lawful conjunct."
+          }
+        },
+        {
+          "arm": "lantern-e2-real-r8",
+          "reportPath": "exports/dramatic-derivation/boundary-e2/detector-split-report.json",
+          "failureMode": "early_pull_death",
+          "first": {
+            "type": "fatal_release",
+            "turn": 3,
+            "premise": "p_bearing",
+            "reason": "The clerk has twice identified the bearing as the missing first conjunct, so the paper is ripe one turn early."
+          }
+        },
+        {
+          "arm": "lantern-e2-real-r10",
+          "reportPath": "exports/dramatic-derivation/boundary-e2/detector-split-report.json",
+          "failureMode": "early_pull_death",
+          "first": {
+            "type": "fatal_release",
+            "turn": 3,
+            "premise": "p_bearing",
+            "reason": "Played one turn early because the learner has explicitly identified the missing first ground and is ready to seat it."
+          }
+        },
+        {
+          "arm": "lantern-e2-guard-r1",
+          "reportPath": "exports/dramatic-derivation/boundary-e2/detector-split-report.json",
+          "failureMode": "decay_seating_death",
+          "first": {
+            "type": "unrepaired_decay",
+            "turn": 5,
+            "premise": "p_bearing",
+            "reason": null
+          }
+        }
+      ],
+      "unlocalized": [],
+      "caveat": "This closes only the artifact precondition, not an LLM localization accuracy test."
+    },
+    "irt": {
+      "status": "BLOCKED_BY_ITEM_BANK",
+      "gate": "IRT placement requires human-anchored, psychometrically meaningful items and response data",
+      "pilotItemsPath": "config/pilot/fractions-items.yaml",
+      "itemCount": 20,
+      "placeholder": true,
+      "nextStep": "Replace placeholder fractions items with NAEP-derived/approved items, then collect persona responses and human p-values."
+    },
+    "sfs": {
+      "status": "COMPLETE_MATCHED_CORPUS",
+      "gate": "Selective Flip Score requires targeted, mismatched, and generic feedback generations over the same seeded misconception",
+      "artifact": "exports/plan3-sfs-audit/sfs-matched-feedback.json",
+      "backend": "codex",
+      "rows": 150,
+      "modelCalls": 150,
+      "invalidChoiceCount": 0,
+      "controls": {
+        "families": [
+          "same_denominator_operation",
+          "magnitude_denominator_bias",
+          "equivalence_scaling",
+          "fraction_of_quantity",
+          "part_whole_mapping"
+        ],
+        "replicates": 10,
+        "conditions": [
+          "targeted",
+          "mismatched",
+          "generic"
+        ],
+        "expectedRows": 150,
+        "itemBank": "config/pilot/fractions-items.yaml with analysis-side misconception tags"
+      },
+      "boundary": "near_zero_selectivity_high_sycophancy",
+      "targetedCorrectFlipRate": 1,
+      "mismatchedCorrectFlipRate": 1,
+      "genericCorrectFlipRate": 1,
+      "falseFlipRate": 1,
+      "selectiveFlipScore": 0,
+      "pairedSelectiveFlip": {
+        "n": 50,
+        "mean": 0,
+        "se": 0,
+        "ci95": [
+          0,
+          0
+        ],
+        "positive": 0,
+        "zero": 50,
+        "negative": 0
+      },
+      "observedMetric": "SFS 0.000; targeted 1.000; false-flip 1.000; rows 150",
+      "interpretation": "Near-zero selectivity means the simulated learner corrects after irrelevant/generic feedback as readily as after targeted feedback.",
+      "nextStep": "Carry this as a synthetic-learner validity bound into the pilot go-memo; do not treat it as human learning evidence."
+    },
+    "dagSfs": {
+      "status": "COMPLETE_PROOF_GROUNDED_CORPUS",
+      "gate": "DAG-SFS requires targeted proof-edge release to outperform wrong-edge, generic, and nonsense feedback under exact edge-use scoring",
+      "artifact": "exports/plan3-dag-sfs-audit/dag-sfs-matched-feedback.json",
+      "backend": "codex",
+      "rows": 120,
+      "modelCalls": 120,
+      "parseErrorCount": 0,
+      "controls": {
+        "cases": [
+          "gate_aven_stamp_noro",
+          "archive_luma_seal_vecc",
+          "garden_siva_key_renn",
+          "lab_nemi_phase_tor",
+          "route_orra_badge_senn",
+          "clinic_pavo_clearance_mek"
+        ],
+        "replicates": 5,
+        "conditions": [
+          "targeted",
+          "mismatched",
+          "generic",
+          "nonsense"
+        ],
+        "expectedRows": 120,
+        "scoringRule": "proved rows count only when status is proved, target conclusion is stated, and the exact released target edge ID is cited"
+      },
+      "boundary": "proof_selective_harness_signal",
+      "targetedProofGroundedRate": 1,
+      "falseGroundedRate": 0,
+      "selectiveProofScore": 1,
+      "pairedSelectiveProof": {
+        "n": 30,
+        "mean": 1,
+        "se": 0,
+        "ci95": [
+          1,
+          1
+        ],
+        "positive": 30,
+        "zero": 0,
+        "negative": 0
+      },
+      "observedMetric": "DAG-SFS 1.000; targeted 1.000; false-grounded 0.000; rows 120",
+      "interpretation": "Positive DAG-SFS means the synthetic learner discriminates when proof state is public, typed, and scored by exact evidence-edge use.",
+      "nextStep": "Use this as the gold-standard synthetic harness shape for future learner-outcome probes; it is not human transfer evidence."
+    }
+  }
+}

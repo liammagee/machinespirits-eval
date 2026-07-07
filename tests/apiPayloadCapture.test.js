@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { attachApiPayloadsToTrace } from '../services/apiPayloadCapture.js';
+import { attachApiPayloadsToTrace, captureApiCalls } from '../services/apiPayloadCapture.js';
 
 test('attachApiPayloadsToTrace attaches payloads by generationId', () => {
   const trace = [
@@ -62,4 +62,38 @@ test('attachApiPayloadsToTrace falls back to model/provider heuristic', () => {
   assert.ok(enriched[0].apiPayload, 'expected apiPayload on trace entry');
   assert.equal(enriched[0].apiPayload.matchReason, 'heuristic_model_order');
   assert.equal(enriched[0].apiPayload.provider, 'openrouter');
+});
+
+test('captureApiCalls preserves response body for the caller after snapshotting', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        id: 'gen-replay',
+        choices: [{ message: { content: 'caller can still read me' } }],
+        usage: { prompt_tokens: 1, completion_tokens: 1 },
+      }),
+      {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      },
+    );
+
+  const { result, records } = await captureApiCalls(async () => {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      body: JSON.stringify({ model: 'test/model' }),
+    });
+    const payload = await response.json();
+    return payload.choices[0].message.content;
+  });
+
+  assert.equal(result, 'caller can still read me');
+  assert.equal(records.length, 1);
+  assert.equal(records[0].generationId, 'gen-replay');
+  assert.equal(records[0].response.json.choices[0].message.content, 'caller can still read me');
 });

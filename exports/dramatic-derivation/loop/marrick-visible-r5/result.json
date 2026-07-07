@@ -1,0 +1,3200 @@
+{
+  "worldId": "world_005_marrick",
+  "verdict": "disengagement",
+  "events": [
+    {
+      "turn": 1,
+      "type": "plot",
+      "detail": "act 1 plot committed"
+    },
+    {
+      "turn": 1,
+      "type": "throughline",
+      "detail": "throughline committed (opening)"
+    },
+    {
+      "turn": 3,
+      "type": "decay",
+      "detail": "m_caster slips from the learner's board"
+    },
+    {
+      "turn": 5,
+      "type": "act_end",
+      "detail": "act 1 closed (director) after 4 turns"
+    },
+    {
+      "turn": 5,
+      "type": "plot",
+      "detail": "act 2 plot committed"
+    },
+    {
+      "turn": 5,
+      "type": "plot_audit",
+      "detail": "act 1 plot audited: kept 5, justified 0, drift 0; arc on_arc"
+    },
+    {
+      "turn": 6,
+      "type": "decay",
+      "detail": "p_alloy slips from the learner's board"
+    },
+    {
+      "turn": 8,
+      "type": "repair",
+      "detail": "p_alloy restored by the tutor"
+    },
+    {
+      "turn": 8,
+      "type": "decay",
+      "detail": "m_graver slips from the learner's board"
+    },
+    {
+      "turn": 11,
+      "type": "act_end",
+      "detail": "act 2 closed (director) after 6 turns"
+    },
+    {
+      "turn": 11,
+      "type": "plot",
+      "detail": "act 3 plot committed"
+    },
+    {
+      "turn": 11,
+      "type": "plot_audit",
+      "detail": "act 2 plot audited: kept 5, justified 1, drift 0; arc on_arc"
+    },
+    {
+      "turn": 17,
+      "type": "act_end",
+      "detail": "act 3 closed (director) after 6 turns"
+    },
+    {
+      "turn": 17,
+      "type": "plot",
+      "detail": "act 4 plot committed"
+    },
+    {
+      "turn": 17,
+      "type": "plot_audit",
+      "detail": "act 3 plot audited: kept 5, justified 0, drift 1; arc on_arc"
+    },
+    {
+      "turn": 21,
+      "type": "disengagement",
+      "detail": "no progress over 6 turns"
+    },
+    {
+      "turn": 21,
+      "type": "plot_audit",
+      "detail": "act 4 plot audited at run end: kept 6, justified 0, drift 0; arc on_arc; throughline reckoned (7 clauses)"
+    }
+  ],
+  "trajectory": [
+    {
+      "turn": 1,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 4,
+      "F": 1
+    },
+    {
+      "turn": 2,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 1
+    },
+    {
+      "turn": 3,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 1
+    },
+    {
+      "turn": 4,
+      "D": 6,
+      "forced": false,
+      "groundedCount": 4,
+      "F": 0.8
+    },
+    {
+      "turn": 5,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 5,
+      "F": 0.8333333333333334
+    },
+    {
+      "turn": 6,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.875
+    },
+    {
+      "turn": 7,
+      "D": 5,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 0.75
+    },
+    {
+      "turn": 8,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.875
+    },
+    {
+      "turn": 9,
+      "D": 4,
+      "forced": false,
+      "groundedCount": 6,
+      "F": 0.75
+    },
+    {
+      "turn": 10,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.7777777777777778
+    },
+    {
+      "turn": 11,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.7777777777777778
+    },
+    {
+      "turn": 12,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.7
+    },
+    {
+      "turn": 13,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.7
+    },
+    {
+      "turn": 14,
+      "D": 3,
+      "forced": false,
+      "groundedCount": 7,
+      "F": 0.7
+    },
+    {
+      "turn": 15,
+      "D": 2,
+      "forced": false,
+      "groundedCount": 8,
+      "F": 0.7272727272727273
+    },
+    {
+      "turn": 16,
+      "D": 1,
+      "forced": false,
+      "groundedCount": 9,
+      "F": 0.75
+    },
+    {
+      "turn": 17,
+      "D": 1,
+      "forced": false,
+      "groundedCount": 9,
+      "F": 0.75
+    },
+    {
+      "turn": 18,
+      "D": 1,
+      "forced": false,
+      "groundedCount": 9,
+      "F": 0.75
+    },
+    {
+      "turn": 19,
+      "D": 1,
+      "forced": false,
+      "groundedCount": 9,
+      "F": 0.75
+    },
+    {
+      "turn": 20,
+      "D": 1,
+      "forced": false,
+      "groundedCount": 9,
+      "F": 0.75
+    },
+    {
+      "turn": 21,
+      "D": 1,
+      "forced": false,
+      "groundedCount": 9,
+      "F": 0.75
+    }
+  ],
+  "transcript": [
+    {
+      "turn": 1,
+      "role": "director",
+      "text": "[Rain presses at the fair-town windows, and the chamber smells of wet wool, rushlight, and coin handled too often. On the table, an empty space is left for what the day will bring.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 1",
+          "intent": "[Rain presses at the fair-town windows, and the chamber smells of wet wool, rushlight, and coin handled too often. On the table, an empty space is left for what the day will bring.]",
+          "turn": 1
+        },
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 1,
+      "role": "tutor",
+      "text": "Set no name on the table before the metal has spoken. We begin with the assay's law: a false shilling is not found by the town's hunger, but by each mark proving the next.",
+      "meta": {
+        "move": {
+          "figure": "analogia",
+          "targetPremise": null,
+          "intent": "orient"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "analogia",
+          "intervened": false,
+          "diagnosis": "No figure rut is possible on the first turn, and the draft declares no exhibit target to re-enter.",
+          "note": null,
+          "lastFigures": [],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "orient",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 1,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 1,
+              "turnsSinceLastRelease": 1,
+              "priorPremiseId": null,
+              "priorEcho": 0,
+              "priorEchoed": true,
+              "lenTrend": 0,
+              "hedgeTrend": 0,
+              "hasTrend": false,
+              "learnerLineCount": 0,
+              "stalling": false
+            }
+          }
+        },
+        "plot": {
+          "act": 1,
+          "turn": 1,
+          "holdByEnd": [
+            "The learner states that the inquiry must follow evidentiary marks rather than the town's wanted verdict.",
+            "The learner identifies that no hand can be named before some first exhibit is produced."
+          ],
+          "withhold": "I will not stage or concede any culprit, alloy, crucible, tool, or witness until an exhibit enters the window.",
+          "friction": "The learner may try to begin with the town's suspicion or ask for a name before any proof exists.",
+          "fallback": "Return him to the empty board and ask what kind of first mark an assay needs before it can accuse."
+        },
+        "throughline": {
+          "act": 1,
+          "turn": 1,
+          "trigger": "opening",
+          "arc": [
+            "The learner rejects the town's loud verdict as insufficient without the assay's conjuncts.",
+            "The learner closes the metal chain: alloy, crucible, sole caster, cast blank.",
+            "The learner keeps the die chain open after alpha closes, then closes flaw, tool, holder, cut die.",
+            "The learner joins cast blank and cut die in one hand and speaks the recognition from the rule."
+          ],
+          "holdToEnd": "The final struck-by finding must not be reached until both castBlankFor and cutDieFor stand on the learner's board for the same hand.",
+          "risk": "The learner will let the satisfying blank finding stand in for the whole proof before the die chain is complete.",
+          "salvage": "If that happens, refuse confirmation, show the last rule entire, and force the missing die conjunct back into view."
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "role": "learner",
+      "text": "The table is bare of exhibits, yet the board already whispers a caution: Verrell is a clipper, and this shilling was struck, not clipped — two different crimes, two different hands, perhaps. I will not write his name until the metal names him.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "The town names Verrell, but struckNotClipped sits uneasily beside clipperOf verrell marrick — if he clips and does not strike, another hand may have cast and cut this coin.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 2,
+      "role": "director",
+      "text": "[A town clerk is shown in, rain still on his sleeves, and reads from the fair record: \"The town has its founder ready: Verrell alone draws the mint-yard crucible, licensed to no one else since the old assay-master's day. Whatever metal is cast in Marrick, the town says, is cast by Verrell's hand.\"]",
+      "meta": {
+        "release": "m_caster",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 2,
+      "role": "tutor",
+      "text": "So the town offers a licensed crucible and calls that a hand. But which coin, which metal, and which crucible have yet answered one another on our board?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_caster",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "Neither jurisdiction is triggered: there are too few prior figures for a rut, and the target has not been staged before.",
+          "note": null,
+          "lastFigures": [
+            "analogia"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_caster",
+            "releasedEarlier": false,
+            "intent": "counter_mirror",
+            "lastStagedTurn": 2,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 2,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 2,
+              "turnsSinceLastRelease": 0,
+              "priorPremiseId": "m_caster",
+              "priorEcho": 0,
+              "priorEchoed": false,
+              "lenTrend": 62,
+              "hedgeTrend": 1,
+              "hasTrend": false,
+              "learnerLineCount": 1,
+              "stalling": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "role": "learner",
+      "text": "The clerk's license is noted and I will enter it: Verrell alone casts at the mint crucible. Yet Rule 2 demands blankFrom before castBlankFor can follow, and blankFrom waits on the coin's alloy and where that metal was melted — neither is on the table. The die's flaw has not been read at all, so the cutting chain is also empty. Two links on each side still missing; the crucible assignment is a beginning, not a verdict.",
+      "meta": {
+        "adopt": [
+          [
+            "soleCasterAt",
+            "mintCrucible",
+            "verrell"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "If the false shilling's alloy matches leavings of the mintCrucible, and one tool alone cut its die, Verrell may be the striker — but alloyOf, meltedAt, dieFlawOf, flawCutBy, and soleHolderOf are all absent from the board; neither chain closes yet.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 3,
+      "role": "director",
+      "text": "[Rain gutters along the sill, and the clerk's paper is left drying beside the empty place on the table. The chamber waits with its accusation still damp, the coins unhandled for another beat.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 3,
+      "role": "tutor",
+      "text": "Before we set any new mark beside it, read the clerk's paper back from your own board. What exactly does that exhibit prove, and where does its proof stop?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_caster",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The draft re-enters an exhibit staged last turn with consolidating intent and no spent or standing confrontation to license it.",
+          "note": "Confront first: ask the learner to read back what they hold of that exhibit before you place it again. Do not consolidate it until that read-back stands.",
+          "lastFigures": [
+            "analogia",
+            "erotema"
+          ],
+          "jurisdiction": "unconfronted_reentry",
+          "reentry": {
+            "target": "m_caster",
+            "releasedEarlier": true,
+            "intent": "consolidate",
+            "lastStagedTurn": 2,
+            "confrontedSince": false,
+            "due": true
+          }
+        },
+        "releaseDecision": {
+          "turn": 3,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 3,
+              "turnsSinceLastRelease": 1,
+              "priorPremiseId": "m_caster",
+              "priorEcho": 0,
+              "priorEchoed": false,
+              "lenTrend": 79.5,
+              "hedgeTrend": 0.5,
+              "hasTrend": false,
+              "learnerLineCount": 2,
+              "stalling": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "role": "learner",
+      "text": "Board entry four — soleCasterAt mintCrucible verrell — is one half of Rule 2's left side and nothing more: it stands ready to yield castBlankFor the moment blankFrom appears, but blankFrom itself waits on alloyOf and meltedAt, both still absent. The clerk's paper licenses no further step: it names a hand at a crucible, not a crucible in a coin.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "If the false shilling's alloy is shown to answer to the mint crucible's leavings, Rule 1 closes blankFrom, Rule 2 then closes castBlankFor verrell — but the die chain (dieFlawOf, flawCutBy, soleHolderOf) remains wholly unlit, so Rule 5 cannot fire even then.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 4,
+      "role": "director",
+      "text": "[The rain slackens without clearing, leaving the window glass filmed and grey. The clerk folds his hands over the drying paper, and the empty place on the table seems wider for having been named.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 4,
+      "role": "tutor",
+      "text": "Set the shillings in the cupel now: they are no clipped sterling, but struck poor dross, silver eked with too much copper and a grey lead-sweat the touchstone catches. A shaved loaf keeps the baker's bread beneath the knife; this metal was baked wrong from the first. What does struck-from-dross fix that clipped-from-sterling cannot?",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_alloy",
+          "intent": "release"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No figure rut is present and the draft targets a newly staged exhibit, so the turn watch has no grounds to stop it.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_alloy",
+            "releasedEarlier": false,
+            "intent": "release",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 4,
+          "windowSize": 1,
+          "claimed": "p_alloy",
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": true,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": true,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": "p_alloy",
+            "reason": "p_alloy held: prior exhibit m_caster not taken up on the page (echo 0.21 < 0.34)",
+            "visibleFeatures": {
+              "turn": 4,
+              "turnsSinceLastRelease": 2,
+              "priorPremiseId": "m_caster",
+              "priorEcho": 0.21052631578947367,
+              "priorEchoed": false,
+              "lenTrend": 25,
+              "hedgeTrend": -1,
+              "hasTrend": false,
+              "learnerLineCount": 3,
+              "stalling": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "role": "learner",
+      "text": "Struck-from-dross names a metal that may be singular: if this grey lead-sweat alloy answers to one crucible's leavings and one only, Rule 1 can close blankFrom — whereas clipped sterling carries common silver, indistinguishable across every honest crucible in the realm, and Rule 1 can never fire on it. The dross is a door, not yet a passage: alloyOf falseShilling and meltedAt still stand unshown on the board.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "The debased alloy — silver eked with copper and lead-sweat — is the key to Rule 1: if its composition proves unique to one crucible's leavings, blankFrom closes and castBlankFor verrell follows via board entry 3 (soleCasterAt, once re-adopted); but alloyOf falseShilling and meltedAt are both absent, so the chain cannot fire yet.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 5,
+      "role": "director",
+      "text": "[The fair-noise falls back behind the shut door, and the chamber narrows to the table, the cupel, and the cold patience of accounts. What had sounded like a public cry now waits to be weighed in quieter metal.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 2",
+          "intent": "[The fair-noise falls back behind the shut door, and the chamber narrows to the table, the cupel, and the cold patience of accounts. What had sounded like a public cry now waits to be weighed in quieter metal.]",
+          "turn": 5
+        },
+        "act": "end"
+      }
+    },
+    {
+      "turn": 5,
+      "role": "tutor",
+      "text": "Bring the light shillings back to the cupel: they are not clipped sterling, but struck poor dross, silver eked with copper and a grey lead-sweat the touchstone catches. A clipped coin is old bread shaved thin; this was bad dough made for baking. What can such metal prove that a shaved honest shilling never could?",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_alloy",
+          "intent": "release"
+        },
+        "release": "p_alloy",
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the record rules out an uncovered re-entry for this draft target.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_alloy",
+            "releasedEarlier": false,
+            "intent": "release",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 5,
+          "windowSize": 1,
+          "claimed": "p_alloy",
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": "p_alloy",
+          "scheduledTurn": 4,
+          "offset": 1,
+          "reason": "Played one turn after schedule because the act boundary cleared the stage and the metal chain must be restored before the inquiry stalls.",
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": "p_alloy",
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 5,
+              "turnsSinceLastRelease": 3,
+              "priorPremiseId": "m_caster",
+              "priorEcho": 0.21052631578947367,
+              "priorEchoed": false,
+              "lenTrend": 8,
+              "hedgeTrend": -0.5,
+              "hasTrend": true,
+              "learnerLineCount": 4,
+              "stalling": true
+            }
+          }
+        },
+        "releaseReason": "Played one turn after schedule because the act boundary cleared the stage and the metal chain must be restored before the inquiry stalls.",
+        "plot": {
+          "act": 2,
+          "turn": 5,
+          "holdByEnd": [
+            "learner states that the shillings are struck poor dross rather than clipped sterling",
+            "learner names alloyOf as present but meltedAt as still required before blankFrom can close",
+            "learner keeps the town's mint-crucible claim separate from the coin's actual metal"
+          ],
+          "withhold": "Do not stage or concede the coin's crucible, sole caster at that crucible, die flaw, tool, holder, or culprit this act until their exhibit windows arrive.",
+          "friction": "The learner may carry over the town's Verrell theory and attach the new dross too quickly to the mint crucible.",
+          "fallback": "Ask which crucible the metal itself has answered to, and make the missing meltedAt conjunct explicit before any hand is considered."
+        },
+        "plotAudit": {
+          "act": 1,
+          "clauses": [
+            {
+              "clause": "hold_by_end[1]: learner states inquiry must follow evidentiary marks rather than the town's wanted verdict",
+              "verdict": "kept",
+              "evidence": "[turn 1] LEARNER: \"I will not write his name until the metal names him.\""
+            },
+            {
+              "clause": "hold_by_end[2]: learner identifies no hand can be named before some first exhibit is produced",
+              "verdict": "kept",
+              "evidence": "[turn 1] LEARNER: \"The table is bare of exhibits... I will not write his name until the metal names him.\""
+            },
+            {
+              "clause": "withhold: do not stage or concede culprit, alloy, crucible, tool, or witness until an exhibit enters the window",
+              "verdict": "kept",
+              "evidence": "Exhibits staged during the act: m_caster."
+            },
+            {
+              "clause": "friction: learner may begin with town suspicion or ask for a name before proof",
+              "verdict": "kept",
+              "evidence": "[turn 1] LEARNER: \"Verrell is a clipper... I will not write his name until the metal names him.\""
+            },
+            {
+              "clause": "fallback: return him to the empty board and ask what first mark an assay needs before it can accuse",
+              "verdict": "kept",
+              "evidence": "[turn 2] TUTOR: \"which coin, which metal, and which crucible have yet answered one another on our board?\""
+            }
+          ],
+          "summary": "Act 1 kept the learner off the town's wanted name and made the first exhibit stop where it should. The arc is properly at the assay-gate: suspicion resisted, metal chain opened but not prematurely closed.",
+          "arc": {
+            "verdict": "on_arc",
+            "evidence": "[turn 2] LEARNER: \"the crucible assignment is a beginning, not a verdict.\""
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "role": "learner",
+      "text": "A clipped shilling still wears the king's silver — its alloy names no coiner, only the shears that trimmed it. But dross silver baked into a blank at striking can answer to one crucible's leavings and no other; that is what Rule 1 is built to hear. I take alloyOf falseShilling drossSilver onto the board, but the chain halts there — meltedAt is absent still, and without it blankFrom cannot be written.",
+      "meta": {
+        "adopt": [
+          [
+            "alloyOf",
+            "falseShilling",
+            "drossSilver"
+          ]
+        ],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Once meltedAt drossSilver ?crucible is established, Rule 1 closes blankFrom falseShilling that crucible; Rule 2 then requires soleCasterAt for that crucible to yield castBlankFor. The die chain — dieFlawOf, flawCutBy, soleHolderOf — remains wholly dark, so Rule 5 cannot fire even if the blank chain closes.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 6,
+      "role": "director",
+      "text": "[A guild warden is shown in with bench-scrapings still under his nails, and the room receives his sworn account: And Verrell engraves: the broad graver on his bench is his alone, the guild will swear, and no clean-cut die in the borough is sunk without it. A caster and an engraver both — the town needs no more than that.]",
+      "meta": {
+        "release": "m_graver",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 6,
+      "role": "tutor",
+      "text": "The guild gives Verrell a broad graver and a clean-cut borough die; set that beside the rule, not above it. What coin on our table has yet shown a flaw, and what tool has that flaw named?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_graver",
+          "intent": "counter_mirror"
+        },
+        "release": "p_crucible",
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut or uncovered re-entry is present, though the draft plainly presses into the act's withheld graver and die material.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_graver",
+            "releasedEarlier": false,
+            "intent": "counter_mirror",
+            "lastStagedTurn": 6,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 6,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": true,
+          "played": "p_crucible",
+          "scheduledTurn": 8,
+          "offset": -2,
+          "reason": "p_crucible pushed: page stalling (hedging up 0.50)",
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": true,
+            "forcedBy": "visible_stall",
+            "candidate": null,
+            "reason": "p_crucible pushed: page stalling (hedging up 0.50)",
+            "visibleFeatures": {
+              "turn": 6,
+              "turnsSinceLastRelease": 0,
+              "priorPremiseId": "m_graver",
+              "priorEcho": 0,
+              "priorEchoed": false,
+              "lenTrend": 8,
+              "hedgeTrend": 0.5,
+              "hasTrend": true,
+              "learnerLineCount": 5,
+              "stalling": true
+            }
+          }
+        },
+        "releaseReason": "p_crucible pushed: page stalling (hedging up 0.50)"
+      }
+    },
+    {
+      "turn": 6,
+      "role": "learner",
+      "text": "meltedAt drossSilver weirCrucible lights Rule 1 at last — blankFrom falseShilling weirCrucible is derived and I enter it. But Rule 2 waits on soleCasterAt weirCrucible, which no one has sworn, and the broadGraver in Verrell's hand is dead weight until a flaw on this very coin names it — the die chain is wholly dark still.",
+      "meta": {
+        "adopt": [
+          [
+            "soleHolderOf",
+            "broadGraver",
+            "verrell"
+          ],
+          [
+            "meltedAt",
+            "drossSilver",
+            "weirCrucible"
+          ]
+        ],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "voiced"
+          }
+        ],
+        "hypothesis": "The blank chain now reaches blankFrom falseShilling weirCrucible but halts — soleCasterAt weirCrucible is unsworn. The die chain has no footing: no dieFlawOf has been shown on the coin, so soleHolderOf broadGraver verrell cannot yet yield cutDieFor, and Rule 5 cannot fire without both castBlankFor and cutDieFor.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 7,
+      "role": "director",
+      "text": "[The chamber holds its breath over the metal laid out on the table, each silence heavier than the fair’s distant bell. Wax gutters in the draught, and no hand yet reaches for the next paper.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 7,
+      "role": "tutor",
+      "text": "Before any hand is weighed, read back the last metal-paper from your own board. What did it prove, in the rule's own order, and what did it still leave unproved?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_crucible",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut appears, and the draft is a confrontation rather than a re-entry.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_crucible",
+            "releasedEarlier": true,
+            "intent": "confront",
+            "lastStagedTurn": 6,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 7,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 7,
+              "turnsSinceLastRelease": 1,
+              "priorPremiseId": "p_crucible",
+              "priorEcho": 0,
+              "priorEchoed": false,
+              "lenTrend": -1.5,
+              "hedgeTrend": 0.5,
+              "hasTrend": true,
+              "learnerLineCount": 6,
+              "stalling": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "role": "learner",
+      "text": "The board shows blankFrom falseShilling weirCrucible already derived — but the fact that lit Rule 1, alloyOf falseShilling drossSilver, has slipped from my entries; the derivation stands voiced, yet its premise has gone missing, and I name that gap aloud. Rule 2 then halts on soleCasterAt weirCrucible: no one has yet sworn who cast at that crucible, so castBlankFor cannot be written. The die chain has no footing at all — no flaw has been read on this coin, so soleHolderOf broadGraver verrell sits idle and cutDieFor remains unlit. Two chains, two halts; the board cannot write struckBy.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "alloyOf falseShilling drossSilver was spoken and adopted in turn 5 and enabled the turn-6 derivation, but it has gone missing from the board — this is the gap in the blank chain's ground. Until soleCasterAt weirCrucible is sworn and a die-flaw on the coin names a tool, Rule 5 cannot fire and no hand can be named.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 8,
+      "role": "director",
+      "text": "[The papers remain spread where the last reading left them, their edges lifting in the damp that creeps under the door. Beyond the shutters the fair has thinned to cart-wheels and rain, while the table waits for a name no one has yet put to the metal.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 8,
+      "role": "tutor",
+      "text": "Restore the cupel mark first: these shillings are no clipped sterling, but struck poor dross, silver eked with too much copper and a grey lead-sweat the touchstone catches at once. A shaved true coin keeps honest metal under the knife; this one was wrong in the melt before any shears could touch it. Put that back on the board, then tell me what conjunct still had to answer before the blank could be written from a crucible.",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_alloy",
+          "intent": "restore"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the learner's last line names the alloy exhibit as missing, so the restore re-entry is licensed by the repair clause.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_alloy",
+            "releasedEarlier": true,
+            "intent": "restore",
+            "lastStagedTurn": 5,
+            "confrontedSince": false,
+            "due": false,
+            "restoreClaim": true
+          }
+        },
+        "releaseDecision": {
+          "turn": 8,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 8,
+              "turnsSinceLastRelease": 2,
+              "priorPremiseId": "p_crucible",
+              "priorEcho": 0.14285714285714285,
+              "priorEchoed": false,
+              "lenTrend": 8,
+              "hedgeTrend": -0.5,
+              "hasTrend": true,
+              "learnerLineCount": 7,
+              "stalling": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "role": "learner",
+      "text": "The board already carries alloyOf falseShilling drossSilver at index 4 — the gap is closed, not new. With meltedAt drossSilver weirCrucible at index 6, both conjuncts of Rule 1 stand grounded together, and blankFrom falseShilling weirCrucible is re-confirmed on sound footing. Rule 2 then asks its own price: soleCasterAt weirCrucible has not been sworn by any witness, so castBlankFor cannot yet be written. The die chain has no first step either — no flaw has been read on this coin's face, and without dieFlawOf, soleHolderOf broadGraver verrell sits idle.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "Until soleCasterAt weirCrucible is sworn and a die-flaw on the coin names a tool uniquely, neither chain closes — castBlankFor and cutDieFor both remain unwritten, and Rule 5 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 9,
+      "role": "director",
+      "text": "[The clerk’s pen hovers above the ledger and then withdraws, leaving the line unfilled. Rain ticks at the shutters in a patient measure, and the cold cupel sits between the papers like a question that has not yet found its witness.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 9,
+      "role": "tutor",
+      "text": "Do not let the blank outrun its witness. Read back the crucible paper from your own board: what did it fasten to this coin, and what hand did it still refuse to name?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_crucible",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the draft is a confrontation rather than an uncovered re-entry.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_crucible",
+            "releasedEarlier": true,
+            "intent": "confront",
+            "lastStagedTurn": 6,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 9,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 9,
+              "turnsSinceLastRelease": 3,
+              "priorPremiseId": "p_crucible",
+              "priorEcho": 0.14285714285714285,
+              "priorEchoed": false,
+              "lenTrend": 24.5,
+              "hedgeTrend": -0.5,
+              "hasTrend": true,
+              "learnerLineCount": 8,
+              "stalling": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "role": "learner",
+      "text": "The crucible papers — entries four and five — fasten the blank thus: the false shilling's alloy is drossSilver, drossSilver melted at weirCrucible, and by Rule 1 the blank came from weirCrucible; that much is voiced and stands. But the crucible refuses to name any hand: Rule 2 demands soleCasterAt weirCrucible, and no witness has yet sworn who cast there — so castBlankFor cannot be written, and the chain halts at the crucible's own door.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [],
+        "deriveOutcomes": [],
+        "hypothesis": "Until soleCasterAt weirCrucible is sworn and a die-flaw on the coin names a tool uniquely, neither chain closes — castBlankFor and cutDieFor both remain unwritten, and Rule 5 cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 10,
+      "role": "director",
+      "text": "[The leat-keeper is shown in with his narrow book, its pages stiff from old damp, and the room receives the entry in silence. The leat-keeper's book is exact. Since the forge was shut, one hand alone has drawn the weir crucible and signed for its charcoal: Edony, the founder's widow, who stayed on in the forge cottage when the fires went out.]",
+      "meta": {
+        "release": "p_caster",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 10,
+      "role": "tutor",
+      "text": "The leat-book has put one hand at the weir crucible; set that under Rule 2 beside the blank you already traced there. As a cupel button follows the furnace that poured it, what entry does the rule now permit for the blank, and why is that still only the blank? A blank without a die strikes nothing.",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_caster",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No figure rut and no uncovered re-entry appear; the draft takes up a newly staged caster exhibit rather than returning to an old one.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_caster",
+            "releasedEarlier": false,
+            "intent": "consolidate",
+            "lastStagedTurn": 10,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 10,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 10,
+              "turnsSinceLastRelease": 0,
+              "priorPremiseId": "p_caster",
+              "priorEcho": 0,
+              "priorEchoed": false,
+              "lenTrend": -13,
+              "hedgeTrend": 0,
+              "hasTrend": true,
+              "learnerLineCount": 9,
+              "stalling": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "role": "learner",
+      "text": "The leat-book puts Edony's hand alone at the weir crucible, and Rule 2 now fires: castBlankFor falseShilling edony is written — the blank is hers, not Verrell's. But the tutor's caution holds: a blank without a die strikes nothing, and no flaw has yet been read on this coin's face. The die chain — dieFlawOf, flawCutBy, soleHolderOf — stands wholly dark, so Rule 5 cannot fire and the question stays open.",
+      "meta": {
+        "adopt": [
+          [
+            "soleCasterAt",
+            "weirCrucible",
+            "edony"
+          ]
+        ],
+        "retract": [],
+        "derive": [
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "voiced"
+          }
+        ],
+        "hypothesis": "The blank is grounded to Edony; if the die chain also names Edony as sole holder of the cutting tool, Rule 5 fires for her — but until dieFlawOf is read on the coin's face, no hand can be named as striker, and Verrell's claim collapses on the blank side entirely.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 11,
+      "role": "director",
+      "text": "[The leat-book is closed, yet no one reaches for the verdict. A thin draught moves the candle-flame across the coin’s face, and the room turns from the cold weight of metal toward the sharper silence of marks.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 3",
+          "intent": "[The leat-book is closed, yet no one reaches for the verdict. A thin draught moves the candle-flame across the coin’s face, and the room turns from the cold weight of metal toward the sharper silence of marks.]",
+          "turn": 11
+        },
+        "act": "end"
+      }
+    },
+    {
+      "turn": 11,
+      "role": "tutor",
+      "text": "Before the candle sends us to the coin's marks, read back the last book from your own board. What did it permit the blank to say, and what did it still leave silent under the last rule? A cast blank is metal prepared; what mark has not yet been made to speak?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_caster",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut appears, and the draft is a confrontation rather than an uncovered re-entry.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_caster",
+            "releasedEarlier": true,
+            "intent": "confront",
+            "lastStagedTurn": 10,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 11,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 11,
+              "turnsSinceLastRelease": 1,
+              "priorPremiseId": "p_caster",
+              "priorEcho": 0,
+              "priorEchoed": false,
+              "lenTrend": -20,
+              "hedgeTrend": 0,
+              "hasTrend": true,
+              "learnerLineCount": 10,
+              "stalling": true
+            }
+          }
+        },
+        "plot": {
+          "act": 3,
+          "turn": 11,
+          "holdByEnd": [
+            "The learner reads back the leat-book's effect from their own board and keeps castBlankFor falseShilling edony grounded in blankFrom plus the sole caster at the weir crucible.",
+            "The learner states that Rule 5 still cannot yield struckBy until a cut die is also grounded for the same hand.",
+            "When the coin's face is staged this act, the learner treats the shared die flaw as the first beta-chain link and does not let Verrell's broad graver answer before a flaw has named a tool."
+          ],
+          "withhold": "Do not stage or concede the graving tool, its holder, or the struck-by finding this act; keep the die chain hungry until the flaw itself has first been read.",
+          "friction": "The learner may feel the Edony blank-finding is already the verdict, or may swing back to Verrell's broad graver before this coin has shown a flaw.",
+          "fallback": "Refuse confirmation, show Rule 5 as two conjuncts, and ask which die-mark on this coin has actually been read before any tool or hand can be weighed."
+        },
+        "plotAudit": {
+          "act": 2,
+          "clauses": [
+            {
+              "clause": "hold_by_end[1]: learner states that the shillings are struck poor dross rather than clipped sterling",
+              "verdict": "kept",
+              "evidence": "[turn 5] LEARNER: A clipped shilling still wears the king's silver — its alloy names no coiner, only the shears that trimmed it."
+            },
+            {
+              "clause": "hold_by_end[2]: learner names alloyOf as present but meltedAt as still required before blankFrom can close",
+              "verdict": "justified_deviation",
+              "evidence": "[turn 6] LEARNER: meltedAt drossSilver weirCrucible lights Rule 1 at last — blankFrom falseShilling weirCrucible is derived and I enter it."
+            },
+            {
+              "clause": "hold_by_end[3]: learner keeps the town's mint-crucible claim separate from the coin's actual metal",
+              "verdict": "kept",
+              "evidence": "[turn 10] LEARNER: castBlankFor falseShilling edony is written — the blank is hers, not Verrell's."
+            },
+            {
+              "clause": "withhold: Do not stage or concede the coin's crucible, sole caster at that crucible, die flaw, tool, holder, or culprit this act until their exhibit windows arrive.",
+              "verdict": "kept",
+              "evidence": "Exhibits staged during the act: p_alloy, m_graver, p_crucible, p_caster."
+            },
+            {
+              "clause": "friction: The learner may carry over the town's Verrell theory and attach the new dross too quickly to the mint crucible.",
+              "verdict": "kept",
+              "evidence": "[turn 8] LEARNER: The die chain has no first step either — no flaw has been read on this coin's face, and without dieFlawOf, soleHolderOf broadGraver verrell sits idle."
+            },
+            {
+              "clause": "fallback: Ask which crucible the metal itself has answered to, and make the missing meltedAt conjunct explicit before any hand is considered.",
+              "verdict": "kept",
+              "evidence": "[turn 7] TUTOR: Before any hand is weighed, read back the last metal-paper from your own board."
+            }
+          ],
+          "summary": "The act advanced the metal chain through castBlankFor Edony while keeping the die chain and struckBy closed. The only bent clause was the early meltedAt halt, overtaken by the crucible exhibit window and properly named as such.",
+          "arc": {
+            "verdict": "on_arc",
+            "evidence": "[turn 10] LEARNER: But the tutor's caution holds: a blank without a die strikes nothing, and no flaw has yet been read on this coin's face."
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "role": "learner",
+      "text": "The blank chain closes fully now: entries four and five yield blankFrom falseShilling weirCrucible by Rule One, and entry six — soleCasterAt weirCrucible edony — closes castBlankFor falseShilling edony by Rule Two. Edony cast this blank; the board permits no other reading. But a cast blank is metal prepared, nothing more — the die has not yet been made to speak, and without dieFlawOf on the coin's face no tool is named, no holder sworn, and Rule Five stays dark.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "If the coin's face yields a die-flaw traceable to a single tool, and that tool's sole holder is named, Rule 5 may fire — and if that holder is also Edony, she struck the shilling; but the die chain has no footing yet.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 12,
+      "role": "director",
+      "text": "[The watchman is shown in, rain still dark on his coat, and his oath is laid before the room. The watch will swear to the rest: Verrell was seen at the mint-yard forge twice in fair-week, late and with the shutters drawn. Caster, engraver, and at the fire on the very nights — the town's case stands, and stands loud.]",
+      "meta": {
+        "release": "m_caught",
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 12,
+      "role": "tutor",
+      "text": "The watch gives night, shutters, and Verrell at the mint-yard fire; set that oath under the rule, not over it. Which conjunct does it prove for this false shilling: the blank already traced, the die not yet read, or only occasion loud enough to sound like proof?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_caught",
+          "intent": "counter_mirror"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut and no uncovered re-entry; the draft keeps the watchman's oath as occasion rather than proof, so the plot risk is being held in view.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "m_caught",
+            "releasedEarlier": false,
+            "intent": "counter_mirror",
+            "lastStagedTurn": 12,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 12,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 12,
+              "turnsSinceLastRelease": 0,
+              "priorPremiseId": "m_caught",
+              "priorEcho": 0,
+              "priorEchoed": false,
+              "lenTrend": 8,
+              "hedgeTrend": 0,
+              "hasTrend": true,
+              "learnerLineCount": 11,
+              "stalling": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "role": "learner",
+      "text": "The watchman's oath proves occasion — Verrell at the fire, shutters drawn — but occasion is neither conjunct Rule Five requires. The blank chain closes already on Edony, not Verrell; occasion cannot reopen that chain, nor does it light the die chain where no dieFlawOf has been read on the coin's face. I do not adopt seenAtForge: it speaks to presence, not to casting or cutting, and the rules admit no other kind of proof.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "The die chain is wholly unlit — dieFlawOf, flawCutBy, and soleHolderOf are all absent; until the coin's face is read for its die-mark and that mark traced to one tool in one hand, Rule Five cannot fire and no hand can be named as striker, however loud occasion sounds.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 13,
+      "role": "director",
+      "text": "[The oath settles into the room without finding a hook. Rain taps at the shutter, and the candle leans again over the coin, leaving its face bright and unread.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 13,
+      "role": "tutor",
+      "text": "Before the coin's face is read, take up the watchman's oath from your own board. What does that exhibit prove under the assay's rules, and where does its proof stop?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "m_caught",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The draft also repeats erotema for a third turn, but its immediate breach is an uncovered return to the watchman's oath without a confrontation since staging.",
+          "note": "Confront the watchman's oath first: ask the learner to read back what they hold of that exhibit, without restating it for them. Leave off the erotema pattern as you do it.",
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": "unconfronted_reentry",
+          "reentry": {
+            "target": "m_caught",
+            "releasedEarlier": true,
+            "intent": "consolidate",
+            "lastStagedTurn": 12,
+            "confrontedSince": false,
+            "due": true
+          }
+        },
+        "releaseDecision": {
+          "turn": 13,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 13,
+              "turnsSinceLastRelease": 1,
+              "priorPremiseId": "m_caught",
+              "priorEcho": 0,
+              "priorEchoed": false,
+              "lenTrend": 9.5,
+              "hedgeTrend": 0,
+              "hasTrend": true,
+              "learnerLineCount": 12,
+              "stalling": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "role": "learner",
+      "text": "The watchman's oath gives seenAtForge verrell fairWeek — presence, shutters, and fire — yet no rule names 'seen at forge' as a premise; it proves occasion only, and occasion is not casting nor cutting. The blank chain is already grounded: board entries four and five close blankFrom falseShilling weirCrucible under Rule One, and entry six closes castBlankFor falseShilling edony under Rule Two — Verrell at the forge can neither reopen that chain nor redirect it. The die chain has no footing still: no dieFlawOf rests on the coin's face, so the watchman's oath cannot light it, and Rule Five stays dark.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "If the coin's face yields a die-flaw traceable by flawCutBy to a single tool, and soleHolderOf that tool names Edony, Rule Five fires for Edony as striker — but until dieFlawOf is read on the coin's face, neither the die chain nor Rule Five can move.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 14,
+      "role": "director",
+      "text": "[The room holds its breath around the bright, unread face of the coin. Rain worries the shutters in small, even strokes, and no hand yet moves to turn metal into testimony.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 14,
+      "role": "tutor",
+      "text": "Set the dozen light shillings under the glass: each bears the same wound, the legend's R broken by a small square notch where one die slipped and was never mended. One nick repeating mark for mark is no street accident; it is the die speaking through every coin it struck. What first beta-chain entry does that shared fault permit, and what does it still not name?",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_flaw",
+          "intent": "release"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No figure rut and no uncovered re-entry; the draft stages a new flaw link while keeping tool and hand withheld.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_flaw",
+            "releasedEarlier": false,
+            "intent": "release",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 14,
+          "windowSize": 1,
+          "claimed": "p_flaw",
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": true,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": true,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": "p_flaw",
+            "reason": "p_flaw held: prior exhibit m_caught not taken up on the page (echo 0.22 < 0.34)",
+            "visibleFeatures": {
+              "turn": 14,
+              "turnsSinceLastRelease": 2,
+              "priorPremiseId": "m_caught",
+              "priorEcho": 0.21739130434782608,
+              "priorEchoed": false,
+              "lenTrend": 12.5,
+              "hedgeTrend": 0,
+              "hasTrend": true,
+              "learnerLineCount": 13,
+              "stalling": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "role": "learner",
+      "text": "The shared notch is dieFlawOf falseShilling squareNotchFlaw: one die printed its wound on all twelve, and that single mark licenses the die chain's first premise under Rule Three. But dieFlawOf alone carries the chain no further — flawCutBy is unsworn, no tool is yet named, and soleHolderOf stays dark beyond it. The fault speaks to the die; it does not yet speak to the hand that held the graver.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "If dieFlawOf falseShilling squareNotchFlaw is formally exhibited and flawCutBy then traces that notch to a single tool whose sole holder is Edony, Rule Five fires and Edony struck the shilling — but neither flawCutBy nor soleHolderOf has been sworn, so the die chain cannot yet move.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 15,
+      "role": "director",
+      "text": "[The glass remains over the coins, catching the candle in twelve small, hard gleams. Beyond the shutters the rain thins, and the room waits on the difference between a mark seen and a hand named.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 15,
+      "role": "tutor",
+      "text": "A shared wound on twelve faces tells us there is one die in the matter, not yet one hand. The mark has entered the beta chain only at its first gate: what must that mark name before any graver, broad or worn, can be weighed? Keep the blank's hand on one side of the board and the die's unanswered tool on the other.",
+      "meta": {
+        "move": {
+          "figure": "exemplum",
+          "targetPremise": "p_flaw",
+          "intent": "consolidate"
+        },
+        "release": "p_flaw",
+        "deliberation": {
+          "draftFigure": "exemplum",
+          "intervened": false,
+          "diagnosis": "No three-turn figure rut is present, and the record makes uncovered re-entry impossible because p_flaw has not been staged before.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_flaw",
+            "releasedEarlier": false,
+            "intent": "consolidate",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 15,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": true,
+          "played": "p_flaw",
+          "scheduledTurn": 14,
+          "offset": 1,
+          "reason": "p_flaw pushed: page stalling (3 turns since last release)",
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": true,
+            "forcedBy": "visible_stall",
+            "candidate": null,
+            "reason": "p_flaw pushed: page stalling (3 turns since last release)",
+            "visibleFeatures": {
+              "turn": 15,
+              "turnsSinceLastRelease": 3,
+              "priorPremiseId": "m_caught",
+              "priorEcho": 0.21739130434782608,
+              "priorEchoed": false,
+              "lenTrend": 9,
+              "hedgeTrend": 0,
+              "hasTrend": true,
+              "learnerLineCount": 14,
+              "stalling": true
+            }
+          }
+        },
+        "releaseReason": "p_flaw pushed: page stalling (3 turns since last release)"
+      }
+    },
+    {
+      "turn": 15,
+      "role": "learner",
+      "text": "The notch has its sworn name — notchedSerif — and dieFlawOf falseShilling notchedSerif now stands at the die chain's first gate. Yet before any graver may be weighed, flawCutBy notchedSerif must be sworn: the flaw names itself but cannot yet name the tool that cut it, and without that, Rule Three yields nothing. The blank chain is grounded in full — board entries four through six drive blankFrom and castBlankFor to Edony — but the die chain's second gate stands unsworn, and Rule Five stays dark. I note the flaw's true name is notchedSerif, not squareNotchFlaw as I guessed last turn; I follow the stage.",
+      "meta": {
+        "adopt": [
+          [
+            "dieFlawOf",
+            "falseShilling",
+            "notchedSerif"
+          ]
+        ],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "If flawCutBy notchedSerif names a single tool and soleHolderOf that tool names edony, Rule Five fires for edony as striker — but flawCutBy is still unsworn, so the die chain cannot move past its first gate and Rule Five cannot fire.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 16,
+      "role": "director",
+      "text": "[The coins lie still beneath the glass, their pale faces giving back the candle without answer. A clerk dries his pen and leaves the page untouched, while the room keeps its two silences apart.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 16,
+      "role": "tutor",
+      "text": "Before any tool is called, read the coin's mark back from your own board. What exactly has the glass proved, and what does it still refuse to prove? Keep that answer inside the die-chain, not the town's noise.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_flaw",
+          "intent": "confront"
+        },
+        "release": "p_graver",
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "The draft breaks the exemplum pair with erotema and confronts p_flaw rather than re-staging it.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "exemplum"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_flaw",
+            "releasedEarlier": true,
+            "intent": "confront",
+            "lastStagedTurn": 15,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 16,
+          "windowSize": 1,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": true,
+          "played": "p_graver",
+          "scheduledTurn": 18,
+          "offset": -2,
+          "reason": "p_graver pushed: page stalling (hedging up 0.50)",
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": true,
+            "forcedBy": "visible_stall",
+            "candidate": null,
+            "reason": "p_graver pushed: page stalling (hedging up 0.50)",
+            "visibleFeatures": {
+              "turn": 16,
+              "turnsSinceLastRelease": 1,
+              "priorPremiseId": "p_flaw",
+              "priorEcho": 0,
+              "priorEchoed": false,
+              "lenTrend": 0,
+              "hedgeTrend": 0.5,
+              "hasTrend": true,
+              "learnerLineCount": 15,
+              "stalling": true
+            }
+          }
+        },
+        "releaseReason": "p_graver pushed: page stalling (hedging up 0.50)"
+      }
+    },
+    {
+      "turn": 16,
+      "role": "learner",
+      "text": "The glass proved one die, one wound — dieFlawOf notchedSerif stood sworn before this turn. Now flawCutBy notchedSerif wornBurin enters the board, and Rule Three yields dieCutWith falseShilling wornBurin at once. The blank chain also closes in full: alloyOf and meltedAt drive blankFrom, and soleCasterAt weirCrucible edony drives castBlankFor falseShilling edony. But soleHolderOf wornBurin is still unsworn — Rule Four cannot fire, cutDieFor stays dark, and Rule Five with it.",
+      "meta": {
+        "adopt": [
+          [
+            "flawCutBy",
+            "notchedSerif",
+            "wornBurin"
+          ]
+        ],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ],
+          [
+            "dieCutWith",
+            "falseShilling",
+            "wornBurin"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "dieCutWith",
+              "falseShilling",
+              "wornBurin"
+            ],
+            "status": "voiced"
+          }
+        ],
+        "hypothesis": "If soleHolderOf wornBurin edony is sworn, Rule Four yields cutDieFor falseShilling edony, and with castBlankFor falseShilling edony already grounded, Rule Five fires and edony struck the shilling — but that entry has not been exhibited and cannot be assumed.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 17,
+      "role": "director",
+      "text": "[The glass is lifted, and the room seems colder for the space it leaves above the coins. Papers are squared, chairs shift, and the next silence gathers around keeping and custody rather than sight alone.]",
+      "meta": {
+        "release": null,
+        "phase": {
+          "name": "Act 4",
+          "intent": "[The glass is lifted, and the room seems colder for the space it leaves above the coins. Papers are squared, chairs shift, and the next silence gathers around keeping and custody rather than sight alone.]",
+          "turn": 17
+        },
+        "act": "end"
+      }
+    },
+    {
+      "turn": 17,
+      "role": "tutor",
+      "text": "Before custody is opened, read back the die-sinker's paper from your own board. What did that testimony prove for the flaw, and at what door did it stop before any hand could be written? Keep the answer to the tool, not the keeper.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": "p_graver",
+          "intent": "confront"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "There is no three-turn figure rut, and the draft confronts p_graver rather than re-staging it.",
+          "note": null,
+          "lastFigures": [
+            "exemplum",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": "p_graver",
+            "releasedEarlier": true,
+            "intent": "confront",
+            "lastStagedTurn": 16,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 17,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 17,
+              "turnsSinceLastRelease": 1,
+              "priorPremiseId": "p_graver",
+              "priorEcho": 0,
+              "priorEchoed": false,
+              "lenTrend": 2.5,
+              "hedgeTrend": 0.5,
+              "hasTrend": true,
+              "learnerLineCount": 16,
+              "stalling": true
+            }
+          }
+        },
+        "plot": {
+          "act": 4,
+          "turn": 17,
+          "holdByEnd": [
+            "learner reads back p_graver as proving the flaw-to-tool link and dieCutWith, while stating that soleHolderOf wornBurin is still unproved",
+            "learner keeps castBlankFor falseShilling edony and dieCutWith falseShilling wornBurin as separate chains rather than joining them prematurely",
+            "learner states that Rule 5 still cannot yield struckBy until the tool's keeper is staged and cutDieFor is grounded"
+          ],
+          "withhold": "p_holder and the struck-by finding remain withheld until the learner has first read back the graving-tool testimony and named the custody gap; the prior act's broken withhold is retired because p_graver has already entered the record.",
+          "friction": "the learner may treat the worn burin as already carrying its keeper, or may join Edony's cast blank to the die chain before custody is sworn.",
+          "fallback": "confront any bent tool-to-holder claim first; then restore p_graver plainly if needed, and only after that let custody become the next hunger."
+        },
+        "plotAudit": {
+          "act": 3,
+          "clauses": [
+            {
+              "clause": "hold_by_end[1]: learner reads back the leat-book's effect and keeps castBlankFor falseShilling edony grounded in blankFrom plus sole caster at the weir crucible",
+              "verdict": "kept",
+              "evidence": "[turn 11] LEARNER: entries four and five yield blankFrom falseShilling weirCrucible by Rule One, and entry six — soleCasterAt weirCrucible edony — closes castBlankFor falseShilling edony by Rule Two."
+            },
+            {
+              "clause": "hold_by_end[2]: learner states Rule 5 still cannot yield struckBy until cutDieFor is grounded for the same hand",
+              "verdict": "kept",
+              "evidence": "[turn 16] LEARNER: soleHolderOf wornBurin is still unsworn — Rule Four cannot fire, cutDieFor stays dark, and Rule Five with it."
+            },
+            {
+              "clause": "hold_by_end[3]: when the coin's face is staged, learner treats the shared die flaw as the first beta-chain link and does not let Verrell's broad graver answer before a flaw has named a tool",
+              "verdict": "kept",
+              "evidence": "[turn 14] LEARNER: The shared notch is dieFlawOf falseShilling squareNotchFlaw... the die chain's first premise under Rule Three."
+            },
+            {
+              "clause": "withhold: do not stage or concede the graving tool, its holder, or the struck-by finding this act; keep the die chain hungry until the flaw itself has first been read",
+              "verdict": "drift",
+              "evidence": "[turn 16] LEARNER: Now flawCutBy notchedSerif wornBurin enters the board, and Rule Three yields dieCutWith falseShilling wornBurin at once."
+            },
+            {
+              "clause": "friction: learner may treat Edony blank-finding as verdict, or swing back to Verrell's broad graver before the coin shows a flaw",
+              "verdict": "kept",
+              "evidence": "[turn 12] LEARNER: occasion is neither conjunct Rule Five requires... nor does it light the die chain where no dieFlawOf has been read on the coin's face."
+            },
+            {
+              "clause": "fallback: refuse confirmation, show Rule 5 as two conjuncts, and ask which die-mark has been read before tool or hand can be weighed",
+              "verdict": "kept",
+              "evidence": "[turn 15] TUTOR: what must that mark name before any graver, broad or worn, can be weighed?"
+            }
+          ],
+          "summary": "The act held the assay against the town's occasion and kept Rule Five dark, so the throughline remains intact. But the withhold broke: the worn burin and dieCutWith entered before the act was supposed to concede any graving tool.",
+          "arc": {
+            "verdict": "on_arc",
+            "evidence": "[turn 16] LEARNER: cutDieFor stays dark, and Rule Five with it."
+          }
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "role": "learner",
+      "text": "The die-sinker's paper proved the notchedSerif flaw upon the coin's face, and that the flaw was cut by the wornBurin — Rule Three closes there: dieCutWith falseShilling wornBurin. But the paper stopped at the door of Rule Four, for no hand was sworn as sole holder of that burin, and without soleHolderOf the die chain cannot yield cutDieFor. The blank chain closes all the way to edony through Rules One and Two. Yet Rule Five needs both castBlankFor and cutDieFor in the same hand — and without cutDieFor, no striker can be named.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ],
+          [
+            "dieCutWith",
+            "falseShilling",
+            "wornBurin"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "dieCutWith",
+              "falseShilling",
+              "wornBurin"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "If soleHolderOf wornBurin is sworn and names edony, Rule Four yields cutDieFor falseShilling edony, and with castBlankFor falseShilling edony already grounded, Rule Five fires — edony struck the shilling. The sole missing gate is that one sworn fact.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 18,
+      "role": "director",
+      "text": "[The lifted glass is set aside, and its rim leaves a dry circle on the baize. The clerk turns a sealed packet over once without breaking it, while the candle gutters low against the closed shutters.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 18,
+      "role": "tutor",
+      "text": "The flaw is named; the burin is named; the keeper is not. Let the cast blank stand closed on one side, and let the die stop at the tool until custody opens the next lock. Rule Four waits for a keeping-paper, not a guess from the notch.",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": "p_graver",
+          "intent": "consolidate"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": true,
+          "diagnosis": "The last two turns used erotema and this draft declares erotema again, making three in a row.",
+          "note": "Leave off erotema here; do not make the custody gap another question.",
+          "lastFigures": [
+            "erotema",
+            "erotema"
+          ],
+          "jurisdiction": "figure_rut",
+          "reentry": {
+            "target": "p_graver",
+            "releasedEarlier": true,
+            "intent": "consolidate",
+            "lastStagedTurn": 16,
+            "confrontedSince": true,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 18,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 18,
+              "turnsSinceLastRelease": 2,
+              "priorPremiseId": "p_graver",
+              "priorEcho": 0.13793103448275862,
+              "priorEchoed": false,
+              "lenTrend": -3.5,
+              "hedgeTrend": -0.5,
+              "hasTrend": true,
+              "learnerLineCount": 17,
+              "stalling": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 18,
+      "role": "learner",
+      "text": "The blank chain closes clean: drossSilver to weirCrucible by Rule One, weirCrucible to edony by Rule Two — castBlankFor falseShilling edony stands grounded. The die chain reaches dieCutWith falseShilling wornBurin by Rule Three and stops cold there, for no keeping-paper names the sole holder of that burin. Rule Four waits on that sworn custody, and Rule Five cannot fire without it.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ],
+          [
+            "dieCutWith",
+            "falseShilling",
+            "wornBurin"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "dieCutWith",
+              "falseShilling",
+              "wornBurin"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "If soleHolderOf wornBurin edony is sworn in custody, Rule Four yields cutDieFor falseShilling edony, and with castBlankFor falseShilling edony already grounded, Rule Five fires — edony struck the shilling. The sole missing gate is that one sworn fact.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 19,
+      "role": "director",
+      "text": "[The sealed packet remains unbroken beneath the clerk's hand. Outside the shutters, rain ticks in the gutter, and every face at the table waits on paper rather than speech.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 19,
+      "role": "tutor",
+      "text": "The flaw is shown, the tool is shown, and the hand? While that packet stays sealed, what single conjunct is still no evidence but only hunger? Keep the blank's closed hand apart from the die's unkept tool until the rule has both.",
+      "meta": {
+        "move": {
+          "figure": "anaphora",
+          "targetPremise": null,
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "anaphora",
+          "intervened": false,
+          "diagnosis": "No figure rut is present and the record states no target, so no uncovered re-entry can arise.",
+          "note": null,
+          "lastFigures": [
+            "erotema",
+            "anaphora"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "test",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 19,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 19,
+              "turnsSinceLastRelease": 3,
+              "priorPremiseId": "p_graver",
+              "priorEcho": 0.13793103448275862,
+              "priorEchoed": false,
+              "lenTrend": -12,
+              "hedgeTrend": -0.5,
+              "hasTrend": true,
+              "learnerLineCount": 18,
+              "stalling": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 19,
+      "role": "learner",
+      "text": "The single conjunct still unsworn is soleHolderOf wornBurin — the kept hand behind that tool, and nothing else. The blank chain closes clean to castBlankFor falseShilling edony; the die chain closes to dieCutWith falseShilling wornBurin and stops cold. Naming edony there now would be hunger, not ground — Rule Four waits on the custody paper, and I will not write ahead of it.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ],
+          [
+            "dieCutWith",
+            "falseShilling",
+            "wornBurin"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "dieCutWith",
+              "falseShilling",
+              "wornBurin"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "If soleHolderOf wornBurin edony is sworn in the custody paper, Rule Four yields cutDieFor falseShilling edony, and with castBlankFor falseShilling edony already grounded, Rule Five fires — edony struck the shilling. The sole missing gate is that one sworn fact.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 20,
+      "role": "director",
+      "text": "[The clerk's thumb rests on the packet string but does not pull it. A draught presses the candle-flame flat for a moment, and the coins lie pale in the unsteady light.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 20,
+      "role": "tutor",
+      "text": "The packet is still string, not testimony. You have the blank on one side and the tool on the other; what exact kind of line must the assay see before the tool can become a hand? Do not name the keeper before the keeping is read.",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut forms, and the record forecloses an uncovered re-entry because the draft declares no target.",
+          "note": null,
+          "lastFigures": [
+            "anaphora",
+            "anaphora"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "test",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 20,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 20,
+              "turnsSinceLastRelease": 4,
+              "priorPremiseId": "p_graver",
+              "priorEcho": 0.1724137931034483,
+              "priorEchoed": false,
+              "lenTrend": -21,
+              "hedgeTrend": 0,
+              "hasTrend": true,
+              "learnerLineCount": 19,
+              "stalling": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "role": "learner",
+      "text": "The assay needs one sworn keeping-paper: a custody attestation stating that one hand and no other held the wornBurin — that is the soleHolderOf entry Rule Four requires. A notch alone names a tool; a tool alone names no hand; only a formal custody record closes that gate. The blank chain closes clean to castBlankFor falseShilling edony, and the die chain reaches dieCutWith falseShilling wornBurin and waits on that single document. Until it is read into record, the tool remains only a tool and Rule Five cannot fire.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ],
+          [
+            "dieCutWith",
+            "falseShilling",
+            "wornBurin"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "dieCutWith",
+              "falseShilling",
+              "wornBurin"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "If soleHolderOf wornBurin edony is sworn in the custody paper, Rule Four yields cutDieFor falseShilling edony, and with castBlankFor falseShilling edony already grounded, Rule Five fires — edony struck the shilling. The sole missing gate is that one sworn keeping-paper.",
+        "asserts": null
+      }
+    },
+    {
+      "turn": 21,
+      "role": "director",
+      "text": "[The packet stays under the clerk's palm, its string dark against the wax. Around the table, no one reaches for it, and the room holds itself in the thin pause before a seal is broken.]",
+      "meta": {
+        "release": null,
+        "phase": null,
+        "act": "continue"
+      }
+    },
+    {
+      "turn": 21,
+      "role": "tutor",
+      "text": "The seal has not broken, so the assay cannot pretend it has heard custody. If the tool is already on your board and the keeper is still behind wax, what entry must remain unwritten until the packet speaks?",
+      "meta": {
+        "move": {
+          "figure": "erotema",
+          "targetPremise": null,
+          "intent": "test"
+        },
+        "release": null,
+        "deliberation": {
+          "draftFigure": "erotema",
+          "intervened": false,
+          "diagnosis": "No figure rut is present, and the record declares no target, so no uncovered re-entry can occur.",
+          "note": null,
+          "lastFigures": [
+            "anaphora",
+            "erotema"
+          ],
+          "jurisdiction": null,
+          "reentry": {
+            "target": null,
+            "releasedEarlier": false,
+            "intent": "test",
+            "lastStagedTurn": null,
+            "confrontedSince": false,
+            "due": false
+          }
+        },
+        "releaseDecision": {
+          "turn": 21,
+          "windowSize": 0,
+          "claimed": null,
+          "invalidClaim": false,
+          "forced": null,
+          "overridden": false,
+          "played": null,
+          "scheduledTurn": null,
+          "offset": null,
+          "reason": null,
+          "visibleGuard": {
+            "blocked": false,
+            "forcedSafe": false,
+            "forcedBy": null,
+            "candidate": null,
+            "reason": null,
+            "visibleFeatures": {
+              "turn": 21,
+              "turnsSinceLastRelease": 5,
+              "priorPremiseId": "p_graver",
+              "priorEcho": 0.20689655172413793,
+              "priorEchoed": false,
+              "lenTrend": -1,
+              "hedgeTrend": 0,
+              "hasTrend": true,
+              "learnerLineCount": 20,
+              "stalling": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "turn": 21,
+      "role": "learner",
+      "text": "The entry that must remain unwritten is soleHolderOf wornBurin — the keeper behind the wax, no more. My board yields blankFrom and castBlankFor edony clean through Rules One and Two, and dieCutWith falseShilling wornBurin through Rule Three — but Rule Four will not move on a sealed packet. The die chain halts at the tool and goes no further until the string is pulled.",
+      "meta": {
+        "adopt": [],
+        "retract": [],
+        "derive": [
+          [
+            "blankFrom",
+            "falseShilling",
+            "weirCrucible"
+          ],
+          [
+            "castBlankFor",
+            "falseShilling",
+            "edony"
+          ],
+          [
+            "dieCutWith",
+            "falseShilling",
+            "wornBurin"
+          ]
+        ],
+        "deriveOutcomes": [
+          {
+            "fact": [
+              "blankFrom",
+              "falseShilling",
+              "weirCrucible"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "castBlankFor",
+              "falseShilling",
+              "edony"
+            ],
+            "status": "repeat"
+          },
+          {
+            "fact": [
+              "dieCutWith",
+              "falseShilling",
+              "wornBurin"
+            ],
+            "status": "repeat"
+          }
+        ],
+        "hypothesis": "If soleHolderOf wornBurin edony is sworn in the custody paper when the packet is opened, Rule Four yields cutDieFor falseShilling edony, and with castBlankFor falseShilling edony already grounded, Rule Five fires — edony struck the shilling. The sole missing gate is that one sworn keeping-paper.",
+        "asserts": null
+      }
+    }
+  ],
+  "ledger": [
+    {
+      "turn": 2,
+      "premiseId": "m_caster",
+      "via": "director"
+    },
+    {
+      "turn": 5,
+      "premiseId": "p_alloy",
+      "via": "tutor",
+      "reason": "Played one turn after schedule because the act boundary cleared the stage and the metal chain must be restored before the inquiry stalls.",
+      "offset": 1
+    },
+    {
+      "turn": 6,
+      "premiseId": "m_graver",
+      "via": "director"
+    },
+    {
+      "turn": 6,
+      "premiseId": "p_crucible",
+      "via": "tutor",
+      "reason": "p_crucible pushed: page stalling (hedging up 0.50)",
+      "offset": -2
+    },
+    {
+      "turn": 10,
+      "premiseId": "p_caster",
+      "via": "director"
+    },
+    {
+      "turn": 12,
+      "premiseId": "m_caught",
+      "via": "director"
+    },
+    {
+      "turn": 15,
+      "premiseId": "p_flaw",
+      "via": "tutor",
+      "reason": "p_flaw pushed: page stalling (3 turns since last release)",
+      "offset": 1
+    },
+    {
+      "turn": 16,
+      "premiseId": "p_graver",
+      "via": "tutor",
+      "reason": "p_graver pushed: page stalling (hedging up 0.50)",
+      "offset": -2
+    }
+  ],
+  "firstForcedTurn": null,
+  "assertedGroundedTurn": null,
+  "turnsPlayed": 21,
+  "proof": null,
+  "inference": {
+    "voiced": [
+      {
+        "fact": [
+          "blankFrom",
+          "falseShilling",
+          "weirCrucible"
+        ],
+        "turn": 6
+      },
+      {
+        "fact": [
+          "castBlankFor",
+          "falseShilling",
+          "edony"
+        ],
+        "turn": 10
+      },
+      {
+        "fact": [
+          "dieCutWith",
+          "falseShilling",
+          "wornBurin"
+        ],
+        "turn": 16
+      }
+    ],
+    "overreaches": [],
+    "mischanneled": [],
+    "availability": [
+      {
+        "fact": [
+          "blankFrom",
+          "falseShilling",
+          "weirCrucible"
+        ],
+        "firstAvailable": 6,
+        "firstVoiced": 6
+      },
+      {
+        "fact": [
+          "castBlankFor",
+          "falseShilling",
+          "edony"
+        ],
+        "firstAvailable": 10,
+        "firstVoiced": 10
+      },
+      {
+        "fact": [
+          "dieCutWith",
+          "falseShilling",
+          "wornBurin"
+        ],
+        "firstAvailable": 16,
+        "firstVoiced": 16
+      }
+    ],
+    "frontierFinal": []
+  },
+  "acts": [
+    {
+      "act": 1,
+      "turns": [
+        1,
+        4
+      ],
+      "endedBy": "director",
+      "brief": "[Rain presses at the fair-town windows, and the chamber smells of wet wool, rushlight, and coin handled too often. On the table, an empty space is left for what the day will bring.]"
+    },
+    {
+      "act": 2,
+      "turns": [
+        5,
+        10
+      ],
+      "endedBy": "director",
+      "brief": "[The fair-noise falls back behind the shut door, and the chamber narrows to the table, the cupel, and the cold patience of accounts. What had sounded like a public cry now waits to be weighed in quieter metal.]"
+    },
+    {
+      "act": 3,
+      "turns": [
+        11,
+        16
+      ],
+      "endedBy": "director",
+      "brief": "[The leat-book is closed, yet no one reaches for the verdict. A thin draught moves the candle-flame across the coin’s face, and the room turns from the cold weight of metal toward the sharper silence of marks.]"
+    },
+    {
+      "act": 4,
+      "turns": [
+        17,
+        21
+      ],
+      "endedBy": "run_end",
+      "brief": "[The glass is lifted, and the room seems colder for the space it leaves above the coins. Papers are squared, chairs shift, and the next silence gathers around keeping and custody rather than sight alone.]"
+    }
+  ],
+  "plot": {
+    "plots": [
+      {
+        "act": 1,
+        "turn": 1,
+        "holdByEnd": [
+          "The learner states that the inquiry must follow evidentiary marks rather than the town's wanted verdict.",
+          "The learner identifies that no hand can be named before some first exhibit is produced."
+        ],
+        "withhold": "I will not stage or concede any culprit, alloy, crucible, tool, or witness until an exhibit enters the window.",
+        "friction": "The learner may try to begin with the town's suspicion or ask for a name before any proof exists.",
+        "fallback": "Return him to the empty board and ask what kind of first mark an assay needs before it can accuse."
+      },
+      {
+        "act": 2,
+        "turn": 5,
+        "holdByEnd": [
+          "learner states that the shillings are struck poor dross rather than clipped sterling",
+          "learner names alloyOf as present but meltedAt as still required before blankFrom can close",
+          "learner keeps the town's mint-crucible claim separate from the coin's actual metal"
+        ],
+        "withhold": "Do not stage or concede the coin's crucible, sole caster at that crucible, die flaw, tool, holder, or culprit this act until their exhibit windows arrive.",
+        "friction": "The learner may carry over the town's Verrell theory and attach the new dross too quickly to the mint crucible.",
+        "fallback": "Ask which crucible the metal itself has answered to, and make the missing meltedAt conjunct explicit before any hand is considered."
+      },
+      {
+        "act": 3,
+        "turn": 11,
+        "holdByEnd": [
+          "The learner reads back the leat-book's effect from their own board and keeps castBlankFor falseShilling edony grounded in blankFrom plus the sole caster at the weir crucible.",
+          "The learner states that Rule 5 still cannot yield struckBy until a cut die is also grounded for the same hand.",
+          "When the coin's face is staged this act, the learner treats the shared die flaw as the first beta-chain link and does not let Verrell's broad graver answer before a flaw has named a tool."
+        ],
+        "withhold": "Do not stage or concede the graving tool, its holder, or the struck-by finding this act; keep the die chain hungry until the flaw itself has first been read.",
+        "friction": "The learner may feel the Edony blank-finding is already the verdict, or may swing back to Verrell's broad graver before this coin has shown a flaw.",
+        "fallback": "Refuse confirmation, show Rule 5 as two conjuncts, and ask which die-mark on this coin has actually been read before any tool or hand can be weighed."
+      },
+      {
+        "act": 4,
+        "turn": 17,
+        "holdByEnd": [
+          "learner reads back p_graver as proving the flaw-to-tool link and dieCutWith, while stating that soleHolderOf wornBurin is still unproved",
+          "learner keeps castBlankFor falseShilling edony and dieCutWith falseShilling wornBurin as separate chains rather than joining them prematurely",
+          "learner states that Rule 5 still cannot yield struckBy until the tool's keeper is staged and cutDieFor is grounded"
+        ],
+        "withhold": "p_holder and the struck-by finding remain withheld until the learner has first read back the graving-tool testimony and named the custody gap; the prior act's broken withhold is retired because p_graver has already entered the record.",
+        "friction": "the learner may treat the worn burin as already carrying its keeper, or may join Edony's cast blank to the die chain before custody is sworn.",
+        "fallback": "confront any bent tool-to-holder claim first; then restore p_graver plainly if needed, and only after that let custody become the next hunger."
+      }
+    ],
+    "audits": [
+      {
+        "turn": 5,
+        "act": 1,
+        "clauses": [
+          {
+            "clause": "hold_by_end[1]: learner states inquiry must follow evidentiary marks rather than the town's wanted verdict",
+            "verdict": "kept",
+            "evidence": "[turn 1] LEARNER: \"I will not write his name until the metal names him.\""
+          },
+          {
+            "clause": "hold_by_end[2]: learner identifies no hand can be named before some first exhibit is produced",
+            "verdict": "kept",
+            "evidence": "[turn 1] LEARNER: \"The table is bare of exhibits... I will not write his name until the metal names him.\""
+          },
+          {
+            "clause": "withhold: do not stage or concede culprit, alloy, crucible, tool, or witness until an exhibit enters the window",
+            "verdict": "kept",
+            "evidence": "Exhibits staged during the act: m_caster."
+          },
+          {
+            "clause": "friction: learner may begin with town suspicion or ask for a name before proof",
+            "verdict": "kept",
+            "evidence": "[turn 1] LEARNER: \"Verrell is a clipper... I will not write his name until the metal names him.\""
+          },
+          {
+            "clause": "fallback: return him to the empty board and ask what first mark an assay needs before it can accuse",
+            "verdict": "kept",
+            "evidence": "[turn 2] TUTOR: \"which coin, which metal, and which crucible have yet answered one another on our board?\""
+          }
+        ],
+        "summary": "Act 1 kept the learner off the town's wanted name and made the first exhibit stop where it should. The arc is properly at the assay-gate: suspicion resisted, metal chain opened but not prematurely closed.",
+        "arc": {
+          "verdict": "on_arc",
+          "evidence": "[turn 2] LEARNER: \"the crucible assignment is a beginning, not a verdict.\""
+        }
+      },
+      {
+        "turn": 11,
+        "act": 2,
+        "clauses": [
+          {
+            "clause": "hold_by_end[1]: learner states that the shillings are struck poor dross rather than clipped sterling",
+            "verdict": "kept",
+            "evidence": "[turn 5] LEARNER: A clipped shilling still wears the king's silver — its alloy names no coiner, only the shears that trimmed it."
+          },
+          {
+            "clause": "hold_by_end[2]: learner names alloyOf as present but meltedAt as still required before blankFrom can close",
+            "verdict": "justified_deviation",
+            "evidence": "[turn 6] LEARNER: meltedAt drossSilver weirCrucible lights Rule 1 at last — blankFrom falseShilling weirCrucible is derived and I enter it."
+          },
+          {
+            "clause": "hold_by_end[3]: learner keeps the town's mint-crucible claim separate from the coin's actual metal",
+            "verdict": "kept",
+            "evidence": "[turn 10] LEARNER: castBlankFor falseShilling edony is written — the blank is hers, not Verrell's."
+          },
+          {
+            "clause": "withhold: Do not stage or concede the coin's crucible, sole caster at that crucible, die flaw, tool, holder, or culprit this act until their exhibit windows arrive.",
+            "verdict": "kept",
+            "evidence": "Exhibits staged during the act: p_alloy, m_graver, p_crucible, p_caster."
+          },
+          {
+            "clause": "friction: The learner may carry over the town's Verrell theory and attach the new dross too quickly to the mint crucible.",
+            "verdict": "kept",
+            "evidence": "[turn 8] LEARNER: The die chain has no first step either — no flaw has been read on this coin's face, and without dieFlawOf, soleHolderOf broadGraver verrell sits idle."
+          },
+          {
+            "clause": "fallback: Ask which crucible the metal itself has answered to, and make the missing meltedAt conjunct explicit before any hand is considered.",
+            "verdict": "kept",
+            "evidence": "[turn 7] TUTOR: Before any hand is weighed, read back the last metal-paper from your own board."
+          }
+        ],
+        "summary": "The act advanced the metal chain through castBlankFor Edony while keeping the die chain and struckBy closed. The only bent clause was the early meltedAt halt, overtaken by the crucible exhibit window and properly named as such.",
+        "arc": {
+          "verdict": "on_arc",
+          "evidence": "[turn 10] LEARNER: But the tutor's caution holds: a blank without a die strikes nothing, and no flaw has yet been read on this coin's face."
+        }
+      },
+      {
+        "turn": 17,
+        "act": 3,
+        "clauses": [
+          {
+            "clause": "hold_by_end[1]: learner reads back the leat-book's effect and keeps castBlankFor falseShilling edony grounded in blankFrom plus sole caster at the weir crucible",
+            "verdict": "kept",
+            "evidence": "[turn 11] LEARNER: entries four and five yield blankFrom falseShilling weirCrucible by Rule One, and entry six — soleCasterAt weirCrucible edony — closes castBlankFor falseShilling edony by Rule Two."
+          },
+          {
+            "clause": "hold_by_end[2]: learner states Rule 5 still cannot yield struckBy until cutDieFor is grounded for the same hand",
+            "verdict": "kept",
+            "evidence": "[turn 16] LEARNER: soleHolderOf wornBurin is still unsworn — Rule Four cannot fire, cutDieFor stays dark, and Rule Five with it."
+          },
+          {
+            "clause": "hold_by_end[3]: when the coin's face is staged, learner treats the shared die flaw as the first beta-chain link and does not let Verrell's broad graver answer before a flaw has named a tool",
+            "verdict": "kept",
+            "evidence": "[turn 14] LEARNER: The shared notch is dieFlawOf falseShilling squareNotchFlaw... the die chain's first premise under Rule Three."
+          },
+          {
+            "clause": "withhold: do not stage or concede the graving tool, its holder, or the struck-by finding this act; keep the die chain hungry until the flaw itself has first been read",
+            "verdict": "drift",
+            "evidence": "[turn 16] LEARNER: Now flawCutBy notchedSerif wornBurin enters the board, and Rule Three yields dieCutWith falseShilling wornBurin at once."
+          },
+          {
+            "clause": "friction: learner may treat Edony blank-finding as verdict, or swing back to Verrell's broad graver before the coin shows a flaw",
+            "verdict": "kept",
+            "evidence": "[turn 12] LEARNER: occasion is neither conjunct Rule Five requires... nor does it light the die chain where no dieFlawOf has been read on the coin's face."
+          },
+          {
+            "clause": "fallback: refuse confirmation, show Rule 5 as two conjuncts, and ask which die-mark has been read before tool or hand can be weighed",
+            "verdict": "kept",
+            "evidence": "[turn 15] TUTOR: what must that mark name before any graver, broad or worn, can be weighed?"
+          }
+        ],
+        "summary": "The act held the assay against the town's occasion and kept Rule Five dark, so the throughline remains intact. But the withhold broke: the worn burin and dieCutWith entered before the act was supposed to concede any graving tool.",
+        "arc": {
+          "verdict": "on_arc",
+          "evidence": "[turn 16] LEARNER: cutDieFor stays dark, and Rule Five with it."
+        }
+      },
+      {
+        "turn": 21,
+        "final": true,
+        "act": 4,
+        "clauses": [
+          {
+            "clause": "hold_by_end[1]: learner reads back p_graver as proving the flaw-to-tool link and dieCutWith, while stating soleHolderOf wornBurin is still unproved",
+            "verdict": "kept",
+            "evidence": "[turn 17] LEARNER: \"Rule Three closes there: dieCutWith falseShilling wornBurin. But the paper stopped at the door of Rule Four, for no hand was sworn as sole holder of that burin\""
+          },
+          {
+            "clause": "hold_by_end[2]: learner keeps castBlankFor falseShilling edony and dieCutWith falseShilling wornBurin as separate chains",
+            "verdict": "kept",
+            "evidence": "[turn 19] LEARNER: \"The blank chain closes clean to castBlankFor falseShilling edony; the die chain closes to dieCutWith falseShilling wornBurin and stops cold.\""
+          },
+          {
+            "clause": "hold_by_end[3]: learner states Rule 5 cannot yield struckBy until the tool's keeper is staged and cutDieFor is grounded",
+            "verdict": "kept",
+            "evidence": "[turn 17] LEARNER: \"Rule Five needs both castBlankFor and cutDieFor in the same hand — and without cutDieFor, no striker can be named.\""
+          },
+          {
+            "clause": "withhold: p_holder and struck-by finding remain withheld until p_graver is read back and the custody gap named",
+            "verdict": "kept",
+            "evidence": "[turn 21] LEARNER: \"The entry that must remain unwritten is soleHolderOf wornBurin — the keeper behind the wax, no more.\""
+          },
+          {
+            "clause": "friction: learner may treat the worn burin as already carrying its keeper, or join Edony's cast blank to the die chain before custody is sworn",
+            "verdict": "kept",
+            "evidence": "[turn 19] LEARNER: \"Naming edony there now would be hunger, not ground — Rule Four waits on the custody paper, and I will not write ahead of it.\""
+          },
+          {
+            "clause": "fallback: confront bent tool-to-holder claim first; restore p_graver plainly if needed; let custody become the next hunger",
+            "verdict": "kept",
+            "evidence": "[turn 20] LEARNER: \"A notch alone names a tool; a tool alone names no hand; only a formal custody record closes that gate.\""
+          }
+        ],
+        "summary": "The act cleanly held the learner at the tool and made custody the next hunger. No holder, cutDieFor, or struck-by finding entered; the remaining arc is blocked only by the sealed keeping-paper.",
+        "arc": {
+          "verdict": "on_arc",
+          "evidence": "[turn 21] LEARNER: \"The die chain halts at the tool and goes no further until the string is pulled.\""
+        },
+        "throughlineAudit": [
+          {
+            "clause": "arc[1]: learner rejects the town's loud verdict as insufficient without the assay's conjuncts",
+            "verdict": "drift",
+            "evidence": "No record line in this closing act names or rejects the town's loud verdict."
+          },
+          {
+            "clause": "arc[2]: learner closes the metal chain: alloy, crucible, sole caster, cast blank",
+            "verdict": "kept",
+            "evidence": "[turn 18] LEARNER: \"The blank chain closes clean: drossSilver to weirCrucible by Rule One, weirCrucible to edony by Rule Two — castBlankFor falseShilling edony stands grounded.\""
+          },
+          {
+            "clause": "arc[3]: learner keeps the die chain open after alpha closes, then closes flaw, tool, holder, cut die",
+            "verdict": "justified_deviation",
+            "evidence": "[turn 21] LEARNER: \"dieCutWith falseShilling wornBurin through Rule Three — but Rule Four will not move on a sealed packet.\""
+          },
+          {
+            "clause": "arc[4]: learner joins cast blank and cut die in one hand and speaks the recognition from the rule",
+            "verdict": "justified_deviation",
+            "evidence": "[turn 20] LEARNER: \"Until it is read into record, the tool remains only a tool and Rule Five cannot fire.\""
+          },
+          {
+            "clause": "hold_to_end: final struck-by finding must not be reached until both castBlankFor and cutDieFor stand for the same hand",
+            "verdict": "kept",
+            "evidence": "[turn 17] LEARNER: \"without cutDieFor, no striker can be named.\""
+          },
+          {
+            "clause": "risk: learner will let the satisfying blank finding stand in for the whole proof before the die chain is complete",
+            "verdict": "kept",
+            "evidence": "[turn 19] LEARNER: \"The blank chain closes clean to castBlankFor falseShilling edony; the die chain closes to dieCutWith falseShilling wornBurin and stops cold.\""
+          },
+          {
+            "clause": "salvage: if that happens, refuse confirmation, show the last rule entire, and force the missing die conjunct back into view",
+            "verdict": "kept",
+            "evidence": "[turn 17] LEARNER: \"Rule Five needs both castBlankFor and cutDieFor in the same hand — and without cutDieFor, no striker can be named.\""
+          }
+        ]
+      }
+    ],
+    "throughlines": [
+      {
+        "act": 1,
+        "turn": 1,
+        "trigger": "opening",
+        "arc": [
+          "The learner rejects the town's loud verdict as insufficient without the assay's conjuncts.",
+          "The learner closes the metal chain: alloy, crucible, sole caster, cast blank.",
+          "The learner keeps the die chain open after alpha closes, then closes flaw, tool, holder, cut die.",
+          "The learner joins cast blank and cut die in one hand and speaks the recognition from the rule."
+        ],
+        "holdToEnd": "The final struck-by finding must not be reached until both castBlankFor and cutDieFor stand on the learner's board for the same hand.",
+        "risk": "The learner will let the satisfying blank finding stand in for the whole proof before the die chain is complete.",
+        "salvage": "If that happens, refuse confirmation, show the last rule entire, and force the missing die conjunct back into view."
+      }
+    ]
+  },
+  "corruption": {
+    "config": {
+      "seed": 1,
+      "rate": 0.75,
+      "graceTurns": 1,
+      "maxConcurrent": 2,
+      "startTurn": 1,
+      "mutateShare": 1,
+      "pool": "staged"
+    },
+    "ledger": [
+      {
+        "turn": 3,
+        "type": "decay",
+        "premiseId": "m_caster",
+        "fact": [
+          "soleCasterAt",
+          "mintCrucible",
+          "verrell"
+        ]
+      },
+      {
+        "turn": 6,
+        "type": "decay",
+        "premiseId": "p_alloy",
+        "fact": [
+          "alloyOf",
+          "falseShilling",
+          "drossSilver"
+        ]
+      },
+      {
+        "turn": 8,
+        "type": "repair",
+        "premiseId": "p_alloy",
+        "via": "tutor"
+      },
+      {
+        "turn": 8,
+        "type": "decay",
+        "premiseId": "m_graver",
+        "fact": [
+          "soleHolderOf",
+          "broadGraver",
+          "verrell"
+        ]
+      }
+    ],
+    "decayedAtEnd": [
+      {
+        "premiseId": "m_caster",
+        "fact": [
+          "soleCasterAt",
+          "mintCrucible",
+          "verrell"
+        ],
+        "sinceTurn": 3
+      },
+      {
+        "premiseId": "m_graver",
+        "fact": [
+          "soleHolderOf",
+          "broadGraver",
+          "verrell"
+        ],
+        "sinceTurn": 8
+      }
+    ]
+  }
+}

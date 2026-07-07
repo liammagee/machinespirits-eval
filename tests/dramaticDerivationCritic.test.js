@@ -102,6 +102,42 @@ test('renderProofProse tells the world-001 proof with surfaces, glosses and the 
   assert.ok(prose.includes(world.secret.surface), 'closing line states the secret surface');
 });
 
+test('renderProofProse cites the twin actually staged, not an arbitrary same-fact exhibit', () => {
+  // Two exhibits assert the SAME fact (two witnesses to one event). A
+  // factKey->premise map collides on them; the prose must name the exhibit
+  // the run actually staged (from the ledger), not whichever twin is last in
+  // the world file. Minimal synthetic world isolates the disambiguation.
+  const twinWorld = {
+    premises: [
+      { id: 'a_first', fact: ['eventSeen', 'x'], surface: 'The FIRST witness saw it.' },
+      { id: 'a_second', fact: ['eventSeen', 'x'], surface: 'The SECOND witness saw it.' },
+      { id: 'b', fact: ['otherFact', 'y'], surface: 'The other fact stands on its own.' },
+    ],
+    rules: [{ id: 'R', gloss: 'event and other together force the conclusion' }],
+    background: [],
+    secret: { fact: ['concluded', 'z'], surface: 'the concealed conclusion' },
+  };
+  const proof = {
+    fact: ['concluded', 'z'],
+    base: false,
+    rule: 'R',
+    premises: [
+      { fact: ['eventSeen', 'x'], base: true },
+      { fact: ['otherFact', 'y'], base: true },
+    ],
+  };
+
+  // No ledger: deterministic first-in-file fallback (not arbitrary last-wins).
+  const noLedger = renderProofProse(proof, twinWorld);
+  assert.ok(noLedger.includes('The FIRST witness'), 'no ledger → first-in-file twin');
+  assert.ok(!noLedger.includes('The SECOND witness'), 'no ledger → not the later twin');
+
+  // Ledger staged the SECOND twin: the prose must flip to it.
+  const staged = renderProofProse(proof, twinWorld, { ledger: [{ turn: 3, premiseId: 'a_second' }] });
+  assert.ok(staged.includes('The SECOND witness'), 'ledger override → the staged twin');
+  assert.ok(!staged.includes('The FIRST witness'), 'ledger override → not the unstaged twin');
+});
+
 // ---------------------------------------------------------------------------
 // the pinned critic target
 // ---------------------------------------------------------------------------

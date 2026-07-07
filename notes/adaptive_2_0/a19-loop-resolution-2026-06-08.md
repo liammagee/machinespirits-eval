@@ -44,7 +44,7 @@ triggered because no `offer_diagnostic_options` headroom appeared.
 - Repair type: `preserve_struggle`.
 - S0 stratum: `recursive_full_no_policy_memory`.
 - Attempt-1 report:
-  `notes/adaptive_2_0/a19-attempt1-real-gate-report-over-compliance.md`.
+  `notes/adaptive_2_0/2026-06-07-a19-attempt1-real-gate-report-over-compliance.md`.
 - Admitted axiom:
   `exports/a19/axioms/over-compliance-scaffold-dependency/axiom.json`.
 - Sibling `a` paired adjudication:

@@ -5,12 +5,12 @@ import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 // ============================================================================
-// Poetics job launcher — guarded spawner for the four poetics run types.
+// Poetics job launcher — guarded spawner for local browser-launched run types.
 //
-// The browser can kick off (1) new generative drama runs, (2) discursive
-// replays (counterfactual revisions), (3) adversarial CLI structure scores, and
-// (4) online OpenRouter-METERED Sonnet scores. Each kind maps to exactly one
-// whitelisted script; user input is turned into an argv ARRAY by a per-kind
+// The browser can kick off generative drama runs, discursive replays
+// (counterfactual revisions), evaluation-cell runs, adversarial CLI structure
+// scores, and online OpenRouter-METERED Sonnet scores. Each kind maps to
+// exactly one whitelisted script; user input is turned into an argv ARRAY by a per-kind
 // builder (never a shell string), and the resolved cost class drives the UI's
 // confirm gate + a serial lock.
 //
@@ -27,7 +27,12 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT_DIR = path.resolve(__dirname, '../..');
-const LOG_DIR = path.join(ROOT_DIR, 'exports', '.poetics-job-logs');
+// Exports root is overridable via EVAL_EXPORTS_DIR (the Electron desktop app
+// relocates it into the user-data dir, the same way EVAL_DB_PATH / EVAL_LOGS_DIR
+// relocate the DB + logs). Defaults to <repo>/exports for the web servers + CLI,
+// so behaviour is unchanged when the env var is unset.
+const EXPORTS_ROOT = process.env.EVAL_EXPORTS_DIR || path.join(ROOT_DIR, 'exports');
+const LOG_DIR = path.join(EXPORTS_ROOT, '.poetics-job-logs');
 
 // Keep only the tail of stdout/stderr in memory; the full stream goes to logFile.
 const MAX_LOG_LINES = 300;
@@ -77,6 +82,16 @@ function bool(v) {
 // (codex/claude/agy/gemini) routes through the plan → quota, not metered.
 function looksMetered(model) {
   return typeof model === 'string' && model.includes('/');
+}
+
+function validateToken(value, key, pattern, help) {
+  if (!pattern.test(value)) throw new Error(`${key} has invalid characters${help ? ` (${help})` : ''}`);
+  return value;
+}
+
+function optSafeToken(params, key, pattern, help) {
+  const value = optString(params, key);
+  return value ? validateToken(value, key, pattern, help) : null;
 }
 
 // ── Per-kind argv builders ────────────────────────────────────────────────────
@@ -177,6 +192,171 @@ function buildGenerate(params) {
   return { argv, costClass, label, costNote };
 }
 
+const DRAMA_GENERATORS = ['claude', 'codex', 'gemini', 'api'];
+
+// Enact a compiled curriculum drama spec (curriculum/<name>.dramas.yaml) through
+// generate-pedagogical-dramas.js — the SAME batch generator the curriculum
+// compiler targets. --only picks one drama; omit it to run the whole spec. A bare
+// spec basename resolves under curriculum/; a slashed path is taken relative to
+// the repo root. Generator claude/codex/gemini route through the Max plan (quota);
+// only generator=api with an OpenRouter slug is metered $.
+function buildPedagogicalDrama(params) {
+  const mock = bool(params.mock);
+  const dryRun = bool(params.dryRun);
+  const force = bool(params.force);
+  const generator = enumValue(params, 'generator', DRAMA_GENERATORS, 'claude');
+  const model = optString(params, 'model');
+  const only = optString(params, 'only');
+  const maxTurns = optPosInt(params, 'maxTurns');
+  const claudePersistentWorkers = bool(params.claudePersistentWorkers);
+
+  const spec = reqString(params, 'spec');
+  if (spec.includes('..') || !/^[\w.\-/]+$/.test(spec)) throw new Error('spec has invalid characters');
+  if (!spec.endsWith('.yaml') && !spec.endsWith('.yml')) throw new Error('spec must be a .yaml file');
+  // No leading slash, and a slashed path must stay repo-relative (the guard above
+  // already blocks ".."). A bare basename is a compiled spec under curriculum/.
+  if (spec.startsWith('/')) throw new Error('spec must be a repo-relative path');
+  const specPath = spec.includes('/') ? spec : `curriculum/${spec}`;
+
+  const argv = ['--spec', specPath];
+  if (only) argv.push('--only', only);
+  argv.push('--generator', generator);
+  if (model) argv.push('--model', model);
+  if (maxTurns) argv.push('--max-turns', String(maxTurns));
+
+  // The generator otherwise defaults its out/transcripts/delib/key dirs INTO the
+  // config/poetics-calibration/phase2-* tree (its native home). A UI-launched
+  // curriculum run must never land there, so pin all four under one dedicated base
+  // — exports/curriculum-drama/<specBase> by default, or an operator override.
+  const specBase = (specPath.split('/').pop() || 'curriculum').replace(/\.dramas\.ya?ml$|\.ya?ml$/, '');
+  const outBase = optString(params, 'outBase') || `exports/curriculum-drama/${specBase}`;
+  if (outBase.includes('..') || outBase.startsWith('/')) throw new Error('outBase must be a repo-relative path');
+  argv.push('--out-dir', `${outBase}/samples`);
+  argv.push('--transcripts-dir', `${outBase}/transcripts`);
+  argv.push('--delib-dir', `${outBase}/deliberations`);
+  argv.push('--key', `${outBase}/key.yaml`);
+
+  if (mock) argv.push('--mock');
+  if (dryRun) argv.push('--dry-run');
+  if (force) argv.push('--force');
+  if (claudePersistentWorkers) argv.push('--claude-persistent-workers');
+
+  const free = mock || dryRun;
+  let costClass;
+  if (free) costClass = COST_CLASSES.FREE;
+  else if (generator === 'api' && looksMetered(model)) costClass = COST_CLASSES.METERED;
+  else costClass = COST_CLASSES.QUOTA;
+
+  const label = `pedagogical-drama · ${only || 'all'} · gen=${generator}${mock ? ' · mock' : ''}${dryRun ? ' · dry-run' : ''}`;
+  const costNote = free
+    ? 'Mock / dry-run — no spend.'
+    : costClass === COST_CLASSES.METERED
+      ? `generator=api + --model "${model}" is an OpenRouter slug — REAL metered spend.`
+      : `Generator "${generator}" routes through the CLI/Max plan (quota drain, no per-call $).`;
+  return { argv, costClass, label, costNote };
+}
+
+// Launch a proof-DAG derivation run (scripts/run-derivation-loop.js) — a tutor
+// script enacted against a world, rule-checked into grounded / impasse /
+// disengagement. The loop writes live.json under exports/dramatic-derivation/loop/
+// <label>, so a launched run STREAMS to /derivation/live and lands on /derivation
+// when it closes. Mock backend is zero-cost; --real targets OpenRouter
+// (default gemini-flash) = metered $. The full experimental flag surface stays on
+// the CLI — this exposes the core dials (world × script + register + superego).
+const DERIVATION_CONFIG_REL = 'config/drama-derivation';
+
+function buildDerivation(params) {
+  const real = bool(params.real);
+  const superego = bool(params.superego);
+  const stallWatch = bool(params.stallWatch);
+
+  const world = reqString(params, 'world');
+  if (world.includes('..') || !/^[\w.-]+\.ya?ml$/.test(world)) throw new Error('world must be a world-*.yaml basename');
+  const script = reqString(params, 'script');
+  if (script.includes('..') || !/^[\w.-]+\.md$/.test(script))
+    throw new Error('script must be a tutor-script .md basename');
+  const worldRel = `${DERIVATION_CONFIG_REL}/${world}`;
+  const scriptRel = `${DERIVATION_CONFIG_REL}/tutor-scripts/${script}`;
+  if (!fs.existsSync(path.join(ROOT_DIR, worldRel))) throw new Error(`world not found: ${world}`);
+  if (!fs.existsSync(path.join(ROOT_DIR, scriptRel))) throw new Error(`tutor script not found: ${script}`);
+
+  const argv = ['--world', worldRel, '--script', scriptRel];
+  const label = optString(params, 'label');
+  if (label) {
+    if (!/^[\w.-]+$/.test(label)) throw new Error('label has invalid characters');
+    argv.push('--label', label);
+  }
+  const recognition = enumValue(params, 'recognition', ['0', '1', '2', '3'], null);
+  if (recognition != null) argv.push('--recognition', recognition);
+  const charisma = enumValue(params, 'charisma', ['0', '1', '2', '3'], null);
+  if (charisma != null) argv.push('--charisma', charisma);
+  const dramaturgy = enumValue(params, 'dramaturgy', ['free', 'frozen'], null);
+  if (dramaturgy) argv.push('--dramaturgy', dramaturgy);
+  if (superego) argv.push('--superego');
+  if (stallWatch) {
+    if (!superego) throw new Error('stall-watch requires superego');
+    argv.push('--stall-watch');
+  }
+  if (real) argv.push('--real');
+
+  const costClass = real ? COST_CLASSES.METERED : COST_CLASSES.FREE;
+  const label2 = `derivation · ${world.replace(/\.ya?ml$/, '')} × ${script.replace(/\.md$/, '')}${real ? ' · REAL' : ' · mock'}`;
+  const costNote = real
+    ? 'Real run — OpenRouter metered spend (default gemini-flash; DERIVATION_MODEL overrides). Streams live to /derivation/live.'
+    : 'Mock backend — zero cost. Streams live to /derivation/live; lands on /derivation when it closes.';
+  return { argv, costClass, label: label2, costNote };
+}
+
+const DERIVATION_ASSESSMENT_JUDGES = ['none', 'claude', 'codex', 'gemini'];
+
+function parseDerivationLabels(params) {
+  const labels = reqString(params, 'labels')
+    .split(',')
+    .map((label) => label.trim())
+    .filter(Boolean);
+  if (!labels.length) throw new Error('labels is required');
+  for (const label of labels) {
+    if (!/^[\w.-]+$/.test(label)) throw new Error(`invalid derivation label: ${label}`);
+  }
+  return labels;
+}
+
+function defaultDerivationAssessmentOutDir(labels) {
+  const first = labels[0].replace(/[^\w.-]+/gu, '-');
+  return `exports/dramatic-derivation/derivation-assessments/${first}${labels.length > 1 ? `-plus-${labels.length - 1}` : ''}`;
+}
+
+function buildDerivationAssessmentJob(params) {
+  const labels = parseDerivationLabels(params);
+  const judgeCli = enumValue(params, 'judgeCli', DERIVATION_ASSESSMENT_JUDGES, 'none');
+  const runDir = optString(params, 'runDir') || 'exports/dramatic-derivation/loop';
+  const outDir = optString(params, 'outDir') || defaultDerivationAssessmentOutDir(labels);
+  const argv = ['--labels', labels.join(','), '--run-dir', runDir, '--out-dir', outDir, '--judge-cli', judgeCli];
+
+  const rubrics = optString(params, 'rubrics');
+  if (rubrics) argv.push('--rubrics', rubrics);
+  const model = optString(params, 'model');
+  if (model) argv.push('--model', model);
+  const judgeEffort = enumValue(params, 'judgeEffort', ['low', 'medium', 'high', 'xhigh', 'max'], null);
+  if (judgeEffort) argv.push('--judge-effort', judgeEffort);
+  const timeoutMs = optPosInt(params, 'timeoutMs');
+  if (timeoutMs) argv.push('--timeout-ms', String(timeoutMs));
+  const maxTranscriptChars = optPosInt(params, 'maxTranscriptChars');
+  if (maxTranscriptChars) argv.push('--max-transcript-chars', String(maxTranscriptChars));
+  const scoreConcurrency = optPosInt(params, 'scoreConcurrency');
+  if (scoreConcurrency) argv.push('--score-concurrency', String(scoreConcurrency));
+  if (bool(params.resumeExisting)) argv.push('--resume-existing');
+  if (bool(params.force)) argv.push('--force');
+
+  const costClass = judgeCli === 'none' ? COST_CLASSES.FREE : COST_CLASSES.QUOTA;
+  const label = `derivation-assessment · ${labels.length} run${labels.length === 1 ? '' : 's'} · judge=${judgeCli}`;
+  const costNote =
+    judgeCli === 'none'
+      ? 'No external judge — writes mechanical proof gates, human-readable DAG profiles, prompts, manifest, and report.'
+      : `External judge "${judgeCli}" routes through the CLI/Max plan (quota drain); proof gate remains mechanical.`;
+  return { argv, costClass, label, costNote };
+}
+
 const STRUCTURE_CRITICS = ['rules', 'codex', 'claude', 'claude-code'];
 
 function buildAdversarialScore(params) {
@@ -238,6 +418,71 @@ function buildOnlineScore(params) {
   return { argv, costClass, label, costNote };
 }
 
+const EVAL_JUDGE_CLIS = ['none', 'claude', 'gemini', 'codex'];
+const EVAL_TOKEN_RE = /^[\w./:-]+$/u;
+const EVAL_CSV_TOKEN_RE = /^[\w./:-]+(?:,[\w./:-]+)*$/u;
+const EVAL_CLUSTER_RE = /^[\w-]+(?:,[\w-]+)*$/u;
+
+function buildEvalCell(params) {
+  const cell = validateToken(reqString(params, 'cell'), 'cell', /^cell_\d+[\w-]*$/u, 'expected cell_<n>...');
+  const runs = optPosInt(params, 'runs') || 1;
+  const parallelism = optPosInt(params, 'parallelism');
+  const dryRun = bool(params.dryRun);
+  const skipRubric = bool(params.skipRubric);
+  const live = bool(params.live);
+  const transcript = bool(params.transcript);
+  const allowModelMix = bool(params.allowModelMix);
+
+  const scenario = optSafeToken(params, 'scenario', EVAL_CSV_TOKEN_RE, 'comma-separated scenario ids');
+  const cluster = optSafeToken(params, 'cluster', EVAL_CLUSTER_RE, 'comma-separated cluster names');
+  if (scenario && cluster) throw new Error('scenario and cluster are mutually exclusive');
+
+  const argv = ['run', '--profiles', cell, '--runs', String(runs)];
+  if (scenario) argv.push('--scenario', scenario);
+  if (cluster) argv.push('--cluster', cluster);
+  if (parallelism) argv.push('--parallelism', String(parallelism));
+
+  const description =
+    optString(params, 'description') || `Pedagogical drama batch: ${cell}${scenario ? ` / ${scenario}` : ''}`;
+  argv.push('--description', description.slice(0, 240));
+
+  const addModelFlag = (flag, key) => {
+    const value = optSafeToken(params, key, EVAL_TOKEN_RE, 'model alias or provider/model slug');
+    if (value) argv.push(flag, value);
+  };
+  addModelFlag('--model', 'model');
+  addModelFlag('--tutor-model', 'tutorModel');
+  addModelFlag('--ego-model', 'egoModel');
+  addModelFlag('--superego-model', 'superegoModel');
+  addModelFlag('--learner-model', 'learnerModel');
+  addModelFlag('--learner-ego-model', 'learnerEgoModel');
+  addModelFlag('--learner-superego-model', 'learnerSuperegoModel');
+
+  const judge = enumValue(params, 'judgeCli', EVAL_JUDGE_CLIS, 'none');
+  if (judge !== 'none') {
+    argv.push('--judge-cli', judge);
+    const judgeCliModel = optSafeToken(params, 'judgeCliModel', EVAL_TOKEN_RE, 'CLI model alias');
+    if (judgeCliModel) argv.push('--judge-cli-model', judgeCliModel);
+  }
+
+  const maxTokens = optPosInt(params, 'maxTokens');
+  if (maxTokens) argv.push('--max-tokens', String(maxTokens));
+  if (dryRun) argv.push('--dry-run');
+  if (skipRubric) argv.push('--skip-rubric');
+  if (live) argv.push('--live');
+  if (transcript) argv.push('--transcript');
+  if (allowModelMix) argv.push('--allow-model-mix');
+
+  const costClass = dryRun ? COST_CLASSES.FREE : COST_CLASSES.METERED;
+  const label = `script-batch · ${cell} · runs=${runs}${scenario ? ` · ${scenario}` : cluster ? ` · ${cluster}` : ''}${
+    dryRun ? ' · dry-run' : ''
+  }`;
+  const costNote = dryRun
+    ? 'Dry-run script batch uses mock tutor/learner/judge paths — no API spend.'
+    : 'Real script batches call the configured tutor and learner models; treat as OpenRouter/API metered spend.';
+  return { argv, costClass, label, costNote };
+}
+
 // ── Whitelisted job kinds ─────────────────────────────────────────────────────
 
 export const JOB_KINDS = Object.freeze({
@@ -253,6 +498,24 @@ export const JOB_KINDS = Object.freeze({
     title: 'Generate — pedagogical drama',
     build: buildGenerate,
   },
+  'pedagogical-drama': {
+    kind: 'pedagogical-drama',
+    script: 'scripts/generate-pedagogical-dramas.js',
+    title: 'Curriculum drama — enact a compiled spec',
+    build: buildPedagogicalDrama,
+  },
+  derivation: {
+    kind: 'derivation',
+    script: 'scripts/run-derivation-loop.js',
+    title: 'Derivation — proof-DAG drama (watch live)',
+    build: buildDerivation,
+  },
+  'derivation-assessment': {
+    kind: 'derivation-assessment',
+    script: 'scripts/score-derivation-transcript-rubric-suite.js',
+    title: 'Derivation assessment — proof gate + readable DAG',
+    build: buildDerivationAssessmentJob,
+  },
   'adversarial-score': {
     kind: 'adversarial-score',
     script: 'scripts/critic-poetics-structure.js',
@@ -265,10 +528,109 @@ export const JOB_KINDS = Object.freeze({
     title: 'Online score — Sonnet (OpenRouter, metered $)',
     build: buildOnlineScore,
   },
+  'eval-cell': {
+    kind: 'eval-cell',
+    script: 'scripts/eval-cli.js',
+    title: 'Script batch — tutor cell + AI learner',
+    build: buildEvalCell,
+  },
 });
 
 export function describeKinds() {
   return Object.values(JOB_KINDS).map(({ kind, title, script }) => ({ kind, title, script }));
+}
+
+function cloneParams(params) {
+  return JSON.parse(JSON.stringify(params || {}));
+}
+
+function resultLinks(kind, params = {}) {
+  const q = (pairs) => {
+    const qs = new URLSearchParams();
+    Object.entries(pairs).forEach(([k, v]) => {
+      if (v != null && v !== '') qs.set(k, v);
+    });
+    const s = qs.toString();
+    return s ? `?${s}` : '';
+  };
+  if (kind === 'derivation') {
+    const links = [
+      { label: 'watch live', href: '/derivation/live' },
+      { label: 'open proof runs', href: '/derivation' },
+    ];
+    if (params.label) links.push({ label: 'open target run', href: `/derivation/${encodeURIComponent(params.label)}` });
+    return links;
+  }
+  if (kind === 'derivation-assessment') {
+    const labels = String(params.labels || '')
+      .split(',')
+      .map((label) => label.trim())
+      .filter(Boolean);
+    const links = [{ label: 'open proof runs', href: '/derivation' }];
+    if (labels.length === 1) {
+      links.unshift({ label: 'open assessed run', href: `/derivation/${encodeURIComponent(labels[0])}` });
+    }
+    return links;
+  }
+  if (kind === 'replay') return [{ label: 'open replays', href: '/replays' }];
+  if (kind === 'generate') return [{ label: 'open scripts', href: '/browse' }];
+  if (kind === 'pedagogical-drama') {
+    return [
+      { label: 'open curriculum', href: '/curriculum' },
+      { label: 'open scripts', href: '/browse' },
+    ];
+  }
+  if (kind === 'adversarial-score') return [{ label: 'open scores', href: '/browse?tab=scores' }];
+  if (kind === 'online-score') {
+    return [
+      {
+        label: 'open scored scripts',
+        href: `/browse${q({ runId: params.mode === 'run' ? params.runId : '', tab: 'scores' })}`,
+      },
+    ];
+  }
+  if (kind === 'eval-cell') {
+    return [
+      { label: 'open eval notes', href: '/eval' },
+      { label: 'launch another', href: `/admin/runs${q({ kind: 'eval-cell', cell: params.cell })}` },
+    ];
+  }
+  return [];
+}
+
+function planChecks(plan, params = {}) {
+  const costState =
+    plan.costClass === COST_CLASSES.FREE ? 'ok' : plan.costClass === COST_CLASSES.METERED ? 'danger' : 'warn';
+  return [
+    {
+      label: 'Whitelisted script',
+      state: 'ok',
+      detail: plan.script,
+    },
+    {
+      label: 'Argument builder',
+      state: 'ok',
+      detail: `${plan.argv.length} argv element${plan.argv.length === 1 ? '' : 's'} built without shell interpolation`,
+    },
+    {
+      label: 'Cost gate',
+      state: costState,
+      detail:
+        plan.costClass === COST_CLASSES.FREE
+          ? 'free/mock/dry-run path'
+          : plan.costClass === COST_CLASSES.METERED
+            ? 'typed RUN confirmation required before launch'
+            : 'quota route; serialized with other non-free jobs',
+    },
+    {
+      label: 'Result surface',
+      state: resultLinks(plan.kind, params).length ? 'ok' : 'warn',
+      detail:
+        resultLinks(plan.kind, params)
+          .map((l) => l.label)
+          .join(', ') || 'no dedicated result route',
+    },
+  ];
 }
 
 // planJob resolves params → argv + cost class WITHOUT spawning. The UI calls
@@ -277,7 +639,8 @@ export function planJob({ kind, params }) {
   const spec = JOB_KINDS[kind];
   if (!spec) throw new Error(`unknown job kind: ${kind}`);
   const built = spec.build(params || {});
-  return {
+  const cleanParams = cloneParams(params);
+  const plan = {
     kind,
     script: spec.script,
     title: spec.title,
@@ -286,6 +649,12 @@ export function planJob({ kind, params }) {
     label: built.label,
     costNote: built.costNote,
     command: `node ${spec.script} ${built.argv.join(' ')}`,
+  };
+  return {
+    ...plan,
+    params: cleanParams,
+    checks: planChecks(plan, cleanParams),
+    links: resultLinks(kind, cleanParams),
   };
 }
 
@@ -315,6 +684,9 @@ function publicJob(job) {
     status: job.status,
     command: job.command,
     argv: job.argv,
+    params: cloneParams(job.params),
+    checks: job.checks || [],
+    links: job.links || resultLinks(job.kind, job.params || {}),
     pid: job.pid,
     exitCode: job.exitCode,
     signal: job.signal || null,
@@ -379,6 +751,9 @@ export function launchJob({ kind, params }, deps = {}) {
     costClass: plan.costClass,
     costNote: plan.costNote,
     argv: plan.argv,
+    params: cloneParams(params),
+    checks: plan.checks,
+    links: plan.links,
     command: plan.command,
     script: plan.script,
     status: 'running',

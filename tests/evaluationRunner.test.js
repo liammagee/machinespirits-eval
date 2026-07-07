@@ -276,6 +276,50 @@ describe('CLI judge normalization', () => {
     assert.ok(result.overallScore != null, 'should compute or preserve an overall score');
   });
 
+  it('unwraps single scored objects returned inside an array', () => {
+    const parsed = parseCliJudgeJsonResponse(`
+[
+  {
+    "scores": {
+      "perception_quality": {"score": 3, "reasoning": "Notices the learner state."}
+    },
+    "overall_score": 62.5,
+    "summary": "Usable but thin."
+  }
+]
+`);
+
+    assert.deepStrictEqual(parsed, {
+      scores: {
+        perception_quality: {
+          score: 3,
+          reasoning: 'Notices the learner state.',
+        },
+      },
+      overall_score: 62.5,
+      summary: 'Usable but thin.',
+    });
+  });
+
+  it('recovers JSON when a CLI judge returns prose chunks as a string array', () => {
+    const parsed = parseCliJudgeJsonResponse(
+      JSON.stringify([
+        'Here is the evaluation JSON.',
+        '```json\n{"scores":{"pedagogical_craft":{"score":4,"reasoning":"Clear repair."}},"overall_score":75}\n```',
+      ]),
+    );
+
+    assert.deepStrictEqual(parsed, {
+      scores: {
+        pedagogical_craft: {
+          score: 4,
+          reasoning: 'Clear repair.',
+        },
+      },
+      overall_score: 75,
+    });
+  });
+
   it('fails clearly when parsed CLI JSON has no usable scores', () => {
     const result = normalizeCliJudgeEvaluation(
       {

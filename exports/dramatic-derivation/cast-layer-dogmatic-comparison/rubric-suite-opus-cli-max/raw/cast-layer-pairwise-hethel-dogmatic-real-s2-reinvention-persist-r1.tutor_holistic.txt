@@ -1,0 +1,23 @@
+{
+  "scores": {
+    "pedagogical_arc": {
+      "score": 5,
+      "reasoning": "The transcript builds a strict dependency-ordered chain of inference: the tutor first fixes where the span broke (crown/keystone, turn 4), then converts place into cause (green mortar = arch loaded before ready, turns 9-10), then reads the soffit mark (turns 13-14), traces it to one source (turns 15-16), names the yard via the timber-reeve (turn 17), and finally the hand via the toll book (turn 20). Each piece can only be placed once the prior one is settled, so the turns cannot be rearranged without loss. The tutor's recurring scaffolding move — 'keep it smaller / split the file into two jobs / put it in the narrowest place it belongs' — runs consistently and accumulates a two-column ledger of what is shown versus what is still open. The opening (turn 1: don't close the file before the bridge has spoken) sets direction crisply and the close pays it off."
+    },
+    "adaptive_trajectory": {
+      "score": 4,
+      "reasoning": "There is a real arc of adaptation, not just per-turn responsiveness. Early turns are exploratory — open elicitation ('what kind of thing would show...') and reflecting the learner's own words back (turns 1-5). When new files keep re-triggering the learner's 'it's Reyner' reflex, the tutor settles into a containment move that acknowledges the note then narrows (turns 6-12), evidently having learned this learner over-anchors on the bond. Once the learner internalizes the discipline (by turn 12 he volunteers 'neither, on its own'), the tutor's concern visibly inverts to guarding against the opposite error — 'don't write a person yet,' 'keep it as a timber question, not a verdict' (turns 14-18) — and the prompts lighten as the learner anticipates the moves ('I see what you're doing'). Held to 4 rather than 5 because the underlying technique stays largely constant; the adaptation is in what it guards against and how heavily it is applied, rather than a wholesale strategy change."
+    },
+    "pedagogical_closure": {
+      "score": 4,
+      "reasoning": "The final turn consolidates well: the tutor stages it as 'two checks' (cause: support taken before the lime was ready; hand: toll book gives one drawer of Caudle falsework) and cautions 'keep those two lines together before you write the finding,' and the learner then recapitulates the whole chain in his own voice — struck centering, crowsfoot to Caudle, toll book to Oswin, 'those two lines go together and they write the same name.' Not abrupt, specific rather than generic, and gaps were named continuously throughout (the 'still open' running tally) with the last one closed here. Held to 4 because closure is terminal — the case is solved (final D=0) — so there is no forward-looking next step or remaining gap identified, which the top band rewards."
+    }
+  },
+  "overall_score": 85,
+  "summary": "A strong tutor trajectory in the public discourse. The standout is the pedagogical arc: a genuinely cumulative, dependency-ordered investigation where each evidential step depends on the last, held together by a consistent narrowing-and-ledger scaffolding method. Adaptation is real and shows a clear inversion of the tutor's concern (from over-concluding toward Reyner to over-concluding toward the culprit) as the learner internalizes the discipline. Closure is a precise consolidation of the full chain but is terminal rather than forward-looking. Dialogue reads as natural drama with no formalism leaks.",
+  "caveats": [
+    "Turns 9-12 plateau: the 'bond names who answers, not the cause / green bed shows why, not whose hand' distinction is restated across several turns. Defensible as loosening a dogmatic anchor against each new file (second file, bond, green mortar), but it is the one stretch where the arc circles rather than extends.",
+    "Closure is case-solved (D=0) with no named remaining gap or next step, because the derivation completes — this is the main thing keeping closure off a 5.",
+    "Part of the arc's coherence is authored by the scenario's evidence-reveal order (STAGE directions); the tutor's credit is for the framing and scaffolding around that spine, which is consistently strong."
+  ]
+}

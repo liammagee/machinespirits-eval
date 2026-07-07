@@ -4,6 +4,14 @@
 
 This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` specialised for the **Dramatic Recognition / Poetics** arc (sanctioned 2026-05-19). Master plan: `DRAMATIC-RECOGNITION-PLAN.md`. The full eval-factorial machinery below (cells 1–125, ego-superego, adaptive runner, rubrics v2.2) is inherited unchanged; the *active* work lives in the poetics pipeline and lands as a new § of `docs/research/paper-full-2.0.md`. Sibling agent docs at repo root: `AGENTS.md` (Codex), `GEMINI.md`.
 
+## Desktop app (Electron)
+
+There is an Electron desktop app that is the **exact equivalent of the web UX and stays in sync by construction** — it embeds the unchanged Express stack and loads the web UI over loopback, so there is ONE UI codebase. The desktop code lives under `desktop/` on `main` (merged from the now-removed `claude/electron-desktop-app` branch). Active dev happens in a dedicated Electron-ABI worktree — `../ms-electron` on branch `desktop-dev` — launched with `npm run desktop:dev`.
+
+**To change the UX (web AND desktop), edit the web stack** — `public/**`, the route renderers in `scripts/browse-poetics-scripts.js`, `routes/**`, `services/**`, or the shared mounter `services/evalSurfaces.js`. The desktop updates automatically; **never fork UI into `desktop/`.** Full rules + file map: `desktop/ARCHITECTURE.md`. Run/build/use docs: `desktop/README.md`.
+
+The sync contract is enforced by tests — `npm run desktop:test` (Electron's Node in that worktree), or the same tests under `npm test` on the Node ABI in CI: route-parity (desktop serves exactly the web route table), no UI files in `desktop/`, one-way dependency (`services/`/`routes/`/`public/` never import `desktop/`). If you add a new **writable** store anywhere in the stack, give it an env override and relocate it in `desktop/paths.js`, else the packaged read-only/asar app crashes at boot (currently relocated: `EVAL_DB_PATH`, `EVAL_LOGS_DIR`, `EVAL_EXPORTS_DIR`, `AUTH_DB_PATH`, `EVAL_WRITING_PAD_DIR`, `TUTOR_CORE_LOG_DIR`). Native modules (`better-sqlite3`, `node-pty`) are rebuilt for Electron's ABI by `npm run desktop:rebuild`, so plain `node`/`npm test` won't load them in that worktree — use a fresh checkout for the Node-ABI suite.
+
 ## Core Architecture
 
 ### Tutor-core (in-housed)
@@ -45,7 +53,7 @@ Pilot infrastructure for human-learner validation lives at:
 - `services/pilotItemBank.js` + `config/pilot/fractions-items.yaml` — form-counterbalanced item bank with server-side scoring
 - `scripts/ingest-pilot-sessions.js` — completed pilot sessions → `evaluation_results` rows + dialogue logs (idempotent), so `eval-cli evaluate <runId>` can score real-learner transcripts under v2.2 alongside simulated ones
 
-Recruitment is gated on IRB approval / real consent text / real item content (see `TODO.md` §A1).
+Recruitment is gated on IRB approval / real consent text / real item content (tracked in `workplan/items/a1-human-learner-validation.md`; historical design detail remains in `TODO.md` §A1).
 
 ### Tutor-Learner Symmetry (Design Principle)
 
@@ -65,6 +73,18 @@ Always aim for absolute symmetry between tutor and learner trace labels, scoring
 Do NOT use asymmetric names. When in doubt, check the other side's labels and mirror them exactly.
 
 ## Configuration
+
+### Model stack default
+
+**nemotron/kimi must never be the default pairing for new runs** (standing user directive, 2026-07-07 — the A4 run on nemotron/kimi is suspected of producing false negatives). By default, use `codex.gpt-5.5` or claude-code Sonnet 5 via the CLI bridge unless the user specifies otherwise:
+
+```bash
+node scripts/eval-cli.js run --profiles <cells> --ego-model codex.gpt-5.5 --superego-model codex.gpt-5.5 --runs N
+```
+
+- The CLI bridge now reaches **tutor-core's dialogue engine** (standard-runner cells like 40/93), not just id-director/learner/adaptive/judge seams — via the external-AI-provider hook (`tutor-core/services/externalAIProvider.js`, registered by `evaluationRunner.js`). `--ego-model` / `--superego-model` CLI overrides therefore work for ALL cells.
+- `eval-cli run` prints a **non-blocking stderr warning** when a run resolves to the nemotron/kimi pairing with no explicit model override (`services/stackDefaultWarning.js`). Existing cell YAML is unchanged — the weak stack remains available as an explicit choice.
+- **Interpretation rule: nulls generated on nemotron/kimi are stack-bounded until replicated on a strong model.** Do not present a nemotron/kimi null as an architecture verdict without a strong-stack replication (or an explicit stack-bounded caveat).
 
 ### How to Read a Cell's Architecture
 
@@ -254,7 +274,7 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 - **Rubric version columns**: `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version` — auto-resolved from YAML `version:` fields at write time. `"1.0"` = original rubric (14 tutor dimensions). `"2.0"` = v2 rubric overhaul (Feb 26). `"2.1"` = public-only output scoring + deliberation rubric (Feb 27). `"2.2"` = literature-informed redesign (Feb 28): consolidates 14 → 8 tutor dimensions using GuideEval P→O→E decomposition, adds `content_accuracy`, removes `learner_growth`. Versioned rubrics live in `config/rubrics/v{X.Y}/`; active rubrics are in `config/`. **Do NOT retroactively score historical data under a newer rubric version** — this creates cross-version contamination that invalidates within-run comparisons.
 - **Charisma rubric** (`config/evaluation-rubric-charisma.yaml` v1.0) is independent of v2.2 — used only by id-director cells (101-109). Stored in `tutor_charisma_*` columns and can be cross-correlated with the v2.2 tutor rubric.
 - **Provenance hashes**: `config_hash`, `dialogue_content_hash`, `prompt_content_hash` enable cross-run reproducibility checks. `services/evalSignature.js` validates consistency (e.g. detects `config_hash_drift` when the same profile+scenario produces rows with different hashes).
-- **Boards**: `TODO.md` (root) is the long-horizon experimental/infrastructure list (A* experiments, B* code quality, C* maintenance, D* research). Paper 2.0 working notes live as dated files under `notes/poetics/` (active arc) and `notes/` more broadly — there is no separate `BOARD.md` in this fork. Automated research roundups land in `notes/daily-notes/` and MUST follow the cadence/dedup convention in `notes/daily-notes/README.md` (non-overlapping windows, one arxiv ID per note).
+- **Todo / board source of truth**: all live todos, experiments, paper tasks, infra tasks, and maintenance work are tracked in `workplan/`. The write source is one markdown file per item in `workplan/items/`; `workplan/BOARD.md` and `workplan/board.json` are generated views from those items. Do not add new live work to `TODO.md`, old techne board snapshots, or dated notes without also creating/updating a `workplan/items/` card. `TODO.md` is now historical design context only. After changing item files, run `node scripts/workplan.js render && node scripts/workplan.js validate`. Automated research roundups land in `notes/daily-notes/` and MUST follow the cadence/dedup convention in `notes/daily-notes/README.md` before workplan ingestion.
 
 ### Test Directory Convention
 
