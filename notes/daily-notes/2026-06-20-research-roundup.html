@@ -44,52 +44,20 @@
   </style>
 </head>
 <body>
-<!-- meta: date=2026-06-20 window=(2026-06-18,2026-06-20] arxiv=2606.20138,2606.20493,2606.18557,2606.11502,2606.17657,2606.20529,2606.16047,2606.14695 generator=research-roundup-routine -->
+<!-- meta: date=2026-06-20 window=(2026-06-18,2026-06-20] arxiv=2606.20493,2606.18557,2606.17657,2606.20529,2606.16047,2606.14695 generator=research-roundup-routine -->
 
 <h1>Research Roundup <small style="font-weight:normal;font-size:.85em">18 Jun – 20 Jun 2026</small></h1>
 <p style="font-size:.9rem;color:#555;">
-  Five papers written up across prompt engineering, agent architecture, ontology/formal
-  reasoning, dramaturgy, and rhetoric. Three fall inside or at the boundary of the June 19–20
-  window (IDs 2606.20xxx–2606.18557); two are coverage-gap entries from June 9–16, claimed here
-  against the dedup rule. Three further near-misses are listed at the foot.
+  Three papers written up across agent architecture, ontology/formal reasoning, and rhetoric.
+  Two further candidates originally drafted in this note — 2606.20138 (adaptive tutoring prompt
+  router) and 2606.11502 (roleplay truth-probe suppression) — were dropped at merge time: both
+  are already covered by the 23 Jun roundup, whose window reaches back to (2026-06-18,
+  2026-06-23]. Three further near-misses are listed at the foot.
   Note: ArXiv does not announce weekend submissions until Monday June 23 — papers submitted
   June 19–20 carry IDs 2606.19xxx–2606.21xxx and are not yet fully indexed by search engines.
   Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
   <span class="flag yellow">WATCH</span> = relevant background.
 </p>
-
-<!-- ────────────────────────────────────── -->
-<h2>Prompt Engineering</h2>
-
-<div class="paper hot">
-  <h3>
-    Learning to Prompt: Improving Student Engagement with Adaptive LLM-based High-School Tutoring
-    <span class="flag">UNBLOCK</span>
-  </h3>
-  <div class="meta">
-    Po-Chin Chang, Nicholas Hogan, Aske Plaat, Michiel T. van der Meer ·
-    Conference on Games 2026 (vision paper) ·
-    arXiv 2606.20138 · ~19–20 Jun 2026 ·
-    <a href="https://arxiv.org/abs/2606.20138">https://arxiv.org/abs/2606.20138</a>
-  </div>
-  <p>
-    An adaptive prompt-engineering framework for LLM-based high-school tutors that iterates
-    over prompt strategies in response to student engagement signals detected mid-session.
-    Rather than fixing a prompt at session start, the system continuously adjusts the tutor
-    prompt based on learner behavioral signals, showing measurable pedagogical gains across
-    varied learner profiles.
-  </p>
-  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
-    <strong>Project relevance:</strong>
-    Directly addresses the prompt-engineering backbone of LLM tutoring. The adaptive strategy
-    parallels the project's <code>prompts/</code> versioning and <code>resolveEvalProfile</code>
-    dispatch logic; the engagement-signal framing maps onto the learner rubric's engagement
-    dimension (v2.2). The evaluation methodology — iterating prompts against live learner
-    signals — is a candidate paradigm for the <code>npm run prompt-lab -- autotune</code>
-    workflow, replacing manual ablation (cells 9–20) with a closed-loop engagement-driven
-    search.
-  </p>
-</div>
 
 <!-- ────────────────────────────────────── -->
 <h2>Agent Architecture</h2>
@@ -151,39 +119,6 @@
     recognition events requiring revision of an earlier premise. The NFM framing (formal,
     verifiable ground truth) also parallels the project's <code>passes_required /
     passes_forbidden</code> validation columns.
-  </p>
-</div>
-
-<!-- ────────────────────────────────────── -->
-<h2>Dramaturgy &amp; Role-Play</h2>
-
-<div class="paper hot">
-  <h3>
-    When Roleplaying, Do Models Believe What They Say?
-    <span class="flag">UNBLOCK</span>
-  </h3>
-  <div class="meta">
-    Benjamin Sturgeon, David Africa, Sid Black ·
-    arXiv 2606.11502 · ~9 Jun 2026 (coverage gap — not in prior roundups) ·
-    <a href="https://arxiv.org/abs/2606.11502">https://arxiv.org/abs/2606.11502</a>
-  </div>
-  <p>
-    Linear truth probes applied to LLMs roleplaying historical personas (Aristotle, Newton,
-    etc.) whose stated beliefs diverge from modern consensus. Key finding: persona induction
-    suppresses the internal false-belief probe less than equally-false non-persona claims
-    — the model continues to classify its own in-character assertion as false while voicing
-    it. The suppression pattern persists across prompting, in-context learning, and supervised
-    fine-tuning.
-  </p>
-  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
-    <strong>Project relevance:</strong>
-    Directly challenges the epistemic foundations of the drama-machine learner. If an
-    LLM-learner playing a "confused student" is internally probing the correct answer as true
-    throughout, the apparent anagnorisis is a surface output shift rather than a genuine
-    belief update — precisely the gap between dramatic form and epistemic substance that
-    §6.13 opens. Suggests the poetics rubric needs a "depth of belief change" sub-dimension,
-    or that the anagnorisis detector should consult an auxiliary truth probe alongside surface
-    language. High priority for the adaptation-recognition loop redesign.
   </p>
 </div>
 
@@ -257,8 +192,9 @@
   Generated by Claude Code (claude-sonnet-4-6) · 2026-06-20 ·
   Window: (2026-06-18, 2026-06-20] · Search: ArXiv API + Google Scholar metadata (2 parallel agents) ·
   Note: ArXiv weekend-submission announcement lag — June 19–20 papers (2606.19xxx–2606.21xxx)
-  not fully indexed until June 23 · Coverage-gap entries (2606.11502, 2606.17657) from the
-  June 9–18 gap between prior roundups claimed here against the dedup rule ·
+  not fully indexed until June 23 · Coverage-gap entry (2606.17657) from the June 9–18 gap
+  between prior roundups claimed here against the dedup rule · 2606.20138 and 2606.11502 dropped
+  at merge time (2026-07-08 backlog pass) as already covered by the 23 Jun roundup ·
   Repository: <code>liammagee/machinespirits-eval</code>
 </footer>
 
