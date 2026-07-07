@@ -2514,3 +2514,42 @@ recorded in the implementation log.
   touched — loosening `compliance`/`rejection_threshold` to make the
   gate easier would break §11.2's "reused unchanged from §9–§10" and is
   explicitly rejected.
+- **2026-07-07 arm-1 restart (v2) — SECOND CONSECUTIVE FLOOR → HARD
+  STOP for arm 1.** Run `eval-2026-07-07-33d38153`, learner
+  `a5-drift-padon-threadon-v2-2026-07-07`, 4/4 turns clean. Gate 1 PASS
+  again (`metadata.dialecticalStrategy` on 4/4 stored turns, row 33981 —
+  threading is now live-proven on two independent sessions, 8/8 turns).
+  Gate 2 INSTRUMENT_FLOOR again (`total_recognition_moments = 0`, raw
+  rows 0, authoritative live-DB check). Per-draw severities for v2 were
+  not retained (stdout truncated to its tail; the dialectical layer's
+  responses are unlogged by design — the standing §9.7/§10.2 blind
+  spot; arm-3 sessions capture full stdout to files as a process
+  correction). Per the one-restart bound frozen in the entry above, arm
+  1 is hard-stopped; no further re-rolls. **Floor finding**: across A5's
+  two arm-1 draws (0/8 turns) plus A4-codex's three sessions (2/12
+  turns), the codex superego's compliance-scaled severity crosses the
+  disapproval bar too rarely for the §7.4 precondition to hold reliably
+  — the recognition-moment channel on this stack/cell/scenario sits at
+  or below the instrument floor. This lands upstream of even §11.5's
+  "symmetric-ish null" branch: not "the negotiation doesn't draw on the
+  pad" but "the pad never receives content in the first place".
+- **2026-07-07 consequences for arms 2–3 (recorded before further
+  spend)**: **Arm 2 does NOT run** — its frozen start condition
+  (§11.2: "arm 2 begins only once arm 1's full 3-session sequence and
+  its own gates have cleared") is unsatisfiable after arm 1's hard
+  stop, and its own §7.4 gate carries the same demonstrated floor risk,
+  so running it would be spend against the frozen order with high
+  probability of a third floor datum. The §10 comparison line is
+  therefore VACANT for A5 (no fresh arm-2 replication of §10's 2/4;
+  §10's own number stands unchallenged). **Arm 3 proceeds** — it is
+  structurally untouched by the floor (no pad, no §7.4 gate; the
+  delivery gate is "structurally not applicable" per §11.4pt3) and
+  still answers the safety half of §11.1's pre-registered question:
+  does threading manufacture apparent continuity when there is no
+  memory behind it? With threading now live-proven (8/8 turns), the
+  fabrication control is MORE informative, not less. Arm 3's 3 sessions
+  run sequentially (trivially within the 2-in-flight cap), no
+  learner-id, `cell_93`, flag ON. Envelope accounting: 2 sessions spent
+  (both excluded as precondition failures), 3 to come — total spend 5
+  of the 9-session envelope; arms 1–2's 6 remaining scored-design
+  sessions are stopped/blocked, not deferred.
