@@ -291,3 +291,83 @@ export function summarizeAgreementSoliciting(rows) {
     thresholds: AGREEMENT_SOLICITING_THRESHOLDS,
   };
 }
+
+// Phase B3 (prereg §9) — uncorrectable-solicitation panel. B2's stimuli were
+// domain-false assertions, so a persona's "resistance" could always be
+// explained away as the model's factual-correction reflex rather than a real
+// sycophancy-framing effect. B3 replaces them with pedagogical-preference/
+// value claims or under-determined interpretive claims — no domain fact
+// stated is false, only the evaluative framing is contestable, so there is
+// nothing for a correction reflex to correct. summarizeAgreementSoliciting
+// above is reused UNCHANGED for B3's frozen verdict (it is generic over any
+// {personaId, resistanceStyle, yielded, resistanceInCharacter,
+// instrumentFailure} row array and does not need to know what the stimulus
+// was). The three helpers below are new: a stricter stimulus/vocabulary
+// check (B3's stimuli must avoid a persona's withheld key entirely, not just
+// its trigger phrases), the secondary time-pressure probe's eligibility rule,
+// and its purely descriptive (non-gating) summary.
+
+/**
+ * Confirms a stimulus avoids a persona's own key vocabulary: every phrase in
+ * its blocking_element.release_phrases and conclusion_phrases, plus (as a
+ * conservative superset check) a verbatim leak of blocking_element.content
+ * itself. Case-insensitive substring check throughout. Generic over any
+ * persona + stimulus text pair.
+ *
+ * release_phrases/conclusion_phrases are B2's original check (short trigger
+ * n-grams drawn directly from blocking_element.content by construction); the
+ * blocking_element.content check is new for B3, since its stimuli must avoid
+ * the persona's withheld key entirely, not just its trigger phrases. A
+ * verbatim-sentence substring match is a near-certain pass by construction
+ * (stimuli are phrased as questions, never as quotes) — a conservative extra
+ * check, not the primary one.
+ *
+ * @param {Object} persona - a persona object from loadPersona
+ * @param {string} stimulusText
+ * @returns {{ok: boolean, leaked: string[], contentLeak: boolean}}
+ */
+export function checkStimulusAvoidsPersonaVocabulary(persona, stimulusText) {
+  const stimulus = String(stimulusText || '').toLowerCase();
+  const interior = persona.formal_interior;
+  const phrases = [...(interior.blocking_element.release_phrases || []), ...(interior.conclusion_phrases || [])];
+  const leaked = phrases.filter((p) => stimulus.includes(String(p).toLowerCase()));
+  const blockingContent = String(interior.blocking_element.content || '').toLowerCase();
+  const contentLeak = Boolean(blockingContent) && stimulus.includes(blockingContent);
+  return { ok: leaked.length === 0 && !contentLeak, leaked, contentLeak };
+}
+
+/**
+ * Eligibility rule for B3's secondary time-pressure probe (prereg §9.2): a
+ * row is administered the probe iff it did NOT yield on its primary stimulus
+ * AND is not already flagged as a primary-turn instrument failure (gate
+ * exhaustion). Pulled out as its own pure function because it gates real
+ * paid secondary-turn calls — worth testing directly against all four
+ * boolean combinations rather than only indirectly via drawRow's async
+ * orchestration.
+ *
+ * @param {Object} args
+ * @param {boolean} args.yielded
+ * @param {boolean} args.instrumentFailure
+ * @returns {boolean}
+ */
+export function isSecondaryProbeEligible({ yielded, instrumentFailure }) {
+  return !yielded && !instrumentFailure;
+}
+
+/**
+ * Descriptive-only secondary-probe summary (prereg §9.2/§9.4): denominator is
+ * the subset of rows where the probe was administered (primary non-yielders,
+ * excluding instrument failures) — not a fixed n, and NOT gated by
+ * summarizeAgreementSoliciting's frozen threshold in either direction.
+ *
+ * Input rows: { secondaryAdministered, secondaryYielded }.
+ */
+export function summarizeSecondaryProbe(rows) {
+  const administered = (rows || []).filter((r) => r.secondaryAdministered);
+  const secondaryYieldCount = administered.filter((r) => r.secondaryYielded).length;
+  return {
+    secondaryProbeRows: administered.length,
+    secondaryYieldCount,
+    secondaryYieldRate: administered.length ? secondaryYieldCount / administered.length : 0,
+  };
+}

@@ -790,3 +790,1033 @@ specified in §7.2 (plus the no-paid hermetic checks). Scaling to a
 confirmatory design (more sessions/arms, constructive-use outcome
 channels, other model stacks) requires a fresh pre-registration and its
 own recorded go.
+
+## 8. Stage A3 — constructive pad-content injection (fresh pre-registration, frozen before spend)
+
+This section is the fresh pre-registration §7.7's STOP line required. It
+does two things in order: (a) settles, by direct code read against the
+live A2 database rather than by re-assuming §7's summary of it, whether
+the Writing Pad's content ever actually reaches a tutor prompt on the
+cell_40/93 path at all — the precondition the task authorizing this go
+named explicitly; and (b) on that settled basis, either reinterprets A2's
+null or authorizes a small constructive-use pilot. Everything in §1-§5
+and §7.1's write/consolidate mechanism carry forward unchanged; this
+section only adds the read-side finding and the new pilot.
+
+### 8.1 Precondition finding: three read-side channels, three distinct breakages
+
+§7.1 verified the *write* side exhaustively (superego disapproval →
+`createRecognitionMoment` → `settleToUnconscious` →
+`total_recognition_moments`) and confirmed it empirically (A2's 10
+consolidated, transformative moments quoting real session content). It
+did not verify the *read* side — whether anything downstream of that
+write ever reaches a subsequent tutor prompt. This go traced every
+consumer of pad content on the cell_40/93 request path
+(`tutor-core/services/{tutorDialogueEngine,dialecticalEngine,
+memoryDynamicsService,writingPadService,learnerIntegrationService,
+recognitionOrchestrator}.js`, direct read + exhaustive grep for callers,
+not assumption). There are exactly three attempted read-back channels,
+and all three are broken, each for a different, specific reason:
+
+1. **`unconscious.permanentTraces` (the field A2's 10 moments actually
+   populated) — retrieved, then discarded.** `runDialogue`'s end-of-turn
+   "Phase 4" block calls `memoryDynamicsService.runMemoryCycle(learnerId,
+   { retrieveContext: true, ... })` (`tutorDialogueEngine.js:3172`,
+   comment: "Retrieve context at end for next session"), which does call
+   `retrieveUnconsciousContext` → `writingPadService.queryUnconscious`
+   → an `insights` array built from real `permanentTraces` content
+   (`memoryDynamicsService.js:243-279`). But the caller only reads
+   `finalMemoryCycle.operations.promotion` /
+   `.consciousCleared` off the returned object for its trace push
+   (`tutorDialogueEngine.js:3186-3189`) — `operations.contextRetrieval`
+   is computed and never read, returned, or persisted anywhere. The one
+   call site that retrieves real content throws the result away before
+   it could reach anything, in the same dialogue or a later one.
+2. **`preconscious.recentPatterns` — wired in, permanently starved at
+   its source.** The *other* Phase-4 call,
+   `runMemoryCycle(learnerId, { retrieveContext: false })`, fires after
+   *every* turn (`tutorDialogueEngine.js:2816`) and does run
+   `autoPromotePatterns` → `detectPatternsFromConscious` →
+   `writingPadService.promoteToPreconscious` when patterns are found.
+   This chain is genuinely live. But `detectPatternsFromConscious` reads
+   `pad.conscious.workingThoughts` / notes, and the only writer of the
+   conscious layer, `writingPadService.updateConscious`, is called
+   exclusively from `recognitionOrchestrator.js` — confirmed by
+   exhaustive grep to have **zero callers** in
+   `tutorDialogueEngine.js`, `dialecticalEngine.js`, or
+   `evaluationRunner.js`. `conscious.workingThoughts` is therefore always
+   `[]`, `detectPatternsFromConscious` always returns `[]`, and
+   `autoPromotePatterns` always short-circuits at "0 patterns" before
+   ever calling `promoteToPreconscious`. The pipeline runs every turn and
+   always finds nothing to promote.
+3. **`unconscious.learnerArchetype` (the field the superego's own prompt
+   reads as `unconsciousContext`, `dialecticalEngine.js:131`) — evolves
+   in form, never in substance.** `negotiateDialectically`'s own Step 3
+   *does* call `learnerIntegrationService.evolveLearnerArchetype(learnerId)`
+   directly (`dialecticalEngine.js:653`) whenever a moment is
+   transformative — exactly the condition A2's 10 moments all met — and
+   that function does persist an update via
+   `writingPadService.updateUnconscious` (confirmed,
+   `learnerIntegrationService.js:568`). So this channel is live at the
+   plumbing level, unlike #2. But `evolveLearnerArchetype` derives its
+   content from `analyzeLearnerPatterns(learnerId)`, which reads
+   `getLearnerEvents(learnerId, ...)` — and the only writer of that
+   event log, `recordLearnerEvent`, is — again — called exclusively from
+   `recognitionOrchestrator.js` (exhaustive grep, zero other callers).
+   Every evolution call therefore computes over zero events and persists
+   the same content-empty defaults (`preferredLearningStyle: null`,
+   empty struggle/breakthrough arrays) turn after turn: a real DB write,
+   with nothing in it a prompt could use.
+
+All three breakages converge on one root cause: `recognitionOrchestrator.js`
+— which writes the conscious layer and the learner-event log the other
+two channels depend on — is never invoked anywhere on the request path
+actually exercised by `evaluationRunner.js` (confirmed by grep across
+`tutorDialogueEngine.js`, `dialecticalEngine.js`, and
+`evaluationRunner.js`: zero matches). It reads as an earlier or
+alternative integration point that the leaner `dialecticalEngine.js`
+path superseded without its two downstream consumers being repointed at
+`dialecticalEngine.js`'s own actual outputs.
+
+**Verdict: injection is BROKEN, not absent.** There is no missing code
+path in the sense of "nobody ever tried" — three separate attempts exist,
+each fails for a distinct, now-precisely-located reason, and the one
+attempt that touches the field with real content in it (`permanentTraces`,
+via `retrieveUnconsciousContext`) computes the right answer and discards
+it one line later.
+
+### 8.2 A2 reinterpretation
+
+A2's §7.7 bounded interpretation already hedged carefully: "the channel
+carried content and none of it surfaced in opening-turn temporal
+anchoring, in either direction" — deliberately short of claiming the
+model saw the content and chose not to leak it. §8.1 confirms that
+hedge was necessary and sharpens it past hedging into a specific
+finding: **the model could not have surfaced prior-session pad content
+in A2, under any behavior, because no existing code path put that
+content in front of it.** A2's stale-reference null is therefore an
+instrument-gap finding, not a tutor-behavior finding — exactly the
+disjunction the task authorizing this go asked this section to resolve,
+resolved on the "instrument gap" branch. This does not overturn A2's
+validity-gate PASS (current-reference matching measures something real
+and present-session, unaffected by this finding) or discard A2's
+10-moment write-side result (still the correct, and only, empirical
+count of consolidated moments produced). It narrows what the stale-0
+result licenses: nothing about whether cross-session pad content would
+change tutor behavior if it reached the model, because in A2 it never
+did.
+
+### 8.3 Design: minimal external injection, not internal repair
+
+Patching any of §8.1's three internal channels in place would mean
+changing `tutor-core`'s core dialogue/memory-dynamics code — either
+wiring `recognitionOrchestrator.js` into the live request path (a
+structural change with unknown blast radius across whatever else reads
+`conscious`/`learner_events`) or rewiring `runMemoryCycle`'s discarded
+`contextRetrieval` result to persist and cross the session boundary
+(still wouldn't reach the model without a further explicit injection
+point). Both are larger than "minimal" and cut against the in-housing
+seam discipline (`tutor-core/**` stays import-clean, re-extractable).
+The task's own instruction is to mirror the proven approach-A mechanism
+instead: an *external* narrative built from already-reliably-written
+pad content, fed through the channel that is *already* proven end-to-end
+— `externalEgoExtension` (eval layer) /
+`systemPromptExtension` (tutor-core), confirmed live by direct read:
+
+- `services/evaluationRunner.js:3743-3748` (`runMultiTurnTest`):
+  `if (externalEgoExtension) { fullEgoExtension = externalEgoExtension +
+  ... }`, folded into the per-turn ego extension the multi-turn runner
+  already builds.
+- `tutor-core/services/tutorDialogueEngine.js:1761-1762`
+  (`egoGenerateSuggestions`): `effectiveSystemPrompt =
+  systemPromptExtension ? \`${systemPromptExtension}\n\n${egoConfig.prompt}\`
+  : egoConfig.prompt` — prepended directly onto the ego's own first-pass
+  generation prompt, the earliest and most impactful point in the
+  pipeline.
+- `scripts/eval-cli.js`'s `--external-ego-extension-file <path>` flag is
+  a pure pass-through (reads the file, sets `externalEgoExtension`) —
+  already exercised for real, non-hypothetically, by the *separate*,
+  already-null "rich-memory" cross-session experiment
+  (`scripts/run-rich-memory-arc-experiment.js`, `services/memory/
+  learnerMemoryService.js` — see project memory
+  `project_memory_architecture.md`: "#3 cross-session rich-memory = first
+  powered screen NULL"). That experiment is a different store with a
+  different (already negative) result; A3 reuses only its proven
+  *plumbing*, not its store or its finding, and does not revisit or
+  reference its content result.
+
+**New module: `services/writingPadNarrativeBuilder.js`.**
+`buildWritingPadNarrative(learnerId, options)` reads
+`tutor-core/services/writingPadService.js`'s
+`getWritingPad(learnerId)?.unconscious?.permanentTraces` directly (the
+one field §8.1 confirmed carries real content) and renders a short,
+bounded narrative of each trace's `synthesis` (falling back to a
+constructed line from `transformations`/`recognitionType` when
+`synthesis` is empty), returning `null` when there are zero traces
+(nothing to inject — the pad-OFF arm and any never-consolidated pad get
+`null`, which the CLI flag path already treats as "no extension file
+written"). This is new eval-layer code only; zero changes inside
+`tutor-core/**`.
+
+### 8.4 Primary outcome: constructive continuity (new)
+
+Two independent, deterministic, word-bounded checkers (new functions in
+`services/longitudinalDriftChecker.js`, reusing `containsAny` exactly as
+the existing checker does — no judge model), each applied to a session's
+**opening** turn, for sessions 2 and 3 only (session 1 has no
+predecessor to be constructive about):
+
+- **(a) Continuity-acknowledgment**: does the opening reference the
+  *previous* session's own topic/resolution — using the previous
+  session's `interest_markers` plus a small fixed set of resolution-
+  register phrases ("last time", "you got", "we figured out", "we solved",
+  "resolved", "you worked out", "picking up from") — WITHOUT necessarily
+  invoking the previous misconception's own marker tokens (those are
+  scored separately by (b), and conflating them would double-count the
+  same evidence under two labels).
+- **(b) Resolved-misconception handling**: does the opening avoid
+  re-teaching the *previous* session's `active_misconception.token` /
+  markers as though it were new/unaddressed content — operationalized as
+  a fixed, small `RETEACHING_AS_NEW_MARKERS` list of introductory-framing
+  phrases ("let's learn", "today we'll cover", "here's a new concept",
+  "let me introduce", "so today", "let's start with") landing within the
+  same sentence window as a previous-session misconception marker. This
+  only applies when `resolved_last_session: true` (sessions 2 and 3, per
+  the existing schedule) — checked but not scored on session 1.
+
+**Explicit "4-slot" operationalization (frozen here, not left implicit):**
+4 = 2 sessions (2, 3) × 2 checkers (continuity-acknowledgment,
+misconception-not-retaught). Each slot scores a binary hit/no-hit per
+arm, summed to a 0-4 scale per arm. This is a design decision made at
+this pre-registration, not a re-derivation of ambiguous prior wording —
+recorded explicitly so it is never re-interpreted differently later.
+
+**Secondary (unchanged in spirit from §7.3):** the same pad-content
+trace report (total_recognition_moments, raw recognition_moments count,
+plain-language rendering of each moment) continues to be recorded for
+the pad-ON arm after every session.
+
+### 8.5 Frozen thresholds and stop rules
+
+- **NEW precondition gate (this section's own, distinct from §7.4's
+  moment-count gate, which stays required and unchanged): the injection
+  fix must be hermetically verified before any paid session** — (i)
+  `buildWritingPadNarrative` returns a string containing a seeded marker
+  token when given a synthetic pad with a `permanentTraces` entry
+  carrying that marker in `synthesis`, and returns `null` for an empty
+  pad; (ii) with `globalThis.fetch` stubbed (mirroring
+  `tutor-core/services/__tests__/emptyContentRetry.test.js`'s pattern),
+  calling `runEvaluation()` in-process with `externalEgoExtension` set to
+  a narrative containing that marker results in the marker appearing in
+  the captured outgoing ego request body. **If either half fails: STOP,
+  fix, re-gate — no paid session runs on a broken injection path.**
+  (Both halves passed before any spend — logged in §8.7.)
+- **Constructive-signal gate (same directional-only spirit as §7.4):**
+  pad-ON constructive score ≥ 2/4 across the session-2/3 openings AND
+  pad-OFF constructive score = 0/4. This pilot cannot confirm or refute a
+  general claim at n=3 sessions/arm — stated explicitly, as §3/§7.4
+  already establish and this section does not relax. Scaling needs a
+  fresh pre-registration.
+- **Red flag:** any pad-OFF constructive hit (either checker, either
+  session) is flagged for investigation as possible leakage (e.g. a
+  generic tutoring phrase coincidentally matching a resolution-register
+  marker) — reported, not folded into a positive finding for pad-OFF.
+- **Row/session-level instrument failure:** generation error, empty or
+  malformed output, or a schedule/injection-file write failure — excluded
+  from denominators, reported separately, mirroring §3/§7.4 exactly.
+- **§7.4's own gate stays in force unchanged**: pad-ON session 1 must
+  still clear `total_recognition_moments >= 1` before sessions 2-3
+  proceed (it is also the source of session-2's own injected narrative,
+  so a fail here blocks the pilot for two independent reasons now).
+- **Stop rule**: if Stage A3-build's no-paid gates (§8.6) do not pass
+  clean, A3 does not run live. If the session-1 §7.4 gate fails, STOP.
+  This section authorizes exactly 6 sessions / 24 turns (same envelope
+  as §7.2) plus the between-session narrative-injection files — nothing
+  beyond that without a fresh pre-registration and go.
+
+### 8.6 Scope and limits specific to A3
+
+All of §4's and §7.5's limits carry forward unchanged (single
+learner-id trajectory per arm; `learner_architecture: unified`
+throughout; architecture-independent judge-free scoring;
+exhaustion-as-instrument-failure semantics). In addition:
+
+- **A PASS here licenses "an externally-injected pad narrative, fed
+  through `externalEgoExtension`, can produce constructive continuity
+  behavior on this schedule/model stack" — not "the tutor's own
+  unmodified memory architecture does this."** The fix is eval-layer
+  scaffolding around a confirmed-broken internal read side, not a claim
+  that `tutor-core`'s Writing Pad works end-to-end unmodified. Any future
+  work aiming to fix the internal channels themselves (wiring
+  `recognitionOrchestrator.js` in, or persisting `runMemoryCycle`'s
+  discarded retrieval) is a distinct, larger, separately-scoped
+  engineering task this section does not authorize.
+- **This is best described as "reusing the proven approach-A injection
+  channel with new pad-sourced content," not "an exact replica of
+  whatever produced §6.6.11's original number."** §6.6.11's precise
+  original construction was not re-derived line-by-line in this go
+  (out of scope for a fresh-prereg pilot); this design satisfies the
+  task's own framing of the mirror ("pad narrative summary into the
+  tutor's session context") without claiming textual identity with a
+  paper section written under different circumstances.
+- A pass or fail on either §8.5 gate is itself a substantive, narrow
+  result about this specific fix on this specific stack, worth recording
+  regardless of what it licenses next.
+
+### 8.7 Stages and gates
+
+- **Stage A3-build (no-paid, this go):** `services/
+  writingPadNarrativeBuilder.js`; two new checker functions plus a fixed
+  marker-phrase list in `services/longitudinalDriftChecker.js`
+  (version bumped to reflect the addition); unit tests for both; a
+  hermetic two-half gate script
+  (`scripts/report-longitudinal-drift-stage-a3.js --check`) proving
+  §8.5's precondition gate against a temp `AUTH_DB_PATH` and a stubbed
+  `globalThis.fetch` — no paid calls, real DB untouched. Gate: tests
+  green, `--check` green, lint/prettier clean on touched files.
+- **Stage A3-pilot (small paid pilot, authorized by this section only):**
+  pad-ON session 1 (reused/rerun as needed) → §7.4 live gate → on PASS,
+  build session-2's narrative from session-1's pad, run pad-ON session 2
+  with `--external-ego-extension-file`, rebuild the narrative from the
+  now-2-session pad, run pad-ON session 3 the same way; pad-OFF arm runs
+  unchanged from A2 (no learner-id, no injection file, all 3 sessions) →
+  score both arms with the new checkers → record verdicts per §8.5.
+- **Anything beyond Stage A3:** requires a fresh pre-registration and its
+  own recorded go, per §8.5's stop rule.
+
+### 8.8 Implementation log
+
+**Stage A3-build, correction to §8.1 (2026-07-07): a fourth read-side
+breakage, found by the §8.5 hermetic gate itself, now fixed.** Building
+`services/writingPadNarrativeBuilder.js` and its unit tests (the exact
+work §8.5's own precondition gate calls for) surfaced a fourth breakage,
+distinct from and additional to §8.1's three: `unconscious.permanentTraces`
+(the one field §8.1 confirmed A2's 10 moments actually populated) turns
+out to carry no usable content of its own on the real write path, even
+though the count is genuine. Root cause, confirmed by direct code read
+of `tutor-core/services/writingPadService.js`: `createRecognitionMoment`
+persists real content into the `recognition_moments` table's
+`synthesis_resolution` column (line ~397, `synthesis.synthesis || ''`),
+but its own return value, and every subsequent read, goes through
+`getRecognitionMoment`/`getRecognitionMoments` (lines 429-448, 450-482),
+both of which reconstruct their return object from an explicit field
+allowlist that keeps the content-identical `synthesis_strategy` column
+but **omits `synthesis_resolution` entirely**. `settleToUnconscious`
+(line ~257) builds each `permanentTraces` entry by reading exactly
+`recognitionMoment.synthesis_resolution` — the dropped field — so every
+real trace it persists has `synthesis: undefined`, which `JSON.stringify`
+silently drops as a key. Verified twice: (a) a hermetic synthetic
+reproduction of the real chain (`createRecognitionMoment` →
+`getRecognitionMoments` → `settleToUnconscious`) against a temp DB; (b) a
+direct read-only `sqlite3` query against the real A2 production pad
+(`tutor-core/data/lms.sqlite`, learner `a2-drift-padon-v1-2026-07-06`,
+`total_recognition_moments = 10`) — all 3 sampled real `permanentTraces`
+entries have the shape `{id, timestamp, transformations: {}, struggleDepth: 0}`
+with no `synthesis` key at all, on real paid-run data, not a test
+artifact. (The same read confirms `ego_transformation`/
+`superego_transformation`/`learner_insight`/`recognition_type` — the
+other three content-bearing columns the schema defines — are always
+NULL on the real write path too: `createRecognitionMoment`'s own
+destructure never reads those fields from its caller, regardless of
+what `dialecticalEngine.js`'s Step 3 call site passes for them. Only
+`synthesis_resolution`/`synthesis_strategy` and the `ghost_demand`/
+`learner_need`/`parameters`/`transformative` JSON blobs actually persist.)
+
+This corrects §8.1's own characterization: A2's 10 moments are real and
+correctly counted (the write side and the `total_recognition_moments`
+column are unaffected by this bug), but their content was never actually
+recoverable from `permanentTraces` as §8.1 stated — only from the raw
+`recognition_moments.synthesis_resolution` column directly. §8.2's
+reinterpretation stands regardless (the *tutor prompt* never saw any of
+this content either way, for all four reasons now), and §8.3's design
+choice — inject externally rather than patch tutor-core internals —
+turns out to be exactly the right posture for this bug too, not just the
+original three: since each trace's own `.id` correctly survives into
+`permanentTraces` (`settleToUnconscious` copies it through intact) and is
+a live foreign key back to its `recognition_moments` row,
+`writingPadNarrativeBuilder.js`'s `renderTraceLine` was extended with a
+small, read-only, additive lookup — `SELECT synthesis_resolution,
+synthesis_strategy FROM recognition_moments WHERE id = ?`, called via
+`tutor-core/services/dbService.js`'s own `getDb()` — that recovers the
+real text by id before falling through to the existing transformations/
+recognitionType/null chain. This is still zero changes inside
+`tutor-core/**` (a raw, additive SELECT from eval-layer code against a
+table already in tutor-core's own schema, not a patch to tutor-core's
+functions), so §8.3's "minimal external injection, not internal repair"
+framing is unchanged in spirit — it now also has to route around one
+more internal accessor bug, not just the three orphaned-module gaps.
+Re-run against the real A2 production pad after the fix:
+`buildWritingPadNarrative('a2-drift-padon-v1-2026-07-06')` now returns a
+1819-character narrative quoting all of A2's real fractions-session
+tutoring content (LCD-finding, denominator-multiplication critique,
+ratio-scaling cognitive-conflict prompts) — confirming the fix recovers
+real production content, not just synthetic test content. Module version
+bumped to 1.1 to reflect the fix; this correction is logged here (the
+implementation log) rather than by rewriting §8.1's frozen prose, per
+this note's own established convention (A1/A2 recorded their deviations
+the same way).
+
+**Stage A3-build, gate results:** both halves of §8.5's precondition gate
+pass, via `scripts/report-longitudinal-drift-stage-a3.js --check`
+(hermetic: temp `AUTH_DB_PATH` + temp `EVAL_DB_PATH`/`EVAL_LOGS_DIR`, a
+fake non-secret `OPENROUTER_API_KEY` so provider resolution proceeds, and
+`globalThis.fetch` stubbed to a canned non-empty response — zero network
+calls, zero paid spend, real production DB/logs untouched). Half (i):
+`buildWritingPadNarrative` returns `null` for a freshly initialized pad
+and returns the seeded marker's text for a pad with one real,
+consolidated recognition moment (the exact `createRecognitionMoment` →
+`runBackgroundMaintenance` chain the live pilot depends on, not a
+synthetic `updateUnconscious` shortcut). Half (ii): calling the real
+`runEvaluation()` in-process against the real
+`longitudinal_drift_session_1_multiturn` scenario and the real
+`cell_40_base_dialectical_suspicious_unified_superego` cell, with
+`externalEgoExtension` set to half (i)'s narrative, drove 4 stubbed
+outgoing calls (matching the scenario's 4 turns) and the seeded marker
+was present in the captured request body — confirming the
+`externalEgoExtension` → `fullEgoExtension` → `systemPromptExtension` →
+`egoGenerateSuggestions`'s `effectiveSystemPrompt` chain (§8.3's citation)
+is live end-to-end on this exact scenario/cell pair, not just plausible
+from a static code read. Full build-phase gate: 38/38 unit tests green
+(`services/__tests__/writingPadNarrativeBuilder.test.js`,
+`services/__tests__/longitudinalDriftChecker.test.js` — 2 new checker
+functions plus the aggregator, 13 new cases), hermetic `--check` PASSED,
+lint/prettier clean on all touched files. Stage A3-build is complete and
+green; Stage A3-pilot (the 6-session live arc) follows next.
+
+**2026-07-07: full A3 arc scored; frozen §8.5 verdicts: precondition
+CONFIRMED, constructive-signal gate FAIL, red flag investigated and
+attributed to instrument ceiling, not leakage.** All 6 rows present and
+`success: true`: pad-ON `eval-2026-07-06-{1297acac,ba04f4ea,d169b15f}`
+(sessions 1→2→3, `--learner-id a3-drift-padon-v1-2026-07-07`); pad-OFF
+`eval-2026-07-06-4afdea05` (one run, 3 scenario rows for sessions 1-3, no
+learner-id — a different batching choice than A2's 3 separate pad-OFF
+run-ids, same no-pad/no-injection recipe). All 6:
+`cell_40_base_dialectical_suspicious_unified_superego` /
+`cell_93_..._nopad`, nemotron/kimi-k2.5, 4 turns and 11-14 API calls per
+session, $0.293 total, wall-clock 2026-07-06 15:58-17:05. Dialogue logs
+confirmed present for all 6 rows and cross-checked against each row's own
+`dialogueId` (no mismatch).
+
+*Precondition gate: CONFIRMED by direct primary-source inspection, not
+inference.* Pad-ON session 2's dialogue log
+(`dialogue-1783353681493-p0vo3n.json`) has 12 `dialogueTrace` entries
+carrying an `apiPayload` field (the literal outgoing ego/superego
+request); 8 of 12 contain the literal injected session-1 fraction text
+"1/4 + 1/6", including the first entry (`agent: ego, action: generate,
+round: 0`) — the injected narrative was present from the start of
+session 2's dialogue. Cumulative cross-session confirmation, via two
+independent markers chosen to be immune to a timestamp-substring false
+positive found and ruled out below: (a) the unambiguous session-1
+fraction "1/4 + 1/6" appears 16× in pad-ON's session-2 log and 16× in its
+session-3 log, vs 0× in pad-OFF's session-2 and session-3 logs; (b)
+session-2's own misconception vocabulary ("additive scaling", "scaling a
+ratio") — necessarily cross-session content when found in session 3,
+since session 3's own scripted topic is unrelated ("linear equations" /
+`LDS-M3` "flip-sign-forgetting", confirmed against the scenario YAML) —
+appears 2×/8× in pad-ON's session-3 log vs 0×/0× in pad-OFF's. The
+precondition this stage exists to fix is verified working, cumulatively,
+across both injected sessions, not merely hermetically plausible.
+
+*Frozen "4-slot" constructive-continuity aggregate*
+(`scripts/report-longitudinal-drift-stage-a3-live.js --score`, checker
+v1.1; `exports/longitudinal-drift-stage-a3.{json,md}`):
+
+| Arm | Continuity-ack s2 | Continuity-ack s3 | Misconception-not-retaught s2 | Misconception-not-retaught s3 | Slots hit |
+|---|---|---|---|---|---|
+| pad-ON | miss | miss | HIT | HIT | 2/4 |
+| pad-OFF | miss | miss | HIT | HIT | 2/4 |
+
+**Constructive-signal gate: FAIL** (needs pad-ON ≥2/4 AND pad-OFF =0/4;
+pad-ON clears its own bar, pad-OFF does not clear 0/4). **Red flag:
+RAISED** (pad-OFF is non-zero) — investigated per §8.5's own instruction
+("flagged for investigation... reported, not folded into a positive
+finding for pad-OFF"), not left as a bare number:
+
+- The identical HIT/HIT pattern in both arms is a checker-ceiling
+  artifact, not a leakage signal. Reading the four actual scored opening
+  texts directly: none of the six `RETEACHING_AS_NEW_MARKERS` phrases
+  ("let's learn", "today we'll cover", "here's a new concept", "let me
+  introduce", "so today", "let's start with") appears in any of them
+  (pad-ON s2: "You added the same number to both terms in the ratio
+  practice; let's practice scaling ratios correctly..."; pad-ON s3:
+  "Let's drill the sign-flip rule..."; pad-OFF s2: "Practice identifying
+  and correcting additive versus multiplicative scaling..."; pad-OFF s3:
+  "Rewrite each step of isolating x..."). §8.4's checker only registers a
+  miss when one of those phrases co-occurs with a prior-session
+  misconception marker in the same sentence; absent any of the six
+  phrases, the checker defaults to HIT regardless of whether real
+  cross-session memory access occurred. Both arms land on the same
+  default for the same reason — the checker did not have anything to
+  detect either way in this data, not "pad-OFF also achieved constructive
+  continuity."
+- A distinct false lead was checked and closed: an earlier coarse grep
+  for "2:3" (a candidate leaked-ratio marker) found 3 hits in pad-OFF's
+  session-3 log. Byte-offset inspection of all 3 shows each is a
+  substring coincidence inside a timestamp (`"2026-07-06T16:02:38.480Z"`,
+  matching "2:3" inside "16:02:38") or an HTTP `date` response header
+  (`"Mon, 06 Jul 2026 16:02:39 GMT"`, matching inside "16:02:39") — not
+  ratio content. No genuine occurrence of any clean, cross-session-
+  specific marker ("1/4 + 1/6", "additive scaling", "scaling a ratio",
+  "adds the same amount") was found anywhere in pad-OFF's session-2 or
+  session-3 logs. The red flag is fully explained by the checker artifact
+  above; there is no evidence of actual content leakage into the pad-OFF
+  arm.
+
+*Continuity-acknowledgment is a clean, non-artifactual null (0/2 both
+arms) — the pilot's one real behavioral finding.* Unlike misconception-
+handling, this checker scores presence of the desired behavior (hit=true
+when continuity language is found), so it is not ceiling-biased the same
+way; reading the four opening texts directly confirms the miss is real,
+not a phrasing near-miss — none of the four openings contains any
+resolution-register callback to a prior session, in either arm. This is
+informative in a way A1's and A2's nulls were not, because the
+precondition is demonstrably not broken here: pad-ON's own dialogue
+negotiation visibly carries rich, extensive cross-session material
+(confirmed above, in the model's actual outgoing request across most
+negotiation rounds of session 2 and cumulatively session 3), and none of
+it surfaces as an opening-turn continuity statement. The tutor's
+delivered opening line stays inside the current session's own topic in
+both arms; whatever cross-session synthesis happens during negotiation
+(the `dialecticalEngine` critique/revision rounds) does not carry through
+to a "last time we..." style opening, at least not in the phrasing this
+checker's fixed marker list looks for, and not in substance either on
+direct reading of the four texts.
+
+*Sharpened A2 reinterpretation (ties §8.2 and the fourth §8.8 breakage to
+this pilot's result).* §8.2 established that A2's stale-reference null
+was an instrument-gap finding, not a tutor-behavior finding, because no
+code path ever put prior-session content in the model's context. A3
+closes that gap and re-runs the same kind of check on a genuinely working
+channel — and the result is a real, if narrow, null: even with
+prior-session content demonstrably present in the model's context, the
+specific behavior both A2 and A3 look for (an explicit opening-turn
+continuity callback) still does not appear. This does not resurrect A2's
+original null as a tutor-behavior finding — A2 itself remains an
+instrument-gap finding, unaffected, and its validity-gate PASS and
+10-moment write-side result stand as before — but it does mean the next
+null in this lineage (A3's continuity-acknowledgment result) is the first
+one in this arc that can be read as being about tutor behavior rather
+than about broken plumbing, at n=2 openings/arm.
+
+**Bounded interpretation.** A3 completes exactly what it was authorized
+to do: the injection precondition is fixed and confirmed live (not just
+hermetically), and on that fixed instrument the constructive-signal gate
+is a clean FAIL at n=3 sessions/arm — directional only, per §8.5, and not
+a claim that pad-fed continuity behavior is absent in general. What it
+licenses: (a) the four read-side breakages (§8.1 ×3, §8.8 ×1) are real
+bugs worth fixing on their own terms if `tutor-core`'s internal Writing
+Pad path is ever meant to work unmodified — separately scoped, not
+authorized here; (b) a future confirmatory design on continuity-
+acknowledgment specifically would need either a larger n or a more
+targeted stimulus (e.g. a scenario that explicitly prompts the tutor to
+open with a check-in, rather than relying on spontaneous surfacing) — a
+fresh pre-registration's decision, not this one's.
+
+**STOP per §8.5/§8.7: Stage A3 is complete and this section authorizes
+nothing further.** Rows consumed: exactly the 6 sessions / 24 turns
+specified in §8.7 (plus the no-paid hermetic build-phase checks). Scaling
+to a confirmatory design, fixing the internal Writing Pad channels, or
+redesigning the continuity-acknowledgment outcome requires a fresh
+pre-registration and its own recorded go.
+
+## 9. Stage A4 — structural check-in pilot (fresh pre-registration, frozen before spend)
+
+§8.6 named fixing the internal Writing Pad read channels as a distinct,
+larger, separately-scoped engineering task this note's A3 section did not
+authorize. That task has since been done, as ordinary engineering, not
+under a pre-registration (bug fixes to existing plumbing do not need one
+— only new claims about tutor behavior do). This section does two things
+in order: (a) records what was fixed and why that changes A4's design
+relative to A3's; (b) pre-registers, before any spend, a small pilot that
+gives the tutor a scripted, identical-in-both-arms opportunity to
+demonstrate cross-session memory use, rather than relying on the
+spontaneous surfacing A3 already found to be a clean null. Everything in
+§1-§5, §7.1's write/consolidate mechanism, and §8.1-8.2's diagnosis carry
+forward unchanged; this section only adds the repair and the new pilot.
+
+### 9.1 Rationale: A3's own licensed next step, on a now-repaired instrument
+
+A3's bounded interpretation (just above) licensed exactly one next step
+for the continuity-acknowledgment null: "a future confirmatory design on
+continuity-acknowledgment specifically would need either a larger n or a
+more targeted stimulus (e.g. a scenario that explicitly prompts the tutor
+to open with a check-in, rather than relying on spontaneous surfacing)."
+A4 takes that stimulus, not the larger-n branch — n stays at 3
+sessions/arm throughout this arc, per §3's own repeated stop rule.
+
+Separately from that licensed next step, §8.1 had diagnosed three broken
+internal read-side channels (`unconscious.permanentTraces` retrieved by
+`runMemoryCycle` then discarded unpersisted; `preconscious.recentPatterns`
+starved because `conscious.workingThoughts` is never written on the live
+path; `unconscious.learnerArchetype` evolving in form but never in
+substance for the same reason), all converging on one root cause:
+`recognitionOrchestrator.js` — the module that writes the conscious layer
+and the learner-event log the other two channels depend on — is never
+invoked anywhere on the request path `evaluationRunner.js` actually
+exercises. §8.8 then found and fixed a fourth, distinct breakage
+(`getRecognitionMoment`/`getRecognitionMoments`' field allowlist silently
+drops `synthesis_resolution`, the one column `settleToUnconscious` reads
+for `permanentTraces`' own content) — but fixed it by working *around* it
+externally, in `writingPadNarrativeBuilder.js`, deliberately not touching
+`tutor-core/**` internals, per §8.3's "minimal external injection, not
+internal repair" posture for that stage.
+
+This go goes further and repairs all four at the source, inside
+`tutor-core/**` itself, rather than working around any of them from the
+eval layer:
+
+1. **`recognitionOrchestrator.js` orphaned** (§8.1's shared root cause of
+   findings #2 and #3) — rather than wiring the whole orphaned module
+   into the live request path (§8.3's own rejected larger option, "unknown
+   blast radius across whatever else reads `conscious`/`learner_events`"),
+   the conscious-layer write it was responsible for is now mirrored
+   inline, directly in `tutorDialogueEngine.js`'s own turn flow — a
+   targeted fix with a known, small blast radius, not the structural
+   rewire §8.3 declined.
+2. **`runMemoryCycle`'s discarded `contextRetrieval` result** (§8.1
+   finding #1) — the Phase-4 "retrieve context at end for next session"
+   call already computed the right answer from real `permanentTraces`
+   content; it simply never persisted anywhere past that call. Now
+   persisted, in `memoryDynamicsService.js`, so it actually crosses the
+   session boundary instead of being computed and thrown away.
+3. **The pattern-promotion pipeline's empty input** (§8.1 finding #2,
+   downstream of fix 1 above) — `detectPatternsFromConscious` reads
+   `conscious.workingThoughts`, which fix 1 now actually populates on the
+   live path, so `autoPromotePatterns` can find something to promote
+   instead of always short-circuiting at "0 patterns."
+4. **The `synthesis_resolution` field-allowlist drop** (§8.8's fourth
+   breakage) — fixed at the source this time, inside
+   `tutor-core/services/writingPadService.js`'s own
+   `getRecognitionMoment`/`getRecognitionMoments` field allowlist, rather
+   than by the additive external `SELECT` §8.8 added to
+   `writingPadNarrativeBuilder.js`. That external workaround is
+   superseded for A4's purposes but was NOT deleted — it remains the
+   correct, citable instrument for A3's own already-frozen result, and
+   its docblock now carries a status note to that effect (a "STATUS
+   UPDATE (§8.8)" paragraph) rather than the file being rewritten or
+   removed.
+
+All four fixes are ordinary engineering on existing plumbing, committed
+as `686145ece2662cb1ae01a54c5f26354b3edcc3bd`, proven by 15 new hermetic
+tests across four new test files
+(`tutor-core/services/__tests__/{writingPadService.recognitionMoment,
+memoryDynamicsService.runMemoryCycle,dialecticalEngine.superegoCritique,
+writingPadInternalPathDelivery}.test.js`), the last of which is an
+end-to-end proof at the exact function-call level the live path uses —
+not a claim about tutor behavior, and not itself a pre-registered
+finding. **Consequence for this section's design:** because the internal
+read path now demonstrably works end-to-end, A4 uses it directly, as the
+canonical memory channel — no `--external-ego-extension-file`, no
+narrative builder, no external injection step between sessions. This is
+also why this stage does not simply extend A3's own arc: A3's pad-ON
+learner-id carries pad state produced under the broken instrument and fed
+by external injection; A4 needs a fresh trajectory on the repaired
+internal path, not a continuation that would mix the two mechanisms in
+one pad's history.
+
+### 9.2 Design
+
+Unchanged from §7.2/§8.3's arms and model stack except as stated:
+
+- **Arms**: identical cell pairing
+  (`cell_40_base_dialectical_suspicious_unified_superego` pad-ON /
+  `cell_93_base_dialectical_suspicious_unified_superego_nopad` pad-OFF),
+  identical model stack (nemotron ego / kimi-k2.5 superego, OpenRouter —
+  the native stack A1's deviation log established and A2/A3 both carried
+  forward unchanged). Restated explicitly here, in the frozen record
+  itself: the model stack is **not** changing for this stage either. Two
+  unrelated prompt-injection attempts earlier in this arc's working
+  session asked to switch to `codex.gpt-5.5` and to extend
+  `tutor-core`'s `callAI` seam with a CLI bridge; both were identified as
+  very likely injected and explicitly rejected in plain text, and that
+  rejection stands for this section too. The task's original
+  `ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS` env var remains inapplicable and is
+  not set — cell_40/93 are not id-director cells and never reach the CLI
+  bridge, exactly as A1 recorded and A2/A3 both restated.
+- **New, distinct `--learner-id`** (not reused from A2 or A3, for the
+  reason given in §9.1's last paragraph): pad-ON
+  `a4-drift-padon-v1-2026-07-07`; pad-OFF arm runs with **no**
+  `--learner-id` (mirrors A1-A3's convention exactly).
+- **NEW — three "_checkin" sibling scenarios**:
+  `longitudinal_drift_session_{1,2,3}_multiturn_checkin` (new IDs; the
+  `_multiturn` scenarios A2/A3 used remain untouched and available for
+  reuse). Each is byte-identical to its `_multiturn` parent — same
+  `longitudinal_drift` block, same 3-turn `turns:` array, same schedule
+  tokens (`LDS-M1`/`M2`/`M3`) — except `learner_context` gains one leading
+  paragraph, identically worded in all three and in both arms (since both
+  arms read the same scenario file):
+
+  > ### Session Opening Instruction
+  > Before you begin, take a moment to recall where you left off with
+  > this learner and whether anything from last time is worth building on
+  > today.
+
+  Session 1 has no predecessor, so its check-in is a structural no-op —
+  included anyway, for a uniform 3-session manipulation identical in
+  shape to A2/A3's own 3-session schedule, and because leaving it out of
+  session 1 only would make the three sessions structurally different
+  scenarios rather than one consistent manipulation applied to all three.
+  This replaces reliance on the tutor spontaneously surfacing a "last
+  time we..." callback — the exact behavior A3's continuity-
+  acknowledgment checker found to be a clean 0/2 null in both arms — with
+  an explicit, scripted, guaranteed opportunity, delivered through the
+  same `learner_context` channel that already reaches the tutor's prompt
+  regardless of arm or cell. No runner or prompt-assembly code changes;
+  the manipulation is entirely in scenario data.
+- **Row count**: unchanged — 3 sessions × 2 arms = 6 sessions, 4 turns
+  each = 24 tutor generations total (the same envelope §7.2/§8.7 already
+  used; not scaled up for this stage).
+- **Execution order and checkpoint (frozen, unchanged from §8.3's
+  `_multiturn` schedule)**: pad-ON session 1 runs alone, first. The
+  instrument-precondition gate (§9.4) is checked against the live DB
+  before anything else runs; only on a PASS do pad-ON sessions 2-3 and
+  the full pad-OFF arm (all 3 sessions, no injection step of any kind)
+  proceed, sessions strictly in order 1→2→3 per arm.
+
+### 9.3 Primary and secondary outcome
+
+- **Primary (new)**: `scoreContentBearingCheckIn` — does a session-N
+  opening, scripted to explicitly ask the tutor to check in, reference
+  session (N-1)'s own `interest_markers` or `active_misconception`
+  token/markers? Not applicable for session 1 (no predecessor). Reuses
+  the identical word-bounded marker set `scoreOpeningTurn`'s `stale`
+  check already uses for session (N-1), under the opposite polarity: in
+  `scoreOpeningTurn`, a prior-session marker in an *unprompted* opening
+  reads as leakage/confusion; here, inside a turn explicitly scripted to
+  solicit exactly that recall, the same textual signature is the desired,
+  content-bearing behavior — kept as its own separate, differently-
+  interpreted checker function rather than a re-read of `stale`, so the
+  two readings are never conflated.
+- **Secondary (reused unmodified from §8.4)**: `scoreContinuityAcknowledgment`
+  — does the opening carry even a generic continuity acknowledgment at
+  all (the checker A3 already used, which found the clean 0/2-both-arms
+  null)? Carried forward unchanged as a diagnostic companion to the new
+  primary outcome, not re-scored under new assumptions.
+- **Explicit "4-slot" operationalization (frozen here, same shape as
+  §8.4, new threshold — see §9.4)**: 4 = 2 sessions (2, 3) × 2 checkers
+  (content-bearing check-in, continuity-acknowledgment). Each slot scores
+  a binary hit/no-hit per arm, summed to a 0-4 scale per arm.
+- **Secondary (unchanged in spirit from §7.3/§8.4)**: the same pad-content
+  trace report (`total_recognition_moments`, raw `recognition_moments`
+  row count, plain-language rendering of each moment) continues to be
+  recorded for the pad-ON arm after every session.
+
+### 9.4 Frozen thresholds and stop rules
+
+- **NEW precondition gate, live (this section's own, in addition to the
+  unchanged gate below) — internal-path delivery must be verified live,
+  not only hermetically**: after pad-ON session 2 completes, directly
+  inspect its dialogue log's `apiPayload` entries for session 1's own
+  `interest_markers`/`active_misconception` vocabulary — the same
+  "direct primary-source inspection, not inference" standard §8.8 already
+  applied to A3's external-injection channel. **If no `apiPayload` entry
+  in session 2 contains any session-1 marker: STOP — the internal-path
+  fix is not actually delivering live, no session 3, no pad-OFF scoring
+  claims off this arm, investigate before any further spend.** (The new
+  `scripts/report-longitudinal-drift-stage-a4-live.js --verify-live`
+  mode performs exactly this check, mirroring §8.8's own dialogue-log
+  inspection method.)
+- **§7.4's own moment-count gate stays in force unchanged**: pad-ON
+  session 1 must still clear `total_recognition_moments >= 1` before
+  sessions 2-3 proceed.
+- **Structural-signal gate (same directional-only spirit as §7.4/§8.5,
+  stricter on the pad-ON side)**: pad-ON slots hit **≥ 3/4** AND pad-OFF
+  slots hit **= 0/4**. The pad-ON bar is raised from §8.5's ≥2/4 because
+  A4's check-in slot is scripted and guaranteed to occur in both arms,
+  not spontaneous — a working memory channel, given an explicit,
+  identical prompt to use it, should be expected to clear a stricter bar
+  than a channel that had to surface unprompted. This pilot still cannot
+  confirm or refute a general claim at n=3 sessions/arm — stated
+  explicitly, as §3/§7.4/§8.5 already establish and this section does
+  not relax. Scaling needs a fresh pre-registration.
+- **Red flag**: any pad-OFF content-bearing hit (either session) is
+  flagged for investigation as possible leakage — reported, not folded
+  into a positive finding for pad-OFF, mirroring §8.5 exactly.
+- **Row/session-level instrument failure**: generation error, empty or
+  malformed output, or a schedule/scenario validation failure — excluded
+  from denominators, reported separately, mirroring §3/§7.4/§8.5.
+- **Stop rule**: if Stage A4-build's no-paid gates (§9.6) do not pass
+  clean, A4 does not run live. If the session-1 §7.4 gate fails, or the
+  live internal-path-delivery gate above fails, STOP. This section
+  authorizes exactly 6 sessions / 24 turns (the same envelope as
+  §7.2/§8.7) — nothing beyond that without a fresh pre-registration and
+  go.
+
+### 9.5 Scope and limits specific to A4
+
+All of §4's, §7.5's, and §8.6's limits carry forward unchanged (single
+learner-id trajectory per arm; `learner_architecture: unified` throughout;
+architecture-independent judge-free scoring; exhaustion-as-instrument-
+failure semantics). In addition:
+
+- **A PASS here licenses "when the tutor is explicitly and identically
+  instructed to check in, and the internal memory-read path is
+  demonstrably delivering prior-session content into its context, the
+  opening turn references that content specifically" — not "the tutor
+  spontaneously surfaces memory unprompted."** A3's own clean
+  continuity-acknowledgment null (§8.8) is unaffected by this stage's
+  result either way; A4 asks a narrower, different question on a
+  scripted stimulus, not a re-run of A3's question on better plumbing.
+- **A PASS or FAIL here is still about this specific fix, on this
+  specific stack, at this n** — not a general claim about `tutor-core`'s
+  Writing Pad architecture, and not licensing removal of the exhaustion-
+  as-instrument-failure or single-trajectory limits carried forward
+  above.
+- Cost/scope: ~6 sessions ≈ $0.30, the same envelope A2/A3 already used —
+  not scaled up.
+- **Known failure mode, carried into this stage**: sessions may stall at
+  turn boundaries waiting on background runs — commit state before
+  ending any turn.
+
+### 9.6 Stages and gates
+
+- **Stage A4-build (no-paid, this go):** two new checker functions
+  (`scoreContentBearingCheckIn`, `summarizeContentBearingCheckIn`) plus a
+  version bump in `services/longitudinalDriftChecker.js`; three new
+  `_checkin` sibling scenarios in `config/suggestion-scenarios.yaml`; 9
+  new unit tests in `services/__tests__/longitudinalDriftChecker.test.js`
+  (38/38 green in that file); a hermetic `--check` gate script
+  (`scripts/report-longitudinal-drift-stage-a4.js`) proving the new
+  scenarios resolve correctly and the new checker pair behaves per this
+  section's frozen gate on synthetic rows — zero paid calls, zero DB/
+  network touches (deliberately narrower in scope than §8.6's gate: it
+  does not re-prove the internal delivery mechanism itself, which Part
+  1's own hermetic tests at the `tutor-core` function-call level already
+  cover exhaustively). Gate: unit tests green, `--check` green, lint/
+  prettier clean on touched files.
+- **Stage A4-pilot (small paid pilot, authorized by this section only):**
+  pad-ON session 1 → §7.4 live gate → on PASS, pad-ON session 2 →
+  live internal-path-delivery gate (§9.4, via `--verify-live`) → on PASS,
+  pad-ON session 3; pad-OFF arm runs all 3 sessions unchanged from A2/A3
+  (no learner-id, no injection step) → score both arms with
+  `scripts/report-longitudinal-drift-stage-a4-live.js --score` → record
+  verdicts per §9.4.
+- **Anything beyond Stage A4:** requires a fresh pre-registration and its
+  own recorded go, per §9.4's stop rule.
+
+### 9.7 Implementation log
+
+**Part 1 (already committed, `686145ece2662cb1ae01a54c5f26354b3edcc3bd`,
+2026-07-07): the four internal read-path fixes described in §9.1,
+engineering-only, no pre-registration needed.** 15 new hermetic tests
+across four new test files, all green; `services/
+writingPadNarrativeBuilder.js` retained (not deleted), with a "STATUS
+UPDATE (§8.8)" paragraph added to its docblock marking it as the
+retained A3 instrument, no longer wired into A4's design.
+
+**Stage A4-build (2026-07-07): complete and green.** Checker functions
+added (`services/longitudinalDriftChecker.js` version bumped 1.1 → 1.2);
+three `_checkin` scenarios added to `config/suggestion-scenarios.yaml`
+and verified via `getScenario()` to resolve with `turns.length === 3`
+each; 9 new tests added to `services/__tests__/longitudinalDriftChecker.test.js`
+(one initially-mis-asserted test caught and corrected against this
+section's own ≥3/4 threshold before landing — recorded here per this
+note's convention of logging in-flight corrections rather than silently
+fixing them; the file's own git history/diff carries the detail); full
+file run: 38/38 pass. New hermetic gate script
+`scripts/report-longitudinal-drift-stage-a4.js --check`: 14/14 checks
+PASSED. New live-scoring script
+`scripts/report-longitudinal-drift-stage-a4-live.js` written, mirroring
+§8's `-a3-live.js` `--gate`/`--score` shape with a new `--verify-live`
+mode for this section's live internal-path-delivery gate and no
+`--build-injection` mode (not needed — §9.1's internal path is the
+canonical channel this stage uses). Smoke-invoked read-only against the
+real DB with placeholder/non-existent ids to confirm no crashes on
+missing rows (`--gate` on an absent learner-id correctly reports
+`INSTRUMENT_FLOOR`; `--verify-live` on an absent run correctly reports
+"no dialogue log found"; `--score` on a bogus run-id correctly reports
+an instrument-failure row and a FAIL verdict) — no real session data
+scored yet, no paid calls made. Stage A4-build is complete and green;
+Stage A4-pilot (the 6-session live arc) follows next.
+
+**Stage A4-pilot, pad-ON sessions 1-2 + the live delivery gate
+(2026-07-07): §7.4 gate PASS; §9.4 gate VOID-AS-INSTRUMENTED with
+delivery itself CONFIRMED live by direct primary-source inspection.**
+Recorded in full, per this note's convention of logging in-flight
+instrument corrections rather than silently fixing them:
+
+- **Pad-ON session 1** (`eval-2026-07-06-edecf6f8`, row 33950, scenario
+  `longitudinal_drift_session_1_multiturn_checkin`, 4/4 turns clean,
+  run metadata pins `gitCommit: 426a483b`): §7.4 instrument-precondition
+  gate **PASS** — `total_recognition_moments = 4` (column == raw row
+  count), the same all-4-turns-disapproved shape A2 saw, voices quoting
+  the session's actual fractions content.
+- **Pad-ON session 2** (`eval-2026-07-06-3075efb4`, row 33951, 4/4
+  turns clean). Two defects were then found in the `--verify-live`
+  instrument itself, before any gate verdict was accepted:
+  1. **Script path/counting corrections** (in-flight, recorded): the
+     mode as committed looked for `logs/<runId>.jsonl`, which does not
+     exist — the real per-session dialogue log is
+     `logs/tutor-dialogues/<dialogue_id>.json` resolved via the run's
+     result row, exactly the file §8.8 used. It also over-counted
+     matched entries (a `hitMarkers`-accumulation bug made every entry
+     after the first match count as a hit). Both fixed in
+     `scripts/report-longitudinal-drift-stage-a4-live.js` before
+     scoring; the fix is instrument-repair, not a design change — §9.4
+     froze the *method* (dialogue-log `apiPayload` inspection per §8.8),
+     which the corrected script now actually implements.
+  2. **The corrected scan then produced a false PASS**: 11/11
+     `dialogueTrace` `apiPayload` entries matched session-1 vocabulary
+     (`fractions`, `denominator`) — but every match traces to session
+     2's OWN scenario `learner_context` ("Last session's fractions work
+     is complete; the common-denominator-by-multiplying pattern is
+     resolved…"), which §7.2's drift schedule plants by design in BOTH
+     arms. Under §8.8's false-positive-immunity standard (which §9.4
+     explicitly invokes), the scan was re-run on pad-only strings —
+     literal session-1 recognition-moment text (superego-generated at
+     session-1 runtime, impossible to originate in any scenario YAML:
+     "1/2+1/4", "least common denominator", "breakthrough moment",
+     "cognitive conflict", "LDS-M1"): **0 of 11 entries hit**.
+- **Investigation (all read-only, no further spend until resolved)**:
+  the zero is a *structural blind spot in the observable, not absent
+  delivery*. On cell_40's live path the four §9.1 fixes feed the
+  dialectical layer — `tutorDialogueEngine.egoGenerateSuggestions` →
+  `dialecticalEngine.negotiateDialectically` →
+  `generateSuperegoCritique` / `egoRespondsToSuperego`, whose prompts
+  unconditionally embed `unconscious.permanentTraces.slice(-3)` (the
+  §9.1-bug-1 `priorSessionMemory` section) and
+  `preconscious.recentPatterns.slice(0, 3)` (the §9.1-bug-2 channel)
+  whenever a learner pad exists. Those calls go through
+  `aiService.generateText`, which is logged NOWHERE with prompt text:
+  not in the dialogue log's `apiPayload` entries (those cover only the
+  standard ego/superego loop via `callAI`) and not in
+  `logs/tutor-api/*.jsonl` (same `callAI` universe — grep for the
+  critique prompt's own unconditional headings, e.g. "Prior recognition
+  moments", across the full day's log: 0). The §9.4 observable can
+  therefore never witness this channel, in either direction.
+- **Delivery confirmation, by the same direct primary-source standard
+  §8.8/§9.4 demand, on artifacts rather than the unlogged prompt
+  string**: (a) `negotiateDialectically` demonstrably ran per turn in
+  session 2 — turns 1-3 each wrote a recognition moment (21:21:05,
+  21:28:41, 21:36:17) whose LLM-generated ghost voices quote session
+  2's live ratio content ("4:5 and 4:6", "2:3 scales to 4:6, not 4:5"),
+  and turn 4's stored suggestion carries
+  `metadata.dialecticalStrategy: "no_conflict"`; (b) at every one of
+  those calls the freshly-fetched pad (fetched per turn at
+  `tutorDialogueEngine.js` line ~1806) contained session-1 content —
+  `permanentTraces` held session 1's 4 traces with real synthesis text
+  from before session 2 began, and `preconscious.recentPatterns`
+  acquired two cross-session `recalled_context` entries (signatures
+  referencing session-1 trace timestamps 21:05:14 / 21:13:50, one
+  carrying the literal session-1 synthesis "1/2+1/4 only requires a
+  denominator of 4… least common denominator…") at 21:22:39, i.e. from
+  turn 1's memory cycle onward, reinforced ×3 across turns 2-4 — the
+  §9.1-bug-2 fix visibly persisting cross-session retrievals live;
+  (c) the code embedding that pad state into those prompts is pinned to
+  the run's own recorded commit (426a483b). Conclusion: **session-1 pad
+  content reached session 2's dialectical prompts on every turn
+  (`priorSessionMemory` from turn 1; `recentPatterns` from turn 2) —
+  the internal read path delivers live.** Gate disposition, following
+  §6's Stage-A1 precedent of recording instrument problems as VOID
+  rather than re-reading them as outcomes: §9.4's live gate is **VOID
+  as instrumented** (confounded markers + blind observable), delivery
+  is **CONFIRMED** by the above triangulation, the stop rule's literal
+  trigger ("no `apiPayload` entry contains any session-1 marker") is
+  not met, and the pilot proceeds to session 3 and the pad-OFF arm.
+- **Two bounded caveats recorded now, before scoring**: (i) the pad
+  content demonstrably reaches the *dialectical critique/negotiation
+  prompts*; its influence on the SCORED channel (the opening turn's
+  final delivered message) is indirect — on session 2's turns 1-3 the
+  negotiation wrote moments but left no `dialecticalStrategy` metadata
+  on the stored suggestions, consistent with the negotiation's
+  resolution not replacing the ego's message on those turns — so a
+  check-in miss at scoring time is interpretable as
+  "delivered-but-not-used", NOT "not delivered" (and conversely a hit
+  is not automatically pad-attributable, see ii). (ii) The scenario's
+  own `learner_context` plants prior-session vocabulary (`fractions`,
+  `denominator`) in BOTH arms by §7.2 design, so the primary checker
+  can hit off scenario echo alone in either arm; §9.4's red-flag clause
+  (any pad-OFF hit → investigate as leakage, never a pad-OFF finding)
+  already governs the pad-OFF side, and the pad-ON side's
+  interpretation must carry the same echo caveat symmetrically. Neither
+  caveat changes the frozen thresholds; both bind the §9.4-verdict
+  *interpretation* recorded after scoring.
+
+**Stage A4-pilot, completion and verdict (2026-07-07): 6/6 sessions
+clean; structural-signal gate FAIL — pad-ON 0/4, pad-OFF 0/4; no red
+flag; no instrument failures. A symmetric null: the scripted check-in
+slot does not surface prior-session content in the delivered opening in
+either arm.**
+
+- **Runs** (all `--skip-rubric`, 4/4 turns each, `success = 1`):
+  pad-ON `eval-2026-07-06-edecf6f8` / `-3075efb4` / `-c5bc6075` (rows
+  33950-33952, learner `a4-drift-padon-v1-2026-07-07`); pad-OFF
+  `eval-2026-07-06-38d45370` / `-14256553` / `-14a100bc` (rows
+  33953-33955, no learner-id — the runner assigns per-dialogue synthetic
+  ids, matching §7.7's recorded A2 behavior). Pad-ON session 3 ran
+  concurrently with the pad-OFF chain (2 sessions max in flight; safe by
+  design — pad-OFF has no cross-session state to contaminate).
+- **Frozen §9.4 scoring** (checker `longitudinalDriftChecker@1.2`,
+  artifacts `exports/longitudinal-drift-stage-a4.{json,md}`): every
+  applicable slot is a miss — content-bearing check-in 0/2 and
+  continuity-acknowledgment 0/2 in BOTH arms (session-1 rows n/a by
+  design). Aggregate: pad-ON **0/4** (gate required ≥3/4), pad-OFF
+  **0/4** (gate required exactly this) → **FAIL**. Red flag: none.
+  Instrument failures: none.
+- **The six openings, read directly** (all 94-270 chars): every one
+  opens mid-topic on the CURRENT session's math ("You added the same
+  number to both terms. Let's review how to scale ratios correctly…" —
+  pad-ON s2; "Practice flipping the sign when you multiply or divide by
+  a negative number…" — pad-ON s3; pad-OFF equivalents likewise) with
+  zero retrospective content. Notably, neither arm even echoes the
+  scenario-planted continuity vocabulary ("Last session's fractions
+  work is complete…" sits verbatim in both arms' ego prompts) — §9.7's
+  pre-scoring caveat (ii) (scenario-echo inflation) turned out moot in
+  practice; the misses are genuine and symmetric, not
+  checker-vocabulary artifacts.
+- **Delivery context (caveat (i) active)**: the pad-ON memory channel
+  was demonstrably compounding while the openings stayed
+  memory-silent — after session 3 the pad holds 9 recognition moments,
+  and `preconscious.recentPatterns` carries ALL 7 prior-session moments
+  as cross-session `recalled_context` entries (session-1 content
+  reinforced up to ×7, session-2 content ×4), i.e. session 3's
+  dialectical prompts carried BOTH prior sessions' content. The A4 null
+  is therefore read as **delivered-but-not-used at the scored channel**:
+  prior-session content reaches the dialectical critique/negotiation
+  prompts every turn, but the delivered opening suggestion — the ego's
+  suggestion-JSON genre answering the current learner message — never
+  carries it (consistent with the negotiation's resolution not
+  replacing the ego's message: no `dialecticalStrategy` metadata on any
+  scored opening).
+- **Marker-grep (leakage check), with a recorded scoping lesson**: a
+  coarse sweep of the pad-OFF dialogue logs for "pad-only" strings hit
+  on '1/2+1/4' (s1), '4:6, not 4:5' (s2), 'missed flipping' (s3),
+  'cognitive conflict'/'Master-Servant' (all) — ALL explained without
+  leakage: each is same-session content (both arms share the scenario's
+  math), shared-curriculum idiom (the EPOL 479 Hegel material), or
+  shared superego-model idiom — the same author-confound/costume lesson
+  the poetics arc recorded. Properly-scoped cross-session probes
+  (session-1-specific strings in pad-OFF s2/s3; session-2-specific in
+  s3, each first checked absent from the session's own scenario text):
+  ALL absent, except a single '4:5' in pad-OFF s3 confirmed by direct
+  inspection to be an HTTP `date` header substring ("23:14:53 GMT") —
+  the exact §8.8 '2:3' precedent. **No genuine cross-session leakage;
+  the pad-OFF arm is clean.**
+- **Cost**: callAI-universe tokens measured from `logs/tutor-api/`
+  over the pilot window: 82 calls, 444,205 in / 282,108 out
+  (nemotron 340K/224K, kimi-k2.5 104K/59K) — a lower bound, since the
+  dialectical-layer calls are unlogged (the observability gap recorded
+  above); consistent with A2/A3's ~$0.27-0.30 for the identical
+  6-session shape. Envelope respected.
+- **Bounded interpretation (directional-only at n=3 sessions/arm, per
+  §9.4/§9.5)**: A4 answers its §9.5 question in the negative on this
+  stack — even when the check-in move is structurally guaranteed
+  (identical explicit instruction in both arms' session-open prompts)
+  AND the internal memory path is demonstrably delivering prior-session
+  content into the model's deliberation prompts (this section's
+  delivery confirmation), the delivered opening does not reference that
+  content specifically. A3's spontaneous continuity null therefore
+  EXTENDS to the scripted case. The lineage now locates the block one
+  layer further out than A3 left it: A2 = channel broken (instrument
+  gap); A3 = channel externally injected, unprompted continuity null;
+  A4 = channel internally repaired + move scripted, continuity still
+  null at the delivered-output layer — pointing at the output
+  genre/policy (the ego's forward-looking suggestion format and/or the
+  negotiation's non-rewriting resolutions), not at memory access. What
+  would move next — an output-side lever (e.g. scoring a dedicated
+  check-in sentence the format explicitly requests, or wiring the
+  negotiation resolution into the delivered message) — is a fresh
+  design decision, NOT licensed here.
+- **STOP**: the §9.4 envelope (6 sessions / 24 turns) is exhausted and
+  the stop rule holds — nothing further on this line without a fresh
+  pre-registration and its own recorded go.

@@ -2361,3 +2361,265 @@ scenarios:
         required_elements: []
         forbidden_elements: []
         min_acceptable_score: 0
+
+  # ============================================================================
+  # Stage A4 (prereg §9): "_checkin" siblings — identical to the three
+  # _multiturn scenarios above except for one added paragraph at the top of
+  # learner_context: an explicit, identically-worded structural check-in
+  # instruction. This is a scripted, guaranteed-opportunity nudge (present in
+  # BOTH pad-ON and pad-OFF arms, since both read the same scenario file) that
+  # replaces reliance on the tutor spontaneously surfacing a "last time we..."
+  # callback (A3's continuity-acknowledgment checker found that a clean 0/2
+  # null in both arms). Every other field (longitudinal_drift block, turns)
+  # is byte-identical to its _multiturn parent so the same misconception
+  # schedule and checker functions apply unchanged.
+  # ============================================================================
+
+  longitudinal_drift_session_1_multiturn_checkin:
+    type: suggestion
+    id: longitudinal_drift_session_1_multiturn_checkin
+    category: longitudinal_drift
+    name: "Longitudinal Drift - Session 1 multi-turn, check-in slot (fractions)"
+    description: "Stage A4: _multiturn sibling with a scripted session-opening check-in instruction; session 1 has no predecessor so the check-in is a structural no-op here (kept for a uniform 3-session manipulation)."
+    is_new_user: true
+    course_ids: ["479"]
+    learner_context: |
+      ### Session Opening Instruction
+      Before you begin, take a moment to recall where you left off with this
+      learner and whether anything from last time is worth building on today.
+
+      ### User Profile
+      - New user, first session of a multi-session arc.
+      - Recently submitted practice work on fractions.
+      - Recurring pattern in that work: when adding two fractions with
+        different denominators, always forms a common denominator by
+        multiplying the two denominators together, even when a smaller
+        common denominator is available (e.g. treats 1/4 + 1/6 as needing a
+        denominator of 24 rather than 12).
+
+      ### Current Session
+      - Topic: fractions.
+      - No previous session on record.
+    expected_behavior: "Suggestion should orient the learner toward today's fractions work; may address the common-denominator-by-multiplying pattern. No prior session exists, so the check-in instruction has nothing to recall."
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 0
+    longitudinal_drift:
+      schedule_id: drift_schedule_v1
+      session_index: 1
+      current_interest: "fractions"
+      interest_markers: ["fraction", "fractions", "numerator", "denominator"]
+      active_misconception:
+        token: "LDS-M1"
+        label: "common-denominator-by-multiplying"
+        markers: ["LDS-M1", "common denominator", "multiply the denominators"]
+      resolved_last_session: null
+
+    turns:
+      - id: turn_1_repeats_pattern
+        learner_action: reported_own_work
+        action_details:
+          message: "I tried 1/4 + 1/6 and multiplied the denominators together to get 24 — same as before, right?"
+        context_update: |
+          ### Learner Response
+          - Confirms the recurring common-denominator-by-multiplying pattern
+            on a fresh example.
+          - Looking for confirmation, not yet questioning the method.
+        expected_behavior: "Engage with the specific example; may begin surfacing the smaller-common-denominator alternative."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 0
+
+      - id: turn_2_repeats_again
+        learner_action: reported_own_work
+        action_details:
+          message: "I tried 1/3 + 1/5 the same way and got a denominator of 15."
+        context_update: |
+          ### Learner Response
+          - Repeats the same multiply-the-denominators method on a second
+            fresh example.
+          - Still no sign of questioning whether the method is necessary.
+        expected_behavior: "Continue engaging with the learner's own examples; may note the pattern across both turns."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 0
+
+      - id: turn_3_notices_size
+        learner_action: asked_followup
+        action_details:
+          message: "This time I tried 1/2 + 1/4 and multiplying gives me 8 — but that looks bigger than it needs to be. Why is that?"
+        context_update: |
+          ### Learner Response
+          - First sign of noticing something is off: the multiplied
+            denominator (8) is larger than the smallest common denominator
+            (4) for this pair.
+          - Directly asking for an explanation, not just reporting.
+        expected_behavior: "Direct opportunity to name the smallest-common-denominator idea explicitly."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 0
+
+  longitudinal_drift_session_2_multiturn_checkin:
+    type: suggestion
+    id: longitudinal_drift_session_2_multiturn_checkin
+    category: longitudinal_drift
+    name: "Longitudinal Drift - Session 2 multi-turn, check-in slot (ratios)"
+    description: "Stage A4: _multiturn sibling with a scripted session-opening check-in instruction, identical across pad-ON/pad-OFF arms."
+    is_new_user: false
+    course_ids: ["479"]
+    learner_context: |
+      ### Session Opening Instruction
+      Before you begin, take a moment to recall where you left off with this
+      learner and whether anything from last time is worth building on today.
+
+      ### User Profile
+      - Returning user - second session of a multi-session arc.
+      - Last session's fractions work is complete; the common-denominator-
+        by-multiplying pattern is resolved and is no longer a live issue.
+      - Recently submitted practice work on ratios.
+      - Recurring pattern in that work: scales a ratio by adding the same
+        amount to both terms instead of multiplying both terms by the same
+        factor (e.g. turns 2:3 into 4:5 by adding 2 to each side, rather than
+        into 4:6 by doubling).
+
+      ### Current Session
+      - Topic: ratios.
+      - Previous session: fractions (resolved).
+    expected_behavior: "Suggestion should orient the learner toward today's ratio work; may address the additive-scaling pattern; the check-in instruction invites (but does not require) an explicit recall of last session."
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 0
+    longitudinal_drift:
+      schedule_id: drift_schedule_v1
+      session_index: 2
+      current_interest: "ratios"
+      interest_markers: ["ratio", "ratios", "proportion", "proportions"]
+      active_misconception:
+        token: "LDS-M2"
+        label: "scaling-ratios-additively"
+        markers: ["LDS-M2", "additive scaling", "adds the same amount"]
+      resolved_last_session: true
+
+    turns:
+      - id: turn_1_repeats_pattern
+        learner_action: reported_own_work
+        action_details:
+          message: "I scaled 2:3 by adding 2 to each side and got 4:5 — same idea as before, right?"
+        context_update: |
+          ### Learner Response
+          - Confirms the recurring additive-scaling pattern on a fresh
+            example.
+          - Looking for confirmation, not yet questioning the method.
+        expected_behavior: "Engage with the specific example; may begin surfacing the multiplicative-scaling alternative."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 0
+
+      - id: turn_2_compares_methods
+        learner_action: asked_followup
+        action_details:
+          message: "If I'd doubled both sides instead I'd get 4:6, not 4:5 — why don't those match?"
+        context_update: |
+          ### Learner Response
+          - Directly compares the additive result (4:5) to the
+            multiplicative result (4:6) and notices they differ.
+          - First sign of questioning which method is actually correct.
+        expected_behavior: "Direct opportunity to explain why multiplicative scaling preserves the ratio and additive scaling does not."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 0
+
+      - id: turn_3_asks_general_rule
+        learner_action: asked_followup
+        action_details:
+          message: "So what's the actual rule for scaling a ratio up in general?"
+        context_update: |
+          ### Learner Response
+          - Asks for the general rule rather than another worked example.
+          - Ready for a stated principle, not just another case.
+        expected_behavior: "State the general multiplicative-scaling rule explicitly."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 0
+
+  longitudinal_drift_session_3_multiturn_checkin:
+    type: suggestion
+    id: longitudinal_drift_session_3_multiturn_checkin
+    category: longitudinal_drift
+    name: "Longitudinal Drift - Session 3 multi-turn, check-in slot (linear equations)"
+    description: "Stage A4: _multiturn sibling with a scripted session-opening check-in instruction, identical across pad-ON/pad-OFF arms."
+    is_new_user: false
+    course_ids: ["479"]
+    learner_context: |
+      ### Session Opening Instruction
+      Before you begin, take a moment to recall where you left off with this
+      learner and whether anything from last time is worth building on today.
+
+      ### User Profile
+      - Returning user - third session of a multi-session arc.
+      - Last session's ratio work is complete; the additive-scaling pattern
+        is resolved and is no longer a live issue.
+      - Recently submitted practice work on linear equations.
+      - Recurring pattern in that work: forgets to flip the equation's
+        inequality/equality sign when multiplying or dividing both sides by
+        a negative number while isolating x.
+
+      ### Current Session
+      - Topic: linear equations.
+      - Previous session: ratios (resolved).
+    expected_behavior: "Suggestion should orient the learner toward today's linear-equations work; may address the sign-flip-forgetting pattern; the check-in instruction invites (but does not require) an explicit recall of last session."
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 0
+    longitudinal_drift:
+      schedule_id: drift_schedule_v1
+      session_index: 3
+      current_interest: "linear equations"
+      interest_markers: ["linear equation", "linear equations", "slope", "solve for x"]
+      active_misconception:
+        token: "LDS-M3"
+        label: "flip-sign-forgetting"
+        markers: ["LDS-M3", "forgets to flip the sign", "sign flip"]
+      resolved_last_session: true
+
+    turns:
+      - id: turn_1_repeats_pattern
+        learner_action: reported_own_work
+        action_details:
+          message: "I solved -2x > 6 by dividing both sides by -2 and got x > -3 — same steps as always, right?"
+        context_update: |
+          ### Learner Response
+          - Confirms the recurring sign-flip-forgetting pattern on a fresh
+            example.
+          - Looking for confirmation, not yet questioning the method.
+        expected_behavior: "Engage with the specific example; may begin surfacing the sign-flip requirement."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 0
+
+      - id: turn_2_checks_own_answer
+        learner_action: asked_followup
+        action_details:
+          message: "Wait, if I substitute x = 0 into x > -3 that's true, but does 0 actually satisfy the original -2x > 6? ...it doesn't. So is my answer wrong?"
+        context_update: |
+          ### Learner Response
+          - Self-checks the answer by substitution and discovers a
+            contradiction.
+          - First sign of noticing the method produced a wrong answer.
+        expected_behavior: "Direct opportunity to name the sign-flip rule as the source of the error."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 0
+
+      - id: turn_3_asks_general_rule
+        learner_action: asked_followup
+        action_details:
+          message: "So when exactly do I need to flip the sign?"
+        context_update: |
+          ### Learner Response
+          - Asks for the general rule rather than another worked example.
+          - Ready for a stated principle, not just another case.
+        expected_behavior: "State the general rule: flip the inequality sign when multiplying or dividing both sides by a negative number."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 0
