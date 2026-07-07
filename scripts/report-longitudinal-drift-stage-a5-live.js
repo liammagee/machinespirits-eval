@@ -326,6 +326,7 @@ function summarizeThreeArm(allRows) {
       turnsTotal += row.delivery?.turns ?? 0;
     }
     byArm[armToken] = {
+      ran: armRows.length > 0,
       slotsHit,
       slotsApplicable,
       instrumentFailures: armRows.length - usableRows.length,
@@ -336,11 +337,15 @@ function summarizeThreeArm(allRows) {
     };
   }
 
-  // §11.4 point 4 — the three asymmetric frozen thresholds:
-  const arm1Pass = byArm['padon-threadon'].slotsHit >= 3;
-  const arm2Pass = byArm['padon-threadoff'].slotsHit <= 1;
-  const arm3Pass = byArm['padoff-threadon'].slotsHit === 0;
-  const cleanSignal = arm1Pass && arm2Pass && arm3Pass;
+  // §11.4 point 4 — the three asymmetric frozen thresholds. A gate is only
+  // meaningful for an arm that actually ran (an arm stopped/blocked upstream
+  // — e.g. at the §7.4 precondition floor — must read NOT RUN, not a
+  // vacuous 0/4 pass or fail).
+  const notRun = ARM_TOKENS.filter((t) => !byArm[t].ran);
+  const arm1Pass = byArm['padon-threadon'].ran ? byArm['padon-threadon'].slotsHit >= 3 : null;
+  const arm2Pass = byArm['padon-threadoff'].ran ? byArm['padon-threadoff'].slotsHit <= 1 : null;
+  const arm3Pass = byArm['padoff-threadon'].ran ? byArm['padoff-threadon'].slotsHit === 0 : null;
+  const cleanSignal = arm1Pass === true && arm2Pass === true && arm3Pass === true;
   // §11.4 point 5 — arm-3 red flag is ANY hit, independent of the arm3Pass
   // boolean above (identical condition here, but reported/labeled
   // separately per the frozen design so it is never silently absorbed into
@@ -350,7 +355,12 @@ function summarizeThreeArm(allRows) {
   return {
     byArm,
     gates: { arm1Pass, arm2Pass, arm3Pass },
-    verdict: cleanSignal ? 'CLEAN_SIGNAL' : 'NOT_CLEAN — see §11.5 interpretation map',
+    verdict:
+      notRun.length > 0
+        ? `NOT_EVALUABLE — arm(s) not run: ${notRun.join(', ')} (see the prereg §11.8 implementation log)`
+        : cleanSignal
+          ? 'CLEAN_SIGNAL'
+          : 'NOT_CLEAN — see §11.5 interpretation map',
     arm3RedFlag,
   };
 }
@@ -425,9 +435,15 @@ async function runScore(args) {
 
   const armSummaryLine = (armToken) => {
     const s = summary.byArm[armToken];
+    if (!s.ran) {
+      return `| ${ARM_LABEL[armToken]} | NOT RUN | — | — | — |`;
+    }
     const rate = s.threadingDeliveryRate == null ? 'n/a' : `${(s.threadingDeliveryRate * 100).toFixed(0)}%`;
     return `| ${ARM_LABEL[armToken]} | ${s.slotsHit}/4 | ${s.slotsApplicable} | ${s.instrumentFailures} | ${s.turnsTagged}/${s.turnsTotal} (${rate}) |`;
   };
+  const gateWord = (pass) => (pass === null ? 'NOT RUN' : pass ? 'pass' : 'fail');
+  const armGateCell = (armToken, pass) =>
+    summary.byArm[armToken].ran ? `${summary.byArm[armToken].slotsHit}/4 [${gateWord(pass)}]` : 'NOT RUN';
 
   const md = [
     '# Longitudinal Drift — Stage A5 (negotiation threading, three-arm) live scoring',
@@ -447,12 +463,14 @@ async function runScore(args) {
     ...ARM_TOKENS.map(armSummaryLine),
     '',
     `- **Structural-signal gate** (arm-1 >=3/4 AND arm-2 <=1/4 AND arm-3 =0/4): **${summary.verdict}** ` +
-      `(arm-1 ${summary.byArm['padon-threadon'].slotsHit}/4 [${summary.gates.arm1Pass ? 'pass' : 'fail'}], ` +
-      `arm-2 ${summary.byArm['padon-threadoff'].slotsHit}/4 [${summary.gates.arm2Pass ? 'pass' : 'fail'}], ` +
-      `arm-3 ${summary.byArm['padoff-threadon'].slotsHit}/4 [${summary.gates.arm3Pass ? 'pass' : 'fail'}]). ` +
+      `(arm-1 ${armGateCell('padon-threadon', summary.gates.arm1Pass)}, ` +
+      `arm-2 ${armGateCell('padon-threadoff', summary.gates.arm2Pass)}, ` +
+      `arm-3 ${armGateCell('padoff-threadon', summary.gates.arm3Pass)}). ` +
       'Directional-only at this n — scaling needs a fresh pre-registration (§11.6).',
-    `- **§10 comparison line (frozen)**: §10's pad-ON/threading-OFF-equivalent result was **2/4**. Arm-2 here scored ` +
-      `**${summary.byArm['padon-threadoff'].slotsHit}/4** — ${summary.byArm['padon-threadoff'].slotsHit === 2 ? 'matches §10 exactly' : 'deviates from §10; see §11.5 for how to read a deviation'}.`,
+    summary.byArm['padon-threadoff'].ran
+      ? `- **§10 comparison line (frozen)**: §10's pad-ON/threading-OFF-equivalent result was **2/4**. Arm-2 here scored ` +
+        `**${summary.byArm['padon-threadoff'].slotsHit}/4** — ${summary.byArm['padon-threadoff'].slotsHit === 2 ? 'matches §10 exactly' : 'deviates from §10; see §11.5 for how to read a deviation'}.`
+      : `- **§10 comparison line (frozen)**: arm 2 NOT RUN — no fresh replication datum; §10's own pad-ON **2/4** stands unchallenged.`,
     `- **Red flag** (arm-3 — the critical control — any content-bearing hit): ${summary.arm3RedFlag ? '**RAISED** — investigate for scenario-echo vs genuine fabrication per §11.4pt5/§11.5 before any positive reading' : 'none'}.`,
     '',
     '## Pad-content secondary trace',

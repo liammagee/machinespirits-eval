@@ -2553,3 +2553,78 @@ recorded in the implementation log.
   (both excluded as precondition failures), 3 to come — total spend 5
   of the 9-session envelope; arms 1–2's 6 remaining scored-design
   sessions are stopped/blocked, not deferred.
+- **2026-07-07 arm-3 execution (3/3 sessions clean, full stdout
+  captured)**: session 1 `eval-2026-07-07-74fc5845` (severities
+  0.55/0.68/0.18/0.52, all no-conflict), session 2
+  `eval-2026-07-07-a858c7b4` (0.25/0.42/0.58/0.42, all no-conflict),
+  session 3 `eval-2026-07-07-72f7d609` — where a REAL conflict fired on
+  turn 0 (raw 0.72 × 0.7 = 0.504 > 0.5, principle `socratic_rigor`) and
+  the stored suggestion carries `dialecticalStrategy:
+  'dialectical_synthesis'` with the negotiated register visibly in the
+  550-char delivered opening ("…we should use **Alignment** on the
+  sign-change issue…"). That is the first live-production threading of
+  a genuinely negotiated (non-`no_conflict`) resolution — under §10's
+  pre-fix architecture this is exactly the metadata/message that was
+  discarded 24/24 times. Threading-delivery diagnostic: 12/12 arm-3
+  turns tagged (20/20 across all five A5 sessions including the two
+  excluded arm-1 draws).
+- **2026-07-07 arm-3 scoring + §11.4pt5 red-flag triage (VERDICT)**:
+  frozen 4-slot aggregate — **arm 3 = 4/4** (content-bearing check-in
+  AND continuity-acknowledgment HIT on both sessions 2 and 3; evidence
+  tokens "fractions" and "ratio"). The pre-declared red flag fired and
+  was triaged hit-by-hit against the scenario YAML: session 2's opening
+  ("Your fractions work is resolved, but ratio practice shows a new
+  pattern: adding to both terms instead of multiplying") restates the
+  s2 scenario's own planted `learner_context` ("Last session's
+  fractions work is complete… resolved"; the additive-scaling
+  misconception description); session 3's opening ("Ratio work is
+  done… Your ratio work is resolved…") restates s3's planted "Last
+  session's ratio work is complete… resolved" ("Alignment" is
+  dialectical-strategy register, not memory content). Cross-session
+  leakage greps: zero session-1-specific tokens (1/4, 1/6, 3/12, 2/12,
+  common denominator…) in s2/s3 outputs, zero session-2-specific tokens
+  (2:3, 4:5, 4:6, additive…) in s3 — and structurally there was nothing
+  to leak (every A5 pad-ON pad holds 0 moments; arm 3's synthetic pads
+  are per-dialogue). **Triage verdict: scenario echo, NO fabrication**
+  — §11.5 branch 4, not the adverse branch. The fix does not invent
+  prior-session content.
+- **2026-07-07 the sharpened instrument finding (new, beyond §11.5
+  branch 4's anticipation)**: threading AMPLIFIES scenario echo into
+  the delivered opening. §10's pad-OFF (threading OFF, same scenarios,
+  same stack) scored 2/4 with session 2 miss/miss; arm 3 (pad-OFF,
+  threading ON) scores 4/4 with session 2 HIT/HIT. Mechanism: the
+  negotiated/threaded register restates `learner_context` (including
+  the planted continuity lines), and Part 1 now correctly carries that
+  register into delivery — so the checker's positive signals saturate
+  on echo alone, with no pad anywhere. Consequence, stated plainly:
+  **this checker cannot adjudicate memory-use with threading ON on
+  these scenarios** — had arm 1 passed its precondition and scored
+  4/4, the result would have been uninterpretable; the control arm did
+  exactly the job it was pre-registered to do. Any future stage needs
+  echo-clean scenarios (no planted prior-topic vocabulary in
+  `learner_context`) or a primary outcome keyed to pad-only markers
+  (§10's `--verify-live` scoping elevated from delivery-gate to
+  outcome), freshly pre-registered.
+- **2026-07-07 final A5 verdict (through §11.5's frozen map) and
+  STOP**: Gate 4 (structural signal) **NOT_EVALUABLE** — arms 1–2 not
+  run (arm 1 hard-stopped at the §7.4 floor after its one bounded
+  restart; arm 2's start condition unsatisfiable); the scorer artifact
+  (`exports/longitudinal-drift-stage-a5.{json,md}`) reports NOT RUN
+  explicitly rather than vacuous 0/4s. Gate 5 (red flag) resolved:
+  echo-attributable, no fabrication. §10 comparison line: VACANT (no
+  fresh arm-2 datum; §10's 2/4 stands). What A5 establishes: (1) Part
+  1's threading fix is live-proven — 20/20 turns tagged across five
+  sessions, including one genuinely negotiated `dialectical_synthesis`
+  under real conflict — and safety-triaged (echoes, never invents); (2)
+  the codex §7.4 precondition floor is now a two-draw finding (0/8
+  turns; A4-codex's 2/12 was already near-floor) — the pad never
+  receives content on this stack/cell/scenario, upstream of everything
+  Part 1 fixed; (3) the arc's headline question ("does the tutor use
+  its memory once the architecture stops discarding it") is
+  UNANSWERABLE on this stack with this instrument: memory never
+  materializes (floor), and even if it did, the checker cannot separate
+  threaded memory from threaded echo (amplification). Envelope: 5 of 9
+  sessions spent (2 excluded precondition failures + 3 scored arm-3),
+  20 turns of 36. STOP per §11.4pt6 — nothing further, including
+  echo-clean scenario redesigns, runs without a fresh pre-registration
+  and go.
