@@ -24,6 +24,7 @@ import { fileURLToPath } from 'url';
 import * as configLoader from './tutorConfigLoader.js';
 import * as monitoringService from './monitoringService.js';
 import { parseSSEStream } from './sseStreamParser.js';
+import { externalProviderHandles, callExternalProvider } from './externalAIProvider.js';
 import { jsonrepair } from 'jsonrepair';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1073,6 +1074,29 @@ async function _fetchProvider({
   onToken = null,
 }) {
   const { temperature = 0.5, max_tokens = 1500, top_p, reasoning_effort = 'low' } = hyperparameters;
+
+  // External-provider hook (e.g. a consuming repo's local CLI bridge).
+  // Checked BEFORE the isConfigured gate: external providers manage their
+  // own auth (no API key / base_url), so the HTTP-config check does not
+  // apply to them. When no hook is registered this block is a no-op.
+  if (externalProviderHandles(provider)) {
+    const ext = await callExternalProvider({
+      channel: 'dialogue-engine',
+      provider,
+      model,
+      systemPrompt,
+      messages,
+      hyperparameters,
+    });
+    return {
+      text: ext.text || '',
+      inputTokens: ext.inputTokens || 0,
+      outputTokens: ext.outputTokens || 0,
+      latencyMs: ext.latencyMs,
+      ...(ext.cost != null && { cost: ext.cost }),
+      ...(ext.finishReason != null && { finishReason: ext.finishReason }),
+    };
+  }
 
   if (!providerConfig?.isConfigured) {
     throw new Error(`Provider ${provider} not configured (missing API key)`);

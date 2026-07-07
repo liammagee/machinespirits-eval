@@ -46,6 +46,7 @@ import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
 import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.js';
+import { buildCliProviderHook } from './cliProviderBridge.js';
 import { formatApiMessages } from './apiMessageFormatter.js';
 import { LiveApiReporter } from './liveApiReporter.js';
 import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
@@ -199,9 +200,19 @@ function resolveRejudgeScenarioAndDialogueLog(result, preloadedDialogueLog = nul
 import('../tutor-core/index.js')
   .then((mod) => {
     if (typeof mod.setLogDir === 'function') mod.setLogDir(LOGS_ROOT);
+    // Extend CLI providers (codex / claude-code) into tutor-core's dialogue
+    // engine: the hook is injected from the eval side so tutor-core never
+    // imports eval code (one-way seam). Covers the callAI standard loop
+    // (ego/superego/ego-revise) and the unified/aiService dialectical layer,
+    // making --ego-model codex.gpt-5.5 / --superego-model claude-code.sonnet
+    // work for standard-runner cells (e.g. cell_40/93), not just id-director
+    // and learner engines.
+    if (typeof mod.setExternalAIProviderHook === 'function') {
+      mod.setExternalAIProviderHook(buildCliProviderHook());
+    }
   })
   .catch(() => {
-    /* setLogDir not available in this tutor-core version */
+    /* setLogDir / external provider hook not available in this tutor-core version */
   });
 
 // Read package version once at import time
@@ -2308,7 +2319,14 @@ export async function runEvaluation(options = {}) {
       label: p.name,
     }));
   } else if (Array.isArray(configurations)) {
-    targetConfigs = configurations;
+    // Normalize string entries ("cell_40_...") into config objects. Passing a
+    // bare string previously spread into per-character garbage downstream —
+    // config.profileName came out undefined and the run silently used the
+    // DEFAULT tutor-core profile instead of the named cell (with none of the
+    // cell's feature flags: dialectical negotiation, prompt rewriting, ...).
+    targetConfigs = configurations.map((c) =>
+      typeof c === 'string' ? { provider: null, model: null, profileName: c, label: c } : c,
+    );
   }
 
   // Apply model overrides: CLI flags take precedence over YAML-level config
