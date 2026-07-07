@@ -88,8 +88,9 @@
  * schedule with startTurn < --turn). The report says which.
  *
  * Artifacts land in <out>/<label>/ in the loop run shape (diagnosis.json,
- * result.json, transcript.md [+ commentary.md]) plus episode.json — so an
- * episode can itself be a --from source for the next episode.
+ * result.json, transcript.md, dialogue-report.md, dialogue-report.json,
+ * dynamic-field.svg [+ commentary.md]) plus episode.json — so an episode can
+ * itself be a --from source for the next episode.
  */
 
 import 'dotenv/config';
@@ -121,6 +122,8 @@ import {
   renderTranscript,
   runCritic,
   commentaryFileMd,
+  buildDialogueReport,
+  renderDialogueReportArtifacts,
   buildWorldIR,
   compileGuardSpec,
   selectGuardRepresentation,
@@ -474,6 +477,23 @@ async function main() {
     triState('didactic-mode', Boolean(srcDiag.didacticMode)),
     Boolean(srcDiag.didacticMode),
   );
+  const fieldPlannerEnforce = track(
+    'field-planner-enforce',
+    triState('field-planner-enforce', Boolean(srcDiag.fieldPlannerEnforce)),
+    Boolean(srcDiag.fieldPlannerEnforce),
+  );
+  const requestedFieldPlanner = track(
+    'field-planner',
+    triState('field-planner', Boolean(srcDiag.fieldPlanner) || fieldPlannerEnforce),
+    Boolean(srcDiag.fieldPlanner) || Boolean(srcDiag.fieldPlannerEnforce),
+  );
+  const fieldPlanner = requestedFieldPlanner || fieldPlannerEnforce;
+  if (fieldPlanner && acts) {
+    console.error(
+      '--field-planner on currently requires non-acts mode (acts redacts learner-store state from the tutor)',
+    );
+    process.exit(1);
+  }
   const castLayer = track('cast-layer', triState('cast-layer', Boolean(srcDiag.castLayer)), Boolean(srcDiag.castLayer));
   const castReinvention = track(
     'cast-reinvention',
@@ -799,6 +819,8 @@ async function main() {
       rhetoricalPolicy: rhetoricalPolicy || null,
       discursiveCalibration,
       didacticMode,
+      fieldPlanner,
+      fieldPlannerEnforce,
       castLayer,
       castReinvention,
       ownershipProof,
@@ -895,6 +917,13 @@ async function main() {
   if (didacticMode) {
     console.log('didact  MODE ON — public scene/act learning signals choose explanatory mode only');
   }
+  if (fieldPlanner) {
+    console.log(
+      fieldPlannerEnforce
+        ? 'field   PLANNER ON + ENFORCE — coupled field selects and enforces tutor conduct family'
+        : 'field   PLANNER ON — coupled field selects tutor conduct family and didactic mode',
+    );
+  }
   if (castLayer) {
     console.log(`cast    LAYER ON${castReinvention ? ' + REINVENTION ON' : ''} — public conduct advisory only`);
   }
@@ -982,6 +1011,8 @@ async function main() {
       rhetoricalPolicy,
       discursiveCalibration,
       didacticMode,
+      fieldPlanner,
+      fieldPlannerEnforce,
       castLayer,
       castReinvention,
       ownershipTarget: world.ownershipTarget,
@@ -1014,6 +1045,11 @@ async function main() {
     if (s.didacticMode?.recommendedMode) {
       bits.push(`didactic ${s.didacticMode.recommendedMode}/${s.didacticMode.learningSignal || 'unknown'}`);
     }
+    if (s.fieldPlanner?.selectedMoveFamily) {
+      bits.push(
+        `field ${s.fieldPlanner.selectedMoveFamily}${s.fieldPlanner.targetPremise ? `/${s.fieldPlanner.targetPremise}` : ''}${s.fieldPlanner.efficacy ? `/${s.fieldPlanner.efficacy}` : ''}`,
+      );
+    }
     if (s.castState?.tutor?.currentStance) bits.push(`cast ${s.castState.tutor.currentStance}`);
     if (s.tutorReinvention?.active) bits.push(`reinvent ${s.tutorReinvention.toStance}`);
     if (s.phase && s.phase.turn === s.turn) bits.push(`movement "${s.phase.name}"`);
@@ -1037,6 +1073,8 @@ async function main() {
         directorCadence,
         stagePrologue,
         publicRegister,
+        fieldPlanner,
+        fieldPlannerEnforce,
         ...(sceneMode ? { sceneMode } : {}),
         ...(decay ? { decay } : {}),
         ...(acts ? { acts } : {}),
@@ -1135,6 +1173,8 @@ async function main() {
     rhetoricalPolicy: rhetoricalPolicy || null,
     discursiveCalibration,
     didacticMode,
+    fieldPlanner,
+    fieldPlannerEnforce,
     castLayer,
     castReinvention,
     ownershipProof,
@@ -1201,6 +1241,10 @@ async function main() {
   fs.writeFileSync(path.join(outDir, 'diagnosis.json'), `${JSON.stringify(diagnosis, null, 2)}\n`);
   fs.writeFileSync(path.join(outDir, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);
   fs.writeFileSync(path.join(outDir, 'episode.json'), `${JSON.stringify(episode, null, 2)}\n`);
+  const dialogueReport = buildDialogueReport(result, world, { label, diagnosis });
+  for (const [filename, content] of Object.entries(renderDialogueReportArtifacts(dialogueReport))) {
+    fs.writeFileSync(path.join(outDir, filename), content);
+  }
   livePublisher.complete({ result, diagnosis });
 
   let commentaryEmbed = null;
@@ -1263,7 +1307,7 @@ async function main() {
   }
   console.log('');
   console.log(
-    `artifacts ${path.relative(ROOT, outDir)}/{transcript.md, diagnosis.json, result.json, episode.json${commentaryEmbed ? ', commentary.md' : ''}}`,
+    `artifacts ${path.relative(ROOT, outDir)}/{transcript.md, diagnosis.json, result.json, episode.json, dialogue-report.md, dialogue-report.json, dynamic-field.svg${commentaryEmbed ? ', commentary.md' : ''}}`,
   );
 }
 

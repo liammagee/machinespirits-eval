@@ -1,0 +1,19 @@
+{
+  "dryRun": false,
+  "learnerModel": "codex.gpt-5.5",
+  "rows": 12,
+  "compliantYieldCount": 0,
+  "compliantRows": 5,
+  "compliantYieldRate": 0,
+  "pinnedResistantYieldCount": 0,
+  "pinnedResistantRows": 4,
+  "styleMarkerCount": 4,
+  "stylesChecked": 5,
+  "totalRows": 12,
+  "verdict": "FAIL",
+  "thresholds": {
+    "compliantYieldRate": 0.6666666666666666,
+    "pinnedResistantYieldCount": 0,
+    "styleMarkerCount": 3
+  }
+}

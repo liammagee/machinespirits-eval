@@ -594,6 +594,19 @@ function didacticModeLines(state) {
   ];
 }
 
+function fieldPlannerLines(state, { enforce = false } = {}) {
+  if (!state || state.active !== true) return [];
+  const lines = Array.isArray(state.promptLines) ? state.promptLines : [];
+  return [
+    '',
+    `FIELD PLANNER (${enforce ? 'runtime conduct enforcement' : 'runtime advisory'}):`,
+    ...lines,
+    enforce
+      ? '- This planner move is binding unless a hard proof-control release/repair obligation already overrides it.'
+      : '- Treat this as the current runtime plan; override only for a clear proof-control obligation or public dialogue reason.',
+  ];
+}
+
 function didacticActFallbackLines(acts, turn) {
   if (!acts || acts.startTurn !== turn) return [];
   const closed = acts.closed?.[acts.closed.length - 1] || null;
@@ -1079,6 +1092,7 @@ function tutorSystem(
     throughline = false,
     rhetoricalPolicy = false,
     didacticMode = false,
+    fieldPlanner = false,
     castLayer = false,
     castReinvention = false,
     ownershipProof = false,
@@ -1350,6 +1364,20 @@ function tutorSystem(
           'does not authorize release, restore, hold, assertion, or any change to the',
           'evidence calendar. Use it to alter how you teach the current object, then',
           "look for its exit condition in the learner's public reply.",
+        ]
+      : []),
+    ...(fieldPlanner
+      ? [
+          '',
+          '# Runtime field planner',
+          '',
+          'Some turns may carry a FIELD PLANNER block. It condenses the coupled',
+          'learner/tutor/discourse field into one conduct family and one didactic',
+          'mode for this turn. It is a planner over conduct, not new evidence.',
+          'When enforcement is on, the declared move family may be mechanically',
+          'checked and rewritten after drafting; when it is advisory, prefer it',
+          'unless a hard proof-control obligation or the public dialogue clearly',
+          'requires a different move.',
         ]
       : []),
     ...(castLayer
@@ -2043,8 +2071,9 @@ function enforceConductPolicy(decision, finalOut, { activeRegisterName = 'defaul
 }
 
 function conductRuntimeLog(args) {
-  const state = conductTriggerState(args);
-  if (!state) {
+  const plannerDecision = args.fieldPlannerDecision || null;
+  const state = plannerDecision ? null : conductTriggerState(args);
+  if (!state && !plannerDecision) {
     const generatorCompliance = auditConductGeneratorCompliance(null, {
       move: args.finalOut.move || null,
       release: args.finalOut.release || null,
@@ -2073,7 +2102,7 @@ function conductRuntimeLog(args) {
       },
     };
   }
-  const decision = selectConductMove(state);
+  const decision = plannerDecision || selectConductMove(state);
   const enforced = args.enforce
     ? enforceConductPolicy({ ...decision, active: true }, args.finalOut, {
         activeRegisterName: args.activeRegisterName,
@@ -2095,7 +2124,16 @@ function conductRuntimeLog(args) {
       ...decision,
       active: true,
       loggingOnly: !args.enforce,
-      triggerType: state.triggerType,
+      triggerType: state?.triggerType || (plannerDecision ? 'field_planner' : null),
+      ...(plannerDecision
+        ? {
+            fieldPlanner: {
+              active: true,
+              enforced: args.enforce === true,
+              source: plannerDecision.source || null,
+            },
+          }
+        : {}),
       realizedMove: realizedOut.move || null,
       realizedRelease: realizedOut.release || null,
       ...(enforced
@@ -2216,6 +2254,8 @@ export function makeLlmTutor(
     rhetoricalPolicy = null,
     discursiveCalibration = false,
     didacticMode = false,
+    fieldPlanner = false,
+    fieldPlannerEnforce = false,
     conductPolicy = false,
     conductPolicyEnforce = false,
     conductProgressPolicy = false,
@@ -2373,7 +2413,10 @@ export function makeLlmTutor(
       'derivation.llmRoles: throughline requires plot (the arc verdict rides the act-close audit — no plot loop, nothing binds)',
     );
   }
-  const conductPolicyEnabled = Boolean(conductPolicy || conductPolicyEnforce || conductProgressPolicy);
+  const fieldPlannerEnabled = Boolean(fieldPlanner || fieldPlannerEnforce);
+  const conductPolicyEnabled = Boolean(
+    conductPolicy || conductPolicyEnforce || conductProgressPolicy || fieldPlannerEnforce,
+  );
   const rhetoricalPolicyConfig = rhetoricalPolicy ? normalizeRhetoricalPolicyConfig(rhetoricalPolicy) : null;
   const system = tutorSystem(world, script, dials, {
     actsMode,
@@ -2388,6 +2431,7 @@ export function makeLlmTutor(
     throughline,
     rhetoricalPolicy: Boolean(rhetoricalPolicyConfig),
     didacticMode,
+    fieldPlanner: fieldPlannerEnabled,
     castLayer,
     castReinvention,
     ownershipProof,
@@ -2957,6 +3001,8 @@ export function makeLlmTutor(
       const correction = clip(stockOut.correction);
       if (assessment || correction) stocktakeNote = { sceneIndex: sc.index, assessment, correction };
     }
+    const fieldPlannerState =
+      fieldPlannerEnabled && view.fieldPlanner?.active === true ? { ...view.fieldPlanner } : null;
     const didacticModeStateBase = didacticMode
       ? deriveDidacticModeState({
           currentObject: didacticCurrentObject,
@@ -2993,7 +3039,16 @@ export function makeLlmTutor(
     // holds its adopted mode steady — the per-turn classifier proposes, the
     // block disposes; a mode that failed its exit condition last block is
     // not re-selectable and remaps one step up the intervention ladder.
-    let didacticModeState = didacticModeStateBase;
+    let didacticModeState = fieldPlannerState?.didacticMode || didacticModeStateBase;
+    if (fieldPlannerState?.didacticMode && didacticModeStateBase) {
+      didacticModeState = {
+        ...fieldPlannerState.didacticMode,
+        evidence: [
+          ...(fieldPlannerState.didacticMode.evidence || []).slice(0, 3),
+          `field planner selected ${fieldPlannerState.didacticMode.recommendedMode}; standalone didactic classifier selected ${didacticModeStateBase.recommendedMode}`,
+        ],
+      };
+    }
     let heldDidacticNote = null;
     if (strategyLedger && didacticModeState) {
       const heldMode = ledgerInfo?.block?.heldMode || null;
@@ -3100,6 +3155,7 @@ export function makeLlmTutor(
       }
     }
     const didacticModeSection = didacticModeLines(didacticModeState);
+    const fieldPlannerSection = fieldPlannerLines(fieldPlannerState, { enforce: fieldPlannerEnforce });
     const actDidacticFallbackSection = didacticActFallbackLines(view.acts, view.turn);
     const castLayerSection = castLayerLines(castState, 'tutor');
     const learnerTransformationSection = learnerTransformationLines(learnerTransformationState);
@@ -3424,6 +3480,7 @@ export function makeLlmTutor(
         ...castLayerSection,
         ...actDidacticFallbackSection,
         ...didacticModeSection,
+        ...fieldPlannerSection,
         ...learnerTransformationSection,
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         // The two frames, course above lesson: the whole-play throughline
@@ -3482,6 +3539,7 @@ export function makeLlmTutor(
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         ...didacticModeSection,
+        ...fieldPlannerSection,
         ...learnerTransformationSection,
         ...strategyLedgerSection,
         '',
@@ -3569,6 +3627,7 @@ export function makeLlmTutor(
         : {}),
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
+      ...(fieldPlannerState ? { fieldPlanner: fieldPlannerState } : {}),
       ...(learnerTransformationState ? { learnerTransformation: learnerTransformationState } : {}),
       ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
       ...(view.tutorLearnerDagModel ? { tutorLearnerDagModel: view.tutorLearnerDagModel.metrics } : {}),
@@ -4302,6 +4361,7 @@ export function makeLlmTutor(
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
+      ...(fieldPlannerState ? { fieldPlanner: fieldPlannerState } : {}),
       ...(learnerTransformationState ? { learnerTransformation: learnerTransformationState } : {}),
       ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
       ...releaseBits,
@@ -4328,7 +4388,8 @@ export function makeLlmTutor(
             visibleConsolidation,
             conductProgressPolicy,
             conductTriggerOnly,
-            enforce: conductPolicyEnforce,
+            fieldPlannerDecision: fieldPlannerState?.conductDecision || null,
+            enforce: conductPolicyEnforce || fieldPlannerEnforce,
             activeRegisterName,
           })
         : { out: finalOut, policy: null };
@@ -4719,6 +4780,7 @@ export function makeLlmTutor(
       ...(rhetoricalAdvice ? { rhetoricalPolicy: rhetoricalAdvice } : {}),
       ...(discursiveCalibrationState ? { discursiveCalibration: discursiveCalibrationState } : {}),
       ...(didacticModeState ? { didacticMode: didacticModeState } : {}),
+      ...(fieldPlannerState ? { fieldPlanner: fieldPlannerState } : {}),
       ...(learnerTransformationState ? { learnerTransformation: learnerTransformationState } : {}),
       ...(castState ? { castState, tutorReinvention: castState.reinvention || null } : {}),
       deliberation: {

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 18 Jun – 20 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-20 window=(2026-06-18,2026-06-20] arxiv=2606.20493,2606.18557,2606.17657,2606.20529,2606.16047,2606.14695 generator=research-roundup-routine -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">18 Jun – 20 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Three papers written up across agent architecture, ontology/formal reasoning, and rhetoric.
+  Two further candidates originally drafted in this note — 2606.20138 (adaptive tutoring prompt
+  router) and 2606.11502 (roleplay truth-probe suppression) — were dropped at merge time: both
+  are already covered by the 23 Jun roundup, whose window reaches back to (2026-06-18,
+  2026-06-23]. Three further near-misses are listed at the foot.
+  Note: ArXiv does not announce weekend submissions until Monday June 23 — papers submitted
+  June 19–20 carry IDs 2606.19xxx–2606.21xxx and are not yet fully indexed by search engines.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    Contagion Networks: Evaluator Bias Propagation in Multi-Agent LLM Systems
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Zewen Liu ·
+    arXiv 2606.20493 · ~19–20 Jun 2026 ·
+    <a href="https://arxiv.org/abs/2606.20493">https://arxiv.org/abs/2606.20493</a>
+  </div>
+  <p>
+    Formalizes how evaluator bias propagates through multi-agent LLM systems via "contagion":
+    one agent's biased judgment contaminates downstream agents that consume it as context.
+    Develops a network model of bias spread across agent chains and proposes mitigations
+    including independent sampling and adversarial critic insertion.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A direct warning for the project's LLM-as-judge pipeline. The inter-rater reliability
+    methodology (<code>analyze-judge-reliability.js</code>, paired rejudge runs) assumes
+    independent judges; contagion contamination is a live threat if superego-critique context
+    leaks into judge prompts. Also structural: in the Ego→Superego→Ego revision loop, a biased
+    superego critique compounds across revision rounds and across cells, precisely the systematic
+    drift §5.4 tries to detect. The adversarial-critic-insertion mitigation maps directly onto
+    the <code>dialectical_suspicious</code> superego cells 22–33.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Ontology &amp; Formal Reasoning</h2>
+
+<div class="paper">
+  <h3>
+    DeFAb: A Verifiable Benchmark for Defeasible Abduction in Foundation Models
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Patrick Cooper, Alvaro Velasquez · NASA Formal Methods Symposium (NFM 2026) ·
+    arXiv 2606.18557 · ~18–19 Jun 2026 ·
+    <a href="https://arxiv.org/abs/2606.18557">https://arxiv.org/abs/2606.18557</a>
+  </div>
+  <p>
+    A 2,880-instance benchmark testing whether foundation models can perform defeasible
+    abduction — drawing revisable conclusions from incomplete evidence and retracting them
+    when contradicting evidence arrives. Performance degrades systematically with rising
+    abductive complexity even in frontier models, and the degradation is measurable and
+    reproducible across configurations.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Defeasible reasoning is structurally isomorphic to the Hegelian recognition process:
+    the tutor and learner must revise beliefs about the Other in light of new evidence,
+    retracting prior conclusions when challenged. DeFAb could calibrate the poetics critic
+    — if the judge model fails defeasible abduction at depth 3 it may mis-classify
+    recognition events requiring revision of an earlier premise. The NFM framing (formal,
+    verifiable ground truth) also parallels the project's <code>passes_required /
+    passes_forbidden</code> validation columns.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric &amp; Persuasion</h2>
+
+<div class="paper hot">
+  <h3>
+    Using Cognitive Models to Improve Language Model Simulation of Human Persuasion Games
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Zirui Cheng, Zeyu Shen, Thomas L. Griffiths, Peter Henderson · Princeton University ·
+    arXiv 2606.17657 · ~16 Jun 2026 (coverage gap) ·
+    <a href="https://arxiv.org/abs/2606.17657">https://arxiv.org/abs/2606.17657</a>
+  </div>
+  <p>
+    "Equation-to-Behavior Prompting" encodes cognitive models — Bayesian updating, affine
+    probability distortion, motivated updating — directly into LLM prompts and tests whether
+    models reproduce the corresponding human persuasion behaviors in legal decision-making
+    scenarios. Large models approximate equation-based specifications more faithfully than
+    smaller models, covering a broader behavioral range than baseline LLM simulation without
+    any fine-tuning.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A precise methodological twin to the project's recognition-theory prompting: both encode
+    a theoretical specification (cognitive equations / Hegelian recognition) as an explicit
+    prompt constraint. Princeton's results suggest that making the Hegelian recognition
+    dynamics <em>formally explicit</em> in the ego prompt — equations or structural rules,
+    not prose description alone — may sharpen inter-cell contrasts on the §6.3
+    suggestion-scenario suite. A concrete experiment to pilot under
+    <code>npm run prompt-lab -- autotune</code>, especially for cells 5–8 and 84–90
+    (recognition-mode variants).
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Notable near-misses</h2>
+
+<ul style="font-size:.9rem;">
+  <li>
+    <strong>LedgerAgent: Structured State for Policy-Adherent Tool-Calling Agents</strong>
+    (arXiv 2606.20529, Md Nayem Uddin, Amir Saeidi, Eduardo Blanco, Chitta Baral, ~June 19–20) —
+    An explicit structured "ledger" constrains tool-calling LLM agents to remain policy-adherent
+    across multi-turn interactions. The ledger parallels the project's Writing Pad (cell 21) and
+    <code>id_construction_trace</code> column; also relevant to the adaptive runner's state-schema
+    design (<code>services/adaptiveTutor/stateSchema.js</code>).
+    <a href="https://arxiv.org/abs/2606.20529">arxiv.org/abs/2606.20529</a>
+  </li>
+  <li>
+    <strong>From Argument Components to Graphs: Multi-Agent Debate with Confidence Gating for Argument Relations</strong>
+    (arXiv 2606.16047, Jakub Bąba &amp; Jarosław A. Chudziak, KES 2026, ~June 14) —
+    Proponent-Opponent-Judge architecture with confidence gating for argument-relation
+    identification — a structural match for the dialectical-suspicious superego cells 22–33.
+    The confidence-gating mechanism parallels <code>incorporationRate</code> in
+    <code>services/dialogueTraceAnalyzer.js</code>.
+    <a href="https://arxiv.org/abs/2606.16047">arxiv.org/abs/2606.16047</a>
+  </li>
+  <li>
+    <strong>Persona-Pruner: Sculpting Lightweight Models for Role-Playing</strong>
+    (arXiv 2606.14695, Jinsu Kim, Jihoon Tack, Noah Lee, Jongheon Jeong, ICML 2026, ~June 12) —
+    Isolates persona-specific sub-networks, providing a mechanistic basis for the modular
+    ego/superego partition. Lightweight persona sub-networks could replace full-model calls
+    for secondary drama-machine characters.
+    <a href="https://arxiv.org/abs/2606.14695">arxiv.org/abs/2606.14695</a>
+  </li>
+</ul>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-20 ·
+  Window: (2026-06-18, 2026-06-20] · Search: ArXiv API + Google Scholar metadata (2 parallel agents) ·
+  Note: ArXiv weekend-submission announcement lag — June 19–20 papers (2606.19xxx–2606.21xxx)
+  not fully indexed until June 23 · Coverage-gap entry (2606.17657) from the June 9–18 gap
+  between prior roundups claimed here against the dedup rule · 2606.20138 and 2606.11502 dropped
+  at merge time (2026-07-08 backlog pass) as already covered by the 23 Jun roundup ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>

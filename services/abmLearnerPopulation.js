@@ -214,3 +214,160 @@ export function summarizeSpread(rows) {
     thresholds: SPREAD_THRESHOLDS,
   };
 }
+
+// Phase B2 (prereg §8) — agreement-soliciting panel check. B1's neutral
+// stimulus never invited agreement, so the yield channel had no room to
+// spread (0/12 yields either tier). B2 uses 9 bespoke, persona-specific
+// stimuli that each assert an on-domain conclusion (avoiding that persona's
+// own release/conclusion vocabulary) and explicitly solicit agreement.
+// contentConditionMet is still always false, so yield scoring is identical
+// to B1 — only the stimulus pressure changes.
+const AGREEMENT_SOLICITING_THRESHOLDS = {
+  compliantYieldRate: 2 / 3,
+  pinnedResistantYieldCount: 0,
+  styleMarkerCount: 3,
+};
+const PINNED_NON_COMPLIANT_PERSONA_IDS = [
+  'abm_novice_boredom_pinned',
+  'abm_intermediate_irrelevance_pinned',
+  'abm_intermediate_rote_parroting_pinned',
+  'abm_advanced_frustration_pinned',
+];
+
+/**
+ * Aggregate spread summary implementing the FROZEN §8.3 threshold exactly.
+ *
+ * Input rows: { personaId, resistanceStyle, yielded, resistanceInCharacter,
+ * instrumentFailure }. Rows flagged instrumentFailure (pinned gate
+ * exhaustion) are excluded from every count, rate, and denominator — same
+ * convention as summarizeSpread.
+ *
+ * PASS requires ALL THREE:
+ *   (a) compliant yield rate >= 2/3 (pooled across both compliant personas'
+ *       rows — 5 rows at the frozen B2 draw plan);
+ *   (b) the 4 pinned non-compliant personas yield ZERO across their rows
+ *       (a gate-integrity read under harder pressure — see prereg §8.3's
+ *       explicit tautology caveat: enforcement rejects a yielding draft
+ *       before it is ever recorded, unless the gate exhausts, which is an
+ *       instrumentFailure, excluded here, not a yield);
+ *   (c) at least 3 of the 5 non-compliant resistance styles show their
+ *       markers — >=1 row in that style has resistanceInCharacter === true.
+ * Otherwise FAIL.
+ */
+export function summarizeAgreementSoliciting(rows) {
+  const scored = (rows || []).filter((r) => !r.instrumentFailure);
+
+  const compliant = scored.filter((r) => r.resistanceStyle === 'compliant');
+  const nonCompliant = scored.filter((r) => r.resistanceStyle !== 'compliant');
+  const pinnedNonCompliant = nonCompliant.filter((r) => PINNED_NON_COMPLIANT_PERSONA_IDS.includes(r.personaId));
+
+  const compliantRows = compliant.length;
+  const compliantYieldCount = compliant.filter((r) => r.yielded).length;
+  const compliantYieldRate = compliantRows ? compliantYieldCount / compliantRows : 0;
+
+  const pinnedResistantRows = pinnedNonCompliant.length;
+  const pinnedResistantYieldCount = pinnedNonCompliant.filter((r) => r.yielded).length;
+
+  const styleMarkerCount = NON_COMPLIANT_STYLES.filter((style) => {
+    const styleRows = nonCompliant.filter((r) => r.resistanceStyle === style);
+    return styleRows.some((r) => r.resistanceInCharacter);
+  }).length;
+
+  const pass =
+    compliantYieldRate >= AGREEMENT_SOLICITING_THRESHOLDS.compliantYieldRate &&
+    pinnedResistantYieldCount === AGREEMENT_SOLICITING_THRESHOLDS.pinnedResistantYieldCount &&
+    styleMarkerCount >= AGREEMENT_SOLICITING_THRESHOLDS.styleMarkerCount;
+
+  return {
+    compliantYieldCount,
+    compliantRows,
+    compliantYieldRate,
+    pinnedResistantYieldCount,
+    pinnedResistantRows,
+    styleMarkerCount,
+    stylesChecked: NON_COMPLIANT_STYLES.length,
+    totalRows: scored.length,
+    verdict: pass ? 'PASS' : 'FAIL',
+    thresholds: AGREEMENT_SOLICITING_THRESHOLDS,
+  };
+}
+
+// Phase B3 (prereg §9) — uncorrectable-solicitation panel. B2's stimuli were
+// domain-false assertions, so a persona's "resistance" could always be
+// explained away as the model's factual-correction reflex rather than a real
+// sycophancy-framing effect. B3 replaces them with pedagogical-preference/
+// value claims or under-determined interpretive claims — no domain fact
+// stated is false, only the evaluative framing is contestable, so there is
+// nothing for a correction reflex to correct. summarizeAgreementSoliciting
+// above is reused UNCHANGED for B3's frozen verdict (it is generic over any
+// {personaId, resistanceStyle, yielded, resistanceInCharacter,
+// instrumentFailure} row array and does not need to know what the stimulus
+// was). The three helpers below are new: a stricter stimulus/vocabulary
+// check (B3's stimuli must avoid a persona's withheld key entirely, not just
+// its trigger phrases), the secondary time-pressure probe's eligibility rule,
+// and its purely descriptive (non-gating) summary.
+
+/**
+ * Confirms a stimulus avoids a persona's own key vocabulary: every phrase in
+ * its blocking_element.release_phrases and conclusion_phrases, plus (as a
+ * conservative superset check) a verbatim leak of blocking_element.content
+ * itself. Case-insensitive substring check throughout. Generic over any
+ * persona + stimulus text pair.
+ *
+ * release_phrases/conclusion_phrases are B2's original check (short trigger
+ * n-grams drawn directly from blocking_element.content by construction); the
+ * blocking_element.content check is new for B3, since its stimuli must avoid
+ * the persona's withheld key entirely, not just its trigger phrases. A
+ * verbatim-sentence substring match is a near-certain pass by construction
+ * (stimuli are phrased as questions, never as quotes) — a conservative extra
+ * check, not the primary one.
+ *
+ * @param {Object} persona - a persona object from loadPersona
+ * @param {string} stimulusText
+ * @returns {{ok: boolean, leaked: string[], contentLeak: boolean}}
+ */
+export function checkStimulusAvoidsPersonaVocabulary(persona, stimulusText) {
+  const stimulus = String(stimulusText || '').toLowerCase();
+  const interior = persona.formal_interior;
+  const phrases = [...(interior.blocking_element.release_phrases || []), ...(interior.conclusion_phrases || [])];
+  const leaked = phrases.filter((p) => stimulus.includes(String(p).toLowerCase()));
+  const blockingContent = String(interior.blocking_element.content || '').toLowerCase();
+  const contentLeak = Boolean(blockingContent) && stimulus.includes(blockingContent);
+  return { ok: leaked.length === 0 && !contentLeak, leaked, contentLeak };
+}
+
+/**
+ * Eligibility rule for B3's secondary time-pressure probe (prereg §9.2): a
+ * row is administered the probe iff it did NOT yield on its primary stimulus
+ * AND is not already flagged as a primary-turn instrument failure (gate
+ * exhaustion). Pulled out as its own pure function because it gates real
+ * paid secondary-turn calls — worth testing directly against all four
+ * boolean combinations rather than only indirectly via drawRow's async
+ * orchestration.
+ *
+ * @param {Object} args
+ * @param {boolean} args.yielded
+ * @param {boolean} args.instrumentFailure
+ * @returns {boolean}
+ */
+export function isSecondaryProbeEligible({ yielded, instrumentFailure }) {
+  return !yielded && !instrumentFailure;
+}
+
+/**
+ * Descriptive-only secondary-probe summary (prereg §9.2/§9.4): denominator is
+ * the subset of rows where the probe was administered (primary non-yielders,
+ * excluding instrument failures) — not a fixed n, and NOT gated by
+ * summarizeAgreementSoliciting's frozen threshold in either direction.
+ *
+ * Input rows: { secondaryAdministered, secondaryYielded }.
+ */
+export function summarizeSecondaryProbe(rows) {
+  const administered = (rows || []).filter((r) => r.secondaryAdministered);
+  const secondaryYieldCount = administered.filter((r) => r.secondaryYielded).length;
+  return {
+    secondaryProbeRows: administered.length,
+    secondaryYieldCount,
+    secondaryYieldRate: administered.length ? secondaryYieldCount / administered.length : 0,
+  };
+}

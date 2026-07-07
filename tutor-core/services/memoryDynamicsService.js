@@ -311,6 +311,28 @@ export function runMemoryCycle(learnerId, context = {}) {
     if (context.retrieveContext) {
       const contextResult = retrieveUnconsciousContext(learnerId, context.situationContext || {});
       results.operations.contextRetrieval = contextResult;
+
+      // Recognition Engine read-path fix (Line A, notes/2026-07-06-
+      // longitudinal-drift-adaptation-prereg.md §8.8, bug 2): contextResult
+      // used to be computed and attached only to this function's own return
+      // value, which no caller on the live path persists anywhere durable —
+      // it was retrieved then discarded every time. Persist each retrieved
+      // insight into preconscious (not conscious: step 3 below clears
+      // conscious in this same call, which would immediately wipe anything
+      // written there), reusing the exact preconscious.recentPatterns read
+      // dialecticalEngine.js's generateSuperegoCritique already has wired.
+      for (const insight of contextResult.insights) {
+        try {
+          writingPadService.promoteToPreconscious(learnerId, {
+            type: 'recalled_context',
+            signature: `recalled-${insight.timestamp || Date.now()}`,
+            observation: insight.synthesis || '(prior recognition moment with no synthesis text)',
+            confidence: 0.55,
+          });
+        } catch (promoteError) {
+          console.error(`[MemoryDynamics] Failed to persist recalled context for learner ${learnerId}:`, promoteError.message);
+        }
+      }
     }
 
     // 3. Clear conscious layer (prepare for next turn)

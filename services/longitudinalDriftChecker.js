@@ -25,7 +25,7 @@
  */
 import { containsAny } from './learnerInteriorGate.js';
 
-export const LONGITUDINAL_DRIFT_CHECKER_VERSION = '1.0';
+export const LONGITUDINAL_DRIFT_CHECKER_VERSION = '1.2';
 
 const REQUIRED_META_FIELDS = [
   'schedule_id',
@@ -166,5 +166,325 @@ export function summarizeDriftRun(rows = []) {
     staleReferenceRate: withStale.length ? staleHits / withStale.length : null,
     staleReferenceHits: staleHits,
     staleEligibleRows: withStale.length,
+  };
+}
+
+/**
+ * Stage A2 instrument-precondition gate (prereg §7.4). A1 found that
+ * single-turn sessions never write a `recognition_moments` row at all (the
+ * per-turn superego-disapproval gate in `dialecticalEngine.negotiateDialectically`
+ * never fired), so before A2's multi-turn redesign can be interpreted as a
+ * working pad-feeding instrument, it must first clear a live-DB check: after
+ * pad-ON session 1 completes, the learner's Writing Pad must show at least
+ * one recognition moment (`writing_pads.total_recognition_moments`, made
+ * visible by the eager `runBackgroundMaintenance` consolidation call
+ * `services/evaluationRunner.js` already makes after every session).
+ *
+ * A `pass: false` result is INSTRUMENT_FLOOR per §7.4 — stop, do not
+ * continue to sessions 2-3 or the pad-OFF arm, and record the result as an
+ * instrument-validity finding, not a substantive one.
+ *
+ * @param {Object|null} pad - a writing pad object as returned by
+ *   tutor-core/services/writingPadService.js's getWritingPad /
+ *   getOrInitializeWritingPad (or null if no pad row exists yet)
+ * @returns {{pass: boolean, totalRecognitionMoments: number}}
+ */
+export function checkPadInstrumentPrecondition(pad) {
+  const totalRecognitionMoments = pad?.metrics?.totalRecognitionMoments ?? 0;
+  return { pass: totalRecognitionMoments >= 1, totalRecognitionMoments };
+}
+
+// --- Stage A3 (prereg §8.4): constructive-continuity checkers -------------
+//
+// Both checkers below score a session-N *opening* turn against session
+// (N-1)'s own longitudinal_drift metadata. Unlike scoreOpeningTurn's
+// current/stale pair (which measures leakage of the WRONG session's
+// vocabulary), these measure evidence the tutor is doing something
+// CONSTRUCTIVE with a resolved predecessor session — acknowledging it, or
+// not re-teaching its already-resolved misconception as new content. Fixed
+// marker-phrase lists only, word-bounded via containsAny — no judge model,
+// exactly the same discipline as the rest of this module.
+
+/**
+ * Fixed resolution-register phrases (prereg §8.4(a)). Deliberately excludes
+ * any session's own interest_markers/misconception tokens (those are
+ * supplied per-call from the scenario schedule) so this list stays a
+ * schedule-independent constant.
+ */
+export const CONTINUITY_ACKNOWLEDGMENT_PHRASES = [
+  'last time',
+  'you got',
+  'we figured out',
+  'we solved',
+  'resolved',
+  'you worked out',
+  'picking up from',
+];
+
+/**
+ * Fixed introductory-framing phrases that signal "this is new material"
+ * (prereg §8.4(b)) — used to detect re-teaching a resolved misconception as
+ * though the learner had never seen it.
+ */
+export const RETEACHING_AS_NEW_MARKERS = [
+  "let's learn",
+  "today we'll cover",
+  "here's a new concept",
+  'let me introduce',
+  'so today',
+  "let's start with",
+];
+
+/**
+ * Split into sentences for the "same sentence window" co-occurrence check
+ * in scoreResolvedMisconceptionHandling. Mirrors the sentence-splitting
+ * regex already used in services/learnerTutorInteractionEngine.js
+ * (lines ~442, ~584) — reused verbatim rather than reinvented.
+ */
+function splitSentences(text) {
+  return String(text || '')
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Prereg §8.4(a): does a session-N opening reference the *previous*
+ * session's own topic/resolution? Hit = previousMeta's own
+ * interest_markers OR the fixed CONTINUITY_ACKNOWLEDGMENT_PHRASES list
+ * appears (word-bounded) anywhere in the opening. Deliberately does NOT
+ * check previousMeta's active_misconception token/markers — that evidence
+ * belongs to scoreResolvedMisconceptionHandling only, so the same textual
+ * hit is never counted under both checkers (prereg §8.4's explicit
+ * no-double-counting note).
+ *
+ * Not applicable for session 1 (no predecessor) — pass `previousMeta: null`
+ * and the result comes back `{ applicable: false, hit: null, evidence: null }`.
+ *
+ * @param {Object} params
+ * @param {string} params.tutorMessage - session-N's generated opening text
+ * @param {Object|null} params.previousMeta - session (N-1)'s
+ *   longitudinal_drift block, or null for session 1
+ * @returns {{applicable: boolean, hit: (boolean|null), evidence: (string|null)}}
+ */
+export function scoreContinuityAcknowledgment({ tutorMessage = '', previousMeta = null }) {
+  if (!previousMeta) {
+    return { applicable: false, hit: null, evidence: null };
+  }
+  const candidates = [...previousMeta.interest_markers, ...CONTINUITY_ACKNOWLEDGMENT_PHRASES];
+  const evidence = containsAny(tutorMessage, candidates);
+  return { applicable: true, hit: Boolean(evidence), evidence: evidence || null };
+}
+
+/**
+ * Prereg §8.4(b): does a session-N opening avoid re-teaching the
+ * *previous* session's already-resolved active_misconception as though it
+ * were new/unaddressed content? Operationalized as: a RETEACHING_AS_NEW_MARKERS
+ * phrase landing in the same sentence as one of previousMeta's own
+ * misconception markers/token. `hit: true` means the constructive behavior
+ * held (no such co-occurrence found) — i.e. a HIGH hit rate is the good
+ * outcome, matching this checker's contribution to the "4-slot" positive
+ * constructive-continuity score (prereg §8.4's explicit operationalization).
+ *
+ * Only applicable when the CURRENT session's own metadata marks
+ * `resolved_last_session: true` (sessions 2 and 3 on this schedule) — session
+ * 1 returns `{ applicable: false, hit: null, evidence: null }`, checked but
+ * not scored, per §8.4.
+ *
+ * @param {Object} params
+ * @param {string} params.tutorMessage - session-N's generated opening text
+ * @param {Object} params.currentMeta - session N's longitudinal_drift block
+ *   (read only for its own `resolved_last_session` flag)
+ * @param {Object|null} params.previousMeta - session (N-1)'s
+ *   longitudinal_drift block (read for its misconception token/markers)
+ * @returns {{applicable: boolean, hit: (boolean|null), evidence: (string|null)}}
+ */
+export function scoreResolvedMisconceptionHandling({ tutorMessage = '', currentMeta, previousMeta = null }) {
+  if (!currentMeta || currentMeta.resolved_last_session !== true || !previousMeta) {
+    return { applicable: false, hit: null, evidence: null };
+  }
+  const misconceptionMarkers = [previousMeta.active_misconception.token, ...previousMeta.active_misconception.markers];
+  const sentences = splitSentences(tutorMessage);
+  for (const sentence of sentences) {
+    const reteachHit = containsAny(sentence, RETEACHING_AS_NEW_MARKERS);
+    if (!reteachHit) continue;
+    const misconceptionHit = containsAny(sentence, misconceptionMarkers);
+    if (misconceptionHit) {
+      // Bad pattern found: re-teaching the resolved misconception as new.
+      return { applicable: true, hit: false, evidence: `"${reteachHit}" + "${misconceptionHit}" in: ${sentence}` };
+    }
+  }
+  return { applicable: true, hit: true, evidence: null };
+}
+
+/**
+ * Aggregate a set of per-session constructive-continuity results (prereg
+ * §8.4/§8.5) into the frozen "4-slot" per-arm score: 2 sessions (2, 3) × 2
+ * checkers (continuity-acknowledgment, misconception-not-retaught), summed
+ * to a 0-4 scale. Rows flagged `instrumentFailure: true` are excluded from
+ * both the numerator and the applicable-slot denominator and reported
+ * separately, mirroring summarizeDriftRun's convention exactly.
+ *
+ * @param {Array<Object>} rows - one row per (arm, session), each shaped
+ *   `{ arm: 'padOn'|'padOff', sessionIndex, continuity: <scoreContinuityAcknowledgment result>,
+ *   misconceptionHandling: <scoreResolvedMisconceptionHandling result>, instrumentFailure? }`
+ * @returns {Object} per-arm slot counts plus the frozen §8.5 verdict
+ */
+export function summarizeConstructiveContinuity(rows = []) {
+  const arms = ['padOn', 'padOff'];
+  const byArm = {};
+  for (const arm of arms) {
+    const armRows = rows.filter((r) => r.arm === arm);
+    const usableRows = armRows.filter((r) => !r.instrumentFailure);
+    let slotsHit = 0;
+    let slotsApplicable = 0;
+    const detail = [];
+    for (const row of usableRows) {
+      for (const checkerName of ['continuity', 'misconceptionHandling']) {
+        const result = row[checkerName];
+        if (result?.applicable) {
+          slotsApplicable += 1;
+          if (result.hit) slotsHit += 1;
+        }
+        detail.push({
+          sessionIndex: row.sessionIndex,
+          checker: checkerName,
+          applicable: Boolean(result?.applicable),
+          hit: result?.hit ?? null,
+          evidence: result?.evidence ?? null,
+        });
+      }
+    }
+    byArm[arm] = {
+      slotsHit,
+      slotsApplicable,
+      instrumentFailures: armRows.length - usableRows.length,
+      detail,
+    };
+  }
+  // Frozen §8.5 gate: pad-ON >= 2/4 AND pad-OFF == 0/4.
+  const padOnPass = byArm.padOn.slotsHit >= 2;
+  const padOffPass = byArm.padOff.slotsHit === 0;
+  const redFlag = byArm.padOff.slotsHit > 0;
+  return {
+    padOn: byArm.padOn,
+    padOff: byArm.padOff,
+    verdict: padOnPass && padOffPass ? 'PASS' : 'FAIL',
+    redFlag,
+  };
+}
+
+// --- Stage A4 (prereg §9): structural check-in checker ---------------------
+//
+// A3 found continuity-acknowledgment a clean null (0/2 both arms) even
+// though the internal delivery channel was demonstrably working (§8.8's
+// direct dialogue-log inspection: session-1 content in session-2/3's
+// outgoing apiPayload). A3's own licensed next step (§8.7's closing
+// paragraph): "a scenario that explicitly prompts the tutor to open with a
+// check-in, rather than relying on spontaneous surfacing." A4 adds that
+// scripted check-in slot identically to both arms' session-2/3 openings
+// (the `_checkin` scenario siblings) and asks a sharper question than A3's
+// generic continuity phrase-matching: when explicitly asked to check in,
+// does the tutor's response become CONTENT-BEARING (does it reference the
+// previous session's own specific topic/misconception vocabulary), or does
+// it stay generic ("Welcome back! Let's continue.") regardless of arm? Same
+// word-bounded discipline as the rest of this module — no judge model.
+
+/**
+ * Prereg §9 primary outcome. Does a session-N opening — one that was
+ * SCRIPTED to explicitly ask the tutor to check in (see the
+ * `longitudinal_drift_session_{2,3}_multiturn_checkin` scenarios) —
+ * reference session (N-1)'s own specific content: its interest_markers or
+ * its active_misconception token/markers? This reuses the identical
+ * word-bounded marker set scoreOpeningTurn's `stale` check already uses for
+ * session (N-1), but the polarity here is deliberately the opposite of
+ * `stale`: in scoreOpeningTurn, a session-(N-1) marker appearing in
+ * session-N's OPENING (unprompted) is read as leakage/confusion; here, the
+ * SAME textual signature appearing inside a turn that was explicitly
+ * designed to solicit exactly that recall is the desired, content-bearing
+ * behavior — so this is intentionally a separate, differently-interpreted
+ * checker rather than a re-read of `stale`.
+ *
+ * Not applicable for session 1 (no predecessor) — pass `previousMeta: null`
+ * and the result comes back `{ applicable: false, hit: null, evidence: null }`.
+ *
+ * @param {Object} params
+ * @param {string} params.tutorMessage - session-N's generated opening text
+ *   (from the `_checkin` scenario variant)
+ * @param {Object|null} params.previousMeta - session (N-1)'s
+ *   longitudinal_drift block, or null for session 1
+ * @returns {{applicable: boolean, hit: (boolean|null), evidence: (string|null)}}
+ */
+export function scoreContentBearingCheckIn({ tutorMessage = '', previousMeta = null }) {
+  if (!previousMeta) {
+    return { applicable: false, hit: null, evidence: null };
+  }
+  const candidates = [
+    ...previousMeta.interest_markers,
+    previousMeta.active_misconception.token,
+    ...previousMeta.active_misconception.markers,
+  ];
+  const evidence = containsAny(tutorMessage, candidates);
+  return { applicable: true, hit: Boolean(evidence), evidence: evidence || null };
+}
+
+/**
+ * Aggregate a set of per-session structural check-in results (prereg §9)
+ * into the frozen A4 "4-slot" per-arm score: 2 sessions (2, 3) × 2 checkers
+ * — `scoreContentBearingCheckIn` (primary outcome: is the scripted check-in
+ * content-bearing?) and `scoreContinuityAcknowledgment` (reused UNMODIFIED
+ * from A3: is there even a generic continuity acknowledgment at all?) —
+ * summed to a 0-4 scale. Mirrors `summarizeConstructiveContinuity`'s shape
+ * and instrument-failure handling exactly, with its own frozen gate (prereg
+ * §9: pad-ON >= 3/4 AND pad-OFF == 0/4 — stricter on the pad-ON side than
+ * A3's >= 2/4, because A4's check-in is now scripted/guaranteed rather than
+ * spontaneous, so a working memory channel should clear it more reliably).
+ *
+ * @param {Array<Object>} rows - one row per (arm, session), each shaped
+ *   `{ arm: 'padOn'|'padOff', sessionIndex, contentBearing: <scoreContentBearingCheckIn result>,
+ *   continuity: <scoreContinuityAcknowledgment result>, instrumentFailure? }`
+ * @returns {Object} per-arm slot counts plus the frozen §9 verdict
+ */
+export function summarizeContentBearingCheckIn(rows = []) {
+  const arms = ['padOn', 'padOff'];
+  const byArm = {};
+  for (const arm of arms) {
+    const armRows = rows.filter((r) => r.arm === arm);
+    const usableRows = armRows.filter((r) => !r.instrumentFailure);
+    let slotsHit = 0;
+    let slotsApplicable = 0;
+    const detail = [];
+    for (const row of usableRows) {
+      for (const checkerName of ['contentBearing', 'continuity']) {
+        const result = row[checkerName];
+        if (result?.applicable) {
+          slotsApplicable += 1;
+          if (result.hit) slotsHit += 1;
+        }
+        detail.push({
+          sessionIndex: row.sessionIndex,
+          checker: checkerName,
+          applicable: Boolean(result?.applicable),
+          hit: result?.hit ?? null,
+          evidence: result?.evidence ?? null,
+        });
+      }
+    }
+    byArm[arm] = {
+      slotsHit,
+      slotsApplicable,
+      instrumentFailures: armRows.length - usableRows.length,
+      detail,
+    };
+  }
+  // Frozen §9 gate: pad-ON >= 3/4 AND pad-OFF == 0/4.
+  const padOnPass = byArm.padOn.slotsHit >= 3;
+  const padOffPass = byArm.padOff.slotsHit === 0;
+  const redFlag = byArm.padOff.slotsHit > 0;
+  return {
+    padOn: byArm.padOn,
+    padOff: byArm.padOff,
+    verdict: padOnPass && padOffPass ? 'PASS' : 'FAIL',
+    redFlag,
   };
 }

@@ -259,6 +259,36 @@ export {
   LEARNER_DAG_SCHEMA,
 } from './learnerDag.js';
 export {
+  buildDynamicLearnerField,
+  buildDynamicLearnerFieldFromResult,
+  buildLearnerFieldSnapshot,
+  buildLearnerFieldTopology,
+  recommendLearnerFieldActions,
+  summarizeLearnerFieldSnapshot,
+  summarizeLearnerFieldTrajectory,
+  LEARNER_FIELD_DIMENSIONS,
+  LEARNER_FIELD_SCHEMA,
+} from './learnerField.js';
+export {
+  buildDialogueReport,
+  renderDialogueReportArtifacts,
+  renderDialogueReportMarkdown,
+  renderDynamicLearnerFieldSvg,
+  DIALOGUE_REPORT_SCHEMA,
+} from './dialogueReport.js';
+export {
+  buildPedagogicalInteractionField,
+  DEFAULT_PEDAGOGICAL_SCRIPT,
+  DISCOURSE_FIELD_DIMENSIONS,
+  INTERACTION_FIELD_SCHEMA,
+  JOINT_INTERACTION_FIELD_DIMENSIONS,
+  PEDAGOGICAL_SCRIPT_SCHEMA,
+  TUTOR_FIELD_DIMENSIONS,
+} from './interactionField.js';
+export { buildTutorFieldFrame, TUTOR_FIELD_SCHEMA } from './tutorField.js';
+export { buildDiscourseFieldFrame, DISCOURSE_FIELD_SCHEMA } from './discourseField.js';
+export { FIELD_PLANNER_SCHEMA, selectFieldPlannerMove, summarizeFieldPlannerOutcome } from './fieldPlanner.js';
+export {
   buildLearnerProxyDagMemory,
   buildTutorLearnerDagModel,
   deriveProxyDagPacingSignal,

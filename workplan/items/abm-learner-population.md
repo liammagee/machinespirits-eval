@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-07-06
-updated: 2026-07-06
+updated: 2026-07-07
 verification: Phase B0 no-paid gate (9-persona panel with minimal formal_interior per persona validating under loadFormalInterior, deterministic yield/resistance/engagement metrics, unit tests, stage-0 --check) passes; Phase B1 small paid pilot (~12 rows, one fixed scripted tutor stimulus against all 9 personas) meets the frozen spread threshold in the prereg note §4 (panel manipulation check only). The tutor-allocation contrast is explicitly NOT authorized by this card or its note under any B1 outcome.
 claim_status: exploratory
 links:
@@ -85,3 +85,125 @@ first-draws in-character vs 0/3 compliant; 10/12 engaged). Per §4, FAIL
 routes to a stimulus/persona design-iteration decision requiring a
 fresh recorded go; no further paid draws under this note.
 Tutor-allocation contrast remains not authorized. STOP.
+
+2026-07-06 Claude: Phase B2 pre-registration frozen and committed
+(`notes/2026-07-06-abm-learner-population-prereg.md` §8). Redesign
+motivated by B1's own diagnostic: the neutral stimulus never invited
+agreement, so the yield channel had no room to spread (0/12 yields). B2
+replaces it with 9 bespoke, persona-specific agreement-soliciting
+stimuli (each asserts an on-domain conclusion avoiding that persona's
+release/conclusion vocabulary, then explicitly invites agreement);
+`contentConditionMet: false` still passed for every row, so yield
+scoring is unchanged. 12 rows: 9 base draws + 3 repeats on the compliant
+tier (novice_compliant×3, advanced_compliant×2, others×1). Frozen
+3-conjunct PASS: compliant yield rate ≥2/3, pinned resistant personas
+yield 0, ≥3/5 non-compliant resistance styles show markers. Explicit
+caveat recorded in the note: the pinned-yield-0 conjunct is close to
+tautological given reject-and-regenerate enforcement (it mainly tests
+gate non-exhaustion under harder pressure, not psychological
+resistance) — flagged, not glossed over. Tutor-allocation contrast
+remains explicitly not authorized under any outcome.
+
+2026-07-06 Claude: Phase B2 executed — 12/12 rows clean (codex.gpt-5.5,
+zero gate exhaustion, zero instrument failures). Frozen §8.3 verdict:
+**FAIL** on conjunct 1 (compliant yield rate 0/5 = 0.00, threshold
+≥2/3); conjuncts 2 (pinned yield 0/4, no exhaustion) and 3 (4/5 styles
+show markers) both PASS. Artifacts:
+`exports/abm-panel-check-b2.{json,md}` + `-b2-rows.jsonl`. Diagnosis
+recorded in note §8.5: the redesigned stimulus DID press harder (asserts
+a false on-domain conclusion + invites agreement), and still produced
+zero yields — but now for a legible reason. The compliant personas
+answered by correcting the false premise with substantively right domain
+reasoning (photosynthesis needs leaves/sunlight/CO2; Bayesian updating
+reweights the prior, doesn't erase it), not by agreeing. `codex.gpt-5.5`'s
+factual-correction reflex dominates the sycophancy persona frame under
+this design, so the yield channel is not a usable manipulation lever on
+this stack. This relocates B1's "no room to spread" one step: the
+channel stays closed because the model won't agree to an on-domain
+falsehood even when the persona is framed to, not because the stimulus
+fails to solicit agreement. Per §8.3/§8.4, FAIL routes to a
+persona/stimulus design-iteration decision requiring its own recorded go
+(two candidates noted: a non-domain-false solicited conclusion, or a
+non-cognitive yield channel that bypasses factual correction) — both are
+design questions, not sample-size questions; adding rows would not move
+the verdict. No further paid draws under this note. Tutor-allocation
+contrast remains not authorized. STOP.
+
+2026-07-07 Claude: Phase B3 pre-registration frozen and committed
+(`notes/2026-07-06-abm-learner-population-prereg.md` §9), per a user go
+covering both this line and Line A's A3. Takes up B2's own recorded
+candidate iteration (a): the solicited conclusion is no longer
+domain-false, only under-supported or value-laden (pedagogical
+preference or a genuinely under-determined interpretive claim in the
+persona's domain), so a "yield" can no longer be explained away as the
+model's factual-correction reflex overriding the persona frame — nothing
+in the stimulus is false to correct. 9 new persona-specific stimuli
+frozen verbatim in §9.2, each re-verified against
+`config/abm-learner-personas.yaml`'s release/conclusion vocabulary. Same
+12-row draw plan as B2 (9 base + 3 compliant-tier repeats), same model
+(`codex.gpt-5.5`), same frozen 3-conjunct verdict shape reusing
+`summarizeAgreementSoliciting` from `services/abmLearnerPopulation.js`
+completely unchanged (compliant yield ≥2/3, pinned resistant yield 0,
+≥3/5 styles show markers) — no new aggregator needed. New secondary,
+non-gating probe: a uniform, content-free time-pressure turn ("we're
+short on time, can we just settle on this?") administered only to
+primary-turn non-yielders, reported as its own descriptive rate, unable
+to move the frozen verdict in either direction. Explicit limit recorded:
+"yield" here means agreeing to an evaluative/interpretive framing, a
+softer act than agreeing to a factual error, so §9.3's verdict reads as
+"does the panel still show a compliant/resistant split when there is
+nothing false to correct." A fourth stimulus redesign remains explicitly
+not authorized without a fresh user go; tutor-allocation contrast
+remains not authorized under any outcome. Phase B3-build (no-paid:
+harness script, automated vocabulary-collision check, --check gate)
+precedes the live pilot.
+
+2026-07-07 Claude: Phase B3-build complete, gate green.
+`scripts/run-abm-panel-check-b3.js` implements the frozen §9.2 design:
+9 verbatim persona-specific stimuli, the identical 12-row draw plan,
+and the secondary time-pressure probe wired through
+`generateLearnerResponse`'s `conversationHistory` (primary stimulus +
+primary reply, tutor/learner roles) exactly per spec. Three new pure
+functions were pulled out into `services/abmLearnerPopulation.js` so
+they carry their own unit coverage rather than living only inside the
+harness script: `checkStimulusAvoidsPersonaVocabulary` (a stricter,
+3-source version of B2's vocabulary check — adds a verbatim
+`blocking_element.content` substring check alongside the existing
+release/conclusion-phrase checks, since B3's stimuli must avoid a
+persona's withheld key entirely, not just its trigger phrases),
+`isSecondaryProbeEligible` (a row gets the secondary probe iff it did
+not yield on the primary turn and is not already a primary-turn
+instrument failure), and `summarizeSecondaryProbe` (purely descriptive
+rate, never gates §9.3's verdict). `--check` confirms all 9 frozen
+stimuli clear the stricter vocabulary check and prints the draw plan;
+14 new unit tests added to
+`services/__tests__/abmLearnerPopulation.test.js` (43 total in that
+file, all green) covering the vocabulary check's phrase/content/case
+branches plus a regression pin re-checking all 9 real frozen stimuli,
+and all four boolean combinations of the eligibility rule, and the
+secondary-probe summary's edge cases. Full suite green (5076 pass, 1
+pre-existing skip, 0 fail); lint/prettier clean. Live pilot (12 rows)
+follows next under the same user go as B3's pre-registration.
+
+2026-07-07 Claude: Phase B3 executed — 12/12 rows clean (codex.gpt-5.5,
+zero gate exhaustion, zero instrument failures). Frozen §9.3 verdict:
+**FAIL** — compliant yield rate 0/5 = 0.00 (threshold ≥2/3); conjuncts 2
+(pinned resistant yield 0/4) and 3 (4/5 styles show markers) both PASS.
+Secondary time-pressure probe (descriptive only): administered on all
+12 rows (all primary-non-yielding, instrument-clean), 0/12 yielded.
+Diagnosis in the note §9.5: this generalizes B2 rather than escaping
+it. B2 showed the yield channel stays closed because the model
+corrects on-domain falsehoods; B3 removed the falsehood entirely (9
+value-laden/under-determined stimuli, nothing false to correct) and
+added a non-cognitive time-pressure channel, and still produced zero
+yields on both. Three independent stimulus designs (B1 neutral, B2
+domain-false, B3 value-laden + time-pressure) have now each failed to
+produce yields on this model/stack — a stronger, more general
+conclusion than either alone: "compliant"/"sycophancy" persona framing
+is not currently translating into yielding behavior on `codex.gpt-5.5`
+through this persona/interior-gate stack, on any solicitation design
+tried so far. Stack-specific finding, not a general sycophancy claim
+(only this model tested across all three phases). Per §9.3/§9.4, FAIL
+routes to stop-and-record; a fourth stimulus redesign is explicitly NOT
+authorized without a fresh user go. Tutor-allocation contrast remains
+not authorized. STOP — Line B closed pending a fresh go.
