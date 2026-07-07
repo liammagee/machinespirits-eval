@@ -291,3 +291,43 @@ negotiation resolutions not rewriting the delivered message), not
 memory access. Directional-only at n=3/arm. STOP per §9.4 — output-side
 levers are a fresh design decision requiring a new prereg + go.
 Artifacts: exports/longitudinal-drift-stage-a4.{json,md}.
+
+2026-07-07 Claude: Stage A4-codex (§10) executed end-to-end under the
+confirmed user directive (nemotron/kimi never the default; suspected
+false negatives). Prereg frozen before spend; §9.2 carries a dated
+correction (the earlier "injected" characterization of the codex/bridge
+requests was wrong — confirmed repository-owner directives). Enablers
+landed first: CLI bridge extended into tutor-core's dialogue engine via
+an eval-injected external-provider hook (one-way seam intact; hermetic
+cell_40 proof, zero HTTP escape; cli_capture restores apiPayload
+observability for CLI calls; sync-registration race found by the canary
+itself and fixed), plus the CLAUDE.md "Model stack default" rule and a
+non-blocking eval-cli stderr warning on bare nemotron/kimi runs.
+Pilot (6/6 clean, 4/4 turns each, ~37.5 min wall-clock, Max-plan
+quota): pad-ON eval-2026-07-07-{139daa20,ffaac9d7,44a48b61} (learner
+a4c-drift-padon-v1-2026-07-07), pad-OFF
+eval-2026-07-07-{433a19d2,b7b30353,49cbde02}. §7.4 gate PASS (1 moment
+s1; 2 total — codex superego disapproves far less than nemotron's 9);
+delivery gate PASS at BOTH scoping levels (naive 12/12 AND pad-only
+strings "unnecessarily large denominator" 4x / "1/3 + 1/5" 4x in
+session-2 payloads — first payload-level delivery witness in this arc).
+VERDICT: structural-signal gate FAIL — pad-ON 2/4, pad-OFF 2/4;
+session-3 HIT/HIT in BOTH arms; red flag resolved as scenario echo
+(planted "ratio work is complete" text; pad-only probes clean; single
+"x=0 self-check" grep hit = same-session scripted content, the
+'2:3'/'4:5' precedent). Split answer to the false-negative question:
+YES at the surface level (nemotron 0/4-0/4 suppressed even
+scenario-planted continuity; codex acknowledges and references the
+prior topic in s3 both arms) — the stack rule has empirical support;
+NO at the contrast level (pad-ON − pad-OFF = 0 on BOTH stacks — the
+memory null replicates strong). NEW code-level finding: the
+output-threading defect is architectural and stack-independent —
+hermetic probe shows dialecticalStrategy metadata null even under a
+guaranteed no_conflict, because the dialogue loop's revision REPLACES
+the negotiated suggestion wholesale (0/24 turns carry metadata, both
+stacks); the pad→negotiation→delivery chain is severed whenever a
+revision round runs. A2-A4 memory-contrast nulls stand;
+delivered-but-not-used now pinned to a specific fixable hop. STOP per
+§10.4 — output-side levers need a fresh prereg + go. Artifacts:
+exports/longitudinal-drift-stage-a4-codex.{json,md} (nemotron §9 pair
+regenerated deterministically + both pairs now force-added/tracked).

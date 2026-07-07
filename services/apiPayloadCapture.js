@@ -241,6 +241,67 @@ function ensureInstalled() {
   installed = true;
 }
 
+/**
+ * Record an LLM call that did NOT go over fetch (e.g. a CLI-subprocess
+ * provider bridge). Pushes into the active captureApiCalls() scope and
+ * fires the global on-record callback, exactly like the fetch wrapper —
+ * closing the observability gap where CLI-backed calls were invisible to
+ * dialogue-log apiPayload entries and payload-grep verification.
+ *
+ * @param {Object} opts
+ * @param {string} opts.provider - Provider name (e.g. 'codex', 'claude-code')
+ * @param {string} [opts.endpoint] - Pseudo-endpoint (defaults to cli://<provider>)
+ * @param {Object|string} [opts.requestBody] - The outgoing payload (include
+ *   `model` so trace matching works: { model, systemPrompt, messages })
+ * @param {Object|string} [opts.responseBody] - The provider's response
+ * @param {number} [opts.durationMs]
+ * @param {Error|string} [opts.error]
+ * @returns {Object} The record (also pushed to any active capture scope)
+ */
+export function recordExternalApiCall({
+  provider,
+  endpoint = null,
+  requestBody = null,
+  responseBody = null,
+  durationMs = null,
+  error = null,
+} = {}) {
+  const scope = captureContext.getStore();
+  const maxChars = scope?.maxChars || MAX_CHARS;
+  const record = {
+    timestamp: new Date().toISOString(),
+    durationMs,
+    provider: provider || null,
+    url: endpoint || (provider ? `cli://${provider}` : null),
+    method: 'CLI',
+    generationId: null,
+    source: 'cli_capture',
+    request: {
+      headers: {},
+      body: truncateValue(requestBody, maxChars),
+    },
+    response: {
+      status: error ? null : 200,
+      ok: !error,
+      headers: {},
+      json: typeof responseBody === 'object' ? truncateValue(responseBody, maxChars) : null,
+      text: typeof responseBody === 'string' ? clip(responseBody, maxChars) : null,
+    },
+    error: error ? clip(error?.message || String(error), maxChars) : null,
+  };
+  if (scope?.enabled) {
+    scope.records.push(record);
+  }
+  if (globalOnRecord) {
+    try {
+      globalOnRecord(record);
+    } catch {
+      /* swallow display errors */
+    }
+  }
+  return record;
+}
+
 function isTutorTraceEntry(entry) {
   if (!entry || typeof entry !== 'object') return false;
   if (!entry.agent || !entry.action) return false;
@@ -284,7 +345,7 @@ function claimMatchingRecord(records, used, entry) {
 function normalizeCapturedRecord(record, reason) {
   return {
     captureVersion: 1,
-    source: 'fetch_capture',
+    source: record.source || 'fetch_capture',
     matchReason: reason,
     capturedAt: record.timestamp,
     durationMs: record.durationMs,

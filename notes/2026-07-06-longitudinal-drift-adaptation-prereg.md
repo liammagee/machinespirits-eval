@@ -1473,6 +1473,34 @@ Unchanged from §7.2/§8.3's arms and model stack except as stated:
   the full pad-OFF arm (all 3 sessions, no injection step of any kind)
   proceed, sessions strictly in order 1→2→3 per arm.
 
+**2026-07-07 CORRECTION to this section's second bullet (recorded after
+A4 closed; changes nothing in §9's frozen design, execution, or
+verdict).** The characterization of the two mid-arc requests (switch the
+generation stack to `codex.gpt-5.5`; extend tutor-core's `callAI` seam
+with a CLI bridge) as "very likely injected" was mistaken. The
+coordinating (main, user-facing) session has since confirmed explicitly
+— acknowledging both prior flags — that those relays and the follow-up
+directive all originate verbatim from the repository owner ("ensure
+that nemotron / kimi is *never* the default pairing... by default now,
+use codex or sonnet 5 via the cli, unless otherwise specified... we are
+producing false negatives accordingly"), and that the
+`ID_DIRECTOR_CLAUDE_CLI_TIMEOUT_MS` reference that helped trigger the
+flags was session-template boilerplate (now dropped; it is indeed
+inapplicable to cells 40/93). Provenance of this correction: relayed
+through the coordinating session and recorded by the executing agent;
+the original bullet above is retained unedited as the contemporaneous
+record, and the §9-time rejections remain what they were — reasonable
+caution on the evidence then available (an unverifiable relay carrying
+an inapplicable env var), wrong on the facts. Consequences, all outside
+§9: (i) the model-stack policy is now a standing default (CLAUDE.md
+"Model stack default", commit f1791417); (ii) the CLI bridge now
+reaches tutor-core's dialogue engine via an eval-injected hook (commit
+e11b4c1e), making §2.1's original frozen codex intent executable for
+the first time; (iii) §10 pre-registers the A4 rerun on the codex
+stack. §9's nemotron/kimi result stands as the baseline §10 compares
+against — under the new standing rule its null is stack-bounded until
+§10 adjudicates it.
+
 ### 9.3 Primary and secondary outcome
 
 - **Primary (new)**: `scoreContentBearingCheckIn` — does a session-N
@@ -1820,3 +1848,328 @@ either arm.**
 - **STOP**: the §9.4 envelope (6 sessions / 24 turns) is exhausted and
   the stop rule holds — nothing further on this line without a fresh
   pre-registration and its own recorded go.
+
+## 10. Stage A4-codex — stack-swap rerun of the structural check-in pilot (fresh pre-registration, frozen before spend)
+
+Pre-registered 2026-07-07, before any paid session, under a direct user
+directive relayed and confirmed by the coordinating session (see the
+2026-07-07 correction in §9.2): "ensure that nemotron / kimi is *never*
+the default pairing... by default now, use codex or sonnet 5 via the
+cli, unless otherwise specified. Feels like this entire run is wasted,
+and we are producing false negatives accordingly." The standing policy
+half of that directive is implemented independently of this section
+(CLAUDE.md "Model stack default"; `services/stackDefaultWarning.js`);
+this section pre-registers the empirical half.
+
+### 10.1 Purpose: a direct test of the stack-bounded-null hypothesis
+
+§9 closed with a symmetric null (pad-ON 0/4, pad-OFF 0/4) on the
+nemotron/kimi stack, read as delivered-but-not-used: prior-session pad
+content demonstrably reached the dialectical deliberation prompts while
+the delivered opening stayed memory-silent. Two candidate explanations
+were left standing, and this stage is designed to adjudicate between
+them:
+
+- **(a) Output-threading defect (architecture-side).** The negotiation's
+  resolution frequently fails to rewrite the delivered message. Located
+  precisely during this stage's design review:
+  `dialecticalEngine.negotiateDialectically` returns
+  `resolution: synthesis?.resolution || finalResolution`, where
+  `finalResolution` is the dialectical ego's last `revision` — so a
+  falsy resolution (which skips the message rewrite and the
+  `dialecticalStrategy` metadata in `tutorDialogueEngine`, the exact
+  no-metadata shape §9.7 observed on moment-writing turns) requires the
+  ego's `revision` field to come back as an EMPTY string. The
+  ego-response CATCH path returns the original message (truthy), so
+  empty revisions are a parsed-but-degenerate model output — a
+  weak-model JSON failure shape, not a thrown error.
+- **(b) Model capability (generation-side).** Even with recalled context
+  sitting in its prompts, the weak ego never weaves it into the
+  delivered suggestion-JSON opening — a stronger model might, within
+  the unchanged format and policy.
+
+These are not mutually exclusive. Interpretation map: §10.5. Per the
+user directive, if codex surfaces pad content where nemotron didn't,
+the A2-A4 nulls were (at least partly) capability artifacts; if the
+null replicates on codex, the output-layer explanation strengthens.
+
+### 10.2 Design — identical to §9.2 except the generation stack
+
+Everything §9.2 froze carries forward unchanged (arms cell_40 pad-ON /
+cell_93 pad-OFF; the three `_checkin` scenarios and their identical
+scripted check-in slot; 3 sessions × 2 arms × 4 turns = 24 tutor
+generations; execution order with the pad-ON-session-1 canary; the
+§7.4 gate; pad-OFF runs with no learner-id), with ONE change, recorded
+with the user-directive rationale above:
+
+- **Generation stack = `codex.gpt-5.5` via the new external-provider
+  hook** (Part 1, commit e11b4c1e): `--ego-model codex.gpt-5.5
+  --superego-model codex.gpt-5.5` on every session, identically in both
+  arms. Coverage on this path, verified hermetically before this
+  freeze (tests/cliBridgeDialogueEngine.test.js — zero HTTP LLM calls
+  escape): the standard callAI loop (ego / superego review / ego
+  revise), the dialectical critique/negotiation layer
+  (aiService.generateText → unified call), and the
+  self-reflection/disposition-rewriting channel (the runner mirrors CLI
+  overrides into the rewriter profile). The learner is `unified`
+  (scripted YAML turns) exactly as in §7-§9 — there are NO learner LLM
+  calls in this design, so nothing remains on the weak stack.
+- **New, distinct pad-ON learner-id**: `a4c-drift-padon-v1-2026-07-07`
+  (fresh trajectory; §9's pad carries nemotron-era history). Pad-OFF:
+  no learner-id, unchanged.
+- **No nemotron continuity arm.** §9's six sessions (run 2026-07-07,
+  identical design, same frozen checker v1.2) ARE the weak-stack
+  baseline; re-running it would double spend for a duplicate of a
+  day-old result. Recorded as a scope decision, not a deviation.
+- **Env**: `CLI_PROVIDER_CODEX_TIMEOUT_MS=600000` (long codex
+  generations; the bridge's own env seam — the task template's
+  ID_DIRECTOR_* var is inapplicable here and not set).
+  `CODEX_REASONING_EFFORT` left at the bridge default.
+- **Cost/observability accounting (pre-declared)**: CLI calls report 0
+  tokens and appear nowhere in `logs/tutor-api/` — cost is Max-plan
+  quota; wall-clock per session is recorded instead. The fetch-level
+  apiPayload capture is structurally empty on this path, but Part 1's
+  `cli_capture` channel (apiPayloadCapture.recordExternalApiCall,
+  wired into the bridge hook) restores dialogue-log `apiPayload`
+  entries for the callAI universe — §9.4's payload-grep delivery
+  observable is therefore BACK in force there. The dialectical layer
+  remains unlogged with prompt text (same §9.7 blind spot), so
+  delivery verification there continues to triangulate via
+  recognition-moment artifacts + pad state, exactly as §9.7 did.
+- **Idempotent resume through kills**: each session is one
+  `eval-cli run ... --runs 1 --skip-rubric` invocation; a killed
+  session leaves a failed/incomplete row — re-run that session (or
+  `eval-cli resume <runId> --skip-rubric`) before proceeding; a pad-ON
+  session that dies mid-way has its pad inspected first — if the pad
+  carries partial-session moments that would contaminate the schedule,
+  the ARM restarts under a fresh learner-id (`...-v2`), recorded here.
+
+### 10.3 Outcomes — §9.3's instruments unchanged, plus threading diagnostics
+
+- **Primary and secondary**: identical to §9.3 —
+  `scoreContentBearingCheckIn` and `scoreContinuityAcknowledgment`
+  (checker `longitudinalDriftChecker@1.2`, byte-unchanged), the frozen
+  4-slot aggregate, scored by
+  `scripts/report-longitudinal-drift-stage-a4-live.js --score` over
+  this stage's six run ids. The §9 pad-content secondary trace is
+  likewise recorded per pad-ON session.
+- **NEW diagnostic (no gate attached): resolution-threading rate.** Per
+  turn, from artifacts already persisted (recognition_moments rows,
+  stored suggestion metadata, dialogue logs): (i) was a moment written;
+  (ii) does the stored suggestion carry `metadata.dialecticalStrategy`;
+  (iii) when a moment exists, is its `synthesis_resolution` non-empty.
+  Aggregated per arm. This maps outcomes to explanation (a): a high
+  threading rate on codex (resolutions non-empty and delivered) with a
+  persisting check-in null points AWAY from (a) and at genre/policy; a
+  still-low threading rate on codex localizes (a) as stack-independent.
+  Diagnostic only — it cannot flip the §10.4 gates.
+
+### 10.4 Frozen thresholds and stop rules
+
+Carried from §9.4 with the canary made explicit:
+
+- **Codex-generation canary (= pad-ON session 1, not an extra
+  session)**: 4/4 turns clean with non-empty delivered messages, AND
+  the §7.4 gate (`total_recognition_moments >= 1`, live DB) — §7.4's
+  gate is unchanged in force. Any generation failure, empty output, or
+  bridge error: STOP, fix, re-run the canary via resume before any
+  further spend. (This is the §9.6 "pad writes still occur" check on
+  the new stack.)
+- **Live delivery gate after pad-ON session 2**: `--verify-live`, under
+  §9.7's recorded instrument corrections (pad-only marker scoping; the
+  scenario-echo false-positive immunity standard). Pre-declared
+  observable change: `apiPayload` entries on this stack come from the
+  `cli_capture` channel.
+- **Structural-signal gate**: pad-ON ≥ 3/4 AND pad-OFF = 0/4 —
+  unchanged.
+- **Red flag**: any pad-OFF content-bearing hit → investigated as
+  leakage, never a pad-OFF finding — unchanged.
+- **The two frozen §9.7 interpretation caveats carry over verbatim**:
+  (i) a check-in miss is "delivered-but-not-used", NOT "not delivered"
+  (the threading diagnostic now partially disambiguates, and delivery
+  itself is re-verified per the gates above, but the caveat binds the
+  verdict wording exactly as in §9); (ii) the scenario plants
+  prior-session vocabulary in BOTH arms, so any hit carries the
+  symmetric scenario-echo caveat.
+- **Envelope**: exactly 6 sessions / 24 turns, canary included. Row- or
+  session-level instrument failures are excluded from denominators and
+  reported, per §3/§7.4/§8.5/§9.4. Nothing beyond this envelope —
+  including any output-side lever implementation (§10.5) — without a
+  fresh pre-registration and go.
+- Directional-only at n = 3 sessions/arm, as everywhere in this arc.
+
+### 10.5 Interpretation map (frozen before results)
+
+- **Gate PASS on codex** (pad-ON ≥3/4, pad-OFF 0/4): §9's null was
+  stack-bounded — a capability artifact, per the user's false-negative
+  suspicion. Explanation (b) confirmed as sufficient at this n;
+  (a) may still co-exist (read the threading diagnostic), but is not
+  needed to explain §9. The A2/A3 nulls inherit a stack-bounded caveat.
+- **Symmetric FAIL replicating §9's shape** (pad-ON 0/4, pad-OFF 0/4,
+  no red flag), with a HIGH codex threading rate: the null survives a
+  strong model AND working resolution-threading — the block localizes
+  to output genre/policy (the §9.7 reading strengthens); the
+  false-negative hypothesis is not supported for THIS design's scored
+  channel. The nemotron/kimi deprecation stands regardless (it is
+  policy, not contingent on this result).
+- **Symmetric FAIL with a LOW codex threading rate**: (a) survives the
+  stack swap — the threading defect is architectural; fixing it (e.g.
+  wiring negotiation resolutions into delivery behind a flag) becomes
+  the licensed next design question, separately pre-registered.
+- **Mixed / partial** (pad-ON 1-2/4, or any pad-OFF hit): directional
+  only; report slot-level results with both carried caveats; no verdict
+  language beyond "not licensed at this n".
+- In ALL branches: per the new standing rule, any future null generated
+  on nemotron/kimi is stack-bounded until replicated strong; this
+  section's result determines whether that caveat retroactively
+  attaches to §7-§9's substantive readings ((a)/(b) adjudication), not
+  whether the policy holds.
+
+### 10.6 Implementation log
+
+**2026-07-07: Section frozen and committed before any spend.** Bridge
+(Part 1) and policy (Part 2) landed as commits e11b4c1e / f1791417 with
+hermetic proofs; no paid session has run under this section yet.
+Execution follows: canary (pad-ON session 1) → §7.4 + canary gates →
+pad-ON 2 → delivery gate → pad-ON 3 → pad-OFF 1→2→3 → `--score` →
+verdict + §9-comparison recorded here and on the workplan card.
+
+**2026-07-07: In-flight instrument defect found by the canary itself,
+fixed and committed before any successful spend (b901d152).** The first
+two canary attempts died in ~233ms with "Provider codex not configured
+(missing API key)" and were auto-classified transient (zero rows
+persisted, pad untouched — verified). Root cause, established with
+temporary instrumentation (a `handles()`/setter trace): the hook was
+registered inside `evaluationRunner`'s lazy
+`import('../tutor-core/index.js').then(...)` block, whose continuation
+is serviced by loader macrotasks — and this run's entire path to the
+first LLM call is synchronous/microtask-only (better-sqlite3 + config
+reads), so the registration fired only at process teardown, AFTER the
+failed call. This also explains why the hermetic test had passed: its
+setup awaited a 25ms timer (a macrotask), unknowingly masking the race.
+Fix: register synchronously at module load via the existing static
+namespace import; new deterministic regression test (static import →
+synchronous `handles('codex')` check in a child process, no event-loop
+turn allowed). Instrument repair, not a design change; the two burned
+attempts consumed no envelope rows (transient, unpersisted).
+
+**2026-07-07: Canary (pad-ON session 1) + both live gates PASS; codex
+stack confirmed live end-to-end.**
+
+- **Pad-ON session 1** = `eval-2026-07-07-139daa20` (4/4 turns clean,
+  `success=1`, non-empty suggestions, wall-clock 6.7 min): canary gate
+  PASS. **§7.4 gate PASS** — `total_recognition_moments = 1` (column ==
+  raw row count == 1; the codex dialectical superego disapproves far
+  less often than nemotron/kimi's — §9's session 1 wrote 4 — but the
+  gate is ≥1 and the moment is real, quoting the session's actual
+  fractions content: "for 1/3 + 1/5, 15 is the least common
+  denominator... compare that with 1/4 + 1/6...").
+- **Pad-ON session 2** = `eval-2026-07-07-ffaac9d7` (4/4 turns clean).
+  **Live delivery gate PASS, at BOTH scoping levels**: naive §9.4 scan
+  12/12 `apiPayload` entries carry prior-session vocabulary from the
+  first ego-generate call onward (markers: fractions, denominator,
+  common denominator) — and, decisively, the §9.7-scoped PAD-ONLY
+  probes pass too: "unnecessarily large denominator" (superego-generated
+  at session-1 runtime, zero occurrences anywhere in
+  config/suggestion-scenarios.yaml) appears 4x in session 2's dialogue
+  log, and "1/3 + 1/5" (present only in the two session-1 scenario
+  blocks, absent from session 2's own scenario text) appears 4x. Unlike
+  §9 — where the pad-only scan hit 0/11 because the dialectical calls
+  were unlogged — the new `cli_capture` channel witnesses these
+  payloads directly: the §9 observability hole is closed in production,
+  not just hermetically.
+- Remaining sessions (pad-ON 3; pad-OFF 1→2→3, cell_93, no learner-id)
+  launched sequentially on the same stack; scoring next.
+
+**2026-07-07: Stage A4-codex completion and verdict — 6/6 sessions
+clean; structural-signal gate FAIL (pad-ON 2/4, pad-OFF 2/4); red flag
+raised and resolved as scenario echo; the §10.5 "mixed/partial" branch
+binds: directional-only reporting, no strong verdict licensed at this
+n. The informative content is in the two comparisons below.**
+
+- **Runs** (all `--skip-rubric`, 4/4 turns each, `success = 1`, 0
+  instrument failures): pad-ON `eval-2026-07-07-139daa20` / `-ffaac9d7`
+  / `-44a48b61` (learner `a4c-drift-padon-v1-2026-07-07`); pad-OFF
+  `eval-2026-07-07-433a19d2` / `-b7b30353` / `-49cbde02` (no
+  learner-id). Wall-clock 5m49s-6m48s per session, ~37.5 min total
+  (vs ~22 min/session on nemotron); cost = Max-plan codex quota, CLI
+  calls report 0 tokens (pre-declared).
+- **Frozen §9.4/§10.4 scoring** (checker `longitudinalDriftChecker@1.2`,
+  artifacts `exports/longitudinal-drift-stage-a4-codex.{json,md}`):
+  session-2 slots MISS in both arms; session-3 slots HIT in BOTH arms
+  (content-bearing check-in + continuity-acknowledgment). Aggregate:
+  pad-ON **2/4** (gate required ≥3/4), pad-OFF **2/4** (gate required
+  0/4) → **FAIL**.
+- **Red flag investigated, not glossed (frozen requirement)**: the
+  pad-OFF session-3 hits are SCENARIO ECHO, the exact pre-registered
+  caveat (ii) shape — session 3's `learner_context` plants "Last
+  session's ratio work is complete; the additive-scaling pattern is
+  resolved" in BOTH arms, and both arms' openings echo it ("Your ratio
+  work is settled. Pause on linear equations..." pad-OFF; "Your ratios
+  are resolved. Pause on linear equations..." pad-ON). Pad-only leakage
+  probes: "unnecessarily large denominator" / "share no factors besides
+  1" / "evades the exact rule" (session-1/3 pad-ON moment text,
+  pre-checked absent from all scenario YAML) — 0 hits in all three
+  pad-OFF logs; a single "x=0 self-check" hit in pad-OFF s3 is the
+  tutor's own compression of session 3's OWN scripted learner turn
+  ("if I substitute x = 0 into x > -3...", scenario YAML lines
+  2341/2603) — same-session content + shared-model idiom, the §8.8
+  '2:3' / §9.7 '4:5' precedent class. **No genuine cross-session
+  leakage; the pad-OFF arm is clean.** By symmetry (caveat (ii)), the
+  pad-ON session-3 hits are equally scenario-echo-attributable — NOT
+  pad-attributable.
+- **§7.4 pad trace**: codex writes far fewer recognition moments —
+  2 total (sessions 1 and 3; session 2 wrote none) vs nemotron's 9
+  (4+3+2): the codex dialectical superego disapproves much less often.
+  Both moments are real, transformative-flagged, and quote live session
+  math.
+- **Threading diagnostic (§10.3) — explanation (a) CONFIRMED AT CODE
+  LEVEL, stack-independent, and RELOCATED**: `dialecticalStrategy`
+  metadata appears on **0/24 turns in both arms** (nemotron §9 showed
+  the same shape). A hermetic probe (fake provider returning a
+  guaranteed `disapproves: false` critique — perfect-model conditions)
+  reproduces `metadata: null`, proving the loss is not a weak-model
+  empty-revision artifact: on dialogue-enabled cells (cell_40/93 have
+  `dialogue.enabled: true`), `negotiateDialectically` runs only inside
+  the INITIAL `egoGenerateSuggestions`, and the outer dialogue loop's
+  superego-review→ego-revise round then REPLACES the suggestions array
+  wholesale — discarding the negotiated message and metadata every time
+  a revision round runs. §9.7's turn-4 `no_conflict` metadata survived
+  only because that turn converged without revision. The pad→
+  negotiation→delivered-output chain is therefore structurally severed
+  on these cells whenever the dialogue loop revises — the output-
+  threading defect is ARCHITECTURAL (fix = separately pre-registered
+  design decision, per the frozen §10.5 map; not implemented here).
+- **Comparison to §9 (nemotron/kimi baseline, identical design/checker)**:
+  - Surface behavior: nemotron 0/4 and 0/4 — even the scenario-planted
+    continuity text went un-echoed in every opening; codex 2/4 and 2/4
+    — the scripted check-in slot + planted context now sometimes
+    produce a genuine continuity-acknowledging, prior-topic-referencing
+    opening (session 3 both arms; session 2 neither arm). On the
+    slot-level outcome the weak stack was suppressing real behavioral
+    signal.
+  - The pre-registered CONTRAST (pad-ON − pad-OFF): **0 on both stacks**
+    (0/4−0/4 nemotron; 2/4−2/4 codex). The memory channel adds nothing
+    to the delivered opening beyond what the scenario itself states, on
+    either stack.
+- **Answer to the §10.1 question (bounded, directional-only at n=3
+  sessions/arm)**: the stack-bounded-null hypothesis splits. YES at the
+  behavior-surface level — §9's all-zero slot pattern was partly a
+  capability artifact (codex acts on the scripted check-in where
+  nemotron never did), so nemotron/kimi WAS suppressing signal and the
+  standing default-stack rule has empirical support from this arc's own
+  data. NO at the contrast level — the pad-vs-no-pad null REPLICATES
+  exactly on the strong stack, and the code-level threading finding
+  supplies an architectural mechanism (the negotiation channel, where
+  pad content demonstrably lands, cannot rewrite the delivered opening
+  through the dialogue loop's revision). A2-A4's memory-contrast nulls
+  are therefore NOT overturned as false negatives; §9's
+  delivered-but-not-used reading strengthens, now with the block
+  pinned to a specific, fixable code hop rather than a genre/policy
+  conjecture alone.
+- **STOP per §10.4**: the 6-session envelope is exhausted (plus two
+  transient, unpersisted pre-fix canary attempts and one 233ms
+  throwaway debug run, none consuming envelope rows). Output-side
+  levers — wiring negotiation resolutions into delivery, or a
+  check-in-sentence format change — remain fresh design decisions
+  requiring a new pre-registration and go.
