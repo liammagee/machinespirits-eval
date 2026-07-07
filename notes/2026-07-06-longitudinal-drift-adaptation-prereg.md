@@ -2173,3 +2173,458 @@ n. The informative content is in the two comparisons below.**
   levers — wiring negotiation resolutions into delivery, or a
   check-in-sentence format change — remain fresh design decisions
   requiring a new pre-registration and go.
+
+## 11. Stage A5 — negotiation threading + three-arm drift test (fresh pre-registration, frozen before spend)
+
+Part 1 (this session, ordinary engineering — not itself a pre-registered
+empirical claim), commit `289e6930`: adds `threadNegotiationResolution`
+(default `false`) to `tutor-core/services/tutorDialogueEngine.js`'s
+`runDialogue()`. When the outer superego-review → ego-revise loop
+replaces `currentSuggestions` wholesale on a revision round, the flag
+re-applies the negotiated resolution captured from the turn's own
+initial `dialecticalNegotiation` call instead of letting it be silently
+discarded — the exact mechanism §10.6 pinned architecturally (see
+below). Threaded through `tutorApiService.js` (`threadNegotiationResolution`
+param, passed into `runDialogue`'s options) and `services/evaluationRunner.js`
+(CLI flag → run metadata → checkpoint-resume precedence → per-turn
+generation), exposed as `--thread-negotiation-resolution` in
+`scripts/eval-cli.js`. Off by default: byte-identical to every prior
+stage's behaviour without it. Hermetic regression test
+`tests/negotiationThreading.test.js` (6/6 passing) proves both arms on
+a real multi-turn scenario/cell (`cell_40_base_dialectical_suspicious_unified_superego`,
+`longitudinal_drift_session_1_multiturn_checkin`, fake CLI hook, zero
+network): flag off reproduces the discard exactly (post-revision
+suggestions and trace entries lack `dialecticalStrategy` metadata even
+though negotiation demonstrably runs every turn); flag on threads both
+the metadata and the negotiated message text through every post-revision
+round into the delivered/stored suggestion. Full suite green (5075/5075,
+1 pre-existing skip), lint and prettier clean.
+
+### 11.1 Purpose and rationale
+
+§10.6's hermetic perfect-model probe (a fake provider guaranteeing
+`disapproves: false`) still reproduced `metadata: null` on every
+post-revision turn — proving the §9/§10 checker null's most plausible
+remaining architectural explanation, (a) output-threading defect, is
+real and not a weak-model artifact: `dialecticalStrategy` metadata
+appeared on 0/24 turns in BOTH arms of the real A4-codex paid run. §10's
+own closing text named the fix — "wiring negotiation resolutions into
+delivery" — as "a separately pre-registered design decision, not
+implemented here." Part 1 is that decision, implemented and hermetically
+proven. This section pre-registers the empirical question built on top
+of it, before any paid spend: does actually threading the resolution
+through change the structural-signal verdict that has been null or
+mixed at every prior stage that reached this checker (§9: 0/4–0/4
+nemotron/kimi; §10: 2/4–2/4 codex, "mixed/partial", no clean verdict
+licensed)? And — the sharper, harder question — can the fix be trusted,
+i.e. does it ever manufacture apparent cross-session continuity when
+there is no real memory behind it to carry forward?
+
+That second question is why this is a three-arm design rather than a
+simple pad-ON-with-threading rerun. Threading only re-applies whatever a
+turn's OWN initial `negotiateDialectically` call produced; it has no
+special knowledge of whether that call had real pad content available.
+If threading can make a check-in read as content-bearing even with the
+pad absent, that would be a fabrication risk indistinguishable from
+memory at the checker level — a strictly worse outcome than the null it
+would be curing. Arm 3 exists to catch exactly that.
+
+### 11.2 Design
+
+Reused unchanged from §9–§10: cell pair `cell_40_base_dialectical_suspicious_unified_superego`
+(pad-ON candidate) / `cell_93_base_dialectical_suspicious_unified_superego_nopad`
+(pad-OFF candidate) — the only pairing used anywhere in the Line A arc;
+the three `longitudinal_drift_session_{1,2,3}_multiturn_checkin`
+scenarios and their scripted check-in slot; generation stack
+`codex.gpt-5.5` for ego and superego via the CLI bridge
+(`--ego-model codex.gpt-5.5 --superego-model codex.gpt-5.5`), per
+CLAUDE.md's "Model stack default" rule; the frozen checker
+`longitudinalDriftChecker@1.2` (`scoreContentBearingCheckIn` primary,
+`scoreContinuityAcknowledgment` secondary), byte-unchanged.
+
+**Three arms** (task-specified, each a full 3-session sequence on its
+own fresh identity):
+
+- **Arm 1 — pad-ON + threading ON.** Learner-id
+  `a5-drift-padon-threadon-v1-2026-07-07`. `--thread-negotiation-resolution`
+  set. The primary experimental condition: memory delivery (established
+  working since §8/§9) combined with the now-fixed negotiation-to-delivery
+  hop.
+- **Arm 2 — pad-ON + threading OFF.** Learner-id
+  `a5-drift-padon-threadoff-v1-2026-07-07`. Flag NOT set. This is the
+  exact replication control of A4-codex §10: same cell, same scenarios,
+  same stack, same pad-ON condition — a fresh, contemporaneous rerun
+  rather than a re-citation of §10's own six rows, so the arm-1-vs-arm-2
+  contrast is not confounded by anything that drifted between
+  2026-07-07's two sessions (model version, prompt content, harness
+  state). **§10 comparison line (frozen):** §10's pad-ON result on this
+  identical design was **2/4**. Arm 2's result is reported directly
+  alongside that number, unadjusted; a large deviation either direction
+  (e.g. 0/4 or 4/4) is itself informative about run-to-run stochasticity
+  at this n and must be flagged as such, not silently treated as
+  confirming or overturning §10.
+- **Arm 3 — pad-OFF + threading ON.** No learner-id (established
+  pad-OFF convention — the runner assigns per-dialogue synthetic ids on
+  the multi-turn path). `--thread-negotiation-resolution` set. The
+  critical control: there is no persisted pad, so `negotiateDialectically`
+  has no cross-session content available to any turn's negotiation in
+  the first place. Any content-bearing check-in hit here cannot be
+  explained by threading correctly carrying forward real memory — it
+  would have to be scenario echo (the established `learner_context`
+  confound, §10.6) or the fix itself fabricating apparent continuity.
+  Threading is a same-turn, same-session mechanism (it re-applies a
+  turn's own initial negotiation onto that turn's own post-revision
+  suggestion); it is not itself a cross-session channel, so a structural
+  0/4 is the mechanistically expected outcome — this arm exists to
+  confirm that expectation empirically rather than assume it.
+
+**Row count**: 3 arms × 3 sessions = 9 rows / 36 turns (each `_checkin`
+session is 4 turns, matching §9/§10). Budget: ≈60 minutes of codex
+quota, extrapolating A4-codex's observed ~6.25 min/session average
+(range 5m49s–6m48s over 6 sessions).
+
+**Execution order**: arm 1's session 1 runs alone first as the
+threading-live canary (§11.4). After it clears, arm 1's sessions 2–3
+run to completion, each gated, strictly sequentially — arm 1 and arm 2
+are the direct pairwise contrast and share the same codex quota window,
+so they run sequentially relative to each other rather than concurrently
+(arm 2 begins only once arm 1's full 3-session sequence and its own
+gates have cleared). Arm 3 has no cross-session state to protect
+(mirroring §10.2's own reasoning for its pad-OFF concurrency allowance)
+and may run interleaved with whichever pad-ON arm is not currently
+blocked on a gate check, capped at 2 sessions in flight at any time —
+the same cap §10 used.
+
+**Env**: `CLI_PROVIDER_CODEX_TIMEOUT_MS=600000`. `CODEX_REASONING_EFFORT`
+left at the bridge default. Not an adaptive-runner cell — `ADAPTIVE_TUTOR_LLM`
+is not applicable.
+
+**Idempotent resume through kills**: unchanged from §10.2 — each session
+is one `eval-cli run ... --runs 1 --skip-rubric` invocation; a killed
+session leaves a failed/incomplete row, re-run via resume before
+proceeding; a pad-ON arm (1 or 2) that dies mid-session has its pad
+inspected first, and if partial-session moments would contaminate the
+schedule, that arm restarts under a fresh learner-id suffix (`...-v2`),
+recorded in the implementation log.
+
+### 11.3 Outcomes
+
+- **Primary and secondary**: identical instruments to §9.3/§10.3 —
+  `scoreContentBearingCheckIn` and `scoreContinuityAcknowledgment`,
+  scored on each session's opening tutor turn
+  (`suggestions[0].message`), aggregated per arm into the same frozen
+  4-slot scale (2 sessions [2, 3] × 2 checkers, 0–4). The §9/§10 pad-content
+  secondary trace is recorded per pad-ON arm (1 and 2).
+- **New diagnostic (no gate attached, extends §10.3's threading
+  diagnostic): per-turn threading-delivery rate.** For all 36 turns
+  across all three arms, from artifacts already persisted: does the
+  stored suggestion carry non-null `metadata.dialecticalStrategy`, and
+  when it does, is the negotiated text detectably present in the
+  delivered message (mirroring the hermetic test's own assertion
+  shape). Expected shape if the fix is working as designed: arm 1 and
+  arm 3 both show a materially higher rate than arm 2 (which should
+  replicate §10's 0/24 finding, since the flag is off); arm 3's rate
+  being nonzero is not itself informative about memory (see §11.2) —
+  only a PAIRED content-bearing-checker hit in arm 3 is.
+- **§10 comparison line**: restated from §11.2 — arm 2's fresh 2026-07-07
+  pad-ON/threading-OFF result is reported directly against §10's own
+  pad-ON 2/4, unadjusted, as the design's built-in same-day replication
+  check.
+
+### 11.4 Frozen thresholds and stop rules
+
+1. **Threading-live canary (arm 1, session 1 only, not an extra row).**
+   Normal generation hygiene (4/4 turns clean, non-empty delivered
+   messages) AND at least 1 of the 4 turns' stored suggestion carries
+   non-null `metadata.dialecticalStrategy`. This is the live-production
+   counterpart to the hermetic test — proof the fix actually fires
+   outside a fake-hook harness. FAIL → STOP, investigate, fix, re-canary
+   via resume before any further spend.
+2. **§7.4 precondition gate (arms 1 and 2, each after its own session
+   1).** `total_recognition_moments >= 1`, live DB. Unchanged in force
+   from A2 onward. FAIL on either arm → STOP that arm; a contaminated
+   partial pad restarts under a fresh learner-id suffix, recorded in the
+   implementation log.
+3. **Delivery gate (arms 1 and 2, each after its own session 2).**
+   §10's `--verify-live` method exactly: strict pad-only marker scoping
+   — only markers that could originate from a prior session's own
+   superego-generated recognition-moment text, never scenario-planted
+   `learner_context` vocabulary — found in session-N's outgoing
+   `apiPayload` (via the `cli_capture` channel on this stack). Checked
+   identically on both pad-ON arms; structurally not applicable to arm 3
+   (no pad). FAIL → triage per the established VOID-vs-genuine-absence
+   pattern (§9.7/§10.6) before continuing that arm.
+4. **Structural-signal gate (frozen, checked once all 9 sessions are
+   scored)**: **arm 1 ≥ 3/4 AND arm 2 ≤ 1/4 AND arm 3 = 0/4**, all on
+   the same 4-slot aggregate. This is the signal criterion for a clean
+   read; see §11.5 for how partial patterns are interpreted.
+5. **Red flag (arm 3 — the critical control).** ANY arm-3
+   content-bearing-check-in or continuity-acknowledgment hit, at any
+   session, is flagged and individually investigated (scenario-echo per
+   §10.6's precedent vs. genuine fabrication) before it is folded into
+   any interpretation. An arm-3 hit that survives scenario-echo triage
+   is reported as a serious adverse finding about the fix — a threading
+   mechanism that manufactures apparent continuity is not a fix — and
+   overrides any positive arm-1 reading in the headline verdict.
+6. **Envelope**: exactly 9 sessions / 36 turns total across all three
+   arms (the canary is arm-1 session 1, already counted). Nothing beyond
+   this — including any further output-side lever — runs without a
+   fresh pre-registration and go. Directional-only at n = 3 sessions per
+   arm, as everywhere in this arc.
+
+### 11.5 Interpretation map (frozen before results)
+
+- **Clean signal** (arm 1 ≥3/4, arm 2 ≤1/4, arm 3 = 0/4): threading
+  does exactly what it was built to do — it recovers the
+  memory-into-delivery path without fabricating content when there is
+  nothing real to deliver. This would be the first positive
+  structural-signal result anywhere in the Line A arc (§9 and §10 were
+  null or mixed). Licenses, as a separate future pre-registration,
+  turning the flag on more broadly — not licensed by this section
+  alone.
+- **Arm 1 clears its own bar but arm 2 lands near §10's own 2/4** (not
+  ≤1/4), arm 3 = 0/4: the strict arm-2 ≤1/4 cutoff was calibrated before
+  seeing that fresh reruns of the same design can land away from §10's
+  point estimate at this n. Report both numbers plainly against the §10
+  comparison line; let the SIZE of the arm-1-minus-arm-2 gap carry the
+  interpretation rather than the pass/fail label on arm 2 alone. Still
+  directional-only; do not upgrade to a clean-signal verdict.
+- **Arm 1 low (<3/4) despite the threading-live canary passing**: the
+  fix is threading *something* through, but not necessarily
+  session-(N-1)-content-bearing something. Cross-check the threading-delivery
+  diagnostic (§11.3) against the content-bearing checker specifically:
+  high delivery-rate + low content-bearing-rate localizes the remaining
+  gap upstream, to what the negotiation prompt itself draws on, not to
+  the now-fixed delivery hop — a different, separately pre-registerable
+  question. Do not conflate the two.
+- **Arm 3 nonzero, cleanly attributable to scenario echo** (per §10.6's
+  precedent: both arms' `learner_context` plants prior-session-adjacent
+  vocabulary identically): note it, exclude it from the headline
+  verdict, do not treat as a threading defect — but state explicitly
+  that the echo confound is unresolved as a design limitation (see
+  §11.6).
+- **Arm 3 nonzero, NOT attributable to scenario echo**: reported as a
+  genuine adverse finding regardless of arms 1–2's results — a fix that
+  works by hallucinating memory is not a fix. This is the one branch
+  that overrides an otherwise-clean signal on arms 1–2.
+- **Symmetric-ish null** (arm 1 also low, ~0–1/4): the discard was
+  fixed but the content still is not there to thread — §9/§10's
+  "delivered-but-not-used" framing was incomplete. The deeper gap is
+  upstream of delivery (what the negotiation prompt draws on), not the
+  output hop Part 1 fixed. Read §10's 2/4–2/4 as closer to a ceiling
+  than a floor for this cell/scenario/stack combination, not as
+  something the threading bug was suppressing.
+- In all branches: this section adjudicates the threading-defect
+  question specifically; it does not re-open the nemotron/kimi
+  stack-bounded caveat (§9/§10 territory) or license any run beyond the
+  9-session envelope.
+
+### 11.6 Scope and limits specific to A5
+
+- n = 3 sessions/arm, 3 arms — directional-only, as every stage in this
+  arc. No scaling without a fresh pre-registration.
+- Single stack (`codex.gpt-5.5`) — does not re-adjudicate §9's
+  nemotron/kimi result, which remains stack-bounded pending its own
+  rerun; that is out of scope here.
+- Single cell pair (`cell_40`/`cell_93`) — the only pairing used
+  throughout Line A. A5 does not test whether threading matters for any
+  other `dialectical_negotiation` cell.
+- The dialectical layer's own sub-calls remain unlogged with prompt
+  text — Part 1 changes what is DELIVERED, not what is logged, so the
+  §9.7/§10.2 observability blind spot is unchanged. Delivery verification
+  continues to triangulate via recognition-moment artifacts, pad state,
+  and the new threading-delivery diagnostic, not `apiPayload` grep on
+  the dialectical layer itself.
+- The scenario-echo confound (§10.6) is a standing, unresolved
+  instrument limitation, not something this stage's design fixes — it
+  is the reason arm-3 hits require individual triage rather than a bare
+  count.
+- A5 tests whether the engineering fix changes the structural-signal
+  verdict and whether it is safe (non-fabricating). It is not a claim
+  about the tutor's understanding or intent — same framing discipline as
+  every other stage: architecture-level behaviour, not mind-reading.
+
+### 11.7 Stages and gates
+
+- **Stage A5-build (no paid spend)**:
+  - Threading tests green: `tests/negotiationThreading.test.js` (6/6 —
+    already true, commit `289e6930`).
+  - Full suite green, lint and prettier clean on all Part 1 files
+    (already true, same commit).
+  - New three-arm scorer: `scripts/report-longitudinal-drift-stage-a5-live.js`,
+    modeled on `-a4-live.js`'s `--gate` / `--verify-live` / `--score`
+    mode shape, generalized to three arm tokens (`padon-threadon`,
+    `padon-threadoff`, `padoff-threadon`) and the three distinct gate
+    thresholds in §11.4 point 4, plus a threading-delivery diagnostic
+    mode reporting `metadata.dialecticalStrategy` presence per turn.
+  - Gate: script written; a shape-only smoke of its `--score` path
+    (e.g. reusing A4-codex's existing run ids to exercise the
+    three-arm aggregation and threshold logic, clearly labeled as a
+    smoke and not conflated with A5's own data) passes before any paid
+    session runs.
+- **Stage A5-pilot (paid, codex quota)**:
+  - Session sequence: arm-1 session 1 (canary, hard gate) → arm-1
+    sessions 2–3 (each gated) → arm-2 sessions 1–3 (each gated,
+    sequential after arm 1 completes) — with arm-3's 3 sessions
+    interleaved opportunistically throughout (capped at 2 sessions in
+    flight), per §11.2's execution order.
+  - Gate: §11.4's gates 1–3 clear live (or are triaged to a recorded,
+    non-blocking resolution) before scoring; final verdict per §11.4
+    gate 4 and gate 5, read through §11.5's interpretation map, recorded
+    in the implementation log below.
+
+### 11.8 Implementation log
+
+- **2026-07-07 canary (arm-1 session 1, run `eval-2026-07-07-7dbccd2f`,
+  learner `a5-drift-padon-threadon-v1-2026-07-07`, 6m02s, 12 API calls,
+  4/4 turns clean)**. **Gate 1 (threading-live) PASS, stronger than the
+  bar**: `metadata.dialecticalStrategy` present on **4/4** stored turns
+  (bar was ≥1/4), verified both by the scorer and directly on the DB
+  row's `suggestions` JSON (row 33980) — all four `no_conflict`. Against
+  §10's 0/24 on the identical cell/scenario/stack, this is the first
+  live-production (non-hermetic) proof that Part 1's threading survives
+  the revision loop. **Gate 2 (§7.4 precondition) INSTRUMENT_FLOOR**:
+  `total_recognition_moments = 0` (pad exists, raw rows 0). Investigated
+  before any disposition: the four superego critiques' raw severities
+  were 0.18 / 0.52 / 0.62 / 0.12 (two with raw `disapproves: true`), but
+  `dialecticalEngine.js`'s pre-existing scaling (`severity × compliance
+  (0.7 default) > rejection_threshold (0.5 default)`, i.e. an effective
+  raw bar ≈ 0.714) re-derives `disapproves`, so all four turns resolved
+  `no_conflict` and nothing was written to the pad. Part 1 is exonerated
+  by construction: commit `289e6930` never touched `dialecticalEngine.js`
+  (file list: eval-cli, evaluationRunner, the new test, tutorApiService,
+  tutorDialogueEngine), and the scaling behaviour is byte-identical to
+  what §10 ran under. This is §10's own recorded warning realized —
+  "codex disapproves far less than nemotron (2 moments total vs 9); the
+  §7.4 ≥1 gate is much closer to the floor" — A4-codex's session 1 drew
+  one critique above the bar; this draw's maximum was 0.62.
+- **2026-07-07 disposition (recorded before further spend)**: per
+  §11.4pt2's own remediation clause ("…restarts under a fresh learner-id
+  suffix, recorded in the implementation log"), arm 1 restarts **once**
+  under `a5-drift-padon-threadon-v2-2026-07-07`. The floored v1 session
+  is excluded as a precondition failure (not scored; its pad is empty so
+  nothing carries over, and the v1 id is never reused) — the scored
+  design remains 9 sessions / 36 turns. Bounds, frozen now: **one
+  restart per pad-ON arm, maximum**; a second consecutive floor on the
+  same arm is a hard stop for that arm and the pilot reports
+  "instrument floor on this stack" as its finding rather than re-rolling
+  further (a stochastic precondition may not be fished into passing).
+  The restarted session 1 re-runs the full canary discipline (runs
+  alone, gate 1 + gate 2) before arm 1 proceeds. Cell config is NOT
+  touched — loosening `compliance`/`rejection_threshold` to make the
+  gate easier would break §11.2's "reused unchanged from §9–§10" and is
+  explicitly rejected.
+- **2026-07-07 arm-1 restart (v2) — SECOND CONSECUTIVE FLOOR → HARD
+  STOP for arm 1.** Run `eval-2026-07-07-33d38153`, learner
+  `a5-drift-padon-threadon-v2-2026-07-07`, 4/4 turns clean. Gate 1 PASS
+  again (`metadata.dialecticalStrategy` on 4/4 stored turns, row 33981 —
+  threading is now live-proven on two independent sessions, 8/8 turns).
+  Gate 2 INSTRUMENT_FLOOR again (`total_recognition_moments = 0`, raw
+  rows 0, authoritative live-DB check). Per-draw severities for v2 were
+  not retained (stdout truncated to its tail; the dialectical layer's
+  responses are unlogged by design — the standing §9.7/§10.2 blind
+  spot; arm-3 sessions capture full stdout to files as a process
+  correction). Per the one-restart bound frozen in the entry above, arm
+  1 is hard-stopped; no further re-rolls. **Floor finding**: across A5's
+  two arm-1 draws (0/8 turns) plus A4-codex's three sessions (2/12
+  turns), the codex superego's compliance-scaled severity crosses the
+  disapproval bar too rarely for the §7.4 precondition to hold reliably
+  — the recognition-moment channel on this stack/cell/scenario sits at
+  or below the instrument floor. This lands upstream of even §11.5's
+  "symmetric-ish null" branch: not "the negotiation doesn't draw on the
+  pad" but "the pad never receives content in the first place".
+- **2026-07-07 consequences for arms 2–3 (recorded before further
+  spend)**: **Arm 2 does NOT run** — its frozen start condition
+  (§11.2: "arm 2 begins only once arm 1's full 3-session sequence and
+  its own gates have cleared") is unsatisfiable after arm 1's hard
+  stop, and its own §7.4 gate carries the same demonstrated floor risk,
+  so running it would be spend against the frozen order with high
+  probability of a third floor datum. The §10 comparison line is
+  therefore VACANT for A5 (no fresh arm-2 replication of §10's 2/4;
+  §10's own number stands unchallenged). **Arm 3 proceeds** — it is
+  structurally untouched by the floor (no pad, no §7.4 gate; the
+  delivery gate is "structurally not applicable" per §11.4pt3) and
+  still answers the safety half of §11.1's pre-registered question:
+  does threading manufacture apparent continuity when there is no
+  memory behind it? With threading now live-proven (8/8 turns), the
+  fabrication control is MORE informative, not less. Arm 3's 3 sessions
+  run sequentially (trivially within the 2-in-flight cap), no
+  learner-id, `cell_93`, flag ON. Envelope accounting: 2 sessions spent
+  (both excluded as precondition failures), 3 to come — total spend 5
+  of the 9-session envelope; arms 1–2's 6 remaining scored-design
+  sessions are stopped/blocked, not deferred.
+- **2026-07-07 arm-3 execution (3/3 sessions clean, full stdout
+  captured)**: session 1 `eval-2026-07-07-74fc5845` (severities
+  0.55/0.68/0.18/0.52, all no-conflict), session 2
+  `eval-2026-07-07-a858c7b4` (0.25/0.42/0.58/0.42, all no-conflict),
+  session 3 `eval-2026-07-07-72f7d609` — where a REAL conflict fired on
+  turn 0 (raw 0.72 × 0.7 = 0.504 > 0.5, principle `socratic_rigor`) and
+  the stored suggestion carries `dialecticalStrategy:
+  'dialectical_synthesis'` with the negotiated register visibly in the
+  550-char delivered opening ("…we should use **Alignment** on the
+  sign-change issue…"). That is the first live-production threading of
+  a genuinely negotiated (non-`no_conflict`) resolution — under §10's
+  pre-fix architecture this is exactly the metadata/message that was
+  discarded 24/24 times. Threading-delivery diagnostic: 12/12 arm-3
+  turns tagged (20/20 across all five A5 sessions including the two
+  excluded arm-1 draws).
+- **2026-07-07 arm-3 scoring + §11.4pt5 red-flag triage (VERDICT)**:
+  frozen 4-slot aggregate — **arm 3 = 4/4** (content-bearing check-in
+  AND continuity-acknowledgment HIT on both sessions 2 and 3; evidence
+  tokens "fractions" and "ratio"). The pre-declared red flag fired and
+  was triaged hit-by-hit against the scenario YAML: session 2's opening
+  ("Your fractions work is resolved, but ratio practice shows a new
+  pattern: adding to both terms instead of multiplying") restates the
+  s2 scenario's own planted `learner_context` ("Last session's
+  fractions work is complete… resolved"; the additive-scaling
+  misconception description); session 3's opening ("Ratio work is
+  done… Your ratio work is resolved…") restates s3's planted "Last
+  session's ratio work is complete… resolved" ("Alignment" is
+  dialectical-strategy register, not memory content). Cross-session
+  leakage greps: zero session-1-specific tokens (1/4, 1/6, 3/12, 2/12,
+  common denominator…) in s2/s3 outputs, zero session-2-specific tokens
+  (2:3, 4:5, 4:6, additive…) in s3 — and structurally there was nothing
+  to leak (every A5 pad-ON pad holds 0 moments; arm 3's synthetic pads
+  are per-dialogue). **Triage verdict: scenario echo, NO fabrication**
+  — §11.5 branch 4, not the adverse branch. The fix does not invent
+  prior-session content.
+- **2026-07-07 the sharpened instrument finding (new, beyond §11.5
+  branch 4's anticipation)**: threading AMPLIFIES scenario echo into
+  the delivered opening. §10's pad-OFF (threading OFF, same scenarios,
+  same stack) scored 2/4 with session 2 miss/miss; arm 3 (pad-OFF,
+  threading ON) scores 4/4 with session 2 HIT/HIT. Mechanism: the
+  negotiated/threaded register restates `learner_context` (including
+  the planted continuity lines), and Part 1 now correctly carries that
+  register into delivery — so the checker's positive signals saturate
+  on echo alone, with no pad anywhere. Consequence, stated plainly:
+  **this checker cannot adjudicate memory-use with threading ON on
+  these scenarios** — had arm 1 passed its precondition and scored
+  4/4, the result would have been uninterpretable; the control arm did
+  exactly the job it was pre-registered to do. Any future stage needs
+  echo-clean scenarios (no planted prior-topic vocabulary in
+  `learner_context`) or a primary outcome keyed to pad-only markers
+  (§10's `--verify-live` scoping elevated from delivery-gate to
+  outcome), freshly pre-registered.
+- **2026-07-07 final A5 verdict (through §11.5's frozen map) and
+  STOP**: Gate 4 (structural signal) **NOT_EVALUABLE** — arms 1–2 not
+  run (arm 1 hard-stopped at the §7.4 floor after its one bounded
+  restart; arm 2's start condition unsatisfiable); the scorer artifact
+  (`exports/longitudinal-drift-stage-a5.{json,md}`) reports NOT RUN
+  explicitly rather than vacuous 0/4s. Gate 5 (red flag) resolved:
+  echo-attributable, no fabrication. §10 comparison line: VACANT (no
+  fresh arm-2 datum; §10's 2/4 stands). What A5 establishes: (1) Part
+  1's threading fix is live-proven — 20/20 turns tagged across five
+  sessions, including one genuinely negotiated `dialectical_synthesis`
+  under real conflict — and safety-triaged (echoes, never invents); (2)
+  the codex §7.4 precondition floor is now a two-draw finding (0/8
+  turns; A4-codex's 2/12 was already near-floor) — the pad never
+  receives content on this stack/cell/scenario, upstream of everything
+  Part 1 fixed; (3) the arc's headline question ("does the tutor use
+  its memory once the architecture stops discarding it") is
+  UNANSWERABLE on this stack with this instrument: memory never
+  materializes (floor), and even if it did, the checker cannot separate
+  threaded memory from threaded echo (amplification). Envelope: 5 of 9
+  sessions spent (2 excluded precondition failures + 3 scored arm-3),
+  20 turns of 36. STOP per §11.4pt6 — nothing further, including
+  echo-clean scenario redesigns, runs without a fresh pre-registration
+  and go.

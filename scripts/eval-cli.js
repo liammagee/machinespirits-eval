@@ -71,6 +71,12 @@ import 'dotenv/config';
  *                          When supplied, ALL dialogues in this invocation share the ID,
  *                          letting tutor-core's Writing Pad accumulate state session-over-session.
  *                          Omit for per-dialogue synthetic IDs (default behaviour).
+ *   --thread-negotiation-resolution
+ *                          For 'run' (A5): carry the negotiated dialectical resolution
+ *                          into the delivered suggestion across revision rounds, instead
+ *                          of letting a revision round silently discard it. Off by default
+ *                          (byte-identical to pre-A5 behaviour). Survives resume-after-kill
+ *                          via checkpoint + run metadata.
  *
  * The default `run` uses the 2x2x2 factorial design:
  *   Factor A: Recognition prompts (off / on)
@@ -1700,6 +1706,10 @@ async function main() {
         // A7 Longitudinal: when supplied, ALL dialogues in this invocation share
         // the Writing Pad keyed by this ID. Omit for per-dialogue synthetic IDs.
         const learnerIdOpt = getOption('learner-id');
+        // A5: carry the negotiated dialectical resolution into the delivered
+        // suggestion across revision rounds (else discarded — see
+        // threadNegotiationResolutionIntoSuggestions in tutorDialogueEngine.js).
+        const threadNegotiationResolutionFlag = getFlag('thread-negotiation-resolution');
         // #3 cross-session memory: opt-in ego prompt extension supplied via a file
         // (a file avoids CLI quoting for the narrative); threads to runEvaluation's hook.
         const externalEgoExtensionFile = getOption('external-ego-extension-file');
@@ -1909,6 +1919,7 @@ async function main() {
           showMessages,
           liveApi,
           learnerId: learnerIdOpt || null,
+          threadNegotiationResolution: threadNegotiationResolutionFlag || false,
           externalEgoExtension:
             externalEgoExtensionFile && fs.existsSync(externalEgoExtensionFile)
               ? fs.readFileSync(externalEgoExtensionFile, 'utf8')

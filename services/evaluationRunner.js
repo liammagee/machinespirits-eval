@@ -1962,6 +1962,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     superegoPromptExtension = null, // Dynamic disposition adjustments for superego
     learnerId = null, // For Writing Pad memory persistence
     dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
+    threadNegotiationResolution = false, // A5: carry negotiated resolution into the delivered suggestion across revision rounds
     behavioralOverrides = null, // Quantitative params from superego self-reflection
     dryRun = false,
     captureApiPayloads = process.env.EVAL_CAPTURE_API_PAYLOADS !== 'false',
@@ -2076,6 +2077,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
               superegoPromptExtension, // Dynamic disposition adjustments for superego
               learnerId, // Activates Writing Pad three-layer memory
               dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
+              threadNegotiationResolution, // A5: carry negotiated resolution into the delivered suggestion across revision rounds
               behavioralOverrides, // Quantitative params from superego self-reflection
               conversationMode, // 'messages' for multi-turn message chains
               internalHistory, // Optional internal ego/superego message transcript
@@ -2240,6 +2242,7 @@ export async function runEvaluation(options = {}) {
     showMessages = false, // true for truncated, 'full' for untruncated API message display
     liveApi = false, // --live: stream one-line display per API call in real time
     learnerId: explicitLearnerId = null, // A7 Longitudinal: shared Writing Pad across runs
+    threadNegotiationResolution: explicitThreadNegotiationResolution = false, // A5 CLI --thread-negotiation-resolution: carry negotiated resolution into the delivered suggestion across revision rounds (OR'd with the profile-level thread_negotiation_resolution flag in runMultiTurnTest)
     externalEgoExtension = null, // opt-in ego prompt extension (e.g. cross-session memory narrative); multi-turn only, folded into fullEgoExtension in runMultiTurnTest
   } = options;
 
@@ -2416,6 +2419,9 @@ export async function runEvaluation(options = {}) {
       learnerModelOverride: effectiveLearnerModelOverride || null,
       learnerEgoModelOverride: effectiveLearnerEgoModelOverride || null,
       learnerSuperegoModelOverride: effectiveLearnerSuperegoModelOverride || null,
+      // A5: run-wide threading arm, re-applied on resume (see resumeEvaluation)
+      // so a test resumed before its first checkpoint still gets the right arm.
+      threadNegotiationResolution: explicitThreadNegotiationResolution || null,
       maxTokensOverride: maxTokensOverride || null,
       dryRun: dryRun || false,
       // Store scenario IDs and profile names for accurate resume
@@ -2541,6 +2547,7 @@ export async function runEvaluation(options = {}) {
           runNum,
           liveApiReporter,
           learnerId: explicitLearnerId,
+          threadNegotiationResolution: explicitThreadNegotiationResolution,
           externalEgoExtension,
         });
 
@@ -3264,6 +3271,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     checkpointState = null,
     liveApiReporter: liveReporter = null,
     learnerId: explicitLearnerId = null, // A7 Longitudinal: pre-empts the synthetic ID
+    threadNegotiationResolution: explicitThreadNegotiationResolution = false, // A5 CLI --thread-negotiation-resolution override
     externalEgoExtension = null, // approach A (#3): opt-in cross-session memory narrative, prepended to fullEgoExtension below
   } = options;
 
@@ -3555,6 +3563,19 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   }
 
   const dialecticalNegotiation = rawProfile?.dialectical_negotiation ?? false;
+  // A5: CLI --thread-negotiation-resolution OR's with an optional static per-cell
+  // default (rawProfile.thread_negotiation_resolution) — lets the SAME cell run
+  // with threading on or off across different invocations (needed for the A5
+  // three-arm design, which reuses cell_40 for both the threaded and unthreaded
+  // arms) without registering a duplicate cell. Precedence mirrors learnerId
+  // above: checkpoint (resume-safety, so a kill mid-dialogue can't silently
+  // flip a session's arm to "threading off") > explicit CLI flag > per-cell
+  // YAML default. Nullish (not ||) coalescing on the checkpoint value: a
+  // checkpointed `false` (e.g. arm-2/arm-3's off-arms) must be honored as-is,
+  // not treated as "unset" and re-derived.
+  const threadNegotiationResolution =
+    cs?.threadNegotiationResolution ??
+    (explicitThreadNegotiationResolution || (rawProfile?.thread_negotiation_resolution ?? false));
   const promptRewritingEnabled = rawProfile?.prompt_rewriting?.enabled ?? false;
   const promptRewritingStrategy = rawProfile?.prompt_rewriting?.strategy ?? 'template';
   const superegoDispositionRewriting = rawProfile?.superego_disposition_rewriting ?? false;
@@ -3585,6 +3606,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     scenarioId: scenario.id,
     learnerId,
     dialecticalNegotiation,
+    threadNegotiationResolution,
     dryRun,
     conversationMode,
     internalHistory,
@@ -4710,6 +4732,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         totalTurns: totalTurnCount,
         dialogueId,
         learnerId,
+        threadNegotiationResolution, // A5: preserve this session's arm across resume-after-kill
         turns,
         turnResults,
         conversationHistory,
@@ -5071,6 +5094,13 @@ export async function resumeEvaluation(options = {}) {
   const learnerModelOverride = metadata.learnerModelOverride || null;
   const learnerEgoModelOverride = metadata.learnerEgoModelOverride || null;
   const learnerSuperegoModelOverride = metadata.learnerSuperegoModelOverride || null;
+  // A5: run-wide threading arm (set once at `run` time, see runEvaluation's metadata
+  // block below). Re-applied per test below so a test resumed from scratch (no
+  // checkpoint yet written, e.g. killed before its first turn completed) still gets
+  // the correct arm instead of silently falling back to threading-off. Any
+  // already-checkpointed test overrides this with its own checkpointed value
+  // (see the cs?.threadNegotiationResolution ?? ... precedence in runMultiTurnTest).
+  const threadNegotiationResolution = metadata.threadNegotiationResolution || null;
 
   // 3. Get existing results for completion checking
   const existingResults = evaluationStore.getResults(runId);
@@ -5306,6 +5336,7 @@ export async function resumeEvaluation(options = {}) {
         verbose,
         runId,
         checkpointState: checkpointState || null,
+        threadNegotiationResolution: threadNegotiationResolution ?? false, // A5: resume-safety (see metadata extraction above)
       });
 
       evaluationStore.storeResult(runId, result);

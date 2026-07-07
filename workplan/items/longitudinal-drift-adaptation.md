@@ -331,3 +331,37 @@ delivered-but-not-used now pinned to a specific fixable hop. STOP per
 §10.4 — output-side levers need a fresh prereg + go. Artifacts:
 exports/longitudinal-drift-stage-a4-codex.{json,md} (nemotron §9 pair
 regenerated deterministically + both pairs now force-added/tracked).
+
+2026-07-07 Claude: Stage A5 (negotiation threading + three-arm drift
+test, prereg §11) executed to its frozen stop rules. Part 1 (commit
+289e6930): threadNegotiationResolution flag (default off,
+byte-identical without it) re-applies the turn's negotiated resolution
+after the dialogue loop's revision replaces suggestions — the §10.6
+architectural discard, fixed at source; hermetic test 6/6. Pilot:
+arm-1 (pad-ON+threading) canary PASSED gate 1 decisively —
+metadata.dialecticalStrategy on 4/4 stored turns vs §10's 0/24, first
+live proof — but hit the §7.4 precondition floor (0 recognition
+moments), and its one bounded restart (v2, per §11.4pt2's remediation
+clause) floored again: 0/8 turns across two draws (A4-codex was
+already near-floor at 2/12) → arm 1 hard-stopped, arm 2's start
+condition unsatisfiable (never ran; §10's 2/4 stands unchallenged).
+Arm 3 (pad-OFF+threading, the fabrication control) ran 3/3 clean:
+threading 12/12 turns (20/20 across all five sessions), including the
+first live threading of a real negotiated dialectical_synthesis under
+genuine conflict (raw severity 0.72 → scaled 0.504 > 0.5). Arm-3
+scored 4/4 — the pre-declared red flag — triaged hit-by-hit against
+scenario YAML: pure scenario echo, NO fabrication (zero
+earlier-session-specific tokens; nothing to leak, all pads empty).
+Sharpened instrument finding: threading AMPLIFIES echo into delivery
+(§10 pad-OFF 2/4 → arm-3 4/4, session 2 flipped miss/miss→HIT/HIT),
+so this checker cannot adjudicate memory-use with threading ON — a
+passing arm 1 would have been uninterpretable; the control arm did its
+pre-registered job. Verdict: gate 4 NOT_EVALUABLE (arms 1-2 not run);
+the arc's headline question is unanswerable on this stack with this
+instrument — memory never materializes (floor), and if it did, memory
+vs echo is indistinguishable here. Envelope: 5 of 9 sessions spent.
+STOP per §11.4pt6 — echo-clean scenarios or pad-only-marker primary
+outcomes are fresh-prereg territory. Artifacts:
+exports/longitudinal-drift-stage-a5.{json,md}; runs
+eval-2026-07-07-{7dbccd2f,33d38153} (excluded precondition failures),
+eval-2026-07-07-{74fc5845,a858c7b4,72f7d609} (arm 3).

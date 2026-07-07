@@ -2348,6 +2348,70 @@ function suggestionSimilarity(sugA, sugB) {
   return matches / maxLen;
 }
 
+/**
+ * A5 negotiation-resolution threading (gated by threadNegotiationResolution).
+ *
+ * The dialectical negotiation layer (negotiateDialectically(), invoked once
+ * inside the INITIAL egoGenerateSuggestions() call in runDialogue()) writes
+ * its resolution into suggestions[0].message + suggestions[0].metadata
+ * (recognitionMoment / dialecticalStrategy / negotiationRounds). Every
+ * subsequent outer-loop superego-review -> ego-revise round REPLACES
+ * currentSuggestions wholesale with a freshly LLM-generated array that has
+ * no metadata slot — silently discarding that content on essentially every
+ * turn for dialogue-enabled cells (see notes/2026-07-06-longitudinal-drift-
+ * adaptation-prereg.md §10/§11).
+ *
+ * captureNegotiationResolution() snapshots the negotiated message + metadata
+ * right after the initial generation, before any revision round can run.
+ * threadNegotiationResolutionIntoSuggestions() re-applies that snapshot to a
+ * post-revision suggestions array: it re-attaches the metadata unconditionally
+ * and appends the negotiated message text only if the revision doesn't
+ * already contain it. Both are pure/deterministic — no model call, no change
+ * to egoRevise's prompt or behavior — so this is a no-op when the captured
+ * snapshot is null (flag off, or no negotiation ran).
+ */
+function captureNegotiationResolution(suggestions) {
+  const first = Array.isArray(suggestions) ? suggestions[0] : null;
+  const metadata = first?.metadata;
+  if (!metadata || metadata.dialecticalStrategy == null) return null;
+  return {
+    message: typeof first.message === 'string' ? first.message : '',
+    metadata: {
+      recognitionMoment: metadata.recognitionMoment,
+      dialecticalStrategy: metadata.dialecticalStrategy,
+      negotiationRounds: metadata.negotiationRounds,
+    },
+  };
+}
+
+function threadNegotiationResolutionIntoSuggestions(suggestions, negotiation) {
+  if (!negotiation || !Array.isArray(suggestions) || suggestions.length === 0) return suggestions;
+  const [first, ...rest] = suggestions;
+  // Already carries negotiation metadata (e.g. re-threaded in an earlier round
+  // of this same dialogue) — leave it alone.
+  if (first?.metadata?.dialecticalStrategy != null) return suggestions;
+
+  const revisedMessage = typeof first?.message === 'string' ? first.message : '';
+  const negotiatedMessage = negotiation.message || '';
+  const negotiatedAlreadyPresent = Boolean(negotiatedMessage) && revisedMessage.includes(negotiatedMessage.trim());
+  const mergedMessage =
+    !negotiatedMessage || negotiatedAlreadyPresent
+      ? revisedMessage
+      : `${revisedMessage}\n\n${negotiatedMessage}`.trim();
+
+  return [
+    {
+      ...first,
+      message: mergedMessage,
+      metadata: {
+        ...(first?.metadata || {}),
+        ...negotiation.metadata,
+      },
+    },
+    ...rest,
+  ];
+}
+
 const INTERNAL_HISTORY_DEFAULTS = {
   enabled: false,
   surface: 'messages',
@@ -2492,6 +2556,7 @@ export async function runDialogue(context, options = {}) {
     recognitionSeeking = 0.6,  // How much ego seeks recognition from learner (0.0-1.0)
     learnerId = null, // Phase 1: Writing Pad persistence
     dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
+    threadNegotiationResolution = false, // A5: carry the negotiated resolution into the delivered suggestion across revision rounds (else discarded — see threadNegotiationResolutionIntoSuggestions)
     behavioralOverrides = null, // Quantitative params from superego self-reflection
     _dialogueId = null, // Internal: reuse dialogue ID for multi-turn continuity
     _skipLogging = false, // Internal: skip file logging for multi-turn intermediate steps
@@ -2772,6 +2837,11 @@ export async function runDialogue(context, options = {}) {
     });
   }
   currentSuggestions = egoInitial.suggestions;
+  // A5: snapshot the negotiated resolution now, before any revision round
+  // can discard it. See threadNegotiationResolutionIntoSuggestions() above.
+  const initialNegotiation = threadNegotiationResolution
+    ? captureNegotiationResolution(currentSuggestions)
+    : null;
   recordInternalHistoryEvent(
     unifiedInternalHistory,
     internalHistoryConfig,
@@ -3028,7 +3098,9 @@ export async function runDialogue(context, options = {}) {
         { profileName, from: 'ego', to: 'user', direction: 'response', egoModel, hyperparameters, systemPromptExtension, onToken: makeOnToken('ego', round), messageHistory: egoRevisionHistory }
       );
       onStream?.({ type: 'complete', agent: 'ego', round });
-      currentSuggestions = egoRevision.suggestions;
+      currentSuggestions = threadNegotiationResolution
+        ? threadNegotiationResolutionIntoSuggestions(egoRevision.suggestions, initialNegotiation)
+        : egoRevision.suggestions;
       recordInternalHistoryEvent(
         unifiedInternalHistory,
         internalHistoryConfig,
@@ -3132,7 +3204,9 @@ export async function runDialogue(context, options = {}) {
       { profileName, egoModel, hyperparameters, systemPromptExtension, onToken: makeOnToken('ego', round), messageHistory: rejectionRevisionHistory }
     );
     onStream?.({ type: 'complete', agent: 'ego', round });
-    currentSuggestions = egoRevision.suggestions;
+    currentSuggestions = threadNegotiationResolution
+      ? threadNegotiationResolutionIntoSuggestions(egoRevision.suggestions, initialNegotiation)
+      : egoRevision.suggestions;
 
     // Record the revision exchange in ego's internal chain
     if (useMessageChains) {
