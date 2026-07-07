@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 20 Jun – 21 Jun 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-06-21 window=(2026-06-20,2026-06-21] arxiv=2606.20014,2606.20245 generator=research-roundup-routine -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">20 Jun – 21 Jun 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Two papers from arXiv (both <code>2606.2xxxx</code>, announced June&nbsp;19) across
+  agent architecture and knowledge grounding.
+  Window retiled to <code>(2026-06-20, 2026-06-21]</code> at merge time (2026-07-08 backlog
+  pass): the 2026-06-20 roundup (merged after this branch was cut) now covers
+  <code>(2026-06-18, 2026-06-20]</code>, so this note picks up from there rather than
+  re-claiming 2026-06-18–20. One paper originally drafted here — 2606.20138 (adaptive
+  tutoring prompt router) — is dropped as a result: it is already covered by both the
+  2026-06-20 and 2026-06-23 roundups.
+  Nothing new surfaced this window for ontology, dramaturgy, or rhetoric — noted below.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture / Knowledge Grounding</h2>
+
+<div class="paper hot">
+  <h3>
+    Navigating Unreliable Parametric and Contextual Knowledge: Explicit Knowledge Conflict Resolution for LLM Inference
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Huang Peng, Jiuyang Tang, Weixin Zeng, Hao Xu, Xiang Zhao ·
+    arXiv 2606.20245 · June 18, 2026 ·
+    <a href="https://arxiv.org/abs/2606.20245">https://arxiv.org/abs/2606.20245</a>
+  </div>
+  <p>
+    Proposes MACR (Multi-Agent Conflict Resolution), a framework that rejects the standard
+    binary paradigm of "trust the model" or "trust the context" and instead surfaces
+    conflicts explicitly — between the LLM's parametric knowledge and external context,
+    and among multiple external sources — then adjudicates them through a multi-agent
+    reasoning step. Neither source is privileged <em>a priori</em>; the adjudicating agent
+    weighs credibility, recency, and internal consistency before committing to a response.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The ego-superego architecture is exactly this pattern: the superego's critique is a
+    conflict-resolution step between the ego's parametric priors and the in-context
+    pedagogical constraints. MACR formalises what the project does implicitly and adds
+    a third party (the adjudicator), which maps onto the <em>judge model</em> in the
+    evaluation pipeline. The framework is a candidate design for cells 93–100
+    (superego variant ablations) — specifically for <code>cell_98_two_pass</code> and
+    <code>cell_99_coupling</code>, where the conflict between ego and superego is
+    currently handled by a single revision pass. An MACR-style explicit adjudication
+    layer between ego and superego revision could be a cell_126+ addition.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Hierarchical Control in Multi-Agent Games: LLM-based Planning and RL Execution
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    arXiv 2606.20014 · June 18, 2026 ·
+    <a href="https://arxiv.org/abs/2606.20014">https://arxiv.org/abs/2606.20014</a>
+  </div>
+  <p>
+    A two-layer hierarchical architecture: a pretrained LLM acts as a slow, centralized
+    strategic controller that selects among specialised RL skill policies; the RL policies
+    execute reactively at high frequency. Tested in a competitive 2v2 King of the Hill
+    environment, the hybrid matches hand-crafted behaviour trees while significantly
+    outperforming flat RL. The LLM layer operates on a longer timescale and sees the
+    global game state; the RL layer handles local, real-time execution.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    The timescale separation (slow strategic / fast reactive) resonates with the
+    ego-superego deliberation loop: the superego operates at a "meta" timescale, critiquing
+    holistic pedagogical intent; the ego executes the next utterance reactively.
+    The cells 110–113 adaptive runner (LangGraph state-policy) already operationalise a
+    version of this — this paper provides a formal grounding and a concrete benchmark
+    for evaluating whether LLM strategic oversight improves over flat ego-only cells.
+    Background for §6.8.4 cross-architecture discussion.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Ontology / Knowledge Representation</h2>
+<p style="font-size:.9rem;color:#777;font-style:italic;">
+  No new papers in this topic for the window (2026-06-20, 2026-06-21].
+  The closest papers are from the Jun&nbsp;17 batch (announced Jun&nbsp;18, last window):
+  in particular, 2606.09134 (<em>From USD Scenes to Knowledge Graphs: Zero-Shot Ontology
+  Grounding with LLMs</em>) was missed by the Jun&nbsp;18 roundup but falls outside today's
+  window — it will not be re-listed here per the delta rule; catch it in a future aggregate.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Narrative</h2>
+<p style="font-size:.9rem;color:#777;font-style:italic;">
+  No new papers in this topic for this window.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric &amp; Communicative Theory</h2>
+<p style="font-size:.9rem;color:#777;font-style:italic;">
+  No new papers in this topic for this window. The persuasion/rhetoric vein
+  (2606.05330 PersuasionTrace, 2606.17657 Cognitive-Model Persuasion Simulation)
+  from earlier windows remains the live literature here.
+</p>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-4-6) · 2026-06-21 ·
+  Research-roundup-routine: 20+ search queries, multiple source extractions ·
+  Window: (2026-06-20, 2026-06-21] (retiled from the original (2026-06-18, 2026-06-21] at merge
+  time, 2026-07-08 backlog pass, once the 2026-06-20 roundup landed) ·
+  Jun&nbsp;19 was the sole arXiv announcement day in this window ·
+  2606.20138 dropped at merge time as already covered by the 2026-06-20 and 2026-06-23 roundups ·
+  Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
