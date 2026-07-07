@@ -2475,4 +2475,42 @@ recorded in the implementation log.
 
 ### 11.8 Implementation log
 
-_(empty — filled in during and after Stage A5-pilot execution.)_
+- **2026-07-07 canary (arm-1 session 1, run `eval-2026-07-07-7dbccd2f`,
+  learner `a5-drift-padon-threadon-v1-2026-07-07`, 6m02s, 12 API calls,
+  4/4 turns clean)**. **Gate 1 (threading-live) PASS, stronger than the
+  bar**: `metadata.dialecticalStrategy` present on **4/4** stored turns
+  (bar was ≥1/4), verified both by the scorer and directly on the DB
+  row's `suggestions` JSON (row 33980) — all four `no_conflict`. Against
+  §10's 0/24 on the identical cell/scenario/stack, this is the first
+  live-production (non-hermetic) proof that Part 1's threading survives
+  the revision loop. **Gate 2 (§7.4 precondition) INSTRUMENT_FLOOR**:
+  `total_recognition_moments = 0` (pad exists, raw rows 0). Investigated
+  before any disposition: the four superego critiques' raw severities
+  were 0.18 / 0.52 / 0.62 / 0.12 (two with raw `disapproves: true`), but
+  `dialecticalEngine.js`'s pre-existing scaling (`severity × compliance
+  (0.7 default) > rejection_threshold (0.5 default)`, i.e. an effective
+  raw bar ≈ 0.714) re-derives `disapproves`, so all four turns resolved
+  `no_conflict` and nothing was written to the pad. Part 1 is exonerated
+  by construction: commit `289e6930` never touched `dialecticalEngine.js`
+  (file list: eval-cli, evaluationRunner, the new test, tutorApiService,
+  tutorDialogueEngine), and the scaling behaviour is byte-identical to
+  what §10 ran under. This is §10's own recorded warning realized —
+  "codex disapproves far less than nemotron (2 moments total vs 9); the
+  §7.4 ≥1 gate is much closer to the floor" — A4-codex's session 1 drew
+  one critique above the bar; this draw's maximum was 0.62.
+- **2026-07-07 disposition (recorded before further spend)**: per
+  §11.4pt2's own remediation clause ("…restarts under a fresh learner-id
+  suffix, recorded in the implementation log"), arm 1 restarts **once**
+  under `a5-drift-padon-threadon-v2-2026-07-07`. The floored v1 session
+  is excluded as a precondition failure (not scored; its pad is empty so
+  nothing carries over, and the v1 id is never reused) — the scored
+  design remains 9 sessions / 36 turns. Bounds, frozen now: **one
+  restart per pad-ON arm, maximum**; a second consecutive floor on the
+  same arm is a hard stop for that arm and the pilot reports
+  "instrument floor on this stack" as its finding rather than re-rolling
+  further (a stochastic precondition may not be fished into passing).
+  The restarted session 1 re-runs the full canary discipline (runs
+  alone, gate 1 + gate 2) before arm 1 proceeds. Cell config is NOT
+  touched — loosening `compliance`/`rejection_threshold` to make the
+  gate easier would break §11.2's "reused unchanged from §9–§10" and is
+  explicitly rejected.
