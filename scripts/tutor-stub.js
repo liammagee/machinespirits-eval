@@ -159,7 +159,7 @@ const LEARNER_RECORD_SYSTEM_PROMPT = [
 
 const LEARNER_ANALYSIS_SYSTEM_PROMPT = [
   'You are a compact up-front reviewer for an experimental tutor.',
-  'Return a pedagogical discourse classification, a conservative public learner-record update, and, when requested, a reviewer-chosen tutor register.',
+  'Return a pedagogical discourse classification, a conservative public learner-record update, and, only when requested, a reviewer-chosen tutor register.',
   'Use only the learner input, the public transcript, public rules, and staged public evidence supplied in the prompt.',
   'Do not infer hidden story facts, concealed answers, private tutor prompts, proof paths, or unstaged evidence.',
   'Return one JSON object only. No prose outside JSON.',
@@ -243,8 +243,12 @@ Options:
   --register-palette <all|safe|negative|non-simulated|csv>
                          tutor-register palette for selection (default: all);
                          all includes every register in the registry
-  --register-policy <dynamic|bland|random>
-                         dynamic makes brisk pacing non-default; bland permits
+  --register-policy <dynamic|field|state|bland|random>
+                         dynamic lets the reviewer choose; field maps observed
+                         field/DAG movement to a local probability distribution;
+                         state maps current classifier/DAG state to a local
+                         probability distribution;
+                         bland permits
                          brisk pacing as the ordinary stepwise proof register;
                          random samples uniformly from the active palette
                          (default: ${STUB.registerPolicy})
@@ -334,7 +338,8 @@ Environment:
                          disable default closeout report
   TUTOR_STUB_CLI_EFFORT  optional default CLI effort override
   TUTOR_STUB_REGISTER_POLICY
-                         optional default register policy: dynamic, bland, or random
+                         optional default register policy: dynamic, field,
+                         state, bland, or random
   TUTOR_STUB_AUTO_LEARNER_MODEL
                          optional default automated learner model
   TUTOR_STUB_AUTO_TURNS  optional default automated learner turn cap
@@ -908,8 +913,10 @@ function effectiveTemperatureForModel(resolved, requestedTemperature) {
 
 function normalizeRegisterPolicy(value) {
   const policy = String(value || 'dynamic').trim().toLowerCase();
-  if (policy === 'dynamic' || policy === 'bland' || policy === 'random') return policy;
-  throw new Error(`Unknown --register-policy: ${value}. Expected dynamic, bland, or random.`);
+  if (policy === 'dynamic' || policy === 'field' || policy === 'state' || policy === 'bland' || policy === 'random') {
+    return policy;
+  }
+  throw new Error(`Unknown --register-policy: ${value}. Expected dynamic, field, state, bland, or random.`);
 }
 
 function buildRegisterPalette(mode) {
@@ -1936,7 +1943,38 @@ function appendTraceEvent(trace, event) {
     seq: ++trace.seq,
     ...event,
   };
-  fs.appendFileSync(trace.filePath, `${JSON.stringify(entry)}\n`);
+  fs.appendFileSync(trace.filePath, `${JSON.stringify(redactTraceSecrets(entry))}\n`);
+}
+
+function redactTraceSecrets(value, seen = new WeakSet()) {
+  if (value === null || value === undefined) return value;
+  if (typeof value === 'string') {
+    return /^sk-[A-Za-z0-9_-]{12,}/u.test(value) ? '[redacted]' : value;
+  }
+  if (typeof value !== 'object') return value;
+  if (seen.has(value)) return '[circular]';
+  seen.add(value);
+  if (Array.isArray(value)) return value.map((item) => redactTraceSecrets(item, seen));
+  const redacted = {};
+  for (const [key, nested] of Object.entries(value)) {
+    const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/gu, '');
+    if (
+      [
+        'apikey',
+        'authorization',
+        'bearer',
+        'secret',
+        'password',
+        'accesstoken',
+        'refreshtoken',
+      ].includes(normalizedKey)
+    ) {
+      redacted[key] = '[redacted]';
+    } else {
+      redacted[key] = redactTraceSecrets(nested, seen);
+    }
+  }
+  return redacted;
 }
 
 function traceDisplayPath(trace) {
@@ -2081,10 +2119,6 @@ function restoreDialogueFromTrace(state, resume, { currentWorld }) {
 
 function providerSupportsStreaming(resolved) {
   return Boolean(resolved?.provider && !isCliProvider(resolved.provider));
-}
-
-function streamEnabledFor(state, resolved) {
-  return Boolean(state?.stream?.enabled && providerSupportsStreaming(resolved));
 }
 
 function streamLabel(role) {
@@ -2305,8 +2339,12 @@ function registerSelectionSchema() {
 function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
   const staged = stagedEvidenceRows(state.world, tutorTurn);
   const includeRegisterSelection = Boolean(
-    state.register?.enabled && state.register.policy !== 'random' && state.register.palette?.length,
+    state.register?.enabled &&
+      !['field', 'state', 'random'].includes(state.register.policy) &&
+      state.register.palette?.length,
   );
+  const localFieldPolicy = Boolean(state.register?.enabled && state.register.policy === 'field');
+  const localStatePolicy = Boolean(state.register?.enabled && state.register.policy === 'state');
   const schema = {
     classification: learnerClassificationSchema(),
     learner_record: learnerRecordSchema(),
@@ -2321,6 +2359,12 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     '2. A conservative public learner-record update for the tutor-side learner-DAG model.',
     includeRegisterSelection
       ? '3. A tutor-register selection made by the up-front reviewer using the classification plus the tutor-side learner-DAG state.'
+      : null,
+    localFieldPolicy
+      ? 'Register policy is field: do not choose a tutor register. The runtime will map your classification plus the learner-DAG update into a local register probability distribution.'
+      : null,
+    localStatePolicy
+      ? 'Register policy is state: do not choose a tutor register. The runtime will map the current classification plus current learner-DAG assessment into a local register probability distribution.'
       : null,
     '',
     '# Public tutoring context',
@@ -2875,12 +2919,564 @@ function randomRegisterSelection({ state, classification }) {
   };
 }
 
+const FIELD_REGISTER_BASE_WEIGHTS = {
+  plain: 1,
+  precise: 1,
+  brisk: 0.7,
+  warm: 0.8,
+  witnessing: 0.55,
+  charismatic: 0.75,
+  ironic: 0.35,
+  sarcastic: 0.2,
+  face_threat: 0.08,
+};
+
+function hasScoreRegister(scores, register) {
+  return Object.prototype.hasOwnProperty.call(scores, register);
+}
+
+function addRegisterScore(scores, register, amount, drivers, reason) {
+  if (!hasScoreRegister(scores, register) || !Number.isFinite(Number(amount))) return;
+  scores[register] += Number(amount);
+  if (amount > 0 && reason) drivers.push(`${register}+${Number(amount).toFixed(2)} ${reason}`);
+}
+
+function multiplyRegisterScore(scores, register, factor, drivers, reason) {
+  if (!hasScoreRegister(scores, register) || !Number.isFinite(Number(factor))) return;
+  scores[register] *= Number(factor);
+  if (reason) drivers.push(`${register}x${Number(factor).toFixed(2)} ${reason}`);
+}
+
+function learnerDagDeltaForFieldPolicy({ state, tutorLearnerDag }) {
+  const previous = state.turns?.at(-1)?.tutorLearnerDagModel || null;
+  const current = tutorLearnerDag?.model || null;
+  const before = dagProgressFeatures(previous);
+  const after = dagProgressFeatures(current);
+  const delta = Object.fromEntries(Object.keys(after).map((key) => [key, Number(after[key]) - Number(before[key])]));
+  const progressScore =
+    delta.bestPathCoverage * 4 +
+    delta.groundedCount +
+    delta.voicedDerivedCount * 2 +
+    delta.candidateConclusionCount +
+    delta.answerCandidateCount * 3 -
+    Math.max(0, delta.unsupportedAssertionCount);
+  return {
+    before,
+    after,
+    delta,
+    progressScore: Number(progressScore.toFixed(3)),
+    progress: progressScore > 0,
+  };
+}
+
+function fieldRegisterPolicyFeatures({ state, classification, tutorLearnerDag }) {
+  const turn = classification?.turn || {};
+  const assessment = tutorLearnerDag?.model?.assessment || {};
+  const metrics = tutorLearnerDag?.model?.metrics || {};
+  const field = fieldProgressFromClassification({ state, classification });
+  const dag = learnerDagDeltaForFieldPolicy({ state, tutorLearnerDag });
+  const fieldRelation =
+    field.delta === null
+      ? 'initial'
+      : classifyFieldStateRelation({
+          fieldProgress: field.progress,
+          dagProgress: dag.progress,
+        });
+  return {
+    turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
+    requestType: turn.request_type || 'unknown_request',
+    discourseMove: turn.discourse_move || 'unknown',
+    evidenceUse: turn.evidence_use || 'unknown',
+    epistemicStance: turn.epistemic_stance || 'unknown',
+    agency: turn.agency || 'unknown',
+    affect: turn.affect || 'unknown',
+    field: {
+      relation: fieldRelation,
+      beforeScore: field.beforeScore,
+      afterScore: field.afterScore,
+      delta: field.delta,
+      progress: field.progress,
+      dimensions: field.after?.dimensions || {},
+      labels: field.after?.labels || {},
+    },
+    dag: {
+      progress: dag.progress,
+      progressScore: dag.progressScore,
+      delta: dag.delta,
+      bottleneck: assessment.bottleneck || 'unknown',
+      bestPathCoverage: assessment.bestPathCoverage ?? null,
+      missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0),
+      unsupportedAssertionCount: Number(assessment.unsupportedAssertionCount || 0),
+      finalSecretEntailed: assessment.finalSecretEntailed === true,
+      assertedSecret: assessment.assertedSecret === true,
+    },
+    explicitStepwise: hasExplicitStepwiseSignal(classification),
+    recentRegisters: (state.register?.history || []).slice(-4).map((entry) => normalizeStoredRegisterSelection(entry)?.selected_register),
+    latestEfficacy: latestRegisterEfficacy(state),
+  };
+}
+
+function actionFamilyForFieldRegister({ selected, features }) {
+  const requestType = features.requestType || '';
+  const signal = [
+    features.discourseMove,
+    features.evidenceUse,
+    features.epistemicStance,
+    features.agency,
+    features.dag?.bottleneck,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  if (selected === 'brisk') return 'stage_next_step';
+  if (selected === 'plain') return requestType === 'transfer_demand_or_named_material' ? 'ground_in_material' : 'compress_sayback';
+  if (selected === 'warm') return 'reanchor_lived_stake';
+  if (selected === 'witnessing') return 'receive_vulnerability';
+  if (selected === 'charismatic' || selected === 'ironic' || selected === 'sarcastic' || selected === 'face_threat') {
+    return /challenge|resistant|answer_seeking|overconfident|passive|complying/iu.test(signal)
+      ? 'challenge_resistance'
+      : 'clarify_distinction';
+  }
+  if (/challenge|overleaps_evidence|unsupported/iu.test(signal)) return 'answer_accountably';
+  return 'clarify_distinction';
+}
+
+function expectedFieldMoveForRegister(selected, features) {
+  const relation = features.field?.relation || 'unknown';
+  if (relation === 'field_without_dag') {
+    return 'Convert the learner field movement into one public evidence claim or warrant.';
+  }
+  if (relation === 'dag_without_field') {
+    return 'Recover learner agency and ownership around the proof step that just moved.';
+  }
+  if (relation === 'neither_progress') {
+    return 'Change the interaction posture enough to make either learner agency or evidence use move next.';
+  }
+  if (selected === 'witnessing') return 'Lower affective risk while preserving one concrete check.';
+  if (selected === 'charismatic') return 'Interrupt low-agency compliance and create a learner-owned public move.';
+  if (selected === 'ironic') return 'Let the learner notice the mismatch without turning the learner into the target.';
+  if (selected === 'sarcastic') return 'Test whether a dry edge disrupts rote performance while leaving a repair path.';
+  if (selected === 'face_threat') return 'Measure whether local face threat changes uptake while preserving a minimal repair path.';
+  if (selected === 'brisk') return 'Increase pace without turning the next inference into an answer dump.';
+  if (selected === 'plain') return "Make the next move sayable in the learner's own words.";
+  return 'Sharpen the learner field toward one accountable public statement.';
+}
+
+function buildFieldRegisterScores({ state, classification, tutorLearnerDag }) {
+  const palette = state.register?.palette || [];
+  const scores = Object.fromEntries(
+    palette.map((register) => [register, FIELD_REGISTER_BASE_WEIGHTS[register] ?? 0.45]),
+  );
+  const drivers = [];
+  const features = fieldRegisterPolicyFeatures({ state, classification, tutorLearnerDag });
+  const signal = [
+    features.requestType,
+    features.discourseMove,
+    features.evidenceUse,
+    features.epistemicStance,
+    features.agency,
+    features.affect,
+    features.dag.bottleneck,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  if (/conceptual_clarity_request|challenge|overleaps_evidence|unsupported/iu.test(signal)) {
+    addRegisterScore(scores, 'precise', 2.2, drivers, 'for distinction, warrant, or overreach');
+    addRegisterScore(scores, 'ironic', 0.7, drivers, 'for visible mismatch');
+  }
+  if (/plain_language_request|plain_simplification_followup/iu.test(signal)) {
+    addRegisterScore(scores, 'plain', 2.4, drivers, 'for plain-language compression');
+    addRegisterScore(scores, 'warm', 0.7, drivers, 'for low-friction re-entry');
+  }
+  if (/transfer_demand_or_named_material/iu.test(signal)) {
+    addRegisterScore(scores, 'plain', 1.2, drivers, 'for material grounding');
+    addRegisterScore(scores, 'warm', 0.9, drivers, 'for lived continuity');
+  }
+  if (/vulnerability_or_moral_exposure|affective_signal|vulnerable|shame|anxious|risk/iu.test(signal)) {
+    addRegisterScore(scores, 'witnessing', 3.0, drivers, 'for affective exposure');
+    addRegisterScore(scores, 'warm', 1.3, drivers, 'for non-sentimental invitation');
+  }
+  if (/resistance_or_low_agency|resistant|answer_seeking|overconfident|passive|complying/iu.test(signal)) {
+    addRegisterScore(scores, 'charismatic', 2.6, drivers, 'for low-agency or resistant posture');
+    addRegisterScore(scores, 'ironic', 1.0, drivers, 'for rote-performance mismatch');
+    addRegisterScore(scores, 'sarcastic', 0.55, drivers, 'for negative-register probe');
+    addRegisterScore(scores, 'face_threat', 0.25, drivers, 'for simulated stress-test availability');
+  }
+  if (/off_task_or_mixed|off_task/iu.test(signal)) {
+    addRegisterScore(scores, 'plain', 1.0, drivers, 'for reset');
+    addRegisterScore(scores, 'charismatic', 0.9, drivers, 'for sharper re-entry');
+  }
+  if (features.explicitStepwise || /release_or_pacing_gap|inference_gap/iu.test(features.dag.bottleneck)) {
+    addRegisterScore(scores, 'precise', 0.8, drivers, 'for immediate proof-state focus');
+    if (features.explicitStepwise) {
+      addRegisterScore(scores, 'brisk', 2.1, drivers, 'for explicit stepwise request');
+    } else {
+      addRegisterScore(scores, 'brisk', 0.35, drivers, 'for proof gap without explicit stepwise request');
+    }
+  }
+
+  if (features.field.relation === 'field_without_dag') {
+    addRegisterScore(scores, 'plain', 1.7, drivers, 'to convert field movement into a claim');
+    addRegisterScore(scores, 'precise', 1.5, drivers, 'to make the warrant checkable');
+  } else if (features.field.relation === 'dag_without_field') {
+    addRegisterScore(scores, 'warm', 1.2, drivers, 'to recover learner ownership');
+    addRegisterScore(scores, 'witnessing', 0.9, drivers, 'to lower agency risk');
+    addRegisterScore(scores, 'plain', 1.0, drivers, 'to ask for say-back');
+  } else if (features.field.relation === 'both_progress') {
+    addRegisterScore(scores, 'precise', 0.9, drivers, 'to consolidate dual progress');
+    addRegisterScore(scores, 'brisk', 0.8, drivers, 'to preserve momentum');
+    addRegisterScore(scores, 'plain', 0.6, drivers, 'to keep the move portable');
+  } else if (features.field.relation === 'neither_progress') {
+    addRegisterScore(scores, 'charismatic', 1.4, drivers, 'to change a flat field');
+    addRegisterScore(scores, 'ironic', 0.8, drivers, 'to expose a stuck mismatch');
+    addRegisterScore(scores, 'plain', 0.6, drivers, 'to reset without decoration');
+  } else {
+    addRegisterScore(scores, 'warm', 0.6, drivers, 'for first-turn invitation');
+    addRegisterScore(scores, 'precise', 0.6, drivers, 'for first-turn warranting');
+  }
+
+  if (Number(features.field.delta) < -FIELD_PROGRESS_THRESHOLD) {
+    addRegisterScore(scores, 'warm', 1.0, drivers, 'for negative field movement');
+    addRegisterScore(scores, 'witnessing', 0.8, drivers, 'for increased learner risk');
+  }
+  if (features.dag.finalSecretEntailed || features.dag.assertedSecret) {
+    addRegisterScore(scores, 'plain', 1.3, drivers, 'for closure');
+    addRegisterScore(scores, 'precise', 1.0, drivers, 'for accountable closeout');
+    multiplyRegisterScore(scores, 'sarcastic', 0.4, drivers, 'near closure');
+    multiplyRegisterScore(scores, 'face_threat', 0.25, drivers, 'near closure');
+  }
+
+  const latest = latestRegisterSelection(state);
+  if (latest?.selected_register) {
+    const latestLabel = latest.efficacy?.label || features.latestEfficacy?.label || '';
+    const factor = /regression_or_overreach/iu.test(latestLabel)
+      ? 0.35
+      : /no_clear_progress/iu.test(latestLabel)
+        ? 0.55
+        : 0.82;
+    multiplyRegisterScore(scores, latest.selected_register, factor, drivers, 'recent repetition penalty');
+  }
+  for (const register of new Set(features.recentRegisters.filter(Boolean))) {
+    if (recentRegisterCount(state, register) >= 2) {
+      multiplyRegisterScore(scores, register, 0.5, drivers, 'last-four repetition penalty');
+    }
+  }
+  if (!features.explicitStepwise) {
+    multiplyRegisterScore(scores, 'brisk', 0.65, drivers, 'brisk remains non-default without explicit stepwise need');
+  }
+
+  return { features, scores, drivers };
+}
+
+function normalizeRegisterDistribution(scores) {
+  const weighted = Object.entries(scores)
+    .map(([register, weight]) => ({
+      register,
+      weight: Math.max(0.02, Number(weight) || 0),
+    }))
+    .sort((a, b) => b.weight - a.weight || a.register.localeCompare(b.register));
+  const total = weighted.reduce((sum, entry) => sum + entry.weight, 0) || 1;
+  return weighted.map((entry) => ({
+    register: entry.register,
+    weight: roundField(entry.weight),
+    probability: Number((entry.weight / total).toFixed(4)),
+  }));
+}
+
+function sampleRegisterDistribution(distribution) {
+  const total = distribution.reduce((sum, entry) => sum + entry.weight, 0) || 1;
+  const randomValue = Math.random();
+  const threshold = randomValue * total;
+  let cumulative = 0;
+  for (const entry of distribution) {
+    cumulative += entry.weight;
+    if (threshold <= cumulative) {
+      return {
+        entry,
+        random: {
+          method: 'Math.random',
+          value: Number(randomValue.toFixed(6)),
+          threshold: Number(threshold.toFixed(6)),
+        },
+      };
+    }
+  }
+  return {
+    entry: distribution[distribution.length - 1],
+    random: {
+      method: 'Math.random',
+      value: Number(randomValue.toFixed(6)),
+      threshold: Number(threshold.toFixed(6)),
+    },
+  };
+}
+
+function formatRegisterDistribution(distribution, { limit = 5 } = {}) {
+  const entries = Array.isArray(distribution) ? distribution : [];
+  if (!entries.length) return '';
+  return entries
+    .slice(0, limit)
+    .map((entry) => `${entry.register}:${Math.round(Number(entry.probability || 0) * 100)}%`)
+    .join(', ');
+}
+
+function fieldRegisterSelection({ state, classification, tutorLearnerDag }) {
+  const { features, scores, drivers } = buildFieldRegisterScores({ state, classification, tutorLearnerDag });
+  const distribution = normalizeRegisterDistribution(scores);
+  const sampled = sampleRegisterDistribution(distribution);
+  const selected = sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
+  const actionFamily = actionFamilyForFieldRegister({ selected, features });
+  const selectedProbability = sampled.entry?.probability ?? null;
+  const driverText = drivers.slice(0, 5).join('; ') || 'base field-policy weights only';
+  return {
+    selected_register: selected,
+    request_type: features.requestType,
+    action_family: actionFamily,
+    legacy_selected_register: preferredLegacyRegister({
+      register: selected,
+      requestType: features.requestType,
+      actionFamily,
+    }),
+    reviewer_signal: `${features.field.relation}; ${features.discourseMove}; ${features.epistemicStance}; ${features.agency}`,
+    register_reason: `Field policy sampled from local register distribution. Main drivers: ${driverText}.`,
+    evidence_span: classification?.turn?.summary || '',
+    risk_flags: [],
+    expected_dag_move:
+      features.field.relation === 'field_without_dag'
+        ? 'Elicit one public evidence claim that converts learner-field movement into proof-state movement.'
+        : 'Elicit one public, checkable learner move that can update the learner-DAG record.',
+    expected_field_move: expectedFieldMoveForRegister(selected, features),
+    expected_progress_marker:
+      'Next learner turn should show movement in agency, evidence use, epistemic stance, or learner-DAG coverage.',
+    confidence: selectedProbability,
+    source: 'field_register_policy',
+    distribution,
+    selected_probability: selectedProbability,
+    field_policy: {
+      schema: 'machinespirits.tutor-stub.field-register-policy.v1',
+      features,
+      scores: Object.fromEntries(Object.entries(scores).map(([register, score]) => [register, roundField(score)])),
+      drivers,
+      random: sampled.random,
+    },
+  };
+}
+
+const STATE_REGISTER_BASE_WEIGHTS = {
+  plain: 1.15,
+  precise: 1.2,
+  brisk: 0.55,
+  warm: 0.9,
+  witnessing: 0.55,
+  charismatic: 0.8,
+  ironic: 0.22,
+  sarcastic: 0.08,
+  face_threat: 0.03,
+};
+
+function stateRegisterPolicyFeatures({ state, classification, tutorLearnerDag }) {
+  const turn = classification?.turn || {};
+  const scores = turn.scores || {};
+  const assessment = tutorLearnerDag?.model?.assessment || {};
+  const metrics = tutorLearnerDag?.model?.metrics || {};
+  const conceptual = normalizedClassifierScore(scores.conceptual_engagement);
+  const readiness = normalizedClassifierScore(scores.epistemic_readiness);
+  return {
+    turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
+    requestType: turn.request_type || 'unknown_request',
+    discourseMove: turn.discourse_move || 'unknown',
+    evidenceUse: turn.evidence_use || 'unknown',
+    epistemicStance: turn.epistemic_stance || 'unknown',
+    agency: turn.agency || 'unknown',
+    affect: turn.affect || 'unknown',
+    scores: {
+      conceptual,
+      epistemicReadiness: readiness,
+      learnerSurface: meanFinite([conceptual, readiness]),
+    },
+    dag: {
+      bottleneck: assessment.bottleneck || 'unknown',
+      bestPathCoverage: Number(assessment.bestPathCoverage || 0),
+      missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0),
+      groundedCount: Number(metrics.groundedCount || 0),
+      voicedDerivedCount: Number(metrics.voicedDerivedCount || 0),
+      unsupportedAssertionCount: Number(assessment.unsupportedAssertionCount || 0),
+      finalSecretEntailed: assessment.finalSecretEntailed === true,
+      assertedSecret: assessment.assertedSecret === true,
+      assertedMirror: assessment.assertedMirror === true,
+    },
+    explicitStepwise: hasExplicitStepwiseSignal(classification),
+    recentRegisters: (state.register?.history || []).slice(-4).map((entry) => normalizeStoredRegisterSelection(entry)?.selected_register),
+  };
+}
+
+function expectedStateMoveForRegister(selected, features) {
+  if (features.dag.finalSecretEntailed || features.dag.assertedSecret) {
+    return 'Move the current learner state toward accountable closure without adding new evidence.';
+  }
+  if (features.dag.bottleneck === 'premature_assertion') {
+    return 'Move the learner from naming a verdict to naming the public support that licenses it.';
+  }
+  if (features.dag.bottleneck === 'assertion_gap') {
+    return 'Move the learner from held evidence to a warranted final assertion.';
+  }
+  if (/answer_seeking|passive|complying/iu.test(`${features.epistemicStance} ${features.agency} ${features.evidenceUse}`)) {
+    return 'Move the learner from dependent answer-seeking to one small public commitment.';
+  }
+  if (selected === 'witnessing') return 'Lower current affective risk while keeping one concrete public test.';
+  if (selected === 'warm') return 'Restore current learner readiness enough for the next evidence claim.';
+  if (selected === 'charismatic') return 'Interrupt current low-agency posture and demand one owned move.';
+  if (selected === 'precise') return 'Sharpen the current claim, distinction, or warrant into a checkable line.';
+  if (selected === 'brisk') return 'Advance the current proof bottleneck with one learner-owned next step.';
+  return 'Move the current learner state toward one public, checkable evidence statement.';
+}
+
+function buildStateRegisterScores({ state, classification, tutorLearnerDag }) {
+  const palette = state.register?.palette || [];
+  const scores = Object.fromEntries(
+    palette.map((register) => [register, STATE_REGISTER_BASE_WEIGHTS[register] ?? 0.35]),
+  );
+  const drivers = [];
+  const features = stateRegisterPolicyFeatures({ state, classification, tutorLearnerDag });
+  const signal = [
+    features.requestType,
+    features.discourseMove,
+    features.evidenceUse,
+    features.epistemicStance,
+    features.agency,
+    features.affect,
+    features.dag.bottleneck,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  if (features.dag.finalSecretEntailed || features.dag.assertedSecret) {
+    addRegisterScore(scores, 'plain', 2.0, drivers, 'for current closure state');
+    addRegisterScore(scores, 'precise', 1.8, drivers, 'for accountable closeout');
+    multiplyRegisterScore(scores, 'ironic', 0.5, drivers, 'closure dampening');
+    multiplyRegisterScore(scores, 'sarcastic', 0.25, drivers, 'closure dampening');
+    multiplyRegisterScore(scores, 'face_threat', 0.1, drivers, 'closure dampening');
+  }
+  if (/release_or_pacing_gap|inference_gap/iu.test(features.dag.bottleneck)) {
+    addRegisterScore(scores, 'precise', 1.4, drivers, 'for current proof bottleneck');
+    addRegisterScore(scores, 'plain', 0.9, drivers, 'for portable evidence wording');
+    if (features.explicitStepwise) {
+      addRegisterScore(scores, 'brisk', 1.5, drivers, 'for explicit stepwise request');
+    } else {
+      addRegisterScore(scores, 'brisk', 0.25, drivers, 'for proof bottleneck without explicit pacing request');
+    }
+  }
+  if (features.dag.bottleneck === 'learner_integration_gap') {
+    addRegisterScore(scores, 'plain', 1.7, drivers, 'for learner integration');
+    addRegisterScore(scores, 'precise', 1.1, drivers, 'for warrant integration');
+    addRegisterScore(scores, 'warm', 0.8, drivers, 'for ownership recovery');
+  }
+  if (features.dag.bottleneck === 'assertion_gap') {
+    addRegisterScore(scores, 'plain', 1.6, drivers, 'for final say-back');
+    addRegisterScore(scores, 'precise', 1.2, drivers, 'for licensed assertion');
+    addRegisterScore(scores, 'charismatic', 0.6, drivers, 'for final commitment pressure');
+  }
+  if (features.dag.bottleneck === 'premature_assertion') {
+    addRegisterScore(scores, 'precise', 2.0, drivers, 'for premature assertion');
+    addRegisterScore(scores, 'charismatic', 1.0, drivers, 'to interrupt answer-first closure');
+    addRegisterScore(scores, 'ironic', 0.45, drivers, 'for visible warrant gap');
+  }
+  if (/conceptual_clarity_request|challenge|overleaps_evidence|unsupported/iu.test(signal)) {
+    addRegisterScore(scores, 'precise', 1.8, drivers, 'for current distinction or warrant issue');
+    addRegisterScore(scores, 'ironic', 0.35, drivers, 'for current mismatch');
+  }
+  if (/plain_language_request|plain_simplification_followup|transfer_demand_or_named_material/iu.test(signal)) {
+    addRegisterScore(scores, 'plain', 2.0, drivers, 'for current plain-language need');
+    addRegisterScore(scores, 'warm', 0.65, drivers, 'for current re-entry need');
+  }
+  if (/vulnerability_or_moral_exposure|affective_signal|vulnerable|shame|anxious|risk/iu.test(signal)) {
+    addRegisterScore(scores, 'witnessing', 2.8, drivers, 'for current affective exposure');
+    addRegisterScore(scores, 'warm', 1.2, drivers, 'for current affective risk');
+  }
+  if (/resistance_or_low_agency|resistant|answer_seeking|overconfident|passive|complying/iu.test(signal)) {
+    addRegisterScore(scores, 'charismatic', 2.0, drivers, 'for current low-agency state');
+    addRegisterScore(scores, 'plain', 0.8, drivers, 'for small public commitment');
+    addRegisterScore(scores, 'precise', 0.7, drivers, 'for accountable warrant');
+    addRegisterScore(scores, 'ironic', 0.25, drivers, 'for current rote-performance gap');
+  }
+  if (Number(features.scores.conceptual) <= 0.25 || Number(features.scores.epistemicReadiness) <= 0.25) {
+    addRegisterScore(scores, 'plain', 0.9, drivers, 'for low current surface engagement');
+    addRegisterScore(scores, 'warm', 0.55, drivers, 'for low current readiness');
+  }
+  if (/links_evidence_to_rule|revises_from_evidence|grounded|self_correcting/iu.test(signal)) {
+    addRegisterScore(scores, 'precise', 0.9, drivers, 'for current grounded evidence use');
+    addRegisterScore(scores, 'brisk', 0.55, drivers, 'for current momentum');
+  }
+
+  const latest = latestRegisterSelection(state);
+  if (latest?.selected_register) {
+    multiplyRegisterScore(scores, latest.selected_register, 0.72, drivers, 'state-policy repetition penalty');
+  }
+  for (const register of new Set(features.recentRegisters.filter(Boolean))) {
+    if (recentRegisterCount(state, register) >= 2) {
+      multiplyRegisterScore(scores, register, 0.58, drivers, 'last-four repetition penalty');
+    }
+  }
+  if (!features.explicitStepwise) {
+    multiplyRegisterScore(scores, 'brisk', 0.55, drivers, 'brisk non-default without explicit stepwise need');
+  }
+  if (!features.dag.finalSecretEntailed) {
+    multiplyRegisterScore(scores, 'sarcastic', 0.55, drivers, 'negative-register dampening under state policy');
+    multiplyRegisterScore(scores, 'face_threat', 0.3, drivers, 'negative-register dampening under state policy');
+  }
+
+  return { features, scores, drivers };
+}
+
+function stateRegisterSelection({ state, classification, tutorLearnerDag }) {
+  const { features, scores, drivers } = buildStateRegisterScores({ state, classification, tutorLearnerDag });
+  const distribution = normalizeRegisterDistribution(scores);
+  const sampled = sampleRegisterDistribution(distribution);
+  const selected = sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
+  const actionFamily = actionFamilyForFieldRegister({ selected, features });
+  const selectedProbability = sampled.entry?.probability ?? null;
+  const driverText = drivers.slice(0, 5).join('; ') || 'base state-policy weights only';
+  return {
+    selected_register: selected,
+    request_type: features.requestType,
+    action_family: actionFamily,
+    legacy_selected_register: preferredLegacyRegister({
+      register: selected,
+      requestType: features.requestType,
+      actionFamily,
+    }),
+    reviewer_signal: `${features.dag.bottleneck}; ${features.discourseMove}; ${features.epistemicStance}; ${features.agency}`,
+    register_reason: `State policy sampled from current classifier/DAG distribution. Main drivers: ${driverText}.`,
+    evidence_span: classification?.turn?.summary || '',
+    risk_flags: [],
+    expected_dag_move: 'Elicit one public, checkable learner move that addresses the current learner-DAG bottleneck.',
+    expected_field_move: expectedStateMoveForRegister(selected, features),
+    expected_progress_marker:
+      'Next learner turn should improve the current state: public evidence use, agency, assertion quality, or learner-DAG coverage.',
+    confidence: selectedProbability,
+    source: 'state_register_policy',
+    distribution,
+    selected_probability: selectedProbability,
+    state_policy: {
+      schema: 'machinespirits.tutor-stub.state-register-policy.v1',
+      features,
+      scores: Object.fromEntries(Object.entries(scores).map(([register, score]) => [register, roundField(score)])),
+      drivers,
+      random: sampled.random,
+    },
+  };
+}
+
 function normalizeRegisterSelection(rawSelection, { state, classification, tutorLearnerDag, raw }) {
   if (!state.register?.enabled) return null;
   const palette = new Set(state.register.palette || []);
   const policy = state.register?.policy || 'dynamic';
   if (policy === 'random') {
     rawSelection = randomRegisterSelection({ state, classification });
+  } else if (policy === 'field') {
+    rawSelection = fieldRegisterSelection({ state, classification, tutorLearnerDag });
+  } else if (policy === 'state') {
+    rawSelection = stateRegisterSelection({ state, classification, tutorLearnerDag });
   }
   const normalizedRawSelection =
     typeof rawSelection === 'string' ? { selected_register: rawSelection } : rawSelection || {};
@@ -2923,6 +3519,7 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
   const selection = {
     schema: 'machinespirits.tutor-stub.register-selection.v2',
     register_ontology_version: getRegisterOntologyVersion(),
+    policy,
     turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
     selected_register: selected,
     selected_mode: selected,
@@ -2944,6 +3541,10 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
     expected_field_move: String(source.expected_field_move || source.expected_learner_field_move || ''),
     expected_progress_marker: String(source.expected_progress_marker || ''),
     confidence: Number.isFinite(Number(source.confidence)) ? Number(source.confidence) : null,
+    selected_probability: Number.isFinite(Number(source.selected_probability)) ? Number(source.selected_probability) : null,
+    distribution: Array.isArray(source.distribution) ? source.distribution : null,
+    field_policy: source.field_policy || null,
+    state_policy: source.state_policy || null,
     source: source.source || 'combined_learner_analysis',
     random: source.random || null,
     model: raw ? { provider: raw.provider, model: raw.model, latencyMs: raw.latencyMs, usage: raw.usage } : null,
@@ -3256,6 +3857,8 @@ function printRegisterSelection(selection, previousEfficacy = null) {
   const source =
     selection.source && selection.source !== 'combined_learner_analysis' ? `; source ${selection.source}` : '';
   console.log(`${C.cyan}tutor register >${C.reset} ${selection.selected_register}${confidence}${source}${warning}`);
+  const distribution = formatRegisterDistribution(selection.distribution);
+  if (distribution) console.log(`${C.dim}  distribution: ${distribution}${C.reset}`);
   if (selection.request_type || selection.reviewer_signal) {
     console.log(
       `${C.dim}  request: ${selection.request_type || 'unknown'}; action: ${
@@ -3267,13 +3870,18 @@ function printRegisterSelection(selection, previousEfficacy = null) {
   }
   if (selection.register_reason) console.log(`${C.dim}  reason: ${selection.register_reason}${C.reset}`);
   if (selection.expected_dag_move) console.log(`${C.dim}  expected DAG move: ${selection.expected_dag_move}${C.reset}`);
-  if (selection.expected_field_move) console.log(`${C.dim}  expected field move: ${selection.expected_field_move}${C.reset}`);
+  if (selection.expected_field_move) {
+    const expectedMoveLabel = selection.policy === 'state' ? 'expected state move' : 'expected field move';
+    console.log(`${C.dim}  ${expectedMoveLabel}: ${selection.expected_field_move}${C.reset}`);
+  }
 }
 
 function registerSelectionContext(selection, { multipleChoice = false } = {}) {
   if (!selection) return '';
   const definition = getEngagementRegisterDefinition(selection.selected_register) || {};
   const stanceContract = String(definition.stance_contract || '').trim();
+  const expectedMoveLabel =
+    selection.policy === 'state' ? 'Expected learner-state move' : 'Expected learner-field move';
   const guardrails = [
     ...(Array.isArray(definition.forbidden_phrases) && definition.forbidden_phrases.length
       ? [`Forbidden phrase families: ${definition.forbidden_phrases.join(', ')}`]
@@ -3291,7 +3899,7 @@ function registerSelectionContext(selection, { multipleChoice = false } = {}) {
     `Reviewer signal: ${selection.reviewer_signal || 'unknown'}`,
     `Reason: ${selection.register_reason || 'No reason supplied.'}`,
     `Expected learner-DAG move: ${selection.expected_dag_move || 'No expected move supplied.'}`,
-    `Expected learner-field move: ${selection.expected_field_move || 'No expected field move supplied.'}`,
+    `${expectedMoveLabel}: ${selection.expected_field_move || 'No expected state/field move supplied.'}`,
     stanceContract ? 'Stance contract:' : null,
     stanceContract || null,
     guardrails.length ? 'Guardrails:' : null,
@@ -3613,8 +4221,33 @@ function printCurrentTurnAnalysis(state) {
     printAnalysisLine('reviewer signal', registerSelection.reviewer_signal || 'unknown');
     printAnalysisLine('register reason', registerSelection.register_reason);
     printAnalysisLine('expected DAG move', registerSelection.expected_dag_move);
-    printAnalysisLine('expected field move', registerSelection.expected_field_move);
+    printAnalysisLine(
+      registerSelection.policy === 'state' ? 'expected state move' : 'expected field move',
+      registerSelection.expected_field_move,
+    );
     printAnalysisLine('expected progress marker', registerSelection.expected_progress_marker);
+    const distribution = formatRegisterDistribution(registerSelection.distribution, { limit: 7 });
+    if (distribution) printAnalysisLine('register distribution', distribution);
+    if (registerSelection.field_policy?.features) {
+      const features = registerSelection.field_policy.features;
+      printAnalysisLine(
+        'field policy',
+        `relation=${features.field?.relation || 'unknown'}; fieldDelta=${
+          features.field?.delta ?? 'n/a'
+        }; dagScore=${features.dag?.progressScore ?? 'n/a'}; bottleneck=${features.dag?.bottleneck || 'unknown'}`,
+      );
+    }
+    if (registerSelection.state_policy?.features) {
+      const features = registerSelection.state_policy.features;
+      printAnalysisLine(
+        'state policy',
+        `bottleneck=${features.dag?.bottleneck || 'unknown'}; coverage=${
+          features.dag?.bestPathCoverage ?? 'n/a'
+        }; missing=${features.dag?.missingPremiseCount ?? 'n/a'}; surface=${
+          features.scores?.learnerSurface ?? 'n/a'
+        }`,
+      );
+    }
     if (selectedEfficacy) {
       printAnalysisLine(
         'selected register efficacy',
@@ -4724,6 +5357,8 @@ async function main() {
   const registerPalette = buildRegisterPalette(args['safe-registers'] ? 'safe' : args['register-palette']);
   const registerPolicy = normalizeRegisterPolicy(args['register-policy']);
   const randomRegisterSelectionEnabled = registerPolicy === 'random';
+  const fieldRegisterSelectionEnabled = registerPolicy === 'field';
+  const stateRegisterSelectionEnabled = registerPolicy === 'state';
   const registerSelectionEnabled = Boolean(
     !args['no-register-selection'] &&
       registerPalette.length &&
@@ -4823,6 +5458,8 @@ async function main() {
                 palette: registerPalette,
                 policy: registerPolicy,
                 combinedLearnerAnalysis: combinedLearnerAnalysisEnabled,
+                localFieldPolicy: fieldRegisterSelectionEnabled,
+                localStatePolicy: stateRegisterSelectionEnabled,
                 random: randomRegisterSelectionEnabled,
               }
             : { enabled: false },
@@ -4927,6 +5564,8 @@ async function main() {
             palette: registerPalette,
             policy: registerPolicy,
             combinedLearnerAnalysis: combinedLearnerAnalysisEnabled,
+            localFieldPolicy: fieldRegisterSelectionEnabled,
+            localStatePolicy: stateRegisterSelectionEnabled,
             random: randomRegisterSelectionEnabled,
           }
         : { enabled: false },
@@ -5471,13 +6110,14 @@ async function main() {
       console.error(`${C.red}error:${C.reset} ${err.message}\n`);
     } finally {
       processingTurn = false;
-      if (exiting) return;
-      const next = pendingLearnerLines.shift();
-      if (next) {
-        console.log(`${C.dim}running queued learner turn (${pendingLearnerLines.length} still queued)${C.reset}`);
-        void processLearnerLine(next);
-      } else {
-        promptIfIdle();
+      if (!exiting) {
+        const next = pendingLearnerLines.shift();
+        if (next) {
+          console.log(`${C.dim}running queued learner turn (${pendingLearnerLines.length} still queued)${C.reset}`);
+          void processLearnerLine(next);
+        } else {
+          promptIfIdle();
+        }
       }
     }
   }
