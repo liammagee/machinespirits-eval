@@ -2033,3 +2033,50 @@ hermetic proofs; no paid session has run under this section yet.
 Execution follows: canary (pad-ON session 1) → §7.4 + canary gates →
 pad-ON 2 → delivery gate → pad-ON 3 → pad-OFF 1→2→3 → `--score` →
 verdict + §9-comparison recorded here and on the workplan card.
+
+**2026-07-07: In-flight instrument defect found by the canary itself,
+fixed and committed before any successful spend (b901d152).** The first
+two canary attempts died in ~233ms with "Provider codex not configured
+(missing API key)" and were auto-classified transient (zero rows
+persisted, pad untouched — verified). Root cause, established with
+temporary instrumentation (a `handles()`/setter trace): the hook was
+registered inside `evaluationRunner`'s lazy
+`import('../tutor-core/index.js').then(...)` block, whose continuation
+is serviced by loader macrotasks — and this run's entire path to the
+first LLM call is synchronous/microtask-only (better-sqlite3 + config
+reads), so the registration fired only at process teardown, AFTER the
+failed call. This also explains why the hermetic test had passed: its
+setup awaited a 25ms timer (a macrotask), unknowingly masking the race.
+Fix: register synchronously at module load via the existing static
+namespace import; new deterministic regression test (static import →
+synchronous `handles('codex')` check in a child process, no event-loop
+turn allowed). Instrument repair, not a design change; the two burned
+attempts consumed no envelope rows (transient, unpersisted).
+
+**2026-07-07: Canary (pad-ON session 1) + both live gates PASS; codex
+stack confirmed live end-to-end.**
+
+- **Pad-ON session 1** = `eval-2026-07-07-139daa20` (4/4 turns clean,
+  `success=1`, non-empty suggestions, wall-clock 6.7 min): canary gate
+  PASS. **§7.4 gate PASS** — `total_recognition_moments = 1` (column ==
+  raw row count == 1; the codex dialectical superego disapproves far
+  less often than nemotron/kimi's — §9's session 1 wrote 4 — but the
+  gate is ≥1 and the moment is real, quoting the session's actual
+  fractions content: "for 1/3 + 1/5, 15 is the least common
+  denominator... compare that with 1/4 + 1/6...").
+- **Pad-ON session 2** = `eval-2026-07-07-ffaac9d7` (4/4 turns clean).
+  **Live delivery gate PASS, at BOTH scoping levels**: naive §9.4 scan
+  12/12 `apiPayload` entries carry prior-session vocabulary from the
+  first ego-generate call onward (markers: fractions, denominator,
+  common denominator) — and, decisively, the §9.7-scoped PAD-ONLY
+  probes pass too: "unnecessarily large denominator" (superego-generated
+  at session-1 runtime, zero occurrences anywhere in
+  config/suggestion-scenarios.yaml) appears 4x in session 2's dialogue
+  log, and "1/3 + 1/5" (present only in the two session-1 scenario
+  blocks, absent from session 2's own scenario text) appears 4x. Unlike
+  §9 — where the pad-only scan hit 0/11 because the dialectical calls
+  were unlogged — the new `cli_capture` channel witnesses these
+  payloads directly: the §9 observability hole is closed in production,
+  not just hermetically.
+- Remaining sessions (pad-ON 3; pad-OFF 1→2→3, cell_93, no learner-id)
+  launched sequentially on the same stack; scoring next.
