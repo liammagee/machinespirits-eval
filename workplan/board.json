@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-06T19:38:33.174Z",
+  "generated": "2026-07-07T00:24:09.939Z",
   "counts": {
     "total": 100,
     "byStatus": {
-      "done": 84,
+      "done": 85,
       "blocked": 1,
       "dropped": 2,
       "review": 3,
-      "active": 3,
+      "active": 2,
       "archived": 4,
       "triaged": 3
     },
@@ -143,32 +143,6 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
-    },
-    {
-      "id": "shrinkage-probes",
-      "title": "Shrinkage probes: within-seed replication + null-scaling controls",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-07",
-      "updated": "2026-07-07",
-      "branch": "worktree-classifier-dag-register",
-      "verification": "Both limbs run under the frozen prereg; the pre-stated reads recorded; §5.12.7's 'neither has been run' sentence replaced under the usual audit.",
-      "claim_status": "methods",
-      "links": {
-        "notes": "SHRINKAGE-PROBES-PREREGISTRATION.md",
-        "items": [
-          "register-router-contrast",
-          "classifier-dag-register"
-        ]
-      },
-      "tags": [
-        "methodology",
-        "shrinkage",
-        "derivation"
-      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -886,6 +860,32 @@
       ],
       "branch": "codex/ux-enhancements",
       "milestone": "desktop-app"
+    },
+    {
+      "id": "shrinkage-probes",
+      "title": "Shrinkage probes: within-seed replication + null-scaling controls",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-07",
+      "updated": "2026-07-07",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "Both limbs run under the frozen prereg; the pre-stated reads recorded; §5.12.7's 'neither has been run' sentence replaced under the usual audit.",
+      "claim_status": "methods",
+      "links": {
+        "notes": "SHRINKAGE-PROBES-PREREGISTRATION.md",
+        "items": [
+          "register-router-contrast",
+          "classifier-dag-register"
+        ]
+      },
+      "tags": [
+        "methodology",
+        "shrinkage",
+        "derivation"
+      ]
     },
     {
       "id": "strategy-refusal-smoke",

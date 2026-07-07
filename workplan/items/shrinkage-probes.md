@@ -1,7 +1,7 @@
 ---
 id: shrinkage-probes
 title: "Shrinkage probes: within-seed replication + null-scaling controls"
-status: active
+status: done
 type: experiment
 priority: P1
 owner: unassigned
@@ -35,3 +35,21 @@ reading licensed). Reads = null-distribution Δ/U, excursion check
 Methodology only; every closed question stays closed; analysis
 deterministic (scripts/analyze-shrinkage-probes.js, pre-freeze
 validated).
+
+**OUTCOME (2026-07-07):** LIMB B: 2/6 outcome flips at identical
+seeds/config/provider (criterion met), one flip in each direction,
+fires varying at fixed seeds — within-seed sampling variance dominant;
+drift unnecessary; smoke-tier n=3 contrasts formally uninformative.
+LIMB A: the PLACEBO (flag fired 0 times; prompt-identical arms) scaled
+to Δ=−2.80, 10/10 vs 6/10 grounded, U=80/100 — PAST the one-sided 0.05
+point: a known nothing produced a promoted-thread-sized, bar-clearing
+signal. The active null (A2) wobbled unremarkably (Δ=−0.70, U=58/100).
+The censored record's one-way curse does not survive the uncensored
+control: regression works both ways, and §5.12.7's zero-truth +
+tail-selection account is confirmed from both sides. Standing
+recommendation: smokes license mechanism-availability reads only
+(fires/conduct/leaks); outcome colour reported without arithmetic;
+outcome claims begin at pre-registered tier with shrunken-estimate
+sizing. Deviations disclosed on the prereg (rerun2 skip, A1 codex,
+quota interruptions — all operator-directed or label-exact-resumed).
+

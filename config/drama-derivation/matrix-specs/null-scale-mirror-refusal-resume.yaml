@@ -1,0 +1,42 @@
+# TRIMMED RESUME of null-scale-mirror-refusal (external stop at 6/20;
+# operator said resume): same labels + seeds, missing arms only.
+base:
+  world: config/drama-derivation/world-005-marrick.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: baseline-r4
+    flags: { decay: '{"seed":563,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: mirror-refusal-r4
+    flags: { decay: '{"seed":563,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', learner-mirror-refusal: true }
+  - label: baseline-r5
+    flags: { decay: '{"seed":569,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: mirror-refusal-r5
+    flags: { decay: '{"seed":569,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', learner-mirror-refusal: true }
+  - label: baseline-r6
+    flags: { decay: '{"seed":571,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: mirror-refusal-r6
+    flags: { decay: '{"seed":571,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', learner-mirror-refusal: true }
+  - label: baseline-r7
+    flags: { decay: '{"seed":577,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: mirror-refusal-r7
+    flags: { decay: '{"seed":577,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', learner-mirror-refusal: true }
+  - label: baseline-r8
+    flags: { decay: '{"seed":587,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: mirror-refusal-r8
+    flags: { decay: '{"seed":587,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', learner-mirror-refusal: true }
+  - label: baseline-r9
+    flags: { decay: '{"seed":593,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: mirror-refusal-r9
+    flags: { decay: '{"seed":593,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', learner-mirror-refusal: true }
+  - label: baseline-r10
+    flags: { decay: '{"seed":599,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}' }
+  - label: mirror-refusal-r10
+    flags: { decay: '{"seed":599,"rate":0.08,"mutateShare":0.25,"maxConcurrent":1}', learner-mirror-refusal: true }
