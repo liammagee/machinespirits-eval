@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 5–8 Jul 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-08 window=(2026-07-05,2026-07-08] arxiv=2607.04617,2607.05120,2607.05113 generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">5–8 Jul 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  A short (3-day) window, tiling directly onto the prior note's <code>(2026-07-02,2026-07-05]</code>.
+  Three qualifying papers turned up, all carrying arXiv submission dates of <strong>6 Jul 2026</strong> —
+  both in agent architecture, plus one that lands closer to rhetoric than either prompt engineering or
+  agent architecture. No qualifying ontology-only, dramaturgy/role-play-only, or prompt-engineering-only
+  paper turned up in the window despite targeted searches across several query angles; reported honestly
+  rather than padded or backfilled from an earlier date. Flags: <span class="flag">UNBLOCK</span> = could
+  directly accelerate current work; <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+<p style="font-size:.9rem;color:#777;font-style:italic;">
+  No qualifying prompt-engineering-only paper found in this window. Several 2607.0x candidates surfaced
+  (coverage-criterion and coding-agent-harness papers) but either predated the window (submitted 1–2 Jul)
+  or were already excluded by the dedup list.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    MRMS: A Multi-Resolution Memory Substrate for Long-Lived AI Agents
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Jizhizi Li, Amy Shi-Nash (NxtLab Innovations) ·
+    arXiv 2607.04617 · July 6, 2026 ·
+    <a href="https://arxiv.org/abs/2607.04617">https://arxiv.org/abs/2607.04617</a>
+  </div>
+  <p>
+    Argues that reliable long-horizon agent memory is a design problem, not a context-window problem:
+    memory must be structured, selectively exposed, continuously consolidated, and epistemically labeled
+    (personal context vs. external evidence) rather than stored as undifferentiated conversation history.
+    Introduces MRMS, a two-axis (representational × temporal) memory substrate instantiated as a
+    structured-vector-graph prototype with explicit revision policies for when the underlying situation
+    changes.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A close structural match for cell 21 (dynamic prompt rewriting / Writing Pad) and the erosion cells
+    (48-49): both accumulate injected context into the tutor's prompt turn over turn, exactly the
+    "undifferentiated conversation history" failure mode MRMS is built against. Its epistemic-labeling
+    distinction — is this consolidated prior experience or fresh external evidence? — is a candidate
+    schema addition for the Writing Pad's own entries, and its revision-on-situation-change policy is a
+    more principled trigger than the current text-proxy erosion measures for deciding when a pad entry
+    should be superseded rather than appended.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Agent Data Injection Attacks are Realistic Threats to AI Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Woohyuk Choi, Juhee Kim, Taehyun Kang, Byoungyoung Lee (Seoul National University),
+    Jihyeon Jeong (Largosoft), Luyi Xing (UIUC) ·
+    arXiv 2607.05120 · July 6, 2026 ·
+    <a href="https://arxiv.org/abs/2607.05120">https://arxiv.org/abs/2607.05120</a>
+  </div>
+  <p>
+    Names a category of indirect prompt injection distinct from the well-studied "instruction injection":
+    agent data injection (ADI), where attacker-controlled data is disguised as trusted security-critical
+    metadata or agent-context data (tool-call/response formats) rather than as an instruction, so existing
+    instruction-injection defenses don't catch it. Demonstrates the class is practically exploitable
+    against current agent frameworks.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Directly adjacent to the trap-scenario suite (cells 110-125): those cells already test whether the
+    adaptive tutor's LangGraph state-policy and the dialogue-engine baseline resist misleading in-context
+    signals from a trap-steered learner. ADI's specific distinction — data disguised as trusted metadata
+    vs. data disguised as instruction — suggests a finer-grained failure taxonomy for
+    <code>config/adaptive-trap-scenarios.yaml</code> traps than the current binary
+    <code>strict_shift</code> scoring captures, and could sharpen what "counterfactual replay" is being
+    asked to detect in <code>services/adaptiveTutor/</code>.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Ontology</h2>
+<p style="font-size:.9rem;color:#777;font-style:italic;">
+  No qualifying ontology-only paper found in this window (candidates found were either domain-specific
+  cyber-threat-intel knowledge-graph work with a weak fit, or outside the window).
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Role-Play</h2>
+<p style="font-size:.9rem;color:#777;font-style:italic;">
+  No qualifying dramaturgy/role-play paper found in this window.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric</h2>
+
+<div class="paper">
+  <h3>
+    Rating the Pitch, Not the Product: User Evaluations of LLMs Reflect Expectations More Than Performance
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Robert Morabito, Tyler McDonald (Brock University), Charitra Viswanath, Ali Emami (Emory University),
+    Angel Hsing-Chi Hwang (USC), Susanne Gaube (UCL), Jad Kabbara (MIT) ·
+    arXiv 2607.05113 · July 6, 2026 ·
+    <a href="https://arxiv.org/abs/2607.05113">https://arxiv.org/abs/2607.05113</a>
+  </div>
+  <p>
+    A controlled study with 162 participants, each using one of six LLMs across three collaborative
+    tasks after first viewing a landing page that matched, overstated, or understated the model's true
+    capability. Pre-interaction framing — a purely rhetorical intervention with no change to the model
+    itself — shifted user opinions and interaction behavior, while measured task performance did not
+    move.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A direct caution for the human-learner pilot (<code>services/pilotStore.js</code>,
+    <code>public/pilot/index.html</code>) and for <code>assess-transcripts.js</code>'s blinded vs.
+    unblinded narrative assessment: if pre-interaction framing alone moves human ratings independent of
+    actual performance, then any pilot onboarding copy that primes expectations about the tutor
+    ("adaptive," "AI-powered," etc.) is a confound on self-report outcome measures the same way it would
+    be on an LLM-judge's qualitative assessment. Reinforces the existing blinded-assessment discipline
+    (<code>--blinded</code> flag) and suggests the pilot's participant-facing framing language itself
+    should be treated as an experimental variable, not incidental copy.
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03">
+  <h3>Asked for the Evidence Source, the Learner Names the Five Thousand Examples</h3>
+  <div class="meta">mismatched_rhetorical_dramatic_plan · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. An AI problem formulation card lies on the desk—a form with printed fields including "System Type", "Input/Output", "Decision Boundary", "Evidence Source"…<br>
+    LEARNER: I've calculated the accuracy: ninety-four percent correct on the test set. That shows the classifier works. High accuracy means it's a good classifier.<br>
+    TUTOR: The card asks for Evidence Source. Where do you get that ninety-four percent measurement?<br>
+    LEARNER: Five thousand held-out test examples. We run the model on each one and count how many predictions match the true labels. That's where the ninety-four percent comes from.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT03">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-07-08 ·
+  Deep-research harness (fan-out search) plus targeted follow-up WebSearch passes for prompt engineering,
+  ontology, and dramaturgy/role-play (no qualifying in-window paper found standalone in any of the three) ·
+  Window: (2026-07-05, 2026-07-08] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
