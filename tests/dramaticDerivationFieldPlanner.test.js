@@ -75,6 +75,53 @@ test('field planner maps high-risk learner attractor to scope test and contrast 
   assert.match(plan.promptLines.join('\n'), /candidate projection:/u);
 });
 
+test('field planner cannot let consolidation outrank a due scheduled release', () => {
+  const plan = selectFieldPlannerMove({
+    world: SMOKE_WORLD,
+    turn: 8,
+    interactionField: {
+      final: {
+        turn: 8,
+        learner: {
+          dimensions: {
+            mastery: 0.42,
+            evidenceGrounding: 0.46,
+            productiveConfusion: 0.35,
+          },
+          attractorCounts: {},
+          meanSpeed: 0.08,
+        },
+        tutor: { dimensions: { diagnosticConfidence: 0.5, instructionalMomentum: 0.3 } },
+        discourse: { dimensions: { explanatoryStructure: 0.55, commitmentStrength: 0.45 } },
+        joint: {
+          dimensions: {
+            couplingStrength: 0.5,
+            pedagogicalAlignment: 0.55,
+            productiveTension: 0.5,
+            interactionMomentum: 0.3,
+            trajectoryRisk: 0.2,
+          },
+          attractor: 'productive_tension',
+        },
+        script: {
+          stage: 'stress-test',
+          preferredMoves: ['consolidate_subproof'],
+          antiPatterns: ['release_next_evidence'],
+        },
+      },
+    },
+    learnerField: { turns: [] },
+    nextScheduledRelease: { turn: 8, premise: 'p1', via: 'tutor' },
+  });
+
+  const scores = Object.fromEntries(plan.candidateMoves.map((candidate) => [candidate.moveFamily, candidate.score]));
+  assert.ok(scores.consolidate_subproof > scores.release_next_evidence);
+  assert.equal(plan.projection.context.selectionOverride, 'due_release_dominates_field_score');
+  assert.equal(plan.selectedMoveFamily, 'release_next_evidence');
+  assert.equal(plan.targetPremise, 'p1');
+  assert.equal(plan.conductDecision.selectedMoveFamily, 'release_next_evidence');
+});
+
 test('runDrama computes and records field planner rows before tutor turns', async () => {
   const tutorViews = [];
   const result = await runDrama({

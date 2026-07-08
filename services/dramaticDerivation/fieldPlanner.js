@@ -442,6 +442,10 @@ export function projectFieldPlannerCandidates({
   const candidates = CONDUCT_MOVE_FAMILIES.map((moveFamily) =>
     candidateProjection({ moveFamily, turn, metrics, context }),
   ).sort((a, b) => b.score - a.score || String(a.moveFamily).localeCompare(String(b.moveFamily)));
+  const releaseDueCandidate =
+    context.currentReleaseDue && context.releaseTarget
+      ? candidates.find((candidate) => candidate.moveFamily === 'release_next_evidence')
+      : null;
   return {
     schema: FIELD_PLANNER_PROJECTION_SCHEMA,
     turn,
@@ -456,9 +460,10 @@ export function projectFieldPlannerCandidates({
       currentReleaseDue: context.currentReleaseDue,
       releaseTarget: context.releaseTarget,
       heldGapTarget: context.heldGapTarget,
+      ...(releaseDueCandidate ? { selectionOverride: 'due_release_dominates_field_score' } : {}),
     },
     candidates,
-    selected: candidates[0] || null,
+    selected: releaseDueCandidate || candidates[0] || null,
   };
 }
 
