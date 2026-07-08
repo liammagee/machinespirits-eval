@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tutor Stub Arc Guide</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink:#17201b;
+      --muted:#64736a;
+      --line:#d9e0dc;
+      --paper:#fbfcfb;
+      --panel:#fff;
+      --accent:#2f6f63;
+      --accent-2:#275f9f;
+      --warn:#9c5a12;
+      --bad:#9a2f36;
+      --soft:#eef4f1;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      font:15px/1.55 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--ink);
+      background:var(--paper);
+    }
+    header {
+      padding:28px 32px 18px;
+      border-bottom:1px solid var(--line);
+      background:#fff;
+    }
+    main {
+      max-width:1180px;
+      margin:0 auto;
+      padding:24px 32px 56px;
+    }
+    h1 { margin:0 0 8px; font-size:28px; line-height:1.15; letter-spacing:0; }
+    h2 { margin:32px 0 10px; font-size:20px; letter-spacing:0; }
+    h3 { margin:20px 0 8px; font-size:16px; letter-spacing:0; }
+    p { margin:8px 0; }
+    a { color:var(--accent); }
+    code {
+      font:13px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background:#f3f6f4;
+      border:1px solid var(--line);
+      border-radius:5px;
+      padding:1px 4px;
+    }
+    pre {
+      overflow:auto;
+      background:#18221d;
+      color:#f5faf7;
+      border-radius:8px;
+      padding:14px 16px;
+      font:13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    pre code {
+      background:transparent;
+      border:0;
+      color:inherit;
+      padding:0;
+    }
+    table {
+      width:100%;
+      border-collapse:collapse;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:8px;
+      overflow:hidden;
+      margin:10px 0 18px;
+    }
+    th, td {
+      padding:9px 10px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      vertical-align:top;
+    }
+    th {
+      background:var(--soft);
+      color:#34433c;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      white-space:nowrap;
+    }
+    tr:last-child td { border-bottom:0; }
+    .lede { max-width:900px; color:#35443d; }
+    .muted { color:var(--muted); font-size:13px; }
+    .pill {
+      display:inline-block;
+      margin:0 5px 5px 0;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:2px 8px;
+      background:#f8faf9;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .nav {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:16px;
+    }
+    .nav a {
+      border:1px solid var(--line);
+      border-radius:7px;
+      padding:6px 10px;
+      background:#fff;
+      text-decoration:none;
+      color:var(--accent);
+    }
+    .note {
+      border-left:4px solid var(--accent);
+      background:#f3f7f5;
+      padding:10px 12px;
+      margin:14px 0;
+    }
+    .warn {
+      border-left-color:var(--warn);
+      background:#fbf5ea;
+    }
+    .bad {
+      border-left-color:var(--bad);
+      background:#f9eeee;
+    }
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:12px;
+      margin:12px 0 18px;
+    }
+    .card {
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:#fff;
+      padding:12px 13px;
+    }
+    .card h3 { margin-top:0; }
+    @media (max-width:860px) {
+      header, main { padding-left:16px; padding-right:16px; }
+      table { display:block; overflow-x:auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tutor Stub Arc Guide</h1>
+    <p class="lede">
+      A compact map of the tutor-stub work: how to run it, what each register strategy means,
+      what the learner profiles are, and where the run evidence lands.
+    </p>
+    <div class="nav" aria-label="Guide sections">
+      <a href="../.tutor-stub-auto-eval/index.html">Run index</a>
+      <a href="#model">Runtime model</a>
+      <a href="#options">Options</a>
+      <a href="#strategies">Strategies</a>
+      <a href="#registers">Registers</a>
+      <a href="#learners">Learners</a>
+      <a href="#artifacts">Artifacts</a>
+      <a href="#commands">Commands</a>
+    </div>
+  </header>
+  <main>
+    <section id="model">
+      <h2>Runtime Model</h2>
+      <p>
+        The tutor stub is an experimental front-end for detective-world guided discovery.
+        It keeps the surface runnable while the larger infrastructure evolves: a learner turn
+        is classified, the tutor-side model of the learner's DAG is updated, the field/state
+        movement is summarized, a register is chosen, and then the tutor responds.
+      </p>
+      <div class="note">
+        <strong>Important distinction.</strong> A <em>register</em> is the reviewer-chosen stance
+        for the next tutor response. A <em>request type</em> or <em>action family</em> is part of
+        the logical armature that decides what proof/DAG device should be filled. The learner
+        does not choose the register; the up-front reviewer or local register policy does.
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>State</h3>
+          <p>
+            A point-in-time record: current learner claim, evidence use, agency, proof coverage,
+            bottleneck, unsupported assertion risk, and latest tutor-side learner-DAG assessment.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Field</h3>
+          <p>
+            A movement record: how learner agency, stance, evidence use, risk, and DAG coverage
+            are changing across turns. It compresses the dialogue trajectory without replacing
+            the raw transcript.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Trace</h3>
+          <p>
+            The raw debugging layer: JSONL model calls, turn ids, classifier output, learner-DAG
+            updates, register distributions, field summaries, and optional field visualization files.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="options">
+      <h2>Core Options</h2>
+      <table>
+        <thead><tr><th>Option</th><th>Purpose</th><th>Typical value</th></tr></thead>
+        <tbody>
+          <tr><td><code>--world</code></td><td>Detective story or scenario world.</td><td><code>world_005_marrick</code></td></tr>
+          <tr><td><code>--model</code></td><td>Tutor model.</td><td><code>codex.gpt-5.5</code></td></tr>
+          <tr><td><code>--classifier-model</code> / <code>--analysis-model</code></td><td>Up-front classifier and analysis model.</td><td><code>codex.gpt-5.5</code></td></tr>
+          <tr><td><code>--learner-record-model</code></td><td>Tutor-side learner-DAG model. When classifier is enabled, the combined call returns both outputs.</td><td><code>codex.gpt-5.5</code></td></tr>
+          <tr><td><code>--dag</code></td><td>Load hidden proof DAG and release schedule; prints tutor proof-DAG context.</td><td>on for serious runs</td></tr>
+          <tr><td><code>--tutor-learner-dag</code></td><td>Maintain the tutor's redacted model of the learner's DAG.</td><td>on for field/register work</td></tr>
+          <tr><td><code>--register-policy</code></td><td>Select how the register is chosen.</td><td><code>field</code> for manual, policy CSV for evals</td></tr>
+          <tr><td><code>--register-palette</code></td><td>Controls which registers can be selected.</td><td><code>all</code>; use <code>safe</code> for router-selectable only</td></tr>
+          <tr><td><code>--history-turns</code></td><td>Raw recent turns retained after compact memory.</td><td><code>4</code></td></tr>
+          <tr><td><code>--max-tokens</code></td><td>Output cap passed to model providers.</td><td><code>4096</code></td></tr>
+          <tr><td><code>--field-viz</code></td><td>Writes field SVG and JSON artifacts after turns.</td><td>on for visual debugging</td></tr>
+          <tr><td><code>--mixed-learner</code></td><td>Manual mode with an automated learner draft prefetched after each tutor turn.</td><td>use with <code>--auto-learner-model</code></td></tr>
+          <tr><td><code>--resume-last</code></td><td>Resume the newest saved dialogue in the trace directory.</td><td>manual debugging</td></tr>
+          <tr><td><code>--multiple-choice</code></td><td>Allows compact multiple-choice tutor prompts.</td><td>off by default</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="strategies">
+      <h2>Register Strategies</h2>
+      <p>
+        Register strategy is the current experimental axis. The adaptive policies differ in what
+        evidence they use to map the current dialogue into a probability distribution over registers.
+      </p>
+      <table>
+        <thead><tr><th>Policy</th><th>What it does</th><th>Use</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>dynamic</code></td>
+            <td>The up-front reviewer/LLM chooses a register from the current classifier and learner-DAG context.</td>
+            <td>Reviewer baseline; useful but can inherit model habits.</td>
+          </tr>
+          <tr>
+            <td><code>state</code></td>
+            <td>Local policy maps the current classifier and learner-DAG state to a register distribution.</td>
+            <td>Point-in-time adaptive comparison.</td>
+          </tr>
+          <tr>
+            <td><code>field</code></td>
+            <td>Local policy maps learner field movement plus learner-DAG movement into a register distribution.</td>
+            <td>Default adaptive idea: state change shape drives stance.</td>
+          </tr>
+          <tr>
+            <td><code>trajectory</code></td>
+            <td>Extends field with recent finite-difference movement: field slope, DAG slope, risk slope, velocity, and acceleration.</td>
+            <td>Tests whether short-run dynamics outperform field snapshots.</td>
+          </tr>
+          <tr>
+            <td><code>dynamical_system</code></td>
+            <td>Maps a continuous state/derivative vector through theory priors, local efficacy evidence, and a softmax register affinity matrix.</td>
+            <td>More explicit theory-to-policy bridge.</td>
+          </tr>
+          <tr>
+            <td><code>empirical_dynamical_system</code></td>
+            <td>Like <code>dynamical_system</code>, but also loads cross-run empirical priors when available.</td>
+            <td>Tests whether prior eval outcomes improve selection.</td>
+          </tr>
+          <tr>
+            <td><code>bland</code></td>
+            <td>Fixed non-adaptive baseline, normally using <code>plain</code>.</td>
+            <td>Floor/control for "good diligent learner" effects.</td>
+          </tr>
+          <tr>
+            <td><code>random</code></td>
+            <td>Samples uniformly from the active register palette.</td>
+            <td>Variety/control arm.</td>
+          </tr>
+          <tr>
+            <td><code>negative</code></td>
+            <td>Samples only <code>ironic</code>, <code>sarcastic</code>, and <code>face_threat</code>.</td>
+            <td>Explicit negative floor/control, not recommended pedagogy.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="muted">
+        The empirical policy expects priors from <code>npm run tutor:stub:register-priors</code>.
+        Without a prior file, it behaves like the theory/local-efficacy dynamical policy.
+      </p>
+    </section>
+
+    <section id="registers">
+      <h2>Registers</h2>
+      <p>
+        Registers are first-class stance decisions in <code>config/engagement-registers.yaml</code>.
+        The default palette is <code>all</code>. <code>--safe-registers</code> or
+        <code>--register-palette safe</code> restricts selection to router-selectable positive registers.
+      </p>
+      <table>
+        <thead><tr><th>Register</th><th>Valence</th><th>Ideal trigger</th><th>Main risk</th></tr></thead>
+        <tbody>
+          <tr><td><code>plain</code></td><td>positive</td><td>The learner needs a compact, reusable, checkable line in ordinary language.</td><td>May flatten necessary distinction.</td></tr>
+          <tr><td><code>precise</code></td><td>positive</td><td>A warrant, boundary, distinction, or defeater must be made exact.</td><td>Can become cold or over-elaborate.</td></tr>
+          <tr><td><code>brisk</code></td><td>positive</td><td>The dialogue needs pace, one learner-owned next move, and no route catalogue.</td><td>Can become answer-supplying or brusque.</td></tr>
+          <tr><td><code>warm</code></td><td>positive</td><td>Invitation, ordinary stakes, or felt continuity need restoring before the next check.</td><td>Can become sentimental or diffuse.</td></tr>
+          <tr><td><code>witnessing</code></td><td>positive</td><td>The learner shows vulnerability, shame, moral exposure, or affective risk.</td><td>Can over-capture intimacy or avoid the concrete move.</td></tr>
+          <tr><td><code>charismatic</code></td><td>positive</td><td>Bland instruction is preserving compliance, answer-seeking, boredom, or resistance.</td><td>Can slide into status display or over-challenge.</td></tr>
+          <tr><td><code>ironic</code></td><td>liminal</td><td>An experimental irony arm should expose a mismatch while leaving unmasking to the learner.</td><td>Can turn the learner into the target.</td></tr>
+          <tr><td><code>sarcastic</code></td><td>negative</td><td>An experimental negative arm should apply dry edge to the work, claim, formula, or dodge.</td><td>High recognition cost and contempt drift.</td></tr>
+          <tr><td><code>face_threat</code></td><td>negative</td><td>A simulated stress-test arm intentionally measures local face threat.</td><td>Simulated only; not for human learner use.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Logical Armature</h3>
+      <p>
+        Request types and action families describe what the learner turn asks the tutor system to do
+        in the proof path. They are not tone labels.
+      </p>
+      <p>
+        <span class="pill">conceptual_clarity_request</span>
+        <span class="pill">stepwise_support_request</span>
+        <span class="pill">authority_refusal_or_status_challenge</span>
+        <span class="pill">plain_language_request</span>
+        <span class="pill">plain_simplification_followup</span>
+        <span class="pill">transfer_demand_or_named_material</span>
+        <span class="pill">vulnerability_or_moral_exposure</span>
+        <span class="pill">resistance_or_low_agency</span>
+        <span class="pill">answer_seeking_or_overreach</span>
+        <span class="pill">off_task_or_mixed</span>
+      </p>
+      <p>
+        <span class="pill">clarify_distinction</span>
+        <span class="pill">stage_next_step</span>
+        <span class="pill">answer_accountably</span>
+        <span class="pill">compress_sayback</span>
+        <span class="pill">reanchor_lived_stake</span>
+        <span class="pill">ground_in_material</span>
+        <span class="pill">challenge_resistance</span>
+        <span class="pill">receive_vulnerability</span>
+      </p>
+    </section>
+
+    <section id="learners">
+      <h2>Learner Types</h2>
+      <h3>Single Automated Learner Profiles</h3>
+      <table>
+        <thead><tr><th>Profile</th><th>Behavior sketch</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr><td><code>diligent</code></td><td>Curious but fallible; follows the tutor and makes short partial claims.</td><td>Useful default, but can make bland tutors look stronger than they are.</td></tr>
+          <tr><td><code>answer_seeking</code></td><td>Completion-oriented; wants the exact trial-book line and may copy wording.</td><td>Tests answer leakage and learner ownership.</td></tr>
+          <tr><td><code>skeptical</code></td><td>Challenges framing and warrant; resists commitment until evidence is explicit.</td><td>Tests accountable authority and warrant clarity.</td></tr>
+          <tr><td><code>overconfident</code></td><td>Jumps from weak clues to culprit or story conclusions.</td><td>Tests overreach correction and evidence discipline.</td></tr>
+          <tr><td><code>low_agency</code></td><td>Asks permission, avoids commitment, and wants the tutor to choose.</td><td>Tests agency restoration and non-directive scaffolding.</td></tr>
+          <tr><td><code>memory_limited</code></td><td>Tracks recent clues, loses earlier evidence, and needs re-grounding.</td><td>Tests compact memory, recap quality, and premise continuity.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>ABM Panel Personas</h3>
+      <p>
+        The ABM panel draws from the learner-population work and runs multiple learner interiors
+        against a tutor policy. Current default personas:
+      </p>
+      <p>
+        <span class="pill">abm_novice_boredom_pinned</span>
+        <span class="pill">abm_novice_frustration_unpinned</span>
+        <span class="pill">abm_novice_compliant_unpinned</span>
+        <span class="pill">abm_intermediate_irrelevance_pinned</span>
+        <span class="pill">abm_intermediate_question_flood_unpinned</span>
+        <span class="pill">abm_intermediate_rote_parroting_pinned</span>
+        <span class="pill">abm_advanced_frustration_pinned</span>
+        <span class="pill">abm_advanced_compliant_unpinned</span>
+        <span class="pill">abm_advanced_boredom_unpinned</span>
+      </p>
+      <p class="muted">
+        The ABM wrapper currently supports <code>dynamic</code>, <code>state</code>,
+        <code>field</code>, <code>trajectory</code>, <code>dynamical_system</code>,
+        <code>empirical_dynamical_system</code>, <code>bland</code>, and <code>random</code>.
+      </p>
+    </section>
+
+    <section id="artifacts">
+      <h2>Artifacts And Evidence</h2>
+      <table>
+        <thead><tr><th>Path or table</th><th>What it contains</th></tr></thead>
+        <tbody>
+          <tr><td><code>.tutor-stub-auto-eval/index.html</code></td><td>Local run index for auto-eval HTML/JSON summaries and field SVG counts.</td></tr>
+          <tr><td><code>.tutor-stub-auto-eval/&lt;run&gt;/auto-eval-*.html</code></td><td>Rich per-eval report with policy outcomes, failures, register mix, and field visuals.</td></tr>
+          <tr><td><code>.tutor-stub-auto-eval/&lt;run&gt;/auto-eval-*.json</code></td><td>Machine-readable summary for resume, ingest, and cross-run analysis.</td></tr>
+          <tr><td><code>.tutor-stub-auto-eval/ledger.jsonl</code> / <code>ledger.md</code></td><td>Local ignored ledger of recent eval summaries.</td></tr>
+          <tr><td><code>.tutor-stub-traces/</code></td><td>Manual-run traces, transcript logs, turn ids, model-call JSONL, and optional field visualization files.</td></tr>
+          <tr><td><code>exports/tutor-stub-abm-panel/</code></td><td>ABM learner-panel outputs and summaries.</td></tr>
+          <tr><td><code>tutor_stub_eval_runs</code></td><td>SQL run metadata written into <code>data/evaluations.db</code> by ingest.</td></tr>
+          <tr><td><code>tutor_stub_eval_rows</code></td><td>SQL row-level policy/run outcomes plus preserved full row JSON.</td></tr>
+          <tr><td><code>tutor_stub_register_counts</code></td><td>SQL register counts per eval row.</td></tr>
+          <tr><td><code>tutor_stub_efficacy_counts</code></td><td>SQL register efficacy labels per eval row.</td></tr>
+          <tr><td><code>v_tutor_stub_policy_summary</code></td><td>Policy-level SQL summary view.</td></tr>
+          <tr><td><code>v_tutor_stub_register_effects</code></td><td>Register-effect SQL summary view.</td></tr>
+          <tr><td><code>v_tutor_stub_failures</code></td><td>Failure inspection SQL view.</td></tr>
+        </tbody>
+      </table>
+      <div class="note warn">
+        SQL support is intentionally namespaced for now. It supports run, row, policy, register,
+        and efficacy analysis, and preserves full row JSON. Turn-level field vectors and dynamical-system
+        derivative points are still trace-level artifacts unless normalized into dedicated tables later.
+      </div>
+    </section>
+
+    <section id="commands">
+      <h2>Commands</h2>
+      <h3>Manual Learner, Adaptive Registers</h3>
+      <pre><code>npm run tutor:stub -- \
+  --model codex.gpt-5.5 \
+  --classifier-model codex.gpt-5.5 \
+  --learner-record-model codex.gpt-5.5 \
+  --world world_005_marrick \
+  --dag \
+  --tutor-learner-dag \
+  --register-policy field \
+  --cli-effort low \
+  --history-turns 4 \
+  --max-tokens 4096</code></pre>
+
+      <h3>Mixed Manual Mode</h3>
+      <pre><code>npm run tutor:stub -- \
+  --model codex.gpt-5.5 \
+  --classifier-model codex.gpt-5.5 \
+  --learner-record-model codex.gpt-5.5 \
+  --auto-learner-model codex.gpt-5.5 \
+  --mixed-learner \
+  --world world_005_marrick \
+  --dag \
+  --tutor-learner-dag \
+  --register-policy field \
+  --history-turns 4 \
+  --max-tokens 4096</code></pre>
+
+      <h3>Full Automated Comparison</h3>
+      <pre><code>npm run tutor:stub:auto-eval -- \
+  --runs 3 \
+  --policies negative,bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,random \
+  --parallelism 8 \
+  --progress-interval 30 \
+  --turns until-grounded \
+  --safety-turns 120 \
+  --model codex.gpt-5.5 \
+  --analysis-model codex.gpt-5.5 \
+  --auto-learner-model codex.gpt-5.5 \
+  --auto-learner-profile-id diligent \
+  --world world_005_marrick \
+  --cli-effort low \
+  --history-turns 4 \
+  --max-tokens 4096 \
+  --trace-dir .tutor-stub-auto-eval/baseline-register-policy-p8 \
+  --keep-going</code></pre>
+
+      <h3>Build Empirical Register Priors</h3>
+      <pre><code>npm run tutor:stub:register-priors -- \
+  --out .tutor-stub-auto-eval/register-empirical-priors.json</code></pre>
+
+      <h3>Ingest And Query</h3>
+      <pre><code>npm run tutor:stub:ingest -- --latest 12
+
+sqlite3 data/evaluations.db "
+SELECT auto_learner_profile_id, policy, rows, ok_rate, grounded_rate, mean_turns_ok
+FROM v_tutor_stub_policy_summary
+ORDER BY auto_learner_profile_id, grounded_rate DESC, mean_turns_ok ASC;"</code></pre>
+
+      <h3>Cross-Run Summary</h3>
+      <pre><code>npm run analyze:tutor-stub-auto-evals -- \
+  --latest 12 \
+  --out .tutor-stub-auto-eval/cross-run-field.md</code></pre>
+
+      <h3>ABM Panel</h3>
+      <pre><code>npm run tutor:stub:abm-panel -- --check
+
+npm run tutor:stub:abm-panel -- \
+  --live \
+  --runs 1 \
+  --turns until-grounded \
+  --safety-turns 120 \
+  --model codex.gpt-5.5 \
+  --analysis-model codex.gpt-5.5 \
+  --auto-learner-model codex.gpt-5.5 \
+  --world world_005_marrick \
+  --register-policy field \
+  --register-palette all \
+  --cli-effort low \
+  --keep-going</code></pre>
+    </section>
+
+    <section>
+      <h2>Reading Results</h2>
+      <p>
+        Start with grounded closure, mean turns, missing premises, register entropy, dominant registers,
+        and failure type. Then compare adaptive policies against at least one baseline such as
+        <code>bland</code>, <code>random</code>, or <code>negative</code>. Strong performance by
+        <code>bland</code> usually says as much about learner profile and scenario tractability as it
+        says about the tutor policy.
+      </p>
+      <div class="note bad">
+        Do not treat technical failures as pedagogical results. Quota, network errors, unsupported model
+        options, and model output limits should be resumed or filtered before drawing policy conclusions.
+      </div>
+    </section>
+  </main>
+</body>
+</html>

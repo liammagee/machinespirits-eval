@@ -57,11 +57,11 @@ const CLI_OPTIONS = {
   personas: { type: 'string', default: 'all' },
   'output-dir': { type: 'string', default: process.env.TUTOR_STUB_ABM_OUTPUT_DIR || DEFAULT_OUTPUT_DIR },
   'run-id': { type: 'string', default: '' },
-  model: { type: 'string', default: process.env.TUTOR_STUB_ABM_MODEL || 'openai.mini' },
+  model: { type: 'string', default: process.env.TUTOR_STUB_ABM_MODEL || 'codex.gpt-5.5' },
   'analysis-model': { type: 'string', default: process.env.TUTOR_STUB_ABM_ANALYSIS_MODEL || 'codex.gpt-5.5' },
   'auto-learner-model': {
     type: 'string',
-    default: process.env.TUTOR_STUB_ABM_AUTO_LEARNER_MODEL || process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'openai.mini',
+    default: process.env.TUTOR_STUB_ABM_AUTO_LEARNER_MODEL || process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.5',
   },
   world: { type: 'string', default: process.env.TUTOR_STUB_ABM_WORLD || 'world_005_marrick' },
   'register-policy': { type: 'string', default: process.env.TUTOR_STUB_ABM_REGISTER_POLICY || 'dynamic' },
@@ -97,9 +97,10 @@ Options:
   --personas <all|csv>    subset of ABM persona ids (default: all)
   --output-dir <path>     artifact root (default: ${DEFAULT_OUTPUT_DIR})
   --run-id <id>           stable run id; default timestamped
-  --model <ref>           tutor model (default: openai.mini)
+  --model <ref>           tutor model (default: codex.gpt-5.5)
   --analysis-model <ref>  classifier + learner-DAG model (default: codex.gpt-5.5)
   --auto-learner-model <ref>
+                          automated learner model (default: codex.gpt-5.5)
   --world <id|path|none>  tutor-stub detective world (default: world_005_marrick)
   --register-policy <${REGISTER_POLICIES.join('|')}>
   --register-palette <all|safe|negative|non-simulated|csv>

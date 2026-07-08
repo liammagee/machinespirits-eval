@@ -40,11 +40,11 @@ const { values: args } = parseArgs({
     runs: { type: 'string', default: '1' },
     turns: { type: 'string', default: 'until-grounded' },
     policies: { type: 'string', default: 'negative,dynamic,random' },
-    model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || 'openai.mini' },
+    model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || 'codex.gpt-5.5' },
     'analysis-model': { type: 'string', default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || 'codex.gpt-5.5' },
     'auto-learner-model': {
       type: 'string',
-      default: process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL || process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'openai.mini',
+      default: process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL || process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.5',
     },
     'auto-learner-profile': {
       type: 'string',
@@ -93,9 +93,9 @@ Options:
   --turns <n|until-grounded> max automated learner turns per dialogue (default: until-grounded)
   --policies <csv>           register policies to compare (default: negative,dynamic,random)
                               known: dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,bland,random,negative
-  --model <ref>              tutor model (default: openai.mini)
+  --model <ref>              tutor model (default: codex.gpt-5.5)
   --analysis-model <ref>     classifier + learner-DAG model (default: codex.gpt-5.5)
-  --auto-learner-model <ref> automated learner model (default: openai.mini)
+  --auto-learner-model <ref> automated learner model (default: codex.gpt-5.5)
   --auto-learner-profile <text>
   --auto-learner-profile-id <id>
                               built-in profile when no custom text is supplied
@@ -268,6 +268,17 @@ function listTraceFiles(traceDir) {
     .sort();
 }
 
+function runStatePath(traceDir) {
+  return path.join(traceDir, 'run-state.json');
+}
+
+function writeJsonAtomic(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const tmpPath = `${filePath}.tmp`;
+  fs.writeFileSync(tmpPath, `${JSON.stringify(value, null, 2)}\n`);
+  fs.renameSync(tmpPath, filePath);
+}
+
 function countBy(values) {
   const counts = {};
   for (const value of values) {
@@ -283,6 +294,35 @@ function formatCounts(counts, { limit = 6 } = {}) {
     .slice(0, limit)
     .map(([key, value]) => `${key} ${value}`)
     .join(', ');
+}
+
+const REPORT_POLICY_ORDER = [
+  'bland',
+  'random',
+  'state',
+  'field',
+  'trajectory',
+  'dynamic',
+  'dynamical_system',
+  'empirical_dynamical_system',
+  'negative',
+];
+
+function reportPolicyRank(policy) {
+  const rank = REPORT_POLICY_ORDER.indexOf(String(policy || ''));
+  return rank === -1 ? REPORT_POLICY_ORDER.length : rank;
+}
+
+function compareReportPolicies(left, right) {
+  const rankDelta = reportPolicyRank(left) - reportPolicyRank(right);
+  if (rankDelta) return rankDelta;
+  return String(left || '').localeCompare(String(right || ''));
+}
+
+function compareReportRows(left, right) {
+  const policyDelta = compareReportPolicies(left?.policy, right?.policy);
+  if (policyDelta) return policyDelta;
+  return Number(left?.runIndex || 0) - Number(right?.runIndex || 0);
 }
 
 function mean(values) {
@@ -326,6 +366,12 @@ function fieldScore(score) {
 
 function fieldDelta(current, previous) {
   return roundField((current || 0) - (previous || 0));
+}
+
+function numericScore(score) {
+  const raw = scoreValue(score);
+  const numeric = Number(raw);
+  return Number.isFinite(numeric) ? numeric : null;
 }
 
 function formatSignedField(value) {
@@ -487,6 +533,16 @@ function compactNumericMap(object, { limit = Infinity, abs = false, minAbs = 0 }
     })
     .slice(0, limit);
   return Object.fromEntries(entries.map(([key, value]) => [key, roundOptionalField(value)]));
+}
+
+function mergeCounts(countObjects = []) {
+  const out = {};
+  for (const counts of countObjects) {
+    for (const [key, value] of Object.entries(counts || {})) {
+      out[key] = (out[key] || 0) + Number(value || 0);
+    }
+  }
+  return out;
 }
 
 function compactRegisterDistribution(selection = {}) {
@@ -836,6 +892,33 @@ function buildAnimatedRunVisualization(turnRecords = [], fieldViz = null) {
   };
 }
 
+function summarizeLearnerBehavior(turnRecords = []) {
+  const analyses = turnRecords.map((turn) => turn?.classification?.turn || null).filter(Boolean);
+  const conceptualScores = analyses.map((turn) => numericScore(turn.scores?.conceptual_engagement)).filter((value) => value !== null);
+  const readinessScores = analyses.map((turn) => numericScore(turn.scores?.epistemic_readiness)).filter((value) => value !== null);
+  const learnerWords = turnRecords.map((turn) => wordsInText(turn?.learner)).filter((value) => value > 0);
+  const firstTurn = turnRecords[0] || {};
+  const finalTurn = turnRecords.at(-1) || {};
+  return {
+    schema: 'machinespirits.tutor-stub.learner-behavior-summary.v1',
+    turnCount: turnRecords.length,
+    classifiedTurnCount: analyses.length,
+    meanLearnerWords: mean(learnerWords),
+    meanConceptualEngagement: mean(conceptualScores),
+    meanEpistemicReadiness: mean(readinessScores),
+    requestTypeCounts: countBy(analyses.map((turn) => turn.request_type).filter(Boolean)),
+    discourseMoveCounts: countBy(analyses.map((turn) => turn.discourse_move).filter(Boolean)),
+    evidenceUseCounts: countBy(analyses.map((turn) => turn.evidence_use).filter(Boolean)),
+    epistemicStanceCounts: countBy(analyses.map((turn) => turn.epistemic_stance).filter(Boolean)),
+    agencyCounts: countBy(analyses.map((turn) => turn.agency).filter(Boolean)),
+    affectCounts: countBy(analyses.map((turn) => turn.affect).filter(Boolean)),
+    firstLearner: textSnippet(firstTurn.learner, 220),
+    finalLearner: textSnippet(finalTurn.learner, 220),
+    firstClassification: textSnippet(firstTurn.classification?.turn?.summary, 220),
+    finalClassification: textSnippet(finalTurn.classification?.turn?.summary, 220),
+  };
+}
+
 function fieldPolyline(rows, key, { width, height, padding }) {
   if (!rows.length) return '';
   const xSpan = Math.max(1, rows.length - 1);
@@ -1014,6 +1097,17 @@ function summarizeJobProgress(job) {
   };
 }
 
+function summarizeResultProgress(result) {
+  const summary = Array.isArray(result?.traceSummaries) ? result.traceSummaries.at(-1) : null;
+  return {
+    key: result?.key || `${safeSlug(result?.policy || 'unknown')}-r${result?.runIndex || '?'}`,
+    turns: Number(summary?.turnCount || 0),
+    coverage: summary?.bestPathCoverage ?? null,
+    bottleneck: summary?.bottleneck || '',
+    lastType: summary?.stopReason || result?.status || '',
+  };
+}
+
 function summarizeTrace(tracePath, traceDir) {
   const events = readTraceEvents(tracePath);
   const turns = events.filter((event) => event.type === 'turn_complete');
@@ -1022,6 +1116,7 @@ function summarizeTrace(tracePath, traceDir) {
   const fieldWrite = events.filter((event) => event.type === 'field_visualization_write').at(-1) || null;
   const fieldViz = buildLightweightDialogueField(turnRecords);
   const animatedViz = buildAnimatedRunVisualization(turnRecords, fieldViz);
+  const learnerBehavior = summarizeLearnerBehavior(turnRecords);
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
@@ -1078,6 +1173,7 @@ function summarizeTrace(tracePath, traceDir) {
       : null,
     fieldViz: fieldViz.turnCount ? fieldViz : null,
     animatedViz,
+    learnerBehavior,
   };
 }
 
@@ -1118,6 +1214,7 @@ function resultRows(results) {
           field: null,
           fieldViz: null,
           animatedViz: null,
+          learnerBehavior: null,
         },
       ];
     }
@@ -1204,6 +1301,10 @@ function htmlMetric(label, value, sub = '') {
   return `<div class="metric"><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value">${escapeHtml(value)}</div><div class="metric-sub">${escapeHtml(sub)}</div></div>`;
 }
 
+function htmlMetricInfo(label, tooltip, value, sub = '') {
+  return `<div class="metric"><div class="metric-label">${infoTerm(label, tooltip)}</div><div class="metric-value">${escapeHtml(value)}</div><div class="metric-sub">${escapeHtml(sub)}</div></div>`;
+}
+
 function hrefRelative(fromDir, targetPath) {
   return path.relative(fromDir, targetPath).split(path.sep).join('/');
 }
@@ -1228,6 +1329,110 @@ function fieldSummaryText(row) {
 
 function fieldRowTitle(row) {
   return `${row.policy} run ${row.runIndex}`;
+}
+
+function learnerProfileFromSummary(summary = {}) {
+  const config = summary.config || {};
+  const id = String(config.autoLearnerProfileId || '').trim();
+  const builtInDescription = AUTO_LEARNER_PROFILES[id] || '';
+  const commandProfile = (summary.results || [])
+    .map((result) => (Array.isArray(result.command) ? flagValue(result.command, '--auto-learner-profile') : null))
+    .find(Boolean);
+  const description = commandProfile || builtInDescription || '';
+  return {
+    id: id || (description ? 'custom' : 'unknown'),
+    source: builtInDescription ? 'built-in' : description ? 'custom' : 'unknown',
+    description,
+    model: config.autoLearnerModel || null,
+  };
+}
+
+function aggregateLearnerBehavior(rows = []) {
+  const behaviors = rows.map((row) => row.learnerBehavior).filter(Boolean);
+  if (!behaviors.length) return null;
+  return {
+    rowCount: behaviors.length,
+    turnCount: behaviors.reduce((sum, behavior) => sum + Number(behavior.turnCount || 0), 0),
+    classifiedTurnCount: behaviors.reduce((sum, behavior) => sum + Number(behavior.classifiedTurnCount || 0), 0),
+    meanLearnerWords: mean(behaviors.map((behavior) => behavior.meanLearnerWords)),
+    meanConceptualEngagement: mean(behaviors.map((behavior) => behavior.meanConceptualEngagement)),
+    meanEpistemicReadiness: mean(behaviors.map((behavior) => behavior.meanEpistemicReadiness)),
+    requestTypeCounts: mergeCounts(behaviors.map((behavior) => behavior.requestTypeCounts)),
+    discourseMoveCounts: mergeCounts(behaviors.map((behavior) => behavior.discourseMoveCounts)),
+    evidenceUseCounts: mergeCounts(behaviors.map((behavior) => behavior.evidenceUseCounts)),
+    epistemicStanceCounts: mergeCounts(behaviors.map((behavior) => behavior.epistemicStanceCounts)),
+    agencyCounts: mergeCounts(behaviors.map((behavior) => behavior.agencyCounts)),
+    affectCounts: mergeCounts(behaviors.map((behavior) => behavior.affectCounts)),
+    examples: behaviors
+      .map((behavior, index) => ({
+        label: `run ${index + 1}`,
+        firstLearner: behavior.firstLearner,
+        finalLearner: behavior.finalLearner,
+        firstClassification: behavior.firstClassification,
+        finalClassification: behavior.finalClassification,
+      }))
+      .filter((example) => example.firstLearner || example.finalLearner)
+      .slice(0, 3),
+  };
+}
+
+function renderCountChips(counts, { limit = 6 } = {}) {
+  const entries = Object.entries(counts || {})
+    .sort((a, b) => Number(b[1]) - Number(a[1]) || a[0].localeCompare(b[0]))
+    .slice(0, limit);
+  if (!entries.length) return '<span class="learner-empty">none</span>';
+  return entries.map(([key, value]) => `<span class="learner-chip">${escapeHtml(key)} <b>${escapeHtml(value)}</b></span>`).join('');
+}
+
+function learnerStat(label, value, sub = '') {
+  return `<div class="learner-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><em>${escapeHtml(sub)}</em></div>`;
+}
+
+function renderLearnerProfileSection(summary, rows) {
+  const profile = learnerProfileFromSummary(summary);
+  const behavior = aggregateLearnerBehavior(rows);
+  const description = profile.description || 'No automated learner profile text was preserved in this summary.';
+  const examples = behavior?.examples?.length
+    ? `<div class="learner-examples">
+        ${behavior.examples
+          .map(
+            (example) => `<div class="learner-example">
+              <div class="learner-example-label">${escapeHtml(example.label)}</div>
+              <div><strong>Opening:</strong> ${escapeHtml(example.firstClassification || example.firstLearner || '')}</div>
+              <div><strong>Final:</strong> ${escapeHtml(example.finalClassification || example.finalLearner || '')}</div>
+            </div>`,
+          )
+          .join('\n')}
+      </div>`
+    : '';
+  return `<section class="learner-panel">
+    <div class="learner-profile-card">
+      <div class="learner-eyebrow">Automated learner</div>
+      <h3>${escapeHtml(profile.id)}</h3>
+      <p>${escapeHtml(description)}</p>
+      <dl>
+        <div><dt>source</dt><dd>${escapeHtml(profile.source)}</dd></div>
+        <div><dt>model</dt><dd>${escapeHtml(profile.model || 'unknown')}</dd></div>
+      </dl>
+    </div>
+    <div class="learner-behavior-card">
+      <div class="learner-eyebrow">Observed behavior</div>
+      <div class="learner-score-grid">
+        ${learnerStat('Turns', behavior?.turnCount ?? 0, `${behavior?.classifiedTurnCount ?? 0} classified`)}
+        ${learnerStat('Words/Turn', behavior?.meanLearnerWords ?? 0, 'mean learner length')}
+        ${learnerStat('Conceptual', behavior?.meanConceptualEngagement ?? 0, 'mean 1-5 score')}
+        ${learnerStat('Readiness', behavior?.meanEpistemicReadiness ?? 0, 'mean 1-5 score')}
+      </div>
+      <div class="learner-chip-grid">
+        <div><strong>Moves</strong>${renderCountChips(behavior?.discourseMoveCounts)}</div>
+        <div><strong>Stance</strong>${renderCountChips(behavior?.epistemicStanceCounts)}</div>
+        <div><strong>Evidence</strong>${renderCountChips(behavior?.evidenceUseCounts)}</div>
+        <div><strong>Agency</strong>${renderCountChips(behavior?.agencyCounts)}</div>
+        <div><strong>Requests</strong>${renderCountChips(behavior?.requestTypeCounts)}</div>
+      </div>
+      ${examples}
+    </div>
+  </section>`;
 }
 
 function fieldSvgDirForReport(htmlPath) {
@@ -1305,30 +1510,153 @@ function animatedVizReportPayload(rows) {
   };
 }
 
+function infoTerm(label, tooltip) {
+  return `<span class="info-term" tabindex="0" data-tip="${escapeHtml(tooltip)}">${escapeHtml(label)}</span>`;
+}
+
+const REPORT_TERM_TOOLTIPS = {
+  ok: 'Rows that completed without a technical failure. Dry-run rows are configuration checks and failed rows are excluded from most means.',
+  grounded:
+    'Rows where the learner reached grounded asserted-secret closure: the final secret was asserted and entailed by grounded evidence in the learner-DAG.',
+  meanTurns: 'Mean number of learner turns used by OK rows before grounded closure or another stop condition.',
+  meanCoverage:
+    'Mean learner-DAG best-path coverage across OK rows. It is a 0 to 1 score for how much of the target evidence path is grounded.',
+  meanMissing:
+    'Mean count of still-missing premises on the learner-DAG best path at the end of OK rows. Lower is better.',
+  masteryDelta: 'Mean change in the reconstructed learner-mastery field from first to final turn for OK rows.',
+  riskDelta: 'Mean change in reconstructed learner risk from first to final turn for OK rows. Lower or negative usually means risk fell.',
+  topRegisters: 'Most frequently selected tutor discourse registers in the OK rows for this policy.',
+  entropy:
+    'Shannon entropy in bits over selected tutor registers for OK rows. 0 means one register dominated; higher means more register diversity.',
+  bottleneck:
+    'The final learner-DAG limiting condition, such as missing evidence, learner integration gap, premature assertion, or grounded closure.',
+  fieldDelta: 'Compact field movement: learner mastery delta and learner risk delta from first to final turn.',
+  efficacy: 'Counts of register-selection efficacy labels emitted by the register policy or classifier.',
+  leaks: 'Tutor leak audit count: places where the tutor appears to reveal or overgive protected solution information.',
+};
+
+function reportInfoTerm(key, label) {
+  return infoTerm(label, REPORT_TERM_TOOLTIPS[key] || label);
+}
+
+function renderReportMetricGuide() {
+  const terms = [
+    ['Mean Coverage', REPORT_TERM_TOOLTIPS.meanCoverage],
+    ['Mean Missing', REPORT_TERM_TOOLTIPS.meanMissing],
+    ['Entropy', REPORT_TERM_TOOLTIPS.entropy],
+    ['Grounded', REPORT_TERM_TOOLTIPS.grounded],
+  ];
+  return `<aside class="metric-guide" aria-label="Metric explanations">
+    <h3>Reading The Metrics</h3>
+    <dl>
+      ${terms
+        .map(
+          ([term, description]) => `<div>
+            <dt>${escapeHtml(term)}</dt>
+            <dd>${escapeHtml(description)}</dd>
+          </div>`,
+        )
+        .join('\n')}
+    </dl>
+  </aside>`;
+}
+
+function renderAnimatedVizGuide() {
+  const terms = [
+    [
+      'Field',
+      'The learner-discourse movement surface: mastery, risk, alignment, momentum, evidence use, agency, and stance across turns.',
+    ],
+    [
+      'DAG',
+      'The tutor-side learner-DAG model: how much of the proof path appears grounded, voiced, missing, or unsupported.',
+    ],
+    [
+      'Risk',
+      'A compact warning score for fragile progress: unsupported assertions, premature secret claims, face pressure, or rising recognition cost.',
+    ],
+    [
+      'Trajectory',
+      'The recent path through field, DAG, and risk values. It asks whether the dialogue is moving, stalling, regressing, or converging.',
+    ],
+    [
+      'Velocity',
+      'The latest turn-to-turn change. Positive field/DAG velocity is usually good; positive risk velocity is usually bad.',
+    ],
+    [
+      'Slope',
+      'The short-window trend line. It is less twitchy than one-turn velocity and helps identify plateau or convergence.',
+    ],
+    [
+      'Acceleration',
+      'Change in velocity. Large acceleration can mean a real phase shift or an unstable/noisy turn.',
+    ],
+    [
+      'Bottleneck',
+      'The current limiting condition in the proof path, such as missing evidence, learner integration gap, or premature assertion.',
+    ],
+    [
+      'Register',
+      'The discursive strategy selected for the tutor turn, such as precise, warm, brisk, witnessing, or a negative control register.',
+    ],
+    [
+      'Distribution',
+      'The policy probability spread over available registers. Selected-only policies have no spread, so the view shows observed frequency instead.',
+    ],
+  ];
+  return `<aside class="viz-sidebar" aria-label="Animated dynamics explanation">
+    <h3>Reading The Animation</h3>
+    <p>
+      Each turn frame combines ${infoTerm(
+        'Field',
+        terms[0][1],
+      )}, ${infoTerm('DAG', terms[1][1])}, ${infoTerm('Risk', terms[2][1])}, and
+      ${infoTerm('Register', terms[8][1])} signals so you can compare learner movement,
+      proof-state movement, and tutor strategy choice.
+    </p>
+    <dl>
+      ${terms
+        .map(
+          ([term, description]) => `<div>
+            <dt>${infoTerm(term, description)}</dt>
+            <dd>${escapeHtml(description)}</dd>
+          </div>`,
+        )
+        .join('\n')}
+    </dl>
+  </aside>`;
+}
+
 function renderAnimatedVizSection(rows) {
   const payload = animatedVizReportPayload(rows);
   if (!payload.rows.length) {
     return '<p class="sub">No turn-by-turn visualization frames were found in these traces.</p>';
   }
   return `<div class="viz-player" id="tutor-stub-viz-player">
-    <div class="viz-toolbar">
-      <label class="viz-select-label"><span>Run</span><select data-viz-run></select></label>
-      <div class="viz-mode-buttons" role="tablist" aria-label="Visualization mode">
-        <button type="button" data-viz-mode="state">State</button>
-        <button type="button" data-viz-mode="field" class="active">Field</button>
-        <button type="button" data-viz-mode="trajectory">Trajectory</button>
-        <button type="button" data-viz-mode="dynamics">Dynamics</button>
-        <button type="button" data-viz-mode="registers">Registers</button>
+    <div class="viz-layout">
+      <div class="viz-main">
+        <div class="viz-toolbar">
+          <label class="viz-select-label"><span>Run</span><select data-viz-run></select></label>
+          <div class="viz-mode-buttons" role="tablist" aria-label="Visualization mode">
+            <button type="button" data-viz-mode="state">State</button>
+            <button type="button" data-viz-mode="field" class="active">Field</button>
+            <button type="button" data-viz-mode="trajectory">Trajectory</button>
+            <button type="button" data-viz-mode="dynamics">Dynamics</button>
+            <button type="button" data-viz-mode="registers">Registers</button>
+          </div>
+          <div class="viz-step-buttons">
+            <button type="button" data-viz-prev>Prev</button>
+            <button type="button" data-viz-play>Play</button>
+            <button type="button" data-viz-next>Next</button>
+          </div>
+          <label class="viz-range-label"><span>Turn</span><input type="range" min="0" value="0" step="1" data-viz-range></label>
+        </div>
+        <div class="viz-help-strip" data-viz-help></div>
+        <div class="viz-canvas-wrap"><canvas data-viz-canvas></canvas></div>
+        <div class="viz-readout" data-viz-readout aria-live="polite"></div>
       </div>
-      <div class="viz-step-buttons">
-        <button type="button" data-viz-prev>Prev</button>
-        <button type="button" data-viz-play>Play</button>
-        <button type="button" data-viz-next>Next</button>
-      </div>
-      <label class="viz-range-label"><span>Turn</span><input type="range" min="0" value="0" step="1" data-viz-range></label>
+      ${renderAnimatedVizGuide()}
     </div>
-    <div class="viz-canvas-wrap"><canvas data-viz-canvas></canvas></div>
-    <pre class="viz-readout" data-viz-readout></pre>
   </div>
   <script type="application/json" id="tutor-stub-viz-data">${safeJsonForScript(JSON.stringify(payload))}</script>
   <script>
@@ -1350,6 +1678,7 @@ function renderAnimatedVizSection(rows) {
     var select = root.querySelector('[data-viz-run]');
     var range = root.querySelector('[data-viz-range]');
     var readout = root.querySelector('[data-viz-readout]');
+    var helpStrip = root.querySelector('[data-viz-help]');
     var playButton = root.querySelector('[data-viz-play]');
     var modeButtons = Array.prototype.slice.call(root.querySelectorAll('[data-viz-mode]'));
     var activeRow = rows[0];
@@ -1365,6 +1694,18 @@ function renderAnimatedVizSection(rows) {
       dag: '#059669',
       risk: '#dc2626'
     };
+    var registerOrder = ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic', 'ironic', 'sarcastic', 'face_threat'];
+    var registerMeta = {
+      plain: { label: 'Plain', group: 'clarify', color: '#2563eb', note: 'plain-language re-entry' },
+      precise: { label: 'Precise', group: 'warrant', color: '#059669', note: 'distinction or proof step' },
+      brisk: { label: 'Brisk', group: 'pace', color: '#d97706', note: 'faster stepwise movement' },
+      warm: { label: 'Warm', group: 'repair', color: '#db2777', note: 'readiness and affect repair' },
+      witnessing: { label: 'Witnessing', group: 'recognition', color: '#7c3aed', note: 'acknowledge learner position' },
+      charismatic: { label: 'Charismatic', group: 'disrupt', color: '#0891b2', note: 'interrupt stuck low agency' },
+      ironic: { label: 'Ironic', group: 'negative/probe', color: '#64748b', note: 'mismatch cue' },
+      sarcastic: { label: 'Sarcastic', group: 'negative/probe', color: '#a855f7', note: 'hostile challenge probe' },
+      face_threat: { label: 'Face threat', group: 'negative/probe', color: '#dc2626', note: 'status-pressure probe' }
+    };
 
     function finite(value, fallback) {
       var number = Number(value);
@@ -1378,6 +1719,56 @@ function renderAnimatedVizSection(rows) {
     function format(value) {
       var number = Number(value);
       return Number.isFinite(number) ? number.toFixed(3) : 'n/a';
+    }
+
+    function pct(value) {
+      var number = Number(value);
+      return Number.isFinite(number) ? Math.round(number * 100) + '%' : 'n/a';
+    }
+
+    function metaForRegister(register) {
+      var key = String(register || 'none');
+      return registerMeta[key] || {
+        label: key.replace(/_/g, ' ').replace(/\\b\\w/g, function (match) { return match.toUpperCase(); }),
+        group: 'other',
+        color: '#334155',
+        note: 'unclassified register'
+      };
+    }
+
+    function registerLabel(register) {
+      var meta = metaForRegister(register);
+      return meta.label + (register && meta.label.toLowerCase().replace(/ /g, '_') !== register ? ' (' + register + ')' : '');
+    }
+
+    function escapeReadoutHtml(value) {
+      return String(value || '').replace(/[&<>"]/g, function (char) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;'
+        }[char];
+      });
+    }
+
+    function eventChips(events) {
+      var list = (events || []).slice(0, 6);
+      if (!list.length) return '<span class="event-chip event-none">none</span>';
+      return list.map(function (event) {
+        return '<span class="event-chip">' + escapeReadoutHtml(event) + '</span>';
+      }).join('');
+    }
+
+    function truncateText(value, maxWidth) {
+      var raw = String(value || '');
+      if (ctx.measureText(raw).width <= maxWidth) return raw;
+      var suffix = '...';
+      var textValue = raw;
+      while (textValue.length > 1 && ctx.measureText(textValue + suffix).width > maxWidth) {
+        textValue = textValue.slice(0, -1);
+      }
+      return textValue + suffix;
     }
 
     function currentFrames() {
@@ -1423,6 +1814,16 @@ function renderAnimatedVizSection(rows) {
       ctx.fillRect(x, y, width * bounded, 12);
       text(label, x, y - 4, { color: '#34433c', size: 11 });
       text(format(value), x + width + 8, y + 10, { color: '#66736c', size: 11 });
+    }
+
+    function labeledBar(label, value, x, y, width, color, valueLabel) {
+      var bounded = clamp01(value);
+      ctx.fillStyle = '#e7ece8';
+      ctx.fillRect(x, y, width, 14);
+      ctx.fillStyle = color || '#2f6f63';
+      ctx.fillRect(x, y, width * bounded, 14);
+      text(truncateText(label, width - 46), x, y - 5, { color: '#34433c', size: 11 });
+      text(valueLabel || pct(value), x + width + 8, y + 11, { color: '#66736c', size: 11 });
     }
 
     function drawPlot(series, options) {
@@ -1544,33 +1945,200 @@ function renderAnimatedVizSection(rows) {
       });
     }
 
-    function drawRegisters(frame, width, height) {
-      text('Register Distribution', 28, 34, { size: 18, weight: '700' });
-      var rows = frame.register.distribution || [];
-      if (!rows.length) {
-        text('no register distribution', 34, 86, { color: '#66736c' });
-        return;
-      }
-      var x = 44;
-      var y = 76;
-      var barWidth = width - 280;
-      rows.slice(0, 12).forEach(function (entry, index) {
-        var yy = y + index * 28;
-        var selected = entry.register === frame.selectedRegister;
-        rectBar(entry.register + (selected ? ' *' : ''), entry.probability, x, yy, barWidth, selected ? '#7c3aed' : '#2f6f63');
+    function registerKeysForRun() {
+      var seen = {};
+      currentFrames().forEach(function (frame) {
+        if (frame.selectedRegister) seen[frame.selectedRegister] = true;
+        (frame.register.distribution || []).forEach(function (entry) {
+          if (entry.register) seen[entry.register] = true;
+        });
+        Object.keys(frame.register.scores || {}).forEach(function (key) {
+          seen[key] = true;
+        });
       });
-      text('selected: ' + (frame.selectedRegister || 'none'), width - 210, 92, { color: '#34433c', size: 13, weight: '700' });
-      text('source: ' + frame.register.distributionSource, width - 210, 122, { color: '#66736c' });
+      return Object.keys(seen).sort(function (left, right) {
+        var leftIndex = registerOrder.indexOf(left);
+        var rightIndex = registerOrder.indexOf(right);
+        leftIndex = leftIndex === -1 ? 999 : leftIndex;
+        rightIndex = rightIndex === -1 ? 999 : rightIndex;
+        return leftIndex - rightIndex || left.localeCompare(right);
+      });
+    }
+
+    function registerCountsThrough(index) {
+      var counts = {};
+      currentFrames().slice(0, index + 1).forEach(function (frame) {
+        var key = frame.selectedRegister || 'none';
+        counts[key] = (counts[key] || 0) + 1;
+      });
+      return counts;
+    }
+
+    function drawRegisterTimeline(frames, x, y, width, height) {
+      text('selection timeline', x, y - 12, { color: '#34433c', size: 12, weight: '700' });
+      ctx.fillStyle = '#eef4f1';
+      ctx.fillRect(x, y, width, height);
+      var count = Math.max(1, frames.length);
+      frames.forEach(function (row, index) {
+        var meta = metaForRegister(row.selectedRegister);
+        var start = x + (index / count) * width;
+        var end = x + ((index + 1) / count) * width;
+        ctx.fillStyle = meta.color;
+        ctx.fillRect(start, y, Math.max(1, end - start + 0.5), height);
+      });
+      var cursorX = x + ((activeIndex + 0.5) / count) * width;
+      ctx.strokeStyle = '#17201b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cursorX, y - 5);
+      ctx.lineTo(cursorX, y + height + 5);
+      ctx.stroke();
+      ctx.strokeStyle = '#d9e0dc';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, width, height);
+      text('1', x, y + height + 18, { color: '#66736c', size: 10 });
+      text(String(frames.length), x + width, y + height + 18, { color: '#66736c', size: 10, align: 'right' });
+    }
+
+    function drawRegisterLegend(keys, x, y, width, height) {
+      text('key', x, y, { size: 13, weight: '700' });
+      var rowHeight = 34;
+      keys.slice(0, Math.floor((height - 30) / rowHeight)).forEach(function (key, index) {
+        var meta = metaForRegister(key);
+        var yy = y + 26 + index * rowHeight;
+        ctx.fillStyle = meta.color;
+        ctx.fillRect(x, yy - 10, 12, 12);
+        text(meta.label, x + 18, yy, { color: '#17201b', size: 12, weight: '700' });
+        text(truncateText(meta.group + ' | ' + meta.note, width - 18), x + 18, yy + 16, { color: '#66736c', size: 10 });
+      });
+    }
+
+    function drawCurrentRegisterCard(frame, x, y, width) {
+      var meta = metaForRegister(frame.selectedRegister);
+      ctx.fillStyle = '#f8faf9';
+      ctx.fillRect(x, y, width, 108);
+      ctx.strokeStyle = '#d9e0dc';
+      ctx.strokeRect(x, y, width, 108);
+      ctx.fillStyle = meta.color;
+      ctx.fillRect(x + 12, y + 18, 18, 18);
+      text('current register', x + 12, y + 14, { color: '#66736c', size: 11 });
+      text(meta.label, x + 40, y + 32, { color: '#17201b', size: 16, weight: '700' });
+      text(String(frame.selectedRegister || 'none'), x + 40, y + 52, { color: '#66736c', size: 11 });
+      text('policy: ' + (frame.register.policy || activeRow.policy || 'unknown'), x + 12, y + 78, { color: '#34433c', size: 11 });
+      text('kind: ' + meta.group, x + 12, y + 96, { color: '#34433c', size: 11 });
+    }
+
+    function drawRegisters(frame, width, height) {
+      text('Register Strategy', 28, 34, { size: 18, weight: '700' });
+      var frames = currentFrames();
+      var keys = registerKeysForRun();
+      var leftX = 34;
+      var rightWidth = Math.min(300, Math.max(230, width * 0.28));
+      var rightX = width - rightWidth - 28;
+      var leftWidth = Math.max(320, rightX - leftX - 28);
+      drawCurrentRegisterCard(frame, rightX, 62, rightWidth);
+      drawRegisterLegend(keys, rightX, 196, rightWidth, height - 210);
+      drawRegisterTimeline(frames, leftX, 78, leftWidth, 54);
+
+      var rows = frame.register.distribution || [];
+      var hasPolicyDistribution = frame.register.distributionSource === 'policy_distribution' && rows.length > 1;
+      var y = 182;
+      var barWidth = leftWidth - 76;
+      if (hasPolicyDistribution) {
+        text('current probability distribution', leftX, y - 24, { color: '#34433c', size: 12, weight: '700' });
+        rows.slice(0, 9).forEach(function (entry, index) {
+          var meta = metaForRegister(entry.register);
+          var selected = entry.register === frame.selectedRegister;
+          labeledBar(
+            meta.label + (selected ? '  selected' : ''),
+            entry.probability,
+            leftX,
+            y + index * 30,
+            barWidth,
+            selected ? '#17201b' : meta.color,
+            pct(entry.probability),
+          );
+        });
+      } else {
+        var counts = registerCountsThrough(activeIndex);
+        var total = Math.max(1, activeIndex + 1);
+        text('selection frequency through this turn', leftX, y - 24, { color: '#34433c', size: 12, weight: '700' });
+        keys
+          .map(function (key) {
+            return { register: key, count: counts[key] || 0 };
+          })
+          .filter(function (entry) {
+            return entry.count > 0;
+          })
+          .sort(function (left, right) {
+            return right.count - left.count || registerOrder.indexOf(left.register) - registerOrder.indexOf(right.register);
+          })
+          .slice(0, 9)
+          .forEach(function (entry, index) {
+            var meta = metaForRegister(entry.register);
+            labeledBar(
+              meta.label,
+              entry.count / total,
+              leftX,
+              y + index * 30,
+              barWidth,
+              meta.color,
+              entry.count + '/' + total,
+            );
+          });
+      }
+      text('source: ' + frame.register.distributionSource, leftX, height - 26, { color: '#66736c', size: 11 });
     }
 
     function updateReadout(frame) {
       if (!readout || !frame) return;
-      readout.textContent = [
-        activeRow.title + ' | turn ' + frame.turn + '/' + activeRow.viz.turnCount + ' | ' + mode,
-        'register: ' + (frame.selectedRegister || 'none') + ' | bottleneck: ' + (frame.field.bottleneck || 'unknown') + ' | events: ' + (frame.events || []).join(', '),
-        'learner: ' + ((frame.snippets && frame.snippets.learner) || ''),
-        'tutor: ' + ((frame.snippets && frame.snippets.tutor) || '')
-      ].join('\\n');
+      var meta = metaForRegister(frame.selectedRegister || 'none');
+      var registerKey = frame.selectedRegister || 'none';
+      var bottleneck = (frame.field && frame.field.bottleneck) || 'unknown';
+      var learner = (frame.snippets && frame.snippets.learner) || '';
+      var tutor = (frame.snippets && frame.snippets.tutor) || '';
+      readout.innerHTML = [
+        '<div class="viz-readout-head">',
+          '<strong>' + escapeReadoutHtml(activeRow.title) + '</strong>',
+          '<span>turn ' + escapeReadoutHtml(frame.turn) + '/' + escapeReadoutHtml(activeRow.viz.turnCount) + '</span>',
+          '<span>' + escapeReadoutHtml(mode) + '</span>',
+        '</div>',
+        '<div class="viz-readout-grid">',
+          '<section class="readout-card readout-style" style="--style-color:' + escapeReadoutHtml(meta.color) + '">',
+            '<span class="readout-label">style / register</span>',
+            '<strong><span class="style-swatch"></span>' + escapeReadoutHtml(meta.label) + '</strong>',
+            '<em>' + escapeReadoutHtml(registerKey) + ' · ' + escapeReadoutHtml(meta.group) + ' · ' + escapeReadoutHtml(meta.note) + '</em>',
+          '</section>',
+          '<section class="readout-card readout-bottleneck">',
+            '<span class="readout-label">proof bottleneck</span>',
+            '<strong>' + escapeReadoutHtml(bottleneck) + '</strong>',
+          '</section>',
+          '<section class="readout-card readout-events">',
+            '<span class="readout-label">events</span>',
+            '<div class="event-list">' + eventChips(frame.events) + '</div>',
+          '</section>',
+        '</div>',
+        '<div class="viz-readout-lines">',
+          '<p><span class="snippet-label learner">learner</span><span>' + escapeReadoutHtml(learner) + '</span></p>',
+          '<p><span class="snippet-label tutor">tutor</span><span>' + escapeReadoutHtml(tutor) + '</span></p>',
+        '</div>'
+      ].join('');
+    }
+
+    function helpTextForMode() {
+      if (mode === 'state') {
+        return 'State: current classifier and learner-DAG snapshot, including request type, proof coverage, missing premises, and bottleneck.';
+      }
+      if (mode === 'trajectory') {
+        return 'Trajectory: field, DAG, and risk over recent turns. v/s/a are velocity, slope, and acceleration.';
+      }
+      if (mode === 'dynamics') {
+        return 'Dynamics: state-vector axes and derivative/attractor signals used by dynamical-system register policies when available.';
+      }
+      if (mode === 'registers') {
+        return 'Registers: selected discursive strategy over time. The timeline shows choices; bars show either policy probabilities or observed frequency for selected-only policies.';
+      }
+      return 'Field: mastery, risk, tutor alignment, and joint momentum across turns.';
     }
 
     function draw() {
@@ -1595,6 +2163,7 @@ function renderAnimatedVizSection(rows) {
       modeButtons.forEach(function (button) {
         button.classList.toggle('active', button.getAttribute('data-viz-mode') === mode);
       });
+      if (helpStrip) helpStrip.textContent = helpTextForMode();
       if (playButton) playButton.textContent = timer ? 'Pause' : 'Play';
     }
 
@@ -1701,8 +2270,11 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
   const reportDir = htmlPath
     ? path.dirname(resolvePath(htmlPath))
     : resolveTracePath(summary.config?.traceDir || '.', ROOT);
+  const indexHref = hrefRelative(reportDir, path.join(indexRootDir(), 'index.html'));
   const guideHref = hrefRelative(reportDir, path.join(ROOT, 'docs', 'tutor-stub-arc-guide.html'));
+  const orderedRows = rows.slice().sort(compareReportRows);
   const policyRows = Object.entries(summary.aggregates.byPolicy)
+    .sort(([left], [right]) => compareReportPolicies(left, right))
     .map(
       ([policy, bucket]) => `<tr>
         <td><strong>${escapeHtml(policy)}</strong></td>
@@ -1719,7 +2291,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
       </tr>`,
     )
     .join('\n');
-  const runRows = rows
+  const runRows = orderedRows
     .map(
       (row) => `<tr>
         <td>${escapeHtml(row.policy)}</td>
@@ -1760,11 +2332,39 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
     .sub { color:var(--muted); }
     .header-links { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
     .header-links a { border:1px solid var(--line); border-radius:7px; padding:5px 9px; background:#fff; text-decoration:none; }
-    .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:18px 0 4px; }
+    .summary-panel { display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:14px; align-items:stretch; margin:18px 0 4px; }
+    .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:0; }
     .metric { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px; }
     .metric-label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
     .metric-value { font-size:24px; font-weight:700; margin-top:4px; }
     .metric-sub { color:var(--muted); font-size:12px; min-height:18px; }
+    .metric-guide { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+    .metric-guide h3 { margin:0 0 8px; font-size:15px; }
+    .metric-guide dl { margin:0; display:grid; gap:8px; }
+    .metric-guide dl div { border-top:1px solid var(--line); padding-top:8px; }
+    .metric-guide dl div:first-child { border-top:0; padding-top:0; }
+    .metric-guide dt { font-weight:700; color:#24342d; }
+    .metric-guide dd { margin:2px 0 0; color:var(--muted); font-size:12px; }
+    .learner-panel { display:grid; grid-template-columns:minmax(260px,.85fr) minmax(360px,1.5fr); gap:14px; margin:18px 0 4px; }
+    .learner-profile-card, .learner-behavior-card { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px; }
+    .learner-eyebrow { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+    .learner-profile-card h3 { margin:4px 0 8px; font-size:20px; }
+    .learner-profile-card p { margin:0 0 12px; color:#34433c; }
+    .learner-profile-card dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:0; }
+    .learner-profile-card dt { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+    .learner-profile-card dd { margin:2px 0 0; font-weight:700; }
+    .learner-score-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin:8px 0 12px; }
+    .learner-stat { border:1px solid var(--line); border-radius:7px; padding:8px; background:#fbfcfb; }
+    .learner-stat span { display:block; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+    .learner-stat strong { display:block; margin-top:2px; font-size:18px; }
+    .learner-stat em { display:block; color:var(--muted); font-style:normal; font-size:11px; }
+    .learner-chip-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
+    .learner-chip-grid strong { display:block; margin-bottom:5px; color:#24342d; }
+    .learner-chip { display:inline-block; margin:0 5px 5px 0; padding:3px 7px; border-radius:999px; background:#eef4f1; border:1px solid var(--line); color:#34433c; font-size:12px; }
+    .learner-empty { color:var(--muted); font-size:12px; }
+    .learner-examples { display:grid; gap:8px; margin-top:12px; }
+    .learner-example { border-top:1px solid var(--line); padding-top:8px; color:#34433c; font-size:12px; }
+    .learner-example-label { color:var(--muted); text-transform:uppercase; letter-spacing:.04em; font-size:11px; margin-bottom:3px; }
     .field-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:14px; }
     .field-card { background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
     .field-card-head { display:flex; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); background:#f7faf8; }
@@ -1776,6 +2376,15 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
     .field-svg { overflow-x:auto; background:#f8fafc; }
     .field-svg svg { display:block; width:100%; min-width:640px; height:auto; }
     .viz-player { background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+    .viz-layout { display:grid; grid-template-columns:minmax(0,1fr) 310px; }
+    .viz-main { min-width:0; }
+    .viz-sidebar { border-left:1px solid var(--line); background:#fbfcfb; padding:14px; }
+    .viz-sidebar h3 { margin:0 0 8px; font-size:15px; }
+    .viz-sidebar p { margin:0 0 12px; color:#34433c; font-size:12px; }
+    .viz-sidebar dl { margin:0; display:grid; gap:8px; }
+    .viz-sidebar dl div { border-top:1px solid var(--line); padding-top:8px; }
+    .viz-sidebar dt { font-weight:700; color:#24342d; }
+    .viz-sidebar dd { margin:3px 0 0; color:var(--muted); font-size:12px; }
     .viz-toolbar { display:grid; grid-template-columns:minmax(220px,1.2fr) auto auto minmax(180px,.9fr); gap:10px; align-items:end; padding:12px 14px; border-bottom:1px solid var(--line); background:#f7faf8; }
     .viz-toolbar label { display:flex; flex-direction:column; gap:4px; color:var(--muted); font-size:12px; }
     .viz-toolbar select, .viz-toolbar button, .viz-toolbar input { font:inherit; }
@@ -1784,9 +2393,53 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
     .viz-mode-buttons button, .viz-step-buttons button { border:1px solid var(--line); border-radius:6px; background:#fff; color:#34433c; padding:7px 9px; cursor:pointer; }
     .viz-mode-buttons button.active { border-color:var(--accent); background:#eaf3f0; color:#17443b; font-weight:700; }
     .viz-range-label input { width:100%; min-width:150px; accent-color:var(--accent); }
+    .viz-help-strip { border-bottom:1px solid var(--line); padding:9px 14px; color:#34433c; background:#fff; font-size:12px; }
+    .viz-readout { margin:0; padding:12px 14px; border-top:1px solid var(--line); background:#f8faf9; color:#34433c; min-height:118px; }
+    .viz-readout-head { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; font-size:12px; }
+    .viz-readout-head strong { color:#17201b; font-size:13px; }
+    .viz-readout-head span { border:1px solid var(--line); border-radius:999px; padding:2px 7px; background:#fff; color:var(--muted); }
+    .viz-readout-grid { display:grid; grid-template-columns:minmax(210px, .9fr) minmax(190px, .7fr) minmax(260px, 1.4fr); gap:10px; }
+    .readout-card { border:1px solid var(--line); border-radius:7px; background:#fff; padding:9px 10px; min-width:0; }
+    .readout-card strong { display:block; color:#17201b; margin-top:3px; overflow-wrap:anywhere; }
+    .readout-card em { display:block; margin-top:3px; color:var(--muted); font-style:normal; font-size:12px; overflow-wrap:anywhere; }
+    .readout-style { border-left:6px solid var(--style-color, var(--accent)); background:linear-gradient(90deg, color-mix(in srgb, var(--style-color, var(--accent)) 10%, #fff), #fff 65%); }
+    .readout-label { display:block; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+    .style-swatch { display:inline-block; width:10px; height:10px; margin-right:7px; border-radius:999px; background:var(--style-color, var(--accent)); vertical-align:middle; }
+    .event-list { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
+    .event-chip { display:inline-block; border:1px solid #cdd9d3; border-radius:999px; padding:2px 7px; background:#eef4f1; color:#24433b; font-size:12px; }
+    .event-none { color:var(--muted); background:#fff; }
+    .viz-readout-lines { display:grid; gap:7px; margin-top:10px; font-size:13px; line-height:1.35; }
+    .viz-readout-lines p { display:grid; grid-template-columns:74px minmax(0,1fr); gap:8px; margin:0; }
+    .snippet-label { align-self:start; border-radius:999px; padding:2px 7px; text-transform:uppercase; letter-spacing:.04em; font-size:10px; font-weight:700; text-align:center; }
+    .snippet-label.learner { background:#e8f0fe; color:#275f9f; }
+    .snippet-label.tutor { background:#eaf3f0; color:#17443b; }
+    .info-term { position:relative; display:inline-block; border-bottom:1px dotted var(--accent); color:#17443b; cursor:help; }
+    .info-term::after {
+      content:attr(data-tip);
+      position:absolute;
+      left:0;
+      top:calc(100% + 7px);
+      z-index:10;
+      width:min(310px,80vw);
+      padding:8px 9px;
+      border:1px solid var(--line);
+      border-radius:7px;
+      background:#17201b;
+      color:#fff;
+      font-size:12px;
+      line-height:1.35;
+      text-transform:none;
+      letter-spacing:0;
+      font-weight:400;
+      box-shadow:0 8px 24px rgba(23,32,27,.18);
+      opacity:0;
+      transform:translateY(-3px);
+      pointer-events:none;
+      transition:opacity .12s ease, transform .12s ease;
+    }
+    .info-term:hover::after, .info-term:focus::after { opacity:1; transform:translateY(0); }
     .viz-canvas-wrap { background:#fff; }
     .viz-canvas-wrap canvas { display:block; width:100%; height:420px; }
-    .viz-readout { margin:0; padding:12px 14px; border-top:1px solid var(--line); background:#f8faf9; color:#34433c; white-space:pre-wrap; overflow-wrap:anywhere; font:12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; min-height:88px; }
     table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
     th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
     th { background:#eef4f1; font-size:12px; color:#34433c; text-transform:uppercase; letter-spacing:.04em; }
@@ -1798,8 +2451,14 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
     .status.dry_run { background:#f3eadc; color:var(--warn); }
     a { color:var(--accent); }
     @media (max-width: 820px) {
+      .summary-panel { grid-template-columns:1fr; }
+      .learner-panel { grid-template-columns:1fr; }
+      .viz-layout { grid-template-columns:1fr; }
+      .viz-sidebar { border-left:0; border-top:1px solid var(--line); }
       .viz-toolbar { grid-template-columns:1fr; }
       .viz-canvas-wrap canvas { height:360px; }
+      .viz-readout-grid { grid-template-columns:1fr; }
+      .viz-readout-lines p { grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -1807,32 +2466,69 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
   <header>
     <h1>Tutor Stub Auto-Eval Report</h1>
     <div class="sub">Started ${escapeHtml(summary.startedAt)} · completed ${escapeHtml(summary.completedAt)} · world ${escapeHtml(summary.config.world)}</div>
-    <div class="header-links"><a href="${escapeHtml(guideHref)}">arc guide</a></div>
+    <div class="header-links">
+      <a href="${escapeHtml(indexHref)}">report index</a>
+      <a href="${escapeHtml(guideHref)}">arc guide</a>
+    </div>
   </header>
   <main>
-    <section class="metrics">
-      ${htmlMetric('Rows', summary.aggregates.rows, `${summary.aggregates.failed} failed · ${summary.aggregates.dryRun} dry-run`)}
-      ${htmlMetric('Grounded', `${summary.aggregates.grounded}/${summary.aggregates.ok}`, `${Math.round(summary.aggregates.groundedRate * 100)}% closure`)}
-      ${htmlMetric('Mean Turns', summary.aggregates.meanTurns, `safety cap ${summary.config.safetyTurns}`)}
-      ${htmlMetric('Mean Coverage', summary.aggregates.meanCoverage, 'learner-DAG best path')}
-      ${htmlMetric('Mean Missing', summary.aggregates.meanMissing, 'remaining premises')}
+    <section class="summary-panel">
+      <div class="metrics">
+        ${htmlMetricInfo('Rows', REPORT_TERM_TOOLTIPS.ok, summary.aggregates.rows, `${summary.aggregates.failed} failed · ${summary.aggregates.dryRun} dry-run`)}
+        ${htmlMetricInfo('Grounded', REPORT_TERM_TOOLTIPS.grounded, `${summary.aggregates.grounded}/${summary.aggregates.ok}`, `${Math.round(summary.aggregates.groundedRate * 100)}% closure`)}
+        ${htmlMetricInfo('Mean Turns', REPORT_TERM_TOOLTIPS.meanTurns, summary.aggregates.meanTurns, `safety cap ${summary.config.safetyTurns}`)}
+        ${htmlMetricInfo('Mean Coverage', REPORT_TERM_TOOLTIPS.meanCoverage, summary.aggregates.meanCoverage, 'learner-DAG best path')}
+        ${htmlMetricInfo('Mean Missing', REPORT_TERM_TOOLTIPS.meanMissing, summary.aggregates.meanMissing, 'remaining premises')}
+      </div>
+      ${renderReportMetricGuide()}
     </section>
+
+    <h2>Learner Profile</h2>
+    ${renderLearnerProfileSection(summary, rows)}
 
     <h2>Policy Comparison</h2>
     <table>
-      <thead><tr><th>Policy</th><th>OK</th><th>Grounded</th><th>Rate</th><th>Mean Turns</th><th>Mean Coverage</th><th>Mean Missing</th><th>Mastery Δ</th><th>Risk Δ</th><th>Top Registers</th><th>Entropy</th></tr></thead>
+      <thead><tr>
+        <th>Policy</th>
+        <th>${reportInfoTerm('ok', 'OK')}</th>
+        <th>${reportInfoTerm('grounded', 'Grounded')}</th>
+        <th>Rate</th>
+        <th>${reportInfoTerm('meanTurns', 'Mean Turns')}</th>
+        <th>${reportInfoTerm('meanCoverage', 'Mean Coverage')}</th>
+        <th>${reportInfoTerm('meanMissing', 'Mean Missing')}</th>
+        <th>${reportInfoTerm('masteryDelta', 'Mastery Δ')}</th>
+        <th>${reportInfoTerm('riskDelta', 'Risk Δ')}</th>
+        <th>${reportInfoTerm('topRegisters', 'Top Registers')}</th>
+        <th>${reportInfoTerm('entropy', 'Entropy')}</th>
+      </tr></thead>
       <tbody>${policyRows || '<tr><td colspan="11">No policy rows.</td></tr>'}</tbody>
     </table>
 
     <h2>Animated Dynamics</h2>
-    ${renderAnimatedVizSection(rows)}
+    ${renderAnimatedVizSection(orderedRows)}
 
     <h2>Field Trajectories</h2>
-    ${renderFieldTrajectories(rows)}
+    ${renderFieldTrajectories(orderedRows)}
 
     <h2>Run Details</h2>
     <table>
-      <thead><tr><th>Policy</th><th>Run</th><th>Status</th><th>Grounded</th><th>Stop</th><th>Turns</th><th>Coverage</th><th>Missing</th><th>Bottleneck</th><th>Field Δ</th><th>Registers</th><th>Efficacy</th><th>Leaks</th><th>Trace</th><th>Log</th></tr></thead>
+      <thead><tr>
+        <th>Policy</th>
+        <th>Run</th>
+        <th>Status</th>
+        <th>${reportInfoTerm('grounded', 'Grounded')}</th>
+        <th>Stop</th>
+        <th>${reportInfoTerm('meanTurns', 'Turns')}</th>
+        <th>${reportInfoTerm('meanCoverage', 'Coverage')}</th>
+        <th>${reportInfoTerm('meanMissing', 'Missing')}</th>
+        <th>${reportInfoTerm('bottleneck', 'Bottleneck')}</th>
+        <th>${reportInfoTerm('fieldDelta', 'Field Δ')}</th>
+        <th>${reportInfoTerm('topRegisters', 'Registers')}</th>
+        <th>${reportInfoTerm('efficacy', 'Efficacy')}</th>
+        <th>${reportInfoTerm('leaks', 'Leaks')}</th>
+        <th>Trace</th>
+        <th>Log</th>
+      </tr></thead>
       <tbody>${runRows || '<tr><td colspan="15">No run rows.</td></tr>'}</tbody>
     </table>
   </main>
@@ -2014,6 +2710,24 @@ function listAutoEvalSummaryFiles(rootDir) {
   return files;
 }
 
+function listAutoEvalRunStateFiles(rootDir) {
+  if (!fs.existsSync(rootDir)) return [];
+  const files = [];
+  const stack = [rootDir];
+  while (stack.length) {
+    const dir = stack.pop();
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const entryPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (!skipIndexScanDir(entry.name)) stack.push(entryPath);
+        continue;
+      }
+      if (entry.name === 'run-state.json') files.push(entryPath);
+    }
+  }
+  return files;
+}
+
 function reportHtmlPathForSummary(summary, jsonPath) {
   const sibling = jsonPath.replace(/\.json$/u, '.html');
   const reported = summary?.report?.html ? resolvePath(summary.report.html) : null;
@@ -2056,7 +2770,9 @@ function readIndexSummary(jsonPath, rootDir) {
         ? `${relParent}/${path.basename(jsonPath, '.json')}`
         : path.basename(jsonPath, '.json');
     const policies = Array.isArray(config.policies) && config.policies.length ? config.policies : Object.keys(aggregates.byPolicy || {});
+    const policyText = policies.join(' ');
     const completedAt = summary.completedAt || summary.startedAt || '';
+    const completedMs = Date.parse(completedAt) || Date.parse(summary.startedAt || '') || fs.statSync(jsonPath).mtimeMs || 0;
     const status = config.dryRun || aggregates.dryRun === aggregates.rows ? 'dry_run' : aggregates.failed ? 'failed' : 'ok';
     const htmlExists = fs.existsSync(htmlPath);
     return {
@@ -2078,6 +2794,7 @@ function readIndexSummary(jsonPath, rootDir) {
       safetyTurns: config.safetyTurns ?? '',
       model: config.model || '',
       analysisModel: config.analysisModel || '',
+      autoLearnerModel: config.autoLearnerModel || '',
       rows: aggregates.rows || 0,
       ok: aggregates.ok || 0,
       failed: aggregates.failed || 0,
@@ -2087,14 +2804,23 @@ function readIndexSummary(jsonPath, rootDir) {
       meanTurns: aggregates.meanTurns ?? '',
       meanCoverage: aggregates.meanCoverage ?? '',
       meanMissing: aggregates.meanMissing ?? '',
+      policyText,
+      completedMs,
       searchText: [
         reportName,
         status,
-        policies.join(' '),
+        policyText,
         config.autoLearnerProfileId,
         config.world,
+        config.turns,
+        config.safetyTurns,
         config.model,
         config.analysisModel,
+        config.autoLearnerModel,
+        aggregates.rows ? `${aggregates.rows} rows` : '',
+        aggregates.ok ? `${aggregates.ok} ok` : '',
+        aggregates.failed ? `${aggregates.failed} failed` : '',
+        aggregates.grounded ? `${aggregates.grounded} grounded` : '',
         shortDate(completedAt),
       ]
         .filter(Boolean)
@@ -2121,6 +2847,7 @@ function readIndexSummary(jsonPath, rootDir) {
       safetyTurns: '',
       model: '',
       analysisModel: '',
+      autoLearnerModel: '',
       rows: 0,
       ok: 0,
       failed: 1,
@@ -2130,7 +2857,85 @@ function readIndexSummary(jsonPath, rootDir) {
       meanTurns: '',
       meanCoverage: '',
       meanMissing: '',
+      policyText: '',
+      completedMs: fs.existsSync(jsonPath) ? fs.statSync(jsonPath).mtimeMs : 0,
       searchText: `${path.basename(jsonPath)} parse error`.toLowerCase(),
+      parseError: error.message,
+    };
+  }
+}
+
+function readIndexRunState(statePath, rootDir) {
+  try {
+    const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+    const updatedMs = Date.parse(state.updatedAt || '') || fs.statSync(statePath).mtimeMs || 0;
+    const stale = state.status === 'running' && Date.now() - updatedMs > 15 * 60 * 1000;
+    const status = stale ? 'stale' : state.status || 'running';
+    const relState = hrefRelative(rootDir, statePath);
+    const relParent = path.dirname(relState);
+    const runName = relParent && relParent !== '.' ? relParent : path.basename(path.dirname(statePath));
+    const jobs = (state.jobs || []).map((job) => {
+      const traceDir = job.traceDir ? resolvePath(job.traceDir) : '';
+      const latestTrace = traceDir ? latestTraceFile(traceDir) : null;
+      const logPath = job.log ? resolvePath(job.log) : '';
+      return {
+        ...job,
+        logHref: logPath ? hrefRelative(rootDir, logPath) : '',
+        traceHref: latestTrace ? hrefRelative(rootDir, latestTrace) : '',
+        traceDirHref: traceDir ? hrefRelative(rootDir, traceDir) : '',
+      };
+    });
+    const activeJobs = jobs.filter((job) => job.status === 'running');
+    return {
+      runName,
+      statePath,
+      stateHref: relState,
+      status,
+      pid: state.pid || '',
+      startedAt: state.startedAt || '',
+      updatedAt: state.updatedAt || '',
+      updatedMs,
+      traceDir: state.traceDir || '',
+      traceDirHref: state.traceDir ? hrefRelative(rootDir, resolvePath(state.traceDir)) : '',
+      config: state.config || {},
+      policies: state.config?.policies || [],
+      learnerProfile: state.config?.autoLearnerProfileId || '',
+      world: state.config?.world || '',
+      totals: state.totals || {},
+      jobs,
+      activeJobs,
+      searchText: [
+        runName,
+        status,
+        state.config?.autoLearnerProfileId,
+        state.config?.world,
+        ...(state.config?.policies || []),
+        shortDate(state.startedAt || ''),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase(),
+    };
+  } catch (error) {
+    return {
+      runName: path.basename(path.dirname(statePath)),
+      statePath,
+      stateHref: hrefRelative(rootDir, statePath),
+      status: 'stale',
+      pid: '',
+      startedAt: '',
+      updatedAt: '',
+      updatedMs: fs.existsSync(statePath) ? fs.statSync(statePath).mtimeMs : 0,
+      traceDir: '',
+      traceDirHref: '',
+      config: {},
+      policies: [],
+      learnerProfile: '',
+      world: '',
+      totals: { jobs: 0, completed: 0, active: 0, queued: 0, failed: 0 },
+      jobs: [],
+      activeJobs: [],
+      searchText: `${path.basename(statePath)} parse error`.toLowerCase(),
       parseError: error.message,
     };
   }
@@ -2141,7 +2946,93 @@ function policyChips(policies) {
   return policies.map((policy) => `<span class="chip">${escapeHtml(policy)}</span>`).join('');
 }
 
-function renderReportIndex({ rows, rootDir, generatedAt }) {
+function indexSelectOptions(values) {
+  return values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+}
+
+function uniqueIndexValues(rows, selector) {
+  return Array.from(
+    new Set(
+      rows
+        .flatMap((row) => selector(row))
+        .map((value) => String(value || '').trim())
+        .filter(Boolean),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
+}
+
+function indexProgressBar(rate) {
+  const bounded = Math.max(0, Math.min(1, Number(rate || 0)));
+  return `<span class="live-progress" aria-label="${Math.round(bounded * 100)}% complete"><span style="width:${Math.round(
+    bounded * 100,
+  )}%"></span></span>`;
+}
+
+function renderLiveJob(job) {
+  const coverage = job.coverage === null || job.coverage === undefined ? '' : ` · c${escapeHtml(job.coverage)}`;
+  const bottleneck = job.bottleneck ? ` · ${escapeHtml(job.bottleneck)}` : '';
+  const lastType = job.lastType ? ` · ${escapeHtml(job.lastType)}` : '';
+  const links = [
+    job.logHref ? `<a href="${escapeHtml(job.logHref)}">log</a>` : '',
+    job.traceHref ? `<a href="${escapeHtml(job.traceHref)}">trace</a>` : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  return `<article class="live-job ${escapeHtml(job.status || 'queued')}">
+    <div><strong>${escapeHtml(job.policy)} r${escapeHtml(job.runIndex)}</strong> <span>${escapeHtml(job.status || 'queued')}</span></div>
+    <p>${escapeHtml(job.turns || 0)} turns${coverage}${bottleneck}${lastType}</p>
+    <div class="live-links">${links || '<span class="muted">waiting for trace</span>'}</div>
+  </article>`;
+}
+
+function renderLiveRuns(activeRuns) {
+  if (!activeRuns.length) return '';
+  return `<section class="live-runs" aria-label="Runs in progress">
+    <div class="live-runs-head">
+      <div>
+        <h2><span class="live-dot"></span>Runs In Progress</h2>
+        <p>Updated as active auto-eval workers write trace and log files. This page refreshes every 30 seconds while runs are visible.</p>
+      </div>
+      <span class="live-count">${escapeHtml(activeRuns.length)} active</span>
+    </div>
+    ${activeRuns
+      .map((run) => {
+        const totals = run.totals || {};
+        const rate = totals.progressRate ?? (totals.jobs ? Number(totals.completed || 0) / Number(totals.jobs || 1) : 0);
+        const activeJobs = run.activeJobs.length ? run.activeJobs : run.jobs.filter((job) => job.status !== 'queued').slice(-6);
+        return `<article class="live-run-card ${escapeHtml(run.status)}" data-search="${escapeHtml(run.searchText)}">
+          <div class="live-run-top">
+            <div>
+              <h3>${escapeHtml(run.runName)}</h3>
+              <p>${escapeHtml(run.learnerProfile || 'unknown learner')} · ${escapeHtml(run.world || 'unknown world')} · pid ${escapeHtml(
+                run.pid || 'n/a',
+              )}</p>
+            </div>
+            <span class="status ${escapeHtml(run.status)}">${escapeHtml(run.status)}</span>
+          </div>
+          <div class="live-run-progress">
+            ${indexProgressBar(rate)}
+            <span>${escapeHtml(totals.completed || 0)}/${escapeHtml(totals.jobs || 0)} jobs · ${escapeHtml(totals.active || 0)} active · ${escapeHtml(
+              totals.queued || 0,
+            )} queued · ${escapeHtml(totals.failed || 0)} failed</span>
+          </div>
+          <div class="live-run-meta">
+            <span>started ${escapeHtml(shortDate(run.startedAt))}</span>
+            <span>updated ${escapeHtml(shortDate(run.updatedAt))}</span>
+            <span>${policyChips(run.policies)}</span>
+          </div>
+          <div class="live-jobs">${activeJobs.map(renderLiveJob).join('\n') || '<span class="muted">No active jobs.</span>'}</div>
+          <div class="live-actions">
+            <a href="${escapeHtml(run.stateHref)}">state json</a>
+            ${run.traceDirHref ? `<a href="${escapeHtml(run.traceDirHref)}">trace dir</a>` : ''}
+          </div>
+        </article>`;
+      })
+      .join('\n')}
+  </section>`;
+}
+
+function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
   const guideHref = hrefRelative(rootDir, path.join(ROOT, 'docs', 'tutor-stub-arc-guide.html'));
   const totals = {
     reports: rows.length,
@@ -2152,16 +3043,39 @@ function renderReportIndex({ rows, rootDir, generatedAt }) {
     svgs: rows.reduce((sum, row) => sum + Number(row.svgCount || 0), 0),
   };
   const groundedRate = totals.ok ? Number((totals.grounded / totals.ok).toFixed(3)) : 0;
+  const statusOptions = uniqueIndexValues(rows, (row) => [row.status]);
+  const learnerOptions = uniqueIndexValues(rows, (row) => [row.learnerProfile]);
+  const policyOptions = uniqueIndexValues(rows, (row) => row.policies || []);
+  const worldOptions = uniqueIndexValues(rows, (row) => [row.world]);
   const reportRows = rows
     .map(
-      (row) => `<tr data-search="${escapeHtml(row.searchText)}">
+      (row) => `<tr
+        data-search="${escapeHtml(row.searchText)}"
+        data-status="${escapeHtml(row.status)}"
+        data-learner="${escapeHtml(row.learnerProfile || '')}"
+        data-policies="${escapeHtml((row.policies || []).join('|'))}"
+        data-policy-text="${escapeHtml(row.policyText || '')}"
+        data-world="${escapeHtml(row.world || '')}"
+        data-completed-ms="${escapeHtml(row.completedMs || 0)}"
+        data-report-name="${escapeHtml(row.reportName || '')}"
+        data-grounded-rate="${escapeHtml(row.groundedRate ?? '')}"
+        data-turns="${escapeHtml(row.meanTurns ?? '')}"
+        data-coverage="${escapeHtml(row.meanCoverage ?? '')}"
+        data-rows="${escapeHtml(row.rows || 0)}"
+        data-ok="${escapeHtml(row.ok || 0)}"
+        data-failed="${escapeHtml(row.failed || 0)}"
+        data-svgs="${escapeHtml(row.svgCount || 0)}">
         <td>
           <div><strong>${escapeHtml(shortDate(row.completedAt) || row.reportName)}</strong></div>
           <div class="muted">${escapeHtml(row.reportName)}</div>
+          <div class="muted">${escapeHtml(row.world || '')}</div>
         </td>
         <td><span class="status ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span></td>
         <td>${policyChips(row.policies)}</td>
-        <td>${escapeHtml(row.learnerProfile || '')}</td>
+        <td>
+          <div>${escapeHtml(row.learnerProfile || '')}</div>
+          <div class="muted">${escapeHtml(row.autoLearnerModel || '')}</div>
+        </td>
         <td>${escapeHtml(row.ok)}/${escapeHtml(row.failed)}${row.dryRun ? ` · ${escapeHtml(row.dryRun)} dry` : ''}</td>
         <td>${escapeHtml(row.grounded)}/${escapeHtml(row.ok)} · ${Math.round(Number(row.groundedRate || 0) * 100)}%</td>
         <td>${escapeHtml(row.meanTurns)}</td>
@@ -2179,6 +3093,7 @@ function renderReportIndex({ rows, rootDir, generatedAt }) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  ${activeRuns.length ? '<meta http-equiv="refresh" content="30">' : ''}
   <title>Tutor Stub Reports</title>
   <style>
     :root { color-scheme: light; --ink:#17201b; --muted:#65736b; --line:#d9e0dc; --paper:#fbfcfb; --panel:#fff; --accent:#2f6f63; --bad:#9a2f36; --warn:#9c5a12; --blue:#275f9f; }
@@ -2192,8 +3107,40 @@ function renderReportIndex({ rows, rootDir, generatedAt }) {
     .metric-label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
     .metric-value { font-size:22px; font-weight:700; margin-top:3px; }
     .metric-sub { color:var(--muted); font-size:12px; min-height:18px; }
-    .toolbar { display:flex; align-items:center; gap:10px; margin:18px 0 10px; }
-    input { width:min(420px,100%); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font:inherit; background:#fff; color:var(--ink); }
+    .live-runs { margin:0 0 18px; }
+    .live-runs-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin:0 0 10px; }
+    .live-runs h2 { margin:0; font-size:18px; }
+    .live-runs p { margin:3px 0 0; color:var(--muted); font-size:12px; }
+    .live-dot { display:inline-block; width:9px; height:9px; margin-right:7px; border-radius:999px; background:var(--accent); box-shadow:0 0 0 rgba(47,111,99,.45); animation:livePulse 1.4s infinite; }
+    .live-count { border:1px solid var(--line); border-radius:999px; padding:3px 8px; background:#fff; color:var(--accent); font-size:12px; font-weight:700; white-space:nowrap; }
+    .live-run-card { background:#fff; border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:8px; padding:12px; margin-bottom:10px; box-shadow:0 4px 18px rgba(23,32,27,.05); }
+    .live-run-card.stale { border-left-color:var(--warn); }
+    .live-run-card.aborted { border-left-color:var(--bad); }
+    .live-run-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .live-run-top h3 { margin:0; font-size:15px; }
+    .live-run-top p { margin:3px 0 0; color:var(--muted); font-size:12px; }
+    .live-run-progress { display:grid; grid-template-columns:minmax(180px,1fr) auto; gap:10px; align-items:center; margin:10px 0; color:var(--muted); font-size:12px; }
+    .live-progress { display:block; height:10px; border-radius:999px; overflow:hidden; background:#e1e7e4; }
+    .live-progress span { display:block; height:100%; min-width:8px; border-radius:999px; background:repeating-linear-gradient(45deg, #2f6f63 0 8px, #3f8b7b 8px 16px); animation:liveStripe 1s linear infinite; }
+    .live-run-meta { display:flex; flex-wrap:wrap; gap:8px; align-items:center; color:var(--muted); font-size:12px; margin-bottom:9px; }
+    .live-jobs { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:8px; }
+    .live-job { border:1px solid var(--line); border-radius:7px; padding:8px; background:#fbfcfb; }
+    .live-job.running { border-color:#9bc9bd; background:#f1faf7; }
+    .live-job.failed { border-color:#e5b5b5; background:#fff7f7; }
+    .live-job div:first-child { display:flex; justify-content:space-between; gap:8px; }
+    .live-job div:first-child span { color:var(--muted); font-size:12px; }
+    .live-job p { margin:4px 0 5px; color:#34433c; font-size:12px; }
+    .live-links a, .live-actions a { margin-right:8px; }
+    .live-actions { margin-top:10px; font-size:12px; }
+    @keyframes livePulse { 0% { box-shadow:0 0 0 0 rgba(47,111,99,.42); } 70% { box-shadow:0 0 0 9px rgba(47,111,99,0); } 100% { box-shadow:0 0 0 0 rgba(47,111,99,0); } }
+    @keyframes liveStripe { from { background-position:0 0; } to { background-position:23px 0; } }
+    .toolbar { display:grid; grid-template-columns:minmax(260px, 2fr) repeat(7, minmax(118px, 1fr)) auto auto; align-items:end; gap:10px; margin:18px 0 10px; }
+    .control { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .control span { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+    input, select, button { border:1px solid var(--line); border-radius:6px; padding:8px 10px; font:inherit; background:#fff; color:var(--ink); min-height:38px; }
+    input { width:100%; box-sizing:border-box; }
+    select { width:100%; box-sizing:border-box; }
+    button { cursor:pointer; color:var(--accent); font-weight:600; }
     table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
     th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
     th { background:#eef4f1; color:#34433c; font-size:12px; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
@@ -2205,9 +3152,37 @@ function renderReportIndex({ rows, rootDir, generatedAt }) {
     a { color:var(--accent); }
     .actions { white-space:nowrap; }
     .actions a { margin-right:8px; }
+    .info-term { position:relative; cursor:help; text-decoration:underline dotted rgba(23,32,27,.45); text-underline-offset:3px; }
+    .info-term:focus { outline:2px solid rgba(47,111,99,.35); outline-offset:2px; border-radius:3px; }
+    .info-term:hover::after, .info-term:focus::after {
+      content:attr(data-tip);
+      position:absolute;
+      z-index:20;
+      left:0;
+      top:calc(100% + 8px);
+      width:min(300px, 70vw);
+      padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius:6px;
+      background:#fff;
+      color:var(--ink);
+      box-shadow:0 8px 24px rgba(20,32,26,.16);
+      text-transform:none;
+      letter-spacing:0;
+      font-size:12px;
+      line-height:1.35;
+      white-space:normal;
+    }
     @media (max-width: 860px) {
       main, header { padding-left:16px; padding-right:16px; }
+      .toolbar { grid-template-columns:1fr 1fr; }
+      .control:first-child { grid-column:1 / -1; }
+      .live-run-progress { grid-template-columns:1fr; }
       table { display:block; overflow-x:auto; }
+    }
+    @media (max-width: 560px) {
+      .toolbar { grid-template-columns:1fr; }
+      .control:first-child { grid-column:auto; }
     }
   </style>
 </head>
@@ -2220,44 +3195,211 @@ function renderReportIndex({ rows, rootDir, generatedAt }) {
     </div>
   </header>
   <main>
+    ${renderLiveRuns(activeRuns)}
     <section class="metrics">
       ${htmlMetric('Reports', totals.reports, `${rows.filter((row) => row.htmlExists).length} with HTML`)}
       ${htmlMetric('Rows', totals.ok + totals.failed + totals.dryRun, `${totals.failed} failed · ${totals.dryRun} dry-run`)}
       ${htmlMetric('Grounded', `${totals.grounded}/${totals.ok}`, `${Math.round(groundedRate * 100)}% closure`)}
       ${htmlMetric('Field SVGs', totals.svgs, 'standalone artifacts')}
+      ${htmlMetric('Active', activeRuns.length, 'running or stale')}
     </section>
     <div class="toolbar">
-      <input data-filter placeholder="Filter" aria-label="Filter reports">
+      <label class="control">
+        <span>Search</span>
+        <input data-filter placeholder="Search reports, policies, learner, model" aria-label="Search reports">
+      </label>
+      <label class="control">
+        <span>From</span>
+        <input type="date" data-date-from aria-label="Filter from completed date">
+      </label>
+      <label class="control">
+        <span>To</span>
+        <input type="date" data-date-to aria-label="Filter to completed date">
+      </label>
+      <label class="control">
+        <span>Status</span>
+        <select data-status-filter aria-label="Filter by status">
+          <option value="">All</option>
+          ${indexSelectOptions(statusOptions)}
+        </select>
+      </label>
+      <label class="control">
+        <span>Learner</span>
+        <select data-learner-filter aria-label="Filter by learner">
+          <option value="">All</option>
+          ${indexSelectOptions(learnerOptions)}
+        </select>
+      </label>
+      <label class="control">
+        <span>Policy</span>
+        <select data-policy-filter aria-label="Filter by policy">
+          <option value="">All</option>
+          ${indexSelectOptions(policyOptions)}
+        </select>
+      </label>
+      <label class="control">
+        <span>World</span>
+        <select data-world-filter aria-label="Filter by world">
+          <option value="">All</option>
+          ${indexSelectOptions(worldOptions)}
+        </select>
+      </label>
+      <label class="control">
+        <span>Sort</span>
+        <select data-sort-key aria-label="Sort reports">
+          <option value="date">Date</option>
+          <option value="status">Status</option>
+          <option value="learner">Learner</option>
+          <option value="policy">Policy</option>
+          <option value="grounded">Grounded</option>
+          <option value="coverage">Coverage</option>
+          <option value="turns">Turns</option>
+          <option value="rows">Rows</option>
+          <option value="failed">Failed</option>
+          <option value="svgs">SVGs</option>
+          <option value="report">Report</option>
+        </select>
+      </label>
+      <label class="control">
+        <span>Direction</span>
+        <select data-sort-dir aria-label="Sort direction">
+          <option value="desc">Desc</option>
+          <option value="asc">Asc</option>
+        </select>
+      </label>
+      <button type="button" data-reset>Reset</button>
       <span class="muted" data-count>${rows.length} shown</span>
     </div>
     <table>
-      <thead><tr><th>Completed</th><th>Status</th><th>Policies</th><th>Learner</th><th>OK/Failed</th><th>Grounded</th><th>Turns</th><th>Coverage</th><th>SVGs</th><th>Links</th></tr></thead>
+      <thead><tr>
+        <th>Completed</th>
+        <th>${infoTerm('Status', 'Run-level technical status: ok has no failed rows, failed has one or more failed rows, dry_run is configuration-only output.')}</th>
+        <th>Policies</th>
+        <th>Learner</th>
+        <th>${infoTerm('OK/Failed', 'OK rows completed without a technical failure. Failed rows are generation, resume, or evaluation failures.')}</th>
+        <th>${infoTerm('Grounded', 'Rows where the learner reached grounded asserted-secret closure, shown as grounded over OK rows plus percentage.')}</th>
+        <th>${infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.')}</th>
+        <th>${infoTerm('Coverage', 'Mean best-path learner-DAG coverage: how much of the evidence path is grounded, on a 0 to 1 scale.')}</th>
+        <th>${infoTerm('SVGs', 'Static field-trajectory artifacts emitted beside each report.')}</th>
+        <th>Links</th>
+      </tr></thead>
       <tbody>${reportRows || '<tr><td colspan="10">No reports found.</td></tr>'}</tbody>
     </table>
   </main>
   <script>
     const input = document.querySelector('[data-filter]');
+    const dateFrom = document.querySelector('[data-date-from]');
+    const dateTo = document.querySelector('[data-date-to]');
+    const statusFilter = document.querySelector('[data-status-filter]');
+    const learnerFilter = document.querySelector('[data-learner-filter]');
+    const policyFilter = document.querySelector('[data-policy-filter]');
+    const worldFilter = document.querySelector('[data-world-filter]');
+    const sortKey = document.querySelector('[data-sort-key]');
+    const sortDir = document.querySelector('[data-sort-dir]');
+    const reset = document.querySelector('[data-reset]');
+    const tbody = document.querySelector('tbody');
     const rows = Array.from(document.querySelectorAll('tbody tr[data-search]'));
     const count = document.querySelector('[data-count]');
-    function applyFilter() {
+    const numericSortKeys = new Set(['date', 'grounded', 'coverage', 'turns', 'rows', 'failed', 'svgs']);
+    const sortMap = {
+      date: 'completedMs',
+      status: 'status',
+      learner: 'learner',
+      policy: 'policyText',
+      grounded: 'groundedRate',
+      coverage: 'coverage',
+      turns: 'turns',
+      rows: 'rows',
+      failed: 'failed',
+      svgs: 'svgs',
+      report: 'reportName',
+    };
+    function numberValue(row, key) {
+      const value = Number(row.dataset[key] || '');
+      return Number.isFinite(value) ? value : null;
+    }
+    function stringValue(row, key) {
+      return String(row.dataset[key] || '').toLowerCase();
+    }
+    function dayStartMs(value) {
+      if (!value) return null;
+      const parsed = Date.parse(value + 'T00:00:00');
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    function dayEndMs(value) {
+      if (!value) return null;
+      const parsed = Date.parse(value + 'T23:59:59.999');
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    function compareValues(a, b, direction) {
+      if (a === null && b === null) return 0;
+      if (a === null) return 1;
+      if (b === null) return -1;
+      if (typeof a === 'number' && typeof b === 'number') {
+        return direction === 'asc' ? a - b : b - a;
+      }
+      const base = String(a).localeCompare(String(b));
+      return direction === 'asc' ? base : -base;
+    }
+    function rowMatches(row) {
       const q = (input?.value || '').trim().toLowerCase();
+      const status = statusFilter?.value || '';
+      const learner = learnerFilter?.value || '';
+      const policy = policyFilter?.value || '';
+      const world = worldFilter?.value || '';
+      const fromMs = dayStartMs(dateFrom?.value || '');
+      const toMs = dayEndMs(dateTo?.value || '');
+      const completedMs = numberValue(row, 'completedMs');
+      if (q && !row.dataset.search.includes(q)) return false;
+      if (fromMs !== null && (completedMs === null || completedMs < fromMs)) return false;
+      if (toMs !== null && (completedMs === null || completedMs > toMs)) return false;
+      if (status && row.dataset.status !== status) return false;
+      if (learner && row.dataset.learner !== learner) return false;
+      if (world && row.dataset.world !== world) return false;
+      if (policy && !String(row.dataset.policies || '').split('|').includes(policy)) return false;
+      return true;
+    }
+    function applyIndexControls() {
+      const key = sortKey?.value || 'date';
+      const direction = sortDir?.value || 'desc';
+      const datasetKey = sortMap[key] || 'completedMs';
+      const sortedRows = rows.slice().sort((a, b) => {
+        const aValue = numericSortKeys.has(key) ? numberValue(a, datasetKey) : stringValue(a, datasetKey);
+        const bValue = numericSortKeys.has(key) ? numberValue(b, datasetKey) : stringValue(b, datasetKey);
+        return compareValues(aValue, bValue, direction) || stringValue(a, 'reportName').localeCompare(stringValue(b, 'reportName'));
+      });
       let shown = 0;
-      for (const row of rows) {
-        const visible = !q || row.dataset.search.includes(q);
+      for (const row of sortedRows) {
+        const visible = rowMatches(row);
         row.hidden = !visible;
         if (visible) shown += 1;
+        tbody?.appendChild(row);
       }
       if (count) count.textContent = shown + ' shown';
     }
-    input?.addEventListener('input', applyFilter);
-    applyFilter();
+    for (const control of [input, dateFrom, dateTo, statusFilter, learnerFilter, policyFilter, worldFilter, sortKey, sortDir]) {
+      control?.addEventListener(control === input ? 'input' : 'change', applyIndexControls);
+    }
+    reset?.addEventListener('click', () => {
+      if (input) input.value = '';
+      if (dateFrom) dateFrom.value = '';
+      if (dateTo) dateTo.value = '';
+      if (statusFilter) statusFilter.value = '';
+      if (learnerFilter) learnerFilter.value = '';
+      if (policyFilter) policyFilter.value = '';
+      if (worldFilter) worldFilter.value = '';
+      if (sortKey) sortKey.value = 'date';
+      if (sortDir) sortDir.value = 'desc';
+      applyIndexControls();
+    });
+    applyIndexControls();
   </script>
 </body>
 </html>
 `;
 }
 
-function writeReportIndex({ rootDir = indexRootDir() } = {}) {
+function writeReportIndex({ rootDir = indexRootDir(), quiet = false } = {}) {
   fs.mkdirSync(rootDir, { recursive: true });
   const rows = listAutoEvalSummaryFiles(rootDir)
     .map((jsonPath) => readIndexSummary(jsonPath, rootDir))
@@ -2266,9 +3408,13 @@ function writeReportIndex({ rootDir = indexRootDir() } = {}) {
       const bTime = Date.parse(b.completedAt || b.startedAt || '') || fs.statSync(b.jsonPath).mtimeMs;
       return bTime - aTime || a.reportName.localeCompare(b.reportName);
     });
+  const activeRuns = listAutoEvalRunStateFiles(rootDir)
+    .map((statePath) => readIndexRunState(statePath, rootDir))
+    .filter((state) => !['completed', 'dry_run'].includes(state.status))
+    .sort((a, b) => b.updatedMs - a.updatedMs || a.runName.localeCompare(b.runName));
   const indexPath = path.join(rootDir, 'index.html');
-  fs.writeFileSync(indexPath, renderReportIndex({ rows, rootDir, generatedAt: new Date().toISOString() }));
-  console.log(`[auto-eval] index ${indexPath}`);
+  fs.writeFileSync(indexPath, renderReportIndex({ rows, activeRuns, rootDir, generatedAt: new Date().toISOString() }));
+  if (!quiet) console.log(`[auto-eval] index ${indexPath}`);
   return indexPath;
 }
 
@@ -2455,6 +3601,92 @@ function buildResumePlan(summaryPath) {
   };
 }
 
+function autoEvalConfigForState({ traceDir, configOverride = null }) {
+  return configOverride || {
+    runs: positiveInt(args.runs, '--runs'),
+    turns: turnsArg(),
+    untilGrounded: Boolean(args['until-grounded']),
+    safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
+    parallelism: positiveInt(args.parallelism, '--parallelism'),
+    policies: policyCsv(args.policies),
+    model: args.model,
+    analysisModel: args['analysis-model'],
+    autoLearnerModel: args['auto-learner-model'],
+    autoLearnerProfileId: autoLearnerProfileLabel(),
+    maxTokens: args['max-tokens'] ? positiveInt(args['max-tokens'], '--max-tokens') : null,
+    historyTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
+    memorySummary: {
+      enabled: !args['no-memory-summary'],
+      rawRecentTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
+    },
+    world: args.world,
+    traceDir,
+    dryRun: Boolean(args['dry-run']),
+  };
+}
+
+function buildRunState({ traceDir, startedAt, jobs, activeJobs, results, completed, status, configOverride = null, resume = null }) {
+  const totalJobs = jobs.length;
+  const resultByKey = new Map(
+    results.map((result) => [result.key || `${safeSlug(result.policy || 'unknown')}-r${result.runIndex || '?'}`, result]),
+  );
+  const activeKeys = new Set(activeJobs.keys());
+  const jobRows = jobs.map((job) => {
+    const result = resultByKey.get(job.key);
+    const active = activeKeys.has(job.key);
+    const progress = active ? summarizeJobProgress(job) : result ? summarizeResultProgress(result) : null;
+    return {
+      ordinal: job.ordinal,
+      key: job.key,
+      policy: job.policy,
+      runIndex: job.runIndex,
+      runs: job.runs,
+      status: result?.status || (active ? 'running' : 'queued'),
+      turns: progress?.turns || 0,
+      coverage: progress?.coverage ?? null,
+      bottleneck: progress?.bottleneck || '',
+      lastType: progress?.lastType || '',
+      log: path.relative(ROOT, job.logPath),
+      traceDir: path.relative(ROOT, job.traceDir),
+    };
+  });
+  return {
+    schema: 'machinespirits.tutor-stub.auto-eval-run-state.v1',
+    pid: process.pid,
+    status,
+    startedAt,
+    updatedAt: new Date().toISOString(),
+    traceDir: path.relative(ROOT, traceDir),
+    config: autoEvalConfigForState({ traceDir, configOverride }),
+    resume,
+    totals: {
+      jobs: totalJobs,
+      completed,
+      active: activeJobs.size,
+      queued: Math.max(0, totalJobs - completed - activeJobs.size),
+      ok: results.filter((result) => result.status === 'ok').length,
+      failed: results.filter((result) => result.status === 'failed').length,
+      dryRun: results.filter((result) => result.status === 'dry_run').length,
+      progressRate: totalJobs ? Number((completed / totalJobs).toFixed(3)) : 0,
+    },
+    jobs: jobRows,
+  };
+}
+
+function writeRunState(state) {
+  const traceDir = resolvePath(state.config?.traceDir || state.traceDir || args['trace-dir']);
+  const statePath = runStatePath(traceDir);
+  writeJsonAtomic(statePath, state);
+  return statePath;
+}
+
+function writeRunStateSnapshot(context) {
+  const state = buildRunState(context);
+  const statePath = writeRunState(state);
+  if (!args['no-html-report']) writeReportIndex({ quiet: true });
+  return statePath;
+}
+
 function runChildJob(job) {
   return new Promise((resolve) => {
     fs.mkdirSync(job.traceDir, { recursive: true });
@@ -2482,6 +3714,7 @@ function runChildJob(job) {
       const newTraces = after.filter((file) => !before.has(file));
       const traceSummaries = newTraces.map((tracePath) => summarizeTrace(tracePath, job.traceDir));
       const result = {
+        key: job.key,
         policy: job.policy,
         runIndex: job.runIndex,
         status: status === 0 ? 'ok' : 'failed',
@@ -2498,25 +3731,39 @@ function runChildJob(job) {
   });
 }
 
-async function runJobs({ jobs, parallelism }) {
+async function runJobs({ jobs, parallelism, traceDir, startedAt, configOverride = null, resume = null }) {
   const results = [];
   const activeJobs = new Map();
   let cursor = 0;
   let completed = 0;
   let aborted = false;
   const totalJobs = jobs.length;
+  const stateContext = (status = aborted ? 'aborted' : 'running') => ({
+    traceDir,
+    startedAt,
+    jobs,
+    activeJobs,
+    results,
+    completed,
+    status,
+    configOverride,
+    resume,
+  });
   const progressIntervalSec = positiveInt(args['progress-interval'], '--progress-interval');
-  const progressTimer = args['no-progress'] || args['dry-run']
+  const progressTimer = args['dry-run']
     ? null
     : setInterval(() => {
         printTurnProgress({ completed, total: totalJobs, activeJobs, results });
+        writeRunStateSnapshot(stateContext());
       }, progressIntervalSec * 1000);
+  writeRunStateSnapshot(stateContext(args['dry-run'] ? 'dry_run' : 'running'));
 
   async function worker() {
     while (!aborted && cursor < jobs.length) {
       const job = jobs[cursor];
       cursor += 1;
       activeJobs.set(job.key, job);
+      writeRunStateSnapshot(stateContext());
       console.log(`\n[auto-eval] policy=${job.policy} run=${job.runIndex}/${job.runs}`);
       printProgress({
         completed,
@@ -2526,6 +3773,7 @@ async function runJobs({ jobs, parallelism }) {
       console.log(displayCommand(job.childArgs));
       const result = args['dry-run']
         ? {
+            key: job.key,
             policy: job.policy,
             runIndex: job.runIndex,
             status: 'dry_run',
@@ -2538,6 +3786,7 @@ async function runJobs({ jobs, parallelism }) {
       activeJobs.delete(job.key);
       results.push(result);
       completed += 1;
+      writeRunStateSnapshot(stateContext());
       const primary = result.traceSummaries?.at(-1);
       const outcome = primary
         ? `${result.status}; turns ${primary.turnCount}; coverage ${primary.bestPathCoverage}; stop ${primary.stopReason || 'none'}`
@@ -2556,6 +3805,7 @@ async function runJobs({ jobs, parallelism }) {
     await Promise.all(workers);
   } finally {
     if (progressTimer) clearInterval(progressTimer);
+    writeRunStateSnapshot(stateContext(aborted ? 'aborted' : args['dry-run'] ? 'dry_run' : 'completed'));
   }
   return {
     results: results.sort((a, b) => {
@@ -2607,7 +3857,19 @@ async function main() {
       total: plan.jobs.length,
       label: `resuming ${plan.jobs.length} rows from ${path.relative(ROOT, plan.sourcePath)}; parallelism ${parallelism}`,
     });
-    const { results: retriedResults, aborted } = await runJobs({ jobs: plan.jobs, parallelism });
+    const resumeState = {
+      sourcePath: path.relative(ROOT, plan.sourcePath),
+      retried: plan.jobs.length,
+      statuses: csv(args['resume-statuses']),
+    };
+    const { results: retriedResults, aborted } = await runJobs({
+      jobs: plan.jobs,
+      parallelism,
+      traceDir: plan.traceDir,
+      startedAt,
+      configOverride: plan.config,
+      resume: resumeState,
+    });
     writeSummary({
       traceDir: plan.traceDir,
       startedAt,
@@ -2642,7 +3904,7 @@ async function main() {
   const startedAt = new Date().toISOString();
   const jobs = buildJobs({ policies, runs, traceDir, parallelism });
   printProgress({ completed: 0, total: jobs.length, label: `starting; parallelism ${parallelism}` });
-  const { results, aborted } = await runJobs({ jobs, parallelism });
+  const { results, aborted } = await runJobs({ jobs, parallelism, traceDir, startedAt });
   writeSummary({ traceDir, startedAt, results, failed: aborted });
   if (aborted) process.exit(1);
 }
@@ -2654,27 +3916,7 @@ function writeSummary({ traceDir, startedAt, results, failed, configOverride = n
     startedAt,
     completedAt: new Date().toISOString(),
     failed,
-    config: configOverride || {
-      runs: positiveInt(args.runs, '--runs'),
-      turns: turnsArg(),
-      untilGrounded: Boolean(args['until-grounded']),
-      safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
-      parallelism: positiveInt(args.parallelism, '--parallelism'),
-      policies: policyCsv(args.policies),
-      model: args.model,
-      analysisModel: args['analysis-model'],
-      autoLearnerModel: args['auto-learner-model'],
-      autoLearnerProfileId: autoLearnerProfileLabel(),
-      maxTokens: args['max-tokens'] ? positiveInt(args['max-tokens'], '--max-tokens') : null,
-      historyTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
-      memorySummary: {
-        enabled: !args['no-memory-summary'],
-        rawRecentTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
-      },
-      world: args.world,
-      traceDir,
-      dryRun: Boolean(args['dry-run']),
-    },
+    config: autoEvalConfigForState({ traceDir, configOverride }),
     results,
   };
   if (resume) {

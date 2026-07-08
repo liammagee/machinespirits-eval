@@ -27,7 +27,7 @@ Key choices and defaults:
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
 - Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited`, or list presets with `--list-learner-profiles`.
 - Runs: default `3` for baseline comparisons, `5` for focused policy comparisons, `1` for ABM panels.
-- Models: default tutor `openai.mini`, analysis/classifier/DAG `codex.gpt-5.5`, automated learner `openai.mini`.
+- Models: default tutor `codex.gpt-5.5`, analysis/classifier/DAG `codex.gpt-5.5`, automated learner `codex.gpt-5.5`.
 - Parallelism: default `8` for `auto-eval`; ABM panel is currently serial.
 - Turn stopping: default `--turns until-grounded --safety-turns 120`.
 - Token cap: default `--max-tokens 4096` for `auto-eval` and resumes to avoid output-limit failures.
@@ -46,7 +46,7 @@ Use when the user will type learner turns manually:
 
 ```bash
 npm run tutor:stub -- \
-  --model openai.mini \
+  --model codex.gpt-5.5 \
   --classifier-model codex.gpt-5.5 \
   --learner-record-model codex.gpt-5.5 \
   --world world_005_marrick \
@@ -80,9 +80,9 @@ npm run tutor:stub:auto-eval -- \
   --progress-interval 30 \
   --turns until-grounded \
   --safety-turns 120 \
-  --model openai.mini \
+  --model codex.gpt-5.5 \
   --analysis-model codex.gpt-5.5 \
-  --auto-learner-model openai.mini \
+  --auto-learner-model codex.gpt-5.5 \
   --auto-learner-profile-id diligent \
   --world world_005_marrick \
   --cli-effort low \
@@ -102,9 +102,9 @@ npm run tutor:stub:auto-eval -- \
   --progress-interval 30 \
   --turns until-grounded \
   --safety-turns 120 \
-  --model openai.mini \
+  --model codex.gpt-5.5 \
   --analysis-model codex.gpt-5.5 \
-  --auto-learner-model openai.mini \
+  --auto-learner-model codex.gpt-5.5 \
   --world world_005_marrick \
   --cli-effort low \
   --history-turns 4 \
@@ -177,9 +177,9 @@ npm run tutor:stub:abm-panel -- \
   --runs 1 \
   --turns until-grounded \
   --safety-turns 120 \
-  --model openai.mini \
+  --model codex.gpt-5.5 \
   --analysis-model codex.gpt-5.5 \
-  --auto-learner-model openai.mini \
+  --auto-learner-model codex.gpt-5.5 \
   --world world_005_marrick \
   --register-policy field \
   --register-palette all \

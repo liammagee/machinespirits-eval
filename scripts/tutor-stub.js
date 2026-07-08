@@ -10,9 +10,9 @@
  * - no rubric scoring
  *
  * Edit the STUB defaults or buildSystemPrompt() below, then run:
+ *   npm run tutor:stub -- --model codex.gpt-5.5
  *   npm run tutor:stub -- --model openai.mini
  *   npm run tutor:stub -- --model openrouter.sonnet-5
- *   npm run tutor:stub -- --model codex.gpt-5.5
  *   npm run tutor:stub -- --model claude-code.sonnet
  */
 
@@ -50,7 +50,7 @@ const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'co
 const NEGATIVE_FLOOR_REGISTERS = ['ironic', 'sarcastic', 'face_threat'];
 
 const STUB = {
-  model: process.env.TUTOR_STUB_MODEL || 'openai.mini',
+  model: process.env.TUTOR_STUB_MODEL || 'codex.gpt-5.5',
   classifierModel: process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.5',
   learnerRecordModel: process.env.TUTOR_STUB_LEARNER_RECORD_MODEL || process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.5',
   topic: process.env.TUTOR_STUB_TOPIC || 'fractions',
@@ -71,7 +71,7 @@ const STUB = {
   opening: process.env.TUTOR_STUB_OPENING !== '0',
   closeoutReport: process.env.TUTOR_STUB_CLOSEOUT_REPORT !== '0',
   fieldViz: process.env.TUTOR_STUB_FIELD_VIZ === '1',
-  autoLearnerModel: process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'openai.mini',
+  autoLearnerModel: process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.5',
   autoTurns: process.env.TUTOR_STUB_AUTO_TURNS || 'until-grounded',
   autoSafetyTurns: Number.parseInt(process.env.TUTOR_STUB_AUTO_SAFETY_TURNS || '80', 10),
   autoLearnerProfile:
