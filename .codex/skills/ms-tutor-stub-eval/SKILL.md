@@ -33,7 +33,7 @@ Key choices and defaults:
 - Token cap: default `--max-tokens 4096` for `auto-eval` and resumes to avoid output-limit failures.
 - Memory compaction: default on; use `--history-turns 4` to keep only a short raw recent window plus compact state/field/dialogue summaries. Use `--no-memory-summary` only for legacy full-transcript debugging.
 - Trace/output dir: default `.tutor-stub-auto-eval/<descriptive-run-id>` for auto-eval, `exports/tutor-stub-abm-panel` for ABM.
-- Eval ledger: default `.tutor-stub-auto-eval/ledger.jsonl` plus `.tutor-stub-auto-eval/ledger.md`; this is local/ignored and separate from `data/evaluations.db`. Use `--no-ledger` to skip.
+- Eval ledger: default `.tutor-stub-auto-eval/ledger.jsonl` plus `.tutor-stub-auto-eval/ledger.md`; this is local/ignored. Use `--no-ledger` to skip. For SQL querying, ingest JSON summaries into `data/evaluations.db` with `npm run tutor:stub:ingest`.
 - Debug turn ids: tutor-stub prints `turn id > <run-id>:tNNN` at each learner turn; ask the user for that id when debugging a specific turn.
 
 Do not recommend `codex.mini`, `codex.gpt-mini`, or `codex.gpt-5-mini`; the local
@@ -216,16 +216,28 @@ find .tutor-stub-auto-eval/<run>/traces -name '*.jsonl' -print0 \
 
 ## Multi-Eval / Cross-Run Field
 
-Use when comparing several `auto-eval-*.json` summaries or the local ledger.
+Use when comparing several ingested DB summaries, `auto-eval-*.json` summaries,
+or the local ledger.
 This treats each eval as a point in a cross-run field with axes for reliability,
 effective grounded closure, coverage, turn efficiency, register diversity, and
 leak discipline.
 
-From the local ledger:
+Default mode reads `data/evaluations.db` tutor-stub tables when present, then
+supplements from the local ledger and discovered report directories:
 
 ```bash
 npm run analyze:tutor-stub-auto-evals -- \
   --latest 12 \
+  --out .tutor-stub-auto-eval/cross-run-field.md
+```
+
+DB-only:
+
+```bash
+npm run analyze:tutor-stub-auto-evals -- \
+  --latest 12 \
+  --no-ledger \
+  --no-dir \
   --out .tutor-stub-auto-eval/cross-run-field.md
 ```
 
@@ -239,7 +251,44 @@ npm run analyze:tutor-stub-auto-evals -- \
 ```
 
 Use `--json` for machine-readable output. Use `--policies state,field,trajectory,dynamical_system,empirical_dynamical_system,dynamic`
-to focus policy rows.
+to focus policy rows. Use `--no-db` for a filesystem-only report.
+
+## SQL Ingest
+
+Use when the user wants SQL queries across tutor-stub eval summaries. This writes
+namespaced tables into `data/evaluations.db`; it does not force tutor-stub rows
+into `evaluation_results`.
+
+```bash
+npm run tutor:stub:ingest -- \
+  .tutor-stub-auto-eval/<run>/auto-eval-YYYY-MM-DDTHH-MM-SS-sssZ.json
+```
+
+Ingest the newest local summaries:
+
+```bash
+npm run tutor:stub:ingest -- --latest 12
+```
+
+Useful views after ingest:
+
+- `v_tutor_stub_policy_summary`
+- `v_tutor_stub_register_effects`
+- `v_tutor_stub_failures`
+
+Current SQL coverage is run/row/policy/register/effectiveness oriented. The
+full row JSON is preserved, including field summaries when present, but
+turn-level field vectors and dynamical-system derivative/trajectory points are
+not yet normalized into dedicated SQL tables.
+
+Example:
+
+```bash
+sqlite3 data/evaluations.db "
+SELECT auto_learner_profile_id, policy, rows, ok_rate, grounded_rate, mean_turns_ok
+FROM v_tutor_stub_policy_summary
+ORDER BY auto_learner_profile_id, grounded_rate DESC, mean_turns_ok ASC;"
+```
 
 ## Reading Results
 

@@ -27,6 +27,7 @@
     "tutor:stub": "node scripts/tutor-stub.js",
     "tutor:stub:auto-eval": "node scripts/run-tutor-stub-auto-eval.js",
     "tutor:stub:abm-panel": "node scripts/run-tutor-stub-abm-panel.js",
+    "tutor:stub:ingest": "node scripts/ingest-tutor-stub-auto-evals.js",
     "tutor:stub:register-priors": "node scripts/build-tutor-stub-register-priors.js",
     "eval": "node scripts/eval-cli.js",
     "eval:quick": "node scripts/eval-cli.js quick",

@@ -2,9 +2,9 @@
 /**
  * Summarize multiple tutor-stub auto-eval summaries as a cross-run field.
  *
- * This stays outside data/evaluations.db. It reads local auto-eval JSON summaries
- * or the ignored tutor-stub auto-eval ledger and emits a compact Markdown or JSON
- * report.
+ * Reads namespaced tutor-stub tables in data/evaluations.db when available,
+ * plus local auto-eval JSON summaries or the ignored tutor-stub auto-eval
+ * ledger, and emits a compact Markdown or JSON report.
  */
 
 import fs from 'node:fs';
@@ -12,8 +12,10 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import Database from 'better-sqlite3';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const DEFAULT_DB = process.env.EVAL_DB_PATH || path.join(ROOT, 'data', 'evaluations.db');
 const DEFAULT_LEDGER = '.tutor-stub-auto-eval/ledger.jsonl';
 const DEFAULT_SEARCH_DIR = '.tutor-stub-auto-eval';
 const MAX_REGISTER_TYPES = 9;
@@ -21,6 +23,7 @@ const MAX_REGISTER_TYPES = 9;
 const { values: args, positionals } = parseArgs({
   allowPositionals: true,
   options: {
+    db: { type: 'string', default: DEFAULT_DB },
     ledger: { type: 'string', default: DEFAULT_LEDGER },
     dir: { type: 'string', default: DEFAULT_SEARCH_DIR },
     latest: { type: 'string', default: '12' },
@@ -28,7 +31,9 @@ const { values: args, positionals } = parseArgs({
     out: { type: 'string', default: '' },
     json: { type: 'boolean', default: false },
     'include-dry-run': { type: 'boolean', default: false },
+    'no-db': { type: 'boolean', default: false },
     'no-ledger': { type: 'boolean', default: false },
+    'no-dir': { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
   },
 });
@@ -38,6 +43,8 @@ function usage() {
   node scripts/analyze-tutor-stub-auto-evals.js [auto-eval.json ...] [options]
 
 Options:
+  --db <path>           evaluation DB with tutor_stub_* tables
+                        (default: EVAL_DB_PATH or data/evaluations.db)
   --ledger <path>       ledger JSONL to read when no files are supplied
                         (default: ${DEFAULT_LEDGER})
   --dir <path>          fallback discovery dir when no ledger exists
@@ -47,7 +54,9 @@ Options:
   --out <path>          write report to path instead of stdout
   --json                emit JSON instead of Markdown
   --include-dry-run     keep dry-run evals
+  --no-db               skip tutor_stub_* SQL tables
   --no-ledger           ignore ledger and auto-discover summaries
+  --no-dir              skip auto-discovery from --dir
 `);
 }
 
@@ -89,6 +98,16 @@ function mean(values) {
   const finite = values.map(Number).filter(Number.isFinite);
   if (!finite.length) return null;
   return round(finite.reduce((sum, value) => sum + value, 0) / finite.length);
+}
+
+function parseJson(value, fallback = null) {
+  if (value === null || value === undefined || value === '') return fallback;
+  if (typeof value !== 'string') return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
 }
 
 function sumCounts(...countsObjects) {
@@ -152,7 +171,7 @@ function summaryFromFile(filePath) {
   const resolved = resolvePath(filePath);
   const summary = JSON.parse(fs.readFileSync(resolved, 'utf8'));
   return {
-    source: 'summary',
+    source: 'file',
     runId: path.basename(resolved, '.json'),
     startedAt: summary.startedAt || null,
     completedAt: summary.completedAt || null,
@@ -164,6 +183,116 @@ function summaryFromFile(filePath) {
     config: summary.config || {},
     totals: normalizeAggregates(summary.aggregates || {}),
   };
+}
+
+function dbTableExists(db, tableName) {
+  return Boolean(
+    db
+      .prepare("SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name = ?")
+      .get(tableName),
+  );
+}
+
+function dbRowsForRun(db, runId) {
+  if (!dbTableExists(db, 'tutor_stub_eval_rows')) return [];
+  return db
+    .prepare(
+      `SELECT
+        policy, run_index, status, turn_count, grounded_closure,
+        best_path_coverage, missing_premise_count, register_counts_json,
+        leak_count, error_count, register_entropy
+       FROM tutor_stub_eval_rows
+       WHERE eval_run_id = ?`,
+    )
+    .all(runId);
+}
+
+function summarizeDbBucket(rows) {
+  const liveRows = rows.filter((row) => row.status !== 'dry_run');
+  const okRows = liveRows.filter((row) => row.status === 'ok');
+  const registerCounts = sumCounts(...okRows.map((row) => parseJson(row.register_counts_json, {})));
+  return {
+    rows: rows.length,
+    completed: liveRows.length,
+    ok: okRows.length,
+    failed: liveRows.filter((row) => row.status === 'failed').length,
+    dryRun: rows.filter((row) => row.status === 'dry_run').length,
+    grounded: okRows.filter((row) => row.grounded_closure === 1).length,
+    groundedRate: okRows.length
+      ? okRows.filter((row) => row.grounded_closure === 1).length / okRows.length
+      : 0,
+    meanTurns: mean(okRows.map((row) => row.turn_count)) ?? 0,
+    meanCoverage: mean(okRows.map((row) => row.best_path_coverage)) ?? 0,
+    meanMissing: mean(okRows.map((row) => row.missing_premise_count)) ?? 0,
+    registerCounts,
+    registerEntropy: entropyFromCounts(registerCounts),
+    leakCount: okRows.reduce((sum, row) => sum + Number(row.leak_count || 0), 0),
+    errorCount: okRows.reduce((sum, row) => sum + Number(row.error_count || 0), 0),
+  };
+}
+
+function dbAggregatesForRun(db, runId) {
+  const rows = dbRowsForRun(db, runId);
+  const byPolicyRows = new Map();
+  for (const row of rows) {
+    const policy = row.policy || 'unknown';
+    if (!byPolicyRows.has(policy)) byPolicyRows.set(policy, []);
+    byPolicyRows.get(policy).push(row);
+  }
+  const totals = summarizeDbBucket(rows);
+  totals.byPolicy = Object.fromEntries(
+    [...byPolicyRows.entries()].map(([policy, policyRows]) => [policy, summarizeDbBucket(policyRows)]),
+  );
+  return totals;
+}
+
+function summaryFromDbRun(row, db) {
+  const config = {
+    ...parseJson(row.config_json, {}),
+  };
+  if (!Array.isArray(config.policies)) config.policies = parseJson(row.policies_json, []);
+  if (!config.world) config.world = row.world || null;
+  if (!config.model) config.model = row.model || null;
+  if (!config.analysisModel) config.analysisModel = row.analysis_model || null;
+  if (!config.autoLearnerModel) config.autoLearnerModel = row.auto_learner_model || null;
+  if (!config.autoLearnerProfileId) config.autoLearnerProfileId = row.auto_learner_profile_id || null;
+  const aggregateJson = parseJson(row.aggregates_json, null);
+  const totals = aggregateJson?.byPolicy ? aggregateJson : dbAggregatesForRun(db, row.id);
+  return {
+    source: 'db',
+    runId: row.source_run_id || row.id,
+    startedAt: row.started_at || null,
+    completedAt: row.completed_at || null,
+    recordedAt: row.completed_at || row.started_at || row.ingested_at || null,
+    report: {
+      json: row.summary_path || null,
+      html: row.html_path || null,
+    },
+    config,
+    totals: normalizeAggregates(totals),
+  };
+}
+
+function readDbSummaries(dbPath) {
+  const resolved = resolvePath(dbPath);
+  if (!fs.existsSync(resolved)) return [];
+  let db;
+  try {
+    db = new Database(resolved, { readonly: true, fileMustExist: true });
+    if (!dbTableExists(db, 'tutor_stub_eval_runs')) return [];
+    return db
+      .prepare(
+        `SELECT *
+         FROM tutor_stub_eval_runs
+         ORDER BY COALESCE(completed_at, started_at, ingested_at, id) DESC`,
+      )
+      .all()
+      .map((row) => summaryFromDbRun(row, db));
+  } catch {
+    return [];
+  } finally {
+    if (db) db.close();
+  }
 }
 
 function summaryFromLedgerEntry(entry) {
@@ -230,6 +359,25 @@ function discoverSummaries(dir) {
   }
   walk(root);
   return out.map(summaryFromFile);
+}
+
+function dedupeSummaries(summaries) {
+  const byRunId = new Map();
+  for (const summary of summaries) {
+    const key = summary.runId || summary.report?.json;
+    if (!key || byRunId.has(key)) continue;
+    byRunId.set(key, summary);
+  }
+  return [...byRunId.values()];
+}
+
+function sourceBreakdown(summaries) {
+  const out = {};
+  for (const summary of summaries) {
+    const source = summary.source || 'unknown';
+    out[source] = (out[source] || 0) + 1;
+  }
+  return out;
 }
 
 function evalTime(summary) {
@@ -386,6 +534,7 @@ function buildReport(summaries) {
     schema: 'machinespirits.tutor-stub.cross-run-field.v1',
     generatedAt: new Date().toISOString(),
     sourceCount: summaries.length,
+    sources: sourceBreakdown(summaries),
     evalCount: filtered.length,
     latest: latest
       ? {
@@ -400,6 +549,7 @@ function buildReport(summaries) {
       'Cross-run field axes differ from dialogue fields: reliability, effective closure, coverage, turn efficiency, register diversity, and leak discipline.',
       'Effective closure counts grounded runs over all rows, so technical failures lower the field point.',
       'Register diversity uses entropy normalized against the v2 all-register palette size.',
+      'SQL-backed summaries use tutor_stub_* tables when available; local JSON summaries and ledger entries are still accepted.',
     ],
   };
 }
@@ -424,6 +574,9 @@ function renderMarkdown(report) {
     '',
     `Generated: ${report.generatedAt}`,
     `Evals: ${report.evalCount} shown (${report.sourceCount} source entr${report.sourceCount === 1 ? 'y' : 'ies'})`,
+    `Sources: ${Object.entries(report.sources || {})
+      .map(([source, count]) => `${source}:${count}`)
+      .join(', ')}`,
     '',
   ];
   if (report.latest) {
@@ -468,11 +621,10 @@ function renderMarkdown(report) {
 
 function loadInputs() {
   if (positionals.length) return positionals.map(summaryFromFile);
-  if (!args['no-ledger']) {
-    const ledgerRows = readLedger(args.ledger);
-    if (ledgerRows.length) return ledgerRows;
-  }
-  return discoverSummaries(args.dir);
+  const dbRows = args['no-db'] ? [] : readDbSummaries(args.db);
+  const ledgerRows = args['no-ledger'] ? [] : readLedger(args.ledger);
+  const dirRows = args['no-dir'] ? [] : discoverSummaries(args.dir);
+  return dedupeSummaries([...dbRows, ...ledgerRows, ...dirRows]);
 }
 
 function main() {
