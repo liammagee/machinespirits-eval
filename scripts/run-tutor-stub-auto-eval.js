@@ -940,7 +940,7 @@ function fieldTurnMarkers(rows, { width, height, padding }) {
       const label = escapeXml(`${row.turn}: ${row.learnerMove} / ${row.register || 'no-register'} / ${row.bottleneck}`);
       return `<circle cx="${x.toFixed(1)}" cy="${(padding.top + height + 18).toFixed(
         1,
-      )}" r="2.8" fill="#475569"><title>${label}</title></circle>`;
+      )}" r="2.8" fill="#6A5C50"><title>${label}</title></circle>`;
     })
     .join('\n');
 }
@@ -955,10 +955,10 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
   const final = field?.summary?.final || {};
   const delta = field?.summary?.fieldDelta || {};
   const series = [
-    ['learnerMastery', 'mastery', '#2563eb'],
-    ['learnerRisk', 'risk', '#dc2626'],
-    ['tutorAlignment', 'alignment', '#059669'],
-    ['jointMomentum', 'momentum', '#7c3aed'],
+    ['learnerMastery', 'mastery', '#2A4F6B'],
+    ['learnerRisk', 'risk', '#A53E2E'],
+    ['tutorAlignment', 'alignment', '#56683A'],
+    ['jointMomentum', 'momentum', '#C08A3E'],
   ];
   const gridLines = [0, 0.25, 0.5, 0.75, 1]
     .map((value) => {
@@ -966,8 +966,8 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
       return [
         `<line x1="${padding.left}" y1="${y.toFixed(1)}" x2="${(padding.left + chartWidth).toFixed(
           1,
-        )}" y2="${y.toFixed(1)}" stroke="#e2e8f0" />`,
-        `<text x="${padding.left - 10}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="10" fill="#64748b">${value.toFixed(
+        )}" y2="${y.toFixed(1)}" stroke="#D8C7A9" />`,
+        `<text x="${padding.left - 10}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="10" fill="#6A5C50">${value.toFixed(
           2,
         )}</text>`,
       ].join('\n');
@@ -986,7 +986,7 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
   const legend = series
     .map(
       ([key, label, color], index) =>
-        `<g transform="translate(${padding.left + index * 135}, ${svgHeight - 24})"><rect width="11" height="11" rx="2" fill="${color}" /><text x="16" y="10" font-size="11" fill="#334155">${label}: ${escapeXml(
+        `<g transform="translate(${padding.left + index * 135}, ${svgHeight - 24})"><rect width="11" height="11" fill="${color}" /><text x="16" y="10" font-size="11" fill="#3A2F27">${label}: ${escapeXml(
           final[key] ?? 'n/a',
         )}</text></g>`,
     )
@@ -997,12 +997,12 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" role="img">
   <title>${escapeXml(title)}</title>
   <desc>Lightweight tutor-stub field visualization across ${rows.length} completed turn(s).</desc>
-  <rect width="100%" height="100%" fill="#f8fafc" />
-  <text x="${padding.left}" y="26" font-size="18" font-weight="700" fill="#0f172a">${escapeXml(title)}</text>
-  <text x="${padding.left}" y="47" font-size="12" fill="#475569">turns ${field.turnCount}; mean speed ${escapeXml(
+  <rect width="100%" height="100%" fill="#F7EFDD" />
+  <text x="${padding.left}" y="26" font-size="18" font-weight="700" fill="#181310">${escapeXml(title)}</text>
+  <text x="${padding.left}" y="47" font-size="12" fill="#6A5C50">turns ${field.turnCount}; mean speed ${escapeXml(
     field.summary?.meanSpeed ?? 'n/a',
   )}; ${escapeXml(deltaText)}; bottleneck ${escapeXml(final.bottleneck || 'unknown')}</text>
-  <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="#ffffff" stroke="#cbd5e1" />
+  <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="#FBF6E8" stroke="#D8C7A9" />
   ${gridLines}
   ${lines}
   ${fieldTurnMarkers(rows, { width: chartWidth, height: chartHeight, padding })}
@@ -1305,6 +1305,534 @@ function htmlMetricInfo(label, tooltip, value, sub = '') {
   return `<div class="metric"><div class="metric-label">${infoTerm(label, tooltip)}</div><div class="metric-value">${escapeHtml(value)}</div><div class="metric-sub">${escapeHtml(sub)}</div></div>`;
 }
 
+function machineSpiritsReportCss() {
+  return `
+    @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+    :root {
+      color-scheme: light;
+      --paper:#F1E9D8;
+      --paper-2:#E9DFC7;
+      --paper-3:#EFE4CC;
+      --paper-4:#F7EFDD;
+      --ink:#181310;
+      --ink-2:#3A2F27;
+      --ink-3:#6A5C50;
+      --ink-4:#695B47;
+      --linen:#D8C7A9;
+      --moss:#56683A;
+      --moss-deep:#3A4824;
+      --moss-soft:#E3E6CE;
+      --brick:#A53E2E;
+      --brick-d:#7C2C1F;
+      --brick-soft:#F3DDD6;
+      --ochre:#C08A3E;
+      --ochre-d:#835A1B;
+      --ochre-soft:#F5E6C2;
+      --indigo:#2A4F6B;
+      --indigo-soft:#DCE6EE;
+      --rule:rgba(28,22,16,0.18);
+      --rule-soft:rgba(28,22,16,0.10);
+      --ease:cubic-bezier(.22,.61,.36,1);
+      --bg:var(--paper);
+      --panel:var(--paper-4);
+      --panel-2:var(--paper-2);
+      --muted:var(--ink-3);
+      --line:var(--rule);
+      --accent:var(--moss-deep);
+      --accent-soft:var(--moss-soft);
+      --text:var(--ink-2);
+      --good:var(--moss-deep);
+      --warn:var(--ochre-d);
+      --bad:var(--brick-d);
+      --blue:var(--indigo);
+    }
+    * { box-sizing:border-box; }
+    html, body { margin:0; padding:0; max-width:100%; overflow-x:hidden; }
+    html { background:var(--paper); -webkit-text-size-adjust:100%; }
+    body {
+      min-height:100vh;
+      background:var(--paper);
+      color:var(--ink-2);
+      font-family:"Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+      font-feature-settings:"ss01", "kern", "liga";
+      font-optical-sizing:auto;
+      font-size:15px;
+      line-height:1.5;
+      letter-spacing:0.003em;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      position:relative;
+    }
+    body::before {
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:-2;
+      pointer-events:none;
+      background:
+        radial-gradient(130% 90% at 50% 0%, transparent 48%, rgba(20,16,12,0.06) 100%),
+        radial-gradient(75% 55% at 8% 92%, rgba(165,62,46,0.04), transparent 70%),
+        radial-gradient(70% 60% at 96% 14%, rgba(86,104,58,0.05), transparent 70%);
+      mix-blend-mode:multiply;
+    }
+    body::after {
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      pointer-events:none;
+      opacity:0.14;
+      background-image:radial-gradient(rgba(20,16,12,0.55) 0.5px, transparent 0.5px);
+      background-size:3px 3px;
+      mix-blend-mode:multiply;
+    }
+    h1, h2, h3, h4 {
+      font-family:"Fraunces", "Source Serif 4", Georgia, serif;
+      font-optical-sizing:auto;
+      font-variation-settings:"SOFT" 50, "WONK" 1, "opsz" 96;
+      color:var(--ink);
+      font-weight:500;
+      letter-spacing:-0.012em;
+      line-height:1.12;
+      margin:0 0 0.5em;
+    }
+    h1 { font-size:clamp(1.6rem, 1.1rem + 1.2vw, 2.35rem); }
+    h2 { margin:34px 0 12px; font-size:1.2rem; }
+    h3 { font-size:1rem; }
+    a { color:var(--brick-d); text-underline-offset:2px; }
+    a:hover { color:var(--brick); }
+    code, kbd, samp, .sub, .muted, .metric-label, .metric-sub, .control span, th, button, input, select, textarea, .chip, .status, .learner-eyebrow, .readout-label, .snippet-label, .event-chip, .live-count, .live-run-meta, .live-run-progress, .index-measure em, .index-measure span {
+      font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    header {
+      max-width:1360px;
+      margin:0 auto;
+      padding:28px clamp(18px, 4vw, 44px) 18px;
+      border-bottom:1px solid var(--rule);
+    }
+    main {
+      max-width:1360px;
+      margin:0 auto;
+      padding:22px clamp(18px, 4vw, 44px) 44px;
+    }
+    main.report-main { max-width:1540px; }
+    .report-shell {
+      display:grid;
+      grid-template-columns:190px minmax(0,1fr);
+      gap:22px;
+      align-items:start;
+    }
+    .report-content { min-width:0; }
+    .report-section {
+      min-width:0;
+      scroll-margin-top:18px;
+    }
+    .report-nav {
+      position:sticky;
+      top:14px;
+      max-height:calc(100vh - 28px);
+      overflow:auto;
+      border:1px solid var(--rule);
+      background:rgba(247,239,221,0.88);
+      box-shadow:0 12px 30px rgba(28,22,16,0.05);
+      padding:12px;
+    }
+    .report-nav-title {
+      color:var(--ink-3);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+    .report-nav-list { display:grid; gap:4px; }
+    .report-nav a {
+      display:block;
+      border-left:3px solid var(--rule);
+      color:var(--ink-2);
+      padding:6px 8px 6px 9px;
+      text-decoration:none;
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:12px;
+      line-height:1.25;
+    }
+    .report-nav a:hover, .report-nav a:focus {
+      border-left-color:var(--brick);
+      background:var(--brick-soft);
+      color:var(--brick-d);
+      outline:0;
+    }
+    .visually-hidden {
+      position:absolute;
+      width:1px;
+      height:1px;
+      overflow:hidden;
+      clip:rect(0 0 0 0);
+      white-space:nowrap;
+      clip-path:inset(50%);
+    }
+    .sub, .muted {
+      color:var(--ink-3);
+      font-size:12px;
+      letter-spacing:0.04em;
+    }
+    .header-links { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .header-links a, .field-link, .live-actions a, .live-links a, .actions a {
+      display:inline-flex;
+      align-items:center;
+      min-height:28px;
+      border:1px solid var(--rule);
+      background:var(--paper-4);
+      color:var(--brick-d);
+      padding:3px 9px;
+      text-decoration:none;
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:12px;
+      letter-spacing:0.02em;
+    }
+    .header-links a:hover, .field-link:hover, .live-actions a:hover, .live-links a:hover, .actions a:hover {
+      background:var(--brick-soft);
+      color:var(--brick-d);
+    }
+    .summary-panel { display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:14px; align-items:start; margin:18px 0 4px; }
+    .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:16px 0; }
+    .summary-panel .metrics { margin:0; }
+    .metric, .metric-guide, .learner-profile-card, .learner-behavior-card, .field-card, .viz-player, .live-run-card, table {
+      background:rgba(247,239,221,0.86);
+      border:1px solid var(--rule);
+      box-shadow:0 12px 30px rgba(28,22,16,0.05);
+    }
+    .metric { padding:13px 14px; }
+    .metric-label { color:var(--ink-3); font-size:11px; text-transform:uppercase; letter-spacing:0.11em; }
+    .metric-value { margin-top:3px; color:var(--ink); font-family:"Fraunces", Georgia, serif; font-size:28px; font-weight:600; line-height:1.05; }
+    .metric-sub { color:var(--ink-3); font-size:12px; min-height:18px; }
+    .metric-guide { padding:13px 15px; }
+    .metric-guide h3 { margin:0 0 9px; }
+    .metric-guide dl, .viz-sidebar dl { margin:0; display:grid; gap:8px; }
+    .metric-guide dl div, .viz-sidebar dl div { border-top:1px solid var(--rule-soft); padding-top:8px; }
+    .metric-guide dl div:first-child, .viz-sidebar dl div:first-child { border-top:0; padding-top:0; }
+    .metric-guide dt, .viz-sidebar dt, .learner-chip-grid strong { font-weight:600; color:var(--ink); }
+    .metric-guide dd, .viz-sidebar dd { margin:2px 0 0; color:var(--ink-3); font-size:12px; }
+    .learner-panel { display:grid; grid-template-columns:minmax(260px,.85fr) minmax(360px,1.5fr); gap:14px; margin:18px 0 4px; }
+    .learner-profile-card, .learner-behavior-card { padding:15px; }
+    .learner-eyebrow { color:var(--ink-3); font-size:11px; text-transform:uppercase; letter-spacing:0.12em; }
+    .learner-profile-card h3 { margin:4px 0 8px; font-size:1.35rem; }
+    .learner-profile-card p, .viz-sidebar p, .field-card-summary, .learner-example, .live-job p { color:var(--ink-2); }
+    .learner-profile-card dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:0; }
+    .learner-profile-card dt, .learner-stat span, .learner-example-label {
+      color:var(--ink-3);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.11em;
+    }
+    .learner-profile-card dd { margin:2px 0 0; font-weight:600; color:var(--ink); }
+    .learner-score-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin:8px 0 12px; }
+    .learner-stat { border:1px solid var(--rule-soft); padding:9px; background:rgba(251,246,232,0.8); }
+    .learner-stat strong { display:block; margin-top:2px; font-family:"Fraunces", Georgia, serif; font-size:20px; color:var(--ink); }
+    .learner-stat em { display:block; color:var(--ink-3); font-style:normal; font-size:11px; }
+    .learner-chip-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
+    .learner-chip, .chip, .event-chip, .status, .field-badge {
+      display:inline-block;
+      border:1px solid var(--rule);
+      background:var(--paper-3);
+      color:var(--ink-2);
+      padding:2px 7px;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .learner-chip { margin:0 5px 5px 0; }
+    .chip { margin:0 4px 4px 0; }
+    .learner-empty { color:var(--ink-3); font-size:12px; }
+    .learner-examples { display:grid; gap:8px; margin-top:12px; }
+    .learner-example { border-top:1px solid var(--rule-soft); padding-top:8px; font-size:12px; }
+    .field-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:14px; }
+    .field-card { overflow:hidden; }
+    .field-card-head {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      border-bottom:1px solid var(--rule);
+      background:rgba(233,223,199,0.72);
+    }
+    .field-card h3 { margin:0 0 3px; }
+    .field-actions { display:flex; align-items:flex-start; gap:8px; }
+    .field-badge { align-self:flex-start; background:var(--paper-4); }
+    .field-card-summary { padding:9px 14px; font-size:12px; border-bottom:1px solid var(--rule-soft); }
+    .field-svg { overflow-x:auto; background:var(--paper-4); }
+    .field-svg svg { display:block; width:100%; min-width:640px; height:auto; }
+    .viz-player { overflow:hidden; }
+    .viz-layout { display:grid; grid-template-columns:minmax(0,1fr) 310px; }
+    .viz-main { min-width:0; }
+    .viz-sidebar { border-left:1px solid var(--rule); background:rgba(233,223,199,0.56); padding:14px; }
+    .viz-sidebar h3 { margin:0 0 8px; }
+    .viz-sidebar p { margin:0 0 12px; font-size:12px; }
+    .viz-toolbar, .toolbar {
+      border-bottom:1px solid var(--rule);
+      background:rgba(233,223,199,0.72);
+    }
+    .viz-toolbar {
+      display:grid;
+      grid-template-columns:minmax(220px,1.1fr) minmax(280px,2.2fr) minmax(240px,1.2fr) minmax(160px,.8fr);
+      gap:10px;
+      align-items:end;
+      padding:12px 14px;
+    }
+    .viz-toolbar label, .control { display:flex; flex-direction:column; gap:4px; color:var(--ink-3); font-size:12px; }
+    .viz-control-group { min-width:0; }
+    .viz-group-label {
+      display:block;
+      color:var(--ink-3);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      letter-spacing:0.11em;
+      text-transform:uppercase;
+      margin-bottom:4px;
+    }
+    .viz-toolbar select, .viz-toolbar button, .viz-toolbar input, input, select, button {
+      width:100%;
+      min-height:38px;
+      border:1px solid var(--rule);
+      background:var(--paper-4);
+      color:var(--ink);
+      padding:7px 9px;
+      border-radius:0;
+      font:inherit;
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:12px;
+    }
+    button {
+      width:auto;
+      cursor:pointer;
+      color:var(--brick-d);
+      font-weight:600;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+    }
+    button:hover { background:var(--brick-soft); }
+    .viz-mode-buttons, .viz-step-buttons { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+    .viz-mode-buttons button, .viz-step-buttons button { width:auto; }
+    .viz-mode-buttons button.active {
+      border-color:var(--moss-deep);
+      background:var(--moss-deep);
+      color:var(--paper);
+    }
+    .viz-range-label input { min-width:150px; accent-color:var(--brick); }
+    .viz-help-strip {
+      border-bottom:1px solid var(--rule);
+      padding:9px 14px;
+      color:var(--ink-2);
+      background:rgba(247,239,221,0.82);
+      font-size:12px;
+    }
+    .viz-canvas-wrap { background:var(--paper-4); }
+    .viz-canvas-wrap canvas { display:block; width:100%; height:420px; }
+    .viz-readout {
+      margin:0;
+      min-height:118px;
+      padding:12px 14px;
+      border-top:1px solid var(--rule);
+      background:rgba(241,233,216,0.88);
+      color:var(--ink-2);
+    }
+    .viz-readout-head { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; font-size:12px; }
+    .viz-readout-head strong { color:var(--ink); font-size:13px; }
+    .viz-readout-head span { border:1px solid var(--rule); padding:2px 7px; background:var(--paper-4); color:var(--ink-3); }
+    .viz-readout-grid { display:grid; grid-template-columns:minmax(210px,.9fr) minmax(190px,.7fr) minmax(260px,1.4fr); gap:10px; }
+    .readout-card { min-width:0; border:1px solid var(--rule); background:var(--paper-4); padding:9px 10px; }
+    .readout-card strong { display:block; color:var(--ink); margin-top:3px; overflow-wrap:anywhere; }
+    .readout-card em { display:block; margin-top:3px; color:var(--ink-3); font-style:normal; font-size:12px; overflow-wrap:anywhere; }
+    .readout-style {
+      border-left:6px solid var(--style-color, var(--moss-deep));
+      background:linear-gradient(90deg, color-mix(in srgb, var(--style-color, var(--moss-deep)) 12%, var(--paper-4)), var(--paper-4) 70%);
+    }
+    .readout-label { display:block; color:var(--ink-3); font-size:11px; text-transform:uppercase; letter-spacing:0.11em; }
+    .style-swatch { display:inline-block; width:10px; height:10px; margin-right:7px; background:var(--style-color, var(--moss-deep)); vertical-align:middle; }
+    .event-list { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
+    .event-chip { background:var(--moss-soft); color:var(--moss-deep); }
+    .event-none { color:var(--ink-3); background:var(--paper-4); }
+    .viz-readout-lines { display:grid; gap:7px; margin-top:10px; font-size:13px; line-height:1.35; }
+    .viz-readout-lines p { display:grid; grid-template-columns:74px minmax(0,1fr); gap:8px; margin:0; }
+    .snippet-label { align-self:start; padding:2px 7px; text-transform:uppercase; letter-spacing:0.08em; font-size:10px; font-weight:700; text-align:center; }
+    .snippet-label.learner { background:var(--indigo-soft); color:var(--indigo); }
+    .snippet-label.tutor { background:var(--moss-soft); color:var(--moss-deep); }
+    table { width:100%; border-collapse:collapse; overflow:hidden; }
+    th, td { padding:9px 10px; border-bottom:1px solid var(--rule); text-align:left; vertical-align:top; }
+    th {
+      background:rgba(233,223,199,0.82);
+      color:var(--ink-2);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:0.09em;
+      white-space:nowrap;
+    }
+    tr:last-child td { border-bottom:0; }
+    td strong { color:var(--ink); font-weight:600; }
+    .index-measure strong {
+      display:block;
+      color:var(--ink);
+      font-size:14px;
+      line-height:1.2;
+      white-space:nowrap;
+    }
+    .index-measure strong span {
+      color:var(--ink-3);
+      font-size:11px;
+      font-weight:500;
+      letter-spacing:0.05em;
+    }
+    .index-measure em {
+      display:block;
+      margin-top:2px;
+      color:var(--ink-3);
+      font-size:11px;
+      font-style:normal;
+      letter-spacing:0.02em;
+      white-space:normal;
+    }
+    .index-measure a { color:var(--brick-d); text-decoration-thickness:1px; text-underline-offset:2px; }
+    .mini-bar { display:inline-block; width:72px; height:7px; margin-left:6px; background:var(--paper-2); overflow:hidden; vertical-align:middle; }
+    .mini-bar span { display:block; height:100%; background:var(--moss-deep); }
+    .status { background:var(--moss-soft); color:var(--moss-deep); }
+    .status.failed, .status.aborted { background:var(--brick-soft); color:var(--brick-d); }
+    .status.dry_run, .status.stale { background:var(--ochre-soft); color:var(--ochre-d); }
+    .actions { white-space:nowrap; }
+    .actions a { margin-right:6px; }
+    .info-term {
+      position:relative;
+      display:inline-block;
+      color:var(--brick-d);
+      cursor:help;
+      text-decoration:underline dotted rgba(124,44,31,0.52);
+      text-underline-offset:3px;
+    }
+    .info-term:focus { outline:2px solid rgba(165,62,46,0.30); outline-offset:2px; }
+    .info-term::after {
+      content:attr(data-tip);
+      position:absolute;
+      left:0;
+      top:calc(100% + 7px);
+      z-index:20;
+      width:min(320px,80vw);
+      padding:8px 10px;
+      border:1px solid var(--rule);
+      background:var(--ink);
+      color:var(--paper);
+      box-shadow:0 10px 28px rgba(28,22,16,0.22);
+      text-transform:none;
+      letter-spacing:0;
+      font-family:"Source Serif 4", Georgia, serif;
+      font-size:12px;
+      line-height:1.35;
+      font-weight:400;
+      white-space:normal;
+      opacity:0;
+      transform:translateY(-3px);
+      pointer-events:none;
+      transition:opacity .12s var(--ease), transform .12s var(--ease);
+    }
+    .info-term:hover::after, .info-term:focus::after { opacity:1; transform:translateY(0); }
+    .toolbar {
+      display:grid;
+      grid-template-columns:minmax(220px,2fr) repeat(5,minmax(108px,1fr));
+      align-items:end;
+      gap:10px;
+      margin:18px 0 10px;
+      padding:12px;
+      border:1px solid var(--rule);
+    }
+    .toolbar .control:first-child { grid-column:span 2; }
+    .control span { color:var(--ink-3); font-size:11px; text-transform:uppercase; letter-spacing:0.11em; }
+    input { box-sizing:border-box; }
+    select { box-sizing:border-box; }
+    .live-runs { margin:0 0 18px; }
+    .live-runs-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin:0 0 10px; }
+    .live-runs h2 { margin:0; }
+    .live-runs p { margin:3px 0 0; color:var(--ink-3); font-size:12px; }
+    .live-dot {
+      display:inline-block;
+      width:9px;
+      height:9px;
+      margin-right:7px;
+      background:var(--brick);
+      box-shadow:0 0 0 rgba(165,62,46,0.45);
+      animation:livePulse 1.4s infinite;
+    }
+    .live-count { border:1px solid var(--rule); padding:3px 8px; background:var(--paper-4); color:var(--brick-d); font-size:12px; font-weight:700; white-space:nowrap; }
+    .live-run-card { border-left:5px solid var(--brick); padding:13px; margin-bottom:10px; }
+    .live-run-card.stale { border-left-color:var(--ochre); }
+    .live-run-card.aborted { border-left-color:var(--brick-d); }
+    .live-run-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .live-run-top h3 { margin:0 0 3px; }
+    .live-run-top p { margin:3px 0 0; color:var(--ink-3); font-size:12px; }
+    .live-run-progress { display:grid; grid-template-columns:minmax(180px,1fr) auto; gap:10px; align-items:center; margin:10px 0; color:var(--ink-3); font-size:12px; }
+    .live-progress { display:block; height:10px; overflow:hidden; background:var(--paper-2); border:1px solid var(--rule-soft); }
+    .live-progress span {
+      display:block;
+      height:100%;
+      min-width:8px;
+      background:repeating-linear-gradient(45deg, var(--brick) 0 8px, var(--ochre) 8px 16px);
+      animation:liveStripe 1s linear infinite;
+    }
+    .live-run-meta { display:flex; flex-wrap:wrap; gap:8px; align-items:center; color:var(--ink-3); font-size:12px; margin-bottom:9px; }
+    .live-jobs { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:8px; }
+    .live-job { border:1px solid var(--rule); padding:9px; background:rgba(251,246,232,0.84); }
+    .live-job.running { border-color:var(--moss); background:var(--moss-soft); }
+    .live-job.failed { border-color:var(--brick); background:var(--brick-soft); }
+    .live-job div:first-child { display:flex; justify-content:space-between; gap:8px; }
+    .live-job div:first-child span { color:var(--ink-3); font-size:12px; }
+    .live-job p { margin:4px 0 5px; font-size:12px; }
+    .live-actions { margin-top:10px; font-size:12px; }
+    .live-actions a, .live-links a { margin-right:6px; }
+    @keyframes livePulse {
+      0% { box-shadow:0 0 0 0 rgba(165,62,46,0.42); }
+      70% { box-shadow:0 0 0 9px rgba(165,62,46,0); }
+      100% { box-shadow:0 0 0 0 rgba(165,62,46,0); }
+    }
+    @keyframes liveStripe { from { background-position:0 0; } to { background-position:23px 0; } }
+    @media (max-width: 1100px) {
+      .report-shell { grid-template-columns:1fr; gap:14px; }
+      .report-section { scroll-margin-top:92px; }
+      .report-nav {
+        position:sticky;
+        top:0;
+        z-index:12;
+        max-height:none;
+        overflow-x:auto;
+      }
+      .report-nav-list {
+        display:flex;
+        gap:6px;
+        min-width:max-content;
+      }
+      .report-nav a {
+        border-left:0;
+        border-bottom:3px solid var(--rule);
+        padding:6px 8px;
+        white-space:nowrap;
+      }
+      .report-nav a:hover, .report-nav a:focus { border-bottom-color:var(--brick); }
+    }
+    @media (max-width: 900px) {
+      .summary-panel, .learner-panel, .viz-layout { grid-template-columns:1fr; }
+      .viz-sidebar { border-left:0; border-top:1px solid var(--rule); }
+      .viz-toolbar, .toolbar { grid-template-columns:1fr; }
+      .toolbar .control:first-child { grid-column:1 / -1; }
+      .viz-canvas-wrap canvas { height:360px; }
+      .viz-readout-grid { grid-template-columns:1fr; }
+      .viz-readout-lines p { grid-template-columns:1fr; }
+      table { display:block; overflow-x:auto; }
+      .live-run-progress { grid-template-columns:1fr; }
+    }
+    @media (max-width: 560px) {
+      header, main { padding-left:16px; padding-right:16px; }
+      .metrics { grid-template-columns:1fr; }
+    }
+  `;
+}
+
 function hrefRelative(fromDir, targetPath) {
   return path.relative(fromDir, targetPath).split(path.sep).join('/');
 }
@@ -1561,22 +2089,39 @@ function renderReportMetricGuide() {
   </aside>`;
 }
 
+function renderReportSectionNav() {
+  const sections = [
+    ['run-summary', 'Run Summary'],
+    ['learner-profile', 'Learner Profile'],
+    ['policy-comparison', 'Policy Comparison'],
+    ['turn-replay', 'Turn Replay'],
+    ['field-trajectories', 'Field Trajectories'],
+    ['run-details', 'Run Details'],
+  ];
+  return `<aside class="report-nav" aria-label="Eval report sections">
+    <div class="report-nav-title">Sections</div>
+    <nav class="report-nav-list">
+      ${sections.map(([id, label]) => `<a href="#${escapeHtml(id)}">${escapeHtml(label)}</a>`).join('\n')}
+    </nav>
+  </aside>`;
+}
+
 function renderAnimatedVizGuide() {
   const terms = [
     [
-      'Field',
+      'Field signals',
       'The learner-discourse movement surface: mastery, risk, alignment, momentum, evidence use, agency, and stance across turns.',
     ],
     [
-      'DAG',
+      'Learner-DAG',
       'The tutor-side learner-DAG model: how much of the proof path appears grounded, voiced, missing, or unsupported.',
     ],
     [
-      'Risk',
+      'Risk score',
       'A compact warning score for fragile progress: unsupported assertions, premature secret claims, face pressure, or rising recognition cost.',
     ],
     [
-      'Trajectory',
+      'Derivative trace',
       'The recent path through field, DAG, and risk values. It asks whether the dialogue is moving, stalling, regressing, or converging.',
     ],
     [
@@ -1596,23 +2141,23 @@ function renderAnimatedVizGuide() {
       'The current limiting condition in the proof path, such as missing evidence, learner integration gap, or premature assertion.',
     ],
     [
-      'Register',
+      'Register/style',
       'The discursive strategy selected for the tutor turn, such as precise, warm, brisk, witnessing, or a negative control register.',
     ],
     [
-      'Distribution',
+      'Policy distribution',
       'The policy probability spread over available registers. Selected-only policies have no spread, so the view shows observed frequency instead.',
     ],
   ];
-  return `<aside class="viz-sidebar" aria-label="Animated dynamics explanation">
-    <h3>Reading The Animation</h3>
+  return `<aside class="viz-sidebar" aria-label="Turn replay explanation">
+    <h3>Reading The Replay</h3>
     <p>
-      Each turn frame combines ${infoTerm(
-        'Field',
-        terms[0][1],
-      )}, ${infoTerm('DAG', terms[1][1])}, ${infoTerm('Risk', terms[2][1])}, and
-      ${infoTerm('Register', terms[8][1])} signals so you can compare learner movement,
-      proof-state movement, and tutor strategy choice.
+      The ${infoTerm('register policy', 'The algorithm being benchmarked, such as field, trajectory, or dynamical_system.')} belongs to the
+      selected eval row. The buttons choose only the ${infoTerm(
+        'visual view',
+        'The lens used to draw the same turn sequence; it does not change the underlying policy.',
+      )}. Each frame combines ${infoTerm('field signals', terms[0][1])}, ${infoTerm('learner-DAG', terms[1][1])},
+      ${infoTerm('risk', terms[2][1])}, and ${infoTerm('register/style', terms[8][1])}.
     </p>
     <dl>
       ${terms
@@ -1636,18 +2181,25 @@ function renderAnimatedVizSection(rows) {
     <div class="viz-layout">
       <div class="viz-main">
         <div class="viz-toolbar">
-          <label class="viz-select-label"><span>Run</span><select data-viz-run></select></label>
-          <div class="viz-mode-buttons" role="tablist" aria-label="Visualization mode">
-            <button type="button" data-viz-mode="state">State</button>
-            <button type="button" data-viz-mode="field" class="active">Field</button>
-            <button type="button" data-viz-mode="trajectory">Trajectory</button>
-            <button type="button" data-viz-mode="dynamics">Dynamics</button>
-            <button type="button" data-viz-mode="registers">Registers</button>
+          <label class="viz-select-label"><span>Policy Run</span><select data-viz-run></select></label>
+          <div class="viz-control-group">
+            <span class="viz-group-label">View</span>
+            <div class="viz-mode-buttons" role="tablist" aria-label="Visualization view">
+              <button type="button" data-viz-mode="state">State Snapshot</button>
+              <button type="button" data-viz-mode="field" class="active">Interaction Field</button>
+              <button type="button" data-viz-mode="trajectory">Derivative Trace</button>
+              <button type="button" data-viz-mode="dynamics">System Model</button>
+              <button type="button" data-viz-mode="registers">Register Lens</button>
+            </div>
           </div>
-          <div class="viz-step-buttons">
-            <button type="button" data-viz-prev>Prev</button>
-            <button type="button" data-viz-play>Play</button>
-            <button type="button" data-viz-next>Next</button>
+          <div class="viz-control-group">
+            <span class="viz-group-label">Playback</span>
+            <div class="viz-step-buttons" aria-label="Turn playback controls">
+              <button type="button" data-viz-prev>Prev</button>
+              <button type="button" data-viz-play>Play</button>
+              <button type="button" data-viz-reset>Reset</button>
+              <button type="button" data-viz-next>Next</button>
+            </div>
           </div>
           <label class="viz-range-label"><span>Turn</span><input type="range" min="0" value="0" step="1" data-viz-range></label>
         </div>
@@ -1680,31 +2232,39 @@ function renderAnimatedVizSection(rows) {
     var readout = root.querySelector('[data-viz-readout]');
     var helpStrip = root.querySelector('[data-viz-help]');
     var playButton = root.querySelector('[data-viz-play]');
+    var resetButton = root.querySelector('[data-viz-reset]');
     var modeButtons = Array.prototype.slice.call(root.querySelectorAll('[data-viz-mode]'));
     var activeRow = rows[0];
     var activeIndex = 0;
     var mode = 'field';
     var timer = null;
+    var viewLabels = {
+      state: 'State Snapshot',
+      field: 'Interaction Field',
+      trajectory: 'Derivative Trace',
+      dynamics: 'System Model',
+      registers: 'Register Lens'
+    };
     var palette = {
-      learnerMastery: '#2563eb',
-      learnerRisk: '#dc2626',
-      tutorAlignment: '#059669',
-      jointMomentum: '#7c3aed',
-      field: '#2563eb',
-      dag: '#059669',
-      risk: '#dc2626'
+      learnerMastery: '#2A4F6B',
+      learnerRisk: '#A53E2E',
+      tutorAlignment: '#56683A',
+      jointMomentum: '#C08A3E',
+      field: '#2A4F6B',
+      dag: '#56683A',
+      risk: '#A53E2E'
     };
     var registerOrder = ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic', 'ironic', 'sarcastic', 'face_threat'];
     var registerMeta = {
-      plain: { label: 'Plain', group: 'clarify', color: '#2563eb', note: 'plain-language re-entry' },
-      precise: { label: 'Precise', group: 'warrant', color: '#059669', note: 'distinction or proof step' },
-      brisk: { label: 'Brisk', group: 'pace', color: '#d97706', note: 'faster stepwise movement' },
-      warm: { label: 'Warm', group: 'repair', color: '#db2777', note: 'readiness and affect repair' },
-      witnessing: { label: 'Witnessing', group: 'recognition', color: '#7c3aed', note: 'acknowledge learner position' },
-      charismatic: { label: 'Charismatic', group: 'disrupt', color: '#0891b2', note: 'interrupt stuck low agency' },
-      ironic: { label: 'Ironic', group: 'negative/probe', color: '#64748b', note: 'mismatch cue' },
-      sarcastic: { label: 'Sarcastic', group: 'negative/probe', color: '#a855f7', note: 'hostile challenge probe' },
-      face_threat: { label: 'Face threat', group: 'negative/probe', color: '#dc2626', note: 'status-pressure probe' }
+      plain: { label: 'Plain', group: 'clarify', color: '#2A4F6B', note: 'plain-language re-entry' },
+      precise: { label: 'Precise', group: 'warrant', color: '#56683A', note: 'distinction or proof step' },
+      brisk: { label: 'Brisk', group: 'pace', color: '#C08A3E', note: 'faster stepwise movement' },
+      warm: { label: 'Warm', group: 'repair', color: '#A53E2E', note: 'readiness and affect repair' },
+      witnessing: { label: 'Witnessing', group: 'recognition', color: '#835A1B', note: 'acknowledge learner position' },
+      charismatic: { label: 'Charismatic', group: 'disrupt', color: '#3A4824', note: 'interrupt stuck low agency' },
+      ironic: { label: 'Ironic', group: 'negative/probe', color: '#6A5C50', note: 'mismatch cue' },
+      sarcastic: { label: 'Sarcastic', group: 'negative/probe', color: '#7C2C1F', note: 'hostile challenge probe' },
+      face_threat: { label: 'Face threat', group: 'negative/probe', color: '#A53E2E', note: 'status-pressure probe' }
     };
 
     function finite(value, fallback) {
@@ -1731,7 +2291,7 @@ function renderAnimatedVizSection(rows) {
       return registerMeta[key] || {
         label: key.replace(/_/g, ' ').replace(/\\b\\w/g, function (match) { return match.toUpperCase(); }),
         group: 'other',
-        color: '#334155',
+        color: '#3A2F27',
         note: 'unclassified register'
       };
     }
@@ -1739,6 +2299,10 @@ function renderAnimatedVizSection(rows) {
     function registerLabel(register) {
       var meta = metaForRegister(register);
       return meta.label + (register && meta.label.toLowerCase().replace(/ /g, '_') !== register ? ' (' + register + ')' : '');
+    }
+
+    function viewLabel(key) {
+      return viewLabels[key] || key || 'View';
     }
 
     function escapeReadoutHtml(value) {
@@ -1793,14 +2357,14 @@ function renderAnimatedVizSection(rows) {
 
     function clear(width, height) {
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#F7EFDD';
       ctx.fillRect(0, 0, width, height);
     }
 
     function text(value, x, y, options) {
       var opts = options || {};
-      ctx.fillStyle = opts.color || '#17201b';
-      ctx.font = (opts.weight ? opts.weight + ' ' : '') + (opts.size || 12) + 'px ui-sans-serif, system-ui, sans-serif';
+      ctx.fillStyle = opts.color || '#181310';
+      ctx.font = (opts.weight ? opts.weight + ' ' : '') + (opts.size || 12) + 'px "Source Serif 4", Georgia, serif';
       ctx.textAlign = opts.align || 'left';
       ctx.textBaseline = opts.baseline || 'alphabetic';
       ctx.fillText(String(value), x, y);
@@ -1808,22 +2372,22 @@ function renderAnimatedVizSection(rows) {
 
     function rectBar(label, value, x, y, width, color) {
       var bounded = clamp01(value);
-      ctx.fillStyle = '#e7ece8';
+      ctx.fillStyle = '#E9DFC7';
       ctx.fillRect(x, y, width, 12);
-      ctx.fillStyle = color || '#2f6f63';
+      ctx.fillStyle = color || '#3A4824';
       ctx.fillRect(x, y, width * bounded, 12);
-      text(label, x, y - 4, { color: '#34433c', size: 11 });
-      text(format(value), x + width + 8, y + 10, { color: '#66736c', size: 11 });
+      text(label, x, y - 4, { color: '#3A2F27', size: 11 });
+      text(format(value), x + width + 8, y + 10, { color: '#6A5C50', size: 11 });
     }
 
     function labeledBar(label, value, x, y, width, color, valueLabel) {
       var bounded = clamp01(value);
-      ctx.fillStyle = '#e7ece8';
+      ctx.fillStyle = '#E9DFC7';
       ctx.fillRect(x, y, width, 14);
-      ctx.fillStyle = color || '#2f6f63';
+      ctx.fillStyle = color || '#3A4824';
       ctx.fillRect(x, y, width * bounded, 14);
-      text(truncateText(label, width - 46), x, y - 5, { color: '#34433c', size: 11 });
-      text(valueLabel || pct(value), x + width + 8, y + 11, { color: '#66736c', size: 11 });
+      text(truncateText(label, width - 46), x, y - 5, { color: '#3A2F27', size: 11 });
+      text(valueLabel || pct(value), x + width + 8, y + 11, { color: '#6A5C50', size: 11 });
     }
 
     function drawPlot(series, options) {
@@ -1834,7 +2398,7 @@ function renderAnimatedVizSection(rows) {
       var width = opts.width || 640;
       var height = opts.height || 240;
       var count = Math.max(1, frames.length - 1);
-      ctx.strokeStyle = '#d9e0dc';
+      ctx.strokeStyle = '#D8C7A9';
       ctx.lineWidth = 1;
       for (var grid = 0; grid <= 4; grid += 1) {
         var gy = y + height - (grid / 4) * height;
@@ -1842,9 +2406,9 @@ function renderAnimatedVizSection(rows) {
         ctx.moveTo(x, gy);
         ctx.lineTo(x + width, gy);
         ctx.stroke();
-        text((grid / 4).toFixed(2), x - 8, gy + 4, { color: '#66736c', size: 10, align: 'right' });
+        text((grid / 4).toFixed(2), x - 8, gy + 4, { color: '#6A5C50', size: 10, align: 'right' });
       }
-      ctx.strokeStyle = '#b9c6bf';
+      ctx.strokeStyle = '#D8C7A9';
       ctx.strokeRect(x, y, width, height);
       series.forEach(function (item, seriesIndex) {
         ctx.beginPath();
@@ -1861,7 +2425,7 @@ function renderAnimatedVizSection(rows) {
         text(item.label, x + seriesIndex * 132, y + height + 28, { color: item.color, size: 12, weight: '700' });
       });
       var cursorX = x + (Math.max(0, Math.min(activeIndex, count)) / count) * width;
-      ctx.strokeStyle = '#17201b';
+      ctx.strokeStyle = '#181310';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(cursorX, y);
@@ -1870,23 +2434,23 @@ function renderAnimatedVizSection(rows) {
     }
 
     function drawState(frame, width, height) {
-      text('Learner/DAG State', 28, 34, { size: 18, weight: '700' });
+      text('State Snapshot', 28, 34, { size: 18, weight: '700' });
       var scores = (frame.state.classifier && frame.state.classifier.scores) || {};
-      rectBar('conceptual', scores.conceptual, 38, 82, width * 0.36, '#2563eb');
-      rectBar('readiness', scores.epistemicReadiness, 38, 126, width * 0.36, '#059669');
-      rectBar('surface', scores.learnerSurface, 38, 170, width * 0.36, '#7c3aed');
-      rectBar('coverage', frame.state.dag.bestPathCoverage, 38, 214, width * 0.36, '#2f6f63');
+      rectBar('conceptual', scores.conceptual, 38, 82, width * 0.36, '#2A4F6B');
+      rectBar('readiness', scores.epistemicReadiness, 38, 126, width * 0.36, '#56683A');
+      rectBar('surface', scores.learnerSurface, 38, 170, width * 0.36, '#C08A3E');
+      rectBar('coverage', frame.state.dag.bestPathCoverage, 38, 214, width * 0.36, '#3A4824');
       var rightX = width * 0.52;
       text('DAG', rightX, 82, { size: 13, weight: '700' });
-      text('bottleneck: ' + (frame.state.dag.bottleneck || 'unknown'), rightX, 112, { color: '#34433c' });
-      text('grounded: ' + frame.state.dag.groundedCount + '   missing: ' + frame.state.dag.missingPremiseCount, rightX, 140, { color: '#34433c' });
-      text('unsupported: ' + frame.state.dag.unsupportedAssertionCount, rightX, 168, { color: '#34433c' });
-      text('request: ' + ((frame.state.classifier && frame.state.classifier.requestType) || 'unknown'), rightX, 214, { color: '#34433c' });
-      text('move: ' + ((frame.state.classifier && frame.state.classifier.discourseMove) || 'unknown'), rightX, 242, { color: '#34433c' });
+      text('bottleneck: ' + (frame.state.dag.bottleneck || 'unknown'), rightX, 112, { color: '#3A2F27' });
+      text('grounded: ' + frame.state.dag.groundedCount + '   missing: ' + frame.state.dag.missingPremiseCount, rightX, 140, { color: '#3A2F27' });
+      text('unsupported: ' + frame.state.dag.unsupportedAssertionCount, rightX, 168, { color: '#3A2F27' });
+      text('request: ' + ((frame.state.classifier && frame.state.classifier.requestType) || 'unknown'), rightX, 214, { color: '#3A2F27' });
+      text('move: ' + ((frame.state.classifier && frame.state.classifier.discourseMove) || 'unknown'), rightX, 242, { color: '#3A2F27' });
     }
 
     function drawField(frame, width, height) {
-      text('Field Trajectory', 28, 34, { size: 18, weight: '700' });
+      text('Interaction Field', 28, 34, { size: 18, weight: '700' });
       drawPlot([
         { label: 'mastery', color: palette.learnerMastery, value: function (row) { return row.field.learnerMastery; } },
         { label: 'risk', color: palette.learnerRisk, value: function (row) { return row.field.learnerRisk; } },
@@ -1896,7 +2460,7 @@ function renderAnimatedVizSection(rows) {
     }
 
     function drawTrajectory(frame, width, height) {
-      text('Trajectory Derivatives', 28, 34, { size: 18, weight: '700' });
+      text('Derivative Trace', 28, 34, { size: 18, weight: '700' });
       drawPlot([
         { label: 'field', color: palette.field, value: function (row) { return row.trajectory.field.current; } },
         { label: 'dag', color: palette.dag, value: function (row) { return row.trajectory.dag.current; } },
@@ -1904,44 +2468,44 @@ function renderAnimatedVizSection(rows) {
       ], { x: 54, y: 64, width: width * 0.58, height: height - 142 });
       var x = width * 0.7;
       var y = 82;
-      text('velocity / slope / acceleration', x, y - 24, { color: '#34433c', size: 12, weight: '700' });
+      text('velocity / slope / acceleration', x, y - 24, { color: '#3A2F27', size: 12, weight: '700' });
       ['field', 'dag', 'risk'].forEach(function (key, index) {
         var metric = frame.trajectory[key] || {};
         var yy = y + index * 76;
         text(key, x, yy, { color: palette[key], size: 13, weight: '700' });
-        text('v ' + format(metric.velocity), x, yy + 24, { color: '#34433c' });
-        text('s ' + format(metric.slope), x + 86, yy + 24, { color: '#34433c' });
-        text('a ' + format(metric.acceleration), x + 172, yy + 24, { color: '#34433c' });
+        text('v ' + format(metric.velocity), x, yy + 24, { color: '#3A2F27' });
+        text('s ' + format(metric.slope), x + 86, yy + 24, { color: '#3A2F27' });
+        text('a ' + format(metric.acceleration), x + 172, yy + 24, { color: '#3A2F27' });
       });
     }
 
     function drawHeatmap(object, x, y, width, cellHeight) {
       var entries = Object.entries(object || {});
       if (!entries.length) {
-        text('no vector data', x, y + 18, { color: '#66736c' });
+        text('no vector data', x, y + 18, { color: '#6A5C50' });
         return;
       }
       entries.forEach(function (entry, index) {
         var key = entry[0];
         var value = clamp01(entry[1]);
         var yy = y + index * cellHeight;
-        var intensity = Math.round(245 - value * 115);
-        ctx.fillStyle = 'rgb(' + intensity + ',' + Math.round(250 - value * 70) + ',' + Math.round(246 - value * 110) + ')';
+        var intensity = Math.round(247 - value * 70);
+        ctx.fillStyle = 'rgb(' + intensity + ',' + Math.round(239 - value * 62) + ',' + Math.round(221 - value * 82) + ')';
         ctx.fillRect(x, yy, width, cellHeight - 3);
-        text(key, x + 8, yy + cellHeight - 10, { color: '#17201b', size: 11 });
-        text(format(value), x + width - 8, yy + cellHeight - 10, { color: '#17201b', size: 11, align: 'right' });
+        text(key, x + 8, yy + cellHeight - 10, { color: '#181310', size: 11 });
+        text(format(value), x + width - 8, yy + cellHeight - 10, { color: '#181310', size: 11, align: 'right' });
       });
     }
 
     function drawDynamics(frame, width, height) {
-      text('Dynamical System', 28, 34, { size: 18, weight: '700' });
-      text('source: ' + (frame.dynamics.source || 'unknown'), 28, 56, { color: '#66736c', size: 12 });
+      text('System Model', 28, 34, { size: 18, weight: '700' });
+      text('source: ' + (frame.dynamics.source || 'unknown'), 28, 56, { color: '#6A5C50', size: 12 });
       drawHeatmap(frame.dynamics.stateVector || {}, 34, 82, width * 0.46, 22);
       var rightX = width * 0.56;
       text('attractors / derivatives', rightX, 82, { size: 13, weight: '700' });
       var bars = Object.keys(frame.dynamics.attractors || {}).length ? frame.dynamics.attractors : frame.dynamics.derivativeVector;
       Object.entries(bars || {}).slice(0, 12).forEach(function (entry, index) {
-        rectBar(entry[0], Math.abs(finite(entry[1], 0)), rightX, 116 + index * 24, width * 0.28, '#2f6f63');
+        rectBar(entry[0], Math.abs(finite(entry[1], 0)), rightX, 116 + index * 24, width * 0.28, '#3A4824');
       });
     }
 
@@ -1975,8 +2539,8 @@ function renderAnimatedVizSection(rows) {
     }
 
     function drawRegisterTimeline(frames, x, y, width, height) {
-      text('selection timeline', x, y - 12, { color: '#34433c', size: 12, weight: '700' });
-      ctx.fillStyle = '#eef4f1';
+      text('selection timeline', x, y - 12, { color: '#3A2F27', size: 12, weight: '700' });
+      ctx.fillStyle = '#E9DFC7';
       ctx.fillRect(x, y, width, height);
       var count = Math.max(1, frames.length);
       frames.forEach(function (row, index) {
@@ -1987,17 +2551,17 @@ function renderAnimatedVizSection(rows) {
         ctx.fillRect(start, y, Math.max(1, end - start + 0.5), height);
       });
       var cursorX = x + ((activeIndex + 0.5) / count) * width;
-      ctx.strokeStyle = '#17201b';
+      ctx.strokeStyle = '#181310';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(cursorX, y - 5);
       ctx.lineTo(cursorX, y + height + 5);
       ctx.stroke();
-      ctx.strokeStyle = '#d9e0dc';
+      ctx.strokeStyle = '#D8C7A9';
       ctx.lineWidth = 1;
       ctx.strokeRect(x, y, width, height);
-      text('1', x, y + height + 18, { color: '#66736c', size: 10 });
-      text(String(frames.length), x + width, y + height + 18, { color: '#66736c', size: 10, align: 'right' });
+      text('1', x, y + height + 18, { color: '#6A5C50', size: 10 });
+      text(String(frames.length), x + width, y + height + 18, { color: '#6A5C50', size: 10, align: 'right' });
     }
 
     function drawRegisterLegend(keys, x, y, width, height) {
@@ -2008,28 +2572,28 @@ function renderAnimatedVizSection(rows) {
         var yy = y + 26 + index * rowHeight;
         ctx.fillStyle = meta.color;
         ctx.fillRect(x, yy - 10, 12, 12);
-        text(meta.label, x + 18, yy, { color: '#17201b', size: 12, weight: '700' });
-        text(truncateText(meta.group + ' | ' + meta.note, width - 18), x + 18, yy + 16, { color: '#66736c', size: 10 });
+        text(meta.label, x + 18, yy, { color: '#181310', size: 12, weight: '700' });
+        text(truncateText(meta.group + ' | ' + meta.note, width - 18), x + 18, yy + 16, { color: '#6A5C50', size: 10 });
       });
     }
 
     function drawCurrentRegisterCard(frame, x, y, width) {
       var meta = metaForRegister(frame.selectedRegister);
-      ctx.fillStyle = '#f8faf9';
+      ctx.fillStyle = '#FBF6E8';
       ctx.fillRect(x, y, width, 108);
-      ctx.strokeStyle = '#d9e0dc';
+      ctx.strokeStyle = '#D8C7A9';
       ctx.strokeRect(x, y, width, 108);
       ctx.fillStyle = meta.color;
       ctx.fillRect(x + 12, y + 18, 18, 18);
-      text('current register', x + 12, y + 14, { color: '#66736c', size: 11 });
-      text(meta.label, x + 40, y + 32, { color: '#17201b', size: 16, weight: '700' });
-      text(String(frame.selectedRegister || 'none'), x + 40, y + 52, { color: '#66736c', size: 11 });
-      text('policy: ' + (frame.register.policy || activeRow.policy || 'unknown'), x + 12, y + 78, { color: '#34433c', size: 11 });
-      text('kind: ' + meta.group, x + 12, y + 96, { color: '#34433c', size: 11 });
+      text('current register', x + 12, y + 14, { color: '#6A5C50', size: 11 });
+      text(meta.label, x + 40, y + 32, { color: '#181310', size: 16, weight: '700' });
+      text(String(frame.selectedRegister || 'none'), x + 40, y + 52, { color: '#6A5C50', size: 11 });
+      text('register policy: ' + (frame.register.policy || activeRow.policy || 'unknown'), x + 12, y + 78, { color: '#3A2F27', size: 11 });
+      text('kind: ' + meta.group, x + 12, y + 96, { color: '#3A2F27', size: 11 });
     }
 
     function drawRegisters(frame, width, height) {
-      text('Register Strategy', 28, 34, { size: 18, weight: '700' });
+      text('Register Lens', 28, 34, { size: 18, weight: '700' });
       var frames = currentFrames();
       var keys = registerKeysForRun();
       var leftX = 34;
@@ -2045,7 +2609,7 @@ function renderAnimatedVizSection(rows) {
       var y = 182;
       var barWidth = leftWidth - 76;
       if (hasPolicyDistribution) {
-        text('current probability distribution', leftX, y - 24, { color: '#34433c', size: 12, weight: '700' });
+        text('current probability distribution', leftX, y - 24, { color: '#3A2F27', size: 12, weight: '700' });
         rows.slice(0, 9).forEach(function (entry, index) {
           var meta = metaForRegister(entry.register);
           var selected = entry.register === frame.selectedRegister;
@@ -2055,14 +2619,14 @@ function renderAnimatedVizSection(rows) {
             leftX,
             y + index * 30,
             barWidth,
-            selected ? '#17201b' : meta.color,
+            selected ? '#181310' : meta.color,
             pct(entry.probability),
           );
         });
       } else {
         var counts = registerCountsThrough(activeIndex);
         var total = Math.max(1, activeIndex + 1);
-        text('selection frequency through this turn', leftX, y - 24, { color: '#34433c', size: 12, weight: '700' });
+        text('selection frequency through this turn', leftX, y - 24, { color: '#3A2F27', size: 12, weight: '700' });
         keys
           .map(function (key) {
             return { register: key, count: counts[key] || 0 };
@@ -2087,7 +2651,7 @@ function renderAnimatedVizSection(rows) {
             );
           });
       }
-      text('source: ' + frame.register.distributionSource, leftX, height - 26, { color: '#66736c', size: 11 });
+      text('source: ' + frame.register.distributionSource, leftX, height - 26, { color: '#6A5C50', size: 11 });
     }
 
     function updateReadout(frame) {
@@ -2101,7 +2665,7 @@ function renderAnimatedVizSection(rows) {
         '<div class="viz-readout-head">',
           '<strong>' + escapeReadoutHtml(activeRow.title) + '</strong>',
           '<span>turn ' + escapeReadoutHtml(frame.turn) + '/' + escapeReadoutHtml(activeRow.viz.turnCount) + '</span>',
-          '<span>' + escapeReadoutHtml(mode) + '</span>',
+          '<span>view ' + escapeReadoutHtml(viewLabel(mode)) + '</span>',
         '</div>',
         '<div class="viz-readout-grid">',
           '<section class="readout-card readout-style" style="--style-color:' + escapeReadoutHtml(meta.color) + '">',
@@ -2127,18 +2691,18 @@ function renderAnimatedVizSection(rows) {
 
     function helpTextForMode() {
       if (mode === 'state') {
-        return 'State: current classifier and learner-DAG snapshot, including request type, proof coverage, missing premises, and bottleneck.';
+        return 'View: State Snapshot. Shows the current classifier and learner-DAG snapshot, including request type, proof coverage, missing premises, and bottleneck.';
       }
       if (mode === 'trajectory') {
-        return 'Trajectory: field, DAG, and risk over recent turns. v/s/a are velocity, slope, and acceleration.';
+        return 'View: Derivative Trace. Shows field, DAG, and risk movement over recent turns. v/s/a are velocity, slope, and acceleration.';
       }
       if (mode === 'dynamics') {
-        return 'Dynamics: state-vector axes and derivative/attractor signals used by dynamical-system register policies when available.';
+        return 'View: System Model. Shows state-vector axes and derivative/attractor signals when the selected register policy emits them.';
       }
       if (mode === 'registers') {
-        return 'Registers: selected discursive strategy over time. The timeline shows choices; bars show either policy probabilities or observed frequency for selected-only policies.';
+        return 'View: Register Lens. Shows selected tutor register/style over time; bars show either policy probabilities or observed frequency for selected-only policies.';
       }
-      return 'Field: mastery, risk, tutor alignment, and joint momentum across turns.';
+      return 'View: Interaction Field. Shows mastery, risk, tutor alignment, and joint momentum across turns.';
     }
 
     function draw() {
@@ -2152,7 +2716,7 @@ function renderAnimatedVizSection(rows) {
       else if (mode === 'dynamics') drawDynamics(frame, width, height);
       else if (mode === 'registers') drawRegisters(frame, width, height);
       else drawField(frame, width, height);
-      text('turn ' + frame.turn, width - 28, 34, { align: 'right', color: '#66736c', size: 12, weight: '700' });
+      text('turn ' + frame.turn, width - 28, 34, { align: 'right', color: '#6A5C50', size: 12, weight: '700' });
       updateReadout(frame);
     }
 
@@ -2183,7 +2747,7 @@ function renderAnimatedVizSection(rows) {
     rows.forEach(function (row, index) {
       var option = document.createElement('option');
       option.value = String(index);
-      option.textContent = row.title + ' (' + row.turnCount + 't, ' + row.status + ')';
+      option.textContent = 'policy ' + row.policy + ' · run ' + row.runIndex + ' · ' + row.turnCount + 't · ' + row.status;
       select.appendChild(option);
     });
     select.addEventListener('change', function () {
@@ -2217,6 +2781,10 @@ function renderAnimatedVizSection(rows) {
         setIndex(activeIndex + 1);
       }, 850);
       syncControls();
+    });
+    resetButton.addEventListener('click', function () {
+      stop();
+      setIndex(0);
     });
     modeButtons.forEach(function (button) {
       button.addEventListener('click', function () {
@@ -2323,143 +2891,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tutor Stub Auto-Eval Report</title>
   <style>
-    :root { color-scheme: light; --ink:#17201b; --muted:#66736c; --line:#d9e0dc; --paper:#fbfcfb; --panel:#ffffff; --accent:#2f6f63; --warn:#9c5a12; --bad:#9a2f36; }
-    body { margin:0; font:14px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--paper); }
-    header { padding:28px 32px 18px; border-bottom:1px solid var(--line); background:linear-gradient(180deg,#fff,#f4f7f5); }
-    h1 { margin:0 0 8px; font-size:26px; letter-spacing:0; }
-    h2 { margin:30px 0 12px; font-size:18px; }
-    main { max-width:1280px; margin:0 auto; padding:22px 32px 40px; }
-    .sub { color:var(--muted); }
-    .header-links { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
-    .header-links a { border:1px solid var(--line); border-radius:7px; padding:5px 9px; background:#fff; text-decoration:none; }
-    .summary-panel { display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:14px; align-items:stretch; margin:18px 0 4px; }
-    .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:0; }
-    .metric { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px; }
-    .metric-label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
-    .metric-value { font-size:24px; font-weight:700; margin-top:4px; }
-    .metric-sub { color:var(--muted); font-size:12px; min-height:18px; }
-    .metric-guide { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
-    .metric-guide h3 { margin:0 0 8px; font-size:15px; }
-    .metric-guide dl { margin:0; display:grid; gap:8px; }
-    .metric-guide dl div { border-top:1px solid var(--line); padding-top:8px; }
-    .metric-guide dl div:first-child { border-top:0; padding-top:0; }
-    .metric-guide dt { font-weight:700; color:#24342d; }
-    .metric-guide dd { margin:2px 0 0; color:var(--muted); font-size:12px; }
-    .learner-panel { display:grid; grid-template-columns:minmax(260px,.85fr) minmax(360px,1.5fr); gap:14px; margin:18px 0 4px; }
-    .learner-profile-card, .learner-behavior-card { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px; }
-    .learner-eyebrow { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
-    .learner-profile-card h3 { margin:4px 0 8px; font-size:20px; }
-    .learner-profile-card p { margin:0 0 12px; color:#34433c; }
-    .learner-profile-card dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:0; }
-    .learner-profile-card dt { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
-    .learner-profile-card dd { margin:2px 0 0; font-weight:700; }
-    .learner-score-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin:8px 0 12px; }
-    .learner-stat { border:1px solid var(--line); border-radius:7px; padding:8px; background:#fbfcfb; }
-    .learner-stat span { display:block; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
-    .learner-stat strong { display:block; margin-top:2px; font-size:18px; }
-    .learner-stat em { display:block; color:var(--muted); font-style:normal; font-size:11px; }
-    .learner-chip-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
-    .learner-chip-grid strong { display:block; margin-bottom:5px; color:#24342d; }
-    .learner-chip { display:inline-block; margin:0 5px 5px 0; padding:3px 7px; border-radius:999px; background:#eef4f1; border:1px solid var(--line); color:#34433c; font-size:12px; }
-    .learner-empty { color:var(--muted); font-size:12px; }
-    .learner-examples { display:grid; gap:8px; margin-top:12px; }
-    .learner-example { border-top:1px solid var(--line); padding-top:8px; color:#34433c; font-size:12px; }
-    .learner-example-label { color:var(--muted); text-transform:uppercase; letter-spacing:.04em; font-size:11px; margin-bottom:3px; }
-    .field-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:14px; }
-    .field-card { background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
-    .field-card-head { display:flex; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); background:#f7faf8; }
-    .field-card h3 { margin:0 0 3px; font-size:15px; }
-    .field-actions { display:flex; align-items:flex-start; gap:8px; }
-    .field-link { border:1px solid var(--line); border-radius:999px; padding:3px 8px; background:#fff; font-size:12px; text-decoration:none; white-space:nowrap; }
-    .field-badge { align-self:flex-start; border:1px solid var(--line); border-radius:999px; padding:3px 8px; color:#34433c; background:#fff; font-size:12px; white-space:nowrap; }
-    .field-card-summary { padding:9px 14px; color:#34433c; font-size:12px; border-bottom:1px solid var(--line); }
-    .field-svg { overflow-x:auto; background:#f8fafc; }
-    .field-svg svg { display:block; width:100%; min-width:640px; height:auto; }
-    .viz-player { background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
-    .viz-layout { display:grid; grid-template-columns:minmax(0,1fr) 310px; }
-    .viz-main { min-width:0; }
-    .viz-sidebar { border-left:1px solid var(--line); background:#fbfcfb; padding:14px; }
-    .viz-sidebar h3 { margin:0 0 8px; font-size:15px; }
-    .viz-sidebar p { margin:0 0 12px; color:#34433c; font-size:12px; }
-    .viz-sidebar dl { margin:0; display:grid; gap:8px; }
-    .viz-sidebar dl div { border-top:1px solid var(--line); padding-top:8px; }
-    .viz-sidebar dt { font-weight:700; color:#24342d; }
-    .viz-sidebar dd { margin:3px 0 0; color:var(--muted); font-size:12px; }
-    .viz-toolbar { display:grid; grid-template-columns:minmax(220px,1.2fr) auto auto minmax(180px,.9fr); gap:10px; align-items:end; padding:12px 14px; border-bottom:1px solid var(--line); background:#f7faf8; }
-    .viz-toolbar label { display:flex; flex-direction:column; gap:4px; color:var(--muted); font-size:12px; }
-    .viz-toolbar select, .viz-toolbar button, .viz-toolbar input { font:inherit; }
-    .viz-toolbar select { width:100%; border:1px solid var(--line); border-radius:6px; padding:7px 8px; background:#fff; color:var(--ink); }
-    .viz-mode-buttons, .viz-step-buttons { display:flex; flex-wrap:wrap; gap:6px; }
-    .viz-mode-buttons button, .viz-step-buttons button { border:1px solid var(--line); border-radius:6px; background:#fff; color:#34433c; padding:7px 9px; cursor:pointer; }
-    .viz-mode-buttons button.active { border-color:var(--accent); background:#eaf3f0; color:#17443b; font-weight:700; }
-    .viz-range-label input { width:100%; min-width:150px; accent-color:var(--accent); }
-    .viz-help-strip { border-bottom:1px solid var(--line); padding:9px 14px; color:#34433c; background:#fff; font-size:12px; }
-    .viz-readout { margin:0; padding:12px 14px; border-top:1px solid var(--line); background:#f8faf9; color:#34433c; min-height:118px; }
-    .viz-readout-head { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; font-size:12px; }
-    .viz-readout-head strong { color:#17201b; font-size:13px; }
-    .viz-readout-head span { border:1px solid var(--line); border-radius:999px; padding:2px 7px; background:#fff; color:var(--muted); }
-    .viz-readout-grid { display:grid; grid-template-columns:minmax(210px, .9fr) minmax(190px, .7fr) minmax(260px, 1.4fr); gap:10px; }
-    .readout-card { border:1px solid var(--line); border-radius:7px; background:#fff; padding:9px 10px; min-width:0; }
-    .readout-card strong { display:block; color:#17201b; margin-top:3px; overflow-wrap:anywhere; }
-    .readout-card em { display:block; margin-top:3px; color:var(--muted); font-style:normal; font-size:12px; overflow-wrap:anywhere; }
-    .readout-style { border-left:6px solid var(--style-color, var(--accent)); background:linear-gradient(90deg, color-mix(in srgb, var(--style-color, var(--accent)) 10%, #fff), #fff 65%); }
-    .readout-label { display:block; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
-    .style-swatch { display:inline-block; width:10px; height:10px; margin-right:7px; border-radius:999px; background:var(--style-color, var(--accent)); vertical-align:middle; }
-    .event-list { display:flex; flex-wrap:wrap; gap:5px; margin-top:5px; }
-    .event-chip { display:inline-block; border:1px solid #cdd9d3; border-radius:999px; padding:2px 7px; background:#eef4f1; color:#24433b; font-size:12px; }
-    .event-none { color:var(--muted); background:#fff; }
-    .viz-readout-lines { display:grid; gap:7px; margin-top:10px; font-size:13px; line-height:1.35; }
-    .viz-readout-lines p { display:grid; grid-template-columns:74px minmax(0,1fr); gap:8px; margin:0; }
-    .snippet-label { align-self:start; border-radius:999px; padding:2px 7px; text-transform:uppercase; letter-spacing:.04em; font-size:10px; font-weight:700; text-align:center; }
-    .snippet-label.learner { background:#e8f0fe; color:#275f9f; }
-    .snippet-label.tutor { background:#eaf3f0; color:#17443b; }
-    .info-term { position:relative; display:inline-block; border-bottom:1px dotted var(--accent); color:#17443b; cursor:help; }
-    .info-term::after {
-      content:attr(data-tip);
-      position:absolute;
-      left:0;
-      top:calc(100% + 7px);
-      z-index:10;
-      width:min(310px,80vw);
-      padding:8px 9px;
-      border:1px solid var(--line);
-      border-radius:7px;
-      background:#17201b;
-      color:#fff;
-      font-size:12px;
-      line-height:1.35;
-      text-transform:none;
-      letter-spacing:0;
-      font-weight:400;
-      box-shadow:0 8px 24px rgba(23,32,27,.18);
-      opacity:0;
-      transform:translateY(-3px);
-      pointer-events:none;
-      transition:opacity .12s ease, transform .12s ease;
-    }
-    .info-term:hover::after, .info-term:focus::after { opacity:1; transform:translateY(0); }
-    .viz-canvas-wrap { background:#fff; }
-    .viz-canvas-wrap canvas { display:block; width:100%; height:420px; }
-    table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
-    th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
-    th { background:#eef4f1; font-size:12px; color:#34433c; text-transform:uppercase; letter-spacing:.04em; }
-    tr:last-child td { border-bottom:0; }
-    .mini-bar { display:inline-block; width:72px; height:7px; margin-left:6px; border-radius:999px; background:#e1e7e4; overflow:hidden; vertical-align:middle; }
-    .mini-bar span { display:block; height:100%; background:var(--accent); }
-    .status { display:inline-block; padding:2px 7px; border-radius:999px; background:#e8eee9; font-size:12px; }
-    .status.failed { background:#f5dddd; color:var(--bad); }
-    .status.dry_run { background:#f3eadc; color:var(--warn); }
-    a { color:var(--accent); }
-    @media (max-width: 820px) {
-      .summary-panel { grid-template-columns:1fr; }
-      .learner-panel { grid-template-columns:1fr; }
-      .viz-layout { grid-template-columns:1fr; }
-      .viz-sidebar { border-left:0; border-top:1px solid var(--line); }
-      .viz-toolbar { grid-template-columns:1fr; }
-      .viz-canvas-wrap canvas { height:360px; }
-      .viz-readout-grid { grid-template-columns:1fr; }
-      .viz-readout-lines p { grid-template-columns:1fr; }
-    }
+    ${machineSpiritsReportCss()}
   </style>
 </head>
 <body>
@@ -2471,23 +2903,32 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
       <a href="${escapeHtml(guideHref)}">arc guide</a>
     </div>
   </header>
-  <main>
-    <section class="summary-panel">
-      <div class="metrics">
-        ${htmlMetricInfo('Rows', REPORT_TERM_TOOLTIPS.ok, summary.aggregates.rows, `${summary.aggregates.failed} failed · ${summary.aggregates.dryRun} dry-run`)}
-        ${htmlMetricInfo('Grounded', REPORT_TERM_TOOLTIPS.grounded, `${summary.aggregates.grounded}/${summary.aggregates.ok}`, `${Math.round(summary.aggregates.groundedRate * 100)}% closure`)}
-        ${htmlMetricInfo('Mean Turns', REPORT_TERM_TOOLTIPS.meanTurns, summary.aggregates.meanTurns, `safety cap ${summary.config.safetyTurns}`)}
-        ${htmlMetricInfo('Mean Coverage', REPORT_TERM_TOOLTIPS.meanCoverage, summary.aggregates.meanCoverage, 'learner-DAG best path')}
-        ${htmlMetricInfo('Mean Missing', REPORT_TERM_TOOLTIPS.meanMissing, summary.aggregates.meanMissing, 'remaining premises')}
-      </div>
-      ${renderReportMetricGuide()}
-    </section>
+  <main class="report-main">
+    <div class="report-shell">
+      ${renderReportSectionNav()}
+      <div class="report-content">
+        <section id="run-summary" class="report-section">
+          <h2 class="visually-hidden">Run Summary</h2>
+          <div class="summary-panel">
+            <div class="metrics">
+              ${htmlMetricInfo('Rows', REPORT_TERM_TOOLTIPS.ok, summary.aggregates.rows, `${summary.aggregates.failed} failed · ${summary.aggregates.dryRun} dry-run`)}
+              ${htmlMetricInfo('Grounded', REPORT_TERM_TOOLTIPS.grounded, `${summary.aggregates.grounded}/${summary.aggregates.ok}`, `${Math.round(summary.aggregates.groundedRate * 100)}% closure`)}
+              ${htmlMetricInfo('Mean Turns', REPORT_TERM_TOOLTIPS.meanTurns, summary.aggregates.meanTurns, `safety cap ${summary.config.safetyTurns}`)}
+              ${htmlMetricInfo('Mean Coverage', REPORT_TERM_TOOLTIPS.meanCoverage, summary.aggregates.meanCoverage, 'learner-DAG best path')}
+              ${htmlMetricInfo('Mean Missing', REPORT_TERM_TOOLTIPS.meanMissing, summary.aggregates.meanMissing, 'remaining premises')}
+            </div>
+            ${renderReportMetricGuide()}
+          </div>
+        </section>
 
-    <h2>Learner Profile</h2>
-    ${renderLearnerProfileSection(summary, rows)}
+        <section id="learner-profile" class="report-section">
+          <h2>Learner Profile</h2>
+          ${renderLearnerProfileSection(summary, rows)}
+        </section>
 
-    <h2>Policy Comparison</h2>
-    <table>
+        <section id="policy-comparison" class="report-section">
+          <h2>Policy Comparison</h2>
+          <table>
       <thead><tr>
         <th>Policy</th>
         <th>${reportInfoTerm('ok', 'OK')}</th>
@@ -2502,16 +2943,22 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>${reportInfoTerm('entropy', 'Entropy')}</th>
       </tr></thead>
       <tbody>${policyRows || '<tr><td colspan="11">No policy rows.</td></tr>'}</tbody>
-    </table>
+          </table>
+        </section>
 
-    <h2>Animated Dynamics</h2>
-    ${renderAnimatedVizSection(orderedRows)}
+        <section id="turn-replay" class="report-section">
+          <h2>Turn Replay</h2>
+          ${renderAnimatedVizSection(orderedRows)}
+        </section>
 
-    <h2>Field Trajectories</h2>
-    ${renderFieldTrajectories(orderedRows)}
+        <section id="field-trajectories" class="report-section">
+          <h2>Field Trajectories</h2>
+          ${renderFieldTrajectories(orderedRows)}
+        </section>
 
-    <h2>Run Details</h2>
-    <table>
+        <section id="run-details" class="report-section">
+          <h2>Run Details</h2>
+          <table>
       <thead><tr>
         <th>Policy</th>
         <th>Run</th>
@@ -2530,7 +2977,10 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>Log</th>
       </tr></thead>
       <tbody>${runRows || '<tr><td colspan="15">No run rows.</td></tr>'}</tbody>
-    </table>
+          </table>
+        </section>
+      </div>
+    </div>
   </main>
 </body>
 </html>
@@ -2782,7 +3232,7 @@ function readIndexSummary(jsonPath, rootDir) {
       htmlExists,
       jsonHref: hrefRelative(rootDir, jsonPath),
       htmlHref: htmlExists ? hrefRelative(rootDir, htmlPath) : '',
-      svgHref: svgFiles[0] ? hrefRelative(rootDir, svgFiles[0]) : '',
+      svgHref: svgFiles.length ? `${hrefRelative(rootDir, fieldSvgDirForReport(htmlPath))}/` : '',
       svgCount: svgFiles.length,
       completedAt,
       startedAt: summary.startedAt || '',
@@ -2950,6 +3400,32 @@ function indexSelectOptions(values) {
   return values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
 }
 
+function formatIndexMeasure(value, digits = 3) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return '';
+  return numeric.toFixed(digits).replace(/\.?0+$/u, '');
+}
+
+function renderIndexCoverageCell(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return '<span class="muted">not scored</span>';
+  const bounded = Math.max(0, Math.min(1, numeric));
+  return `<div class="index-measure">
+    <strong>${Math.round(bounded * 100)}% <span>evidence path</span></strong>
+    <em>mean learner-DAG coverage ${escapeHtml(formatIndexMeasure(numeric))}</em>
+  </div>`;
+}
+
+function renderIndexFieldSnapshotCell(row) {
+  const count = Number(row.svgCount || 0);
+  const label = `${count} field ${count === 1 ? 'snapshot' : 'snapshots'}`;
+  const body = row.svgHref ? `<a href="${escapeHtml(row.svgHref)}">${escapeHtml(label)}</a>` : escapeHtml(label);
+  return `<div class="index-measure">
+    <strong>${body}</strong>
+    <em>${count ? 'static SVG exports for inspection' : 'no exported field artifacts'}</em>
+  </div>`;
+}
+
 function uniqueIndexValues(rows, selector) {
   return Array.from(
     new Set(
@@ -3079,8 +3555,8 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
         <td>${escapeHtml(row.ok)}/${escapeHtml(row.failed)}${row.dryRun ? ` · ${escapeHtml(row.dryRun)} dry` : ''}</td>
         <td>${escapeHtml(row.grounded)}/${escapeHtml(row.ok)} · ${Math.round(Number(row.groundedRate || 0) * 100)}%</td>
         <td>${escapeHtml(row.meanTurns)}</td>
-        <td>${escapeHtml(row.meanCoverage)}</td>
-        <td>${row.svgHref ? `<a href="${escapeHtml(row.svgHref)}">${escapeHtml(row.svgCount)} svg</a>` : escapeHtml(row.svgCount)}</td>
+        <td>${renderIndexCoverageCell(row.meanCoverage)}</td>
+        <td>${renderIndexFieldSnapshotCell(row)}</td>
         <td class="actions">
           ${row.htmlHref ? `<a href="${escapeHtml(row.htmlHref)}">report</a>` : '<span class="muted">report</span>'}
           <a href="${escapeHtml(row.jsonHref)}">json</a>
@@ -3096,94 +3572,7 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
   ${activeRuns.length ? '<meta http-equiv="refresh" content="30">' : ''}
   <title>Tutor Stub Reports</title>
   <style>
-    :root { color-scheme: light; --ink:#17201b; --muted:#65736b; --line:#d9e0dc; --paper:#fbfcfb; --panel:#fff; --accent:#2f6f63; --bad:#9a2f36; --warn:#9c5a12; --blue:#275f9f; }
-    body { margin:0; font:14px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--paper); }
-    header { padding:24px 32px 16px; border-bottom:1px solid var(--line); background:#fff; }
-    main { max-width:1280px; margin:0 auto; padding:20px 32px 40px; }
-    h1 { margin:0 0 6px; font-size:24px; letter-spacing:0; }
-    .muted { color:var(--muted); font-size:12px; }
-    .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:16px 0; }
-    .metric { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:11px 12px; }
-    .metric-label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
-    .metric-value { font-size:22px; font-weight:700; margin-top:3px; }
-    .metric-sub { color:var(--muted); font-size:12px; min-height:18px; }
-    .live-runs { margin:0 0 18px; }
-    .live-runs-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin:0 0 10px; }
-    .live-runs h2 { margin:0; font-size:18px; }
-    .live-runs p { margin:3px 0 0; color:var(--muted); font-size:12px; }
-    .live-dot { display:inline-block; width:9px; height:9px; margin-right:7px; border-radius:999px; background:var(--accent); box-shadow:0 0 0 rgba(47,111,99,.45); animation:livePulse 1.4s infinite; }
-    .live-count { border:1px solid var(--line); border-radius:999px; padding:3px 8px; background:#fff; color:var(--accent); font-size:12px; font-weight:700; white-space:nowrap; }
-    .live-run-card { background:#fff; border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:8px; padding:12px; margin-bottom:10px; box-shadow:0 4px 18px rgba(23,32,27,.05); }
-    .live-run-card.stale { border-left-color:var(--warn); }
-    .live-run-card.aborted { border-left-color:var(--bad); }
-    .live-run-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
-    .live-run-top h3 { margin:0; font-size:15px; }
-    .live-run-top p { margin:3px 0 0; color:var(--muted); font-size:12px; }
-    .live-run-progress { display:grid; grid-template-columns:minmax(180px,1fr) auto; gap:10px; align-items:center; margin:10px 0; color:var(--muted); font-size:12px; }
-    .live-progress { display:block; height:10px; border-radius:999px; overflow:hidden; background:#e1e7e4; }
-    .live-progress span { display:block; height:100%; min-width:8px; border-radius:999px; background:repeating-linear-gradient(45deg, #2f6f63 0 8px, #3f8b7b 8px 16px); animation:liveStripe 1s linear infinite; }
-    .live-run-meta { display:flex; flex-wrap:wrap; gap:8px; align-items:center; color:var(--muted); font-size:12px; margin-bottom:9px; }
-    .live-jobs { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:8px; }
-    .live-job { border:1px solid var(--line); border-radius:7px; padding:8px; background:#fbfcfb; }
-    .live-job.running { border-color:#9bc9bd; background:#f1faf7; }
-    .live-job.failed { border-color:#e5b5b5; background:#fff7f7; }
-    .live-job div:first-child { display:flex; justify-content:space-between; gap:8px; }
-    .live-job div:first-child span { color:var(--muted); font-size:12px; }
-    .live-job p { margin:4px 0 5px; color:#34433c; font-size:12px; }
-    .live-links a, .live-actions a { margin-right:8px; }
-    .live-actions { margin-top:10px; font-size:12px; }
-    @keyframes livePulse { 0% { box-shadow:0 0 0 0 rgba(47,111,99,.42); } 70% { box-shadow:0 0 0 9px rgba(47,111,99,0); } 100% { box-shadow:0 0 0 0 rgba(47,111,99,0); } }
-    @keyframes liveStripe { from { background-position:0 0; } to { background-position:23px 0; } }
-    .toolbar { display:grid; grid-template-columns:minmax(260px, 2fr) repeat(7, minmax(118px, 1fr)) auto auto; align-items:end; gap:10px; margin:18px 0 10px; }
-    .control { display:flex; flex-direction:column; gap:4px; min-width:0; }
-    .control span { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
-    input, select, button { border:1px solid var(--line); border-radius:6px; padding:8px 10px; font:inherit; background:#fff; color:var(--ink); min-height:38px; }
-    input { width:100%; box-sizing:border-box; }
-    select { width:100%; box-sizing:border-box; }
-    button { cursor:pointer; color:var(--accent); font-weight:600; }
-    table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
-    th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
-    th { background:#eef4f1; color:#34433c; font-size:12px; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
-    tr:last-child td { border-bottom:0; }
-    .chip { display:inline-block; margin:0 4px 4px 0; border:1px solid var(--line); border-radius:999px; padding:2px 7px; background:#f8faf9; font-size:12px; white-space:nowrap; }
-    .status { display:inline-block; border-radius:999px; padding:2px 7px; background:#e8eee9; font-size:12px; white-space:nowrap; }
-    .status.failed { background:#f5dddd; color:var(--bad); }
-    .status.dry_run { background:#f3eadc; color:var(--warn); }
-    a { color:var(--accent); }
-    .actions { white-space:nowrap; }
-    .actions a { margin-right:8px; }
-    .info-term { position:relative; cursor:help; text-decoration:underline dotted rgba(23,32,27,.45); text-underline-offset:3px; }
-    .info-term:focus { outline:2px solid rgba(47,111,99,.35); outline-offset:2px; border-radius:3px; }
-    .info-term:hover::after, .info-term:focus::after {
-      content:attr(data-tip);
-      position:absolute;
-      z-index:20;
-      left:0;
-      top:calc(100% + 8px);
-      width:min(300px, 70vw);
-      padding:8px 10px;
-      border:1px solid var(--line);
-      border-radius:6px;
-      background:#fff;
-      color:var(--ink);
-      box-shadow:0 8px 24px rgba(20,32,26,.16);
-      text-transform:none;
-      letter-spacing:0;
-      font-size:12px;
-      line-height:1.35;
-      white-space:normal;
-    }
-    @media (max-width: 860px) {
-      main, header { padding-left:16px; padding-right:16px; }
-      .toolbar { grid-template-columns:1fr 1fr; }
-      .control:first-child { grid-column:1 / -1; }
-      .live-run-progress { grid-template-columns:1fr; }
-      table { display:block; overflow-x:auto; }
-    }
-    @media (max-width: 560px) {
-      .toolbar { grid-template-columns:1fr; }
-      .control:first-child { grid-column:auto; }
-    }
+    ${machineSpiritsReportCss()}
   </style>
 </head>
 <body>
@@ -3200,7 +3589,12 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
       ${htmlMetric('Reports', totals.reports, `${rows.filter((row) => row.htmlExists).length} with HTML`)}
       ${htmlMetric('Rows', totals.ok + totals.failed + totals.dryRun, `${totals.failed} failed · ${totals.dryRun} dry-run`)}
       ${htmlMetric('Grounded', `${totals.grounded}/${totals.ok}`, `${Math.round(groundedRate * 100)}% closure`)}
-      ${htmlMetric('Field SVGs', totals.svgs, 'standalone artifacts')}
+      ${htmlMetricInfo(
+        'Field Snapshots',
+        'Static SVG exports written beside reports for inspecting each row\'s interaction-field visualization. They are report artifacts, not scored rows.',
+        totals.svgs,
+        'static visualization exports',
+      )}
       ${htmlMetric('Active', activeRuns.length, 'running or stale')}
     </section>
     <div class="toolbar">
@@ -3252,11 +3646,11 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
           <option value="learner">Learner</option>
           <option value="policy">Policy</option>
           <option value="grounded">Grounded</option>
-          <option value="coverage">Coverage</option>
+          <option value="coverage">Evidence Path</option>
           <option value="turns">Turns</option>
           <option value="rows">Rows</option>
           <option value="failed">Failed</option>
-          <option value="svgs">SVGs</option>
+          <option value="svgs">Field Snapshots</option>
           <option value="report">Report</option>
         </select>
       </label>
@@ -3279,8 +3673,8 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
         <th>${infoTerm('OK/Failed', 'OK rows completed without a technical failure. Failed rows are generation, resume, or evaluation failures.')}</th>
         <th>${infoTerm('Grounded', 'Rows where the learner reached grounded asserted-secret closure, shown as grounded over OK rows plus percentage.')}</th>
         <th>${infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.')}</th>
-        <th>${infoTerm('Coverage', 'Mean best-path learner-DAG coverage: how much of the evidence path is grounded, on a 0 to 1 scale.')}</th>
-        <th>${infoTerm('SVGs', 'Static field-trajectory artifacts emitted beside each report.')}</th>
+        <th>${infoTerm('Evidence Path', 'Mean learner-DAG best-path coverage: how much of the target evidence path is grounded, shown as a percentage with the raw 0 to 1 coverage score underneath.')}</th>
+        <th>${infoTerm('Field Snapshots', 'Count of static SVG exports emitted beside the report for inspecting per-row interaction-field visualizations. This is an artifact count, not an evaluation score.')}</th>
         <th>Links</th>
       </tr></thead>
       <tbody>${reportRows || '<tr><td colspan="10">No reports found.</td></tr>'}</tbody>

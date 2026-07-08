@@ -178,7 +178,7 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
   'You see only the public transcript and the latest tutor message.',
   'Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
   'Reply as the learner only. No role label, no analysis, no JSON.',
-  'Keep the reply concise: usually one sentence, one question, or one trial-book claim.',
+  'Keep the reply concise: usually one sentence, one question, or one warranted evidence claim.',
 ].join('\n');
 
 const { values: args, positionals } = parseArgs({
@@ -708,7 +708,7 @@ function deterministicLeakFallback({ learnerText }) {
   if (asksForChoice) {
     return [
       "I can't put a name or private conclusion in the trial-book yet.",
-      'Write the next trial-book line as a testable evidence claim: what mark on the coin, metal, tool, hand, or record would license the next step?',
+      'State the next warranted public claim in one line: what mark on the coin, metal, tool, hand, or record licenses it?',
     ].join(' ');
   }
   return [
@@ -722,7 +722,7 @@ function buildTutorOpening(state) {
   if (world) {
     return [
       `Before we write a name in the trial-book, keep the public question in view: ${world.question}`,
-      'Start with one mark the evidence can actually bear: what fact about the coin should we test or enter first?',
+      'Start with one mark the evidence can actually bear: what public claim about the coin follows from the mark?',
     ].join(' ');
   }
   return [
@@ -896,11 +896,12 @@ function worldDagPrompt(world) {
     '- Work from released evidence and public rules only.',
     '- Treat every fact: line, predicate name, rule id, premise id, and proof-path id as private notation. Never write that notation to the learner.',
     '- Translate formal facts into ordinary trial-book language before speaking: say "the dross alloy came from the mint crucible", not "meltedAt(drossSilver, mintCrucible)".',
+    '- Treat the trial-book as the learner\'s public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the trial-book entry.',
     '- Do not name the concealed answer, hidden answer-bearer, or any intermediate conclusion involving that bearer until the released public evidence derives that exact step.',
     '- Especially avoid statements of the form "<hidden person> cast/cut/struck/made..." unless the learner has already derived it from staged evidence.',
     '- Ask what conjunct, premise, or rule is still missing; do not fill it early.',
     '- If the learner guesses the concealed answer, do not confirm it until the released facts derive it.',
-    '- When a scheduled premise is due, introduce at most one piece of evidence and then ask the learner to place it on the board.',
+    '- When a scheduled premise is due, introduce at most one piece of evidence and then ask the learner to use it in a single warranted claim.',
   ].filter(Boolean);
 }
 
@@ -913,9 +914,9 @@ function responseChoiceModeRules({ multipleChoice }) {
         '- End by asking the learner to choose one option or write their own evidence claim.',
       ]
     : [
-        '- Do not make the next step multiple choice. If the learner seems unsure, name the required shape of the trial-book line directly without giving the hidden answer: "write the evidence that shows which crucible the metal came from", "write the mark that identifies the tool", or "write the record that names who alone held it".',
+        '- Do not make the next step multiple choice. If the learner seems unsure, name the required shape of the public claim directly without giving the hidden answer: "state what the metal proves about the crucible", "state what the mark proves about the tool", or "state what the record proves about who held it".',
         '- When talking through options, collapse them to one live issue: what evidence is missing now, what it would prove, and what the learner should state next.',
-        '- End with one direct prompt for the learner to write or say the next evidence claim; avoid long explanations before that prompt.',
+        '- End with one direct prompt for the learner to state the next warranted evidence claim; avoid long explanations before that prompt.',
       ];
 }
 
@@ -937,7 +938,8 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag, mult
     '- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.',
     '- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.',
     '- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.',
-    '- In story mode, speak in public evidence language: "which single line of evidence belongs in the trial-book?", not "add meltedAt(...)", "sole-caster", "blank-route", or "die-route".',
+    '- In story mode, speak in public evidence language: "what public claim does this mark license?", not "add meltedAt(...)", "sole-caster", "blank-route", or "die-route".',
+    '- Do not make the learner deduce a claim and then separately enter it in the trial-book. Their stated warranted claim is the entry.',
     '- In story mode, keep the medieval flavour but be terse: usually 2-4 short sentences, never a catalogue of routes.',
     ...responseChoiceModeRules({ multipleChoice }),
     '- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.',
@@ -2383,6 +2385,7 @@ function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
     '- adopt: include only staged premise ids the learner explicitly accepts, uses, restates, or treats as evidence.',
     '- retract: include only staged premise ids the learner explicitly rejects or withdraws.',
     '- derive: include fact arrays only when the learner voices a conclusion supported by adopted/staged evidence and public rules.',
+    '- Single-step trial-book rule: if the learner states a warranted conclusion from staged evidence, include both the supporting staged premise ids in adopt and the conclusion fact in derive. Do not require a separate "add it to the book" utterance.',
     '- hypothesis: one short sentence if the learner offers a conjecture, uncertainty, or provisional theory.',
     '- assert_answer: the named answer candidate if the learner directly answers the public question; otherwise null.',
     '- Be conservative. Do not mark staged evidence adopted merely because it exists.',
@@ -2584,6 +2587,7 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     '- adopt: include only staged premise ids the learner explicitly accepts, uses, restates, or treats as evidence.',
     '- retract: include only staged premise ids the learner explicitly rejects or withdraws.',
     '- derive: include fact arrays only when the learner voices a conclusion supported by adopted/staged evidence and public rules.',
+    '- Single-step trial-book rule: if the learner states a warranted conclusion from staged evidence, include both the supporting staged premise ids in adopt and the conclusion fact in derive. Do not require a separate "add it to the book" utterance.',
     '- hypothesis: one short sentence if the learner offers a conjecture, uncertainty, or provisional theory.',
     '- assert_answer: the named answer candidate if the learner directly answers the public question; otherwise null.',
     '- Be conservative. Do not mark staged evidence adopted merely because it exists.',
@@ -4754,12 +4758,31 @@ function validFactArray(value) {
   return Array.isArray(value) && value.length > 0 && value.every((part) => typeof part === 'string');
 }
 
+function proofBaseKeys(closed, key, seen = new Set()) {
+  if (seen.has(key)) return [];
+  seen.add(key);
+  const proof = closed.proofs.get(key);
+  if (!proof) return [key];
+  return proof.premises.flatMap((premiseKey) => proofBaseKeys(closed, premiseKey, seen));
+}
+
 function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText }) {
   const record = state.learnerDag.record;
   const world = state.world;
   const released = new Map(stagedEvidenceRows(world, tutorTurn).map((row) => [row.premise, row]));
+  const releasedByFactKey = new Map(
+    [...released.values()].filter((row) => row.fact).map((row) => [factKey(row.fact), row]),
+  );
   const accepted = { adopt: [], retract: [], derive: [], hypothesis: null, assertAnswer: null };
   const rejected = [];
+  const retracted = new Set();
+
+  const adoptReleasedRow = (row) => {
+    if (!row?.fact || retracted.has(row.premise)) return false;
+    record.board.set(factKey(row.fact), row.fact);
+    if (!accepted.adopt.includes(row.premise)) accepted.adopt.push(row.premise);
+    return true;
+  };
 
   for (const premiseId of Array.isArray(update?.retract) ? update.retract : []) {
     const row = released.get(premiseId);
@@ -4769,6 +4792,7 @@ function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText }) {
     }
     record.board.delete(factKey(row.fact));
     accepted.retract.push(premiseId);
+    retracted.add(premiseId);
   }
 
   for (const premiseId of Array.isArray(update?.adopt) ? update.adopt : []) {
@@ -4777,19 +4801,33 @@ function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText }) {
       rejected.push({ type: 'adopt', value: premiseId, reason: 'not staged' });
       continue;
     }
-    record.board.set(factKey(row.fact), row.fact);
-    accepted.adopt.push(premiseId);
+    adoptReleasedRow(row);
   }
 
-  const groundedFacts = [...record.board.values()];
-  const closed = closure(groundedFacts, world.rules);
   for (const fact of Array.isArray(update?.derive) ? update.derive : []) {
     if (!validFactArray(fact)) {
       rejected.push({ type: 'derive', value: fact, reason: 'not a fact array' });
       continue;
     }
     const key = factKey(fact);
-    const canonical = closed.facts.get(key);
+    const answersPublicQuestion = Boolean(matchPattern(world.questionPattern, fact));
+    let closed = closure([...record.board.values()], world.rules);
+    let canonical = closed.facts.get(key);
+    if ((!canonical || !closed.proofs.get(key)) && !answersPublicQuestion) {
+      const stagedFacts = [...released.values()]
+        .filter((row) => row.fact && !retracted.has(row.premise))
+        .map((row) => row.fact);
+      const stagedClosed = closure([...record.board.values(), ...stagedFacts], world.rules);
+      const stagedCanonical = stagedClosed.facts.get(key);
+      const stagedProof = stagedClosed.proofs.get(key);
+      if (stagedCanonical && stagedProof) {
+        for (const baseKey of proofBaseKeys(stagedClosed, key)) {
+          adoptReleasedRow(releasedByFactKey.get(baseKey));
+        }
+        closed = closure([...record.board.values()], world.rules);
+        canonical = closed.facts.get(key);
+      }
+    }
     if (!canonical || !closed.proofs.get(key)) {
       rejected.push({ type: 'derive', value: fact, reason: 'not derivable from accepted public record' });
       continue;
@@ -5107,7 +5145,7 @@ function registerSelectionContext(selection, { multipleChoice = false } = {}) {
     'Write the next tutor message in this register without naming the register, the classifier, or the learner-DAG machinery.',
     multipleChoice
       ? 'Keep the turn compact. In story mode, if you use multiple choice, offer 2-4 short public evidence options and invite the learner to choose or write their own trial-book line.'
-      : 'Keep the turn compact. In story mode, give one live evidence issue and one direct trial-book prompt, not a menu of possible routes.',
+      : 'Keep the turn compact. In story mode, give one live evidence issue and one direct prompt for a warranted public claim, not a menu of possible routes.',
     '[End tutor-only selected register]',
   ]
     .filter(Boolean)
@@ -6419,7 +6457,7 @@ function cleanAutomatedLearnerReply(text) {
 function deterministicAutomatedLearnerFallback({ state }) {
   const latestTutor = [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
   if (/trial-book|evidence|write|say|state|claim/iu.test(latestTutor)) {
-    return 'What single public evidence claim should I write into the trial-book next?';
+    return 'I will make one public evidence claim and keep the verdict open until the marks license a name.';
   }
   return 'What public evidence should I test first?';
 }
@@ -6446,7 +6484,7 @@ function buildAutomatedLearnerPrompt({ state, profile, turnNumber }) {
     '# Task',
     '',
     `Write learner turn ${turnNumber}. Use only public evidence and the public transcript.`,
-    'If the tutor asks for a trial-book line, write one concise public evidence claim rather than asking for a menu.',
+    'If the tutor asks for a trial-book line, write one concise public evidence claim. Treat that claim as your deduction and the book entry; do not ask for a separate bookkeeping step.',
     'If you are stuck, ask one concrete question about what evidence would count.',
   ].join('\n');
 }
