@@ -46,6 +46,7 @@ import { loadWorld, plotLint } from '../services/dramaticDerivation/world.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
+const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
 
 const STUB = {
   model: process.env.TUTOR_STUB_MODEL || 'openai.mini',
@@ -58,7 +59,8 @@ const STUB = {
   style: 'Calm, concise, Socratic, and specific. Do not perform the whole solution unless the learner is truly stuck.',
   temperature: 0.35,
   maxTokens: 2000,
-  historyTurns: 8,
+  historyTurns: Number.parseInt(process.env.TUTOR_STUB_HISTORY_TURNS || '4', 10),
+  memorySummary: process.env.TUTOR_STUB_MEMORY_SUMMARY !== '0',
   traceDir: process.env.TUTOR_STUB_TRACE_DIR || '.tutor-stub-traces',
   stream: process.env.TUTOR_STUB_STREAM !== '0',
   interimAnimation: process.env.TUTOR_STUB_INTERIM_ANIMATION !== '0',
@@ -206,6 +208,7 @@ const { values: args, positionals } = parseArgs({
     'resume-last': { type: 'boolean', default: false },
     'no-stream': { type: 'boolean', default: false },
     'no-interim-animation': { type: 'boolean', default: false },
+    'no-memory-summary': { type: 'boolean', default: false },
     'field-viz': { type: 'boolean', default: STUB.fieldViz },
     'multiple-choice': { type: 'boolean', default: STUB.multipleChoice },
     'no-opening': { type: 'boolean', default: false },
@@ -248,8 +251,7 @@ Options:
                          field/DAG movement to a local probability distribution;
                          state maps current classifier/DAG state to a local
                          probability distribution;
-                         bland permits
-                         brisk pacing as the ordinary stepwise proof register;
+                         bland fixes a plain non-adaptive baseline register;
                          random samples uniformly from the active palette
                          (default: ${STUB.registerPolicy})
   --safe-registers       limit tutor-register selection to router-selectable
@@ -288,6 +290,7 @@ Options:
   --no-stream            disable token streaming for API-backed model calls
   --no-interim-animation disable the temporary state/field status animation
                          shown while model calls are waiting
+  --no-memory-summary    disable compact state/field dialogue memory in prompts
   --field-viz            write/update lightweight field SVG + JSON artifacts
                          in trace-dir after each completed turn
   --multiple-choice      allow compact multiple-choice tutor prompts
@@ -298,7 +301,8 @@ Options:
                          low, medium, high, xhigh, max, or config
   --temperature <n>      API temperature (default: ${STUB.temperature})
   --max-tokens <n>       response token cap for API providers (default: ${STUB.maxTokens})
-  --history-turns <n>    turns kept in context (default: ${STUB.historyTurns})
+  --history-turns <n>    raw recent turns kept in context, after compact memory
+                         summary (default: ${STUB.historyTurns})
   --show-prompt          print the system prompt before starting
   --dry-run              print resolved config and first payload, but do not call a model
   --help                 show this message
@@ -364,6 +368,18 @@ function parsePositiveInt(value, name) {
     throw new Error(`${name} must be a positive integer`);
   }
   return parsed;
+}
+
+function assertSupportedModelRefs(refs) {
+  for (const [label, ref] of Object.entries(refs)) {
+    const normalized = String(ref || '').trim().toLowerCase();
+    if (UNSUPPORTED_CODEX_MINI_REFS.has(normalized)) {
+      throw new Error(
+        `${label}=${ref} is not supported by the local Codex CLI ChatGPT-account route. ` +
+          'Use codex.gpt-5.5 for CLI-backed Codex, or openai.mini/openrouter.gpt-mini for GPT mini.',
+      );
+    }
+  }
 }
 
 function parseAutoTurns(value) {
@@ -1095,9 +1111,8 @@ function registerSelectionPolicyPrompt(state) {
         ]
       : policy === 'bland'
       ? [
-          '- Register policy: bland. A plain, stepwise tutor is acceptable here.',
-          '- Brisk may be selected for ordinary proof-path pacing, missing premises, or inference gaps.',
-          '- Still choose another register when the learner clearly asks for a conceptual distinction, challenges the frame, shows resistance, or exposes affective stakes.',
+          '- Register policy: bland. The runtime uses a fixed plain register as a non-adaptive baseline.',
+          '- Do not choose or justify a tutor register in the model output for this policy.',
         ]
       : [
           '- Register policy: dynamic. The up-front reviewer chooses the register; do not treat the learner request type as the register.',
@@ -1214,17 +1229,6 @@ function parseClassifierJson(rawText) {
   };
 }
 
-function classifierTranscript(turns, limit) {
-  const recent = turns.slice(-limit);
-  if (recent.length === 0) return 'No previous turns.';
-  return recent
-    .map((turn, index) => {
-      const absoluteTurn = turns.length - recent.length + index + 1;
-      return [`Turn ${absoluteTurn}`, `Learner: ${turn.learner}`, `Tutor: ${turn.tutor}`].join('\n');
-    })
-    .join('\n\n');
-}
-
 function classifierWorldContext(state) {
   if (!state.world) return 'No detective-story world is active.';
   return [
@@ -1254,7 +1258,7 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
     '',
     '# Previous public transcript',
     '',
-    classifierTranscript(state.turns, state.historyTurns),
+    compactPublicTranscriptForPrompt(state, state.historyTurns),
     '',
     '# Current learner turn',
     '',
@@ -2213,17 +2217,6 @@ function stagedEvidenceRows(world, turn) {
   });
 }
 
-function learnerRecordTranscript(turns, limit) {
-  const recent = turns.slice(-limit);
-  if (recent.length === 0) return 'No previous turns.';
-  return recent
-    .map((turn, index) => {
-      const absoluteTurn = turns.length - recent.length + index + 1;
-      return [`Turn ${absoluteTurn}`, `Learner: ${turn.learner}`, `Tutor: ${turn.tutor}`].join('\n');
-    })
-    .join('\n\n');
-}
-
 function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
   const staged = stagedEvidenceRows(state.world, tutorTurn);
   return [
@@ -2252,7 +2245,7 @@ function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
       : '- none',
     '',
     '# Previous public transcript',
-    learnerRecordTranscript(state.turns, state.historyTurns),
+    compactPublicTranscriptForPrompt(state, state.historyTurns),
     '',
     '# Current learner turn',
     learnerText,
@@ -2340,11 +2333,12 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
   const staged = stagedEvidenceRows(state.world, tutorTurn);
   const includeRegisterSelection = Boolean(
     state.register?.enabled &&
-      !['field', 'state', 'random'].includes(state.register.policy) &&
+      !['field', 'state', 'random', 'bland'].includes(state.register.policy) &&
       state.register.palette?.length,
   );
   const localFieldPolicy = Boolean(state.register?.enabled && state.register.policy === 'field');
   const localStatePolicy = Boolean(state.register?.enabled && state.register.policy === 'state');
+  const fixedBlandPolicy = Boolean(state.register?.enabled && state.register.policy === 'bland');
   const schema = {
     classification: learnerClassificationSchema(),
     learner_record: learnerRecordSchema(),
@@ -2365,6 +2359,9 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
       : null,
     localStatePolicy
       ? 'Register policy is state: do not choose a tutor register. The runtime will map the current classification plus current learner-DAG assessment into a local register probability distribution.'
+      : null,
+    fixedBlandPolicy
+      ? 'Register policy is bland: do not choose a tutor register. The runtime will use a fixed plain non-adaptive baseline register.'
       : null,
     '',
     '# Public tutoring context',
@@ -2396,7 +2393,7 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     '',
     '# Previous public transcript',
     '',
-    learnerRecordTranscript(state.turns, state.historyTurns),
+    compactPublicTranscriptForPrompt(state, state.historyTurns),
     '',
     '# Current learner turn',
     '',
@@ -2834,11 +2831,6 @@ function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
     actionFamily = 'challenge_resistance';
     reason = 'Low-agency, answer-seeking, or overconfident posture warrants a compact challenge rather than another stepwise hint.';
     expectedFieldMove = 'Increase learner agency or evidence-seeking without supplying the concealed answer.';
-  } else if (policy === 'bland' && palette.has('brisk') && /release_or_pacing_gap|inference_gap/.test(assessment.bottleneck || '')) {
-    selected = 'brisk';
-    actionFamily = 'stage_next_step';
-    reason = 'Bland policy permits ordinary stepwise support for the current proof-state bottleneck.';
-    expectedFieldMove = 'Keep learner effort organized around the next immediate evidence step.';
   } else if (policy === 'dynamic' && palette.has('brisk') && shouldUseDynamicBrisk({ state, classification, assessment })) {
     selected = 'brisk';
     actionFamily = 'stage_next_step';
@@ -2880,6 +2872,34 @@ function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
     confidence: 0.25,
     warning: 'fallback_register_selection',
     source: 'local_fallback_register_selection',
+  };
+}
+
+function fixedBlandRegisterSelection({ state, classification }) {
+  const palette = new Set(state.register?.palette || []);
+  const selected = firstAvailableRegister(palette, ['plain', 'precise', 'brisk']);
+  const requestType = classification?.turn?.request_type || 'bland_baseline';
+  return {
+    selected_register: selected,
+    request_type: requestType,
+    action_family: 'baseline_plain_response',
+    legacy_selected_register: preferredLegacyRegister({
+      register: selected,
+      requestType,
+      actionFamily: 'baseline_plain_response',
+    }),
+    reviewer_signal: 'fixed_bland_policy',
+    register_reason:
+      selected === 'plain'
+        ? 'Bland policy fixes a plain non-adaptive baseline register.'
+        : 'Bland policy requested plain, but the active palette did not include it; selected the nearest available baseline register.',
+    evidence_span: classification?.turn?.summary || '',
+    risk_flags: [],
+    expected_dag_move: 'No adaptive register-specific DAG move is predicted for the bland baseline.',
+    expected_field_move: 'Use the fixed plain stance as a control condition for comparison with adaptive register policies.',
+    expected_progress_marker: 'Observe learner-DAG and field movement without adaptive register selection.',
+    confidence: null,
+    source: 'fixed_bland_register_policy',
   };
 }
 
@@ -3477,6 +3497,8 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
     rawSelection = fieldRegisterSelection({ state, classification, tutorLearnerDag });
   } else if (policy === 'state') {
     rawSelection = stateRegisterSelection({ state, classification, tutorLearnerDag });
+  } else if (policy === 'bland') {
+    rawSelection = fixedBlandRegisterSelection({ state, classification });
   }
   const normalizedRawSelection =
     typeof rawSelection === 'string' ? { selected_register: rawSelection } : rawSelection || {};
@@ -3960,7 +3982,135 @@ function createLearnerDagState({ enabled, resolved, world }) {
 }
 
 function trimHistory(messages, turns) {
-  return messages.slice(-(turns * 2));
+  const safeTurns = Math.max(0, Number(turns) || 0);
+  return messages.slice(-(safeTurns * 2));
+}
+
+function rawPublicTurnTranscript(turns, limit) {
+  const safeLimit = Math.max(0, Number(limit) || 0);
+  const recent = safeLimit > 0 ? turns.slice(-safeLimit) : [];
+  if (recent.length === 0) return 'No previous turns in the raw recent window.';
+  return recent
+    .map((turn, index) => {
+      const absoluteTurn = turns.length - recent.length + index + 1;
+      return [`Turn ${absoluteTurn}`, `Learner: ${turn.learner}`, `Tutor: ${turn.tutor}`].join('\n');
+    })
+    .join('\n\n');
+}
+
+function signedMemoryValue(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return 'n/a';
+  return `${Number(value) >= 0 ? '+' : ''}${value}`;
+}
+
+function publicDialogueMemorySummary(state, { includeAnalysis = true } = {}) {
+  const turns = state?.turns || [];
+  if (turns.length === 0) return 'No previous public dialogue to summarize.';
+
+  const rawWindow = Math.max(0, Number(state?.historyTurns ?? STUB.historyTurns) || 0);
+  const older = rawWindow > 0 ? turns.slice(0, Math.max(0, turns.length - rawWindow)) : turns;
+  const latest = turns.at(-1);
+  const latestClassification = latest?.classification || {};
+  const lines = [
+    '[Compact public dialogue memory]',
+    `Completed public turns: ${turns.length}; raw recent window: ${Math.min(rawWindow, turns.length)} turn(s).`,
+    older.length ? `Older turns compressed: 1-${older.length}.` : 'Older turns compressed: none yet.',
+  ];
+
+  if (older.length) {
+    lines.push('Older public milestones:');
+    for (const turn of older.slice(-6)) {
+      lines.push(
+        `- T${turn.turn}: learner ${oneLine(turn.learner, { max: 120 })}; tutor ${oneLine(turn.tutor, {
+          max: 150,
+        })}`,
+      );
+    }
+  }
+
+  if (includeAnalysis && latest) {
+    lines.push('Latest public learner analysis:');
+    lines.push(`- This turn: ${latestClassification.turn?.summary || oneLine(latest.learner, { max: 160 })}`);
+    lines.push(`- Overall: ${latestClassification.overall?.summary || 'No public overall summary yet.'}`);
+    lines.push(
+      `- Trajectory: ${
+        latestClassification.overall?.trajectory ||
+        latestClassification.overall?.current_state ||
+        'No public trajectory summary yet.'
+      }`,
+    );
+    lines.push(
+      `- Next likely need: ${
+        latestClassification.turn?.pedagogical_need ||
+        latestClassification.overall?.next_best_tutor_move ||
+        'Ask one concrete evidence-generating question.'
+      }`,
+    );
+  }
+
+  lines.push('[End compact public dialogue memory]');
+  return lines.join('\n');
+}
+
+function compactPublicTranscriptForPrompt(state, limit, { includeAnalysis = true } = {}) {
+  const turns = state?.turns || [];
+  const rawTranscript = rawPublicTurnTranscript(turns, limit);
+  if (!state?.memory?.enabled || turns.length === 0) return rawTranscript;
+  return [
+    publicDialogueMemorySummary(state, { includeAnalysis }),
+    '[Raw recent public transcript]',
+    rawTranscript,
+    '[End raw recent public transcript]',
+  ].join('\n\n');
+}
+
+function tutorDialogueMemorySummary(state, { currentTutorTurn, historyTurns } = {}) {
+  const turns = state?.turns || [];
+  if (!state?.memory?.enabled || turns.length === 0) return '';
+
+  const latest = turns.at(-1);
+  const classification = latest?.classification || {};
+  const model = state.learnerDag?.lastModel || latest?.tutorLearnerDagModel || {};
+  const metrics = model.metrics || {};
+  const assessment = model.assessment || {};
+  const field = buildLightweightDialogueField(turns);
+  const final = field.summary.final || {};
+  const delta = field.summary.fieldDelta || {};
+  const latestRow = field.rows.at(-1) || null;
+  const previousRow = field.rows.at(-2) || null;
+  const registerCounts = compactCounts(
+    countBy(state.register?.history || [], (entry) => normalizeStoredRegisterSelection(entry)?.selected_register || 'unknown'),
+    { limit: 6 },
+  );
+  const latestRegister = latestRegisterSelection(state);
+
+  return [
+    '[Tutor-only compact dialogue memory]',
+    `Current tutor turn: ${currentTutorTurn || turns.length + 1}; completed prior turns: ${turns.length}; raw recent window: ${Math.min(
+      Number(historyTurns ?? state.historyTurns ?? STUB.historyTurns) || 0,
+      turns.length,
+    )} turn(s).`,
+    `Case status: ${dialogueCaseStatus(latest)}`,
+    `Latest learner move: ${classification.turn?.summary || oneLine(latest?.learner, { max: 160 })}`,
+    `Overall learner trajectory: ${
+      classification.overall?.trajectory || classification.overall?.summary || 'No trajectory summary yet.'
+    }`,
+    `Learner-DAG assessment: coverage ${assessment.bestPathCoverage ?? 'unknown'}, grounded ${
+      metrics.groundedCount ?? 0
+    }, missing ${metrics.missingPremiseCount ?? 0}, bottleneck ${assessment.bottleneck || 'unknown'}.`,
+    `Field final: mastery ${final.learnerMastery ?? 'n/a'}, risk ${final.learnerRisk ?? 'n/a'}, alignment ${
+      final.tutorAlignment ?? 'n/a'
+    }, momentum ${final.jointMomentum ?? 'n/a'}, coverage ${final.coverage ?? 'n/a'}.`,
+    `Field movement: mastery ${signedMemoryValue(delta.learnerMastery)}, risk ${signedMemoryValue(
+      delta.learnerRisk,
+    )}, alignment ${signedMemoryValue(delta.tutorAlignment)}, momentum ${signedMemoryValue(delta.jointMomentum)}; ${
+      latestRow ? describeFieldShift(latestRow, previousRow, field.summary) : 'no field row yet'
+    }`,
+    `Register history: ${registerCounts}; latest ${latestRegister?.selected_register || 'none yet'}.`,
+    'Use this as compressed continuity. The raw recent transcript below controls exact wording and immediate turn-taking.',
+    'Do not mention memory summaries, fields, DAGs, coverage, hidden paths, or internal state to the learner.',
+    '[End tutor-only compact dialogue memory]',
+  ].join('\n');
 }
 
 function classifierTutorContext(classification) {
@@ -4803,6 +4953,7 @@ function dagTurnContext(world, tutorTurn) {
 async function callTutor({
   learnerText,
   history,
+  state = null,
   systemPrompt,
   resolved,
   temperature,
@@ -4820,11 +4971,13 @@ async function callTutor({
 }) {
   const context = trimHistory(history, historyTurns);
   const tutorTurn = Math.floor(history.length / 2) + 1;
+  const tutorMemory = tutorDialogueMemorySummary(state, { currentTutorTurn: tutorTurn, historyTurns });
   const advisory = classifierTutorContext(classification);
   const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel);
   const registerAdvisory = registerSelectionContext(registerSelection, { multipleChoice });
   const learnerPrompt = `Learner says:\n${learnerText}`;
   const promptParts = [
+    tutorMemory,
     dag && world ? dagTurnContext(world, tutorTurn) : null,
     advisory,
     learnerDagAdvisory,
@@ -5033,11 +5186,19 @@ function publicWorldSummary(world) {
 }
 
 function publicTranscriptForAutomatedLearner(state) {
-  const rows = (state.history || []).map((message) => {
+  const messages = state.memory?.enabled ? trimHistory(state.history || [], state.historyTurns) : state.history || [];
+  const rows = messages.map((message) => {
     const role = message.role === 'assistant' ? 'Tutor' : 'Learner';
     return `${role}: ${message.content || ''}`;
   });
-  return rows.join('\n\n') || '(No prior public transcript.)';
+  const recentTranscript = rows.join('\n\n') || '(No prior public transcript.)';
+  if (!state.memory?.enabled || !(state.turns || []).length) return recentTranscript;
+  return [
+    publicDialogueMemorySummary(state, { includeAnalysis: false }),
+    '[Raw recent public transcript]',
+    recentTranscript,
+    '[End raw recent public transcript]',
+  ].join('\n\n');
 }
 
 function cleanAutomatedLearnerReply(text) {
@@ -5089,7 +5250,7 @@ async function generateAutomatedLearnerTurn({ state, resolved, profile, turnNumb
     resolved,
     systemPrompt: AUTO_LEARNER_SYSTEM_PROMPT,
     role: 'tutor_stub_auto_learner',
-    maxTokens: 260,
+    maxTokens: 900,
     trace: state.trace,
     stream,
     cliEffort,
@@ -5121,6 +5282,7 @@ async function runOneTurn(
   const response = await callTutor({
     learnerText,
     history: state.history,
+    state,
     systemPrompt: state.systemPrompt,
     resolved: state.resolved,
     temperature: state.temperature,
@@ -5329,6 +5491,7 @@ async function main() {
   const temperature = parseNumber(args.temperature, '--temperature', { min: 0, max: 2 });
   const maxTokens = parsePositiveInt(args['max-tokens'], '--max-tokens');
   const historyTurns = parsePositiveInt(args['history-turns'], '--history-turns');
+  const memorySummaryEnabled = Boolean(STUB.memorySummary && !args['no-memory-summary']);
   const autoLearnerEnabled = Boolean(args['auto-learner']);
   const autoTurns = parseAutoTurns(args['auto-turns']);
   const autoSafetyTurns = parsePositiveInt(args['auto-safety-turns'], '--auto-safety-turns');
@@ -5340,6 +5503,12 @@ async function main() {
   const directorContext = buildDirectorInitialContext(worldBundle?.world || null);
   const effectiveTopic = worldBundle && args.topic === STUB.topic ? worldBundle.world.title : args.topic;
   const multipleChoiceEnabled = Boolean(args['multiple-choice']);
+  assertSupportedModelRefs({
+    '--model': args.model,
+    '--classifier-model': args['classifier-model'],
+    '--learner-record-model': args['learner-record-model'],
+    '--auto-learner-model': args['auto-learner-model'],
+  });
   const systemPrompt = loadSystemPrompt({
     worldBundle,
     dag: args.dag,
@@ -5465,6 +5634,12 @@ async function main() {
             : { enabled: false },
           maxTokens,
           historyTurns,
+          memorySummary: {
+            enabled: memorySummaryEnabled,
+            rawRecentTurns: historyTurns,
+            publicSummary: memorySummaryEnabled,
+            tutorStateFieldSummary: memorySummaryEnabled,
+          },
           cliEffort: cliEffort || null,
           trace: traceEnabled
             ? {
@@ -5578,6 +5753,12 @@ async function main() {
         classifier: streamEnabled && classifierResolved ? providerSupportsStreaming(classifierResolved) : false,
         learnerAnalysis: streamEnabled && learnerRecordResolved ? providerSupportsStreaming(learnerRecordResolved) : false,
       },
+      memorySummary: {
+        enabled: memorySummaryEnabled,
+        rawRecentTurns: historyTurns,
+        publicSummary: memorySummaryEnabled,
+        tutorStateFieldSummary: memorySummaryEnabled,
+      },
       opening: { enabled: openingEnabled, printedByDefault: Boolean(openingEnabled && !firstMessage) },
       closeoutReport: { enabled: closeoutReportEnabled },
       multipleChoice: { enabled: multipleChoiceEnabled },
@@ -5613,6 +5794,9 @@ async function main() {
     temperature: effectiveTemperature,
     maxTokens,
     historyTurns,
+    memory: {
+      enabled: memorySummaryEnabled,
+    },
     world: worldBundle?.world || null,
     directorContext,
     dag: args.dag,

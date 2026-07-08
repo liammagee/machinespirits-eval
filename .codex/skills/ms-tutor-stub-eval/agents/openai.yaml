@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tutor Stub Eval"
+  short_description: "Run, resume, and compare tutor-stub detective-world evals."
+  default_prompt: "Run, resume, or analyze tutor-stub evals, including multi-eval cross-run field summaries, with defaults for world, policies, models, turns, and output paths."
