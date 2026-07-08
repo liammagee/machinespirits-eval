@@ -940,7 +940,7 @@ function fieldTurnMarkers(rows, { width, height, padding }) {
       const label = escapeXml(`${row.turn}: ${row.learnerMove} / ${row.register || 'no-register'} / ${row.bottleneck}`);
       return `<circle cx="${x.toFixed(1)}" cy="${(padding.top + height + 18).toFixed(
         1,
-      )}" r="2.8" fill="#6A5C50"><title>${label}</title></circle>`;
+      )}" r="2.8" fill="#0A0A0A"><title>${label}</title></circle>`;
     })
     .join('\n');
 }
@@ -955,10 +955,10 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
   const final = field?.summary?.final || {};
   const delta = field?.summary?.fieldDelta || {};
   const series = [
-    ['learnerMastery', 'mastery', '#2A4F6B'],
-    ['learnerRisk', 'risk', '#A53E2E'],
-    ['tutorAlignment', 'alignment', '#56683A'],
-    ['jointMomentum', 'momentum', '#C08A3E'],
+    ['learnerMastery', 'mastery', '#0A0A0A'],
+    ['learnerRisk', 'risk', '#E63946'],
+    ['tutorAlignment', 'alignment', '#525252'],
+    ['jointMomentum', 'momentum', '#A1A1AA'],
   ];
   const gridLines = [0, 0.25, 0.5, 0.75, 1]
     .map((value) => {
@@ -966,8 +966,8 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
       return [
         `<line x1="${padding.left}" y1="${y.toFixed(1)}" x2="${(padding.left + chartWidth).toFixed(
           1,
-        )}" y2="${y.toFixed(1)}" stroke="#D8C7A9" />`,
-        `<text x="${padding.left - 10}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="10" fill="#6A5C50">${value.toFixed(
+        )}" y2="${y.toFixed(1)}" stroke="#D4D4D8" />`,
+        `<text x="${padding.left - 10}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="10" fill="#525252">${value.toFixed(
           2,
         )}</text>`,
       ].join('\n');
@@ -986,7 +986,7 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
   const legend = series
     .map(
       ([key, label, color], index) =>
-        `<g transform="translate(${padding.left + index * 135}, ${svgHeight - 24})"><rect width="11" height="11" fill="${color}" /><text x="16" y="10" font-size="11" fill="#3A2F27">${label}: ${escapeXml(
+        `<g transform="translate(${padding.left + index * 135}, ${svgHeight - 24})"><rect width="11" height="11" fill="${color}" /><text x="16" y="10" font-size="11" fill="#0A0A0A">${label}: ${escapeXml(
           final[key] ?? 'n/a',
         )}</text></g>`,
     )
@@ -997,12 +997,13 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" role="img">
   <title>${escapeXml(title)}</title>
   <desc>Lightweight tutor-stub field visualization across ${rows.length} completed turn(s).</desc>
-  <rect width="100%" height="100%" fill="#F7EFDD" />
-  <text x="${padding.left}" y="26" font-size="18" font-weight="700" fill="#181310">${escapeXml(title)}</text>
-  <text x="${padding.left}" y="47" font-size="12" fill="#6A5C50">turns ${field.turnCount}; mean speed ${escapeXml(
+  <rect width="100%" height="100%" fill="#FFFFFF" />
+  <rect width="100%" height="8" fill="#E63946" />
+  <text x="${padding.left}" y="28" font-size="18" font-weight="700" fill="#0A0A0A">${escapeXml(title)}</text>
+  <text x="${padding.left}" y="49" font-size="12" fill="#525252">turns ${field.turnCount}; mean speed ${escapeXml(
     field.summary?.meanSpeed ?? 'n/a',
   )}; ${escapeXml(deltaText)}; bottleneck ${escapeXml(final.bottleneck || 'unknown')}</text>
-  <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="#FBF6E8" stroke="#D8C7A9" />
+  <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="#FAFAFA" stroke="#0A0A0A" stroke-width="1.5" />
   ${gridLines}
   ${lines}
   ${fieldTurnMarkers(rows, { width: chartWidth, height: chartHeight, padding })}
@@ -1311,28 +1312,29 @@ function machineSpiritsReportCss() {
 
     :root {
       color-scheme: light;
-      --paper:#F1E9D8;
-      --paper-2:#E9DFC7;
-      --paper-3:#EFE4CC;
-      --paper-4:#F7EFDD;
-      --ink:#181310;
-      --ink-2:#3A2F27;
-      --ink-3:#6A5C50;
-      --ink-4:#695B47;
-      --linen:#D8C7A9;
-      --moss:#56683A;
-      --moss-deep:#3A4824;
-      --moss-soft:#E3E6CE;
-      --brick:#A53E2E;
-      --brick-d:#7C2C1F;
-      --brick-soft:#F3DDD6;
-      --ochre:#C08A3E;
-      --ochre-d:#835A1B;
-      --ochre-soft:#F5E6C2;
-      --indigo:#2A4F6B;
-      --indigo-soft:#DCE6EE;
-      --rule:rgba(28,22,16,0.18);
-      --rule-soft:rgba(28,22,16,0.10);
+      --paper:#FFFFFF;
+      --paper-2:#F4F4F5;
+      --paper-3:#FAFAFA;
+      --paper-4:#FFFFFF;
+      --ink:#0A0A0A;
+      --ink-2:#262626;
+      --ink-3:#525252;
+      --ink-4:#8A8A8A;
+      --linen:#D4D4D8;
+      --moss:#171717;
+      --moss-deep:#000000;
+      --moss-soft:#ECECEC;
+      --brick:#E63946;
+      --brick-d:#C1121F;
+      --brick-soft:#FBE3E5;
+      --ochre:#737373;
+      --ochre-d:#525252;
+      --ochre-soft:#EDEDED;
+      --indigo:#404040;
+      --indigo-soft:#EDEDED;
+      --red-mark:#E63946;
+      --rule:rgba(10,10,10,0.22);
+      --rule-soft:rgba(10,10,10,0.09);
       --ease:cubic-bezier(.22,.61,.36,1);
       --bg:var(--paper);
       --panel:var(--paper-4);
@@ -1371,9 +1373,9 @@ function machineSpiritsReportCss() {
       z-index:-2;
       pointer-events:none;
       background:
-        radial-gradient(130% 90% at 50% 0%, transparent 48%, rgba(20,16,12,0.06) 100%),
-        radial-gradient(75% 55% at 8% 92%, rgba(165,62,46,0.04), transparent 70%),
-        radial-gradient(70% 60% at 96% 14%, rgba(86,104,58,0.05), transparent 70%);
+        radial-gradient(130% 90% at 50% 0%, transparent 48%, rgba(10,10,10,0.06) 100%),
+        radial-gradient(75% 55% at 8% 92%, rgba(230,57,70,0.04), transparent 70%),
+        radial-gradient(70% 60% at 96% 14%, rgba(10,10,10,0.04), transparent 70%);
       mix-blend-mode:multiply;
     }
     body::after {
@@ -1708,7 +1710,7 @@ function machineSpiritsReportCss() {
       text-decoration:underline dotted rgba(124,44,31,0.52);
       text-underline-offset:3px;
     }
-    .info-term:focus { outline:2px solid rgba(165,62,46,0.30); outline-offset:2px; }
+    .info-term:focus { outline:2px solid rgba(230,57,70,0.30); outline-offset:2px; }
     .info-term::after {
       content:attr(data-tip);
       position:absolute;
@@ -1757,7 +1759,7 @@ function machineSpiritsReportCss() {
       height:9px;
       margin-right:7px;
       background:var(--brick);
-      box-shadow:0 0 0 rgba(165,62,46,0.45);
+      box-shadow:0 0 0 rgba(230,57,70,0.45);
       animation:livePulse 1.4s infinite;
     }
     .live-count { border:1px solid var(--rule); padding:3px 8px; background:var(--paper-4); color:var(--brick-d); font-size:12px; font-weight:700; white-space:nowrap; }
@@ -1786,10 +1788,188 @@ function machineSpiritsReportCss() {
     .live-job p { margin:4px 0 5px; font-size:12px; }
     .live-actions { margin-top:10px; font-size:12px; }
     .live-actions a, .live-links a { margin-right:6px; }
+    body::before {
+      background:
+        linear-gradient(to right, rgba(10,10,10,0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(10,10,10,0.05) 1px, transparent 1px);
+      background-size:56px 56px, 56px 56px;
+      mix-blend-mode:multiply;
+    }
+    body::after {
+      opacity:0.22;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(230,57,70,0.22) 0 2px, transparent 2px),
+        radial-gradient(circle at 82% 22%, rgba(10,10,10,0.16) 0 1.2px, transparent 1.2px),
+        radial-gradient(circle at 28% 78%, rgba(230,57,70,0.18) 0 1.5px, transparent 1.5px),
+        repeating-linear-gradient(135deg, transparent 0 17px, rgba(10,10,10,0.055) 17px 18px);
+      background-size:34px 34px, 27px 27px, 42px 42px, 100% 100%;
+      mix-blend-mode:multiply;
+    }
+    header {
+      position:relative;
+      max-width:none;
+      border-bottom:4px solid var(--ink);
+      background:var(--paper);
+    }
+    header::after {
+      content:"";
+      position:absolute;
+      right:clamp(18px, 4vw, 44px);
+      bottom:-4px;
+      width:min(28vw, 360px);
+      height:12px;
+      background:var(--red-mark);
+    }
+    h1 {
+      max-width:980px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:0;
+    }
+    h2 {
+      border-top:4px solid var(--ink);
+      padding-top:10px;
+      text-transform:uppercase;
+      letter-spacing:0;
+    }
+    h2::before {
+      content:"";
+      display:inline-block;
+      width:0.65em;
+      height:0.65em;
+      margin-right:0.42em;
+      background:var(--red-mark);
+      vertical-align:0.02em;
+    }
+    .header-links a, .field-link, .live-actions a, .live-links a, .actions a {
+      border:2px solid var(--ink);
+      background:var(--paper);
+      color:var(--ink);
+      box-shadow:3px 3px 0 var(--red-mark);
+      text-transform:uppercase;
+      font-weight:700;
+    }
+    .header-links a:hover, .field-link:hover, .live-actions a:hover, .live-links a:hover, .actions a:hover {
+      background:var(--ink);
+      color:var(--paper);
+    }
+    .metric, .metric-guide, .learner-profile-card, .learner-behavior-card, .field-card, .viz-player, .live-run-card, table, .report-nav {
+      background:var(--paper);
+      border:2px solid var(--ink);
+      box-shadow:6px 6px 0 var(--ink);
+    }
+    .metric:nth-child(2n), .field-card:nth-child(3n), .learner-behavior-card, .viz-player {
+      box-shadow:6px 6px 0 var(--red-mark);
+    }
+    .metric { min-height:126px; }
+    .metric-label, .report-nav-title, .control span, th, .learner-eyebrow, .readout-label, .viz-group-label {
+      color:var(--ink);
+      font-weight:800;
+      letter-spacing:0.08em;
+    }
+    .metric-value {
+      color:var(--ink);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:34px;
+      font-weight:800;
+    }
+    .metric-sub, .sub, .muted { color:var(--ink-3); }
+    .report-nav {
+      background:
+        linear-gradient(90deg, var(--red-mark) 0 9px, transparent 9px),
+        var(--paper);
+    }
+    .report-nav a {
+      border-left:4px solid var(--ink);
+      color:var(--ink);
+      font-weight:700;
+      text-transform:uppercase;
+    }
+    .report-nav a:hover, .report-nav a:focus {
+      border-left-color:var(--red-mark);
+      background:var(--ink);
+      color:var(--paper);
+    }
+    .metric-guide, .viz-sidebar {
+      background:
+        linear-gradient(90deg, var(--red-mark) 0 8px, transparent 8px),
+        var(--paper);
+    }
+    .metric-guide dl div, .viz-sidebar dl div, .learner-example {
+      border-top:2px solid var(--ink);
+    }
+    .learner-stat, .learner-chip, .chip, .event-chip, .status, .field-badge, .readout-card {
+      border:2px solid var(--ink);
+      background:var(--paper);
+      color:var(--ink);
+    }
+    .status {
+      background:var(--ink);
+      color:var(--paper);
+      font-weight:800;
+      text-transform:uppercase;
+    }
+    .status.failed, .status.aborted, .status.dry_run, .status.stale {
+      background:var(--red-mark);
+      color:var(--paper);
+    }
+    .field-card-head, .viz-toolbar, .toolbar, th {
+      background:
+        linear-gradient(90deg, var(--ink) 0 14px, transparent 14px),
+        var(--paper-2);
+      border-bottom:2px solid var(--ink);
+    }
+    th { border-bottom:3px solid var(--ink); }
+    th, td { border-bottom:2px solid var(--ink); }
+    tr:nth-child(even) td { background:var(--paper-3); }
+    .viz-sidebar { border-left:2px solid var(--ink); }
+    .viz-help-strip, .viz-readout {
+      background:var(--paper);
+      border-top:2px solid var(--ink);
+      border-bottom:2px solid var(--ink);
+    }
+    .viz-canvas-wrap, .field-svg { background:var(--paper); }
+    .viz-toolbar select, .viz-toolbar button, .viz-toolbar input, input, select, button {
+      border:2px solid var(--ink);
+      background:var(--paper);
+      color:var(--ink);
+      font-weight:700;
+    }
+    button:hover, .viz-mode-buttons button.active {
+      background:var(--red-mark);
+      border-color:var(--ink);
+      color:var(--paper);
+    }
+    .mini-bar {
+      background:var(--paper-2);
+      border:1px solid var(--ink);
+    }
+    .mini-bar span { background:var(--red-mark); }
+    .info-term {
+      color:var(--ink);
+      font-weight:800;
+      text-decoration:underline solid var(--red-mark);
+    }
+    .info-term::after {
+      border:2px solid var(--ink);
+      background:var(--paper);
+      color:var(--ink);
+      box-shadow:5px 5px 0 var(--red-mark);
+    }
+    .live-dot, .live-progress span {
+      background:var(--red-mark);
+    }
+    .live-progress {
+      background:var(--paper);
+      border:2px solid var(--ink);
+    }
+    .live-job { background:var(--paper); border:2px solid var(--ink); }
+    .live-job.running { background:var(--paper-2); border-color:var(--ink); }
+    .live-job.failed { background:var(--brick-soft); border-color:var(--red-mark); }
     @keyframes livePulse {
-      0% { box-shadow:0 0 0 0 rgba(165,62,46,0.42); }
-      70% { box-shadow:0 0 0 9px rgba(165,62,46,0); }
-      100% { box-shadow:0 0 0 0 rgba(165,62,46,0); }
+      0% { box-shadow:0 0 0 0 rgba(230,57,70,0.42); }
+      70% { box-shadow:0 0 0 9px rgba(230,57,70,0); }
+      100% { box-shadow:0 0 0 0 rgba(230,57,70,0); }
     }
     @keyframes liveStripe { from { background-position:0 0; } to { background-position:23px 0; } }
     @media (max-width: 1100px) {
@@ -2246,25 +2426,25 @@ function renderAnimatedVizSection(rows) {
       registers: 'Register Lens'
     };
     var palette = {
-      learnerMastery: '#2A4F6B',
-      learnerRisk: '#A53E2E',
-      tutorAlignment: '#56683A',
-      jointMomentum: '#C08A3E',
-      field: '#2A4F6B',
-      dag: '#56683A',
-      risk: '#A53E2E'
+      learnerMastery: '#0A0A0A',
+      learnerRisk: '#E63946',
+      tutorAlignment: '#525252',
+      jointMomentum: '#A1A1AA',
+      field: '#0A0A0A',
+      dag: '#525252',
+      risk: '#E63946'
     };
     var registerOrder = ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic', 'ironic', 'sarcastic', 'face_threat'];
     var registerMeta = {
-      plain: { label: 'Plain', group: 'clarify', color: '#2A4F6B', note: 'plain-language re-entry' },
-      precise: { label: 'Precise', group: 'warrant', color: '#56683A', note: 'distinction or proof step' },
-      brisk: { label: 'Brisk', group: 'pace', color: '#C08A3E', note: 'faster stepwise movement' },
-      warm: { label: 'Warm', group: 'repair', color: '#A53E2E', note: 'readiness and affect repair' },
-      witnessing: { label: 'Witnessing', group: 'recognition', color: '#835A1B', note: 'acknowledge learner position' },
-      charismatic: { label: 'Charismatic', group: 'disrupt', color: '#3A4824', note: 'interrupt stuck low agency' },
-      ironic: { label: 'Ironic', group: 'negative/probe', color: '#6A5C50', note: 'mismatch cue' },
-      sarcastic: { label: 'Sarcastic', group: 'negative/probe', color: '#7C2C1F', note: 'hostile challenge probe' },
-      face_threat: { label: 'Face threat', group: 'negative/probe', color: '#A53E2E', note: 'status-pressure probe' }
+      plain: { label: 'Plain', group: 'clarify', color: '#0A0A0A', note: 'plain-language re-entry' },
+      precise: { label: 'Precise', group: 'warrant', color: '#525252', note: 'distinction or proof step' },
+      brisk: { label: 'Brisk', group: 'pace', color: '#A1A1AA', note: 'faster stepwise movement' },
+      warm: { label: 'Warm', group: 'repair', color: '#E63946', note: 'readiness and affect repair' },
+      witnessing: { label: 'Witnessing', group: 'recognition', color: '#C1121F', note: 'acknowledge learner position' },
+      charismatic: { label: 'Charismatic', group: 'disrupt', color: '#262626', note: 'interrupt stuck low agency' },
+      ironic: { label: 'Ironic', group: 'negative/probe', color: '#8A8A8A', note: 'mismatch cue' },
+      sarcastic: { label: 'Sarcastic', group: 'negative/probe', color: '#000000', note: 'hostile challenge probe' },
+      face_threat: { label: 'Face threat', group: 'negative/probe', color: '#E63946', note: 'status-pressure probe' }
     };
 
     function finite(value, fallback) {
@@ -2291,7 +2471,7 @@ function renderAnimatedVizSection(rows) {
       return registerMeta[key] || {
         label: key.replace(/_/g, ' ').replace(/\\b\\w/g, function (match) { return match.toUpperCase(); }),
         group: 'other',
-        color: '#3A2F27',
+        color: '#0A0A0A',
         note: 'unclassified register'
       };
     }
@@ -2357,13 +2537,18 @@ function renderAnimatedVizSection(rows) {
 
     function clear(width, height) {
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#F7EFDD';
+      ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = 'rgba(230,57,70,0.08)';
+      ctx.fillRect(0, 0, width, 10);
+      ctx.fillStyle = 'rgba(10,10,10,0.06)';
+      for (var gx = 0; gx < width; gx += 56) ctx.fillRect(gx, 0, 1, height);
+      for (var gy = 0; gy < height; gy += 56) ctx.fillRect(0, gy, width, 1);
     }
 
     function text(value, x, y, options) {
       var opts = options || {};
-      ctx.fillStyle = opts.color || '#181310';
+      ctx.fillStyle = opts.color || '#0A0A0A';
       ctx.font = (opts.weight ? opts.weight + ' ' : '') + (opts.size || 12) + 'px "Source Serif 4", Georgia, serif';
       ctx.textAlign = opts.align || 'left';
       ctx.textBaseline = opts.baseline || 'alphabetic';
@@ -2372,22 +2557,22 @@ function renderAnimatedVizSection(rows) {
 
     function rectBar(label, value, x, y, width, color) {
       var bounded = clamp01(value);
-      ctx.fillStyle = '#E9DFC7';
+      ctx.fillStyle = '#F4F4F5';
       ctx.fillRect(x, y, width, 12);
-      ctx.fillStyle = color || '#3A4824';
+      ctx.fillStyle = color || '#0A0A0A';
       ctx.fillRect(x, y, width * bounded, 12);
-      text(label, x, y - 4, { color: '#3A2F27', size: 11 });
-      text(format(value), x + width + 8, y + 10, { color: '#6A5C50', size: 11 });
+      text(label, x, y - 4, { color: '#0A0A0A', size: 11, weight: '700' });
+      text(format(value), x + width + 8, y + 10, { color: '#525252', size: 11 });
     }
 
     function labeledBar(label, value, x, y, width, color, valueLabel) {
       var bounded = clamp01(value);
-      ctx.fillStyle = '#E9DFC7';
+      ctx.fillStyle = '#F4F4F5';
       ctx.fillRect(x, y, width, 14);
-      ctx.fillStyle = color || '#3A4824';
+      ctx.fillStyle = color || '#0A0A0A';
       ctx.fillRect(x, y, width * bounded, 14);
-      text(truncateText(label, width - 46), x, y - 5, { color: '#3A2F27', size: 11 });
-      text(valueLabel || pct(value), x + width + 8, y + 11, { color: '#6A5C50', size: 11 });
+      text(truncateText(label, width - 46), x, y - 5, { color: '#0A0A0A', size: 11, weight: '700' });
+      text(valueLabel || pct(value), x + width + 8, y + 11, { color: '#525252', size: 11 });
     }
 
     function drawPlot(series, options) {
@@ -2398,7 +2583,7 @@ function renderAnimatedVizSection(rows) {
       var width = opts.width || 640;
       var height = opts.height || 240;
       var count = Math.max(1, frames.length - 1);
-      ctx.strokeStyle = '#D8C7A9';
+      ctx.strokeStyle = '#D4D4D8';
       ctx.lineWidth = 1;
       for (var grid = 0; grid <= 4; grid += 1) {
         var gy = y + height - (grid / 4) * height;
@@ -2406,9 +2591,9 @@ function renderAnimatedVizSection(rows) {
         ctx.moveTo(x, gy);
         ctx.lineTo(x + width, gy);
         ctx.stroke();
-        text((grid / 4).toFixed(2), x - 8, gy + 4, { color: '#6A5C50', size: 10, align: 'right' });
+        text((grid / 4).toFixed(2), x - 8, gy + 4, { color: '#525252', size: 10, align: 'right' });
       }
-      ctx.strokeStyle = '#D8C7A9';
+      ctx.strokeStyle = '#0A0A0A';
       ctx.strokeRect(x, y, width, height);
       series.forEach(function (item, seriesIndex) {
         ctx.beginPath();
@@ -2425,7 +2610,7 @@ function renderAnimatedVizSection(rows) {
         text(item.label, x + seriesIndex * 132, y + height + 28, { color: item.color, size: 12, weight: '700' });
       });
       var cursorX = x + (Math.max(0, Math.min(activeIndex, count)) / count) * width;
-      ctx.strokeStyle = '#181310';
+      ctx.strokeStyle = '#E63946';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(cursorX, y);
@@ -2436,17 +2621,17 @@ function renderAnimatedVizSection(rows) {
     function drawState(frame, width, height) {
       text('State Snapshot', 28, 34, { size: 18, weight: '700' });
       var scores = (frame.state.classifier && frame.state.classifier.scores) || {};
-      rectBar('conceptual', scores.conceptual, 38, 82, width * 0.36, '#2A4F6B');
-      rectBar('readiness', scores.epistemicReadiness, 38, 126, width * 0.36, '#56683A');
-      rectBar('surface', scores.learnerSurface, 38, 170, width * 0.36, '#C08A3E');
-      rectBar('coverage', frame.state.dag.bestPathCoverage, 38, 214, width * 0.36, '#3A4824');
+      rectBar('conceptual', scores.conceptual, 38, 82, width * 0.36, '#0A0A0A');
+      rectBar('readiness', scores.epistemicReadiness, 38, 126, width * 0.36, '#525252');
+      rectBar('surface', scores.learnerSurface, 38, 170, width * 0.36, '#A1A1AA');
+      rectBar('coverage', frame.state.dag.bestPathCoverage, 38, 214, width * 0.36, '#E63946');
       var rightX = width * 0.52;
       text('DAG', rightX, 82, { size: 13, weight: '700' });
-      text('bottleneck: ' + (frame.state.dag.bottleneck || 'unknown'), rightX, 112, { color: '#3A2F27' });
-      text('grounded: ' + frame.state.dag.groundedCount + '   missing: ' + frame.state.dag.missingPremiseCount, rightX, 140, { color: '#3A2F27' });
-      text('unsupported: ' + frame.state.dag.unsupportedAssertionCount, rightX, 168, { color: '#3A2F27' });
-      text('request: ' + ((frame.state.classifier && frame.state.classifier.requestType) || 'unknown'), rightX, 214, { color: '#3A2F27' });
-      text('move: ' + ((frame.state.classifier && frame.state.classifier.discourseMove) || 'unknown'), rightX, 242, { color: '#3A2F27' });
+      text('bottleneck: ' + (frame.state.dag.bottleneck || 'unknown'), rightX, 112, { color: '#0A0A0A' });
+      text('grounded: ' + frame.state.dag.groundedCount + '   missing: ' + frame.state.dag.missingPremiseCount, rightX, 140, { color: '#0A0A0A' });
+      text('unsupported: ' + frame.state.dag.unsupportedAssertionCount, rightX, 168, { color: '#0A0A0A' });
+      text('request: ' + ((frame.state.classifier && frame.state.classifier.requestType) || 'unknown'), rightX, 214, { color: '#0A0A0A' });
+      text('move: ' + ((frame.state.classifier && frame.state.classifier.discourseMove) || 'unknown'), rightX, 242, { color: '#0A0A0A' });
     }
 
     function drawField(frame, width, height) {
@@ -2468,44 +2653,44 @@ function renderAnimatedVizSection(rows) {
       ], { x: 54, y: 64, width: width * 0.58, height: height - 142 });
       var x = width * 0.7;
       var y = 82;
-      text('velocity / slope / acceleration', x, y - 24, { color: '#3A2F27', size: 12, weight: '700' });
+      text('velocity / slope / acceleration', x, y - 24, { color: '#0A0A0A', size: 12, weight: '700' });
       ['field', 'dag', 'risk'].forEach(function (key, index) {
         var metric = frame.trajectory[key] || {};
         var yy = y + index * 76;
         text(key, x, yy, { color: palette[key], size: 13, weight: '700' });
-        text('v ' + format(metric.velocity), x, yy + 24, { color: '#3A2F27' });
-        text('s ' + format(metric.slope), x + 86, yy + 24, { color: '#3A2F27' });
-        text('a ' + format(metric.acceleration), x + 172, yy + 24, { color: '#3A2F27' });
+        text('v ' + format(metric.velocity), x, yy + 24, { color: '#0A0A0A' });
+        text('s ' + format(metric.slope), x + 86, yy + 24, { color: '#0A0A0A' });
+        text('a ' + format(metric.acceleration), x + 172, yy + 24, { color: '#0A0A0A' });
       });
     }
 
     function drawHeatmap(object, x, y, width, cellHeight) {
       var entries = Object.entries(object || {});
       if (!entries.length) {
-        text('no vector data', x, y + 18, { color: '#6A5C50' });
+        text('no vector data', x, y + 18, { color: '#525252' });
         return;
       }
       entries.forEach(function (entry, index) {
         var key = entry[0];
         var value = clamp01(entry[1]);
         var yy = y + index * cellHeight;
-        var intensity = Math.round(247 - value * 70);
-        ctx.fillStyle = 'rgb(' + intensity + ',' + Math.round(239 - value * 62) + ',' + Math.round(221 - value * 82) + ')';
+        var intensity = Math.round(244 - value * 62);
+        ctx.fillStyle = value > 0.66 ? 'rgba(230,57,70,' + (0.22 + value * 0.28) + ')' : 'rgb(' + intensity + ',' + intensity + ',' + intensity + ')';
         ctx.fillRect(x, yy, width, cellHeight - 3);
-        text(key, x + 8, yy + cellHeight - 10, { color: '#181310', size: 11 });
-        text(format(value), x + width - 8, yy + cellHeight - 10, { color: '#181310', size: 11, align: 'right' });
+        text(key, x + 8, yy + cellHeight - 10, { color: '#0A0A0A', size: 11 });
+        text(format(value), x + width - 8, yy + cellHeight - 10, { color: '#0A0A0A', size: 11, align: 'right' });
       });
     }
 
     function drawDynamics(frame, width, height) {
       text('System Model', 28, 34, { size: 18, weight: '700' });
-      text('source: ' + (frame.dynamics.source || 'unknown'), 28, 56, { color: '#6A5C50', size: 12 });
+      text('source: ' + (frame.dynamics.source || 'unknown'), 28, 56, { color: '#525252', size: 12 });
       drawHeatmap(frame.dynamics.stateVector || {}, 34, 82, width * 0.46, 22);
       var rightX = width * 0.56;
       text('attractors / derivatives', rightX, 82, { size: 13, weight: '700' });
       var bars = Object.keys(frame.dynamics.attractors || {}).length ? frame.dynamics.attractors : frame.dynamics.derivativeVector;
       Object.entries(bars || {}).slice(0, 12).forEach(function (entry, index) {
-        rectBar(entry[0], Math.abs(finite(entry[1], 0)), rightX, 116 + index * 24, width * 0.28, '#3A4824');
+        rectBar(entry[0], Math.abs(finite(entry[1], 0)), rightX, 116 + index * 24, width * 0.28, '#E63946');
       });
     }
 
@@ -2539,8 +2724,8 @@ function renderAnimatedVizSection(rows) {
     }
 
     function drawRegisterTimeline(frames, x, y, width, height) {
-      text('selection timeline', x, y - 12, { color: '#3A2F27', size: 12, weight: '700' });
-      ctx.fillStyle = '#E9DFC7';
+      text('selection timeline', x, y - 12, { color: '#0A0A0A', size: 12, weight: '700' });
+      ctx.fillStyle = '#F4F4F5';
       ctx.fillRect(x, y, width, height);
       var count = Math.max(1, frames.length);
       frames.forEach(function (row, index) {
@@ -2551,17 +2736,17 @@ function renderAnimatedVizSection(rows) {
         ctx.fillRect(start, y, Math.max(1, end - start + 0.5), height);
       });
       var cursorX = x + ((activeIndex + 0.5) / count) * width;
-      ctx.strokeStyle = '#181310';
+      ctx.strokeStyle = '#E63946';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(cursorX, y - 5);
       ctx.lineTo(cursorX, y + height + 5);
       ctx.stroke();
-      ctx.strokeStyle = '#D8C7A9';
+      ctx.strokeStyle = '#0A0A0A';
       ctx.lineWidth = 1;
       ctx.strokeRect(x, y, width, height);
-      text('1', x, y + height + 18, { color: '#6A5C50', size: 10 });
-      text(String(frames.length), x + width, y + height + 18, { color: '#6A5C50', size: 10, align: 'right' });
+      text('1', x, y + height + 18, { color: '#525252', size: 10 });
+      text(String(frames.length), x + width, y + height + 18, { color: '#525252', size: 10, align: 'right' });
     }
 
     function drawRegisterLegend(keys, x, y, width, height) {
@@ -2572,24 +2757,24 @@ function renderAnimatedVizSection(rows) {
         var yy = y + 26 + index * rowHeight;
         ctx.fillStyle = meta.color;
         ctx.fillRect(x, yy - 10, 12, 12);
-        text(meta.label, x + 18, yy, { color: '#181310', size: 12, weight: '700' });
-        text(truncateText(meta.group + ' | ' + meta.note, width - 18), x + 18, yy + 16, { color: '#6A5C50', size: 10 });
+        text(meta.label, x + 18, yy, { color: '#0A0A0A', size: 12, weight: '700' });
+        text(truncateText(meta.group + ' | ' + meta.note, width - 18), x + 18, yy + 16, { color: '#525252', size: 10 });
       });
     }
 
     function drawCurrentRegisterCard(frame, x, y, width) {
       var meta = metaForRegister(frame.selectedRegister);
-      ctx.fillStyle = '#FBF6E8';
+      ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(x, y, width, 108);
-      ctx.strokeStyle = '#D8C7A9';
+      ctx.strokeStyle = '#0A0A0A';
       ctx.strokeRect(x, y, width, 108);
       ctx.fillStyle = meta.color;
       ctx.fillRect(x + 12, y + 18, 18, 18);
-      text('current register', x + 12, y + 14, { color: '#6A5C50', size: 11 });
-      text(meta.label, x + 40, y + 32, { color: '#181310', size: 16, weight: '700' });
-      text(String(frame.selectedRegister || 'none'), x + 40, y + 52, { color: '#6A5C50', size: 11 });
-      text('register policy: ' + (frame.register.policy || activeRow.policy || 'unknown'), x + 12, y + 78, { color: '#3A2F27', size: 11 });
-      text('kind: ' + meta.group, x + 12, y + 96, { color: '#3A2F27', size: 11 });
+      text('current register', x + 12, y + 14, { color: '#525252', size: 11 });
+      text(meta.label, x + 40, y + 32, { color: '#0A0A0A', size: 16, weight: '700' });
+      text(String(frame.selectedRegister || 'none'), x + 40, y + 52, { color: '#525252', size: 11 });
+      text('register policy: ' + (frame.register.policy || activeRow.policy || 'unknown'), x + 12, y + 78, { color: '#0A0A0A', size: 11 });
+      text('kind: ' + meta.group, x + 12, y + 96, { color: '#0A0A0A', size: 11 });
     }
 
     function drawRegisters(frame, width, height) {
@@ -2609,7 +2794,7 @@ function renderAnimatedVizSection(rows) {
       var y = 182;
       var barWidth = leftWidth - 76;
       if (hasPolicyDistribution) {
-        text('current probability distribution', leftX, y - 24, { color: '#3A2F27', size: 12, weight: '700' });
+        text('current probability distribution', leftX, y - 24, { color: '#0A0A0A', size: 12, weight: '700' });
         rows.slice(0, 9).forEach(function (entry, index) {
           var meta = metaForRegister(entry.register);
           var selected = entry.register === frame.selectedRegister;
@@ -2619,14 +2804,14 @@ function renderAnimatedVizSection(rows) {
             leftX,
             y + index * 30,
             barWidth,
-            selected ? '#181310' : meta.color,
+            selected ? '#0A0A0A' : meta.color,
             pct(entry.probability),
           );
         });
       } else {
         var counts = registerCountsThrough(activeIndex);
         var total = Math.max(1, activeIndex + 1);
-        text('selection frequency through this turn', leftX, y - 24, { color: '#3A2F27', size: 12, weight: '700' });
+        text('selection frequency through this turn', leftX, y - 24, { color: '#0A0A0A', size: 12, weight: '700' });
         keys
           .map(function (key) {
             return { register: key, count: counts[key] || 0 };
@@ -2651,7 +2836,7 @@ function renderAnimatedVizSection(rows) {
             );
           });
       }
-      text('source: ' + frame.register.distributionSource, leftX, height - 26, { color: '#6A5C50', size: 11 });
+      text('source: ' + frame.register.distributionSource, leftX, height - 26, { color: '#525252', size: 11 });
     }
 
     function updateReadout(frame) {
@@ -2716,7 +2901,7 @@ function renderAnimatedVizSection(rows) {
       else if (mode === 'dynamics') drawDynamics(frame, width, height);
       else if (mode === 'registers') drawRegisters(frame, width, height);
       else drawField(frame, width, height);
-      text('turn ' + frame.turn, width - 28, 34, { align: 'right', color: '#6A5C50', size: 12, weight: '700' });
+      text('turn ' + frame.turn, width - 28, 34, { align: 'right', color: '#525252', size: 12, weight: '700' });
       updateReadout(frame);
     }
 

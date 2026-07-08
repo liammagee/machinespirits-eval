@@ -113,6 +113,7 @@
     "derivation:loop": "node scripts/run-derivation-loop.js",
     "derivation:episode": "node scripts/run-derivation-episode.js",
     "derivation:matrix": "node scripts/run-derivation-matrix.js",
+    "derivation:phase6-gate": "node scripts/run-derivation-phase6-gate.js",
     "derivation:critic": "node scripts/derivation-critic.js",
     "derivation:corridor": "node scripts/derivation-corridor-map.js",
     "derivation:mine": "node scripts/derivation-mine-conduct.js",
