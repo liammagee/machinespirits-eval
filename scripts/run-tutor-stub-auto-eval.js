@@ -455,6 +455,387 @@ function buildLightweightDialogueField(turnRecords = []) {
   };
 }
 
+function roundOptionalField(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Number(numeric.toFixed(3)) : null;
+}
+
+function numberOrNull(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function normalizedField01(value, fallback = 0) {
+  const numeric = numberOrNull(value);
+  return numeric === null ? fallback : clampField01(numeric);
+}
+
+function textSnippet(value, maxLength = 180) {
+  const text = String(value || '').replace(/\s+/gu, ' ').trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, Math.max(0, maxLength - 1)).trim()}...`;
+}
+
+function compactNumericMap(object, { limit = Infinity, abs = false, minAbs = 0 } = {}) {
+  const entries = Object.entries(object || {})
+    .map(([key, value]) => [key, numberOrNull(value)])
+    .filter(([, value]) => value !== null && Math.abs(value) >= minAbs)
+    .sort((a, b) => {
+      const left = abs ? Math.abs(a[1]) : a[1];
+      const right = abs ? Math.abs(b[1]) : b[1];
+      return right - left || a[0].localeCompare(b[0]);
+    })
+    .slice(0, limit);
+  return Object.fromEntries(entries.map(([key, value]) => [key, roundOptionalField(value)]));
+}
+
+function compactRegisterDistribution(selection = {}) {
+  const distribution = Array.isArray(selection.distribution)
+    ? selection.distribution
+        .map((entry) => ({
+          register: String(entry?.register || entry?.selected_register || '').trim(),
+          probability: roundOptionalField(entry?.probability),
+          weight: roundOptionalField(entry?.weight),
+        }))
+        .filter((entry) => entry.register)
+    : [];
+  if (distribution.length) {
+    return {
+      source: 'policy_distribution',
+      rows: distribution.sort((a, b) => Number(b.probability || 0) - Number(a.probability || 0) || a.register.localeCompare(b.register)),
+    };
+  }
+  const selected = String(selection.selected_register || '').trim();
+  if (!selected) return { source: 'none', rows: [] };
+  return {
+    source: 'selected_only',
+    rows: [
+      {
+        register: selected,
+        probability: roundOptionalField(selection.selected_probability ?? 1),
+        weight: null,
+      },
+    ],
+  };
+}
+
+function seriesMetric(values) {
+  const finite = values.map(numberOrNull).filter((value) => value !== null);
+  const current = finite.at(-1) ?? null;
+  const previous = finite.length >= 2 ? finite.at(-2) : null;
+  const beforePrevious = finite.length >= 3 ? finite.at(-3) : null;
+  const velocity = current !== null && previous !== null ? current - previous : null;
+  const previousVelocity = previous !== null && beforePrevious !== null ? previous - beforePrevious : null;
+  const acceleration = velocity !== null && previousVelocity !== null ? velocity - previousVelocity : null;
+  let slope = null;
+  if (finite.length >= 2) {
+    const points = finite.map((value, index) => ({ x: index, y: value }));
+    const meanX = points.reduce((sum, point) => sum + point.x, 0) / points.length;
+    const meanY = points.reduce((sum, point) => sum + point.y, 0) / points.length;
+    const denominator = points.reduce((sum, point) => sum + (point.x - meanX) ** 2, 0);
+    if (denominator) {
+      const numerator = points.reduce((sum, point) => sum + (point.x - meanX) * (point.y - meanY), 0);
+      slope = numerator / denominator;
+    }
+  }
+  return {
+    current: roundOptionalField(current),
+    previous: roundOptionalField(previous),
+    velocity: roundOptionalField(velocity),
+    previousVelocity: roundOptionalField(previousVelocity),
+    acceleration: roundOptionalField(acceleration),
+    slope: roundOptionalField(slope),
+  };
+}
+
+function reconstructedTrajectoryFromFieldRows(fieldRows, index, { window = 5 } = {}) {
+  const rows = fieldRows.slice(Math.max(0, index + 1 - window), index + 1);
+  const fieldValues = rows.map((row) => row.learnerMastery);
+  const dagValues = rows.map((row) => row.coverage);
+  const riskValues = rows.map((row) => row.learnerRisk);
+  const field = seriesMetric(fieldValues);
+  const dag = seriesMetric(dagValues);
+  const risk = seriesMetric(riskValues);
+  const fieldSlope = Number(field.slope || 0);
+  const dagSlope = Number(dag.slope || 0);
+  const riskSlope = Number(risk.slope || 0);
+  const fieldVelocity = Number(field.velocity || 0);
+  const dagVelocity = Number(dag.velocity || 0);
+  const riskVelocity = Number(risk.velocity || 0);
+  return {
+    schema: 'machinespirits.tutor-stub.reconstructed-trajectory.v1',
+    window,
+    pointCount: rows.length,
+    points: rows.map((row) => ({
+      turn: row.turn,
+      fieldScore: row.learnerMastery,
+      dagScore: row.coverage,
+      riskScore: row.learnerRisk,
+      bottleneck: row.bottleneck,
+    })),
+    field,
+    dag,
+    risk,
+    flags: {
+      plateau: rows.length >= 3 && Math.abs(fieldSlope) < 0.025 && Math.abs(dagSlope) < 0.025 && riskSlope >= -0.025,
+      fieldRegression: rows.length >= 2 && (fieldVelocity < -0.04 || fieldSlope < -0.025),
+      riskRising: rows.length >= 2 && (riskVelocity > 0.04 || riskSlope > 0.025),
+      fieldOnlyDrift: rows.length >= 3 && fieldSlope > 0.025 && dagSlope <= 0.015,
+      dagOnlyDrift: rows.length >= 3 && dagSlope > 0.025 && fieldSlope < 0.015,
+      stableConvergence: rows.length >= 3 && dagSlope > 0.025 && fieldSlope >= -0.015 && riskSlope <= 0.025,
+      coerciveProgress: rows.length >= 2 && dagVelocity > 0.08 && (fieldVelocity < -0.02 || riskVelocity > 0.04),
+      noisyAcceleration:
+        rows.length >= 3 &&
+        (Math.abs(Number(field.acceleration || 0)) > 0.08 ||
+          Math.abs(Number(dag.acceleration || 0)) > 0.08 ||
+          Math.abs(Number(risk.acceleration || 0)) > 0.08),
+      nearClosure: Number(rows.at(-1)?.coverage || 0) >= 0.8,
+    },
+  };
+}
+
+function compactTrajectoryMetric(metric = {}) {
+  return {
+    current: roundOptionalField(metric.current),
+    previous: roundOptionalField(metric.previous),
+    velocity: roundOptionalField(metric.velocity),
+    previousVelocity: roundOptionalField(metric.previousVelocity),
+    acceleration: roundOptionalField(metric.acceleration),
+    slope: roundOptionalField(metric.slope),
+  };
+}
+
+function compactTrajectory(trajectory, fallbackTrajectory) {
+  const source = trajectory ? 'register_policy' : 'reconstructed_field';
+  const selected = trajectory || fallbackTrajectory || {};
+  return {
+    schema: selected.schema || null,
+    source,
+    window: selected.window ?? null,
+    pointCount: selected.pointCount ?? null,
+    points: (selected.points || []).map((point) => ({
+      turn: point.turn ?? null,
+      fieldScore: roundOptionalField(point.fieldScore),
+      dagScore: roundOptionalField(point.dagScore),
+      riskScore: roundOptionalField(point.riskScore),
+      bottleneck: point.bottleneck || null,
+    })),
+    field: compactTrajectoryMetric(selected.field),
+    dag: compactTrajectoryMetric(selected.dag),
+    risk: compactTrajectoryMetric(selected.risk),
+    flags: Object.fromEntries(Object.entries(selected.flags || {}).map(([key, value]) => [key, Boolean(value)])),
+  };
+}
+
+function classifierStateFeatures(turn = {}, fieldRow = {}) {
+  const classification = turn.classification || {};
+  const turnAnalysis = classification.turn || {};
+  const scores = turnAnalysis.scores || {};
+  return {
+    requestType: turnAnalysis.request_type || 'unknown',
+    discourseMove: turnAnalysis.discourse_move || 'unknown',
+    evidenceUse: turnAnalysis.evidence_use || 'unknown',
+    epistemicStance: turnAnalysis.epistemic_stance || 'unknown',
+    agency: turnAnalysis.agency || 'unknown',
+    affect: turnAnalysis.affect || 'unknown',
+    scores: {
+      conceptual: roundOptionalField(fieldRow.conceptual ?? fieldScore(scores.conceptual_engagement)),
+      epistemicReadiness: roundOptionalField(fieldRow.readiness ?? fieldScore(scores.epistemic_readiness)),
+      learnerSurface: roundOptionalField(mean([fieldRow.conceptual, fieldRow.readiness])),
+    },
+  };
+}
+
+function approximateDynamicalStateVector({ turn, fieldRow, trajectory, selection }) {
+  const assessment = turn?.tutorLearnerDagModel?.assessment || {};
+  const metrics = turn?.tutorLearnerDagModel?.metrics || {};
+  const flags = trajectory?.flags || {};
+  const coverage = normalizedField01(assessment.bestPathCoverage ?? fieldRow.coverage, 0);
+  const missingNeed = clampField01(Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? fieldRow.missingCount ?? 0) / 8);
+  const unsupportedNeed = clampField01(Number(assessment.unsupportedAssertionCount || 0) / 3);
+  const conceptual = normalizedField01(fieldRow.conceptual, 0.5);
+  const readiness = normalizedField01(fieldRow.readiness, 0.5);
+  const risk = normalizedField01(fieldRow.learnerRisk, 0);
+  const alignment = normalizedField01(fieldRow.tutorAlignment, 0.5);
+  const momentum = normalizedField01(fieldRow.jointMomentum, 0);
+  const selectedProbability = numberOrNull(selection?.selected_probability);
+  const negativeValence = selection?.valence === 'negative' || ['ironic', 'sarcastic', 'face_threat'].includes(selection?.selected_register);
+  return {
+    evidence_gap: roundField(clampField01((1 - coverage) * 0.58 + missingNeed * 0.32 + (1 - conceptual) * 0.1)),
+    warrant_gap: roundField(
+      clampField01(
+        unsupportedNeed * 0.45 +
+          (assessment.bottleneck === 'assertion_gap' ? 0.3 : 0) +
+          (assessment.bottleneck === 'premature_assertion' ? 0.35 : 0) +
+          (1 - readiness) * 0.15,
+      ),
+    ),
+    agency_deficit: roundField(clampField01(1 - readiness + (selection?.action_family === 'answer_supply' ? 0.2 : 0))),
+    affective_risk: roundField(risk),
+    recognition_pressure: roundField(clampField01((1 - alignment) * 0.45 + risk * 0.3 + (negativeValence ? 0.25 : 0))),
+    coercion_risk: roundField(clampField01((negativeValence ? 0.35 : 0) + (flags.coerciveProgress ? 0.35 : 0) + risk * 0.2)),
+    integration_need: roundField(clampField01(1 - conceptual + (assessment.bottleneck === 'learner_integration_gap' ? 0.25 : 0))),
+    compression_need: roundField(clampField01((1 - conceptual) * 0.45 + (1 - readiness) * 0.25 + missingNeed * 0.3)),
+    momentum: roundField(momentum),
+    stagnation: roundField(clampField01((flags.plateau ? 0.55 : 0) + (Number(fieldRow.speed || 0) < 0.035 ? 0.18 : 0))),
+    disruption_need: roundField(clampField01((flags.plateau ? 0.5 : 0) + (flags.fieldRegression ? 0.25 : 0) + (1 - readiness) * 0.2)),
+    tempo_affordance: roundField(clampField01(momentum * (1 - risk) + (selection?.request_type === 'transfer_demand_or_named_material' ? 0.12 : 0))),
+    closure_pressure: roundField(clampField01(coverage * 0.65 + (assessment.finalSecretEntailed ? 0.25 : 0) + (assessment.assertedSecret ? 0.2 : 0))),
+    field_regression: roundField(clampField01((flags.fieldRegression ? 0.65 : 0) + Math.max(0, -(Number(trajectory?.field?.velocity || 0))) * 3)),
+    empirical_uncertainty: roundField(selectedProbability === null ? 0.8 : clampField01(1 - selectedProbability)),
+  };
+}
+
+function frameEvents({ turn, fieldRow, trajectory, selection }) {
+  const events = new Set();
+  if (fieldRow.bottleneck) events.add(fieldRow.bottleneck);
+  for (const flag of selection?.risk_flags || []) events.add(flag);
+  for (const [flag, enabled] of Object.entries(trajectory?.flags || {})) {
+    if (enabled) events.add(flag);
+  }
+  if (turn?.tutorLeakAudit?.ok === false) events.add('leak_audit_flag');
+  if (turn?.tutorResponseRepaired) events.add('repaired_response');
+  if (turn?.tutorDeterministicFallback) events.add('deterministic_fallback');
+  return Array.from(events).filter(Boolean).slice(0, 10);
+}
+
+function compactFrameState({ turn, fieldRow, selection }) {
+  const model = turn?.tutorLearnerDagModel || {};
+  const metrics = model.metrics || {};
+  const assessment = model.assessment || {};
+  const policyFeatures =
+    selection?.state_policy?.features || selection?.field_policy?.features || selection?.trajectory_policy?.features || selection?.dynamical_system_policy?.features;
+  const classifier = {
+    ...classifierStateFeatures(turn, fieldRow),
+    ...(policyFeatures
+      ? {
+          requestType: policyFeatures.requestType || policyFeatures.request_type || undefined,
+          discourseMove: policyFeatures.discourseMove || policyFeatures.discourse_move || undefined,
+          evidenceUse: policyFeatures.evidenceUse || policyFeatures.evidence_use || undefined,
+          epistemicStance: policyFeatures.epistemicStance || policyFeatures.epistemic_stance || undefined,
+          agency: policyFeatures.agency || undefined,
+          affect: policyFeatures.affect || undefined,
+          scores: policyFeatures.scores || classifierStateFeatures(turn, fieldRow).scores,
+        }
+      : {}),
+  };
+  return {
+    classifier,
+    dag: {
+      bottleneck: assessment.bottleneck || 'unknown',
+      bestPathCoverage: roundOptionalField(assessment.bestPathCoverage ?? fieldRow.coverage),
+      missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? fieldRow.missingCount ?? 0),
+      groundedCount: Number(metrics.groundedCount ?? fieldRow.groundedCount ?? 0),
+      voicedDerivedCount: Number(metrics.voicedDerivedCount || 0),
+      unsupportedAssertionCount: Number(assessment.unsupportedAssertionCount || 0),
+      finalSecretEntailed: assessment.finalSecretEntailed === true,
+      assertedSecret: assessment.assertedSecret === true,
+      assertedMirror: assessment.assertedMirror === true,
+    },
+  };
+}
+
+function buildAnimatedVizFrame({ turn, index, fieldRows }) {
+  const fieldRow = fieldRows[index] || lightweightFieldTurn(turn, fieldRows[index - 1] || null);
+  const selection = turn?.registerSelection || {};
+  const fallbackTrajectory = reconstructedTrajectoryFromFieldRows(fieldRows, index);
+  const policyTrajectory = selection.dynamical_system_policy?.trajectory || selection.trajectory_policy?.trajectory || null;
+  const trajectory = compactTrajectory(policyTrajectory, fallbackTrajectory);
+  const stateVector = selection.dynamical_system_policy?.state_vector || approximateDynamicalStateVector({ turn, fieldRow, trajectory, selection });
+  const derivativeVector =
+    selection.dynamical_system_policy?.derivative_vector || {
+      field_velocity: trajectory.field.velocity,
+      field_slope: trajectory.field.slope,
+      field_acceleration: trajectory.field.acceleration,
+      dag_velocity: trajectory.dag.velocity,
+      dag_slope: trajectory.dag.slope,
+      dag_acceleration: trajectory.dag.acceleration,
+      risk_velocity: trajectory.risk.velocity,
+      risk_slope: trajectory.risk.slope,
+      risk_acceleration: trajectory.risk.acceleration,
+    };
+  const distribution = compactRegisterDistribution(selection);
+  return {
+    schema: 'machinespirits.tutor-stub.animated-viz-frame.v1',
+    turn: turn?.turn ?? index + 1,
+    policy: selection.policy || null,
+    selectedRegister: selection.selected_register || null,
+    register: {
+      policy: selection.policy || null,
+      selected: selection.selected_register || null,
+      probability: roundOptionalField(selection.selected_probability),
+      distributionSource: distribution.source,
+      distribution: distribution.rows,
+      scores: compactNumericMap(
+        selection.dynamical_system_policy?.scores ||
+          selection.trajectory_policy?.scores ||
+          selection.state_policy?.scores ||
+          selection.field_policy?.scores ||
+          {},
+        { limit: 12 },
+      ),
+      logits: compactNumericMap(selection.dynamical_system_policy?.logits || {}, { limit: 12 }),
+    },
+    state: compactFrameState({ turn, fieldRow, selection }),
+    field: {
+      learnerMastery: fieldRow.learnerMastery,
+      learnerRisk: fieldRow.learnerRisk,
+      tutorAlignment: fieldRow.tutorAlignment,
+      jointMomentum: fieldRow.jointMomentum,
+      coverage: fieldRow.coverage,
+      speed: fieldRow.speed,
+      bottleneck: fieldRow.bottleneck,
+      learnerMove: fieldRow.learnerMove,
+    },
+    trajectory,
+    dynamics: {
+      source: selection.dynamical_system_policy ? 'dynamical_system_policy' : 'reconstructed_state',
+      stateVector: compactNumericMap(stateVector),
+      derivativeVector: compactNumericMap(derivativeVector),
+      attractors: compactNumericMap(selection.dynamical_system_policy?.attractors || {}, { limit: 12 }),
+      selectedContributions: (selection.dynamical_system_policy?.selected_contributions || []).slice(0, 8),
+      empirical: selection.dynamical_system_policy?.empirical || null,
+      corpusEmpirical: selection.dynamical_system_policy?.corpus_empirical || null,
+      mapping: selection.dynamical_system_policy?.mapping || null,
+    },
+    events: frameEvents({ turn, fieldRow, trajectory, selection }),
+    snippets: {
+      learner: textSnippet(turn?.learner),
+      tutor: textSnippet(turn?.tutor),
+    },
+  };
+}
+
+function buildAnimatedRunVisualization(turnRecords = [], fieldViz = null) {
+  const fieldRows = fieldViz?.rows?.length ? fieldViz.rows : buildLightweightDialogueField(turnRecords).rows;
+  const frames = turnRecords.map((turn, index) => buildAnimatedVizFrame({ turn, index, fieldRows }));
+  if (!frames.length) return null;
+  const registerPalette = Array.from(
+    new Set(
+      frames.flatMap((frame) => [
+        frame.selectedRegister,
+        ...frame.register.distribution.map((entry) => entry.register),
+        ...Object.keys(frame.register.scores || {}),
+      ]),
+    ),
+  ).filter(Boolean);
+  const dynamicsAxes = Array.from(new Set(frames.flatMap((frame) => Object.keys(frame.dynamics.stateVector || {}))));
+  return {
+    schema: 'machinespirits.tutor-stub.run-animation.v1',
+    turnCount: frames.length,
+    registerPalette,
+    dynamicsAxes,
+    layers: {
+      state: true,
+      field: true,
+      trajectory: true,
+      dynamicalSystem: frames.some((frame) => frame.dynamics.source === 'dynamical_system_policy'),
+      registers: frames.some((frame) => frame.register.distribution.length),
+    },
+    frames,
+  };
+}
+
 function fieldPolyline(rows, key, { width, height, padding }) {
   if (!rows.length) return '';
   const xSpan = Math.max(1, rows.length - 1);
@@ -640,6 +1021,7 @@ function summarizeTrace(tracePath, traceDir) {
   const runEnds = events.filter((event) => event.type === 'run_end' || event.type === 'auto_learner_run_end');
   const fieldWrite = events.filter((event) => event.type === 'field_visualization_write').at(-1) || null;
   const fieldViz = buildLightweightDialogueField(turnRecords);
+  const animatedViz = buildAnimatedRunVisualization(turnRecords, fieldViz);
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
@@ -695,6 +1077,7 @@ function summarizeTrace(tracePath, traceDir) {
         }
       : null,
     fieldViz: fieldViz.turnCount ? fieldViz : null,
+    animatedViz,
   };
 }
 
@@ -734,6 +1117,7 @@ function resultRows(results) {
           errorCount: 0,
           field: null,
           fieldViz: null,
+          animatedViz: null,
         },
       ];
     }
@@ -880,6 +1264,408 @@ function writeFieldSvgArtifacts({ rows, htmlPath }) {
   });
 }
 
+function safeJsonForScript(value) {
+  return String(value)
+    .replace(/</gu, '\\u003c')
+    .replace(/>/gu, '\\u003e')
+    .replace(/&/gu, '\\u0026')
+    .replace(/\u2028/gu, '\\u2028')
+    .replace(/\u2029/gu, '\\u2029');
+}
+
+function animatedVizRowId(row, index) {
+  const traceStem = row.trace ? path.basename(row.trace, path.extname(row.trace)) : '';
+  return [
+    'viz',
+    String(index + 1).padStart(2, '0'),
+    safeSlug(row.policy || 'policy'),
+    `r${safeSlug(row.runIndex || 'x')}`,
+    safeSlug(traceStem).slice(0, 36),
+  ]
+    .filter(Boolean)
+    .join('-');
+}
+
+function animatedVizReportPayload(rows) {
+  const vizRows = rows.filter((row) => row.animatedViz?.frames?.length);
+  return {
+    schema: 'machinespirits.tutor-stub.report-animation.v1',
+    rows: vizRows.map((row, index) => ({
+      id: animatedVizRowId(row, index),
+      title: fieldRowTitle(row),
+      policy: row.policy,
+      runIndex: row.runIndex,
+      status: row.status,
+      groundedClosure: row.groundedClosure,
+      stopReason: row.stopReason || null,
+      turnCount: row.turnCount,
+      trace: row.trace || null,
+      viz: row.animatedViz,
+    })),
+  };
+}
+
+function renderAnimatedVizSection(rows) {
+  const payload = animatedVizReportPayload(rows);
+  if (!payload.rows.length) {
+    return '<p class="sub">No turn-by-turn visualization frames were found in these traces.</p>';
+  }
+  return `<div class="viz-player" id="tutor-stub-viz-player">
+    <div class="viz-toolbar">
+      <label class="viz-select-label"><span>Run</span><select data-viz-run></select></label>
+      <div class="viz-mode-buttons" role="tablist" aria-label="Visualization mode">
+        <button type="button" data-viz-mode="state">State</button>
+        <button type="button" data-viz-mode="field" class="active">Field</button>
+        <button type="button" data-viz-mode="trajectory">Trajectory</button>
+        <button type="button" data-viz-mode="dynamics">Dynamics</button>
+        <button type="button" data-viz-mode="registers">Registers</button>
+      </div>
+      <div class="viz-step-buttons">
+        <button type="button" data-viz-prev>Prev</button>
+        <button type="button" data-viz-play>Play</button>
+        <button type="button" data-viz-next>Next</button>
+      </div>
+      <label class="viz-range-label"><span>Turn</span><input type="range" min="0" value="0" step="1" data-viz-range></label>
+    </div>
+    <div class="viz-canvas-wrap"><canvas data-viz-canvas></canvas></div>
+    <pre class="viz-readout" data-viz-readout></pre>
+  </div>
+  <script type="application/json" id="tutor-stub-viz-data">${safeJsonForScript(JSON.stringify(payload))}</script>
+  <script>
+  (function () {
+    var root = document.getElementById('tutor-stub-viz-player');
+    var dataNode = document.getElementById('tutor-stub-viz-data');
+    if (!root || !dataNode) return;
+    var payload;
+    try {
+      payload = JSON.parse(dataNode.textContent || '{}');
+    } catch (error) {
+      return;
+    }
+    var rows = payload.rows || [];
+    if (!rows.length) return;
+    var canvas = root.querySelector('[data-viz-canvas]');
+    var ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
+    if (!ctx) return;
+    var select = root.querySelector('[data-viz-run]');
+    var range = root.querySelector('[data-viz-range]');
+    var readout = root.querySelector('[data-viz-readout]');
+    var playButton = root.querySelector('[data-viz-play]');
+    var modeButtons = Array.prototype.slice.call(root.querySelectorAll('[data-viz-mode]'));
+    var activeRow = rows[0];
+    var activeIndex = 0;
+    var mode = 'field';
+    var timer = null;
+    var palette = {
+      learnerMastery: '#2563eb',
+      learnerRisk: '#dc2626',
+      tutorAlignment: '#059669',
+      jointMomentum: '#7c3aed',
+      field: '#2563eb',
+      dag: '#059669',
+      risk: '#dc2626'
+    };
+
+    function finite(value, fallback) {
+      var number = Number(value);
+      return Number.isFinite(number) ? number : fallback;
+    }
+
+    function clamp01(value) {
+      return Math.max(0, Math.min(1, finite(value, 0)));
+    }
+
+    function format(value) {
+      var number = Number(value);
+      return Number.isFinite(number) ? number.toFixed(3) : 'n/a';
+    }
+
+    function currentFrames() {
+      return (activeRow.viz && activeRow.viz.frames) || [];
+    }
+
+    function currentFrame() {
+      var frames = currentFrames();
+      return frames[Math.max(0, Math.min(activeIndex, frames.length - 1))] || null;
+    }
+
+    function resizeCanvas() {
+      var rect = canvas.getBoundingClientRect();
+      var ratio = window.devicePixelRatio || 1;
+      var width = Math.max(320, Math.floor(rect.width));
+      var height = Math.max(320, Math.floor(rect.height));
+      canvas.width = Math.floor(width * ratio);
+      canvas.height = Math.floor(height * ratio);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      draw();
+    }
+
+    function clear(width, height) {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function text(value, x, y, options) {
+      var opts = options || {};
+      ctx.fillStyle = opts.color || '#17201b';
+      ctx.font = (opts.weight ? opts.weight + ' ' : '') + (opts.size || 12) + 'px ui-sans-serif, system-ui, sans-serif';
+      ctx.textAlign = opts.align || 'left';
+      ctx.textBaseline = opts.baseline || 'alphabetic';
+      ctx.fillText(String(value), x, y);
+    }
+
+    function rectBar(label, value, x, y, width, color) {
+      var bounded = clamp01(value);
+      ctx.fillStyle = '#e7ece8';
+      ctx.fillRect(x, y, width, 12);
+      ctx.fillStyle = color || '#2f6f63';
+      ctx.fillRect(x, y, width * bounded, 12);
+      text(label, x, y - 4, { color: '#34433c', size: 11 });
+      text(format(value), x + width + 8, y + 10, { color: '#66736c', size: 11 });
+    }
+
+    function drawPlot(series, options) {
+      var opts = options || {};
+      var frames = currentFrames();
+      var x = opts.x || 44;
+      var y = opts.y || 58;
+      var width = opts.width || 640;
+      var height = opts.height || 240;
+      var count = Math.max(1, frames.length - 1);
+      ctx.strokeStyle = '#d9e0dc';
+      ctx.lineWidth = 1;
+      for (var grid = 0; grid <= 4; grid += 1) {
+        var gy = y + height - (grid / 4) * height;
+        ctx.beginPath();
+        ctx.moveTo(x, gy);
+        ctx.lineTo(x + width, gy);
+        ctx.stroke();
+        text((grid / 4).toFixed(2), x - 8, gy + 4, { color: '#66736c', size: 10, align: 'right' });
+      }
+      ctx.strokeStyle = '#b9c6bf';
+      ctx.strokeRect(x, y, width, height);
+      series.forEach(function (item, seriesIndex) {
+        ctx.beginPath();
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = 3;
+        for (var index = 0; index <= activeIndex && index < frames.length; index += 1) {
+          var value = clamp01(item.value(frames[index]));
+          var px = x + (index / count) * width;
+          var py = y + height - value * height;
+          if (index === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        text(item.label, x + seriesIndex * 132, y + height + 28, { color: item.color, size: 12, weight: '700' });
+      });
+      var cursorX = x + (Math.max(0, Math.min(activeIndex, count)) / count) * width;
+      ctx.strokeStyle = '#17201b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cursorX, y);
+      ctx.lineTo(cursorX, y + height);
+      ctx.stroke();
+    }
+
+    function drawState(frame, width, height) {
+      text('Learner/DAG State', 28, 34, { size: 18, weight: '700' });
+      var scores = (frame.state.classifier && frame.state.classifier.scores) || {};
+      rectBar('conceptual', scores.conceptual, 38, 82, width * 0.36, '#2563eb');
+      rectBar('readiness', scores.epistemicReadiness, 38, 126, width * 0.36, '#059669');
+      rectBar('surface', scores.learnerSurface, 38, 170, width * 0.36, '#7c3aed');
+      rectBar('coverage', frame.state.dag.bestPathCoverage, 38, 214, width * 0.36, '#2f6f63');
+      var rightX = width * 0.52;
+      text('DAG', rightX, 82, { size: 13, weight: '700' });
+      text('bottleneck: ' + (frame.state.dag.bottleneck || 'unknown'), rightX, 112, { color: '#34433c' });
+      text('grounded: ' + frame.state.dag.groundedCount + '   missing: ' + frame.state.dag.missingPremiseCount, rightX, 140, { color: '#34433c' });
+      text('unsupported: ' + frame.state.dag.unsupportedAssertionCount, rightX, 168, { color: '#34433c' });
+      text('request: ' + ((frame.state.classifier && frame.state.classifier.requestType) || 'unknown'), rightX, 214, { color: '#34433c' });
+      text('move: ' + ((frame.state.classifier && frame.state.classifier.discourseMove) || 'unknown'), rightX, 242, { color: '#34433c' });
+    }
+
+    function drawField(frame, width, height) {
+      text('Field Trajectory', 28, 34, { size: 18, weight: '700' });
+      drawPlot([
+        { label: 'mastery', color: palette.learnerMastery, value: function (row) { return row.field.learnerMastery; } },
+        { label: 'risk', color: palette.learnerRisk, value: function (row) { return row.field.learnerRisk; } },
+        { label: 'alignment', color: palette.tutorAlignment, value: function (row) { return row.field.tutorAlignment; } },
+        { label: 'momentum', color: palette.jointMomentum, value: function (row) { return row.field.jointMomentum; } }
+      ], { x: 54, y: 64, width: width - 108, height: height - 142 });
+    }
+
+    function drawTrajectory(frame, width, height) {
+      text('Trajectory Derivatives', 28, 34, { size: 18, weight: '700' });
+      drawPlot([
+        { label: 'field', color: palette.field, value: function (row) { return row.trajectory.field.current; } },
+        { label: 'dag', color: palette.dag, value: function (row) { return row.trajectory.dag.current; } },
+        { label: 'risk', color: palette.risk, value: function (row) { return row.trajectory.risk.current; } }
+      ], { x: 54, y: 64, width: width * 0.58, height: height - 142 });
+      var x = width * 0.7;
+      var y = 82;
+      text('velocity / slope / acceleration', x, y - 24, { color: '#34433c', size: 12, weight: '700' });
+      ['field', 'dag', 'risk'].forEach(function (key, index) {
+        var metric = frame.trajectory[key] || {};
+        var yy = y + index * 76;
+        text(key, x, yy, { color: palette[key], size: 13, weight: '700' });
+        text('v ' + format(metric.velocity), x, yy + 24, { color: '#34433c' });
+        text('s ' + format(metric.slope), x + 86, yy + 24, { color: '#34433c' });
+        text('a ' + format(metric.acceleration), x + 172, yy + 24, { color: '#34433c' });
+      });
+    }
+
+    function drawHeatmap(object, x, y, width, cellHeight) {
+      var entries = Object.entries(object || {});
+      if (!entries.length) {
+        text('no vector data', x, y + 18, { color: '#66736c' });
+        return;
+      }
+      entries.forEach(function (entry, index) {
+        var key = entry[0];
+        var value = clamp01(entry[1]);
+        var yy = y + index * cellHeight;
+        var intensity = Math.round(245 - value * 115);
+        ctx.fillStyle = 'rgb(' + intensity + ',' + Math.round(250 - value * 70) + ',' + Math.round(246 - value * 110) + ')';
+        ctx.fillRect(x, yy, width, cellHeight - 3);
+        text(key, x + 8, yy + cellHeight - 10, { color: '#17201b', size: 11 });
+        text(format(value), x + width - 8, yy + cellHeight - 10, { color: '#17201b', size: 11, align: 'right' });
+      });
+    }
+
+    function drawDynamics(frame, width, height) {
+      text('Dynamical System', 28, 34, { size: 18, weight: '700' });
+      text('source: ' + (frame.dynamics.source || 'unknown'), 28, 56, { color: '#66736c', size: 12 });
+      drawHeatmap(frame.dynamics.stateVector || {}, 34, 82, width * 0.46, 22);
+      var rightX = width * 0.56;
+      text('attractors / derivatives', rightX, 82, { size: 13, weight: '700' });
+      var bars = Object.keys(frame.dynamics.attractors || {}).length ? frame.dynamics.attractors : frame.dynamics.derivativeVector;
+      Object.entries(bars || {}).slice(0, 12).forEach(function (entry, index) {
+        rectBar(entry[0], Math.abs(finite(entry[1], 0)), rightX, 116 + index * 24, width * 0.28, '#2f6f63');
+      });
+    }
+
+    function drawRegisters(frame, width, height) {
+      text('Register Distribution', 28, 34, { size: 18, weight: '700' });
+      var rows = frame.register.distribution || [];
+      if (!rows.length) {
+        text('no register distribution', 34, 86, { color: '#66736c' });
+        return;
+      }
+      var x = 44;
+      var y = 76;
+      var barWidth = width - 280;
+      rows.slice(0, 12).forEach(function (entry, index) {
+        var yy = y + index * 28;
+        var selected = entry.register === frame.selectedRegister;
+        rectBar(entry.register + (selected ? ' *' : ''), entry.probability, x, yy, barWidth, selected ? '#7c3aed' : '#2f6f63');
+      });
+      text('selected: ' + (frame.selectedRegister || 'none'), width - 210, 92, { color: '#34433c', size: 13, weight: '700' });
+      text('source: ' + frame.register.distributionSource, width - 210, 122, { color: '#66736c' });
+    }
+
+    function updateReadout(frame) {
+      if (!readout || !frame) return;
+      readout.textContent = [
+        activeRow.title + ' | turn ' + frame.turn + '/' + activeRow.viz.turnCount + ' | ' + mode,
+        'register: ' + (frame.selectedRegister || 'none') + ' | bottleneck: ' + (frame.field.bottleneck || 'unknown') + ' | events: ' + (frame.events || []).join(', '),
+        'learner: ' + ((frame.snippets && frame.snippets.learner) || ''),
+        'tutor: ' + ((frame.snippets && frame.snippets.tutor) || '')
+      ].join('\\n');
+    }
+
+    function draw() {
+      var width = canvas.clientWidth || 960;
+      var height = canvas.clientHeight || 420;
+      var frame = currentFrame();
+      clear(width, height);
+      if (!frame) return;
+      if (mode === 'state') drawState(frame, width, height);
+      else if (mode === 'trajectory') drawTrajectory(frame, width, height);
+      else if (mode === 'dynamics') drawDynamics(frame, width, height);
+      else if (mode === 'registers') drawRegisters(frame, width, height);
+      else drawField(frame, width, height);
+      text('turn ' + frame.turn, width - 28, 34, { align: 'right', color: '#66736c', size: 12, weight: '700' });
+      updateReadout(frame);
+    }
+
+    function syncControls() {
+      var frames = currentFrames();
+      range.max = String(Math.max(0, frames.length - 1));
+      range.value = String(activeIndex);
+      modeButtons.forEach(function (button) {
+        button.classList.toggle('active', button.getAttribute('data-viz-mode') === mode);
+      });
+      if (playButton) playButton.textContent = timer ? 'Pause' : 'Play';
+    }
+
+    function setIndex(value) {
+      var frames = currentFrames();
+      activeIndex = Math.max(0, Math.min(Number(value) || 0, Math.max(0, frames.length - 1)));
+      syncControls();
+      draw();
+    }
+
+    function stop() {
+      if (timer) window.clearInterval(timer);
+      timer = null;
+      syncControls();
+    }
+
+    rows.forEach(function (row, index) {
+      var option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = row.title + ' (' + row.turnCount + 't, ' + row.status + ')';
+      select.appendChild(option);
+    });
+    select.addEventListener('change', function () {
+      stop();
+      activeRow = rows[Number(select.value) || 0] || rows[0];
+      setIndex(0);
+    });
+    range.addEventListener('input', function () {
+      stop();
+      setIndex(range.value);
+    });
+    root.querySelector('[data-viz-prev]').addEventListener('click', function () {
+      stop();
+      setIndex(activeIndex - 1);
+    });
+    root.querySelector('[data-viz-next]').addEventListener('click', function () {
+      stop();
+      setIndex(activeIndex + 1);
+    });
+    playButton.addEventListener('click', function () {
+      if (timer) {
+        stop();
+        return;
+      }
+      timer = window.setInterval(function () {
+        var frames = currentFrames();
+        if (activeIndex >= frames.length - 1) {
+          stop();
+          return;
+        }
+        setIndex(activeIndex + 1);
+      }, 850);
+      syncControls();
+    });
+    modeButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        mode = button.getAttribute('data-viz-mode') || 'field';
+        syncControls();
+        draw();
+      });
+    });
+    if (window.ResizeObserver) {
+      new ResizeObserver(resizeCanvas).observe(canvas);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    syncControls();
+    resizeCanvas();
+  })();
+  </script>`;
+}
+
 function renderFieldTrajectories(rows) {
   const fieldRows = rows.filter((row) => row.fieldViz?.rows?.length);
   if (!fieldRows.length) {
@@ -911,7 +1697,11 @@ function renderFieldTrajectories(rows) {
   </div>`;
 }
 
-function renderHtmlReport(summary, rows) {
+function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
+  const reportDir = htmlPath
+    ? path.dirname(resolvePath(htmlPath))
+    : resolveTracePath(summary.config?.traceDir || '.', ROOT);
+  const guideHref = hrefRelative(reportDir, path.join(ROOT, 'docs', 'tutor-stub-arc-guide.html'));
   const policyRows = Object.entries(summary.aggregates.byPolicy)
     .map(
       ([policy, bucket]) => `<tr>
@@ -968,6 +1758,8 @@ function renderHtmlReport(summary, rows) {
     h2 { margin:30px 0 12px; font-size:18px; }
     main { max-width:1280px; margin:0 auto; padding:22px 32px 40px; }
     .sub { color:var(--muted); }
+    .header-links { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+    .header-links a { border:1px solid var(--line); border-radius:7px; padding:5px 9px; background:#fff; text-decoration:none; }
     .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:18px 0 4px; }
     .metric { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px; }
     .metric-label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
@@ -983,6 +1775,18 @@ function renderHtmlReport(summary, rows) {
     .field-card-summary { padding:9px 14px; color:#34433c; font-size:12px; border-bottom:1px solid var(--line); }
     .field-svg { overflow-x:auto; background:#f8fafc; }
     .field-svg svg { display:block; width:100%; min-width:640px; height:auto; }
+    .viz-player { background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+    .viz-toolbar { display:grid; grid-template-columns:minmax(220px,1.2fr) auto auto minmax(180px,.9fr); gap:10px; align-items:end; padding:12px 14px; border-bottom:1px solid var(--line); background:#f7faf8; }
+    .viz-toolbar label { display:flex; flex-direction:column; gap:4px; color:var(--muted); font-size:12px; }
+    .viz-toolbar select, .viz-toolbar button, .viz-toolbar input { font:inherit; }
+    .viz-toolbar select { width:100%; border:1px solid var(--line); border-radius:6px; padding:7px 8px; background:#fff; color:var(--ink); }
+    .viz-mode-buttons, .viz-step-buttons { display:flex; flex-wrap:wrap; gap:6px; }
+    .viz-mode-buttons button, .viz-step-buttons button { border:1px solid var(--line); border-radius:6px; background:#fff; color:#34433c; padding:7px 9px; cursor:pointer; }
+    .viz-mode-buttons button.active { border-color:var(--accent); background:#eaf3f0; color:#17443b; font-weight:700; }
+    .viz-range-label input { width:100%; min-width:150px; accent-color:var(--accent); }
+    .viz-canvas-wrap { background:#fff; }
+    .viz-canvas-wrap canvas { display:block; width:100%; height:420px; }
+    .viz-readout { margin:0; padding:12px 14px; border-top:1px solid var(--line); background:#f8faf9; color:#34433c; white-space:pre-wrap; overflow-wrap:anywhere; font:12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; min-height:88px; }
     table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
     th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
     th { background:#eef4f1; font-size:12px; color:#34433c; text-transform:uppercase; letter-spacing:.04em; }
@@ -993,12 +1797,17 @@ function renderHtmlReport(summary, rows) {
     .status.failed { background:#f5dddd; color:var(--bad); }
     .status.dry_run { background:#f3eadc; color:var(--warn); }
     a { color:var(--accent); }
+    @media (max-width: 820px) {
+      .viz-toolbar { grid-template-columns:1fr; }
+      .viz-canvas-wrap canvas { height:360px; }
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Tutor Stub Auto-Eval Report</h1>
     <div class="sub">Started ${escapeHtml(summary.startedAt)} · completed ${escapeHtml(summary.completedAt)} · world ${escapeHtml(summary.config.world)}</div>
+    <div class="header-links"><a href="${escapeHtml(guideHref)}">arc guide</a></div>
   </header>
   <main>
     <section class="metrics">
@@ -1014,6 +1823,9 @@ function renderHtmlReport(summary, rows) {
       <thead><tr><th>Policy</th><th>OK</th><th>Grounded</th><th>Rate</th><th>Mean Turns</th><th>Mean Coverage</th><th>Mean Missing</th><th>Mastery Δ</th><th>Risk Δ</th><th>Top Registers</th><th>Entropy</th></tr></thead>
       <tbody>${policyRows || '<tr><td colspan="11">No policy rows.</td></tr>'}</tbody>
     </table>
+
+    <h2>Animated Dynamics</h2>
+    ${renderAnimatedVizSection(rows)}
 
     <h2>Field Trajectories</h2>
     ${renderFieldTrajectories(rows)}
@@ -1031,7 +1843,7 @@ function renderHtmlReport(summary, rows) {
 
 function writeHtmlReport({ summary, rows, htmlPath }) {
   const fieldSvgPaths = writeFieldSvgArtifacts({ rows, htmlPath });
-  fs.writeFileSync(htmlPath, renderHtmlReport(summary, rows));
+  fs.writeFileSync(htmlPath, renderHtmlReport(summary, rows, { htmlPath }));
   console.log(`[auto-eval] wrote ${htmlPath}`);
   if (fieldSvgPaths.length) {
     console.log(`[auto-eval] wrote ${fieldSvgPaths.length} field SVGs to ${fieldSvgDirForReport(htmlPath)}`);
@@ -1330,6 +2142,7 @@ function policyChips(policies) {
 }
 
 function renderReportIndex({ rows, rootDir, generatedAt }) {
+  const guideHref = hrefRelative(rootDir, path.join(ROOT, 'docs', 'tutor-stub-arc-guide.html'));
   const totals = {
     reports: rows.length,
     ok: rows.reduce((sum, row) => sum + Number(row.ok || 0), 0),
@@ -1401,7 +2214,10 @@ function renderReportIndex({ rows, rootDir, generatedAt }) {
 <body>
   <header>
     <h1>Tutor Stub Reports</h1>
-    <div class="muted">Generated ${escapeHtml(shortDate(generatedAt))} · root ${escapeHtml(path.relative(ROOT, rootDir) || '.')}</div>
+    <div class="muted">
+      Generated ${escapeHtml(shortDate(generatedAt))} · root ${escapeHtml(path.relative(ROOT, rootDir) || '.')} ·
+      <a href="${escapeHtml(guideHref || 'docs/tutor-stub-arc-guide.html')}">arc guide</a>
+    </div>
   </header>
   <main>
     <section class="metrics">
