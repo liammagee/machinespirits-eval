@@ -20,7 +20,12 @@ Key choices and defaults:
 
 - Mode: `human`, `auto-eval`, `resume`, `abm-panel`, `analyze`, `multi-eval`; default `auto-eval` for comparisons, `human` when the user will play the learner.
 - World: default `world_005_marrick`.
-- Register policies: default comparison `bland,dynamic,field,state,random`; focused adaptive comparison `dynamic,field,state`.
+- Register policies: default comparison `negative,bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,random`; focused adaptive comparison `dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system`.
+- Trajectory policy: `--register-policy trajectory` leaves `field` unchanged and adds recent finite-difference velocity/slope/acceleration/risk-trend adjustments for benchmarking against `field`.
+- Dynamical-system policy: `--register-policy dynamical_system` maps a continuous state/derivative vector through theory priors plus within-dialogue empirical efficacy corrections; `dynamical-system` is accepted as an alias.
+- Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
+- Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
+- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited`, or list presets with `--list-learner-profiles`.
 - Runs: default `3` for baseline comparisons, `5` for focused policy comparisons, `1` for ABM panels.
 - Models: default tutor `openai.mini`, analysis/classifier/DAG `codex.gpt-5.5`, automated learner `openai.mini`.
 - Parallelism: default `8` for `auto-eval`; ABM panel is currently serial.
@@ -29,6 +34,7 @@ Key choices and defaults:
 - Memory compaction: default on; use `--history-turns 4` to keep only a short raw recent window plus compact state/field/dialogue summaries. Use `--no-memory-summary` only for legacy full-transcript debugging.
 - Trace/output dir: default `.tutor-stub-auto-eval/<descriptive-run-id>` for auto-eval, `exports/tutor-stub-abm-panel` for ABM.
 - Eval ledger: default `.tutor-stub-auto-eval/ledger.jsonl` plus `.tutor-stub-auto-eval/ledger.md`; this is local/ignored and separate from `data/evaluations.db`. Use `--no-ledger` to skip.
+- Debug turn ids: tutor-stub prints `turn id > <run-id>:tNNN` at each learner turn; ask the user for that id when debugging a specific turn.
 
 Do not recommend `codex.mini`, `codex.gpt-mini`, or `codex.gpt-5-mini`; the local
 Codex ChatGPT-account route rejects those. Use `codex.gpt-5.5` for CLI-backed
@@ -57,7 +63,10 @@ Useful variants:
 - Add `--resume-last` to continue the latest dialogue in the trace dir.
 - Add `--register-policy bland` for a non-dynamic-feeling baseline.
 - Add `--multiple-choice` only when explicitly requested.
-- Use slash commands during a run: `/analysis`, `/field`, `/viz`, `/quit`.
+- Add `--mixed-learner --auto-learner-model codex.gpt-5.5` for manual play with
+  a prefetched learner draft after each tutor turn. Press Tab on an empty learner
+  prompt to insert the draft for editing, or use `/suggest`, `/use`, `/regen`.
+- Use slash commands during a run: `/analysis`, `/field`, `/viz`, `/suggest`, `/use`, `/regen`, `/quit`.
 
 ## Automated Single-Learner Eval
 
@@ -66,7 +75,7 @@ Use for policy comparisons with one generic automated learner:
 ```bash
 npm run tutor:stub:auto-eval -- \
   --runs 3 \
-  --policies bland,dynamic,field,state,random \
+  --policies negative,bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,random \
   --parallelism 8 \
   --progress-interval 30 \
   --turns until-grounded \
@@ -74,6 +83,7 @@ npm run tutor:stub:auto-eval -- \
   --model openai.mini \
   --analysis-model codex.gpt-5.5 \
   --auto-learner-model openai.mini \
+  --auto-learner-profile-id diligent \
   --world world_005_marrick \
   --cli-effort low \
   --history-turns 4 \
@@ -87,7 +97,7 @@ Focused adaptive comparison:
 ```bash
 npm run tutor:stub:auto-eval -- \
   --runs 5 \
-  --policies dynamic,field,state \
+  --policies dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system \
   --parallelism 8 \
   --progress-interval 30 \
   --turns until-grounded \
@@ -107,6 +117,14 @@ Always dry-run first when changing model refs, policies, or directories:
 
 ```bash
 npm run tutor:stub:auto-eval -- --dry-run <same flags>
+```
+
+Build/update repository-informed register priors before using
+`empirical_dynamical_system`:
+
+```bash
+npm run tutor:stub:register-priors -- \
+  --out .tutor-stub-auto-eval/register-empirical-priors.json
 ```
 
 To add an existing auto-eval summary to the local ledger without re-running
@@ -220,7 +238,7 @@ npm run analyze:tutor-stub-auto-evals -- \
   --out .tutor-stub-auto-eval/cross-run-field.md
 ```
 
-Use `--json` for machine-readable output. Use `--policies field,state,dynamic`
+Use `--json` for machine-readable output. Use `--policies state,field,trajectory,dynamical_system,empirical_dynamical_system,dynamic`
 to focus policy rows.
 
 ## Reading Results
@@ -229,7 +247,7 @@ Prefer the latest `auto-eval-*.json` / `.html` in the trace dir. Report:
 
 - `ok/failed`, and whether failures are technical or pedagogical.
 - Grounded closure rate, mean turns, mean coverage, missing premise count.
-- Per-policy comparison: `bland`, `dynamic`, `field`, `state`, `random`.
+- Per-policy comparison: `negative`, `bland`, `dynamic`, `state`, `field`, `trajectory`, `dynamical_system`, `empirical_dynamical_system`, `random`.
 - Register entropy and dominant registers.
 - Bottlenecks: `learner_integration_gap`, `release_or_pacing_gap`, `assertion_gap`, `premature_assertion`, `grounded_asserted_secret`.
 - Check `.tutor-stub-auto-eval/ledger.md` for the local cross-run ledger before comparing recent evals.
@@ -242,5 +260,5 @@ Interpretation guardrails:
   network, unsupported model, and max-token errors.
 - `auto_safety_turn_cap` is an incomplete/timeout-like outcome even when row
   status is `ok`.
-- Compare `field` and `state` only against a baseline/control if `bland` or
+- Compare `state`, `field`, `trajectory`, `dynamical_system`, and `empirical_dynamical_system` only against a baseline/control if `bland` or
   `random` is present.

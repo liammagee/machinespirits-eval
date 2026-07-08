@@ -3,7 +3,7 @@
  * Run unattended tutor-stub dialogues with an automated learner.
  *
  * Default comparison:
- *   dynamic preconscious register policy vs random register policy.
+ *   negative floor vs dynamic preconscious register policy vs random register policy.
  *
  * Usage:
  *   npm run tutor:stub:auto-eval -- --dry-run
@@ -20,12 +20,26 @@ import { parseArgs } from 'node:util';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
+const AUTO_LEARNER_PROFILES = {
+  diligent:
+    'A curious but fallible learner. They follow the tutor, sometimes ask for evidence, and sometimes make short partial claims.',
+  answer_seeking:
+    'A completion-oriented learner. They want the exact trial-book line, often ask what to write next, and may mistake copied wording for understanding.',
+  skeptical:
+    'A skeptical learner. They challenge the tutor framing, ask why a warrant counts, and resist committing until public evidence is explicit.',
+  overconfident:
+    'An overconfident learner. They jump to culprit or story conclusions from weak clues and need to be pulled back to public evidence.',
+  low_agency:
+    'A hesitant low-agency learner. They ask permission, avoid committing to claims, and prefer the tutor to choose unless explicitly prompted.',
+  memory_limited:
+    'A memory-limited learner. They mainly track the last few public clues, lose earlier evidence, and need re-grounding before inference.',
+};
 
 const { values: args } = parseArgs({
   options: {
     runs: { type: 'string', default: '1' },
     turns: { type: 'string', default: 'until-grounded' },
-    policies: { type: 'string', default: 'dynamic,random' },
+    policies: { type: 'string', default: 'negative,dynamic,random' },
     model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || 'openai.mini' },
     'analysis-model': { type: 'string', default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || 'codex.gpt-5.5' },
     'auto-learner-model': {
@@ -34,13 +48,17 @@ const { values: args } = parseArgs({
     },
     'auto-learner-profile': {
       type: 'string',
-      default:
-        process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_PROFILE ||
-        'A curious but fallible learner. They follow the tutor, sometimes ask for evidence, and sometimes make short partial claims.',
+      default: process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_PROFILE || '',
+    },
+    'auto-learner-profile-id': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_PROFILE_ID || 'diligent',
     },
     'report-from': { type: 'string', default: '' },
     'resume-from': { type: 'string', default: '' },
     'resume-statuses': { type: 'string', default: 'failed' },
+    index: { type: 'boolean', default: false },
+    'index-root': { type: 'string', default: process.env.TUTOR_STUB_EVAL_INDEX_ROOT || '.tutor-stub-auto-eval' },
     world: { type: 'string', default: process.env.TUTOR_STUB_EVAL_WORLD || 'world_005_marrick' },
     'trace-dir': { type: 'string', default: process.env.TUTOR_STUB_EVAL_TRACE_DIR || '.tutor-stub-auto-eval' },
     ledger: { type: 'string', default: process.env.TUTOR_STUB_EVAL_LEDGER || '.tutor-stub-auto-eval/ledger.jsonl' },
@@ -61,6 +79,7 @@ const { values: args } = parseArgs({
     'no-memory-summary': { type: 'boolean', default: false },
     'keep-going': { type: 'boolean', default: false },
     'dry-run': { type: 'boolean', default: false },
+    'list-learner-profiles': { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
   },
 });
@@ -72,14 +91,20 @@ function printHelp() {
 Options:
   --runs <n>                 repetitions per policy (default: 1)
   --turns <n|until-grounded> max automated learner turns per dialogue (default: until-grounded)
-  --policies <csv>           register policies to compare (default: dynamic,random)
+  --policies <csv>           register policies to compare (default: negative,dynamic,random)
+                              known: dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,bland,random,negative
   --model <ref>              tutor model (default: openai.mini)
   --analysis-model <ref>     classifier + learner-DAG model (default: codex.gpt-5.5)
   --auto-learner-model <ref> automated learner model (default: openai.mini)
   --auto-learner-profile <text>
+  --auto-learner-profile-id <id>
+                              built-in profile when no custom text is supplied
+                              (default: diligent; use --list-learner-profiles)
   --report-from <json>       build HTML from an existing auto-eval JSON summary
   --resume-from <json>       rerun rows from an existing auto-eval JSON summary
   --resume-statuses <csv>    statuses to rerun with --resume-from (default: failed)
+  --index                    build/update the local report index and exit
+  --index-root <path>        report index root (default: .tutor-stub-auto-eval)
   --world <id|path|none>     default: world_005_marrick
   --trace-dir <path>         default: .tutor-stub-auto-eval
   --ledger <path>            append/upsert eval ledger JSONL (default: .tutor-stub-auto-eval/ledger.jsonl)
@@ -100,6 +125,7 @@ Options:
   --no-memory-summary        disable tutor-stub compact dialogue memory
   --keep-going               continue after a failed run
   --dry-run                  print commands only
+  --list-learner-profiles    print built-in automated learner profiles
 `);
 }
 
@@ -124,6 +150,14 @@ function csv(value) {
     .filter(Boolean);
 }
 
+function normalizePolicyName(value) {
+  return String(value || '').trim().toLowerCase().replace(/-/gu, '_');
+}
+
+function policyCsv(value) {
+  return csv(value).map(normalizePolicyName).filter(Boolean);
+}
+
 function assertSupportedModelRefs(refs) {
   for (const [label, ref] of Object.entries(refs)) {
     const normalized = String(ref || '').trim().toLowerCase();
@@ -133,6 +167,37 @@ function assertSupportedModelRefs(refs) {
           'Use codex.gpt-5.5 for CLI-backed Codex, or openai.mini/openrouter.gpt-mini for GPT mini.',
       );
     }
+  }
+}
+
+function normalizeLearnerProfileId(value) {
+  return String(value || 'diligent').trim().toLowerCase().replace(/-/gu, '_');
+}
+
+function resolvedAutoLearnerProfileId() {
+  const id = normalizeLearnerProfileId(args['auto-learner-profile-id']);
+  if (!AUTO_LEARNER_PROFILES[id]) {
+    throw new Error(
+      `Unknown --auto-learner-profile-id: ${args['auto-learner-profile-id']}. ` +
+        `Known: ${Object.keys(AUTO_LEARNER_PROFILES).join(', ')}`,
+    );
+  }
+  return id;
+}
+
+function resolvedAutoLearnerProfile() {
+  const custom = String(args['auto-learner-profile'] || '').trim();
+  if (custom) return custom;
+  return AUTO_LEARNER_PROFILES[resolvedAutoLearnerProfileId()];
+}
+
+function autoLearnerProfileLabel() {
+  return String(args['auto-learner-profile'] || '').trim() ? 'custom' : resolvedAutoLearnerProfileId();
+}
+
+function printLearnerProfiles() {
+  for (const [id, profile] of Object.entries(AUTO_LEARNER_PROFILES)) {
+    console.log(`${id}: ${profile}`);
   }
 }
 
@@ -238,6 +303,249 @@ function entropy(values) {
   return Number(raw.toFixed(3));
 }
 
+function scoreValue(score) {
+  if (score && typeof score === 'object' && score.score !== undefined) return score.score;
+  if (score !== undefined && score !== null) return score;
+  return '?';
+}
+
+function clampField01(value) {
+  if (!Number.isFinite(Number(value))) return 0;
+  return Math.max(0, Math.min(1, Number(value)));
+}
+
+function roundField(value) {
+  return Number((Number(value) || 0).toFixed(3));
+}
+
+function fieldScore(score) {
+  const raw = scoreValue(score);
+  const numeric = Number(raw);
+  return Number.isFinite(numeric) ? clampField01(numeric / 5) : 0;
+}
+
+function fieldDelta(current, previous) {
+  return roundField((current || 0) - (previous || 0));
+}
+
+function formatSignedField(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 'n/a';
+  return `${numeric >= 0 ? '+' : ''}${numeric}`;
+}
+
+function escapeXml(value) {
+  return String(value ?? '')
+    .replace(/&/gu, '&amp;')
+    .replace(/</gu, '&lt;')
+    .replace(/>/gu, '&gt;')
+    .replace(/"/gu, '&quot;')
+    .replace(/'/gu, '&apos;');
+}
+
+function wordsInText(text) {
+  return String(text || '')
+    .split(/\s+/)
+    .filter(Boolean).length;
+}
+
+function lightweightFieldTurn(turn, previous = null) {
+  const classification = turn?.classification || {};
+  const turnAnalysis = classification.turn || {};
+  const scores = turnAnalysis.scores || {};
+  const model = turn?.tutorLearnerDagModel || {};
+  const metrics = model.metrics || {};
+  const assessment = model.assessment || {};
+  const register = turn?.registerSelection || {};
+  const priorEfficacy = turn?.previousRegisterEfficacy || null;
+  const leakOk = !turn?.tutorLeakAudit || turn.tutorLeakAudit.ok === true;
+  const conceptual = fieldScore(scores.conceptual_engagement);
+  const readiness = fieldScore(scores.epistemic_readiness);
+  const coverage = clampField01(Number(assessment.bestPathCoverage || 0));
+  const grounded = clampField01(Number(metrics.groundedCount || 0) / 8);
+  const missing = clampField01(Number(metrics.missingPremiseCount || 0) / 8);
+  const overreach =
+    /overconfident|answer_seeking|overleaps_evidence|unsupported|resistant/iu.test(
+      [
+        turnAnalysis.epistemic_stance,
+        turnAnalysis.evidence_use,
+        assessment.bottleneck,
+        priorEfficacy?.label,
+      ]
+        .filter(Boolean)
+        .join(' '),
+    )
+      ? 0.25
+      : 0;
+  const responseWords = wordsInText(turn?.tutor);
+  const brevity = clampField01(1 - Math.max(0, responseWords - 95) / 130);
+  const registerConfidence = Number.isFinite(Number(register.confidence)) ? clampField01(Number(register.confidence)) : 0.5;
+  const efficacyScore = priorEfficacy ? clampField01((Number(priorEfficacy.progressScore || 0) + 4) / 8) : 0.5;
+
+  const learnerMastery = roundField(0.34 * conceptual + 0.26 * readiness + 0.3 * coverage + 0.1 * grounded);
+  const learnerRisk = roundField(clampField01(0.45 * missing + 0.25 * (1 - readiness) + overreach));
+  const tutorAlignment = roundField(
+    clampField01(0.3 * registerConfidence + 0.24 * efficacyScore + 0.22 * brevity + 0.24 * (leakOk ? 1 : 0)),
+  );
+  const jointMomentum = roundField(
+    clampField01(
+      0.42 * Math.max(0, fieldDelta(learnerMastery, previous?.learnerMastery)) +
+        0.28 * Math.max(0, fieldDelta(coverage, previous?.coverage)) +
+        0.18 * efficacyScore +
+        0.12 * (turn?.tutorDag?.leavesReleased || 0) / Math.max(1, turn?.tutorDag?.leavesTotal || 1),
+    ),
+  );
+
+  return {
+    turn: turn.turn,
+    learnerMastery,
+    learnerRisk,
+    tutorAlignment,
+    jointMomentum,
+    coverage,
+    groundedCount: Number(metrics.groundedCount || 0),
+    missingCount: Number(metrics.missingPremiseCount || 0),
+    conceptual,
+    readiness,
+    register: register.selected_register || null,
+    bottleneck: assessment.bottleneck || 'unknown',
+    learnerMove: turnAnalysis.discourse_move || 'unknown',
+    speed: previous
+      ? roundField(
+          Math.sqrt(
+            fieldDelta(learnerMastery, previous.learnerMastery) ** 2 +
+              fieldDelta(learnerRisk, previous.learnerRisk) ** 2 +
+              fieldDelta(tutorAlignment, previous.tutorAlignment) ** 2 +
+              fieldDelta(jointMomentum, previous.jointMomentum) ** 2,
+          ),
+        )
+      : 0,
+  };
+}
+
+function buildLightweightDialogueField(turnRecords = []) {
+  const rows = [];
+  for (const turn of turnRecords) {
+    rows.push(lightweightFieldTurn(turn, rows.at(-1) || null));
+  }
+  const first = rows[0] || {};
+  const final = rows.at(-1) || {};
+  return {
+    schema: 'machinespirits.tutor-stub.lightweight-field.v1',
+    turnCount: rows.length,
+    rows,
+    summary: {
+      finalTurn: final.turn || null,
+      meanSpeed: roundField(rows.reduce((sum, row) => sum + row.speed, 0) / Math.max(1, rows.length)),
+      fieldDelta: {
+        learnerMastery: fieldDelta(final.learnerMastery, first.learnerMastery),
+        learnerRisk: fieldDelta(final.learnerRisk, first.learnerRisk),
+        tutorAlignment: fieldDelta(final.tutorAlignment, first.tutorAlignment),
+        jointMomentum: fieldDelta(final.jointMomentum, first.jointMomentum),
+      },
+      final: {
+        learnerMastery: final.learnerMastery ?? null,
+        learnerRisk: final.learnerRisk ?? null,
+        tutorAlignment: final.tutorAlignment ?? null,
+        jointMomentum: final.jointMomentum ?? null,
+        coverage: final.coverage ?? null,
+        bottleneck: final.bottleneck || null,
+      },
+    },
+  };
+}
+
+function fieldPolyline(rows, key, { width, height, padding }) {
+  if (!rows.length) return '';
+  const xSpan = Math.max(1, rows.length - 1);
+  return rows
+    .map((row, index) => {
+      const x = padding.left + (index / xSpan) * width;
+      const y = padding.top + (1 - clampField01(row[key])) * height;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+}
+
+function fieldTurnMarkers(rows, { width, height, padding }) {
+  if (!rows.length) return '';
+  const xSpan = Math.max(1, rows.length - 1);
+  return rows
+    .map((row, index) => {
+      const x = padding.left + (index / xSpan) * width;
+      const label = escapeXml(`${row.turn}: ${row.learnerMove} / ${row.register || 'no-register'} / ${row.bottleneck}`);
+      return `<circle cx="${x.toFixed(1)}" cy="${(padding.top + height + 18).toFixed(
+        1,
+      )}" r="2.8" fill="#475569"><title>${label}</title></circle>`;
+    })
+    .join('\n');
+}
+
+function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Field' } = {}) {
+  const rows = field?.rows || [];
+  const padding = { top: 64, right: 34, bottom: 68, left: 58 };
+  const chartWidth = 660;
+  const chartHeight = 220;
+  const svgWidth = chartWidth + padding.left + padding.right;
+  const svgHeight = chartHeight + padding.top + padding.bottom;
+  const final = field?.summary?.final || {};
+  const delta = field?.summary?.fieldDelta || {};
+  const series = [
+    ['learnerMastery', 'mastery', '#2563eb'],
+    ['learnerRisk', 'risk', '#dc2626'],
+    ['tutorAlignment', 'alignment', '#059669'],
+    ['jointMomentum', 'momentum', '#7c3aed'],
+  ];
+  const gridLines = [0, 0.25, 0.5, 0.75, 1]
+    .map((value) => {
+      const y = padding.top + (1 - value) * chartHeight;
+      return [
+        `<line x1="${padding.left}" y1="${y.toFixed(1)}" x2="${(padding.left + chartWidth).toFixed(
+          1,
+        )}" y2="${y.toFixed(1)}" stroke="#e2e8f0" />`,
+        `<text x="${padding.left - 10}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="10" fill="#64748b">${value.toFixed(
+          2,
+        )}</text>`,
+      ].join('\n');
+    })
+    .join('\n');
+  const lines = series
+    .map(
+      ([key, label, color]) =>
+        `<polyline points="${fieldPolyline(rows, key, {
+          width: chartWidth,
+          height: chartHeight,
+          padding,
+        })}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><title>${label}</title></polyline>`,
+    )
+    .join('\n');
+  const legend = series
+    .map(
+      ([key, label, color], index) =>
+        `<g transform="translate(${padding.left + index * 135}, ${svgHeight - 24})"><rect width="11" height="11" rx="2" fill="${color}" /><text x="16" y="10" font-size="11" fill="#334155">${label}: ${escapeXml(
+          final[key] ?? 'n/a',
+        )}</text></g>`,
+    )
+    .join('\n');
+  const deltaText = `delta M ${formatSignedField(delta.learnerMastery)} | R ${formatSignedField(
+    delta.learnerRisk,
+  )} | A ${formatSignedField(delta.tutorAlignment)} | P ${formatSignedField(delta.jointMomentum)}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" role="img">
+  <title>${escapeXml(title)}</title>
+  <desc>Lightweight tutor-stub field visualization across ${rows.length} completed turn(s).</desc>
+  <rect width="100%" height="100%" fill="#f8fafc" />
+  <text x="${padding.left}" y="26" font-size="18" font-weight="700" fill="#0f172a">${escapeXml(title)}</text>
+  <text x="${padding.left}" y="47" font-size="12" fill="#475569">turns ${field.turnCount}; mean speed ${escapeXml(
+    field.summary?.meanSpeed ?? 'n/a',
+  )}; ${escapeXml(deltaText)}; bottleneck ${escapeXml(final.bottleneck || 'unknown')}</text>
+  <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="#ffffff" stroke="#cbd5e1" />
+  ${gridLines}
+  ${lines}
+  ${fieldTurnMarkers(rows, { width: chartWidth, height: chartHeight, padding })}
+  ${legend}
+</svg>`;
+}
+
 function progressBar(completed, total, { width = 28 } = {}) {
   const ratio = total ? Math.max(0, Math.min(1, completed / total)) : 0;
   const filled = Math.round(ratio * width);
@@ -328,8 +636,10 @@ function summarizeJobProgress(job) {
 function summarizeTrace(tracePath, traceDir) {
   const events = readTraceEvents(tracePath);
   const turns = events.filter((event) => event.type === 'turn_complete');
+  const turnRecords = turns.map((event) => event.turnRecord).filter(Boolean);
   const runEnds = events.filter((event) => event.type === 'run_end' || event.type === 'auto_learner_run_end');
   const fieldWrite = events.filter((event) => event.type === 'field_visualization_write').at(-1) || null;
+  const fieldViz = buildLightweightDialogueField(turnRecords);
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
@@ -369,13 +679,22 @@ function summarizeTrace(tracePath, traceDir) {
     repairedCount: turns.filter((event) => event.turnRecord?.tutorResponseRepaired).length,
     fallbackCount: turns.filter((event) => event.turnRecord?.tutorDeterministicFallback).length,
     errorCount: modelErrors.length,
-    field: fieldWrite?.summary
+    field: fieldViz.turnCount
+      ? {
+          final: fieldViz.summary.final || null,
+          delta: fieldViz.summary.fieldDelta || null,
+          meanSpeed: fieldViz.summary.meanSpeed ?? null,
+          source: fieldWrite?.summary ? 'trace_event' : 'reconstructed',
+        }
+      : fieldWrite?.summary
       ? {
           final: fieldWrite.summary.final || null,
           delta: fieldWrite.summary.fieldDelta || null,
           meanSpeed: fieldWrite.summary.meanSpeed ?? null,
+          source: 'trace_event',
         }
       : null,
+    fieldViz: fieldViz.turnCount ? fieldViz : null,
   };
 }
 
@@ -414,6 +733,7 @@ function resultRows(results) {
           fallbackCount: 0,
           errorCount: 0,
           field: null,
+          fieldViz: null,
         },
       ];
     }
@@ -500,6 +820,97 @@ function htmlMetric(label, value, sub = '') {
   return `<div class="metric"><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value">${escapeHtml(value)}</div><div class="metric-sub">${escapeHtml(sub)}</div></div>`;
 }
 
+function hrefRelative(fromDir, targetPath) {
+  return path.relative(fromDir, targetPath).split(path.sep).join('/');
+}
+
+function formatFieldValue(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric.toFixed(3) : 'n/a';
+}
+
+function fieldSummaryText(row) {
+  const final = row.field?.final || {};
+  const delta = row.field?.delta || {};
+  return [
+    `final M ${formatFieldValue(final.learnerMastery)}`,
+    `R ${formatFieldValue(final.learnerRisk)}`,
+    `A ${formatFieldValue(final.tutorAlignment)}`,
+    `P ${formatFieldValue(final.jointMomentum)}`,
+    `delta M ${formatSignedField(delta.learnerMastery)}`,
+    `R ${formatSignedField(delta.learnerRisk)}`,
+  ].join(' · ');
+}
+
+function fieldRowTitle(row) {
+  return `${row.policy} run ${row.runIndex}`;
+}
+
+function fieldSvgDirForReport(htmlPath) {
+  const ext = path.extname(htmlPath);
+  const stem = path.basename(htmlPath, ext || '.html');
+  return path.join(path.dirname(htmlPath), `${stem}-field-svg`);
+}
+
+function fieldSvgFilename(row, index) {
+  const traceStem = row.trace ? path.basename(row.trace, path.extname(row.trace)) : '';
+  const bits = [
+    String(index + 1).padStart(2, '0'),
+    safeSlug(row.policy || 'policy'),
+    `r${safeSlug(row.runIndex || 'x')}`,
+    safeSlug(traceStem).slice(0, 42),
+  ].filter(Boolean);
+  return `${bits.join('-')}.svg`;
+}
+
+function writeFieldSvgArtifacts({ rows, htmlPath }) {
+  if (!htmlPath) return [];
+  const fieldRows = rows.filter((row) => row.fieldViz?.rows?.length);
+  if (!fieldRows.length) return [];
+  const svgDir = fieldSvgDirForReport(htmlPath);
+  fs.mkdirSync(svgDir, { recursive: true });
+  return fieldRows.map((row, index) => {
+    const svgPath = path.join(svgDir, fieldSvgFilename(row, index));
+    fs.writeFileSync(svgPath, `${renderLightweightFieldSvg(row.fieldViz, { title: fieldRowTitle(row) })}\n`);
+    row.fieldSvg = {
+      path: path.relative(ROOT, svgPath),
+      href: path.relative(path.dirname(htmlPath), svgPath),
+    };
+    return svgPath;
+  });
+}
+
+function renderFieldTrajectories(rows) {
+  const fieldRows = rows.filter((row) => row.fieldViz?.rows?.length);
+  if (!fieldRows.length) {
+    return '<p class="sub">No field trajectory data was found in these traces.</p>';
+  }
+  return `<div class="field-grid">
+    ${fieldRows
+      .map((row) => {
+        const title = fieldRowTitle(row);
+        const final = row.field?.final || {};
+        return `<article class="field-card">
+          <div class="field-card-head">
+            <div>
+              <h3>${escapeHtml(title)}</h3>
+              <div class="sub">${escapeHtml(row.status)} · ${escapeHtml(row.turnCount)} turns · ${escapeHtml(
+                row.stopReason || 'no stop reason',
+              )}</div>
+            </div>
+            <div class="field-actions">
+              ${row.fieldSvg?.href ? `<a class="field-link" href="${escapeHtml(row.fieldSvg.href)}">svg</a>` : ''}
+              <div class="field-badge">${row.groundedClosure ? 'grounded' : escapeHtml(final.bottleneck || row.bottleneck || 'open')}</div>
+            </div>
+          </div>
+          <div class="field-card-summary">${escapeHtml(fieldSummaryText(row))}</div>
+          <div class="field-svg">${renderLightweightFieldSvg(row.fieldViz, { title })}</div>
+        </article>`;
+      })
+      .join('\n')}
+  </div>`;
+}
+
 function renderHtmlReport(summary, rows) {
   const policyRows = Object.entries(summary.aggregates.byPolicy)
     .map(
@@ -530,6 +941,11 @@ function renderHtmlReport(summary, rows) {
         <td>${row.bestPathCoverage} ${pctBar(row.bestPathCoverage)}</td>
         <td>${escapeHtml(row.missingPremiseCount ?? '')}</td>
         <td>${escapeHtml(row.bottleneck)}</td>
+        <td>${escapeHtml(
+          row.field?.delta
+            ? `M ${formatSignedField(row.field.delta.learnerMastery)} / R ${formatSignedField(row.field.delta.learnerRisk)}`
+            : '',
+        )}</td>
         <td>${escapeHtml(formatCounts(row.registerCounts, { limit: 4 }))}</td>
         <td>${escapeHtml(formatCounts(row.efficacyCounts, { limit: 4 }))}</td>
         <td>${escapeHtml(row.leakCount)}</td>
@@ -557,6 +973,16 @@ function renderHtmlReport(summary, rows) {
     .metric-label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
     .metric-value { font-size:24px; font-weight:700; margin-top:4px; }
     .metric-sub { color:var(--muted); font-size:12px; min-height:18px; }
+    .field-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:14px; }
+    .field-card { background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+    .field-card-head { display:flex; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); background:#f7faf8; }
+    .field-card h3 { margin:0 0 3px; font-size:15px; }
+    .field-actions { display:flex; align-items:flex-start; gap:8px; }
+    .field-link { border:1px solid var(--line); border-radius:999px; padding:3px 8px; background:#fff; font-size:12px; text-decoration:none; white-space:nowrap; }
+    .field-badge { align-self:flex-start; border:1px solid var(--line); border-radius:999px; padding:3px 8px; color:#34433c; background:#fff; font-size:12px; white-space:nowrap; }
+    .field-card-summary { padding:9px 14px; color:#34433c; font-size:12px; border-bottom:1px solid var(--line); }
+    .field-svg { overflow-x:auto; background:#f8fafc; }
+    .field-svg svg { display:block; width:100%; min-width:640px; height:auto; }
     table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
     th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
     th { background:#eef4f1; font-size:12px; color:#34433c; text-transform:uppercase; letter-spacing:.04em; }
@@ -589,10 +1015,13 @@ function renderHtmlReport(summary, rows) {
       <tbody>${policyRows || '<tr><td colspan="11">No policy rows.</td></tr>'}</tbody>
     </table>
 
+    <h2>Field Trajectories</h2>
+    ${renderFieldTrajectories(rows)}
+
     <h2>Run Details</h2>
     <table>
-      <thead><tr><th>Policy</th><th>Run</th><th>Status</th><th>Grounded</th><th>Stop</th><th>Turns</th><th>Coverage</th><th>Missing</th><th>Bottleneck</th><th>Registers</th><th>Efficacy</th><th>Leaks</th><th>Trace</th><th>Log</th></tr></thead>
-      <tbody>${runRows || '<tr><td colspan="14">No run rows.</td></tr>'}</tbody>
+      <thead><tr><th>Policy</th><th>Run</th><th>Status</th><th>Grounded</th><th>Stop</th><th>Turns</th><th>Coverage</th><th>Missing</th><th>Bottleneck</th><th>Field Δ</th><th>Registers</th><th>Efficacy</th><th>Leaks</th><th>Trace</th><th>Log</th></tr></thead>
+      <tbody>${runRows || '<tr><td colspan="15">No run rows.</td></tr>'}</tbody>
     </table>
   </main>
 </body>
@@ -601,8 +1030,13 @@ function renderHtmlReport(summary, rows) {
 }
 
 function writeHtmlReport({ summary, rows, htmlPath }) {
+  const fieldSvgPaths = writeFieldSvgArtifacts({ rows, htmlPath });
   fs.writeFileSync(htmlPath, renderHtmlReport(summary, rows));
   console.log(`[auto-eval] wrote ${htmlPath}`);
+  if (fieldSvgPaths.length) {
+    console.log(`[auto-eval] wrote ${fieldSvgPaths.length} field SVGs to ${fieldSvgDirForReport(htmlPath)}`);
+  }
+  writeReportIndex();
 }
 
 function relativeReportPath(filePath) {
@@ -654,6 +1088,7 @@ function ledgerEntryForSummary({ summary, summaryPath, htmlPath }) {
       model: config.model || null,
       analysisModel: config.analysisModel || null,
       autoLearnerModel: config.autoLearnerModel || null,
+      autoLearnerProfileId: config.autoLearnerProfileId || null,
       world: config.world || null,
       maxTokens: config.maxTokens ?? null,
       historyTurns: config.historyTurns ?? null,
@@ -741,6 +1176,286 @@ function renderLedgerMarkdown(entries) {
   return `${lines.join('\n')}\n`;
 }
 
+function indexRootDir() {
+  return resolvePath(args['index-root']);
+}
+
+function skipIndexScanDir(name) {
+  return name === 'logs' || name === 'traces' || name.endsWith('-field-svg');
+}
+
+function listAutoEvalSummaryFiles(rootDir) {
+  if (!fs.existsSync(rootDir)) return [];
+  const files = [];
+  const stack = [rootDir];
+  while (stack.length) {
+    const dir = stack.pop();
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const entryPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (!skipIndexScanDir(entry.name)) stack.push(entryPath);
+        continue;
+      }
+      if (/^auto-eval-.*\.json$/u.test(entry.name)) files.push(entryPath);
+    }
+  }
+  return files;
+}
+
+function reportHtmlPathForSummary(summary, jsonPath) {
+  const sibling = jsonPath.replace(/\.json$/u, '.html');
+  const reported = summary?.report?.html ? resolvePath(summary.report.html) : null;
+  if (reported && fs.existsSync(reported)) return reported;
+  if (fs.existsSync(sibling)) return sibling;
+  return reported || sibling;
+}
+
+function reportFieldSvgFiles(htmlPath) {
+  const svgDir = fieldSvgDirForReport(htmlPath);
+  if (!fs.existsSync(svgDir)) return [];
+  return fs
+    .readdirSync(svgDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.svg'))
+    .map((entry) => path.join(svgDir, entry.name))
+    .sort();
+}
+
+function shortDate(value) {
+  if (!value) return '';
+  return String(value).replace(/\.\d{3}Z$/u, 'Z').replace('T', ' ');
+}
+
+function indexAggregates(summary) {
+  if (summary?.aggregates?.byPolicy) return summary.aggregates;
+  return summarizeRows(resultRows(summary?.results || []));
+}
+
+function readIndexSummary(jsonPath, rootDir) {
+  try {
+    const summary = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    const aggregates = indexAggregates(summary);
+    const config = summary.config || {};
+    const htmlPath = reportHtmlPathForSummary(summary, jsonPath);
+    const svgFiles = reportFieldSvgFiles(htmlPath);
+    const relJson = hrefRelative(rootDir, jsonPath);
+    const relParent = path.dirname(relJson);
+    const reportName =
+      relParent && relParent !== '.'
+        ? `${relParent}/${path.basename(jsonPath, '.json')}`
+        : path.basename(jsonPath, '.json');
+    const policies = Array.isArray(config.policies) && config.policies.length ? config.policies : Object.keys(aggregates.byPolicy || {});
+    const completedAt = summary.completedAt || summary.startedAt || '';
+    const status = config.dryRun || aggregates.dryRun === aggregates.rows ? 'dry_run' : aggregates.failed ? 'failed' : 'ok';
+    const htmlExists = fs.existsSync(htmlPath);
+    return {
+      reportName,
+      jsonPath,
+      htmlPath,
+      htmlExists,
+      jsonHref: hrefRelative(rootDir, jsonPath),
+      htmlHref: htmlExists ? hrefRelative(rootDir, htmlPath) : '',
+      svgHref: svgFiles[0] ? hrefRelative(rootDir, svgFiles[0]) : '',
+      svgCount: svgFiles.length,
+      completedAt,
+      startedAt: summary.startedAt || '',
+      status,
+      policies,
+      learnerProfile: config.autoLearnerProfileId || '',
+      world: config.world || '',
+      turns: config.turns || '',
+      safetyTurns: config.safetyTurns ?? '',
+      model: config.model || '',
+      analysisModel: config.analysisModel || '',
+      rows: aggregates.rows || 0,
+      ok: aggregates.ok || 0,
+      failed: aggregates.failed || 0,
+      dryRun: aggregates.dryRun || 0,
+      grounded: aggregates.grounded || 0,
+      groundedRate: aggregates.groundedRate || 0,
+      meanTurns: aggregates.meanTurns ?? '',
+      meanCoverage: aggregates.meanCoverage ?? '',
+      meanMissing: aggregates.meanMissing ?? '',
+      searchText: [
+        reportName,
+        status,
+        policies.join(' '),
+        config.autoLearnerProfileId,
+        config.world,
+        config.model,
+        config.analysisModel,
+        shortDate(completedAt),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase(),
+    };
+  } catch (error) {
+    return {
+      reportName: path.basename(jsonPath, '.json'),
+      jsonPath,
+      htmlPath: '',
+      htmlExists: false,
+      jsonHref: hrefRelative(rootDir, jsonPath),
+      htmlHref: '',
+      svgHref: '',
+      svgCount: 0,
+      completedAt: '',
+      startedAt: '',
+      status: 'failed',
+      policies: [],
+      learnerProfile: '',
+      world: '',
+      turns: '',
+      safetyTurns: '',
+      model: '',
+      analysisModel: '',
+      rows: 0,
+      ok: 0,
+      failed: 1,
+      dryRun: 0,
+      grounded: 0,
+      groundedRate: 0,
+      meanTurns: '',
+      meanCoverage: '',
+      meanMissing: '',
+      searchText: `${path.basename(jsonPath)} parse error`.toLowerCase(),
+      parseError: error.message,
+    };
+  }
+}
+
+function policyChips(policies) {
+  if (!policies?.length) return '<span class="muted">none</span>';
+  return policies.map((policy) => `<span class="chip">${escapeHtml(policy)}</span>`).join('');
+}
+
+function renderReportIndex({ rows, rootDir, generatedAt }) {
+  const totals = {
+    reports: rows.length,
+    ok: rows.reduce((sum, row) => sum + Number(row.ok || 0), 0),
+    failed: rows.reduce((sum, row) => sum + Number(row.failed || 0), 0),
+    dryRun: rows.reduce((sum, row) => sum + Number(row.dryRun || 0), 0),
+    grounded: rows.reduce((sum, row) => sum + Number(row.grounded || 0), 0),
+    svgs: rows.reduce((sum, row) => sum + Number(row.svgCount || 0), 0),
+  };
+  const groundedRate = totals.ok ? Number((totals.grounded / totals.ok).toFixed(3)) : 0;
+  const reportRows = rows
+    .map(
+      (row) => `<tr data-search="${escapeHtml(row.searchText)}">
+        <td>
+          <div><strong>${escapeHtml(shortDate(row.completedAt) || row.reportName)}</strong></div>
+          <div class="muted">${escapeHtml(row.reportName)}</div>
+        </td>
+        <td><span class="status ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span></td>
+        <td>${policyChips(row.policies)}</td>
+        <td>${escapeHtml(row.learnerProfile || '')}</td>
+        <td>${escapeHtml(row.ok)}/${escapeHtml(row.failed)}${row.dryRun ? ` · ${escapeHtml(row.dryRun)} dry` : ''}</td>
+        <td>${escapeHtml(row.grounded)}/${escapeHtml(row.ok)} · ${Math.round(Number(row.groundedRate || 0) * 100)}%</td>
+        <td>${escapeHtml(row.meanTurns)}</td>
+        <td>${escapeHtml(row.meanCoverage)}</td>
+        <td>${row.svgHref ? `<a href="${escapeHtml(row.svgHref)}">${escapeHtml(row.svgCount)} svg</a>` : escapeHtml(row.svgCount)}</td>
+        <td class="actions">
+          ${row.htmlHref ? `<a href="${escapeHtml(row.htmlHref)}">report</a>` : '<span class="muted">report</span>'}
+          <a href="${escapeHtml(row.jsonHref)}">json</a>
+        </td>
+      </tr>`,
+    )
+    .join('\n');
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tutor Stub Reports</title>
+  <style>
+    :root { color-scheme: light; --ink:#17201b; --muted:#65736b; --line:#d9e0dc; --paper:#fbfcfb; --panel:#fff; --accent:#2f6f63; --bad:#9a2f36; --warn:#9c5a12; --blue:#275f9f; }
+    body { margin:0; font:14px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--paper); }
+    header { padding:24px 32px 16px; border-bottom:1px solid var(--line); background:#fff; }
+    main { max-width:1280px; margin:0 auto; padding:20px 32px 40px; }
+    h1 { margin:0 0 6px; font-size:24px; letter-spacing:0; }
+    .muted { color:var(--muted); font-size:12px; }
+    .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:16px 0; }
+    .metric { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:11px 12px; }
+    .metric-label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+    .metric-value { font-size:22px; font-weight:700; margin-top:3px; }
+    .metric-sub { color:var(--muted); font-size:12px; min-height:18px; }
+    .toolbar { display:flex; align-items:center; gap:10px; margin:18px 0 10px; }
+    input { width:min(420px,100%); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font:inherit; background:#fff; color:var(--ink); }
+    table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+    th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { background:#eef4f1; color:#34433c; font-size:12px; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+    tr:last-child td { border-bottom:0; }
+    .chip { display:inline-block; margin:0 4px 4px 0; border:1px solid var(--line); border-radius:999px; padding:2px 7px; background:#f8faf9; font-size:12px; white-space:nowrap; }
+    .status { display:inline-block; border-radius:999px; padding:2px 7px; background:#e8eee9; font-size:12px; white-space:nowrap; }
+    .status.failed { background:#f5dddd; color:var(--bad); }
+    .status.dry_run { background:#f3eadc; color:var(--warn); }
+    a { color:var(--accent); }
+    .actions { white-space:nowrap; }
+    .actions a { margin-right:8px; }
+    @media (max-width: 860px) {
+      main, header { padding-left:16px; padding-right:16px; }
+      table { display:block; overflow-x:auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tutor Stub Reports</h1>
+    <div class="muted">Generated ${escapeHtml(shortDate(generatedAt))} · root ${escapeHtml(path.relative(ROOT, rootDir) || '.')}</div>
+  </header>
+  <main>
+    <section class="metrics">
+      ${htmlMetric('Reports', totals.reports, `${rows.filter((row) => row.htmlExists).length} with HTML`)}
+      ${htmlMetric('Rows', totals.ok + totals.failed + totals.dryRun, `${totals.failed} failed · ${totals.dryRun} dry-run`)}
+      ${htmlMetric('Grounded', `${totals.grounded}/${totals.ok}`, `${Math.round(groundedRate * 100)}% closure`)}
+      ${htmlMetric('Field SVGs', totals.svgs, 'standalone artifacts')}
+    </section>
+    <div class="toolbar">
+      <input data-filter placeholder="Filter" aria-label="Filter reports">
+      <span class="muted" data-count>${rows.length} shown</span>
+    </div>
+    <table>
+      <thead><tr><th>Completed</th><th>Status</th><th>Policies</th><th>Learner</th><th>OK/Failed</th><th>Grounded</th><th>Turns</th><th>Coverage</th><th>SVGs</th><th>Links</th></tr></thead>
+      <tbody>${reportRows || '<tr><td colspan="10">No reports found.</td></tr>'}</tbody>
+    </table>
+  </main>
+  <script>
+    const input = document.querySelector('[data-filter]');
+    const rows = Array.from(document.querySelectorAll('tbody tr[data-search]'));
+    const count = document.querySelector('[data-count]');
+    function applyFilter() {
+      const q = (input?.value || '').trim().toLowerCase();
+      let shown = 0;
+      for (const row of rows) {
+        const visible = !q || row.dataset.search.includes(q);
+        row.hidden = !visible;
+        if (visible) shown += 1;
+      }
+      if (count) count.textContent = shown + ' shown';
+    }
+    input?.addEventListener('input', applyFilter);
+    applyFilter();
+  </script>
+</body>
+</html>
+`;
+}
+
+function writeReportIndex({ rootDir = indexRootDir() } = {}) {
+  fs.mkdirSync(rootDir, { recursive: true });
+  const rows = listAutoEvalSummaryFiles(rootDir)
+    .map((jsonPath) => readIndexSummary(jsonPath, rootDir))
+    .sort((a, b) => {
+      const aTime = Date.parse(a.completedAt || a.startedAt || '') || fs.statSync(a.jsonPath).mtimeMs;
+      const bTime = Date.parse(b.completedAt || b.startedAt || '') || fs.statSync(b.jsonPath).mtimeMs;
+      return bTime - aTime || a.reportName.localeCompare(b.reportName);
+    });
+  const indexPath = path.join(rootDir, 'index.html');
+  fs.writeFileSync(indexPath, renderReportIndex({ rows, rootDir, generatedAt: new Date().toISOString() }));
+  console.log(`[auto-eval] index ${indexPath}`);
+  return indexPath;
+}
+
 function writeEvalLedger({ summary, summaryPath, htmlPath }) {
   if (args['no-ledger']) return;
   const ledgerPath = resolvePath(args.ledger);
@@ -760,11 +1475,15 @@ function writeReportFromSummary(summaryPath) {
   const summary = JSON.parse(fs.readFileSync(resolvedSummaryPath, 'utf8'));
   const traceDir = resolveTracePath(summary.config?.traceDir || path.dirname(resolvedSummaryPath), ROOT);
   for (const result of summary.results || []) {
-    if (Array.isArray(result.traceSummaries) && result.traceSummaries.length) continue;
-    result.traceSummaries = (result.traces || [])
+    const refreshed = (result.traces || [])
       .map((tracePath) => resolveTracePath(tracePath, traceDir))
       .filter((tracePath) => tracePath && fs.existsSync(tracePath))
       .map((tracePath) => summarizeTrace(tracePath, traceDir));
+    if (refreshed.length) {
+      result.traceSummaries = refreshed;
+    } else if (!Array.isArray(result.traceSummaries)) {
+      result.traceSummaries = [];
+    }
   }
   const rows = resultRows(summary.results || []);
   summary.aggregates = summarizeRows(rows);
@@ -779,6 +1498,7 @@ function writeReportFromSummary(summaryPath) {
 
 function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
   const autoTurns = turnsArg();
+  const registerPalette = policy === 'negative' ? 'negative' : args['register-palette'];
   const command = [
     'scripts/tutor-stub.js',
     '--auto-learner',
@@ -795,14 +1515,14 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     '--auto-learner-model',
     args['auto-learner-model'],
     '--auto-learner-profile',
-    args['auto-learner-profile'],
+    resolvedAutoLearnerProfile(),
     '--tutor-learner-dag',
     '--world',
     args.world,
     '--register-policy',
     policy,
     '--register-palette',
-    args['register-palette'],
+    registerPalette,
     '--trace-dir',
     traceDir,
     '--no-stream',
@@ -1036,6 +1756,14 @@ async function main() {
     printHelp();
     return;
   }
+  if (args['list-learner-profiles']) {
+    printLearnerProfiles();
+    return;
+  }
+  if (args.index) {
+    writeReportIndex();
+    return;
+  }
   if (args['report-from']) {
     writeReportFromSummary(args['report-from']);
     return;
@@ -1090,7 +1818,7 @@ async function main() {
   if (args['until-grounded'] && args['no-stop-on-grounded']) {
     throw new Error('--until-grounded cannot be combined with --no-stop-on-grounded');
   }
-  const policies = csv(args.policies);
+  const policies = policyCsv(args.policies);
   if (!policies.length) throw new Error('--policies must include at least one policy');
   const traceDir = resolvePath(args['trace-dir']);
   fs.mkdirSync(traceDir, { recursive: true });
@@ -1116,10 +1844,11 @@ function writeSummary({ traceDir, startedAt, results, failed, configOverride = n
       untilGrounded: Boolean(args['until-grounded']),
       safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
       parallelism: positiveInt(args.parallelism, '--parallelism'),
-      policies: csv(args.policies),
+      policies: policyCsv(args.policies),
       model: args.model,
       analysisModel: args['analysis-model'],
       autoLearnerModel: args['auto-learner-model'],
+      autoLearnerProfileId: autoLearnerProfileLabel(),
       maxTokens: args['max-tokens'] ? positiveInt(args['max-tokens'], '--max-tokens') : null,
       historyTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
       memorySummary: {
@@ -1154,6 +1883,9 @@ function writeSummary({ traceDir, startedAt, results, failed, configOverride = n
     writeHtmlReport({ summary, rows, htmlPath });
   }
   writeEvalLedger({ summary, summaryPath, htmlPath: args['no-html-report'] ? null : htmlPath });
+  if (args['no-html-report']) {
+    writeReportIndex();
+  }
 }
 
 try {

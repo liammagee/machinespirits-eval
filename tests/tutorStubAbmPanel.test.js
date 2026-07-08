@@ -33,8 +33,21 @@ describe('tutor-stub ABM panel helpers', () => {
   });
 
   it('accepts all tutor-stub register policies used by panel comparisons', () => {
-    assert.deepEqual(REGISTER_POLICIES, ['dynamic', 'field', 'state', 'bland', 'random']);
+    assert.deepEqual(REGISTER_POLICIES, [
+      'dynamic',
+      'state',
+      'field',
+      'trajectory',
+      'dynamical_system',
+      'empirical_dynamical_system',
+      'bland',
+      'random',
+    ]);
     assert.equal(normalizeRegisterPolicy(' field '), 'field');
+    assert.equal(normalizeRegisterPolicy('trajectory'), 'trajectory');
+    assert.equal(normalizeRegisterPolicy('dynamical_system'), 'dynamical_system');
+    assert.equal(normalizeRegisterPolicy('dynamical-system'), 'dynamical_system');
+    assert.equal(normalizeRegisterPolicy('empirical-dynamical-system'), 'empirical_dynamical_system');
     assert.equal(normalizeRegisterPolicy('STATE'), 'state');
     assert.throws(() => normalizeRegisterPolicy('legacy'), /--register-policy/);
   });

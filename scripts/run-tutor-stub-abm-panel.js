@@ -36,7 +36,16 @@ export const DEFAULT_PERSONA_IDS = Object.freeze([
 ]);
 
 const DEFAULT_OUTPUT_DIR = 'exports/tutor-stub-abm-panel';
-export const REGISTER_POLICIES = Object.freeze(['dynamic', 'field', 'state', 'bland', 'random']);
+export const REGISTER_POLICIES = Object.freeze([
+  'dynamic',
+  'state',
+  'field',
+  'trajectory',
+  'dynamical_system',
+  'empirical_dynamical_system',
+  'bland',
+  'random',
+]);
 
 const CLI_OPTIONS = {
   check: { type: 'boolean', default: false },
@@ -109,7 +118,7 @@ function positiveInt(value, name) {
 }
 
 export function normalizeRegisterPolicy(value) {
-  const policy = String(value || 'dynamic').trim().toLowerCase();
+  const policy = String(value || 'dynamic').trim().toLowerCase().replace(/-/gu, '_');
   if (REGISTER_POLICIES.includes(policy)) return policy;
   throw new Error(`--register-policy must be one of: ${REGISTER_POLICIES.join(', ')}`);
 }
