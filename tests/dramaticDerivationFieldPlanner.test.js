@@ -4,7 +4,9 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 import {
+  buildDialogueReport,
   FIELD_PLANNER_SCHEMA,
+  FIELD_PLANNER_PROJECTION_SCHEMA,
   loadWorld,
   runDrama,
   selectFieldPlannerMove,
@@ -60,12 +62,17 @@ test('field planner maps high-risk learner attractor to scope test and contrast 
   });
 
   assert.equal(plan.schema, FIELD_PLANNER_SCHEMA);
+  assert.equal(plan.projection.schema, FIELD_PLANNER_PROJECTION_SCHEMA);
   assert.equal(plan.selectedMoveFamily, 'ask_scope_test');
   assert.equal(plan.targetPremise, 'p1');
   assert.equal(plan.didacticMode.recommendedMode, 'contrast_case');
   assert.equal(plan.conductDecision.selectedMoveFamily, 'ask_scope_test');
   assert.equal(plan.conductDecision.nonLeakAudit.ok, true);
+  assert.ok(plan.candidateMoves.length >= 8);
+  assert.equal(plan.candidateMoves[0].moveFamily, 'ask_scope_test');
+  assert.ok(plan.expectedMovement.joint.trajectoryRisk < 0);
   assert.match(plan.promptLines.join('\n'), /conduct family: ask_scope_test/u);
+  assert.match(plan.promptLines.join('\n'), /candidate projection:/u);
 });
 
 test('runDrama computes and records field planner rows before tutor turns', async () => {
@@ -94,7 +101,17 @@ test('runDrama computes and records field planner rows before tutor turns', asyn
   assert.equal(tutorViews[0].fieldPlanner.schema, FIELD_PLANNER_SCHEMA);
   assert.equal(result.fieldPlanner.length, 1);
   assert.equal(result.fieldPlanner[0].schema, FIELD_PLANNER_SCHEMA);
+  assert.ok(result.fieldPlanner[0].candidateMoves.length >= 8);
+  assert.ok(result.fieldPlanner[0].expectedMovement);
+  assert.ok(result.fieldPlanner[0].projection.selected.score !== null);
   assert.equal(result.fieldPlanner[0].outcome.efficacy, 'no_immediate_movement');
+  assert.equal(result.fieldPlanner[0].outcome.projectionAlignment, 'not_observed_yet');
   const tutorLine = result.transcript.find((line) => line.role === 'tutor');
   assert.equal(tutorLine.meta.fieldPlanner.schema, FIELD_PLANNER_SCHEMA);
+  assert.ok(tutorLine.meta.fieldPlanner.selectedScore !== null);
+
+  const report = buildDialogueReport(result, SMOKE_WORLD, { label: 'field-planner-report-smoke' });
+  assert.equal(report.fieldPlanner.count, 1);
+  assert.equal(report.summary.fieldPlannerCount, 1);
+  assert.equal(report.fieldPlanner.rows[0].candidateCount, result.fieldPlanner[0].candidateMoves.length);
 });

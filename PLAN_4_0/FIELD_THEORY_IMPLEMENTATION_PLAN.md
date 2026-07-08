@@ -4,6 +4,14 @@
 
 This plan turns the PLAN_4_0 field-theory note into an incremental runtime implementation. It is an implementation plan, not an empirical paper claim. Field reporting is instrumentation; field planning and enforcement are experimental controller work that must remain opt-in until evaluated under frozen protocols.
 
+Current implementation status:
+
+- Phases 1-2 are implemented as runtime field objects and dialogue-report artifacts.
+- Phase 3 is implemented as a registered pedagogical-script object model with the default `prediction_failure_repair_generalisation_transfer` script.
+- Phase 4 is implemented as deterministic candidate-move projection inside the field planner. LLM simulation remains deliberately out of scope until the deterministic baseline is evaluated.
+- Phase 5 is implemented as opt-in advisory/enforced field planning with stored candidate projections, selected moves, expected movement, observed movement, and non-leak audits.
+- Phase 6 is specified in `PHASE_6_EVIDENCE_GATE_PLAN.md` and remains unrun.
+
 ## Goal
 
 Bring the dramatic-derivation runtime closer to the Field Theory of Adaptive Pedagogical Interaction by making learner, tutor, discourse, and joint interaction fields first-class computational objects, then using those fields to support reports, trajectory projections, script-level planning, and gated conduct selection.
@@ -68,6 +76,8 @@ Promote scripts from labels into computational objects:
 
 The default script remains `prediction_failure_repair_generalisation_transfer`, but the runtime should be able to register more scripts without touching planner logic.
 
+Implemented in `services/dramaticDerivation/pedagogicalScripts.js`. Each interaction-field turn carries the active stage's preferred moves, anti-patterns, and expected movement into planner scoring.
+
 ## Phase 4: Trajectory Projection
 
 Before selecting an action, evaluate candidate moves against predicted field deltas:
@@ -80,6 +90,8 @@ current field
 ```
 
 Start with deterministic projections from existing conduct and didactic specs. Add LLM simulation only after deterministic projections provide a stable baseline.
+
+Implemented in `services/dramaticDerivation/fieldPlanner.js` as a deterministic candidate table over all conduct move families. Each candidate receives expected learner/tutor/discourse/joint deltas and a score before selection.
 
 ## Phase 5: Runtime Planning
 
@@ -98,6 +110,8 @@ Planner choices must record:
 - observed post-turn movement
 - non-leak audit status
 
+Implemented in `result.fieldPlanner[*]` and surfaced in dialogue reports.
+
 ## Phase 6: Evaluation Gate
 
 No paper-level claim follows from implementation alone. Promotion requires a frozen held-out evaluation:
@@ -111,6 +125,8 @@ No paper-level claim follows from implementation alone. Promotion requires a fro
 - proof reliability, release adherence, and field-movement metrics
 
 The first valid claim should be narrow: whether field planning improves a predeclared derivation-controller failure without harming proof reliability.
+
+See `PHASE_6_EVIDENCE_GATE_PLAN.md` for the frozen arms, world set, endpoints, safety gates, and decision rules.
 
 ## First Implementation Slice
 

@@ -1536,6 +1536,20 @@ export async function runDrama({ world, roles, options = {} }) {
         scriptStage: planner.scriptStage || null,
         jointAttractor: planner.jointAttractor || null,
         metrics: planner.metrics || null,
+        projection: planner.projection || null,
+        candidateMoves: (planner.candidateMoves || []).map((candidate) => ({
+          moveFamily: candidate.moveFamily || null,
+          didacticMode: candidate.didacticMode || null,
+          reasonCode: candidate.reasonCode || null,
+          targetPremise: candidate.targetPremise || null,
+          score: candidate.score ?? null,
+          scoreBreakdown: candidate.scoreBreakdown || null,
+          expectedMovement: candidate.expectedMovement || null,
+          scriptFit: candidate.scriptFit || null,
+          expectedLocalUptake: candidate.expectedLocalUptake || null,
+        })),
+        expectedMovement: planner.expectedMovement || planner.projection?.selected?.expectedMovement || null,
+        efficacyProbe: planner.efficacyProbe || null,
         conductDecision: planner.conductDecision
           ? {
               selectedMoveFamily: planner.conductDecision.selectedMoveFamily || null,
@@ -2553,6 +2567,8 @@ export async function runDrama({ world, roles, options = {} }) {
               targetPremise: fieldPlannerRow.targetPremise,
               didacticMode: fieldPlannerRow.didacticMode?.recommendedMode || null,
               efficacy: fieldPlannerRow.outcome?.efficacy || null,
+              projectionAlignment: fieldPlannerRow.outcome?.projectionAlignment || null,
+              selectedScore: fieldPlannerRow.projection?.selected?.score ?? null,
             },
           }
         : {}),
