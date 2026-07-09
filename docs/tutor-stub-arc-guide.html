@@ -412,9 +412,6 @@
       <h2>Commands</h2>
       <h3>Manual Learner, Adaptive Registers</h3>
       <pre><code>npm run tutor:stub -- \
-  --model codex.gpt-5.5 \
-  --classifier-model codex.gpt-5.5 \
-  --learner-record-model codex.gpt-5.5 \
   --world world_005_marrick \
   --dag \
   --tutor-learner-dag \
@@ -425,10 +422,6 @@
 
       <h3>Mixed Manual Mode</h3>
       <pre><code>npm run tutor:stub -- \
-  --model codex.gpt-5.5 \
-  --classifier-model codex.gpt-5.5 \
-  --learner-record-model codex.gpt-5.5 \
-  --auto-learner-model codex.gpt-5.5 \
   --mixed-learner \
   --world world_005_marrick \
   --dag \
@@ -445,9 +438,6 @@
   --progress-interval 30 \
   --turns until-grounded \
   --safety-turns 120 \
-  --model codex.gpt-5.5 \
-  --analysis-model codex.gpt-5.5 \
-  --auto-learner-model codex.gpt-5.5 \
   --auto-learner-profile-id diligent \
   --world world_005_marrick \
   --cli-effort low \
@@ -510,9 +500,6 @@ npm run tutor:stub:abm-panel -- \
   --runs 1 \
   --turns until-grounded \
   --safety-turns 120 \
-  --model codex.gpt-5.5 \
-  --analysis-model codex.gpt-5.5 \
-  --auto-learner-model codex.gpt-5.5 \
   --world world_005_marrick \
   --register-policy field \
   --register-palette all \

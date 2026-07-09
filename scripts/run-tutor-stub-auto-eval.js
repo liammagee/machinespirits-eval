@@ -29,18 +29,21 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
+const DEFAULT_CODEX_MODEL_REF = 'codex.gpt-5.5';
 
 const { values: args } = parseArgs({
   options: {
     runs: { type: 'string', default: '1' },
     turns: { type: 'string', default: 'until-grounded' },
     policies: { type: 'string', default: 'negative,dynamic,random' },
-    model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || 'codex.gpt-5.5' },
-    'analysis-model': { type: 'string', default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || 'codex.gpt-5.5' },
+    model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || DEFAULT_CODEX_MODEL_REF },
+    'analysis-model': { type: 'string', default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || DEFAULT_CODEX_MODEL_REF },
     'auto-learner-model': {
       type: 'string',
       default:
-        process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL || process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.5',
+        process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL ||
+        process.env.TUTOR_STUB_AUTO_LEARNER_MODEL ||
+        DEFAULT_CODEX_MODEL_REF,
     },
     'auto-learner-profile': {
       type: 'string',
@@ -7680,14 +7683,6 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     autoTurns,
     '--auto-safety-turns',
     String(positiveInt(args['safety-turns'], '--safety-turns')),
-    '--model',
-    args.model,
-    '--classifier-model',
-    args['analysis-model'],
-    '--learner-record-model',
-    args['analysis-model'],
-    '--auto-learner-model',
-    args['auto-learner-model'],
     '--auto-learner-profile',
     resolvedAutoLearnerProfile(),
     '--tutor-learner-dag',
@@ -7704,6 +7699,14 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     '--no-stream',
     '--no-interim-animation',
   ];
+  if (args.model !== DEFAULT_CODEX_MODEL_REF) command.push('--model', args.model);
+  if (args['analysis-model'] !== DEFAULT_CODEX_MODEL_REF) {
+    command.push('--classifier-model', args['analysis-model']);
+    command.push('--learner-record-model', args['analysis-model']);
+  }
+  if (args['auto-learner-model'] !== DEFAULT_CODEX_MODEL_REF) {
+    command.push('--auto-learner-model', args['auto-learner-model']);
+  }
   if (!args['no-dag']) command.push('--dag');
   if (args['no-stop-on-grounded']) command.push('--no-auto-stop-on-grounded');
   if (args['first-message']) command.push('--once', args['first-message']);

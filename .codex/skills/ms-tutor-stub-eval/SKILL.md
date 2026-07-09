@@ -59,9 +59,6 @@ Use when the user will type learner turns manually:
 
 ```bash
 npm run tutor:stub -- \
-  --model codex.gpt-5.5 \
-  --classifier-model codex.gpt-5.5 \
-  --learner-record-model codex.gpt-5.5 \
   --world world_005_marrick \
   --dag \
   --tutor-learner-dag \
@@ -76,10 +73,12 @@ Useful variants:
 
 - Add `--resume-last` to continue the latest dialogue in the trace dir.
 - Add `--register-policy bland` for a non-dynamic-feeling baseline.
+- Add `--model`, `--classifier-model`, `--learner-record-model`, or
+  `--auto-learner-model` only when overriding the default `codex.gpt-5.5`.
 - Add `--multiple-choice` only when explicitly requested.
-- Add `--mixed-learner --auto-learner-model codex.gpt-5.5` for manual play with
-  a prefetched learner draft after each tutor turn. Press Tab on an empty learner
-  prompt to insert the draft for editing, or use `/suggest`, `/use`, `/regen`.
+- Add `--mixed-learner` for manual play with a prefetched learner draft after
+  each tutor turn. Press Tab on an empty learner prompt to insert the draft for
+  editing, or use `/suggest`, `/use`, `/regen`.
 - Use slash commands during a run: `/analysis`, `/field`, `/viz`, `/clarify [phrase]`,
   `/explain [phrase]`, `/suggest`, `/use`, `/regen`, `/quit`.
 
@@ -95,9 +94,6 @@ npm run tutor:stub:auto-eval -- \
   --progress-interval 30 \
   --turns until-grounded \
   --safety-turns 120 \
-  --model codex.gpt-5.5 \
-  --analysis-model codex.gpt-5.5 \
-  --auto-learner-model codex.gpt-5.5 \
   --auto-learner-profile-id diligent \
   --world world_005_marrick \
   --dag-mode strict_dag \
@@ -118,9 +114,6 @@ npm run tutor:stub:auto-eval -- \
   --progress-interval 30 \
   --turns until-grounded \
   --safety-turns 120 \
-  --model codex.gpt-5.5 \
-  --analysis-model codex.gpt-5.5 \
-  --auto-learner-model codex.gpt-5.5 \
   --world world_005_marrick \
   --dag-mode strict_dag \
   --cli-effort low \
@@ -194,9 +187,6 @@ npm run tutor:stub:abm-panel -- \
   --runs 1 \
   --turns until-grounded \
   --safety-turns 120 \
-  --model codex.gpt-5.5 \
-  --analysis-model codex.gpt-5.5 \
-  --auto-learner-model codex.gpt-5.5 \
   --world world_005_marrick \
   --register-policy field \
   --register-palette all \

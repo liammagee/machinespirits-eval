@@ -10,7 +10,7 @@
  * - no rubric scoring
  *
  * Edit the STUB defaults or buildSystemPrompt() below, then run:
- *   npm run tutor:stub -- --model codex.gpt-5.5
+ *   npm run tutor:stub
  *   npm run tutor:stub -- --model openai.mini
  *   npm run tutor:stub -- --model openrouter.sonnet-5
  *   npm run tutor:stub -- --model claude-code.sonnet
