@@ -1593,7 +1593,7 @@ function machineSpiritsReportCss() {
     h3 { font-size:1rem; }
     a { color:var(--brick-d); text-underline-offset:2px; }
     a:hover { color:var(--brick); }
-    code, kbd, samp, .sub, .muted, .metric-label, .metric-sub, .control span, th, button, input, select, textarea, .chip, .status, .learner-eyebrow, .readout-label, .snippet-label, .event-chip, .live-count, .live-run-meta, .live-run-progress, .index-measure em, .index-measure span, .read-first-note {
+    code, kbd, samp, .sub, .muted, .metric-label, .metric-sub, .control span, th, button, input, select, textarea, .chip, .status, .scope-badge, .scope-note, .learner-eyebrow, .readout-label, .snippet-label, .event-chip, .live-count, .live-run-meta, .live-run-progress, .index-measure em, .index-measure span, .read-first-note {
       font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
     header {
@@ -1815,7 +1815,7 @@ function machineSpiritsReportCss() {
     .learner-stat strong { display:block; margin-top:2px; font-family:"Fraunces", Georgia, serif; font-size:20px; color:var(--ink); }
     .learner-stat em { display:block; color:var(--ink-3); font-style:normal; font-size:11px; }
     .learner-chip-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
-    .learner-chip, .chip, .event-chip, .status, .field-badge {
+    .learner-chip, .chip, .event-chip, .status, .scope-badge, .field-badge {
       display:inline-block;
       border:1px solid var(--rule);
       background:var(--paper-3);
@@ -1826,6 +1826,46 @@ function machineSpiritsReportCss() {
     }
     .learner-chip { margin:0 5px 5px 0; }
     .chip { margin:0 4px 4px 0; }
+    .scope-badge {
+      margin:0 4px 4px 0;
+      background:var(--paper-4);
+      color:var(--ink);
+      font-weight:700;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+    }
+    .scope-badge.matrix {
+      background:var(--red);
+      border-color:var(--ink);
+      color:var(--paper);
+    }
+    .scope-note {
+      display:block;
+      margin-top:4px;
+      color:var(--brick-d);
+      font-size:11px;
+      line-height:1.35;
+      letter-spacing:0.02em;
+    }
+    .scope-notice {
+      margin:0 0 16px;
+      border-left:8px solid var(--red);
+      background:var(--brick-soft);
+      padding:12px 14px;
+      color:var(--ink-2);
+      box-shadow:4px 4px 0 var(--ink);
+    }
+    .scope-notice strong {
+      display:block;
+      color:var(--ink);
+      margin-bottom:3px;
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:12px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+    .scope-notice p { margin:0; font-size:13px; line-height:1.4; }
+    .scope-notice a { font-family:"JetBrains Mono", ui-monospace, monospace; font-size:12px; }
     .learner-empty { color:var(--ink-3); font-size:12px; }
     .learner-examples { display:grid; gap:8px; margin-top:12px; }
     .learner-example { border-top:1px solid var(--rule-soft); padding-top:8px; font-size:12px; }
@@ -4627,6 +4667,12 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
     : resolveTracePath(summary.config?.traceDir || '.', ROOT);
   const indexHref = hrefRelative(reportDir, path.join(indexRootDir(), 'index.html'));
   const guideHref = hrefRelative(reportDir, path.join(ROOT, 'docs', 'tutor-stub-arc-guide.html'));
+  const reportScope = reportScopeForSummary({
+    jsonPath: summary.report?.json || '',
+    summary,
+    config: summary.config || {},
+    rootDir: reportDir,
+  });
   const orderedRows = rows.slice().sort(compareReportRows);
   const policyRows = Object.entries(summary.aggregates.byPolicy)
     .sort(([left], [right]) => compareReportPolicies(left, right))
@@ -4688,6 +4734,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
 <body>
   <header>
     <h1>Tutor Stub Auto-Eval Report</h1>
+    ${renderReportScopeBadge(reportScope)}
     <div class="sub">Started ${escapeHtml(summary.startedAt)} · completed ${escapeHtml(summary.completedAt)} · world ${escapeHtml(summary.config.world)}</div>
     <div class="header-links">
       <a href="${escapeHtml(indexHref)}">report index</a>
@@ -4700,6 +4747,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
       <div class="report-content">
         <section id="run-summary" class="report-section">
           <h2 class="visually-hidden">Run Summary</h2>
+          ${renderReportScopeNotice(reportScope)}
           <div class="summary-panel">
             <div class="metrics">
               ${htmlMetricInfo('Rows', REPORT_TERM_TOOLTIPS.ok, summary.aggregates.rows, `${summary.aggregates.failed} failed · ${summary.aggregates.dryRun} dry-run`)}
@@ -5052,6 +5100,81 @@ function indexDetailRows(summary) {
   });
 }
 
+function qaMatrixChildInfoForPath(filePath) {
+  if (!filePath) return null;
+  const resolved = resolvePath(String(filePath));
+  const parts = resolved.split(path.sep).filter(Boolean);
+  const matrixIndex = parts.findIndex((part) => /^qa-matrix-\d{4}-/u.test(part));
+  if (matrixIndex === -1 || matrixIndex + 1 >= parts.length) return null;
+  const matrixId = parts[matrixIndex];
+  const profile = parts[matrixIndex + 1];
+  if (!profile || profile === 'logs' || profile === 'traces' || profile.endsWith('.json') || profile.endsWith('.md')) {
+    return null;
+  }
+  const rootPrefix = resolved.startsWith(path.sep) ? path.sep : '';
+  const matrixRoot = path.join(rootPrefix, ...parts.slice(0, matrixIndex + 1));
+  return {
+    kind: 'qa_matrix_child',
+    matrixId,
+    profile,
+    matrixRoot,
+    planPath: path.join(matrixRoot, 'qa-plan.json'),
+  };
+}
+
+function qaMatrixChildInfoForSummary({ jsonPath = '', summary = {}, config = {} } = {}) {
+  const candidates = [
+    jsonPath,
+    summary.report?.json,
+    summary.report?.html,
+    config.traceDir,
+    summary.resume?.sourcePath,
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    const info = qaMatrixChildInfoForPath(candidate);
+    if (info) return info;
+  }
+  return null;
+}
+
+function reportScopeForSummary({ jsonPath = '', summary = {}, config = {}, rootDir = ROOT } = {}) {
+  const qaChild = qaMatrixChildInfoForSummary({ jsonPath, summary, config });
+  if (!qaChild) {
+    return {
+      kind: 'standalone',
+      label: 'Standalone auto-eval',
+      note: 'Standalone auto-eval report.',
+      matrixId: '',
+      profile: '',
+      planHref: '',
+    };
+  }
+  const planHref = fs.existsSync(qaChild.planPath) ? hrefRelative(rootDir, qaChild.planPath) : '';
+  return {
+    kind: qaChild.kind,
+    label: `QA matrix child: ${qaChild.profile}`,
+    note: `One learner-profile slice of ${qaChild.matrixId}; not the consolidated QA matrix.`,
+    matrixId: qaChild.matrixId,
+    profile: qaChild.profile,
+    planHref,
+  };
+}
+
+function renderReportScopeBadge(scope) {
+  if (scope?.kind === 'qa_matrix_child') {
+    return `<span class="scope-badge matrix">${escapeHtml(scope.label)}</span>`;
+  }
+  return '';
+}
+
+function renderReportScopeNotice(scope) {
+  if (scope?.kind !== 'qa_matrix_child') return '';
+  return `<div class="scope-notice">
+    <strong>${escapeHtml(scope.label)}</strong>
+    <p>${escapeHtml(scope.note)} ${scope.planHref ? `<a href="${escapeHtml(scope.planHref)}">qa plan</a>` : ''}</p>
+  </div>`;
+}
+
 function indexRunKind({ reportName, summary, config, aggregates, status }) {
   if (config.dryRun || aggregates.dryRun === aggregates.rows || status === 'dry_run') return 'dry';
   const smokeText = [
@@ -5091,6 +5214,7 @@ function readIndexSummary(jsonPath, rootDir) {
       relParent && relParent !== '.'
         ? `${relParent}/${path.basename(jsonPath, '.json')}`
         : path.basename(jsonPath, '.json');
+    const reportScope = reportScopeForSummary({ jsonPath, summary, config, rootDir });
     const policies =
       Array.isArray(config.policies) && config.policies.length
         ? config.policies
@@ -5105,6 +5229,7 @@ function readIndexSummary(jsonPath, rootDir) {
     const htmlExists = fs.existsSync(htmlPath);
     return {
       reportName,
+      reportScope,
       runKind,
       jsonPath,
       htmlPath,
@@ -5147,6 +5272,10 @@ function readIndexSummary(jsonPath, rootDir) {
       completedMs,
       searchText: [
         reportName,
+        reportScope.label,
+        reportScope.note,
+        reportScope.matrixId,
+        reportScope.profile,
         runKind,
         indexRunKindLabel(runKind),
         status,
@@ -5171,6 +5300,14 @@ function readIndexSummary(jsonPath, rootDir) {
   } catch (error) {
     return {
       reportName: path.basename(jsonPath, '.json'),
+      reportScope: {
+        kind: 'unknown',
+        label: 'Unreadable report',
+        note: 'Could not parse report summary.',
+        matrixId: '',
+        profile: '',
+        planHref: '',
+      },
       runKind: 'smoke',
       jsonPath,
       htmlPath: '',
@@ -5224,6 +5361,12 @@ function readIndexRunState(statePath, rootDir) {
     const relState = hrefRelative(rootDir, statePath);
     const relParent = path.dirname(relState);
     const runName = relParent && relParent !== '.' ? relParent : path.basename(path.dirname(statePath));
+    const reportScope = reportScopeForSummary({
+      jsonPath: statePath,
+      summary: { report: { json: statePath } },
+      config: state.config || {},
+      rootDir,
+    });
     const jobs = (state.jobs || []).map((job) => {
       const traceDir = job.traceDir ? resolvePath(job.traceDir) : '';
       const latestTrace = traceDir ? latestTraceFile(traceDir) : null;
@@ -5238,6 +5381,7 @@ function readIndexRunState(statePath, rootDir) {
     const activeJobs = jobs.filter((job) => job.status === 'running');
     return {
       runName,
+      reportScope,
       statePath,
       stateHref: relState,
       status,
@@ -5256,6 +5400,10 @@ function readIndexRunState(statePath, rootDir) {
       activeJobs,
       searchText: [
         runName,
+        reportScope.label,
+        reportScope.note,
+        reportScope.matrixId,
+        reportScope.profile,
         status,
         state.config?.autoLearnerProfileId,
         state.config?.world,
@@ -5269,6 +5417,14 @@ function readIndexRunState(statePath, rootDir) {
   } catch (error) {
     return {
       runName: path.basename(path.dirname(statePath)),
+      reportScope: {
+        kind: 'unknown',
+        label: 'Unreadable run state',
+        note: 'Could not parse run-state file.',
+        matrixId: '',
+        profile: '',
+        planHref: '',
+      },
       statePath,
       stateHref: hrefRelative(rootDir, statePath),
       status: 'stale',
@@ -5708,6 +5864,14 @@ function indexBigPictureModel({ rows, activeRuns = [], hiddenByDefault = 0 }) {
 function indexRowData(row) {
   return {
     reportName: row.reportName || '',
+    reportScope: row.reportScope || {
+      kind: 'standalone',
+      label: 'Standalone auto-eval',
+      note: 'Standalone auto-eval report.',
+      matrixId: '',
+      profile: '',
+      planHref: '',
+    },
     runKind: row.runKind || 'real',
     htmlExists: Boolean(row.htmlExists),
     jsonHref: row.jsonHref || '',
@@ -5784,8 +5948,9 @@ function indexDataModel({ rows, activeRuns = [], rootDir, generatedAt }) {
 }
 
 function renderReportIndexShell({ rootDir, generatedAt }) {
-  const cssHref = hrefRelative(rootDir, path.join(rootDir, 'assets', 'tutor-stub-report.css'));
-  const appHref = hrefRelative(rootDir, path.join(rootDir, 'assets', 'tutor-stub-index.js'));
+  const assetVersion = encodeURIComponent(generatedAt || new Date().toISOString());
+  const cssHref = `${hrefRelative(rootDir, path.join(rootDir, 'assets', 'tutor-stub-report.css'))}?v=${assetVersion}`;
+  const appHref = `${hrefRelative(rootDir, path.join(rootDir, 'assets', 'tutor-stub-index.js'))}?v=${assetVersion}`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -5827,6 +5992,19 @@ function tutorStubIndexClientJs() {
     if (kind === 'dry') return 'dry run';
     if (kind === 'smoke') return 'smoke run';
     return 'real run';
+  }
+  function scopeBadge(scope) {
+    if (scope && scope.kind === 'qa_matrix_child') {
+      return '<span class="scope-badge matrix">' + esc(scope.label || 'QA matrix child') + '</span>';
+    }
+    return '';
+  }
+  function scopeNote(scope) {
+    if (scope && scope.kind === 'qa_matrix_child') {
+      var link = scope.planHref ? ' <a href="' + esc(scope.planHref) + '">qa plan</a>' : '';
+      return '<span class="scope-note">' + esc(scope.note || 'QA matrix child report.') + link + '</span>';
+    }
+    return '';
   }
   function infoTerm(label, tooltip) {
     return '<span class="info-term" tabindex="0" data-tip="' + esc(tooltip || label) + '">' + esc(label) + '</span>';
@@ -5893,7 +6071,7 @@ function tutorStubIndexClientJs() {
         var totals = run.totals || {};
         var rate = totals.progressRate != null ? totals.progressRate : (totals.jobs ? Number(totals.completed || 0) / Number(totals.jobs || 1) : 0);
         var activeJobs = run.activeJobs && run.activeJobs.length ? run.activeJobs : (run.jobs || []).filter(function (job) { return job.status !== 'queued'; }).slice(-6);
-        return '<article class="live-run-card ' + esc(run.status) + '" data-search="' + esc(run.searchText) + '"><div class="live-run-top"><div><h3>' + esc(run.runName) + '</h3><p>' + esc(run.learnerProfile || 'unknown learner') + ' · ' + esc(run.world || 'unknown world') + ' · pid ' + esc(run.pid || 'n/a') + '</p></div><span class="status ' + esc(run.status) + '">' + esc(run.status) + '</span></div><div class="live-run-progress">' + progressBar(rate) + '<span>' + esc(totals.completed || 0) + '/' + esc(totals.jobs || 0) + ' jobs · ' + esc(totals.active || 0) + ' active · ' + esc(totals.queued || 0) + ' queued · ' + esc(totals.failed || 0) + ' failed</span></div><div class="live-run-meta"><span>started ' + esc(shortDate(run.startedAt)) + '</span><span>updated ' + esc(shortDate(run.updatedAt)) + '</span><span>' + policyChips(run.policies) + '</span></div><div class="live-jobs">' + (activeJobs.map(renderLiveJob).join('\n') || '<span class="muted">No active jobs.</span>') + '</div><div class="live-actions"><a href="' + esc(run.stateHref) + '">state json</a> ' + (run.traceDirHref ? '<a href="' + esc(run.traceDirHref) + '">trace dir</a>' : '') + '</div></article>';
+        return '<article class="live-run-card ' + esc(run.status) + '" data-search="' + esc(run.searchText) + '"><div class="live-run-top"><div><h3>' + esc(run.runName) + '</h3>' + scopeBadge(run.reportScope) + '<p>' + esc(run.learnerProfile || 'unknown learner') + ' · ' + esc(run.world || 'unknown world') + ' · pid ' + esc(run.pid || 'n/a') + '</p>' + scopeNote(run.reportScope) + '</div><span class="status ' + esc(run.status) + '">' + esc(run.status) + '</span></div><div class="live-run-progress">' + progressBar(rate) + '<span>' + esc(totals.completed || 0) + '/' + esc(totals.jobs || 0) + ' jobs · ' + esc(totals.active || 0) + ' active · ' + esc(totals.queued || 0) + ' queued · ' + esc(totals.failed || 0) + ' failed</span></div><div class="live-run-meta"><span>started ' + esc(shortDate(run.startedAt)) + '</span><span>updated ' + esc(shortDate(run.updatedAt)) + '</span><span>' + policyChips(run.policies) + '</span></div><div class="live-jobs">' + (activeJobs.map(renderLiveJob).join('\n') || '<span class="muted">No active jobs.</span>') + '</div><div class="live-actions"><a href="' + esc(run.stateHref) + '">state json</a> ' + (run.traceDirHref ? '<a href="' + esc(run.traceDirHref) + '">trace dir</a>' : '') + '</div></article>';
       }).join('\n') + '</section>';
   }
   function renderBigPicture(model) {
@@ -5907,7 +6085,8 @@ function tutorStubIndexClientJs() {
     return '<section class="big-picture" aria-label="Big picture summary"><div class="big-picture-head"><div><h2>Big Picture</h2><p>Deterministic rollup over the latest real, completed reports. It summarizes closure, evidence coverage, policy signal, learner-profile robustness, and the main cautions before you open individual reports.</p></div><span class="live-count">' + esc(model.reportCount) + ' report' + (model.reportCount === 1 ? '' : 's') + '</span></div><div class="big-picture-grid"><div class="big-picture-panel"><h3>Overall Read</h3><ul class="big-picture-read">' + (model.bullets || []).map(function (bullet) { return '<li>' + esc(bullet) + '</li>'; }).join('\n') + '</ul>' + ((model.cautions || []).length ? '<div class="big-picture-cautions">' + model.cautions.map(function (caution) { return '<div>' + esc(caution) + '</div>'; }).join('\n') + '</div>' : '') + '</div><div class="big-picture-panel"><h3>Learner Robustness</h3><div class="table-scroll" role="region" aria-label="Learner robustness table" tabindex="0"><table class="big-picture-table"><thead><tr><th>Learner</th><th>Reports</th><th>OK/Failed</th><th>Closure</th><th>Turns</th><th>Leaks</th></tr></thead><tbody>' + (learnerRows || '<tr><td colspan="6">No learner-profile rows yet.</td></tr>') + '</tbody></table></div></div></div><div class="table-scroll" role="region" aria-label="Policy signal table" tabindex="0"><table class="big-picture-table"><thead><tr><th>Policy</th><th>OK/Failed</th><th>Closure</th><th>Coverage</th><th>Final M/R</th><th>Gain/Reduction</th><th>Leaks</th><th>Signal</th></tr></thead><tbody>' + (policyRows || '<tr><td colspan="8">No policy rows yet.</td></tr>') + '</tbody></table></div></section>';
   }
   function reportRow(row) {
-    return '<tr data-search="' + esc(row.searchText) + '" data-status="' + esc(row.status) + '" data-learner="' + esc(row.learnerProfile || '') + '" data-policies="' + esc((row.policies || []).join('|')) + '" data-policy-text="' + esc(row.policyText || '') + '" data-world="' + esc(row.world || '') + '" data-completed-ms="' + esc(row.completedMs || 0) + '" data-report-name="' + esc(row.reportName || '') + '" data-run-kind="' + esc(row.runKind || 'real') + '" data-grounded-rate="' + esc(row.groundedRate == null ? '' : row.groundedRate) + '" data-turns="' + esc(row.meanTurns == null ? '' : row.meanTurns) + '" data-coverage="' + esc(row.meanCoverage == null ? '' : row.meanCoverage) + '" data-rows="' + esc(row.rows || 0) + '" data-ok="' + esc(row.ok || 0) + '" data-failed="' + esc(row.failed || 0) + '" data-svgs="' + esc(row.svgCount || 0) + '"><td><div><strong>' + esc(shortDate(row.completedAt) || row.reportName) + '</strong></div><div class="muted">' + esc(row.reportName) + '</div><div class="muted">' + esc(row.world || '') + ' · ' + esc(indexRunKindLabel(row.runKind || 'real')) + '</div></td><td><span class="status ' + esc(row.status) + '">' + esc(row.status) + '</span></td><td>' + policyChips(row.policies) + '</td><td><div>' + esc(row.learnerProfile || '') + '</div><div class="muted">' + esc(row.autoLearnerModel || '') + '</div></td><td>' + esc(row.ok) + '/' + esc(row.failed) + (row.dryRun ? ' · ' + esc(row.dryRun) + ' dry' : '') + '</td><td>' + esc(row.grounded) + '/' + esc(row.ok) + ' · ' + Math.round(Number(row.groundedRate || 0) * 100) + '%</td><td>' + esc(row.meanTurns) + '</td><td>' + coverageCell(row.meanCoverage) + '</td><td>' + fieldSnapshotCell(row) + '</td><td class="actions">' + (row.htmlHref ? '<a href="' + esc(row.htmlHref) + '">report</a>' : '<span class="muted">report</span>') + ' <a href="' + esc(row.jsonHref) + '">json</a></td></tr>';
+    var scope = row.reportScope || {};
+    return '<tr data-search="' + esc(row.searchText) + '" data-status="' + esc(row.status) + '" data-learner="' + esc(row.learnerProfile || '') + '" data-policies="' + esc((row.policies || []).join('|')) + '" data-policy-text="' + esc(row.policyText || '') + '" data-world="' + esc(row.world || '') + '" data-completed-ms="' + esc(row.completedMs || 0) + '" data-report-name="' + esc(row.reportName || '') + '" data-report-scope="' + esc(scope.kind || 'standalone') + '" data-run-kind="' + esc(row.runKind || 'real') + '" data-grounded-rate="' + esc(row.groundedRate == null ? '' : row.groundedRate) + '" data-turns="' + esc(row.meanTurns == null ? '' : row.meanTurns) + '" data-coverage="' + esc(row.meanCoverage == null ? '' : row.meanCoverage) + '" data-rows="' + esc(row.rows || 0) + '" data-ok="' + esc(row.ok || 0) + '" data-failed="' + esc(row.failed || 0) + '" data-svgs="' + esc(row.svgCount || 0) + '"><td><div><strong>' + esc(shortDate(row.completedAt) || row.reportName) + '</strong> ' + scopeBadge(scope) + '</div><div class="muted">' + esc(row.reportName) + '</div><div class="muted">' + esc(row.world || '') + ' · ' + esc(indexRunKindLabel(row.runKind || 'real')) + '</div>' + scopeNote(scope) + '</td><td><span class="status ' + esc(row.status) + '">' + esc(row.status) + '</span></td><td>' + policyChips(row.policies) + '</td><td><div>' + esc(row.learnerProfile || '') + '</div><div class="muted">' + esc(row.autoLearnerModel || '') + '</div></td><td>' + esc(row.ok) + '/' + esc(row.failed) + (row.dryRun ? ' · ' + esc(row.dryRun) + ' dry' : '') + '</td><td>' + esc(row.grounded) + '/' + esc(row.ok) + ' · ' + Math.round(Number(row.groundedRate || 0) * 100) + '%</td><td>' + esc(row.meanTurns) + '</td><td>' + coverageCell(row.meanCoverage) + '</td><td>' + fieldSnapshotCell(row) + '</td><td class="actions">' + (row.htmlHref ? '<a href="' + esc(row.htmlHref) + '">report</a>' : '<span class="muted">report</span>') + ' <a href="' + esc(row.jsonHref) + '">json</a></td></tr>';
   }
   function render(data) {
     state.data = data;
