@@ -1,14 +1,17 @@
 # Tutor Stub Human Discourse Layer
 
-Status: design package for a breaking tutor-stub change.
+Status: phase 2 implementation note for a breaking tutor-stub change.
 Date: 2026-07-09
 
-Current implementation status: phase 1 is implemented. Tutor-stub runs now
-accept `--dag-mode`, record a human-discourse run config, and attach
-`humanDiscourseFrame`, `scaffoldState`, `sideArc`, `proofDebt`, and
-`warrantPremiseAudit` records to completed turn traces. Later phases still need
-to populate those records with active scaffold projections, proof-debt
-transitions, side-arc classification, and implied/suppressed premise detection.
+Current implementation status: phases 1-6 are implemented in the tutor-stub
+surface. Tutor-stub runs accept `--dag-mode`; `strict_dag` remains the
+audit-only baseline, while `human_scaffold` and
+`defeasible_human_scaffold` actively add per-turn human-scaffold prompt context.
+Completed turns record `humanDiscourseFrame`, `scaffoldState`, `sideArc`,
+`proofDebt`, and `warrantPremiseAudit` records. Auto-eval summaries, HTML
+reports, transition-training examples, and SQL ingest preserve the same
+human-discourse metadata. Later work should refine the extractor and scoring
+rubrics with empirical human traces; it should not remove the strict DAG audit.
 
 ## Summary
 
@@ -198,8 +201,10 @@ The transcript format should preserve:
 - scaffold coverage;
 - final closure status: strict, defeasible-only, or ungrounded.
 
-Reports should rank human-scaffold runs separately from strict-DAG runs and show
-when apparent speed came from harmless compression versus unresolved debt.
+Reports label the active DAG discourse mode and carry turn-level scaffold
+metadata into transcript notes and training examples. They should rank
+human-scaffold runs separately from strict-DAG runs and show when apparent speed
+came from harmless compression versus unresolved debt.
 
 ## Evaluation implications
 
@@ -225,16 +230,20 @@ Success criteria should include:
 
 ## Implementation phases
 
-1. Add schema and trace fields for scaffold state, side arcs, and proof debt.
-2. Add warrant/premise stocktake fields for explicit, implied, suppressed, and
-   common-sense material.
-3. Project `dramaturgy.acts` plus release schedule into a human scaffold context.
-4. Add prompt instructions for warrant framing, allowed leaps, and side-arc
-   return contracts.
-5. Update learner-record extraction to distinguish strict proof adoption from
-   provisional scaffold acceptance.
-6. Update auto-eval reports and SQL ingest to preserve scaffold/debt metrics.
-7. Add Marrick-focused tests and one dry-run command before broader QA.
+1. Done: add schema and trace fields for scaffold state, side arcs, and proof
+   debt.
+2. Done: add warrant/premise stocktake fields for explicit, implied,
+   suppressed, and common-sense material.
+3. Done: project `dramaturgy.acts` plus release schedule into a human scaffold
+   context.
+4. Done: add prompt instructions for warrant framing, allowed leaps, and
+   side-arc return contracts.
+5. Done: update learner-record extraction to distinguish strict proof adoption
+   from provisional scaffold acceptance.
+6. Done: update auto-eval reports and SQL ingest to preserve scaffold/debt
+   metrics and label DAG discourse mode.
+7. Current verification: targeted tests plus a single Marrick mixed/human
+   scaffold smoke before broader QA.
 
 ## Non-goals
 

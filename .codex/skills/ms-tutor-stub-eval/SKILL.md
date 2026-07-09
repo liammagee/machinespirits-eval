@@ -27,8 +27,9 @@ Key choices and defaults:
 - Dynamical-system policy: `--register-policy dynamical_system` maps a continuous state/derivative vector through theory priors plus within-dialogue empirical efficacy corrections; `dynamical-system` is accepted as an alias.
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep a nearest `selected_register` for compatibility while passing a weighted `register_vector`/style blend to the tutor; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
+- DAG discourse mode: default `strict_dag` is the proof-audit baseline. Use `--dag-mode human_scaffold` or `--dag-mode defeasible_human_scaffold` when testing the human-facing scaffold that allows ordinary-language warrant framing, side arcs, and explicit proof debt while the strict DAG remains the audit.
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
-- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
+- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v1`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
 - Runs: default `3` for baseline comparisons, `5` for focused policy comparisons, `1` for ABM panels.
 - Models: default tutor `codex.gpt-5.5`, analysis/classifier/DAG `codex.gpt-5.5`, automated learner `codex.gpt-5.5`.
 - Parallelism: default `8` for `auto-eval`; ABM panel is currently serial.
@@ -55,6 +56,7 @@ npm run tutor:stub -- \
   --world world_005_marrick \
   --dag \
   --tutor-learner-dag \
+  --dag-mode defeasible_human_scaffold \
   --register-policy field \
   --cli-effort low \
   --history-turns 4 \
@@ -88,6 +90,7 @@ npm run tutor:stub:auto-eval -- \
   --auto-learner-model codex.gpt-5.5 \
   --auto-learner-profile-id diligent \
   --world world_005_marrick \
+  --dag-mode strict_dag \
   --cli-effort low \
   --history-turns 4 \
   --max-tokens 4096 \
@@ -109,6 +112,7 @@ npm run tutor:stub:auto-eval -- \
   --analysis-model codex.gpt-5.5 \
   --auto-learner-model codex.gpt-5.5 \
   --world world_005_marrick \
+  --dag-mode strict_dag \
   --cli-effort low \
   --history-turns 4 \
   --max-tokens 4096 \
@@ -238,6 +242,8 @@ Use `--profile-suite sentinel` for a cheaper profile screen (`diligent`,
 `proof_skipper`, `false_memory`, `affective_resistant`) and `--profile-suite
 stress` for only the sharper failure-mode profiles. Explicit `--profiles`
 overrides the profile suite.
+When testing `affective_resistant`, include a pressure arm such as
+`--policies field,negative` so the profile has a real interactional trigger.
 Use `--from-dir .tutor-stub-auto-eval/qa-matrix-<timestamp>` to rebuild only the
 consolidated reports from existing per-learner summaries.
 
@@ -259,6 +265,9 @@ Use `--json` for a machine-readable report. A useful initial gate is average
 pairwise cosine `< 0.85` and max similarity to `diligent < 0.90`; if the gate
 fails, the profile prompts are probably not yet differentiated enough to justify
 larger runs.
+Document the learner-profile robustness evidence and interpretation in
+`docs/tutor-stub-learner-profile-robustness.md` when profile schemas or gates
+change.
 
 ## Field/State Analysis
 

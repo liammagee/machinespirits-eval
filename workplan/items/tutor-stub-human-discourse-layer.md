@@ -54,18 +54,19 @@ Acceptance:
 
 Implementation phases:
 
-1. Add data shapes and trace fields for scaffold state, side arcs, and proof
-   debt.
-2. Add data shapes and trace fields for warrant/premise stocktake.
-3. Add Marrick scaffold projection from existing `dramaturgy.acts` and
+1. Done: add data shapes and trace fields for scaffold state, side arcs, and
+   proof debt.
+2. Done: add data shapes and trace fields for warrant/premise stocktake.
+3. Done: add Marrick scaffold projection from existing `dramaturgy.acts` and
    `release_schedule`.
-4. Extend tutor prompt context with warrant framing and side-arc return
+4. Done: extend tutor prompt context with warrant framing and side-arc return
    contracts.
-5. Extend learner-record extraction to distinguish strict proof adoption from
-   provisional scaffold acceptance.
-6. Update reports, SQL ingest, and QA matrix labels to separate strict and
+5. Done: extend learner-record extraction to distinguish strict proof adoption
+   from provisional scaffold acceptance.
+6. Done: update reports, SQL ingest, and QA labels to separate strict and
    human-scaffold metrics.
-7. Add targeted tests plus a Marrick dry run before any larger eval comparison.
+7. In progress: run targeted tests plus a Marrick mixed/human-scaffold smoke
+   before any larger eval comparison.
 
 This item is intentionally breaking for eval comparability. Historical Marrick
 strict-DAG runs remain useful as proof-discipline baselines, not as direct
@@ -77,3 +78,8 @@ Progress log:
   human-discourse run config, per-turn `humanDiscourseFrame`,
   `scaffoldState`, `sideArc`, `proofDebt`, and `warrantPremiseAudit` records,
   plus dry-run contract tests. Behavior remains unchanged in this phase.
+- 2026-07-09: Phases 2-6 implemented: human scaffold modes now project
+  dramaturgy/release context into tutor prompts, record provisional
+  warrant/premise stocktake, preserve side-arc/proof-debt data in reports and
+  SQL ingest, and label auto-eval summaries with `dagMode`. Strict mode remains
+  audit-only.

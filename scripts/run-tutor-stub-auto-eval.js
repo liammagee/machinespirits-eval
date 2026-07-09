@@ -17,35 +17,18 @@ import process from 'node:process';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import {
+  learnerProfileContract,
+  learnerProfileContractSummary,
+  learnerProfileDescription,
+  learnerProfileIds,
+  learnerProfileListText,
+  learnerProfilePrompt,
+  normalizeLearnerProfileId,
+} from './tutor-stub-learner-profile-contracts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
-const AUTO_LEARNER_PROFILES = {
-  diligent:
-    'Control learner. They are curious, concrete, and fallible: they try to integrate public evidence, make occasional partial claims, and repair when the tutor points to a missing warrant. Do not invent an artificial failure mode.',
-  answer_seeking:
-    'Premature-closure and copying learner. Primary failure: they want the exact trial-book line, ask what to write next, and treat copied tutor wording as understanding. They close early unless the tutor forces one public evidence claim plus its warrant.',
-  skeptical:
-    'Low-trust warrant challenger. Primary failure: they distrust the tutor framing, ask why a warrant counts, and resist closure until the public clue and the inference rule appear in the same claim. They are not rude; they are evidentially demanding.',
-  overconfident:
-    'Culprit-jump proof-skipper. Primary failure: they leap from a salient clue to a culprit or secret, omit the intermediate warrant, and defend the leap until shown concrete counter-evidence or a missing public premise.',
-  low_agency:
-    'Permission-seeking passive learner. Primary failure: they ask the tutor to choose, avoid self-authored claims, and stall at bookkeeping. They only write a trial-book line when the tutor names the specific missing premise they should commit to.',
-  memory_limited:
-    'Narrow-memory and false-recall learner. Primary failure: they mostly track the last two public clues, lose earlier evidence, and sometimes blend or misquote a prior clue. They accept correction only when the tutor re-grounds it in the public transcript.',
-  premature_closure:
-    'Stress profile: premature closure. They try to declare the secret as soon as any plausible clue appears, even if the evidence chain is incomplete. They need the tutor to slow them down and require the missing warrant.',
-  proof_skipper:
-    'Stress profile: proof skipper. They can identify relevant evidence but repeatedly omit the bridge from clue to conclusion. They prefer a polished trial-book sentence over explaining why the sentence is licensed.',
-  false_memory:
-    'Stress profile: false memory. They confidently import or distort an earlier clue after several turns, especially when the tutor asks them to connect evidence. They repair only when the tutor contrasts the remembered clue with the public record.',
-  contradiction_keeper:
-    'Stress profile: contradiction keeper. They preserve conflicting public clues and refuse to resolve the case until the tutor helps name what would rule each possibility in or out. They are slow but proof-safety oriented.',
-  affective_resistant:
-    'Stress profile: affectively resistant learner. They become defensive or withdraw when the tutor pressures, mocks, or over-directs. They re-engage when the tutor acknowledges uncertainty and gives a small agency-preserving step.',
-  low_trust_skeptic:
-    'Stress profile: low-trust skeptic. They assume the tutor may be smuggling the answer and challenge every unsupported inference. They will proceed only after the tutor separates public evidence, inference rule, and trial-book wording.',
-};
 
 const { values: args } = parseArgs({
   options: {
@@ -76,6 +59,7 @@ const { values: args } = parseArgs({
     'trace-dir': { type: 'string', default: process.env.TUTOR_STUB_EVAL_TRACE_DIR || '.tutor-stub-auto-eval' },
     ledger: { type: 'string', default: process.env.TUTOR_STUB_EVAL_LEDGER || '.tutor-stub-auto-eval/ledger.jsonl' },
     'register-palette': { type: 'string', default: 'all' },
+    'dag-mode': { type: 'string', default: process.env.TUTOR_STUB_EVAL_DAG_MODE || process.env.TUTOR_STUB_DAG_MODE || 'strict_dag' },
     'first-message': { type: 'string', default: '' },
     'cli-effort': { type: 'string', default: process.env.TUTOR_STUB_EVAL_CLI_EFFORT || '' },
     'max-tokens': { type: 'string', default: process.env.TUTOR_STUB_EVAL_MAX_TOKENS || '' },
@@ -122,6 +106,7 @@ Options:
   --trace-dir <path>         default: .tutor-stub-auto-eval
   --ledger <path>            append/upsert eval ledger JSONL (default: .tutor-stub-auto-eval/ledger.jsonl)
   --register-palette <mode>  default: all
+  --dag-mode <mode>          strict_dag, human_scaffold, or defeasible_human_scaffold
   --first-message <text>     seed the first learner turn instead of using tutor opening
   --cli-effort <level>       low, medium, high, xhigh, max, or config for CLI providers
   --max-tokens <n>           tutor response token cap passed to tutor-stub
@@ -188,19 +173,12 @@ function assertSupportedModelRefs(refs) {
   }
 }
 
-function normalizeLearnerProfileId(value) {
-  return String(value || 'diligent')
-    .trim()
-    .toLowerCase()
-    .replace(/-/gu, '_');
-}
-
 function resolvedAutoLearnerProfileId() {
   const id = normalizeLearnerProfileId(args['auto-learner-profile-id']);
-  if (!AUTO_LEARNER_PROFILES[id]) {
+  if (!learnerProfileContract(id)) {
     throw new Error(
       `Unknown --auto-learner-profile-id: ${args['auto-learner-profile-id']}. ` +
-        `Known: ${Object.keys(AUTO_LEARNER_PROFILES).join(', ')}`,
+        `Known: ${learnerProfileIds().join(', ')}`,
     );
   }
   return id;
@@ -209,7 +187,7 @@ function resolvedAutoLearnerProfileId() {
 function resolvedAutoLearnerProfile() {
   const custom = String(args['auto-learner-profile'] || '').trim();
   if (custom) return custom;
-  return AUTO_LEARNER_PROFILES[resolvedAutoLearnerProfileId()];
+  return learnerProfilePrompt(resolvedAutoLearnerProfileId());
 }
 
 function autoLearnerProfileLabel() {
@@ -217,9 +195,7 @@ function autoLearnerProfileLabel() {
 }
 
 function printLearnerProfiles() {
-  for (const [id, profile] of Object.entries(AUTO_LEARNER_PROFILES)) {
-    console.log(`${id}: ${profile}`);
-  }
+  console.log(learnerProfileListText());
 }
 
 function resolvePath(value) {
@@ -294,8 +270,12 @@ function runStatePath(traceDir) {
 }
 
 function writeJsonAtomic(filePath, value) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  const tmpPath = `${filePath}.tmp`;
+  const dir = path.dirname(filePath);
+  fs.mkdirSync(dir, { recursive: true });
+  const tmpPath = path.join(
+    dir,
+    `.${path.basename(filePath)}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`,
+  );
   fs.writeFileSync(tmpPath, `${JSON.stringify(value, null, 2)}\n`);
   fs.renameSync(tmpPath, filePath);
 }
@@ -805,6 +785,13 @@ function approximateDynamicalStateVector({ turn, fieldRow, trajectory, selection
 function frameEvents({ turn, fieldRow, trajectory, selection }) {
   const events = new Set();
   if (fieldRow.bottleneck) events.add(fieldRow.bottleneck);
+  if (turn?.humanDiscourseFrame?.sideArc?.detected) events.add(`side_arc:${turn.humanDiscourseFrame.sideArc.type || 'unknown'}`);
+  if (turn?.humanDiscourseFrame?.proofDebt?.status && turn.humanDiscourseFrame.proofDebt.status !== 'none_open') {
+    events.add(`proof_debt:${turn.humanDiscourseFrame.proofDebt.status}`);
+  }
+  if (turn?.humanDiscourseFrame?.warrantPremiseAudit?.status) {
+    events.add(`warrant_stocktake:${turn.humanDiscourseFrame.warrantPremiseAudit.status}`);
+  }
   for (const flag of selection?.risk_flags || []) events.add(flag);
   for (const [flag, enabled] of Object.entries(trajectory?.flags || {})) {
     if (enabled) events.add(flag);
@@ -905,6 +892,7 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
       logits: compactNumericMap(selection.dynamical_system_policy?.logits || {}, { limit: 12 }),
     },
     state: compactFrameState({ turn, fieldRow, selection }),
+    humanDiscourse: turn?.humanDiscourseFrame || null,
     field: {
       learnerMastery: fieldRow.learnerMastery,
       learnerRisk: fieldRow.learnerRisk,
@@ -1014,6 +1002,7 @@ function compactTranscriptTurn({ turn, index, fieldRows }) {
       scores: state.classifier.scores || {},
     },
     dag: state.dag,
+    humanDiscourse: turn?.humanDiscourseFrame || null,
     field: {
       learnerMastery: fieldRow.learnerMastery,
       learnerRisk: fieldRow.learnerRisk,
@@ -1134,6 +1123,7 @@ function buildTurnTrainingExamples({ animatedViz = null, transcript = null } = {
         stateVector: frame.dynamics?.stateVector || {},
         derivativeVector: frame.dynamics?.derivativeVector || {},
         trajectory: frame.trajectory || turn.trajectory || {},
+        humanDiscourse: frame.humanDiscourse || turn.humanDiscourse || null,
       },
       outcomeAfterNextLearner: nextFrame
         ? {
@@ -1190,6 +1180,33 @@ function summarizeLearnerBehavior(turnRecords = []) {
     finalLearner: textSnippet(finalTurn.learner, 220),
     firstClassification: textSnippet(firstTurn.classification?.turn?.summary, 220),
     finalClassification: textSnippet(finalTurn.classification?.turn?.summary, 220),
+  };
+}
+
+function summarizeHumanDiscourse(turnRecords = []) {
+  const frames = turnRecords.map((turn) => turn?.humanDiscourseFrame).filter(Boolean);
+  if (!frames.length) return null;
+  const finalFrame = frames.at(-1) || null;
+  const proofDebtCounts = frames.reduce(
+    (acc, frame) => {
+      acc.open += Number(frame?.proofDebt?.counts?.open || 0);
+      acc.harmful += Number(frame?.proofDebt?.counts?.harmful || 0);
+      acc.discharged += Number(frame?.proofDebt?.counts?.discharged || 0);
+      return acc;
+    },
+    { open: 0, harmful: 0, discharged: 0 },
+  );
+  return {
+    schema: 'machinespirits.tutor-stub.human-discourse-summary.v1',
+    mode: finalFrame?.mode || frames[0]?.mode || null,
+    scaffoldActive: frames.some((frame) => frame.scaffoldActive),
+    turnCount: frames.length,
+    sideArcCount: frames.filter((frame) => frame.sideArc?.detected).length,
+    proofDebtCounts,
+    finalStatus: finalFrame?.warrantPremiseAudit?.proofStatus || null,
+    finalProofDebtStatus: finalFrame?.proofDebt?.status || null,
+    finalBranch: finalFrame?.scaffoldState?.branch || null,
+    finalFrame,
   };
 }
 
@@ -1423,6 +1440,7 @@ function summarizeTrace(tracePath, traceDir) {
   const transcript = buildTranscriptDrilldown(turnRecords, fieldViz);
   const trainingExamples = buildTurnTrainingExamples({ animatedViz, transcript });
   const learnerBehavior = summarizeLearnerBehavior(turnRecords);
+  const humanDiscourse = summarizeHumanDiscourse(turnRecords);
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
@@ -1478,6 +1496,7 @@ function summarizeTrace(tracePath, traceDir) {
     transcript,
     trainingExamples,
     learnerBehavior,
+    humanDiscourse,
   };
 }
 
@@ -3350,14 +3369,14 @@ function fieldRowTitle(row) {
 function learnerProfileFromSummary(summary = {}) {
   const config = summary.config || {};
   const id = String(config.autoLearnerProfileId || '').trim();
-  const builtInDescription = AUTO_LEARNER_PROFILES[id] || '';
+  const builtInDescription = learnerProfileDescription(id);
   const commandProfile = (summary.results || [])
     .map((result) => (Array.isArray(result.command) ? flagValue(result.command, '--auto-learner-profile') : null))
     .find(Boolean);
-  const description = commandProfile || builtInDescription || '';
+  const description = builtInDescription || commandProfile || '';
   return {
     id: id || (description ? 'custom' : 'unknown'),
-    source: builtInDescription ? 'built-in' : description ? 'custom' : 'unknown',
+    source: builtInDescription ? 'built-in contract' : description ? 'custom' : 'unknown',
     description,
     model: config.autoLearnerModel || null,
   };
@@ -4031,11 +4050,16 @@ function renderTranscriptExplorer(rows) {
         var dag = turn.dag || {};
         var field = turn.field || {};
         var trajectory = turn.trajectory || {};
+        var human = turn.humanDiscourse || {};
+        var scaffold = human.scaffoldState || {};
+        var debt = human.proofDebt || {};
+        var audit = human.warrantPremiseAudit || {};
         return '<article class="transcript-note-card">' +
           '<div class="transcript-note-head"><span>Turn ' + esc(turn.turn) + '</span>' + registerMark(turn) + '</div>' +
           '<p><strong>Learner state:</strong> ' + esc([state.requestType, state.discourseMove, state.evidenceUse, state.epistemicStance, state.agency].filter(Boolean).join(' · ')) + '</p>' +
           (state.summary ? '<p><strong>Classifier summary:</strong> ' + esc(state.summary) + '</p>' : '') +
           '<p><strong>DAG:</strong> coverage ' + esc(pct(dag.bestPathCoverage)) + ', missing ' + esc(dag.missingPremiseCount) + ', grounded ' + esc(dag.groundedCount) + ', proof status ' + esc(proofStatus(dag.bottleneck || field.bottleneck)) + '</p>' +
+          (human.mode && human.mode !== 'strict_dag' ? '<p><strong>Human scaffold:</strong> ' + esc((scaffold.branch && (scaffold.branch.label || scaffold.branch.id)) || 'open scaffold') + '; side arc ' + esc((human.sideArc && human.sideArc.detected) ? human.sideArc.type : 'none') + '; proof debt ' + esc(debt.status || 'unknown') + '; warrants explicit/missing ' + esc((audit.counts && audit.counts.explicitWarrants) || 0) + '/' + esc((audit.counts && audit.counts.missingWarrants) || 0) + '</p>' : '') +
           '<p><strong>Field:</strong> mastery ' + esc(fmt(field.learnerMastery)) + ', risk ' + esc(fmt(field.learnerRisk)) + ', alignment ' + esc(fmt(field.tutorAlignment)) + ', momentum ' + esc(fmt(field.jointMomentum)) + '</p>' +
           '<p><strong>Trajectory:</strong> field v ' + esc(fmt(trajectory.fieldVelocity)) + ', DAG v ' + esc(fmt(trajectory.dagVelocity)) + ', risk v ' + esc(fmt(trajectory.riskVelocity)) + '</p>' +
           metaStrip(turn) +
@@ -5284,7 +5308,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
   <header>
     <h1>Tutor Stub Auto-Eval Report</h1>
     ${renderReportScopeBadge(reportScope)}
-    <div class="sub">Started ${escapeHtml(summary.startedAt)} · completed ${escapeHtml(summary.completedAt)} · world ${escapeHtml(summary.config.world)}</div>
+    <div class="sub">Started ${escapeHtml(summary.startedAt)} · completed ${escapeHtml(summary.completedAt)} · world ${escapeHtml(summary.config.world)} · DAG discourse ${escapeHtml(summary.config.dagMode || 'strict_dag')}</div>
     <div class="header-links">
       <a href="${escapeHtml(indexHref)}">report index</a>
       <a href="${escapeHtml(guideHref)}">arc guide</a>
@@ -5304,6 +5328,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
               ${htmlMetricInfo('Mean Turns', REPORT_TERM_TOOLTIPS.meanTurns, summary.aggregates.meanTurns, `safety cap ${summary.config.safetyTurns}`)}
               ${htmlMetricInfo('Mean Coverage', REPORT_TERM_TOOLTIPS.meanCoverage, summary.aggregates.meanCoverage, 'learner-DAG best path')}
               ${htmlMetricInfo('Mean Missing', REPORT_TERM_TOOLTIPS.meanMissing, summary.aggregates.meanMissing, 'remaining premises')}
+              ${htmlMetricInfo('DAG Mode', 'Discourse mode for translating the strict proof DAG into tutor behavior. strict_dag is the audit baseline; human_scaffold and defeasible_human_scaffold add human-facing warrant/proof-debt scaffolds.', summary.config.dagMode || 'strict_dag', summary.config.dagMode === 'strict_dag' || !summary.config.dagMode ? 'strict audit' : 'human scaffold active')}
             </div>
             ${renderReportMetricGuide()}
           </div>
@@ -5793,6 +5818,7 @@ function readIndexSummary(jsonPath, rootDir) {
       policies,
       learnerProfile: config.autoLearnerProfileId || '',
       world: config.world || '',
+      dagMode: config.dagMode || 'strict_dag',
       turns: config.turns || '',
       safetyTurns: config.safetyTurns ?? '',
       model: config.model || '',
@@ -5831,6 +5857,7 @@ function readIndexSummary(jsonPath, rootDir) {
         policyText,
         config.autoLearnerProfileId,
         config.world,
+        config.dagMode || 'strict_dag',
         config.turns,
         config.safetyTurns,
         config.model,
@@ -5871,6 +5898,7 @@ function readIndexSummary(jsonPath, rootDir) {
       policies: [],
       learnerProfile: '',
       world: '',
+      dagMode: 'strict_dag',
       turns: '',
       safetyTurns: '',
       model: '',
@@ -5944,6 +5972,7 @@ function readIndexRunState(statePath, rootDir) {
       policies: state.config?.policies || [],
       learnerProfile: state.config?.autoLearnerProfileId || '',
       world: state.config?.world || '',
+      dagMode: state.config?.dagMode || 'strict_dag',
       totals: state.totals || {},
       jobs,
       activeJobs,
@@ -5956,6 +5985,7 @@ function readIndexRunState(statePath, rootDir) {
         status,
         state.config?.autoLearnerProfileId,
         state.config?.world,
+        state.config?.dagMode || 'strict_dag',
         ...(state.config?.policies || []),
         shortDate(state.startedAt || ''),
       ]
@@ -5987,6 +6017,7 @@ function readIndexRunState(statePath, rootDir) {
       policies: [],
       learnerProfile: '',
       world: '',
+      dagMode: 'strict_dag',
       totals: { jobs: 0, completed: 0, active: 0, queued: 0, failed: 0 },
       jobs: [],
       activeJobs: [],
@@ -6096,7 +6127,9 @@ function renderLiveRuns(activeRuns) {
           <div class="live-run-top">
             <div>
               <h3>${escapeHtml(run.runName)}</h3>
-              <p>${escapeHtml(run.learnerProfile || 'unknown learner')} · ${escapeHtml(run.world || 'unknown world')} · pid ${escapeHtml(
+              <p>${escapeHtml(run.learnerProfile || 'unknown learner')} · ${escapeHtml(run.world || 'unknown world')} · ${escapeHtml(
+                run.dagMode || 'strict_dag',
+              )} · pid ${escapeHtml(
                 run.pid || 'n/a',
               )}</p>
             </div>
@@ -6975,7 +7008,7 @@ function tutorStubIndexClientJs() {
         var totals = run.totals || {};
         var rate = totals.progressRate != null ? totals.progressRate : (totals.jobs ? Number(totals.completed || 0) / Number(totals.jobs || 1) : 0);
         var activeJobs = run.activeJobs && run.activeJobs.length ? run.activeJobs : (run.jobs || []).filter(function (job) { return job.status !== 'queued'; }).slice(-6);
-        return '<article class="live-run-card ' + esc(run.status) + '" data-search="' + esc(run.searchText) + '"><div class="live-run-top"><div><h3>' + esc(run.runName) + '</h3>' + scopeBadge(run.reportScope) + '<p>' + esc(run.learnerProfile || 'unknown learner') + ' · ' + esc(run.world || 'unknown world') + ' · pid ' + esc(run.pid || 'n/a') + '</p>' + scopeNote(run.reportScope) + '</div><span class="status ' + esc(run.status) + '">' + esc(run.status) + '</span></div><div class="live-run-progress">' + progressBar(rate) + '<span>' + esc(totals.completed || 0) + '/' + esc(totals.jobs || 0) + ' jobs · ' + esc(totals.active || 0) + ' active · ' + esc(totals.queued || 0) + ' queued · ' + esc(totals.failed || 0) + ' failed</span></div><div class="live-run-meta"><span>started ' + esc(shortDate(run.startedAt)) + '</span><span>updated ' + esc(shortDate(run.updatedAt)) + '</span><span>' + policyChips(run.policies) + '</span></div><div class="live-jobs">' + (activeJobs.map(renderLiveJob).join('\n') || '<span class="muted">No active jobs.</span>') + '</div><div class="live-actions"><a href="' + esc(run.stateHref) + '">state json</a> ' + (run.traceDirHref ? '<a href="' + esc(run.traceDirHref) + '">trace dir</a>' : '') + '</div></article>';
+        return '<article class="live-run-card ' + esc(run.status) + '" data-search="' + esc(run.searchText) + '"><div class="live-run-top"><div><h3>' + esc(run.runName) + '</h3>' + scopeBadge(run.reportScope) + '<p>' + esc(run.learnerProfile || 'unknown learner') + ' · ' + esc(run.world || 'unknown world') + ' · ' + esc(run.dagMode || 'strict_dag') + ' · pid ' + esc(run.pid || 'n/a') + '</p>' + scopeNote(run.reportScope) + '</div><span class="status ' + esc(run.status) + '">' + esc(run.status) + '</span></div><div class="live-run-progress">' + progressBar(rate) + '<span>' + esc(totals.completed || 0) + '/' + esc(totals.jobs || 0) + ' jobs · ' + esc(totals.active || 0) + ' active · ' + esc(totals.queued || 0) + ' queued · ' + esc(totals.failed || 0) + ' failed</span></div><div class="live-run-meta"><span>started ' + esc(shortDate(run.startedAt)) + '</span><span>updated ' + esc(shortDate(run.updatedAt)) + '</span><span>' + policyChips(run.policies) + '</span></div><div class="live-jobs">' + (activeJobs.map(renderLiveJob).join('\n') || '<span class="muted">No active jobs.</span>') + '</div><div class="live-actions"><a href="' + esc(run.stateHref) + '">state json</a> ' + (run.traceDirHref ? '<a href="' + esc(run.traceDirHref) + '">trace dir</a>' : '') + '</div></article>';
       }).join('\n') + '</section>';
   }
   function projectionFor(row, index) {
@@ -7129,7 +7162,7 @@ function tutorStubIndexClientJs() {
   function reportRow(row) {
     var scope = row.reportScope || {};
     var links = reportActionLinks(row);
-    return '<tr data-search="' + esc(row.searchText) + '" data-status="' + esc(row.status) + '" data-learner="' + esc(row.learnerProfile || '') + '" data-policies="' + esc((row.policies || []).join('|')) + '" data-policy-text="' + esc(row.policyText || '') + '" data-world="' + esc(row.world || '') + '" data-completed-ms="' + esc(row.completedMs || 0) + '" data-report-name="' + esc(row.reportName || '') + '" data-report-scope="' + esc(scope.kind || 'standalone') + '" data-run-kind="' + esc(row.runKind || 'real') + '" data-grounded-rate="' + esc(row.groundedRate == null ? '' : row.groundedRate) + '" data-turns="' + esc(row.meanTurns == null ? '' : row.meanTurns) + '" data-coverage="' + esc(row.meanCoverage == null ? '' : row.meanCoverage) + '" data-rows="' + esc(row.rows || 0) + '" data-ok="' + esc(row.ok || 0) + '" data-failed="' + esc(row.failed || 0) + '" data-svgs="' + esc(row.svgCount || 0) + '"><td><div><strong>' + esc(shortDate(row.completedAt) || row.reportName) + '</strong> ' + scopeBadge(scope) + '</div><div class="muted">' + esc(row.reportName) + '</div><div class="muted">' + esc(row.world || '') + ' · ' + esc(indexRunKindLabel(row.runKind || 'real')) + '</div>' + scopeNote(scope) + '</td><td class="actions links-cell">' + links + '</td><td><span class="status ' + esc(row.status) + '">' + esc(row.status) + '</span></td><td>' + policyChips(row.policies) + '</td><td><div>' + esc(row.learnerProfile || '') + '</div><div class="muted">' + esc(row.autoLearnerModel || '') + '</div></td><td>' + esc(row.ok) + '/' + esc(row.failed) + (row.dryRun ? ' · ' + esc(row.dryRun) + ' dry' : '') + '</td><td>' + esc(row.grounded) + '/' + esc(row.ok) + ' · ' + Math.round(Number(row.groundedRate || 0) * 100) + '%</td><td>' + esc(row.meanTurns) + '</td><td>' + coverageCell(row.meanCoverage) + '</td><td>' + fieldSnapshotCell(row) + '</td></tr>';
+    return '<tr data-search="' + esc(row.searchText) + '" data-status="' + esc(row.status) + '" data-learner="' + esc(row.learnerProfile || '') + '" data-policies="' + esc((row.policies || []).join('|')) + '" data-policy-text="' + esc(row.policyText || '') + '" data-world="' + esc(row.world || '') + '" data-dag-mode="' + esc(row.dagMode || 'strict_dag') + '" data-completed-ms="' + esc(row.completedMs || 0) + '" data-report-name="' + esc(row.reportName || '') + '" data-report-scope="' + esc(scope.kind || 'standalone') + '" data-run-kind="' + esc(row.runKind || 'real') + '" data-grounded-rate="' + esc(row.groundedRate == null ? '' : row.groundedRate) + '" data-turns="' + esc(row.meanTurns == null ? '' : row.meanTurns) + '" data-coverage="' + esc(row.meanCoverage == null ? '' : row.meanCoverage) + '" data-rows="' + esc(row.rows || 0) + '" data-ok="' + esc(row.ok || 0) + '" data-failed="' + esc(row.failed || 0) + '" data-svgs="' + esc(row.svgCount || 0) + '"><td><div><strong>' + esc(shortDate(row.completedAt) || row.reportName) + '</strong> ' + scopeBadge(scope) + '</div><div class="muted">' + esc(row.reportName) + '</div><div class="muted">' + esc(row.world || '') + ' · ' + esc(row.dagMode || 'strict_dag') + ' · ' + esc(indexRunKindLabel(row.runKind || 'real')) + '</div>' + scopeNote(scope) + '</td><td class="actions links-cell">' + links + '</td><td><span class="status ' + esc(row.status) + '">' + esc(row.status) + '</span></td><td>' + policyChips(row.policies) + '</td><td><div>' + esc(row.learnerProfile || '') + '</div><div class="muted">' + esc(row.autoLearnerModel || '') + '</div></td><td>' + esc(row.ok) + '/' + esc(row.failed) + (row.dryRun ? ' · ' + esc(row.dryRun) + ' dry' : '') + '</td><td>' + esc(row.grounded) + '/' + esc(row.ok) + ' · ' + Math.round(Number(row.groundedRate || 0) * 100) + '%</td><td>' + esc(row.meanTurns) + '</td><td>' + coverageCell(row.meanCoverage) + '</td><td>' + fieldSnapshotCell(row) + '</td></tr>';
   }
   function render(data) {
     state.data = data;
@@ -7292,6 +7325,7 @@ function _renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
         data-policies="${escapeHtml((row.policies || []).join('|'))}"
         data-policy-text="${escapeHtml(row.policyText || '')}"
         data-world="${escapeHtml(row.world || '')}"
+        data-dag-mode="${escapeHtml(row.dagMode || 'strict_dag')}"
         data-completed-ms="${escapeHtml(row.completedMs || 0)}"
         data-report-name="${escapeHtml(row.reportName || '')}"
         data-run-kind="${escapeHtml(row.runKind || 'real')}"
@@ -7305,7 +7339,7 @@ function _renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
         <td>
           <div><strong>${escapeHtml(shortDate(row.completedAt) || row.reportName)}</strong></div>
           <div class="muted">${escapeHtml(row.reportName)}</div>
-          <div class="muted">${escapeHtml(row.world || '')} · ${escapeHtml(indexRunKindLabel(row.runKind || 'real'))}</div>
+          <div class="muted">${escapeHtml(row.world || '')} · ${escapeHtml(row.dagMode || 'strict_dag')} · ${escapeHtml(indexRunKindLabel(row.runKind || 'real'))}</div>
         </td>
         <td class="actions links-cell">${indexReportActionLinks(row)}</td>
         <td><span class="status ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span></td>
@@ -7659,6 +7693,8 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     '--tutor-learner-dag',
     '--world',
     args.world,
+    '--dag-mode',
+    args['dag-mode'],
     '--register-policy',
     policy,
     '--register-palette',
@@ -7795,6 +7831,9 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       analysisModel: args['analysis-model'],
       autoLearnerModel: args['auto-learner-model'],
       autoLearnerProfileId: autoLearnerProfileLabel(),
+      autoLearnerProfileContract:
+        autoLearnerProfileLabel() === 'custom' ? null : learnerProfileContractSummary(resolvedAutoLearnerProfileId()),
+      dagMode: args['dag-mode'],
       maxTokens: args['max-tokens'] ? positiveInt(args['max-tokens'], '--max-tokens') : null,
       historyTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
       memorySummary: {

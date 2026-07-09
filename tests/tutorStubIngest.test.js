@@ -112,6 +112,21 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
                     stateVector: { evidence_gap: 0.25, warrant_gap: 0.4 },
                     derivativeVector: { field_velocity: 0.1, risk_velocity: -0.04 },
                     trajectory: { source: 'dynamical_system_policy' },
+                    humanDiscourse: {
+                      schema: 'machinespirits.tutor-stub.human-discourse-frame.v1',
+                      mode: 'defeasible_human_scaffold',
+                      scaffoldActive: true,
+                      scaffoldState: {
+                        branch: { id: 'blank_chain', label: 'blank and metal provenance' },
+                        localQuestion: 'What does the metal evidence license?',
+                      },
+                      sideArc: { detected: false, type: null },
+                      proofDebt: { status: 'open_proof_debt', counts: { open: 1, harmful: 0, discharged: 0 } },
+                      warrantPremiseAudit: {
+                        proofStatus: 'provisional_scaffold',
+                        counts: { explicitWarrants: 0, missingWarrants: 1 },
+                      },
+                    },
                   },
                   outcomeAfterNextLearner: {
                     nextTurn: 2,
@@ -184,6 +199,8 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
     const turnFrame = db
       .prepare(
         `SELECT selected_register, register_vector_json, state_vector_json, dag_json,
+                human_discourse_json, scaffold_state_json, side_arc_json,
+                proof_debt_json, warrant_premise_audit_json,
                 learner_text, tutor_text, delta_mastery, delta_risk, delta_coverage
          FROM tutor_stub_turn_frames`,
       )
@@ -192,6 +209,11 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
     assert.deepEqual(JSON.parse(turnFrame.register_vector_json), { precise: 0.72, warm: 0.28 });
     assert.deepEqual(JSON.parse(turnFrame.state_vector_json), { evidence_gap: 0.25, warrant_gap: 0.4 });
     assert.equal(JSON.parse(turnFrame.dag_json).bottleneck, 'assertion_gap');
+    assert.equal(JSON.parse(turnFrame.human_discourse_json).mode, 'defeasible_human_scaffold');
+    assert.equal(JSON.parse(turnFrame.scaffold_state_json).branch.id, 'blank_chain');
+    assert.equal(JSON.parse(turnFrame.side_arc_json).detected, false);
+    assert.equal(JSON.parse(turnFrame.proof_debt_json).status, 'open_proof_debt');
+    assert.equal(JSON.parse(turnFrame.warrant_premise_audit_json).proofStatus, 'provisional_scaffold');
     assert.equal(turnFrame.learner_text, 'The assay now licenses Edony.');
     assert.equal(turnFrame.tutor_text, 'Case closed.');
     assert.equal(turnFrame.delta_mastery, 0.2);
@@ -199,11 +221,12 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
     assert.equal(turnFrame.delta_coverage, 0.25);
 
     const trainingView = db
-      .prepare('SELECT policy, selected_register, delta_mastery FROM v_tutor_stub_turn_training')
+      .prepare('SELECT policy, selected_register, delta_mastery, human_discourse_json FROM v_tutor_stub_turn_training')
       .get();
     assert.equal(trainingView.policy, 'field');
     assert.equal(trainingView.selected_register, 'precise');
     assert.equal(trainingView.delta_mastery, 0.2);
+    assert.equal(JSON.parse(trainingView.human_discourse_json).scaffoldActive, true);
 
     const view = db.prepare('SELECT policy, rows, ok_rate, grounded_rate FROM v_tutor_stub_policy_summary').get();
     assert.equal(view.policy, 'field');

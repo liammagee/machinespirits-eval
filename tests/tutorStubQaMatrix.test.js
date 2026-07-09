@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { learnerProfileContractSummary, learnerProfilePrompt } from '../scripts/tutor-stub-learner-profile-contracts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -201,6 +202,74 @@ test('auto-eval lists stress learner profiles', () => {
   assert.match(output, /proof_skipper:/);
   assert.match(output, /false_memory:/);
   assert.match(output, /affective_resistant:/);
+  assert.match(output, /Stress - Proof skipper/);
+  assert.doesNotMatch(output, /classifier labels/);
+});
+
+test('stress profile contracts preserve observable discrimination cues', () => {
+  const falseMemoryPrompt = learnerProfilePrompt('false_memory');
+  assert.match(falseMemoryPrompt, /wrong or distorted public detail/u);
+  assert.match(falseMemoryPrompt, /treating weight as alloy or crucible proof/u);
+  assert.match(falseMemoryPrompt, /Do not repair the false detail in the same learner turn/u);
+
+  const falseMemorySummary = learnerProfileContractSummary('false_memory');
+  assert.equal(falseMemorySummary.stableFailure.mustShowByTurn, 2);
+  assert.ok(falseMemorySummary.traceSignatureTargets.evidenceUse.overleaps_evidence);
+  assert.deepEqual(falseMemorySummary.traceSignatureTargets.evidenceUse.links_evidence_to_rule, [0, 0.18]);
+
+  const affectivePrompt = learnerProfilePrompt('affective_resistant');
+  assert.match(affectivePrompt, /negative, ironic, sarcastic, face_threat/u);
+  assert.match(affectivePrompt, /At least three times, push back/u);
+  assert.match(affectivePrompt, /pressure-only turns/u);
+  assert.match(affectivePrompt, /That feels like a jump/u);
+
+  const affectiveSummary = learnerProfileContractSummary('affective_resistant');
+  assert.equal(affectiveSummary.stableFailure.mustRecurMinRate, 0.6);
+  assert.ok(affectiveSummary.traceSignatureTargets.requestType.authority_refusal_or_status_challenge);
+  assert.deepEqual(affectiveSummary.traceSignatureTargets.evidenceUse.links_evidence_to_rule, [0, 0.1]);
+  assert.deepEqual(affectiveSummary.traceSignatureTargets.epistemicStance.grounded, [0, 0.1]);
+});
+
+test('auto-eval dry run records selected learner profile contract', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-contract-dry-run-'));
+  try {
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-auto-eval.js',
+        '--runs',
+        '1',
+        '--policies',
+        'field',
+        '--turns',
+        '8',
+        '--auto-learner-profile-id',
+        'proof_skipper',
+        '--trace-dir',
+        tmp,
+        '--dry-run',
+        '--no-html-report',
+        '--no-ledger',
+        '--no-progress',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+    const summaryPath = fs
+      .readdirSync(tmp)
+      .filter((name) => /^auto-eval-.*\.json$/u.test(name))
+      .map((name) => path.join(tmp, name))
+      .at(0);
+    assert.ok(summaryPath);
+    const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+    assert.equal(summary.config.autoLearnerProfileId, 'proof_skipper');
+    assert.equal(summary.config.autoLearnerProfileContract.schema, 'machinespirits.tutor-stub.learner-profile-contract.v1');
+    assert.equal(summary.config.autoLearnerProfileContract.id, 'proof_skipper');
+    const profileArg = summary.results[0].command[summary.results[0].command.indexOf('--auto-learner-profile') + 1];
+    assert.match(profileArg, /Behavioral signature to approximate/);
+    assert.match(profileArg, /Do not mention profile names/);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });
 
 test('qa matrix adaptive suite includes continuous register policies', () => {

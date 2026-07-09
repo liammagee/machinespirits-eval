@@ -174,6 +174,7 @@ function fallbackTrainingExamples(row = {}) {
         stateVector: frame.dynamics?.stateVector || {},
         derivativeVector: frame.dynamics?.derivativeVector || {},
         trajectory: frame.trajectory || turn.trajectory || {},
+        humanDiscourse: frame.humanDiscourse || turn.humanDiscourse || null,
       },
       outcomeAfterNextLearner: nextFrame
         ? {
@@ -268,6 +269,19 @@ function openDb(dbPath) {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   return { db, path: resolved };
+}
+
+function columnExists(db, table, column) {
+  return db
+    .prepare(`PRAGMA table_info(${table})`)
+    .all()
+    .some((row) => row.name === column);
+}
+
+function addColumnIfMissing(db, table, column, definition) {
+  if (!columnExists(db, table, column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
 }
 
 function migrate(db) {
@@ -388,6 +402,11 @@ function migrate(db) {
 	      learner_state_json TEXT,
 	      field_json TEXT,
 	      trajectory_json TEXT,
+	      human_discourse_json TEXT,
+	      scaffold_state_json TEXT,
+	      side_arc_json TEXT,
+	      proof_debt_json TEXT,
+	      warrant_premise_audit_json TEXT,
 	      learner_text TEXT,
 	      tutor_text TEXT,
 	      response_json TEXT,
@@ -415,6 +434,11 @@ function migrate(db) {
 	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_register_policy ON tutor_stub_register_counts(policy, register);
 	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_turn_frames_policy ON tutor_stub_turn_frames(policy, selected_register);
 	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_turn_frames_row ON tutor_stub_turn_frames(row_id, turn);
+
+    DROP VIEW IF EXISTS v_tutor_stub_policy_summary;
+    DROP VIEW IF EXISTS v_tutor_stub_register_effects;
+    DROP VIEW IF EXISTS v_tutor_stub_turn_training;
+    DROP VIEW IF EXISTS v_tutor_stub_failures;
 
     CREATE VIEW IF NOT EXISTS v_tutor_stub_policy_summary AS
       SELECT
@@ -477,6 +501,11 @@ function migrate(db) {
 	        frames.learner_state_json,
 	        frames.field_json,
 	        frames.trajectory_json,
+	        frames.human_discourse_json,
+	        frames.scaffold_state_json,
+	        frames.side_arc_json,
+	        frames.proof_debt_json,
+	        frames.warrant_premise_audit_json,
 	        frames.reward_proxy_json
 	      FROM tutor_stub_turn_frames frames
 	      JOIN tutor_stub_eval_runs runs ON runs.id = frames.eval_run_id;
@@ -498,6 +527,11 @@ function migrate(db) {
       JOIN tutor_stub_eval_runs runs ON runs.id = rows.eval_run_id
       WHERE rows.status != 'ok' OR rows.exit_code != 0;
   `);
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'human_discourse_json', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'scaffold_state_json', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'side_arc_json', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'proof_debt_json', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'warrant_premise_audit_json', 'TEXT');
 }
 
 function ingestSummary(db, summaryPath) {
@@ -662,18 +696,20 @@ function ingestSummary(db, summaryPath) {
         id, eval_run_id, row_id, policy, run_index, turn, selected_register,
         register_policy, register_vector_json, register_distribution_json,
         register_entropy_bits, state_vector_json, derivative_vector_json,
-        dag_json, learner_state_json, field_json, trajectory_json, learner_text,
-        tutor_text, response_json, events_json, next_turn, next_field_json,
-        next_dag_json, next_state_vector_json, delta_mastery, delta_risk,
+        dag_json, learner_state_json, field_json, trajectory_json,
+        human_discourse_json, scaffold_state_json, side_arc_json, proof_debt_json,
+        warrant_premise_audit_json, learner_text, tutor_text, response_json,
+        events_json, next_turn, next_field_json, next_dag_json, next_state_vector_json, delta_mastery, delta_risk,
         delta_coverage, delta_alignment, delta_momentum, reward_proxy_json,
         frame_json, transcript_turn_json
       ) VALUES (
         @id, @eval_run_id, @row_id, @policy, @run_index, @turn, @selected_register,
         @register_policy, @register_vector_json, @register_distribution_json,
         @register_entropy_bits, @state_vector_json, @derivative_vector_json,
-        @dag_json, @learner_state_json, @field_json, @trajectory_json, @learner_text,
-        @tutor_text, @response_json, @events_json, @next_turn, @next_field_json,
-        @next_dag_json, @next_state_vector_json, @delta_mastery, @delta_risk,
+        @dag_json, @learner_state_json, @field_json, @trajectory_json,
+        @human_discourse_json, @scaffold_state_json, @side_arc_json, @proof_debt_json,
+        @warrant_premise_audit_json, @learner_text, @tutor_text, @response_json,
+        @events_json, @next_turn, @next_field_json, @next_dag_json, @next_state_vector_json, @delta_mastery, @delta_risk,
         @delta_coverage, @delta_alignment, @delta_momentum, @reward_proxy_json,
         @frame_json, @transcript_turn_json
       )
@@ -729,6 +765,7 @@ function ingestSummary(db, summaryPath) {
         const reward = example.rewardProxy || {};
         const deltas = reward.deltas || {};
         const turn = integerOrNull(example.turn) ?? exampleIndex + 1;
+        const humanDiscourse = before.humanDiscourse || example.humanDiscourse || example.frame?.humanDiscourse || null;
         insertTurnFrame.run({
           id: `${rowId}:t${turn}`,
           eval_run_id: runId,
@@ -747,6 +784,11 @@ function ingestSummary(db, summaryPath) {
           learner_state_json: safeJson(before.learnerState || {}),
           field_json: safeJson(before.field || {}),
           trajectory_json: safeJson(before.trajectory || {}),
+          human_discourse_json: safeJson(humanDiscourse),
+          scaffold_state_json: safeJson(humanDiscourse?.scaffoldState || null),
+          side_arc_json: safeJson(humanDiscourse?.sideArc || null),
+          proof_debt_json: safeJson(humanDiscourse?.proofDebt || null),
+          warrant_premise_audit_json: safeJson(humanDiscourse?.warrantPremiseAudit || null),
           learner_text: before.learnerText || null,
           tutor_text: action.tutorText || null,
           response_json: safeJson(example.response || {}),

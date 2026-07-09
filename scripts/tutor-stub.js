@@ -60,6 +60,7 @@ const SCAFFOLD_STATE_SCHEMA = 'machinespirits.tutor-stub.scaffold-state.v1';
 const SIDE_ARC_SCHEMA = 'machinespirits.tutor-stub.side-arc.v1';
 const PROOF_DEBT_SCHEMA = 'machinespirits.tutor-stub.proof-debt-state.v1';
 const WARRANT_PREMISE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.warrant-premise-audit.v1';
+const HUMAN_DISCOURSE_PHASE = 'phase_2_human_scaffold_prompting';
 
 const STUB = {
   model: process.env.TUTOR_STUB_MODEL || 'codex.gpt-5.5',
@@ -1052,14 +1053,22 @@ function normalizeDagMode(value) {
 }
 
 function buildHumanDiscourseRunConfig({ dagMode, dagEnabled, tutorLearnerDagEnabled }) {
+  const scaffoldActive = dagMode !== 'strict_dag';
   return {
     schema: HUMAN_DISCOURSE_RUN_CONFIG_SCHEMA,
     dagMode,
     strictAuditDag: Boolean(dagEnabled),
     tutorLearnerDag: Boolean(tutorLearnerDagEnabled),
-    phase: 'phase_1_trace_shapes',
+    phase: HUMAN_DISCOURSE_PHASE,
+    scaffoldActive,
+    scaffoldPolicy:
+      dagMode === 'defeasible_human_scaffold'
+        ? 'allow learner-owned provisional leaps, keep proof debt visible, and return to strict warrants when needed'
+        : dagMode === 'human_scaffold'
+          ? 'frame local human-facing warrants while strict DAG audit remains authoritative'
+          : 'strict DAG audit only; no human-scaffold prompt adaptation',
     traceFields: ['humanDiscourseFrame', 'scaffoldState', 'sideArc', 'proofDebt', 'warrantPremiseAudit'],
-    behaviorChange: false,
+    behaviorChange: scaffoldActive,
   };
 }
 
@@ -2051,6 +2060,13 @@ function buildTutorInterimContext({
     registerSelection,
     previousRegisterEfficacy,
     tutorDagSnapshot: buildTutorDagSnapshot(state, tutorTurn),
+    humanDiscourseFrame: buildHumanDiscourseFrame({
+      state,
+      tutorTurn,
+      tutorLearnerDag,
+      classification,
+      learnerText,
+    }),
   };
 }
 
@@ -2264,6 +2280,7 @@ function replayLearnerDagFromTurns(state, turns) {
           derive: accepted.derive || [],
           hypothesis: accepted.hypothesis || null,
           assert_answer: accepted.assertAnswer || null,
+          human_discourse: accepted.humanDiscourse || null,
         },
         state,
         tutorTurn: Number(turn.turn) || replayed + 1,
@@ -2417,48 +2434,192 @@ function activeDramaturgyAct(world, tutorTurn) {
   return {
     act: act.act || null,
     title: String(act.title || '').trim() || null,
+    intent: String(act.intent || '').trim() || null,
     turns: Array.isArray(act.turns) ? act.turns : null,
   };
 }
 
-function buildScaffoldState({ state, tutorTurn, dagMode }) {
+function branchTemplateForEvidence(row = {}) {
+  const id = String(row.premise || '').trim();
+  const fact = Array.isArray(row.fact) ? factText(row.fact) : '';
+  const text = `${id} ${fact} ${row.surface || ''}`.toLowerCase();
+  if (/^m_/u.test(id) || /verrell|mirror|town|watch|caught|mintcrucible|broadgraver/u.test(text)) {
+    return {
+      id: 'mirror_pressure',
+      label: 'town case pressure',
+      localQuestion: 'What exactly does the town case prove, and what does it only make tempting?',
+      warrantFrame: 'Separate a tempting public fact from the stricter coin-evidence rule it would need to license a verdict.',
+      joinReminder: 'Do not let the town case stand in for the coin marks; keep it as pressure to be tested.',
+    };
+  }
+  if (/alloy|meltedat|crucible|blankfrom|solecasterat|castblank|dross|cupel|metal|blank/u.test(text)) {
+    return {
+      id: 'blank_chain',
+      label: 'blank and metal provenance',
+      localQuestion: 'What does the metal evidence license about where the blank came from?',
+      warrantFrame: 'Ask for a claim shaped as evidence plus rule plus limited conclusion about the blank, not yet the final hand.',
+      joinReminder: 'This can close the blank branch, but it is only half the proof until the die branch also closes.',
+    };
+  }
+  if (/die|flaw|graver|burin|holder|cutdie|notch|serif|tool/u.test(text)) {
+    return {
+      id: 'die_chain',
+      label: 'die and tool provenance',
+      localQuestion: 'What does the mark on the coin license about the tool that cut the die?',
+      warrantFrame: 'Ask for a claim shaped as mark plus rule plus limited conclusion about the die or tool.',
+      joinReminder: 'This can close the die branch, but the final verdict still needs the blank and die to meet in one hand.',
+    };
+  }
+  if (/struckby|secret|join|same hand|both/u.test(text)) {
+    return {
+      id: 'join',
+      label: 'blank-die join',
+      localQuestion: 'Do the cast blank and the cut die now meet in one hand?',
+      warrantFrame: 'Ask the learner to join the two public supports: the blank branch and the die branch must point to the same hand.',
+      joinReminder: 'Only now may the final verdict be named, and only as the result of those two public supports.',
+    };
+  }
+  return {
+    id: 'open_scaffold',
+    label: 'open evidence scaffold',
+    localQuestion: 'What public evidence is live, and what limited claim does it license?',
+    warrantFrame: 'Keep the learner on one public evidence claim and one warrant at a time.',
+    joinReminder: 'Treat any broader conclusion as provisional until the public proof catches up.',
+  };
+}
+
+function scaffoldBranchForTurn({ world, tutorTurn, tutorLearnerDag }) {
+  if (!world) return branchTemplateForEvidence();
+  const dueNow = currentReleaseRows({ world }, tutorTurn);
+  if (dueNow.length) return branchTemplateForEvidence(dueNow[0]);
+  const latestReleased = stagedEvidenceRows(world, tutorTurn).at(-1);
+  const nextRelease = world.releaseSchedule.find((entry) => entry.turn > tutorTurn) || null;
+  const assessment = tutorLearnerDag?.model?.assessment || tutorLearnerDag?.assessment || {};
+  if (assessment.finalSecretEntailed || assessment.bottleneck === 'assertion_gap') {
+    return branchTemplateForEvidence({ premise: 'join', surface: 'blank and die meet in one hand' });
+  }
+  if (latestReleased) return branchTemplateForEvidence(latestReleased);
+  if (nextRelease) {
+    const premise = world.premiseById.get(nextRelease.premise);
+    return branchTemplateForEvidence({ ...nextRelease, surface: premise?.surface || '', fact: premise?.fact || null });
+  }
+  return branchTemplateForEvidence();
+}
+
+function compactReleaseRow(row = {}) {
+  return {
+    premise: row.premise || null,
+    turn: row.turn ?? null,
+    via: row.via || null,
+    surface: oneLine(row.surface || '', { max: 220 }) || null,
+  };
+}
+
+function buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag }) {
   const enabled = dagMode !== 'strict_dag';
+  const world = state?.world || null;
+  const dueNow = currentReleaseRows({ world }, tutorTurn);
+  const released = world ? stagedEvidenceRows(world, tutorTurn) : [];
+  const next = world?.releaseSchedule?.find((entry) => entry.turn > tutorTurn) || null;
+  const nextPremise = next ? world.premiseById.get(next.premise) : null;
+  const branch = scaffoldBranchForTurn({ world, tutorTurn, tutorLearnerDag });
+  const modeNote =
+    dagMode === 'defeasible_human_scaffold'
+      ? 'Learner may make a provisional local leap if the tutor names the proof debt and returns to it.'
+      : dagMode === 'human_scaffold'
+        ? 'Tutor frames the local warrant and permits ordinary-language reasoning while strict proof remains the audit.'
+        : 'Strict audit mode; no scaffold adaptation.';
   return {
     schema: SCAFFOLD_STATE_SCHEMA,
     mode: dagMode,
     enabled,
-    source: enabled ? 'phase_1_shape_only' : 'strict_dag_disabled',
+    source: enabled ? 'dramaturgy_release_projection' : 'strict_dag_disabled',
     turn: tutorTurn,
-    activeAct: activeDramaturgyAct(state.world, tutorTurn),
-    branch: null,
-    localQuestion: null,
-    warrantFrame: null,
-    joinReminder: null,
-    returnTarget: null,
-    status: enabled ? 'pending_projection' : 'not_enabled_strict_dag',
+    activeAct: activeDramaturgyAct(world, tutorTurn),
+    branch,
+    localQuestion: enabled ? branch.localQuestion : null,
+    warrantFrame: enabled ? branch.warrantFrame : null,
+    joinReminder: enabled ? branch.joinReminder : null,
+    releaseState: {
+      releasedCount: released.length,
+      dueNow: dueNow.map(compactReleaseRow),
+      latestReleased: released.at(-1) ? compactReleaseRow(released.at(-1)) : null,
+      nextRelease: next
+        ? compactReleaseRow({ ...next, surface: nextPremise?.surface || '', fact: nextPremise?.fact || null })
+        : null,
+    },
+    returnTarget: enabled
+      ? {
+          kind: dueNow.length ? 'current_release' : branch.id === 'join' ? 'join_warrant' : 'local_branch_warrant',
+          prompt: branch.localQuestion,
+          afterSideArc: `Return to: ${branch.localQuestion}`,
+        }
+      : null,
+    modeNote,
+    status: enabled ? 'projected_from_dramaturgy' : 'not_enabled_strict_dag',
   };
 }
 
-function buildSideArcState({ dagMode }) {
+function buildSideArcState({ dagMode, classification = null, learnerText = '', scaffoldState = null }) {
+  const turn = classification?.turn || {};
+  const labels = [turn.request_type, turn.discourse_move, turn.epistemic_stance, turn.affect]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  const text = String(learnerText || '').toLowerCase();
+  let type = null;
+  let reason = 'no side arc detected';
+  if (/plain|simpl|clarif|what do you mean|old language|confus|translate|wording/u.test(`${labels} ${text}`)) {
+    type = 'clarification_or_plain_language';
+    reason = 'learner is asking for clarification, translation, or simpler wording';
+  } else if (/challenge|authority_refusal|low_trust|why|how do we know|prove|smuggling/u.test(`${labels} ${text}`)) {
+    type = 'warrant_challenge';
+    reason = 'learner is challenging the warrant or the tutor authority behind it';
+  } else if (/resistant|affective|frustrat|pressure|defensive|too much|lost/u.test(`${labels} ${text}`)) {
+    type = 'affective_repair';
+    reason = 'learner is signalling affective resistance, pressure, or loss of agency';
+  } else if (/off_task|unrelated/u.test(labels)) {
+    type = 'off_task_or_contextual';
+    reason = 'learner moved away from the proof path';
+  }
   return {
     schema: SIDE_ARC_SCHEMA,
     mode: dagMode,
-    detected: false,
-    type: null,
-    status: 'none',
-    returnTarget: null,
-    reason: 'phase_1_shape_only',
+    detected: Boolean(type),
+    type,
+    status: type ? 'active_return_required' : 'none',
+    returnTarget: type ? scaffoldState?.returnTarget || null : null,
+    learnerNeed: type ? turn.pedagogical_need || classification?.overall?.next_best_tutor_move || null : null,
+    reason,
   };
 }
 
-function buildProofDebtState({ dagMode }) {
+function buildProofDebtState({ dagMode, warrantPremiseAudit }) {
   const enabled = dagMode !== 'strict_dag';
-  const buckets = { open: [], repaired: [], discharged: [], harmful: [] };
+  const audit = warrantPremiseAudit || {};
+  const open = [
+    ...(audit.proofDebtCandidates || []),
+    ...(audit.warrants?.missing || []),
+    ...(audit.warrants?.implied || []),
+    ...(audit.premises?.impliedPublic || []),
+    ...(audit.premises?.commonSenseBridges || []),
+  ];
+  const harmful = [...(audit.premises?.suppressedOrPrivate || []), ...(audit.premises?.illicitHidden || [])];
+  const discharged = audit.strictProofAdoptions || [];
+  const repaired = [];
+  const buckets = { open, repaired, discharged, harmful };
+  const status = !enabled
+    ? 'not_enabled_strict_dag'
+    : harmful.length
+      ? 'harmful_hidden_premise_risk'
+      : open.length
+        ? 'open_proof_debt'
+        : 'none_open';
   return {
     schema: PROOF_DEBT_SCHEMA,
     mode: dagMode,
     enabled,
-    status: enabled ? 'none_open' : 'not_enabled_strict_dag',
+    status,
     ...buckets,
     counts: Object.fromEntries(Object.entries(buckets).map(([key, rows]) => [key, rows.length])),
   };
@@ -2488,62 +2649,160 @@ function publicStocktakeRows(rows = [], source = 'learner_record') {
     .filter((row) => row.surface);
 }
 
-function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag }) {
-  const model = tutorLearnerDag?.model || tutorLearnerDag || null;
-  const record = model?.learnerRecord || {};
-  const explicitWarrants = publicStocktakeRows(record.voicedDerived, 'voiced_derived_public_claim');
-  const explicitPublicPremises = publicStocktakeRows(record.grounded, 'grounded_public_record');
-  const emptyBuckets = {
-    impliedWarrants: [],
-    missingWarrants: [],
-    impliedPremises: [],
-    suppressedPremises: [],
-    commonSenseBridges: [],
-    illicitHiddenPremises: [],
-    proofDebtCandidates: [],
-  };
+function normalizeDiscourseRows(rows = [], source = 'learner_record') {
+  return (Array.isArray(rows) ? rows : [])
+    .map((row) => {
+      if (typeof row === 'string') return { surface: row.trim(), source };
+      return {
+        surface: String(row?.surface || row?.text || row?.claim || row?.premise || '').trim(),
+        warrantNeeded: String(row?.warrant_needed || row?.warrantNeeded || row?.missing_warrant || '').trim() || null,
+        reason: String(row?.reason || row?.note || '').trim() || null,
+        severity: String(row?.severity || '').trim() || null,
+        source: String(row?.source || source).trim() || source,
+      };
+    })
+    .filter((row) => row.surface || row.reason || row.warrantNeeded);
+}
+
+function normalizeHumanDiscourseExtraction(raw = {}) {
+  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const sideArc = source.side_arc || source.sideArc || {};
   return {
-    schema: WARRANT_PREMISE_AUDIT_SCHEMA,
-    mode: dagMode,
-    phase: 'phase_1_trace_shapes',
-    status: 'shape_only_needs_classifier',
-    warrants: {
-      explicit: explicitWarrants,
-      implied: emptyBuckets.impliedWarrants,
-      missing: emptyBuckets.missingWarrants,
-    },
-    premises: {
-      explicitPublic: explicitPublicPremises,
-      impliedPublic: emptyBuckets.impliedPremises,
-      suppressedOrPrivate: emptyBuckets.suppressedPremises,
-      commonSenseBridges: emptyBuckets.commonSenseBridges,
-      illicitHidden: emptyBuckets.illicitHiddenPremises,
-    },
-    proofDebtCandidates: emptyBuckets.proofDebtCandidates,
-    counts: {
-      explicitWarrants: explicitWarrants.length,
-      impliedWarrants: emptyBuckets.impliedWarrants.length,
-      missingWarrants: emptyBuckets.missingWarrants.length,
-      explicitPublicPremises: explicitPublicPremises.length,
-      impliedPremises: emptyBuckets.impliedPremises.length,
-      suppressedPremises: emptyBuckets.suppressedPremises.length,
-      commonSenseBridges: emptyBuckets.commonSenseBridges.length,
-      illicitHiddenPremises: emptyBuckets.illicitHiddenPremises.length,
-      proofDebtCandidates: emptyBuckets.proofDebtCandidates.length,
+    proofStatus: String(source.proof_status || source.proofStatus || 'unclear').trim() || 'unclear',
+    provisionalClaims: normalizeDiscourseRows(source.provisional_claims || source.provisionalClaims, 'extractor_provisional_claim'),
+    impliedWarrants: normalizeDiscourseRows(source.implied_warrants || source.impliedWarrants, 'extractor_implied_warrant'),
+    missingWarrants: normalizeDiscourseRows(source.missing_warrants || source.missingWarrants, 'extractor_missing_warrant'),
+    impliedPremises: normalizeDiscourseRows(source.implied_public_premises || source.impliedPremises, 'extractor_implied_premise'),
+    suppressedPremises: normalizeDiscourseRows(
+      source.suppressed_or_private_premises || source.suppressedPremises,
+      'extractor_suppressed_premise',
+    ),
+    commonSenseBridges: normalizeDiscourseRows(source.common_sense_bridges || source.commonSenseBridges, 'extractor_common_sense'),
+    illicitHiddenPremises: normalizeDiscourseRows(source.illicit_hidden_premises || source.illicitHiddenPremises, 'extractor_hidden_premise'),
+    proofDebtCandidates: normalizeDiscourseRows(source.proof_debt_candidates || source.proofDebtCandidates, 'extractor_proof_debt'),
+    sideArc: {
+      detected: sideArc.detected === true,
+      type: String(sideArc.type || '').trim() || null,
+      reason: String(sideArc.reason || '').trim() || null,
+      returnTarget: String(sideArc.return_target || sideArc.returnTarget || '').trim() || null,
     },
   };
 }
 
-function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag }) {
+function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = null, learnerText = '', world = null }) {
+  const model = tutorLearnerDag?.model || tutorLearnerDag || null;
+  const record = model?.learnerRecord || {};
+  const explicitWarrants = publicStocktakeRows(record.voicedDerived, 'voiced_derived_public_claim');
+  const explicitPublicPremises = publicStocktakeRows(record.grounded, 'grounded_public_record');
+  const extraction = normalizeHumanDiscourseExtraction(tutorLearnerDag?.accepted?.humanDiscourse || tutorLearnerDag?.extractor?.humanDiscourse);
+  const turn = classification?.turn || {};
+  const overleap = /overleaps_evidence|overconfident|answer_seeking/iu.test(
+    [turn.evidence_use, turn.epistemic_stance, turn.discourse_move].filter(Boolean).join(' '),
+  );
+  const heuristicMissingWarrants =
+    overleap && explicitWarrants.length === 0
+      ? [
+          {
+            surface: oneLine(learnerText, { max: 180 }),
+            reason: 'classifier marked overreach or answer-seeking before an explicit public warrant was stored',
+            source: 'heuristic_overleap',
+          },
+        ].filter((row) => row.surface)
+      : [];
+  const rejectedDebt = normalizeDiscourseRows(
+    (tutorLearnerDag?.rejected || [])
+      .filter((row) => row?.type === 'derive' || row?.type === 'assert' || row?.reason === 'not staged')
+      .map((row) => ({
+        surface: Array.isArray(row.value) ? factSurface(world, row.value) : String(row.value || ''),
+        reason: row.reason || 'rejected by strict learner-DAG update',
+      })),
+    'strict_dag_rejection',
+  );
+  const proofDebtCandidates = [
+    ...extraction.proofDebtCandidates,
+    ...extraction.provisionalClaims
+      .filter((row) => row.warrantNeeded)
+      .map((row) => ({ ...row, reason: row.reason || row.warrantNeeded })),
+    ...heuristicMissingWarrants,
+    ...rejectedDebt,
+  ];
+  const strictProofAdoptions = [
+    ...(tutorLearnerDag?.accepted?.adopt || []).map((premise) => ({ surface: premise, source: 'strict_adopted_premise' })),
+    ...(tutorLearnerDag?.accepted?.derive || []).map((fact) => ({
+      surface: factSurface(world, fact),
+      source: 'strict_derived_public_claim',
+    })),
+  ].filter((row) => row.surface);
+  const proofStatus =
+    model?.assessment?.finalSecretEntailed && model?.assessment?.assertedSecret
+      ? 'strict_grounded_closure'
+      : extraction.proofStatus !== 'unclear'
+        ? extraction.proofStatus
+        : proofDebtCandidates.length
+          ? 'provisional_or_debt_open'
+          : 'strict_or_open';
+  return {
+    schema: WARRANT_PREMISE_AUDIT_SCHEMA,
+    mode: dagMode,
+    phase: HUMAN_DISCOURSE_PHASE,
+    proofStatus,
+    status:
+      dagMode === 'strict_dag'
+        ? 'strict_audit_only'
+        : extraction.illicitHiddenPremises.length || extraction.suppressedPremises.length
+          ? 'hidden_or_suppressed_premise_risk'
+          : proofDebtCandidates.length
+            ? 'proof_debt_open'
+            : 'current_turn_clean',
+    warrants: {
+      explicit: explicitWarrants,
+      implied: extraction.impliedWarrants,
+      missing: [...extraction.missingWarrants, ...heuristicMissingWarrants],
+    },
+    premises: {
+      explicitPublic: explicitPublicPremises,
+      impliedPublic: extraction.impliedPremises,
+      suppressedOrPrivate: extraction.suppressedPremises,
+      commonSenseBridges: extraction.commonSenseBridges,
+      illicitHidden: extraction.illicitHiddenPremises,
+    },
+    provisionalClaims: extraction.provisionalClaims,
+    proofDebtCandidates,
+    strictProofAdoptions,
+    extractionSideArc: extraction.sideArc,
+    counts: {
+      explicitWarrants: explicitWarrants.length,
+      impliedWarrants: extraction.impliedWarrants.length,
+      missingWarrants: extraction.missingWarrants.length + heuristicMissingWarrants.length,
+      explicitPublicPremises: explicitPublicPremises.length,
+      impliedPremises: extraction.impliedPremises.length,
+      suppressedPremises: extraction.suppressedPremises.length,
+      commonSenseBridges: extraction.commonSenseBridges.length,
+      illicitHiddenPremises: extraction.illicitHiddenPremises.length,
+      provisionalClaims: extraction.provisionalClaims.length,
+      proofDebtCandidates: proofDebtCandidates.length,
+      strictProofAdoptions: strictProofAdoptions.length,
+    },
+  };
+}
+
+function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classification = null, learnerText = '' }) {
   const dagMode = state?.dagMode || 'strict_dag';
-  const scaffoldState = buildScaffoldState({ state, tutorTurn, dagMode });
-  const sideArc = buildSideArcState({ dagMode });
-  const proofDebt = buildProofDebtState({ dagMode });
-  const warrantPremiseAudit = buildWarrantPremiseAudit({ dagMode, tutorLearnerDag });
+  const scaffoldState = buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag });
+  const sideArc = buildSideArcState({ dagMode, classification, learnerText, scaffoldState });
+  const warrantPremiseAudit = buildWarrantPremiseAudit({
+    dagMode,
+    tutorLearnerDag,
+    classification,
+    learnerText,
+    world: state?.world || null,
+  });
+  const proofDebt = buildProofDebtState({ dagMode, warrantPremiseAudit });
   return {
     schema: HUMAN_DISCOURSE_FRAME_SCHEMA,
     mode: dagMode,
-    phase: 'phase_1_trace_shapes',
+    phase: HUMAN_DISCOURSE_PHASE,
+    scaffoldActive: dagMode !== 'strict_dag',
     turn: tutorTurn,
     strictDag: buildStrictDagAuditState(tutorLearnerDag),
     scaffoldState,
@@ -2594,6 +2853,16 @@ function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
     '- Single-step trial-book rule: if the learner states a warranted conclusion from staged evidence, include both the supporting staged premise ids in adopt and the conclusion fact in derive. Do not require a separate "add it to the book" utterance.',
     '- hypothesis: one short sentence if the learner offers a conjecture, uncertainty, or provisional theory.',
     '- assert_answer: the named answer candidate if the learner directly answers the public question; otherwise null.',
+    '- human_discourse.proof_status: strict_proof, provisional_scaffold, side_arc, hidden_premise_risk, or unclear.',
+    '- human_discourse.provisional_claims: claims the learner is allowed to hold provisionally before the strict proof is complete.',
+    '- human_discourse.implied_warrants: inference rules the learner is using in ordinary language without spelling them out.',
+    '- human_discourse.missing_warrants: warrants the learner needs before the claim counts as strict proof.',
+    '- human_discourse.implied_public_premises: public assumptions suggested by the transcript but not yet stored as strict grounded premises.',
+    '- human_discourse.suppressed_or_private_premises: premises the learner seems to rely on that are not public in the staged evidence.',
+    '- human_discourse.common_sense_bridges: harmless everyday bridges that can be allowed provisionally but may need repair.',
+    '- human_discourse.illicit_hidden_premises: any apparent use of hidden or unstaged story facts.',
+    '- human_discourse.proof_debt_candidates: provisional leaps or missing warrants the tutor should keep visible for later repair.',
+    '- human_discourse.side_arc: clarification, vocabulary, affective, trust, or off-path requests that should be answered briefly before returning to the proof path.',
     '- Be conservative. Do not mark staged evidence adopted merely because it exists.',
     '',
     '# JSON schema',
@@ -2605,6 +2874,7 @@ function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
         derive: [['predicate', 'arg1', 'arg2']],
         hypothesis: 'short hypothesis or null',
         assert_answer: 'candidate name or null',
+        human_discourse: humanDiscourseExtractionSchema(),
         notes: 'brief reason for the extraction',
       },
       null,
@@ -2646,7 +2916,28 @@ function learnerRecordSchema() {
     derive: [['predicate', 'arg1', 'arg2']],
     hypothesis: 'short hypothesis or null',
     assert_answer: 'candidate name or null',
+    human_discourse: humanDiscourseExtractionSchema(),
     notes: 'brief reason for the extraction',
+  };
+}
+
+function humanDiscourseExtractionSchema() {
+  return {
+    proof_status: 'strict_proof | provisional_scaffold | side_arc | hidden_premise_risk | unclear',
+    provisional_claims: [{ surface: 'ordinary-language claim', warrant_needed: 'missing warrant or null' }],
+    implied_warrants: [{ surface: 'unstated inference rule in ordinary language', reason: 'why it is implied' }],
+    missing_warrants: [{ surface: 'claim needing a warrant', reason: 'what warrant is absent' }],
+    implied_public_premises: [{ surface: 'public premise implied but not strictly grounded', reason: 'why it matters' }],
+    suppressed_or_private_premises: [{ surface: 'unstated/private premise', reason: 'why it is not public enough' }],
+    common_sense_bridges: [{ surface: 'commonsense bridge', reason: 'why it is safe but not strict proof' }],
+    illicit_hidden_premises: [{ surface: 'hidden or unstaged premise', reason: 'why it must not be used' }],
+    proof_debt_candidates: [{ surface: 'provisional leap', reason: 'repair needed later', severity: 'low | medium | high' }],
+    side_arc: {
+      detected: false,
+      type: 'clarification_or_plain_language | warrant_challenge | affective_repair | off_task_or_contextual | null',
+      reason: 'why this is a side arc or null',
+      return_target: 'short phrase naming the proof-path point to return to, or null',
+    },
   };
 }
 
@@ -2810,6 +3101,16 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     '- Single-step trial-book rule: if the learner states a warranted conclusion from staged evidence, include both the supporting staged premise ids in adopt and the conclusion fact in derive. Do not require a separate "add it to the book" utterance.',
     '- hypothesis: one short sentence if the learner offers a conjecture, uncertainty, or provisional theory.',
     '- assert_answer: the named answer candidate if the learner directly answers the public question; otherwise null.',
+    '- human_discourse.proof_status: strict_proof, provisional_scaffold, side_arc, hidden_premise_risk, or unclear.',
+    '- human_discourse.provisional_claims: claims the learner is allowed to hold provisionally before strict proof is complete.',
+    '- human_discourse.implied_warrants: ordinary-language inference rules the learner is using without spelling them out.',
+    '- human_discourse.missing_warrants: warrants the learner still owes before a claim counts as strict proof.',
+    '- human_discourse.implied_public_premises: public assumptions suggested by the transcript but not yet stored as strict grounded premises.',
+    '- human_discourse.suppressed_or_private_premises: premises the learner seems to rely on that are not public in the staged evidence.',
+    '- human_discourse.common_sense_bridges: harmless everyday bridges that can be allowed provisionally but may need repair.',
+    '- human_discourse.illicit_hidden_premises: any apparent use of hidden or unstaged story facts.',
+    '- human_discourse.proof_debt_candidates: provisional leaps or missing warrants the tutor should keep visible for later repair.',
+    '- human_discourse.side_arc: clarification, vocabulary, affective, trust, or off-path requests that should be answered briefly before returning to the proof path.',
     '- Be conservative. Do not mark staged evidence adopted merely because it exists.',
     includeRegisterSelection ? '' : null,
     includeRegisterSelection ? '# Tutor-register selection' : null,
@@ -5114,7 +5415,14 @@ function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText }) {
   const releasedByFactKey = new Map(
     [...released.values()].filter((row) => row.fact).map((row) => [factKey(row.fact), row]),
   );
-  const accepted = { adopt: [], retract: [], derive: [], hypothesis: null, assertAnswer: null };
+  const accepted = {
+    adopt: [],
+    retract: [],
+    derive: [],
+    hypothesis: null,
+    assertAnswer: null,
+    humanDiscourse: normalizeHumanDiscourseExtraction(update?.human_discourse || update?.humanDiscourse),
+  };
   const rejected = [];
   const retracted = new Set();
 
@@ -5239,6 +5547,7 @@ function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText }) {
       latencyMs: update?.latencyMs || 0,
       usage: update?.usage || null,
       parseError: update?.parseError || null,
+      humanDiscourse: accepted.humanDiscourse,
       notes: typeof update?.notes === 'string' ? update.notes : null,
     },
   };
@@ -5290,7 +5599,14 @@ async function buildTutorLearnerDagForTurn(learnerText, state) {
     const model = emptyTutorLearnerDagModel(state, tutorTurn);
     const result = {
       model,
-      accepted: { adopt: [], retract: [], derive: [], hypothesis: null, assertAnswer: null },
+      accepted: {
+        adopt: [],
+        retract: [],
+        derive: [],
+        hypothesis: null,
+        assertAnswer: null,
+        humanDiscourse: normalizeHumanDiscourseExtraction(),
+      },
       rejected: [],
       extractor: {
         error: err.message,
@@ -5337,7 +5653,14 @@ async function analyzeLearnerTurnCombined(learnerText, state) {
     const model = emptyTutorLearnerDagModel(state, tutorTurn);
     const tutorLearnerDag = {
       model,
-      accepted: { adopt: [], retract: [], derive: [], hypothesis: null, assertAnswer: null },
+      accepted: {
+        adopt: [],
+        retract: [],
+        derive: [],
+        hypothesis: null,
+        assertAnswer: null,
+        humanDiscourse: normalizeHumanDiscourseExtraction(),
+      },
       rejected: [],
       extractor: {
         error: err.message,
@@ -5542,6 +5865,68 @@ function tutorLearnerDagModelContext(result) {
     'Use this as advisory context only. Do not mention DAGs, coverage, missing counts, hidden paths, or internal state.',
     '[End tutor-only redacted learner-DAG model]',
   ].join('\n');
+}
+
+function compactAuditRows(rows = [], limit = 3) {
+  const visible = (Array.isArray(rows) ? rows : [])
+    .map((row) => {
+      if (typeof row === 'string') return row.trim();
+      const bits = [row?.surface, row?.warrantNeeded, row?.reason].filter(Boolean).map((value) => oneLine(value, { max: 120 }));
+      return bits.join(' — ');
+    })
+    .filter(Boolean)
+    .slice(0, limit);
+  return visible.length ? visible.map((row) => `- ${row}`).join('\n') : '- none';
+}
+
+function humanDiscourseTutorContext(frame) {
+  if (!frame || frame.mode === 'strict_dag') return '';
+  const scaffold = frame.scaffoldState || {};
+  const branch = scaffold.branch || {};
+  const sideArc = frame.sideArc || {};
+  const proofDebt = frame.proofDebt || {};
+  const audit = frame.warrantPremiseAudit || {};
+  const due = scaffold.releaseState?.dueNow || [];
+  const latest = scaffold.releaseState?.latestReleased || null;
+  const next = scaffold.releaseState?.nextRelease || null;
+  const promptRule =
+    frame.mode === 'defeasible_human_scaffold'
+      ? 'You may let the learner hold a local conclusion provisionally, but explicitly keep the missing warrant or premise as proof debt and return to it soon.'
+      : 'Frame the local warrant in ordinary language while preserving the strict proof audit; do not license the final answer early.';
+  return [
+    '[Tutor-only human discourse scaffold]',
+    `Mode: ${frame.mode}; strict DAG remains the audit, but the learner-facing scaffold is active.`,
+    `Act: ${scaffold.activeAct?.act || 'unknown'}${scaffold.activeAct?.title ? ` — ${scaffold.activeAct.title}` : ''}.`,
+    scaffold.activeAct?.intent ? `Act intent: ${oneLine(scaffold.activeAct.intent, { max: 260 })}` : null,
+    `Current branch: ${branch.label || branch.id || 'open scaffold'}.`,
+    scaffold.localQuestion ? `Local question: ${scaffold.localQuestion}` : null,
+    scaffold.warrantFrame ? `Warrant frame: ${scaffold.warrantFrame}` : null,
+    scaffold.joinReminder ? `Join reminder: ${scaffold.joinReminder}` : null,
+    due.length
+      ? `Evidence due now: ${due.map((row) => `${row.premise}/${row.via}: ${oneLine(row.surface, { max: 120 })}`).join(' | ')}`
+      : latest
+        ? `Latest released evidence: ${latest.premise}/${latest.via}: ${oneLine(latest.surface, { max: 140 })}`
+        : null,
+    next ? `Next scheduled evidence: ${next.premise} at turn ${next.turn} via ${next.via}` : null,
+    sideArc.detected
+      ? `Side arc: ${sideArc.type}. Answer the learner's clarification/trust/affect need briefly, then ${sideArc.returnTarget?.afterSideArc || 'return to the local evidence question'}.`
+      : 'Side arc: none detected; stay on the local warrant.',
+    `Proof debt status: ${proofDebt.status || 'unknown'}; open=${proofDebt.counts?.open ?? 0}; harmful=${proofDebt.counts?.harmful ?? 0}.`,
+    proofDebt.open?.length ? `Open proof debt:\n${compactAuditRows(proofDebt.open)}` : null,
+    audit.warrants?.missing?.length ? `Missing warrants:\n${compactAuditRows(audit.warrants.missing)}` : null,
+    audit.premises?.suppressedOrPrivate?.length || audit.premises?.illicitHidden?.length
+      ? `Hidden/private premise risk:\n${compactAuditRows([
+          ...(audit.premises?.suppressedOrPrivate || []),
+          ...(audit.premises?.illicitHidden || []),
+        ])}`
+      : null,
+    promptRule,
+    'Learner-facing behavior: use plain public evidence language, allow one ordinary-language leap only as provisional, name what would make it strict, and ask for one next claim or clarification.',
+    'Never mention scaffold state, proof debt, side arcs, DAGs, premise ids, rule ids, hidden facts, or release schedules.',
+    '[End tutor-only human discourse scaffold]',
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 function createLearnerDagState({ enabled, resolved, world }) {
@@ -6049,6 +6434,28 @@ function printCurrentTurnAnalysis(state) {
     printAnalysisLine('tutor DAG', state.dag ? 'no snapshot stored for this turn' : 'off');
   }
 
+  if (turn.humanDiscourseFrame) {
+    const frame = turn.humanDiscourseFrame;
+    const scaffold = frame.scaffoldState || {};
+    const proofDebt = frame.proofDebt || {};
+    const audit = frame.warrantPremiseAudit || {};
+    printAnalysisLine(
+      'human scaffold',
+      `${frame.mode}; branch=${scaffold.branch?.label || scaffold.branch?.id || 'none'}; sideArc=${
+        frame.sideArc?.detected ? frame.sideArc.type : 'none'
+      }; proofDebt=${proofDebt.status || 'unknown'}`,
+    );
+    printAnalysisLine('local question', scaffold.localQuestion);
+    if (audit.counts) {
+      printAnalysisLine(
+        'warrant stocktake',
+        `explicit=${audit.counts.explicitWarrants || 0}; implied=${audit.counts.impliedWarrants || 0}; missing=${
+          audit.counts.missingWarrants || 0
+        }; suppressed=${audit.counts.suppressedPremises || 0}; commonsense=${audit.counts.commonSenseBridges || 0}`,
+      );
+    }
+  }
+
   printAnalysisLine('trace', tracePath);
   console.log();
 }
@@ -6505,6 +6912,13 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
     humanDiscourse: {
       config: state.humanDiscourse || null,
       finalFrame: last.humanDiscourseFrame || null,
+      finalStatus: last.humanDiscourseFrame?.warrantPremiseAudit?.proofStatus || null,
+      proofDebtStatus: last.humanDiscourseFrame?.proofDebt?.status || null,
+      sideArcCount: state.turns.filter((turn) => turn.humanDiscourseFrame?.sideArc?.detected).length,
+      openProofDebtCount: state.turns.reduce(
+        (sum, turn) => sum + Number(turn.humanDiscourseFrame?.proofDebt?.counts?.open || 0),
+        0,
+      ),
     },
     field: field.summary,
     finalTurn: {
@@ -6533,6 +6947,13 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
   );
   console.log(`${C.dim}  registers: ${registerCounts}${C.reset}`);
   console.log(`${C.dim}  bottlenecks: ${bottleneckCounts}${C.reset}`);
+  if (payload.humanDiscourse.config?.scaffoldActive) {
+    console.log(
+      `${C.dim}  human scaffold: ${payload.humanDiscourse.finalStatus || 'unknown'}; proof debt ${
+        payload.humanDiscourse.proofDebtStatus || 'unknown'
+      }; side arcs ${payload.humanDiscourse.sideArcCount}; open debt rows ${payload.humanDiscourse.openProofDebtCount}${C.reset}`,
+    );
+  }
   console.log(`${C.dim}  last turn id: ${payload.finalTurn.turnId}${C.reset}`);
   console.log(`${C.dim}  last learner: ${oneLine(last.learner, { max: 180 })}${C.reset}`);
   console.log(`${C.dim}  last tutor: ${oneLine(last.tutor, { max: 220 })}${C.reset}\n`);
@@ -6576,6 +6997,7 @@ async function callTutor({
   classification,
   tutorLearnerDagModel,
   registerSelection,
+  humanDiscourseFrame = null,
   trace = null,
   stream = null,
   cliEffort = null,
@@ -6586,6 +7008,7 @@ async function callTutor({
   const tutorMemory = tutorDialogueMemorySummary(state, { currentTutorTurn: tutorTurn, historyTurns });
   const advisory = classifierTutorContext(classification);
   const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel);
+  const humanDiscourseAdvisory = humanDiscourseTutorContext(humanDiscourseFrame);
   const registerAdvisory = registerSelectionContext(registerSelection, { multipleChoice });
   const learnerPrompt = `Learner says:\n${learnerText}`;
   const promptParts = [
@@ -6593,6 +7016,7 @@ async function callTutor({
     dag && world ? dagTurnContext(world, tutorTurn) : null,
     advisory,
     learnerDagAdvisory,
+    humanDiscourseAdvisory,
     registerAdvisory,
     learnerPrompt,
   ].filter(Boolean);
@@ -6894,6 +7318,13 @@ async function runOneTurn(
   }
   const tutorTurn = state.turns.length + 1;
   const turnId = turnDebugId(state, tutorTurn);
+  const humanDiscourseFrame = buildHumanDiscourseFrame({
+    state,
+    tutorTurn,
+    tutorLearnerDag,
+    classification,
+    learnerText,
+  });
 
   const response = await callTutor({
     learnerText,
@@ -6909,17 +7340,13 @@ async function runOneTurn(
     classification,
     tutorLearnerDagModel: tutorLearnerDag,
     registerSelection,
+    humanDiscourseFrame,
     trace: state.trace,
     stream: state.stream,
     cliEffort: state.cliEffort,
     multipleChoice: state.multipleChoice,
   });
   const dagSnapshot = buildTutorDagSnapshot(state, tutorTurn);
-  const humanDiscourseFrame = buildHumanDiscourseFrame({
-    state,
-    tutorTurn,
-    tutorLearnerDag,
-  });
 
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
@@ -7163,6 +7590,19 @@ async function main() {
     dagEnabled: args.dag,
     tutorLearnerDagEnabled,
   });
+  const humanDiscoursePreviewFrame = buildHumanDiscourseFrame({
+    state: {
+      world: worldBundle?.world || null,
+      dag: args.dag,
+      dagMode,
+      humanDiscourse: humanDiscourseConfig,
+      turns: [],
+    },
+    tutorTurn: 1,
+    tutorLearnerDag: null,
+    classification: null,
+    learnerText: '',
+  });
   const combinedLearnerAnalysisEnabled = Boolean(classifierEnabled && tutorLearnerDagEnabled);
   const registerPolicy = normalizeRegisterPolicy(args['register-policy']);
   const registerEmpiricalPrior = loadRegisterEmpiricalPrior(args['register-empirical-prior'], { policy: registerPolicy });
@@ -7259,6 +7699,7 @@ async function main() {
               }
             : null,
           humanDiscourse: humanDiscourseConfig,
+          humanDiscoursePreviewFrame,
           directorContext,
           temperature: effectiveTemperature,
           requestedTemperature: temperature,
@@ -7593,7 +8034,11 @@ async function main() {
   } else {
     console.log(`${C.dim}tutor learner-DAG: off${C.reset}`);
   }
-  console.log(`${C.dim}DAG discourse mode: ${dagMode} (${humanDiscourseConfig.phase}; behavior unchanged)${C.reset}`);
+  console.log(
+    `${C.dim}DAG discourse mode: ${dagMode} (${humanDiscourseConfig.phase}; ${
+      humanDiscourseConfig.behaviorChange ? 'human scaffold prompt active' : 'strict audit only'
+    })${C.reset}`,
+  );
   if (autoLearnerEnabled) {
     const autoTurnSummary =
       autoTurns === null ? `until grounded; safety ${autoSafetyTurns}` : `${autoTurns}`;
