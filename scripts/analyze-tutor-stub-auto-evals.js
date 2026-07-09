@@ -28,8 +28,10 @@ const { values: args, positionals } = parseArgs({
     dir: { type: 'string', default: DEFAULT_SEARCH_DIR },
     latest: { type: 'string', default: '12' },
     policies: { type: 'string', default: '' },
+    'baseline-policy': { type: 'string', default: 'bland' },
     out: { type: 'string', default: '' },
     json: { type: 'boolean', default: false },
+    qa: { type: 'boolean', default: false },
     'include-dry-run': { type: 'boolean', default: false },
     'no-db': { type: 'boolean', default: false },
     'no-ledger': { type: 'boolean', default: false },
@@ -51,8 +53,10 @@ Options:
                         (default: ${DEFAULT_SEARCH_DIR})
   --latest <n>          keep the latest n evals after sorting (default: 12)
   --policies <csv>      limit policy field rows
+  --baseline-policy <p> policy used for QA deltas (default: bland)
   --out <path>          write report to path instead of stdout
   --json                emit JSON instead of Markdown
+  --qa                  include QA policy-by-learner robustness tables
   --include-dry-run     keep dry-run evals
   --no-db               skip tutor_stub_* SQL tables
   --no-ledger           ignore ledger and auto-discover summaries
@@ -82,6 +86,13 @@ function csv(value) {
     .filter(Boolean);
 }
 
+function normalizePolicyName(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/-/gu, '_');
+}
+
 function clamp01(value) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return 0;
@@ -98,6 +109,26 @@ function mean(values) {
   const finite = values.map(Number).filter(Number.isFinite);
   if (!finite.length) return null;
   return round(finite.reduce((sum, value) => sum + value, 0) / finite.length);
+}
+
+function min(values) {
+  const finite = values.map(Number).filter(Number.isFinite);
+  if (!finite.length) return null;
+  return round(Math.min(...finite));
+}
+
+function max(values) {
+  const finite = values.map(Number).filter(Number.isFinite);
+  if (!finite.length) return null;
+  return round(Math.max(...finite));
+}
+
+function stddev(values) {
+  const finite = values.map(Number).filter(Number.isFinite);
+  if (finite.length < 2) return 0;
+  const avg = finite.reduce((sum, value) => sum + value, 0) / finite.length;
+  const variance = finite.reduce((sum, value) => sum + (value - avg) ** 2, 0) / finite.length;
+  return round(Math.sqrt(variance));
 }
 
 function parseJson(value, fallback = null) {
@@ -178,7 +209,9 @@ function summaryFromFile(filePath) {
     recordedAt: summary.completedAt || summary.startedAt || fs.statSync(resolved).mtime.toISOString(),
     report: {
       json: relativePath(resolved),
-      html: summary.report?.html ? relativePath(summary.report.html) : relativePath(resolved.replace(/\.json$/u, '.html')),
+      html: summary.report?.html
+        ? relativePath(summary.report.html)
+        : relativePath(resolved.replace(/\.json$/u, '.html')),
     },
     config: summary.config || {},
     totals: normalizeAggregates(summary.aggregates || {}),
@@ -187,9 +220,7 @@ function summaryFromFile(filePath) {
 
 function dbTableExists(db, tableName) {
   return Boolean(
-    db
-      .prepare("SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name = ?")
-      .get(tableName),
+    db.prepare("SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name = ?").get(tableName),
   );
 }
 
@@ -218,9 +249,7 @@ function summarizeDbBucket(rows) {
     failed: liveRows.filter((row) => row.status === 'failed').length,
     dryRun: rows.filter((row) => row.status === 'dry_run').length,
     grounded: okRows.filter((row) => row.grounded_closure === 1).length,
-    groundedRate: okRows.length
-      ? okRows.filter((row) => row.grounded_closure === 1).length / okRows.length
-      : 0,
+    groundedRate: okRows.length ? okRows.filter((row) => row.grounded_closure === 1).length / okRows.length : 0,
     meanTurns: mean(okRows.map((row) => row.turn_count)) ?? 0,
     meanCoverage: mean(okRows.map((row) => row.best_path_coverage)) ?? 0,
     meanMissing: mean(okRows.map((row) => row.missing_premise_count)) ?? 0,
@@ -381,7 +410,8 @@ function sourceBreakdown(summaries) {
 }
 
 function evalTime(summary) {
-  const stamp = summary.completedAt || summary.startedAt || timestampFromRunId(summary.runId) || summary.recordedAt || '';
+  const stamp =
+    summary.completedAt || summary.startedAt || timestampFromRunId(summary.runId) || summary.recordedAt || '';
   const millis = Date.parse(stamp);
   return Number.isFinite(millis) ? millis : 0;
 }
@@ -468,12 +498,15 @@ function policyFieldRows(summaries, selectedPolicies) {
   const wanted = selectedPolicies.length ? new Set(selectedPolicies) : null;
   const rows = [];
   for (const summary of summaries) {
+    const learnerProfile = summary.config?.autoLearnerProfileId || summary.config?.autoLearnerProfile || 'unknown';
     for (const [policy, policyTotals] of Object.entries(summary.totals.byPolicy || {})) {
       if (wanted && !wanted.has(policy)) continue;
       const normalizedTotals = normalizeAggregates({ ...policyTotals, byPolicy: {} });
       rows.push({
         runId: summary.runId,
         recordedAt: summary.recordedAt,
+        learnerProfile,
+        world: summary.config?.world || null,
         policy,
         totals: {
           rows: normalizedTotals.rows,
@@ -491,6 +524,141 @@ function policyFieldRows(summaries, selectedPolicies) {
     }
   }
   return rows;
+}
+
+function sortPolicyNames(policies) {
+  const preferred = [
+    'bland',
+    'random',
+    'dynamic',
+    'state',
+    'field',
+    'trajectory',
+    'dynamical_system',
+    'empirical_dynamical_system',
+    'negative',
+  ];
+  return policies.slice().sort((left, right) => {
+    const leftIndex = preferred.indexOf(left);
+    const rightIndex = preferred.indexOf(right);
+    const leftRank = leftIndex === -1 ? preferred.length : leftIndex;
+    const rightRank = rightIndex === -1 ? preferred.length : rightIndex;
+    return leftRank - rightRank || left.localeCompare(right);
+  });
+}
+
+function cellSummary(rows) {
+  const totalsRows = rows.map((row) => row.totals || {});
+  const fields = rows.map((row) => row.field || {});
+  const score = mean(fields.map((field) => field.score));
+  return {
+    observations: rows.length,
+    score,
+    reliability: mean(fields.map((field) => field.reliability)),
+    effectiveClosure: mean(fields.map((field) => field.effectiveClosure)),
+    coverage: mean(fields.map((field) => field.coverage)),
+    meanTurns: mean(totalsRows.map((totals) => totals.meanTurns)),
+    meanMissing: mean(totalsRows.map((totals) => totals.meanMissing)),
+    failureRate: mean(fields.map((field) => field.failureRate)),
+    registerDiversity: mean(fields.map((field) => field.registerDiversity)),
+  };
+}
+
+function summarizePolicyRobustness(cells, learnerProfiles, baselinePolicy) {
+  const byPolicy = new Map();
+  for (const cell of cells) {
+    if (!byPolicy.has(cell.policy)) byPolicy.set(cell.policy, []);
+    byPolicy.get(cell.policy).push(cell);
+  }
+  return sortPolicyNames([...byPolicy.keys()])
+    .map((policy) => {
+      const policyCells = byPolicy.get(policy) || [];
+      const scores = policyCells.map((cell) => cell.score);
+      const deltas = policyCells.map((cell) => cell.deltaVsBaseline).filter((value) => value !== null);
+      const observedLearners = policyCells.filter((cell) => cell.observations > 0).length;
+      const learnerCoverage = learnerProfiles.length ? round(observedLearners / learnerProfiles.length) : 0;
+      const worstScore = min(scores);
+      const meanScore = mean(scores);
+      return {
+        policy,
+        baselinePolicy,
+        observedLearners,
+        learnerCoverage,
+        observations: policyCells.reduce((sum, cell) => sum + Number(cell.observations || 0), 0),
+        meanScore,
+        worstScore,
+        bestScore: max(scores),
+        scoreStddev: stddev(scores),
+        meanDeltaVsBaseline: deltas.length ? mean(deltas) : null,
+        worstDeltaVsBaseline: deltas.length ? min(deltas) : null,
+        meanEffectiveClosure: mean(policyCells.map((cell) => cell.effectiveClosure)),
+        worstEffectiveClosure: min(policyCells.map((cell) => cell.effectiveClosure)),
+        meanCoverage: mean(policyCells.map((cell) => cell.coverage)),
+        meanTurns: mean(policyCells.map((cell) => cell.meanTurns)),
+        meanFailureRate: mean(policyCells.map((cell) => cell.failureRate)),
+        qaInterpretation:
+          learnerCoverage < 1
+            ? 'incomplete learner coverage'
+            : worstScore !== null && meanScore !== null && meanScore - worstScore >= 0.12
+              ? 'learner-sensitive'
+              : 'robust across observed learners',
+      };
+    })
+    .sort((left, right) => {
+      const worstDelta = Number(right.worstScore ?? -Infinity) - Number(left.worstScore ?? -Infinity);
+      if (worstDelta) return worstDelta;
+      const meanDelta = Number(right.meanScore ?? -Infinity) - Number(left.meanScore ?? -Infinity);
+      if (meanDelta) return meanDelta;
+      return left.policy.localeCompare(right.policy);
+    });
+}
+
+function buildQaMatrix(policyRows, { baselinePolicy = 'bland' } = {}) {
+  const learnerProfiles = Array.from(new Set(policyRows.map((row) => row.learnerProfile || 'unknown'))).sort((a, b) =>
+    a.localeCompare(b),
+  );
+  const policies = sortPolicyNames(Array.from(new Set(policyRows.map((row) => row.policy))));
+  const rowsByLearnerPolicy = new Map();
+  for (const row of policyRows) {
+    const key = `${row.learnerProfile || 'unknown'}\u0000${row.policy}`;
+    if (!rowsByLearnerPolicy.has(key)) rowsByLearnerPolicy.set(key, []);
+    rowsByLearnerPolicy.get(key).push(row);
+  }
+  const baselineByLearner = new Map();
+  const cells = [];
+  for (const learnerProfile of learnerProfiles) {
+    const baselineRows = rowsByLearnerPolicy.get(`${learnerProfile}\u0000${baselinePolicy}`) || [];
+    const baseline = baselineRows.length ? cellSummary(baselineRows) : null;
+    if (baseline) baselineByLearner.set(learnerProfile, baseline);
+    for (const policy of policies) {
+      const rows = rowsByLearnerPolicy.get(`${learnerProfile}\u0000${policy}`) || [];
+      if (!rows.length) continue;
+      const cell = {
+        learnerProfile,
+        policy,
+        ...cellSummary(rows),
+      };
+      const learnerBaseline = baselineByLearner.get(learnerProfile);
+      cell.deltaVsBaseline =
+        learnerBaseline && cell.score !== null && learnerBaseline.score !== null
+          ? round(cell.score - learnerBaseline.score)
+          : null;
+      cells.push(cell);
+    }
+  }
+  return {
+    schema: 'machinespirits.tutor-stub.qa-matrix.v1',
+    baselinePolicy,
+    learnerProfiles,
+    policies,
+    cells,
+    policyRobustness: summarizePolicyRobustness(cells, learnerProfiles, baselinePolicy),
+    notes: [
+      'QA robustness aggregates policy rows by automated learner profile before ranking policies.',
+      `Delta columns compare each policy against ${baselinePolicy} within the same learner profile when that baseline is present.`,
+      'Worst score is intentionally prominent: a policy that only works for diligent learners should not outrank one that holds up across harder learner profiles.',
+    ],
+  };
 }
 
 function summarizePolicies(policyRows) {
@@ -529,6 +697,7 @@ function buildReport(summaries) {
   const trajectory = buildRunTrajectory(filtered);
   const policies = policyFieldRows(filtered, selectedPolicies);
   const policySummary = summarizePolicies(policies);
+  const qaMatrix = buildQaMatrix(policies, { baselinePolicy: normalizePolicyName(args['baseline-policy']) || 'bland' });
   const latest = trajectory.at(-1) || null;
   return {
     schema: 'machinespirits.tutor-stub.cross-run-field.v1',
@@ -545,11 +714,13 @@ function buildReport(summaries) {
       : null,
     trajectory,
     policySummary,
+    qaMatrix,
     notes: [
       'Cross-run field axes differ from dialogue fields: reliability, effective closure, coverage, turn efficiency, register diversity, and leak discipline.',
       'Effective closure counts grounded runs over all rows, so technical failures lower the field point.',
       'Register diversity uses entropy normalized against the v2 all-register palette size.',
       'SQL-backed summaries use tutor_stub_* tables when available; local JSON summaries and ledger entries are still accepted.',
+      'QA robustness compares policies across automated learner profiles when summaries include multiple learner profiles.',
     ],
   };
 }
@@ -595,7 +766,13 @@ function renderMarkdown(report) {
       { label: 'Mean Turns', value: (row) => row.totals.meanTurns },
       { label: 'Field Score', value: (row) => row.field.score },
       { label: 'Movement', value: (row) => `${row.movement.label} (${signed(row.movement.deltaScore)})` },
-      { label: 'Reports', value: (row) => [row.report.html ? `[html](${row.report.html})` : '', row.report.json ? `[json](${row.report.json})` : ''].filter(Boolean).join(' ') },
+      {
+        label: 'Reports',
+        value: (row) =>
+          [row.report.html ? `[html](${row.report.html})` : '', row.report.json ? `[json](${row.report.json})` : '']
+            .filter(Boolean)
+            .join(' '),
+      },
     ]),
   );
   lines.push('', '## Policy Field', '');
@@ -613,8 +790,53 @@ function renderMarkdown(report) {
       { label: 'Latest Registers', value: (row) => topCounts(row.latestRegisters) || 'none' },
     ]),
   );
+  const showQa = args.qa || (report.qaMatrix?.learnerProfiles?.length || 0) > 1;
+  if (showQa && report.qaMatrix?.policyRobustness?.length) {
+    lines.push('', '## QA Policy Robustness', '');
+    lines.push(
+      markdownTable(report.qaMatrix.policyRobustness, [
+        { label: 'Policy', value: (row) => row.policy },
+        { label: 'Learners', value: (row) => `${row.observedLearners}/${report.qaMatrix.learnerProfiles.length}` },
+        { label: 'Worst Score', value: (row) => row.worstScore ?? 'n/a' },
+        { label: 'Mean Score', value: (row) => row.meanScore ?? 'n/a' },
+        { label: `Mean Delta vs ${report.qaMatrix.baselinePolicy}`, value: (row) => signed(row.meanDeltaVsBaseline) },
+        { label: `Worst Delta vs ${report.qaMatrix.baselinePolicy}`, value: (row) => signed(row.worstDeltaVsBaseline) },
+        { label: 'Closure', value: (row) => row.meanEffectiveClosure ?? 'n/a' },
+        { label: 'Coverage', value: (row) => row.meanCoverage ?? 'n/a' },
+        { label: 'Turns', value: (row) => row.meanTurns ?? 'n/a' },
+        { label: 'Failures', value: (row) => row.meanFailureRate ?? 'n/a' },
+        { label: 'QA Read', value: (row) => row.qaInterpretation },
+      ]),
+    );
+    lines.push('', '## QA Learner Matrix', '');
+    lines.push(
+      markdownTable(
+        report.qaMatrix.learnerProfiles.map((learnerProfile) => ({ learnerProfile })),
+        [
+          { label: 'Learner', value: (row) => row.learnerProfile },
+          ...report.qaMatrix.policies.map((policy) => ({
+            label: policy,
+            value: (row) => {
+              const cell = report.qaMatrix.cells.find(
+                (candidate) => candidate.learnerProfile === row.learnerProfile && candidate.policy === policy,
+              );
+              if (!cell) return 'n/a';
+              const delta = cell.deltaVsBaseline === null ? '' : ` (${signed(cell.deltaVsBaseline)})`;
+              return `${cell.score ?? 'n/a'}${delta}`;
+            },
+          })),
+        ],
+      ),
+    );
+    lines.push(
+      '',
+      'Matrix cells show QA score, with parenthesized same-learner delta against the configured baseline when available.',
+      '',
+    );
+  }
   lines.push('', '## Notes', '');
   for (const note of report.notes) lines.push(`- ${note}`);
+  for (const note of report.qaMatrix?.notes || []) lines.push(`- ${note}`);
   lines.push('');
   return lines.join('\n');
 }

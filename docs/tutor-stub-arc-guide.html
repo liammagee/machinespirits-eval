@@ -385,6 +385,8 @@
           <tr><td><code>.tutor-stub-auto-eval/index.html</code></td><td>Local run index for auto-eval HTML/JSON summaries and field SVG counts.</td></tr>
           <tr><td><code>.tutor-stub-auto-eval/&lt;run&gt;/auto-eval-*.html</code></td><td>Rich per-eval report with policy outcomes, failures, register mix, and field visuals.</td></tr>
           <tr><td><code>.tutor-stub-auto-eval/&lt;run&gt;/auto-eval-*.json</code></td><td>Machine-readable summary for resume, ingest, and cross-run analysis.</td></tr>
+          <tr><td><code>.tutor-stub-auto-eval/qa-matrix-*/qa-plan.json</code></td><td>Reproducible policy x learner QA recipe, including exact child commands.</td></tr>
+          <tr><td><code>.tutor-stub-auto-eval/qa-matrix-*/qa-matrix.md</code> / <code>qa-matrix.json</code></td><td>Consolidated robustness report: policy differences across automated learner profiles.</td></tr>
           <tr><td><code>.tutor-stub-auto-eval/ledger.jsonl</code> / <code>ledger.md</code></td><td>Local ignored ledger of recent eval summaries.</td></tr>
           <tr><td><code>.tutor-stub-traces/</code></td><td>Manual-run traces, transcript logs, turn ids, model-call JSONL, and optional field visualization files.</td></tr>
           <tr><td><code>exports/tutor-stub-abm-panel/</code></td><td>ABM learner-panel outputs and summaries.</td></tr>
@@ -451,6 +453,35 @@
   --max-tokens 4096 \
   --trace-dir .tutor-stub-auto-eval/baseline-register-policy-p8 \
   --keep-going</code></pre>
+
+      <h3>Reproducible QA Matrix</h3>
+      <p>
+        The focused suite is the seven-policy comparison: <code>bland</code> plus
+        <code>dynamic</code>, <code>state</code>, <code>field</code>, <code>trajectory</code>,
+        <code>dynamical_system</code>, and <code>empirical_dynamical_system</code>.
+        Use <code>--suite full</code> to add <code>negative</code> and <code>random</code>
+        controls.
+      </p>
+      <pre><code>npm run tutor:stub:qa -- \
+  --suite focused \
+  --runs 1 \
+  --profiles diligent,answer_seeking,skeptical,overconfident,low_agency,memory_limited \
+  --turns until-grounded \
+  --safety-turns 120 \
+  --parallelism 6 \
+  --world world_005_marrick \
+  --cli-effort low \
+  --history-turns 4 \
+  --max-tokens 4096 \
+  --keep-going</code></pre>
+
+      <p>
+        Always verify the exact command expansion before a paid QA run:
+      </p>
+      <pre><code>npm run tutor:stub:qa -- --suite focused --runs 1 --dry-run
+
+npm run tutor:stub:qa -- \
+  --from-dir .tutor-stub-auto-eval/qa-matrix-&lt;timestamp&gt;</code></pre>
 
       <h3>Build Empirical Register Priors</h3>
       <pre><code>npm run tutor:stub:register-priors -- \

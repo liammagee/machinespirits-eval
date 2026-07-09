@@ -938,16 +938,43 @@ function fieldTurnMarkers(rows, { width, height, padding }) {
     .map((row, index) => {
       const x = padding.left + (index / xSpan) * width;
       const label = escapeXml(`${row.turn}: ${row.learnerMove} / ${row.register || 'no-register'} / ${row.bottleneck}`);
-      return `<circle cx="${x.toFixed(1)}" cy="${(padding.top + height + 18).toFixed(
+      return `<circle cx="${x.toFixed(1)}" cy="${(padding.top + height + 9).toFixed(
         1,
-      )}" r="2.8" fill="#0A0A0A"><title>${label}</title></circle>`;
+      )}" r="2.5" fill="#0A0A0A"><title>${label}</title></circle>`;
     })
     .join('\n');
 }
 
+function fieldTurnAxis(rows, { width, height, padding }) {
+  if (!rows.length) return '';
+  const xSpan = Math.max(1, rows.length - 1);
+  const tickEvery = Math.max(1, Math.ceil(rows.length / 6));
+  const baseline = padding.top + height;
+  const ticks = rows
+    .map((row, index) => {
+      const x = padding.left + (index / xSpan) * width;
+      const showLabel = rows.length <= 8 || index === 0 || index === rows.length - 1 || index % tickEvery === 0;
+      return [
+        `<line x1="${x.toFixed(1)}" y1="${baseline.toFixed(1)}" x2="${x.toFixed(1)}" y2="${(baseline + 7).toFixed(
+          1,
+        )}" stroke="#0A0A0A" stroke-width="1" />`,
+        showLabel
+          ? `<text x="${x.toFixed(1)}" y="${(baseline + 22).toFixed(
+              1,
+            )}" text-anchor="middle" font-size="10" fill="#525252">${escapeXml(row.turn ?? index + 1)}</text>`
+          : '',
+      ].join('');
+    })
+    .join('\n');
+  return `${ticks}
+  <text x="${(padding.left + width / 2).toFixed(1)}" y="${(baseline + 44).toFixed(
+    1,
+  )}" text-anchor="middle" font-size="11" font-weight="700" fill="#0A0A0A">turns</text>`;
+}
+
 function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Field' } = {}) {
   const rows = field?.rows || [];
-  const padding = { top: 64, right: 34, bottom: 68, left: 58 };
+  const padding = { top: 88, right: 34, bottom: 68, left: 58 };
   const chartWidth = 660;
   const chartHeight = 220;
   const svgWidth = chartWidth + padding.left + padding.right;
@@ -955,10 +982,10 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
   const final = field?.summary?.final || {};
   const delta = field?.summary?.fieldDelta || {};
   const series = [
-    ['learnerMastery', 'mastery', '#0A0A0A'],
-    ['learnerRisk', 'risk', '#E63946'],
-    ['tutorAlignment', 'alignment', '#525252'],
-    ['jointMomentum', 'momentum', '#A1A1AA'],
+    ['learnerMastery', 'mastery', '#0A0A0A', ''],
+    ['learnerRisk', 'risk', '#E63946', '8 5'],
+    ['tutorAlignment', 'alignment', '#0057B8', '2 5'],
+    ['jointMomentum', 'momentum', '#D98E04', '12 4 2 4'],
   ];
   const gridLines = [0, 0.25, 0.5, 0.75, 1]
     .map((value) => {
@@ -975,18 +1002,20 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
     .join('\n');
   const lines = series
     .map(
-      ([key, label, color]) =>
+      ([key, label, color, dash]) =>
         `<polyline points="${fieldPolyline(rows, key, {
           width: chartWidth,
           height: chartHeight,
           padding,
-        })}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><title>${label}</title></polyline>`,
+        })}" fill="none" stroke="${color}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"${
+          dash ? ` stroke-dasharray="${dash}"` : ''
+        }><title>${label}</title></polyline>`,
     )
     .join('\n');
   const legend = series
     .map(
       ([key, label, color], index) =>
-        `<g transform="translate(${padding.left + index * 135}, ${svgHeight - 24})"><rect width="11" height="11" fill="${color}" /><text x="16" y="10" font-size="11" fill="#0A0A0A">${label}: ${escapeXml(
+        `<g transform="translate(${padding.left + index * 145}, 62)"><rect width="11" height="11" fill="${color}" stroke="#0A0A0A" /><text x="16" y="10" font-size="11" font-weight="700" fill="#0A0A0A">${label}: ${escapeXml(
           final[key] ?? 'n/a',
         )}</text></g>`,
     )
@@ -1006,6 +1035,7 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
   <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="#FAFAFA" stroke="#0A0A0A" stroke-width="1.5" />
   ${gridLines}
   ${lines}
+  ${fieldTurnAxis(rows, { width: chartWidth, height: chartHeight, padding })}
   ${fieldTurnMarkers(rows, { width: chartWidth, height: chartHeight, padding })}
   ${legend}
 </svg>`;
@@ -1327,6 +1357,16 @@ function machineSpiritsReportCss() {
       --brick:#E63946;
       --brick-d:#C1121F;
       --brick-soft:#FBE3E5;
+      --blue:#0057B8;
+      --blue-soft:#DDEBFF;
+      --yellow:#F2B705;
+      --yellow-soft:#FFF1B8;
+      --green:#009B72;
+      --green-soft:#DDF7EE;
+      --violet:#6B4EFF;
+      --violet-soft:#E8E3FF;
+      --magenta:#D72670;
+      --magenta-soft:#FFE0EE;
       --ochre:#737373;
       --ochre-d:#525252;
       --ochre-soft:#EDEDED;
@@ -1567,7 +1607,7 @@ function machineSpiritsReportCss() {
     .field-svg svg { display:block; width:100%; min-width:640px; height:auto; }
     .viz-player { overflow:hidden; }
     .viz-layout { display:grid; grid-template-columns:minmax(0,1fr) 310px; }
-    .viz-main { min-width:0; }
+    .viz-main { min-width:0; overflow:hidden; }
     .viz-sidebar { border-left:1px solid var(--rule); background:rgba(233,223,199,0.56); padding:14px; }
     .viz-sidebar h3 { margin:0 0 8px; }
     .viz-sidebar p { margin:0 0 12px; font-size:12px; }
@@ -1660,7 +1700,24 @@ function machineSpiritsReportCss() {
     .snippet-label { align-self:start; padding:2px 7px; text-transform:uppercase; letter-spacing:0.08em; font-size:10px; font-weight:700; text-align:center; }
     .snippet-label.learner { background:var(--indigo-soft); color:var(--indigo); }
     .snippet-label.tutor { background:var(--moss-soft); color:var(--moss-deep); }
+    .table-scroll {
+      max-width:100%;
+      min-width:0;
+      overflow-x:auto;
+      overflow-y:hidden;
+      padding:0 10px 10px 0;
+      margin:0 0 10px;
+    }
     table { width:100%; border-collapse:collapse; overflow:hidden; }
+    .table-scroll table {
+      margin:0;
+    }
+    .policy-comparison-table {
+      min-width:1080px;
+    }
+    .run-details-table {
+      min-width:1420px;
+    }
     th, td { padding:9px 10px; border-bottom:1px solid var(--rule); text-align:left; vertical-align:top; }
     th {
       background:rgba(233,223,199,0.82);
@@ -1672,6 +1729,27 @@ function machineSpiritsReportCss() {
     }
     tr:last-child td { border-bottom:0; }
     td strong { color:var(--ink); font-weight:600; }
+    .run-details-table th, .run-details-table td {
+      line-height:1.25;
+      overflow-wrap:anywhere;
+    }
+    .run-details-table th:nth-child(1), .run-details-table td:nth-child(1),
+    .run-details-table th:nth-child(3), .run-details-table td:nth-child(3),
+    .run-details-table th:nth-child(4), .run-details-table td:nth-child(4),
+    .run-details-table th:nth-child(6), .run-details-table td:nth-child(6),
+    .run-details-table th:nth-child(7), .run-details-table td:nth-child(7),
+    .run-details-table th:nth-child(8), .run-details-table td:nth-child(8),
+    .run-details-table th:nth-child(13), .run-details-table td:nth-child(13),
+    .run-details-table th:nth-child(14), .run-details-table td:nth-child(14),
+    .run-details-table th:nth-child(15), .run-details-table td:nth-child(15) {
+      white-space:nowrap;
+    }
+    .run-details-table th:nth-child(5), .run-details-table td:nth-child(5),
+    .run-details-table th:nth-child(9), .run-details-table td:nth-child(9),
+    .run-details-table th:nth-child(11), .run-details-table td:nth-child(11),
+    .run-details-table th:nth-child(12), .run-details-table td:nth-child(12) {
+      max-width:240px;
+    }
     .index-measure strong {
       display:block;
       color:var(--ink);
@@ -1858,6 +1936,9 @@ function machineSpiritsReportCss() {
       border:2px solid var(--ink);
       box-shadow:6px 6px 0 var(--ink);
     }
+    table {
+      box-shadow:4px 4px 0 var(--ink);
+    }
     .metric:nth-child(2n), .field-card:nth-child(3n), .learner-behavior-card, .viz-player {
       box-shadow:6px 6px 0 var(--red-mark);
     }
@@ -1913,13 +1994,18 @@ function machineSpiritsReportCss() {
       background:var(--red-mark);
       color:var(--paper);
     }
-    .field-card-head, .viz-toolbar, .toolbar, th {
+    .field-card-head, .viz-toolbar, .toolbar {
       background:
         linear-gradient(90deg, var(--ink) 0 14px, transparent 14px),
         var(--paper-2);
       border-bottom:2px solid var(--ink);
     }
-    th { border-bottom:3px solid var(--ink); }
+    th {
+      background:var(--paper-2);
+      border-bottom:3px solid var(--ink);
+      box-shadow:inset 0 6px 0 var(--ink);
+      padding-top:18px;
+    }
     th, td { border-bottom:2px solid var(--ink); }
     tr:nth-child(even) td { background:var(--paper-3); }
     .viz-sidebar { border-left:2px solid var(--ink); }
@@ -1934,6 +2020,103 @@ function machineSpiritsReportCss() {
       background:var(--paper);
       color:var(--ink);
       font-weight:700;
+    }
+    .viz-toolbar {
+      grid-template-columns:repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+      gap:14px;
+      align-items:stretch;
+      background:var(--paper);
+      border-bottom:4px solid var(--ink);
+      padding:14px;
+    }
+    .viz-toolbar label, .viz-control-group {
+      position:relative;
+      min-width:0;
+      min-height:92px;
+      padding:14px 12px 12px;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:4px 4px 0 var(--group-accent, var(--ink));
+    }
+    .viz-toolbar label::before, .viz-control-group::before {
+      content:"";
+      position:absolute;
+      top:-2px;
+      left:-2px;
+      right:-2px;
+      height:9px;
+      background:var(--group-accent, var(--ink));
+      border-bottom:2px solid var(--ink);
+    }
+    .viz-run-control { --group-accent:var(--blue); --group-label-ink:var(--paper); }
+    .viz-view-control { --group-accent:var(--red-mark); --group-label-ink:var(--paper); }
+    .viz-playback-control { --group-accent:var(--yellow); --group-label-ink:var(--ink); }
+    .viz-turn-control { --group-accent:var(--green); --group-label-ink:var(--paper); }
+    .viz-toolbar label > span:first-child, .viz-group-label {
+      align-self:flex-start;
+      margin:2px 0 2px;
+      padding:4px 8px;
+      border:2px solid var(--ink);
+      background:var(--group-accent, var(--ink));
+      color:var(--group-label-ink, var(--paper));
+      line-height:1;
+    }
+    .viz-toolbar select, .viz-toolbar input {
+      margin-top:auto;
+    }
+    .viz-mode-buttons, .viz-step-buttons {
+      gap:8px;
+    }
+    .viz-mode-buttons button {
+      flex:1 1 118px;
+      min-width:0;
+      min-height:42px;
+      border-left-width:6px;
+      border-left-color:var(--red-mark);
+      background:var(--paper);
+      box-shadow:2px 2px 0 var(--ink);
+    }
+    .viz-mode-buttons button.active {
+      background:var(--red-mark);
+      color:var(--paper);
+      box-shadow:inset 0 -5px 0 var(--ink), 2px 2px 0 var(--ink);
+    }
+    .viz-step-buttons button {
+      flex:1 1 74px;
+      min-height:42px;
+      box-shadow:2px 2px 0 var(--yellow);
+    }
+    .viz-step-buttons button[data-viz-play] {
+      background:var(--blue);
+      color:var(--paper);
+    }
+    .viz-step-buttons button[data-viz-reset] {
+      background:var(--yellow-soft);
+      color:var(--ink);
+    }
+    .viz-range-label input[type="range"] {
+      accent-color:var(--green);
+    }
+    .viz-readout-head span {
+      border:2px solid var(--ink);
+      background:var(--paper);
+      color:var(--ink);
+      box-shadow:2px 2px 0 var(--red-mark);
+    }
+    .readout-card {
+      box-shadow:none;
+      border:2px solid var(--ink);
+    }
+    .readout-style {
+      border-left:10px solid var(--style-color, var(--ink));
+    }
+    .snippet-label.learner {
+      background:var(--blue);
+      color:var(--paper);
+    }
+    .snippet-label.tutor {
+      background:var(--green);
+      color:var(--paper);
     }
     button:hover, .viz-mode-buttons button.active {
       background:var(--red-mark);
@@ -1972,6 +2155,11 @@ function machineSpiritsReportCss() {
       100% { box-shadow:0 0 0 0 rgba(230,57,70,0); }
     }
     @keyframes liveStripe { from { background-position:0 0; } to { background-position:23px 0; } }
+    @media (max-width: 1220px) {
+      .viz-toolbar {
+        grid-template-columns:repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+      }
+    }
     @media (max-width: 1100px) {
       .report-shell { grid-template-columns:1fr; gap:14px; }
       .report-section { scroll-margin-top:92px; }
@@ -2003,7 +2191,7 @@ function machineSpiritsReportCss() {
       .viz-canvas-wrap canvas { height:360px; }
       .viz-readout-grid { grid-template-columns:1fr; }
       .viz-readout-lines p { grid-template-columns:1fr; }
-      table { display:block; overflow-x:auto; }
+      .table-scroll { padding-right:6px; }
       .live-run-progress { grid-template-columns:1fr; }
     }
     @media (max-width: 560px) {
@@ -2361,8 +2549,8 @@ function renderAnimatedVizSection(rows) {
     <div class="viz-layout">
       <div class="viz-main">
         <div class="viz-toolbar">
-          <label class="viz-select-label"><span>Policy Run</span><select data-viz-run></select></label>
-          <div class="viz-control-group">
+          <label class="viz-select-label viz-run-control"><span>Policy Run</span><select data-viz-run></select></label>
+          <div class="viz-control-group viz-view-control">
             <span class="viz-group-label">View</span>
             <div class="viz-mode-buttons" role="tablist" aria-label="Visualization view">
               <button type="button" data-viz-mode="state">State Snapshot</button>
@@ -2372,7 +2560,7 @@ function renderAnimatedVizSection(rows) {
               <button type="button" data-viz-mode="registers">Register Lens</button>
             </div>
           </div>
-          <div class="viz-control-group">
+          <div class="viz-control-group viz-playback-control">
             <span class="viz-group-label">Playback</span>
             <div class="viz-step-buttons" aria-label="Turn playback controls">
               <button type="button" data-viz-prev>Prev</button>
@@ -2381,7 +2569,7 @@ function renderAnimatedVizSection(rows) {
               <button type="button" data-viz-next>Next</button>
             </div>
           </div>
-          <label class="viz-range-label"><span>Turn</span><input type="range" min="0" value="0" step="1" data-viz-range></label>
+          <label class="viz-range-label viz-turn-control"><span>Turn</span><input type="range" min="0" value="0" step="1" data-viz-range></label>
         </div>
         <div class="viz-help-strip" data-viz-help></div>
         <div class="viz-canvas-wrap"><canvas data-viz-canvas></canvas></div>
@@ -2428,23 +2616,23 @@ function renderAnimatedVizSection(rows) {
     var palette = {
       learnerMastery: '#0A0A0A',
       learnerRisk: '#E63946',
-      tutorAlignment: '#525252',
-      jointMomentum: '#A1A1AA',
-      field: '#0A0A0A',
-      dag: '#525252',
+      tutorAlignment: '#0057B8',
+      jointMomentum: '#D98E04',
+      field: '#009B72',
+      dag: '#0057B8',
       risk: '#E63946'
     };
     var registerOrder = ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic', 'ironic', 'sarcastic', 'face_threat'];
     var registerMeta = {
       plain: { label: 'Plain', group: 'clarify', color: '#0A0A0A', note: 'plain-language re-entry' },
-      precise: { label: 'Precise', group: 'warrant', color: '#525252', note: 'distinction or proof step' },
-      brisk: { label: 'Brisk', group: 'pace', color: '#A1A1AA', note: 'faster stepwise movement' },
+      precise: { label: 'Precise', group: 'warrant', color: '#0057B8', note: 'distinction or proof step' },
+      brisk: { label: 'Brisk', group: 'pace', color: '#D98E04', note: 'faster stepwise movement' },
       warm: { label: 'Warm', group: 'repair', color: '#E63946', note: 'readiness and affect repair' },
-      witnessing: { label: 'Witnessing', group: 'recognition', color: '#C1121F', note: 'acknowledge learner position' },
-      charismatic: { label: 'Charismatic', group: 'disrupt', color: '#262626', note: 'interrupt stuck low agency' },
-      ironic: { label: 'Ironic', group: 'negative/probe', color: '#8A8A8A', note: 'mismatch cue' },
+      witnessing: { label: 'Witnessing', group: 'recognition', color: '#009B72', note: 'acknowledge learner position' },
+      charismatic: { label: 'Charismatic', group: 'disrupt', color: '#6B4EFF', note: 'interrupt stuck low agency' },
+      ironic: { label: 'Ironic', group: 'negative/probe', color: '#737373', note: 'mismatch cue' },
       sarcastic: { label: 'Sarcastic', group: 'negative/probe', color: '#000000', note: 'hostile challenge probe' },
-      face_threat: { label: 'Face threat', group: 'negative/probe', color: '#E63946', note: 'status-pressure probe' }
+      face_threat: { label: 'Face threat', group: 'negative/probe', color: '#D72670', note: 'status-pressure probe' }
     };
 
     function finite(value, fallback) {
@@ -2575,6 +2763,49 @@ function renderAnimatedVizSection(rows) {
       text(valueLabel || pct(value), x + width + 8, y + 11, { color: '#525252', size: 11 });
     }
 
+    function drawPlotLegend(series, x, y, maxWidth) {
+      text('key', x, y, { color: '#0A0A0A', size: 11, weight: '700' });
+      var cursorX = x + 34;
+      var cursorY = y;
+      series.forEach(function (item) {
+        var labelWidth = ctx.measureText(item.label).width + 34;
+        if (cursorX + labelWidth > x + maxWidth && cursorX > x + 34) {
+          cursorX = x + 34;
+          cursorY += 19;
+        }
+        ctx.fillStyle = item.color;
+        ctx.fillRect(cursorX, cursorY - 10, 12, 12);
+        ctx.strokeStyle = '#0A0A0A';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(cursorX, cursorY - 10, 12, 12);
+        text(item.label, cursorX + 17, cursorY, { color: '#0A0A0A', size: 11, weight: '700' });
+        cursorX += labelWidth;
+      });
+    }
+
+    function drawTurnAxis(frames, x, y, width, height) {
+      var count = Math.max(1, frames.length - 1);
+      var baseline = y + height;
+      var tickEvery = Math.max(1, Math.ceil(frames.length / 6));
+      ctx.strokeStyle = '#0A0A0A';
+      ctx.lineWidth = 1;
+      for (var index = 0; index < frames.length; index += 1) {
+        var tx = x + (index / count) * width;
+        ctx.beginPath();
+        ctx.moveTo(tx, baseline);
+        ctx.lineTo(tx, baseline + 7);
+        ctx.stroke();
+        if (frames.length <= 8 || index === 0 || index === frames.length - 1 || index % tickEvery === 0) {
+          text(String(frames[index].turn || index + 1), tx, baseline + 21, {
+            color: '#525252',
+            size: 10,
+            align: 'center'
+          });
+        }
+      }
+      text('turns', x + width / 2, baseline + 41, { color: '#0A0A0A', size: 11, weight: '700', align: 'center' });
+    }
+
     function drawPlot(series, options) {
       var opts = options || {};
       var frames = currentFrames();
@@ -2583,7 +2814,7 @@ function renderAnimatedVizSection(rows) {
       var width = opts.width || 640;
       var height = opts.height || 240;
       var count = Math.max(1, frames.length - 1);
-      ctx.strokeStyle = '#D4D4D8';
+      ctx.strokeStyle = '#E4E4E7';
       ctx.lineWidth = 1;
       for (var grid = 0; grid <= 4; grid += 1) {
         var gy = y + height - (grid / 4) * height;
@@ -2593,25 +2824,49 @@ function renderAnimatedVizSection(rows) {
         ctx.stroke();
         text((grid / 4).toFixed(2), x - 8, gy + 4, { color: '#525252', size: 10, align: 'right' });
       }
+      text('score (0-1)', x, y - 11, { color: '#525252', size: 10, weight: '700' });
+      drawPlotLegend(series, opts.legendX || x + 138, opts.legendY || y - 33, opts.legendWidth || width - 138);
+      ctx.strokeStyle = 'rgba(10,10,10,0.08)';
+      ctx.lineWidth = 1;
+      for (var turnGrid = 0; turnGrid < frames.length; turnGrid += 1) {
+        var tx = x + (turnGrid / count) * width;
+        ctx.beginPath();
+        ctx.moveTo(tx, y);
+        ctx.lineTo(tx, y + height);
+        ctx.stroke();
+      }
       ctx.strokeStyle = '#0A0A0A';
       ctx.strokeRect(x, y, width, height);
       series.forEach(function (item, seriesIndex) {
+        var points = [];
         ctx.beginPath();
         ctx.strokeStyle = item.color;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = item.lineWidth || 3.5;
+        ctx.setLineDash(item.dash || []);
         for (var index = 0; index <= activeIndex && index < frames.length; index += 1) {
           var value = clamp01(item.value(frames[index]));
           var px = x + (index / count) * width;
           var py = y + height - value * height;
+          points.push({ x: px, y: py, active: index === activeIndex });
           if (index === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
         }
         ctx.stroke();
-        text(item.label, x + seriesIndex * 132, y + height + 28, { color: item.color, size: 12, weight: '700' });
+        ctx.setLineDash([]);
+        points.forEach(function (point) {
+          ctx.beginPath();
+          ctx.fillStyle = point.active ? item.color : '#FFFFFF';
+          ctx.strokeStyle = item.color;
+          ctx.lineWidth = point.active ? 3 : 2;
+          ctx.arc(point.x, point.y, point.active ? 5 : 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
       });
+      drawTurnAxis(frames, x, y, width, height);
       var cursorX = x + (Math.max(0, Math.min(activeIndex, count)) / count) * width;
       ctx.strokeStyle = '#E63946';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(cursorX, y);
       ctx.lineTo(cursorX, y + height);
@@ -2621,9 +2876,9 @@ function renderAnimatedVizSection(rows) {
     function drawState(frame, width, height) {
       text('State Snapshot', 28, 34, { size: 18, weight: '700' });
       var scores = (frame.state.classifier && frame.state.classifier.scores) || {};
-      rectBar('conceptual', scores.conceptual, 38, 82, width * 0.36, '#0A0A0A');
-      rectBar('readiness', scores.epistemicReadiness, 38, 126, width * 0.36, '#525252');
-      rectBar('surface', scores.learnerSurface, 38, 170, width * 0.36, '#A1A1AA');
+      rectBar('conceptual', scores.conceptual, 38, 82, width * 0.36, '#0057B8');
+      rectBar('readiness', scores.epistemicReadiness, 38, 126, width * 0.36, '#009B72');
+      rectBar('surface', scores.learnerSurface, 38, 170, width * 0.36, '#D98E04');
       rectBar('coverage', frame.state.dag.bestPathCoverage, 38, 214, width * 0.36, '#E63946');
       var rightX = width * 0.52;
       text('DAG', rightX, 82, { size: 13, weight: '700' });
@@ -2637,20 +2892,20 @@ function renderAnimatedVizSection(rows) {
     function drawField(frame, width, height) {
       text('Interaction Field', 28, 34, { size: 18, weight: '700' });
       drawPlot([
-        { label: 'mastery', color: palette.learnerMastery, value: function (row) { return row.field.learnerMastery; } },
-        { label: 'risk', color: palette.learnerRisk, value: function (row) { return row.field.learnerRisk; } },
-        { label: 'alignment', color: palette.tutorAlignment, value: function (row) { return row.field.tutorAlignment; } },
-        { label: 'momentum', color: palette.jointMomentum, value: function (row) { return row.field.jointMomentum; } }
-      ], { x: 54, y: 64, width: width - 108, height: height - 142 });
+        { label: 'mastery', color: palette.learnerMastery, lineWidth: 4, value: function (row) { return row.field.learnerMastery; } },
+        { label: 'risk', color: palette.learnerRisk, dash: [9, 5], lineWidth: 4, value: function (row) { return row.field.learnerRisk; } },
+        { label: 'alignment', color: palette.tutorAlignment, dash: [2, 5], value: function (row) { return row.field.tutorAlignment; } },
+        { label: 'momentum', color: palette.jointMomentum, dash: [12, 4, 2, 4], value: function (row) { return row.field.jointMomentum; } }
+      ], { x: 54, y: 88, width: width - 108, height: height - 178, legendX: 210, legendY: 52, legendWidth: width - 250 });
     }
 
     function drawTrajectory(frame, width, height) {
       text('Derivative Trace', 28, 34, { size: 18, weight: '700' });
       drawPlot([
-        { label: 'field', color: palette.field, value: function (row) { return row.trajectory.field.current; } },
-        { label: 'dag', color: palette.dag, value: function (row) { return row.trajectory.dag.current; } },
-        { label: 'risk', color: palette.risk, value: function (row) { return row.trajectory.risk.current; } }
-      ], { x: 54, y: 64, width: width * 0.58, height: height - 142 });
+        { label: 'field', color: palette.field, lineWidth: 4, value: function (row) { return row.trajectory.field.current; } },
+        { label: 'dag', color: palette.dag, dash: [2, 5], value: function (row) { return row.trajectory.dag.current; } },
+        { label: 'risk', color: palette.risk, dash: [9, 5], lineWidth: 4, value: function (row) { return row.trajectory.risk.current; } }
+      ], { x: 54, y: 88, width: width * 0.58, height: height - 178, legendX: 230, legendY: 52, legendWidth: width * 0.5 });
       var x = width * 0.7;
       var y = 82;
       text('velocity / slope / acceleration', x, y - 24, { color: '#0A0A0A', size: 12, weight: '700' });
@@ -2674,8 +2929,8 @@ function renderAnimatedVizSection(rows) {
         var key = entry[0];
         var value = clamp01(entry[1]);
         var yy = y + index * cellHeight;
-        var intensity = Math.round(244 - value * 62);
-        ctx.fillStyle = value > 0.66 ? 'rgba(230,57,70,' + (0.22 + value * 0.28) + ')' : 'rgb(' + intensity + ',' + intensity + ',' + intensity + ')';
+        var heatColors = ['#F4F4F5', '#DDEBFF', '#DDF7EE', '#FFF1B8', '#FFE0EE', '#FBE3E5'];
+        ctx.fillStyle = heatColors[Math.min(heatColors.length - 1, Math.floor(value * heatColors.length))];
         ctx.fillRect(x, yy, width, cellHeight - 3);
         text(key, x + 8, yy + cellHeight - 10, { color: '#0A0A0A', size: 11 });
         text(format(value), x + width - 8, yy + cellHeight - 10, { color: '#0A0A0A', size: 11, align: 'right' });
@@ -2690,7 +2945,7 @@ function renderAnimatedVizSection(rows) {
       text('attractors / derivatives', rightX, 82, { size: 13, weight: '700' });
       var bars = Object.keys(frame.dynamics.attractors || {}).length ? frame.dynamics.attractors : frame.dynamics.derivativeVector;
       Object.entries(bars || {}).slice(0, 12).forEach(function (entry, index) {
-        rectBar(entry[0], Math.abs(finite(entry[1], 0)), rightX, 116 + index * 24, width * 0.28, '#E63946');
+        rectBar(entry[0], Math.abs(finite(entry[1], 0)), rightX, 116 + index * 24, width * 0.28, index % 2 ? '#0057B8' : '#E63946');
       });
     }
 
@@ -3113,7 +3368,8 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
 
         <section id="policy-comparison" class="report-section">
           <h2>Policy Comparison</h2>
-          <table>
+          <div class="table-scroll" role="region" aria-label="Policy comparison table" tabindex="0">
+          <table class="policy-comparison-table">
       <thead><tr>
         <th>Policy</th>
         <th>${reportInfoTerm('ok', 'OK')}</th>
@@ -3129,6 +3385,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
       </tr></thead>
       <tbody>${policyRows || '<tr><td colspan="11">No policy rows.</td></tr>'}</tbody>
           </table>
+          </div>
         </section>
 
         <section id="turn-replay" class="report-section">
@@ -3143,7 +3400,8 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
 
         <section id="run-details" class="report-section">
           <h2>Run Details</h2>
-          <table>
+          <div class="table-scroll" role="region" aria-label="Run details table" tabindex="0">
+          <table class="run-details-table">
       <thead><tr>
         <th>Policy</th>
         <th>Run</th>
@@ -3163,6 +3421,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
       </tr></thead>
       <tbody>${runRows || '<tr><td colspan="15">No run rows.</td></tr>'}</tbody>
           </table>
+          </div>
         </section>
       </div>
     </div>

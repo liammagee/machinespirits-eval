@@ -7,8 +7,9 @@ allowed-tools: Bash, Read, Grep, Glob
 # Tutor Stub Eval
 
 Use this skill for `scripts/tutor-stub.js`, `scripts/run-tutor-stub-auto-eval.js`,
-`scripts/run-tutor-stub-abm-panel.js`, `scripts/analyze-tutor-stub-field-traces.js`,
-and `scripts/analyze-tutor-stub-auto-evals.js`.
+`scripts/run-tutor-stub-qa-matrix.js`, `scripts/run-tutor-stub-abm-panel.js`,
+`scripts/analyze-tutor-stub-field-traces.js`, and
+`scripts/analyze-tutor-stub-auto-evals.js`.
 Work from the repo root.
 
 ## Intake
@@ -21,6 +22,7 @@ Key choices and defaults:
 - Mode: `human`, `auto-eval`, `resume`, `abm-panel`, `analyze`, `multi-eval`; default `auto-eval` for comparisons, `human` when the user will play the learner.
 - World: default `world_005_marrick`.
 - Register policies: default comparison `negative,bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,random`; focused adaptive comparison `dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system`.
+- QA policy suite: `focused` means the seven-policy robust comparison `bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system`; `full` adds `negative` and `random` controls.
 - Trajectory policy: `--register-policy trajectory` leaves `field` unchanged and adds recent finite-difference velocity/slope/acceleration/risk-trend adjustments for benchmarking against `field`.
 - Dynamical-system policy: `--register-policy dynamical_system` maps a continuous state/derivative vector through theory priors plus within-dialogue empirical efficacy corrections; `dynamical-system` is accepted as an alias.
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
@@ -196,6 +198,41 @@ not expose `--history-turns` directly.
 ```bash
 npm run tutor:stub:abm-panel -- --summarize exports/tutor-stub-abm-panel/<run-id>
 ```
+
+## Reproducible Policy x Learner QA Matrix
+
+Use when the user wants the difference between policies to be robust across
+automated learner types, or wants a comprehensive QA environment rather than a
+single-policy/single-learner report. The runner writes `qa-plan.json` first,
+then one normal auto-eval report per learner profile, then consolidated
+`qa-matrix.md` and `qa-matrix.json` robustness reports.
+
+Dry-run the full command expansion first:
+
+```bash
+npm run tutor:stub:qa -- --suite focused --runs 1 --dry-run
+```
+
+Run the focused seven-policy QA matrix:
+
+```bash
+npm run tutor:stub:qa -- \
+  --suite focused \
+  --runs 1 \
+  --profiles diligent,answer_seeking,skeptical,overconfident,low_agency,memory_limited \
+  --turns until-grounded \
+  --safety-turns 120 \
+  --parallelism 6 \
+  --world world_005_marrick \
+  --cli-effort low \
+  --history-turns 4 \
+  --max-tokens 4096 \
+  --keep-going
+```
+
+Use `--suite full` when you also need the `negative` floor and `random` control.
+Use `--from-dir .tutor-stub-auto-eval/qa-matrix-<timestamp>` to rebuild only the
+consolidated reports from existing per-learner summaries.
 
 ## Field/State Analysis
 
