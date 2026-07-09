@@ -24,6 +24,22 @@ const DEFAULT_LEARNER_PROFILES = [
   'memory_limited',
 ];
 
+const STRESS_LEARNER_PROFILES = [
+  'premature_closure',
+  'proof_skipper',
+  'false_memory',
+  'contradiction_keeper',
+  'affective_resistant',
+  'low_trust_skeptic',
+];
+
+const PROFILE_SUITES = {
+  core: DEFAULT_LEARNER_PROFILES,
+  sentinel: ['diligent', 'proof_skipper', 'false_memory', 'affective_resistant'],
+  stress: STRESS_LEARNER_PROFILES,
+  all: [...DEFAULT_LEARNER_PROFILES, ...STRESS_LEARNER_PROFILES],
+};
+
 const POLICY_SUITES = {
   focused: ['bland', 'dynamic', 'state', 'field', 'trajectory', 'dynamical_system', 'empirical_dynamical_system'],
   adaptive: [
@@ -55,7 +71,8 @@ const POLICY_SUITES = {
 const { values: args } = parseArgs({
   options: {
     suite: { type: 'string', default: 'focused' },
-    profiles: { type: 'string', default: DEFAULT_LEARNER_PROFILES.join(',') },
+    'profile-suite': { type: 'string', default: 'core' },
+    profiles: { type: 'string', default: '' },
     policies: { type: 'string', default: '' },
     runs: { type: 'string', default: '1' },
     turns: { type: 'string', default: 'until-grounded' },
@@ -98,8 +115,10 @@ function usage() {
 Options:
   --suite <focused|adaptive|controls|full>
                          policy suite when --policies is omitted (default: focused)
+  --profile-suite <core|sentinel|stress|all>
+                         learner profile suite when --profiles is omitted (default: core)
   --profiles <csv>       automated learner profiles
-                         (default: ${DEFAULT_LEARNER_PROFILES.join(',')})
+                         overrides --profile-suite
   --policies <csv>       explicit policies; overrides --suite
   --runs <n>             repetitions per policy and learner profile (default: 1)
   --turns <n|until-grounded>
@@ -169,6 +188,13 @@ function policyList() {
 }
 
 function profileList() {
+  if (!args.profiles) {
+    const suite = normalizeProfileName(args['profile-suite'] || 'core');
+    if (!PROFILE_SUITES[suite]) {
+      throw new Error(`Unknown --profile-suite ${args['profile-suite']}. Known: ${Object.keys(PROFILE_SUITES).join(', ')}`);
+    }
+    return PROFILE_SUITES[suite];
+  }
   const profiles = csv(args.profiles).map(normalizeProfileName);
   if (!profiles.length) throw new Error('--profiles must include at least one learner profile');
   return profiles;
@@ -243,6 +269,7 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
     schema: 'machinespirits.tutor-stub.qa-matrix-plan.v1',
     generatedAt: new Date().toISOString(),
     suite: args.policies ? 'custom' : args.suite,
+    profileSuite: args.profiles ? 'custom' : normalizeProfileName(args['profile-suite'] || 'core'),
     dryRun: Boolean(args['dry-run']),
     rootDir: path.relative(ROOT, rootDir),
     profiles,

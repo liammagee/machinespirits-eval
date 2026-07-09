@@ -22,17 +22,29 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
 const AUTO_LEARNER_PROFILES = {
   diligent:
-    'A curious but fallible learner. They follow the tutor, sometimes ask for evidence, and sometimes make short partial claims.',
+    'Control learner. They are curious, concrete, and fallible: they try to integrate public evidence, make occasional partial claims, and repair when the tutor points to a missing warrant. Do not invent an artificial failure mode.',
   answer_seeking:
-    'A completion-oriented learner. They want the exact trial-book line, often ask what to write next, and may mistake copied wording for understanding.',
+    'Premature-closure and copying learner. Primary failure: they want the exact trial-book line, ask what to write next, and treat copied tutor wording as understanding. They close early unless the tutor forces one public evidence claim plus its warrant.',
   skeptical:
-    'A skeptical learner. They challenge the tutor framing, ask why a warrant counts, and resist committing until public evidence is explicit.',
+    'Low-trust warrant challenger. Primary failure: they distrust the tutor framing, ask why a warrant counts, and resist closure until the public clue and the inference rule appear in the same claim. They are not rude; they are evidentially demanding.',
   overconfident:
-    'An overconfident learner. They jump to culprit or story conclusions from weak clues and need to be pulled back to public evidence.',
+    'Culprit-jump proof-skipper. Primary failure: they leap from a salient clue to a culprit or secret, omit the intermediate warrant, and defend the leap until shown concrete counter-evidence or a missing public premise.',
   low_agency:
-    'A hesitant low-agency learner. They ask permission, avoid committing to claims, and prefer the tutor to choose unless explicitly prompted.',
+    'Permission-seeking passive learner. Primary failure: they ask the tutor to choose, avoid self-authored claims, and stall at bookkeeping. They only write a trial-book line when the tutor names the specific missing premise they should commit to.',
   memory_limited:
-    'A memory-limited learner. They mainly track the last few public clues, lose earlier evidence, and need re-grounding before inference.',
+    'Narrow-memory and false-recall learner. Primary failure: they mostly track the last two public clues, lose earlier evidence, and sometimes blend or misquote a prior clue. They accept correction only when the tutor re-grounds it in the public transcript.',
+  premature_closure:
+    'Stress profile: premature closure. They try to declare the secret as soon as any plausible clue appears, even if the evidence chain is incomplete. They need the tutor to slow them down and require the missing warrant.',
+  proof_skipper:
+    'Stress profile: proof skipper. They can identify relevant evidence but repeatedly omit the bridge from clue to conclusion. They prefer a polished trial-book sentence over explaining why the sentence is licensed.',
+  false_memory:
+    'Stress profile: false memory. They confidently import or distort an earlier clue after several turns, especially when the tutor asks them to connect evidence. They repair only when the tutor contrasts the remembered clue with the public record.',
+  contradiction_keeper:
+    'Stress profile: contradiction keeper. They preserve conflicting public clues and refuse to resolve the case until the tutor helps name what would rule each possibility in or out. They are slow but proof-safety oriented.',
+  affective_resistant:
+    'Stress profile: affectively resistant learner. They become defensive or withdraw when the tutor pressures, mocks, or over-directs. They re-engage when the tutor acknowledges uncertainty and gives a small agency-preserving step.',
+  low_trust_skeptic:
+    'Stress profile: low-trust skeptic. They assume the tutor may be smuggling the answer and challenge every unsupported inference. They will proceed only after the tutor separates public evidence, inference rule, and trial-book wording.',
 };
 
 const { values: args } = parseArgs({
@@ -1856,6 +1868,140 @@ function machineSpiritsReportCss() {
       margin:0 0 9px;
       font-size:1rem;
     }
+    .learner-infographic {
+      display:grid;
+      gap:12px;
+    }
+    .learner-dashboard-grid {
+      display:grid;
+      grid-template-columns:minmax(0,1.34fr) minmax(280px,.66fr);
+      gap:12px;
+      align-items:stretch;
+    }
+    .learner-snapshot {
+      display:grid;
+      gap:10px;
+      min-width:0;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:5px 5px 0 var(--red-mark);
+      padding:12px;
+    }
+    .learner-snapshot-head {
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      border-bottom:2px solid var(--ink);
+      padding-bottom:8px;
+    }
+    .learner-snapshot-head strong {
+      display:block;
+      color:var(--ink);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:12px;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+    }
+    .learner-snapshot-head span {
+      color:var(--ink-3);
+      font-size:12px;
+      line-height:1.25;
+    }
+    .learner-kpi-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+    .learner-kpi {
+      min-width:0;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:3px 3px 0 var(--kpi-accent, var(--ink));
+      padding:9px 10px;
+    }
+    .learner-kpi span {
+      display:block;
+      color:var(--ink-3);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:10px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+    .learner-kpi strong {
+      display:block;
+      margin-top:2px;
+      color:var(--ink);
+      font-family:"Fraunces", Georgia, serif;
+      font-size:24px;
+      line-height:1;
+      overflow-wrap:anywhere;
+    }
+    .learner-kpi em {
+      display:block;
+      margin-top:3px;
+      color:var(--ink-3);
+      font-size:11px;
+      font-style:normal;
+      line-height:1.25;
+    }
+    .learner-profile-bars {
+      display:grid;
+      gap:8px;
+    }
+    .learner-rowbar {
+      display:grid;
+      gap:7px;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      padding:8px;
+      box-shadow:3px 3px 0 var(--row-accent, var(--ink));
+    }
+    .learner-rowbar-head {
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:baseline;
+    }
+    .learner-rowbar strong {
+      color:var(--ink);
+      font-size:14px;
+      line-height:1.1;
+      overflow-wrap:anywhere;
+    }
+    .learner-rowbar-head span {
+      color:var(--ink-3);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      white-space:nowrap;
+    }
+    .learner-mini-bars {
+      display:grid;
+      gap:4px;
+    }
+    .learner-mini-bar {
+      display:grid;
+      grid-template-columns:70px minmax(0,1fr) 42px;
+      gap:7px;
+      align-items:center;
+      color:var(--ink-3);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:0.05em;
+    }
+    .learner-mini-track {
+      height:9px;
+      border:1px solid var(--ink);
+      background:var(--paper-2);
+      overflow:hidden;
+    }
+    .learner-mini-track span {
+      display:block;
+      width:var(--bar-width,0%);
+      height:100%;
+      background:var(--bar-color,var(--red-mark));
+    }
     .big-picture-read {
       margin:0;
       padding-left:18px;
@@ -1902,16 +2048,35 @@ function machineSpiritsReportCss() {
     }
     .learner-readout {
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:9px;
-      margin:0 0 12px;
+      grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+      gap:8px;
+      margin:0;
+      counter-reset:learner-note;
     }
     .learner-readout-card {
+      position:relative;
       min-width:0;
       border:2px solid var(--ink);
       background:var(--paper);
       box-shadow:3px 3px 0 var(--red-mark);
-      padding:10px 11px;
+      padding:10px 11px 10px 46px;
+    }
+    .learner-readout-card::before {
+      counter-increment:learner-note;
+      content:counter(learner-note, decimal-leading-zero);
+      position:absolute;
+      left:10px;
+      top:10px;
+      width:25px;
+      height:25px;
+      border:2px solid var(--ink);
+      background:var(--ink);
+      color:var(--paper);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:10px;
+      font-weight:800;
+      line-height:21px;
+      text-align:center;
     }
     .learner-readout-card strong {
       display:block;
@@ -2689,14 +2854,34 @@ function machineSpiritsReportCss() {
       margin:10px 0 0;
     }
     .report-index-scroll table {
-      min-width:1260px;
+      min-width:1820px;
       margin:0;
       border:0;
       box-shadow:none;
       background:var(--paper);
+      table-layout:fixed;
     }
     .report-index-table th, .report-index-table td {
+      box-sizing:border-box;
       padding:8px 10px;
+      overflow-wrap:anywhere;
+    }
+    .report-index-table th:nth-child(1), .report-index-table td:nth-child(1) { width:410px; }
+    .report-index-table th:nth-child(2), .report-index-table td:nth-child(2) { width:126px; }
+    .report-index-table th:nth-child(3), .report-index-table td:nth-child(3) { width:104px; }
+    .report-index-table th:nth-child(4), .report-index-table td:nth-child(4) { width:170px; }
+    .report-index-table th:nth-child(5), .report-index-table td:nth-child(5) { width:220px; }
+    .report-index-table th:nth-child(6), .report-index-table td:nth-child(6) { width:120px; }
+    .report-index-table th:nth-child(7), .report-index-table td:nth-child(7) { width:130px; }
+    .report-index-table th:nth-child(8), .report-index-table td:nth-child(8) { width:95px; }
+    .report-index-table th:nth-child(9), .report-index-table td:nth-child(9) { width:230px; }
+    .report-index-table th:nth-child(10), .report-index-table td:nth-child(10) { width:215px; }
+    .report-index-table td:nth-child(2),
+    .report-index-table td:nth-child(3),
+    .report-index-table td:nth-child(6),
+    .report-index-table td:nth-child(7),
+    .report-index-table td:nth-child(8) {
+      overflow-wrap:normal;
     }
     .report-index-table thead th {
       position:sticky;
@@ -2719,6 +2904,32 @@ function machineSpiritsReportCss() {
     }
     .report-index-table td {
       background:inherit;
+    }
+    .report-index-table .links-cell {
+      width:126px;
+      min-width:126px;
+      max-width:126px;
+      background:inherit;
+    }
+    .report-index-table .actions a,
+    .report-index-table .actions .muted {
+      display:inline-block;
+      margin:0 6px 6px 0;
+    }
+    .report-index-table .links-cell.actions {
+      white-space:normal;
+    }
+    .report-index-table .links-cell a,
+    .report-index-table .links-cell .muted {
+      display:block;
+      width:max-content;
+      max-width:100%;
+      margin:0 0 8px;
+      box-sizing:border-box;
+    }
+    .report-index-table .links-cell a:last-child,
+    .report-index-table .links-cell .muted:last-child {
+      margin-bottom:0;
     }
     .control span { color:var(--ink-3); font-size:11px; text-transform:uppercase; letter-spacing:0.11em; }
     input { box-sizing:border-box; }
@@ -3084,7 +3295,7 @@ function machineSpiritsReportCss() {
       .report-nav a:hover, .report-nav a:focus { border-bottom-color:var(--brick); }
     }
     @media (max-width: 900px) {
-      .summary-panel, .learner-panel, .viz-layout, .big-picture-grid, .big-picture-viz-grid { grid-template-columns:1fr; }
+      .summary-panel, .learner-panel, .viz-layout, .big-picture-grid, .big-picture-viz-grid, .learner-dashboard-grid { grid-template-columns:1fr; }
       .big-picture-head { display:block; }
       .viz-sidebar { border-left:0; border-top:1px solid var(--rule); }
       .viz-toolbar, .toolbar, .transcript-toolbar { grid-template-columns:1fr; }
@@ -5810,6 +6021,14 @@ function renderIndexCoverageCell(value) {
   </div>`;
 }
 
+function indexReportActionLinks(row) {
+  return `${
+    row.htmlHref
+      ? `<a href="${escapeHtml(row.htmlHref)}">report</a>`
+      : '<span class="muted">report</span>'
+  } <a href="${escapeHtml(row.jsonHref)}">json</a>`;
+}
+
 function renderIndexFieldSnapshotCell(row) {
   const count = Number(row.svgCount || 0);
   const label = `${count} field ${count === 1 ? 'snapshot' : 'snapshots'}`;
@@ -6327,17 +6546,94 @@ function renderIndexBigPicture({ rows, activeRuns = [], hiddenByDefault = 0 }) {
       </tr>`,
     )
     .join('\n');
-  const learnerRows = learnerStats
-    .slice(0, 6)
+  const learnerVizRows = learnerStats.slice(0, 6);
+  const learnerVizColors = ['#E63946', '#0057B8', '#009B72', '#F2B705', '#6B4EFF', '#D72670'];
+  const learnerOk = learnerVizRows.reduce((sum, row) => sum + Number(row.ok || 0), 0);
+  const learnerFailed = learnerVizRows.reduce((sum, row) => sum + Number(row.failed || 0), 0);
+  const learnerClosure = meanIndexNumbers(learnerVizRows.map((row) => row.closureRate));
+  const learnerCoverage = meanIndexNumbers(learnerVizRows.map((row) => row.meanCoverage));
+  const learnerTurns = learnerVizRows.map((row) => Number(row.meanTurns)).filter(Number.isFinite);
+  const learnerTurnRange = learnerTurns.length
+    ? `${Number(Math.min(...learnerTurns).toFixed(1))}${
+        Math.max(...learnerTurns) === Math.min(...learnerTurns)
+          ? ''
+          : `-${Number(Math.max(...learnerTurns).toFixed(1))}`
+      }`
+    : 'n/a';
+  const learnerActiveProfiles = learnerLens.activeProfiles || [];
+  const learnerKpis = [
+    {
+      label: 'Profiles',
+      value: learnerVizRows.length || learnerLens.profileCount || 0,
+      sub: learnerLens.label,
+      color: '#0057B8',
+    },
+    {
+      label: 'Closure',
+      value: formatIndexPercent(learnerClosure),
+      sub: 'mean across shown profiles',
+      color: '#009B72',
+    },
+    {
+      label: 'Coverage',
+      value: formatIndexPercent(learnerCoverage),
+      sub: 'mean evidence path',
+      color: '#E63946',
+    },
+    {
+      label: 'Turn Spread',
+      value: learnerTurnRange,
+      sub: 'lower is faster closure',
+      color: '#F2B705',
+    },
+    {
+      label: 'Rows',
+      value: `${learnerOk}/${learnerFailed}`,
+      sub: 'OK/failed in matched lens',
+      color: '#6B4EFF',
+    },
+    {
+      label: 'Live',
+      value: learnerActiveProfiles.length ? learnerActiveProfiles.join(', ') : 'none',
+      sub: learnerActiveProfiles.length ? 'slice still running' : 'no active learner slice',
+      color: '#0A0A0A',
+    },
+  ]
     .map(
-      (row) => `<tr>
-        <td><strong>${escapeHtml(row.key)}</strong></td>
-        <td class="numeric">${escapeHtml(row.reportCount)}</td>
-        <td class="numeric">${escapeHtml(row.ok)}/${escapeHtml(row.failed)}</td>
-        <td class="numeric">${escapeHtml(formatIndexPercent(row.closureRate))}</td>
-        <td class="numeric">${escapeHtml(row.meanTurns ?? 'n/a')}</td>
-        <td class="numeric">${escapeHtml(row.leakCount)}</td>
-      </tr>`,
+      (item) =>
+        `<div class="learner-kpi" style="--kpi-accent:${escapeHtml(item.color)}"><span>${escapeHtml(
+          item.label,
+        )}</span><strong>${escapeHtml(item.value)}</strong><em>${escapeHtml(item.sub)}</em></div>`,
+    )
+    .join('\n');
+  const learnerMiniBar = (label, value, color) => {
+    const bounded = clampField01(value);
+    return `<div class="learner-mini-bar"><span>${escapeHtml(label)}</span><span class="learner-mini-track"><span style="--bar-width:${Math.round(
+      bounded * 100,
+    )}%;--bar-color:${escapeHtml(color)}"></span></span><b>${Math.round(bounded * 100)}%</b></div>`;
+  };
+  const learnerProfileBars = learnerVizRows
+    .map((row, index) => {
+      const color = learnerVizColors[index % learnerVizColors.length];
+      const turnEfficiency = Number.isFinite(Number(row.meanTurns)) ? clampField01(1 - Number(row.meanTurns) / 120) : 0;
+      return `<article class="learner-rowbar" style="--row-accent:${escapeHtml(color)}">
+        <div class="learner-rowbar-head"><strong>${escapeHtml(row.key)}</strong><span>${escapeHtml(row.ok)}/${escapeHtml(
+          row.failed,
+        )} rows</span></div>
+        <div class="learner-mini-bars">
+          ${learnerMiniBar('Closure', row.closureRate, color)}
+          ${learnerMiniBar('Coverage', row.meanCoverage, '#0A0A0A')}
+          ${learnerMiniBar('Speed', turnEfficiency, '#E63946')}
+        </div>
+      </article>`;
+    })
+    .join('\n');
+  const learnerReadoutCards = indexLearnerRobustnessRead({ learnerStats, activeRuns, learnerLens })
+    .map(
+      (row) =>
+        `<article class="learner-readout-card"><strong>${escapeHtml(row.label || 'Read')}</strong><p>${escapeHtml(
+          row.text || '',
+        )}</p></article>`,
     )
     .join('\n');
   return `<section class="big-picture" id="big-picture" aria-label="Big picture summary">
@@ -6363,11 +6659,20 @@ function renderIndexBigPicture({ rows, activeRuns = [], hiddenByDefault = 0 }) {
       <div class="big-picture-panel">
         <h3>Learner Robustness</h3>
         <p class="muted">${escapeHtml(learnerLens.label)} · ${escapeHtml(learnerLens.note)}</p>
-        <div class="table-scroll" role="region" aria-label="Learner robustness table" tabindex="0">
-          <table class="big-picture-table">
-            <thead><tr><th>Learner</th><th>Reports</th><th>OK/Failed</th><th>Closure</th><th>Turns</th><th>Leaks</th></tr></thead>
-            <tbody>${learnerRows || '<tr><td colspan="6">No learner-profile rows yet.</td></tr>'}</tbody>
-          </table>
+        <div class="learner-infographic">
+          <div class="learner-dashboard-grid">
+            <div class="viz-frame">
+              <div class="learner-profile-bars">${learnerProfileBars || '<span class="muted">No learner-profile rows yet.</span>'}</div>
+              <div class="viz-caption"><span>Each learner bar shows closure, evidence coverage, and speed as normalized rates.</span><span>Use the dynamic index for the full scatter map when JavaScript is available.</span></div>
+            </div>
+            <div class="learner-snapshot">
+              <div class="learner-snapshot-head"><div><strong>Learner Snapshot</strong><span>${escapeHtml(
+                learnerLens.note,
+              )}</span></div></div>
+              <div class="learner-kpi-grid">${learnerKpis}</div>
+            </div>
+          </div>
+          <div class="learner-readout">${learnerReadoutCards}</div>
         </div>
       </div>
     </div>
@@ -6646,6 +6951,9 @@ function tutorStubIndexClientJs() {
     var body = row.svgHref ? '<a href="' + esc(row.svgHref) + '">' + esc(label) + '</a>' : esc(label);
     return '<div class="index-measure"><strong>' + body + '</strong><em>' + (count ? 'static SVG exports for inspection' : 'no exported field artifacts') + '</em></div>';
   }
+  function reportActionLinks(row) {
+    return (row.htmlHref ? '<a href="' + esc(row.htmlHref) + '">report</a>' : '<span class="muted">report</span>') + ' <a href="' + esc(row.jsonHref) + '">json</a>';
+  }
   function optionHtml(values) {
     return (values || []).map(function (value) { return '<option value="' + esc(value) + '">' + esc(value) + '</option>'; }).join('');
   }
@@ -6747,10 +7055,50 @@ function tutorStubIndexClientJs() {
     }).join('');
     return '<div class="viz-frame"><svg viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="Learner robustness map"><rect x="0" y="0" width="' + width + '" height="' + height + '" fill="#FFFFFF"/><rect x="' + left + '" y="' + top + '" width="' + chartW + '" height="' + chartH + '" fill="#FAFAFA" stroke="#0A0A0A" stroke-width="2"/>' + grid + '<text x="' + (left + chartW / 2) + '" y="' + (height - 16) + '" text-anchor="middle" font-size="12" font-weight="700" fill="#0A0A0A">closure rate</text><text transform="translate(22 ' + (top + chartH / 2) + ') rotate(-90)" text-anchor="middle" font-size="12" font-weight="700" fill="#0A0A0A">turn efficiency</text>' + pointSvg + '</svg><div class="viz-caption"><span>x = closure; y = faster completion; bubble = completed rows; color separates learner profiles.</span><span>Projection data also includes z = composite signal for later 3D/WebGL views.</span></div></div>';
   }
-  function renderLearnerCards(rows) {
+  function meanValue(values) {
+    var finite = values.map(Number).filter(Number.isFinite);
+    if (!finite.length) return null;
+    return finite.reduce(function (sum, value) { return sum + value; }, 0) / finite.length;
+  }
+  function rangeLabel(values, formatter) {
+    var finite = values.map(Number).filter(Number.isFinite);
+    if (!finite.length) return 'n/a';
+    var min = Math.min.apply(Math, finite);
+    var max = Math.max.apply(Math, finite);
+    if (Math.abs(max - min) < 0.0001) return formatter(min);
+    return formatter(min) + '-' + formatter(max);
+  }
+  function renderLearnerKpis(model) {
+    var rows = model.learnerStats || [];
+    var lens = model.learnerLens || {};
+    var ok = rows.reduce(function (sum, row) { return sum + Number(row.ok || 0); }, 0);
+    var failed = rows.reduce(function (sum, row) { return sum + Number(row.failed || 0); }, 0);
+    var closure = meanValue(rows.map(function (row) { return row.closureRate; }));
+    var coverage = meanValue(rows.map(function (row) { return row.meanCoverage; }));
+    var turnRange = rangeLabel(rows.map(function (row) { return row.meanTurns; }), function (value) { return Number(value.toFixed(1)); });
+    var activeProfiles = lens.activeProfiles && lens.activeProfiles.length ? lens.activeProfiles : [];
+    var cards = [
+      ['Profiles', rows.length || (lens.profileCount || 0), esc(lens.label || 'learner lens'), '#0057B8'],
+      ['Closure', closure == null ? 'n/a' : pct(closure), 'mean across shown profiles', '#009B72'],
+      ['Coverage', coverage == null ? 'n/a' : pct(coverage), 'mean evidence path', '#E63946'],
+      ['Turn Spread', turnRange, 'lower is faster closure', '#F2B705'],
+      ['Rows', ok + '/' + failed, 'OK/failed in matched lens', '#6B4EFF'],
+      ['Live', activeProfiles.length ? activeProfiles.join(', ') : 'none', activeProfiles.length ? 'slice still running' : 'no active learner slice', '#0A0A0A']
+    ];
+    return '<div class="learner-snapshot"><div class="learner-snapshot-head"><div><strong>Learner Snapshot</strong><span>' + esc(lens.note || 'Matched learner-profile lens.') + '</span></div></div><div class="learner-kpi-grid">' + cards.map(function (card) {
+      return '<div class="learner-kpi" style="--kpi-accent:' + esc(card[3]) + '"><span>' + esc(card[0]) + '</span><strong>' + esc(card[1]) + '</strong><em>' + esc(card[2]) + '</em></div>';
+    }).join('') + '</div></div>';
+  }
+  function learnerMiniBar(label, value, color) {
+    var bounded = clamp01(value);
+    return '<div class="learner-mini-bar"><span>' + esc(label) + '</span><span class="learner-mini-track"><span style="--bar-width:' + Math.round(bounded * 100) + '%;--bar-color:' + esc(color) + '"></span></span><b>' + Math.round(bounded * 100) + '%</b></div>';
+  }
+  function renderLearnerBars(rows) {
     if (!rows || !rows.length) return '<div class="muted">No learner profile rows yet.</div>';
-    return '<div class="learner-card-grid">' + rows.map(function (row, index) {
-      return '<article class="learner-card" style="--card-accent:' + esc(vizColor(index)) + '"><strong>' + esc(row.key) + '</strong><dl><div><dt>Reports</dt><dd>' + esc(row.reportCount) + '</dd></div><div><dt>OK/Failed</dt><dd>' + esc(row.ok) + '/' + esc(row.failed) + '</dd></div><div><dt>Closure</dt><dd>' + esc(pct(row.closureRate)) + '</dd></div><div><dt>Turns</dt><dd>' + esc(row.meanTurns == null ? 'n/a' : turnLabel(row.meanTurns)) + '</dd></div><div><dt>Leaks</dt><dd>' + esc(row.leakCount) + '</dd></div><div><dt>Signal</dt><dd>' + esc(measure(row.signalScore)) + '</dd></div></dl></article>';
+    return '<div class="learner-profile-bars">' + rows.map(function (row, index) {
+      var color = vizColor(index);
+      var turnEfficiency = Number.isFinite(Number(row.meanTurns)) ? clamp01(1 - Number(row.meanTurns) / 120) : 0;
+      return '<article class="learner-rowbar" style="--row-accent:' + esc(color) + '"><div class="learner-rowbar-head"><strong>' + esc(row.key) + '</strong><span>' + esc(row.ok) + '/' + esc(row.failed) + ' rows</span></div><div class="learner-mini-bars">' + learnerMiniBar('Closure', row.closureRate, color) + learnerMiniBar('Coverage', row.meanCoverage, '#0A0A0A') + learnerMiniBar('Speed', turnEfficiency, '#E63946') + '</div></article>';
     }).join('') + '</div>';
   }
   function renderLearnerReadout(model) {
@@ -6761,7 +7109,7 @@ function tutorStubIndexClientJs() {
     }).join('') + '</div>';
   }
   function renderLearnerRobustness(model) {
-    return renderLearnerReadout(model) + '<div class="big-picture-viz-grid"><div>' + renderLearnerMap(model) + '</div><div>' + renderLearnerCards(model.learnerStats || []) + '</div></div>';
+    return '<div class="learner-infographic"><div class="learner-dashboard-grid"><div>' + renderLearnerMap(model) + '</div><div>' + renderLearnerKpis(model) + '</div></div><div class="big-picture-viz-grid"><div>' + renderLearnerBars(model.learnerStats || []) + '</div><div>' + renderLearnerReadout(model) + '</div></div></div>';
   }
   function renderPolicySignal(model) {
     var rows = model.policyStats || [];
@@ -6780,14 +7128,15 @@ function tutorStubIndexClientJs() {
   }
   function reportRow(row) {
     var scope = row.reportScope || {};
-    return '<tr data-search="' + esc(row.searchText) + '" data-status="' + esc(row.status) + '" data-learner="' + esc(row.learnerProfile || '') + '" data-policies="' + esc((row.policies || []).join('|')) + '" data-policy-text="' + esc(row.policyText || '') + '" data-world="' + esc(row.world || '') + '" data-completed-ms="' + esc(row.completedMs || 0) + '" data-report-name="' + esc(row.reportName || '') + '" data-report-scope="' + esc(scope.kind || 'standalone') + '" data-run-kind="' + esc(row.runKind || 'real') + '" data-grounded-rate="' + esc(row.groundedRate == null ? '' : row.groundedRate) + '" data-turns="' + esc(row.meanTurns == null ? '' : row.meanTurns) + '" data-coverage="' + esc(row.meanCoverage == null ? '' : row.meanCoverage) + '" data-rows="' + esc(row.rows || 0) + '" data-ok="' + esc(row.ok || 0) + '" data-failed="' + esc(row.failed || 0) + '" data-svgs="' + esc(row.svgCount || 0) + '"><td><div><strong>' + esc(shortDate(row.completedAt) || row.reportName) + '</strong> ' + scopeBadge(scope) + '</div><div class="muted">' + esc(row.reportName) + '</div><div class="muted">' + esc(row.world || '') + ' · ' + esc(indexRunKindLabel(row.runKind || 'real')) + '</div>' + scopeNote(scope) + '</td><td><span class="status ' + esc(row.status) + '">' + esc(row.status) + '</span></td><td>' + policyChips(row.policies) + '</td><td><div>' + esc(row.learnerProfile || '') + '</div><div class="muted">' + esc(row.autoLearnerModel || '') + '</div></td><td>' + esc(row.ok) + '/' + esc(row.failed) + (row.dryRun ? ' · ' + esc(row.dryRun) + ' dry' : '') + '</td><td>' + esc(row.grounded) + '/' + esc(row.ok) + ' · ' + Math.round(Number(row.groundedRate || 0) * 100) + '%</td><td>' + esc(row.meanTurns) + '</td><td>' + coverageCell(row.meanCoverage) + '</td><td>' + fieldSnapshotCell(row) + '</td><td class="actions">' + (row.htmlHref ? '<a href="' + esc(row.htmlHref) + '">report</a>' : '<span class="muted">report</span>') + ' <a href="' + esc(row.jsonHref) + '">json</a></td></tr>';
+    var links = reportActionLinks(row);
+    return '<tr data-search="' + esc(row.searchText) + '" data-status="' + esc(row.status) + '" data-learner="' + esc(row.learnerProfile || '') + '" data-policies="' + esc((row.policies || []).join('|')) + '" data-policy-text="' + esc(row.policyText || '') + '" data-world="' + esc(row.world || '') + '" data-completed-ms="' + esc(row.completedMs || 0) + '" data-report-name="' + esc(row.reportName || '') + '" data-report-scope="' + esc(scope.kind || 'standalone') + '" data-run-kind="' + esc(row.runKind || 'real') + '" data-grounded-rate="' + esc(row.groundedRate == null ? '' : row.groundedRate) + '" data-turns="' + esc(row.meanTurns == null ? '' : row.meanTurns) + '" data-coverage="' + esc(row.meanCoverage == null ? '' : row.meanCoverage) + '" data-rows="' + esc(row.rows || 0) + '" data-ok="' + esc(row.ok || 0) + '" data-failed="' + esc(row.failed || 0) + '" data-svgs="' + esc(row.svgCount || 0) + '"><td><div><strong>' + esc(shortDate(row.completedAt) || row.reportName) + '</strong> ' + scopeBadge(scope) + '</div><div class="muted">' + esc(row.reportName) + '</div><div class="muted">' + esc(row.world || '') + ' · ' + esc(indexRunKindLabel(row.runKind || 'real')) + '</div>' + scopeNote(scope) + '</td><td class="actions links-cell">' + links + '</td><td><span class="status ' + esc(row.status) + '">' + esc(row.status) + '</span></td><td>' + policyChips(row.policies) + '</td><td><div>' + esc(row.learnerProfile || '') + '</div><div class="muted">' + esc(row.autoLearnerModel || '') + '</div></td><td>' + esc(row.ok) + '/' + esc(row.failed) + (row.dryRun ? ' · ' + esc(row.dryRun) + ' dry' : '') + '</td><td>' + esc(row.grounded) + '/' + esc(row.ok) + ' · ' + Math.round(Number(row.groundedRate || 0) * 100) + '%</td><td>' + esc(row.meanTurns) + '</td><td>' + coverageCell(row.meanCoverage) + '</td><td>' + fieldSnapshotCell(row) + '</td></tr>';
   }
   function render(data) {
     state.data = data;
     var totals = data.totals || {};
     var groundedRate = totals.ok ? Number((Number(totals.grounded || 0) / Number(totals.ok || 1)).toFixed(3)) : 0;
     var options = data.options || {};
-    app.innerHTML = '<header><h1>Tutor Stub Reports</h1><div class="muted">Generated ' + esc(shortDate(data.generatedAt)) + ' · root ' + esc(data.rootLabel || '.') + ' · <a href="' + esc(data.guideHref || 'docs/tutor-stub-arc-guide.html') + '">arc guide</a></div></header><main>' + renderLiveRuns(data.activeRuns || []) + renderBigPicture(data.bigPicture) + '<section class="metrics">' + htmlMetric('Reports', totals.reports || 0, (totals.htmlReports || 0) + ' with HTML · ' + (totals.totalReports || 0) + ' total') + htmlMetric('Rows', Number(totals.ok || 0) + Number(totals.failed || 0) + Number(totals.dryRun || 0), (totals.failed || 0) + ' failed · ' + (totals.hiddenByDefault || 0) + ' hidden by default') + htmlMetric('Grounded', (totals.grounded || 0) + '/' + (totals.ok || 0), Math.round(groundedRate * 100) + '% closure') + htmlMetric(infoTerm('Field Snapshots', "Static SVG exports written beside reports for inspecting each row's interaction-field visualization. They are report artifacts, not scored rows."), totals.svgs || 0, 'static visualization exports') + htmlMetric('Active', (data.activeRuns || []).length, 'running or stale') + '</section><section class="report-list" id="report-list"><div class="report-list-head"><div><h2>Report List</h2><p>Filtered report rows. The table body scrolls inside this framed surface; the header stays visible while rows move underneath.</p></div></div><div class="toolbar"><label class="control"><span>Search</span><input data-filter placeholder="Search reports, policies, learner, model" aria-label="Search reports"></label><label class="control"><span>Run Set</span><select data-scope-filter aria-label="Choose which reports to include"><option value="real" selected>Real runs</option><option value="all">Everything</option></select></label><label class="control"><span>From</span><input type="date" data-date-from aria-label="Filter from completed date"></label><label class="control"><span>To</span><input type="date" data-date-to aria-label="Filter to completed date"></label><label class="control"><span>Status</span><select data-status-filter aria-label="Filter by status"><option value="">All</option>' + optionHtml(options.status) + '</select></label><label class="control"><span>Learner</span><select data-learner-filter aria-label="Filter by learner"><option value="">All</option>' + optionHtml(options.learner) + '</select></label><label class="control"><span>Policy</span><select data-policy-filter aria-label="Filter by policy"><option value="">All</option>' + optionHtml(options.policy) + '</select></label><label class="control"><span>World</span><select data-world-filter aria-label="Filter by world"><option value="">All</option>' + optionHtml(options.world) + '</select></label><label class="control"><span>Sort</span><select data-sort-key aria-label="Sort reports"><option value="date">Date</option><option value="status">Status</option><option value="learner">Learner</option><option value="policy">Policy</option><option value="grounded">Grounded</option><option value="coverage">Evidence Path</option><option value="turns">Turns</option><option value="rows">Rows</option><option value="failed">Failed</option><option value="svgs">Field Snapshots</option><option value="report">Report</option></select></label><label class="control"><span>Direction</span><select data-sort-dir aria-label="Sort direction"><option value="desc">Desc</option><option value="asc">Asc</option></select></label><button type="button" data-reset>Reset</button><span class="muted" data-count>0 shown</span></div><div class="table-scroll report-index-scroll" role="region" aria-label="Report table" tabindex="0"><table class="report-index-table"><thead><tr><th>Completed</th><th>' + infoTerm('Status', 'Run-level technical status: ok has no failed rows, failed has one or more failed rows, dry_run is configuration-only output.') + '</th><th>Policies</th><th>Learner</th><th>' + infoTerm('OK/Failed', 'OK rows completed without a technical failure. Failed rows are generation, resume, or evaluation failures.') + '</th><th>' + infoTerm('Grounded', 'Rows where the learner reached grounded asserted-secret closure, shown as grounded over OK rows plus percentage.') + '</th><th>' + infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.') + '</th><th>' + infoTerm('Evidence Path', 'Mean learner-DAG best-path coverage: how much of the target evidence path is grounded, shown as a percentage with the raw 0 to 1 coverage score underneath.') + '</th><th>' + infoTerm('Field Snapshots', 'Count of static SVG exports emitted beside the report for inspecting per-row interaction-field visualizations. This is an artifact count, not an evaluation score.') + '</th><th>Links</th></tr></thead><tbody>' + ((data.rows || []).map(reportRow).join('\n') || '<tr><td colspan="10">No reports found.</td></tr>') + '</tbody></table></div></section></main>';
+    app.innerHTML = '<header><h1>Tutor Stub Reports</h1><div class="muted">Generated ' + esc(shortDate(data.generatedAt)) + ' · root ' + esc(data.rootLabel || '.') + ' · <a href="' + esc(data.guideHref || 'docs/tutor-stub-arc-guide.html') + '">arc guide</a></div></header><main>' + renderLiveRuns(data.activeRuns || []) + renderBigPicture(data.bigPicture) + '<section class="metrics">' + htmlMetric('Reports', totals.reports || 0, (totals.htmlReports || 0) + ' with HTML · ' + (totals.totalReports || 0) + ' total') + htmlMetric('Rows', Number(totals.ok || 0) + Number(totals.failed || 0) + Number(totals.dryRun || 0), (totals.failed || 0) + ' failed · ' + (totals.hiddenByDefault || 0) + ' hidden by default') + htmlMetric('Grounded', (totals.grounded || 0) + '/' + (totals.ok || 0), Math.round(groundedRate * 100) + '% closure') + htmlMetric(infoTerm('Field Snapshots', "Static SVG exports written beside reports for inspecting each row's interaction-field visualization. They are report artifacts, not scored rows."), totals.svgs || 0, 'static visualization exports') + htmlMetric('Active', (data.activeRuns || []).length, 'running or stale') + '</section><section class="report-list" id="report-list"><div class="report-list-head"><div><h2>Report List</h2><p>Filtered report rows. The table body scrolls inside this framed surface; the header stays visible while rows move underneath.</p></div></div><div class="toolbar"><label class="control"><span>Search</span><input data-filter placeholder="Search reports, policies, learner, model" aria-label="Search reports"></label><label class="control"><span>Run Set</span><select data-scope-filter aria-label="Choose which reports to include"><option value="real" selected>Real runs</option><option value="all">Everything</option></select></label><label class="control"><span>From</span><input type="date" data-date-from aria-label="Filter from completed date"></label><label class="control"><span>To</span><input type="date" data-date-to aria-label="Filter to completed date"></label><label class="control"><span>Status</span><select data-status-filter aria-label="Filter by status"><option value="">All</option>' + optionHtml(options.status) + '</select></label><label class="control"><span>Learner</span><select data-learner-filter aria-label="Filter by learner"><option value="">All</option>' + optionHtml(options.learner) + '</select></label><label class="control"><span>Policy</span><select data-policy-filter aria-label="Filter by policy"><option value="">All</option>' + optionHtml(options.policy) + '</select></label><label class="control"><span>World</span><select data-world-filter aria-label="Filter by world"><option value="">All</option>' + optionHtml(options.world) + '</select></label><label class="control"><span>Sort</span><select data-sort-key aria-label="Sort reports"><option value="date">Date</option><option value="status">Status</option><option value="learner">Learner</option><option value="policy">Policy</option><option value="grounded">Grounded</option><option value="coverage">Evidence Path</option><option value="turns">Turns</option><option value="rows">Rows</option><option value="failed">Failed</option><option value="svgs">Field Snapshots</option><option value="report">Report</option></select></label><label class="control"><span>Direction</span><select data-sort-dir aria-label="Sort direction"><option value="desc">Desc</option><option value="asc">Asc</option></select></label><button type="button" data-reset>Reset</button><span class="muted" data-count>0 shown</span></div><div class="table-scroll report-index-scroll" role="region" aria-label="Report table" tabindex="0"><table class="report-index-table"><thead><tr><th>Completed</th><th class="links-cell">Links</th><th>' + infoTerm('Status', 'Run-level technical status: ok has no failed rows, failed has one or more failed rows, dry_run is configuration-only output.') + '</th><th>Policies</th><th>Learner</th><th>' + infoTerm('OK/Failed', 'OK rows completed without a technical failure. Failed rows are generation, resume, or evaluation failures.') + '</th><th>' + infoTerm('Grounded', 'Rows where the learner reached grounded asserted-secret closure, shown as grounded over OK rows plus percentage.') + '</th><th>' + infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.') + '</th><th>' + infoTerm('Evidence Path', 'Mean learner-DAG best-path coverage: how much of the target evidence path is grounded, shown as a percentage with the raw 0 to 1 coverage score underneath.') + '</th><th>' + infoTerm('Field Snapshots', 'Count of static SVG exports emitted beside the report for inspecting per-row interaction-field visualizations. This is an artifact count, not an evaluation score.') + '</th></tr></thead><tbody>' + ((data.rows || []).map(reportRow).join('\n') || '<tr><td colspan="10">No reports found.</td></tr>') + '</tbody></table></div></section></main>';
     bindControls();
     if (window.location.hash) {
       var anchor = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
@@ -6958,6 +7307,7 @@ function _renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
           <div class="muted">${escapeHtml(row.reportName)}</div>
           <div class="muted">${escapeHtml(row.world || '')} · ${escapeHtml(indexRunKindLabel(row.runKind || 'real'))}</div>
         </td>
+        <td class="actions links-cell">${indexReportActionLinks(row)}</td>
         <td><span class="status ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span></td>
         <td>${policyChips(row.policies)}</td>
         <td>
@@ -6969,10 +7319,6 @@ function _renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
         <td>${escapeHtml(row.meanTurns)}</td>
         <td>${renderIndexCoverageCell(row.meanCoverage)}</td>
         <td>${renderIndexFieldSnapshotCell(row)}</td>
-        <td class="actions">
-          ${row.htmlHref ? `<a href="${escapeHtml(row.htmlHref)}">report</a>` : '<span class="muted">report</span>'}
-          <a href="${escapeHtml(row.jsonHref)}">json</a>
-        </td>
       </tr>`,
     )
     .join('\n');
@@ -7084,9 +7430,11 @@ function _renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
       <button type="button" data-reset>Reset</button>
       <span class="muted" data-count>${defaultRows.length} shown</span>
     </div>
-    <table>
+    <div class="table-scroll report-index-scroll" role="region" aria-label="Report table" tabindex="0">
+    <table class="report-index-table">
       <thead><tr>
         <th>Completed</th>
+        <th class="links-cell">Links</th>
         <th>${infoTerm('Status', 'Run-level technical status: ok has no failed rows, failed has one or more failed rows, dry_run is configuration-only output.')}</th>
         <th>Policies</th>
         <th>Learner</th>
@@ -7095,10 +7443,10 @@ function _renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
         <th>${infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.')}</th>
         <th>${infoTerm('Evidence Path', 'Mean learner-DAG best-path coverage: how much of the target evidence path is grounded, shown as a percentage with the raw 0 to 1 coverage score underneath.')}</th>
         <th>${infoTerm('Field Snapshots', 'Count of static SVG exports emitted beside the report for inspecting per-row interaction-field visualizations. This is an artifact count, not an evaluation score.')}</th>
-        <th>Links</th>
       </tr></thead>
       <tbody>${reportRows || '<tr><td colspan="10">No reports found.</td></tr>'}</tbody>
     </table>
+    </div>
   </main>
   <script>
     const input = document.querySelector('[data-filter]');

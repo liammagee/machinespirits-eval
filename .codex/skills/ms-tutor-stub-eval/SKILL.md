@@ -28,7 +28,7 @@ Key choices and defaults:
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep a nearest `selected_register` for compatibility while passing a weighted `register_vector`/style blend to the tutor; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
-- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited`, or list presets with `--list-learner-profiles`.
+- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
 - Runs: default `3` for baseline comparisons, `5` for focused policy comparisons, `1` for ABM panels.
 - Models: default tutor `codex.gpt-5.5`, analysis/classifier/DAG `codex.gpt-5.5`, automated learner `codex.gpt-5.5`.
 - Parallelism: default `8` for `auto-eval`; ABM panel is currently serial.
@@ -234,8 +234,31 @@ npm run tutor:stub:qa -- \
 Use `--suite adaptive` or `--suite full` to include `continuous_dynamical_system`
 and `continuous_empirical_dynamical_system`. Use `--suite full` when you also
 need the `negative` floor and `random` control.
+Use `--profile-suite sentinel` for a cheaper profile screen (`diligent`,
+`proof_skipper`, `false_memory`, `affective_resistant`) and `--profile-suite
+stress` for only the sharper failure-mode profiles. Explicit `--profiles`
+overrides the profile suite.
 Use `--from-dir .tutor-stub-auto-eval/qa-matrix-<timestamp>` to rebuild only the
 consolidated reports from existing per-learner summaries.
+
+## Profile Discrimination From Compacted Traces
+
+Use this after a sentinel/stress pilot to test whether learner profiles produce
+separable behavior. The analyzer reads full JSONL once, emits compacted
+behavior-only traces, then computes profile-pair cosine similarity from
+classifier labels, scalar scores, DAG counters, and register-field state.
+
+```bash
+npm run analyze:tutor-stub-profile-discrimination -- \
+  --trace-root .tutor-stub-auto-eval/<qa-or-profile-screen-run> \
+  --write-compacted .tutor-stub-auto-eval/<qa-or-profile-screen-run>/compacted-traces \
+  --out .tutor-stub-auto-eval/<qa-or-profile-screen-run>/profile-discrimination.md
+```
+
+Use `--json` for a machine-readable report. A useful initial gate is average
+pairwise cosine `< 0.85` and max similarity to `diligent < 0.90`; if the gate
+fails, the profile prompts are probably not yet differentiated enough to justify
+larger runs.
 
 ## Field/State Analysis
 

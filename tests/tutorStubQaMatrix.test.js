@@ -164,6 +164,45 @@ test('qa matrix runner prints a reproducible focused-suite plan', () => {
   assert.ok(plan.jobs[0].command.includes('diligent'));
 });
 
+test('qa matrix runner expands sentinel learner profile suite', () => {
+  const plan = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-qa-matrix.js',
+        '--print-plan',
+        '--json',
+        '--suite',
+        'controls',
+        '--profile-suite',
+        'sentinel',
+        '--runs',
+        '1',
+        '--trace-dir',
+        '.tutor-stub-auto-eval/test-qa-plan-sentinel',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    ),
+  );
+
+  assert.equal(plan.profileSuite, 'sentinel');
+  assert.deepEqual(plan.profiles, ['diligent', 'proof_skipper', 'false_memory', 'affective_resistant']);
+  assert.deepEqual(plan.policies, ['negative', 'bland', 'random']);
+  assert.equal(plan.expectedDialogueRows, 12);
+  assert.ok(plan.jobs.some((job) => job.command.includes('proof_skipper')));
+});
+
+test('auto-eval lists stress learner profiles', () => {
+  const output = execFileSync(process.execPath, ['scripts/run-tutor-stub-auto-eval.js', '--list-learner-profiles'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+
+  assert.match(output, /proof_skipper:/);
+  assert.match(output, /false_memory:/);
+  assert.match(output, /affective_resistant:/);
+});
+
 test('qa matrix adaptive suite includes continuous register policies', () => {
   const plan = JSON.parse(
     execFileSync(
