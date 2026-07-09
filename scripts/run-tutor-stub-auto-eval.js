@@ -1900,6 +1900,33 @@ function machineSpiritsReportCss() {
       font-size:11px;
       line-height:1.35;
     }
+    .learner-readout {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:9px;
+      margin:0 0 12px;
+    }
+    .learner-readout-card {
+      min-width:0;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:3px 3px 0 var(--red-mark);
+      padding:10px 11px;
+    }
+    .learner-readout-card strong {
+      display:block;
+      color:var(--ink);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+    .learner-readout-card p {
+      margin:5px 0 0;
+      color:var(--ink-2);
+      font-size:12px;
+      line-height:1.35;
+    }
     .learner-card-grid {
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));
@@ -5931,6 +5958,98 @@ function recentIndexReportRows(rows, { limit = 12 } = {}) {
   return rows.filter((row) => row.runKind === 'real' && Number(row.ok || 0) > 0).slice(0, limit);
 }
 
+function indexReportTime(row = {}) {
+  const parsed = Date.parse(row.completedAt || row.startedAt || '');
+  if (Number.isFinite(parsed)) return parsed;
+  const numeric = Number(row.completedMs || 0);
+  return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function indexLatestReportByLearner(reportRows) {
+  const byLearner = new Map();
+  for (const row of reportRows) {
+    const learner = row.learnerProfile || row.reportScope?.profile || 'default';
+    if (!learner) continue;
+    const existing = byLearner.get(learner);
+    if (!existing || indexReportTime(row) > indexReportTime(existing)) {
+      byLearner.set(learner, row);
+    }
+  }
+  return [...byLearner.values()].sort((left, right) =>
+    String(left.learnerProfile || left.reportScope?.profile || '').localeCompare(
+      String(right.learnerProfile || right.reportScope?.profile || ''),
+    ),
+  );
+}
+
+function indexLearnerLensReports(rows, { activeRuns = [] } = {}) {
+  const realReports = rows.filter((row) => row.runKind === 'real' && Number(row.ok || 0) > 0);
+  const activeMatrixIds = new Set(
+    activeRuns
+      .map((run) => run.reportScope?.matrixId)
+      .filter(Boolean),
+  );
+  const matrixGroups = new Map();
+  for (const row of realReports) {
+    const scope = row.reportScope || {};
+    if (scope.kind !== 'qa_matrix_child' || !scope.matrixId) continue;
+    if (!matrixGroups.has(scope.matrixId)) matrixGroups.set(scope.matrixId, []);
+    matrixGroups.get(scope.matrixId).push(row);
+  }
+  const cohorts = [...matrixGroups.entries()]
+    .map(([matrixId, groupRows]) => {
+      const reports = indexLatestReportByLearner(groupRows);
+      const activeProfiles = new Set(
+        activeRuns
+          .filter((run) => run.reportScope?.matrixId === matrixId)
+          .map((run) => run.learnerProfile || run.reportScope?.profile)
+          .filter(Boolean),
+      );
+      return {
+        kind: 'qa_matrix_matched',
+        matrixId,
+        reports,
+        profileCount: reports.length,
+        rowCount: reports.reduce((sum, row) => sum + Number(row.ok || 0), 0),
+        completedMs: Math.max(...reports.map(indexReportTime), 0),
+        active: activeMatrixIds.has(matrixId),
+        activeProfiles: [...activeProfiles],
+      };
+    })
+    .filter((cohort) => cohort.profileCount >= 2)
+    .sort(
+      (left, right) =>
+        Number(right.active) - Number(left.active) ||
+        right.completedMs - left.completedMs ||
+        right.profileCount - left.profileCount ||
+        right.rowCount - left.rowCount,
+    );
+  const selected = cohorts[0];
+  if (selected) {
+    const selectedNames = new Set(selected.reports.map((row) => row.reportName).filter(Boolean));
+    return {
+      ...selected,
+      label: `${selected.active ? 'current' : 'latest'} matched QA cohort`,
+      note: `One latest report per learner profile from ${selected.matrixId}.`,
+      omittedReportCount: realReports.filter((row) => !selectedNames.has(row.reportName)).length,
+    };
+  }
+  const reports = recentIndexReportRows(rows);
+  return {
+    kind: 'recent_reports',
+    matrixId: '',
+    label: 'recent real reports',
+    note: 'No comparable QA-matrix learner cohort was available, so this falls back to the recent real-report lens.',
+    reports,
+    profileCount: new Set(reports.map((row) => row.learnerProfile || 'default')).size,
+    rowCount: reports.reduce((sum, row) => sum + Number(row.ok || 0), 0),
+    completedMs: Math.max(...reports.map(indexReportTime), 0),
+    active: false,
+    activeProfiles: [],
+    omittedReportCount: 0,
+  };
+}
+
 function expandIndexDetailRows(reportRows) {
   return reportRows.flatMap((report) =>
     (report.detailRows || []).map((row) => ({
@@ -6014,7 +6133,7 @@ function aggregateIndexDetailRows(rows, keyFn) {
   });
 }
 
-function indexBigPictureBullets({ stats, policyStats, learnerStats, reports }) {
+function indexBigPictureBullets({ stats, policyStats, learnerStats, reports, learnerLens = null }) {
   if (!reports.length)
     return ['No completed real reports are available yet. Run or rebuild a report to populate the dashboard.'];
   const bullets = [];
@@ -6042,10 +6161,13 @@ function indexBigPictureBullets({ stats, policyStats, learnerStats, reports }) {
       .filter((row) => Number.isFinite(Number(row.meanTurns)))
       .slice()
       .sort((left, right) => Number(right.meanTurns) - Number(left.meanTurns))[0];
+    const lensLabel = learnerLens?.kind === 'qa_matrix_matched' ? ` in the ${learnerLens.label}` : '';
     bullets.push(
       `Learner robustness is being checked across ${learnerStats.length} profile${
         learnerStats.length === 1 ? '' : 's'
-      }; ${slowest ? `${slowest.key} is currently the slowest at ${slowest.meanTurns} mean turns.` : 'turn counts are not yet comparable.'}`,
+      }${lensLabel}; ${
+        slowest ? `${slowest.key} is currently the slowest at ${slowest.meanTurns} mean turns.` : 'turn counts are not yet comparable.'
+      }`,
     );
   }
   if (stats.leakCount > 0) {
@@ -6065,17 +6187,120 @@ function indexBigPictureBullets({ stats, policyStats, learnerStats, reports }) {
   return bullets;
 }
 
+function indexLearnerRobustnessRead({ learnerStats, activeRuns = [], learnerLens = null }) {
+  const rows = learnerStats.slice(0, 6);
+  if (!rows.length) {
+    return [
+      {
+        label: 'No Data',
+        text: 'No learner-profile rows are available yet.',
+      },
+    ];
+  }
+  const comparable = rows.filter((row) => Number.isFinite(Number(row.closureRate)) && Number.isFinite(Number(row.meanTurns)));
+  const strong = comparable.filter((row) => Number(row.closureRate) >= 0.95 && Number(row.meanCoverage || 0) >= 0.95);
+  const turns = strong.map((row) => Number(row.meanTurns)).filter(Number.isFinite);
+  const minTurns = turns.length ? Math.min(...turns) : null;
+  const maxTurns = turns.length ? Math.max(...turns) : null;
+  const weaker = comparable.filter((row) => Number(row.closureRate) < 0.95 || Number(row.meanCoverage || 0) < 0.95);
+  const reportCounts = rows.map((row) => Number(row.reportCount || 0)).filter(Number.isFinite);
+  const minReports = reportCounts.length ? Math.min(...reportCounts) : null;
+  const maxReports = reportCounts.length ? Math.max(...reportCounts) : null;
+  const notes = [
+    learnerLens?.kind === 'qa_matrix_matched'
+      ? {
+          label: 'Matched Lens',
+          text: `${learnerLens.label}: ${learnerLens.note} ${learnerLens.omittedReportCount} older or non-matching real report${
+            learnerLens.omittedReportCount === 1 ? ' is' : 's are'
+          } excluded from this learner-profile comparison.`,
+        }
+      : {
+          label: 'Lens',
+          text: learnerLens?.note || 'Learner rows are read from the same recent-report lens as the overall summary.',
+        },
+    {
+      label: 'How To Read',
+      text: 'Right means more closed proof-state. Up means fewer turns because the y-axis is turn efficiency. Larger bubbles mean more completed OK rows.',
+    },
+  ];
+  const closureValues = comparable.map((row) => Number(row.closureRate)).filter(Number.isFinite);
+  const coverageValues = comparable.map((row) => Number(row.meanCoverage)).filter(Number.isFinite);
+  const allTurns = comparable.map((row) => Number(row.meanTurns)).filter(Number.isFinite);
+  const closureSpread = closureValues.length ? Math.max(...closureValues) - Math.min(...closureValues) : null;
+  const coverageSpread = coverageValues.length ? Math.max(...coverageValues) - Math.min(...coverageValues) : null;
+  const turnSpread = allTurns.length ? Math.max(...allTurns) - Math.min(...allTurns) : null;
+  if (strong.length >= Math.max(2, rows.length - 1)) {
+    notes.push({
+      label: 'Main Pattern',
+      text: `${strong.length}/${rows.length} profiles cluster at high closure and full evidence coverage${
+        minTurns !== null && maxTurns !== null ? `, with about ${minTurns.toFixed(1)}-${maxTurns.toFixed(1)} turns` : ''
+      }. That reads as high learner robustness, not strong learner separation.`,
+    });
+  } else {
+    notes.push({
+      label: 'Main Pattern',
+      text: `${strong.length}/${rows.length} profiles are currently in the high-closure/full-coverage region. The learner profile effect is not flat yet.`,
+    });
+  }
+  if (
+    rows.length > 1 &&
+    closureSpread !== null &&
+    coverageSpread !== null &&
+    turnSpread !== null &&
+    closureSpread <= 0.02 &&
+    coverageSpread <= 0.02 &&
+    turnSpread <= 2
+  ) {
+    notes.push({
+      label: 'Differentiation',
+      text: `Closure, evidence coverage, and turn counts are nearly flat in this matched lens. The current profiles are not drawing a strong learner-separation signal here; read cost, leaks, and policy deltas before scaling profile sweeps.`,
+    });
+  }
+  if (weaker.length) {
+    const weakerNames = weaker.map((row) => row.key).join(', ');
+    const lensName = learnerLens?.label || 'learner lens';
+    notes.push({
+      label: 'Caution',
+      text: `${weakerNames} ${weaker.length === 1 ? 'sits' : 'sit'} outside the main cluster in this ${lensName}. Treat that as provisional when report counts differ or a QA slice is still running.`,
+    });
+  } else if (minReports !== null && maxReports !== null && minReports !== maxReports) {
+    notes.push({
+      label: 'Caution',
+      text: `Report counts vary from ${minReports} to ${maxReports}, so small differences should not be read as stable learner-profile effects yet.`,
+    });
+  }
+  const activeLearners = activeRuns.map((run) => run.learnerProfile).filter(Boolean);
+  if (activeLearners.length) {
+    const sameMatrixActive =
+      learnerLens?.matrixId &&
+      activeRuns.some((run) => run.reportScope?.matrixId === learnerLens.matrixId && run.status !== 'completed');
+    notes.push({
+      label: 'Live Run',
+      text: `${[...new Set(activeLearners)].join(', ')} still has an active slice${
+        sameMatrixActive ? ` in ${learnerLens.matrixId}` : ''
+      }; refresh after completion before treating this as final.`,
+    });
+  }
+  notes.push({
+    label: 'Where To Look',
+    text: 'If closure and coverage are flat, the remaining differences are mostly turn cost, leaks, and policy/register behavior rather than basic learner reachability.',
+  });
+  return notes;
+}
+
 function renderIndexBigPicture({ rows, activeRuns = [], hiddenByDefault = 0 }) {
   const reports = recentIndexReportRows(rows);
   const detailRows = expandIndexDetailRows(reports);
   const stats = summarizeIndexDetailRows(detailRows);
+  const learnerLens = indexLearnerLensReports(rows, { activeRuns });
+  const learnerDetailRows = expandIndexDetailRows(learnerLens.reports);
   const policyStats = aggregateIndexDetailRows(detailRows, (row) => row.policy).sort(
     (left, right) => right.signalScore - left.signalScore || compareReportPolicies(left.key, right.key),
   );
-  const learnerStats = aggregateIndexDetailRows(detailRows, (row) => row.learnerProfile).sort(
+  const learnerStats = aggregateIndexDetailRows(learnerDetailRows, (row) => row.learnerProfile).sort(
     (left, right) => right.closureRate - left.closureRate || Number(left.meanTurns || 0) - Number(right.meanTurns || 0),
   );
-  const bullets = indexBigPictureBullets({ stats, policyStats, learnerStats, reports });
+  const bullets = indexBigPictureBullets({ stats, policyStats, learnerStats, reports, learnerLens });
   const cautions = [
     hiddenByDefault
       ? `${hiddenByDefault} dry/smoke report${hiddenByDefault === 1 ? '' : 's'} are hidden from this lens by default.`
@@ -6137,6 +6362,7 @@ function renderIndexBigPicture({ rows, activeRuns = [], hiddenByDefault = 0 }) {
       </div>
       <div class="big-picture-panel">
         <h3>Learner Robustness</h3>
+        <p class="muted">${escapeHtml(learnerLens.label)} · ${escapeHtml(learnerLens.note)}</p>
         <div class="table-scroll" role="region" aria-label="Learner robustness table" tabindex="0">
           <table class="big-picture-table">
             <thead><tr><th>Learner</th><th>Reports</th><th>OK/Failed</th><th>Closure</th><th>Turns</th><th>Leaks</th></tr></thead>
@@ -6167,13 +6393,15 @@ function indexBigPictureModel({ rows, activeRuns = [], hiddenByDefault = 0 }) {
   const reports = recentIndexReportRows(rows);
   const detailRows = expandIndexDetailRows(reports);
   const stats = summarizeIndexDetailRows(detailRows);
+  const learnerLens = indexLearnerLensReports(rows, { activeRuns });
+  const learnerDetailRows = expandIndexDetailRows(learnerLens.reports);
   const policyStats = aggregateIndexDetailRows(detailRows, (row) => row.policy).sort(
     (left, right) => right.signalScore - left.signalScore || compareReportPolicies(left.key, right.key),
   );
-  const learnerStats = aggregateIndexDetailRows(detailRows, (row) => row.learnerProfile).sort(
+  const learnerStats = aggregateIndexDetailRows(learnerDetailRows, (row) => row.learnerProfile).sort(
     (left, right) => right.closureRate - left.closureRate || Number(left.meanTurns || 0) - Number(right.meanTurns || 0),
   );
-  const bullets = indexBigPictureBullets({ stats, policyStats, learnerStats, reports });
+  const bullets = indexBigPictureBullets({ stats, policyStats, learnerStats, reports, learnerLens });
   const cautions = [
     hiddenByDefault
       ? `${hiddenByDefault} dry/smoke report${hiddenByDefault === 1 ? '' : 's'} are hidden from this lens by default.`
@@ -6189,6 +6417,18 @@ function indexBigPictureModel({ rows, activeRuns = [], hiddenByDefault = 0 }) {
     reportCount: reports.length,
     bullets,
     cautions,
+    learnerLens: {
+      kind: learnerLens.kind,
+      matrixId: learnerLens.matrixId,
+      label: learnerLens.label,
+      note: learnerLens.note,
+      profileCount: learnerLens.profileCount,
+      rowCount: learnerLens.rowCount,
+      omittedReportCount: learnerLens.omittedReportCount,
+      active: learnerLens.active,
+      activeProfiles: learnerLens.activeProfiles,
+    },
+    learnerReadout: indexLearnerRobustnessRead({ learnerStats, activeRuns, learnerLens }),
     policyStats: policyStats.slice(0, 7),
     learnerStats: learnerStats.slice(0, 6),
     projections: {
@@ -6513,8 +6753,15 @@ function tutorStubIndexClientJs() {
       return '<article class="learner-card" style="--card-accent:' + esc(vizColor(index)) + '"><strong>' + esc(row.key) + '</strong><dl><div><dt>Reports</dt><dd>' + esc(row.reportCount) + '</dd></div><div><dt>OK/Failed</dt><dd>' + esc(row.ok) + '/' + esc(row.failed) + '</dd></div><div><dt>Closure</dt><dd>' + esc(pct(row.closureRate)) + '</dd></div><div><dt>Turns</dt><dd>' + esc(row.meanTurns == null ? 'n/a' : turnLabel(row.meanTurns)) + '</dd></div><div><dt>Leaks</dt><dd>' + esc(row.leakCount) + '</dd></div><div><dt>Signal</dt><dd>' + esc(measure(row.signalScore)) + '</dd></div></dl></article>';
     }).join('') + '</div>';
   }
+  function renderLearnerReadout(model) {
+    var rows = model.learnerReadout || [];
+    if (!rows.length) return '';
+    return '<div class="learner-readout">' + rows.map(function (row) {
+      return '<article class="learner-readout-card"><strong>' + esc(row.label || 'Read') + '</strong><p>' + esc(row.text || '') + '</p></article>';
+    }).join('') + '</div>';
+  }
   function renderLearnerRobustness(model) {
-    return '<div class="big-picture-viz-grid"><div>' + renderLearnerMap(model) + '</div><div>' + renderLearnerCards(model.learnerStats || []) + '</div></div>';
+    return renderLearnerReadout(model) + '<div class="big-picture-viz-grid"><div>' + renderLearnerMap(model) + '</div><div>' + renderLearnerCards(model.learnerStats || []) + '</div></div>';
   }
   function renderPolicySignal(model) {
     var rows = model.policyStats || [];
