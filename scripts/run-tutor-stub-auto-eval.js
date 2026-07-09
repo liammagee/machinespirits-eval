@@ -44,7 +44,8 @@ const { values: args } = parseArgs({
     'analysis-model': { type: 'string', default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || 'codex.gpt-5.5' },
     'auto-learner-model': {
       type: 'string',
-      default: process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL || process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.5',
+      default:
+        process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL || process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.5',
     },
     'auto-learner-profile': {
       type: 'string',
@@ -151,7 +152,10 @@ function csv(value) {
 }
 
 function normalizePolicyName(value) {
-  return String(value || '').trim().toLowerCase().replace(/-/gu, '_');
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/-/gu, '_');
 }
 
 function policyCsv(value) {
@@ -160,7 +164,9 @@ function policyCsv(value) {
 
 function assertSupportedModelRefs(refs) {
   for (const [label, ref] of Object.entries(refs)) {
-    const normalized = String(ref || '').trim().toLowerCase();
+    const normalized = String(ref || '')
+      .trim()
+      .toLowerCase();
     if (UNSUPPORTED_CODEX_MINI_REFS.has(normalized)) {
       throw new Error(
         `${label}=${ref} is not supported by the local Codex CLI ChatGPT-account route. ` +
@@ -171,7 +177,10 @@ function assertSupportedModelRefs(refs) {
 }
 
 function normalizeLearnerProfileId(value) {
-  return String(value || 'diligent').trim().toLowerCase().replace(/-/gu, '_');
+  return String(value || 'diligent')
+    .trim()
+    .toLowerCase()
+    .replace(/-/gu, '_');
 }
 
 function resolvedAutoLearnerProfileId() {
@@ -380,6 +389,24 @@ function formatSignedField(value) {
   return `${numeric >= 0 ? '+' : ''}${numeric}`;
 }
 
+function formatPositiveField(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 'n/a';
+  return numeric.toFixed(3);
+}
+
+function displayBottleneck(value, { groundedClosure = false } = {}) {
+  const raw = String(value || '').trim();
+  if (groundedClosure || raw === 'grounded_asserted_secret') return 'closed';
+  if (!raw) return 'open';
+  return raw;
+}
+
+function displayStopReason(value) {
+  if (value === 'auto_grounded_closure') return 'grounded closure';
+  return value || 'no stop reason';
+}
+
 function escapeXml(value) {
   return String(value ?? '')
     .replace(/&/gu, '&amp;')
@@ -410,22 +437,18 @@ function lightweightFieldTurn(turn, previous = null) {
   const coverage = clampField01(Number(assessment.bestPathCoverage || 0));
   const grounded = clampField01(Number(metrics.groundedCount || 0) / 8);
   const missing = clampField01(Number(metrics.missingPremiseCount || 0) / 8);
-  const overreach =
-    /overconfident|answer_seeking|overleaps_evidence|unsupported|resistant/iu.test(
-      [
-        turnAnalysis.epistemic_stance,
-        turnAnalysis.evidence_use,
-        assessment.bottleneck,
-        priorEfficacy?.label,
-      ]
-        .filter(Boolean)
-        .join(' '),
-    )
-      ? 0.25
-      : 0;
+  const overreach = /overconfident|answer_seeking|overleaps_evidence|unsupported|resistant/iu.test(
+    [turnAnalysis.epistemic_stance, turnAnalysis.evidence_use, assessment.bottleneck, priorEfficacy?.label]
+      .filter(Boolean)
+      .join(' '),
+  )
+    ? 0.25
+    : 0;
   const responseWords = wordsInText(turn?.tutor);
   const brevity = clampField01(1 - Math.max(0, responseWords - 95) / 130);
-  const registerConfidence = Number.isFinite(Number(register.confidence)) ? clampField01(Number(register.confidence)) : 0.5;
+  const registerConfidence = Number.isFinite(Number(register.confidence))
+    ? clampField01(Number(register.confidence))
+    : 0.5;
   const efficacyScore = priorEfficacy ? clampField01((Number(priorEfficacy.progressScore || 0) + 4) / 8) : 0.5;
 
   const learnerMastery = roundField(0.34 * conceptual + 0.26 * readiness + 0.3 * coverage + 0.1 * grounded);
@@ -438,7 +461,7 @@ function lightweightFieldTurn(turn, previous = null) {
       0.42 * Math.max(0, fieldDelta(learnerMastery, previous?.learnerMastery)) +
         0.28 * Math.max(0, fieldDelta(coverage, previous?.coverage)) +
         0.18 * efficacyScore +
-        0.12 * (turn?.tutorDag?.leavesReleased || 0) / Math.max(1, turn?.tutorDag?.leavesTotal || 1),
+        (0.12 * (turn?.tutorDag?.leavesReleased || 0)) / Math.max(1, turn?.tutorDag?.leavesTotal || 1),
     ),
   );
 
@@ -517,7 +540,9 @@ function normalizedField01(value, fallback = 0) {
 }
 
 function textSnippet(value, maxLength = 180) {
-  const text = String(value || '').replace(/\s+/gu, ' ').trim();
+  const text = String(value || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
   if (text.length <= maxLength) return text;
   return `${text.slice(0, Math.max(0, maxLength - 1)).trim()}...`;
 }
@@ -558,7 +583,9 @@ function compactRegisterDistribution(selection = {}) {
   if (distribution.length) {
     return {
       source: 'policy_distribution',
-      rows: distribution.sort((a, b) => Number(b.probability || 0) - Number(a.probability || 0) || a.register.localeCompare(b.register)),
+      rows: distribution.sort(
+        (a, b) => Number(b.probability || 0) - Number(a.probability || 0) || a.register.localeCompare(b.register),
+      ),
     };
   }
   const selected = String(selection.selected_register || '').trim();
@@ -707,7 +734,9 @@ function approximateDynamicalStateVector({ turn, fieldRow, trajectory, selection
   const metrics = turn?.tutorLearnerDagModel?.metrics || {};
   const flags = trajectory?.flags || {};
   const coverage = normalizedField01(assessment.bestPathCoverage ?? fieldRow.coverage, 0);
-  const missingNeed = clampField01(Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? fieldRow.missingCount ?? 0) / 8);
+  const missingNeed = clampField01(
+    Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? fieldRow.missingCount ?? 0) / 8,
+  );
   const unsupportedNeed = clampField01(Number(assessment.unsupportedAssertionCount || 0) / 3);
   const conceptual = normalizedField01(fieldRow.conceptual, 0.5);
   const readiness = normalizedField01(fieldRow.readiness, 0.5);
@@ -715,7 +744,8 @@ function approximateDynamicalStateVector({ turn, fieldRow, trajectory, selection
   const alignment = normalizedField01(fieldRow.tutorAlignment, 0.5);
   const momentum = normalizedField01(fieldRow.jointMomentum, 0);
   const selectedProbability = numberOrNull(selection?.selected_probability);
-  const negativeValence = selection?.valence === 'negative' || ['ironic', 'sarcastic', 'face_threat'].includes(selection?.selected_register);
+  const negativeValence =
+    selection?.valence === 'negative' || ['ironic', 'sarcastic', 'face_threat'].includes(selection?.selected_register);
   return {
     evidence_gap: roundField(clampField01((1 - coverage) * 0.58 + missingNeed * 0.32 + (1 - conceptual) * 0.1)),
     warrant_gap: roundField(
@@ -729,15 +759,31 @@ function approximateDynamicalStateVector({ turn, fieldRow, trajectory, selection
     agency_deficit: roundField(clampField01(1 - readiness + (selection?.action_family === 'answer_supply' ? 0.2 : 0))),
     affective_risk: roundField(risk),
     recognition_pressure: roundField(clampField01((1 - alignment) * 0.45 + risk * 0.3 + (negativeValence ? 0.25 : 0))),
-    coercion_risk: roundField(clampField01((negativeValence ? 0.35 : 0) + (flags.coerciveProgress ? 0.35 : 0) + risk * 0.2)),
-    integration_need: roundField(clampField01(1 - conceptual + (assessment.bottleneck === 'learner_integration_gap' ? 0.25 : 0))),
+    coercion_risk: roundField(
+      clampField01((negativeValence ? 0.35 : 0) + (flags.coerciveProgress ? 0.35 : 0) + risk * 0.2),
+    ),
+    integration_need: roundField(
+      clampField01(1 - conceptual + (assessment.bottleneck === 'learner_integration_gap' ? 0.25 : 0)),
+    ),
     compression_need: roundField(clampField01((1 - conceptual) * 0.45 + (1 - readiness) * 0.25 + missingNeed * 0.3)),
     momentum: roundField(momentum),
     stagnation: roundField(clampField01((flags.plateau ? 0.55 : 0) + (Number(fieldRow.speed || 0) < 0.035 ? 0.18 : 0))),
-    disruption_need: roundField(clampField01((flags.plateau ? 0.5 : 0) + (flags.fieldRegression ? 0.25 : 0) + (1 - readiness) * 0.2)),
-    tempo_affordance: roundField(clampField01(momentum * (1 - risk) + (selection?.request_type === 'transfer_demand_or_named_material' ? 0.12 : 0))),
-    closure_pressure: roundField(clampField01(coverage * 0.65 + (assessment.finalSecretEntailed ? 0.25 : 0) + (assessment.assertedSecret ? 0.2 : 0))),
-    field_regression: roundField(clampField01((flags.fieldRegression ? 0.65 : 0) + Math.max(0, -(Number(trajectory?.field?.velocity || 0))) * 3)),
+    disruption_need: roundField(
+      clampField01((flags.plateau ? 0.5 : 0) + (flags.fieldRegression ? 0.25 : 0) + (1 - readiness) * 0.2),
+    ),
+    tempo_affordance: roundField(
+      clampField01(
+        momentum * (1 - risk) + (selection?.request_type === 'transfer_demand_or_named_material' ? 0.12 : 0),
+      ),
+    ),
+    closure_pressure: roundField(
+      clampField01(
+        coverage * 0.65 + (assessment.finalSecretEntailed ? 0.25 : 0) + (assessment.assertedSecret ? 0.2 : 0),
+      ),
+    ),
+    field_regression: roundField(
+      clampField01((flags.fieldRegression ? 0.65 : 0) + Math.max(0, -Number(trajectory?.field?.velocity || 0)) * 3),
+    ),
     empirical_uncertainty: roundField(selectedProbability === null ? 0.8 : clampField01(1 - selectedProbability)),
   };
 }
@@ -760,7 +806,10 @@ function compactFrameState({ turn, fieldRow, selection }) {
   const metrics = model.metrics || {};
   const assessment = model.assessment || {};
   const policyFeatures =
-    selection?.state_policy?.features || selection?.field_policy?.features || selection?.trajectory_policy?.features || selection?.dynamical_system_policy?.features;
+    selection?.state_policy?.features ||
+    selection?.field_policy?.features ||
+    selection?.trajectory_policy?.features ||
+    selection?.dynamical_system_policy?.features;
   const classifier = {
     ...classifierStateFeatures(turn, fieldRow),
     ...(policyFeatures
@@ -780,7 +829,9 @@ function compactFrameState({ turn, fieldRow, selection }) {
     dag: {
       bottleneck: assessment.bottleneck || 'unknown',
       bestPathCoverage: roundOptionalField(assessment.bestPathCoverage ?? fieldRow.coverage),
-      missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? fieldRow.missingCount ?? 0),
+      missingPremiseCount: Number(
+        metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? fieldRow.missingCount ?? 0,
+      ),
       groundedCount: Number(metrics.groundedCount ?? fieldRow.groundedCount ?? 0),
       voicedDerivedCount: Number(metrics.voicedDerivedCount || 0),
       unsupportedAssertionCount: Number(assessment.unsupportedAssertionCount || 0),
@@ -795,21 +846,23 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
   const fieldRow = fieldRows[index] || lightweightFieldTurn(turn, fieldRows[index - 1] || null);
   const selection = turn?.registerSelection || {};
   const fallbackTrajectory = reconstructedTrajectoryFromFieldRows(fieldRows, index);
-  const policyTrajectory = selection.dynamical_system_policy?.trajectory || selection.trajectory_policy?.trajectory || null;
+  const policyTrajectory =
+    selection.dynamical_system_policy?.trajectory || selection.trajectory_policy?.trajectory || null;
   const trajectory = compactTrajectory(policyTrajectory, fallbackTrajectory);
-  const stateVector = selection.dynamical_system_policy?.state_vector || approximateDynamicalStateVector({ turn, fieldRow, trajectory, selection });
-  const derivativeVector =
-    selection.dynamical_system_policy?.derivative_vector || {
-      field_velocity: trajectory.field.velocity,
-      field_slope: trajectory.field.slope,
-      field_acceleration: trajectory.field.acceleration,
-      dag_velocity: trajectory.dag.velocity,
-      dag_slope: trajectory.dag.slope,
-      dag_acceleration: trajectory.dag.acceleration,
-      risk_velocity: trajectory.risk.velocity,
-      risk_slope: trajectory.risk.slope,
-      risk_acceleration: trajectory.risk.acceleration,
-    };
+  const stateVector =
+    selection.dynamical_system_policy?.state_vector ||
+    approximateDynamicalStateVector({ turn, fieldRow, trajectory, selection });
+  const derivativeVector = selection.dynamical_system_policy?.derivative_vector || {
+    field_velocity: trajectory.field.velocity,
+    field_slope: trajectory.field.slope,
+    field_acceleration: trajectory.field.acceleration,
+    dag_velocity: trajectory.dag.velocity,
+    dag_slope: trajectory.dag.slope,
+    dag_acceleration: trajectory.dag.acceleration,
+    risk_velocity: trajectory.risk.velocity,
+    risk_slope: trajectory.risk.slope,
+    risk_acceleration: trajectory.risk.acceleration,
+  };
   const distribution = compactRegisterDistribution(selection);
   return {
     schema: 'machinespirits.tutor-stub.animated-viz-frame.v1',
@@ -892,10 +945,98 @@ function buildAnimatedRunVisualization(turnRecords = [], fieldViz = null) {
   };
 }
 
+function compactTranscriptTurn({ turn, index, fieldRows }) {
+  const fieldRow = fieldRows[index] || lightweightFieldTurn(turn, fieldRows[index - 1] || null);
+  const selection = turn?.registerSelection || {};
+  const fallbackTrajectory = reconstructedTrajectoryFromFieldRows(fieldRows, index);
+  const policyTrajectory =
+    selection.dynamical_system_policy?.trajectory || selection.trajectory_policy?.trajectory || null;
+  const trajectory = compactTrajectory(policyTrajectory, fallbackTrajectory);
+  const state = compactFrameState({ turn, fieldRow, selection });
+  const analysis = turn?.classification?.turn || {};
+  const efficacy = turn?.previousRegisterEfficacy || null;
+  const leakAudit = turn?.tutorLeakAudit || null;
+  return {
+    schema: 'machinespirits.tutor-stub.transcript-turn.v1',
+    turn: turn?.turn ?? index + 1,
+    learner: String(turn?.learner || ''),
+    tutor: String(turn?.tutor || ''),
+    excerpts: {
+      learner: textSnippet(turn?.learner, 260),
+      tutor: textSnippet(turn?.tutor, 260),
+    },
+    register: {
+      policy: selection.policy || null,
+      selected: selection.selected_register || null,
+      mode: selection.selected_mode || null,
+      actionFamily: selection.action_family || null,
+      valence: selection.valence || null,
+      probability: roundOptionalField(selection.selected_probability ?? selection.confidence),
+      reason: textSnippet(selection.register_reason, 360),
+      evidenceSpan: textSnippet(selection.evidence_span, 260),
+      expectedDagMove: textSnippet(selection.expected_dag_move, 260),
+      expectedFieldMove: textSnippet(selection.expected_field_move, 260),
+      riskFlags: Array.isArray(selection.risk_flags) ? selection.risk_flags.slice(0, 8) : [],
+    },
+    learnerState: {
+      summary: textSnippet(analysis.summary, 320),
+      requestType: state.classifier.requestType || analysis.request_type || 'unknown',
+      discourseMove: state.classifier.discourseMove || analysis.discourse_move || 'unknown',
+      evidenceUse: state.classifier.evidenceUse || analysis.evidence_use || 'unknown',
+      epistemicStance: state.classifier.epistemicStance || analysis.epistemic_stance || 'unknown',
+      agency: state.classifier.agency || analysis.agency || 'unknown',
+      affect: state.classifier.affect || analysis.affect || 'unknown',
+      scores: state.classifier.scores || {},
+    },
+    dag: state.dag,
+    field: {
+      learnerMastery: fieldRow.learnerMastery,
+      learnerRisk: fieldRow.learnerRisk,
+      tutorAlignment: fieldRow.tutorAlignment,
+      jointMomentum: fieldRow.jointMomentum,
+      coverage: fieldRow.coverage,
+      speed: fieldRow.speed,
+      bottleneck: fieldRow.bottleneck,
+      learnerMove: fieldRow.learnerMove,
+    },
+    trajectory: {
+      source: trajectory.source,
+      fieldVelocity: roundOptionalField(trajectory.field?.velocity),
+      dagVelocity: roundOptionalField(trajectory.dag?.velocity),
+      riskVelocity: roundOptionalField(trajectory.risk?.velocity),
+      flags: trajectory.flags || {},
+    },
+    events: frameEvents({ turn, fieldRow, trajectory, selection }),
+    response: {
+      repaired: Boolean(turn?.tutorResponseRepaired),
+      deterministicFallback: Boolean(turn?.tutorDeterministicFallback),
+      leakOk: leakAudit ? leakAudit.ok !== false : null,
+      leaks: Array.isArray(leakAudit?.leaks) ? leakAudit.leaks.map((leak) => textSnippet(leak, 160)).slice(0, 5) : [],
+      efficacyLabel: efficacy?.label || null,
+      efficacyProgressScore: roundOptionalField(efficacy?.progressScore),
+    },
+  };
+}
+
+function buildTranscriptDrilldown(turnRecords = [], fieldViz = null) {
+  const fieldRows = fieldViz?.rows?.length ? fieldViz.rows : buildLightweightDialogueField(turnRecords).rows;
+  const turns = turnRecords.map((turn, index) => compactTranscriptTurn({ turn, index, fieldRows }));
+  if (!turns.length) return null;
+  return {
+    schema: 'machinespirits.tutor-stub.transcript-drilldown.v1',
+    turnCount: turns.length,
+    turns,
+  };
+}
+
 function summarizeLearnerBehavior(turnRecords = []) {
   const analyses = turnRecords.map((turn) => turn?.classification?.turn || null).filter(Boolean);
-  const conceptualScores = analyses.map((turn) => numericScore(turn.scores?.conceptual_engagement)).filter((value) => value !== null);
-  const readinessScores = analyses.map((turn) => numericScore(turn.scores?.epistemic_readiness)).filter((value) => value !== null);
+  const conceptualScores = analyses
+    .map((turn) => numericScore(turn.scores?.conceptual_engagement))
+    .filter((value) => value !== null);
+  const readinessScores = analyses
+    .map((turn) => numericScore(turn.scores?.epistemic_readiness))
+    .filter((value) => value !== null);
   const learnerWords = turnRecords.map((turn) => wordsInText(turn?.learner)).filter((value) => value > 0);
   const firstTurn = turnRecords[0] || {};
   const finalTurn = turnRecords.at(-1) || {};
@@ -937,7 +1078,9 @@ function fieldTurnMarkers(rows, { width, height, padding }) {
   return rows
     .map((row, index) => {
       const x = padding.left + (index / xSpan) * width;
-      const label = escapeXml(`${row.turn}: ${row.learnerMove} / ${row.register || 'no-register'} / ${row.bottleneck}`);
+      const label = escapeXml(
+        `${row.turn}: ${row.learnerMove} / ${row.register || 'no-register'} / ${displayBottleneck(row.bottleneck)}`,
+      );
       return `<circle cx="${x.toFixed(1)}" cy="${(padding.top + height + 9).toFixed(
         1,
       )}" r="2.5" fill="#0A0A0A"><title>${label}</title></circle>`;
@@ -1020,9 +1163,10 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
         )}</text></g>`,
     )
     .join('\n');
-  const deltaText = `delta M ${formatSignedField(delta.learnerMastery)} | R ${formatSignedField(
-    delta.learnerRisk,
-  )} | A ${formatSignedField(delta.tutorAlignment)} | P ${formatSignedField(delta.jointMomentum)}`;
+  const riskReduction = Number.isFinite(Number(delta.learnerRisk)) ? -Number(delta.learnerRisk) : Number.NaN;
+  const deltaText = `mastery gain ${formatSignedField(delta.learnerMastery)} | risk reduction ${formatPositiveField(
+    riskReduction,
+  )} | alignment change ${formatSignedField(delta.tutorAlignment)} | momentum change ${formatSignedField(delta.jointMomentum)}`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" role="img">
   <title>${escapeXml(title)}</title>
   <desc>Lightweight tutor-stub field visualization across ${rows.length} completed turn(s).</desc>
@@ -1031,7 +1175,7 @@ function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Fiel
   <text x="${padding.left}" y="28" font-size="18" font-weight="700" fill="#0A0A0A">${escapeXml(title)}</text>
   <text x="${padding.left}" y="49" font-size="12" fill="#525252">turns ${field.turnCount}; mean speed ${escapeXml(
     field.summary?.meanSpeed ?? 'n/a',
-  )}; ${escapeXml(deltaText)}; bottleneck ${escapeXml(final.bottleneck || 'unknown')}</text>
+  )}; ${escapeXml(deltaText)}; status ${escapeXml(displayBottleneck(final.bottleneck))}</text>
   <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="#FAFAFA" stroke="#0A0A0A" stroke-width="1.5" />
   ${gridLines}
   ${lines}
@@ -1058,9 +1202,10 @@ function printTurnProgress({ completed, total, activeJobs, results }) {
   if (args['no-progress'] || args['dry-run']) return;
   const active = Array.from(activeJobs.values());
   if (!active.length) return;
-  const turnCap = turnsArg() === 'until-grounded'
-    ? positiveInt(args['safety-turns'], '--safety-turns')
-    : positiveInt(args.turns, '--turns');
+  const turnCap =
+    turnsArg() === 'until-grounded'
+      ? positiveInt(args['safety-turns'], '--safety-turns')
+      : positiveInt(args.turns, '--turns');
   const completedTurns = results.reduce((sum, result) => {
     const summaries = Array.isArray(result.traceSummaries) ? result.traceSummaries : [];
     return sum + summaries.reduce((inner, summary) => inner + Number(summary.turnCount || 0), 0);
@@ -1072,7 +1217,7 @@ function printTurnProgress({ completed, total, activeJobs, results }) {
   const activeText = activeSummaries
     .map((summary) => {
       const coverage = summary.coverage === null ? '' : ` c${summary.coverage}`;
-      const bottleneck = summary.bottleneck ? ` ${summary.bottleneck}` : '';
+      const bottleneck = summary.bottleneck ? ` ${displayBottleneck(summary.bottleneck)}` : '';
       const last = summary.lastType ? ` ${summary.lastType}` : '';
       return `${summary.key}:${summary.turns}t${coverage}${bottleneck}${last}`;
     })
@@ -1092,12 +1237,7 @@ function parseJsonLine(line) {
 
 function readTraceEvents(tracePath) {
   if (!tracePath || !fs.existsSync(tracePath)) return [];
-  return fs
-    .readFileSync(tracePath, 'utf8')
-    .split('\n')
-    .filter(Boolean)
-    .map(parseJsonLine)
-    .filter(Boolean);
+  return fs.readFileSync(tracePath, 'utf8').split('\n').filter(Boolean).map(parseJsonLine).filter(Boolean);
 }
 
 function latestTraceFile(traceDir) {
@@ -1147,16 +1287,13 @@ function summarizeTrace(tracePath, traceDir) {
   const fieldWrite = events.filter((event) => event.type === 'field_visualization_write').at(-1) || null;
   const fieldViz = buildLightweightDialogueField(turnRecords);
   const animatedViz = buildAnimatedRunVisualization(turnRecords, fieldViz);
+  const transcript = buildTranscriptDrilldown(turnRecords, fieldViz);
   const learnerBehavior = summarizeLearnerBehavior(turnRecords);
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
-  const registers = turns
-    .map((event) => event.turnRecord?.registerSelection?.selected_register)
-    .filter(Boolean);
-  const efficacies = turns
-    .map((event) => event.turnRecord?.previousRegisterEfficacy?.label)
-    .filter(Boolean);
+  const registers = turns.map((event) => event.turnRecord?.registerSelection?.selected_register).filter(Boolean);
+  const efficacies = turns.map((event) => event.turnRecord?.previousRegisterEfficacy?.label).filter(Boolean);
   const leakCount = turns.reduce((sum, event) => {
     const leaks = event.turnRecord?.tutorLeakAudit?.leaks;
     if (Array.isArray(leaks)) return sum + leaks.length;
@@ -1164,7 +1301,7 @@ function summarizeTrace(tracePath, traceDir) {
   }, 0);
   const groundedClosure = Boolean(
     assessment.bottleneck === 'grounded_asserted_secret' ||
-      (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
+    (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
   );
   const modelErrors = events.filter((event) => /error/i.test(String(event.type)));
   return {
@@ -1195,15 +1332,16 @@ function summarizeTrace(tracePath, traceDir) {
           source: fieldWrite?.summary ? 'trace_event' : 'reconstructed',
         }
       : fieldWrite?.summary
-      ? {
-          final: fieldWrite.summary.final || null,
-          delta: fieldWrite.summary.fieldDelta || null,
-          meanSpeed: fieldWrite.summary.meanSpeed ?? null,
-          source: 'trace_event',
-        }
-      : null,
+        ? {
+            final: fieldWrite.summary.final || null,
+            delta: fieldWrite.summary.fieldDelta || null,
+            meanSpeed: fieldWrite.summary.meanSpeed ?? null,
+            source: 'trace_event',
+          }
+        : null,
     fieldViz: fieldViz.turnCount ? fieldViz : null,
     animatedViz,
+    transcript,
     learnerBehavior,
   };
 }
@@ -1245,6 +1383,7 @@ function resultRows(results) {
           field: null,
           fieldViz: null,
           animatedViz: null,
+          transcript: null,
           learnerBehavior: null,
         },
       ];
@@ -1265,7 +1404,9 @@ function summarizeRows(rows) {
   const completed = rows.filter((row) => row.status !== 'dry_run');
   const scored = completed.filter((row) => row.status !== 'failed');
   const scoredRegisters = scored.flatMap((row) =>
-    Object.entries(row.registerCounts || {}).flatMap(([register, count]) => Array.from({ length: count }, () => register)),
+    Object.entries(row.registerCounts || {}).flatMap(([register, count]) =>
+      Array.from({ length: count }, () => register),
+    ),
   );
   const byPolicy = {};
   for (const row of rows) {
@@ -1276,7 +1417,9 @@ function summarizeRows(rows) {
     const liveRows = bucketRows.filter((row) => row.status !== 'dry_run');
     const okRows = liveRows.filter((row) => row.status !== 'failed');
     const registers = okRows.flatMap((row) =>
-      Object.entries(row.registerCounts || {}).flatMap(([register, count]) => Array.from({ length: count }, () => register)),
+      Object.entries(row.registerCounts || {}).flatMap(([register, count]) =>
+        Array.from({ length: count }, () => register),
+      ),
     );
     return {
       rows: bucketRows.length,
@@ -1284,7 +1427,9 @@ function summarizeRows(rows) {
       failed: liveRows.filter((row) => row.status === 'failed').length,
       dryRun: bucketRows.filter((row) => row.status === 'dry_run').length,
       grounded: okRows.filter((row) => row.groundedClosure).length,
-      groundedRate: okRows.length ? Number((okRows.filter((row) => row.groundedClosure).length / okRows.length).toFixed(3)) : 0,
+      groundedRate: okRows.length
+        ? Number((okRows.filter((row) => row.groundedClosure).length / okRows.length).toFixed(3))
+        : 0,
       meanTurns: mean(okRows.map((row) => row.turnCount)),
       meanCoverage: mean(okRows.map((row) => row.bestPathCoverage)),
       meanMissing: mean(okRows.map((row) => row.missingPremiseCount)),
@@ -1303,7 +1448,9 @@ function summarizeRows(rows) {
     failed: completed.filter((row) => row.status === 'failed').length,
     dryRun: rows.filter((row) => row.status === 'dry_run').length,
     grounded: scored.filter((row) => row.groundedClosure).length,
-    groundedRate: scored.length ? Number((scored.filter((row) => row.groundedClosure).length / scored.length).toFixed(3)) : 0,
+    groundedRate: scored.length
+      ? Number((scored.filter((row) => row.groundedClosure).length / scored.length).toFixed(3))
+      : 0,
     meanTurns: mean(scored.map((row) => row.turnCount)),
     meanCoverage: mean(scored.map((row) => row.bestPathCoverage)),
     meanMissing: mean(scored.map((row) => row.missingPremiseCount)),
@@ -1311,7 +1458,9 @@ function summarizeRows(rows) {
     registerEntropy: entropy(scoredRegisters),
     leakCount: scored.reduce((sum, row) => sum + Number(row.leakCount || 0), 0),
     errorCount: scored.reduce((sum, row) => sum + Number(row.errorCount || 0), 0),
-    byPolicy: Object.fromEntries(Object.entries(byPolicy).map(([policy, bucketRows]) => [policy, summarizeBucket(bucketRows)])),
+    byPolicy: Object.fromEntries(
+      Object.entries(byPolicy).map(([policy, bucketRows]) => [policy, summarizeBucket(bucketRows)]),
+    ),
   };
 }
 
@@ -1444,7 +1593,7 @@ function machineSpiritsReportCss() {
     h3 { font-size:1rem; }
     a { color:var(--brick-d); text-underline-offset:2px; }
     a:hover { color:var(--brick); }
-    code, kbd, samp, .sub, .muted, .metric-label, .metric-sub, .control span, th, button, input, select, textarea, .chip, .status, .learner-eyebrow, .readout-label, .snippet-label, .event-chip, .live-count, .live-run-meta, .live-run-progress, .index-measure em, .index-measure span {
+    code, kbd, samp, .sub, .muted, .metric-label, .metric-sub, .control span, th, button, input, select, textarea, .chip, .status, .learner-eyebrow, .readout-label, .snippet-label, .event-chip, .live-count, .live-run-meta, .live-run-progress, .index-measure em, .index-measure span, .read-first-note {
       font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
     header {
@@ -1540,6 +1689,65 @@ function machineSpiritsReportCss() {
     .summary-panel { display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:14px; align-items:start; margin:18px 0 4px; }
     .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:16px 0; }
     .summary-panel .metrics { margin:0; }
+    .big-picture {
+      margin:18px 0 20px;
+      border-top:2px solid var(--ink);
+      padding-top:14px;
+    }
+    .big-picture-head {
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      margin:0 0 12px;
+    }
+    .big-picture-head h2 { margin:0; }
+    .big-picture-head p {
+      margin:4px 0 0;
+      max-width:980px;
+      color:var(--ink-3);
+      font-size:12px;
+      letter-spacing:0.02em;
+    }
+    .big-picture-grid {
+      display:grid;
+      grid-template-columns:minmax(280px,1.15fr) minmax(280px,.85fr);
+      gap:14px;
+      align-items:start;
+    }
+    .big-picture-panel {
+      background:rgba(247,239,221,0.76);
+      border:1px solid var(--rule);
+      box-shadow:0 12px 30px rgba(28,22,16,0.05);
+      padding:14px 15px;
+    }
+    .big-picture-panel h3 {
+      margin:0 0 9px;
+      font-size:1rem;
+    }
+    .big-picture-read {
+      margin:0;
+      padding-left:18px;
+      color:var(--ink-2);
+      font-size:13px;
+      line-height:1.45;
+    }
+    .big-picture-read li { margin:6px 0; }
+    .big-picture-table { min-width:760px; }
+    .big-picture-table .numeric { text-align:right; white-space:nowrap; }
+    .big-picture-cautions {
+      display:grid;
+      gap:8px;
+      margin:12px 0 0;
+    }
+    .big-picture-cautions div {
+      border-left:4px solid var(--red);
+      background:rgba(255,255,255,0.34);
+      padding:8px 10px;
+      color:var(--ink-2);
+      font-size:12px;
+      line-height:1.4;
+    }
     .metric, .metric-guide, .learner-profile-card, .learner-behavior-card, .field-card, .viz-player, .live-run-card, table {
       background:rgba(247,239,221,0.86);
       border:1px solid var(--rule);
@@ -1556,6 +1764,38 @@ function machineSpiritsReportCss() {
     .metric-guide dl div:first-child, .viz-sidebar dl div:first-child { border-top:0; padding-top:0; }
     .metric-guide dt, .viz-sidebar dt, .learner-chip-grid strong { font-weight:600; color:var(--ink); }
     .metric-guide dd, .viz-sidebar dd { margin:2px 0 0; color:var(--ink-3); font-size:12px; }
+    .read-first-note {
+      margin:0 0 10px;
+      max-width:980px;
+      color:var(--ink-3);
+      font-size:12px;
+      letter-spacing:0.02em;
+    }
+    .signal-guide {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+      gap:10px;
+      margin:12px 0 0;
+    }
+    .signal-guide div {
+      border:1px solid var(--rule);
+      background:rgba(247,239,221,0.62);
+      padding:10px 11px;
+    }
+    .signal-guide strong {
+      display:block;
+      color:var(--ink);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+    .signal-guide p {
+      margin:4px 0 0;
+      color:var(--ink-3);
+      font-size:12px;
+      line-height:1.42;
+    }
     .learner-panel { display:grid; grid-template-columns:minmax(260px,.85fr) minmax(360px,1.5fr); gap:14px; margin:18px 0 4px; }
     .learner-profile-card, .learner-behavior-card { padding:15px; }
     .learner-eyebrow { color:var(--ink-3); font-size:11px; text-transform:uppercase; letter-spacing:0.12em; }
@@ -1700,6 +1940,284 @@ function machineSpiritsReportCss() {
     .snippet-label { align-self:start; padding:2px 7px; text-transform:uppercase; letter-spacing:0.08em; font-size:10px; font-weight:700; text-align:center; }
     .snippet-label.learner { background:var(--indigo-soft); color:var(--indigo); }
     .snippet-label.tutor { background:var(--moss-soft); color:var(--moss-deep); }
+    .transcript-explorer {
+      min-width:0;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:6px 6px 0 var(--red-mark);
+      overflow:hidden;
+    }
+    .transcript-toolbar {
+      display:grid;
+      grid-template-columns:minmax(220px,1.25fr) minmax(310px,1.7fr) minmax(150px,.7fr) minmax(220px,1fr);
+      gap:14px;
+      align-items:stretch;
+      padding:14px;
+      border-bottom:4px solid var(--ink);
+      background:var(--paper);
+    }
+    .transcript-toolbar label, .transcript-control-group {
+      position:relative;
+      min-width:0;
+      min-height:88px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      padding:14px 12px 12px;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:4px 4px 0 var(--group-accent, var(--ink));
+    }
+    .transcript-toolbar label::before, .transcript-control-group::before {
+      content:"";
+      position:absolute;
+      top:-2px;
+      left:-2px;
+      right:-2px;
+      height:9px;
+      background:var(--group-accent, var(--ink));
+      border-bottom:2px solid var(--ink);
+    }
+    .transcript-run-control { --group-accent:var(--blue); --group-label-ink:var(--paper); }
+    .transcript-view-control { --group-accent:var(--red-mark); --group-label-ink:var(--paper); }
+    .transcript-turn-control { --group-accent:var(--yellow); --group-label-ink:var(--ink); }
+    .transcript-search-control { --group-accent:var(--green); --group-label-ink:var(--paper); }
+    .transcript-toolbar label > span:first-child, .transcript-group-label {
+      align-self:flex-start;
+      margin:2px 0;
+      padding:4px 8px;
+      border:2px solid var(--ink);
+      background:var(--group-accent, var(--ink));
+      color:var(--group-label-ink, var(--paper));
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:0.08em;
+      line-height:1;
+      text-transform:uppercase;
+    }
+    .transcript-toolbar select, .transcript-toolbar input {
+      margin-top:auto;
+      width:100%;
+      min-width:0;
+    }
+    .transcript-mode-buttons { display:flex; flex-wrap:wrap; gap:8px; }
+    .transcript-mode-buttons button {
+      flex:1 1 88px;
+      min-width:0;
+      min-height:38px;
+      border-left-width:6px;
+      border-left-color:var(--red-mark);
+      box-shadow:2px 2px 0 var(--ink);
+    }
+    .transcript-mode-buttons button.active {
+      background:var(--red-mark);
+      color:var(--paper);
+      box-shadow:inset 0 -5px 0 var(--ink), 2px 2px 0 var(--ink);
+    }
+    .transcript-summary {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      padding:10px 14px;
+      border-bottom:2px solid var(--ink);
+      background:var(--paper-2);
+      color:var(--ink);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:12px;
+    }
+    .transcript-body {
+      min-width:0;
+      padding:18px;
+      background:var(--paper);
+    }
+    .transcript-empty {
+      border:2px dashed var(--ink);
+      padding:18px;
+      color:var(--ink-3);
+      background:var(--paper-3);
+    }
+    .transcript-card, .transcript-plate, .transcript-note-card, .transcript-line, .transcript-lane {
+      min-width:0;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:3px 3px 0 var(--ink);
+    }
+    .transcript-card, .transcript-plate, .transcript-note-card { padding:14px; }
+    .transcript-card + .transcript-card, .transcript-plate + .transcript-plate { margin-top:14px; }
+    .transcript-card-head, .transcript-plate-head, .transcript-line-head, .transcript-note-head {
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      gap:8px;
+      align-items:flex-start;
+      margin-bottom:10px;
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+    }
+    .transcript-register-mark {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:2px solid var(--ink);
+      background:var(--style-color, var(--red-mark));
+      color:var(--style-ink, var(--paper));
+      padding:2px 7px;
+      line-height:1.1;
+    }
+    .transcript-dot {
+      width:10px;
+      height:10px;
+      display:inline-block;
+      background:currentColor;
+      border:1px solid var(--ink);
+    }
+    .transcript-voice-grid, .transcript-plate-voices {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+      align-items:start;
+    }
+    .transcript-speaker {
+      display:inline-block;
+      margin:0 0 5px;
+      padding:2px 7px;
+      border:2px solid var(--ink);
+      color:var(--paper);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+    }
+    .transcript-speaker.tutor { background:var(--green); }
+    .transcript-speaker.learner { background:var(--blue); }
+    .transcript-speech {
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+      color:var(--ink);
+      font-size:14px;
+      line-height:1.55;
+    }
+    .transcript-meta-strip {
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:11px;
+    }
+    .transcript-pill {
+      display:inline-block;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      color:var(--ink);
+      padding:2px 7px;
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      line-height:1.25;
+    }
+    .transcript-pill.hot {
+      background:var(--red-mark);
+      color:var(--paper);
+    }
+    .transcript-pill.good {
+      background:var(--green);
+      color:var(--paper);
+    }
+    .transcript-script { display:grid; gap:10px; }
+    .transcript-line {
+      padding:12px;
+      border-left-width:8px;
+    }
+    .transcript-line.learner { border-left-color:var(--blue); }
+    .transcript-line.tutor { border-left-color:var(--green); }
+    .transcript-swimlane { display:grid; gap:10px; }
+    .transcript-swim-head, .transcript-swim-row {
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr);
+      gap:14px;
+      align-items:start;
+    }
+    .transcript-swim-head {
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:var(--paper);
+      padding-bottom:6px;
+    }
+    .transcript-swim-label {
+      border-bottom:4px solid var(--ink);
+      padding:5px 8px;
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+    }
+    .transcript-swim-label.learner { text-align:right; border-bottom-color:var(--blue); }
+    .transcript-swim-label.tutor { border-bottom-color:var(--green); }
+    .transcript-spine {
+      position:relative;
+      min-height:42px;
+    }
+    .transcript-spine::before {
+      content:"";
+      position:absolute;
+      left:50%;
+      top:-10px;
+      bottom:-10px;
+      width:3px;
+      transform:translateX(-50%);
+      background:var(--ink);
+    }
+    .transcript-bead {
+      position:relative;
+      z-index:1;
+      display:block;
+      width:32px;
+      height:32px;
+      margin:4px auto;
+      border:2px solid var(--ink);
+      background:var(--red-mark);
+      color:var(--paper);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:12px;
+      font-weight:800;
+      line-height:28px;
+      text-align:center;
+    }
+    .transcript-lane {
+      padding:12px;
+      box-shadow:none;
+    }
+    .transcript-lane.empty {
+      visibility:hidden;
+    }
+    .transcript-plate {
+      border-left-width:10px;
+      border-left-color:var(--red-mark);
+    }
+    .transcript-plate-reason {
+      margin-top:12px;
+      padding-top:10px;
+      border-top:2px solid var(--ink);
+      color:var(--ink-3);
+      font-size:13px;
+      line-height:1.45;
+    }
+    .transcript-notes-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:12px;
+    }
+    .transcript-note-card p { margin:5px 0 0; color:var(--ink-3); font-size:13px; line-height:1.42; }
+    .transcript-jump-active {
+      outline:3px solid var(--red-mark);
+      outline-offset:3px;
+    }
     .table-scroll {
       max-width:100%;
       min-width:0;
@@ -1715,8 +2233,11 @@ function machineSpiritsReportCss() {
     .policy-comparison-table {
       min-width:1080px;
     }
+    .read-first-table {
+      min-width:1160px;
+    }
     .run-details-table {
-      min-width:1420px;
+      min-width:1540px;
     }
     th, td { padding:9px 10px; border-bottom:1px solid var(--rule); text-align:left; vertical-align:top; }
     th {
@@ -1741,7 +2262,8 @@ function machineSpiritsReportCss() {
     .run-details-table th:nth-child(8), .run-details-table td:nth-child(8),
     .run-details-table th:nth-child(13), .run-details-table td:nth-child(13),
     .run-details-table th:nth-child(14), .run-details-table td:nth-child(14),
-    .run-details-table th:nth-child(15), .run-details-table td:nth-child(15) {
+    .run-details-table th:nth-child(15), .run-details-table td:nth-child(15),
+    .run-details-table th:nth-child(16), .run-details-table td:nth-child(16) {
       white-space:nowrap;
     }
     .run-details-table th:nth-child(5), .run-details-table td:nth-child(5),
@@ -2050,8 +2572,12 @@ function machineSpiritsReportCss() {
     }
     .viz-run-control { --group-accent:var(--blue); --group-label-ink:var(--paper); }
     .viz-view-control { --group-accent:var(--red-mark); --group-label-ink:var(--paper); }
+    .viz-variable-control { --group-accent:var(--violet); --group-label-ink:var(--paper); }
     .viz-playback-control { --group-accent:var(--yellow); --group-label-ink:var(--ink); }
     .viz-turn-control { --group-accent:var(--green); --group-label-ink:var(--paper); }
+    .viz-control-disabled {
+      opacity:0.62;
+    }
     .viz-toolbar label > span:first-child, .viz-group-label {
       align-self:flex-start;
       margin:2px 0 2px;
@@ -2184,13 +2710,18 @@ function machineSpiritsReportCss() {
       .report-nav a:hover, .report-nav a:focus { border-bottom-color:var(--brick); }
     }
     @media (max-width: 900px) {
-      .summary-panel, .learner-panel, .viz-layout { grid-template-columns:1fr; }
+      .summary-panel, .learner-panel, .viz-layout, .big-picture-grid { grid-template-columns:1fr; }
+      .big-picture-head { display:block; }
       .viz-sidebar { border-left:0; border-top:1px solid var(--rule); }
-      .viz-toolbar, .toolbar { grid-template-columns:1fr; }
+      .viz-toolbar, .toolbar, .transcript-toolbar { grid-template-columns:1fr; }
       .toolbar .control:first-child { grid-column:1 / -1; }
       .viz-canvas-wrap canvas { height:360px; }
       .viz-readout-grid { grid-template-columns:1fr; }
       .viz-readout-lines p { grid-template-columns:1fr; }
+      .transcript-voice-grid, .transcript-plate-voices, .transcript-swim-head, .transcript-swim-row { grid-template-columns:1fr; }
+      .transcript-swim-label.spine, .transcript-spine { display:none; }
+      .transcript-swim-label.learner { text-align:left; }
+      .transcript-lane.empty { display:none; }
       .table-scroll { padding-right:6px; }
       .live-run-progress { grid-template-columns:1fr; }
     }
@@ -2213,13 +2744,15 @@ function formatFieldValue(value) {
 function fieldSummaryText(row) {
   const final = row.field?.final || {};
   const delta = row.field?.delta || {};
+  const riskReduction = Number.isFinite(Number(delta.learnerRisk)) ? -Number(delta.learnerRisk) : Number.NaN;
   return [
-    `final M ${formatFieldValue(final.learnerMastery)}`,
-    `R ${formatFieldValue(final.learnerRisk)}`,
-    `A ${formatFieldValue(final.tutorAlignment)}`,
-    `P ${formatFieldValue(final.jointMomentum)}`,
-    `delta M ${formatSignedField(delta.learnerMastery)}`,
-    `R ${formatSignedField(delta.learnerRisk)}`,
+    `final mastery ${formatFieldValue(final.learnerMastery)}`,
+    `risk ${formatFieldValue(final.learnerRisk)}`,
+    `alignment ${formatFieldValue(final.tutorAlignment)}`,
+    `momentum ${formatFieldValue(final.jointMomentum)}`,
+    `mastery gain ${formatSignedField(delta.learnerMastery)}`,
+    `risk reduction ${formatPositiveField(riskReduction)}`,
+    `status ${displayBottleneck(final.bottleneck || row.bottleneck, { groundedClosure: row.groundedClosure })}`,
   ].join(' · ');
 }
 
@@ -2277,7 +2810,9 @@ function renderCountChips(counts, { limit = 6 } = {}) {
     .sort((a, b) => Number(b[1]) - Number(a[1]) || a[0].localeCompare(b[0]))
     .slice(0, limit);
   if (!entries.length) return '<span class="learner-empty">none</span>';
-  return entries.map(([key, value]) => `<span class="learner-chip">${escapeHtml(key)} <b>${escapeHtml(value)}</b></span>`).join('');
+  return entries
+    .map(([key, value]) => `<span class="learner-chip">${escapeHtml(key)} <b>${escapeHtml(value)}</b></span>`)
+    .join('');
 }
 
 function learnerStat(label, value, sub = '') {
@@ -2374,10 +2909,10 @@ function safeJsonForScript(value) {
     .replace(/\u2029/gu, '\\u2029');
 }
 
-function animatedVizRowId(row, index) {
+function reportRowId(row, index, prefix = 'row') {
   const traceStem = row.trace ? path.basename(row.trace, path.extname(row.trace)) : '';
   return [
-    'viz',
+    prefix,
     String(index + 1).padStart(2, '0'),
     safeSlug(row.policy || 'policy'),
     `r${safeSlug(row.runIndex || 'x')}`,
@@ -2385,6 +2920,14 @@ function animatedVizRowId(row, index) {
   ]
     .filter(Boolean)
     .join('-');
+}
+
+function animatedVizRowId(row, index) {
+  return reportRowId(row, index, 'viz');
+}
+
+function transcriptRowId(row, index) {
+  return reportRowId(row, index, 'transcript');
 }
 
 function animatedVizReportPayload(rows) {
@@ -2406,6 +2949,30 @@ function animatedVizReportPayload(rows) {
   };
 }
 
+function transcriptReportPayload(rows) {
+  return {
+    schema: 'machinespirits.tutor-stub.report-transcripts.v1',
+    rows: rows.flatMap((row, index) =>
+      row.transcript?.turns?.length
+        ? [
+            {
+              id: transcriptRowId(row, index),
+              title: fieldRowTitle(row),
+              policy: row.policy,
+              runIndex: row.runIndex,
+              status: row.status,
+              groundedClosure: row.groundedClosure,
+              stopReason: row.stopReason || null,
+              turnCount: row.turnCount,
+              trace: row.trace || null,
+              transcript: row.transcript,
+            },
+          ]
+        : [],
+    ),
+  };
+}
+
 function infoTerm(label, tooltip) {
   return `<span class="info-term" tabindex="0" data-tip="${escapeHtml(tooltip)}">${escapeHtml(label)}</span>`;
 }
@@ -2419,14 +2986,16 @@ const REPORT_TERM_TOOLTIPS = {
     'Mean learner-DAG best-path coverage across OK rows. It is a 0 to 1 score for how much of the target evidence path is grounded.',
   meanMissing:
     'Mean count of still-missing premises on the learner-DAG best path at the end of OK rows. Lower is better.',
-  masteryDelta: 'Mean change in the reconstructed learner-mastery field from first to final turn for OK rows.',
-  riskDelta: 'Mean change in reconstructed learner risk from first to final turn for OK rows. Lower or negative usually means risk fell.',
+  masteryDelta:
+    'Mean change in the reconstructed learner-mastery field from first to final turn for OK rows. Higher gain is better.',
+  riskDelta:
+    'Risk reduction is the fall in reconstructed learner risk from first to final turn. Positive values mean risk went down.',
   topRegisters: 'Most frequently selected tutor discourse registers in the OK rows for this policy.',
   entropy:
     'Shannon entropy in bits over selected tutor registers for OK rows. 0 means one register dominated; higher means more register diversity.',
   bottleneck:
-    'The final learner-DAG limiting condition, such as missing evidence, learner integration gap, premature assertion, or grounded closure.',
-  fieldDelta: 'Compact field movement: learner mastery delta and learner risk delta from first to final turn.',
+    'The final learner-DAG limiting condition. Grounded asserted-secret closure is displayed as closed rather than as a remaining bottleneck.',
+  fieldDelta: 'Compact field movement: learner mastery gain and learner risk reduction from first to final turn.',
   efficacy: 'Counts of register-selection efficacy labels emitted by the register policy or classifier.',
   leaks: 'Tutor leak audit count: places where the tutor appears to reveal or overgive protected solution information.',
 };
@@ -2435,12 +3004,170 @@ function reportInfoTerm(key, label) {
   return infoTerm(label, REPORT_TERM_TOOLTIPS[key] || label);
 }
 
+function policyReadFirstSummaries(rows = [], summary = {}) {
+  const byPolicy = new Map();
+  for (const row of rows) {
+    const key = row.policy || 'unknown';
+    if (!byPolicy.has(key)) byPolicy.set(key, []);
+    byPolicy.get(key).push(row);
+  }
+  const safetyTurns = Number(summary.config?.safetyTurns || 120) || 120;
+  return [...byPolicy.entries()]
+    .map(([policy, policyRows]) => {
+      const liveRows = policyRows.filter((row) => row.status !== 'dry_run');
+      const okRows = liveRows.filter((row) => row.status !== 'failed');
+      const totalTurns = okRows.reduce((sum, row) => sum + Number(row.turnCount || 0), 0);
+      const registers = okRows.flatMap((row) =>
+        Object.entries(row.registerCounts || {}).flatMap(([register, count]) =>
+          Array.from({ length: Number(count || 0) }, () => register),
+        ),
+      );
+      const efficacyCounts = mergeCounts(okRows.map((row) => row.efficacyCounts));
+      const positiveProgress = Number(efficacyCounts.positive_progress || 0);
+      const efficacyTotal = Object.values(efficacyCounts).reduce((sum, value) => sum + Number(value || 0), 0);
+      const progressRate = efficacyTotal ? positiveProgress / efficacyTotal : 0;
+      const registerEntropy = entropy(registers);
+      const finalMastery = mean(okRows.map((row) => row.field?.final?.learnerMastery));
+      const finalRisk = mean(okRows.map((row) => row.field?.final?.learnerRisk));
+      const masteryGain = mean(okRows.map((row) => row.field?.delta?.learnerMastery));
+      const riskReduction = mean(okRows.map((row) => -Number(row.field?.delta?.learnerRisk)));
+      const meanTurns = mean(okRows.map((row) => row.turnCount));
+      const closureRate = okRows.length ? okRows.filter((row) => row.groundedClosure).length / okRows.length : 0;
+      const meanCoverage = mean(okRows.map((row) => row.bestPathCoverage));
+      const leaks = okRows.reduce((sum, row) => sum + Number(row.leakCount || 0), 0);
+      const leakDiscipline = clampField01(1 - leaks / Math.max(1, totalTurns));
+      const turnEfficiency = clampField01(1 - meanTurns / safetyTurns);
+      const registerUsefulness = clampField01((registerEntropy / Math.log2(9)) * (0.5 + 0.5 * progressRate));
+      const signalScore = roundField(
+        0.3 * closureRate +
+          0.16 * meanCoverage +
+          0.17 * clampField01(masteryGain) +
+          0.14 * clampField01(riskReduction) +
+          0.14 * leakDiscipline +
+          0.06 * turnEfficiency +
+          0.03 * registerUsefulness,
+      );
+      return {
+        policy,
+        rows: policyRows.length,
+        ok: okRows.length,
+        failed: liveRows.filter((row) => row.status === 'failed').length,
+        closureRate: roundField(closureRate),
+        meanCoverage,
+        meanTurns,
+        finalMastery,
+        finalRisk,
+        masteryGain,
+        riskReduction,
+        leaks,
+        leakDiscipline,
+        registerEntropy,
+        progressRate: roundField(progressRate),
+        signalScore,
+      };
+    })
+    .sort((left, right) => right.signalScore - left.signalScore || compareReportPolicies(left.policy, right.policy));
+}
+
+function readFirstVerdict(row, index) {
+  if (row.failed) return 'technical failure present';
+  if (row.closureRate < 1) return 'incomplete closure';
+  if (row.leaks > 0) return 'closed, but leak caution';
+  if (index === 0) return 'strongest current signal';
+  if (row.masteryGain >= 0.45 && row.riskReduction >= 0.3) return 'strong field movement';
+  if (row.registerEntropy >= 2 && row.progressRate >= 0.4) return 'varied registers with progress';
+  if (row.registerEntropy < 0.2) return 'stable baseline';
+  return 'clean closure';
+}
+
+function renderSignalGuide() {
+  const signals = [
+    [
+      'Mastery gain',
+      'How far the learner moved toward owning the proof. Read it with final mastery, because a large gain can still end below full command.',
+    ],
+    [
+      'Risk reduction',
+      'How much overreach, missing-premise, or readiness risk fell. Read it with final risk, because the best rows end low, not merely lower.',
+    ],
+    [
+      'Leak discipline',
+      'Whether closure was earned without protected-answer leakage. Clean closure is stronger evidence than fast closure with leaks.',
+    ],
+    [
+      'Turn count',
+      'Efficiency after the safety checks pass. Shorter is only better when closure, coverage, and leak discipline are already clean.',
+    ],
+    [
+      'Register variation',
+      'Entropy or diversity in tutor registers. It is purposeful when it coincides with progress, and just noisy when the field does not move.',
+    ],
+  ];
+  return `<div class="signal-guide" aria-label="Signal guide">
+    ${signals
+      .map(
+        ([label, description]) => `<div>
+          <strong>${escapeHtml(label)}</strong>
+          <p>${escapeHtml(description)}</p>
+        </div>`,
+      )
+      .join('\n')}
+  </div>`;
+}
+
+function renderReadFirstRanking(rows, summary) {
+  const ranked = policyReadFirstSummaries(rows, summary);
+  const body = ranked
+    .map(
+      (row, index) => `<tr>
+        <td>${index + 1}</td>
+        <td><strong>${escapeHtml(row.policy)}</strong></td>
+        <td>${escapeHtml(readFirstVerdict(row, index))}</td>
+        <td>${escapeHtml(row.ok)}/${escapeHtml(row.failed)}</td>
+        <td>${Math.round(row.closureRate * 100)}%</td>
+        <td>${escapeHtml(row.meanTurns)}</td>
+        <td>${escapeHtml(formatFieldValue(row.finalMastery))}</td>
+        <td>${escapeHtml(formatFieldValue(row.finalRisk))}</td>
+        <td>${escapeHtml(formatSignedField(row.masteryGain))}</td>
+        <td>${escapeHtml(formatPositiveField(row.riskReduction))}</td>
+        <td>${escapeHtml(row.leaks ? `${row.leaks} leak${row.leaks === 1 ? '' : 's'}` : 'clean')}</td>
+        <td>${escapeHtml(`${row.registerEntropy} bits; ${Math.round(row.progressRate * 100)}% progress`)}</td>
+      </tr>`,
+    )
+    .join('\n');
+  return `<section id="read-first" class="report-section read-first">
+    <h2>Read This First</h2>
+    <p class="read-first-note">Ranking prioritizes grounded closure, full evidence coverage, mastery gain, risk reduction, leak discipline, turn efficiency, and register variation that coincides with progress. Treat it as a triage view, then inspect the detailed tables below.</p>
+    <div class="table-scroll" role="region" aria-label="Read this first policy ranking" tabindex="0">
+      <table class="read-first-table">
+        <thead><tr>
+          <th>Rank</th>
+          <th>Policy</th>
+          <th>Read</th>
+          <th>OK/Failed</th>
+          <th>Closure</th>
+          <th>Turns</th>
+          <th>Final Mastery</th>
+          <th>Final Risk</th>
+          <th>Mastery Gain</th>
+          <th>Risk Reduction</th>
+          <th>Leak Discipline</th>
+          <th>Register Variation</th>
+        </tr></thead>
+        <tbody>${body || '<tr><td colspan="12">No completed policy rows.</td></tr>'}</tbody>
+      </table>
+    </div>
+    ${renderSignalGuide()}
+  </section>`;
+}
+
 function renderReportMetricGuide() {
   const terms = [
+    ['Mastery Gain', REPORT_TERM_TOOLTIPS.masteryDelta],
+    ['Risk Reduction', REPORT_TERM_TOOLTIPS.riskDelta],
+    ['Leak Discipline', REPORT_TERM_TOOLTIPS.leaks],
     ['Mean Coverage', REPORT_TERM_TOOLTIPS.meanCoverage],
-    ['Mean Missing', REPORT_TERM_TOOLTIPS.meanMissing],
-    ['Entropy', REPORT_TERM_TOOLTIPS.entropy],
-    ['Grounded', REPORT_TERM_TOOLTIPS.grounded],
+    ['Register Entropy', REPORT_TERM_TOOLTIPS.entropy],
   ];
   return `<aside class="metric-guide" aria-label="Metric explanations">
     <h3>Reading The Metrics</h3>
@@ -2460,9 +3187,11 @@ function renderReportMetricGuide() {
 function renderReportSectionNav() {
   const sections = [
     ['run-summary', 'Run Summary'],
+    ['read-first', 'Read This First'],
     ['learner-profile', 'Learner Profile'],
     ['policy-comparison', 'Policy Comparison'],
     ['turn-replay', 'Turn Replay'],
+    ['transcripts', 'Transcripts'],
     ['field-trajectories', 'Field Trajectories'],
     ['run-details', 'Run Details'],
   ];
@@ -2472,6 +3201,338 @@ function renderReportSectionNav() {
       ${sections.map(([id, label]) => `<a href="#${escapeHtml(id)}">${escapeHtml(label)}</a>`).join('\n')}
     </nav>
   </aside>`;
+}
+
+function renderTranscriptExplorer(rows) {
+  const payload = transcriptReportPayload(rows);
+  if (!payload.rows.length) {
+    return '<p class="sub">No transcript turns were found in these traces.</p>';
+  }
+  return `<div class="transcript-explorer" id="tutor-stub-transcript-explorer">
+    <div class="transcript-toolbar">
+      <label class="transcript-run-control"><span>Policy Run</span><select data-transcript-run></select></label>
+      <div class="transcript-control-group transcript-view-control">
+        <span class="transcript-group-label">View</span>
+        <div class="transcript-mode-buttons" role="tablist" aria-label="Transcript view">
+          <button type="button" data-transcript-mode="plates" class="active">Plates</button>
+          <button type="button" data-transcript-mode="excerpts">Excerpts</button>
+          <button type="button" data-transcript-mode="script">Script</button>
+          <button type="button" data-transcript-mode="swimlanes">Swimlanes</button>
+          <button type="button" data-transcript-mode="notes">Notes</button>
+        </div>
+      </div>
+      <label class="transcript-turn-control"><span>Turn</span><select data-transcript-turn></select></label>
+      <label class="transcript-search-control"><span>Search</span><input type="search" data-transcript-search placeholder="text, register, event"></label>
+    </div>
+    <div class="transcript-summary" data-transcript-summary></div>
+    <div class="transcript-body" data-transcript-body aria-live="polite"></div>
+  </div>
+  <script type="application/json" id="tutor-stub-transcript-data">${safeJsonForScript(JSON.stringify(payload))}</script>
+  <script>
+  (function () {
+    var root = document.getElementById('tutor-stub-transcript-explorer');
+    var dataNode = document.getElementById('tutor-stub-transcript-data');
+    if (!root || !dataNode) return;
+    var payload;
+    try {
+      payload = JSON.parse(dataNode.textContent || '{}');
+    } catch (error) {
+      return;
+    }
+    var rows = payload.rows || [];
+    if (!rows.length) return;
+    var runSelect = root.querySelector('[data-transcript-run]');
+    var turnSelect = root.querySelector('[data-transcript-turn]');
+    var searchInput = root.querySelector('[data-transcript-search]');
+    var summary = root.querySelector('[data-transcript-summary]');
+    var body = root.querySelector('[data-transcript-body]');
+    var modeButtons = Array.prototype.slice.call(root.querySelectorAll('[data-transcript-mode]'));
+    var activeRow = rows[0];
+    var activeMode = 'plates';
+    var activeTurn = '';
+    var registerMeta = {
+      plain: { label: 'Plain', color: '#0A0A0A', ink: '#FFFFFF' },
+      precise: { label: 'Precise', color: '#0057B8', ink: '#FFFFFF' },
+      brisk: { label: 'Brisk', color: '#D98E04', ink: '#0A0A0A' },
+      warm: { label: 'Warm', color: '#E63946', ink: '#FFFFFF' },
+      witnessing: { label: 'Witnessing', color: '#009B72', ink: '#FFFFFF' },
+      charismatic: { label: 'Charismatic', color: '#6B4EFF', ink: '#FFFFFF' },
+      ironic: { label: 'Ironic', color: '#737373', ink: '#FFFFFF' },
+      sarcastic: { label: 'Sarcastic', color: '#000000', ink: '#FFFFFF' },
+      face_threat: { label: 'Face threat', color: '#D72670', ink: '#FFFFFF' }
+    };
+
+    function esc(value) {
+      return String(value == null ? '' : value).replace(/[&<>"]/g, function (char) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;'
+        }[char];
+      });
+    }
+
+    function normal(value) {
+      return String(value == null ? '' : value).toLowerCase();
+    }
+
+    function pct(value) {
+      var number = Number(value);
+      return Number.isFinite(number) ? Math.round(number * 100) + '%' : 'n/a';
+    }
+
+    function fmt(value) {
+      var number = Number(value);
+      return Number.isFinite(number) ? number.toFixed(3) : 'n/a';
+    }
+
+    function proofStatus(value) {
+      return value === 'grounded_asserted_secret' ? 'closed' : value || 'open';
+    }
+
+    function metaForRegister(register) {
+      var key = String(register || 'none');
+      return registerMeta[key] || { label: key.replace(/_/g, ' '), color: '#0A0A0A', ink: '#FFFFFF' };
+    }
+
+    function registerMark(turn) {
+      var key = turn.register && turn.register.selected ? turn.register.selected : 'none';
+      var meta = metaForRegister(key);
+      return '<span class="transcript-register-mark" style="--style-color:' + esc(meta.color) + ';--style-ink:' + esc(meta.ink) + '">' +
+        '<span class="transcript-dot" aria-hidden="true"></span>' + esc(meta.label) + '</span>';
+    }
+
+    function chip(label, value, tone) {
+      if (value === undefined || value === null || value === '') return '';
+      return '<span class="transcript-pill' + (tone ? ' ' + esc(tone) : '') + '">' + esc(label) + ': ' + esc(value) + '</span>';
+    }
+
+    function eventChips(turn) {
+      var events = (turn.events || []).slice(0, 8);
+      var risks = ((turn.register && turn.register.riskFlags) || []).slice(0, 5);
+      var all = events.concat(risks.filter(function (flag) { return events.indexOf(flag) === -1; }));
+      if (!all.length) return '<span class="transcript-pill">events: none</span>';
+      return all.map(function (event) {
+        return '<span class="transcript-pill hot">' + esc(proofStatus(event)) + '</span>';
+      }).join('');
+    }
+
+    function turnSearchText(turn) {
+      return [
+        turn.learner,
+        turn.tutor,
+        turn.register && turn.register.selected,
+        turn.register && turn.register.reason,
+        turn.field && turn.field.bottleneck,
+        turn.learnerState && turn.learnerState.discourseMove,
+        turn.learnerState && turn.learnerState.epistemicStance,
+        (turn.events || []).join(' ')
+      ].filter(Boolean).join(' ');
+    }
+
+    function filteredTurns() {
+      var query = normal(searchInput && searchInput.value);
+      return ((activeRow.transcript && activeRow.transcript.turns) || []).filter(function (turn) {
+        if (activeTurn && String(turn.turn) !== String(activeTurn)) return false;
+        return !query || normal(turnSearchText(turn)).indexOf(query) !== -1;
+      });
+    }
+
+    function metaStrip(turn) {
+      var state = turn.learnerState || {};
+      var dag = turn.dag || {};
+      var response = turn.response || {};
+      return '<div class="transcript-meta-strip">' +
+        chip('proof status', proofStatus((turn.field && turn.field.bottleneck) || dag.bottleneck)) +
+        chip('coverage', pct(dag.bestPathCoverage)) +
+        chip('missing', dag.missingPremiseCount) +
+        chip('move', state.discourseMove) +
+        chip('stance', state.epistemicStance) +
+        chip('agency', state.agency) +
+        chip('efficacy', response.efficacyLabel) +
+        (response.repaired ? chip('repair', 'yes', 'good') : '') +
+        eventChips(turn) +
+      '</div>';
+    }
+
+    function voiceBlock(kind, text, compact) {
+      return '<section class="transcript-voice transcript-voice-' + esc(kind) + '">' +
+        '<span class="transcript-speaker ' + esc(kind) + '">' + esc(kind) + '</span>' +
+        '<div class="transcript-speech">' + esc(text || (compact ? '' : 'No text captured.')) + '</div>' +
+      '</section>';
+    }
+
+    function renderExcerpts(turns) {
+      if (!turns.length) return '<div class="transcript-empty">No matching transcript turns.</div>';
+      return turns.map(function (turn) {
+        return '<article class="transcript-card" data-transcript-turn-card="' + esc(turn.turn) + '">' +
+          '<div class="transcript-card-head"><span>Turn ' + esc(turn.turn) + '</span>' + registerMark(turn) + '</div>' +
+          '<div class="transcript-voice-grid">' +
+            voiceBlock('learner', turn.excerpts && turn.excerpts.learner, false) +
+            voiceBlock('tutor', turn.excerpts && turn.excerpts.tutor, false) +
+          '</div>' +
+          metaStrip(turn) +
+        '</article>';
+      }).join('');
+    }
+
+    function renderScript(turns) {
+      if (!turns.length) return '<div class="transcript-empty">No matching transcript turns.</div>';
+      return '<div class="transcript-script">' + turns.map(function (turn) {
+        return '<section class="transcript-line learner">' +
+          '<div class="transcript-line-head"><span>Learner · turn ' + esc(turn.turn) + '</span>' + registerMark(turn) + '</div>' +
+          '<div class="transcript-speech">' + esc(turn.learner || '') + '</div>' +
+        '</section>' +
+        '<section class="transcript-line tutor">' +
+          '<div class="transcript-line-head"><span>Tutor · turn ' + esc(turn.turn) + '</span></div>' +
+          '<div class="transcript-speech">' + esc(turn.tutor || '') + '</div>' +
+          metaStrip(turn) +
+        '</section>';
+      }).join('') + '</div>';
+    }
+
+    function renderSwimlanes(turns) {
+      if (!turns.length) return '<div class="transcript-empty">No matching transcript turns.</div>';
+      return '<div class="transcript-swimlane">' +
+        '<div class="transcript-swim-head">' +
+          '<span class="transcript-swim-label tutor">tutor</span>' +
+          '<span class="transcript-swim-label spine" aria-hidden="true"></span>' +
+          '<span class="transcript-swim-label learner">learner</span>' +
+        '</div>' +
+        turns.map(function (turn) {
+          return '<div class="transcript-swim-row">' +
+            '<section class="transcript-lane tutor">' +
+              '<span class="transcript-speaker tutor">tutor</span>' +
+              '<div class="transcript-speech">' + esc(turn.tutor || '') + '</div>' +
+            '</section>' +
+            '<div class="transcript-spine"><span class="transcript-bead">' + esc(turn.turn) + '</span></div>' +
+            '<section class="transcript-lane learner">' +
+              '<span class="transcript-speaker learner">learner</span>' +
+              '<div class="transcript-speech">' + esc(turn.learner || '') + '</div>' +
+              metaStrip(turn) +
+            '</section>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    }
+
+    function renderPlates(turns) {
+      if (!turns.length) return '<div class="transcript-empty">No matching transcript turns.</div>';
+      return turns.map(function (turn) {
+        var register = turn.register || {};
+        return '<article class="transcript-plate">' +
+          '<div class="transcript-plate-head"><span>Turn ' + esc(turn.turn) + ' · ' + esc(activeRow.policy) + '</span>' + registerMark(turn) + '</div>' +
+          '<div class="transcript-plate-voices">' +
+            voiceBlock('learner', turn.learner, false) +
+            voiceBlock('tutor', turn.tutor, false) +
+          '</div>' +
+          metaStrip(turn) +
+          '<div class="transcript-plate-reason">' +
+            '<strong>Register rationale:</strong> ' + esc(register.reason || 'No register rationale was captured for this turn.') +
+            (register.expectedDagMove ? '<br><strong>DAG move:</strong> ' + esc(register.expectedDagMove) : '') +
+            (register.expectedFieldMove ? '<br><strong>Field move:</strong> ' + esc(register.expectedFieldMove) : '') +
+          '</div>' +
+        '</article>';
+      }).join('');
+    }
+
+    function renderNotes(turns) {
+      if (!turns.length) return '<div class="transcript-empty">No matching transcript turns.</div>';
+      return '<div class="transcript-notes-grid">' + turns.map(function (turn) {
+        var state = turn.learnerState || {};
+        var dag = turn.dag || {};
+        var field = turn.field || {};
+        var trajectory = turn.trajectory || {};
+        return '<article class="transcript-note-card">' +
+          '<div class="transcript-note-head"><span>Turn ' + esc(turn.turn) + '</span>' + registerMark(turn) + '</div>' +
+          '<p><strong>Learner state:</strong> ' + esc([state.requestType, state.discourseMove, state.evidenceUse, state.epistemicStance, state.agency].filter(Boolean).join(' · ')) + '</p>' +
+          (state.summary ? '<p><strong>Classifier summary:</strong> ' + esc(state.summary) + '</p>' : '') +
+          '<p><strong>DAG:</strong> coverage ' + esc(pct(dag.bestPathCoverage)) + ', missing ' + esc(dag.missingPremiseCount) + ', grounded ' + esc(dag.groundedCount) + ', proof status ' + esc(proofStatus(dag.bottleneck || field.bottleneck)) + '</p>' +
+          '<p><strong>Field:</strong> mastery ' + esc(fmt(field.learnerMastery)) + ', risk ' + esc(fmt(field.learnerRisk)) + ', alignment ' + esc(fmt(field.tutorAlignment)) + ', momentum ' + esc(fmt(field.jointMomentum)) + '</p>' +
+          '<p><strong>Trajectory:</strong> field v ' + esc(fmt(trajectory.fieldVelocity)) + ', DAG v ' + esc(fmt(trajectory.dagVelocity)) + ', risk v ' + esc(fmt(trajectory.riskVelocity)) + '</p>' +
+          metaStrip(turn) +
+        '</article>';
+      }).join('') + '</div>';
+    }
+
+    function renderBody() {
+      var turns = filteredTurns();
+      modeButtons.forEach(function (button) {
+        button.classList.toggle('active', button.getAttribute('data-transcript-mode') === activeMode);
+      });
+      var finalTurn = ((activeRow.transcript && activeRow.transcript.turns) || []).slice(-1)[0] || {};
+      if (summary) {
+        summary.innerHTML = [
+          chip('policy', activeRow.policy),
+          chip('run', activeRow.runIndex),
+          chip('turns', activeRow.turnCount),
+          chip('status', activeRow.status, activeRow.status === 'ok' ? 'good' : ''),
+          chip('closure', activeRow.groundedClosure ? 'grounded' : 'open', activeRow.groundedClosure ? 'good' : 'hot'),
+          chip('final status', proofStatus(finalTurn.field && finalTurn.field.bottleneck)),
+          chip('shown', turns.length + '/' + (((activeRow.transcript && activeRow.transcript.turns) || []).length))
+        ].join('');
+      }
+      if (activeMode === 'script') body.innerHTML = renderScript(turns);
+      else if (activeMode === 'swimlanes') body.innerHTML = renderSwimlanes(turns);
+      else if (activeMode === 'notes') body.innerHTML = renderNotes(turns);
+      else if (activeMode === 'excerpts') body.innerHTML = renderExcerpts(turns);
+      else body.innerHTML = renderPlates(turns);
+    }
+
+    function syncTurnOptions() {
+      var turns = (activeRow.transcript && activeRow.transcript.turns) || [];
+      turnSelect.innerHTML = '<option value="">All turns</option>' + turns.map(function (turn) {
+        return '<option value="' + esc(turn.turn) + '"' + (String(turn.turn) === String(activeTurn) ? ' selected' : '') + '>turn ' + esc(turn.turn) + '</option>';
+      }).join('');
+    }
+
+    function selectRunById(id) {
+      var index = rows.findIndex(function (row) { return row.id === id; });
+      if (index < 0) return;
+      activeRow = rows[index];
+      activeTurn = '';
+      runSelect.value = String(index);
+      syncTurnOptions();
+      renderBody();
+      root.classList.add('transcript-jump-active');
+      window.setTimeout(function () { root.classList.remove('transcript-jump-active'); }, 900);
+    }
+
+    rows.forEach(function (row, index) {
+      var option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = 'policy ' + row.policy + ' · run ' + row.runIndex + ' · ' + row.turnCount + 't · ' + row.status;
+      runSelect.appendChild(option);
+    });
+    runSelect.addEventListener('change', function () {
+      activeRow = rows[Number(runSelect.value) || 0] || rows[0];
+      activeTurn = '';
+      if (searchInput) searchInput.value = '';
+      syncTurnOptions();
+      renderBody();
+    });
+    turnSelect.addEventListener('change', function () {
+      activeTurn = turnSelect.value;
+      renderBody();
+    });
+    searchInput.addEventListener('input', renderBody);
+    modeButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        activeMode = button.getAttribute('data-transcript-mode') || 'plates';
+        renderBody();
+      });
+    });
+    document.addEventListener('click', function (event) {
+      var trigger = event.target && event.target.closest ? event.target.closest('[data-transcript-jump]') : null;
+      if (!trigger) return;
+      selectRunById(trigger.getAttribute('data-transcript-jump'));
+    });
+    window.tutorStubTranscriptSelect = selectRunById;
+    syncTurnOptions();
+    renderBody();
+  })();
+  </script>`;
 }
 
 function renderAnimatedVizGuide() {
@@ -2500,13 +3561,10 @@ function renderAnimatedVizGuide() {
       'Slope',
       'The short-window trend line. It is less twitchy than one-turn velocity and helps identify plateau or convergence.',
     ],
+    ['Acceleration', 'Change in velocity. Large acceleration can mean a real phase shift or an unstable/noisy turn.'],
     [
-      'Acceleration',
-      'Change in velocity. Large acceleration can mean a real phase shift or an unstable/noisy turn.',
-    ],
-    [
-      'Bottleneck',
-      'The current limiting condition in the proof path, such as missing evidence, learner integration gap, or premature assertion.',
+      'Proof status',
+      'The current proof-path state. Missing evidence, learner integration gap, and premature assertion are open states; grounded asserted-secret closure is shown as closed.',
     ],
     [
       'Register/style',
@@ -2515,6 +3573,10 @@ function renderAnimatedVizGuide() {
     [
       'Policy distribution',
       'The policy probability spread over available registers. Selected-only policies have no spread, so the view shows observed frequency instead.',
+    ],
+    [
+      'Policy Compare',
+      'A variable-first replay view: choose one variable, then compare the per-turn policy means across all runs in the report.',
     ],
   ];
   return `<aside class="viz-sidebar" aria-label="Turn replay explanation">
@@ -2558,8 +3620,10 @@ function renderAnimatedVizSection(rows) {
               <button type="button" data-viz-mode="trajectory">Derivative Trace</button>
               <button type="button" data-viz-mode="dynamics">System Model</button>
               <button type="button" data-viz-mode="registers">Register Lens</button>
+              <button type="button" data-viz-mode="compare">Policy Compare</button>
             </div>
           </div>
+          <label class="viz-select-label viz-variable-control"><span>Variable</span><select data-viz-variable></select></label>
           <div class="viz-control-group viz-playback-control">
             <span class="viz-group-label">Playback</span>
             <div class="viz-step-buttons" aria-label="Turn playback controls">
@@ -2601,17 +3665,20 @@ function renderAnimatedVizSection(rows) {
     var helpStrip = root.querySelector('[data-viz-help]');
     var playButton = root.querySelector('[data-viz-play]');
     var resetButton = root.querySelector('[data-viz-reset]');
+    var variableSelect = root.querySelector('[data-viz-variable]');
     var modeButtons = Array.prototype.slice.call(root.querySelectorAll('[data-viz-mode]'));
     var activeRow = rows[0];
     var activeIndex = 0;
     var mode = 'field';
+    var compareVariableKey = 'coverage';
     var timer = null;
     var viewLabels = {
       state: 'State Snapshot',
       field: 'Interaction Field',
       trajectory: 'Derivative Trace',
       dynamics: 'System Model',
-      registers: 'Register Lens'
+      registers: 'Register Lens',
+      compare: 'Policy Compare'
     };
     var palette = {
       learnerMastery: '#0A0A0A',
@@ -2622,6 +3689,84 @@ function renderAnimatedVizSection(rows) {
       dag: '#0057B8',
       risk: '#E63946'
     };
+    var policyOrder = ['bland', 'random', 'state', 'field', 'trajectory', 'dynamic', 'dynamical_system', 'empirical_dynamical_system', 'negative'];
+    var policyPalette = {
+      bland: '#0A0A0A',
+      random: '#737373',
+      state: '#0057B8',
+      field: '#009B72',
+      trajectory: '#6B4EFF',
+      dynamic: '#D72670',
+      dynamical_system: '#D98E04',
+      empirical_dynamical_system: '#F2B705',
+      negative: '#E63946'
+    };
+    var compareVariables = [
+      {
+        key: 'coverage',
+        label: 'Evidence Coverage',
+        group: 'Learner-DAG',
+        value: function (frame) { return (frame.field && frame.field.coverage) ?? (frame.state && frame.state.dag && frame.state.dag.bestPathCoverage); },
+        display: function (value) { return pct(value); }
+      },
+      {
+        key: 'learnerMastery',
+        label: 'Learner Mastery',
+        group: 'Field',
+        value: function (frame) { return frame.field && frame.field.learnerMastery; },
+        display: format
+      },
+      {
+        key: 'learnerRisk',
+        label: 'Learner Risk',
+        group: 'Field',
+        lowerBetter: true,
+        value: function (frame) { return frame.field && frame.field.learnerRisk; },
+        display: format
+      },
+      {
+        key: 'tutorAlignment',
+        label: 'Tutor Alignment',
+        group: 'Field',
+        value: function (frame) { return frame.field && frame.field.tutorAlignment; },
+        display: format
+      },
+      {
+        key: 'jointMomentum',
+        label: 'Joint Momentum',
+        group: 'Field',
+        value: function (frame) { return frame.field && frame.field.jointMomentum; },
+        display: format
+      },
+      {
+        key: 'conceptual',
+        label: 'Conceptual Engagement',
+        group: 'Classifier',
+        value: function (frame) { return frame.state && frame.state.classifier && frame.state.classifier.scores && frame.state.classifier.scores.conceptual; },
+        display: format
+      },
+      {
+        key: 'epistemicReadiness',
+        label: 'Epistemic Readiness',
+        group: 'Classifier',
+        value: function (frame) { return frame.state && frame.state.classifier && frame.state.classifier.scores && frame.state.classifier.scores.epistemicReadiness; },
+        display: format
+      },
+      {
+        key: 'missingPremises',
+        label: 'Missing Premises',
+        group: 'Learner-DAG',
+        lowerBetter: true,
+        value: function (frame) {
+          var count = frame.state && frame.state.dag ? Number(frame.state.dag.missingPremiseCount) : NaN;
+          return Number.isFinite(count) ? Math.max(0, Math.min(1, count / 8)) : null;
+        },
+        display: function (value) {
+          var number = Number(value);
+          return Number.isFinite(number) ? Math.round(number * 8) + ' missing' : 'n/a';
+        }
+      }
+    ];
     var registerOrder = ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic', 'ironic', 'sarcastic', 'face_threat'];
     var registerMeta = {
       plain: { label: 'Plain', group: 'clarify', color: '#0A0A0A', note: 'plain-language re-entry' },
@@ -2684,11 +3829,15 @@ function renderAnimatedVizSection(rows) {
       });
     }
 
+    function proofStatus(value) {
+      return value === 'grounded_asserted_secret' ? 'closed' : value || 'open';
+    }
+
     function eventChips(events) {
       var list = (events || []).slice(0, 6);
       if (!list.length) return '<span class="event-chip event-none">none</span>';
       return list.map(function (event) {
-        return '<span class="event-chip">' + escapeReadoutHtml(event) + '</span>';
+        return '<span class="event-chip">' + escapeReadoutHtml(proofStatus(event)) + '</span>';
       }).join('');
     }
 
@@ -2707,9 +3856,74 @@ function renderAnimatedVizSection(rows) {
       return (activeRow.viz && activeRow.viz.frames) || [];
     }
 
+    function compareFrameCount() {
+      return rows.reduce(function (max, row) {
+        return Math.max(max, ((row.viz && row.viz.frames) || []).length);
+      }, 0);
+    }
+
+    function activeFrameCount() {
+      return mode === 'compare' ? compareFrameCount() : currentFrames().length;
+    }
+
     function currentFrame() {
       var frames = currentFrames();
       return frames[Math.max(0, Math.min(activeIndex, frames.length - 1))] || null;
+    }
+
+    function compareVariable() {
+      return compareVariables.find(function (variable) { return variable.key === compareVariableKey; }) || compareVariables[0];
+    }
+
+    function policyRank(policy) {
+      var index = policyOrder.indexOf(String(policy || ''));
+      return index === -1 ? policyOrder.length : index;
+    }
+
+    function policyColor(policy, index) {
+      var key = String(policy || '');
+      var fallback = ['#0A0A0A', '#0057B8', '#009B72', '#E63946', '#6B4EFF', '#D98E04', '#D72670', '#737373'];
+      return policyPalette[key] || fallback[index % fallback.length];
+    }
+
+    function policyGroups() {
+      var groups = {};
+      rows.forEach(function (row) {
+        var key = row.policy || 'unknown';
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(row);
+      });
+      return Object.keys(groups)
+        .sort(function (left, right) {
+          return policyRank(left) - policyRank(right) || left.localeCompare(right);
+        })
+        .map(function (policy, index) {
+          return {
+            policy: policy,
+            rows: groups[policy],
+            color: policyColor(policy, index),
+          };
+        });
+    }
+
+    function frameForRow(row, index) {
+      var frames = (row.viz && row.viz.frames) || [];
+      return frames[index] || null;
+    }
+
+    function meanFinite(values) {
+      var finiteValues = values.map(Number).filter(Number.isFinite);
+      if (!finiteValues.length) return null;
+      return finiteValues.reduce(function (sum, value) { return sum + value; }, 0) / finiteValues.length;
+    }
+
+    function valueForPolicyAt(group, index, variable) {
+      return meanFinite(
+        group.rows.map(function (row) {
+          var frame = frameForRow(row, index);
+          return frame ? variable.value(frame) : null;
+        }),
+      );
     }
 
     function resizeCanvas() {
@@ -2808,7 +4022,7 @@ function renderAnimatedVizSection(rows) {
 
     function drawPlot(series, options) {
       var opts = options || {};
-      var frames = currentFrames();
+      var frames = opts.frames || currentFrames();
       var x = opts.x || 44;
       var y = opts.y || 58;
       var width = opts.width || 640;
@@ -2839,19 +4053,26 @@ function renderAnimatedVizSection(rows) {
       ctx.strokeRect(x, y, width, height);
       series.forEach(function (item, seriesIndex) {
         var points = [];
+        var started = false;
         ctx.beginPath();
         ctx.strokeStyle = item.color;
         ctx.lineWidth = item.lineWidth || 3.5;
         ctx.setLineDash(item.dash || []);
         for (var index = 0; index <= activeIndex && index < frames.length; index += 1) {
-          var value = clamp01(item.value(frames[index]));
+          var rawValue = item.value(frames[index], index);
+          var numericValue = Number(rawValue);
+          if (!Number.isFinite(numericValue)) continue;
+          var value = clamp01(numericValue);
           var px = x + (index / count) * width;
           var py = y + height - value * height;
           points.push({ x: px, y: py, active: index === activeIndex });
-          if (index === 0) ctx.moveTo(px, py);
+          if (!started) {
+            ctx.moveTo(px, py);
+            started = true;
+          }
           else ctx.lineTo(px, py);
         }
-        ctx.stroke();
+        if (started) ctx.stroke();
         ctx.setLineDash([]);
         points.forEach(function (point) {
           ctx.beginPath();
@@ -2882,7 +4103,7 @@ function renderAnimatedVizSection(rows) {
       rectBar('coverage', frame.state.dag.bestPathCoverage, 38, 214, width * 0.36, '#E63946');
       var rightX = width * 0.52;
       text('DAG', rightX, 82, { size: 13, weight: '700' });
-      text('bottleneck: ' + (frame.state.dag.bottleneck || 'unknown'), rightX, 112, { color: '#0A0A0A' });
+      text('proof status: ' + proofStatus(frame.state.dag.bottleneck), rightX, 112, { color: '#0A0A0A' });
       text('grounded: ' + frame.state.dag.groundedCount + '   missing: ' + frame.state.dag.missingPremiseCount, rightX, 140, { color: '#0A0A0A' });
       text('unsupported: ' + frame.state.dag.unsupportedAssertionCount, rightX, 168, { color: '#0A0A0A' });
       text('request: ' + ((frame.state.classifier && frame.state.classifier.requestType) || 'unknown'), rightX, 214, { color: '#0A0A0A' });
@@ -2917,6 +4138,44 @@ function renderAnimatedVizSection(rows) {
         text('s ' + format(metric.slope), x + 86, yy + 24, { color: '#0A0A0A' });
         text('a ' + format(metric.acceleration), x + 172, yy + 24, { color: '#0A0A0A' });
       });
+    }
+
+    function drawPolicyCompare(width, height) {
+      var variable = compareVariable();
+      var groups = policyGroups();
+      var maxFrames = Math.max(1, compareFrameCount());
+      var frames = Array.from({ length: maxFrames }, function (_, index) {
+        return { turn: index + 1 };
+      });
+      text('Policy Compare', 28, 34, { size: 18, weight: '700' });
+      text(variable.label + ' · ' + variable.group + (variable.lowerBetter ? ' · lower is better' : ''), 28, 58, {
+        color: '#525252',
+        size: 12,
+        weight: '700'
+      });
+      drawPlot(
+        groups.map(function (group) {
+          return {
+            label: group.policy + (group.rows.length > 1 ? ' (' + group.rows.length + ')' : ''),
+            color: group.color,
+            lineWidth: group.policy === activeRow.policy ? 4.5 : 3,
+            dash: group.policy === 'random' ? [2, 5] : group.policy === 'negative' ? [9, 5] : [],
+            value: function (_point, index) {
+              return valueForPolicyAt(group, index, variable);
+            },
+          };
+        }),
+        {
+          frames: frames,
+          x: 54,
+          y: 104,
+          width: width - 108,
+          height: height - 202,
+          legendX: 210,
+          legendY: 72,
+          legendWidth: width - 250,
+        },
+      );
     }
 
     function drawHeatmap(object, x, y, width, cellHeight) {
@@ -3098,7 +4357,7 @@ function renderAnimatedVizSection(rows) {
       if (!readout || !frame) return;
       var meta = metaForRegister(frame.selectedRegister || 'none');
       var registerKey = frame.selectedRegister || 'none';
-      var bottleneck = (frame.field && frame.field.bottleneck) || 'unknown';
+      var bottleneck = proofStatus(frame.field && frame.field.bottleneck);
       var learner = (frame.snippets && frame.snippets.learner) || '';
       var tutor = (frame.snippets && frame.snippets.tutor) || '';
       readout.innerHTML = [
@@ -3114,7 +4373,7 @@ function renderAnimatedVizSection(rows) {
             '<em>' + escapeReadoutHtml(registerKey) + ' · ' + escapeReadoutHtml(meta.group) + ' · ' + escapeReadoutHtml(meta.note) + '</em>',
           '</section>',
           '<section class="readout-card readout-bottleneck">',
-            '<span class="readout-label">proof bottleneck</span>',
+            '<span class="readout-label">proof status</span>',
             '<strong>' + escapeReadoutHtml(bottleneck) + '</strong>',
           '</section>',
           '<section class="readout-card readout-events">',
@@ -3129,9 +4388,68 @@ function renderAnimatedVizSection(rows) {
       ].join('');
     }
 
+    function updateCompareReadout() {
+      if (!readout) return;
+      var variable = compareVariable();
+      var groups = policyGroups();
+      var values = groups
+        .map(function (group) {
+          var value = valueForPolicyAt(group, activeIndex, variable);
+          return {
+            policy: group.policy,
+            color: group.color,
+            runs: group.rows.length,
+            value: value,
+          };
+        })
+        .filter(function (entry) {
+          return Number.isFinite(Number(entry.value));
+        });
+      var sorted = values.slice().sort(function (left, right) {
+        return variable.lowerBetter ? left.value - right.value : right.value - left.value;
+      });
+      var leader = sorted[0] || null;
+      var low = values.length ? Math.min.apply(null, values.map(function (entry) { return entry.value; })) : null;
+      var high = values.length ? Math.max.apply(null, values.map(function (entry) { return entry.value; })) : null;
+      var spread = Number.isFinite(high) && Number.isFinite(low) ? high - low : null;
+      readout.innerHTML = [
+        '<div class="viz-readout-head">',
+          '<strong>Policy comparison</strong>',
+          '<span>turn ' + escapeReadoutHtml(activeIndex + 1) + '/' + escapeReadoutHtml(compareFrameCount()) + '</span>',
+          '<span>variable ' + escapeReadoutHtml(variable.label) + '</span>',
+        '</div>',
+        '<div class="viz-readout-grid">',
+          '<section class="readout-card readout-style" style="--style-color:' + escapeReadoutHtml(leader ? leader.color : '#0A0A0A') + '">',
+            '<span class="readout-label">leading policy</span>',
+            '<strong><span class="style-swatch"></span>' + escapeReadoutHtml(leader ? leader.policy : 'n/a') + '</strong>',
+            '<em>' + escapeReadoutHtml(leader ? variable.display(leader.value) : 'no policy has a value at this turn') + '</em>',
+          '</section>',
+          '<section class="readout-card">',
+            '<span class="readout-label">comparison rule</span>',
+            '<strong>' + escapeReadoutHtml(variable.lowerBetter ? 'lower is better' : 'higher is better') + '</strong>',
+            '<em>policy mean when multiple runs exist</em>',
+          '</section>',
+          '<section class="readout-card">',
+            '<span class="readout-label">spread</span>',
+            '<strong>' + escapeReadoutHtml(format(spread)) + '</strong>',
+            '<em>high minus low at this turn</em>',
+          '</section>',
+        '</div>',
+        '<div class="viz-readout-lines">',
+          sorted.slice(0, 9).map(function (entry) {
+            return '<p><span class="snippet-label tutor" style="background:' + escapeReadoutHtml(entry.color) + '">' +
+              escapeReadoutHtml(entry.policy) +
+              '</span><span>' + escapeReadoutHtml(variable.display(entry.value)) +
+              (entry.runs > 1 ? ' · mean of ' + escapeReadoutHtml(entry.runs) + ' runs' : '') +
+              '</span></p>';
+          }).join('') || '<p><span class="snippet-label tutor">none</span><span>No policy has this variable at the current turn.</span></p>',
+        '</div>'
+      ].join('');
+    }
+
     function helpTextForMode() {
       if (mode === 'state') {
-        return 'View: State Snapshot. Shows the current classifier and learner-DAG snapshot, including request type, proof coverage, missing premises, and bottleneck.';
+        return 'View: State Snapshot. Shows the current classifier and learner-DAG snapshot, including request type, proof coverage, missing premises, and proof status.';
       }
       if (mode === 'trajectory') {
         return 'View: Derivative Trace. Shows field, DAG, and risk movement over recent turns. v/s/a are velocity, slope, and acceleration.';
@@ -3142,14 +4460,23 @@ function renderAnimatedVizSection(rows) {
       if (mode === 'registers') {
         return 'View: Register Lens. Shows selected tutor register/style over time; bars show either policy probabilities or observed frequency for selected-only policies.';
       }
+      if (mode === 'compare') {
+        return 'View: Policy Compare. Select one variable and animate policy means against each other turn by turn. If a policy has several runs, its line is the per-turn mean.';
+      }
       return 'View: Interaction Field. Shows mastery, risk, tutor alignment, and joint momentum across turns.';
     }
 
     function draw() {
       var width = canvas.clientWidth || 960;
       var height = canvas.clientHeight || 420;
-      var frame = currentFrame();
       clear(width, height);
+      if (mode === 'compare') {
+        drawPolicyCompare(width, height);
+        text('turn ' + (activeIndex + 1), width - 28, 34, { align: 'right', color: '#525252', size: 12, weight: '700' });
+        updateCompareReadout();
+        return;
+      }
+      var frame = currentFrame();
       if (!frame) return;
       if (mode === 'state') drawState(frame, width, height);
       else if (mode === 'trajectory') drawTrajectory(frame, width, height);
@@ -3161,19 +4488,29 @@ function renderAnimatedVizSection(rows) {
     }
 
     function syncControls() {
-      var frames = currentFrames();
-      range.max = String(Math.max(0, frames.length - 1));
+      var count = activeFrameCount();
+      range.max = String(Math.max(0, count - 1));
       range.value = String(activeIndex);
       modeButtons.forEach(function (button) {
         button.classList.toggle('active', button.getAttribute('data-viz-mode') === mode);
       });
+      if (select) {
+        select.disabled = mode === 'compare';
+        var selectBox = select.closest ? select.closest('label') : null;
+        if (selectBox) selectBox.classList.toggle('viz-control-disabled', mode === 'compare');
+      }
+      if (variableSelect) {
+        variableSelect.disabled = mode !== 'compare';
+        var variableBox = variableSelect.closest ? variableSelect.closest('label') : null;
+        if (variableBox) variableBox.classList.toggle('viz-control-disabled', mode !== 'compare');
+      }
       if (helpStrip) helpStrip.textContent = helpTextForMode();
       if (playButton) playButton.textContent = timer ? 'Pause' : 'Play';
     }
 
     function setIndex(value) {
-      var frames = currentFrames();
-      activeIndex = Math.max(0, Math.min(Number(value) || 0, Math.max(0, frames.length - 1)));
+      var count = activeFrameCount();
+      activeIndex = Math.max(0, Math.min(Number(value) || 0, Math.max(0, count - 1)));
       syncControls();
       draw();
     }
@@ -3190,10 +4527,21 @@ function renderAnimatedVizSection(rows) {
       option.textContent = 'policy ' + row.policy + ' · run ' + row.runIndex + ' · ' + row.turnCount + 't · ' + row.status;
       select.appendChild(option);
     });
+    compareVariables.forEach(function (variable) {
+      var option = document.createElement('option');
+      option.value = variable.key;
+      option.textContent = variable.label + ' · ' + variable.group + (variable.lowerBetter ? ' · lower better' : '');
+      variableSelect.appendChild(option);
+    });
+    variableSelect.value = compareVariableKey;
     select.addEventListener('change', function () {
       stop();
       activeRow = rows[Number(select.value) || 0] || rows[0];
       setIndex(0);
+    });
+    variableSelect.addEventListener('change', function () {
+      compareVariableKey = variableSelect.value || 'coverage';
+      draw();
     });
     range.addEventListener('input', function () {
       stop();
@@ -3213,8 +4561,8 @@ function renderAnimatedVizSection(rows) {
         return;
       }
       timer = window.setInterval(function () {
-        var frames = currentFrames();
-        if (activeIndex >= frames.length - 1) {
+        var count = activeFrameCount();
+        if (activeIndex >= count - 1) {
           stop();
           return;
         }
@@ -3229,8 +4577,7 @@ function renderAnimatedVizSection(rows) {
     modeButtons.forEach(function (button) {
       button.addEventListener('click', function () {
         mode = button.getAttribute('data-viz-mode') || 'field';
-        syncControls();
-        draw();
+        setIndex(activeIndex);
       });
     });
     if (window.ResizeObserver) {
@@ -3258,12 +4605,12 @@ function renderFieldTrajectories(rows) {
             <div>
               <h3>${escapeHtml(title)}</h3>
               <div class="sub">${escapeHtml(row.status)} · ${escapeHtml(row.turnCount)} turns · ${escapeHtml(
-                row.stopReason || 'no stop reason',
+                displayStopReason(row.stopReason),
               )}</div>
             </div>
             <div class="field-actions">
               ${row.fieldSvg?.href ? `<a class="field-link" href="${escapeHtml(row.fieldSvg.href)}">svg</a>` : ''}
-              <div class="field-badge">${row.groundedClosure ? 'grounded' : escapeHtml(final.bottleneck || row.bottleneck || 'open')}</div>
+              <div class="field-badge">${escapeHtml(displayBottleneck(final.bottleneck || row.bottleneck, { groundedClosure: row.groundedClosure }))}</div>
             </div>
           </div>
           <div class="field-card-summary">${escapeHtml(fieldSummaryText(row))}</div>
@@ -3293,36 +4640,40 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <td>${bucket.meanCoverage} ${pctBar(bucket.meanCoverage)}</td>
         <td>${bucket.meanMissing}</td>
         <td>${bucket.meanFieldMasteryDelta}</td>
-        <td>${bucket.meanFieldRiskDelta}</td>
+        <td>${formatPositiveField(-Number(bucket.meanFieldRiskDelta))}</td>
         <td>${escapeHtml(formatCounts(bucket.registerCounts))}</td>
         <td>${bucket.registerEntropy}</td>
       </tr>`,
     )
     .join('\n');
   const runRows = orderedRows
-    .map(
-      (row) => `<tr>
+    .map((row, index) => {
+      const transcriptId = row.transcript?.turns?.length ? transcriptRowId(row, index) : '';
+      return `<tr>
         <td>${escapeHtml(row.policy)}</td>
         <td>${escapeHtml(row.runIndex)}</td>
         <td><span class="status ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span></td>
         <td>${row.groundedClosure ? 'yes' : 'no'}</td>
-        <td>${escapeHtml(row.stopReason || '')}</td>
+        <td>${escapeHtml(displayStopReason(row.stopReason))}</td>
         <td>${escapeHtml(row.turnCount)}</td>
         <td>${row.bestPathCoverage} ${pctBar(row.bestPathCoverage)}</td>
         <td>${escapeHtml(row.missingPremiseCount ?? '')}</td>
-        <td>${escapeHtml(row.bottleneck)}</td>
+        <td>${escapeHtml(displayBottleneck(row.bottleneck, { groundedClosure: row.groundedClosure }))}</td>
         <td>${escapeHtml(
           row.field?.delta
-            ? `M ${formatSignedField(row.field.delta.learnerMastery)} / R ${formatSignedField(row.field.delta.learnerRisk)}`
+            ? `mastery gain ${formatSignedField(row.field.delta.learnerMastery)} / risk reduction ${formatPositiveField(
+                -Number(row.field.delta.learnerRisk),
+              )}`
             : '',
         )}</td>
         <td>${escapeHtml(formatCounts(row.registerCounts, { limit: 4 }))}</td>
         <td>${escapeHtml(formatCounts(row.efficacyCounts, { limit: 4 }))}</td>
         <td>${escapeHtml(row.leakCount)}</td>
+        <td>${transcriptId ? `<a href="#transcripts" data-transcript-jump="${escapeHtml(transcriptId)}">transcript</a>` : ''}</td>
         <td>${row.trace ? `<a href="${escapeHtml(path.relative(summary.config.traceDir || '.', path.join(ROOT, row.trace)))}">trace</a>` : ''}</td>
         <td>${row.log ? `<a href="${escapeHtml(path.relative(summary.config.traceDir || '.', path.join(ROOT, row.log)))}">log</a>` : ''}</td>
-      </tr>`,
-    )
+      </tr>`;
+    })
     .join('\n');
   return `<!doctype html>
 <html lang="en">
@@ -3361,6 +4712,8 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
           </div>
         </section>
 
+        ${renderReadFirstRanking(orderedRows, summary)}
+
         <section id="learner-profile" class="report-section">
           <h2>Learner Profile</h2>
           ${renderLearnerProfileSection(summary, rows)}
@@ -3378,8 +4731,8 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>${reportInfoTerm('meanTurns', 'Mean Turns')}</th>
         <th>${reportInfoTerm('meanCoverage', 'Mean Coverage')}</th>
         <th>${reportInfoTerm('meanMissing', 'Mean Missing')}</th>
-        <th>${reportInfoTerm('masteryDelta', 'Mastery Δ')}</th>
-        <th>${reportInfoTerm('riskDelta', 'Risk Δ')}</th>
+        <th>${reportInfoTerm('masteryDelta', 'Mastery Gain')}</th>
+        <th>${reportInfoTerm('riskDelta', 'Risk Reduction')}</th>
         <th>${reportInfoTerm('topRegisters', 'Top Registers')}</th>
         <th>${reportInfoTerm('entropy', 'Entropy')}</th>
       </tr></thead>
@@ -3391,6 +4744,11 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <section id="turn-replay" class="report-section">
           <h2>Turn Replay</h2>
           ${renderAnimatedVizSection(orderedRows)}
+        </section>
+
+        <section id="transcripts" class="report-section">
+          <h2>Transcripts</h2>
+          ${renderTranscriptExplorer(orderedRows)}
         </section>
 
         <section id="field-trajectories" class="report-section">
@@ -3411,15 +4769,16 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>${reportInfoTerm('meanTurns', 'Turns')}</th>
         <th>${reportInfoTerm('meanCoverage', 'Coverage')}</th>
         <th>${reportInfoTerm('meanMissing', 'Missing')}</th>
-        <th>${reportInfoTerm('bottleneck', 'Bottleneck')}</th>
-        <th>${reportInfoTerm('fieldDelta', 'Field Δ')}</th>
+        <th>${reportInfoTerm('bottleneck', 'Proof Status')}</th>
+        <th>${reportInfoTerm('fieldDelta', 'Field Movement')}</th>
         <th>${reportInfoTerm('topRegisters', 'Registers')}</th>
         <th>${reportInfoTerm('efficacy', 'Efficacy')}</th>
         <th>${reportInfoTerm('leaks', 'Leaks')}</th>
+        <th>Transcript</th>
         <th>Trace</th>
         <th>Log</th>
       </tr></thead>
-      <tbody>${runRows || '<tr><td colspan="15">No run rows.</td></tr>'}</tbody>
+      <tbody>${runRows || '<tr><td colspan="16">No run rows.</td></tr>'}</tbody>
           </table>
           </div>
         </section>
@@ -3536,7 +4895,9 @@ function readLedgerEntries(ledgerPath) {
 }
 
 function markdownEscape(value) {
-  return String(value ?? '').replace(/\|/gu, '\\|').replace(/\n/gu, ' ');
+  return String(value ?? '')
+    .replace(/\|/gu, '\\|')
+    .replace(/\n/gu, ' ');
 }
 
 function formatLedgerPolicies(entry) {
@@ -3569,7 +4930,11 @@ function renderLedgerMarkdown(entries) {
         `${entry.totals?.ok ?? 0}/${entry.totals?.failed ?? 0}`,
         markdownEscape(entry.totals?.groundedRate ?? ''),
         markdownEscape(entry.totals?.meanTurns ?? ''),
-        markdownEscape(Object.entries(entry.totals?.registerCounts || {}).map(([key, value]) => `${key}:${value}`).join(', ')),
+        markdownEscape(
+          Object.entries(entry.totals?.registerCounts || {})
+            .map(([key, value]) => `${key}:${value}`)
+            .join(', '),
+        ),
         formatLedgerReports(entry),
       ].join(' | '),
     );
@@ -3642,12 +5007,71 @@ function reportFieldSvgFiles(htmlPath) {
 
 function shortDate(value) {
   if (!value) return '';
-  return String(value).replace(/\.\d{3}Z$/u, 'Z').replace('T', ' ');
+  return String(value)
+    .replace(/\.\d{3}Z$/u, 'Z')
+    .replace('T', ' ');
 }
 
 function indexAggregates(summary) {
   if (summary?.aggregates?.byPolicy) return summary.aggregates;
   return summarizeRows(resultRows(summary?.results || []));
+}
+
+function indexNumberOrNull(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function indexDetailRows(summary) {
+  const rows = Array.isArray(summary?.rows) ? summary.rows : resultRows(summary?.results || []);
+  return rows.map((row) => {
+    const efficacyCounts = row.efficacyCounts || {};
+    const efficacyTotal = Object.values(efficacyCounts).reduce((sum, value) => sum + Number(value || 0), 0);
+    return {
+      policy: row.policy || 'unknown',
+      status: row.status || 'unknown',
+      groundedClosure: row.groundedClosure === true,
+      turnCount: indexNumberOrNull(row.turnCount),
+      bestPathCoverage: indexNumberOrNull(row.bestPathCoverage),
+      missingPremiseCount: indexNumberOrNull(row.missingPremiseCount),
+      leakCount: Number(row.leakCount || 0),
+      errorCount: Number(row.errorCount || 0),
+      registerEntropy: indexNumberOrNull(row.registerEntropy),
+      registerCounts: row.registerCounts || {},
+      efficacyCounts,
+      efficacyTotal,
+      positiveProgress: Number(efficacyCounts.positive_progress || 0),
+      finalMastery: indexNumberOrNull(row.field?.final?.learnerMastery),
+      finalRisk: indexNumberOrNull(row.field?.final?.learnerRisk),
+      masteryGain: indexNumberOrNull(row.field?.delta?.learnerMastery),
+      riskReduction:
+        row.field?.delta?.learnerRisk === undefined || row.field?.delta?.learnerRisk === null
+          ? null
+          : -Number(row.field.delta.learnerRisk),
+    };
+  });
+}
+
+function indexRunKind({ reportName, summary, config, aggregates, status }) {
+  if (config.dryRun || aggregates.dryRun === aggregates.rows || status === 'dry_run') return 'dry';
+  const smokeText = [
+    reportName,
+    config.traceDir,
+    summary?.resume?.sourcePath,
+    summary?.report?.json,
+    summary?.report?.html,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  if (/(^|[^a-z0-9])smoke([^a-z0-9]|$)/u.test(smokeText)) return 'smoke';
+  return 'real';
+}
+
+function indexRunKindLabel(kind) {
+  if (kind === 'dry') return 'dry run';
+  if (kind === 'smoke') return 'smoke run';
+  return 'real run';
 }
 
 function readIndexSummary(jsonPath, rootDir) {
@@ -3657,20 +5081,31 @@ function readIndexSummary(jsonPath, rootDir) {
     const config = summary.config || {};
     const htmlPath = reportHtmlPathForSummary(summary, jsonPath);
     const svgFiles = reportFieldSvgFiles(htmlPath);
+    const detailRows = indexDetailRows(summary);
+    const okDetailRows = detailRows.filter((row) => row.status !== 'dry_run' && row.status !== 'failed');
+    const efficacyCounts = mergeCounts(okDetailRows.map((row) => row.efficacyCounts));
+    const efficacyTotal = Object.values(efficacyCounts).reduce((sum, value) => sum + Number(value || 0), 0);
     const relJson = hrefRelative(rootDir, jsonPath);
     const relParent = path.dirname(relJson);
     const reportName =
       relParent && relParent !== '.'
         ? `${relParent}/${path.basename(jsonPath, '.json')}`
         : path.basename(jsonPath, '.json');
-    const policies = Array.isArray(config.policies) && config.policies.length ? config.policies : Object.keys(aggregates.byPolicy || {});
+    const policies =
+      Array.isArray(config.policies) && config.policies.length
+        ? config.policies
+        : Object.keys(aggregates.byPolicy || {});
     const policyText = policies.join(' ');
     const completedAt = summary.completedAt || summary.startedAt || '';
-    const completedMs = Date.parse(completedAt) || Date.parse(summary.startedAt || '') || fs.statSync(jsonPath).mtimeMs || 0;
-    const status = config.dryRun || aggregates.dryRun === aggregates.rows ? 'dry_run' : aggregates.failed ? 'failed' : 'ok';
+    const completedMs =
+      Date.parse(completedAt) || Date.parse(summary.startedAt || '') || fs.statSync(jsonPath).mtimeMs || 0;
+    const status =
+      config.dryRun || aggregates.dryRun === aggregates.rows ? 'dry_run' : aggregates.failed ? 'failed' : 'ok';
+    const runKind = indexRunKind({ reportName, summary, config, aggregates, status });
     const htmlExists = fs.existsSync(htmlPath);
     return {
       reportName,
+      runKind,
       jsonPath,
       htmlPath,
       htmlExists,
@@ -3698,10 +5133,22 @@ function readIndexSummary(jsonPath, rootDir) {
       meanTurns: aggregates.meanTurns ?? '',
       meanCoverage: aggregates.meanCoverage ?? '',
       meanMissing: aggregates.meanMissing ?? '',
+      leakCount: aggregates.leakCount || 0,
+      registerEntropy: aggregates.registerEntropy ?? '',
+      finalMastery: mean(okDetailRows.map((row) => row.finalMastery)),
+      finalRisk: mean(okDetailRows.map((row) => row.finalRisk)),
+      masteryGain: mean(okDetailRows.map((row) => row.masteryGain)),
+      riskReduction: mean(okDetailRows.map((row) => row.riskReduction)),
+      progressRate: efficacyTotal
+        ? Number((Number(efficacyCounts.positive_progress || 0) / efficacyTotal).toFixed(3))
+        : 0,
+      detailRows,
       policyText,
       completedMs,
       searchText: [
         reportName,
+        runKind,
+        indexRunKindLabel(runKind),
         status,
         policyText,
         config.autoLearnerProfileId,
@@ -3724,6 +5171,7 @@ function readIndexSummary(jsonPath, rootDir) {
   } catch (error) {
     return {
       reportName: path.basename(jsonPath, '.json'),
+      runKind: 'smoke',
       jsonPath,
       htmlPath: '',
       htmlExists: false,
@@ -3751,6 +5199,14 @@ function readIndexSummary(jsonPath, rootDir) {
       meanTurns: '',
       meanCoverage: '',
       meanMissing: '',
+      leakCount: 0,
+      registerEntropy: '',
+      finalMastery: 0,
+      finalRisk: 0,
+      masteryGain: 0,
+      riskReduction: 0,
+      progressRate: 0,
+      detailRows: [],
       policyText: '',
       completedMs: fs.existsSync(jsonPath) ? fs.statSync(jsonPath).mtimeMs : 0,
       searchText: `${path.basename(jsonPath)} parse error`.toLowerCase(),
@@ -3890,7 +5346,7 @@ function indexProgressBar(rate) {
 
 function renderLiveJob(job) {
   const coverage = job.coverage === null || job.coverage === undefined ? '' : ` · c${escapeHtml(job.coverage)}`;
-  const bottleneck = job.bottleneck ? ` · ${escapeHtml(job.bottleneck)}` : '';
+  const bottleneck = job.bottleneck ? ` · ${escapeHtml(displayBottleneck(job.bottleneck))}` : '';
   const lastType = job.lastType ? ` · ${escapeHtml(job.lastType)}` : '';
   const links = [
     job.logHref ? `<a href="${escapeHtml(job.logHref)}">log</a>` : '',
@@ -3918,8 +5374,11 @@ function renderLiveRuns(activeRuns) {
     ${activeRuns
       .map((run) => {
         const totals = run.totals || {};
-        const rate = totals.progressRate ?? (totals.jobs ? Number(totals.completed || 0) / Number(totals.jobs || 1) : 0);
-        const activeJobs = run.activeJobs.length ? run.activeJobs : run.jobs.filter((job) => job.status !== 'queued').slice(-6);
+        const rate =
+          totals.progressRate ?? (totals.jobs ? Number(totals.completed || 0) / Number(totals.jobs || 1) : 0);
+        const activeJobs = run.activeJobs.length
+          ? run.activeJobs
+          : run.jobs.filter((job) => job.status !== 'queued').slice(-6);
         return `<article class="live-run-card ${escapeHtml(run.status)}" data-search="${escapeHtml(run.searchText)}">
           <div class="live-run-top">
             <div>
@@ -3952,15 +5411,646 @@ function renderLiveRuns(activeRuns) {
   </section>`;
 }
 
-function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
+function meanIndexNumbers(values) {
+  const finite = values
+    .filter((value) => value !== null && value !== undefined)
+    .map(Number)
+    .filter(Number.isFinite);
+  if (!finite.length) return null;
+  return Number((finite.reduce((sum, value) => sum + value, 0) / finite.length).toFixed(3));
+}
+
+function formatIndexPercent(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 'n/a';
+  return `${Math.round(numeric * 100)}%`;
+}
+
+function formatIndexField(value) {
+  return value === null || value === undefined ? 'n/a' : formatFieldValue(value);
+}
+
+function formatIndexSigned(value) {
+  return value === null || value === undefined ? 'n/a' : formatSignedField(value);
+}
+
+function formatIndexPositive(value) {
+  return value === null || value === undefined ? 'n/a' : formatPositiveField(value);
+}
+
+function recentIndexReportRows(rows, { limit = 12 } = {}) {
+  return rows.filter((row) => row.runKind === 'real' && Number(row.ok || 0) > 0).slice(0, limit);
+}
+
+function expandIndexDetailRows(reportRows) {
+  return reportRows.flatMap((report) =>
+    (report.detailRows || []).map((row) => ({
+      ...row,
+      reportName: report.reportName,
+      learnerProfile: report.learnerProfile || 'default',
+    })),
+  );
+}
+
+function summarizeIndexDetailRows(rows) {
+  const liveRows = rows.filter((row) => row.status !== 'dry_run');
+  const okRows = liveRows.filter((row) => row.status !== 'failed');
+  const totalTurns = okRows.reduce((sum, row) => sum + Number(row.turnCount || 0), 0);
+  const efficacyCounts = mergeCounts(okRows.map((row) => row.efficacyCounts));
+  const efficacyTotal = Object.values(efficacyCounts).reduce((sum, value) => sum + Number(value || 0), 0);
+  const leakCount = okRows.reduce((sum, row) => sum + Number(row.leakCount || 0), 0);
+  const registerCounts = mergeCounts(okRows.map((row) => row.registerCounts));
+  const registers = Object.entries(registerCounts).flatMap(([register, count]) =>
+    Array.from({ length: Number(count || 0) }, () => register),
+  );
+  return {
+    rows: liveRows.length,
+    ok: okRows.length,
+    failed: liveRows.filter((row) => row.status === 'failed').length,
+    grounded: okRows.filter((row) => row.groundedClosure).length,
+    closureRate: okRows.length
+      ? Number((okRows.filter((row) => row.groundedClosure).length / okRows.length).toFixed(3))
+      : 0,
+    meanTurns: meanIndexNumbers(okRows.map((row) => row.turnCount)),
+    meanCoverage: meanIndexNumbers(okRows.map((row) => row.bestPathCoverage)),
+    meanMissing: meanIndexNumbers(okRows.map((row) => row.missingPremiseCount)),
+    finalMastery: meanIndexNumbers(okRows.map((row) => row.finalMastery)),
+    finalRisk: meanIndexNumbers(okRows.map((row) => row.finalRisk)),
+    masteryGain: meanIndexNumbers(okRows.map((row) => row.masteryGain)),
+    riskReduction: meanIndexNumbers(okRows.map((row) => row.riskReduction)),
+    registerEntropy: entropy(registers),
+    progressRate: efficacyTotal
+      ? Number((Number(efficacyCounts.positive_progress || 0) / efficacyTotal).toFixed(3))
+      : 0,
+    leakCount,
+    leakDiscipline: clampField01(1 - leakCount / Math.max(1, totalTurns)),
+    reportCount: new Set(rows.map((row) => row.reportName).filter(Boolean)).size,
+  };
+}
+
+function indexSignalScore(stats) {
+  const finalMastery = stats.finalMastery === null ? Number(stats.meanCoverage || 0) : Number(stats.finalMastery);
+  const finalRisk = stats.finalRisk === null ? 0.5 : Number(stats.finalRisk);
+  const masteryGain = stats.masteryGain === null ? 0 : Number(stats.masteryGain);
+  const riskReduction = stats.riskReduction === null ? 0 : Number(stats.riskReduction);
+  const turnEfficiency = clampField01(1 - Number(stats.meanTurns || 0) / 120);
+  return roundField(
+    0.22 * Number(stats.closureRate || 0) +
+      0.16 * Number(stats.meanCoverage || 0) +
+      0.14 * clampField01(finalMastery) +
+      0.12 * clampField01(1 - finalRisk) +
+      0.12 * clampField01(masteryGain) +
+      0.1 * clampField01(riskReduction) +
+      0.08 * Number(stats.leakDiscipline || 0) +
+      0.04 * turnEfficiency +
+      0.02 * Number(stats.progressRate || 0),
+  );
+}
+
+function aggregateIndexDetailRows(rows, keyFn) {
+  const buckets = new Map();
+  for (const row of rows) {
+    const key = keyFn(row);
+    if (!key) continue;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(row);
+  }
+  return [...buckets.entries()].map(([key, bucketRows]) => {
+    const stats = summarizeIndexDetailRows(bucketRows);
+    return {
+      key,
+      ...stats,
+      signalScore: indexSignalScore(stats),
+    };
+  });
+}
+
+function indexBigPictureBullets({ stats, policyStats, learnerStats, reports }) {
+  if (!reports.length)
+    return ['No completed real reports are available yet. Run or rebuild a report to populate the dashboard.'];
+  const bullets = [];
+  const coverageText =
+    stats.meanCoverage === null
+      ? 'coverage is not yet available'
+      : `${formatIndexPercent(stats.meanCoverage)} mean evidence coverage`;
+  bullets.push(
+    `Recent lens covers ${reports.length} real report${reports.length === 1 ? '' : 's'} and ${stats.ok} completed row${
+      stats.ok === 1 ? '' : 's'
+    }: ${stats.grounded}/${stats.ok} reached closed proof-state (${formatIndexPercent(stats.closureRate)}), with ${coverageText}.`,
+  );
+  const topPolicy = policyStats[0];
+  if (topPolicy) {
+    bullets.push(
+      `Strongest policy signal in this lens is ${topPolicy.key}: ${formatIndexPercent(topPolicy.closureRate)} closure, ${
+        topPolicy.meanTurns === null ? 'n/a' : topPolicy.meanTurns
+      } mean turns, final M/R ${formatIndexField(topPolicy.finalMastery)}/${formatIndexField(topPolicy.finalRisk)}, and ${topPolicy.leakCount} leak${
+        topPolicy.leakCount === 1 ? '' : 's'
+      }.`,
+    );
+  }
+  if (learnerStats.length > 1) {
+    const slowest = learnerStats
+      .filter((row) => Number.isFinite(Number(row.meanTurns)))
+      .slice()
+      .sort((left, right) => Number(right.meanTurns) - Number(left.meanTurns))[0];
+    bullets.push(
+      `Learner robustness is being checked across ${learnerStats.length} profile${
+        learnerStats.length === 1 ? '' : 's'
+      }; ${slowest ? `${slowest.key} is currently the slowest at ${slowest.meanTurns} mean turns.` : 'turn counts are not yet comparable.'}`,
+    );
+  }
+  if (stats.leakCount > 0) {
+    bullets.push(
+      `Main open caution is leak discipline: ${stats.leakCount} leak audit flag${
+        stats.leakCount === 1 ? '' : 's'
+      } appear in the recent lens, so closure should be read alongside proof safety.`,
+    );
+  }
+  if (stats.failed > 0) {
+    bullets.push(
+      `There ${stats.failed === 1 ? 'is' : 'are'} ${stats.failed} failed row${
+        stats.failed === 1 ? '' : 's'
+      } in the recent lens; inspect those before treating policy differences as pedagogical effects.`,
+    );
+  }
+  return bullets;
+}
+
+function renderIndexBigPicture({ rows, activeRuns = [], hiddenByDefault = 0 }) {
+  const reports = recentIndexReportRows(rows);
+  const detailRows = expandIndexDetailRows(reports);
+  const stats = summarizeIndexDetailRows(detailRows);
+  const policyStats = aggregateIndexDetailRows(detailRows, (row) => row.policy).sort(
+    (left, right) => right.signalScore - left.signalScore || compareReportPolicies(left.key, right.key),
+  );
+  const learnerStats = aggregateIndexDetailRows(detailRows, (row) => row.learnerProfile).sort(
+    (left, right) => right.closureRate - left.closureRate || Number(left.meanTurns || 0) - Number(right.meanTurns || 0),
+  );
+  const bullets = indexBigPictureBullets({ stats, policyStats, learnerStats, reports });
+  const cautions = [
+    hiddenByDefault
+      ? `${hiddenByDefault} dry/smoke report${hiddenByDefault === 1 ? '' : 's'} are hidden from this lens by default.`
+      : null,
+    activeRuns.length
+      ? `${activeRuns.length} run${activeRuns.length === 1 ? ' is' : 's are'} active or stale; refresh after completion for the final picture.`
+      : null,
+    reports.length < rows.filter((row) => row.runKind === 'real' && Number(row.ok || 0) > 0).length
+      ? 'The headline uses the latest 12 real reports with completed rows; use filters below for older history.'
+      : null,
+  ].filter(Boolean);
+  const policyRows = policyStats
+    .slice(0, 7)
+    .map(
+      (row) => `<tr>
+        <td><strong>${escapeHtml(row.key)}</strong></td>
+        <td class="numeric">${escapeHtml(row.ok)}/${escapeHtml(row.failed)}</td>
+        <td class="numeric">${escapeHtml(formatIndexPercent(row.closureRate))}</td>
+        <td class="numeric">${escapeHtml(formatIndexField(row.meanCoverage))}</td>
+        <td class="numeric">${escapeHtml(formatIndexField(row.finalMastery))}/${escapeHtml(formatIndexField(row.finalRisk))}</td>
+        <td class="numeric">${escapeHtml(formatIndexSigned(row.masteryGain))}/${escapeHtml(formatIndexPositive(row.riskReduction))}</td>
+        <td class="numeric">${escapeHtml(row.leakCount)}</td>
+        <td class="numeric">${escapeHtml(formatIndexMeasure(row.signalScore))}</td>
+      </tr>`,
+    )
+    .join('\n');
+  const learnerRows = learnerStats
+    .slice(0, 6)
+    .map(
+      (row) => `<tr>
+        <td><strong>${escapeHtml(row.key)}</strong></td>
+        <td class="numeric">${escapeHtml(row.reportCount)}</td>
+        <td class="numeric">${escapeHtml(row.ok)}/${escapeHtml(row.failed)}</td>
+        <td class="numeric">${escapeHtml(formatIndexPercent(row.closureRate))}</td>
+        <td class="numeric">${escapeHtml(row.meanTurns ?? 'n/a')}</td>
+        <td class="numeric">${escapeHtml(row.leakCount)}</td>
+      </tr>`,
+    )
+    .join('\n');
+  return `<section class="big-picture" aria-label="Big picture summary">
+    <div class="big-picture-head">
+      <div>
+        <h2>Big Picture</h2>
+        <p>Deterministic rollup over the latest real, completed reports. It summarizes closure, evidence coverage, policy signal, learner-profile robustness, and the main cautions before you open individual reports.</p>
+      </div>
+      <span class="live-count">${escapeHtml(reports.length)} report${reports.length === 1 ? '' : 's'}</span>
+    </div>
+    <div class="big-picture-grid">
+      <div class="big-picture-panel">
+        <h3>Overall Read</h3>
+        <ul class="big-picture-read">
+          ${bullets.map((bullet) => `<li>${escapeHtml(bullet)}</li>`).join('\n')}
+        </ul>
+        ${
+          cautions.length
+            ? `<div class="big-picture-cautions">${cautions.map((caution) => `<div>${escapeHtml(caution)}</div>`).join('\n')}</div>`
+            : ''
+        }
+      </div>
+      <div class="big-picture-panel">
+        <h3>Learner Robustness</h3>
+        <div class="table-scroll" role="region" aria-label="Learner robustness table" tabindex="0">
+          <table class="big-picture-table">
+            <thead><tr><th>Learner</th><th>Reports</th><th>OK/Failed</th><th>Closure</th><th>Turns</th><th>Leaks</th></tr></thead>
+            <tbody>${learnerRows || '<tr><td colspan="6">No learner-profile rows yet.</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="table-scroll" role="region" aria-label="Policy signal table" tabindex="0">
+      <table class="big-picture-table">
+        <thead><tr>
+          <th>Policy</th>
+          <th>OK/Failed</th>
+          <th>Closure</th>
+          <th>Coverage</th>
+          <th>Final M/R</th>
+          <th>Gain/Reduction</th>
+          <th>Leaks</th>
+          <th>Signal</th>
+        </tr></thead>
+        <tbody>${policyRows || '<tr><td colspan="8">No policy rows yet.</td></tr>'}</tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+function indexBigPictureModel({ rows, activeRuns = [], hiddenByDefault = 0 }) {
+  const reports = recentIndexReportRows(rows);
+  const detailRows = expandIndexDetailRows(reports);
+  const stats = summarizeIndexDetailRows(detailRows);
+  const policyStats = aggregateIndexDetailRows(detailRows, (row) => row.policy).sort(
+    (left, right) => right.signalScore - left.signalScore || compareReportPolicies(left.key, right.key),
+  );
+  const learnerStats = aggregateIndexDetailRows(detailRows, (row) => row.learnerProfile).sort(
+    (left, right) => right.closureRate - left.closureRate || Number(left.meanTurns || 0) - Number(right.meanTurns || 0),
+  );
+  const bullets = indexBigPictureBullets({ stats, policyStats, learnerStats, reports });
+  const cautions = [
+    hiddenByDefault
+      ? `${hiddenByDefault} dry/smoke report${hiddenByDefault === 1 ? '' : 's'} are hidden from this lens by default.`
+      : null,
+    activeRuns.length
+      ? `${activeRuns.length} run${activeRuns.length === 1 ? ' is' : 's are'} active or stale; refresh after completion for the final picture.`
+      : null,
+    reports.length < rows.filter((row) => row.runKind === 'real' && Number(row.ok || 0) > 0).length
+      ? 'The headline uses the latest 12 real reports with completed rows; use filters below for older history.'
+      : null,
+  ].filter(Boolean);
+  return {
+    reportCount: reports.length,
+    bullets,
+    cautions,
+    policyStats: policyStats.slice(0, 7),
+    learnerStats: learnerStats.slice(0, 6),
+  };
+}
+
+function indexRowData(row) {
+  return {
+    reportName: row.reportName || '',
+    runKind: row.runKind || 'real',
+    htmlExists: Boolean(row.htmlExists),
+    jsonHref: row.jsonHref || '',
+    htmlHref: row.htmlHref || '',
+    svgHref: row.svgHref || '',
+    svgCount: Number(row.svgCount || 0),
+    completedAt: row.completedAt || '',
+    startedAt: row.startedAt || '',
+    status: row.status || '',
+    policies: row.policies || [],
+    learnerProfile: row.learnerProfile || '',
+    world: row.world || '',
+    turns: row.turns || '',
+    safetyTurns: row.safetyTurns ?? '',
+    model: row.model || '',
+    analysisModel: row.analysisModel || '',
+    autoLearnerModel: row.autoLearnerModel || '',
+    rows: Number(row.rows || 0),
+    ok: Number(row.ok || 0),
+    failed: Number(row.failed || 0),
+    dryRun: Number(row.dryRun || 0),
+    grounded: Number(row.grounded || 0),
+    groundedRate: Number(row.groundedRate || 0),
+    meanTurns: row.meanTurns ?? '',
+    meanCoverage: row.meanCoverage ?? '',
+    meanMissing: row.meanMissing ?? '',
+    leakCount: Number(row.leakCount || 0),
+    registerEntropy: row.registerEntropy ?? '',
+    finalMastery: row.finalMastery ?? 0,
+    finalRisk: row.finalRisk ?? 0,
+    masteryGain: row.masteryGain ?? 0,
+    riskReduction: row.riskReduction ?? 0,
+    progressRate: row.progressRate ?? 0,
+    detailRows: row.detailRows || [],
+    policyText: row.policyText || '',
+    completedMs: Number(row.completedMs || 0),
+    searchText: row.searchText || '',
+    parseError: row.parseError || '',
+  };
+}
+
+function indexDataModel({ rows, activeRuns = [], rootDir, generatedAt }) {
   const guideHref = hrefRelative(rootDir, path.join(ROOT, 'docs', 'tutor-stub-arc-guide.html'));
+  const defaultRows = rows.filter((row) => row.runKind === 'real');
+  const hiddenByDefault = rows.length - defaultRows.length;
   const totals = {
-    reports: rows.length,
-    ok: rows.reduce((sum, row) => sum + Number(row.ok || 0), 0),
-    failed: rows.reduce((sum, row) => sum + Number(row.failed || 0), 0),
-    dryRun: rows.reduce((sum, row) => sum + Number(row.dryRun || 0), 0),
-    grounded: rows.reduce((sum, row) => sum + Number(row.grounded || 0), 0),
-    svgs: rows.reduce((sum, row) => sum + Number(row.svgCount || 0), 0),
+    reports: defaultRows.length,
+    htmlReports: defaultRows.filter((row) => row.htmlExists).length,
+    totalReports: rows.length,
+    ok: defaultRows.reduce((sum, row) => sum + Number(row.ok || 0), 0),
+    failed: defaultRows.reduce((sum, row) => sum + Number(row.failed || 0), 0),
+    dryRun: defaultRows.reduce((sum, row) => sum + Number(row.dryRun || 0), 0),
+    grounded: defaultRows.reduce((sum, row) => sum + Number(row.grounded || 0), 0),
+    svgs: defaultRows.reduce((sum, row) => sum + Number(row.svgCount || 0), 0),
+    hiddenByDefault,
+  };
+  return {
+    schema: 'machinespirits.tutor-stub.report-index-data.v1',
+    generatedAt,
+    rootLabel: path.relative(ROOT, rootDir) || '.',
+    guideHref,
+    refreshMs: 30000,
+    totals,
+    options: {
+      status: uniqueIndexValues(rows, (row) => [row.status]),
+      learner: uniqueIndexValues(rows, (row) => [row.learnerProfile]),
+      policy: uniqueIndexValues(rows, (row) => row.policies || []),
+      world: uniqueIndexValues(rows, (row) => [row.world]),
+    },
+    bigPicture: indexBigPictureModel({ rows, activeRuns, hiddenByDefault }),
+    rows: rows.map(indexRowData),
+    activeRuns,
+  };
+}
+
+function renderReportIndexShell({ rootDir, generatedAt }) {
+  const cssHref = hrefRelative(rootDir, path.join(rootDir, 'assets', 'tutor-stub-report.css'));
+  const appHref = hrefRelative(rootDir, path.join(rootDir, 'assets', 'tutor-stub-index.js'));
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tutor Stub Reports</title>
+  <link rel="stylesheet" href="${escapeHtml(cssHref)}">
+</head>
+<body>
+  <div id="tutor-stub-index-app" data-index-root data-index-data="index-data.json" data-generated-at="${escapeHtml(generatedAt)}">
+    <header>
+      <h1>Tutor Stub Reports</h1>
+      <div class="muted">Loading report index...</div>
+    </header>
+  </div>
+  <script src="${escapeHtml(appHref)}"></script>
+</body>
+</html>
+`;
+}
+
+function tutorStubIndexClientJs() {
+  return String.raw`(function () {
+  var app = document.querySelector('[data-index-root]');
+  if (!app) return;
+  var state = { data: null };
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+  function shortDate(value) {
+    return String(value || '').replace(/\.\d{3}Z$/g, 'Z').replace('T', ' ');
+  }
+  function indexRunKindLabel(kind) {
+    if (kind === 'dry') return 'dry run';
+    if (kind === 'smoke') return 'smoke run';
+    return 'real run';
+  }
+  function infoTerm(label, tooltip) {
+    return '<span class="info-term" tabindex="0" data-tip="' + esc(tooltip || label) + '">' + esc(label) + '</span>';
+  }
+  function htmlMetric(label, value, sub) {
+    return '<div class="metric"><div class="metric-label">' + label + '</div><div class="metric-value">' + esc(value) + '</div><div class="metric-sub">' + esc(sub || '') + '</div></div>';
+  }
+  function policyChips(policies) {
+    if (!policies || !policies.length) return '<span class="muted">none</span>';
+    return policies.map(function (policy) { return '<span class="chip">' + esc(policy) + '</span>'; }).join('');
+  }
+  function pct(value) {
+    var numeric = Number(value);
+    return Number.isFinite(numeric) ? Math.round(numeric * 100) + '%' : 'n/a';
+  }
+  function field(value) {
+    var numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric.toFixed(3) : 'n/a';
+  }
+  function signed(value) {
+    var numeric = Number(value);
+    if (!Number.isFinite(numeric)) return 'n/a';
+    return (numeric >= 0 ? '+' : '') + numeric.toFixed(3);
+  }
+  function positive(value) {
+    var numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric.toFixed(3) : 'n/a';
+  }
+  function measure(value) {
+    var numeric = Number(value);
+    if (!Number.isFinite(numeric)) return '';
+    return String(Number(numeric.toFixed(3)));
+  }
+  function coverageCell(value) {
+    var numeric = Number(value);
+    if (!Number.isFinite(numeric)) return '<span class="muted">not scored</span>';
+    var bounded = Math.max(0, Math.min(1, numeric));
+    return '<div class="index-measure"><strong>' + Math.round(bounded * 100) + '% <span>evidence path</span></strong><em>mean learner-DAG coverage ' + esc(measure(numeric)) + '</em></div>';
+  }
+  function fieldSnapshotCell(row) {
+    var count = Number(row.svgCount || 0);
+    var label = count + ' field ' + (count === 1 ? 'snapshot' : 'snapshots');
+    var body = row.svgHref ? '<a href="' + esc(row.svgHref) + '">' + esc(label) + '</a>' : esc(label);
+    return '<div class="index-measure"><strong>' + body + '</strong><em>' + (count ? 'static SVG exports for inspection' : 'no exported field artifacts') + '</em></div>';
+  }
+  function optionHtml(values) {
+    return (values || []).map(function (value) { return '<option value="' + esc(value) + '">' + esc(value) + '</option>'; }).join('');
+  }
+  function progressBar(rate) {
+    var bounded = Math.max(0, Math.min(1, Number(rate || 0)));
+    return '<span class="live-progress" aria-label="' + Math.round(bounded * 100) + '% complete"><span style="width:' + Math.round(bounded * 100) + '%"></span></span>';
+  }
+  function renderLiveJob(job) {
+    var coverage = job.coverage == null ? '' : ' · c' + esc(job.coverage);
+    var bottleneck = job.bottleneck ? ' · ' + esc(job.bottleneck === 'grounded_asserted_secret' ? 'closed' : job.bottleneck) : '';
+    var lastType = job.lastType ? ' · ' + esc(job.lastType) : '';
+    var links = [job.logHref ? '<a href="' + esc(job.logHref) + '">log</a>' : '', job.traceHref ? '<a href="' + esc(job.traceHref) + '">trace</a>' : ''].filter(Boolean).join(' ');
+    return '<article class="live-job ' + esc(job.status || 'queued') + '"><div><strong>' + esc(job.policy) + ' r' + esc(job.runIndex) + '</strong> <span>' + esc(job.status || 'queued') + '</span></div><p>' + esc(job.turns || 0) + ' turns' + coverage + bottleneck + lastType + '</p><div class="live-links">' + (links || '<span class="muted">waiting for trace</span>') + '</div></article>';
+  }
+  function renderLiveRuns(activeRuns) {
+    if (!activeRuns || !activeRuns.length) return '';
+    return '<section class="live-runs" aria-label="Runs in progress"><div class="live-runs-head"><div><h2><span class="live-dot"></span>Runs In Progress</h2><p>Updated as active auto-eval workers write trace and log files. This page refreshes itself while runs are visible.</p></div><span class="live-count">' + esc(activeRuns.length) + ' active</span></div>' +
+      activeRuns.map(function (run) {
+        var totals = run.totals || {};
+        var rate = totals.progressRate != null ? totals.progressRate : (totals.jobs ? Number(totals.completed || 0) / Number(totals.jobs || 1) : 0);
+        var activeJobs = run.activeJobs && run.activeJobs.length ? run.activeJobs : (run.jobs || []).filter(function (job) { return job.status !== 'queued'; }).slice(-6);
+        return '<article class="live-run-card ' + esc(run.status) + '" data-search="' + esc(run.searchText) + '"><div class="live-run-top"><div><h3>' + esc(run.runName) + '</h3><p>' + esc(run.learnerProfile || 'unknown learner') + ' · ' + esc(run.world || 'unknown world') + ' · pid ' + esc(run.pid || 'n/a') + '</p></div><span class="status ' + esc(run.status) + '">' + esc(run.status) + '</span></div><div class="live-run-progress">' + progressBar(rate) + '<span>' + esc(totals.completed || 0) + '/' + esc(totals.jobs || 0) + ' jobs · ' + esc(totals.active || 0) + ' active · ' + esc(totals.queued || 0) + ' queued · ' + esc(totals.failed || 0) + ' failed</span></div><div class="live-run-meta"><span>started ' + esc(shortDate(run.startedAt)) + '</span><span>updated ' + esc(shortDate(run.updatedAt)) + '</span><span>' + policyChips(run.policies) + '</span></div><div class="live-jobs">' + (activeJobs.map(renderLiveJob).join('\n') || '<span class="muted">No active jobs.</span>') + '</div><div class="live-actions"><a href="' + esc(run.stateHref) + '">state json</a> ' + (run.traceDirHref ? '<a href="' + esc(run.traceDirHref) + '">trace dir</a>' : '') + '</div></article>';
+      }).join('\n') + '</section>';
+  }
+  function renderBigPicture(model) {
+    model = model || { bullets: [], cautions: [], policyStats: [], learnerStats: [], reportCount: 0 };
+    var learnerRows = (model.learnerStats || []).map(function (row) {
+      return '<tr><td><strong>' + esc(row.key) + '</strong></td><td class="numeric">' + esc(row.reportCount) + '</td><td class="numeric">' + esc(row.ok) + '/' + esc(row.failed) + '</td><td class="numeric">' + esc(pct(row.closureRate)) + '</td><td class="numeric">' + esc(row.meanTurns == null ? 'n/a' : row.meanTurns) + '</td><td class="numeric">' + esc(row.leakCount) + '</td></tr>';
+    }).join('\n');
+    var policyRows = (model.policyStats || []).map(function (row) {
+      return '<tr><td><strong>' + esc(row.key) + '</strong></td><td class="numeric">' + esc(row.ok) + '/' + esc(row.failed) + '</td><td class="numeric">' + esc(pct(row.closureRate)) + '</td><td class="numeric">' + esc(field(row.meanCoverage)) + '</td><td class="numeric">' + esc(field(row.finalMastery)) + '/' + esc(field(row.finalRisk)) + '</td><td class="numeric">' + esc(signed(row.masteryGain)) + '/' + esc(positive(row.riskReduction)) + '</td><td class="numeric">' + esc(row.leakCount) + '</td><td class="numeric">' + esc(measure(row.signalScore)) + '</td></tr>';
+    }).join('\n');
+    return '<section class="big-picture" aria-label="Big picture summary"><div class="big-picture-head"><div><h2>Big Picture</h2><p>Deterministic rollup over the latest real, completed reports. It summarizes closure, evidence coverage, policy signal, learner-profile robustness, and the main cautions before you open individual reports.</p></div><span class="live-count">' + esc(model.reportCount) + ' report' + (model.reportCount === 1 ? '' : 's') + '</span></div><div class="big-picture-grid"><div class="big-picture-panel"><h3>Overall Read</h3><ul class="big-picture-read">' + (model.bullets || []).map(function (bullet) { return '<li>' + esc(bullet) + '</li>'; }).join('\n') + '</ul>' + ((model.cautions || []).length ? '<div class="big-picture-cautions">' + model.cautions.map(function (caution) { return '<div>' + esc(caution) + '</div>'; }).join('\n') + '</div>' : '') + '</div><div class="big-picture-panel"><h3>Learner Robustness</h3><div class="table-scroll" role="region" aria-label="Learner robustness table" tabindex="0"><table class="big-picture-table"><thead><tr><th>Learner</th><th>Reports</th><th>OK/Failed</th><th>Closure</th><th>Turns</th><th>Leaks</th></tr></thead><tbody>' + (learnerRows || '<tr><td colspan="6">No learner-profile rows yet.</td></tr>') + '</tbody></table></div></div></div><div class="table-scroll" role="region" aria-label="Policy signal table" tabindex="0"><table class="big-picture-table"><thead><tr><th>Policy</th><th>OK/Failed</th><th>Closure</th><th>Coverage</th><th>Final M/R</th><th>Gain/Reduction</th><th>Leaks</th><th>Signal</th></tr></thead><tbody>' + (policyRows || '<tr><td colspan="8">No policy rows yet.</td></tr>') + '</tbody></table></div></section>';
+  }
+  function reportRow(row) {
+    return '<tr data-search="' + esc(row.searchText) + '" data-status="' + esc(row.status) + '" data-learner="' + esc(row.learnerProfile || '') + '" data-policies="' + esc((row.policies || []).join('|')) + '" data-policy-text="' + esc(row.policyText || '') + '" data-world="' + esc(row.world || '') + '" data-completed-ms="' + esc(row.completedMs || 0) + '" data-report-name="' + esc(row.reportName || '') + '" data-run-kind="' + esc(row.runKind || 'real') + '" data-grounded-rate="' + esc(row.groundedRate == null ? '' : row.groundedRate) + '" data-turns="' + esc(row.meanTurns == null ? '' : row.meanTurns) + '" data-coverage="' + esc(row.meanCoverage == null ? '' : row.meanCoverage) + '" data-rows="' + esc(row.rows || 0) + '" data-ok="' + esc(row.ok || 0) + '" data-failed="' + esc(row.failed || 0) + '" data-svgs="' + esc(row.svgCount || 0) + '"><td><div><strong>' + esc(shortDate(row.completedAt) || row.reportName) + '</strong></div><div class="muted">' + esc(row.reportName) + '</div><div class="muted">' + esc(row.world || '') + ' · ' + esc(indexRunKindLabel(row.runKind || 'real')) + '</div></td><td><span class="status ' + esc(row.status) + '">' + esc(row.status) + '</span></td><td>' + policyChips(row.policies) + '</td><td><div>' + esc(row.learnerProfile || '') + '</div><div class="muted">' + esc(row.autoLearnerModel || '') + '</div></td><td>' + esc(row.ok) + '/' + esc(row.failed) + (row.dryRun ? ' · ' + esc(row.dryRun) + ' dry' : '') + '</td><td>' + esc(row.grounded) + '/' + esc(row.ok) + ' · ' + Math.round(Number(row.groundedRate || 0) * 100) + '%</td><td>' + esc(row.meanTurns) + '</td><td>' + coverageCell(row.meanCoverage) + '</td><td>' + fieldSnapshotCell(row) + '</td><td class="actions">' + (row.htmlHref ? '<a href="' + esc(row.htmlHref) + '">report</a>' : '<span class="muted">report</span>') + ' <a href="' + esc(row.jsonHref) + '">json</a></td></tr>';
+  }
+  function render(data) {
+    state.data = data;
+    var totals = data.totals || {};
+    var groundedRate = totals.ok ? Number((Number(totals.grounded || 0) / Number(totals.ok || 1)).toFixed(3)) : 0;
+    var options = data.options || {};
+    app.innerHTML = '<header><h1>Tutor Stub Reports</h1><div class="muted">Generated ' + esc(shortDate(data.generatedAt)) + ' · root ' + esc(data.rootLabel || '.') + ' · <a href="' + esc(data.guideHref || 'docs/tutor-stub-arc-guide.html') + '">arc guide</a></div></header><main>' + renderLiveRuns(data.activeRuns || []) + renderBigPicture(data.bigPicture) + '<section class="metrics">' + htmlMetric('Reports', totals.reports || 0, (totals.htmlReports || 0) + ' with HTML · ' + (totals.totalReports || 0) + ' total') + htmlMetric('Rows', Number(totals.ok || 0) + Number(totals.failed || 0) + Number(totals.dryRun || 0), (totals.failed || 0) + ' failed · ' + (totals.hiddenByDefault || 0) + ' hidden by default') + htmlMetric('Grounded', (totals.grounded || 0) + '/' + (totals.ok || 0), Math.round(groundedRate * 100) + '% closure') + htmlMetric(infoTerm('Field Snapshots', "Static SVG exports written beside reports for inspecting each row's interaction-field visualization. They are report artifacts, not scored rows."), totals.svgs || 0, 'static visualization exports') + htmlMetric('Active', (data.activeRuns || []).length, 'running or stale') + '</section><div class="toolbar"><label class="control"><span>Search</span><input data-filter placeholder="Search reports, policies, learner, model" aria-label="Search reports"></label><label class="control"><span>Run Set</span><select data-scope-filter aria-label="Choose which reports to include"><option value="real" selected>Real runs</option><option value="all">Everything</option></select></label><label class="control"><span>From</span><input type="date" data-date-from aria-label="Filter from completed date"></label><label class="control"><span>To</span><input type="date" data-date-to aria-label="Filter to completed date"></label><label class="control"><span>Status</span><select data-status-filter aria-label="Filter by status"><option value="">All</option>' + optionHtml(options.status) + '</select></label><label class="control"><span>Learner</span><select data-learner-filter aria-label="Filter by learner"><option value="">All</option>' + optionHtml(options.learner) + '</select></label><label class="control"><span>Policy</span><select data-policy-filter aria-label="Filter by policy"><option value="">All</option>' + optionHtml(options.policy) + '</select></label><label class="control"><span>World</span><select data-world-filter aria-label="Filter by world"><option value="">All</option>' + optionHtml(options.world) + '</select></label><label class="control"><span>Sort</span><select data-sort-key aria-label="Sort reports"><option value="date">Date</option><option value="status">Status</option><option value="learner">Learner</option><option value="policy">Policy</option><option value="grounded">Grounded</option><option value="coverage">Evidence Path</option><option value="turns">Turns</option><option value="rows">Rows</option><option value="failed">Failed</option><option value="svgs">Field Snapshots</option><option value="report">Report</option></select></label><label class="control"><span>Direction</span><select data-sort-dir aria-label="Sort direction"><option value="desc">Desc</option><option value="asc">Asc</option></select></label><button type="button" data-reset>Reset</button><span class="muted" data-count>0 shown</span></div><table><thead><tr><th>Completed</th><th>' + infoTerm('Status', 'Run-level technical status: ok has no failed rows, failed has one or more failed rows, dry_run is configuration-only output.') + '</th><th>Policies</th><th>Learner</th><th>' + infoTerm('OK/Failed', 'OK rows completed without a technical failure. Failed rows are generation, resume, or evaluation failures.') + '</th><th>' + infoTerm('Grounded', 'Rows where the learner reached grounded asserted-secret closure, shown as grounded over OK rows plus percentage.') + '</th><th>' + infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.') + '</th><th>' + infoTerm('Evidence Path', 'Mean learner-DAG best-path coverage: how much of the target evidence path is grounded, shown as a percentage with the raw 0 to 1 coverage score underneath.') + '</th><th>' + infoTerm('Field Snapshots', 'Count of static SVG exports emitted beside the report for inspecting per-row interaction-field visualizations. This is an artifact count, not an evaluation score.') + '</th><th>Links</th></tr></thead><tbody>' + ((data.rows || []).map(reportRow).join('\n') || '<tr><td colspan="10">No reports found.</td></tr>') + '</tbody></table></main>';
+    bindControls();
+  }
+  function bindControls() {
+    var input = app.querySelector('[data-filter]');
+    var scopeFilter = app.querySelector('[data-scope-filter]');
+    var dateFrom = app.querySelector('[data-date-from]');
+    var dateTo = app.querySelector('[data-date-to]');
+    var statusFilter = app.querySelector('[data-status-filter]');
+    var learnerFilter = app.querySelector('[data-learner-filter]');
+    var policyFilter = app.querySelector('[data-policy-filter]');
+    var worldFilter = app.querySelector('[data-world-filter]');
+    var sortKey = app.querySelector('[data-sort-key]');
+    var sortDir = app.querySelector('[data-sort-dir]');
+    var reset = app.querySelector('[data-reset]');
+    var tbody = app.querySelector('tbody');
+    var rows = Array.from(app.querySelectorAll('tbody tr[data-search]'));
+    var count = app.querySelector('[data-count]');
+    var numericSortKeys = new Set(['date', 'grounded', 'coverage', 'turns', 'rows', 'failed', 'svgs']);
+    var sortMap = { date: 'completedMs', status: 'status', learner: 'learner', policy: 'policyText', grounded: 'groundedRate', coverage: 'coverage', turns: 'turns', rows: 'rows', failed: 'failed', svgs: 'svgs', report: 'reportName' };
+    function numberValue(row, key) {
+      var value = Number(row.dataset[key] || '');
+      return Number.isFinite(value) ? value : null;
+    }
+    function stringValue(row, key) {
+      return String(row.dataset[key] || '').toLowerCase();
+    }
+    function dayStartMs(value) {
+      if (!value) return null;
+      var parsed = Date.parse(value + 'T00:00:00');
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    function dayEndMs(value) {
+      if (!value) return null;
+      var parsed = Date.parse(value + 'T23:59:59.999');
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    function compareValues(a, b, direction) {
+      if (a === null && b === null) return 0;
+      if (a === null) return 1;
+      if (b === null) return -1;
+      if (typeof a === 'number' && typeof b === 'number') return direction === 'asc' ? a - b : b - a;
+      var base = String(a).localeCompare(String(b));
+      return direction === 'asc' ? base : -base;
+    }
+    function rowMatches(row) {
+      var q = (input && input.value || '').trim().toLowerCase();
+      var scope = scopeFilter && scopeFilter.value || 'real';
+      var status = statusFilter && statusFilter.value || '';
+      var learner = learnerFilter && learnerFilter.value || '';
+      var policy = policyFilter && policyFilter.value || '';
+      var world = worldFilter && worldFilter.value || '';
+      var fromMs = dayStartMs(dateFrom && dateFrom.value || '');
+      var toMs = dayEndMs(dateTo && dateTo.value || '');
+      var completedMs = numberValue(row, 'completedMs');
+      if (scope === 'real' && row.dataset.runKind !== 'real') return false;
+      if (q && !row.dataset.search.includes(q)) return false;
+      if (fromMs !== null && (completedMs === null || completedMs < fromMs)) return false;
+      if (toMs !== null && (completedMs === null || completedMs > toMs)) return false;
+      if (status && row.dataset.status !== status) return false;
+      if (learner && row.dataset.learner !== learner) return false;
+      if (world && row.dataset.world !== world) return false;
+      if (policy && !String(row.dataset.policies || '').split('|').includes(policy)) return false;
+      return true;
+    }
+    function applyIndexControls() {
+      var key = sortKey && sortKey.value || 'date';
+      var direction = sortDir && sortDir.value || 'desc';
+      var datasetKey = sortMap[key] || 'completedMs';
+      var sortedRows = rows.slice().sort(function (a, b) {
+        var aValue = numericSortKeys.has(key) ? numberValue(a, datasetKey) : stringValue(a, datasetKey);
+        var bValue = numericSortKeys.has(key) ? numberValue(b, datasetKey) : stringValue(b, datasetKey);
+        return compareValues(aValue, bValue, direction) || stringValue(a, 'reportName').localeCompare(stringValue(b, 'reportName'));
+      });
+      var shown = 0;
+      sortedRows.forEach(function (row) {
+        var visible = rowMatches(row);
+        row.hidden = !visible;
+        if (visible) shown += 1;
+        if (tbody) tbody.appendChild(row);
+      });
+      if (count) count.textContent = shown + ' shown';
+    }
+    [input, scopeFilter, dateFrom, dateTo, statusFilter, learnerFilter, policyFilter, worldFilter, sortKey, sortDir].forEach(function (control) {
+      if (control) control.addEventListener(control === input ? 'input' : 'change', applyIndexControls);
+    });
+    if (reset) reset.addEventListener('click', function () {
+      if (input) input.value = '';
+      if (scopeFilter) scopeFilter.value = 'real';
+      if (dateFrom) dateFrom.value = '';
+      if (dateTo) dateTo.value = '';
+      if (statusFilter) statusFilter.value = '';
+      if (learnerFilter) learnerFilter.value = '';
+      if (policyFilter) policyFilter.value = '';
+      if (worldFilter) worldFilter.value = '';
+      if (sortKey) sortKey.value = 'date';
+      if (sortDir) sortDir.value = 'desc';
+      applyIndexControls();
+    });
+    applyIndexControls();
+  }
+  async function load() {
+    var dataPath = app.getAttribute('data-index-data') || 'index-data.json';
+    try {
+      var response = await fetch(dataPath, { cache: 'no-store' });
+      if (!response.ok) throw new Error(response.status + ' ' + response.statusText);
+      var data = await response.json();
+      render(data);
+      if ((data.activeRuns || []).length) {
+        window.setTimeout(load, Number(data.refreshMs || 30000));
+      }
+    } catch (error) {
+      app.innerHTML = '<header><h1>Tutor Stub Reports</h1><div class="muted">Could not load index data: ' + esc(error.message || error) + '</div></header>';
+    }
+  }
+  load();
+})();`;
+}
+
+function writeReportIndexAssets(rootDir) {
+  const assetDir = path.join(rootDir, 'assets');
+  fs.mkdirSync(assetDir, { recursive: true });
+  fs.writeFileSync(path.join(assetDir, 'tutor-stub-report.css'), machineSpiritsReportCss());
+  fs.writeFileSync(path.join(assetDir, 'tutor-stub-index.js'), `${tutorStubIndexClientJs()}\n`);
+}
+
+function _renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
+  const guideHref = hrefRelative(rootDir, path.join(ROOT, 'docs', 'tutor-stub-arc-guide.html'));
+  const defaultRows = rows.filter((row) => row.runKind === 'real');
+  const hiddenByDefault = rows.length - defaultRows.length;
+  const totals = {
+    reports: defaultRows.length,
+    ok: defaultRows.reduce((sum, row) => sum + Number(row.ok || 0), 0),
+    failed: defaultRows.reduce((sum, row) => sum + Number(row.failed || 0), 0),
+    dryRun: defaultRows.reduce((sum, row) => sum + Number(row.dryRun || 0), 0),
+    grounded: defaultRows.reduce((sum, row) => sum + Number(row.grounded || 0), 0),
+    svgs: defaultRows.reduce((sum, row) => sum + Number(row.svgCount || 0), 0),
   };
   const groundedRate = totals.ok ? Number((totals.grounded / totals.ok).toFixed(3)) : 0;
   const statusOptions = uniqueIndexValues(rows, (row) => [row.status]);
@@ -3978,6 +6068,7 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
         data-world="${escapeHtml(row.world || '')}"
         data-completed-ms="${escapeHtml(row.completedMs || 0)}"
         data-report-name="${escapeHtml(row.reportName || '')}"
+        data-run-kind="${escapeHtml(row.runKind || 'real')}"
         data-grounded-rate="${escapeHtml(row.groundedRate ?? '')}"
         data-turns="${escapeHtml(row.meanTurns ?? '')}"
         data-coverage="${escapeHtml(row.meanCoverage ?? '')}"
@@ -3988,7 +6079,7 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
         <td>
           <div><strong>${escapeHtml(shortDate(row.completedAt) || row.reportName)}</strong></div>
           <div class="muted">${escapeHtml(row.reportName)}</div>
-          <div class="muted">${escapeHtml(row.world || '')}</div>
+          <div class="muted">${escapeHtml(row.world || '')} · ${escapeHtml(indexRunKindLabel(row.runKind || 'real'))}</div>
         </td>
         <td><span class="status ${escapeHtml(row.status)}">${escapeHtml(row.status)}</span></td>
         <td>${policyChips(row.policies)}</td>
@@ -4029,13 +6120,14 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
   </header>
   <main>
     ${renderLiveRuns(activeRuns)}
+    ${renderIndexBigPicture({ rows, activeRuns, hiddenByDefault })}
     <section class="metrics">
-      ${htmlMetric('Reports', totals.reports, `${rows.filter((row) => row.htmlExists).length} with HTML`)}
-      ${htmlMetric('Rows', totals.ok + totals.failed + totals.dryRun, `${totals.failed} failed · ${totals.dryRun} dry-run`)}
+      ${htmlMetric('Reports', totals.reports, `${defaultRows.filter((row) => row.htmlExists).length} with HTML · ${rows.length} total`)}
+      ${htmlMetric('Rows', totals.ok + totals.failed + totals.dryRun, `${totals.failed} failed · ${hiddenByDefault} hidden by default`)}
       ${htmlMetric('Grounded', `${totals.grounded}/${totals.ok}`, `${Math.round(groundedRate * 100)}% closure`)}
       ${htmlMetricInfo(
         'Field Snapshots',
-        'Static SVG exports written beside reports for inspecting each row\'s interaction-field visualization. They are report artifacts, not scored rows.',
+        "Static SVG exports written beside reports for inspecting each row's interaction-field visualization. They are report artifacts, not scored rows.",
         totals.svgs,
         'static visualization exports',
       )}
@@ -4045,6 +6137,13 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
       <label class="control">
         <span>Search</span>
         <input data-filter placeholder="Search reports, policies, learner, model" aria-label="Search reports">
+      </label>
+      <label class="control">
+        <span>Run Set</span>
+        <select data-scope-filter aria-label="Choose which reports to include">
+          <option value="real" selected>Real runs</option>
+          <option value="all">Everything</option>
+        </select>
       </label>
       <label class="control">
         <span>From</span>
@@ -4106,7 +6205,7 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
         </select>
       </label>
       <button type="button" data-reset>Reset</button>
-      <span class="muted" data-count>${rows.length} shown</span>
+      <span class="muted" data-count>${defaultRows.length} shown</span>
     </div>
     <table>
       <thead><tr>
@@ -4126,6 +6225,7 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
   </main>
   <script>
     const input = document.querySelector('[data-filter]');
+    const scopeFilter = document.querySelector('[data-scope-filter]');
     const dateFrom = document.querySelector('[data-date-from]');
     const dateTo = document.querySelector('[data-date-to]');
     const statusFilter = document.querySelector('[data-status-filter]');
@@ -4181,6 +6281,7 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
     }
     function rowMatches(row) {
       const q = (input?.value || '').trim().toLowerCase();
+      const scope = scopeFilter?.value || 'real';
       const status = statusFilter?.value || '';
       const learner = learnerFilter?.value || '';
       const policy = policyFilter?.value || '';
@@ -4188,6 +6289,7 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
       const fromMs = dayStartMs(dateFrom?.value || '');
       const toMs = dayEndMs(dateTo?.value || '');
       const completedMs = numberValue(row, 'completedMs');
+      if (scope === 'real' && row.dataset.runKind !== 'real') return false;
       if (q && !row.dataset.search.includes(q)) return false;
       if (fromMs !== null && (completedMs === null || completedMs < fromMs)) return false;
       if (toMs !== null && (completedMs === null || completedMs > toMs)) return false;
@@ -4215,11 +6317,12 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
       }
       if (count) count.textContent = shown + ' shown';
     }
-    for (const control of [input, dateFrom, dateTo, statusFilter, learnerFilter, policyFilter, worldFilter, sortKey, sortDir]) {
+    for (const control of [input, scopeFilter, dateFrom, dateTo, statusFilter, learnerFilter, policyFilter, worldFilter, sortKey, sortDir]) {
       control?.addEventListener(control === input ? 'input' : 'change', applyIndexControls);
     }
     reset?.addEventListener('click', () => {
       if (input) input.value = '';
+      if (scopeFilter) scopeFilter.value = 'real';
       if (dateFrom) dateFrom.value = '';
       if (dateTo) dateTo.value = '';
       if (statusFilter) statusFilter.value = '';
@@ -4237,7 +6340,7 @@ function renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
 `;
 }
 
-function writeReportIndex({ rootDir = indexRootDir(), quiet = false } = {}) {
+function writeReportIndex({ rootDir = indexRootDir(), quiet = false, updateShell = true } = {}) {
   fs.mkdirSync(rootDir, { recursive: true });
   const rows = listAutoEvalSummaryFiles(rootDir)
     .map((jsonPath) => readIndexSummary(jsonPath, rootDir))
@@ -4250,8 +6353,18 @@ function writeReportIndex({ rootDir = indexRootDir(), quiet = false } = {}) {
     .map((statePath) => readIndexRunState(statePath, rootDir))
     .filter((state) => !['completed', 'dry_run'].includes(state.status))
     .sort((a, b) => b.updatedMs - a.updatedMs || a.runName.localeCompare(b.runName));
+  const generatedAt = new Date().toISOString();
+  writeReportIndexAssets(rootDir);
+  writeJsonAtomic(path.join(rootDir, 'index-data.json'), indexDataModel({ rows, activeRuns, rootDir, generatedAt }));
   const indexPath = path.join(rootDir, 'index.html');
-  fs.writeFileSync(indexPath, renderReportIndex({ rows, activeRuns, rootDir, generatedAt: new Date().toISOString() }));
+  const dynamicIndexPath = path.join(rootDir, 'index-dynamic.html');
+  const dynamicShell = renderReportIndexShell({ rootDir, generatedAt });
+  fs.writeFileSync(dynamicIndexPath, dynamicShell);
+  const existingShell = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '';
+  const hasDynamicShell = existingShell.includes('data-index-root') && existingShell.includes('index-data.json');
+  if (updateShell || !hasDynamicShell) {
+    fs.writeFileSync(indexPath, dynamicShell);
+  }
   if (!quiet) console.log(`[auto-eval] index ${indexPath}`);
   return indexPath;
 }
@@ -4333,7 +6446,8 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
   if (args['first-message']) command.push('--once', args['first-message']);
   if (args['cli-effort']) command.push('--cli-effort', args['cli-effort']);
   if (args['max-tokens']) command.push('--max-tokens', String(positiveInt(args['max-tokens'], '--max-tokens')));
-  if (args['history-turns']) command.push('--history-turns', String(positiveInt(args['history-turns'], '--history-turns')));
+  if (args['history-turns'])
+    command.push('--history-turns', String(positiveInt(args['history-turns'], '--history-turns')));
   if (args['no-memory-summary']) command.push('--no-memory-summary');
   command.push('--learner', `Automated learner run ${runIndex}/${totalRuns} for policy ${policy}.`);
   return command;
@@ -4377,7 +6491,9 @@ function buildResumePlan(summaryPath) {
     }
     const command = Array.isArray(result.command) ? result.command : null;
     if (!command || command.length < 2) {
-      throw new Error(`Cannot resume ${result.policy || 'unknown'} run ${result.runIndex || '?'}: missing saved command`);
+      throw new Error(
+        `Cannot resume ${result.policy || 'unknown'} run ${result.runIndex || '?'}: missing saved command`,
+      );
     }
     const childArgs = command[0] === 'node' ? command.slice(1) : command;
     let adjustedChildArgs = withFlagValue(
@@ -4440,33 +6556,48 @@ function buildResumePlan(summaryPath) {
 }
 
 function autoEvalConfigForState({ traceDir, configOverride = null }) {
-  return configOverride || {
-    runs: positiveInt(args.runs, '--runs'),
-    turns: turnsArg(),
-    untilGrounded: Boolean(args['until-grounded']),
-    safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
-    parallelism: positiveInt(args.parallelism, '--parallelism'),
-    policies: policyCsv(args.policies),
-    model: args.model,
-    analysisModel: args['analysis-model'],
-    autoLearnerModel: args['auto-learner-model'],
-    autoLearnerProfileId: autoLearnerProfileLabel(),
-    maxTokens: args['max-tokens'] ? positiveInt(args['max-tokens'], '--max-tokens') : null,
-    historyTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
-    memorySummary: {
-      enabled: !args['no-memory-summary'],
-      rawRecentTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
-    },
-    world: args.world,
-    traceDir,
-    dryRun: Boolean(args['dry-run']),
-  };
+  return (
+    configOverride || {
+      runs: positiveInt(args.runs, '--runs'),
+      turns: turnsArg(),
+      untilGrounded: Boolean(args['until-grounded']),
+      safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
+      parallelism: positiveInt(args.parallelism, '--parallelism'),
+      policies: policyCsv(args.policies),
+      model: args.model,
+      analysisModel: args['analysis-model'],
+      autoLearnerModel: args['auto-learner-model'],
+      autoLearnerProfileId: autoLearnerProfileLabel(),
+      maxTokens: args['max-tokens'] ? positiveInt(args['max-tokens'], '--max-tokens') : null,
+      historyTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
+      memorySummary: {
+        enabled: !args['no-memory-summary'],
+        rawRecentTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
+      },
+      world: args.world,
+      traceDir,
+      dryRun: Boolean(args['dry-run']),
+    }
+  );
 }
 
-function buildRunState({ traceDir, startedAt, jobs, activeJobs, results, completed, status, configOverride = null, resume = null }) {
+function buildRunState({
+  traceDir,
+  startedAt,
+  jobs,
+  activeJobs,
+  results,
+  completed,
+  status,
+  configOverride = null,
+  resume = null,
+}) {
   const totalJobs = jobs.length;
   const resultByKey = new Map(
-    results.map((result) => [result.key || `${safeSlug(result.policy || 'unknown')}-r${result.runIndex || '?'}`, result]),
+    results.map((result) => [
+      result.key || `${safeSlug(result.policy || 'unknown')}-r${result.runIndex || '?'}`,
+      result,
+    ]),
   );
   const activeKeys = new Set(activeJobs.keys());
   const jobRows = jobs.map((job) => {
@@ -4521,7 +6652,7 @@ function writeRunState(state) {
 function writeRunStateSnapshot(context) {
   const state = buildRunState(context);
   const statePath = writeRunState(state);
-  if (!args['no-html-report']) writeReportIndex({ quiet: true });
+  if (!args['no-html-report']) writeReportIndex({ quiet: true, updateShell: false });
   return statePath;
 }
 
