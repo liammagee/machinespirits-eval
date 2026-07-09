@@ -49,6 +49,9 @@ Acceptance:
   local evidence question.
 - Preserve trace/report/SQL fields for strict DAG coverage, scaffold coverage,
   proof debt, side-arc type, and final closure status.
+- Treat obvious public bridges as compressed human reasoning: keep them as
+  implied proof debt internally, but ask the learner for explicit warrants only
+  when a leap is unsafe, conflicting, or case-closing.
 - Update QA guidance so old strict-DAG evals remain a baseline but are not mixed
   naively with human-scaffold runs.
 
@@ -83,3 +86,7 @@ Progress log:
   warrant/premise stocktake, preserve side-arc/proof-debt data in reports and
   SQL ingest, and label auto-eval summaries with `dagMode`. Strict mode remains
   audit-only.
+- 2026-07-09: Human-scaffold prompt policy revised for step compression:
+  plausible learner leaps now carry implied proof debt internally, while
+  explicit warrant prompts are reserved for unsafe, contradictory, hidden, or
+  case-closing leaps.

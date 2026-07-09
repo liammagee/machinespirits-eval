@@ -33,6 +33,24 @@ This package separates the proof DAG from the human-facing teaching path:
 The goal is not to weaken proof discipline. The goal is to stop turning every
 proof edge into a riddle.
 
+## Step compression
+
+The human-facing scaffold now treats many skipped steps as normal compressed
+reasoning, not as immediate errors. If a learner says the gist of a public
+evidence move and an ordinary listener would supply the bridge, the tutor should
+carry that bridge internally as implied proof debt and keep the dialogue moving.
+
+The tutor should ask for an explicit warrant only when the skipped step matters:
+
+- the learner is about to name or confirm a suspect;
+- the learner's leap contradicts public evidence;
+- the learner appears to rely on unstaged or private evidence;
+- final closure would depend on the missing bridge;
+- later reasoning goes astray because of the skipped step.
+
+This keeps the strict DAG as the audit layer while reducing the number of
+learner-facing micro-prompts.
+
 ## Why this is a breaking change
 
 Existing Marrick-style runs treat the authored proof path as the main measure of
@@ -236,8 +254,8 @@ Success criteria should include:
    suppressed, and common-sense material.
 3. Done: project `dramaturgy.acts` plus release schedule into a human scaffold
    context.
-4. Done: add prompt instructions for warrant framing, allowed leaps, and
-   side-arc return contracts.
+4. Done: add prompt instructions for warrant framing, compressed human
+   inference, allowed leaps, and side-arc return contracts.
 5. Done: update learner-record extraction to distinguish strict proof adoption
    from provisional scaffold acceptance.
 6. Done: update auto-eval reports and SQL ingest to preserve scaffold/debt

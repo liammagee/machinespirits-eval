@@ -113,6 +113,9 @@ const SLASH_COMMANDS = [
   '/viz',
   '/v',
   '/visualization',
+  '/clarify',
+  '/explain',
+  '/c',
   '/report',
   '/r',
   '/suggest',
@@ -193,6 +196,14 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
   'Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
   'Reply as the learner only. No role label, no analysis, no JSON.',
   'Keep the reply concise: usually one sentence, one question, or one warranted evidence claim.',
+].join('\n');
+
+const CLARIFIER_SYSTEM_PROMPT = [
+  'You clarify tutor wording for a learner in an experimental tutoring dialogue.',
+  'Use only the public scene, public transcript, and latest tutor message supplied in the prompt.',
+  'Do not infer hidden proof paths, concealed answers, private tutor prompts, private DAG state, or unstaged evidence.',
+  'Do not continue the lesson or answer the case question. Explain wording only.',
+  'Keep the reply short, concrete, and learner-facing. No JSON, no role label.',
 ].join('\n');
 
 const { values: args, positionals } = parseArgs({
@@ -363,6 +374,9 @@ Interactive commands:
   /f                     alias for /field
   /viz                   write a lightweight field SVG + JSON now
   /v                     alias for /viz
+  /clarify [phrase]      explain a complex or unclear term from tutor dialogue
+  /explain [phrase]      alias for /clarify
+  /c [phrase]            alias for /clarify
   /report                show the compact dialogue closeout report
   /r                     alias for /report
   /clear                 reset transcript and learner/register state
@@ -925,11 +939,12 @@ function worldDagPrompt(world) {
     '- Treat every fact: line, predicate name, rule id, premise id, and proof-path id as private notation. Never write that notation to the learner.',
     '- Translate formal facts into ordinary trial-book language before speaking: say "the dross alloy came from the mint crucible", not "meltedAt(drossSilver, mintCrucible)".',
     '- Treat the trial-book as the learner\'s public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the trial-book entry.',
+    '- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.',
     '- Do not name the concealed answer, hidden answer-bearer, or any intermediate conclusion involving that bearer until the released public evidence derives that exact step.',
     '- Especially avoid statements of the form "<hidden person> cast/cut/struck/made..." unless the learner has already derived it from staged evidence.',
-    '- Ask what conjunct, premise, or rule is still missing; do not fill it early.',
+    '- Ask for an explicit missing bridge only when the learner\'s leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.',
     '- If the learner guesses the concealed answer, do not confirm it until the released facts derive it.',
-    '- When a scheduled premise is due, introduce at most one piece of evidence and then ask the learner to use it in a single warranted claim.',
+    '- When a scheduled premise is due, introduce at most one piece of evidence and ask for the learner\'s natural reading of what it changes, not a full proof ledger.',
   ].filter(Boolean);
 }
 
@@ -942,9 +957,9 @@ function responseChoiceModeRules({ multipleChoice }) {
         '- End by asking the learner to choose one option or write their own evidence claim.',
       ]
     : [
-        '- Do not make the next step multiple choice. If the learner seems unsure, name the required shape of the public claim directly without giving the hidden answer: "state what the metal proves about the crucible", "state what the mark proves about the tool", or "state what the record proves about who held it".',
-        '- When talking through options, collapse them to one live issue: what evidence is missing now, what it would prove, and what the learner should state next.',
-        '- End with one direct prompt for the learner to state the next warranted evidence claim; avoid long explanations before that prompt.',
+        '- Do not make the next step multiple choice. If the learner seems unsure, name the live issue directly without giving the hidden answer: "what does the metal change?", "what does that mark rule out?", or "what would make that name safe?".',
+        '- When talking through options, collapse them to one live issue: what changed, what remains unsafe, or what the learner now thinks follows.',
+        '- End with one light prompt for the learner\'s natural next thought; do not require a full proof step unless their leap is unsafe or case-closing.',
       ];
 }
 
@@ -968,6 +983,7 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag, mult
     '- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.',
     '- In story mode, speak in public evidence language: "what public claim does this mark license?", not "add meltedAt(...)", "sole-caster", "blank-route", or "die-route".',
     '- Do not make the learner deduce a claim and then separately enter it in the trial-book. Their stated warranted claim is the entry.',
+    '- Let human learners compress obvious reasoning. Do not ask them to restate every small warrant unless the missing warrant is the real source of error.',
     '- In story mode, keep the medieval flavour but be terse: usually 2-4 short sentences, never a catalogue of routes.',
     ...responseChoiceModeRules({ multipleChoice }),
     '- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.',
@@ -1054,6 +1070,18 @@ function normalizeDagMode(value) {
 
 function buildHumanDiscourseRunConfig({ dagMode, dagEnabled, tutorLearnerDagEnabled }) {
   const scaffoldActive = dagMode !== 'strict_dag';
+  const stepCompression =
+    dagMode === 'defeasible_human_scaffold'
+      ? {
+          enabled: true,
+          policy: 'accept obvious public bridges as implied proof debt; ask for explicit warrants only when the leap is unsafe, conflicting, or case-closing',
+          maxExplicitDemandsPerTurn: 1,
+        }
+      : {
+          enabled: false,
+          policy: dagMode === 'human_scaffold' ? 'frame one local warrant without expanding the whole proof chain' : 'strict proof audit only',
+          maxExplicitDemandsPerTurn: dagMode === 'human_scaffold' ? 1 : 0,
+        };
   return {
     schema: HUMAN_DISCOURSE_RUN_CONFIG_SCHEMA,
     dagMode,
@@ -1061,9 +1089,10 @@ function buildHumanDiscourseRunConfig({ dagMode, dagEnabled, tutorLearnerDagEnab
     tutorLearnerDag: Boolean(tutorLearnerDagEnabled),
     phase: HUMAN_DISCOURSE_PHASE,
     scaffoldActive,
+    stepCompression,
     scaffoldPolicy:
       dagMode === 'defeasible_human_scaffold'
-        ? 'allow learner-owned provisional leaps, keep proof debt visible, and return to strict warrants when needed'
+        ? 'allow learner-owned compressed inference, keep implied proof debt internal, and only surface warrant gaps when they matter'
         : dagMode === 'human_scaffold'
           ? 'frame local human-facing warrants while strict DAG audit remains authoritative'
           : 'strict DAG audit only; no human-scaffold prompt adaptation',
@@ -2525,9 +2554,9 @@ function buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag }) {
   const branch = scaffoldBranchForTurn({ world, tutorTurn, tutorLearnerDag });
   const modeNote =
     dagMode === 'defeasible_human_scaffold'
-      ? 'Learner may make a provisional local leap if the tutor names the proof debt and returns to it.'
+      ? 'Learner may make compressed local leaps; tutor carries obvious public bridges internally and surfaces proof debt only when it matters.'
       : dagMode === 'human_scaffold'
-        ? 'Tutor frames the local warrant and permits ordinary-language reasoning while strict proof remains the audit.'
+        ? 'Tutor frames one local warrant and permits ordinary-language reasoning while strict proof remains the audit.'
         : 'Strict audit mode; no scaffold adaptation.';
   return {
     schema: SCAFFOLD_STATE_SCHEMA,
@@ -2803,6 +2832,7 @@ function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classific
     mode: dagMode,
     phase: HUMAN_DISCOURSE_PHASE,
     scaffoldActive: dagMode !== 'strict_dag',
+    stepCompression: state?.humanDiscourse?.stepCompression || null,
     turn: tutorTurn,
     strictDag: buildStrictDagAuditState(tutorLearnerDag),
     scaffoldState,
@@ -5833,7 +5863,7 @@ function registerSelectionContext(selection, { multipleChoice = false } = {}) {
     'Write the next tutor message in this register without naming the register, the classifier, or the learner-DAG machinery.',
     multipleChoice
       ? 'Keep the turn compact. In story mode, if you use multiple choice, offer 2-4 short public evidence options and invite the learner to choose or write their own trial-book line.'
-      : 'Keep the turn compact. In story mode, give one live evidence issue and one direct prompt for a warranted public claim, not a menu of possible routes.',
+      : 'Keep the turn compact. In story mode, give one live issue and one light prompt for the learner\'s next thought; do not require a full warranted claim unless the learner is making an unsafe or case-closing leap.',
     '[End tutor-only selected register]',
   ]
     .filter(Boolean)
@@ -5886,16 +5916,20 @@ function humanDiscourseTutorContext(frame) {
   const sideArc = frame.sideArc || {};
   const proofDebt = frame.proofDebt || {};
   const audit = frame.warrantPremiseAudit || {};
+  const compression = frame.stepCompression || {};
   const due = scaffold.releaseState?.dueNow || [];
   const latest = scaffold.releaseState?.latestReleased || null;
   const next = scaffold.releaseState?.nextRelease || null;
   const promptRule =
     frame.mode === 'defeasible_human_scaffold'
-      ? 'You may let the learner hold a local conclusion provisionally, but explicitly keep the missing warrant or premise as proof debt and return to it soon.'
-      : 'Frame the local warrant in ordinary language while preserving the strict proof audit; do not license the final answer early.';
+      ? 'Treat plausible learner leaps as compressed human reasoning. Keep obvious omitted bridges as internal proof debt, and surface a warrant gap only when the leap is unsafe, conflicting, or would close the case.'
+      : 'Frame one local warrant in ordinary language while preserving the strict proof audit; do not expand the whole proof chain or license the final answer early.';
   return [
     '[Tutor-only human discourse scaffold]',
     `Mode: ${frame.mode}; strict DAG remains the audit, but the learner-facing scaffold is active.`,
+    compression.enabled
+      ? `Step compression: on; ${compression.policy || 'accept obvious public bridges as implied'}; max explicit demands per turn ${compression.maxExplicitDemandsPerTurn ?? 1}.`
+      : null,
     `Act: ${scaffold.activeAct?.act || 'unknown'}${scaffold.activeAct?.title ? ` — ${scaffold.activeAct.title}` : ''}.`,
     scaffold.activeAct?.intent ? `Act intent: ${oneLine(scaffold.activeAct.intent, { max: 260 })}` : null,
     `Current branch: ${branch.label || branch.id || 'open scaffold'}.`,
@@ -5921,7 +5955,10 @@ function humanDiscourseTutorContext(frame) {
         ])}`
       : null,
     promptRule,
-    'Learner-facing behavior: use plain public evidence language, allow one ordinary-language leap only as provisional, name what would make it strict, and ask for one next claim or clarification.',
+    'Learner-facing behavior: use plain public evidence language, answer side clarifications briefly, and usually move with the learner\'s compressed inference rather than forcing them to spell out every link.',
+    'When the learner skips an obvious public bridge, do not quiz them on it. Carry the bridge internally as implied proof debt and continue to the next useful pressure.',
+    'Ask for an explicit warrant only if the learner is about to name/confirm a suspect, contradicts public evidence, relies on unstaged evidence, or reaches a conclusion that would be false without the missing bridge.',
+    'Default response shape: one short acknowledgement, one sentence naming the live evidence pressure, one light question. Avoid lists of routes, ledgers, or multiple required subclaims.',
     'Never mention scaffold state, proof debt, side arcs, DAGs, premise ids, rule ids, hidden facts, or release schedules.',
     '[End tutor-only human discourse scaffold]',
   ]
@@ -6237,7 +6274,7 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printInteractiveHelp() {
   console.log(
-    `${C.cyan}slash commands >${C.reset} /analysis, /a, /field, /f, /viz, /v, /report, /r, /suggest, /use, /regen, /clear, /help, /quit\n`,
+    `${C.cyan}slash commands >${C.reset} /analysis, /a, /field, /f, /viz, /v, /clarify [phrase], /explain [phrase], /report, /r, /suggest, /use, /regen, /clear, /help, /quit\n`,
   );
 }
 
@@ -7239,6 +7276,68 @@ function publicTranscriptForAutomatedLearner(state) {
   ].join('\n\n');
 }
 
+function latestTutorMessage(state) {
+  return [...(state?.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+}
+
+function buildTutorClarificationPrompt({ state, term = '' }) {
+  const latestTutor = latestTutorMessage(state);
+  const requestedTerm = String(term || '').trim();
+  return [
+    '# Public scene',
+    '',
+    publicWorldSummary(state.world),
+    '',
+    '# Public transcript',
+    '',
+    compactPublicTranscriptForPrompt(state, state.historyTurns, { includeAnalysis: false }),
+    '',
+    '# Latest tutor message to clarify',
+    '',
+    latestTutor || '(No tutor message is available yet.)',
+    '',
+    '# Learner clarification request',
+    '',
+    requestedTerm
+      ? `Explain this term or phrase from the tutor dialogue: "${requestedTerm}".`
+      : 'No term was supplied. Pick up to three likely confusing words or phrases from the latest tutor message and explain them.',
+    '',
+    '# Output rules',
+    '',
+    '- Use only public wording already in the transcript.',
+    '- Do not add new evidence, new suspects, hidden conclusions, or next proof steps.',
+    '- Prefer one short paragraph, or at most three bullets.',
+    '- If the requested term is not in the latest tutor message or public transcript, say so briefly and ask which phrase the learner means.',
+    '- If the latest tutor message ended with a question, preserve that question as still pending rather than answering it.',
+  ].join('\n');
+}
+
+function cleanClarificationReply(text) {
+  return String(text || '')
+    .replace(/^```(?:text|markdown)?/iu, '')
+    .replace(/```$/u, '')
+    .replace(/^\s*(clarify|clarification|explain|explanation)\s*:\s*/iu, '')
+    .trim();
+}
+
+async function generateTutorClarification({ state, term = '', resolved, cliEffort = null }) {
+  const raw = await callPromptModel({
+    prompt: buildTutorClarificationPrompt({ state, term }),
+    resolved,
+    systemPrompt: CLARIFIER_SYSTEM_PROMPT,
+    role: 'tutor_stub_clarifier',
+    maxTokens: 500,
+    trace: state.trace,
+    stream: { enabled: false },
+    cliEffort,
+    turn: state.turns.length,
+  });
+  return {
+    ...raw,
+    text: cleanClarificationReply(raw.text),
+  };
+}
+
 function cleanAutomatedLearnerReply(text) {
   return String(text || '')
     .replace(/^```(?:text|markdown)?/iu, '')
@@ -8141,7 +8240,7 @@ async function main() {
   }
   printDirectorInitialContext(directorContext);
   console.log(
-    `${C.dim}topic: ${effectiveTopic} | /analysis, /field, or /viz for state | slash commands work while thinking | /quit to exit${C.reset}\n`,
+    `${C.dim}topic: ${effectiveTopic} | /analysis, /field, /viz, or /clarify for help | slash commands work while thinking | /quit to exit${C.reset}\n`,
   );
 
   if (autoLearnerEnabled) {
@@ -8270,6 +8369,7 @@ async function main() {
     },
   });
   let processingTurn = false;
+  let clarificationInFlight = false;
   let exiting = false;
   let finalized = false;
   const pendingLearnerLines = [];
@@ -8506,6 +8606,76 @@ async function main() {
     if (!exiting && !processingTurn) rl.prompt();
   }
 
+  async function runClarificationCommand(term = '', { duringTurn = false } = {}) {
+    clearStatusLine();
+    const latestTutor = latestTutorMessage(state);
+    if (!latestTutor) {
+      console.log(`${C.cyan}clarify >${C.reset} no tutor message is available yet`);
+      console.log(`${C.dim}  start the dialogue first, then use /clarify [phrase] after tutor wording that needs explanation${C.reset}\n`);
+      appendTraceEvent(state.trace, {
+        type: 'clarification_unavailable',
+        reason: 'no_tutor_message',
+        duringTurn,
+      });
+      return;
+    }
+    if (clarificationInFlight) {
+      console.log(`${C.dim}clarification is already running; wait for it to finish, then try again${C.reset}\n`);
+      appendTraceEvent(state.trace, {
+        type: 'clarification_skipped',
+        reason: 'already_in_flight',
+        duringTurn,
+      });
+      return;
+    }
+
+    clarificationInFlight = true;
+    const requestedTerm = String(term || '').trim();
+    appendTraceEvent(state.trace, {
+      type: 'clarification_start',
+      term: requestedTerm || null,
+      duringTurn,
+      turn: state.turns.length,
+    });
+    try {
+      console.log(
+        `${C.dim}clarifying${requestedTerm ? ` "${oneLine(requestedTerm, { max: 80 })}"` : ' latest tutor wording'}...${C.reset}`,
+      );
+      const response = await generateTutorClarification({
+        state,
+        term: requestedTerm,
+        resolved: state.resolved,
+        cliEffort: state.cliEffort,
+      });
+      clearStatusLine();
+      console.log(`${C.cyan}clarify >${C.reset} ${response.text}\n`);
+      appendTraceEvent(state.trace, {
+        type: 'clarification_complete',
+        term: requestedTerm || null,
+        duringTurn,
+        turn: state.turns.length,
+        text: response.text,
+        provider: response.provider,
+        model: response.model,
+        latencyMs: response.latencyMs,
+        usage: response.usage,
+      });
+      if (duringTurn) console.log(`${C.dim}tutor is still thinking; clarification used the latest completed tutor message${C.reset}\n`);
+    } catch (err) {
+      clearStatusLine();
+      console.log(`${C.red}clarify error:${C.reset} ${err.message}\n`);
+      appendTraceEvent(state.trace, {
+        type: 'clarification_error',
+        term: requestedTerm || null,
+        duringTurn,
+        turn: state.turns.length,
+        error: err.message,
+      });
+    } finally {
+      clarificationInFlight = false;
+    }
+  }
+
   function emitOpeningPrompt(reason = 'start') {
     if (!openingEnabled || state.history.length) return null;
     const opening = buildTutorOpening(state);
@@ -8537,6 +8707,8 @@ async function main() {
 
   function handleSlashCommand(trimmed, { duringTurn = false } = {}) {
     if (!trimmed.startsWith('/')) return false;
+    const command = trimmed.split(/\s+/u)[0];
+    const commandArg = trimmed.slice(command.length).trim();
     if (trimmed === '/quit' || trimmed === '/exit') {
       if (duringTurn) {
         stopInterimAnimation(state);
@@ -8603,6 +8775,9 @@ async function main() {
       if (duringTurn) console.log(`${C.dim}tutor is still thinking; visualization excludes the in-progress turn${C.reset}\n`);
       finishSlashCommand();
       return true;
+    }
+    if (command === '/clarify' || command === '/explain' || command === '/c') {
+      return runClarificationCommand(commandArg, { duringTurn }).finally(finishSlashCommand);
     }
     if (trimmed === '/report' || trimmed === '/r') {
       clearStatusLine();
@@ -8739,14 +8914,21 @@ async function main() {
       promptIfIdle();
       return;
     }
-    if (handleSlashCommand(trimmed, { duringTurn: processingTurn })) {
-      promptIfIdle();
+    const slashResult = handleSlashCommand(trimmed, { duringTurn: processingTurn });
+    if (slashResult) {
+      if (typeof slashResult.then === 'function') {
+        void slashResult.finally(() => {
+          promptIfIdle();
+        });
+      } else {
+        promptIfIdle();
+      }
       return;
     }
     if (processingTurn) {
       const pausedInterim = pauseInterimAnimation(state);
       pendingLearnerLines.push(trimmed);
-      console.log(`${C.dim}queued learner turn (${pendingLearnerLines.length} queued); use /analysis, /field, or /viz while waiting${C.reset}`);
+      console.log(`${C.dim}queued learner turn (${pendingLearnerLines.length} queued); use /analysis, /field, /viz, or /clarify while waiting${C.reset}`);
       appendTraceEvent(state.trace, {
         type: 'learner_turn_queued',
         queued: pendingLearnerLines.length,

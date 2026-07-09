@@ -27,7 +27,7 @@ Key choices and defaults:
 - Dynamical-system policy: `--register-policy dynamical_system` maps a continuous state/derivative vector through theory priors plus within-dialogue empirical efficacy corrections; `dynamical-system` is accepted as an alias.
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep a nearest `selected_register` for compatibility while passing a weighted `register_vector`/style blend to the tutor; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
-- DAG discourse mode: default `strict_dag` is the proof-audit baseline. Use `--dag-mode human_scaffold` or `--dag-mode defeasible_human_scaffold` when testing the human-facing scaffold that allows ordinary-language warrant framing, side arcs, and explicit proof debt while the strict DAG remains the audit.
+- DAG discourse mode: default `strict_dag` is the proof-audit baseline. Use `--dag-mode human_scaffold` or `--dag-mode defeasible_human_scaffold` when testing the human-facing scaffold that allows ordinary-language warrant framing, side arcs, compressed human inference, and internal proof debt while the strict DAG remains the audit.
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
 - Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v1`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
 - Runs: default `3` for baseline comparisons, `5` for focused policy comparisons, `1` for ABM panels.
@@ -45,6 +45,15 @@ Codex ChatGPT-account route rejects those. Use `codex.gpt-5.5` for CLI-backed
 Codex, or `openai.mini` / `openrouter.gpt-mini` for GPT mini.
 
 ## Human Learner Session
+
+Use the mnemonic presets for common interactive checks:
+
+```bash
+npm run tutor:stub:direct          # no DAG interpretation, human types turns
+npm run tutor:stub:direct:mixed    # no DAG interpretation, learner drafts available
+npm run tutor:stub:scaffold        # human-facing DAG scaffold, human types turns
+npm run tutor:stub:scaffold:mixed  # human-facing DAG scaffold, learner drafts available
+```
 
 Use when the user will type learner turns manually:
 
@@ -71,7 +80,8 @@ Useful variants:
 - Add `--mixed-learner --auto-learner-model codex.gpt-5.5` for manual play with
   a prefetched learner draft after each tutor turn. Press Tab on an empty learner
   prompt to insert the draft for editing, or use `/suggest`, `/use`, `/regen`.
-- Use slash commands during a run: `/analysis`, `/field`, `/viz`, `/suggest`, `/use`, `/regen`, `/quit`.
+- Use slash commands during a run: `/analysis`, `/field`, `/viz`, `/clarify [phrase]`,
+  `/explain [phrase]`, `/suggest`, `/use`, `/regen`, `/quit`.
 
 ## Automated Single-Learner Eval
 

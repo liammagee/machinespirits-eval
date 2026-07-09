@@ -37,6 +37,9 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
   assert.equal(config.humanDiscourse.phase, 'phase_2_human_scaffold_prompting');
   assert.equal(config.humanDiscourse.scaffoldActive, true);
   assert.equal(config.humanDiscourse.behaviorChange, true);
+  assert.equal(config.humanDiscourse.stepCompression.enabled, true);
+  assert.equal(config.humanDiscourse.stepCompression.maxExplicitDemandsPerTurn, 1);
+  assert.match(config.humanDiscourse.stepCompression.policy, /obvious public bridges/u);
   assert.deepEqual(config.humanDiscourse.traceFields, [
     'humanDiscourseFrame',
     'scaffoldState',
@@ -50,6 +53,9 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
   assert.equal(config.humanDiscoursePreviewFrame.scaffoldState.activeAct.title, 'The Light Shillings');
   assert.equal(config.humanDiscoursePreviewFrame.scaffoldState.branch.id, 'mirror_pressure');
   assert.match(config.humanDiscoursePreviewFrame.scaffoldState.localQuestion, /town case/u);
+  assert.equal(config.humanDiscoursePreviewFrame.stepCompression.enabled, true);
+  assert.match(config.systemPrompt, /Let human learners compress obvious reasoning/u);
+  assert.match(config.systemPrompt, /Ask for an explicit missing bridge only when/u);
 });
 
 test('tutor-stub DAG mode defaults to strict audit mode', () => {
@@ -58,6 +64,7 @@ test('tutor-stub DAG mode defaults to strict audit mode', () => {
   assert.equal(config.humanDiscourse.dagMode, 'strict_dag');
   assert.equal(config.humanDiscourse.scaffoldActive, false);
   assert.equal(config.humanDiscourse.behaviorChange, false);
+  assert.equal(config.humanDiscourse.stepCompression.enabled, false);
   assert.equal(config.humanDiscoursePreviewFrame.scaffoldActive, false);
   assert.equal(config.humanDiscoursePreviewFrame.scaffoldState.status, 'not_enabled_strict_dag');
 });
@@ -78,6 +85,32 @@ test('tutor-stub rejects unknown DAG discourse modes', () => {
   );
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Unknown --dag-mode: guesswork/);
+});
+
+test('tutor-stub interactive help exposes clarification commands', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+      '--world',
+      'world_005_marrick',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      input: '/help\n/clarify cupel\n/quit\n',
+    },
+  );
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /\/clarify \[phrase\]/u);
+  assert.match(result.stdout, /\/explain \[phrase\]/u);
+  assert.match(result.stdout, /no tutor message is available yet/u);
 });
 
 test('auto-eval dry run forwards DAG discourse mode to tutor-stub children', () => {
