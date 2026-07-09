@@ -536,6 +536,8 @@ function sortPolicyNames(policies) {
     'trajectory',
     'dynamical_system',
     'empirical_dynamical_system',
+    'continuous_dynamical_system',
+    'continuous_empirical_dynamical_system',
     'negative',
   ];
   return policies.slice().sort((left, right) => {

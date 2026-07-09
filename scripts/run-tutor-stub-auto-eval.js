@@ -93,7 +93,7 @@ Options:
   --runs <n>                 repetitions per policy (default: 1)
   --turns <n|until-grounded> max automated learner turns per dialogue (default: until-grounded)
   --policies <csv>           register policies to compare (default: negative,dynamic,random)
-                              known: dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,bland,random,negative
+                              known: dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,bland,random,negative
   --model <ref>              tutor model (default: codex.gpt-5.5)
   --analysis-model <ref>     classifier + learner-DAG model (default: codex.gpt-5.5)
   --auto-learner-model <ref> automated learner model (default: codex.gpt-5.5)
@@ -314,6 +314,8 @@ const REPORT_POLICY_ORDER = [
   'dynamic',
   'dynamical_system',
   'empirical_dynamical_system',
+  'continuous_dynamical_system',
+  'continuous_empirical_dynamical_system',
   'negative',
 ];
 
@@ -873,6 +875,11 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
       policy: selection.policy || null,
       selected: selection.selected_register || null,
       probability: roundOptionalField(selection.selected_probability),
+      vector: selection.register_vector || selection.continuous_register_policy?.register_vector || null,
+      vectorEntropyBits: roundOptionalField(
+        selection.register_vector_entropy_bits ?? selection.continuous_register_policy?.entropy_bits,
+      ),
+      continuous: selection.continuous_register_policy || null,
       distributionSource: distribution.source,
       distribution: distribution.rows,
       scores: compactNumericMap(
@@ -905,6 +912,7 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
       selectedContributions: (selection.dynamical_system_policy?.selected_contributions || []).slice(0, 8),
       empirical: selection.dynamical_system_policy?.empirical || null,
       corpusEmpirical: selection.dynamical_system_policy?.corpus_empirical || null,
+      continuous: selection.continuous_register_policy || selection.dynamical_system_policy?.continuous_register_policy || null,
       mapping: selection.dynamical_system_policy?.mapping || null,
     },
     events: frameEvents({ turn, fieldRow, trajectory, selection }),
@@ -972,6 +980,11 @@ function compactTranscriptTurn({ turn, index, fieldRows }) {
       actionFamily: selection.action_family || null,
       valence: selection.valence || null,
       probability: roundOptionalField(selection.selected_probability ?? selection.confidence),
+      vector: selection.register_vector || selection.continuous_register_policy?.register_vector || null,
+      vectorEntropyBits: roundOptionalField(
+        selection.register_vector_entropy_bits ?? selection.continuous_register_policy?.entropy_bits,
+      ),
+      continuous: selection.continuous_register_policy || null,
       reason: textSnippet(selection.register_reason, 360),
       evidenceSpan: textSnippet(selection.evidence_span, 260),
       expectedDagMove: textSnippet(selection.expected_dag_move, 260),
@@ -1026,6 +1039,114 @@ function buildTranscriptDrilldown(turnRecords = [], fieldViz = null) {
     schema: 'machinespirits.tutor-stub.transcript-drilldown.v1',
     turnCount: turns.length,
     turns,
+  };
+}
+
+function trainingDelta(nextField = {}, currentField = {}, key) {
+  if (!nextField || nextField[key] === undefined || !currentField || currentField[key] === undefined) return null;
+  return fieldDelta(nextField[key], currentField[key]);
+}
+
+function rewardProxyFromFrames({ frame, nextFrame, transcriptTurn }) {
+  const currentField = frame?.field || {};
+  const nextField = nextFrame?.field || null;
+  const deltas = nextField
+    ? {
+        learnerMastery: trainingDelta(nextField, currentField, 'learnerMastery'),
+        learnerRisk: trainingDelta(nextField, currentField, 'learnerRisk'),
+        coverage: trainingDelta(nextField, currentField, 'coverage'),
+        tutorAlignment: trainingDelta(nextField, currentField, 'tutorAlignment'),
+        jointMomentum: trainingDelta(nextField, currentField, 'jointMomentum'),
+      }
+    : {
+        learnerMastery: null,
+        learnerRisk: null,
+        coverage: null,
+        tutorAlignment: null,
+        jointMomentum: null,
+      };
+  const leakPenalty = transcriptTurn?.response?.leakOk === false ? 1 : 0;
+  const repairedPenalty = transcriptTurn?.response?.repaired ? 0.25 : 0;
+  const score =
+    deltas.learnerMastery === null
+      ? null
+      : roundOptionalField(
+          Number(deltas.learnerMastery || 0) * 0.38 -
+            Number(deltas.learnerRisk || 0) * 0.28 +
+            Number(deltas.coverage || 0) * 0.24 +
+            Number(deltas.jointMomentum || 0) * 0.1 -
+            leakPenalty * 0.8 -
+            repairedPenalty,
+        );
+  return {
+    schema: 'machinespirits.tutor-stub.reward-proxy.v1',
+    score,
+    deltas,
+    penalties: {
+      leak: leakPenalty,
+      repaired: repairedPenalty,
+    },
+    note:
+      'Exploratory proxy only: positive mastery/coverage/momentum and falling risk are useful for transition-model fitting, not a paper-grade learning effect.',
+  };
+}
+
+function buildTurnTrainingExamples({ animatedViz = null, transcript = null } = {}) {
+  const frames = Array.isArray(animatedViz?.frames) ? animatedViz.frames : [];
+  const turns = Array.isArray(transcript?.turns) ? transcript.turns : [];
+  if (!frames.length && !turns.length) return null;
+  const count = Math.max(frames.length, turns.length);
+  const examples = [];
+  for (let index = 0; index < count; index += 1) {
+    const frame = frames[index] || {};
+    const turn = turns[index] || {};
+    const nextFrame = frames[index + 1] || null;
+    const rewardProxy = rewardProxyFromFrames({ frame, nextFrame, transcriptTurn: turn });
+    examples.push({
+      schema: 'machinespirits.tutor-stub.turn-training-example.v1',
+      turn: frame.turn ?? turn.turn ?? index + 1,
+      policy: frame.policy || turn.register?.policy || null,
+      action: {
+        selectedRegister: frame.selectedRegister || turn.register?.selected || null,
+        registerPolicy: frame.register?.policy || turn.register?.policy || null,
+        registerVector: frame.register?.vector || turn.register?.vector || null,
+        registerDistribution: frame.register?.distribution || null,
+        registerVectorEntropyBits: frame.register?.vectorEntropyBits ?? turn.register?.vectorEntropyBits ?? null,
+        tutorText: turn.tutor || frame.snippets?.tutor || '',
+      },
+      stateBeforeAction: {
+        learnerText: turn.learner || frame.snippets?.learner || '',
+        learnerState: turn.learnerState || frame.state?.classifier || {},
+        dag: frame.state?.dag || turn.dag || {},
+        field: frame.field || turn.field || {},
+        stateVector: frame.dynamics?.stateVector || {},
+        derivativeVector: frame.dynamics?.derivativeVector || {},
+        trajectory: frame.trajectory || turn.trajectory || {},
+      },
+      outcomeAfterNextLearner: nextFrame
+        ? {
+            nextTurn: nextFrame.turn ?? null,
+            dag: nextFrame.state?.dag || {},
+            field: nextFrame.field || {},
+            stateVector: nextFrame.dynamics?.stateVector || {},
+            derivativeVector: nextFrame.dynamics?.derivativeVector || {},
+            groundedClosure:
+              nextFrame.state?.dag?.bottleneck === 'grounded_asserted_secret' ||
+              (nextFrame.state?.dag?.finalSecretEntailed === true && nextFrame.state?.dag?.assertedSecret === true),
+          }
+        : null,
+      response: turn.response || {},
+      events: Array.from(new Set([...(frame.events || []), ...(turn.events || [])])).filter(Boolean),
+      rewardProxy,
+      frame,
+      transcriptTurn: turn,
+    });
+  }
+  return {
+    schema: 'machinespirits.tutor-stub.turn-training-examples.v1',
+    purpose: 'transition_and_reward_modeling',
+    turnCount: examples.length,
+    examples,
   };
 }
 
@@ -1288,6 +1409,7 @@ function summarizeTrace(tracePath, traceDir) {
   const fieldViz = buildLightweightDialogueField(turnRecords);
   const animatedViz = buildAnimatedRunVisualization(turnRecords, fieldViz);
   const transcript = buildTranscriptDrilldown(turnRecords, fieldViz);
+  const trainingExamples = buildTurnTrainingExamples({ animatedViz, transcript });
   const learnerBehavior = summarizeLearnerBehavior(turnRecords);
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
@@ -1342,6 +1464,7 @@ function summarizeTrace(tracePath, traceDir) {
     fieldViz: fieldViz.turnCount ? fieldViz : null,
     animatedViz,
     transcript,
+    trainingExamples,
     learnerBehavior,
   };
 }
@@ -1384,6 +1507,7 @@ function resultRows(results) {
           fieldViz: null,
           animatedViz: null,
           transcript: null,
+          trainingExamples: null,
           learnerBehavior: null,
         },
       ];
@@ -1536,6 +1660,7 @@ function machineSpiritsReportCss() {
       --good:var(--moss-deep);
       --warn:var(--ochre-d);
       --bad:var(--brick-d);
+      --red:var(--red-mark);
       --blue:var(--indigo);
     }
     * { box-sizing:border-box; }
@@ -1711,15 +1836,21 @@ function machineSpiritsReportCss() {
     }
     .big-picture-grid {
       display:grid;
-      grid-template-columns:minmax(280px,1.15fr) minmax(280px,.85fr);
+      grid-template-columns:minmax(0,1fr);
       gap:14px;
       align-items:start;
     }
     .big-picture-panel {
+      min-width:0;
+      grid-column:1 / -1;
       background:rgba(247,239,221,0.76);
       border:1px solid var(--rule);
       box-shadow:0 12px 30px rgba(28,22,16,0.05);
       padding:14px 15px;
+      overflow:hidden;
+    }
+    .big-picture-panel-wide {
+      grid-column:1 / -1;
     }
     .big-picture-panel h3 {
       margin:0 0 9px;
@@ -1735,6 +1866,120 @@ function machineSpiritsReportCss() {
     .big-picture-read li { margin:6px 0; }
     .big-picture-table { min-width:760px; }
     .big-picture-table .numeric { text-align:right; white-space:nowrap; }
+    .big-picture-viz-grid {
+      display:grid;
+      grid-template-columns:minmax(0,1fr);
+      gap:12px;
+      align-items:start;
+      margin-top:12px;
+    }
+    .big-picture-viz-grid > * {
+      min-width:0;
+    }
+    .viz-frame {
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:5px 5px 0 var(--ink);
+      min-width:0;
+      overflow:hidden;
+    }
+    .viz-frame svg {
+      display:block;
+      width:100%;
+      height:auto;
+      min-height:260px;
+    }
+    .viz-caption {
+      display:grid;
+      gap:5px;
+      padding:8px 10px;
+      border-top:2px solid var(--ink);
+      background:var(--paper-3);
+      color:var(--ink-3);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      line-height:1.35;
+    }
+    .learner-card-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));
+      gap:9px;
+      min-width:0;
+    }
+    .learner-card {
+      min-width:0;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:3px 3px 0 var(--card-accent, var(--ink));
+      padding:10px;
+    }
+    .learner-card strong {
+      display:block;
+      color:var(--ink);
+      font-family:"Fraunces", Georgia, serif;
+      font-size:18px;
+      line-height:1.1;
+      overflow-wrap:anywhere;
+    }
+    .learner-card dl {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:7px 9px;
+      margin:9px 0 0;
+    }
+    .learner-card dt {
+      color:var(--ink-3);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:10px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+    .learner-card dd {
+      margin:1px 0 0;
+      color:var(--ink);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:13px;
+      font-weight:700;
+    }
+    @media (min-width: 1180px) {
+      .big-picture-viz-grid {
+        grid-template-columns:minmax(420px,1.1fr) minmax(300px,.9fr);
+      }
+    }
+    .policy-bars {
+      display:grid;
+      gap:8px;
+    }
+    .policy-bar-row {
+      display:grid;
+      grid-template-columns:minmax(120px,190px) minmax(160px,1fr) auto;
+      gap:10px;
+      align-items:center;
+    }
+    .policy-bar-row strong {
+      overflow-wrap:anywhere;
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:12px;
+    }
+    .policy-bar {
+      height:15px;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:2px 2px 0 var(--ink);
+      overflow:hidden;
+    }
+    .policy-bar span {
+      display:block;
+      height:100%;
+      width:var(--bar-width,0%);
+      background:var(--bar-color,var(--red));
+    }
+    .policy-bar-meta {
+      color:var(--ink-3);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      white-space:nowrap;
+    }
     .big-picture-cautions {
       display:grid;
       gap:8px;
@@ -2386,6 +2631,68 @@ function machineSpiritsReportCss() {
       border:1px solid var(--rule);
     }
     .toolbar .control:first-child { grid-column:span 2; }
+    .report-list {
+      margin:18px 0 0;
+      border-top:2px solid var(--ink);
+      padding-top:14px;
+    }
+    .report-list-head {
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      margin:0 0 10px;
+    }
+    .report-list h2 {
+      margin:0;
+    }
+    .report-list p {
+      margin:3px 0 0;
+      color:var(--ink-3);
+      font-size:12px;
+      letter-spacing:0.02em;
+    }
+    .report-index-scroll {
+      max-height:min(72vh, 820px);
+      overflow:auto;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:5px 5px 0 var(--ink);
+      padding:0;
+      margin:10px 0 0;
+    }
+    .report-index-scroll table {
+      min-width:1260px;
+      margin:0;
+      border:0;
+      box-shadow:none;
+      background:var(--paper);
+    }
+    .report-index-table th, .report-index-table td {
+      padding:8px 10px;
+    }
+    .report-index-table thead th {
+      position:sticky;
+      top:0;
+      z-index:3;
+      border-bottom:2px solid var(--ink);
+      background:var(--paper-2);
+    }
+    .report-index-table tbody tr {
+      background:var(--paper);
+    }
+    .report-index-table tbody tr:nth-child(even) {
+      background:var(--paper-3);
+    }
+    .report-index-table tbody tr[hidden] {
+      display:none;
+    }
+    .report-index-table tbody tr:first-child td {
+      border-top:2px solid var(--ink);
+    }
+    .report-index-table td {
+      background:inherit;
+    }
     .control span { color:var(--ink-3); font-size:11px; text-transform:uppercase; letter-spacing:0.11em; }
     input { box-sizing:border-box; }
     select { box-sizing:border-box; }
@@ -2750,7 +3057,7 @@ function machineSpiritsReportCss() {
       .report-nav a:hover, .report-nav a:focus { border-bottom-color:var(--brick); }
     }
     @media (max-width: 900px) {
-      .summary-panel, .learner-panel, .viz-layout, .big-picture-grid { grid-template-columns:1fr; }
+      .summary-panel, .learner-panel, .viz-layout, .big-picture-grid, .big-picture-viz-grid { grid-template-columns:1fr; }
       .big-picture-head { display:block; }
       .viz-sidebar { border-left:0; border-top:1px solid var(--rule); }
       .viz-toolbar, .toolbar, .transcript-toolbar { grid-template-columns:1fr; }
@@ -2768,6 +3075,8 @@ function machineSpiritsReportCss() {
     @media (max-width: 560px) {
       header, main { padding-left:16px; padding-right:16px; }
       .metrics { grid-template-columns:1fr; }
+      .policy-bar-row { grid-template-columns:1fr; gap:5px; }
+      .policy-bar-meta { white-space:normal; }
     }
   `;
 }
@@ -3612,7 +3921,7 @@ function renderAnimatedVizGuide() {
     ],
     [
       'Policy distribution',
-      'The policy probability spread over available registers. Selected-only policies have no spread, so the view shows observed frequency instead.',
+      'The policy probability spread over available registers. Continuous policies show the weighted stance blend; selected-only policies show observed frequency instead.',
     ],
     [
       'Policy Compare',
@@ -3622,7 +3931,7 @@ function renderAnimatedVizGuide() {
   return `<aside class="viz-sidebar" aria-label="Turn replay explanation">
     <h3>Reading The Replay</h3>
     <p>
-      The ${infoTerm('register policy', 'The algorithm being benchmarked, such as field, trajectory, or dynamical_system.')} belongs to the
+      The ${infoTerm('register policy', 'The algorithm being benchmarked, such as field, trajectory, dynamical_system, or continuous_dynamical_system.')} belongs to the
       selected eval row. The buttons choose only the ${infoTerm(
         'visual view',
         'The lens used to draw the same turn sequence; it does not change the underlying policy.',
@@ -3729,7 +4038,7 @@ function renderAnimatedVizSection(rows) {
       dag: '#0057B8',
       risk: '#E63946'
     };
-    var policyOrder = ['bland', 'random', 'state', 'field', 'trajectory', 'dynamic', 'dynamical_system', 'empirical_dynamical_system', 'negative'];
+    var policyOrder = ['bland', 'random', 'state', 'field', 'trajectory', 'dynamic', 'dynamical_system', 'empirical_dynamical_system', 'continuous_dynamical_system', 'continuous_empirical_dynamical_system', 'negative'];
     var policyPalette = {
       bland: '#0A0A0A',
       random: '#737373',
@@ -3739,6 +4048,8 @@ function renderAnimatedVizSection(rows) {
       dynamic: '#D72670',
       dynamical_system: '#D98E04',
       empirical_dynamical_system: '#F2B705',
+      continuous_dynamical_system: '#8A5A00',
+      continuous_empirical_dynamical_system: '#B88700',
       negative: '#E63946'
     };
     var compareVariables = [
@@ -5594,6 +5905,28 @@ function formatIndexPositive(value) {
   return value === null || value === undefined ? 'n/a' : formatPositiveField(value);
 }
 
+function indexProjectionPoint(row, index = 0) {
+  const meanTurns = Number(row.meanTurns);
+  const turnEfficiency = Number.isFinite(meanTurns) ? clampField01(1 - meanTurns / 120) : 0;
+  return {
+    key: row.key,
+    x: Number(row.closureRate || 0),
+    y: turnEfficiency,
+    z: Number(row.signalScore || 0),
+    radius: Math.max(4, Math.min(18, 4 + Math.sqrt(Number(row.ok || 0)) * 2)),
+    colorIndex: index,
+    metrics: {
+      ok: row.ok,
+      failed: row.failed,
+      closureRate: row.closureRate,
+      meanTurns: row.meanTurns,
+      meanCoverage: row.meanCoverage,
+      leakCount: row.leakCount,
+      signalScore: row.signalScore,
+    },
+  };
+}
+
 function recentIndexReportRows(rows, { limit = 12 } = {}) {
   return rows.filter((row) => row.runKind === 'real' && Number(row.ok || 0) > 0).slice(0, limit);
 }
@@ -5782,7 +6115,7 @@ function renderIndexBigPicture({ rows, activeRuns = [], hiddenByDefault = 0 }) {
       </tr>`,
     )
     .join('\n');
-  return `<section class="big-picture" aria-label="Big picture summary">
+  return `<section class="big-picture" id="big-picture" aria-label="Big picture summary">
     <div class="big-picture-head">
       <div>
         <h2>Big Picture</h2>
@@ -5858,6 +6191,16 @@ function indexBigPictureModel({ rows, activeRuns = [], hiddenByDefault = 0 }) {
     cautions,
     policyStats: policyStats.slice(0, 7),
     learnerStats: learnerStats.slice(0, 6),
+    projections: {
+      axes: {
+        x: 'closureRate',
+        y: 'turnEfficiency',
+        z: 'signalScore',
+        radius: 'completedRows',
+      },
+      learners: learnerStats.slice(0, 6).map(indexProjectionPoint),
+      policies: policyStats.slice(0, 7).map(indexProjectionPoint),
+    },
   };
 }
 
@@ -6038,6 +6381,19 @@ function tutorStubIndexClientJs() {
     if (!Number.isFinite(numeric)) return '';
     return String(Number(numeric.toFixed(3)));
   }
+  function clamp01(value) {
+    var numeric = Number(value);
+    if (!Number.isFinite(numeric)) return 0;
+    return Math.max(0, Math.min(1, numeric));
+  }
+  function vizColor(index) {
+    var colors = ['#E63946', '#0057B8', '#009B72', '#F2B705', '#6B4EFF', '#D72670', '#0A0A0A', '#737373'];
+    return colors[Math.abs(Number(index || 0)) % colors.length];
+  }
+  function turnLabel(value) {
+    var numeric = Number(value);
+    return Number.isFinite(numeric) ? String(Number(numeric.toFixed(1))) : 'n/a';
+  }
   function coverageCell(value) {
     var numeric = Number(value);
     if (!Number.isFinite(numeric)) return '<span class="muted">not scored</span>';
@@ -6074,15 +6430,106 @@ function tutorStubIndexClientJs() {
         return '<article class="live-run-card ' + esc(run.status) + '" data-search="' + esc(run.searchText) + '"><div class="live-run-top"><div><h3>' + esc(run.runName) + '</h3>' + scopeBadge(run.reportScope) + '<p>' + esc(run.learnerProfile || 'unknown learner') + ' · ' + esc(run.world || 'unknown world') + ' · pid ' + esc(run.pid || 'n/a') + '</p>' + scopeNote(run.reportScope) + '</div><span class="status ' + esc(run.status) + '">' + esc(run.status) + '</span></div><div class="live-run-progress">' + progressBar(rate) + '<span>' + esc(totals.completed || 0) + '/' + esc(totals.jobs || 0) + ' jobs · ' + esc(totals.active || 0) + ' active · ' + esc(totals.queued || 0) + ' queued · ' + esc(totals.failed || 0) + ' failed</span></div><div class="live-run-meta"><span>started ' + esc(shortDate(run.startedAt)) + '</span><span>updated ' + esc(shortDate(run.updatedAt)) + '</span><span>' + policyChips(run.policies) + '</span></div><div class="live-jobs">' + (activeJobs.map(renderLiveJob).join('\n') || '<span class="muted">No active jobs.</span>') + '</div><div class="live-actions"><a href="' + esc(run.stateHref) + '">state json</a> ' + (run.traceDirHref ? '<a href="' + esc(run.traceDirHref) + '">trace dir</a>' : '') + '</div></article>';
       }).join('\n') + '</section>';
   }
+  function projectionFor(row, index) {
+    var turnEfficiency = Number.isFinite(Number(row.meanTurns)) ? clamp01(1 - Number(row.meanTurns) / 120) : 0;
+    return {
+      key: row.key,
+      x: clamp01(row.closureRate),
+      y: turnEfficiency,
+      z: clamp01(row.signalScore),
+      radius: Math.max(5, Math.min(18, 5 + Math.sqrt(Number(row.ok || 0)) * 2)),
+      colorIndex: index
+    };
+  }
+  function learnerProjection(model) {
+    var projected = model && model.projections && model.projections.learners;
+    if (projected && projected.length) return projected;
+    return (model.learnerStats || []).map(projectionFor);
+  }
+  function renderLearnerMap(model) {
+    var rows = model.learnerStats || [];
+    if (!rows.length) return '<div class="viz-frame"><div class="viz-caption">No learner profile rows yet.</div></div>';
+    var points = learnerProjection(model);
+    var byKey = {};
+    rows.forEach(function (row) { byKey[row.key] = row; });
+    var width = 760;
+    var height = 330;
+    var left = 76;
+    var right = 28;
+    var top = 28;
+    var bottom = 62;
+    var chartW = width - left - right;
+    var chartH = height - top - bottom;
+    var grid = [0, 0.25, 0.5, 0.75, 1].map(function (tick) {
+      var x = left + tick * chartW;
+      var y = top + (1 - tick) * chartH;
+      return '<line x1="' + x + '" y1="' + top + '" x2="' + x + '" y2="' + (top + chartH) + '" stroke="#D4D4D8" stroke-width="1"/><text x="' + x + '" y="' + (top + chartH + 25) + '" text-anchor="middle" font-size="11" fill="#525252">' + Math.round(tick * 100) + '%</text><line x1="' + left + '" y1="' + y + '" x2="' + (left + chartW) + '" y2="' + y + '" stroke="#E5E5E5" stroke-width="1"/><text x="' + (left - 12) + '" y="' + (y + 4) + '" text-anchor="end" font-size="11" fill="#525252">' + Math.round(tick * 100) + '%</text>';
+    }).join('');
+    var labeledPoints = points.map(function (point, index) {
+      var row = byKey[point.key] || rows[index] || {};
+      var x = left + clamp01(point.x) * chartW;
+      var y = top + (1 - clamp01(point.y)) * chartH;
+      var radius = Number(point.radius || 9);
+      var color = vizColor(point.colorIndex == null ? index : point.colorIndex);
+      return { point: point, row: row, x: x, y: y, radius: radius, color: color, index: index, labelY: y + 4 };
+    });
+    var sortedLabels = labeledPoints.slice().sort(function (a, b) { return a.labelY - b.labelY; });
+    var minLabelGap = 21;
+    var minLabelY = top + 16;
+    var maxLabelY = top + chartH - 8;
+    sortedLabels.forEach(function (item, index) {
+      item.labelY = Math.max(minLabelY, Math.min(maxLabelY, item.labelY));
+      if (index > 0) item.labelY = Math.max(item.labelY, sortedLabels[index - 1].labelY + minLabelGap);
+    });
+    var overflow = sortedLabels.length ? sortedLabels[sortedLabels.length - 1].labelY - maxLabelY : 0;
+    if (overflow > 0) {
+      sortedLabels.forEach(function (item) { item.labelY -= overflow; });
+      for (var i = sortedLabels.length - 2; i >= 0; i -= 1) {
+        sortedLabels[i].labelY = Math.min(sortedLabels[i].labelY, sortedLabels[i + 1].labelY - minLabelGap);
+      }
+      sortedLabels.forEach(function (item) {
+        item.labelY = Math.max(minLabelY, Math.min(maxLabelY, item.labelY));
+      });
+    }
+    var pointSvg = labeledPoints.map(function (item) {
+      var row = item.row;
+      var x = item.x;
+      var y = item.y;
+      var radius = item.radius;
+      var color = item.color;
+      var labelSideLeft = x > width - right - 160;
+      var labelX = labelSideLeft ? Math.max(left + 108, x - radius - 12) : Math.min(width - right - 108, x + radius + 12);
+      var labelAnchor = labelSideLeft ? 'end' : 'start';
+      var lineX = labelSideLeft ? labelX + 6 : labelX - 6;
+      var labelY = item.labelY;
+      var title = row.key + ': closure ' + pct(row.closureRate) + ', turns ' + turnLabel(row.meanTurns) + ', leaks ' + (row.leakCount || 0);
+      return '<g><title>' + esc(title) + '</title><line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + lineX.toFixed(1) + '" y2="' + labelY.toFixed(1) + '" stroke="#0A0A0A" stroke-width="1"/><circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + radius.toFixed(1) + '" fill="' + color + '" fill-opacity="0.86" stroke="#0A0A0A" stroke-width="2"/><rect x="' + (labelSideLeft ? (labelX + 8) : (labelX - 16)).toFixed(1) + '" y="' + (labelY - 10).toFixed(1) + '" width="10" height="10" fill="' + color + '" stroke="#0A0A0A" stroke-width="1"/><text x="' + labelX.toFixed(1) + '" y="' + labelY.toFixed(1) + '" text-anchor="' + labelAnchor + '" font-size="13" font-weight="700" fill="#0A0A0A">' + esc(row.key || item.point.key) + '</text></g>';
+    }).join('');
+    return '<div class="viz-frame"><svg viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="Learner robustness map"><rect x="0" y="0" width="' + width + '" height="' + height + '" fill="#FFFFFF"/><rect x="' + left + '" y="' + top + '" width="' + chartW + '" height="' + chartH + '" fill="#FAFAFA" stroke="#0A0A0A" stroke-width="2"/>' + grid + '<text x="' + (left + chartW / 2) + '" y="' + (height - 16) + '" text-anchor="middle" font-size="12" font-weight="700" fill="#0A0A0A">closure rate</text><text transform="translate(22 ' + (top + chartH / 2) + ') rotate(-90)" text-anchor="middle" font-size="12" font-weight="700" fill="#0A0A0A">turn efficiency</text>' + pointSvg + '</svg><div class="viz-caption"><span>x = closure; y = faster completion; bubble = completed rows; color separates learner profiles.</span><span>Projection data also includes z = composite signal for later 3D/WebGL views.</span></div></div>';
+  }
+  function renderLearnerCards(rows) {
+    if (!rows || !rows.length) return '<div class="muted">No learner profile rows yet.</div>';
+    return '<div class="learner-card-grid">' + rows.map(function (row, index) {
+      return '<article class="learner-card" style="--card-accent:' + esc(vizColor(index)) + '"><strong>' + esc(row.key) + '</strong><dl><div><dt>Reports</dt><dd>' + esc(row.reportCount) + '</dd></div><div><dt>OK/Failed</dt><dd>' + esc(row.ok) + '/' + esc(row.failed) + '</dd></div><div><dt>Closure</dt><dd>' + esc(pct(row.closureRate)) + '</dd></div><div><dt>Turns</dt><dd>' + esc(row.meanTurns == null ? 'n/a' : turnLabel(row.meanTurns)) + '</dd></div><div><dt>Leaks</dt><dd>' + esc(row.leakCount) + '</dd></div><div><dt>Signal</dt><dd>' + esc(measure(row.signalScore)) + '</dd></div></dl></article>';
+    }).join('') + '</div>';
+  }
+  function renderLearnerRobustness(model) {
+    return '<div class="big-picture-viz-grid"><div>' + renderLearnerMap(model) + '</div><div>' + renderLearnerCards(model.learnerStats || []) + '</div></div>';
+  }
+  function renderPolicySignal(model) {
+    var rows = model.policyStats || [];
+    if (!rows.length) return '<div class="muted">No policy rows yet.</div>';
+    var maxSignal = rows.reduce(function (max, row) { return Math.max(max, Number(row.signalScore || 0)); }, 0) || 1;
+    return '<div class="policy-bars">' + rows.map(function (row, index) {
+      var color = vizColor(index);
+      var width = Math.round((Number(row.signalScore || 0) / maxSignal) * 100);
+      var meta = pct(row.closureRate) + ' closure · ' + turnLabel(row.meanTurns) + ' turns · ' + (row.leakCount || 0) + ' leaks';
+      return '<div class="policy-bar-row"><strong>' + esc(row.key) + '</strong><div class="policy-bar" title="' + esc(meta) + '"><span style="--bar-width:' + width + '%;--bar-color:' + esc(color) + '"></span></div><span class="policy-bar-meta">' + esc(measure(row.signalScore)) + '</span></div>';
+    }).join('') + '</div>';
+  }
   function renderBigPicture(model) {
     model = model || { bullets: [], cautions: [], policyStats: [], learnerStats: [], reportCount: 0 };
-    var learnerRows = (model.learnerStats || []).map(function (row) {
-      return '<tr><td><strong>' + esc(row.key) + '</strong></td><td class="numeric">' + esc(row.reportCount) + '</td><td class="numeric">' + esc(row.ok) + '/' + esc(row.failed) + '</td><td class="numeric">' + esc(pct(row.closureRate)) + '</td><td class="numeric">' + esc(row.meanTurns == null ? 'n/a' : row.meanTurns) + '</td><td class="numeric">' + esc(row.leakCount) + '</td></tr>';
-    }).join('\n');
-    var policyRows = (model.policyStats || []).map(function (row) {
-      return '<tr><td><strong>' + esc(row.key) + '</strong></td><td class="numeric">' + esc(row.ok) + '/' + esc(row.failed) + '</td><td class="numeric">' + esc(pct(row.closureRate)) + '</td><td class="numeric">' + esc(field(row.meanCoverage)) + '</td><td class="numeric">' + esc(field(row.finalMastery)) + '/' + esc(field(row.finalRisk)) + '</td><td class="numeric">' + esc(signed(row.masteryGain)) + '/' + esc(positive(row.riskReduction)) + '</td><td class="numeric">' + esc(row.leakCount) + '</td><td class="numeric">' + esc(measure(row.signalScore)) + '</td></tr>';
-    }).join('\n');
-    return '<section class="big-picture" aria-label="Big picture summary"><div class="big-picture-head"><div><h2>Big Picture</h2><p>Deterministic rollup over the latest real, completed reports. It summarizes closure, evidence coverage, policy signal, learner-profile robustness, and the main cautions before you open individual reports.</p></div><span class="live-count">' + esc(model.reportCount) + ' report' + (model.reportCount === 1 ? '' : 's') + '</span></div><div class="big-picture-grid"><div class="big-picture-panel"><h3>Overall Read</h3><ul class="big-picture-read">' + (model.bullets || []).map(function (bullet) { return '<li>' + esc(bullet) + '</li>'; }).join('\n') + '</ul>' + ((model.cautions || []).length ? '<div class="big-picture-cautions">' + model.cautions.map(function (caution) { return '<div>' + esc(caution) + '</div>'; }).join('\n') + '</div>' : '') + '</div><div class="big-picture-panel"><h3>Learner Robustness</h3><div class="table-scroll" role="region" aria-label="Learner robustness table" tabindex="0"><table class="big-picture-table"><thead><tr><th>Learner</th><th>Reports</th><th>OK/Failed</th><th>Closure</th><th>Turns</th><th>Leaks</th></tr></thead><tbody>' + (learnerRows || '<tr><td colspan="6">No learner-profile rows yet.</td></tr>') + '</tbody></table></div></div></div><div class="table-scroll" role="region" aria-label="Policy signal table" tabindex="0"><table class="big-picture-table"><thead><tr><th>Policy</th><th>OK/Failed</th><th>Closure</th><th>Coverage</th><th>Final M/R</th><th>Gain/Reduction</th><th>Leaks</th><th>Signal</th></tr></thead><tbody>' + (policyRows || '<tr><td colspan="8">No policy rows yet.</td></tr>') + '</tbody></table></div></section>';
+    return '<section class="big-picture" id="big-picture" aria-label="Big picture summary"><div class="big-picture-head"><div><h2>Big Picture</h2><p>Deterministic rollup over the latest real, completed reports. It summarizes closure, evidence coverage, policy signal, learner-profile robustness, and the main cautions before you open individual reports.</p></div><span class="live-count">' + esc(model.reportCount) + ' report' + (model.reportCount === 1 ? '' : 's') + '</span></div><div class="big-picture-grid"><div class="big-picture-panel big-picture-panel-wide"><h3>Overall Read</h3><ul class="big-picture-read">' + (model.bullets || []).map(function (bullet) { return '<li>' + esc(bullet) + '</li>'; }).join('\n') + '</ul>' + ((model.cautions || []).length ? '<div class="big-picture-cautions">' + model.cautions.map(function (caution) { return '<div>' + esc(caution) + '</div>'; }).join('\n') + '</div>' : '') + '</div><div class="big-picture-panel big-picture-panel-wide"><h3>Learner Robustness</h3>' + renderLearnerRobustness(model) + '</div></div><div class="big-picture-panel"><h3>Policy Signal</h3>' + renderPolicySignal(model) + '</div></section>';
   }
   function reportRow(row) {
     var scope = row.reportScope || {};
@@ -6093,8 +6540,12 @@ function tutorStubIndexClientJs() {
     var totals = data.totals || {};
     var groundedRate = totals.ok ? Number((Number(totals.grounded || 0) / Number(totals.ok || 1)).toFixed(3)) : 0;
     var options = data.options || {};
-    app.innerHTML = '<header><h1>Tutor Stub Reports</h1><div class="muted">Generated ' + esc(shortDate(data.generatedAt)) + ' · root ' + esc(data.rootLabel || '.') + ' · <a href="' + esc(data.guideHref || 'docs/tutor-stub-arc-guide.html') + '">arc guide</a></div></header><main>' + renderLiveRuns(data.activeRuns || []) + renderBigPicture(data.bigPicture) + '<section class="metrics">' + htmlMetric('Reports', totals.reports || 0, (totals.htmlReports || 0) + ' with HTML · ' + (totals.totalReports || 0) + ' total') + htmlMetric('Rows', Number(totals.ok || 0) + Number(totals.failed || 0) + Number(totals.dryRun || 0), (totals.failed || 0) + ' failed · ' + (totals.hiddenByDefault || 0) + ' hidden by default') + htmlMetric('Grounded', (totals.grounded || 0) + '/' + (totals.ok || 0), Math.round(groundedRate * 100) + '% closure') + htmlMetric(infoTerm('Field Snapshots', "Static SVG exports written beside reports for inspecting each row's interaction-field visualization. They are report artifacts, not scored rows."), totals.svgs || 0, 'static visualization exports') + htmlMetric('Active', (data.activeRuns || []).length, 'running or stale') + '</section><div class="toolbar"><label class="control"><span>Search</span><input data-filter placeholder="Search reports, policies, learner, model" aria-label="Search reports"></label><label class="control"><span>Run Set</span><select data-scope-filter aria-label="Choose which reports to include"><option value="real" selected>Real runs</option><option value="all">Everything</option></select></label><label class="control"><span>From</span><input type="date" data-date-from aria-label="Filter from completed date"></label><label class="control"><span>To</span><input type="date" data-date-to aria-label="Filter to completed date"></label><label class="control"><span>Status</span><select data-status-filter aria-label="Filter by status"><option value="">All</option>' + optionHtml(options.status) + '</select></label><label class="control"><span>Learner</span><select data-learner-filter aria-label="Filter by learner"><option value="">All</option>' + optionHtml(options.learner) + '</select></label><label class="control"><span>Policy</span><select data-policy-filter aria-label="Filter by policy"><option value="">All</option>' + optionHtml(options.policy) + '</select></label><label class="control"><span>World</span><select data-world-filter aria-label="Filter by world"><option value="">All</option>' + optionHtml(options.world) + '</select></label><label class="control"><span>Sort</span><select data-sort-key aria-label="Sort reports"><option value="date">Date</option><option value="status">Status</option><option value="learner">Learner</option><option value="policy">Policy</option><option value="grounded">Grounded</option><option value="coverage">Evidence Path</option><option value="turns">Turns</option><option value="rows">Rows</option><option value="failed">Failed</option><option value="svgs">Field Snapshots</option><option value="report">Report</option></select></label><label class="control"><span>Direction</span><select data-sort-dir aria-label="Sort direction"><option value="desc">Desc</option><option value="asc">Asc</option></select></label><button type="button" data-reset>Reset</button><span class="muted" data-count>0 shown</span></div><table><thead><tr><th>Completed</th><th>' + infoTerm('Status', 'Run-level technical status: ok has no failed rows, failed has one or more failed rows, dry_run is configuration-only output.') + '</th><th>Policies</th><th>Learner</th><th>' + infoTerm('OK/Failed', 'OK rows completed without a technical failure. Failed rows are generation, resume, or evaluation failures.') + '</th><th>' + infoTerm('Grounded', 'Rows where the learner reached grounded asserted-secret closure, shown as grounded over OK rows plus percentage.') + '</th><th>' + infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.') + '</th><th>' + infoTerm('Evidence Path', 'Mean learner-DAG best-path coverage: how much of the target evidence path is grounded, shown as a percentage with the raw 0 to 1 coverage score underneath.') + '</th><th>' + infoTerm('Field Snapshots', 'Count of static SVG exports emitted beside the report for inspecting per-row interaction-field visualizations. This is an artifact count, not an evaluation score.') + '</th><th>Links</th></tr></thead><tbody>' + ((data.rows || []).map(reportRow).join('\n') || '<tr><td colspan="10">No reports found.</td></tr>') + '</tbody></table></main>';
+    app.innerHTML = '<header><h1>Tutor Stub Reports</h1><div class="muted">Generated ' + esc(shortDate(data.generatedAt)) + ' · root ' + esc(data.rootLabel || '.') + ' · <a href="' + esc(data.guideHref || 'docs/tutor-stub-arc-guide.html') + '">arc guide</a></div></header><main>' + renderLiveRuns(data.activeRuns || []) + renderBigPicture(data.bigPicture) + '<section class="metrics">' + htmlMetric('Reports', totals.reports || 0, (totals.htmlReports || 0) + ' with HTML · ' + (totals.totalReports || 0) + ' total') + htmlMetric('Rows', Number(totals.ok || 0) + Number(totals.failed || 0) + Number(totals.dryRun || 0), (totals.failed || 0) + ' failed · ' + (totals.hiddenByDefault || 0) + ' hidden by default') + htmlMetric('Grounded', (totals.grounded || 0) + '/' + (totals.ok || 0), Math.round(groundedRate * 100) + '% closure') + htmlMetric(infoTerm('Field Snapshots', "Static SVG exports written beside reports for inspecting each row's interaction-field visualization. They are report artifacts, not scored rows."), totals.svgs || 0, 'static visualization exports') + htmlMetric('Active', (data.activeRuns || []).length, 'running or stale') + '</section><section class="report-list" id="report-list"><div class="report-list-head"><div><h2>Report List</h2><p>Filtered report rows. The table body scrolls inside this framed surface; the header stays visible while rows move underneath.</p></div></div><div class="toolbar"><label class="control"><span>Search</span><input data-filter placeholder="Search reports, policies, learner, model" aria-label="Search reports"></label><label class="control"><span>Run Set</span><select data-scope-filter aria-label="Choose which reports to include"><option value="real" selected>Real runs</option><option value="all">Everything</option></select></label><label class="control"><span>From</span><input type="date" data-date-from aria-label="Filter from completed date"></label><label class="control"><span>To</span><input type="date" data-date-to aria-label="Filter to completed date"></label><label class="control"><span>Status</span><select data-status-filter aria-label="Filter by status"><option value="">All</option>' + optionHtml(options.status) + '</select></label><label class="control"><span>Learner</span><select data-learner-filter aria-label="Filter by learner"><option value="">All</option>' + optionHtml(options.learner) + '</select></label><label class="control"><span>Policy</span><select data-policy-filter aria-label="Filter by policy"><option value="">All</option>' + optionHtml(options.policy) + '</select></label><label class="control"><span>World</span><select data-world-filter aria-label="Filter by world"><option value="">All</option>' + optionHtml(options.world) + '</select></label><label class="control"><span>Sort</span><select data-sort-key aria-label="Sort reports"><option value="date">Date</option><option value="status">Status</option><option value="learner">Learner</option><option value="policy">Policy</option><option value="grounded">Grounded</option><option value="coverage">Evidence Path</option><option value="turns">Turns</option><option value="rows">Rows</option><option value="failed">Failed</option><option value="svgs">Field Snapshots</option><option value="report">Report</option></select></label><label class="control"><span>Direction</span><select data-sort-dir aria-label="Sort direction"><option value="desc">Desc</option><option value="asc">Asc</option></select></label><button type="button" data-reset>Reset</button><span class="muted" data-count>0 shown</span></div><div class="table-scroll report-index-scroll" role="region" aria-label="Report table" tabindex="0"><table class="report-index-table"><thead><tr><th>Completed</th><th>' + infoTerm('Status', 'Run-level technical status: ok has no failed rows, failed has one or more failed rows, dry_run is configuration-only output.') + '</th><th>Policies</th><th>Learner</th><th>' + infoTerm('OK/Failed', 'OK rows completed without a technical failure. Failed rows are generation, resume, or evaluation failures.') + '</th><th>' + infoTerm('Grounded', 'Rows where the learner reached grounded asserted-secret closure, shown as grounded over OK rows plus percentage.') + '</th><th>' + infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.') + '</th><th>' + infoTerm('Evidence Path', 'Mean learner-DAG best-path coverage: how much of the target evidence path is grounded, shown as a percentage with the raw 0 to 1 coverage score underneath.') + '</th><th>' + infoTerm('Field Snapshots', 'Count of static SVG exports emitted beside the report for inspecting per-row interaction-field visualizations. This is an artifact count, not an evaluation score.') + '</th><th>Links</th></tr></thead><tbody>' + ((data.rows || []).map(reportRow).join('\n') || '<tr><td colspan="10">No reports found.</td></tr>') + '</tbody></table></div></section></main>';
     bindControls();
+    if (window.location.hash) {
+      var anchor = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+      if (anchor) window.requestAnimationFrame(function () { anchor.scrollIntoView({ block: 'start' }); });
+    }
   }
   function bindControls() {
     var input = app.querySelector('[data-filter]');
@@ -6519,7 +6970,7 @@ function _renderReportIndex({ rows, activeRuns = [], rootDir, generatedAt }) {
 `;
 }
 
-function writeReportIndex({ rootDir = indexRootDir(), quiet = false, updateShell = true } = {}) {
+function writeReportIndex({ rootDir = indexRootDir(), quiet = false, updateShell = true, updateAssets = true } = {}) {
   fs.mkdirSync(rootDir, { recursive: true });
   const rows = listAutoEvalSummaryFiles(rootDir)
     .map((jsonPath) => readIndexSummary(jsonPath, rootDir))
@@ -6533,12 +6984,14 @@ function writeReportIndex({ rootDir = indexRootDir(), quiet = false, updateShell
     .filter((state) => !['completed', 'dry_run'].includes(state.status))
     .sort((a, b) => b.updatedMs - a.updatedMs || a.runName.localeCompare(b.runName));
   const generatedAt = new Date().toISOString();
-  writeReportIndexAssets(rootDir);
+  if (updateAssets) writeReportIndexAssets(rootDir);
   writeJsonAtomic(path.join(rootDir, 'index-data.json'), indexDataModel({ rows, activeRuns, rootDir, generatedAt }));
   const indexPath = path.join(rootDir, 'index.html');
   const dynamicIndexPath = path.join(rootDir, 'index-dynamic.html');
   const dynamicShell = renderReportIndexShell({ rootDir, generatedAt });
-  fs.writeFileSync(dynamicIndexPath, dynamicShell);
+  if (updateShell || !fs.existsSync(dynamicIndexPath)) {
+    fs.writeFileSync(dynamicIndexPath, dynamicShell);
+  }
   const existingShell = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '';
   const hasDynamicShell = existingShell.includes('data-index-root') && existingShell.includes('index-data.json');
   if (updateShell || !hasDynamicShell) {
@@ -6831,7 +7284,7 @@ function writeRunState(state) {
 function writeRunStateSnapshot(context) {
   const state = buildRunState(context);
   const statePath = writeRunState(state);
-  if (!args['no-html-report']) writeReportIndex({ quiet: true, updateShell: false });
+  if (!args['no-html-report']) writeReportIndex({ quiet: true, updateShell: false, updateAssets: false });
   return statePath;
 }
 

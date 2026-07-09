@@ -26,7 +26,16 @@ const DEFAULT_LEARNER_PROFILES = [
 
 const POLICY_SUITES = {
   focused: ['bland', 'dynamic', 'state', 'field', 'trajectory', 'dynamical_system', 'empirical_dynamical_system'],
-  adaptive: ['dynamic', 'state', 'field', 'trajectory', 'dynamical_system', 'empirical_dynamical_system'],
+  adaptive: [
+    'dynamic',
+    'state',
+    'field',
+    'trajectory',
+    'dynamical_system',
+    'empirical_dynamical_system',
+    'continuous_dynamical_system',
+    'continuous_empirical_dynamical_system',
+  ],
   controls: ['negative', 'bland', 'random'],
   full: [
     'negative',
@@ -38,6 +47,8 @@ const POLICY_SUITES = {
     'trajectory',
     'dynamical_system',
     'empirical_dynamical_system',
+    'continuous_dynamical_system',
+    'continuous_empirical_dynamical_system',
   ],
 };
 

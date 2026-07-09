@@ -84,6 +84,11 @@ function boolInt(value) {
   return value ? 1 : 0;
 }
 
+function roundDelta(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Number(numeric.toFixed(4)) : null;
+}
+
 function csvLimit(value, name) {
   if (value === '' || value === undefined || value === null) return null;
   const parsed = Number.parseInt(value, 10);
@@ -128,7 +133,82 @@ function defaultFailedRow(result) {
     fallbackCount: 0,
     errorCount: 0,
     field: null,
+    trainingExamples: null,
   };
+}
+
+function fieldDelta(nextField = {}, currentField = {}, key) {
+  if (!nextField || nextField[key] === undefined || !currentField || currentField[key] === undefined) return null;
+  return roundDelta(Number(nextField[key]) - Number(currentField[key]));
+}
+
+function fallbackTrainingExamples(row = {}) {
+  const frames = Array.isArray(row.animatedViz?.frames) ? row.animatedViz.frames : [];
+  const turns = Array.isArray(row.transcript?.turns) ? row.transcript.turns : [];
+  if (!frames.length && !turns.length) return [];
+  const count = Math.max(frames.length, turns.length);
+  const examples = [];
+  for (let index = 0; index < count; index += 1) {
+    const frame = frames[index] || {};
+    const turn = turns[index] || {};
+    const nextFrame = frames[index + 1] || null;
+    const currentField = frame.field || turn.field || {};
+    const nextField = nextFrame?.field || null;
+    examples.push({
+      schema: 'machinespirits.tutor-stub.turn-training-example.v1',
+      turn: frame.turn ?? turn.turn ?? index + 1,
+      policy: frame.policy || turn.register?.policy || row.policy || null,
+      action: {
+        selectedRegister: frame.selectedRegister || turn.register?.selected || null,
+        registerPolicy: frame.register?.policy || turn.register?.policy || row.policy || null,
+        registerVector: frame.register?.vector || turn.register?.vector || null,
+        registerDistribution: frame.register?.distribution || null,
+        registerVectorEntropyBits: frame.register?.vectorEntropyBits ?? turn.register?.vectorEntropyBits ?? null,
+        tutorText: turn.tutor || frame.snippets?.tutor || '',
+      },
+      stateBeforeAction: {
+        learnerText: turn.learner || frame.snippets?.learner || '',
+        learnerState: turn.learnerState || frame.state?.classifier || {},
+        dag: frame.state?.dag || turn.dag || {},
+        field: currentField,
+        stateVector: frame.dynamics?.stateVector || {},
+        derivativeVector: frame.dynamics?.derivativeVector || {},
+        trajectory: frame.trajectory || turn.trajectory || {},
+      },
+      outcomeAfterNextLearner: nextFrame
+        ? {
+            nextTurn: nextFrame.turn ?? null,
+            dag: nextFrame.state?.dag || {},
+            field: nextField || {},
+            stateVector: nextFrame.dynamics?.stateVector || {},
+            derivativeVector: nextFrame.dynamics?.derivativeVector || {},
+            groundedClosure:
+              nextFrame.state?.dag?.bottleneck === 'grounded_asserted_secret' ||
+              (nextFrame.state?.dag?.finalSecretEntailed === true && nextFrame.state?.dag?.assertedSecret === true),
+          }
+        : null,
+      response: turn.response || {},
+      events: Array.from(new Set([...(frame.events || []), ...(turn.events || [])])).filter(Boolean),
+      rewardProxy: {
+        schema: 'machinespirits.tutor-stub.reward-proxy.v1',
+        deltas: {
+          learnerMastery: nextField ? fieldDelta(nextField, currentField, 'learnerMastery') : null,
+          learnerRisk: nextField ? fieldDelta(nextField, currentField, 'learnerRisk') : null,
+          coverage: nextField ? fieldDelta(nextField, currentField, 'coverage') : null,
+          tutorAlignment: nextField ? fieldDelta(nextField, currentField, 'tutorAlignment') : null,
+          jointMomentum: nextField ? fieldDelta(nextField, currentField, 'jointMomentum') : null,
+        },
+      },
+      frame,
+      transcriptTurn: turn,
+    });
+  }
+  return examples;
+}
+
+function trainingExamplesFromRow(row = {}) {
+  const examples = Array.isArray(row.trainingExamples?.examples) ? row.trainingExamples.examples : fallbackTrainingExamples(row);
+  return examples.filter((example) => example && typeof example === 'object');
 }
 
 function rowsFromSummary(summary) {
@@ -280,22 +360,61 @@ function migrate(db) {
       PRIMARY KEY(row_id, register)
     );
 
-    CREATE TABLE IF NOT EXISTS tutor_stub_efficacy_counts (
+	    CREATE TABLE IF NOT EXISTS tutor_stub_efficacy_counts (
       eval_run_id TEXT NOT NULL REFERENCES tutor_stub_eval_runs(id) ON DELETE CASCADE,
       row_id TEXT NOT NULL REFERENCES tutor_stub_eval_rows(id) ON DELETE CASCADE,
       policy TEXT,
       run_index INTEGER,
       efficacy TEXT NOT NULL,
       count INTEGER NOT NULL,
-      PRIMARY KEY(row_id, efficacy)
-    );
+	      PRIMARY KEY(row_id, efficacy)
+	    );
 
-    CREATE INDEX IF NOT EXISTS idx_tutor_stub_runs_completed ON tutor_stub_eval_runs(completed_at);
-    CREATE INDEX IF NOT EXISTS idx_tutor_stub_runs_profile ON tutor_stub_eval_runs(auto_learner_profile_id);
-    CREATE INDEX IF NOT EXISTS idx_tutor_stub_rows_policy ON tutor_stub_eval_rows(policy);
-    CREATE INDEX IF NOT EXISTS idx_tutor_stub_rows_status ON tutor_stub_eval_rows(status);
-    CREATE INDEX IF NOT EXISTS idx_tutor_stub_rows_grounded ON tutor_stub_eval_rows(grounded_closure);
-    CREATE INDEX IF NOT EXISTS idx_tutor_stub_register_policy ON tutor_stub_register_counts(policy, register);
+	    CREATE TABLE IF NOT EXISTS tutor_stub_turn_frames (
+	      id TEXT PRIMARY KEY,
+	      eval_run_id TEXT NOT NULL REFERENCES tutor_stub_eval_runs(id) ON DELETE CASCADE,
+	      row_id TEXT NOT NULL REFERENCES tutor_stub_eval_rows(id) ON DELETE CASCADE,
+	      policy TEXT,
+	      run_index INTEGER,
+	      turn INTEGER,
+	      selected_register TEXT,
+	      register_policy TEXT,
+	      register_vector_json TEXT,
+	      register_distribution_json TEXT,
+	      register_entropy_bits REAL,
+	      state_vector_json TEXT,
+	      derivative_vector_json TEXT,
+	      dag_json TEXT,
+	      learner_state_json TEXT,
+	      field_json TEXT,
+	      trajectory_json TEXT,
+	      learner_text TEXT,
+	      tutor_text TEXT,
+	      response_json TEXT,
+	      events_json TEXT,
+	      next_turn INTEGER,
+	      next_field_json TEXT,
+	      next_dag_json TEXT,
+	      next_state_vector_json TEXT,
+	      delta_mastery REAL,
+	      delta_risk REAL,
+	      delta_coverage REAL,
+	      delta_alignment REAL,
+	      delta_momentum REAL,
+	      reward_proxy_json TEXT,
+	      frame_json TEXT,
+	      transcript_turn_json TEXT,
+	      UNIQUE(row_id, turn)
+	    );
+
+	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_runs_completed ON tutor_stub_eval_runs(completed_at);
+	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_runs_profile ON tutor_stub_eval_runs(auto_learner_profile_id);
+	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_rows_policy ON tutor_stub_eval_rows(policy);
+	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_rows_status ON tutor_stub_eval_rows(status);
+	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_rows_grounded ON tutor_stub_eval_rows(grounded_closure);
+	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_register_policy ON tutor_stub_register_counts(policy, register);
+	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_turn_frames_policy ON tutor_stub_turn_frames(policy, selected_register);
+	    CREATE INDEX IF NOT EXISTS idx_tutor_stub_turn_frames_row ON tutor_stub_turn_frames(row_id, turn);
 
     CREATE VIEW IF NOT EXISTS v_tutor_stub_policy_summary AS
       SELECT
@@ -328,13 +447,41 @@ function migrate(db) {
         COUNT(DISTINCT counts.row_id) AS rows_with_register,
         ROUND(AVG(rows.turn_count), 3) AS mean_turns,
         ROUND(AVG(rows.grounded_closure), 4) AS grounded_rate,
-        ROUND(AVG(rows.leak_count), 3) AS mean_leaks
-      FROM tutor_stub_register_counts counts
-      JOIN tutor_stub_eval_rows rows ON rows.id = counts.row_id
-      JOIN tutor_stub_eval_runs runs ON runs.id = counts.eval_run_id
-      GROUP BY runs.auto_learner_profile_id, runs.world, counts.policy, counts.register;
+  ROUND(AVG(rows.leak_count), 3) AS mean_leaks
+	      FROM tutor_stub_register_counts counts
+	      JOIN tutor_stub_eval_rows rows ON rows.id = counts.row_id
+	      JOIN tutor_stub_eval_runs runs ON runs.id = counts.eval_run_id
+	      GROUP BY runs.auto_learner_profile_id, runs.world, counts.policy, counts.register;
 
-    CREATE VIEW IF NOT EXISTS v_tutor_stub_failures AS
+	    CREATE VIEW IF NOT EXISTS v_tutor_stub_turn_training AS
+	      SELECT
+	        runs.auto_learner_profile_id,
+	        runs.world,
+	        frames.policy,
+	        frames.run_index,
+	        frames.turn,
+	        frames.selected_register,
+	        frames.register_policy,
+	        frames.register_entropy_bits,
+	        frames.delta_mastery,
+	        frames.delta_risk,
+	        frames.delta_coverage,
+	        frames.delta_alignment,
+	        frames.delta_momentum,
+	        frames.learner_text,
+	        frames.tutor_text,
+	        frames.register_vector_json,
+	        frames.state_vector_json,
+	        frames.derivative_vector_json,
+	        frames.dag_json,
+	        frames.learner_state_json,
+	        frames.field_json,
+	        frames.trajectory_json,
+	        frames.reward_proxy_json
+	      FROM tutor_stub_turn_frames frames
+	      JOIN tutor_stub_eval_runs runs ON runs.id = frames.eval_run_id;
+
+	    CREATE VIEW IF NOT EXISTS v_tutor_stub_failures AS
       SELECT
         runs.id AS eval_run_id,
         runs.summary_path,
@@ -480,6 +627,7 @@ function ingestSummary(db, summaryPath) {
       resume_json: safeJson(summary.resume || null),
     });
 
+    db.prepare('DELETE FROM tutor_stub_turn_frames WHERE eval_run_id = ?').run(runId);
     db.prepare('DELETE FROM tutor_stub_efficacy_counts WHERE eval_run_id = ?').run(runId);
     db.prepare('DELETE FROM tutor_stub_register_counts WHERE eval_run_id = ?').run(runId);
     db.prepare('DELETE FROM tutor_stub_eval_rows WHERE eval_run_id = ?').run(runId);
@@ -508,6 +656,27 @@ function ingestSummary(db, summaryPath) {
     const insertEfficacy = db.prepare(`
       INSERT INTO tutor_stub_efficacy_counts (eval_run_id, row_id, policy, run_index, efficacy, count)
       VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    const insertTurnFrame = db.prepare(`
+      INSERT INTO tutor_stub_turn_frames (
+        id, eval_run_id, row_id, policy, run_index, turn, selected_register,
+        register_policy, register_vector_json, register_distribution_json,
+        register_entropy_bits, state_vector_json, derivative_vector_json,
+        dag_json, learner_state_json, field_json, trajectory_json, learner_text,
+        tutor_text, response_json, events_json, next_turn, next_field_json,
+        next_dag_json, next_state_vector_json, delta_mastery, delta_risk,
+        delta_coverage, delta_alignment, delta_momentum, reward_proxy_json,
+        frame_json, transcript_turn_json
+      ) VALUES (
+        @id, @eval_run_id, @row_id, @policy, @run_index, @turn, @selected_register,
+        @register_policy, @register_vector_json, @register_distribution_json,
+        @register_entropy_bits, @state_vector_json, @derivative_vector_json,
+        @dag_json, @learner_state_json, @field_json, @trajectory_json, @learner_text,
+        @tutor_text, @response_json, @events_json, @next_turn, @next_field_json,
+        @next_dag_json, @next_state_vector_json, @delta_mastery, @delta_risk,
+        @delta_coverage, @delta_alignment, @delta_momentum, @reward_proxy_json,
+        @frame_json, @transcript_turn_json
+      )
     `);
 
     rows.forEach((row, index) => {
@@ -553,6 +722,49 @@ function ingestSummary(db, summaryPath) {
         const numeric = integerOrNull(count);
         if (numeric > 0) insertEfficacy.run(runId, rowId, policy, runIndex, efficacy, numeric);
       }
+      trainingExamplesFromRow(row).forEach((example, exampleIndex) => {
+        const action = example.action || {};
+        const before = example.stateBeforeAction || {};
+        const outcome = example.outcomeAfterNextLearner || null;
+        const reward = example.rewardProxy || {};
+        const deltas = reward.deltas || {};
+        const turn = integerOrNull(example.turn) ?? exampleIndex + 1;
+        insertTurnFrame.run({
+          id: `${rowId}:t${turn}`,
+          eval_run_id: runId,
+          row_id: rowId,
+          policy: example.policy || policy,
+          run_index: runIndex,
+          turn,
+          selected_register: action.selectedRegister || null,
+          register_policy: action.registerPolicy || null,
+          register_vector_json: safeJson(action.registerVector || null),
+          register_distribution_json: safeJson(action.registerDistribution || []),
+          register_entropy_bits: numberOrNull(action.registerVectorEntropyBits),
+          state_vector_json: safeJson(before.stateVector || {}),
+          derivative_vector_json: safeJson(before.derivativeVector || {}),
+          dag_json: safeJson(before.dag || {}),
+          learner_state_json: safeJson(before.learnerState || {}),
+          field_json: safeJson(before.field || {}),
+          trajectory_json: safeJson(before.trajectory || {}),
+          learner_text: before.learnerText || null,
+          tutor_text: action.tutorText || null,
+          response_json: safeJson(example.response || {}),
+          events_json: safeJson(example.events || []),
+          next_turn: integerOrNull(outcome?.nextTurn),
+          next_field_json: safeJson(outcome?.field || null),
+          next_dag_json: safeJson(outcome?.dag || null),
+          next_state_vector_json: safeJson(outcome?.stateVector || null),
+          delta_mastery: numberOrNull(deltas.learnerMastery),
+          delta_risk: numberOrNull(deltas.learnerRisk),
+          delta_coverage: numberOrNull(deltas.coverage),
+          delta_alignment: numberOrNull(deltas.tutorAlignment),
+          delta_momentum: numberOrNull(deltas.jointMomentum),
+          reward_proxy_json: safeJson(reward || null),
+          frame_json: safeJson(example.frame || null),
+          transcript_turn_json: safeJson(example.transcriptTurn || null),
+        });
+      });
     });
   });
 

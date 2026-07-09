@@ -43,6 +43,11 @@ import {
   resolveEngagementRegister,
 } from '../services/engagementRegisterRegistry.js';
 import { loadWorld, plotLint } from '../services/dramaticDerivation/world.js';
+import {
+  buildContinuousRegisterPolicyMetadata,
+  buildContinuousRegisterVector,
+  continuousRegisterStyleInstruction,
+} from '../services/tutorStubContinuousRegister.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -258,7 +263,7 @@ Options:
   --register-palette <all|safe|negative|non-simulated|csv>
                          tutor-register palette for selection (default: all);
                          all includes every register in the registry
-  --register-policy <dynamic|state|field|trajectory|dynamical_system|empirical_dynamical_system|bland|random|negative>
+  --register-policy <dynamic|state|field|trajectory|dynamical_system|empirical_dynamical_system|continuous_dynamical_system|continuous_empirical_dynamical_system|bland|random|negative>
                          dynamic lets the reviewer choose; field maps observed
                          field/DAG movement to a local probability distribution;
                          trajectory extends field with recent velocity, slope,
@@ -267,6 +272,8 @@ Options:
                          vector through theory priors plus empirical efficacy;
                          empirical_dynamical_system additionally loads
                          cross-run empirical priors when available;
+                         continuous_* variants keep a nearest register label
+                         but pass a weighted register blend to the tutor;
                          state maps current classifier/DAG state to a local
                          probability distribution;
                          bland fixes a plain non-adaptive baseline register;
@@ -372,7 +379,10 @@ Environment:
   TUTOR_STUB_REGISTER_POLICY
                          optional default register policy: dynamic, state,
                          field, trajectory, dynamical_system,
-                         empirical_dynamical_system, bland, random, or negative
+                         empirical_dynamical_system,
+                         continuous_dynamical_system,
+                         continuous_empirical_dynamical_system, bland, random,
+                         or negative
   TUTOR_STUB_REGISTER_EMPIRICAL_PRIOR
                          optional JSON prior path for empirical register mapping
   TUTOR_STUB_AUTO_LEARNER_MODEL
@@ -433,7 +443,9 @@ function resolveRegisterEmpiricalPriorPath(value, { policy }) {
   const raw = String(value || '').trim();
   if (/^(off|none|false|0)$/iu.test(raw)) return null;
   if (raw && raw !== 'auto') return resolveWorkspacePath(raw);
-  if (policy === 'empirical_dynamical_system' || raw === 'auto') return defaultRegisterEmpiricalPriorPath();
+  if (policy === 'empirical_dynamical_system' || policy === 'continuous_empirical_dynamical_system' || raw === 'auto') {
+    return defaultRegisterEmpiricalPriorPath();
+  }
   return null;
 }
 
@@ -1004,6 +1016,8 @@ function normalizeRegisterPolicy(value) {
     policy === 'trajectory' ||
     policy === 'dynamical_system' ||
     policy === 'empirical_dynamical_system' ||
+    policy === 'continuous_dynamical_system' ||
+    policy === 'continuous_empirical_dynamical_system' ||
     policy === 'state' ||
     policy === 'bland' ||
     policy === 'random' ||
@@ -1012,7 +1026,7 @@ function normalizeRegisterPolicy(value) {
     return policy;
   }
   throw new Error(
-    `Unknown --register-policy: ${value}. Expected dynamic, state, field, trajectory, dynamical_system, empirical_dynamical_system, bland, random, or negative.`,
+    `Unknown --register-policy: ${value}. Expected dynamic, state, field, trajectory, dynamical_system, empirical_dynamical_system, continuous_dynamical_system, continuous_empirical_dynamical_system, bland, random, or negative.`,
   );
 }
 
@@ -1207,6 +1221,16 @@ function registerSelectionPolicyPrompt(state) {
       : policy === 'empirical_dynamical_system'
       ? [
           '- Register policy: empirical_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors, local efficacy evidence, and cross-run empirical priors.',
+          '- Do not choose or justify a tutor register in the model output for this policy.',
+        ]
+      : policy === 'continuous_dynamical_system'
+      ? [
+          '- Register policy: continuous_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors plus local efficacy evidence into a weighted register blend.',
+          '- Do not choose or justify a tutor register in the model output for this policy.',
+        ]
+      : policy === 'continuous_empirical_dynamical_system'
+      ? [
+          '- Register policy: continuous_empirical_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors, local efficacy evidence, and cross-run empirical priors into a weighted register blend.',
           '- Do not choose or justify a tutor register in the model output for this policy.',
         ]
       : [
@@ -2469,6 +2493,8 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
         'trajectory',
         'dynamical_system',
         'empirical_dynamical_system',
+        'continuous_dynamical_system',
+        'continuous_empirical_dynamical_system',
         'state',
         'random',
         'bland',
@@ -2481,6 +2507,12 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
   const localDynamicalSystemPolicy = Boolean(state.register?.enabled && state.register.policy === 'dynamical_system');
   const localEmpiricalDynamicalSystemPolicy = Boolean(
     state.register?.enabled && state.register.policy === 'empirical_dynamical_system',
+  );
+  const localContinuousDynamicalSystemPolicy = Boolean(
+    state.register?.enabled && state.register.policy === 'continuous_dynamical_system',
+  );
+  const localContinuousEmpiricalDynamicalSystemPolicy = Boolean(
+    state.register?.enabled && state.register.policy === 'continuous_empirical_dynamical_system',
   );
   const localStatePolicy = Boolean(state.register?.enabled && state.register.policy === 'state');
   const fixedBlandPolicy = Boolean(state.register?.enabled && state.register.policy === 'bland');
@@ -2511,6 +2543,12 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
       : null,
     localEmpiricalDynamicalSystemPolicy
       ? 'Register policy is empirical_dynamical_system: do not choose a tutor register. The runtime will map your classification, learner-DAG update, recent derivatives, theoretical register priors, prior local register efficacy, and cross-run empirical priors into a local probability distribution.'
+      : null,
+    localContinuousDynamicalSystemPolicy
+      ? 'Register policy is continuous_dynamical_system: do not choose a tutor register. The runtime will map your classification, learner-DAG update, recent derivatives, theoretical register priors, and prior local register efficacy into a weighted blend of register anchors.'
+      : null,
+    localContinuousEmpiricalDynamicalSystemPolicy
+      ? 'Register policy is continuous_empirical_dynamical_system: do not choose a tutor register. The runtime will map your classification, learner-DAG update, recent derivatives, theoretical register priors, prior local register efficacy, and cross-run empirical priors into a weighted blend of register anchors.'
       : null,
     localStatePolicy
       ? 'Register policy is state: do not choose a tutor register. The runtime will map the current classification plus current learner-DAG assessment into a local register probability distribution.'
@@ -4435,6 +4473,113 @@ function dynamicalSystemRegisterSelection({ state, classification, tutorLearnerD
   };
 }
 
+function continuousDynamicalSystemRegisterSelection({ state, classification, tutorLearnerDag, useCorpusPrior = false }) {
+  const { features, trajectory, system, empirical, corpusEmpirical, logits, scores, drivers } = buildDynamicalSystemRegisterScores({
+    state,
+    classification,
+    tutorLearnerDag,
+    useCorpusPrior,
+  });
+  const definitions = getEngagementRegisterDefinitions();
+  const blend = buildContinuousRegisterVector({
+    scores,
+    palette: state.register?.palette || [],
+    definitions,
+    allowUnsafe: state.register?.continuousUnsafe === true,
+  });
+  const selected = blend.selectedRegister || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
+  const actionFamily = actionFamilyForFieldRegister({ selected, features });
+  const selectedProbability = blend.selectedProbability ?? null;
+  const selectedContributions = registerAffinityContributions(selected, system.state_vector).slice(0, 6);
+  const blendInstruction = continuousRegisterStyleInstruction(blend, definitions);
+  const continuousPolicy = buildContinuousRegisterPolicyMetadata({
+    blend,
+    useCorpusPrior,
+    empirical,
+    corpusEmpirical,
+    styleInstruction: blendInstruction,
+  });
+  const driverText =
+    [
+      `blend ${blend.dominantBlend || selected}`,
+      ...drivers.slice(0, 4),
+      selectedContributions.length
+        ? `selected ${selected}: ${selectedContributions
+            .map((row) => `${row.axis}${row.contribution >= 0 ? '+' : ''}${roundField(row.contribution)}`)
+            .join(', ')}`
+        : null,
+    ]
+      .filter(Boolean)
+      .join('; ') || 'continuous dynamical-system base priors only';
+  return {
+    selected_register: selected,
+    request_type: features.requestType,
+    action_family: actionFamily,
+    legacy_selected_register: preferredLegacyRegister({
+      register: selected,
+      requestType: features.requestType,
+      actionFamily,
+    }),
+    reviewer_signal: `continuous blend=${blend.dominantBlend}; attractors=${topNumericEntries(system.attractors, { limit: 3 }).join(
+      ', ',
+    )}; vector=${topNumericEntries(system.state_vector, { limit: 3 }).join(', ')}`,
+    register_reason: `${
+      useCorpusPrior ? 'Continuous empirical dynamical-system' : 'Continuous dynamical-system'
+    } policy blended register anchors from theory affinity matrix plus local${
+      useCorpusPrior ? ' and cross-run' : ''
+    } efficacy correction. Main drivers: ${driverText}.`,
+    evidence_span: classification?.turn?.summary || '',
+    risk_flags: dynamicalSystemRiskFlags(system),
+    expected_dag_move: expectedDynamicalDagMove(features, system),
+    expected_field_move: expectedDynamicalMoveForRegister(selected, features, system),
+    expected_progress_marker:
+      'Next learner turn should show the continuous stance blend moving the system vector toward lower gap/risk and higher ownership, grounding, or closure.',
+    confidence: selectedProbability,
+    source: useCorpusPrior
+      ? 'continuous_empirical_dynamical_system_register_policy'
+      : 'continuous_dynamical_system_register_policy',
+    distribution: blend.rows,
+    selected_probability: selectedProbability,
+    register_vector: blend.vector,
+    register_vector_entropy_bits: blend.entropyBits,
+    continuous_register_policy: continuousPolicy,
+    dynamical_system_policy: {
+      schema: 'machinespirits.tutor-stub.dynamical-system-register-policy.v1',
+      mapping: {
+        type: useCorpusPrior
+          ? 'softmax_affinity_matrix_with_local_and_corpus_empirical_correction'
+          : 'softmax_affinity_matrix_with_empirical_correction',
+        temperature: DYNAMICAL_SYSTEM_TEMPERATURE,
+        theory_priors:
+          'recognition safety, learner ownership, accountable warranting, proof-state closure, and controlled productive disruption',
+        affinity_matrix_version: 'v1',
+      },
+      state_vector: system.state_vector,
+      derivative_vector: system.derivative_vector,
+      attractors: system.attractors,
+      selected_affinity: DYNAMICAL_SYSTEM_REGISTER_AFFINITY[selected] || {},
+      selected_contributions: selectedContributions.map((row) => ({
+        axis: row.axis,
+        weight: row.weight,
+        value: roundField(row.value),
+        contribution: roundField(row.contribution),
+      })),
+      empirical,
+      corpus_empirical: corpusEmpirical,
+      logits: Object.fromEntries(Object.entries(logits).map(([register, logit]) => [register, roundField(logit)])),
+      scores: Object.fromEntries(Object.entries(scores).map(([register, score]) => [register, roundField(score)])),
+      drivers,
+      trajectory,
+      features,
+      continuous_register_policy: {
+        register_vector: continuousPolicy.register_vector,
+        entropy_bits: continuousPolicy.entropy_bits,
+        dominant_blend: continuousPolicy.dominant_blend,
+      },
+    },
+  };
+}
+
 const STATE_REGISTER_BASE_WEIGHTS = {
   plain: 1.15,
   precise: 1.2,
@@ -4661,6 +4806,15 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
       tutorLearnerDag,
       useCorpusPrior: true,
     });
+  } else if (policy === 'continuous_dynamical_system') {
+    rawSelection = continuousDynamicalSystemRegisterSelection({ state, classification, tutorLearnerDag });
+  } else if (policy === 'continuous_empirical_dynamical_system') {
+    rawSelection = continuousDynamicalSystemRegisterSelection({
+      state,
+      classification,
+      tutorLearnerDag,
+      useCorpusPrior: true,
+    });
   } else if (policy === 'state') {
     rawSelection = stateRegisterSelection({ state, classification, tutorLearnerDag });
   } else if (policy === 'bland') {
@@ -4731,9 +4885,14 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
     confidence: Number.isFinite(Number(source.confidence)) ? Number(source.confidence) : null,
     selected_probability: Number.isFinite(Number(source.selected_probability)) ? Number(source.selected_probability) : null,
     distribution: Array.isArray(source.distribution) ? source.distribution : null,
+    register_vector: source.register_vector && typeof source.register_vector === 'object' ? source.register_vector : null,
+    register_vector_entropy_bits: Number.isFinite(Number(source.register_vector_entropy_bits))
+      ? Number(source.register_vector_entropy_bits)
+      : null,
     field_policy: source.field_policy || null,
     trajectory_policy: source.trajectory_policy || null,
     dynamical_system_policy: source.dynamical_system_policy || null,
+    continuous_register_policy: source.continuous_register_policy || null,
     state_policy: source.state_policy || null,
     source: source.source || 'combined_learner_analysis',
     random: source.random || null,
@@ -5084,6 +5243,13 @@ function printRegisterSelection(selection, previousEfficacy = null) {
   console.log(`${C.cyan}tutor register >${C.reset} ${selection.selected_register}${confidence}${source}${warning}`);
   const distribution = formatRegisterDistribution(selection.distribution);
   if (distribution) console.log(`${C.dim}  distribution: ${distribution}${C.reset}`);
+  if (selection.continuous_register_policy?.dominant_blend) {
+    console.log(
+      `${C.dim}  continuous blend: ${selection.continuous_register_policy.dominant_blend}; entropy ${
+        selection.continuous_register_policy.entropy_bits ?? 'n/a'
+      } bits${C.reset}`,
+    );
+  }
   if (selection.request_type || selection.reviewer_signal) {
     console.log(
       `${C.dim}  request: ${selection.request_type || 'unknown'}; action: ${
@@ -5101,7 +5267,10 @@ function printRegisterSelection(selection, previousEfficacy = null) {
         ? 'expected state move'
         : selection.policy === 'trajectory'
           ? 'expected trajectory move'
-          : selection.policy === 'dynamical_system' || selection.policy === 'empirical_dynamical_system'
+          : selection.policy === 'dynamical_system' ||
+              selection.policy === 'empirical_dynamical_system' ||
+              selection.policy === 'continuous_dynamical_system' ||
+              selection.policy === 'continuous_empirical_dynamical_system'
             ? 'expected dynamical move'
           : 'expected field move';
     console.log(`${C.dim}  ${expectedMoveLabel}: ${selection.expected_field_move}${C.reset}`);
@@ -5117,9 +5286,21 @@ function registerSelectionContext(selection, { multipleChoice = false } = {}) {
       ? 'Expected learner-state move'
       : selection.policy === 'trajectory'
         ? 'Expected learner-trajectory move'
-        : selection.policy === 'dynamical_system' || selection.policy === 'empirical_dynamical_system'
+        : selection.policy === 'dynamical_system' ||
+            selection.policy === 'empirical_dynamical_system' ||
+            selection.policy === 'continuous_dynamical_system' ||
+            selection.policy === 'continuous_empirical_dynamical_system'
           ? 'Expected learner-dynamical move'
-        : 'Expected learner-field move';
+          : 'Expected learner-field move';
+  const continuousStyleInstruction = String(selection.continuous_register_policy?.style_instruction || '').trim();
+  const vectorSummary =
+    selection.continuous_register_policy?.dominant_blend ||
+    (selection.register_vector
+      ? Object.entries(selection.register_vector)
+          .sort((a, b) => Number(b[1]) - Number(a[1]) || a[0].localeCompare(b[0]))
+          .map(([register, weight]) => `${register} ${Math.round(Number(weight || 0) * 100)}%`)
+          .join(', ')
+      : '');
   const guardrails = [
     ...(Array.isArray(definition.forbidden_phrases) && definition.forbidden_phrases.length
       ? [`Forbidden phrase families: ${definition.forbidden_phrases.join(', ')}`]
@@ -5136,6 +5317,8 @@ function registerSelectionContext(selection, { multipleChoice = false } = {}) {
     `Action family: ${selection.action_family || 'none'}`,
     `Reviewer signal: ${selection.reviewer_signal || 'unknown'}`,
     `Reason: ${selection.register_reason || 'No reason supplied.'}`,
+    vectorSummary ? `Continuous register vector: ${vectorSummary}` : null,
+    continuousStyleInstruction || null,
     `Expected learner-DAG move: ${selection.expected_dag_move || 'No expected move supplied.'}`,
     `${expectedMoveLabel}: ${selection.expected_field_move || 'No expected state/field move supplied.'}`,
     stanceContract ? 'Stance contract:' : null,
@@ -6781,15 +6964,27 @@ async function main() {
   const combinedLearnerAnalysisEnabled = Boolean(classifierEnabled && tutorLearnerDagEnabled);
   const registerPolicy = normalizeRegisterPolicy(args['register-policy']);
   const registerEmpiricalPrior = loadRegisterEmpiricalPrior(args['register-empirical-prior'], { policy: registerPolicy });
-  const registerPalette = buildRegisterPalette(
-    registerPolicy === 'negative' ? 'negative' : args['safe-registers'] ? 'safe' : args['register-palette'],
-  );
+  const registerPaletteMode = registerPolicy === 'negative' ? 'negative' : args['safe-registers'] ? 'safe' : args['register-palette'];
+  const registerPalette = buildRegisterPalette(registerPaletteMode);
   const randomRegisterSelectionEnabled = registerPolicy === 'random';
   const negativeRegisterSelectionEnabled = registerPolicy === 'negative';
   const fieldRegisterSelectionEnabled = registerPolicy === 'field';
   const trajectoryRegisterSelectionEnabled = registerPolicy === 'trajectory';
   const dynamicalSystemRegisterSelectionEnabled = registerPolicy === 'dynamical_system';
   const empiricalDynamicalSystemRegisterSelectionEnabled = registerPolicy === 'empirical_dynamical_system';
+  const continuousDynamicalSystemRegisterSelectionEnabled = registerPolicy === 'continuous_dynamical_system';
+  const continuousEmpiricalDynamicalSystemRegisterSelectionEnabled =
+    registerPolicy === 'continuous_empirical_dynamical_system';
+  const continuousRegisterSelectionEnabled = Boolean(
+    continuousDynamicalSystemRegisterSelectionEnabled || continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
+  );
+  const continuousUnsafeRegisterAnchorsEnabled = Boolean(
+    continuousRegisterSelectionEnabled &&
+      !args['safe-registers'] &&
+      /(^|,)(all|simulated|negative|negative-floor|ironic|sarcastic|face_threat)(,|$)/iu.test(
+        String(args['register-palette'] || ''),
+      ),
+  );
   const stateRegisterSelectionEnabled = registerPolicy === 'state';
   const registerSelectionEnabled = Boolean(
     !args['no-register-selection'] &&
@@ -6905,6 +7100,10 @@ async function main() {
                 localTrajectoryPolicy: trajectoryRegisterSelectionEnabled,
                 localDynamicalSystemPolicy: dynamicalSystemRegisterSelectionEnabled,
                 localEmpiricalDynamicalSystemPolicy: empiricalDynamicalSystemRegisterSelectionEnabled,
+                localContinuousDynamicalSystemPolicy: continuousDynamicalSystemRegisterSelectionEnabled,
+                localContinuousEmpiricalDynamicalSystemPolicy:
+                  continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
+                continuousUnsafeRegisterAnchors: continuousUnsafeRegisterAnchorsEnabled,
                 localStatePolicy: stateRegisterSelectionEnabled,
                 random: randomRegisterSelectionEnabled,
                 negative: negativeRegisterSelectionEnabled,
@@ -7034,10 +7233,14 @@ async function main() {
             policy: registerPolicy,
             combinedLearnerAnalysis: combinedLearnerAnalysisEnabled,
             localFieldPolicy: fieldRegisterSelectionEnabled,
-            localTrajectoryPolicy: trajectoryRegisterSelectionEnabled,
-            localDynamicalSystemPolicy: dynamicalSystemRegisterSelectionEnabled,
-            localEmpiricalDynamicalSystemPolicy: empiricalDynamicalSystemRegisterSelectionEnabled,
-            localStatePolicy: stateRegisterSelectionEnabled,
+                localTrajectoryPolicy: trajectoryRegisterSelectionEnabled,
+                localDynamicalSystemPolicy: dynamicalSystemRegisterSelectionEnabled,
+                localEmpiricalDynamicalSystemPolicy: empiricalDynamicalSystemRegisterSelectionEnabled,
+                localContinuousDynamicalSystemPolicy: continuousDynamicalSystemRegisterSelectionEnabled,
+                localContinuousEmpiricalDynamicalSystemPolicy:
+                  continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
+                continuousUnsafeRegisterAnchors: continuousUnsafeRegisterAnchorsEnabled,
+                localStatePolicy: stateRegisterSelectionEnabled,
             random: randomRegisterSelectionEnabled,
             negative: negativeRegisterSelectionEnabled,
             empiricalPrior: {
@@ -7118,6 +7321,7 @@ async function main() {
       enabled: registerSelectionEnabled,
       palette: registerPalette,
       policy: registerPolicy,
+      continuousUnsafe: continuousUnsafeRegisterAnchorsEnabled,
       empiricalPrior: registerEmpiricalPrior.prior,
       empiricalPriorStatus: registerEmpiricalPrior.status,
       empiricalPriorPath: registerEmpiricalPrior.filePath,
@@ -7200,11 +7404,22 @@ async function main() {
   }
   if (registerSelectionEnabled) {
     console.log(`${C.dim}register selection: on [${registerPalette.join(', ')}] | policy ${registerPolicy}${C.reset}`);
-    if (empiricalDynamicalSystemRegisterSelectionEnabled || registerEmpiricalPrior.status === 'loaded') {
+    if (
+      empiricalDynamicalSystemRegisterSelectionEnabled ||
+      continuousEmpiricalDynamicalSystemRegisterSelectionEnabled ||
+      registerEmpiricalPrior.status === 'loaded'
+    ) {
       const priorPath = registerEmpiricalPrior.filePath ? path.relative(ROOT, registerEmpiricalPrior.filePath) : 'none';
       console.log(
         `${C.dim}register empirical prior: ${registerEmpiricalPrior.status}${
           priorPath ? ` | ${priorPath}` : ''
+        }${C.reset}`,
+      );
+    }
+    if (continuousRegisterSelectionEnabled) {
+      console.log(
+        `${C.dim}continuous register anchors: ${
+          continuousUnsafeRegisterAnchorsEnabled ? 'active palette' : 'safe router-selectable only'
         }${C.reset}`,
       );
     }

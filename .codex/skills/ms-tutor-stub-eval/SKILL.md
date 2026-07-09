@@ -21,11 +21,12 @@ Key choices and defaults:
 
 - Mode: `human`, `auto-eval`, `resume`, `abm-panel`, `analyze`, `multi-eval`; default `auto-eval` for comparisons, `human` when the user will play the learner.
 - World: default `world_005_marrick`.
-- Register policies: default comparison `negative,bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,random`; focused adaptive comparison `dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system`.
+- Register policies: default comparison `negative,bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,random`; focused adaptive comparison `dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system`.
 - QA policy suite: `focused` means the seven-policy robust comparison `bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system`; `full` adds `negative` and `random` controls.
 - Trajectory policy: `--register-policy trajectory` leaves `field` unchanged and adds recent finite-difference velocity/slope/acceleration/risk-trend adjustments for benchmarking against `field`.
 - Dynamical-system policy: `--register-policy dynamical_system` maps a continuous state/derivative vector through theory priors plus within-dialogue empirical efficacy corrections; `dynamical-system` is accepted as an alias.
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
+- Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep a nearest `selected_register` for compatibility while passing a weighted `register_vector`/style blend to the tutor; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
 - Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited`, or list presets with `--list-learner-profiles`.
 - Runs: default `3` for baseline comparisons, `5` for focused policy comparisons, `1` for ABM panels.
@@ -77,7 +78,7 @@ Use for policy comparisons with one generic automated learner:
 ```bash
 npm run tutor:stub:auto-eval -- \
   --runs 3 \
-  --policies negative,bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,random \
+  --policies negative,bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,random \
   --parallelism 8 \
   --progress-interval 30 \
   --turns until-grounded \
@@ -99,7 +100,7 @@ Focused adaptive comparison:
 ```bash
 npm run tutor:stub:auto-eval -- \
   --runs 5 \
-  --policies dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system \
+  --policies dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system \
   --parallelism 8 \
   --progress-interval 30 \
   --turns until-grounded \
@@ -230,7 +231,9 @@ npm run tutor:stub:qa -- \
   --keep-going
 ```
 
-Use `--suite full` when you also need the `negative` floor and `random` control.
+Use `--suite adaptive` or `--suite full` to include `continuous_dynamical_system`
+and `continuous_empirical_dynamical_system`. Use `--suite full` when you also
+need the `negative` floor and `random` control.
 Use `--from-dir .tutor-stub-auto-eval/qa-matrix-<timestamp>` to rebuild only the
 consolidated reports from existing per-learner summaries.
 
@@ -287,7 +290,7 @@ npm run analyze:tutor-stub-auto-evals -- \
   --out .tutor-stub-auto-eval/cross-run-field.md
 ```
 
-Use `--json` for machine-readable output. Use `--policies state,field,trajectory,dynamical_system,empirical_dynamical_system,dynamic`
+Use `--json` for machine-readable output. Use `--policies state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,dynamic`
 to focus policy rows. Use `--no-db` for a filesystem-only report.
 
 ## SQL Ingest
@@ -311,12 +314,15 @@ Useful views after ingest:
 
 - `v_tutor_stub_policy_summary`
 - `v_tutor_stub_register_effects`
+- `v_tutor_stub_turn_training`
 - `v_tutor_stub_failures`
 
-Current SQL coverage is run/row/policy/register/effectiveness oriented. The
-full row JSON is preserved, including field summaries when present, but
-turn-level field vectors and dynamical-system derivative/trajectory points are
-not yet normalized into dedicated SQL tables.
+SQL coverage includes run/row/policy/register/effectiveness summaries plus
+`tutor_stub_turn_frames`, a per-turn table for transition/reward modeling. It
+normalizes register vectors, selected registers, learner/DAG/field state,
+dynamical state and derivative vectors, transcript text, response metadata, and
+next-turn deltas. The full row JSON is still preserved for backward-compatible
+reconstruction.
 
 Example:
 
@@ -333,7 +339,7 @@ Prefer the latest `auto-eval-*.json` / `.html` in the trace dir. Report:
 
 - `ok/failed`, and whether failures are technical or pedagogical.
 - Grounded closure rate, mean turns, mean coverage, missing premise count.
-- Per-policy comparison: `negative`, `bland`, `dynamic`, `state`, `field`, `trajectory`, `dynamical_system`, `empirical_dynamical_system`, `random`.
+- Per-policy comparison: `negative`, `bland`, `dynamic`, `state`, `field`, `trajectory`, `dynamical_system`, `empirical_dynamical_system`, `continuous_dynamical_system`, `continuous_empirical_dynamical_system`, `random`.
 - Register entropy and dominant registers.
 - Bottlenecks: `learner_integration_gap`, `release_or_pacing_gap`, `assertion_gap`, `premature_assertion`, `grounded_asserted_secret`.
 - Check `.tutor-stub-auto-eval/ledger.md` for the local cross-run ledger before comparing recent evals.
@@ -346,5 +352,5 @@ Interpretation guardrails:
   network, unsupported model, and max-token errors.
 - `auto_safety_turn_cap` is an incomplete/timeout-like outcome even when row
   status is `ok`.
-- Compare `state`, `field`, `trajectory`, `dynamical_system`, and `empirical_dynamical_system` only against a baseline/control if `bland` or
+- Compare `state`, `field`, `trajectory`, `dynamical_system`, `empirical_dynamical_system`, `continuous_dynamical_system`, and `continuous_empirical_dynamical_system` only against a baseline/control if `bland` or
   `random` is present.

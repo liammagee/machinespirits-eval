@@ -43,6 +43,8 @@ export const REGISTER_POLICIES = Object.freeze([
   'trajectory',
   'dynamical_system',
   'empirical_dynamical_system',
+  'continuous_dynamical_system',
+  'continuous_empirical_dynamical_system',
   'bland',
   'random',
 ]);

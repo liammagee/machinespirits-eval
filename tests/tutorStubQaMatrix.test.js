@@ -163,3 +163,37 @@ test('qa matrix runner prints a reproducible focused-suite plan', () => {
   assert.ok(plan.jobs[0].command.includes('--auto-learner-profile-id'));
   assert.ok(plan.jobs[0].command.includes('diligent'));
 });
+
+test('qa matrix adaptive suite includes continuous register policies', () => {
+  const plan = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-qa-matrix.js',
+        '--print-plan',
+        '--json',
+        '--suite',
+        'adaptive',
+        '--profiles',
+        'diligent',
+        '--runs',
+        '1',
+        '--trace-dir',
+        '.tutor-stub-auto-eval/test-qa-plan-adaptive',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    ),
+  );
+
+  assert.deepEqual(plan.policies, [
+    'dynamic',
+    'state',
+    'field',
+    'trajectory',
+    'dynamical_system',
+    'empirical_dynamical_system',
+    'continuous_dynamical_system',
+    'continuous_empirical_dynamical_system',
+  ]);
+  assert.equal(plan.expectedDialogueRows, 8);
+});

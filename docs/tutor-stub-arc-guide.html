@@ -394,8 +394,10 @@
           <tr><td><code>tutor_stub_eval_rows</code></td><td>SQL row-level policy/run outcomes plus preserved full row JSON.</td></tr>
           <tr><td><code>tutor_stub_register_counts</code></td><td>SQL register counts per eval row.</td></tr>
           <tr><td><code>tutor_stub_efficacy_counts</code></td><td>SQL register efficacy labels per eval row.</td></tr>
+          <tr><td><code>tutor_stub_turn_frames</code></td><td>Per-turn transition-model rows: register vectors, learner/DAG/field state, dynamical vectors, transcript text, and next-turn deltas.</td></tr>
           <tr><td><code>v_tutor_stub_policy_summary</code></td><td>Policy-level SQL summary view.</td></tr>
           <tr><td><code>v_tutor_stub_register_effects</code></td><td>Register-effect SQL summary view.</td></tr>
+          <tr><td><code>v_tutor_stub_turn_training</code></td><td>Query view over turn frames for transition/reward-model export.</td></tr>
           <tr><td><code>v_tutor_stub_failures</code></td><td>Failure inspection SQL view.</td></tr>
         </tbody>
       </table>
