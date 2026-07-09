@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 5–9 Jul 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-09 window=(2026-07-05,2026-07-09] arxiv=2607.04617,2607.05120,2607.05391 generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">5–9 Jul 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  Three qualifying papers, all carrying an arXiv submission date of <strong>6 Jul 2026</strong>, cluster
+  around agent context/memory design and agentic verification. No qualifying ontology, dramaturgy/role-play,
+  or rhetoric paper turned up in the window despite multiple targeted search passes on each topic — reported
+  honestly rather than padded or backfilled from adjacent months. Flags:
+  <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    MRMS: A Multi-Resolution Memory Substrate for Long-Lived AI Agents
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Jizhizi Li, Amy Shi-Nash (NxtLab Innovations) ·
+    arXiv 2607.04617 · July 6, 2026 ·
+    <a href="https://arxiv.org/abs/2607.04617">https://arxiv.org/abs/2607.04617</a>
+  </div>
+  <p>
+    Argues that continuity for a long-lived agent cannot come from simply extending the prompt window: an
+    agent must preserve useful prior experience, retrieve it selectively, distinguish personal context from
+    external evidence, and revise memory when the underlying situation changes. Central claim — reliable
+    personalization is a memory-design problem, not a retrieval problem — is operationalized as MRMS, a
+    prototype combining structured records, vector retrieval, temporal policies, and graph-based revision.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A ready-made design vocabulary for cell 21 (dynamic prompt rewriting with the Writing Pad) and cells
+    48-49 (prompt erosion): both mechanisms accumulate injected context into the tutor's prompt turn over
+    turn, exactly the "undifferentiated conversation history" MRMS argues against. MRMS's four properties —
+    structured, selectively exposed, continuously consolidated, epistemically labeled — give the Writing Pad
+    a principled target state, and its temporal-policy/graph-revision split is a plausible complement to the
+    text-proxy erosion measures already used to score cells 48-49: instead of only measuring how much drift
+    has occurred, it suggests measuring whether the Writing Pad is consolidating (MRMS-like) or merely
+    concatenating (erosion-prone).
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    LLM-as-a-Verifier: A General-Purpose Verification Framework
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Jacky Kwok, Shulu Li, Pranav Atreya, Yuejiang Liu, Yixing Jiang, Chelsea Finn, Marco Pavone, Ion Stoica,
+    Azalia Mirhoseini ·
+    arXiv 2607.05391 · July 6, 2026 ·
+    <a href="https://arxiv.org/abs/2607.05391">https://arxiv.org/abs/2607.05391</a>
+  </div>
+  <p>
+    Identifies verification — determining whether a candidate solution is correct — as a distinct scaling
+    axis alongside pre-training, post-training, and test-time compute. Unlike standard LM-judge prompting,
+    which produces a single discrete score, LLM-as-a-Verifier computes the expectation over the distribution
+    of scoring-token logits to produce a continuous score, which the authors show scales along three
+    dimensions: score granularity, repeated evaluation, and criteria decomposition. State-of-the-art results
+    on Terminal-Bench V2, SWE-Bench Verified, RoboRewardBench, and MedAgentBench.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Directly bears on the v2.2 rubric judge pipeline (<code>scripts/eval-cli.js evaluate</code> and the
+    dimension-scoring services): today's judge calls elicit a single discrete score per dimension per rubric
+    version, the exact "standard LM judge" pattern the paper contrasts itself against. Logit-expectation
+    scoring is a candidate drop-in for reducing judge-side score quantization noise — relevant to
+    <code>analyze-judge-reliability.js</code>'s inter-judge correlation work, since a continuous score would
+    give correlation analyses more signal than the current discrete 1-N buckets, and the "criteria
+    decomposition" axis maps naturally onto the 8-dimension v2.2 rubric's per-dimension scoring.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Agent Data Injection Attacks are Realistic Threats to AI Agents
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Woohyuk Choi, Juhee Kim, Taehyun Kang (Seoul National University), Jihyeon Jeong (Largosoft),
+    Luyi Xing (University of Illinois Urbana-Champaign), Byoungyoung Lee (Seoul National University) ·
+    arXiv 2607.05120 · July 6, 2026 ·
+    <a href="https://arxiv.org/abs/2607.05120">https://arxiv.org/abs/2607.05120</a>
+  </div>
+  <p>
+    Introduces agent data injection (ADI), a category of indirect prompt injection distinct from
+    instruction injection: rather than smuggling in new instructions, ADI disguises malicious data as
+    trusted metadata the agent already treats as authoritative — resource identifiers, data origins, or
+    tool call/response formats — causing the agent to take unintended actions on attacker-controlled data
+    it never questions as data.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A relevant threat model for the adaptive runner's structured state (<code>services/adaptiveTutor/
+    stateSchema.js</code>, <code>policyActions.js</code>) and the id-director's persona envelope
+    (<code>id_construction_trace</code>): both architectures feed structured, agent-trusted context
+    (learner state, id-persona JSON) into downstream policy/generation steps much like the "agent context
+    data" ADI targets. Not an immediate action item — the project's agents don't currently ingest
+    untrusted external data — but worth keeping on the radar if the adaptive trap-scenario suite (cells
+    110-113, 124) is ever extended to ingest externally-sourced scenario content.
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03">
+  <h3>The Card Asks for a Signature the Number Can't Give</h3>
+  <div class="meta">mismatched_rhetorical_dramatic_plan · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. An AI problem formulation card lies on the desk—a form with printed fields including "System Type", "Input/Output", "Decision Boundary", "Evidence Source", "Classification Rationale". The learner is preparing responses for a panel review.<br>
+    LEARNER: I've calculated the accuracy: ninety-four percent correct on the test set. That shows the classifier works. High accuracy means it's a good classifier.<br>
+    TUTOR: The card asks for Evidence Source. Where do you get that ninety-four percent measurement?<br>
+    LEARNER: Five thousand held-out test examples. We run the model on each one and count how many predictions match the true labels. That's where the ninety-four percent comes from.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT03">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T03</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-07-09 ·
+  Deep-research harness (fan-out search) plus targeted follow-up WebSearch passes for ontology,
+  dramaturgy/role-play, and rhetoric (no qualifying in-window paper found standalone in any of the three) ·
+  Window: (2026-07-05, 2026-07-09] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
