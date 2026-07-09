@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-09T06:53:16.787Z",
+  "generated": "2026-07-09T08:24:46.135Z",
   "counts": {
-    "total": 101,
+    "total": 102,
     "byStatus": {
       "done": 85,
       "blocked": 1,
       "dropped": 2,
       "review": 3,
-      "active": 2,
+      "active": 3,
       "archived": 4,
       "triaged": 4
     },
     "byType": {
       "research": 41,
       "experiment": 33,
-      "infra": 10,
+      "infra": 11,
       "content": 2,
       "maintenance": 5,
       "paper": 4,
@@ -171,6 +171,35 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "tutor-stub-human-discourse-layer",
+      "title": "Human discourse layer for tutor-stub proof DAGs",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-09",
+      "updated": "2026-07-09",
+      "verification": "Tutor-stub supports a labelled human-scaffold DAG mode with trace/report fields for scaffold state, proof debt, side arcs, and warrant/premise stocktake; Marrick dry-run and targeted tests show strict DAG audit remains intact.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "docs/tutor-stub-human-discourse-layer.md"
+        ],
+        "items": [
+          "continuous-register-policy",
+          "tutor-stub-transition-reward-model"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "proof-dag",
+        "human-scaffold",
+        "proof-debt",
+        "side-arcs"
+      ]
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",

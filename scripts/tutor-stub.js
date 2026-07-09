@@ -53,6 +53,13 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
 const NEGATIVE_FLOOR_REGISTERS = ['ironic', 'sarcastic', 'face_threat'];
+const DAG_MODES = ['strict_dag', 'human_scaffold', 'defeasible_human_scaffold'];
+const HUMAN_DISCOURSE_RUN_CONFIG_SCHEMA = 'machinespirits.tutor-stub.human-discourse-run-config.v1';
+const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-frame.v1';
+const SCAFFOLD_STATE_SCHEMA = 'machinespirits.tutor-stub.scaffold-state.v1';
+const SIDE_ARC_SCHEMA = 'machinespirits.tutor-stub.side-arc.v1';
+const PROOF_DEBT_SCHEMA = 'machinespirits.tutor-stub.proof-debt-state.v1';
+const WARRANT_PREMISE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.warrant-premise-audit.v1';
 
 const STUB = {
   model: process.env.TUTOR_STUB_MODEL || 'codex.gpt-5.5',
@@ -72,6 +79,7 @@ const STUB = {
   interimAnimation: process.env.TUTOR_STUB_INTERIM_ANIMATION !== '0',
   cliEffort: process.env.TUTOR_STUB_CLI_EFFORT || '',
   registerPolicy: process.env.TUTOR_STUB_REGISTER_POLICY || 'dynamic',
+  dagMode: process.env.TUTOR_STUB_DAG_MODE || 'strict_dag',
   multipleChoice: process.env.TUTOR_STUB_MULTIPLE_CHOICE === '1',
   opening: process.env.TUTOR_STUB_OPENING !== '0',
   closeoutReport: process.env.TUTOR_STUB_CLOSEOUT_REPORT !== '0',
@@ -205,6 +213,7 @@ const { values: args, positionals } = parseArgs({
     topic: { type: 'string', default: STUB.topic },
     world: { type: 'string', default: STUB.world },
     dag: { type: 'boolean', default: false },
+    'dag-mode': { type: 'string', default: STUB.dagMode },
     'list-worlds': { type: 'boolean', default: false },
     learner: { type: 'string', default: STUB.learner },
     goal: { type: 'string', default: STUB.goal },
@@ -289,6 +298,10 @@ Options:
   --world <id|path|none> detective-story world (default: ${STUB.world})
   --dag                  add hidden proof DAG + release schedule to tutor prompt;
                          also prints the tutor desire-DAG after each turn
+  --dag-mode <strict_dag|human_scaffold|defeasible_human_scaffold>
+                         label the proof-discourse mode for traces/reports.
+                         Phase 1 records scaffold/debt/side-arc fields without
+                         changing tutor behavior (default: ${STUB.dagMode})
   --list-worlds          list available detective-story worlds and exit
   --topic <text>         tutoring topic (default: ${STUB.topic})
   --learner <text>       learner sketch
@@ -365,6 +378,8 @@ Environment:
                          optional default learner-record / combined-analysis model override
   TUTOR_STUB_TOPIC       optional default topic override
   TUTOR_STUB_WORLD       optional default detective-story world
+  TUTOR_STUB_DAG_MODE    optional DAG discourse mode: strict_dag,
+                         human_scaffold, or defeasible_human_scaffold
   TUTOR_STUB_TRACE_DIR   optional default trace directory
   TUTOR_STUB_STREAM=0    disable token streaming by default
   TUTOR_STUB_INTERIM_ANIMATION=0
@@ -1028,6 +1043,24 @@ function normalizeRegisterPolicy(value) {
   throw new Error(
     `Unknown --register-policy: ${value}. Expected dynamic, state, field, trajectory, dynamical_system, empirical_dynamical_system, continuous_dynamical_system, continuous_empirical_dynamical_system, bland, random, or negative.`,
   );
+}
+
+function normalizeDagMode(value) {
+  const mode = String(value || 'strict_dag').trim().toLowerCase().replace(/-/gu, '_');
+  if (DAG_MODES.includes(mode)) return mode;
+  throw new Error(`Unknown --dag-mode: ${value}. Expected ${DAG_MODES.join(', ')}.`);
+}
+
+function buildHumanDiscourseRunConfig({ dagMode, dagEnabled, tutorLearnerDagEnabled }) {
+  return {
+    schema: HUMAN_DISCOURSE_RUN_CONFIG_SCHEMA,
+    dagMode,
+    strictAuditDag: Boolean(dagEnabled),
+    tutorLearnerDag: Boolean(tutorLearnerDagEnabled),
+    phase: 'phase_1_trace_shapes',
+    traceFields: ['humanDiscourseFrame', 'scaffoldState', 'sideArc', 'proofDebt', 'warrantPremiseAudit'],
+    behaviorChange: false,
+  };
 }
 
 function buildRegisterPalette(mode) {
@@ -2369,6 +2402,155 @@ function stagedEvidenceRows(world, turn) {
       fact: premise?.fact || null,
     };
   });
+}
+
+function activeDramaturgyAct(world, tutorTurn) {
+  const acts = world?.dramaturgy?.acts;
+  if (!Array.isArray(acts)) return null;
+  const turn = Number(tutorTurn);
+  if (!Number.isFinite(turn)) return null;
+  const act = acts.find((entry) => {
+    const [start, end] = Array.isArray(entry?.turns) ? entry.turns.map(Number) : [];
+    return Number.isFinite(start) && Number.isFinite(end) && turn >= start && turn <= end;
+  });
+  if (!act) return null;
+  return {
+    act: act.act || null,
+    title: String(act.title || '').trim() || null,
+    turns: Array.isArray(act.turns) ? act.turns : null,
+  };
+}
+
+function buildScaffoldState({ state, tutorTurn, dagMode }) {
+  const enabled = dagMode !== 'strict_dag';
+  return {
+    schema: SCAFFOLD_STATE_SCHEMA,
+    mode: dagMode,
+    enabled,
+    source: enabled ? 'phase_1_shape_only' : 'strict_dag_disabled',
+    turn: tutorTurn,
+    activeAct: activeDramaturgyAct(state.world, tutorTurn),
+    branch: null,
+    localQuestion: null,
+    warrantFrame: null,
+    joinReminder: null,
+    returnTarget: null,
+    status: enabled ? 'pending_projection' : 'not_enabled_strict_dag',
+  };
+}
+
+function buildSideArcState({ dagMode }) {
+  return {
+    schema: SIDE_ARC_SCHEMA,
+    mode: dagMode,
+    detected: false,
+    type: null,
+    status: 'none',
+    returnTarget: null,
+    reason: 'phase_1_shape_only',
+  };
+}
+
+function buildProofDebtState({ dagMode }) {
+  const enabled = dagMode !== 'strict_dag';
+  const buckets = { open: [], repaired: [], discharged: [], harmful: [] };
+  return {
+    schema: PROOF_DEBT_SCHEMA,
+    mode: dagMode,
+    enabled,
+    status: enabled ? 'none_open' : 'not_enabled_strict_dag',
+    ...buckets,
+    counts: Object.fromEntries(Object.entries(buckets).map(([key, rows]) => [key, rows.length])),
+  };
+}
+
+function buildStrictDagAuditState(tutorLearnerDag) {
+  const model = tutorLearnerDag?.model || tutorLearnerDag || null;
+  const assessment = model?.assessment || {};
+  const metrics = model?.metrics || {};
+  return {
+    enabled: Boolean(model),
+    coverage: assessment.bestPathCoverage ?? null,
+    bottleneck: assessment.bottleneck || null,
+    finalSecretEntailed: assessment.finalSecretEntailed === true,
+    assertedSecret: assessment.assertedSecret === true,
+    missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0),
+  };
+}
+
+function publicStocktakeRows(rows = [], source = 'learner_record') {
+  return (Array.isArray(rows) ? rows : [])
+    .map((row) => ({
+      surface: String(row?.surface || row?.text || '').trim(),
+      turn: Number.isFinite(Number(row?.turn)) ? Number(row.turn) : null,
+      source,
+    }))
+    .filter((row) => row.surface);
+}
+
+function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag }) {
+  const model = tutorLearnerDag?.model || tutorLearnerDag || null;
+  const record = model?.learnerRecord || {};
+  const explicitWarrants = publicStocktakeRows(record.voicedDerived, 'voiced_derived_public_claim');
+  const explicitPublicPremises = publicStocktakeRows(record.grounded, 'grounded_public_record');
+  const emptyBuckets = {
+    impliedWarrants: [],
+    missingWarrants: [],
+    impliedPremises: [],
+    suppressedPremises: [],
+    commonSenseBridges: [],
+    illicitHiddenPremises: [],
+    proofDebtCandidates: [],
+  };
+  return {
+    schema: WARRANT_PREMISE_AUDIT_SCHEMA,
+    mode: dagMode,
+    phase: 'phase_1_trace_shapes',
+    status: 'shape_only_needs_classifier',
+    warrants: {
+      explicit: explicitWarrants,
+      implied: emptyBuckets.impliedWarrants,
+      missing: emptyBuckets.missingWarrants,
+    },
+    premises: {
+      explicitPublic: explicitPublicPremises,
+      impliedPublic: emptyBuckets.impliedPremises,
+      suppressedOrPrivate: emptyBuckets.suppressedPremises,
+      commonSenseBridges: emptyBuckets.commonSenseBridges,
+      illicitHidden: emptyBuckets.illicitHiddenPremises,
+    },
+    proofDebtCandidates: emptyBuckets.proofDebtCandidates,
+    counts: {
+      explicitWarrants: explicitWarrants.length,
+      impliedWarrants: emptyBuckets.impliedWarrants.length,
+      missingWarrants: emptyBuckets.missingWarrants.length,
+      explicitPublicPremises: explicitPublicPremises.length,
+      impliedPremises: emptyBuckets.impliedPremises.length,
+      suppressedPremises: emptyBuckets.suppressedPremises.length,
+      commonSenseBridges: emptyBuckets.commonSenseBridges.length,
+      illicitHiddenPremises: emptyBuckets.illicitHiddenPremises.length,
+      proofDebtCandidates: emptyBuckets.proofDebtCandidates.length,
+    },
+  };
+}
+
+function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag }) {
+  const dagMode = state?.dagMode || 'strict_dag';
+  const scaffoldState = buildScaffoldState({ state, tutorTurn, dagMode });
+  const sideArc = buildSideArcState({ dagMode });
+  const proofDebt = buildProofDebtState({ dagMode });
+  const warrantPremiseAudit = buildWarrantPremiseAudit({ dagMode, tutorLearnerDag });
+  return {
+    schema: HUMAN_DISCOURSE_FRAME_SCHEMA,
+    mode: dagMode,
+    phase: 'phase_1_trace_shapes',
+    turn: tutorTurn,
+    strictDag: buildStrictDagAuditState(tutorLearnerDag),
+    scaffoldState,
+    sideArc,
+    proofDebt,
+    warrantPremiseAudit,
+  };
 }
 
 function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
@@ -6320,6 +6502,10 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
       assertedSecret: assessment.assertedSecret === true,
       missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0),
     },
+    humanDiscourse: {
+      config: state.humanDiscourse || null,
+      finalFrame: last.humanDiscourseFrame || null,
+    },
     field: field.summary,
     finalTurn: {
       turnId: last.turnId || turnDebugId(state, last.turn),
@@ -6729,6 +6915,11 @@ async function runOneTurn(
     multipleChoice: state.multipleChoice,
   });
   const dagSnapshot = buildTutorDagSnapshot(state, tutorTurn);
+  const humanDiscourseFrame = buildHumanDiscourseFrame({
+    state,
+    tutorTurn,
+    tutorLearnerDag,
+  });
 
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
@@ -6745,6 +6936,11 @@ async function runOneTurn(
           extractor: tutorLearnerDag.extractor || null,
         }
       : null,
+    humanDiscourseFrame,
+    scaffoldState: humanDiscourseFrame.scaffoldState,
+    sideArc: humanDiscourseFrame.sideArc,
+    proofDebt: humanDiscourseFrame.proofDebt,
+    warrantPremiseAudit: humanDiscourseFrame.warrantPremiseAudit,
     registerSelection,
     previousRegisterEfficacy,
     tutor: response.text,
@@ -6941,6 +7137,7 @@ async function main() {
   const worldBundle = resolveWorldRef(args.world);
   const directorContext = buildDirectorInitialContext(worldBundle?.world || null);
   const effectiveTopic = worldBundle && args.topic === STUB.topic ? worldBundle.world.title : args.topic;
+  const dagMode = normalizeDagMode(args['dag-mode']);
   const multipleChoiceEnabled = Boolean(args['multiple-choice']);
   assertSupportedModelRefs({
     '--model': args.model,
@@ -6961,6 +7158,11 @@ async function main() {
   const autoLearnerProviderConfig = autoLearnerResolved ? getProviderConfig(autoLearnerResolved.provider) : null;
   const classifierEnabled = !args['no-classifier'];
   const tutorLearnerDagEnabled = Boolean(args['tutor-learner-dag'] && worldBundle);
+  const humanDiscourseConfig = buildHumanDiscourseRunConfig({
+    dagMode,
+    dagEnabled: args.dag,
+    tutorLearnerDagEnabled,
+  });
   const combinedLearnerAnalysisEnabled = Boolean(classifierEnabled && tutorLearnerDagEnabled);
   const registerPolicy = normalizeRegisterPolicy(args['register-policy']);
   const registerEmpiricalPrior = loadRegisterEmpiricalPrior(args['register-empirical-prior'], { policy: registerPolicy });
@@ -7056,6 +7258,7 @@ async function main() {
                 dag: args.dag,
               }
             : null,
+          humanDiscourse: humanDiscourseConfig,
           directorContext,
           temperature: effectiveTemperature,
           requestedTemperature: temperature,
@@ -7201,6 +7404,7 @@ async function main() {
     metadata: {
       modelRef: args.model,
       resolved: visibleModel,
+      humanDiscourse: humanDiscourseConfig,
       classifier: visibleClassifierConfig,
       tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
       autoLearner: autoLearnerEnabled
@@ -7233,14 +7437,14 @@ async function main() {
             policy: registerPolicy,
             combinedLearnerAnalysis: combinedLearnerAnalysisEnabled,
             localFieldPolicy: fieldRegisterSelectionEnabled,
-                localTrajectoryPolicy: trajectoryRegisterSelectionEnabled,
-                localDynamicalSystemPolicy: dynamicalSystemRegisterSelectionEnabled,
-                localEmpiricalDynamicalSystemPolicy: empiricalDynamicalSystemRegisterSelectionEnabled,
-                localContinuousDynamicalSystemPolicy: continuousDynamicalSystemRegisterSelectionEnabled,
-                localContinuousEmpiricalDynamicalSystemPolicy:
-                  continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
-                continuousUnsafeRegisterAnchors: continuousUnsafeRegisterAnchorsEnabled,
-                localStatePolicy: stateRegisterSelectionEnabled,
+            localTrajectoryPolicy: trajectoryRegisterSelectionEnabled,
+            localDynamicalSystemPolicy: dynamicalSystemRegisterSelectionEnabled,
+            localEmpiricalDynamicalSystemPolicy: empiricalDynamicalSystemRegisterSelectionEnabled,
+            localContinuousDynamicalSystemPolicy: continuousDynamicalSystemRegisterSelectionEnabled,
+            localContinuousEmpiricalDynamicalSystemPolicy:
+              continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
+            continuousUnsafeRegisterAnchors: continuousUnsafeRegisterAnchorsEnabled,
+            localStatePolicy: stateRegisterSelectionEnabled,
             random: randomRegisterSelectionEnabled,
             negative: negativeRegisterSelectionEnabled,
             empiricalPrior: {
@@ -7306,6 +7510,8 @@ async function main() {
     world: worldBundle?.world || null,
     directorContext,
     dag: args.dag,
+    dagMode,
+    humanDiscourse: humanDiscourseConfig,
     tutorDag,
     classifier: {
       enabled: classifierEnabled,
@@ -7387,6 +7593,7 @@ async function main() {
   } else {
     console.log(`${C.dim}tutor learner-DAG: off${C.reset}`);
   }
+  console.log(`${C.dim}DAG discourse mode: ${dagMode} (${humanDiscourseConfig.phase}; behavior unchanged)${C.reset}`);
   if (autoLearnerEnabled) {
     const autoTurnSummary =
       autoTurns === null ? `until grounded; safety ${autoSafetyTurns}` : `${autoTurns}`;
