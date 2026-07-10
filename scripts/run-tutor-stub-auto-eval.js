@@ -37,7 +37,10 @@ const { values: args } = parseArgs({
     turns: { type: 'string', default: 'until-grounded' },
     policies: { type: 'string', default: 'negative,dynamic,random' },
     model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || DEFAULT_CODEX_MODEL_REF },
-    'analysis-model': { type: 'string', default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || DEFAULT_CODEX_MODEL_REF },
+    'analysis-model': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || DEFAULT_CODEX_MODEL_REF,
+    },
     'auto-learner-model': {
       type: 'string',
       default:
@@ -62,7 +65,10 @@ const { values: args } = parseArgs({
     'trace-dir': { type: 'string', default: process.env.TUTOR_STUB_EVAL_TRACE_DIR || '.tutor-stub-auto-eval' },
     ledger: { type: 'string', default: process.env.TUTOR_STUB_EVAL_LEDGER || '.tutor-stub-auto-eval/ledger.jsonl' },
     'register-palette': { type: 'string', default: 'all' },
-    'dag-mode': { type: 'string', default: process.env.TUTOR_STUB_EVAL_DAG_MODE || process.env.TUTOR_STUB_DAG_MODE || 'strict_dag' },
+    'dag-mode': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_DAG_MODE || process.env.TUTOR_STUB_DAG_MODE || 'strict_dag',
+    },
     'first-message': { type: 'string', default: '' },
     'cli-effort': { type: 'string', default: process.env.TUTOR_STUB_EVAL_CLI_EFFORT || '' },
     'max-tokens': { type: 'string', default: process.env.TUTOR_STUB_EVAL_MAX_TOKENS || '' },
@@ -788,7 +794,8 @@ function approximateDynamicalStateVector({ turn, fieldRow, trajectory, selection
 function frameEvents({ turn, fieldRow, trajectory, selection }) {
   const events = new Set();
   if (fieldRow.bottleneck) events.add(fieldRow.bottleneck);
-  if (turn?.humanDiscourseFrame?.sideArc?.detected) events.add(`side_arc:${turn.humanDiscourseFrame.sideArc.type || 'unknown'}`);
+  if (turn?.humanDiscourseFrame?.sideArc?.detected)
+    events.add(`side_arc:${turn.humanDiscourseFrame.sideArc.type || 'unknown'}`);
   if (turn?.humanDiscourseFrame?.proofDebt?.status && turn.humanDiscourseFrame.proofDebt.status !== 'none_open') {
     events.add(`proof_debt:${turn.humanDiscourseFrame.proofDebt.status}`);
   }
@@ -915,7 +922,8 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
       selectedContributions: (selection.dynamical_system_policy?.selected_contributions || []).slice(0, 8),
       empirical: selection.dynamical_system_policy?.empirical || null,
       corpusEmpirical: selection.dynamical_system_policy?.corpus_empirical || null,
-      continuous: selection.continuous_register_policy || selection.dynamical_system_policy?.continuous_register_policy || null,
+      continuous:
+        selection.continuous_register_policy || selection.dynamical_system_policy?.continuous_register_policy || null,
       mapping: selection.dynamical_system_policy?.mapping || null,
     },
     events: frameEvents({ turn, fieldRow, trajectory, selection }),
@@ -1090,8 +1098,7 @@ function rewardProxyFromFrames({ frame, nextFrame, transcriptTurn }) {
       leak: leakPenalty,
       repaired: repairedPenalty,
     },
-    note:
-      'Exploratory proxy only: positive mastery/coverage/momentum and falling risk are useful for transition-model fitting, not a paper-grade learning effect.',
+    note: 'Exploratory proxy only: positive mastery/coverage/momentum and falling risk are useful for transition-model fitting, not a paper-grade learning effect.',
   };
 }
 
@@ -2961,6 +2968,12 @@ function machineSpiritsReportCss() {
     input { box-sizing:border-box; }
     select { box-sizing:border-box; }
     .live-runs { margin:0 0 18px; }
+    .operations-drawer { border:2px solid var(--ink); background:var(--paper-2); }
+    .operations-drawer > summary { display:flex; justify-content:space-between; gap:12px; align-items:center; cursor:pointer; list-style:none; padding:10px 12px; }
+    .operations-drawer > summary::-webkit-details-marker { display:none; }
+    .operations-drawer > summary > span:first-child strong, .operations-drawer > summary > span:first-child em { display:block; }
+    .operations-drawer > summary > span:first-child em { margin-top:2px; color:var(--ink-3); font-size:10px; font-style:normal; }
+    .operations-drawer-body { border-top:2px solid var(--ink); padding:10px; }
     .live-runs-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin:0 0 10px; }
     .live-runs h2 { margin:0; }
     .live-runs p { margin:3px 0 0; color:var(--ink-3); font-size:12px; }
@@ -3313,6 +3326,22 @@ function machineSpiritsReportCss() {
       padding:14px;
     }
     .cohort-card.primary { box-shadow:8px 8px 0 var(--red-mark); }
+    .evaluation-routebar {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:end;
+      margin:0 0 12px;
+      border:2px solid var(--ink);
+      background:var(--paper-2);
+      padding:9px;
+    }
+    .evaluation-routebar label { min-width:min(100%, 360px); }
+    .evaluation-routebar label span { display:block; margin-bottom:4px; color:var(--ink-3); font-family:"JetBrains Mono", ui-monospace, monospace; font-size:9px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .evaluation-routebar select { width:100%; }
+    .evaluation-routebar nav { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:5px; }
+    .evaluation-routebar button, .cohort-head-actions button, .comparison-tray button, .lineage-node, .lab-gate button { border:2px solid var(--ink); background:var(--paper); color:var(--ink); box-shadow:2px 2px 0 var(--ink); padding:6px 8px; font-family:"JetBrains Mono", ui-monospace, monospace; font-size:9px; font-weight:800; text-transform:uppercase; cursor:pointer; }
+    .evaluation-routebar button.active { background:var(--ink); color:var(--paper); box-shadow:2px 2px 0 var(--red-mark); }
     .cohort-card-head {
       display:flex;
       justify-content:space-between;
@@ -3321,6 +3350,8 @@ function machineSpiritsReportCss() {
     }
     .cohort-card-head h3 { margin:2px 0 3px; overflow-wrap:anywhere; }
     .cohort-card-head p { margin:0; color:var(--ink-3); font-size:12px; }
+    .evaluation-timestamp { font-family:"JetBrains Mono", ui-monospace, monospace; font-size:10px; font-weight:700; letter-spacing:.02em; }
+    .cohort-head-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
     .cohort-eyebrow, .cohort-metric span {
       display:block;
       color:var(--ink-3);
@@ -3337,11 +3368,89 @@ function machineSpiritsReportCss() {
     }
     .cohort-decision.attention { border-left-color:var(--red-mark); background:var(--brick-soft); }
     .cohort-decision.pass { border-left-color:var(--green); background:var(--moss-soft); }
+    .cohort-decision.adaptation-supported { border-left-color:var(--green); background:var(--green-soft); }
+    .cohort-decision.adaptation-contradicted { border-left-color:var(--red-mark); background:var(--brick-soft); }
+    .decision-caveat { display:block; margin-top:4px; color:var(--ink-3); font-size:11px; font-weight:400; }
+    .evaluation-progress { margin:12px 0 0; border:2px solid var(--ink); background:var(--paper-3); padding:10px 12px; display:grid; gap:6px; }
+    .evaluation-progress-track { display:flex; align-items:center; gap:10px; }
+    .evaluation-progress-track .live-progress { flex:1 1 160px; }
+    .evaluation-progress-track strong { font-family:"JetBrains Mono", ui-monospace, monospace; font-size:11px; white-space:nowrap; }
+    .evaluation-progress-meta { display:flex; flex-wrap:wrap; gap:5px 12px; align-items:baseline; font-size:11px; }
+    .live-slice { border:1px solid var(--ink); background:var(--paper); padding:1px 7px; font-family:"JetBrains Mono", ui-monospace, monospace; font-size:10px; }
+    .live-slice.stale { background:var(--brick-soft); }
+    .evaluation-progress-note { margin:0; color:var(--ink-3); font-size:11px; max-width:920px; }
+    .reading-guide { margin:10px 0; border:2px dashed var(--ink); background:var(--paper); }
+    .reading-guide summary { padding:8px 12px; cursor:pointer; font-family:"JetBrains Mono", ui-monospace, monospace; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .reading-guide-body { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; padding:2px 12px 12px; }
+    .reading-guide-body div { border-top:2px solid var(--ink); padding-top:6px; }
+    .reading-guide-body strong { display:block; font-family:"JetBrains Mono", ui-monospace, monospace; font-size:10px; letter-spacing:.05em; text-transform:uppercase; }
+    .reading-guide-body p { margin:3px 0 0; font-size:11px; }
+    .lab-2d-legend { margin:0 0 8px; color:var(--ink-3); font-size:11px; max-width:920px; }
     .cohort-metrics {
       display:grid;
       grid-template-columns:repeat(5,minmax(0,1fr));
       gap:8px;
     }
+    .research-verdict-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+    .study-panel { margin:10px 0; border:2px solid var(--ink); background:var(--paper-3); padding:12px; }
+    .study-panel h4 { margin:7px 0 3px; font-size:18px; }
+    .study-panel p { margin:0; max-width:920px; }
+    .study-panel dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin:10px 0 0; }
+    .study-panel dl div { border-top:2px solid var(--ink); padding-top:6px; }
+    .study-panel dt { color:var(--ink-3); font-family:"JetBrains Mono", ui-monospace, monospace; font-size:9px; font-weight:800; text-transform:uppercase; }
+    .study-panel dd { margin:2px 0 0; font-size:11px; }
+    .adaptation-matrix { min-width:max(760px, 100%); }
+    .adaptation-matrix th span { display:block; color:var(--red-mark); font-size:8px; }
+    .matrix-cell { min-width:155px; border-left:7px solid var(--yellow); }
+    .matrix-cell.adaptation-supported { border-left-color:var(--green); background:var(--green-soft); }
+    .matrix-cell.adaptation-contradicted { border-left-color:var(--red-mark); background:var(--brick-soft); }
+    .matrix-cell.adaptation-baseline { border-left-color:var(--ink); }
+    .matrix-cell strong, .matrix-cell span, .matrix-cell em { display:block; }
+    .matrix-cell strong { text-transform:uppercase; }
+    .matrix-cell span, .matrix-cell em { margin-top:3px; color:var(--ink-3); font-size:9px; font-style:normal; }
+    .lineage { display:grid; gap:10px; }
+    .lineage-summary { display:flex; justify-content:space-between; gap:12px; }
+    .lineage-track { display:flex; gap:8px; overflow-x:auto; padding:3px 3px 9px; }
+    .lineage-node { flex:0 0 210px; display:grid; grid-template-columns:26px minmax(0,1fr); gap:4px 8px; text-align:left; text-transform:none; }
+    .lineage-node.active { background:var(--ink); color:var(--paper); box-shadow:3px 3px 0 var(--red-mark); }
+    .lineage-node span { grid-row:1 / 3; display:grid; place-items:center; border:1px solid currentColor; }
+    .lineage-node strong, .lineage-node em { overflow-wrap:anywhere; }
+    .lineage-node em { font-size:9px; font-style:normal; }
+    .lab-view { display:grid; gap:10px; }
+    .lab-warning, .lab-gate { border:2px solid var(--ink); border-left:9px solid var(--yellow); background:var(--yellow-soft); padding:11px; }
+    .lab-warning strong, .lab-warning span { display:block; }
+    .lab-warning span { margin-top:3px; font-size:11px; }
+    .lab-2d { border:2px solid var(--ink); background:var(--paper-3); padding:10px; }
+    .lab-2d h4 { margin:0 0 8px; }
+    .lab-2d > div { display:grid; grid-template-columns:minmax(150px,1fr) repeat(3,auto); gap:9px; padding:6px 0; border-top:1px solid var(--ink); font-size:10px; }
+    .lab-2d > div span { color:var(--ink-3); font-family:"JetBrains Mono", ui-monospace, monospace; }
+    .lab-gate.pass { border-left-color:var(--green); background:var(--green-soft); }
+    .lab-gate p { margin:4px 0; }
+    .lab-gate ul { margin:7px 0 0; }
+    .lab-3d { border:3px solid var(--ink); background:var(--paper); box-shadow:6px 6px 0 var(--violet); padding:11px; overflow:hidden; }
+    .lab-3d-head { display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+    .lab-3d-head h4 { margin:0; }
+    .lab-3d-head span { color:var(--ink-3); font-family:"JetBrains Mono", ui-monospace, monospace; font-size:9px; text-transform:uppercase; }
+    .lab-3d-scene { min-height:430px; display:grid; place-items:center; perspective:900px; overflow:hidden; }
+    .lab-3d-stage { position:relative; width:min(68vw, 560px); aspect-ratio:1; border:3px solid var(--ink); transform-style:preserve-3d; transform:rotateX(58deg) rotateZ(-31deg); background:repeating-linear-gradient(0deg, transparent 0 54px, rgba(10,10,10,.12) 54px 56px), repeating-linear-gradient(90deg, transparent 0 54px, rgba(10,10,10,.12) 54px 56px), var(--paper-2); box-shadow:16px 18px 0 rgba(10,10,10,.12); }
+    .lab-3d-point { position:absolute; left:var(--point-x); top:var(--point-y); display:grid; justify-items:center; transform:translate(-50%,-50%) translateZ(var(--point-z)); transform-style:preserve-3d; }
+    .lab-3d-point i { width:14px; height:14px; border:2px solid var(--ink); border-radius:50%; background:var(--yellow); box-shadow:0 0 0 4px rgba(242,183,5,.25); }
+    .lab-3d-point.adaptation-supported i { background:var(--green); box-shadow:0 0 0 4px rgba(0,155,114,.22); }
+    .lab-3d-point.adaptation-contradicted i { background:var(--red-mark); box-shadow:0 0 0 4px rgba(230,57,70,.22); }
+    .lab-3d-point b { max-width:100px; margin-top:2px; overflow:hidden; color:var(--ink); font-family:"JetBrains Mono", ui-monospace, monospace; font-size:8px; text-overflow:ellipsis; white-space:nowrap; }
+    .lab-axis { position:absolute; color:var(--ink); font-family:"JetBrains Mono", ui-monospace, monospace; font-size:9px; font-weight:800; text-transform:uppercase; }
+    .lab-axis.x { left:8px; bottom:5px; }
+    .lab-axis.y { right:5px; top:8px; writing-mode:vertical-rl; }
+    .lab-axis.z { left:8px; top:8px; }
+    .lab-3d > p { margin:8px 0 0; color:var(--ink-3); font-size:10px; }
+    .comparison-tray { position:sticky; bottom:10px; z-index:20; margin-top:14px; border:3px solid var(--ink); background:var(--paper); box-shadow:7px 7px 0 var(--red-mark); padding:10px; }
+    .comparison-tray-head { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:8px; }
+    .comparison-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:8px; }
+    .comparison-grid article { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:5px; border:2px solid var(--ink); padding:6px; }
+    .comparison-grid article > button:first-child { display:grid; gap:2px; border:0; box-shadow:none; padding:3px; text-align:left; text-transform:none; }
+    .comparison-grid strong, .comparison-grid span, .comparison-grid em { display:block; overflow-wrap:anywhere; }
+    .comparison-grid span { color:var(--red-mark); font-size:9px; text-transform:uppercase; }
+    .comparison-grid em { color:var(--ink-3); font-size:9px; font-style:normal; }
     .cohort-metric {
       min-width:0;
       border:2px solid var(--ink);
@@ -3520,9 +3629,47 @@ function machineSpiritsReportCss() {
     .read-first-card-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
     .read-first-card-stats span { border-top:1px solid var(--ink); padding-top:5px; color:var(--ink-3); font-size:10px; }
     .read-first-card-stats b { display:block; color:var(--ink); font-size:14px; overflow-wrap:anywhere; }
+    .adaptation-headline {
+      display:grid;
+      gap:4px;
+      margin:10px 0;
+      border:2px solid var(--ink);
+      border-left:9px solid var(--yellow);
+      background:var(--yellow-soft);
+      box-shadow:4px 4px 0 var(--ink);
+      padding:12px 14px;
+    }
+    .adaptation-headline.supported { border-left-color:var(--green); background:var(--green-soft); }
+    .adaptation-headline.contradicted { border-left-color:var(--red-mark); background:var(--brick-soft); }
+    .adaptation-headline span { color:var(--ink-3); font-size:12px; }
+    .read-first-card.adaptation-supported { box-shadow:4px 4px 0 var(--green); }
+    .read-first-card.adaptation-contradicted { box-shadow:4px 4px 0 var(--red-mark); }
+    .read-first-card.adaptation-baseline { box-shadow:4px 4px 0 var(--ink); }
+    .status.adaptation-supported { background:var(--green-soft); border-color:var(--green); }
+    .status.adaptation-contradicted { background:var(--brick-soft); border-color:var(--red-mark); }
+    .status.adaptation-mixed, .status.adaptation-not_established, .status.adaptation-pending { background:var(--yellow-soft); }
     .read-first-details { margin:12px 0; border:2px solid var(--ink); background:var(--paper-2); }
     .read-first-details > summary { cursor:pointer; padding:10px 12px; font-family:"JetBrains Mono", ui-monospace, monospace; font-size:11px; font-weight:800; text-transform:uppercase; }
     .read-first-details .table-scroll { border-top:2px solid var(--ink); }
+    .adaptation-timeline { display:grid; gap:8px; }
+    .adaptation-timeline-key { display:flex; flex-wrap:wrap; gap:8px; color:var(--ink-3); font-family:"JetBrains Mono", ui-monospace, monospace; font-size:10px; }
+    .adaptation-timeline-key span { border:1px solid var(--ink); background:var(--paper); padding:4px 6px; }
+    .adaptation-timeline-key .positive { border-left:6px solid var(--green); }
+    .adaptation-timeline-key .neutral { border-left:6px solid var(--yellow); }
+    .adaptation-timeline-key .negative { border-left:6px solid var(--red-mark); }
+    .adaptation-trial { border:2px solid var(--ink); background:var(--paper-2); }
+    .adaptation-trial > summary { display:flex; justify-content:space-between; gap:12px; cursor:pointer; padding:9px 11px; font-size:11px; }
+    .adaptation-trial > summary span { color:var(--ink-3); font-family:"JetBrains Mono", ui-monospace, monospace; font-size:10px; }
+    .adaptation-trial-body { border-top:2px solid var(--ink); padding:10px; }
+    .adaptation-strip { display:flex; gap:6px; overflow-x:auto; padding:2px 2px 8px; }
+    .adaptation-moment { flex:0 0 96px; min-height:70px; display:grid; align-content:start; gap:2px; border:2px solid var(--ink); border-top:8px solid var(--yellow); background:var(--paper); color:var(--ink); padding:6px; text-align:left; cursor:pointer; }
+    .adaptation-moment.positive { border-top-color:var(--green); }
+    .adaptation-moment.negative { border-top-color:var(--red-mark); }
+    .adaptation-moment span, .adaptation-moment em { color:var(--ink-3); font-size:9px; font-style:normal; }
+    .adaptation-moment strong { overflow:hidden; text-overflow:ellipsis; font-size:10px; white-space:nowrap; }
+    .adaptation-links { display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; }
+    .adaptation-links a { border:2px solid var(--ink); background:var(--paper); box-shadow:2px 2px 0 var(--red-mark); padding:4px 7px; color:var(--ink); font-family:"JetBrains Mono", ui-monospace, monospace; font-size:9px; font-weight:800; text-transform:uppercase; }
+    .viz-jump-active, .transcript-jump-active { outline:6px solid var(--yellow); outline-offset:4px; }
     .viz-layout { grid-template-columns:minmax(0,1fr); }
     .viz-sidebar { border-left:0; border-top:2px solid var(--ink); padding:0; }
     .viz-sidebar > summary { cursor:pointer; padding:11px 14px; font-family:"JetBrains Mono", ui-monospace, monospace; font-size:11px; font-weight:800; text-transform:uppercase; }
@@ -3581,6 +3728,9 @@ function machineSpiritsReportCss() {
       .table-scroll { padding-right:6px; }
       .live-run-progress { grid-template-columns:1fr; }
       .cohort-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .research-verdict-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .evaluation-routebar { display:block; }
+      .evaluation-routebar nav { justify-content:flex-start; margin-top:8px; }
       .cohort-metric:last-child { grid-column:1 / -1; }
       .profile-row { grid-template-columns:minmax(130px,1.2fr) 80px 90px 90px minmax(100px,.8fr); }
       .profile-row > :nth-child(5) { display:none; }
@@ -3604,6 +3754,7 @@ function machineSpiritsReportCss() {
       .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .metric { min-height:106px; }
       .cohort-workspace-head, .cohort-card-head, .report-list-head { display:block; }
+      .cohort-head-actions { justify-content:flex-start; margin-top:8px; }
       .cohort-workspace-head .live-count, .cohort-card-head .status { display:inline-block; margin-top:8px; }
       .cohort-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .cohort-read { display:block; }
@@ -3617,6 +3768,11 @@ function machineSpiritsReportCss() {
       .profile-row > .profile-actions { grid-column:1 / -1; text-align:left; }
       .policy-bar-row { grid-template-columns:1fr; gap:5px; }
       .policy-bar-meta { white-space:normal; }
+      .research-verdict-grid { grid-template-columns:1fr; }
+      .lab-2d > div { grid-template-columns:1fr; }
+      .lab-3d-scene { min-height:330px; }
+      .lab-3d-stage { width:260px; }
+      .comparison-tray { position:static; }
     }
     @media (max-width: 350px) {
       .metrics, .cohort-metrics { grid-template-columns:1fr; }
@@ -3899,7 +4055,116 @@ function reportInfoTerm(key, label) {
   return infoTerm(label, REPORT_TERM_TOOLTIPS[key] || label);
 }
 
-function policyReadFirstSummaries(rows = [], summary = {}) {
+function categoricalEntropy(values = []) {
+  const present = values.map((value) => String(value || '').trim()).filter(Boolean);
+  return entropy(present);
+}
+
+function normalizedMutualInformation(pairs = []) {
+  const valid = pairs.filter(([left, right]) => left && right);
+  if (valid.length < 2) return 0;
+  const leftCounts = countBy(valid.map(([left]) => left));
+  const rightCounts = countBy(valid.map(([, right]) => right));
+  const jointCounts = countBy(valid.map(([left, right]) => `${left}\u241f${right}`));
+  const total = valid.length;
+  let mutualInformation = 0;
+  for (const [jointKey, jointCount] of Object.entries(jointCounts)) {
+    const [left, right] = jointKey.split('\u241f');
+    const jointProbability = jointCount / total;
+    const independentProbability = (Number(leftCounts[left] || 0) / total) * (Number(rightCounts[right] || 0) / total);
+    if (jointProbability > 0 && independentProbability > 0) {
+      mutualInformation += jointProbability * Math.log2(jointProbability / independentProbability);
+    }
+  }
+  const denominator = Math.max(
+    categoricalEntropy(valid.map(([left]) => left)),
+    categoricalEntropy(valid.map(([, right]) => right)),
+  );
+  return denominator > 0 ? roundField(mutualInformation / denominator) : 0;
+}
+
+function adaptationStateKey(example = {}) {
+  const state = example.stateBeforeAction?.learnerState || {};
+  const dag = example.stateBeforeAction?.dag || {};
+  return [
+    state.requestType || state.discourseMove || 'unknown_move',
+    state.evidenceUse || state.epistemicStance || 'unknown_evidence',
+    dag.bottleneck || 'unknown_bottleneck',
+  ].join('|');
+}
+
+function adaptationPolicyMetrics(policyRows = [], safetyTurns = 120) {
+  const liveRows = policyRows.filter((row) => row.status !== 'dry_run');
+  const okRows = liveRows.filter((row) => row.status !== 'failed');
+  const examples = okRows.flatMap((row) => row.trainingExamples?.examples || []);
+  const transitions = examples.filter((example) => Number.isFinite(Number(example.rewardProxy?.score)));
+  const rewards = transitions.map((example) => Number(example.rewardProxy.score));
+  const registers = examples.map((example) => example.action?.selectedRegister).filter(Boolean);
+  const fallbackRegisters = okRows.flatMap((row) =>
+    Object.entries(row.registerCounts || {}).flatMap(([register, count]) =>
+      Array.from({ length: Number(count || 0) }, () => register),
+    ),
+  );
+  const observedRegisters = registers.length ? registers : fallbackRegisters;
+  const stateActionPairs = examples
+    .map((example) => [adaptationStateKey(example), example.action?.selectedRegister || ''])
+    .filter(([, register]) => register);
+  const closureRate = okRows.length ? okRows.filter((row) => row.groundedClosure).length / okRows.length : null;
+  const meanTurns = mean(okRows.map((row) => row.turnCount));
+  const meanCoverage = mean(okRows.map((row) => row.bestPathCoverage));
+  const masteryGain = mean(okRows.map((row) => row.field?.delta?.learnerMastery));
+  const riskReduction = mean(okRows.map((row) => -Number(row.field?.delta?.learnerRisk)));
+  const leakCount = okRows.reduce((sum, row) => sum + Number(row.leakCount || 0), 0);
+  const positiveTransitions = rewards.filter((score) => score > 0.005).length;
+  const negativeTransitions = rewards.filter((score) => score < -0.005).length;
+  return {
+    policy: policyRows[0]?.policy || 'unknown',
+    rows: policyRows.length,
+    ok: okRows.length,
+    failed: liveRows.filter((row) => row.status === 'failed').length,
+    outcome: {
+      closureRate: closureRate === null ? null : roundField(closureRate),
+      meanCoverage,
+      meanTurns,
+      masteryGain,
+      riskReduction,
+      leakCount,
+      turnEfficiency: Number.isFinite(Number(meanTurns))
+        ? roundField(clampField01(1 - Number(meanTurns) / safetyTurns))
+        : null,
+    },
+    variation: {
+      registerEntropyBits: categoricalEntropy(observedRegisters),
+      distinctRegisters: new Set(observedRegisters).size,
+      observations: observedRegisters.length,
+    },
+    contingency: {
+      normalizedMutualInformation: normalizedMutualInformation(stateActionPairs),
+      stateActionObservations: stateActionPairs.length,
+      distinctStates: new Set(stateActionPairs.map(([state]) => state)).size,
+    },
+    consequence: {
+      transitionCount: transitions.length,
+      positiveTransitions,
+      neutralTransitions: Math.max(0, transitions.length - positiveTransitions - negativeTransitions),
+      negativeTransitions,
+      positiveRate: transitions.length ? roundField(positiveTransitions / transitions.length) : null,
+      meanRewardProxy: rewards.length ? mean(rewards) : null,
+    },
+    validity: {
+      technical:
+        liveRows.length && liveRows.every((row) => row.status !== 'failed')
+          ? 'pass'
+          : liveRows.length
+            ? 'attention'
+            : 'pending',
+      transitionEvidence: transitions.length >= 3 ? 'pass' : 'pending',
+      exploratory: true,
+    },
+  };
+}
+
+function adaptationEvidenceForRows(rows = [], summary = {}) {
   const byPolicy = new Map();
   for (const row of rows) {
     const key = row.policy || 'unknown';
@@ -3907,72 +4172,81 @@ function policyReadFirstSummaries(rows = [], summary = {}) {
     byPolicy.get(key).push(row);
   }
   const safetyTurns = Number(summary.config?.safetyTurns || 120) || 120;
-  return [...byPolicy.entries()]
-    .map(([policy, policyRows]) => {
-      const liveRows = policyRows.filter((row) => row.status !== 'dry_run');
-      const okRows = liveRows.filter((row) => row.status !== 'failed');
-      const totalTurns = okRows.reduce((sum, row) => sum + Number(row.turnCount || 0), 0);
-      const registers = okRows.flatMap((row) =>
-        Object.entries(row.registerCounts || {}).flatMap(([register, count]) =>
-          Array.from({ length: Number(count || 0) }, () => register),
-        ),
-      );
-      const efficacyCounts = mergeCounts(okRows.map((row) => row.efficacyCounts));
-      const positiveProgress = Number(efficacyCounts.positive_progress || 0);
-      const efficacyTotal = Object.values(efficacyCounts).reduce((sum, value) => sum + Number(value || 0), 0);
-      const progressRate = efficacyTotal ? positiveProgress / efficacyTotal : 0;
-      const registerEntropy = entropy(registers);
-      const finalMastery = mean(okRows.map((row) => row.field?.final?.learnerMastery));
-      const finalRisk = mean(okRows.map((row) => row.field?.final?.learnerRisk));
-      const masteryGain = mean(okRows.map((row) => row.field?.delta?.learnerMastery));
-      const riskReduction = mean(okRows.map((row) => -Number(row.field?.delta?.learnerRisk)));
-      const meanTurns = mean(okRows.map((row) => row.turnCount));
-      const closureRate = okRows.length ? okRows.filter((row) => row.groundedClosure).length / okRows.length : 0;
-      const meanCoverage = mean(okRows.map((row) => row.bestPathCoverage));
-      const leaks = okRows.reduce((sum, row) => sum + Number(row.leakCount || 0), 0);
-      const leakDiscipline = clampField01(1 - leaks / Math.max(1, totalTurns));
-      const turnEfficiency = clampField01(1 - meanTurns / safetyTurns);
-      const registerUsefulness = clampField01((registerEntropy / Math.log2(9)) * (0.5 + 0.5 * progressRate));
-      const signalScore = roundField(
-        0.3 * closureRate +
-          0.16 * meanCoverage +
-          0.17 * clampField01(masteryGain) +
-          0.14 * clampField01(riskReduction) +
-          0.14 * leakDiscipline +
-          0.06 * turnEfficiency +
-          0.03 * registerUsefulness,
-      );
-      return {
-        policy,
-        rows: policyRows.length,
-        ok: okRows.length,
-        failed: liveRows.filter((row) => row.status === 'failed').length,
-        closureRate: roundField(closureRate),
-        meanCoverage,
-        meanTurns,
-        finalMastery,
-        finalRisk,
-        masteryGain,
-        riskReduction,
-        leaks,
-        leakDiscipline,
-        registerEntropy,
-        progressRate: roundField(progressRate),
-        signalScore,
-      };
-    })
-    .sort((left, right) => right.signalScore - left.signalScore || compareReportPolicies(left.policy, right.policy));
-}
-
-function readFirstVerdict(row, index) {
-  if (row.failed) return 'technical failure present';
-  if (row.closureRate < 1) return 'incomplete closure';
-  if (row.leaks > 0) return 'closed, but leak caution';
-  if (index === 0) return 'strongest current signal';
-  if (row.masteryGain >= 0.45 && row.riskReduction >= 0.3) return 'strong field movement';
-  if (row.registerEntropy >= 2 && row.progressRate >= 0.4) return 'varied registers with progress';
-  if (row.registerEntropy < 0.2) return 'stable baseline';
-  return 'clean closure';
+  const policies = [...byPolicy.values()].map((policyRows) => adaptationPolicyMetrics(policyRows, safetyTurns));
+  const declaredBaseline = summary.config?.baselinePolicy || summary.qaMatrix?.baselinePolicy;
+  const baselinePolicy =
+    declaredBaseline || (policies.some((row) => row.policy === 'bland') ? 'bland' : policies[0]?.policy || '');
+  const baseline = policies.find((row) => row.policy === baselinePolicy) || null;
+  for (const row of policies) {
+    const reference = baseline?.outcome || {};
+    const current = row.outcome || {};
+    const benefitComponents = {
+      closure: Number(current.closureRate || 0) - Number(reference.closureRate || 0),
+      coverage: Number(current.meanCoverage || 0) - Number(reference.meanCoverage || 0),
+      mastery: Number(current.masteryGain || 0) - Number(reference.masteryGain || 0),
+      riskReduction: Number(current.riskReduction || 0) - Number(reference.riskReduction || 0),
+      turnEfficiency: Number(current.turnEfficiency || 0) - Number(reference.turnEfficiency || 0),
+    };
+    const benefitScore =
+      row.policy === baselinePolicy
+        ? 0
+        : roundField(
+            0.35 * benefitComponents.closure +
+              0.25 * benefitComponents.coverage +
+              0.15 * benefitComponents.mastery +
+              0.15 * benefitComponents.riskReduction +
+              0.1 * benefitComponents.turnEfficiency,
+          );
+    const hasVariation = row.variation.distinctRegisters >= 2 && row.variation.registerEntropyBits >= 0.35;
+    const hasContingency =
+      row.contingency.stateActionObservations >= 6 && row.contingency.normalizedMutualInformation >= 0.05;
+    const hasConsequence = row.consequence.transitionCount >= 3 && Number(row.consequence.meanRewardProxy || 0) > 0;
+    let verdict = 'not_established';
+    if (row.policy === baselinePolicy) verdict = 'baseline';
+    else if (row.validity.technical !== 'pass' || row.validity.transitionEvidence !== 'pass') verdict = 'pending';
+    else if (benefitScore < -0.05 && row.consequence.transitionCount >= 6) verdict = 'contradicted';
+    else if (hasVariation && hasContingency && hasConsequence && benefitScore > 0.02) verdict = 'supported';
+    else if ((hasVariation && hasContingency) || hasConsequence || Math.abs(benefitScore) > 0.02) verdict = 'mixed';
+    row.benefit = { baselinePolicy, score: benefitScore, components: benefitComponents };
+    row.verdict = verdict;
+    row.dimensions = {
+      variation: hasVariation ? 'present' : 'not_established',
+      contingency: hasContingency ? 'present' : 'not_established',
+      consequence: hasConsequence ? 'positive' : row.consequence.transitionCount ? 'not_established' : 'pending',
+      benefit: benefitScore > 0.02 ? 'positive' : benefitScore < -0.02 ? 'negative' : 'not_established',
+      validity: row.validity.technical === 'pass' && row.validity.transitionEvidence === 'pass' ? 'usable' : 'pending',
+    };
+  }
+  const usable = policies.filter((row) => row.policy !== baselinePolicy);
+  const outcomeAchieved = policies.some(
+    (row) => Number(row.outcome.closureRate || 0) >= 0.95 && Number(row.outcome.meanCoverage || 0) >= 0.95,
+  );
+  const supported = usable.filter((row) => row.verdict === 'supported');
+  const contradicted = usable.filter((row) => row.verdict === 'contradicted');
+  const verdict = supported.length
+    ? 'supported'
+    : contradicted.length === usable.length && usable.length
+      ? 'contradicted'
+      : usable.some((row) => row.verdict === 'mixed')
+        ? 'mixed'
+        : usable.some((row) => row.verdict === 'pending')
+          ? 'pending'
+          : 'not_established';
+  return {
+    schema: 'machinespirits.tutor-stub.adaptation-evidence.v1',
+    baselinePolicy,
+    outcomeAchieved,
+    verdict,
+    headline: outcomeAchieved
+      ? supported.length
+        ? `Outcome achieved; adaptation advantage supported for ${supported.map((row) => row.policy).join(', ')}.`
+        : 'Outcome achieved; adaptation advantage not established.'
+      : supported.length
+        ? 'Adaptation signal present, but the target outcome is not yet robust.'
+        : 'Outcome and adaptation advantage are not yet established.',
+    policies: policies.sort((left, right) => compareReportPolicies(left.policy, right.policy)),
+    note: 'Exploratory transition evidence. It is designed for research triage and does not by itself establish a causal learning effect.',
+  };
 }
 
 function renderSignalGuide() {
@@ -4010,64 +4284,60 @@ function renderSignalGuide() {
   </div>`;
 }
 
-function renderReadFirstRanking(rows, summary) {
-  const ranked = policyReadFirstSummaries(rows, summary);
-  const cards = ranked
-    .slice(0, 3)
+function adaptationVerdictLabel(value) {
+  return String(value || 'pending').replaceAll('_', ' ');
+}
+
+function renderAdaptationVerdict(rows, summary) {
+  const evidence = adaptationEvidenceForRows(rows, summary);
+  const cards = evidence.policies
     .map(
-      (row, index) => `<article class="read-first-card">
-        <div class="read-first-card-head"><span>#${index + 1}</span><strong>${escapeHtml(row.policy)}</strong></div>
-        <p>${escapeHtml(readFirstVerdict(row, index))}</p>
+      (row) => `<article class="read-first-card adaptation-${escapeHtml(row.verdict)}">
+        <div class="read-first-card-head"><span>${escapeHtml(adaptationVerdictLabel(row.verdict))}</span><strong>${escapeHtml(row.policy)}</strong></div>
+        <p>${row.policy === evidence.baselinePolicy ? 'Reference condition for within-profile differences.' : `Adaptation benefit vs ${escapeHtml(evidence.baselinePolicy)}: ${escapeHtml(formatSignedField(row.benefit.score))}.`}</p>
         <div class="read-first-card-stats">
-          <span><b>${Math.round(row.closureRate * 100)}%</b> closure</span>
-          <span><b>${escapeHtml(formatFieldValue(row.meanCoverage))}</b> coverage</span>
-          <span><b>${escapeHtml(row.meanTurns)}</b> turns</span>
-          <span><b>${escapeHtml(row.leaks ? `${row.leaks} leak${row.leaks === 1 ? '' : 's'}` : 'clean')}</b> leak discipline</span>
+          <span><b>${escapeHtml(`${row.variation.distinctRegisters} / ${row.variation.registerEntropyBits}b`)}</b> variation</span>
+          <span><b>${escapeHtml(formatFieldValue(row.contingency.normalizedMutualInformation))}</b> contingency NMI</span>
+          <span><b>${escapeHtml(row.consequence.transitionCount ? `${Math.round(Number(row.consequence.positiveRate || 0) * 100)}% / ${row.consequence.transitionCount}` : 'pending')}</b> positive transitions</span>
+          <span><b>${row.outcome.closureRate === null ? 'pending' : `${Math.round(row.outcome.closureRate * 100)}%`}</b> outcome closure</span>
         </div>
       </article>`,
     )
     .join('\n');
-  const body = ranked
+  const body = evidence.policies
     .map(
-      (row, index) => `<tr>
-        <td>${index + 1}</td>
+      (row) => `<tr>
         <td><strong>${escapeHtml(row.policy)}</strong></td>
-        <td>${escapeHtml(readFirstVerdict(row, index))}</td>
-        <td>${escapeHtml(row.ok)}/${escapeHtml(row.failed)}</td>
-        <td>${Math.round(row.closureRate * 100)}%</td>
-        <td>${escapeHtml(row.meanTurns)}</td>
-        <td>${escapeHtml(formatFieldValue(row.finalMastery))}</td>
-        <td>${escapeHtml(formatFieldValue(row.finalRisk))}</td>
-        <td>${escapeHtml(formatSignedField(row.masteryGain))}</td>
-        <td>${escapeHtml(formatPositiveField(row.riskReduction))}</td>
-        <td>${escapeHtml(row.leaks ? `${row.leaks} leak${row.leaks === 1 ? '' : 's'}` : 'clean')}</td>
-        <td>${escapeHtml(`${row.registerEntropy} bits; ${Math.round(row.progressRate * 100)}% progress`)}</td>
+        <td><span class="status adaptation-${escapeHtml(row.verdict)}">${escapeHtml(adaptationVerdictLabel(row.verdict))}</span></td>
+        <td>${escapeHtml(row.dimensions.variation)}</td>
+        <td>${escapeHtml(row.dimensions.contingency)} · ${escapeHtml(formatFieldValue(row.contingency.normalizedMutualInformation))} NMI</td>
+        <td>${escapeHtml(row.dimensions.consequence)} · ${escapeHtml(formatSignedField(row.consequence.meanRewardProxy))} mean proxy</td>
+        <td>${escapeHtml(row.dimensions.benefit)} · ${escapeHtml(formatSignedField(row.benefit.score))}</td>
+        <td>${escapeHtml(row.dimensions.validity)}</td>
+        <td>${row.outcome.closureRate === null ? 'pending' : `${Math.round(row.outcome.closureRate * 100)}%`} / ${escapeHtml(formatFieldValue(row.outcome.meanCoverage))}</td>
       </tr>`,
     )
     .join('\n');
   return `<section id="read-first" class="report-section read-first">
-    <h2>Read This First</h2>
-    <p class="read-first-note">Ranking prioritizes grounded closure, full evidence coverage, mastery gain, risk reduction, leak discipline, turn efficiency, and register variation that coincides with progress. Treat it as a triage view, then inspect the detailed tables below.</p>
-    <div class="read-first-cards">${cards || '<p>No completed policy rows.</p>'}</div>
+    <h2>Adaptation Verdict</h2>
+    <div class="adaptation-headline adaptation-${escapeHtml(evidence.verdict)}"><strong>${escapeHtml(evidence.headline)}</strong><span>Outcome and adaptation are reported separately. No policy is ranked when the evidence does not establish an adaptive advantage.</span></div>
+    <p class="read-first-note">${escapeHtml(evidence.note)}</p>
+    <div class="read-first-cards">${cards || '<p>No policy evidence is available.</p>'}</div>
     <details class="read-first-details">
-      <summary>Full policy ranking and secondary metrics</summary>
-      <div class="table-scroll" role="region" aria-label="Full policy ranking" tabindex="0">
+      <summary>Evidence dimensions and baseline differences</summary>
+      <div class="table-scroll" role="region" aria-label="Adaptation evidence dimensions" tabindex="0">
         <table class="read-first-table">
           <thead><tr>
-            <th>Rank</th>
             <th>Policy</th>
-            <th>Read</th>
-            <th>OK/Failed</th>
-            <th>Closure</th>
-            <th>Turns</th>
-            <th>Final Mastery</th>
-            <th>Final Risk</th>
-            <th>Mastery Gain</th>
-            <th>Risk Reduction</th>
-            <th>Leak Discipline</th>
-            <th>Register Variation</th>
+            <th>Verdict</th>
+            <th>Variation</th>
+            <th>Contingency</th>
+            <th>Consequence</th>
+            <th>Benefit vs baseline</th>
+            <th>Validity</th>
+            <th>Closure / coverage</th>
           </tr></thead>
-          <tbody>${body || '<tr><td colspan="12">No completed policy rows.</td></tr>'}</tbody>
+          <tbody>${body || '<tr><td colspan="8">No policy evidence is available.</td></tr>'}</tbody>
         </table>
       </div>
     </details>
@@ -4101,9 +4371,10 @@ function renderReportMetricGuide() {
 function renderReportSectionNav() {
   const sections = [
     ['run-summary', 'Profile Summary'],
-    ['read-first', 'Read This First'],
+    ['read-first', 'Adaptation Verdict'],
     ['learner-profile', 'Learner Profile'],
     ['policy-comparison', 'Policy Comparison'],
+    ['adaptation-timeline', 'Adaptation Timeline'],
     ['turn-replay', 'Turn Replay'],
     ['transcripts', 'Transcripts'],
     ['field-trajectories', 'Field Trajectories'],
@@ -4115,6 +4386,67 @@ function renderReportSectionNav() {
       ${sections.map(([id, label]) => `<a href="#${escapeHtml(id)}">${escapeHtml(label)}</a>`).join('\n')}
     </nav>
   </aside>`;
+}
+
+function adaptationMomentTone(score) {
+  const numeric = Number(score);
+  if (!Number.isFinite(numeric)) return 'pending';
+  if (numeric > 0.005) return 'positive';
+  if (numeric < -0.005) return 'negative';
+  return 'neutral';
+}
+
+function renderAdaptationTimeline(rows) {
+  const trials = rows
+    .map((row, index) => ({ row, index, examples: row.trainingExamples?.examples || [] }))
+    .filter((entry) => entry.examples.length);
+  if (!trials.length) {
+    return '<p class="sub">No transition examples were captured for these trials.</p>';
+  }
+  const content = trials
+    .map(({ row, index, examples }) => {
+      const vizId = animatedVizRowId(row, index);
+      const transcriptId = transcriptRowId(row, index);
+      const positive = examples.filter(
+        (example) => adaptationMomentTone(example.rewardProxy?.score) === 'positive',
+      ).length;
+      const negative = examples.filter(
+        (example) => adaptationMomentTone(example.rewardProxy?.score) === 'negative',
+      ).length;
+      const moments = examples
+        .map((example) => {
+          const score = example.rewardProxy?.score;
+          const tone = adaptationMomentTone(score);
+          const state = example.stateBeforeAction?.learnerState || {};
+          const register = example.action?.selectedRegister || 'no register';
+          const stateLabel = state.requestType || state.discourseMove || state.evidenceUse || 'unclassified state';
+          return `<button type="button" class="adaptation-moment ${escapeHtml(tone)}" data-adaptation-replay="${escapeHtml(vizId)}" data-adaptation-turn="${escapeHtml(example.turn)}" title="${escapeHtml(`${stateLabel} → ${register}; reward proxy ${score ?? 'pending'}`)}"><span>t${escapeHtml(example.turn)}</span><strong>${escapeHtml(register)}</strong><em>${score === null || score === undefined ? 'pending' : formatSignedField(score)}</em></button>`;
+        })
+        .join('');
+      return `<details class="adaptation-trial" data-persist-details="adaptation:${escapeHtml(vizId)}">
+        <summary><strong>${escapeHtml(row.policy)} · trial ${escapeHtml(row.runIndex)}</strong><span>${escapeHtml(examples.length)} decisions · ${escapeHtml(positive)} positive · ${escapeHtml(negative)} negative</span></summary>
+        <div class="adaptation-trial-body">
+          <div class="adaptation-strip" aria-label="${escapeHtml(`${row.policy} trial ${row.runIndex} adaptation transitions`)}">${moments}</div>
+          <div class="adaptation-links"><a href="#turn-replay" data-adaptation-replay="${escapeHtml(vizId)}" data-adaptation-turn="1">open replay</a><a href="#transcripts" data-transcript-jump="${escapeHtml(transcriptId)}">open transcript</a></div>
+        </div>
+      </details>`;
+    })
+    .join('\n');
+  return `<div class="adaptation-timeline">
+    <div class="adaptation-timeline-key"><span class="positive">positive next-turn proxy</span><span class="neutral">flat / unclear</span><span class="negative">negative next-turn proxy</span><span>Click any turn to open replay at that decision.</span></div>
+    ${content}
+  </div>
+  <script>
+  (function () {
+    document.addEventListener('click', function (event) {
+      var trigger = event.target && event.target.closest ? event.target.closest('[data-adaptation-replay]') : null;
+      if (!trigger) return;
+      var id = trigger.getAttribute('data-adaptation-replay');
+      var turn = Number(trigger.getAttribute('data-adaptation-turn') || 1);
+      if (window.tutorStubVizSelect) window.tutorStubVizSelect(id, turn);
+    });
+  })();
+  </script>`;
 }
 
 function renderTranscriptExplorer(rows) {
@@ -5505,6 +5837,17 @@ function renderAnimatedVizSection(rows) {
         setIndex(activeIndex);
       });
     });
+    window.tutorStubVizSelect = function (id, turn) {
+      var index = rows.findIndex(function (row) { return row.id === id; });
+      if (index < 0) return;
+      stop();
+      activeRow = rows[index];
+      select.value = String(index);
+      mode = 'field';
+      setIndex(Math.max(0, Number(turn || 1) - 1));
+      root.classList.add('viz-jump-active');
+      window.setTimeout(function () { root.classList.remove('viz-jump-active'); }, 900);
+    };
     if (window.ResizeObserver) {
       new ResizeObserver(resizeCanvas).observe(canvas);
     }
@@ -5646,7 +5989,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
           </div>
         </section>
 
-        ${renderReadFirstRanking(orderedRows, summary)}
+        ${renderAdaptationVerdict(orderedRows, summary)}
 
         <section id="learner-profile" class="report-section">
           <h2>Learner Profile</h2>
@@ -5673,6 +6016,12 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
       <tbody>${policyRows || '<tr><td colspan="11">No policy rows.</td></tr>'}</tbody>
           </table>
           </div>
+        </section>
+
+        <section id="adaptation-timeline" class="report-section">
+          <h2>Adaptation Timeline</h2>
+          <p class="read-first-note">Each turn connects the learner state seen by the policy, the selected register, and the next-turn exploratory reward proxy. Use it to inspect whether strategy changes were contingent and useful, not merely varied.</p>
+          ${renderAdaptationTimeline(orderedRows)}
         </section>
 
         <section id="turn-replay" class="report-section">
@@ -6130,6 +6479,8 @@ function readIndexSummary(jsonPath, rootDir) {
     const summary = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
     const aggregates = indexAggregates(summary);
     const config = summary.config || {};
+    const sourceRows = Array.isArray(summary?.rows) ? summary.rows : resultRows(summary?.results || []);
+    const adaptationEvidence = adaptationEvidenceForRows(sourceRows, summary);
     const htmlPath = reportHtmlPathForSummary(summary, jsonPath);
     const svgFiles = reportFieldSvgFiles(htmlPath);
     const detailRows = indexDetailRows(summary);
@@ -6196,6 +6547,7 @@ function readIndexSummary(jsonPath, rootDir) {
       progressRate: efficacyTotal
         ? Number((Number(efficacyCounts.positive_progress || 0) / efficacyTotal).toFixed(3))
         : 0,
+      adaptationEvidence,
       detailRows,
       policyText,
       completedMs,
@@ -6274,6 +6626,7 @@ function readIndexSummary(jsonPath, rootDir) {
       masteryGain: 0,
       riskReduction: 0,
       progressRate: 0,
+      adaptationEvidence: null,
       detailRows: [],
       policyText: '',
       completedMs: fs.existsSync(jsonPath) ? fs.statSync(jsonPath).mtimeMs : 0,
@@ -6323,6 +6676,7 @@ function readIndexRunState(statePath, rootDir) {
       traceDir: state.traceDir || '',
       traceDirHref: state.traceDir ? hrefRelative(rootDir, resolvePath(state.traceDir)) : '',
       config: state.config || {},
+      resume: state.resume || null,
       policies: state.config?.policies || [],
       learnerProfile: state.config?.autoLearnerProfileId || '',
       world: state.config?.world || '',
@@ -6368,6 +6722,7 @@ function readIndexRunState(statePath, rootDir) {
       traceDir: '',
       traceDirHref: '',
       config: {},
+      resume: null,
       policies: [],
       learnerProfile: '',
       world: '',
@@ -6408,9 +6763,7 @@ function renderIndexCoverageCell(value) {
 
 function indexReportActionLinks(row) {
   return `${
-    row.htmlHref
-      ? `<a href="${escapeHtml(row.htmlHref)}">report</a>`
-      : '<span class="muted">report</span>'
+    row.htmlHref ? `<a href="${escapeHtml(row.htmlHref)}">report</a>` : '<span class="muted">report</span>'
   } <a href="${escapeHtml(row.jsonHref)}">json</a>`;
 }
 
@@ -6483,9 +6836,7 @@ function renderLiveRuns(activeRuns) {
               <h3>${escapeHtml(run.runName)}</h3>
               <p>${escapeHtml(run.learnerProfile || 'unknown learner')} · ${escapeHtml(run.world || 'unknown world')} · ${escapeHtml(
                 run.dagMode || 'strict_dag',
-              )} · pid ${escapeHtml(
-                run.pid || 'n/a',
-              )}</p>
+              )} · pid ${escapeHtml(run.pid || 'n/a')}</p>
             </div>
             <span class="status ${escapeHtml(run.status)}">${escapeHtml(run.status)}</span>
           </div>
@@ -6590,11 +6941,7 @@ function indexLatestReportByLearner(reportRows) {
 
 function indexLearnerLensReports(rows, { activeRuns = [] } = {}) {
   const realReports = rows.filter((row) => row.runKind === 'real' && Number(row.ok || 0) > 0);
-  const activeMatrixIds = new Set(
-    activeRuns
-      .map((run) => run.reportScope?.matrixId)
-      .filter(Boolean),
-  );
+  const activeMatrixIds = new Set(activeRuns.map((run) => run.reportScope?.matrixId).filter(Boolean));
   const matrixGroups = new Map();
   for (const row of realReports) {
     const scope = row.reportScope || {};
@@ -6665,6 +7012,84 @@ function readIndexJsonArtifact(rootDir, href) {
   }
 }
 
+function inferStudyId(matrixId = '') {
+  const normalized = String(matrixId || '')
+    .replace(/^qa-matrix-/u, '')
+    .replace(/-\d{4}-\d{2}-\d{2}t.*$/iu, '')
+    .replace(/-(?:n\d+|v\d+|live|dry|smoke|rerun|retry)(?=-|$).*$/iu, '')
+    .replace(/-\d{4}-\d{2}-\d{2}.*$/u, '')
+    .replace(/-+$/u, '');
+  return normalized || matrixId || 'unassigned-study';
+}
+
+function studyMetadataForCohort(matrixId, qaPlan = {}) {
+  const declared = qaPlan.study && typeof qaPlan.study === 'object' ? qaPlan.study : {};
+  return {
+    id: qaPlan.studyId || declared.id || inferStudyId(matrixId),
+    researchQuestion:
+      qaPlan.researchQuestion ||
+      declared.researchQuestion ||
+      'Does the tutor change strategy in response to learner state, and does that adaptation improve grounded learning outcomes?',
+    hypothesis: qaPlan.hypothesis || declared.hypothesis || '',
+    primaryContrast: qaPlan.primaryContrast || declared.primaryContrast || '',
+    decisionRule: qaPlan.decisionRule || declared.decisionRule || '',
+    supersedes: qaPlan.supersedes || declared.supersedes || '',
+    source: qaPlan.studyId || declared.id ? 'declared' : 'inferred',
+  };
+}
+
+function cohortAdaptationModel(profileReports, policies, baselinePolicy) {
+  const cells = [];
+  for (const report of profileReports) {
+    const evidence = report.adaptationEvidence;
+    for (const policy of policies) {
+      const row = evidence?.policies?.find((candidate) => candidate.policy === policy) || null;
+      cells.push({
+        profile: report.learnerProfile,
+        policy,
+        verdict: row?.verdict || 'pending',
+        benefit: row?.benefit?.score ?? null,
+        contingency: row?.contingency?.normalizedMutualInformation ?? null,
+        positiveRate: row?.consequence?.positiveRate ?? null,
+        transitionCount: row?.consequence?.transitionCount ?? 0,
+        closureRate: row?.outcome?.closureRate ?? null,
+        coverage: row?.outcome?.meanCoverage ?? null,
+        technical: row?.validity?.technical || 'pending',
+      });
+    }
+  }
+  const nonBaseline = cells.filter((cell) => cell.policy !== baselinePolicy);
+  const verdict = nonBaseline.some((cell) => cell.verdict === 'supported')
+    ? 'supported'
+    : nonBaseline.some((cell) => cell.verdict === 'mixed')
+      ? 'mixed'
+      : nonBaseline.length && nonBaseline.every((cell) => cell.verdict === 'contradicted')
+        ? 'contradicted'
+        : nonBaseline.some((cell) => cell.verdict === 'pending')
+          ? 'pending'
+          : 'not_established';
+  const outcomeAchieved =
+    profileReports.length > 0 && profileReports.every((report) => report.adaptationEvidence?.outcomeAchieved === true);
+  const headline = outcomeAchieved
+    ? verdict === 'supported'
+      ? 'Outcome achieved; an adaptive advantage is supported in at least one matched profile.'
+      : 'Outcome achieved; adaptation advantage not established.'
+    : verdict === 'supported'
+      ? 'Adaptation signal present, but outcome robustness is incomplete.'
+      : 'Outcome and adaptation advantage are not yet established.';
+  return {
+    schema: 'machinespirits.tutor-stub.adaptation-matrix.v1',
+    verdict,
+    headline,
+    outcomeAchieved,
+    baselinePolicy,
+    profiles: profileReports.map((report) => report.learnerProfile),
+    policies,
+    cells,
+    note: 'Exploratory within-profile differences against the declared baseline. Cells do not imply causal proof.',
+  };
+}
+
 function indexCohortModels(rows, activeRuns, rootDir) {
   const buckets = new Map();
   const add = (scope, kind, value) => {
@@ -6676,11 +7101,12 @@ function indexCohortModels(rows, activeRuns, rootDir) {
   rows.forEach((row) => add(row.reportScope, 'rows', row));
   activeRuns.forEach((run) => add(run.reportScope, 'activeRuns', run));
 
-  return [...buckets.values()]
+  const cohorts = [...buckets.values()]
     .map((bucket) => {
       const scope = bucket.scope || {};
       const latestReports = indexLatestReportByLearner(bucket.rows);
-      if (!bucket.activeRuns.length && latestReports.length && latestReports.every((row) => row.runKind !== 'real')) return null;
+      if (!bucket.activeRuns.length && latestReports.length && latestReports.every((row) => row.runKind !== 'real'))
+        return null;
       const qaPlan = readIndexJsonArtifact(rootDir, scope.planHref);
       const qaData = readIndexJsonArtifact(rootDir, scope.qaMatrixJsonHref);
       const discrimination = readIndexJsonArtifact(rootDir, scope.discriminationJsonHref);
@@ -6695,6 +7121,8 @@ function indexCohortModels(rows, activeRuns, rootDir) {
         : Array.isArray(qaPlan?.policies)
           ? qaPlan.policies
           : [...new Set(latestReports.flatMap((row) => row.policies || []))];
+      const baselinePolicy =
+        matrix.baselinePolicy || qaPlan?.baselinePolicy || (policies.includes('bland') ? 'bland' : '');
       const ok = latestReports.reduce((sum, row) => sum + Number(row.ok || 0), 0);
       const failed = latestReports.reduce((sum, row) => sum + Number(row.failed || 0), 0);
       const grounded = latestReports.reduce((sum, row) => sum + Number(row.grounded || 0), 0);
@@ -6703,20 +7131,6 @@ function indexCohortModels(rows, activeRuns, rootDir) {
       const stale = bucket.activeRuns.filter((run) => run.status === 'stale');
       const status = running.length ? 'running' : stale.length ? 'stale' : 'completed';
       const discriminationPass = typeof discrimination?.gate?.pass === 'boolean' ? discrimination.gate.pass : null;
-      const decision =
-        status === 'running'
-          ? 'Experiment in progress'
-          : status === 'stale'
-            ? 'Stale run needs attention'
-            : failed
-              ? 'Technical failures require review'
-              : discriminationPass === false
-                ? 'Profile discrimination gate failed'
-                : discriminationPass === true
-                  ? 'Profile discrimination gate passed'
-                  : qaData
-                    ? 'QA matrix complete; profile gate not run'
-                    : 'Cohort reports available; consolidated QA pending';
       const decisionTone =
         status === 'running' || discriminationPass === null
           ? 'pending'
@@ -6738,15 +7152,10 @@ function indexCohortModels(rows, activeRuns, rootDir) {
       for (const run of bucket.activeRuns) {
         const profile = run.learnerProfile || run.reportScope?.profile || 'default';
         const previous = activeByProfile.get(profile);
-        if (!previous || Number(run.updatedMs || 0) > Number(previous.updatedMs || 0)) activeByProfile.set(profile, run);
+        if (!previous || Number(run.updatedMs || 0) > Number(previous.updatedMs || 0))
+          activeByProfile.set(profile, run);
       }
-      const profileNames = [
-        ...new Set([
-          ...profiles,
-          ...reportsByProfile.keys(),
-          ...activeByProfile.keys(),
-        ]),
-      ];
+      const profileNames = [...new Set([...profiles, ...reportsByProfile.keys(), ...activeByProfile.keys()])];
       const profileReports = profileNames.map((profile) => {
         const row = reportsByProfile.get(profile);
         const active = activeByProfile.get(profile);
@@ -6757,6 +7166,7 @@ function indexCohortModels(rows, activeRuns, rootDir) {
         return {
           learnerProfile: profile,
           status: active?.status || row?.status || 'pending',
+          resume: active?.resume || null,
           completedTrials,
           expectedTrials,
           ok: active ? Number(active.totals?.ok || 0) : Number(row?.ok || 0),
@@ -6771,20 +7181,51 @@ function indexCohortModels(rows, activeRuns, rootDir) {
           htmlHref: row?.htmlHref || '',
           jsonHref: row?.jsonHref || '',
           stateHref: active?.stateHref || '',
+          adaptationEvidence: row?.adaptationEvidence || null,
         };
       });
+      const adaptation = cohortAdaptationModel(profileReports, policies, baselinePolicy);
+      const trialsCompleted = profileReports.reduce((sum, report) => sum + Number(report.completedTrials || 0), 0);
+      const trialsExpected = profileReports.reduce((sum, report) => sum + Number(report.expectedTrials || 0), 0);
+      const liveProfiles = profileReports
+        .filter((report) => report.status === 'running' || report.status === 'stale')
+        .map((report) => ({
+          profile: report.learnerProfile,
+          status: report.status,
+          completedTrials: Number(report.completedTrials || 0),
+          expectedTrials: Number(report.expectedTrials || 0),
+          repairPass: Boolean(report.resume),
+          retriedStatuses: report.resume?.statuses || [],
+        }));
+      const progress = {
+        trialsCompleted,
+        trialsExpected,
+        trialRate: trialsExpected ? Number((trialsCompleted / trialsExpected).toFixed(3)) : null,
+        liveProfiles,
+        lastActivityAt: completedMs ? new Date(completedMs).toISOString() : '',
+      };
+      const study = studyMetadataForCohort(scope.matrixId, qaPlan || {});
+      const labReasons = [];
+      if (!baselinePolicy) labReasons.push('declare a baseline policy');
+      if (latestReports.length < profiles.length) labReasons.push('complete every planned profile');
+      if (failed) labReasons.push('resolve technical failures');
+      if (!adaptation.cells.some((cell) => cell.policy !== baselinePolicy && cell.transitionCount >= 3)) {
+        labReasons.push('capture linked turn-transition evidence');
+      }
+      if (discriminationPass !== true) labReasons.push('pass the profile-discrimination validity gate');
       return {
         id: scope.matrixId,
         key: bucket.key,
         status,
-        decision,
+        decision: adaptation.headline,
         decisionTone,
         completedAt: completedMs ? new Date(completedMs).toISOString() : '',
         profiles,
         policies,
-        baselinePolicy: matrix.baselinePolicy || qaPlan?.baselinePolicy || (policies.includes('bland') ? 'bland' : ''),
+        baselinePolicy,
         completedProfiles: latestReports.length,
         expectedProfiles: profiles.length,
+        progress,
         ok,
         failed,
         grounded,
@@ -6815,13 +7256,50 @@ function indexCohortModels(rows, activeRuns, rootDir) {
           : null,
         links: reportScopeLinks(scope).map(([label, href]) => ({ label, href })),
         childReports: profileReports,
+        adaptation,
+        study,
+        lab3d: {
+          eligible: labReasons.length === 0,
+          reasons: labReasons,
+          linked2dRequired: true,
+          drivesVerdict: false,
+        },
       };
     })
     .filter(Boolean)
     .sort((left, right) => {
       const rank = { running: 3, completed: 2, stale: 1 };
-      return (rank[right.status] || 0) - (rank[left.status] || 0) || Date.parse(right.completedAt) - Date.parse(left.completedAt);
+      return (
+        (rank[right.status] || 0) - (rank[left.status] || 0) ||
+        Date.parse(right.completedAt) - Date.parse(left.completedAt)
+      );
     });
+  const byStudy = new Map();
+  for (const cohort of cohorts) {
+    const studyId = cohort.study?.id || 'unassigned-study';
+    if (!byStudy.has(studyId)) byStudy.set(studyId, []);
+    byStudy.get(studyId).push(cohort);
+  }
+  for (const studyCohorts of byStudy.values()) {
+    const ordered = studyCohorts
+      .slice()
+      .sort((left, right) => Date.parse(left.completedAt || '') - Date.parse(right.completedAt || ''));
+    ordered.forEach((cohort, index) => {
+      cohort.lineage = {
+        position: index + 1,
+        total: ordered.length,
+        previous: ordered[index - 1]?.id || '',
+        next: ordered[index + 1]?.id || '',
+        evaluations: ordered.map((item) => ({
+          id: item.id,
+          completedAt: item.completedAt,
+          status: item.status,
+          verdict: item.adaptation?.verdict || 'pending',
+        })),
+      };
+    });
+  }
+  return cohorts;
 }
 
 function expandIndexDetailRows(reportRows) {
@@ -6940,7 +7418,9 @@ function indexBigPictureBullets({ stats, policyStats, learnerStats, reports, lea
       `Learner robustness is being checked across ${learnerStats.length} profile${
         learnerStats.length === 1 ? '' : 's'
       }${lensLabel}; ${
-        slowest ? `${slowest.key} is currently the slowest at ${slowest.meanTurns} mean turns.` : 'turn counts are not yet comparable.'
+        slowest
+          ? `${slowest.key} is currently the slowest at ${slowest.meanTurns} mean turns.`
+          : 'turn counts are not yet comparable.'
       }`,
     );
   }
@@ -6971,7 +7451,9 @@ function indexLearnerRobustnessRead({ learnerStats, activeRuns = [], learnerLens
       },
     ];
   }
-  const comparable = rows.filter((row) => Number.isFinite(Number(row.closureRate)) && Number.isFinite(Number(row.meanTurns)));
+  const comparable = rows.filter(
+    (row) => Number.isFinite(Number(row.closureRate)) && Number.isFinite(Number(row.meanTurns)),
+  );
   const strong = comparable.filter((row) => Number(row.closureRate) >= 0.95 && Number(row.meanCoverage || 0) >= 0.95);
   const turns = strong.map((row) => Number(row.meanTurns)).filter(Number.isFinite);
   const minTurns = turns.length ? Math.min(...turns) : null;
@@ -7348,6 +7830,7 @@ function indexRowData(row) {
     masteryGain: row.masteryGain ?? 0,
     riskReduction: row.riskReduction ?? 0,
     progressRate: row.progressRate ?? 0,
+    adaptationEvidence: row.adaptationEvidence || null,
     detailRows: row.detailRows || [],
     policyText: row.policyText || '',
     completedMs: Number(row.completedMs || 0),
@@ -7423,6 +7906,65 @@ function tutorStubIndexClientJs() {
   if (!app) return;
   var state = { data: null, rendered: false };
   var uiStorageKey = 'machinespirits.tutorStub.reportIndex.v1';
+  var allowedViews = ['verdict', 'matrix', 'profiles', 'lineage', 'lab'];
+  function routeState(cohorts) {
+    var params = new URLSearchParams(window.location.search);
+    var available = (cohorts || []).map(function (cohort) { return cohort.id; });
+    var requestedEvaluation = params.get('evaluation') || '';
+    var evaluation = available.indexOf(requestedEvaluation) >= 0 ? requestedEvaluation : (available[0] || '');
+    var requestedView = params.get('view') || 'verdict';
+    var view = allowedViews.indexOf(requestedView) >= 0 ? requestedView : 'verdict';
+    var compare = (params.get('compare') || '').split(',').filter(function (id, index, values) {
+      return id && available.indexOf(id) >= 0 && values.indexOf(id) === index;
+    }).slice(0, 3);
+    if (evaluation && params.get('evaluation') !== evaluation) {
+      params.set('evaluation', evaluation);
+      window.history.replaceState({}, '', window.location.pathname + '?' + params.toString() + window.location.hash);
+    }
+    return { evaluation: evaluation, view: view, compare: compare };
+  }
+  function updateRoute(patch, replace) {
+    var params = new URLSearchParams(window.location.search);
+    Object.keys(patch || {}).forEach(function (key) {
+      var value = patch[key];
+      if (Array.isArray(value)) value = value.join(',');
+      if (value === '' || value == null) params.delete(key);
+      else params.set(key, value);
+    });
+    var url = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + window.location.hash;
+    window.history[replace ? 'replaceState' : 'pushState']({}, '', url);
+    if (state.data) render(state.data);
+  }
+  function mergeResearchData(liveData, researchData) {
+    if (!researchData || !researchData.cohorts) return liveData;
+    var researchCohorts = {};
+    (researchData.cohorts || []).forEach(function (cohort) { researchCohorts[cohort.id] = cohort; });
+    var cohorts = (liveData.cohorts || []).map(function (live) {
+      var research = researchCohorts[live.id];
+      if (!research) return live;
+      var researchProfiles = {};
+      (research.childReports || []).forEach(function (profile) { researchProfiles[profile.learnerProfile] = profile; });
+      var childReports = (live.childReports || []).map(function (profile) {
+        return Object.assign({}, researchProfiles[profile.learnerProfile] || {}, profile, {
+          adaptationEvidence: (researchProfiles[profile.learnerProfile] || {}).adaptationEvidence || profile.adaptationEvidence || null
+        });
+      });
+      return Object.assign({}, research, live, {
+        adaptation: research.adaptation || live.adaptation,
+        study: research.study || live.study,
+        lineage: research.lineage || live.lineage,
+        lab3d: research.lab3d || live.lab3d,
+        childReports: childReports
+      });
+    });
+    var researchRows = {};
+    (researchData.rows || []).forEach(function (row) { researchRows[row.reportName] = row; });
+    var rows = (liveData.rows || []).map(function (row) {
+      var research = researchRows[row.reportName];
+      return research ? Object.assign({}, research, row, { adaptationEvidence: research.adaptationEvidence || row.adaptationEvidence || null }) : row;
+    });
+    return Object.assign({}, liveData, { cohorts: cohorts, rows: rows });
+  }
   function esc(value) {
     return String(value == null ? '' : value)
       .replace(/&/g, '&amp;')
@@ -7432,7 +7974,107 @@ function tutorStubIndexClientJs() {
       .replace(/'/g, '&#39;');
   }
   function shortDate(value) {
-    return String(value || '').replace(/\.\d{3}Z$/g, 'Z').replace('T', ' ');
+    if (!value) return '';
+    var date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return String(value).replace(/\.\d{3}Z$/g, 'Z').replace('T', ' ');
+    try {
+      var parts = new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+        timeZoneName: 'short'
+      }).formatToParts(date);
+      var values = {};
+      parts.forEach(function (part) { if (part.type !== 'literal') values[part.type] = part.value; });
+      return [values.year, values.month, values.day].join('-') + ' ' + [values.hour, values.minute, values.second].join(':') + ' ' + (values.timeZoneName || Intl.DateTimeFormat().resolvedOptions().timeZone || 'local');
+    } catch (error) {
+      return String(value).replace(/\.\d{3}Z$/g, 'Z').replace('T', ' ');
+    }
+  }
+  function evaluationTimestamp(cohort) {
+    var value = shortDate(cohort && cohort.completedAt);
+    if (!value) return 'timestamp pending';
+    var live = cohort && (cohort.status === 'running' || cohort.status === 'stale');
+    return (live ? 'updated ' : 'completed ') + value;
+  }
+  function relativeTime(value) {
+    var ms = Date.parse(value || '');
+    if (!Number.isFinite(ms)) return '';
+    var minutes = Math.floor(Math.max(0, Date.now() - ms) / 60000);
+    if (minutes < 1) return 'under a minute ago';
+    if (minutes < 60) return minutes + 'm ago';
+    var hours = Math.floor(minutes / 60);
+    if (hours < 48) return hours + 'h ' + (minutes % 60) + 'm ago';
+    return Math.floor(hours / 24) + 'd ago';
+  }
+  function statusExplainer(status) {
+    if (status === 'running') return 'A runner reported progress within the last 15 minutes. All numbers on this card cover finished trials only and will keep changing.';
+    if (status === 'stale') return 'A runner stopped reporting for more than 15 minutes without finishing its plan. Check its log under Run Operations before trusting these partial numbers.';
+    return 'No runner is active for this evaluation. Every number reads from the latest saved report of each profile.';
+  }
+  function evaluationProgressModel(cohort) {
+    if (cohort.progress && Number(cohort.progress.trialsExpected || 0) > 0) return cohort.progress;
+    var reports = cohort.childReports || [];
+    if (!reports.length) return null;
+    var completed = 0;
+    var expected = 0;
+    var liveProfiles = [];
+    reports.forEach(function (report) {
+      completed += Number(report.completedTrials || 0);
+      expected += Number(report.expectedTrials || 0);
+      if (report.status === 'running' || report.status === 'stale') {
+        liveProfiles.push({
+          profile: report.learnerProfile,
+          status: report.status,
+          completedTrials: Number(report.completedTrials || 0),
+          expectedTrials: Number(report.expectedTrials || 0),
+          repairPass: Boolean(report.resume),
+          retriedStatuses: (report.resume && report.resume.statuses) || []
+        });
+      }
+    });
+    if (!expected) return null;
+    return { trialsCompleted: completed, trialsExpected: expected, trialRate: completed / expected, liveProfiles: liveProfiles, lastActivityAt: cohort.completedAt || '' };
+  }
+  function renderEvaluationProgress(cohort) {
+    var progress = evaluationProgressModel(cohort);
+    if (!progress) return '';
+    var expected = Number(progress.trialsExpected || 0);
+    var completed = Number(progress.trialsCompleted || 0);
+    var rate = progress.trialRate == null ? completed / expected : Number(progress.trialRate);
+    var live = progress.liveProfiles || [];
+    var hasRepairPass = live.some(function (slice) { return slice.repairPass; });
+    var chips = live.map(function (slice) {
+      var label = slice.profile + ' ' + slice.completedTrials + '/' + slice.expectedTrials + (slice.repairPass ? ' repair pass' : '');
+      var tip = slice.repairPass
+        ? 'This pass re-runs only trials that previously failed; earlier finished trials are kept on disk and stay in the report.'
+        : 'First pass over the planned trials for this profile.';
+      return '<span class="live-slice ' + esc(slice.status) + '" title="' + esc(tip) + '">' + esc(label) + '</span>';
+    }).join('');
+    var profileCount = cohort.expectedProfiles ? (cohort.completedProfiles || 0) + '/' + cohort.expectedProfiles + ' profiles reported' : '';
+    var activity = progress.lastActivityAt ? 'last activity ' + relativeTime(progress.lastActivityAt) : '';
+    var note = statusExplainer(cohort.status);
+    if (hasRepairPass) note += ' Live profiles count their current pass, so trial totals can be smaller than the original plan.';
+    if (cohort.status === 'completed' && cohort.expectedProfiles && Number(cohort.completedProfiles || 0) < Number(cohort.expectedProfiles)) {
+      note += ' Some planned profiles never produced a report; resume them or the verdict stays partial.';
+    }
+    return '<div class="evaluation-progress" aria-label="Evaluation progress"><div class="evaluation-progress-track">' + progressBar(rate) + '<strong>' + esc(completed) + '/' + esc(expected) + ' trials finished (' + Math.round(Math.max(0, Math.min(1, rate)) * 100) + '%)</strong></div><div class="evaluation-progress-meta">' + (profileCount ? '<span>' + esc(profileCount) + '</span>' : '') + chips + (activity ? '<span class="muted">' + esc(activity) + '</span>' : '') + '</div><p class="evaluation-progress-note">' + esc(note) + '</p></div>';
+  }
+  function renderReadingGuide() {
+    var entries = [
+      ['Outcome vs adaptation', 'Two separate questions. Outcome: did learners reach grounded closure at all (achieved when an arm reaches 95% closure and 95% coverage). Adaptation: did any state-aware policy beat the baseline arm. A run routinely achieves the outcome while establishing no adaptation advantage.'],
+      ['contingency', 'Normalized mutual information (0 to 1) between the learner state before a turn and the strategy the tutor picked. 0.000 means strategy choice did not track learner state, or there were too few observations to tell. Counts as present at 0.05 or higher with at least 6 state-action observations.'],
+      ['benefit', 'Weighted outcome difference against the baseline policy inside the same learner profile: closure 35%, coverage 25%, mastery gain 15%, risk reduction 15%, turn efficiency 10%. Above +0.02 supports adaptation; below -0.05 with 6 or more transitions contradicts it.'],
+      ['positive x% / n', 'Of the n strategy-shift moments that received a scored next-turn effect, the share that moved the learner forward. n0 means no scored transitions exist yet: that is missing evidence, not evidence of a zero effect.'],
+      ['verdict ladder', 'pending: trials failed or data still missing. not established: evidence present but below every threshold. mixed: some evidence dimensions present. supported or contradicted: the benefit threshold was crossed with enough transitions. baseline: the comparison arm itself, never scored against itself.']
+    ];
+    return '<details class="reading-guide" data-persist-details="reading-guide"><summary>How to read these numbers</summary><div class="reading-guide-body">' + entries.map(function (entry) {
+      return '<div><strong>' + esc(entry[0]) + '</strong><p>' + esc(entry[1]) + '</p></div>';
+    }).join('') + '</div></details>';
   }
   function indexRunKindLabel(kind) {
     if (kind === 'dry') return 'dry run';
@@ -7544,7 +8186,7 @@ function tutorStubIndexClientJs() {
     var stale = activeRuns.filter(function (run) { return run.status === 'stale'; });
     var other = activeRuns.filter(function (run) { return run.status !== 'running' && run.status !== 'stale'; });
     var current = running.concat(other);
-    return '<section class="live-runs" aria-label="Run operations"><div class="live-runs-head"><div><h2><span class="live-dot"></span>Run Operations</h2><p>Compact operational status. Expand a run only when you need jobs, logs, or traces.</p></div><span class="live-count">' + esc(running.length) + ' running · ' + esc(stale.length) + ' stale</span></div><div class="live-run-list">' + (current.map(renderLiveRunCard).join('') || '<p class="muted">No runs are currently executing.</p>') + '</div>' + (stale.length ? '<details class="stale-run-group" data-persist-details="stale-runs"><summary>Needs attention: ' + esc(stale.length) + ' stale run' + (stale.length === 1 ? '' : 's') + '</summary><div class="live-run-list">' + stale.map(renderLiveRunCard).join('') + '</div></details>' : '') + '</section>';
+    return '<details class="live-runs operations-drawer" aria-label="Run operations" data-persist-details="operations-drawer"><summary><span><span class="live-dot"></span><strong>Run Operations</strong><em>Jobs, logs, traces, and stale-worker attention</em></span><span class="live-count">' + esc(running.length) + ' running · ' + esc(stale.length) + ' stale</span></summary><div class="operations-drawer-body"><div class="live-run-list">' + (current.map(renderLiveRunCard).join('') || '<p class="muted">No runs are currently executing.</p>') + '</div>' + (stale.length ? '<details class="stale-run-group" data-persist-details="stale-runs"><summary>Needs attention: ' + esc(stale.length) + ' stale run' + (stale.length === 1 ? '' : 's') + '</summary><div class="live-run-list">' + stale.map(renderLiveRunCard).join('') + '</div></details>' : '') + '</div></details>';
   }
   function projectionFor(row, index) {
     var turnEfficiency = Number.isFinite(Number(row.meanTurns)) ? clamp01(1 - Number(row.meanTurns) / 120) : 0;
@@ -7709,6 +8351,9 @@ function tutorStubIndexClientJs() {
     if (!links || !links.length) return '<span class="muted">Consolidated artifacts pending.</span>';
     return links.map(function (link) { return '<a href="' + esc(link.href) + '">' + esc(link.label) + '</a>'; }).join(' ');
   }
+  function verdictLabel(value) {
+    return String(value || 'pending').replace(/_/g, ' ');
+  }
   function renderEvaluationProfiles(cohort, primary) {
     var reports = cohort.childReports || [];
     if (!reports.length) return '<div class="muted">Profile slices have not started.</div>';
@@ -7718,9 +8363,10 @@ function tutorStubIndexClientJs() {
       var completedTrials = Number(report.completedTrials || 0);
       var expectedTrials = Number(report.expectedTrials || 0);
       var trialValue = expectedTrials ? completedTrials + '/' + expectedTrials : String(completedTrials);
-      var trialNote = Number(report.ok || 0) + ' OK · ' + Number(report.failed || 0) + ' failed';
+      var trialNote = Number(report.ok || 0) + ' OK · ' + Number(report.failed || 0) + ' failed' + ((report.status === 'running' || report.status === 'stale') && report.resume ? ' · repair pass' : '');
       var closure = report.groundedRate == null ? 'pending' : pct(report.groundedRate);
       var coverage = report.meanCoverage == null ? 'pending' : pct(report.meanCoverage);
+      var adaptation = report.adaptationEvidence ? verdictLabel(report.adaptationEvidence.verdict) : 'pending';
       var action = report.htmlHref
         ? '<a href="' + esc(report.htmlHref) + '">Open profile</a>'
         : report.stateHref
@@ -7728,33 +8374,78 @@ function tutorStubIndexClientJs() {
           : report.jsonHref
             ? '<a href="' + esc(report.jsonHref) + '">Profile data</a>'
             : '<span class="muted">pending</span>';
-      return '<div class="profile-row"><div class="profile-name"><strong>' + esc(report.learnerProfile) + '</strong><span>' + esc(report.model || '') + '</span></div><div><span class="status ' + esc(report.status || 'pending') + '">' + esc(report.status || 'pending') + '</span></div><div class="profile-value"><strong>' + esc(trialValue) + '</strong><span>' + esc(trialNote) + '</span></div><div class="profile-value"><strong>' + esc(closure) + '</strong><span>closure</span></div><div class="profile-value"><strong>' + esc(coverage) + '</strong><span>evidence path</span></div><div class="profile-actions">' + action + '</div></div>';
+      return '<div class="profile-row"><div class="profile-name"><strong>' + esc(report.learnerProfile) + '</strong><span>' + esc(report.model || '') + '</span></div><div><span class="status ' + esc(report.status || 'pending') + '">' + esc(report.status || 'pending') + '</span></div><div class="profile-value"><strong>' + esc(trialValue) + '</strong><span>' + esc(trialNote) + '</span></div><div class="profile-value"><strong>' + esc(closure) + '</strong><span>closure</span></div><div class="profile-value"><strong>' + esc(adaptation) + '</strong><span>adaptation</span></div><div class="profile-actions">' + action + '</div></div>';
     }).join('');
-    return '<details class="evaluation-profiles" data-persist-details="evaluation-profiles:' + esc(cohort.id) + '"' + (primary ? ' open' : '') + '><summary>Profiles (' + esc(completed) + '/' + esc(expected) + ' complete)</summary><div class="profile-list"><div class="profile-row profile-head"><span>Profile</span><span>Status</span><span>Trials</span><span>Closure</span><span>Coverage</span><span>Open</span></div>' + rows + '</div></details>';
+    return '<div class="evaluation-profiles"><div class="profile-list"><div class="profile-row profile-head"><span>Profile</span><span>Status</span><span>Trials</span><span>Outcome</span><span>Adaptation</span><span>Open</span></div>' + rows + '</div></div>';
   }
-  function renderCohortCard(cohort, primary) {
+  function renderAdaptationMatrix(cohort) {
+    var matrix = cohort.adaptation || { cells: [], profiles: [], policies: [] };
+    var cells = matrix.cells || [];
+    var body = (matrix.profiles || []).map(function (profile) {
+      return '<tr><th>' + esc(profile) + '</th>' + (matrix.policies || []).map(function (policy) {
+        var cell = cells.find(function (candidate) { return candidate.profile === profile && candidate.policy === policy; }) || {};
+        var delta = cell.benefit == null ? 'pending' : signed(cell.benefit);
+        var consequence = cell.transitionCount ? pct(cell.positiveRate) + ' positive / n' + cell.transitionCount : 'no transitions';
+        return '<td class="matrix-cell adaptation-' + esc(cell.verdict || 'pending') + '"><strong>' + esc(verdictLabel(cell.verdict)) + '</strong><span>Δ ' + esc(delta) + ' vs ' + esc(matrix.baselinePolicy || 'baseline') + '</span><em>' + esc(consequence) + '</em></td>';
+      }).join('') + '</tr>';
+    }).join('');
+    return '<div class="adaptation-matrix-wrap"><div class="table-scroll"><table class="adaptation-matrix"><thead><tr><th>Profile × policy</th>' + (matrix.policies || []).map(function (policy) { return '<th>' + esc(policy) + (policy === matrix.baselinePolicy ? '<span>baseline</span>' : '') + '</th>'; }).join('') + '</tr></thead><tbody>' + (body || '<tr><td>No matched profile evidence yet.</td></tr>') + '</tbody></table></div><p class="muted">' + esc(matrix.note || '') + '</p>' + renderReadingGuide() + '</div>';
+  }
+  function renderStudyPanel(cohort) {
+    var study = cohort.study || {};
+    return '<section class="study-panel"><span class="cohort-eyebrow">Study ' + esc(study.id || 'unassigned') + ' · ' + esc(study.source || 'inferred') + ' metadata</span><h4>Research question</h4><p>' + esc(study.researchQuestion || '') + '</p><dl>' + (study.hypothesis ? '<div><dt>Hypothesis</dt><dd>' + esc(study.hypothesis) + '</dd></div>' : '') + (study.primaryContrast ? '<div><dt>Primary contrast</dt><dd>' + esc(study.primaryContrast) + '</dd></div>' : '') + (study.decisionRule ? '<div><dt>Decision rule</dt><dd>' + esc(study.decisionRule) + '</dd></div>' : '') + (study.supersedes ? '<div><dt>Supersedes</dt><dd>' + esc(study.supersedes) + '</dd></div>' : '') + '</dl></section>';
+  }
+  function renderVerdictView(cohort) {
     var gate = cohort.discriminationGate;
     var gateValue = gate ? (gate.pass ? 'pass' : 'fail') : 'not run';
     var gateNote = gate
       ? (gate.mode || 'pooled') + ' · avg cosine ' + measure(gate.averagePairwiseCosine) + ' · max to control ' + measure(gate.maxSimilarityToControl) + ((gate.failedProfiles || []).length ? ' · failing ' + gate.failedProfiles.join(', ') : '')
       : 'profile separation has not been scored';
-    var topPolicy = cohort.topPolicy
-      ? '<div class="cohort-read"><strong>Current policy read</strong><span>' + esc(cohort.topPolicy.policy) + ' leads the consolidated QA score at ' + esc(measure(cohort.topPolicy.meanScore)) + '. Read this only inside this matched cohort.</span></div>'
-      : '';
     var partialNote = cohort.status === 'running' ? 'completed slices only' : 'matched cohort';
     var completedProfiles = cohort.completedProfiles != null ? cohort.completedProfiles : (cohort.childReports || []).length;
     var expectedProfiles = cohort.expectedProfiles != null ? cohort.expectedProfiles : (cohort.profiles || []).length;
-    return '<article class="cohort-card ' + esc(cohort.decisionTone || 'pending') + (primary ? ' primary' : '') + '"><div class="cohort-card-head"><div><span class="cohort-eyebrow">' + (primary ? 'Selected evaluation' : 'Evaluation') + '</span><h3>' + esc(cohort.id) + '</h3><p>' + esc(shortDate(cohort.completedAt)) + ' · baseline ' + esc(cohort.baselinePolicy || 'not declared') + '</p></div><span class="status ' + esc(cohort.status) + '">' + esc(cohort.status) + '</span></div><div class="cohort-decision ' + esc(cohort.decisionTone || 'pending') + '"><strong>' + esc(cohort.decision) + '</strong></div><div class="cohort-metrics">' + cohortMetric('Profiles', completedProfiles + '/' + expectedProfiles + ' complete', (cohort.profiles || []).join(', ')) + cohortMetric('Policies', (cohort.policies || []).length, (cohort.policies || []).join(', ')) + cohortMetric('Trials', Number(cohort.ok || 0) + Number(cohort.failed || 0), (cohort.ok || 0) + ' OK · ' + (cohort.failed || 0) + ' failed · ' + partialNote) + cohortMetric('Closure', pct(cohort.closureRate), 'mean coverage ' + pct(cohort.meanCoverage) + ' · ' + partialNote) + cohortMetric('Profile gate', gateValue, gateNote) + '</div>' + topPolicy + '<div class="cohort-actions">' + renderCohortLinks(cohort.links || []) + '</div>' + renderEvaluationProfiles(cohort, primary) + '</article>';
+    var adaptation = cohort.adaptation || {};
+    return renderStudyPanel(cohort) + '<div class="research-verdict-grid">' + cohortMetric('Outcome', adaptation.outcomeAchieved ? 'achieved' : 'not robust', pct(cohort.closureRate) + ' closure · ' + pct(cohort.meanCoverage) + ' coverage · ' + partialNote) + cohortMetric('Adaptation', verdictLabel(adaptation.verdict), adaptation.headline || 'transition evidence pending') + cohortMetric('Robustness', completedProfiles + '/' + expectedProfiles + ' profiles', (cohort.profiles || []).join(', ')) + cohortMetric('Validity', gateValue, gateNote) + '</div>' + renderReadingGuide() + '<div class="cohort-actions">' + renderCohortLinks(cohort.links || []) + '</div>';
   }
-  function renderEvaluationWorkspace(cohorts) {
+  function renderLineageView(cohort) {
+    var lineage = cohort.lineage || { position: 1, total: 1, evaluations: [] };
+    var evaluations = lineage.evaluations || [];
+    return renderStudyPanel(cohort) + '<div class="lineage"><div class="lineage-summary"><strong>Evaluation ' + esc(lineage.position) + ' of ' + esc(lineage.total) + '</strong><span>within study ' + esc((cohort.study || {}).id || '') + '</span></div><div class="lineage-track">' + evaluations.map(function (item, index) { return '<button type="button" data-evaluation-select="' + esc(item.id) + '" class="lineage-node' + (item.id === cohort.id ? ' active' : '') + '"><span>' + esc(index + 1) + '</span><strong>' + esc(item.id) + '</strong><em>' + esc(evaluationTimestamp(item)) + ' · ' + esc(verdictLabel(item.verdict)) + '</em></button>'; }).join('') + '</div></div>';
+  }
+  function renderLabView(cohort) {
+    var lab = cohort.lab3d || { eligible: false, reasons: ['evidence gate not evaluated'] };
+    var evidenceRows = (cohort.adaptation && cohort.adaptation.cells || []).filter(function (cell) { return cell.policy !== cohort.baselinePolicy; });
+    var linked = '<div class="lab-2d"><h4>Linked 2D evidence</h4><p class="lab-2d-legend">Each row is one profile × policy cell: contingency = did strategy choice track learner state (0 = no); benefit = outcome delta vs ' + esc(cohort.baselinePolicy || 'baseline') + ' (negative = worse); positive x% / n = scored strategy shifts that helped, out of n observed. n0 = no evidence yet, not a zero effect.</p>' + evidenceRows.slice(0, 12).map(function (cell) { return '<div><strong>' + esc(cell.profile + ' × ' + cell.policy) + '</strong><span>contingency ' + esc(field(cell.contingency)) + '</span><span>benefit ' + esc(signed(cell.benefit)) + '</span><span>positive ' + esc(pct(cell.positiveRate)) + ' / n' + esc(cell.transitionCount) + '</span></div>'; }).join('') + '</div>';
+    var projection = lab.eligible ? '<div class="lab-3d" aria-label="Exploratory three-dimensional adaptation projection"><div class="lab-3d-head"><h4>Contingency × consequence × benefit</h4><span>exploratory projection · never scored</span></div><div class="lab-3d-scene"><div class="lab-3d-stage">' + evidenceRows.slice(0, 36).map(function (cell) { var x = 8 + clamp01(cell.contingency) * 84; var y = 92 - clamp01(cell.positiveRate) * 84; var z = Math.round(Math.max(-0.15, Math.min(0.15, Number(cell.benefit || 0))) * 300); var label = cell.profile + ' × ' + cell.policy + ': contingency ' + field(cell.contingency) + ', positive transitions ' + pct(cell.positiveRate) + ', benefit ' + signed(cell.benefit); return '<span class="lab-3d-point adaptation-' + esc(cell.verdict || 'pending') + '" style="--point-x:' + esc(x) + '%;--point-y:' + esc(y) + '%;--point-z:' + esc(z) + 'px" title="' + esc(label) + '" aria-label="' + esc(label) + '"><i></i><b>' + esc(cell.policy) + '</b></span>'; }).join('') + '<span class="lab-axis x">state contingency →</span><span class="lab-axis y">positive consequence →</span><span class="lab-axis z">benefit ↑</span></div></div><p>Depth encodes within-profile benefit versus ' + esc(cohort.baselinePolicy || 'baseline') + '. Position encodes state-action contingency and positive next-turn proxy rate. Inspect the 2D rows above for exact values.</p></div>' : '';
+    var gate = lab.eligible
+      ? '<div class="lab-gate pass"><strong>Exploratory 3D lab unlocked</strong><p>The 2D matrix, baseline contrast, transition links, and validity gate are complete. The projection may expose clusters and outliers; it cannot drive the adaptation verdict.</p></div>'
+      : '<div class="lab-gate"><strong>3D lab gated</strong><p>Complete the linked 2D evidence first. This prevents perspective and depth effects from becoming pseudo-evidence.</p><ul>' + (lab.reasons || []).map(function (reason) { return '<li>' + esc(reason) + '</li>'; }).join('') + '</ul></div>';
+    return '<div class="lab-view"><div class="lab-warning"><strong>Research safeguard</strong><span>3D never drives verdicts. Every verdict on this page is computed from the flat numbers alone (the Profile × Policy matrix and per-turn transition counts); the 3D projection only re-plots those same numbers. It stays locked until each plotted point can be checked as a plain 2D row, because depth and perspective can make weak separation look strong. Use it to spot clusters worth checking in 2D, never to conclude.</span></div>' + linked + gate + projection + renderReadingGuide() + '</div>';
+  }
+  function renderCohortCard(cohort, primary, view, compared) {
+    var viewBody = view === 'matrix' ? renderAdaptationMatrix(cohort) : view === 'profiles' ? renderEvaluationProfiles(cohort, primary) : view === 'lineage' ? renderLineageView(cohort) : view === 'lab' ? renderLabView(cohort) : renderVerdictView(cohort);
+    var interim = cohort.status === 'running'
+      ? '<span class="decision-caveat">Interim read: trials are still running, so this verdict can change as more evidence lands.</span>'
+      : cohort.status === 'stale'
+        ? '<span class="decision-caveat">Interim read: the last pass stalled before finishing, so treat this verdict as incomplete.</span>'
+        : '';
+    return '<article class="cohort-card ' + esc(cohort.adaptation && cohort.adaptation.verdict || 'pending') + (primary ? ' primary' : '') + '"><div class="cohort-card-head"><div><span class="cohort-eyebrow">Selected evaluation</span><h3>' + esc(cohort.id) + '</h3><p><span class="evaluation-timestamp">' + esc(evaluationTimestamp(cohort)) + '</span> · baseline ' + esc(cohort.baselinePolicy || 'not declared') + '</p></div><div class="cohort-head-actions"><span class="status ' + esc(cohort.status) + '" title="' + esc(statusExplainer(cohort.status)) + '">' + esc(cohort.status) + '</span><button type="button" data-compare-toggle="' + esc(cohort.id) + '">' + (compared ? 'Unpin comparison' : 'Pin comparison') + '</button></div></div>' + renderEvaluationProgress(cohort) + '<div class="cohort-decision adaptation-' + esc(cohort.adaptation && cohort.adaptation.verdict || 'pending') + '"><strong>' + esc(cohort.adaptation && cohort.adaptation.headline || cohort.decision) + '</strong>' + interim + '</div>' + viewBody + '</article>';
+  }
+  function renderComparisonTray(cohorts, route) {
+    if (!route.compare.length) return '';
+    var selected = route.compare.map(function (id) { return cohorts.find(function (cohort) { return cohort.id === id; }); }).filter(Boolean);
+    return '<aside class="comparison-tray"><div class="comparison-tray-head"><strong>Comparison tray</strong><button type="button" data-compare-clear>Clear</button></div><div class="comparison-grid">' + selected.map(function (cohort) { return '<article><button type="button" data-evaluation-select="' + esc(cohort.id) + '"><strong>' + esc(cohort.id) + '</strong><span class="evaluation-timestamp">' + esc(evaluationTimestamp(cohort)) + '</span><em>' + esc(verdictLabel(cohort.adaptation && cohort.adaptation.verdict)) + ' · ' + esc(cohort.adaptation && cohort.adaptation.headline || '') + '</em></button><button type="button" data-compare-toggle="' + esc(cohort.id) + '">remove</button></article>'; }).join('') + '</div></aside>';
+  }
+  function renderEvaluationWorkspace(cohorts, route) {
     cohorts = cohorts || [];
     if (!cohorts.length) return '<section class="cohort-workspace" id="evaluations"><div class="cohort-workspace-head"><div><h2>Evaluations</h2><p>No matched evaluation has been detected yet. Standalone artifacts remain available below.</p></div></div></section>';
-    var current = cohorts[0];
-    var history = cohorts.slice(1);
-    return '<section class="cohort-workspace" id="evaluations" aria-label="Evaluations"><div class="cohort-workspace-head"><div><h2>Evaluations</h2><p>Evaluation → Profile → Trial. Decisions stay at the matched evaluation level; open a profile only when you need its trials and replay.</p></div><span class="live-count">' + esc(cohorts.length) + ' evaluation' + (cohorts.length === 1 ? '' : 's') + '</span></div>' + renderCohortCard(current, true) + (history.length ? '<details class="cohort-history" data-persist-details="evaluation-history"><summary>Earlier evaluations (' + esc(history.length) + ')</summary><div class="cohort-history-grid">' + history.map(function (cohort) { return renderCohortCard(cohort, false); }).join('') + '</div></details>' : '') + '</section>';
+    var current = cohorts.find(function (cohort) { return cohort.id === route.evaluation; }) || cohorts[0];
+    var options = cohorts.map(function (cohort) { return '<option value="' + esc(cohort.id) + '"' + (cohort.id === current.id ? ' selected' : '') + '>' + esc(cohort.id) + ' · ' + esc(evaluationTimestamp(cohort)) + '</option>'; }).join('');
+    var tabs = [['verdict', 'Verdict'], ['matrix', 'Profile × Policy'], ['profiles', 'Profiles'], ['lineage', 'Study Lineage'], ['lab', '3D Lab']].map(function (item) { return '<button type="button" data-view-select="' + item[0] + '" class="' + (route.view === item[0] ? 'active' : '') + '">' + item[1] + '</button>'; }).join('');
+    return '<section class="cohort-workspace" id="evaluations" aria-label="Evaluations"><div class="cohort-workspace-head"><div><h2>Adaptation Research Console</h2><p>Evaluation → Profile → Trial. Every pathway answers the same question: are strategy changes contingent on learner state, and do they improve grounded adaptation?</p></div><span class="live-count">' + esc(cohorts.length) + ' evaluation' + (cohorts.length === 1 ? '' : 's') + '</span></div><div class="evaluation-routebar"><label><span>Evaluation</span><select data-evaluation-select>' + options + '</select></label><nav aria-label="Evaluation views">' + tabs + '</nav></div>' + renderCohortCard(current, true, route.view, route.compare.indexOf(current.id) >= 0) + renderComparisonTray(cohorts, route) + '</section>';
   }
-  function renderCohortWorkspace(cohorts) {
-    return renderEvaluationWorkspace(cohorts);
+  function renderCohortWorkspace(cohorts, route) {
+    return renderEvaluationWorkspace(cohorts, route);
   }
   function renderBigPicture(model) {
     model = model || { bullets: [], cautions: [], policyStats: [], learnerStats: [], reportCount: 0 };
@@ -7807,7 +8498,7 @@ function tutorStubIndexClientJs() {
     var select = document.createElement('select');
     select.setAttribute('data-evaluation-filter', '');
     select.setAttribute('aria-label', 'Choose evaluation artifacts');
-    var selectedId = data.cohorts && data.cohorts[0] ? data.cohorts[0].id : '__all__';
+    var selectedId = routeState(data.cohorts || []).evaluation || '__all__';
     var options = [{ value: selectedId, label: selectedId ? 'Selected evaluation' : 'All artifacts' }, { value: '__all__', label: 'All evaluations and standalone' }, { value: '__standalone__', label: 'Standalone only' }];
     (data.cohorts || []).forEach(function (cohort) {
       if (cohort.id !== selectedId) options.push({ value: cohort.id, label: cohort.id });
@@ -7845,6 +8536,7 @@ function tutorStubIndexClientJs() {
     var saved = state.rendered ? captureUiState() : readStoredUiState();
     var previousScroll = saved && Number.isFinite(Number(saved.scrollY)) ? Number(saved.scrollY) : window.scrollY || 0;
     state.data = data;
+    var route = routeState(data.cohorts || []);
     var totals = data.totals || {};
     var groundedRate = totals.ok ? Number((Number(totals.grounded || 0) / Number(totals.ok || 1)).toFixed(3)) : 0;
     var options = data.options || {};
@@ -7852,9 +8544,9 @@ function tutorStubIndexClientJs() {
     var staleCount = (data.activeRuns || []).filter(function (run) { return run.status === 'stale'; }).length;
     var rowsHtml = (data.rows || []).map(reportRow).join('\n') || '<tr><td colspan="10">No reports found.</td></tr>';
     var cardsHtml = (data.rows || []).map(reportCard).join('\n') || '<p>No reports found.</p>';
-    app.innerHTML = '<header><h1>Tutor Stub Reports</h1><div class="muted">Updated ' + esc(shortDate(data.generatedAt)) + ' · root ' + esc(data.rootLabel || '.') + ' · <a href="' + esc(data.guideHref || 'docs/tutor-stub-arc-guide.html') + '">arc guide</a></div></header><main>' + renderCohortWorkspace(data.cohorts || []) + renderLiveRuns(data.activeRuns || []) + renderBigPicture(data.bigPicture) + '<section class="metrics">' + htmlMetric('Reports', totals.reports || 0, (totals.htmlReports || 0) + ' with HTML · ' + (totals.totalReports || 0) + ' total') + htmlMetric('Rows', Number(totals.ok || 0) + Number(totals.failed || 0) + Number(totals.dryRun || 0), (totals.failed || 0) + ' failed · ' + (totals.hiddenByDefault || 0) + ' hidden by default') + htmlMetric('Grounded', (totals.grounded || 0) + '/' + (totals.ok || 0), Math.round(groundedRate * 100) + '% closure') + htmlMetric(infoTerm('Field Snapshots', "Static SVG exports written beside reports for inspecting each row's interaction-field visualization. They are report artifacts, not scored rows."), totals.svgs || 0, 'static visualization exports') + htmlMetric('Operations', runningCount, staleCount + ' stale need attention') + '</section><section class="report-list" id="report-list"><div class="report-list-head"><div><h2>All Reports</h2><p>Search individual report artifacts after reading the cohort decision above.</p></div><span class="muted" data-count>0 shown</span></div><details class="filter-panel" data-filter-panel open><summary>Filters and sorting <span data-active-filter-count>default view</span></summary><div class="toolbar"><label class="control"><span>Search</span><input data-filter placeholder="Search reports, policies, learner, model" aria-label="Search reports"></label><label class="control"><span>Run Set</span><select data-scope-filter aria-label="Choose which reports to include"><option value="real" selected>Real runs</option><option value="all">Everything</option></select></label><label class="control"><span>From</span><input type="date" data-date-from aria-label="Filter from completed date"></label><label class="control"><span>To</span><input type="date" data-date-to aria-label="Filter to completed date"></label><label class="control"><span>Status</span><select data-status-filter aria-label="Filter by status"><option value="">All</option>' + optionHtml(options.status) + '</select></label><label class="control"><span>Learner</span><select data-learner-filter aria-label="Filter by learner"><option value="">All</option>' + optionHtml(options.learner) + '</select></label><label class="control"><span>Policy</span><select data-policy-filter aria-label="Filter by policy"><option value="">All</option>' + optionHtml(options.policy) + '</select></label><label class="control"><span>World</span><select data-world-filter aria-label="Filter by world"><option value="">All</option>' + optionHtml(options.world) + '</select></label><label class="control"><span>Sort</span><select data-sort-key aria-label="Sort reports"><option value="date">Date</option><option value="status">Status</option><option value="learner">Learner</option><option value="policy">Policy</option><option value="grounded">Grounded</option><option value="coverage">Evidence Path</option><option value="turns">Turns</option><option value="rows">Rows</option><option value="failed">Failed</option><option value="svgs">Field Snapshots</option><option value="report">Report</option></select></label><label class="control"><span>Direction</span><select data-sort-dir aria-label="Sort direction"><option value="desc">Desc</option><option value="asc">Asc</option></select></label><button type="button" data-reset>Reset</button></div></details><div class="report-card-list" data-report-card-list>' + cardsHtml + '</div><div class="table-scroll report-index-scroll" role="region" aria-label="Report table" tabindex="0"><table class="report-index-table"><thead><tr><th>Completed</th><th class="links-cell">Links</th><th>' + infoTerm('Status', 'Run-level technical status: ok has no failed rows, failed has one or more failed rows, dry_run is configuration-only output.') + '</th><th>Policies</th><th>Learner</th><th>' + infoTerm('OK/Failed', 'OK rows completed without a technical failure. Failed rows are generation, resume, or evaluation failures.') + '</th><th>' + infoTerm('Grounded', 'Rows where the learner reached grounded asserted-secret closure, shown as grounded over OK rows plus percentage.') + '</th><th>' + infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.') + '</th><th>' + infoTerm('Evidence Path', 'Mean learner-DAG best-path coverage: how much of the target evidence path is grounded, shown as a percentage with the raw 0 to 1 coverage score underneath.') + '</th><th>' + infoTerm('Field Snapshots', 'Count of static SVG exports emitted beside the report for inspecting per-row interaction-field visualizations. This is an artifact count, not an evaluation score.') + '</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div></section></main>';
+    app.innerHTML = '<header><h1>Tutor Stub Reports</h1><div class="muted">Updated ' + esc(shortDate(data.generatedAt)) + ' · root ' + esc(data.rootLabel || '.') + ' · <a href="' + esc(data.guideHref || 'docs/tutor-stub-arc-guide.html') + '">arc guide</a></div></header><main>' + renderCohortWorkspace(data.cohorts || [], route) + renderLiveRuns(data.activeRuns || []) + renderBigPicture(data.bigPicture) + '<section class="metrics">' + htmlMetric('Reports', totals.reports || 0, (totals.htmlReports || 0) + ' with HTML · ' + (totals.totalReports || 0) + ' total') + htmlMetric('Rows', Number(totals.ok || 0) + Number(totals.failed || 0) + Number(totals.dryRun || 0), (totals.failed || 0) + ' failed · ' + (totals.hiddenByDefault || 0) + ' hidden by default') + htmlMetric('Grounded', (totals.grounded || 0) + '/' + (totals.ok || 0), Math.round(groundedRate * 100) + '% closure') + htmlMetric(infoTerm('Field Snapshots', "Static SVG exports written beside reports for inspecting each row's interaction-field visualization. They are report artifacts, not scored rows."), totals.svgs || 0, 'static visualization exports') + htmlMetric('Operations', runningCount, staleCount + ' stale need attention') + '</section><section class="report-list" id="report-list"><div class="report-list-head"><div><h2>All Reports</h2><p>Search individual report artifacts after reading the cohort decision above.</p></div><span class="muted" data-count>0 shown</span></div><details class="filter-panel" data-filter-panel open><summary>Filters and sorting <span data-active-filter-count>default view</span></summary><div class="toolbar"><label class="control"><span>Search</span><input data-filter placeholder="Search reports, policies, learner, model" aria-label="Search reports"></label><label class="control"><span>Run Set</span><select data-scope-filter aria-label="Choose which reports to include"><option value="real" selected>Real runs</option><option value="all">Everything</option></select></label><label class="control"><span>From</span><input type="date" data-date-from aria-label="Filter from completed date"></label><label class="control"><span>To</span><input type="date" data-date-to aria-label="Filter to completed date"></label><label class="control"><span>Status</span><select data-status-filter aria-label="Filter by status"><option value="">All</option>' + optionHtml(options.status) + '</select></label><label class="control"><span>Learner</span><select data-learner-filter aria-label="Filter by learner"><option value="">All</option>' + optionHtml(options.learner) + '</select></label><label class="control"><span>Policy</span><select data-policy-filter aria-label="Filter by policy"><option value="">All</option>' + optionHtml(options.policy) + '</select></label><label class="control"><span>World</span><select data-world-filter aria-label="Filter by world"><option value="">All</option>' + optionHtml(options.world) + '</select></label><label class="control"><span>Sort</span><select data-sort-key aria-label="Sort reports"><option value="date">Date</option><option value="status">Status</option><option value="learner">Learner</option><option value="policy">Policy</option><option value="grounded">Grounded</option><option value="coverage">Evidence Path</option><option value="turns">Turns</option><option value="rows">Rows</option><option value="failed">Failed</option><option value="svgs">Field Snapshots</option><option value="report">Report</option></select></label><label class="control"><span>Direction</span><select data-sort-dir aria-label="Sort direction"><option value="desc">Desc</option><option value="asc">Asc</option></select></label><button type="button" data-reset>Reset</button></div></details><div class="report-card-list" data-report-card-list>' + cardsHtml + '</div><div class="table-scroll report-index-scroll" role="region" aria-label="Report table" tabindex="0"><table class="report-index-table"><thead><tr><th>Completed</th><th class="links-cell">Links</th><th>' + infoTerm('Status', 'Run-level technical status: ok has no failed rows, failed has one or more failed rows, dry_run is configuration-only output.') + '</th><th>Policies</th><th>Learner</th><th>' + infoTerm('OK/Failed', 'OK rows completed without a technical failure. Failed rows are generation, resume, or evaluation failures.') + '</th><th>' + infoTerm('Grounded', 'Rows where the learner reached grounded asserted-secret closure, shown as grounded over OK rows plus percentage.') + '</th><th>' + infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.') + '</th><th>' + infoTerm('Evidence Path', 'Mean learner-DAG best-path coverage: how much of the target evidence path is grounded, shown as a percentage with the raw 0 to 1 coverage score underneath.') + '</th><th>' + infoTerm('Field Snapshots', 'Count of static SVG exports emitted beside the report for inspecting per-row interaction-field visualizations. This is an artifact count, not an evaluation score.') + '</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div></section></main>';
     upgradeArtifactHistory(data);
-    bindControls(saved);
+    bindControls(saved, route);
     state.rendered = true;
     if (window.location.hash) {
       var anchor = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
@@ -7863,7 +8555,7 @@ function tutorStubIndexClientJs() {
       window.requestAnimationFrame(function () { window.scrollTo(0, previousScroll); });
     }
   }
-  function bindControls(saved) {
+  function bindControls(saved, route) {
     var input = app.querySelector('[data-filter]');
     var evaluationFilter = app.querySelector('[data-evaluation-filter]');
     var scopeFilter = app.querySelector('[data-scope-filter]');
@@ -7883,7 +8575,7 @@ function tutorStubIndexClientJs() {
     var cards = Array.from(app.querySelectorAll('.report-index-card[data-search]'));
     var count = app.querySelector('[data-count]');
     var activeFilterCount = app.querySelector('[data-active-filter-count]');
-    var defaultEvaluation = state.data && state.data.cohorts && state.data.cohorts[0] ? state.data.cohorts[0].id : '__all__';
+    var defaultEvaluation = route && route.evaluation || (state.data && state.data.cohorts && state.data.cohorts[0] ? state.data.cohorts[0].id : '__all__');
     var numericSortKeys = new Set(['date', 'grounded', 'coverage', 'turns', 'rows', 'failed', 'svgs']);
     var sortMap = { date: 'completedMs', status: 'status', learner: 'learner', policy: 'policyText', grounded: 'groundedRate', coverage: 'coverage', turns: 'turns', rows: 'rows', failed: 'failed', svgs: 'svgs', report: 'reportName' };
     function numberValue(row, key) {
@@ -7964,7 +8656,7 @@ function tutorStubIndexClientJs() {
     }
     var controls = saved && saved.controls || {};
     if (input) input.value = controls.search || '';
-    if (evaluationFilter) evaluationFilter.value = controls.evaluation || defaultEvaluation;
+    if (evaluationFilter) evaluationFilter.value = defaultEvaluation;
     if (scopeFilter) scopeFilter.value = controls.scope || 'real';
     if (dateFrom) dateFrom.value = controls.from || '';
     if (dateTo) dateTo.value = controls.to || '';
@@ -7981,6 +8673,25 @@ function tutorStubIndexClientJs() {
       node.addEventListener('toggle', persistUiState);
     });
     if (filterPanel) filterPanel.addEventListener('toggle', persistUiState);
+    Array.from(app.querySelectorAll('[data-evaluation-select]')).forEach(function (control) {
+      if (control.tagName === 'SELECT') control.addEventListener('change', function () { updateRoute({ evaluation: control.value }, false); });
+      else control.addEventListener('click', function () { updateRoute({ evaluation: control.getAttribute('data-evaluation-select') }, false); });
+    });
+    Array.from(app.querySelectorAll('[data-view-select]')).forEach(function (control) {
+      control.addEventListener('click', function () { updateRoute({ view: control.getAttribute('data-view-select') }, false); });
+    });
+    Array.from(app.querySelectorAll('[data-compare-toggle]')).forEach(function (control) {
+      control.addEventListener('click', function () {
+        var id = control.getAttribute('data-compare-toggle');
+        var compare = (route && route.compare || []).slice();
+        var index = compare.indexOf(id);
+        if (index >= 0) compare.splice(index, 1);
+        else if (compare.length < 3) compare.push(id);
+        updateRoute({ compare: compare }, false);
+      });
+    });
+    var compareClear = app.querySelector('[data-compare-clear]');
+    if (compareClear) compareClear.addEventListener('click', function () { updateRoute({ compare: '' }, false); });
     [input, evaluationFilter, scopeFilter, dateFrom, dateTo, statusFilter, learnerFilter, policyFilter, worldFilter, sortKey, sortDir].forEach(function (control) {
       if (control) control.addEventListener(control === input ? 'input' : 'change', function () { applyIndexControls(); persistUiState(); });
     });
@@ -8008,6 +8719,10 @@ function tutorStubIndexClientJs() {
       var response = await fetch(dataPath, { cache: 'no-store' });
       if (!response.ok) throw new Error(response.status + ' ' + response.statusText);
       var data = await response.json();
+      try {
+        var researchResponse = await fetch('index-research-data.json', { cache: 'no-store' });
+        if (researchResponse.ok) data = mergeResearchData(data, await researchResponse.json());
+      } catch (researchError) { /* compatibility sidecar is optional */ }
       render(data);
       if ((data.activeRuns || []).length) {
         window.setTimeout(load, Number(data.refreshMs || 30000));
@@ -8016,6 +8731,7 @@ function tutorStubIndexClientJs() {
       app.innerHTML = '<header><h1>Tutor Stub Reports</h1><div class="muted">Could not load index data: ' + esc(error.message || error) + '</div></header>';
     }
   }
+  window.addEventListener('popstate', function () { if (state.data) render(state.data); });
   load();
 })();`;
 }
@@ -8342,7 +9058,9 @@ function writeReportIndex({ rootDir = indexRootDir(), quiet = false, updateShell
     .sort((a, b) => b.updatedMs - a.updatedMs || a.runName.localeCompare(b.runName));
   const generatedAt = new Date().toISOString();
   if (updateAssets) writeReportIndexAssets(rootDir);
-  writeJsonAtomic(path.join(rootDir, 'index-data.json'), indexDataModel({ rows, activeRuns, rootDir, generatedAt }));
+  const dataModel = indexDataModel({ rows, activeRuns, rootDir, generatedAt });
+  writeJsonAtomic(path.join(rootDir, 'index-data.json'), dataModel);
+  writeJsonAtomic(path.join(rootDir, 'index-research-data.json'), dataModel);
   const indexPath = path.join(rootDir, 'index.html');
   const dynamicIndexPath = path.join(rootDir, 'index-dynamic.html');
   const dynamicShell = renderReportIndexShell({ rootDir, generatedAt });
@@ -8891,6 +9609,7 @@ function writeSummary({ traceDir, startedAt, results, failed, configOverride = n
   const rows = resultRows(results);
   summary.aggregates = summarizeRows(rows);
   summary.rows = rows;
+  summary.adaptationEvidence = adaptationEvidenceForRows(rows, summary);
   const timestamp = safeTimestampForFile();
   const summaryPath = path.join(traceDir, `auto-eval-${timestamp}.json`);
   const htmlPath = path.join(traceDir, `auto-eval-${timestamp}.html`);

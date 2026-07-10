@@ -46,13 +46,20 @@ import { loadWorld, plotLint } from '../services/dramaticDerivation/world.js';
 import {
   mixedLearnerAnalysisCacheKey,
   parseMixedLearnerArtifacts,
+  refreshMixedLearnerPrompt,
 } from '../services/mixedLearnerArtifacts.js';
 import {
   buildContinuousRegisterPolicyMetadata,
   buildContinuousRegisterVector,
   continuousRegisterStyleInstruction,
 } from '../services/tutorStubContinuousRegister.js';
-import { learnerProfileContract } from './tutor-stub-learner-profile-contracts.js';
+import {
+  learnerProfileContract,
+  learnerProfileDescription,
+  learnerProfileIds,
+  learnerProfileListText,
+  learnerProfilePrompt,
+} from './tutor-stub-learner-profile-contracts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -70,7 +77,8 @@ const HUMAN_DISCOURSE_PHASE = 'phase_2_human_scaffold_prompting';
 const STUB = {
   model: process.env.TUTOR_STUB_MODEL || 'codex.gpt-5.6-terra',
   classifierModel: process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.6-terra',
-  learnerRecordModel: process.env.TUTOR_STUB_LEARNER_RECORD_MODEL || process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.6-terra',
+  learnerRecordModel:
+    process.env.TUTOR_STUB_LEARNER_RECORD_MODEL || process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.6-terra',
   topic: process.env.TUTOR_STUB_TOPIC || 'fractions',
   world: process.env.TUTOR_STUB_WORLD || 'world_005_marrick',
   learner: 'A curious learner who may be partly right, partly confused, and unsure how to explain their thinking.',
@@ -106,6 +114,8 @@ const C = {
   red: '\x1b[31m',
   cyan: '\x1b[36m',
   magenta: '\x1b[35m',
+  yellow: '\x1b[33m',
+  green: '\x1b[32m',
 };
 
 const FIELD_PROGRESS_THRESHOLD = 0.05;
@@ -126,6 +136,7 @@ const SLASH_COMMANDS = [
   '/suggest',
   '/clue',
   '/hint',
+  '/profile',
   '/use',
   '/accept',
   '/regen',
@@ -203,8 +214,8 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
   'You are an automated learner in an experimental tutoring dialogue.',
   'You see only the public transcript and the latest tutor message.',
   'Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
-  'The private learner-profile contract supplied below defines the experimental condition. It takes priority over generic helpfulness, smooth progress, and the tutor\'s request for a useful answer.',
-  'Preserve the contract\'s failure operator and repair limits. Do not silently become a diligent learner after correction.',
+  "The private learner-profile contract supplied below defines the experimental condition. It takes priority over generic helpfulness, smooth progress, and the tutor's request for a useful answer.",
+  "Preserve the contract's failure operator and repair limits. Do not silently become a diligent learner after correction.",
   'Reply as the learner only. No role label, no analysis, no JSON.',
   'Keep the reply concise: usually one sentence, one question, or one warranted evidence claim.',
 ].join('\n');
@@ -378,7 +389,8 @@ Options:
   --help                 show this message
 
 Interactive commands:
-  /analysis              show the latest completed turn's internal analysis
+  /analysis              explain the learner reading and selected policy plainly
+  /analysis technical    show classifier, DAG, field, register, and trace evidence
   /a                     alias for /analysis
   /field                 show a lightweight interaction-field trajectory
   /f                     alias for /field
@@ -389,6 +401,15 @@ Interactive commands:
   /c [phrase]            alias for /clarify
   /report                show the compact dialogue closeout report
   /r                     alias for /report
+  /profile               show the active mixed learner profile
+  /profile list          list built-in learner profile ids
+  /profile <id>          switch profile and regenerate mixed artifacts
+  /profile default       restore the command-line/default profile
+  /profile custom <text> use a custom learner behavior sketch
+  /clue, /hint           show the cached non-revealing learner clue
+  /suggest               show the cached learner answer
+  /use                   submit the cached learner answer
+  /regen                 regenerate clue, answer, analysis, and tutor response
   /clear                 reset transcript and learner/register state
   /help                  show interactive commands
   /quit                  exit
@@ -455,7 +476,9 @@ function parsePositiveInt(value, name) {
 
 function assertSupportedModelRefs(refs) {
   for (const [label, ref] of Object.entries(refs)) {
-    const normalized = String(ref || '').trim().toLowerCase();
+    const normalized = String(ref || '')
+      .trim()
+      .toLowerCase();
     if (UNSUPPORTED_CODEX_MINI_REFS.has(normalized)) {
       throw new Error(
         `${label}=${ref} is not supported by the local Codex CLI ChatGPT-account route. ` +
@@ -466,7 +489,9 @@ function assertSupportedModelRefs(refs) {
 }
 
 function parseAutoTurns(value) {
-  const raw = String(value || '').trim().toLowerCase();
+  const raw = String(value || '')
+    .trim()
+    .toLowerCase();
   if (['0', 'none', 'unbounded', 'until-grounded', 'grounded'].includes(raw)) return null;
   return parsePositiveInt(value, '--auto-turns');
 }
@@ -651,8 +676,9 @@ function unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText }) {
         .filter((token) => token.length >= 4 && !PRIVATE_TOKEN_STOPWORDS.has(token) && !publicTokens.has(token)),
     );
     const surfaceTokens = new Set(
-      splitSymbolWords(premise.surface)
-        .filter((token) => token.length >= 5 && !PRIVATE_TOKEN_STOPWORDS.has(token) && !publicTokens.has(token)),
+      splitSymbolWords(premise.surface).filter(
+        (token) => token.length >= 5 && !PRIVATE_TOKEN_STOPWORDS.has(token) && !publicTokens.has(token),
+      ),
     );
     const factMatches = [...factTokens].filter((token) => textContainsToken(text, token));
     const surfaceMatches = [...surfaceTokens].filter((token) => textContainsToken(text, token));
@@ -731,9 +757,7 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText }) {
 }
 
 function tutorLeakRepairPrompt({ originalUserPrompt, unsafeDraft, audit }) {
-  const leakRows = (audit.leaks || [])
-    .map((leak, index) => `${index + 1}. ${leak.type}: ${leak.reason}`)
-    .join('\n');
+  const leakRows = (audit.leaks || []).map((leak, index) => `${index + 1}. ${leak.type}: ${leak.reason}`).join('\n');
   return [
     originalUserPrompt,
     '',
@@ -948,20 +972,20 @@ function worldDagPrompt(world) {
     '- Work from released evidence and public rules only.',
     '- Treat every fact: line, predicate name, rule id, premise id, and proof-path id as private notation. Never write that notation to the learner.',
     '- Translate formal facts into ordinary trial-book language before speaking: say "the dross alloy came from the mint crucible", not "meltedAt(drossSilver, mintCrucible)".',
-    '- Treat the trial-book as the learner\'s public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the trial-book entry.',
+    "- Treat the trial-book as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the trial-book entry.",
     '- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.',
     '- Do not name the concealed answer, hidden answer-bearer, or any intermediate conclusion involving that bearer until the released public evidence derives that exact step.',
     '- Especially avoid statements of the form "<hidden person> cast/cut/struck/made..." unless the learner has already derived it from staged evidence.',
-    '- Ask for an explicit missing bridge only when the learner\'s leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.',
+    "- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.",
     '- If the learner guesses the concealed answer, do not confirm it until the released facts derive it.',
-    '- When a scheduled premise is due, introduce at most one piece of evidence and ask for the learner\'s natural reading of what it changes, not a full proof ledger.',
+    "- When a scheduled premise is due, introduce at most one piece of evidence and ask for the learner's natural reading of what it changes, not a full proof ledger.",
   ].filter(Boolean);
 }
 
 function responseChoiceModeRules({ multipleChoice }) {
   return multipleChoice
     ? [
-        '- Multiple-choice mode is on. When it would help, you may present 2-4 short lettered choices for the learner\'s next move.',
+        "- Multiple-choice mode is on. When it would help, you may present 2-4 short lettered choices for the learner's next move.",
         '- Multiple-choice options must be public evidence-shaped moves, not answers. Do not include the concealed answer, unstaged evidence, predicate/function notation, premise ids, rule ids, or route labels.',
         '- In story mode, each option should be a plain trial-book line shape, such as a metal mark, a tool mark, or a custody record. Keep medieval flavour but avoid long menus.',
         '- End by asking the learner to choose one option or write their own evidence claim.',
@@ -969,7 +993,7 @@ function responseChoiceModeRules({ multipleChoice }) {
     : [
         '- Do not make the next step multiple choice. If the learner seems unsure, name the live issue directly without giving the hidden answer: "what does the metal change?", "what does that mark rule out?", or "what would make that name safe?".',
         '- When talking through options, collapse them to one live issue: what changed, what remains unsafe, or what the learner now thinks follows.',
-        '- End with one light prompt for the learner\'s natural next thought; do not require a full proof step unless their leap is unsafe or case-closing.',
+        "- End with one light prompt for the learner's natural next thought; do not require a full proof step unless their leap is unsafe or case-closing.",
       ];
 }
 
@@ -984,7 +1008,7 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag, mult
     `Style: ${style}`,
     '',
     'Rules:',
-    '- Start by locating the learner\'s current idea, not by grading them.',
+    "- Start by locating the learner's current idea, not by grading them.",
     '- Ask at most one main question per turn.',
     '- Use a tiny concrete example when it helps.',
     '- Keep the answer short enough that the learner can respond.',
@@ -1052,7 +1076,10 @@ function effectiveTemperatureForModel(resolved, requestedTemperature) {
 }
 
 function normalizeRegisterPolicy(value) {
-  const policy = String(value || 'dynamic').trim().toLowerCase().replace(/-/gu, '_');
+  const policy = String(value || 'dynamic')
+    .trim()
+    .toLowerCase()
+    .replace(/-/gu, '_');
   if (
     policy === 'dynamic' ||
     policy === 'field' ||
@@ -1074,7 +1101,10 @@ function normalizeRegisterPolicy(value) {
 }
 
 function normalizeDagMode(value) {
-  const mode = String(value || 'strict_dag').trim().toLowerCase().replace(/-/gu, '_');
+  const mode = String(value || 'strict_dag')
+    .trim()
+    .toLowerCase()
+    .replace(/-/gu, '_');
   if (DAG_MODES.includes(mode)) return mode;
   throw new Error(`Unknown --dag-mode: ${value}. Expected ${DAG_MODES.join(', ')}.`);
 }
@@ -1085,12 +1115,16 @@ function buildHumanDiscourseRunConfig({ dagMode, dagEnabled, tutorLearnerDagEnab
     dagMode === 'defeasible_human_scaffold'
       ? {
           enabled: true,
-          policy: 'accept obvious public bridges as implied proof debt; ask for explicit warrants only when the leap is unsafe, conflicting, or case-closing',
+          policy:
+            'accept obvious public bridges as implied proof debt; ask for explicit warrants only when the leap is unsafe, conflicting, or case-closing',
           maxExplicitDemandsPerTurn: 1,
         }
       : {
           enabled: false,
-          policy: dagMode === 'human_scaffold' ? 'frame one local warrant without expanding the whole proof chain' : 'strict proof audit only',
+          policy:
+            dagMode === 'human_scaffold'
+              ? 'frame one local warrant without expanding the whole proof chain'
+              : 'strict proof audit only',
           maxExplicitDemandsPerTurn: dagMode === 'human_scaffold' ? 1 : 0,
         };
   return {
@@ -1116,7 +1150,9 @@ function buildRegisterPalette(mode) {
   const definitions = getEngagementRegisterDefinitions();
   const allNames = Object.keys(definitions);
   const safeNames = getEngagementRegisterNames({ includeArmAssigned: false });
-  const value = String(mode || 'all').trim().toLowerCase();
+  const value = String(mode || 'all')
+    .trim()
+    .toLowerCase();
 
   let names;
   if (!value || value === 'safe' || value === 'router' || value === 'positive') {
@@ -1128,15 +1164,16 @@ function buildRegisterPalette(mode) {
   } else if (value === 'all' || value === 'simulated') {
     names = allNames;
   } else {
-    names = value.split(',').map((name) => name.trim()).filter(Boolean);
+    names = value
+      .split(',')
+      .map((name) => name.trim())
+      .filter(Boolean);
   }
 
   const resolvedNames = names.map((name) => resolveEngagementRegister(name)?.register || name);
   const unknown = names.filter((name, index) => !definitions[resolvedNames[index]]);
   if (unknown.length) {
-    throw new Error(
-      `Unknown --register-palette register(s): ${unknown.join(', ')}. Known: ${allNames.join(', ')}`,
-    );
+    throw new Error(`Unknown --register-palette register(s): ${unknown.join(', ')}. Known: ${allNames.join(', ')}`);
   }
 
   return [...new Set(resolvedNames)];
@@ -1281,57 +1318,56 @@ function registerSelectionPolicyPrompt(state) {
           '- Do not choose or justify a tutor register in the model output for this policy.',
         ]
       : policy === 'negative'
-      ? [
-          '- Register policy: negative. The runtime will sample locally only from ironic, sarcastic, and face_threat.',
-          '- Do not choose or justify a tutor register in the model output for this policy.',
-        ]
-      : policy === 'bland'
-      ? [
-          '- Register policy: bland. The runtime uses a fixed plain register as a non-adaptive baseline.',
-          '- Do not choose or justify a tutor register in the model output for this policy.',
-        ]
-      : policy === 'trajectory'
-      ? [
-          '- Register policy: trajectory. The runtime maps recent learner-field and learner-DAG trajectory into a local register distribution.',
-          '- Do not choose or justify a tutor register in the model output for this policy.',
-        ]
-      : policy === 'dynamical_system'
-      ? [
-          '- Register policy: dynamical_system. The runtime maps a continuous state/derivative vector through theory priors plus local efficacy evidence.',
-          '- Do not choose or justify a tutor register in the model output for this policy.',
-        ]
-      : policy === 'empirical_dynamical_system'
-      ? [
-          '- Register policy: empirical_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors, local efficacy evidence, and cross-run empirical priors.',
-          '- Do not choose or justify a tutor register in the model output for this policy.',
-        ]
-      : policy === 'continuous_dynamical_system'
-      ? [
-          '- Register policy: continuous_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors plus local efficacy evidence into a weighted register blend.',
-          '- Do not choose or justify a tutor register in the model output for this policy.',
-        ]
-      : policy === 'continuous_empirical_dynamical_system'
-      ? [
-          '- Register policy: continuous_empirical_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors, local efficacy evidence, and cross-run empirical priors into a weighted register blend.',
-          '- Do not choose or justify a tutor register in the model output for this policy.',
-        ]
-      : [
-          '- Register policy: dynamic. The up-front reviewer chooses the register; do not treat the learner request type as the register.',
-          '- Brisk pacing is available but must not be the default register.',
-          '- Penalize repeating the same register, especially brisk. A repeated register needs a concrete reviewer reason grounded in the current public turn.',
-          '- Use brisk only when tight pacing is the needed stance: explicit step-by-step request, visible procedural confusion about the immediate next evidence move, or a newly staged evidence item that needs one learner-owned inference.',
-          '- Do not choose brisk merely because the learner-DAG still has a release_or_pacing_gap, inference_gap, missing premise, or incomplete proof path.',
-          '- If the previous brisk choice produced no_clear_progress or regression_or_overreach, choose a non-brisk register unless the current learner explicitly asks for step-by-step help.',
-          '- Good dynamic alternatives: precise for a distinction/error in terms or accountable warrant; plain for compression/transfer; charismatic for resistant, rote, answer-seeking, or low-agency compliance; witnessing for affective exposure.',
-        ];
+        ? [
+            '- Register policy: negative. The runtime will sample locally only from ironic, sarcastic, and face_threat.',
+            '- Do not choose or justify a tutor register in the model output for this policy.',
+          ]
+        : policy === 'bland'
+          ? [
+              '- Register policy: bland. The runtime uses a fixed plain register as a non-adaptive baseline.',
+              '- Do not choose or justify a tutor register in the model output for this policy.',
+            ]
+          : policy === 'trajectory'
+            ? [
+                '- Register policy: trajectory. The runtime maps recent learner-field and learner-DAG trajectory into a local register distribution.',
+                '- Do not choose or justify a tutor register in the model output for this policy.',
+              ]
+            : policy === 'dynamical_system'
+              ? [
+                  '- Register policy: dynamical_system. The runtime maps a continuous state/derivative vector through theory priors plus local efficacy evidence.',
+                  '- Do not choose or justify a tutor register in the model output for this policy.',
+                ]
+              : policy === 'empirical_dynamical_system'
+                ? [
+                    '- Register policy: empirical_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors, local efficacy evidence, and cross-run empirical priors.',
+                    '- Do not choose or justify a tutor register in the model output for this policy.',
+                  ]
+                : policy === 'continuous_dynamical_system'
+                  ? [
+                      '- Register policy: continuous_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors plus local efficacy evidence into a weighted register blend.',
+                      '- Do not choose or justify a tutor register in the model output for this policy.',
+                    ]
+                  : policy === 'continuous_empirical_dynamical_system'
+                    ? [
+                        '- Register policy: continuous_empirical_dynamical_system. The runtime maps a continuous state/derivative vector through theory priors, local efficacy evidence, and cross-run empirical priors into a weighted register blend.',
+                        '- Do not choose or justify a tutor register in the model output for this policy.',
+                      ]
+                    : [
+                        '- Register policy: dynamic. The up-front reviewer chooses the register; do not treat the learner request type as the register.',
+                        '- Brisk pacing is available but must not be the default register.',
+                        '- Penalize repeating the same register, especially brisk. A repeated register needs a concrete reviewer reason grounded in the current public turn.',
+                        '- Use brisk only when tight pacing is the needed stance: explicit step-by-step request, visible procedural confusion about the immediate next evidence move, or a newly staged evidence item that needs one learner-owned inference.',
+                        '- Do not choose brisk merely because the learner-DAG still has a release_or_pacing_gap, inference_gap, missing premise, or incomplete proof path.',
+                        '- If the previous brisk choice produced no_clear_progress or regression_or_overreach, choose a non-brisk register unless the current learner explicitly asks for step-by-step help.',
+                        '- Good dynamic alternatives: precise for a distinction/error in terms or accountable warrant; plain for compression/transfer; charismatic for resistant, rote, answer-seeking, or low-agency compliance; witnessing for affective exposure.',
+                      ];
   if (latest) {
     lines.push(`- Last register: ${latest.selected_register}; observed efficacy: ${latestEfficacy}.`);
     if (latest.efficacy?.mismatch) {
       lines.push(
-        `- Last field/state relation: ${latest.efficacy.mismatch}; field delta ${formatSignedInterimNumber(
-          latest.efficacy.field?.delta,
-          { decimals: 3 },
-        ) || '0'}, DAG progress ${latest.efficacy.dagProgress ? 'yes' : 'no'}.`,
+        `- Last field/state relation: ${latest.efficacy.mismatch}; field delta ${
+          formatSignedInterimNumber(latest.efficacy.field?.delta, { decimals: 3 }) || '0'
+        }, DAG progress ${latest.efficacy.dagProgress ? 'yes' : 'no'}.`,
       );
     }
   }
@@ -1765,7 +1801,8 @@ function printClassification(classification) {
   const move = classification.turn?.discourse_move || 'unknown';
   const stance = classification.turn?.epistemic_stance || 'unknown';
   const need = classification.turn?.pedagogical_need || classification.overall?.next_best_tutor_move || '';
-  const errorPrefix = classification.error || classification.parseError ? `${C.red} learner-classifier warning${C.reset}` : '';
+  const errorPrefix =
+    classification.error || classification.parseError ? `${C.red} learner-classifier warning${C.reset}` : '';
 
   console.log(`${C.cyan}learner classifier >${C.reset} ${classification.turn?.summary || 'No turn summary.'}`);
   console.log(
@@ -1773,7 +1810,8 @@ function printClassification(classification) {
   );
   console.log(`${C.dim}  overall: ${classification.overall?.summary || 'No overall summary.'}${C.reset}`);
   if (need) console.log(`${C.dim}  tutor cue: ${need}${C.reset}`);
-  if (errorPrefix) console.log(`${errorPrefix}${C.dim}: ${classification.error || classification.parseError}${C.reset}`);
+  if (errorPrefix)
+    console.log(`${errorPrefix}${C.dim}: ${classification.error || classification.parseError}${C.reset}`);
 }
 
 const INTERIM_FRAMES = ['|', '/', '-', '\\'];
@@ -1788,7 +1826,10 @@ function createInterimState({ enabled }) {
 
 function getInterimState(holder) {
   if (!holder) return null;
-  if (Object.prototype.hasOwnProperty.call(holder, 'active') && Object.prototype.hasOwnProperty.call(holder, 'enabled')) {
+  if (
+    Object.prototype.hasOwnProperty.call(holder, 'active') &&
+    Object.prototype.hasOwnProperty.call(holder, 'enabled')
+  ) {
     return holder;
   }
   return holder.interim || null;
@@ -1798,69 +1839,59 @@ function interimAnimationAvailable(interim) {
   return Boolean(interim?.enabled && output.isTTY);
 }
 
-function formatInterimNumber(value) {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric.toFixed(2) : '--';
-}
-
-function formatInterimDelta(value) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric === 0) return '';
-  return `(${numeric > 0 ? '+' : ''}${numeric.toFixed(2)})`;
-}
-
-function formatInterimScore(score) {
-  const value = scoreValue(score);
-  const numeric = Number(value);
-  if (Number.isFinite(numeric)) return `${numeric}/5`;
-  return value && value !== '?' ? String(value) : '--';
-}
-
 function formatSignedInterimNumber(value, { decimals = 2 } = {}) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric) || numeric === 0) return null;
   return `${numeric > 0 ? '+' : ''}${numeric.toFixed(decimals)}`;
 }
 
-function compactInterimCounts(counts = {}) {
-  const source = counts && typeof counts === 'object' && !Array.isArray(counts) ? counts : {};
-  const parts = Object.entries(source)
-    .filter(([, count]) => Number(count || 0) > 0)
-    .map(([key, count]) => `${key}:${count}`);
-  return parts.join(', ') || 'none';
-}
-
 function compactInterimStateSummary(state) {
   const bits = [];
-  if (state?.classifier?.enabled) bits.push(state.classifier.combined ? 'combined-analysis' : 'classifier');
-  if (state?.learnerDag?.enabled) bits.push('learner-DAG');
-  if (state?.register?.enabled) bits.push('register');
-  if (state?.dag) bits.push('tutor-DAG');
-  return `state t0 | ${bits.length ? bits.join('+') : 'plain tutor'}`;
+  if (state?.classifier?.enabled) bits.push('learner reading');
+  if (state?.learnerDag?.enabled) bits.push('reasoning progress');
+  if (state?.register?.enabled) bits.push('response style');
+  if (state?.dag) bits.push('evidence pacing');
+  return bits.length ? bits.join(', ') : 'plain tutor response';
+}
+
+function interimLevel(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 'not available';
+  if (numeric < 0.25) return 'low';
+  if (numeric < 0.5) return 'developing';
+  if (numeric < 0.75) return 'strong';
+  return 'very strong';
+}
+
+function plainInterimBottleneck(value) {
+  const labels = {
+    release_or_pacing_gap: 'the learner needs the next usable piece of evidence',
+    warrant_gap: 'the learner needs a clearer reasoning link',
+    unsupported_assertion: 'the conclusion has moved beyond the evidence',
+    grounded_asserted_secret: 'the conclusion is supported and stated',
+    grounded_unasserted_secret: 'the conclusion is supported but not yet stated',
+  };
+  return labels[value] || String(value || 'the next useful learner move').replaceAll('_', ' ');
 }
 
 function compactInterimFieldSummary(state) {
   if (!state?.turns?.length) return compactInterimStateSummary(state);
   const field = buildLightweightDialogueField(state.turns);
   const final = field.summary.final;
-  const delta = field.summary.fieldDelta;
-  const bottleneck = oneLine(final.bottleneck || 'unknown', { max: 42 });
+  const bottleneck = plainInterimBottleneck(final.bottleneck);
   return [
-    `field t${field.turnCount}`,
-    `M ${formatInterimNumber(final.learnerMastery)}${formatInterimDelta(delta.learnerMastery)}`,
-    `R ${formatInterimNumber(final.learnerRisk)}${formatInterimDelta(delta.learnerRisk)}`,
-    `A ${formatInterimNumber(final.tutorAlignment)}${formatInterimDelta(delta.tutorAlignment)}`,
-    `P ${formatInterimNumber(final.jointMomentum)}${formatInterimDelta(delta.jointMomentum)}`,
-    `cov ${formatInterimNumber(final.coverage)}`,
+    `learner understanding ${interimLevel(final.learnerMastery)}`,
+    `pressure ${interimLevel(final.learnerRisk)}`,
+    `tutor fit ${interimLevel(final.tutorAlignment)}`,
+    `momentum ${interimLevel(final.jointMomentum)}`,
     bottleneck,
   ].join(' | ');
 }
 
 function previousLearnerDagModel(state, context) {
   const currentTurn = Number(context?.tutorTurn || 0);
-  return [...(state?.turns || [])]
-    .reverse()
-    .find((turn) => !currentTurn || Number(turn.turn || 0) < currentTurn)?.tutorLearnerDagModel;
+  return [...(state?.turns || [])].reverse().find((turn) => !currentTurn || Number(turn.turn || 0) < currentTurn)
+    ?.tutorLearnerDagModel;
 }
 
 function compactPendingObjectiveSummary(state, context) {
@@ -1869,16 +1900,22 @@ function compactPendingObjectiveSummary(state, context) {
   const overall = context.classification?.overall || {};
   const assessment = context.tutorLearnerDag?.model?.assessment || {};
   const selection = context.registerSelection || {};
-  const bottleneck = assessment.bottleneck || turn.pedagogical_need || 'awaiting analysis';
-  const register = selection.selected_register ? `via ${selection.selected_register}` : 'register pending';
-  const target = selection.expected_dag_move || overall.next_best_tutor_move || turn.pedagogical_need || 'choose one learner-owned next move';
+  const bottleneck = plainInterimBottleneck(assessment.bottleneck || turn.pedagogical_need || 'awaiting analysis');
+  const register = selection.selected_register
+    ? `style led by ${selection.selected_register}`
+    : 'style still being chosen';
+  const target =
+    selection.expected_dag_move ||
+    overall.next_best_tutor_move ||
+    turn.pedagogical_need ||
+    'choose one learner-owned next move';
   const due = currentReleaseRows(state, context.tutorTurn).map((row) => row.premise);
   return [
-    `objective t${context.tutorTurn || '?'}`,
-    `address ${oneLine(bottleneck, { max: 36 })}`,
+    `turn ${context.tutorTurn || '?'}`,
+    `focus: ${oneLine(bottleneck, { max: 54 })}`,
     register,
-    due.length ? `due ${due.join(',')}` : null,
-    `aim ${oneLine(target, { max: 68 })}`,
+    due.length ? `${due.length} new clue${due.length === 1 ? '' : 's'} available now` : null,
+    `aim: ${oneLine(plainStrategyText(target), { max: 76 })}`,
   ]
     .filter(Boolean)
     .join(' | ');
@@ -1889,16 +1926,16 @@ function compactPendingLearnerSummary(context) {
   const turn = context.classification?.turn || {};
   const overall = context.classification?.overall || {};
   const scores = turn.scores || {};
-  const move = turn.discourse_move || 'pending';
-  const stance = turn.epistemic_stance || 'pending';
+  const move = String(turn.discourse_move || 'still being read').replaceAll('_', ' ');
+  const stance = String(turn.epistemic_stance || 'still being read').replaceAll('_', ' ');
   const need = turn.pedagogical_need || overall.next_best_tutor_move || '';
   const bits = [
-    `learner t${context.tutorTurn || '?'}`,
-    `${move}/${stance}`,
-    `concept ${formatInterimScore(scores.conceptual_engagement)}`,
-    `ready ${formatInterimScore(scores.epistemic_readiness)}`,
+    `turn ${context.tutorTurn || '?'}`,
+    `${move}; ${stance}`,
+    `conceptual engagement ${interimLevel(Number(scoreValue(scores.conceptual_engagement)) / 5)}`,
+    `evidence awareness ${interimLevel(Number(scoreValue(scores.epistemic_readiness)) / 5)}`,
   ];
-  if (need) bits.push(`need ${oneLine(need, { max: 56 })}`);
+  if (need) bits.push(`needs: ${oneLine(plainStrategyText(need), { max: 62 })}`);
   if (!context.classification && context.learnerText) bits.push(oneLine(context.learnerText, { max: 72 }));
   return bits.join(' | ');
 }
@@ -1910,12 +1947,11 @@ function compactPendingLearnerDagSummary(context) {
   const assessment = model.assessment || {};
   const missing = metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0;
   return [
-    `learner-DAG t${model.turn || context.tutorTurn || '?'}`,
-    `cov ${formatInterimNumber(assessment.bestPathCoverage)}`,
-    `grounded ${metrics.groundedCount || 0}`,
-    `voiced ${metrics.voicedDerivedCount || 0}`,
-    `missing ${missing}`,
-    oneLine(assessment.bottleneck || 'unknown bottleneck', { max: 48 }),
+    `turn ${model.turn || context.tutorTurn || '?'}`,
+    `${metrics.groundedCount || 0} public facts held`,
+    `${metrics.voicedDerivedCount || 0} inferences stated`,
+    `${missing} evidence pieces still needed`,
+    plainInterimBottleneck(assessment.bottleneck),
   ].join(' | ');
 }
 
@@ -1931,18 +1967,29 @@ function compactPendingDagMovementSummary(state, context) {
   const answersDelta = currentFeatures.answerCandidateCount - previousFeatures.answerCandidateCount;
   const missingDelta = currentFeatures.missingPremiseCount - previousFeatures.missingPremiseCount;
   const deltas = [
-    coverageDelta ? `cov ${coverageDelta}` : null,
-    groundedDelta ? `grounded ${groundedDelta > 0 ? '+' : ''}${groundedDelta}` : null,
-    voicedDelta ? `voiced ${voicedDelta > 0 ? '+' : ''}${voicedDelta}` : null,
-    answersDelta ? `answers ${answersDelta > 0 ? '+' : ''}${answersDelta}` : null,
-    missingDelta ? `missing ${missingDelta > 0 ? '+' : ''}${missingDelta}` : null,
+    coverageDelta ? `path coverage ${coverageDelta}` : null,
+    groundedDelta
+      ? `${Math.abs(groundedDelta)} public fact${Math.abs(groundedDelta) === 1 ? '' : 's'} ${groundedDelta > 0 ? 'added' : 'lost'}`
+      : null,
+    voicedDelta
+      ? `${Math.abs(voicedDelta)} inference${Math.abs(voicedDelta) === 1 ? '' : 's'} ${voicedDelta > 0 ? 'added' : 'lost'}`
+      : null,
+    answersDelta
+      ? `${Math.abs(answersDelta)} answer candidate${Math.abs(answersDelta) === 1 ? '' : 's'} ${answersDelta > 0 ? 'added' : 'removed'}`
+      : null,
+    missingDelta
+      ? `${Math.abs(missingDelta)} needed piece${Math.abs(missingDelta) === 1 ? '' : 's'} ${missingDelta < 0 ? 'resolved' : 'added'}`
+      : null,
   ].filter(Boolean);
   const assessment = model.assessment || {};
   return [
-    `DAG move t${model.turn || context.tutorTurn || '?'}`,
-    deltas.length ? deltas.join(', ') : 'no movement from prior model',
-    `status ${assessment.finalSecretEntailed ? 'answer-entailed' : assessment.assertedSecret ? 'premature-assertion' : 'open'}`,
-    `buckets ${compactInterimCounts(assessment.missingPremiseBuckets)}`,
+    `turn ${model.turn || context.tutorTurn || '?'}`,
+    deltas.length ? deltas.join(', ') : 'no clear reasoning movement yet',
+    assessment.finalSecretEntailed
+      ? 'the conclusion is supported'
+      : assessment.assertedSecret
+        ? 'the conclusion was stated too early'
+        : 'the conclusion remains open',
   ].join(' | ');
 }
 
@@ -1955,13 +2002,13 @@ function compactLearnerRecordUpdateSummary(state, context) {
   const derived = (accepted.derive || []).map((fact) => oneLine(factSurface(state.world, fact), { max: 34 }));
   const rejected = result.rejected?.length || 0;
   const bits = [
-    `record update t${context.tutorTurn || result.model?.turn || '?'}`,
-    adopted ? `adopt +${adopted}` : null,
-    retracted ? `retract ${retracted}` : null,
-    derived.length ? `derive ${derived.slice(0, 2).join('; ')}` : null,
-    accepted.hypothesis ? `hypothesis ${oneLine(accepted.hypothesis, { max: 44 })}` : null,
-    accepted.assertAnswer ? `assert ${accepted.assertAnswer}` : null,
-    rejected ? `rejected ${rejected}` : null,
+    `turn ${context.tutorTurn || result.model?.turn || '?'}`,
+    adopted ? `${accepted.adopt.length} evidence piece${accepted.adopt.length === 1 ? '' : 's'} accepted` : null,
+    retracted ? `${accepted.retract.length} evidence piece${accepted.retract.length === 1 ? '' : 's'} withdrawn` : null,
+    derived.length ? `new inference: ${derived.slice(0, 2).join('; ')}` : null,
+    accepted.hypothesis ? `working idea: ${oneLine(accepted.hypothesis, { max: 52 })}` : null,
+    accepted.assertAnswer ? `proposed answer: ${accepted.assertAnswer}` : null,
+    rejected ? `${rejected} unsupported update${rejected === 1 ? '' : 's'} ignored` : null,
   ].filter(Boolean);
   return bits.length > 1 ? bits.join(' | ') : null;
 }
@@ -1972,13 +2019,19 @@ function compactPendingRegisterSummary(context) {
   if (!selection && !efficacy) return null;
   const bits = [];
   if (selection) {
-    bits.push(`register ${selection.selected_register || 'unknown'}`);
-    if (selection.confidence !== null && selection.confidence !== undefined) bits.push(`conf ${selection.confidence}`);
-    if (selection.expected_dag_move) bits.push(`expects ${oneLine(selection.expected_dag_move, { max: 62 })}`);
+    const blend = formatRegisterDistribution(selection.distribution, { limit: 4 });
+    bits.push(blend ? `blend ${blend}` : `led by ${selection.selected_register || 'unknown'}`);
+    if (selection.expected_field_move)
+      bits.push(`aim: ${oneLine(plainStrategyText(selection.expected_field_move), { max: 68 })}`);
   }
   if (efficacy) {
-    bits.push(`last ${efficacy.selected_register || 'register'} ${efficacy.label || 'efficacy unknown'}`);
-    if (efficacy.summary) bits.push(oneLine(efficacy.summary, { max: 48 }));
+    const result =
+      efficacy.label === 'positive_progress'
+        ? 'helped'
+        : efficacy.label === 'regression_or_overreach'
+          ? 'hurt progress'
+          : 'had no clear effect yet';
+    bits.push(`last ${efficacy.selected_register || 'style'} ${result}`);
   }
   return bits.join(' | ');
 }
@@ -2006,24 +2059,24 @@ function compactEvidenceTimingSummary(state, context) {
   const next = world.releaseSchedule.find((entry) => entry.turn > tutorTurn) || null;
   const last = [...world.releaseSchedule].reverse().find((entry) => entry.turn <= tutorTurn) || null;
   const dueSummary = dueNow.length
-    ? `due now ${dueNow.map((row) => `${row.premise}/${row.via || 'release'}`).join(', ')}: ${oneLine(
-        dueNow[0].surface,
-        { max: 58 },
-      )}`
+    ? `available now: ${oneLine(dueNow[0].surface, { max: 78 })}`
     : last
-      ? `latest ${last.premise}@t${last.turn}/${last.via || 'release'}`
-      : 'no evidence released yet';
-  const nextSummary = next ? `next ${next.premise}@t${next.turn}/${next.via || 'release'}` : 'next none';
-  return `evidence timing t${tutorTurn} | ${dueSummary} | ${nextSummary}`;
+      ? 'no new evidence this turn; earlier evidence remains available'
+      : 'no case evidence has been introduced yet';
+  const nextSummary = next
+    ? `next new clue is planned for turn ${next.turn} from the ${next.via === 'director' ? 'scene' : 'tutor'}`
+    : 'all planned clues are available';
+  return `turn ${tutorTurn} | ${dueSummary} | ${nextSummary}`;
 }
 
 function compactPendingTutorDagSummary(state, context) {
-  const snapshot = context?.tutorDagSnapshot || buildTutorDagSnapshot(state, context?.tutorTurn || state?.turns?.length + 1);
+  const snapshot =
+    context?.tutorDagSnapshot || buildTutorDagSnapshot(state, context?.tutorTurn || state?.turns?.length + 1);
   if (!snapshot) return null;
   const next = snapshot.nextRelease
-    ? `next ${snapshot.nextRelease.premise}@t${snapshot.nextRelease.turn}/${snapshot.nextRelease.via || 'release'}`
-    : 'next none';
-  return `tutor-DAG t${snapshot.turn} | released ${snapshot.leavesReleased}/${snapshot.leavesTotal} | ${next}`;
+    ? `next clue planned for turn ${snapshot.nextRelease.turn}`
+    : 'all planned clues are available';
+  return `turn ${snapshot.turn} | ${snapshot.leavesReleased} of ${snapshot.leavesTotal} key clues revealed | ${next}`;
 }
 
 function compactPendingFieldSummary(state, context) {
@@ -2038,36 +2091,45 @@ function compactPendingFieldSummary(state, context) {
     registerSelection: context.registerSelection || null,
     previousRegisterEfficacy: context.previousRegisterEfficacy || null,
     tutor: '',
-    tutorDag: context.tutorDagSnapshot || buildTutorDagSnapshot(state, context.tutorTurn || (state?.turns?.length || 0) + 1),
+    tutorDag:
+      context.tutorDagSnapshot || buildTutorDagSnapshot(state, context.tutorTurn || (state?.turns?.length || 0) + 1),
   };
   const row = lightweightFieldTurn(pendingTurn, previous);
-  const baseline = previous || row;
   return [
-    `field projected t${row.turn}`,
-    `M ${formatInterimNumber(row.learnerMastery)}${formatInterimDelta(fieldDelta(row.learnerMastery, baseline.learnerMastery))}`,
-    `R ${formatInterimNumber(row.learnerRisk)}${formatInterimDelta(fieldDelta(row.learnerRisk, baseline.learnerRisk))}`,
-    `A ${formatInterimNumber(row.tutorAlignment)}${formatInterimDelta(fieldDelta(row.tutorAlignment, baseline.tutorAlignment))}`,
-    `P ${formatInterimNumber(row.jointMomentum)}${formatInterimDelta(fieldDelta(row.jointMomentum, baseline.jointMomentum))}`,
-    `cov ${formatInterimNumber(row.coverage)}`,
-    oneLine(row.bottleneck || 'unknown', { max: 42 }),
+    `turn ${row.turn}`,
+    `learner understanding ${interimLevel(row.learnerMastery)}`,
+    `pressure ${interimLevel(row.learnerRisk)}`,
+    `tutor fit ${interimLevel(row.tutorAlignment)}`,
+    `momentum ${interimLevel(row.jointMomentum)}`,
+    plainInterimBottleneck(row.bottleneck),
   ].join(' | ');
 }
 
 function compactInterimPanels(active) {
   const context = active.context || {};
   const panels = [
-    compactPendingObjectiveSummary(active.state, context),
-    compactPendingFieldSummary(active.state, context),
-    compactPendingDagMovementSummary(active.state, context),
-    compactLearnerRecordUpdateSummary(active.state, context),
-    compactEvidenceTimingSummary(active.state, context),
-    compactPendingLearnerSummary(context),
-    compactPendingLearnerDagSummary(context),
-    compactPendingRegisterSummary(context),
-    compactPendingTutorDagSummary(active.state, context),
-    compactInterimFieldSummary(active.state),
-  ].filter(Boolean);
-  return panels.length ? panels : [compactInterimStateSummary(active.state)];
+    { label: 'Tutor focus', tone: 'focus', text: compactPendingObjectiveSummary(active.state, context) },
+    { label: 'Dialogue outlook', tone: 'progress', text: compactPendingFieldSummary(active.state, context) },
+    { label: 'Reasoning change', tone: 'progress', text: compactPendingDagMovementSummary(active.state, context) },
+    { label: 'Learner reasoning', tone: 'learner', text: compactLearnerRecordUpdateSummary(active.state, context) },
+    { label: 'Evidence pacing', tone: 'evidence', text: compactEvidenceTimingSummary(active.state, context) },
+    { label: 'Learner reading', tone: 'learner', text: compactPendingLearnerSummary(context) },
+    { label: 'Reasoning state', tone: 'progress', text: compactPendingLearnerDagSummary(context) },
+    { label: 'Tutor style', tone: 'focus', text: compactPendingRegisterSummary(context) },
+    { label: 'Clue progress', tone: 'evidence', text: compactPendingTutorDagSummary(active.state, context) },
+    { label: 'Dialogue so far', tone: 'progress', text: compactInterimFieldSummary(active.state) },
+  ].filter((panel) => panel.text);
+  return panels.length
+    ? panels
+    : [{ label: 'Active checks', tone: 'neutral', text: compactInterimStateSummary(active.state) }];
+}
+
+function interimToneColor(tone) {
+  if (tone === 'progress') return C.green;
+  if (tone === 'evidence') return C.yellow;
+  if (tone === 'learner') return C.cyan;
+  if (tone === 'focus') return C.magenta;
+  return C.dim;
 }
 
 function renderInterimStatus(active) {
@@ -2077,9 +2139,31 @@ function renderInterimStatus(active) {
   const width = Math.max(60, Math.min(output.columns || 140, 180) - 1);
   const panels = compactInterimPanels(active);
   const panelIndex = Math.floor(active.tick / 4) % panels.length;
-  return oneLine(`${frame} ${active.phase} ${elapsed}s [${panelIndex + 1}/${panels.length}] | ${panels[panelIndex]}`, {
-    max: width,
-  });
+  const panel = panels[panelIndex];
+  const phase = oneLine(active.basePhase || active.phase, { max: 28 });
+  const prefix = `${frame} ${phase} · ${elapsed}s · view ${panelIndex + 1}/${panels.length} | ${panel.label}: `;
+  const panelText = oneLine(panel.text, { max: Math.max(12, width - prefix.length) });
+  return [
+    C.cyan,
+    frame,
+    ' ',
+    C.bold,
+    phase,
+    C.reset,
+    C.dim,
+    ` · ${elapsed}s · `,
+    C.reset,
+    C.yellow,
+    `view ${panelIndex + 1}/${panels.length}`,
+    C.reset,
+    C.dim,
+    ' | ',
+    C.reset,
+    interimToneColor(panel.tone),
+    panel.label,
+    C.reset,
+    `: ${panelText}`,
+  ].join('');
 }
 
 function startInterimAnimation(state, phase, context = null) {
@@ -2102,7 +2186,7 @@ function startInterimAnimation(state, phase, context = null) {
   active.render = () => {
     if (active.paused) return;
     clearStatusLine();
-    process.stdout.write(`${C.dim}${renderInterimStatus(active)}${C.reset}\r`);
+    process.stdout.write(`${renderInterimStatus(active)}${C.reset}\r`);
     active.rendered = true;
   };
   interim.active = active;
@@ -2245,15 +2329,7 @@ function redactTraceSecrets(value, seen = new WeakSet()) {
   for (const [key, nested] of Object.entries(value)) {
     const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/gu, '');
     if (
-      [
-        'apikey',
-        'authorization',
-        'bearer',
-        'secret',
-        'password',
-        'accesstoken',
-        'refreshtoken',
-      ].includes(normalizedKey)
+      ['apikey', 'authorization', 'bearer', 'secret', 'password', 'accesstoken', 'refreshtoken'].includes(normalizedKey)
     ) {
       redacted[key] = '[redacted]';
     } else {
@@ -2531,7 +2607,8 @@ function branchTemplateForEvidence(row = {}) {
       id: 'mirror_pressure',
       label: 'town case pressure',
       localQuestion: 'What exactly does the town case prove, and what does it only make tempting?',
-      warrantFrame: 'Separate a tempting public fact from the stricter coin-evidence rule it would need to license a verdict.',
+      warrantFrame:
+        'Separate a tempting public fact from the stricter coin-evidence rule it would need to license a verdict.',
       joinReminder: 'Do not let the town case stand in for the coin marks; keep it as pressure to be tested.',
     };
   }
@@ -2540,7 +2617,8 @@ function branchTemplateForEvidence(row = {}) {
       id: 'blank_chain',
       label: 'blank and metal provenance',
       localQuestion: 'What does the metal evidence license about where the blank came from?',
-      warrantFrame: 'Ask for a claim shaped as evidence plus rule plus limited conclusion about the blank, not yet the final hand.',
+      warrantFrame:
+        'Ask for a claim shaped as evidence plus rule plus limited conclusion about the blank, not yet the final hand.',
       joinReminder: 'This can close the blank branch, but it is only half the proof until the die branch also closes.',
     };
   }
@@ -2550,7 +2628,8 @@ function branchTemplateForEvidence(row = {}) {
       label: 'die and tool provenance',
       localQuestion: 'What does the mark on the coin license about the tool that cut the die?',
       warrantFrame: 'Ask for a claim shaped as mark plus rule plus limited conclusion about the die or tool.',
-      joinReminder: 'This can close the die branch, but the final verdict still needs the blank and die to meet in one hand.',
+      joinReminder:
+        'This can close the die branch, but the final verdict still needs the blank and die to meet in one hand.',
     };
   }
   if (/struckby|secret|join|same hand|both/u.test(text)) {
@@ -2558,7 +2637,8 @@ function branchTemplateForEvidence(row = {}) {
       id: 'join',
       label: 'blank-die join',
       localQuestion: 'Do the cast blank and the cut die now meet in one hand?',
-      warrantFrame: 'Ask the learner to join the two public supports: the blank branch and the die branch must point to the same hand.',
+      warrantFrame:
+        'Ask the learner to join the two public supports: the blank branch and the die branch must point to the same hand.',
       joinReminder: 'Only now may the final verdict be named, and only as the result of those two public supports.',
     };
   }
@@ -2752,17 +2832,38 @@ function normalizeHumanDiscourseExtraction(raw = {}) {
   const sideArc = source.side_arc || source.sideArc || {};
   return {
     proofStatus: String(source.proof_status || source.proofStatus || 'unclear').trim() || 'unclear',
-    provisionalClaims: normalizeDiscourseRows(source.provisional_claims || source.provisionalClaims, 'extractor_provisional_claim'),
-    impliedWarrants: normalizeDiscourseRows(source.implied_warrants || source.impliedWarrants, 'extractor_implied_warrant'),
-    missingWarrants: normalizeDiscourseRows(source.missing_warrants || source.missingWarrants, 'extractor_missing_warrant'),
-    impliedPremises: normalizeDiscourseRows(source.implied_public_premises || source.impliedPremises, 'extractor_implied_premise'),
+    provisionalClaims: normalizeDiscourseRows(
+      source.provisional_claims || source.provisionalClaims,
+      'extractor_provisional_claim',
+    ),
+    impliedWarrants: normalizeDiscourseRows(
+      source.implied_warrants || source.impliedWarrants,
+      'extractor_implied_warrant',
+    ),
+    missingWarrants: normalizeDiscourseRows(
+      source.missing_warrants || source.missingWarrants,
+      'extractor_missing_warrant',
+    ),
+    impliedPremises: normalizeDiscourseRows(
+      source.implied_public_premises || source.impliedPremises,
+      'extractor_implied_premise',
+    ),
     suppressedPremises: normalizeDiscourseRows(
       source.suppressed_or_private_premises || source.suppressedPremises,
       'extractor_suppressed_premise',
     ),
-    commonSenseBridges: normalizeDiscourseRows(source.common_sense_bridges || source.commonSenseBridges, 'extractor_common_sense'),
-    illicitHiddenPremises: normalizeDiscourseRows(source.illicit_hidden_premises || source.illicitHiddenPremises, 'extractor_hidden_premise'),
-    proofDebtCandidates: normalizeDiscourseRows(source.proof_debt_candidates || source.proofDebtCandidates, 'extractor_proof_debt'),
+    commonSenseBridges: normalizeDiscourseRows(
+      source.common_sense_bridges || source.commonSenseBridges,
+      'extractor_common_sense',
+    ),
+    illicitHiddenPremises: normalizeDiscourseRows(
+      source.illicit_hidden_premises || source.illicitHiddenPremises,
+      'extractor_hidden_premise',
+    ),
+    proofDebtCandidates: normalizeDiscourseRows(
+      source.proof_debt_candidates || source.proofDebtCandidates,
+      'extractor_proof_debt',
+    ),
     sideArc: {
       detected: sideArc.detected === true,
       type: String(sideArc.type || '').trim() || null,
@@ -2777,7 +2878,9 @@ function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = n
   const record = model?.learnerRecord || {};
   const explicitWarrants = publicStocktakeRows(record.voicedDerived, 'voiced_derived_public_claim');
   const explicitPublicPremises = publicStocktakeRows(record.grounded, 'grounded_public_record');
-  const extraction = normalizeHumanDiscourseExtraction(tutorLearnerDag?.accepted?.humanDiscourse || tutorLearnerDag?.extractor?.humanDiscourse);
+  const extraction = normalizeHumanDiscourseExtraction(
+    tutorLearnerDag?.accepted?.humanDiscourse || tutorLearnerDag?.extractor?.humanDiscourse,
+  );
   const turn = classification?.turn || {};
   const overleap = /omits_warrant|overleaps_evidence|distorts_public_evidence|overconfident|answer_seeking/iu.test(
     [turn.evidence_use, turn.epistemic_stance, turn.discourse_move].filter(Boolean).join(' '),
@@ -2810,7 +2913,10 @@ function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = n
     ...rejectedDebt,
   ];
   const strictProofAdoptions = [
-    ...(tutorLearnerDag?.accepted?.adopt || []).map((premise) => ({ surface: premise, source: 'strict_adopted_premise' })),
+    ...(tutorLearnerDag?.accepted?.adopt || []).map((premise) => ({
+      surface: premise,
+      source: 'strict_adopted_premise',
+    })),
     ...(tutorLearnerDag?.accepted?.derive || []).map((fact) => ({
       surface: factSurface(world, fact),
       source: 'strict_derived_public_claim',
@@ -2902,7 +3008,7 @@ function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
     '# Task',
     '',
     'Extract a conservative public learner-record update from the current learner turn.',
-    'This update feeds a tutor-side model of the learner DAG. It is not the learner\'s private state.',
+    "This update feeds a tutor-side model of the learner DAG. It is not the learner's private state.",
     '',
     '# Public question',
     state.world.question,
@@ -3026,19 +3132,19 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
   const staged = stagedEvidenceRows(state.world, tutorTurn);
   const includeRegisterSelection = Boolean(
     state.register?.enabled &&
-      ![
-        'field',
-        'trajectory',
-        'dynamical_system',
-        'empirical_dynamical_system',
-        'continuous_dynamical_system',
-        'continuous_empirical_dynamical_system',
-        'state',
-        'random',
-        'bland',
-        'negative',
-      ].includes(state.register.policy) &&
-      state.register.palette?.length,
+    ![
+      'field',
+      'trajectory',
+      'dynamical_system',
+      'empirical_dynamical_system',
+      'continuous_dynamical_system',
+      'continuous_empirical_dynamical_system',
+      'state',
+      'random',
+      'bland',
+      'negative',
+    ].includes(state.register.policy) &&
+    state.register.palette?.length,
   );
   const localFieldPolicy = Boolean(state.register?.enabled && state.register.policy === 'field');
   const localTrajectoryPolicy = Boolean(state.register?.enabled && state.register.policy === 'trajectory');
@@ -3402,9 +3508,12 @@ function summarizeDagDeltas(delta) {
   const parts = [];
   if (delta.bestPathCoverage) parts.push(`coverage ${delta.bestPathCoverage > 0 ? '+' : ''}${delta.bestPathCoverage}`);
   if (delta.groundedCount) parts.push(`grounded ${delta.groundedCount > 0 ? '+' : ''}${delta.groundedCount}`);
-  if (delta.voicedDerivedCount) parts.push(`voiced ${delta.voicedDerivedCount > 0 ? '+' : ''}${delta.voicedDerivedCount}`);
-  if (delta.answerCandidateCount) parts.push(`answers ${delta.answerCandidateCount > 0 ? '+' : ''}${delta.answerCandidateCount}`);
-  if (delta.missingPremiseCount) parts.push(`missing ${delta.missingPremiseCount > 0 ? '+' : ''}${delta.missingPremiseCount}`);
+  if (delta.voicedDerivedCount)
+    parts.push(`voiced ${delta.voicedDerivedCount > 0 ? '+' : ''}${delta.voicedDerivedCount}`);
+  if (delta.answerCandidateCount)
+    parts.push(`answers ${delta.answerCandidateCount > 0 ? '+' : ''}${delta.answerCandidateCount}`);
+  if (delta.missingPremiseCount)
+    parts.push(`missing ${delta.missingPremiseCount > 0 ? '+' : ''}${delta.missingPremiseCount}`);
   if (delta.unsupportedAssertionCount) {
     parts.push(`unsupported ${delta.unsupportedAssertionCount > 0 ? '+' : ''}${delta.unsupportedAssertionCount}`);
   }
@@ -3423,7 +3532,8 @@ function registerEfficacyFromDagProgress({ selection, currentModel, accepted, st
     delta.answerCandidateCount * 3 -
     delta.missingPremiseCount -
     Math.max(0, delta.unsupportedAssertionCount);
-  const label = progressScore > 0 ? 'positive_progress' : progressScore < 0 ? 'regression_or_overreach' : 'no_clear_progress';
+  const label =
+    progressScore > 0 ? 'positive_progress' : progressScore < 0 ? 'regression_or_overreach' : 'no_clear_progress';
   const dagProgress = progressScore > 0;
   const field = fieldProgressFromClassification({ state, classification });
   const mismatch = classifyFieldStateRelation({ fieldProgress: field.progress, dagProgress });
@@ -3454,7 +3564,9 @@ function registerEfficacyFromDagProgress({ selection, currentModel, accepted, st
 
 function evaluatePendingRegisterEfficacy(state, currentDagResult, classification = null) {
   if (!state.register?.enabled || !currentDagResult?.model) return null;
-  const pending = [...state.register.history].reverse().find((entry) => !entry.efficacy && entry.turn < currentDagResult.model.turn);
+  const pending = [...state.register.history]
+    .reverse()
+    .find((entry) => !entry.efficacy && entry.turn < currentDagResult.model.turn);
   if (!pending) return null;
   pending.efficacy = registerEfficacyFromDagProgress({
     selection: pending,
@@ -3551,10 +3663,14 @@ function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
     actionFamily = 'receive_vulnerability';
     reason = 'The reviewer sees affective exposure as the strongest current public cue.';
     expectedFieldMove = 'Lower learner risk enough for a concrete public-evidence move to become possible.';
-  } else if (palette.has('precise') && /challenge|omits_warrant|overleaps_evidence|distorts_public_evidence/.test(`${move} ${evidenceUse}`)) {
+  } else if (
+    palette.has('precise') &&
+    /challenge|omits_warrant|overleaps_evidence|distorts_public_evidence/.test(`${move} ${evidenceUse}`)
+  ) {
     selected = 'precise';
     actionFamily = 'answer_accountably';
-    reason = 'The learner is challenging or overleaping the public evidence, so the tutor should hold the bid accountable.';
+    reason =
+      'The learner is challenging or overleaping the public evidence, so the tutor should hold the bid accountable.';
     expectedFieldMove = 'Shift from unsupported assertion toward a publicly warranted claim.';
   } else if (policy === 'dynamic' && latestMismatch === 'field_without_dag') {
     selected = firstAvailableRegister(palette, ['plain', 'precise', 'charismatic']);
@@ -3574,22 +3690,20 @@ function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
   ) {
     selected = 'charismatic';
     actionFamily = 'challenge_resistance';
-    reason = 'Low-agency, answer-seeking, or overconfident posture warrants a compact challenge rather than another stepwise hint.';
+    reason =
+      'Low-agency, answer-seeking, or overconfident posture warrants a compact challenge rather than another stepwise hint.';
     expectedFieldMove = 'Increase learner agency or evidence-seeking without supplying the concealed answer.';
-  } else if (policy === 'dynamic' && palette.has('brisk') && shouldUseDynamicBrisk({ state, classification, assessment })) {
+  } else if (
+    policy === 'dynamic' &&
+    palette.has('brisk') &&
+    shouldUseDynamicBrisk({ state, classification, assessment })
+  ) {
     selected = 'brisk';
     actionFamily = 'stage_next_step';
     reason = 'The learner is explicitly asking for stepwise help on the immediate evidence move.';
     expectedFieldMove = 'Make the next learner-owned inference easier without turning it into a menu or answer.';
   } else if (!palette.has(selected)) {
-    selected = firstAvailableRegister(palette, [
-      'precise',
-      'charismatic',
-      'plain',
-      'warm',
-      'witnessing',
-      'brisk',
-    ]);
+    selected = firstAvailableRegister(palette, ['precise', 'charismatic', 'plain', 'warm', 'witnessing', 'brisk']);
   }
 
   if (!reason) {
@@ -3613,7 +3727,8 @@ function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
     risk_flags: [],
     expected_dag_move: 'Elicit one public, checkable learner move that can update the learner-DAG record.',
     expected_field_move: expectedFieldMove,
-    expected_progress_marker: 'Next learner turn adopts staged evidence, voices a derivable inference, or corrects an overreach.',
+    expected_progress_marker:
+      'Next learner turn adopts staged evidence, voices a derivable inference, or corrects an overreach.',
     confidence: 0.25,
     warning: 'fallback_register_selection',
     source: 'local_fallback_register_selection',
@@ -3641,7 +3756,8 @@ function fixedBlandRegisterSelection({ state, classification }) {
     evidence_span: classification?.turn?.summary || '',
     risk_flags: [],
     expected_dag_move: 'No adaptive register-specific DAG move is predicted for the bland baseline.',
-    expected_field_move: 'Use the fixed plain stance as a control condition for comparison with adaptive register policies.',
+    expected_field_move:
+      'Use the fixed plain stance as a control condition for comparison with adaptive register policies.',
     expected_progress_marker: 'Observe learner-DAG and field movement without adaptive register selection.',
     confidence: null,
     source: 'fixed_bland_register_policy',
@@ -3815,7 +3931,9 @@ function fieldRegisterPolicyFeatures({ state, classification, tutorLearnerDag })
       assertedSecret: assessment.assertedSecret === true,
     },
     explicitStepwise: hasExplicitStepwiseSignal(classification),
-    recentRegisters: (state.register?.history || []).slice(-4).map((entry) => normalizeStoredRegisterSelection(entry)?.selected_register),
+    recentRegisters: (state.register?.history || [])
+      .slice(-4)
+      .map((entry) => normalizeStoredRegisterSelection(entry)?.selected_register),
     latestEfficacy: latestRegisterEfficacy(state),
   };
 }
@@ -3832,7 +3950,8 @@ function actionFamilyForFieldRegister({ selected, features }) {
     .filter(Boolean)
     .join(' ');
   if (selected === 'brisk') return 'stage_next_step';
-  if (selected === 'plain') return requestType === 'transfer_demand_or_named_material' ? 'ground_in_material' : 'compress_sayback';
+  if (selected === 'plain')
+    return requestType === 'transfer_demand_or_named_material' ? 'ground_in_material' : 'compress_sayback';
   if (selected === 'warm') return 'reanchor_lived_stake';
   if (selected === 'witnessing') return 'receive_vulnerability';
   if (selected === 'charismatic' || selected === 'ironic' || selected === 'sarcastic' || selected === 'face_threat') {
@@ -3840,7 +3959,8 @@ function actionFamilyForFieldRegister({ selected, features }) {
       ? 'challenge_resistance'
       : 'clarify_distinction';
   }
-  if (/challenge|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported/iu.test(signal)) return 'answer_accountably';
+  if (/challenge|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported/iu.test(signal))
+    return 'answer_accountably';
   return 'clarify_distinction';
 }
 
@@ -3859,7 +3979,8 @@ function expectedFieldMoveForRegister(selected, features) {
   if (selected === 'charismatic') return 'Interrupt low-agency compliance and create a learner-owned public move.';
   if (selected === 'ironic') return 'Let the learner notice the mismatch without turning the learner into the target.';
   if (selected === 'sarcastic') return 'Test whether a dry edge disrupts rote performance while leaving a repair path.';
-  if (selected === 'face_threat') return 'Measure whether local face threat changes uptake while preserving a minimal repair path.';
+  if (selected === 'face_threat')
+    return 'Measure whether local face threat changes uptake while preserving a minimal repair path.';
   if (selected === 'brisk') return 'Increase pace without turning the next inference into an answer dump.';
   if (selected === 'plain') return "Make the next move sayable in the learner's own words.";
   return 'Sharpen the learner field toward one accountable public statement.';
@@ -3884,7 +4005,11 @@ function buildFieldRegisterScores({ state, classification, tutorLearnerDag }) {
     .filter(Boolean)
     .join(' ');
 
-  if (/conceptual_clarity_request|challenge|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported/iu.test(signal)) {
+  if (
+    /conceptual_clarity_request|challenge|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported/iu.test(
+      signal,
+    )
+  ) {
     addRegisterScore(scores, 'precise', 2.2, drivers, 'for distinction, warrant, or overreach');
     addRegisterScore(scores, 'ironic', 0.7, drivers, 'for visible mismatch');
   }
@@ -4028,7 +4153,8 @@ function fieldRegisterSelection({ state, classification, tutorLearnerDag }) {
   const { features, scores, drivers } = buildFieldRegisterScores({ state, classification, tutorLearnerDag });
   const distribution = normalizeRegisterDistribution(scores);
   const sampled = sampleRegisterDistribution(distribution);
-  const selected = sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
+  const selected =
+    sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = actionFamilyForFieldRegister({ selected, features });
   const selectedProbability = sampled.entry?.probability ?? null;
   const driverText = drivers.slice(0, 5).join('; ') || 'base field-policy weights only';
@@ -4194,11 +4320,7 @@ function buildTrajectoryWindow({ state, classification, tutorLearnerDag, window 
   const dagVelocity = numberOr(dag.velocity);
   const riskVelocity = numberOr(risk.velocity);
   const flags = {
-    plateau:
-      points.length >= 3 &&
-      Math.abs(fieldSlope) < 0.025 &&
-      Math.abs(dagSlope) < 0.25 &&
-      riskSlope >= -0.15,
+    plateau: points.length >= 3 && Math.abs(fieldSlope) < 0.025 && Math.abs(dagSlope) < 0.25 && riskSlope >= -0.15,
     fieldRegression: points.length >= 2 && (fieldVelocity < -0.04 || fieldSlope < -0.025),
     riskRising: points.length >= 2 && (riskVelocity > 0.35 || riskSlope > 0.18),
     fieldOnlyDrift: points.length >= 3 && fieldSlope > 0.025 && dagSlope <= 0.2,
@@ -4373,7 +4495,8 @@ function trajectoryRegisterSelection({ state, classification, tutorLearnerDag })
   });
   const distribution = normalizeRegisterDistribution(scores);
   const sampled = sampleRegisterDistribution(distribution);
-  const selected = sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
+  const selected =
+    sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = actionFamilyForFieldRegister({ selected, features });
   const selectedProbability = sampled.entry?.probability ?? null;
   const driverText = drivers.slice(0, 6).join('; ') || 'trajectory policy used field baseline only';
@@ -4405,7 +4528,9 @@ function trajectoryRegisterSelection({ state, classification, tutorLearnerDag })
       base_field_schema: 'machinespirits.tutor-stub.field-register-policy.v1',
       features,
       trajectory,
-      base_scores: Object.fromEntries(Object.entries(baseScores).map(([register, score]) => [register, roundField(score)])),
+      base_scores: Object.fromEntries(
+        Object.entries(baseScores).map(([register, score]) => [register, roundField(score)]),
+      ),
       scores: Object.fromEntries(Object.entries(scores).map(([register, score]) => [register, roundField(score)])),
       base_drivers: baseDrivers,
       drivers,
@@ -4562,8 +4687,14 @@ function buildDynamicalSystemState({ state, classification, tutorLearnerDag }) {
   );
   const answerSeeking = signalMatches(/answer_seeking|overconfident|passive|complying/iu, signalValues);
   const resistance = signalMatches(/resistance_or_low_agency|resistant|challenge|authority_refusal/iu, signalValues);
-  const plainNeed = signalMatches(/plain_language_request|plain_simplification_followup|transfer_demand_or_named_material/iu, signalValues);
-  const overreach = signalMatches(/omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported|premature_assertion/iu, signalValues);
+  const plainNeed = signalMatches(
+    /plain_language_request|plain_simplification_followup|transfer_demand_or_named_material/iu,
+    signalValues,
+  );
+  const overreach = signalMatches(
+    /omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported|premature_assertion/iu,
+    signalValues,
+  );
   const learnerIntegrationGap = features.dag.bottleneck === 'learner_integration_gap';
   const assertionGap = features.dag.bottleneck === 'assertion_gap';
   const releaseGap = /release_or_pacing_gap|inference_gap/iu.test(features.dag.bottleneck);
@@ -4594,12 +4725,18 @@ function buildDynamicalSystemState({ state, classification, tutorLearnerDag }) {
       (1 - epistemic) * 0.1,
   );
   const recognitionPressure = clampField01(
-    agencyDeficit * 0.35 + (resistance ? 0.25 : 0) + (answerSeeking ? 0.25 : 0) + coercionRisk * 0.25 + affectiveRisk * 0.15,
+    agencyDeficit * 0.35 +
+      (resistance ? 0.25 : 0) +
+      (answerSeeking ? 0.25 : 0) +
+      coercionRisk * 0.25 +
+      affectiveRisk * 0.15,
   );
   const integrationNeed = clampField01(
     lowSurface * 0.35 + (flags.fieldOnlyDrift ? 0.25 : 0) + (learnerIntegrationGap ? 0.25 : 0) + (plainNeed ? 0.2 : 0),
   );
-  const compressionNeed = clampField01((plainNeed ? 0.5 : 0) + lowSurface * 0.35 + (features.dag.finalSecretEntailed ? 0.15 : 0));
+  const compressionNeed = clampField01(
+    (plainNeed ? 0.5 : 0) + lowSurface * 0.35 + (features.dag.finalSecretEntailed ? 0.15 : 0),
+  );
   const momentum = clampField01(
     positivePart(trajectory.field?.slope, 4) * 0.2 +
       positivePart(trajectory.dag?.slope, 0.5) * 0.25 +
@@ -4612,7 +4749,9 @@ function buildDynamicalSystemState({ state, classification, tutorLearnerDag }) {
     (flags.plateau ? 0.5 : 0) +
       (features.field.relation === 'neither_progress' ? 0.25 : 0) +
       (latestRegisterEfficacy(state)?.label === 'no_clear_progress' ? 0.2 : 0) +
-      (Math.abs(numberOr(trajectory.field?.velocity)) < 0.02 && Math.abs(numberOr(trajectory.dag?.velocity)) < 0.2 ? 0.15 : 0),
+      (Math.abs(numberOr(trajectory.field?.velocity)) < 0.02 && Math.abs(numberOr(trajectory.dag?.velocity)) < 0.2
+        ? 0.15
+        : 0),
   );
   const closurePressure = clampField01(
     (flags.nearClosure ? 0.45 : 0) +
@@ -4620,9 +4759,15 @@ function buildDynamicalSystemState({ state, classification, tutorLearnerDag }) {
       (assertionGap ? 0.2 : 0) +
       (features.dag.finalSecretEntailed ? 0.25 : 0),
   );
-  const disruptionNeed = clampField01(stagnation * 0.5 + (resistance ? 0.25 : 0) + agencyDeficit * 0.2 - affectiveRisk * 0.35 - coercionRisk * 0.35);
-  const tempoAffordance = clampField01(momentum * (1 - affectiveRisk) * (1 - coercionRisk) + (features.explicitStepwise ? 0.25 : 0));
-  const fieldRegression = clampField01((flags.fieldRegression ? 0.6 : 0) + Math.max(0, -numberOr(trajectory.field?.velocity)) * 3);
+  const disruptionNeed = clampField01(
+    stagnation * 0.5 + (resistance ? 0.25 : 0) + agencyDeficit * 0.2 - affectiveRisk * 0.35 - coercionRisk * 0.35,
+  );
+  const tempoAffordance = clampField01(
+    momentum * (1 - affectiveRisk) * (1 - coercionRisk) + (features.explicitStepwise ? 0.25 : 0),
+  );
+  const fieldRegression = clampField01(
+    (flags.fieldRegression ? 0.6 : 0) + Math.max(0, -numberOr(trajectory.field?.velocity)) * 3,
+  );
   const empiricalEvidenceCount = (state.register?.history || []).filter((entry) => entry.efficacy).length;
   const empiricalUncertainty = clampField01(1 - Math.min(1, empiricalEvidenceCount / 4));
 
@@ -4685,7 +4830,8 @@ function empiricalRegisterCorrections(state, palette) {
     const recency = (index + 1) / entries.length;
     const progress = Math.max(-1, Math.min(1, numberOr(efficacy.progressScore) / 4));
     const fieldDelta = Math.max(-1, Math.min(1, numberOr(efficacy.field?.delta) * 4));
-    const labelAdjustment = efficacy.label === 'positive_progress' ? 0.15 : efficacy.label === 'regression_or_overreach' ? -0.35 : -0.08;
+    const labelAdjustment =
+      efficacy.label === 'positive_progress' ? 0.15 : efficacy.label === 'regression_or_overreach' ? -0.35 : -0.08;
     const update = recency * (0.45 * progress + 0.25 * fieldDelta + labelAdjustment);
     corrections[entry.selected_register] += update;
     evidence.push({
@@ -4700,7 +4846,9 @@ function empiricalRegisterCorrections(state, palette) {
   return {
     schema: 'machinespirits.tutor-stub.register-empirical-corrections.v1',
     source: 'within_dialogue_next_turn_efficacy',
-    corrections: Object.fromEntries(Object.entries(corrections).map(([register, value]) => [register, roundField(value)])),
+    corrections: Object.fromEntries(
+      Object.entries(corrections).map(([register, value]) => [register, roundField(value)]),
+    ),
     evidence,
   };
 }
@@ -4744,7 +4892,13 @@ function corpusEmpiricalRegisterCorrections({ state, palette, system, features, 
     if (overall) {
       const adjustment = corpusPriorRowAdjustment(overall);
       corrections[register] += adjustment;
-      evidence.push({ type: 'overall', register, n: overall.n, meanOutcome: overall.meanOutcome, adjustment: roundField(adjustment) });
+      evidence.push({
+        type: 'overall',
+        register,
+        n: overall.n,
+        meanOutcome: overall.meanOutcome,
+        adjustment: roundField(adjustment),
+      });
     }
     for (const [axis, value] of highAxes) {
       const row = prior.axisPriors?.[axis]?.[register] || null;
@@ -4766,7 +4920,14 @@ function corpusEmpiricalRegisterCorrections({ state, palette, system, features, 
       if (!row) continue;
       const adjustment = corpusPriorRowAdjustment(row);
       corrections[register] += adjustment;
-      evidence.push({ type: 'context', key, register, n: row.n, meanOutcome: row.meanOutcome, adjustment: roundField(adjustment) });
+      evidence.push({
+        type: 'context',
+        key,
+        register,
+        n: row.n,
+        meanOutcome: row.meanOutcome,
+        adjustment: roundField(adjustment),
+      });
     }
   }
 
@@ -4778,7 +4939,9 @@ function corpusEmpiricalRegisterCorrections({ state, palette, system, features, 
     source: prior.source || null,
     contextKeys,
     highAxes: highAxes.map(([axis, value]) => ({ axis, value: roundField(value) })),
-    corrections: Object.fromEntries(Object.entries(corrections).map(([register, value]) => [register, roundField(value)])),
+    corrections: Object.fromEntries(
+      Object.entries(corrections).map(([register, value]) => [register, roundField(value)]),
+    ),
     evidence: evidence.sort((a, b) => Math.abs(numberOr(b.adjustment)) - Math.abs(numberOr(a.adjustment))).slice(0, 30),
   };
 }
@@ -4935,15 +5098,17 @@ function expectedDynamicalMoveForRegister(selected, features, system) {
 }
 
 function dynamicalSystemRegisterSelection({ state, classification, tutorLearnerDag, useCorpusPrior = false }) {
-  const { features, trajectory, system, empirical, corpusEmpirical, logits, scores, drivers } = buildDynamicalSystemRegisterScores({
-    state,
-    classification,
-    tutorLearnerDag,
-    useCorpusPrior,
-  });
+  const { features, trajectory, system, empirical, corpusEmpirical, logits, scores, drivers } =
+    buildDynamicalSystemRegisterScores({
+      state,
+      classification,
+      tutorLearnerDag,
+      useCorpusPrior,
+    });
   const distribution = normalizeRegisterDistribution(scores);
   const sampled = sampleRegisterDistribution(distribution);
-  const selected = sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
+  const selected =
+    sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = actionFamilyForFieldRegister({ selected, features });
   const selectedProbability = sampled.entry?.probability ?? null;
   const selectedContributions = registerAffinityContributions(selected, system.state_vector).slice(0, 6);
@@ -5019,13 +5184,19 @@ function dynamicalSystemRegisterSelection({ state, classification, tutorLearnerD
   };
 }
 
-function continuousDynamicalSystemRegisterSelection({ state, classification, tutorLearnerDag, useCorpusPrior = false }) {
-  const { features, trajectory, system, empirical, corpusEmpirical, logits, scores, drivers } = buildDynamicalSystemRegisterScores({
-    state,
-    classification,
-    tutorLearnerDag,
-    useCorpusPrior,
-  });
+function continuousDynamicalSystemRegisterSelection({
+  state,
+  classification,
+  tutorLearnerDag,
+  useCorpusPrior = false,
+}) {
+  const { features, trajectory, system, empirical, corpusEmpirical, logits, scores, drivers } =
+    buildDynamicalSystemRegisterScores({
+      state,
+      classification,
+      tutorLearnerDag,
+      useCorpusPrior,
+    });
   const definitions = getEngagementRegisterDefinitions();
   const blend = buildContinuousRegisterVector({
     scores,
@@ -5033,7 +5204,8 @@ function continuousDynamicalSystemRegisterSelection({ state, classification, tut
     definitions,
     allowUnsafe: state.register?.continuousUnsafe === true,
   });
-  const selected = blend.selectedRegister || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
+  const selected =
+    blend.selectedRegister || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = actionFamilyForFieldRegister({ selected, features });
   const selectedProbability = blend.selectedProbability ?? null;
   const selectedContributions = registerAffinityContributions(selected, system.state_vector).slice(0, 6);
@@ -5066,9 +5238,9 @@ function continuousDynamicalSystemRegisterSelection({ state, classification, tut
       requestType: features.requestType,
       actionFamily,
     }),
-    reviewer_signal: `continuous blend=${blend.dominantBlend}; attractors=${topNumericEntries(system.attractors, { limit: 3 }).join(
-      ', ',
-    )}; vector=${topNumericEntries(system.state_vector, { limit: 3 }).join(', ')}`,
+    reviewer_signal: `continuous blend=${blend.dominantBlend}; attractors=${topNumericEntries(system.attractors, {
+      limit: 3,
+    }).join(', ')}; vector=${topNumericEntries(system.state_vector, { limit: 3 }).join(', ')}`,
     register_reason: `${
       useCorpusPrior ? 'Continuous empirical dynamical-system' : 'Continuous dynamical-system'
     } policy blended register anchors from theory affinity matrix plus local${
@@ -5170,7 +5342,9 @@ function stateRegisterPolicyFeatures({ state, classification, tutorLearnerDag })
       assertedMirror: assessment.assertedMirror === true,
     },
     explicitStepwise: hasExplicitStepwiseSignal(classification),
-    recentRegisters: (state.register?.history || []).slice(-4).map((entry) => normalizeStoredRegisterSelection(entry)?.selected_register),
+    recentRegisters: (state.register?.history || [])
+      .slice(-4)
+      .map((entry) => normalizeStoredRegisterSelection(entry)?.selected_register),
   };
 }
 
@@ -5184,7 +5358,9 @@ function expectedStateMoveForRegister(selected, features) {
   if (features.dag.bottleneck === 'assertion_gap') {
     return 'Move the learner from held evidence to a warranted final assertion.';
   }
-  if (/answer_seeking|passive|complying/iu.test(`${features.epistemicStance} ${features.agency} ${features.evidenceUse}`)) {
+  if (
+    /answer_seeking|passive|complying/iu.test(`${features.epistemicStance} ${features.agency} ${features.evidenceUse}`)
+  ) {
     return 'Move the learner from dependent answer-seeking to one small public commitment.';
   }
   if (selected === 'witnessing') return 'Lower current affective risk while keeping one concrete public test.';
@@ -5245,7 +5421,11 @@ function buildStateRegisterScores({ state, classification, tutorLearnerDag }) {
     addRegisterScore(scores, 'charismatic', 1.0, drivers, 'to interrupt answer-first closure');
     addRegisterScore(scores, 'ironic', 0.45, drivers, 'for visible warrant gap');
   }
-  if (/conceptual_clarity_request|challenge|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported/iu.test(signal)) {
+  if (
+    /conceptual_clarity_request|challenge|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported/iu.test(
+      signal,
+    )
+  ) {
     addRegisterScore(scores, 'precise', 1.8, drivers, 'for current distinction or warrant issue');
     addRegisterScore(scores, 'ironic', 0.35, drivers, 'for current mismatch');
   }
@@ -5296,7 +5476,8 @@ function stateRegisterSelection({ state, classification, tutorLearnerDag }) {
   const { features, scores, drivers } = buildStateRegisterScores({ state, classification, tutorLearnerDag });
   const distribution = normalizeRegisterDistribution(scores);
   const sampled = sampleRegisterDistribution(distribution);
-  const selected = sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
+  const selected =
+    sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = actionFamilyForFieldRegister({ selected, features });
   const selectedProbability = sampled.entry?.probability ?? null;
   const driverText = drivers.slice(0, 5).join('; ') || 'base state-policy weights only';
@@ -5374,9 +5555,9 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
   const requestedIsKnown = Boolean(requestedRegister && palette.has(requestedRegister));
   const dynamicBriskBlocked = Boolean(
     requestedIsKnown &&
-      policy === 'dynamic' &&
-      requestedRegister === 'brisk' &&
-      !shouldUseDynamicBrisk({ state, classification, assessment: tutorLearnerDag?.model?.assessment || {} }),
+    policy === 'dynamic' &&
+    requestedRegister === 'brisk' &&
+    !shouldUseDynamicBrisk({ state, classification, assessment: tutorLearnerDag?.model?.assessment || {} }),
   );
   const source =
     policy === 'random'
@@ -5429,9 +5610,12 @@ function normalizeRegisterSelection(rawSelection, { state, classification, tutor
     expected_field_move: String(source.expected_field_move || source.expected_learner_field_move || ''),
     expected_progress_marker: String(source.expected_progress_marker || ''),
     confidence: Number.isFinite(Number(source.confidence)) ? Number(source.confidence) : null,
-    selected_probability: Number.isFinite(Number(source.selected_probability)) ? Number(source.selected_probability) : null,
+    selected_probability: Number.isFinite(Number(source.selected_probability))
+      ? Number(source.selected_probability)
+      : null,
     distribution: Array.isArray(source.distribution) ? source.distribution : null,
-    register_vector: source.register_vector && typeof source.register_vector === 'object' ? source.register_vector : null,
+    register_vector:
+      source.register_vector && typeof source.register_vector === 'object' ? source.register_vector : null,
     register_vector_entropy_bits: Number.isFinite(Number(source.register_vector_entropy_bits))
       ? Number(source.register_vector_entropy_bits)
       : null,
@@ -5822,9 +6006,7 @@ function printRegisterSelection(selection, previousEfficacy = null) {
     console.log(
       `${C.dim}  request: ${selection.request_type || 'unknown'}; action: ${
         selection.action_family || 'none'
-      }; reviewer signal: ${
-        selection.reviewer_signal || 'unknown'
-      }${C.reset}`,
+      }; reviewer signal: ${selection.reviewer_signal || 'unknown'}${C.reset}`,
     );
   }
   if (selection.register_reason) console.log(`${C.dim}  reason: ${selection.register_reason}${C.reset}`);
@@ -5840,7 +6022,7 @@ function printRegisterSelection(selection, previousEfficacy = null) {
               selection.policy === 'continuous_dynamical_system' ||
               selection.policy === 'continuous_empirical_dynamical_system'
             ? 'expected dynamical move'
-          : 'expected field move';
+            : 'expected field move';
     console.log(`${C.dim}  ${expectedMoveLabel}: ${selection.expected_field_move}${C.reset}`);
   }
 }
@@ -5874,7 +6056,9 @@ function registerSelectionContext(selection, { multipleChoice = false } = {}) {
       ? [`Forbidden phrase families: ${definition.forbidden_phrases.join(', ')}`]
       : []),
     definition.recognition_guardrail ? `Recognition guardrail: ${definition.recognition_guardrail}` : null,
-    selection.simulated_only ? 'This is a simulated-only register; do not use it unless the operator explicitly enabled it.' : null,
+    selection.simulated_only
+      ? 'This is a simulated-only register; do not use it unless the operator explicitly enabled it.'
+      : null,
   ].filter(Boolean);
   return [
     '[Tutor-only selected register]',
@@ -5896,7 +6080,7 @@ function registerSelectionContext(selection, { multipleChoice = false } = {}) {
     'Write the next tutor message in this register without naming the register, the classifier, or the learner-DAG machinery.',
     multipleChoice
       ? 'Keep the turn compact. In story mode, if you use multiple choice, offer 2-4 short public evidence options and invite the learner to choose or write their own trial-book line.'
-      : 'Keep the turn compact. In story mode, give one live issue and one light prompt for the learner\'s next thought; do not require a full warranted claim unless the learner is making an unsafe or case-closing leap.',
+      : "Keep the turn compact. In story mode, give one live issue and one light prompt for the learner's next thought; do not require a full warranted claim unless the learner is making an unsafe or case-closing leap.",
     '[End tutor-only selected register]',
   ]
     .filter(Boolean)
@@ -5934,7 +6118,9 @@ function compactAuditRows(rows = [], limit = 3) {
   const visible = (Array.isArray(rows) ? rows : [])
     .map((row) => {
       if (typeof row === 'string') return row.trim();
-      const bits = [row?.surface, row?.warrantNeeded, row?.reason].filter(Boolean).map((value) => oneLine(value, { max: 120 }));
+      const bits = [row?.surface, row?.warrantNeeded, row?.reason]
+        .filter(Boolean)
+        .map((value) => oneLine(value, { max: 120 }));
       return bits.join(' — ');
     })
     .filter(Boolean)
@@ -5988,7 +6174,7 @@ function humanDiscourseTutorContext(frame) {
         ])}`
       : null,
     promptRule,
-    'Learner-facing behavior: use plain public evidence language, answer side clarifications briefly, and usually move with the learner\'s compressed inference rather than forcing them to spell out every link.',
+    "Learner-facing behavior: use plain public evidence language, answer side clarifications briefly, and usually move with the learner's compressed inference rather than forcing them to spell out every link.",
     'When the learner skips an obvious public bridge, do not quiz them on it. Carry the bridge internally as implied proof debt and continue to the next useful pressure.',
     'Ask for an explicit warrant only if the learner is about to name/confirm a suspect, contradicts public evidence, relies on unstaged evidence, or reaches a conclusion that would be false without the missing bridge.',
     'Default response shape: one short acknowledgement, one sentence naming the live evidence pressure, one light question. Avoid lists of routes, ledgers, or multiple required subclaims.',
@@ -6115,7 +6301,10 @@ function tutorDialogueMemorySummary(state, { currentTutorTurn, historyTurns } = 
   const latestRow = field.rows.at(-1) || null;
   const previousRow = field.rows.at(-2) || null;
   const registerCounts = compactCounts(
-    countBy(state.register?.history || [], (entry) => normalizeStoredRegisterSelection(entry)?.selected_register || 'unknown'),
+    countBy(
+      state.register?.history || [],
+      (entry) => normalizeStoredRegisterSelection(entry)?.selected_register || 'unknown',
+    ),
     { limit: 6 },
   );
   const latestRegister = latestRegisterSelection(state);
@@ -6307,15 +6496,143 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printInteractiveHelp() {
   console.log(
-    `${C.cyan}slash commands >${C.reset} /analysis, /a, /field, /f, /viz, /v, /clarify [phrase], /explain [phrase], /report, /r, /clue, /hint, /suggest, /use, /regen, /clear, /help, /quit\n`,
+    `${C.cyan}slash commands >${C.reset} /analysis [technical], /a [technical], /field, /f, /viz, /v, /clarify [phrase], /explain [phrase], /report, /r, /profile [list|id|default|custom text], /clue, /hint, /suggest, /use, /regen, /clear, /help, /quit\n`,
   );
 }
 
-function printCurrentTurnAnalysis(state) {
+function plainPolicyLabel(policy) {
+  const labels = {
+    continuous_dynamical_system: 'continuous adaptive blend',
+    continuous_empirical_dynamical_system: 'continuous adaptive blend with cross-run evidence',
+    dynamical_system: 'adaptive weighted choice',
+    empirical_dynamical_system: 'adaptive weighted choice with cross-run evidence',
+    trajectory: 'trajectory-aware choice',
+    field: 'current interaction-state choice',
+    state: 'classifier and reasoning-state choice',
+    dynamic: 'model-reviewed adaptive choice',
+    bland: 'fixed plain baseline',
+    random: 'random control',
+    negative: 'negative-register control',
+  };
+  return labels[policy] || String(policy || 'unknown policy').replaceAll('_', ' ');
+}
+
+function plainPolicySignal(axis) {
+  const labels = {
+    evidence_gap: 'the learner still needs public evidence',
+    warrant_gap: 'a reasoning link is missing',
+    agency_deficit: 'the learner needs more ownership of the next move',
+    affective_risk: 'the learner may feel exposed or pressured',
+    recognition_pressure: 'the response should acknowledge the learner’s independence',
+    coercion_risk: 'the tutor should avoid forcing agreement',
+    integration_need: 'the learner needs help connecting the pieces',
+    compression_need: 'the next move should be simpler and shorter',
+    momentum: 'the dialogue has useful forward movement',
+    stagnation: 'the dialogue risks stalling',
+    disruption_need: 'the current pattern needs a gentle interruption',
+    tempo_affordance: 'the learner appears ready to move faster',
+    closure_pressure: 'the dialogue is nearing a conclusion',
+    field_regression: 'the learner’s engagement has slipped',
+    empirical_uncertainty: 'there is little evidence yet about which style works best here',
+  };
+  return labels[axis] || String(axis || '').replaceAll('_', ' ');
+}
+
+function dominantPlainPolicySignals(registerSelection, { limit = 3 } = {}) {
+  const vector = registerSelection?.dynamical_system_policy?.state_vector || {};
+  return Object.entries(vector)
+    .filter(([, value]) => Number.isFinite(Number(value)) && Number(value) > 0.15)
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .slice(0, limit)
+    .map(([axis]) => plainPolicySignal(axis));
+}
+
+function plainStrategyText(value) {
+  return String(value || '')
+    .replace(/learner-DAG/giu, 'learner’s reasoning')
+    .replace(/DAG/gu, 'reasoning map')
+    .replace(/proof-state/giu, 'reasoning')
+    .replace(/public premise/giu, 'piece of public evidence')
+    .replace(/learner-owned record/giu, 'learner’s stated reasoning')
+    .replace(/low-agency compliance/giu, 'passive agreement')
+    .replace(/learner-owned public move/giu, 'response in the learner’s own words')
+    .replace(/coercion pressure/giu, 'pressure to agree')
+    .replace(/final secret/giu, 'final conclusion');
+}
+
+function printCurrentTurnAnalysis(state, { technical = false } = {}) {
+  if (technical) return printCurrentTurnTechnicalAnalysis(state);
   const turn = state.turns[state.turns.length - 1] || null;
   if (!turn) {
     console.log(`${C.cyan}analysis >${C.reset} no completed turns yet`);
-    console.log(`${C.dim}  enter a learner turn first, then use /analysis to inspect the stored classifier, learner-DAG, register, and tutor-DAG data${C.reset}\n`);
+    console.log(
+      `${C.dim}  enter a learner turn first, then use /analysis; add "technical" for debugging evidence${C.reset}\n`,
+    );
+    return;
+  }
+
+  const classification = turn.classification || {};
+  const turnAnalysis = classification.turn || {};
+  const overall = classification.overall || {};
+  const registerSelection = normalizeStoredRegisterSelection(turn.registerSelection || null);
+  const previousEfficacy = normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null);
+  const policy = registerSelection?.policy || state.register?.policy || 'off';
+  const distribution = formatRegisterDistribution(registerSelection?.distribution, { limit: 4 });
+  const signals = dominantPlainPolicySignals(registerSelection);
+
+  console.log(`${C.cyan}analysis >${C.reset} turn ${turn.turn}`);
+  printAnalysisLine('learner said', turn.learner);
+  printAnalysisLine(
+    'plain reading',
+    turnAnalysis.summary || overall.summary || 'No plain-language reading is available.',
+  );
+  printAnalysisLine('policy', `${plainPolicyLabel(policy)}${policy === 'off' ? '' : ` (${policy})`}`);
+  if (registerSelection) {
+    printAnalysisLine(
+      'response style',
+      distribution || registerSelection.selected_register || 'No style choice was stored.',
+    );
+    if (signals.length) {
+      console.log(`${C.dim}  why this policy leaned that way:${C.reset}`);
+      for (const signal of signals) console.log(`${C.dim}    - ${signal}${C.reset}`);
+    } else {
+      printAnalysisLine('why', registerSelection.reviewer_signal || turnAnalysis.pedagogical_need);
+    }
+    printAnalysisLine(
+      'tutor’s immediate aim',
+      plainStrategyText(
+        registerSelection.expected_field_move || overall.next_best_tutor_move || turnAnalysis.pedagogical_need,
+      ),
+    );
+    printAnalysisLine('reasoning aim', plainStrategyText(registerSelection.expected_dag_move));
+  } else {
+    printAnalysisLine(
+      'tutor’s immediate aim',
+      plainStrategyText(overall.next_best_tutor_move || turnAnalysis.pedagogical_need),
+    );
+  }
+  if (previousEfficacy) {
+    const result =
+      previousEfficacy.label === 'positive_progress'
+        ? 'helped the learner move forward'
+        : previousEfficacy.label === 'regression_or_overreach'
+          ? 'was followed by regression or overreach'
+          : 'did not yet produce clear reasoning progress';
+    printAnalysisLine('last strategy result', `${previousEfficacy.selected_register}: ${result}`);
+  }
+  if (turn.tutorLeakAudit && !turn.tutorLeakAudit.ok) {
+    printAnalysisLine('safety check', 'the first tutor draft revealed too much and was repaired or replaced');
+  }
+  console.log(`${C.dim}  more evidence: /analysis technical (or /a technical)${C.reset}\n`);
+}
+
+function printCurrentTurnTechnicalAnalysis(state) {
+  const turn = state.turns[state.turns.length - 1] || null;
+  if (!turn) {
+    console.log(`${C.cyan}analysis >${C.reset} no completed turns yet`);
+    console.log(
+      `${C.dim}  enter a learner turn first, then use /analysis to inspect the stored classifier, learner-DAG, register, and tutor-DAG data${C.reset}\n`,
+    );
     return;
   }
 
@@ -6341,7 +6658,9 @@ function printCurrentTurnAnalysis(state) {
   const previousFieldRow = field.rows.at(-2) || null;
   const firstFieldRow = field.rows[0] || null;
 
-  console.log(`${C.cyan}analysis >${C.reset} current completed turn ${turn.turn}; id ${turn.turnId || turnDebugId(state, turn.turn)}`);
+  console.log(
+    `${C.cyan}analysis technical >${C.reset} current completed turn ${turn.turn}; id ${turn.turnId || turnDebugId(state, turn.turn)}`,
+  );
   printAnalysisLine('learner', turn.learner);
 
   if (classification) {
@@ -6380,8 +6699,10 @@ function printCurrentTurnAnalysis(state) {
           accepted.retract?.length || 0
         }; hypothesis=${accepted.hypothesis ? 'yes' : 'no'}; assertedAnswer=${accepted.assertAnswer || 'none'}`,
       );
-      if (rejected.length) printAnalysisLine('learner-record rejected', `${rejected.length} extractor item(s) rejected`);
-      if (extractor.error || extractor.parseError) printAnalysisLine('learner-record warning', extractor.error || extractor.parseError);
+      if (rejected.length)
+        printAnalysisLine('learner-record rejected', `${rejected.length} extractor item(s) rejected`);
+      if (extractor.error || extractor.parseError)
+        printAnalysisLine('learner-record warning', extractor.error || extractor.parseError);
     }
     printAnalysisList('grounded public record', learnerRecord.grounded);
     printAnalysisList('learner hypotheses', learnerRecord.hypotheses);
@@ -6395,11 +6716,11 @@ function printCurrentTurnAnalysis(state) {
       registerSelection.confidence === null || registerSelection.confidence === undefined
         ? ''
         : `; confidence=${registerSelection.confidence}`;
+    printAnalysisLine('selected register', `${registerSelection.selected_register}${confidence}`);
     printAnalysisLine(
-      'selected register',
-      `${registerSelection.selected_register}${confidence}`,
+      'logical request type',
+      registerSelection.request_type || registerSelection.learner_signal || 'unknown',
     );
-    printAnalysisLine('logical request type', registerSelection.request_type || registerSelection.learner_signal || 'unknown');
     printAnalysisLine('action family', registerSelection.action_family || 'none');
     if (registerSelection.legacy_selected_register) {
       printAnalysisLine('legacy register alias', registerSelection.legacy_selected_register);
@@ -6454,9 +6775,7 @@ function printCurrentTurnAnalysis(state) {
         'state policy',
         `bottleneck=${features.dag?.bottleneck || 'unknown'}; coverage=${
           features.dag?.bestPathCoverage ?? 'n/a'
-        }; missing=${features.dag?.missingPremiseCount ?? 'n/a'}; surface=${
-          features.scores?.learnerSurface ?? 'n/a'
-        }`,
+        }; missing=${features.dag?.missingPremiseCount ?? 'n/a'}; surface=${features.scores?.learnerSurface ?? 'n/a'}`,
       );
     }
     if (selectedEfficacy) {
@@ -6586,12 +6905,7 @@ function lightweightFieldTurn(turn, previous = null) {
   const missing = clampField01(Number(metrics.missingPremiseCount || 0) / 8);
   const overreach =
     /overconfident|answer_seeking|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported|resistant/iu.test(
-      [
-        turnAnalysis.epistemic_stance,
-        turnAnalysis.evidence_use,
-        assessment.bottleneck,
-        priorEfficacy?.label,
-      ]
+      [turnAnalysis.epistemic_stance, turnAnalysis.evidence_use, assessment.bottleneck, priorEfficacy?.label]
         .filter(Boolean)
         .join(' '),
     )
@@ -6599,7 +6913,9 @@ function lightweightFieldTurn(turn, previous = null) {
       : 0;
   const responseWords = wordsInText(turn?.tutor);
   const brevity = clampField01(1 - Math.max(0, responseWords - 95) / 130);
-  const registerConfidence = Number.isFinite(Number(register.confidence)) ? clampField01(Number(register.confidence)) : 0.5;
+  const registerConfidence = Number.isFinite(Number(register.confidence))
+    ? clampField01(Number(register.confidence))
+    : 0.5;
   const efficacyScore = priorEfficacy ? clampField01((Number(priorEfficacy.progressScore || 0) + 4) / 8) : 0.5;
 
   const learnerMastery = roundField(0.34 * conceptual + 0.26 * readiness + 0.3 * coverage + 0.1 * grounded);
@@ -6612,7 +6928,7 @@ function lightweightFieldTurn(turn, previous = null) {
       0.42 * Math.max(0, fieldDelta(learnerMastery, previous?.learnerMastery)) +
         0.28 * Math.max(0, fieldDelta(coverage, previous?.coverage)) +
         0.18 * efficacyScore +
-        0.12 * (turn?.tutorDag?.leavesReleased || 0) / Math.max(1, turn?.tutorDag?.leavesTotal || 1),
+        (0.12 * (turn?.tutorDag?.leavesReleased || 0)) / Math.max(1, turn?.tutorDag?.leavesTotal || 1),
     ),
   );
 
@@ -6752,7 +7068,9 @@ function printLightweightDialogueField(state) {
     }${delta.jointMomentum}; mean speed ${field.summary.meanSpeed}${C.reset}`,
   );
   console.log(`${C.dim}  bottleneck: ${final.bottleneck || 'unknown'}${C.reset}`);
-  console.log(`${C.dim}  turn | mastery        | risk           | align          | momentum       | move / register / bottleneck${C.reset}`);
+  console.log(
+    `${C.dim}  turn | mastery        | risk           | align          | momentum       | move / register / bottleneck${C.reset}`,
+  );
   for (const row of field.rows) {
     const label = [row.learnerMove, row.register || 'no-register', row.bottleneck].filter(Boolean).join(' / ');
     console.log(
@@ -6934,7 +7252,9 @@ function compactCounts(items, { limit = 5 } = {}) {
 
 function dialogueCaseStatus(turn) {
   const assessment = turn?.tutorLearnerDagModel?.assessment || {};
-  const missing = Number(turn?.tutorLearnerDagModel?.metrics?.missingPremiseCount ?? assessment.missingPremiseCount ?? 0);
+  const missing = Number(
+    turn?.tutorLearnerDagModel?.metrics?.missingPremiseCount ?? assessment.missingPremiseCount ?? 0,
+  );
   if (assessment.finalSecretEntailed && assessment.assertedSecret) {
     return 'case closed: verdict is grounded and the learner has asserted it';
   }
@@ -6952,7 +7272,9 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
   if (!state.turns.length) {
     console.log(`${C.cyan}closeout >${C.reset} ${reason}; no completed tutor turns`);
     if (tracePath) console.log(`${C.dim}  trace: ${tracePath}${C.reset}`);
-    console.log(`${C.dim}  start with the tutor opening prompt, then enter one learner turn to build a report${C.reset}\n`);
+    console.log(
+      `${C.dim}  start with the tutor opening prompt, then enter one learner turn to build a report${C.reset}\n`,
+    );
     return null;
   }
 
@@ -6963,9 +7285,14 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
   const assessment = last.tutorLearnerDagModel?.assessment || {};
   const metrics = last.tutorLearnerDagModel?.metrics || {};
   const registerCounts = compactCounts(
-    countBy(state.turns, (turn) => normalizeStoredRegisterSelection(turn.registerSelection)?.selected_register || 'none'),
+    countBy(
+      state.turns,
+      (turn) => normalizeStoredRegisterSelection(turn.registerSelection)?.selected_register || 'none',
+    ),
   );
-  const bottleneckCounts = compactCounts(countBy(state.turns, (turn) => turn.tutorLearnerDagModel?.assessment?.bottleneck || 'unknown'));
+  const bottleneckCounts = compactCounts(
+    countBy(state.turns, (turn) => turn.tutorLearnerDagModel?.assessment?.bottleneck || 'unknown'),
+  );
   const payload = {
     schema: 'machinespirits.tutor-stub.closeout-report.v1',
     reason,
@@ -7047,7 +7374,9 @@ function dagTurnContext(world, tutorTurn) {
     `Current tutor turn in this lightweight stub: ${tutorTurn}`,
     'Evidence scheduled at or before this turn:',
     releasedLines,
-    next ? `Next scheduled evidence: ${next.premise} at turn ${next.turn} via ${next.via}` : 'Next scheduled evidence: none',
+    next
+      ? `Next scheduled evidence: ${next.premise} at turn ${next.turn} via ${next.via}`
+      : 'Next scheduled evidence: none',
     'Use this as pacing guidance; never state the concealed answer by authority.',
     '[End tutor-only DAG turn context]',
   ].join('\n');
@@ -7082,9 +7411,7 @@ async function callTutor({
   const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel);
   const humanDiscourseAdvisory = humanDiscourseTutorContext(humanDiscourseFrame);
   const registerAdvisory = registerSelectionContext(registerSelection, { multipleChoice });
-  const effectiveSystemPrompt = registerAdvisory
-    ? `${systemPrompt}\n\n${registerAdvisory}`
-    : systemPrompt;
+  const effectiveSystemPrompt = registerAdvisory ? `${systemPrompt}\n\n${registerAdvisory}` : systemPrompt;
   const learnerPrompt = `Learner says:\n${learnerText}`;
   const promptParts = [
     tutorMemory,
@@ -7387,7 +7714,8 @@ function cleanAutomatedLearnerReply(text) {
 }
 
 function deterministicAutomatedLearnerFallback({ state }) {
-  const latestTutor = [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+  const latestTutor =
+    [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
   if (/trial-book|evidence|write|say|state|claim/iu.test(latestTutor)) {
     return 'I will make one public evidence claim and keep the verdict open until the marks license a name.';
   }
@@ -7460,7 +7788,8 @@ function automatedLearnerProfileRuntimeState({ state, profile, turnNumber }) {
   const policy = state.register?.policy || 'unknown';
   const eligiblePolicies = observability.eligiblePolicies || ['*'];
   const policyEligible = eligiblePolicies.includes('*') || eligiblePolicies.includes(policy);
-  const latestTutor = [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+  const latestTutor =
+    [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
   const currentStimulusEligible =
     observability.eligibility === 'public_tutor_pressure'
       ? publicTutorPressure(latestTutor) || negativeRegisterPressure(state.turns?.at(-1)?.registerSelection)
@@ -7483,9 +7812,8 @@ function automatedLearnerProfileRuntimeState({ state, profile, turnNumber }) {
   const mustShowByTurn = Number(observability.mustShowByTurn || 0);
   const targetRate = Number(observability.minEligibleRate || 0);
   const eligibleOpportunities = priorTurns.length + (eligible ? 1 : 0);
-  const targetCount = eligible && (!mustShowByTurn || turnNumber >= mustShowByTurn)
-    ? Math.ceil(eligibleOpportunities * targetRate)
-    : 0;
+  const targetCount =
+    eligible && (!mustShowByTurn || turnNumber >= mustShowByTurn) ? Math.ceil(eligibleOpportunities * targetRate) : 0;
   const deadlineDue = eligible && mustShowByTurn > 0 && turnNumber >= mustShowByTurn && observed === 0;
   const requiredNow = Boolean(eligible && (deadlineDue || observed < targetCount));
   return {
@@ -7518,7 +7846,8 @@ function automatedLearnerProfileRuntime({ state, profile, turnNumber }) {
 }
 
 function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback = '' }) {
-  const latestTutor = [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+  const latestTutor =
+    [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
   return [
     automatedLearnerProfileRuntime({ state, profile, turnNumber }),
     '',
@@ -7628,19 +7957,12 @@ function automatedLearnerRepairInstruction(profileId) {
     return 'Assert one specific but wrong remembered public detail as already seen or established. Do not hedge, describe a future test, or correct the distortion in this turn.';
   }
   if (profileId === 'affective_resistant') {
-    return 'Object to the tutor\'s pressure only. Do not add a clue, trial-book line, warrant, inference, or useful evidence step in the same turn.';
+    return "Object to the tutor's pressure only. Do not add a clue, trial-book line, warrant, inference, or useful evidence step in the same turn.";
   }
   return 'Make the required failure public and unmistakable without repairing it in the same turn.';
 }
 
-async function enforceAutomatedLearnerProfile({
-  state,
-  resolved,
-  profile,
-  turnNumber,
-  generated,
-  cliEffort = null,
-}) {
+async function enforceAutomatedLearnerProfile({ state, resolved, profile, turnNumber, generated, cliEffort = null }) {
   const runtime = automatedLearnerProfileRuntimeState({ state, profile, turnNumber });
   const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
   if (!runtime?.requiredNow || !canPreclassify || !generated.text) {
@@ -7835,7 +8157,7 @@ function learnerDagReachedGroundedClosure(state) {
   const assessment = model?.assessment || {};
   return Boolean(
     assessment.bottleneck === 'grounded_asserted_secret' ||
-      (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
+    (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
   );
 }
 
@@ -7964,7 +8286,9 @@ async function main() {
   const autoSafetyTurns = parsePositiveInt(args['auto-safety-turns'], '--auto-safety-turns');
   const autoStopOnGrounded = !args['no-auto-stop-on-grounded'];
   if (autoLearnerEnabled && autoTurns === null && !autoStopOnGrounded) {
-    throw new Error('--auto-turns until-grounded requires grounded-closure stopping; remove --no-auto-stop-on-grounded');
+    throw new Error(
+      '--auto-turns until-grounded requires grounded-closure stopping; remove --no-auto-stop-on-grounded',
+    );
   }
   const worldBundle = resolveWorldRef(args.world);
   const directorContext = buildDirectorInitialContext(worldBundle?.world || null);
@@ -8010,8 +8334,11 @@ async function main() {
   });
   const combinedLearnerAnalysisEnabled = Boolean(classifierEnabled && tutorLearnerDagEnabled);
   const registerPolicy = normalizeRegisterPolicy(args['register-policy']);
-  const registerEmpiricalPrior = loadRegisterEmpiricalPrior(args['register-empirical-prior'], { policy: registerPolicy });
-  const registerPaletteMode = registerPolicy === 'negative' ? 'negative' : args['safe-registers'] ? 'safe' : args['register-palette'];
+  const registerEmpiricalPrior = loadRegisterEmpiricalPrior(args['register-empirical-prior'], {
+    policy: registerPolicy,
+  });
+  const registerPaletteMode =
+    registerPolicy === 'negative' ? 'negative' : args['safe-registers'] ? 'safe' : args['register-palette'];
   const registerPalette = buildRegisterPalette(registerPaletteMode);
   const randomRegisterSelectionEnabled = registerPolicy === 'random';
   const negativeRegisterSelectionEnabled = registerPolicy === 'negative';
@@ -8027,18 +8354,19 @@ async function main() {
   );
   const continuousUnsafeRegisterAnchorsEnabled = Boolean(
     continuousRegisterSelectionEnabled &&
-      !args['safe-registers'] &&
-      /(^|,)(all|simulated|negative|negative-floor|ironic|sarcastic|face_threat)(,|$)/iu.test(
-        String(args['register-palette'] || ''),
-      ),
+    !args['safe-registers'] &&
+    /(^|,)(all|simulated|negative|negative-floor|ironic|sarcastic|face_threat)(,|$)/iu.test(
+      String(args['register-palette'] || ''),
+    ),
   );
   const stateRegisterSelectionEnabled = registerPolicy === 'state';
   const registerSelectionEnabled = Boolean(
     !args['no-register-selection'] &&
-      registerPalette.length &&
-      (combinedLearnerAnalysisEnabled || randomRegisterSelectionEnabled || negativeRegisterSelectionEnabled),
+    registerPalette.length &&
+    (combinedLearnerAnalysisEnabled || randomRegisterSelectionEnabled || negativeRegisterSelectionEnabled),
   );
-  const classifierResolved = classifierEnabled && !combinedLearnerAnalysisEnabled ? resolveModel(args['classifier-model']) : null;
+  const classifierResolved =
+    classifierEnabled && !combinedLearnerAnalysisEnabled ? resolveModel(args['classifier-model']) : null;
   const classifierProviderConfig = classifierResolved ? getProviderConfig(classifierResolved.provider) : null;
   const learnerRecordResolved = tutorLearnerDagEnabled ? resolveModel(args['learner-record-model']) : null;
   const learnerRecordProviderConfig = learnerRecordResolved ? getProviderConfig(learnerRecordResolved.provider) : null;
@@ -8047,7 +8375,9 @@ async function main() {
   const visibleAutoLearnerModel = autoLearnerResolved
     ? visibleResolvedModel(autoLearnerResolved, autoLearnerProviderConfig)
     : null;
-  const visibleClassifierModel = classifierResolved ? visibleResolvedModel(classifierResolved, classifierProviderConfig) : null;
+  const visibleClassifierModel = classifierResolved
+    ? visibleResolvedModel(classifierResolved, classifierProviderConfig)
+    : null;
   const visibleLearnerRecordModel = learnerRecordResolved
     ? visibleResolvedModel(learnerRecordResolved, learnerRecordProviderConfig)
     : null;
@@ -8077,11 +8407,11 @@ async function main() {
     ? 'off'
     : providerSupportsEventStreaming(resolved)
       ? 'cli_events'
-    : !providerSupportsStreaming(resolved)
-      ? 'unavailable_cli_buffered'
-      : args.dag && worldBundle
-        ? 'guarded_after_audit'
-        : 'live';
+      : !providerSupportsStreaming(resolved)
+        ? 'unavailable_cli_buffered'
+        : args.dag && worldBundle
+          ? 'guarded_after_audit'
+          : 'live';
   const resumeCandidate = args['resume-last'] ? latestDialogueTrace(args['trace-dir']) : null;
 
   if (args['show-prompt']) {
@@ -8192,7 +8522,8 @@ async function main() {
                 : false,
             learnerAnalysis:
               streamEnabled && learnerRecordResolved
-                ? providerSupportsStreaming(learnerRecordResolved) || providerSupportsEventStreaming(learnerRecordResolved)
+                ? providerSupportsStreaming(learnerRecordResolved) ||
+                  providerSupportsEventStreaming(learnerRecordResolved)
                 : false,
           },
           opening: { enabled: openingEnabled, printedByDefault: Boolean(openingEnabled && !firstMessage) },
@@ -8297,8 +8628,7 @@ async function main() {
             localDynamicalSystemPolicy: dynamicalSystemRegisterSelectionEnabled,
             localEmpiricalDynamicalSystemPolicy: empiricalDynamicalSystemRegisterSelectionEnabled,
             localContinuousDynamicalSystemPolicy: continuousDynamicalSystemRegisterSelectionEnabled,
-            localContinuousEmpiricalDynamicalSystemPolicy:
-              continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
+            localContinuousEmpiricalDynamicalSystemPolicy: continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
             continuousUnsafeRegisterAnchors: continuousUnsafeRegisterAnchorsEnabled,
             localStatePolicy: stateRegisterSelectionEnabled,
             random: randomRegisterSelectionEnabled,
@@ -8434,7 +8764,9 @@ async function main() {
     });
   }
 
-  console.log(`\n${C.cyan}tutor-stub${C.reset} ${C.dim}${args.model} -> ${visibleModel.provider}/${visibleModel.model}${C.reset}`);
+  console.log(
+    `\n${C.cyan}tutor-stub${C.reset} ${C.dim}${args.model} -> ${visibleModel.provider}/${visibleModel.model}${C.reset}`,
+  );
   if (classifierEnabled && combinedLearnerAnalysisEnabled) {
     console.log(
       `${C.dim}classifier: combined into learner-DAG analysis via ${args['learner-record-model']} -> ${visibleLearnerRecordModel.provider}/${visibleLearnerRecordModel.model}${C.reset}`,
@@ -8461,8 +8793,7 @@ async function main() {
     })${C.reset}`,
   );
   if (autoLearnerEnabled) {
-    const autoTurnSummary =
-      autoTurns === null ? `until grounded; safety ${autoSafetyTurns}` : `${autoTurns}`;
+    const autoTurnSummary = autoTurns === null ? `until grounded; safety ${autoSafetyTurns}` : `${autoTurns}`;
     console.log(
       `${C.dim}auto learner: on via ${args['auto-learner-model']} -> ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; turns ${autoTurnSummary}; stopOnGrounded ${autoStopOnGrounded}${C.reset}`,
     );
@@ -8526,9 +8857,7 @@ async function main() {
     console.log(`${C.dim}stream: off${C.reset}`);
   }
   console.log(
-    `${C.dim}interim animation: ${
-      interimAnimationEnabled ? (output.isTTY ? 'on' : 'off (non-TTY)') : 'off'
-    }${C.reset}`,
+    `${C.dim}interim animation: ${interimAnimationEnabled ? (output.isTTY ? 'on' : 'off (non-TTY)') : 'off'}${C.reset}`,
   );
   console.log(
     `${C.dim}field visualization: ${
@@ -8676,6 +9005,8 @@ async function main() {
     enabled: mixedLearnerEnabled,
     resolved: autoLearnerResolved,
     profile: args['auto-learner-profile'],
+    defaultProfile: args['auto-learner-profile'],
+    profileId: automatedLearnerProfileId(args['auto-learner-profile']),
     seq: 0,
     pending: null,
     suggestion: null,
@@ -8783,6 +9114,7 @@ async function main() {
         source: entry.source || null,
       })),
       analysisModel: state.learnerDag?.resolved || state.classifier?.resolved || null,
+      learnerProfile: mixedLearner.profile,
       dagMode: state.dagMode,
       systemPrompt: state.systemPrompt,
       schema: 'mixed-learner-analysis-cache.v1',
@@ -8840,11 +9172,7 @@ async function main() {
         learnerText: entry.answer,
       });
       speculativeState.learnerDag.lastModel = tutorLearnerDag.model;
-      const previousRegisterEfficacy = evaluatePendingRegisterEfficacy(
-        speculativeState,
-        tutorLearnerDag,
-        classification,
-      );
+      evaluatePendingRegisterEfficacy(speculativeState, tutorLearnerDag, classification);
       const registerSelection = normalizeRegisterSelection(registerSelectionFromCombinedAnalysis(raw), {
         state: speculativeState,
         classification,
@@ -9114,10 +9442,7 @@ async function main() {
     if (!mixedLearner.enabled || exiting) return false;
     const turnNumber = state.turns.length + 1;
     const turnId = turnDebugId(state, turnNumber);
-    if (
-      !force &&
-      (mixedLearner.pending?.turn === turnNumber || mixedLearner.suggestion?.turn === turnNumber)
-    ) {
+    if (!force && (mixedLearner.pending?.turn === turnNumber || mixedLearner.suggestion?.turn === turnNumber)) {
       return false;
     }
     if (force) resetMixedLearnerSuggestion(reason);
@@ -9196,7 +9521,7 @@ async function main() {
           console.log(
             `${C.dim}mixed learner answer + clue ready for ${turnId}${analysisWarming ? '; analysis warming in background' : ''}; /clue for direction, Tab or /suggest for the answer, /use to send${C.reset}`,
           );
-          rl.prompt(true);
+          refreshMixedLearnerPrompt(rl);
         }
       })
       .catch((err) => {
@@ -9217,7 +9542,7 @@ async function main() {
         if (!processingTurn && !exiting) {
           clearStatusLine();
           console.log(`${C.red}mixed learner error:${C.reset} ${err.message}${C.dim} (/regen to retry)${C.reset}`);
-          rl.prompt(true);
+          refreshMixedLearnerPrompt(rl);
         }
       });
     return true;
@@ -9226,7 +9551,9 @@ async function main() {
   function showMixedLearnerSuggestion({ duringTurn = false } = {}) {
     clearStatusLine();
     if (!mixedLearner.enabled) {
-      console.log(`${C.dim}mixed learner is off; run with --mixed-learner to enable autocomplete suggestions${C.reset}\n`);
+      console.log(
+        `${C.dim}mixed learner is off; run with --mixed-learner to enable autocomplete suggestions${C.reset}\n`,
+      );
       return;
     }
     if (mixedLearner.suggestion?.text) {
@@ -9235,7 +9562,9 @@ async function main() {
       return;
     }
     if (mixedLearner.pending) {
-      console.log(`${C.dim}mixed learner is drafting ${mixedLearner.pending.turnId}; use /suggest again when ready${C.reset}\n`);
+      console.log(
+        `${C.dim}mixed learner is drafting ${mixedLearner.pending.turnId}; use /suggest again when ready${C.reset}\n`,
+      );
       return;
     }
     if (mixedLearner.error) {
@@ -9245,7 +9574,9 @@ async function main() {
       return;
     }
     if (duringTurn) {
-      console.log(`${C.dim}tutor is still thinking; mixed learner drafting starts after the tutor responds${C.reset}\n`);
+      console.log(
+        `${C.dim}tutor is still thinking; mixed learner drafting starts after the tutor responds${C.reset}\n`,
+      );
       return;
     }
     console.log(`${C.dim}no mixed learner suggestion is ready; starting one now${C.reset}\n`);
@@ -9264,15 +9595,21 @@ async function main() {
       return;
     }
     if (mixedLearner.suggestion?.text) {
-      console.log(`${C.dim}the answer is ready, but no safe non-revealing clue was returned; /regen retries the pair${C.reset}\n`);
+      console.log(
+        `${C.dim}the answer is ready, but no safe non-revealing clue was returned; /regen retries the pair${C.reset}\n`,
+      );
       return;
     }
     if (mixedLearner.pending) {
-      console.log(`${C.dim}mixed learner is drafting the clue and answer for ${mixedLearner.pending.turnId}${C.reset}\n`);
+      console.log(
+        `${C.dim}mixed learner is drafting the clue and answer for ${mixedLearner.pending.turnId}${C.reset}\n`,
+      );
       return;
     }
     if (mixedLearner.error) {
-      console.log(`${C.red}mixed learner error:${C.reset} ${mixedLearner.error.message}${C.dim} (/regen to retry)${C.reset}\n`);
+      console.log(
+        `${C.red}mixed learner error:${C.reset} ${mixedLearner.error.message}${C.dim} (/regen to retry)${C.reset}\n`,
+      );
       return;
     }
     if (duringTurn) {
@@ -9283,6 +9620,76 @@ async function main() {
     startMixedLearnerPrefetch('clue');
   }
 
+  function handleMixedLearnerProfileCommand(argument = '', { duringTurn = false } = {}) {
+    clearStatusLine();
+    if (!mixedLearner.enabled) {
+      console.log(`${C.dim}mixed learner is off; run with --mixed-learner to use /profile${C.reset}\n`);
+      return;
+    }
+    const requested = String(argument || '').trim();
+    if (!requested) {
+      const label = mixedLearner.profileId
+        ? `${mixedLearner.profileId}: ${learnerProfileDescription(mixedLearner.profileId)}`
+        : `custom: ${oneLine(mixedLearner.profile, { max: 180 })}`;
+      console.log(`${C.cyan}learner profile >${C.reset} ${label}`);
+      console.log(
+        `${C.dim}  use /profile list, /profile <id>, /profile default, or /profile custom <description>${C.reset}\n`,
+      );
+      return;
+    }
+    if (requested === 'list') {
+      console.log(`${C.cyan}learner profiles >${C.reset}`);
+      console.log(`${learnerProfileListText()}\n`);
+      return;
+    }
+
+    let nextProfile;
+    let nextProfileId = null;
+    if (requested === 'default') {
+      nextProfile = mixedLearner.defaultProfile;
+      nextProfileId = automatedLearnerProfileId(nextProfile);
+    } else if (requested.startsWith('custom ')) {
+      nextProfile = requested.slice('custom '.length).trim();
+      if (!nextProfile) {
+        console.log(`${C.red}profile error:${C.reset} custom profile text is empty\n`);
+        return;
+      }
+    } else {
+      nextProfileId = requested.toLowerCase().replace(/-/gu, '_');
+      if (!learnerProfileIds().includes(nextProfileId)) {
+        console.log(`${C.red}unknown learner profile:${C.reset} ${requested}`);
+        console.log(`${C.dim}  use /profile list to see valid ids${C.reset}\n`);
+        return;
+      }
+      nextProfile = learnerProfilePrompt(nextProfileId);
+    }
+
+    const previousProfileId = mixedLearner.profileId;
+    resetMixedLearnerSuggestion('profile_changed');
+    mixedLearner.profile = nextProfile;
+    mixedLearner.profileId = nextProfileId;
+    appendTraceEvent(state.trace, {
+      type: 'mixed_learner_profile_changed',
+      previousProfileId,
+      profileId: nextProfileId,
+      custom: !nextProfileId,
+      duringTurn,
+      turn: state.turns.length + 1,
+    });
+    const label = nextProfileId ? `${nextProfileId}: ${learnerProfileDescription(nextProfileId)}` : 'custom profile';
+    console.log(`${C.cyan}learner profile >${C.reset} switched to ${label}`);
+    if (duringTurn) {
+      console.log(`${C.dim}  applies when the current tutor response completes${C.reset}\n`);
+    } else if (latestTutorMessage(state)) {
+      startMixedLearnerPrefetch('profile_changed');
+      console.log(
+        `${C.dim}  regenerating clue, answer, analysis, and tutor prefetch for the current turn; Tab activates when the ready message appears${C.reset}\n`,
+      );
+    } else {
+      console.log(`${C.dim}  applies after the next tutor message${C.reset}\n`);
+    }
+  }
+
   function acceptMixedLearnerSuggestion({ duringTurn = false } = {}) {
     clearStatusLine();
     if (!mixedLearner.enabled) {
@@ -9290,7 +9697,9 @@ async function main() {
       return;
     }
     if (duringTurn) {
-      console.log(`${C.dim}tutor is still thinking; /use is available once the current tutor response completes${C.reset}\n`);
+      console.log(
+        `${C.dim}tutor is still thinking; /use is available once the current tutor response completes${C.reset}\n`,
+      );
       return;
     }
     const suggestion = mixedLearner.suggestion;
@@ -9368,7 +9777,9 @@ async function main() {
     const latestTutor = latestTutorMessage(state);
     if (!latestTutor) {
       console.log(`${C.cyan}clarify >${C.reset} no tutor message is available yet`);
-      console.log(`${C.dim}  start the dialogue first, then use /clarify [phrase] after tutor wording that needs explanation${C.reset}\n`);
+      console.log(
+        `${C.dim}  start the dialogue first, then use /clarify [phrase] after tutor wording that needs explanation${C.reset}\n`,
+      );
       appendTraceEvent(state.trace, {
         type: 'clarification_unavailable',
         reason: 'no_tutor_message',
@@ -9417,7 +9828,10 @@ async function main() {
         latencyMs: response.latencyMs,
         usage: response.usage,
       });
-      if (duringTurn) console.log(`${C.dim}tutor is still thinking; clarification used the latest completed tutor message${C.reset}\n`);
+      if (duringTurn)
+        console.log(
+          `${C.dim}tutor is still thinking; clarification used the latest completed tutor message${C.reset}\n`,
+        );
     } catch (err) {
       clearStatusLine();
       console.log(`${C.red}clarify error:${C.reset} ${err.message}\n`);
@@ -9490,13 +9904,21 @@ async function main() {
       finishSlashCommand();
       return true;
     }
-    if (trimmed === '/analysis' || trimmed === '/a') {
+    if (command === '/analysis' || command === '/a') {
       clearStatusLine();
-      printCurrentTurnAnalysis(state);
+      const analysisMode = commandArg.toLowerCase();
+      const technical = ['technical', 'tech', 'evidence', 'debug'].includes(analysisMode);
+      if (analysisMode && !technical) {
+        console.log(`${C.red}unknown analysis mode:${C.reset} ${commandArg}`);
+        console.log(`${C.dim}  use /analysis or /analysis technical${C.reset}\n`);
+      } else {
+        printCurrentTurnAnalysis(state, { technical });
+      }
       appendTraceEvent(state.trace, {
         type: 'analysis_popup',
         turn: state.turns[state.turns.length - 1]?.turn || null,
         duringTurn,
+        mode: technical ? 'technical' : 'plain',
       });
       if (duringTurn) console.log(`${C.dim}tutor is still thinking; showing the latest completed turn${C.reset}\n`);
       finishSlashCommand();
@@ -9530,7 +9952,8 @@ async function main() {
             }
           : null,
       });
-      if (duringTurn) console.log(`${C.dim}tutor is still thinking; visualization excludes the in-progress turn${C.reset}\n`);
+      if (duringTurn)
+        console.log(`${C.dim}tutor is still thinking; visualization excludes the in-progress turn${C.reset}\n`);
       finishSlashCommand();
       return true;
     }
@@ -9539,14 +9962,18 @@ async function main() {
     }
     if (trimmed === '/report' || trimmed === '/r') {
       clearStatusLine();
-      const report = printDialogueCloseout(state, { reason: duringTurn ? 'report_during_turn' : 'report', trace: state.trace });
+      const report = printDialogueCloseout(state, {
+        reason: duringTurn ? 'report_during_turn' : 'report',
+        trace: state.trace,
+      });
       appendTraceEvent(state.trace, {
         type: 'closeout_report_popup',
         turn: state.turns[state.turns.length - 1]?.turn || null,
         duringTurn,
         report,
       });
-      if (duringTurn) console.log(`${C.dim}tutor is still thinking; closeout excludes the in-progress turn${C.reset}\n`);
+      if (duringTurn)
+        console.log(`${C.dim}tutor is still thinking; closeout excludes the in-progress turn${C.reset}\n`);
       finishSlashCommand();
       return true;
     }
@@ -9559,6 +9986,11 @@ async function main() {
         ready: Boolean(mixedLearner.suggestion?.text),
         pending: Boolean(mixedLearner.pending),
       });
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/profile') {
+      handleMixedLearnerProfileCommand(commandArg, { duringTurn });
       finishSlashCommand();
       return true;
     }
@@ -9596,7 +10028,11 @@ async function main() {
       if (duringTurn) {
         clearStatusLine();
         console.log(`${C.dim}/clear is disabled while a tutor turn is in progress${C.reset}\n`);
-        appendTraceEvent(state.trace, { type: 'slash_command_deferred', command: '/clear', reason: 'turn_in_progress' });
+        appendTraceEvent(state.trace, {
+          type: 'slash_command_deferred',
+          command: '/clear',
+          reason: 'turn_in_progress',
+        });
         finishSlashCommand();
         return true;
       }
@@ -9719,7 +10155,9 @@ async function main() {
     if (processingTurn) {
       const pausedInterim = pauseInterimAnimation(state);
       pendingLearnerLines.push(trimmed);
-      console.log(`${C.dim}queued learner turn (${pendingLearnerLines.length} queued); use /analysis, /field, /viz, or /clarify while waiting${C.reset}`);
+      console.log(
+        `${C.dim}queued learner turn (${pendingLearnerLines.length} queued); use /analysis, /field, /viz, or /clarify while waiting${C.reset}`,
+      );
       appendTraceEvent(state.trace, {
         type: 'learner_turn_queued',
         queued: pendingLearnerLines.length,

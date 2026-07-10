@@ -89,8 +89,22 @@ Useful variants:
   learner-DAG, register, scaffold, transcript, and tutor configuration context
   still matches; otherwise the normal tutor call runs. Regeneration, clear,
   turn invalidation, and exit abort stale Codex subprocesses.
+- Change the mixed learner interactively with `/profile <id>`. Use `/profile`
+  for the current profile, `/profile list` for built-ins, `/profile default` to
+  restore the launch-time profile, or `/profile custom <description>` for an
+  ad-hoc behavior sketch. Switching aborts and regenerates all mixed artifacts;
+  Tab activates when the replacement answer's ready message appears.
+- `/analysis` and `/a` default to a plain policy-centered account of the latest
+  learner move, selected response-style blend, main signals, tutor aim, and
+  prior strategy result. Use `/analysis technical` or `/a technical` for the
+  classifier labels, learner/tutor DAGs, field metrics, register vectors,
+  scaffold audit, leak guard, and trace path.
+- Interim waiting lines rotate labeled plain-language views such as Tutor
+  focus, Evidence pacing, Learner reading, Reasoning state, Tutor style, and
+  Clue progress. `view n/N` is a carousel position, not a score; restrained
+  color distinguishes phase, view number, and panel category.
 - Use slash commands during a run: `/analysis`, `/field`, `/viz`, `/clarify [phrase]`,
-  `/explain [phrase]`, `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, `/quit`.
+  `/explain [phrase]`, `/profile`, `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, `/quit`.
 
 ## Automated Single-Learner Eval
 
@@ -263,6 +277,36 @@ When testing `affective_resistant`, include a pressure arm such as
 `--policies field,negative` so the profile has a real interactional trigger.
 Use `--from-dir .tutor-stub-auto-eval/qa-matrix-<timestamp>` to rebuild only the
 consolidated reports from existing per-learner summaries.
+
+## Reading the Report Index Console
+
+Regenerate the console with `node scripts/run-tutor-stub-auto-eval.js --index
+--index-root .tutor-stub-auto-eval`; live runners also refresh it on their
+progress ticks. On the selected-evaluation card:
+
+- **Status chip**: `running` = a runner wrote `run-state.json` within the last
+  15 minutes; `stale` = a runner went quiet mid-plan (check its log under Run
+  Operations); `completed` = no active runner, verdicts read the latest saved
+  report per profile. Hover the chip for the same explanation in place.
+- **Progress strip** (under the card head): `X/Y trials finished (%)`, profile
+  completion, per-profile live chips, and last-activity age. A `repair pass`
+  chip means a `--resume-from ... --resume-statuses failed` pass: it re-plans
+  only previously failed trials, so its denominator is smaller than the
+  original grid; earlier finished trials stay on disk and in the report.
+- **Verdict banner**: `Outcome achieved` = some arm reached >=95% grounded
+  closure and >=95% coverage. `Adaptation advantage not established` = no
+  non-baseline policy crossed the evidence thresholds (contingency NMI >=0.05
+  with >=6 state-action observations; >=3 scored transitions with positive mean
+  reward proxy; benefit >+0.02 vs baseline). While the card is `running` the
+  banner carries an explicit interim-read caveat.
+- **Evidence numbers** (`contingency` / `benefit` / `positive x% / n`): defined
+  in the collapsible "How to read these numbers" guide on the Verdict,
+  Profile x Policy, and 3D Lab views. Key trap: `n0` means zero scored
+  strategy transitions, i.e. missing evidence, not a measured zero effect.
+- **3D Lab safeguard**: verdicts are computed only from the flat 2D numbers;
+  the 3D projection re-plots them for cluster-spotting and stays locked until
+  every plotted point is inspectable as a 2D row (depth/perspective can make
+  weak separation look strong).
 
 ## Profile Discrimination From Compacted Traces
 

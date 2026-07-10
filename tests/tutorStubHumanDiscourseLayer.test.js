@@ -110,7 +110,37 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.equal(result.status, 0);
   assert.match(result.stdout, /\/clarify \[phrase\]/u);
   assert.match(result.stdout, /\/explain \[phrase\]/u);
+  assert.match(result.stdout, /\/analysis \[technical\]/u);
   assert.match(result.stdout, /no tutor message is available yet/u);
+});
+
+test('mixed tutor-stub can list and switch learner profiles interactively', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--mixed-learner',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+      '--world',
+      'world_005_marrick',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      input: '/profile\n/profile list\n/profile diligent\n/profile\n/profile default\n/quit\n',
+    },
+  );
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /learner profiles >/u);
+  assert.match(result.stdout, /answer_seeking:/u);
+  assert.match(result.stdout, /switched to diligent:/u);
+  assert.match(result.stdout, /diligent: Diligent control/u);
+  assert.match(result.stdout, /switched to custom profile/u);
 });
 
 test('auto-eval dry run forwards DAG discourse mode to tutor-stub children', () => {

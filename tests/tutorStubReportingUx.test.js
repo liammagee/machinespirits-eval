@@ -15,6 +15,7 @@ function writeEvalSummary(dir, learnerProfile, completedAt) {
   const htmlPath = path.join(dir, `${stem}.html`);
   const rows = ['bland', 'field'].map((policy, index) => ({
     policy,
+    runIndex: 1,
     status: 'ok',
     groundedClosure: index === 1,
     turnCount: 8 + index,
@@ -26,6 +27,23 @@ function writeEvalSummary(dir, learnerProfile, completedAt) {
     field: {
       final: { learnerMastery: index === 1 ? 0.9 : 0.6, learnerRisk: index === 1 ? 0.1 : 0.3 },
       delta: { learnerMastery: 0.3, learnerRisk: -0.2 },
+    },
+    trainingExamples: {
+      schema: 'machinespirits.tutor-stub.turn-training-examples.v1',
+      examples: Array.from({ length: 6 }, (_, turnIndex) => ({
+        turn: turnIndex + 1,
+        action: {
+          selectedRegister: policy === 'bland' ? 'plain' : turnIndex % 2 ? 'warm' : 'precise',
+        },
+        stateBeforeAction: {
+          learnerState: {
+            requestType: turnIndex % 2 ? 'reassurance' : 'proof_request',
+            evidenceUse: turnIndex % 2 ? 'partial' : 'active',
+          },
+          dag: { bottleneck: turnIndex < 4 ? 'missing_premise' : 'learner_integration_gap' },
+        },
+        rewardProxy: { score: policy === 'field' ? 0.08 : 0 },
+      })),
     },
   }));
   const byPolicy = Object.fromEntries(
@@ -90,7 +108,7 @@ function writeEvalSummary(dir, learnerProfile, completedAt) {
   return { jsonPath, htmlPath };
 }
 
-function writeRunState(dir, learnerProfile, updatedAt) {
+function writeRunState(dir, learnerProfile, updatedAt, resume = null) {
   fs.writeFileSync(
     path.join(dir, 'run-state.json'),
     `${JSON.stringify(
@@ -107,6 +125,7 @@ function writeRunState(dir, learnerProfile, updatedAt) {
           world: 'world_005_marrick',
           dagMode: 'strict_dag',
         },
+        resume,
         totals: { jobs: 2, completed: 1, active: 1, queued: 0, failed: 0, progressRate: 0.5 },
         jobs: [],
       },
@@ -126,6 +145,11 @@ test('tutor-stub report index nests profiles under evaluations and preserves rep
     path.join(cohortRoot, 'qa-plan.json'),
     `${JSON.stringify({
       schema: 'machinespirits.tutor-stub.qa-matrix-plan.v1',
+      studyId: 'profile-pressure',
+      researchQuestion: 'Does policy adaptation help across contrasting learner profiles?',
+      hypothesis: 'Field-contingent policies outperform the bland baseline.',
+      primaryContrast: 'field vs bland',
+      decisionRule: 'Require positive benefit with transition evidence.',
       profiles: ['diligent', 'proof_skipper'],
       policies: ['bland', 'field'],
     })}\n`,
@@ -164,7 +188,11 @@ test('tutor-stub report index nests profiles under evaluations and preserves rep
   writeEvalSummary(diligentDir, 'diligent', '2026-07-09T00:01:00.000Z');
   writeEvalSummary(skipperDir, 'proof_skipper', '2026-07-09T00:02:00.000Z');
   writeRunState(diligentDir, 'diligent', new Date().toISOString());
-  writeRunState(skipperDir, 'proof_skipper', '2020-01-01T00:00:00.000Z');
+  writeRunState(skipperDir, 'proof_skipper', '2020-01-01T00:00:00.000Z', {
+    sourcePath: 'proof_skipper/auto-eval-2026-07-09T00-02-00-000Z.json',
+    retried: 2,
+    statuses: ['failed'],
+  });
 
   execFileSync(process.execPath, ['scripts/run-tutor-stub-auto-eval.js', '--index', '--index-root', root], {
     cwd: ROOT,
@@ -172,12 +200,14 @@ test('tutor-stub report index nests profiles under evaluations and preserves rep
   });
 
   const data = JSON.parse(fs.readFileSync(path.join(root, 'index-data.json'), 'utf8'));
+  const researchData = JSON.parse(fs.readFileSync(path.join(root, 'index-research-data.json'), 'utf8'));
   assert.equal(data.schema, 'machinespirits.tutor-stub.report-index-data.v2');
+  assert.deepEqual(researchData.cohorts, data.cohorts);
   assert.equal(data.cohorts.length, 1);
   const [cohort] = data.cohorts;
   assert.equal(cohort.id, 'custom-profile-pressure-run');
   assert.equal(cohort.status, 'running');
-  assert.equal(cohort.decision, 'Experiment in progress');
+  assert.match(cohort.decision, /adaptive advantage is supported/);
   assert.deepEqual(cohort.profiles, ['diligent', 'proof_skipper']);
   assert.deepEqual(cohort.policies, ['bland', 'field']);
   assert.equal(cohort.discriminationGate.pass, false);
@@ -188,18 +218,73 @@ test('tutor-stub report index nests profiles under evaluations and preserves rep
   assert.ok(cohort.childReports.every((profile) => profile.completedTrials === 1));
   assert.ok(cohort.childReports.every((profile) => profile.expectedTrials === 2));
   assert.ok(cohort.childReports.every((profile) => profile.model === 'codex.gpt-5.5'));
-  assert.ok(data.rows.every((row) => row.reportScope.kind === 'qa_matrix_child'));
-  assert.deepEqual(
-    data.activeRuns.map((run) => run.status).sort(),
-    ['running', 'stale'],
+  assert.equal(cohort.adaptation.schema, 'machinespirits.tutor-stub.adaptation-matrix.v1');
+  assert.equal(cohort.adaptation.verdict, 'supported');
+  assert.equal(cohort.adaptation.baselinePolicy, 'bland');
+  assert.equal(cohort.adaptation.cells.length, 4);
+  assert.equal(
+    cohort.adaptation.cells.find((cell) => cell.profile === 'diligent' && cell.policy === 'field').verdict,
+    'supported',
   );
+  assert.equal(cohort.study.id, 'profile-pressure');
+  assert.match(cohort.study.researchQuestion, /contrasting learner profiles/);
+  assert.equal(cohort.lineage.position, 1);
+  assert.equal(cohort.lineage.total, 1);
+  assert.equal(cohort.lineage.evaluations[0].status, 'running');
+  assert.ok(Number.isFinite(Date.parse(cohort.lineage.evaluations[0].completedAt)));
+  assert.equal(cohort.lab3d.eligible, false);
+  assert.ok(cohort.lab3d.reasons.some((reason) => reason.includes('profile-discrimination')));
+  assert.equal(cohort.progress.trialsCompleted, 2);
+  assert.equal(cohort.progress.trialsExpected, 4);
+  assert.equal(cohort.progress.trialRate, 0.5);
+  assert.ok(Number.isFinite(Date.parse(cohort.progress.lastActivityAt)));
+  assert.deepEqual(cohort.progress.liveProfiles.map((slice) => slice.status).sort(), ['running', 'stale']);
+  assert.equal(cohort.progress.liveProfiles.find((slice) => slice.profile === 'diligent').repairPass, false);
+  assert.equal(cohort.progress.liveProfiles.find((slice) => slice.profile === 'proof_skipper').repairPass, true);
+  assert.deepEqual(cohort.progress.liveProfiles.find((slice) => slice.profile === 'proof_skipper').retriedStatuses, [
+    'failed',
+  ]);
+  assert.ok(
+    data.rows.every((row) => row.adaptationEvidence?.schema === 'machinespirits.tutor-stub.adaptation-evidence.v1'),
+  );
+  assert.ok(data.rows.every((row) => row.reportScope.kind === 'qa_matrix_child'));
+  assert.deepEqual(data.activeRuns.map((run) => run.status).sort(), ['running', 'stale']);
 
   const client = fs.readFileSync(path.join(root, 'assets', 'tutor-stub-index.js'), 'utf8');
   const css = fs.readFileSync(path.join(root, 'assets', 'tutor-stub-report.css'), 'utf8');
   const shell = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   assert.match(client, /renderCohortWorkspace/);
   assert.match(client, /renderEvaluationWorkspace/);
+  assert.match(client, /function evaluationTimestamp\(cohort\)/);
+  assert.match(client, /new Intl\.DateTimeFormat\(undefined/);
+  assert.match(client, /timeZoneName: 'short'/);
+  assert.match(client, /\.formatToParts\(date\)/);
+  assert.match(client, /\(live \? 'updated ' : 'completed '\)/);
+  assert.match(client, /esc\(evaluationTimestamp\(cohort\)\)/);
   assert.match(client, /Evaluation → Profile → Trial/);
+  assert.match(client, /Adaptation Research Console/);
+  assert.match(client, /Profile × Policy/);
+  assert.match(client, /Comparison tray/);
+  assert.match(client, /URLSearchParams/);
+  assert.match(client, /index-research-data\.json/);
+  assert.match(client, /mergeResearchData/);
+  assert.match(client, /data-view-select/);
+  assert.match(client, /data-compare-toggle/);
+  assert.match(client, /Study Lineage/);
+  assert.match(client, /3D never drives verdicts/);
+  assert.match(client, /stays locked until each plotted point can be checked as a plain 2D row/);
+  assert.match(client, /lab-3d-stage/);
+  assert.match(client, /function renderEvaluationProgress\(cohort\)/);
+  assert.match(client, /function statusExplainer\(status\)/);
+  assert.match(client, /trials finished \(/);
+  assert.match(client, /profiles reported/);
+  assert.match(client, /repair pass/);
+  assert.match(client, /Interim read: trials are still running/);
+  assert.match(client, /How to read these numbers/);
+  assert.match(client, /missing evidence, not evidence of a zero effect/);
+  assert.match(client, /lab-2d-legend/);
+  assert.match(client, /last activity/);
+  assert.match(client, /operations-drawer/);
   assert.match(client, /evaluation-profiles/);
   assert.match(client, /Artifact history/);
   assert.match(client, /data-evaluation-filter/);
@@ -208,7 +293,17 @@ test('tutor-stub report index nests profiles under evaluations and preserves rep
   assert.match(client, /report-index-card/);
   assert.match(client, /Needs attention/);
   assert.match(css, /\.cohort-workspace/);
+  assert.match(css, /\.evaluation-progress/);
+  assert.match(css, /\.reading-guide/);
+  assert.match(css, /\.decision-caveat/);
+  assert.match(css, /\.live-slice/);
+  assert.match(css, /\.lab-2d-legend/);
   assert.match(css, /\.evaluation-profiles/);
+  assert.match(css, /\.adaptation-matrix/);
+  assert.match(css, /\.evaluation-routebar/);
+  assert.match(css, /\.comparison-tray/);
+  assert.match(css, /\.operations-drawer/);
+  assert.match(css, /\.lab-3d-stage/);
   assert.match(css, /\.artifact-history/);
   assert.match(css, /\.report-card-list/);
   assert.match(css, /\.report-shell \{ display:block; \}/);
@@ -223,11 +318,18 @@ test('tutor-stub report index nests profiles under evaluations and preserves rep
 test('individual tutor-stub reports expose progressive summaries and accessible replay tabs', () => {
   const source = fs.readFileSync(path.join(ROOT, 'scripts', 'run-tutor-stub-auto-eval.js'), 'utf8');
   assert.match(source, /class="read-first-cards"/);
+  assert.match(source, /<h2>Adaptation Verdict<\/h2>/);
+  assert.match(source, /machinespirits\.tutor-stub\.adaptation-evidence\.v1/);
+  assert.match(source, /summary\.adaptationEvidence = adaptationEvidenceForRows/);
+  assert.match(source, /<h2>Adaptation Timeline<\/h2>/);
+  assert.match(source, /data-adaptation-replay/);
   assert.match(source, /Tutor Stub Profile Report/);
   assert.match(source, /<h2>Trial Details<\/h2>/);
   assert.match(source, /Evaluation → Profile → Trial/);
   assert.doesNotMatch(source, /not the consolidated QA matrix/);
-  assert.match(source, /Full policy ranking and secondary metrics/);
+  assert.doesNotMatch(source, /Full policy ranking and secondary metrics/);
+  assert.doesNotMatch(source, /strongest current signal/);
+  assert.match(source, /Evidence dimensions and baseline differences/);
   assert.match(source, /<details class="viz-sidebar"/);
   assert.match(source, /role="tab" aria-selected="true" aria-controls="tutor-stub-viz-canvas"/);
   assert.match(source, /button\.setAttribute\('aria-selected'/);
