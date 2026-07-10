@@ -230,6 +230,12 @@ function round(value, digits = 3) {
   return Math.round(value * factor) / factor;
 }
 
+function explicitRecollectionFrame(text) {
+  return /\b(?:(?:we|i)\s+(?:already\s+)?(?:saw|read|heard|recorded|remember(?:ed)?|recall(?:ed)?)|the\s+(?:record|trial-book|book)\s+(?:already\s+)?(?:said|showed|recorded|proved))\b/iu.test(
+    String(text || ''),
+  );
+}
+
 function snippet(value, max = 220) {
   const text = String(value || '').replace(/\s+/gu, ' ').trim();
   if (text.length <= max) return text;
@@ -371,6 +377,9 @@ function compactTurn(turn, args, { stimulusTutor = '', stimulusRegister = null }
       publicTutorPressure: publicTutorPressure(stimulusTutor, stimulusRegister),
       register: stimulusRegister,
     },
+    markers: {
+      explicitRecollection: explicitRecollectionFrame(turn.learner),
+    },
   };
   if (args.includeText) {
     compact.text = {
@@ -409,7 +418,7 @@ function compactTrace(file, root, args) {
   const runKey = path.basename(path.dirname(file));
 
   return {
-    schema: 'machinespirits.tutor-stub.compacted-trace.v1',
+    schema: 'machinespirits.tutor-stub.compacted-trace.v2',
     generatedAt: new Date().toISOString(),
     sourceTrace: path.relative(ROOT, file),
     run: {
@@ -441,7 +450,10 @@ function compactTrace(file, root, args) {
 
 function readCompacted(file) {
   const compacted = readJson(file);
-  if (compacted.schema !== 'machinespirits.tutor-stub.compacted-trace.v1') {
+  if (
+    compacted.schema !== 'machinespirits.tutor-stub.compacted-trace.v1' &&
+    compacted.schema !== 'machinespirits.tutor-stub.compacted-trace.v2'
+  ) {
     throw new Error(`Not a compacted tutor-stub trace: ${file}`);
   }
   for (const turn of compacted.turns || []) {
@@ -520,6 +532,10 @@ function vectorForTrace(compacted) {
     if (Number.isFinite(conceptual)) addVector(vector, `conceptualScore:${conceptual}`, 0.5);
     const epistemic = turn.classifier?.epistemicReadinessScore;
     if (Number.isFinite(epistemic)) addVector(vector, `epistemicReadinessScore:${epistemic}`, 0.5);
+    if (turn.markers?.explicitRecollection) {
+      addVector(vector, 'marker:explicitRecollection');
+      addVector(vector, `phase:${phase}:marker:explicitRecollection`, 0.4);
+    }
 
     addCategorical(vector, 'dag:bottleneck', turn.dag?.bottleneck, 0.35);
     addCategorical(vector, 'dag:coverage', unitBand(turn.dag?.bestPathCoverage), 0.35);
@@ -621,6 +637,9 @@ function summarizeSignatureAdherence(profile, turns) {
 }
 
 function markerGroupMatches(turn, group) {
+  if (group.field === 'explicitRecollection') {
+    return (group.values || []).includes(Boolean(turn.markers?.explicitRecollection));
+  }
   const value = turn.classifier?.[group.field];
   return (group.values || []).includes(value);
 }
@@ -862,7 +881,7 @@ function buildReport(compactedTraces, args, compactedWrites) {
   const primaryPass = conditionedPass == null ? pooledPass : conditionedPass;
 
   return {
-    schema: 'machinespirits.tutor-stub.profile-discrimination.v2',
+    schema: 'machinespirits.tutor-stub.profile-discrimination.v3',
     generatedAt: new Date().toISOString(),
     input: {
       traceRoot: args.traceRoot || null,

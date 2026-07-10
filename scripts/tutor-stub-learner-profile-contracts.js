@@ -1,4 +1,4 @@
-const CONTRACT_SCHEMA = 'machinespirits.tutor-stub.learner-profile-contract.v2';
+const CONTRACT_SCHEMA = 'machinespirits.tutor-stub.learner-profile-contract.v3';
 
 const PUBLIC_TURN_RULES = [
   'Write only the learner public turn, not analysis.',
@@ -329,12 +329,16 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     },
     stableFailure: {
       mustShowByTurn: 2,
-      mustRecurMinRate: 0.45,
-      description: 'State conclusions before explaining the inference rule that licenses them.',
+      mustRecurMinRate: 0.6,
+      description: 'Persistently state downstream conclusions before explaining the inference rule that licenses them.',
     },
     triggers: [
       { when: 'tutor asks for trial-book wording', responseBias: 'produce a polished sentence and omit why it is licensed' },
       { when: 'tutor asks why', responseBias: 'give a shallow reason first; repair only after explicit missing-warrant cue' },
+      {
+        when: 'tutor explicitly identifies the missing bridge',
+        responseBias: 'offer a cosmetic rewording or adjacent clue while still omitting the actual licensing rule',
+      },
     ],
     forbiddenNormalization: [
       'Do not behave like a generic careful learner after one correction.',
@@ -342,20 +346,21 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       'Do not self-correct unless the tutor explicitly names the missing bridge.',
     ],
     publicRules: [
-      'On at least four of the first eight learner turns, state a polished conclusion but omit the bridge that licenses it.',
+      'On at least five of the first eight learner turns, state a polished downstream conclusion but omit the bridge that licenses it.',
+      'By learner turn 2, move beyond merely repeating the clue: assert an attribution, source, actor, or trial-book judgment that the clue does not yet license.',
       'On omission turns, do not use because, therefore, since, so, or an if-then warrant; give the claim as if the clue were enough.',
-      'An explicit missing-warrant correction may improve the next turn once, but skip a bridge again later rather than becoming diligent.',
+      'An explicit missing-warrant correction may produce at most one fully warranted repair in eight turns. Otherwise give a cosmetic reason or adjacent clue and continue omitting the actual bridge.',
     ],
     signature: {
       requestType: { stepwise_support_request: [0.45, 0.75], conceptual_clarity_request: [0.1, 0.35] },
       discourseMove: { claim: [0.45, 0.75], inference: [0, 0.25], evidence_adoption: [0, 0.2] },
       evidenceUse: {
-        omits_warrant: [0.35, 0.65],
-        overleaps_evidence: [0.05, 0.35],
+        omits_warrant: [0.5, 0.8],
+        overleaps_evidence: [0.1, 0.4],
         cites_public_evidence: [0.05, 0.35],
-        links_evidence_to_rule: [0, 0.25],
+        links_evidence_to_rule: [0, 0.15],
       },
-      epistemicStance: { overconfident: [0.25, 0.55], exploratory: [0.15, 0.35], grounded: [0, 0.25] },
+      epistemicStance: { overconfident: [0.3, 0.65], exploratory: [0.1, 0.3], grounded: [0, 0.2] },
       agency: { attempting: [0.45, 0.75], steering: [0, 0.25] },
       scoreBands: { conceptualScore: [2.5, 4], epistemicReadinessScore: [2, 3.5] },
     },
@@ -371,7 +376,6 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       markerClauses: [
         [{ field: 'evidenceUse', values: ['omits_warrant'] }],
         [{ field: 'evidenceUse', values: ['overleaps_evidence'] }],
-        [{ field: 'epistemicStance', values: ['overconfident'] }],
       ],
     },
     gate: { maxCosineToDiligent: 0.9, minSignatureTargetPassRate: 0.4, expectedNearestNeighbor: 'overconfident' },
@@ -410,6 +414,8 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       'Do not leave the distortion implicit; it must appear in public learner wording.',
     ],
     publicRules: [
+      'On learner turn 2, naturally say that you already saw, read, heard, or recorded one concrete detail that the public record did not actually establish.',
+      'Misquote the observation itself; do not merely draw a bad inference from a true clue.',
       'On at least two turns before explicit correction, assert a plausible but wrong or distorted public detail.',
       'Good Marrick distortions include treating weight as alloy or crucible proof, treating a die mark as already tied to Verrell, blending broad-graver and die-mark evidence, or misquoting what the trial-book proved.',
       'When corrected, acknowledge the public record in learner-visible terms, then later risk a smaller distorted detail rather than becoming fully diligent.',
@@ -437,7 +443,13 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     repair: { firstCorrection: 'self_corrects_if_record_contrasted', repeatedCorrection: 'introduces a smaller distorted detail later', maxFullRepairsPer8Turns: 1 },
     observability: {
       eligiblePolicies: ['*'],
-      markerClauses: [[{ field: 'evidenceUse', values: ['distorts_public_evidence'] }]],
+      markerClauses: [
+        [{ field: 'evidenceUse', values: ['distorts_public_evidence'] }],
+        [
+          { field: 'evidenceUse', values: ['overleaps_evidence'] },
+          { field: 'explicitRecollection', values: [true] },
+        ],
+      ],
     },
     gate: { maxCosineToDiligent: 0.9, minSignatureTargetPassRate: 0.4, expectedNearestNeighbor: 'memory_limited' },
   }),

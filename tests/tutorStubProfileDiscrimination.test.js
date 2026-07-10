@@ -8,7 +8,10 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-function turnEvent(turn, { request, move, evidence, stance, agency, affect, conceptual, epistemic, coverage, missing }) {
+function turnEvent(
+  turn,
+  { request, move, evidence, stance, agency, affect, conceptual, epistemic, coverage, missing, learner = null },
+) {
   return {
     ts: `2026-07-09T00:00:0${turn}.000Z`,
     runId: 'synthetic',
@@ -17,7 +20,7 @@ function turnEvent(turn, { request, move, evidence, stance, agency, affect, conc
     turn,
     turnRecord: {
       turn,
-      learner: `learner turn ${turn}`,
+      learner: learner || `learner turn ${turn}`,
       tutor: `tutor turn ${turn}`,
       classification: {
         turn: {
@@ -151,7 +154,7 @@ test('profile discrimination analyzer writes compacted traces and cosine report'
       ),
     );
 
-    assert.equal(report.schema, 'machinespirits.tutor-stub.profile-discrimination.v2');
+    assert.equal(report.schema, 'machinespirits.tutor-stub.profile-discrimination.v3');
     assert.equal(report.summary.profiles, 2);
     assert.equal(report.summary.traces, 2);
     assert.equal(report.input.compactedWrites.length, 2);
@@ -163,10 +166,69 @@ test('profile discrimination analyzer writes compacted traces and cosine report'
     const compactedFiles = fs.readdirSync(path.join(compactedDir, 'diligent'));
     assert.equal(compactedFiles.length, 1);
     const compacted = JSON.parse(fs.readFileSync(path.join(compactedDir, 'diligent', compactedFiles[0]), 'utf8'));
-    assert.equal(compacted.schema, 'machinespirits.tutor-stub.compacted-trace.v1');
+    assert.equal(compacted.schema, 'machinespirits.tutor-stub.compacted-trace.v2');
     assert.equal(compacted.run.profile, 'diligent');
     assert.equal(compacted.turns[0].classifier.discourseMove, 'metacognitive_reflection');
     assert.equal(compacted.turns[0].text, undefined);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('explicit false recollection plus an evidence overleap is observable without retaining transcript text', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-false-recollection-'));
+  try {
+    writeTrace(tmp, 'false_memory', [
+      turnEvent(1, {
+        request: 'conceptual_clarity_request',
+        move: 'question',
+        evidence: 'none',
+        stance: 'exploratory',
+        agency: 'attempting',
+        affect: 'cautious',
+        conceptual: 3,
+        epistemic: 3,
+        coverage: 0,
+        missing: 6,
+      }),
+      turnEvent(2, {
+        request: 'answer_seeking_or_overreach',
+        move: 'claim',
+        evidence: 'overleaps_evidence',
+        stance: 'overconfident',
+        agency: 'attempting',
+        affect: 'confident',
+        conceptual: 3,
+        epistemic: 2,
+        coverage: 0,
+        missing: 6,
+        learner: "We already saw that the die mark matched Verrell's graver, so the shillings are his work.",
+      }),
+    ]);
+
+    const compactedDir = path.join(tmp, 'compacted');
+    const report = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [
+          'scripts/analyze-tutor-stub-profile-discrimination.js',
+          '--trace-root',
+          tmp,
+          '--write-compacted',
+          compactedDir,
+          '--json',
+        ],
+        { cwd: ROOT, encoding: 'utf8' },
+      ),
+    );
+
+    const profile = report.profiles.find((row) => row.profile === 'false_memory');
+    assert.equal(profile.observability.runsMeetingDeadline, 1);
+    assert.equal(profile.observability.deadlinePass, true);
+    const compactedFile = fs.readdirSync(path.join(compactedDir, 'false_memory'))[0];
+    const compacted = JSON.parse(fs.readFileSync(path.join(compactedDir, 'false_memory', compactedFile), 'utf8'));
+    assert.equal(compacted.turns[1].markers.explicitRecollection, true);
+    assert.equal(compacted.turns[1].text, undefined);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

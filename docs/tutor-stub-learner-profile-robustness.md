@@ -87,7 +87,7 @@ Recommended combinations:
 - `--profile-suite stress --suite frontier` for targeted expensive probes;
 - `--profile-suite audit --suite audit` only for periodic full sweeps.
 
-Compacted traces use `machinespirits.tutor-stub.compacted-trace.v1`. They remove
+Compacted traces use `machinespirits.tutor-stub.compacted-trace.v2`. They remove
 raw transcript bulk and retain behavior-bearing features: classifier labels,
 conceptual/readiness scores, proof-DAG counters, bottlenecks, field state, and
 policy/register metadata. The profile discrimination analyzer compares profile

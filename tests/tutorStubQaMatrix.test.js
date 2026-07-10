@@ -396,12 +396,20 @@ test('auto-eval lists stress learner profiles', () => {
 
 test('stress profile contracts preserve observable discrimination cues', () => {
   const proofSkipperPrompt = learnerProfilePrompt('proof_skipper');
-  assert.match(proofSkipperPrompt, /at least four of the first eight learner turns/iu);
+  assert.match(proofSkipperPrompt, /at least five of the first eight learner turns/iu);
+  assert.match(proofSkipperPrompt, /attribution, source, actor, or trial-book judgment/iu);
   const proofSkipperSummary = learnerProfileContractSummary('proof_skipper');
-  assert.deepEqual(proofSkipperSummary.traceSignatureTargets.evidenceUse.omits_warrant, [0.35, 0.65]);
+  assert.equal(proofSkipperSummary.stableFailure.mustRecurMinRate, 0.6);
+  assert.deepEqual(proofSkipperSummary.traceSignatureTargets.evidenceUse.omits_warrant, [0.5, 0.8]);
+  assert.deepEqual(proofSkipperSummary.observabilityContract.markerClauses, [
+    [{ field: 'evidenceUse', values: ['omits_warrant'] }],
+    [{ field: 'evidenceUse', values: ['overleaps_evidence'] }],
+  ]);
 
   const falseMemoryPrompt = learnerProfilePrompt('false_memory');
   assert.match(falseMemoryPrompt, /wrong or distorted public detail/u);
+  assert.match(falseMemoryPrompt, /already saw, read, heard, or recorded/iu);
+  assert.match(falseMemoryPrompt, /do not merely draw a bad inference from a true clue/iu);
   assert.match(falseMemoryPrompt, /treating weight as alloy or crucible proof/u);
   assert.match(falseMemoryPrompt, /Do not repair the false detail in the same learner turn/u);
 
@@ -411,6 +419,10 @@ test('stress profile contracts preserve observable discrimination cues', () => {
   assert.ok(falseMemorySummary.traceSignatureTargets.evidenceUse.overleaps_evidence);
   assert.deepEqual(falseMemorySummary.observabilityContract.markerClauses, [
     [{ field: 'evidenceUse', values: ['distorts_public_evidence'] }],
+    [
+      { field: 'evidenceUse', values: ['overleaps_evidence'] },
+      { field: 'explicitRecollection', values: [true] },
+    ],
   ]);
   assert.deepEqual(falseMemorySummary.traceSignatureTargets.evidenceUse.links_evidence_to_rule, [0, 0.18]);
 
@@ -461,7 +473,7 @@ test('auto-eval dry run records selected learner profile contract', () => {
     assert.equal(summary.config.autoLearnerProfileId, 'proof_skipper');
     assert.equal(
       summary.config.autoLearnerProfileContract.schema,
-      'machinespirits.tutor-stub.learner-profile-contract.v2',
+      'machinespirits.tutor-stub.learner-profile-contract.v3',
     );
     assert.equal(summary.config.autoLearnerProfileContract.id, 'proof_skipper');
     const profileArg = summary.results[0].command[summary.results[0].command.indexOf('--auto-learner-profile') + 1];

@@ -29,7 +29,7 @@ Key choices and defaults:
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep a nearest `selected_register` for compatibility while passing a weighted `register_vector`/style blend to the tutor; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
 - DAG discourse mode: default `strict_dag` is the proof-audit baseline. Use `--dag-mode human_scaffold` or `--dag-mode defeasible_human_scaffold` when testing the human-facing scaffold that allows ordinary-language warrant framing, side arcs, compressed human inference, and internal proof debt while the strict DAG remains the audit.
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
-- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v2`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
+- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v3`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
 - Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
 - Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
 - Models: default tutor `codex.gpt-5.6-terra`, analysis/classifier/DAG `codex.gpt-5.6-terra`, automated learner `codex.gpt-5.6-terra`.
@@ -39,7 +39,7 @@ Key choices and defaults:
 - Memory compaction: default on; use `--history-turns 4` to keep only a short raw recent window plus compact state/field/dialogue summaries. Use `--no-memory-summary` only for legacy full-transcript debugging.
 - Trace/output dir: default `.tutor-stub-auto-eval/<descriptive-run-id>` for auto-eval, `exports/tutor-stub-abm-panel` for ABM.
 - Eval ledger: default `.tutor-stub-auto-eval/ledger.jsonl` plus `.tutor-stub-auto-eval/ledger.md`; this is local/ignored. Use `--no-ledger` to skip. For SQL querying, ingest JSON summaries into `data/evaluations.db` with `npm run tutor:stub:ingest`.
-- Debug turn ids: tutor-stub prints `turn id > <run-id>:tNNN` at each learner turn; ask the user for that id when debugging a specific turn.
+- Debug turn ids: tutor-stub prints `turn id > <run-id>:tNNN` at each learner turn. `/id` (aliases `/turn-id`, `/debug-id`) repeats the last completed or in-progress id plus the exact JSONL trace path; ask the user to paste that id into Codex when debugging a specific turn.
 
 Do not recommend `codex.mini`, `codex.gpt-mini`, or `codex.gpt-5-mini`; the local
 Codex ChatGPT-account route rejects those. Use `codex.gpt-5.6-terra` for CLI-backed
@@ -81,6 +81,41 @@ Useful variants:
   each tutor turn. Use `/clue` or `/hint` for non-revealing direction, press Tab
   on an empty learner prompt to insert the answer for editing, or use
   `/suggest`, `/use`, `/regen`.
+- Mixed suggestions may be questions. The ready line, `/clue`, and `/suggest`
+  label the proposed move as `ask a question` or `respond`; question clues say
+  what uncertainty to ask about without revealing the exact wording. Tutor
+  prompts may invite one concrete in-scene question when clarification is more
+  useful than guessing.
+- Mixed artifacts also carry a separate `profile_signal`: a short account of
+  how the visible draft expresses the active learner profile. The ready/Tab
+  surface, `/suggest`, and `/use` show a compact profile card with the profile
+  id, intended pattern, and visible expression; only the learner response is
+  inserted or spoken, so this metadata does not break the dramatic frame.
+- Learner suggestions and clarifications are kept inside the dramatic frame,
+  and tutor prompts require the same: generated speech addresses the other
+  speaker directly and does not say `the tutor`, `the learner`, `the dialogue`,
+  `the prompt`, or that a question is `pending`. Clarification restates the
+  live question directly.
+- In `defeasible_human_scaffold`, high-confidence adjacent ellipsis such as
+  `it will be the same` is resolved against the immediately preceding
+  single-referent public question. The strict learner-DAG may retain an audit
+  gap, but the spoken tutor must treat that local question as answered. A
+  response audit repairs or replaces drafts that merely ask the same question
+  again in different words; case-closing/join answers are not compressed this
+  way.
+- Combined learner-analysis parsing repairs only a bounded one- or two-delimiter
+  JSON truncation and promotes known `learner_record` / `register_selection`
+  fields if the missing delimiter nested them under `classification`. It still
+  rejects unterminated strings, trailing prose, and larger structural repairs.
+- DAG-backed dialogues have an explicit closure lifecycle. Strict grounded and
+  asserted learner-DAG closure always requires a terminal tutor act. In human
+  interactive sessions, a fully released authored tutor DAG also makes
+  conversational closure available: if the tutor states the final verdict, it
+  must explicitly close the case rather than ask another proof question. The
+  tutor may offer exactly one optional learner check-in; its response must end
+  the inquiry without another question. `no thanks` closes immediately without
+  another model call. Automated eval stopping and grounded-rate metrics remain
+  tied to strict learner-DAG closure, not conversational closure.
 - Mixed mode also pre-analyzes the exact cached answer in the background. An
   unchanged Tab or `/use` submission reuses that result; edited text or changed
   turn state invalidates it and runs the normal analysis path.
@@ -92,8 +127,17 @@ Useful variants:
 - Change the mixed learner interactively with `/profile <id>`. Use `/profile`
   for the current profile, `/profile list` for built-ins, `/profile default` to
   restore the launch-time profile, or `/profile custom <description>` for an
-  ad-hoc behavior sketch. Switching aborts and regenerates all mixed artifacts;
+  ad-hoc behavior sketch. Switching aborts and clears the old clue, answer,
+  analysis, and prefetched tutor response before regenerating the full chain;
   Tab activates when the replacement answer's ready message appears.
+- Use `/profile example` for a copyable custom profile. A useful custom sketch
+  names an observable recurring behavior, the situation that triggers it, and
+  the tutor support that permits progress, without adding hidden case facts.
+  For example:
+
+  ```text
+  /profile custom The learner can identify individual clues but struggles to connect them. When asked for a conclusion, they repeat the newest clue. They progress only when the tutor asks them to connect two specific public facts.
+  ```
 - `/analysis` and `/a` default to a plain policy-centered account of the latest
   learner move, selected response-style blend, main signals, tutor aim, and
   prior strategy result. Use `/analysis technical` or `/a technical` for the
@@ -104,7 +148,7 @@ Useful variants:
   Clue progress. `view n/N` is a carousel position, not a score; restrained
   color distinguishes phase, view number, and panel category.
 - Use slash commands during a run: `/analysis`, `/field`, `/viz`, `/clarify [phrase]`,
-  `/explain [phrase]`, `/profile`, `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, `/quit`.
+  `/explain [phrase]`, `/id`, `/profile`, `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, `/quit`.
 
 ## Automated Single-Learner Eval
 

@@ -44,10 +44,30 @@ import {
 } from '../services/engagementRegisterRegistry.js';
 import { loadWorld, plotLint } from '../services/dramaticDerivation/world.js';
 import {
+  invalidateMixedLearnerCache,
   mixedLearnerAnalysisCacheKey,
+  mixedLearnerSuggestionMove,
   parseMixedLearnerArtifacts,
   refreshMixedLearnerPrompt,
 } from '../services/mixedLearnerArtifacts.js';
+import {
+  cleanTutorStubClarificationSpeech,
+  cleanTutorStubStageSpeech,
+} from '../services/tutorStubStageSpeech.js';
+import {
+  auditTutorStubGenerousInferenceResponse,
+  resolveTutorStubGenerousInference,
+} from '../services/tutorStubGenerousInference.js';
+import { closeTruncatedTutorStubJson, normalizeTutorStubAnalysisEnvelope } from '../services/tutorStubJson.js';
+import {
+  advanceTutorStubDialogueClosure,
+  auditTutorStubDialogueClosureResponse,
+  buildTutorStubDialogueClosureFrame,
+  createTutorStubDialogueClosureLifecycle,
+  deterministicTutorStubClosureResponse,
+  tutorStubClosureAcknowledgement,
+  tutorStubLearnerDagGrounded,
+} from '../services/tutorStubDialogueClosure.js';
 import {
   buildContinuousRegisterPolicyMetadata,
   buildContinuousRegisterVector,
@@ -133,6 +153,9 @@ const SLASH_COMMANDS = [
   '/c',
   '/report',
   '/r',
+  '/id',
+  '/turn-id',
+  '/debug-id',
   '/suggest',
   '/clue',
   '/hint',
@@ -145,6 +168,9 @@ const SLASH_COMMANDS = [
   '/quit',
   '/exit',
 ];
+
+const CUSTOM_LEARNER_PROFILE_EXAMPLE =
+  'The learner can identify individual clues but struggles to connect them. When asked for a conclusion, they repeat the newest clue. They progress only when the tutor asks them to connect two specific public facts.';
 
 const LEARNER_FIELD_RANKS = {
   evidence_use: {
@@ -221,11 +247,12 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
 ].join('\n');
 
 const CLARIFIER_SYSTEM_PROMPT = [
-  'You clarify tutor wording for a learner in an experimental tutoring dialogue.',
+  'You clarify wording inside a staged inquiry.',
   'Use only the public scene, public transcript, and latest tutor message supplied in the prompt.',
   'Do not infer hidden proof paths, concealed answers, private tutor prompts, private DAG state, or unstaged evidence.',
   'Do not continue the lesson or answer the case question. Explain wording only.',
-  'Keep the reply short, concrete, and learner-facing. No JSON, no role label.',
+  'Speak directly inside the scene. Never refer to "the tutor", "the learner", "the dialogue", or "the prompt".',
+  'Keep the reply short and concrete. No JSON, no role label.',
 ].join('\n');
 
 const { values: args, positionals } = parseArgs({
@@ -360,8 +387,9 @@ Options:
                          keep running until --auto-turns even after the
                          learner-DAG reaches grounded asserted-secret closure
   --mixed-learner        manual interactive mode with a prefetched clue-answer
-                         pair after each tutor response; use /clue for direction,
-                         press Tab for the answer, or use /suggest, /use, /regen
+                         pair after each tutor response; the prompt, /suggest,
+                         and /use show how the draft expresses its active profile;
+                         use /clue, Tab, /suggest, /use, or /regen
   --mixed-mode           alias for --mixed-learner
   --save <path>          write transcript JSON on exit
   --trace-dir <path>     write JSONL model-call traces here
@@ -401,14 +429,17 @@ Interactive commands:
   /c [phrase]            alias for /clarify
   /report                show the compact dialogue closeout report
   /r                     alias for /report
+  /id                    show the last completed turn id and trace path
+  /turn-id, /debug-id    aliases for /id
   /profile               show the active mixed learner profile
   /profile list          list built-in learner profile ids
+  /profile example       show a copyable custom-profile example
   /profile <id>          switch profile and regenerate mixed artifacts
   /profile default       restore the command-line/default profile
   /profile custom <text> use a custom learner behavior sketch
   /clue, /hint           show the cached non-revealing learner clue
-  /suggest               show the cached learner answer
-  /use                   submit the cached learner answer
+  /suggest               show the cached response and its profile expression
+  /use                   show the profile expression, then submit the response
   /regen                 regenerate clue, answer, analysis, and tutor response
   /clear                 reset transcript and learner/register state
   /help                  show interactive commands
@@ -756,27 +787,72 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText }) {
   };
 }
 
-function tutorLeakRepairPrompt({ originalUserPrompt, unsafeDraft, audit }) {
-  const leakRows = (audit.leaks || []).map((leak, index) => `${index + 1}. ${leak.type}: ${leak.reason}`).join('\n');
+function tutorResponseRepairPrompt({
+  originalUserPrompt,
+  unsafeDraft,
+  leakAudit = null,
+  scaffoldAudit = null,
+  closureAudit = null,
+  dialogueClosureFrame = null,
+}) {
+  const leakRows = (leakAudit?.leaks || [])
+    .map((leak, index) => `${index + 1}. ${leak.type}: ${leak.reason}`)
+    .join('\n');
+  const scaffoldRows = (scaffoldAudit?.issues || [])
+    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
+    .join('\n');
+  const closureRows = (closureAudit?.issues || [])
+    .map((issue, index) => `${index + 1}. ${issue.type}: ${issue.reason}`)
+    .join('\n');
   return [
     originalUserPrompt,
     '',
     '[Tutor-only repair instruction]',
-    'Your previous draft leaked hidden/private proof content and must not be shown to the learner.',
+    'Your previous draft failed a learner-facing safety or scaffold check and must not be shown to the learner.',
     'Rewrite the tutor reply from scratch.',
-    'Use only public setup, already released evidence, and public rules.',
-    'Do not name the concealed answer, any hidden actor, any unreleased object, or any intermediate conclusion involving them.',
-    'Do not use predicate/function notation, premise ids, rule ids, or route labels.',
-    'Do not use compressed technical labels such as "sole-caster", "blank-route", or "die-route"; translate them into ordinary evidence language.',
-    'If the learner wants an answer, ask what public evidence would license the next step instead.',
+    leakRows ? 'Use only public setup, already released evidence, and public rules.' : null,
+    leakRows
+      ? 'Do not name the concealed answer, any hidden actor, any unreleased object, or any intermediate conclusion involving them.'
+      : null,
+    leakRows ? 'Do not use predicate/function notation, premise ids, rule ids, or route labels.' : null,
+    leakRows
+      ? 'Do not use compressed technical labels such as "sole-caster", "blank-route", or "die-route"; translate them into ordinary evidence language.'
+      : null,
+    scaffoldRows
+      ? 'The learner already answered the immediately preceding local question through unambiguous context. Accept that answer as complete for the spoken exchange.'
+      : null,
+    scaffoldRows
+      ? 'Do not ask the same question again in new words. Do not demand the omitted noun, a name, a warrant, a premise, or a trial-book restatement for that same local step.'
+      : null,
+    scaffoldRows
+      ? 'Acknowledge the completed move briefly and advance to a genuinely different public clue, contrast, implication, or learner choice.'
+      : null,
+    closureRows
+      ? 'The response reached or stated the final verdict but failed to end the dialogue cleanly. Rewrite it as a natural closing act.'
+      : null,
+    closureRows
+      ? 'Explicitly say that the case, book, or inquiry is closed. Do not reopen the proof or ask another evidentiary question.'
+      : null,
+    closureRows && dialogueClosureFrame?.allowCheckIn
+      ? 'You may ask exactly one optional final check-in about whether a link should be revisited; ask no other question.'
+      : null,
+    closureRows && !dialogueClosureFrame?.allowCheckIn
+      ? 'Do not ask any question. This is the terminal tutor turn.'
+      : null,
     '',
-    'Leak audit:',
-    leakRows || '- unspecified private-content leak',
+    leakRows ? 'Leak audit:' : null,
+    leakRows || null,
+    scaffoldRows ? 'Human-scaffold audit:' : null,
+    scaffoldRows || null,
+    closureRows ? 'Dialogue-closure audit:' : null,
+    closureRows || null,
     '',
     'Unsafe draft to replace:',
     unsafeDraft,
     '[End tutor-only repair instruction]',
-  ].join('\n');
+  ]
+    .filter((line) => line !== null)
+    .join('\n');
 }
 
 function deterministicLeakFallback({ learnerText }) {
@@ -790,6 +866,13 @@ function deterministicLeakFallback({ learnerText }) {
   return [
     "I can't license that conclusion yet.",
     'Name the public evidence that would make the next step follow, or keep the verdict open.',
+  ].join(' ');
+}
+
+function deterministicGenerousInferenceFallback() {
+  return [
+    'Yes—that answers this local question, so we can carry that step forward.',
+    'What other public mark would you test next before reaching a verdict?',
   ].join(' ');
 }
 
@@ -887,6 +970,8 @@ function worldPublicPrompt(world) {
     '- Play the tutor/investigator guiding the learner through the case.',
     '- Treat the learner as the investigator; do not solve the case for them.',
     '- Keep the public question alive and ask for grounded inferences from evidence.',
+    '- Treat a concrete learner question as a legitimate investigative move. When clarification is more useful than a guess, invite the investigator to ask what evidence, tool, or distinction needs explaining.',
+    '- Stay inside the scene: address the investigator directly and never call either speaker "the tutor" or "the learner".',
   ].filter(Boolean);
 }
 
@@ -1013,6 +1098,8 @@ function buildSystemPrompt({ topic, learner, goal, style, worldBundle, dag, mult
     '- Use a tiny concrete example when it helps.',
     '- Keep the answer short enough that the learner can respond.',
     '- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.',
+    '- Treat learner questions as legitimate moves, not evasions. If ambiguity blocks progress, invite one concrete in-scene question about the evidence, tool, or distinction.',
+    '- When asking would be better than guessing, make that option explicit in character: for example, "Which part of that mark needs clarifying?" Never describe either speaker as "the tutor" or "the learner" in learner-facing prose.',
     '- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.',
     '- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.',
     '- In story mode, speak in public evidence language: "what public claim does this mark license?", not "add meltedAt(...)", "sole-caster", "blank-route", or "die-route".',
@@ -1141,7 +1228,14 @@ function buildHumanDiscourseRunConfig({ dagMode, dagEnabled, tutorLearnerDagEnab
         : dagMode === 'human_scaffold'
           ? 'frame local human-facing warrants while strict DAG audit remains authoritative'
           : 'strict DAG audit only; no human-scaffold prompt adaptation',
-    traceFields: ['humanDiscourseFrame', 'scaffoldState', 'sideArc', 'proofDebt', 'warrantPremiseAudit'],
+    traceFields: [
+      'humanDiscourseFrame',
+      'scaffoldState',
+      'sideArc',
+      'proofDebt',
+      'warrantPremiseAudit',
+      'generousInference',
+    ],
     behaviorChange: scaffoldActive,
   };
 }
@@ -1427,13 +1521,14 @@ function firstJsonObjectCandidate(text) {
 function parseClassifierJson(rawText) {
   const text = String(rawText || '').trim();
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]?.trim();
-  const candidates = [text, fenced, firstJsonObjectCandidate(text)].filter(Boolean);
+  const originalCandidates = [text, fenced, firstJsonObjectCandidate(text)].filter(Boolean);
+  const candidates = originalCandidates.flatMap((candidate) => [candidate, closeTruncatedTutorStubJson(candidate)]).filter(Boolean);
 
   for (const candidate of candidates) {
     try {
       const parsed = JSON.parse(candidate);
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        return { parsed, parseError: null };
+        return { parsed: normalizeTutorStubAnalysisEnvelope(parsed), parseError: null };
       }
     } catch (_) {
       // Try the next extraction strategy.
@@ -1517,6 +1612,8 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
     '- Use distorts_public_evidence only when the learner misstates, blends, or reassigns an already public clue. Use overleaps_evidence for a premature conclusion or missing warrant without distorted recall.',
     '- Precedence rule: choose distorts_public_evidence, not overleaps_evidence, when the learner says or implies that an earlier/public clue existed when it did not, changes what a public clue said, or blends two public clues into a false remembered detail. This remains true when the distortion also supports a premature conclusion.',
     '- Otherwise choose omits_warrant over links_evidence_to_rule when the bridge is absent; reserve overleaps_evidence for a claim that outruns the currently public evidence, especially a premature culprit or case-closing inference.',
+    '- Resolve short answers, pronouns, and ellipsis against the immediately preceding tutor question before classifying them. A reply such as "it will be the same" can fully answer a local single-referent question even though it does not repeat the noun.',
+    '- Do not label a contextually complete short answer confused, passive, or evidence-free merely because it omits words already supplied by the preceding question. Preserve any genuinely missing warrant as a separate strict-audit issue.',
     '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
     '- agency: passive, complying, attempting, steering, self_correcting',
     '',
@@ -2316,6 +2413,21 @@ function printOpeningDebugLine(state) {
   return printDebugIdLine(state, openingDebugId(stateRunDebugId(state)), 'turn id');
 }
 
+function printCurrentDebugId(state, { duringTurn = false } = {}) {
+  const last = state?.turns?.at(-1) || null;
+  const completedId = last?.turnId || (state?.history?.length ? openingDebugId(stateRunDebugId(state)) : null);
+  const activeId = duringTurn ? turnDebugId(state, (last?.turn || 0) + 1) : null;
+  console.log(`${C.cyan}debug id >${C.reset} ${activeId || completedId || stateRunDebugId(state)}`);
+  console.log(`${C.dim}  run id: ${stateRunDebugId(state)}${C.reset}`);
+  if (last) console.log(`${C.dim}  last completed turn: ${last.turnId || turnDebugId(state, last.turn)}${C.reset}`);
+  if (activeId) console.log(`${C.dim}  in-progress turn: ${activeId}${C.reset}`);
+  console.log(
+    `${C.dim}  trace: ${state?.trace?.filePath || 'disabled for this run; rerun without --no-trace for a local JSONL trace'}${C.reset}`,
+  );
+  console.log(`${C.dim}  paste the debug id into Codex to inspect this exact turn${C.reset}\n`);
+  return { runId: stateRunDebugId(state), completedId, activeId, tracePath: state?.trace?.filePath || null };
+}
+
 function redactTraceSecrets(value, seen = new WeakSet()) {
   if (value === null || value === undefined) return value;
   if (typeof value === 'string') {
@@ -2465,6 +2577,39 @@ function restoreDialogueFromTrace(state, resume, { currentWorld }) {
 
   const register = restoreRegisterStateFromTurns(state, turns);
   const learnerDag = replayLearnerDagFromTurns(state, turns);
+  const storedClosure = turns.at(-1)?.dialogueClosure?.lifecycle || null;
+  if (storedClosure && state.dialogueClosure?.enabled) {
+    state.dialogueClosure = {
+      ...state.dialogueClosure,
+      ...jsonClone(storedClosure),
+      enabled: true,
+      allowCheckIn: state.dialogueClosure.allowCheckIn,
+      allowAuthoredDagClosure: state.dialogueClosure.allowAuthoredDagClosure,
+    };
+  } else if (state.dialogueClosure?.enabled && turns.length) {
+    const last = turns.at(-1);
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: state.dialogueClosure,
+      learnerDagModel: last?.tutorLearnerDagModel || null,
+      tutorDagSnapshot: last?.tutorDag || null,
+      answerTerm: answerTermForWorld(state.world),
+    });
+    const audit = auditTutorStubDialogueClosureResponse({ text: last?.tutor || '', frame });
+    if (audit.ok && audit.closesDialogue) {
+      state.dialogueClosure = advanceTutorStubDialogueClosure(state.dialogueClosure, {
+        frame,
+        audit,
+        turn: last.turn,
+      });
+    } else if (audit.closesDialogue && state.dialogueClosure.allowCheckIn) {
+      state.dialogueClosure = {
+        ...state.dialogueClosure,
+        phase: 'awaiting_checkin',
+        reachedAtTurn: Number(last.turn) || null,
+        basis: frame.basis || 'legacy_conversational_closure',
+      };
+    }
+  }
   const warnings = [];
   const resumedWorld = resume.metadata?.world?.id || null;
   if (resumedWorld && currentWorld?.id && resumedWorld !== currentWorld.id) {
@@ -2475,6 +2620,7 @@ function restoreDialogueFromTrace(state, resume, { currentWorld }) {
     turns: turns.length,
     register,
     learnerDag,
+    dialogueClosure: state.dialogueClosure,
     metadata: resume.metadata || null,
     warnings,
   };
@@ -2723,7 +2869,25 @@ function buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag }) {
   };
 }
 
-function buildSideArcState({ dagMode, classification = null, learnerText = '', scaffoldState = null }) {
+function buildSideArcState({
+  dagMode,
+  classification = null,
+  learnerText = '',
+  scaffoldState = null,
+  generousInference = null,
+}) {
+  if (generousInference?.applied) {
+    return {
+      schema: SIDE_ARC_SCHEMA,
+      mode: dagMode,
+      detected: false,
+      type: null,
+      status: 'contextual_answer_resolved',
+      returnTarget: null,
+      learnerNeed: 'Acknowledge the resolved local inference and advance.',
+      reason: 'A high-confidence adjacent elliptical answer completed the current local move.',
+    };
+  }
   const turn = classification?.turn || {};
   const labels = [turn.request_type, turn.discourse_move, turn.epistemic_stance, turn.affect]
     .filter(Boolean)
@@ -2978,7 +3142,20 @@ function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = n
 function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classification = null, learnerText = '' }) {
   const dagMode = state?.dagMode || 'strict_dag';
   const scaffoldState = buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag });
-  const sideArc = buildSideArcState({ dagMode, classification, learnerText, scaffoldState });
+  const generousInference = resolveTutorStubGenerousInference({
+    mode: dagMode,
+    learnerText,
+    previousTutorText: latestTutorMessage(state),
+    branchId: scaffoldState.branch?.id || null,
+    classification,
+  });
+  const sideArc = buildSideArcState({
+    dagMode,
+    classification,
+    learnerText,
+    scaffoldState,
+    generousInference,
+  });
   const warrantPremiseAudit = buildWarrantPremiseAudit({
     dagMode,
     tutorLearnerDag,
@@ -2999,6 +3176,7 @@ function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classific
     sideArc,
     proofDebt,
     warrantPremiseAudit,
+    generousInference,
   };
 }
 
@@ -3041,6 +3219,7 @@ function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
     '- retract: include only staged premise ids the learner explicitly rejects or withdraws.',
     '- derive: include fact arrays only when the learner voices a conclusion supported by adopted/staged evidence and public rules.',
     '- Single-step trial-book rule: if the learner states a warranted conclusion from staged evidence, include both the supporting staged premise ids in adopt and the conclusion fact in derive. Do not require a separate "add it to the book" utterance.',
+    '- Resolve pronouns and elliptical answers against the immediately preceding tutor question. If a short reply such as "the same" unambiguously answers a single-referent local question, treat the resolved content as learner-voiced; do not require the learner to repeat the noun or name.',
     '- hypothesis: one short sentence if the learner offers a conjecture, uncertainty, or provisional theory.',
     '- assert_answer: the named answer candidate if the learner directly answers the public question; otherwise null.',
     '- human_discourse.proof_status: strict_proof, provisional_scaffold, side_arc, hidden_premise_risk, or unclear.',
@@ -3249,6 +3428,8 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     '- discourse_move: question, claim, hypothesis, inference, evidence_adoption, challenge, repair_request, affective_signal, answer_seeking, metacognitive_reflection, off_task',
     '- evidence_use: none, repeats_setup, cites_public_evidence, omits_warrant, links_evidence_to_rule, overleaps_evidence, distorts_public_evidence, revises_from_evidence',
     '- evidence precedence: distorted/misattributed public clue => distorts_public_evidence; correct clue plus conclusion but no bridge => omits_warrant; conclusion beyond available evidence => overleaps_evidence; explicit bridge => links_evidence_to_rule.',
+    '- Resolve short answers, pronouns, and ellipsis against the immediately preceding tutor question before assigning these labels. A reply such as "it will be the same" can fully answer a local single-referent question without repeating the noun.',
+    '- Do not call a contextually complete short answer confused, passive, or evidence-free merely because the preceding question supplies its referent. Record any genuinely omitted warrant separately for strict audit.',
     '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
     '- agency: passive, complying, attempting, steering, self_correcting',
     '',
@@ -3270,6 +3451,7 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     '',
     '- adopt/retract: only staged premise ids the learner explicitly accepts/uses or rejects/withdraws.',
     '- derive: only learner-voiced conclusions supported by adopted or staged evidence plus public rules. For a warranted one-step conclusion, include its supporting premise ids in adopt and its fact in derive.',
+    '- Resolve pronouns and elliptical answers against the immediately preceding tutor question. If a short reply unambiguously answers that local question, the resolved content counts as learner-voiced; do not demand repeated nouns or names.',
     '- hypothesis: one learner conjecture or uncertainty, else null. assert_answer: direct answer candidate, else null.',
     '- human_discourse: record only concrete current-turn material. proof_status uses the schema enum. provisional_claims are allowable but not strict; implied_warrants are unstated bridges; missing_warrants are still owed; implied_public_premises are public but ungrounded; suppressed_or_private_premises and illicit_hidden_premises are not public enough; common_sense_bridges are safe provisional steps; proof_debt_candidates need later repair; side_arc covers clarification, vocabulary, affect, trust, or off-path requests.',
     '- Be conservative: staged evidence is not adopted merely because it exists.',
@@ -6027,8 +6209,12 @@ function printRegisterSelection(selection, previousEfficacy = null) {
   }
 }
 
-function registerSelectionContext(selection, { multipleChoice = false } = {}) {
+function registerSelectionContext(
+  selection,
+  { multipleChoice = false, humanDiscourseFrame = null, dialogueClosureFrame = null } = {},
+) {
   if (!selection) return '';
+  const generousInference = humanDiscourseFrame?.generousInference || null;
   const definition = getEngagementRegisterDefinition(selection.selected_register) || {};
   const stanceContract = String(definition.stance_contract || '').trim();
   const expectedMoveLabel =
@@ -6081,6 +6267,14 @@ function registerSelectionContext(selection, { multipleChoice = false } = {}) {
     multipleChoice
       ? 'Keep the turn compact. In story mode, if you use multiple choice, offer 2-4 short public evidence options and invite the learner to choose or write their own trial-book line.'
       : "Keep the turn compact. In story mode, give one live issue and one light prompt for the learner's next thought; do not require a full warranted claim unless the learner is making an unsafe or case-closing leap.",
+    generousInference?.applied
+      ? 'Human-scaffold override: the learner has already answered the immediately preceding local question by unambiguous context. This overrides any expected DAG/state/field move that would ask for a restatement, name, premise, warrant, or trial-book version of the same answer. Acknowledge it and advance to a genuinely new pressure.'
+      : null,
+    dialogueClosureFrame?.mandatory
+      ? 'Dialogue-closure override: the proof is complete for this dialogue. Closure now overrides every expected DAG/state/field move. Do not solicit another proof step.'
+      : dialogueClosureFrame?.available
+        ? 'Dialogue-closure override: the authored public proof is complete. If this response states the final verdict, it must close the inquiry rather than reopening another proof step.'
+        : null,
     '[End tutor-only selected register]',
   ]
     .filter(Boolean)
@@ -6136,6 +6330,7 @@ function humanDiscourseTutorContext(frame) {
   const proofDebt = frame.proofDebt || {};
   const audit = frame.warrantPremiseAudit || {};
   const compression = frame.stepCompression || {};
+  const generousInference = frame.generousInference || null;
   const due = scaffold.releaseState?.dueNow || [];
   const latest = scaffold.releaseState?.latestReleased || null;
   const next = scaffold.releaseState?.nextRelease || null;
@@ -6161,6 +6356,9 @@ function humanDiscourseTutorContext(frame) {
         ? `Latest released evidence: ${latest.premise}/${latest.via}: ${oneLine(latest.surface, { max: 140 })}`
         : null,
     next ? `Next scheduled evidence: ${next.premise} at turn ${next.turn} via ${next.via}` : null,
+    generousInference.applied ? 'Contextual answer resolution: APPLIED with high confidence.' : null,
+    generousInference.applied ? `Resolved learner move: ${generousInference.resolvedMeaning}` : null,
+    generousInference.applied ? `Authoritative next-turn rule: ${generousInference.tutorInstruction}` : null,
     sideArc.detected
       ? `Side arc: ${sideArc.type}. Answer the learner's clarification/trust/affect need briefly, then ${sideArc.returnTarget?.afterSideArc || 'return to the local evidence question'}.`
       : 'Side arc: none detected; stay on the local warrant.',
@@ -6176,6 +6374,9 @@ function humanDiscourseTutorContext(frame) {
     promptRule,
     "Learner-facing behavior: use plain public evidence language, answer side clarifications briefly, and usually move with the learner's compressed inference rather than forcing them to spell out every link.",
     'When the learner skips an obvious public bridge, do not quiz them on it. Carry the bridge internally as implied proof debt and continue to the next useful pressure.',
+    generousInference.applied
+      ? 'The immediately preceding local question is closed for learner-facing purposes. Do not paraphrase it into another question, ask for a name, ask what it licenses, or request a trial-book restatement. The strict learner-DAG may remain incomplete as an audit; that incompleteness must not control this spoken turn.'
+      : null,
     'Ask for an explicit warrant only if the learner is about to name/confirm a suspect, contradicts public evidence, relies on unstaged evidence, or reaches a conclusion that would be false without the missing bridge.',
     'Default response shape: one short acknowledgement, one sentence naming the live evidence pressure, one light question. Avoid lists of routes, ledgers, or multiple required subclaims.',
     'Never mention scaffold state, proof debt, side arcs, DAGs, premise ids, rule ids, hidden facts, or release schedules.',
@@ -6183,6 +6384,43 @@ function humanDiscourseTutorContext(frame) {
   ]
     .filter(Boolean)
     .join('\n');
+}
+
+function dialogueClosureTutorContext(frame) {
+  if (!frame?.enabled || (!frame.mandatory && !frame.available)) return '';
+  if (frame.phase === 'final_checkin_response') {
+    return [
+      '[Tutor-only dialogue closure]',
+      'Phase: one final learner check-in after the case reached closure.',
+      'Answer only the learner’s check-in from the public transcript. Do not introduce new evidence or restart the proof sequence.',
+      'End with an explicit statement that the case, book, or inquiry is closed and complete.',
+      'Do not ask any further question. This is the terminal tutor turn.',
+      '[End tutor-only dialogue closure]',
+    ].join('\n');
+  }
+  if (frame.mandatory) {
+    return [
+      '[Tutor-only dialogue closure]',
+      `Closure basis: ${frame.basis}. The final conclusion is grounded and asserted; the dialogue must now wind down.`,
+      'Briefly acknowledge the learner’s result and name the decisive public chain in ordinary language.',
+      'Explicitly say that the case, book, or inquiry is closed. Do not ask another proof question.',
+      frame.allowCheckIn
+        ? 'You may end with one optional check-in about whether the learner wants one link revisited. If you ask it, it must be the only question.'
+        : 'Do not ask a follow-up question; end the dialogue now.',
+      '[End tutor-only dialogue closure]',
+    ].join('\n');
+  }
+  return [
+    '[Tutor-only dialogue closure]',
+    'The authored proof DAG is now fully public, so conversational closure is available even if the strict learner-record audit remains incomplete.',
+    'Do not announce the final verdict unless the learner’s current public move genuinely settles the public question.',
+    'If you do state or confirm the final verdict, explicitly close the case instead of returning to another proof prompt.',
+    frame.allowCheckIn
+      ? 'After closing, you may ask one optional final check-in about a link to revisit; it must be the only question.'
+      : 'If you close, do not ask a follow-up question.',
+    'If the learner has not settled the public question, continue normally without pretending the dialogue is closed.',
+    '[End tutor-only dialogue closure]',
+  ].join('\n');
 }
 
 function createLearnerDagState({ enabled, resolved, world }) {
@@ -6496,7 +6734,10 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printInteractiveHelp() {
   console.log(
-    `${C.cyan}slash commands >${C.reset} /analysis [technical], /a [technical], /field, /f, /viz, /v, /clarify [phrase], /explain [phrase], /report, /r, /profile [list|id|default|custom text], /clue, /hint, /suggest, /use, /regen, /clear, /help, /quit\n`,
+    `${C.cyan}slash commands >${C.reset} /analysis [technical], /a [technical], /field, /f, /viz, /v, /clarify [phrase], /explain [phrase], /report, /r, /id, /profile [list|example|id|default|custom text], /clue, /hint, /suggest, /use, /regen, /clear, /help, /quit`,
+  );
+  console.log(
+    `${C.dim}  mixed profile cues: the Tab prompt names the profile; /suggest shows its pattern and visible expression; /use repeats that profile expression before sending${C.reset}\n`,
   );
 }
 
@@ -6579,6 +6820,8 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
   const policy = registerSelection?.policy || state.register?.policy || 'off';
   const distribution = formatRegisterDistribution(registerSelection?.distribution, { limit: 4 });
   const signals = dominantPlainPolicySignals(registerSelection);
+  const generousInference = turn.generousInference || turn.humanDiscourseFrame?.generousInference || null;
+  const dialogueClosure = turn.dialogueClosure || null;
 
   console.log(`${C.cyan}analysis >${C.reset} turn ${turn.turn}`);
   printAnalysisLine('learner said', turn.learner);
@@ -6586,6 +6829,18 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
     'plain reading',
     turnAnalysis.summary || overall.summary || 'No plain-language reading is available.',
   );
+  if (generousInference?.applied) {
+    printAnalysisLine('generous inference', 'accepted the short answer in context; the local question counts as answered');
+    printAnalysisLine('what was carried forward', generousInference.resolvedMeaning);
+  }
+  if (dialogueClosure?.lifecycle?.phase && dialogueClosure.lifecycle.phase !== 'open') {
+    printAnalysisLine(
+      'dialogue ending',
+      dialogueClosure.lifecycle.phase === 'awaiting_checkin'
+        ? 'the public verdict has closed the proof sequence; one optional check-in remains'
+        : 'the tutor has explicitly closed the inquiry',
+    );
+  }
   printAnalysisLine('policy', `${plainPolicyLabel(policy)}${policy === 'off' ? '' : ` (${policy})`}`);
   if (registerSelection) {
     printAnalysisLine(
@@ -6622,6 +6877,9 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
   }
   if (turn.tutorLeakAudit && !turn.tutorLeakAudit.ok) {
     printAnalysisLine('safety check', 'the first tutor draft revealed too much and was repaired or replaced');
+  }
+  if (turn.tutorResponseRepaired && generousInference?.applied) {
+    printAnalysisLine('response guard', 'an initial tutor draft failed a safety or scaffold check and was replaced before display');
   }
   console.log(`${C.dim}  more evidence: /analysis technical (or /a technical)${C.reset}\n`);
 }
@@ -6828,6 +7086,7 @@ function printCurrentTurnTechnicalAnalysis(state) {
     const scaffold = frame.scaffoldState || {};
     const proofDebt = frame.proofDebt || {};
     const audit = frame.warrantPremiseAudit || {};
+    const generousInference = frame.generousInference || {};
     printAnalysisLine(
       'human scaffold',
       `${frame.mode}; branch=${scaffold.branch?.label || scaffold.branch?.id || 'none'}; sideArc=${
@@ -6835,12 +7094,50 @@ function printCurrentTurnTechnicalAnalysis(state) {
       }; proofDebt=${proofDebt.status || 'unknown'}`,
     );
     printAnalysisLine('local question', scaffold.localQuestion);
+    printAnalysisLine(
+      'generous inference',
+      generousInference.applied
+        ? `applied; kind=${generousInference.kind}; confidence=${generousInference.confidence}; ${generousInference.reason}`
+        : `not applied; ${generousInference.reason || 'no contextual resolution recorded'}`,
+    );
+    if (generousInference.applied) {
+      printAnalysisLine('resolved meaning', generousInference.resolvedMeaning);
+      printAnalysisLine('spoken-turn override', generousInference.tutorInstruction);
+    }
+    if (turn.tutorHumanScaffoldAudit) {
+      printAnalysisLine(
+        'human-scaffold response guard',
+        turn.tutorHumanScaffoldAudit.ok
+          ? `ok; semantic re-question similarity=${turn.tutorHumanScaffoldAudit.similarity ?? 0}`
+          : `${turn.tutorHumanScaffoldAudit.issues?.length || 0} issue(s) remained`,
+      );
+    }
     if (audit.counts) {
       printAnalysisLine(
         'warrant stocktake',
         `explicit=${audit.counts.explicitWarrants || 0}; implied=${audit.counts.impliedWarrants || 0}; missing=${
           audit.counts.missingWarrants || 0
         }; suppressed=${audit.counts.suppressedPremises || 0}; commonsense=${audit.counts.commonSenseBridges || 0}`,
+      );
+    }
+  }
+
+  if (turn.dialogueClosure) {
+    const closure = turn.dialogueClosure;
+    printAnalysisLine(
+      'dialogue closure',
+      `frame=${closure.frame?.phase || 'open'}; basis=${closure.frame?.basis || closure.lifecycle?.basis || 'none'}; lifecycle=${
+        closure.lifecycle?.phase || 'open'
+      }; strictGrounded=${closure.frame?.strictGrounded === true}; authoredDagSatisfied=${
+        closure.frame?.authoredDagSatisfied === true
+      }`,
+    );
+    if (closure.audit) {
+      printAnalysisLine(
+        'closure response guard',
+        `ok=${closure.audit.ok}; closes=${closure.audit.closesDialogue}; checkIn=${closure.audit.invitesCheckIn}; issues=${
+          closure.audit.issues?.length || 0
+        }`,
       );
     }
   }
@@ -7252,11 +7549,20 @@ function compactCounts(items, { limit = 5 } = {}) {
 
 function dialogueCaseStatus(turn) {
   const assessment = turn?.tutorLearnerDagModel?.assessment || {};
+  const closure = turn?.dialogueClosure?.lifecycle || null;
   const missing = Number(
     turn?.tutorLearnerDagModel?.metrics?.missingPremiseCount ?? assessment.missingPremiseCount ?? 0,
   );
   if (assessment.finalSecretEntailed && assessment.assertedSecret) {
     return 'case closed: verdict is grounded and the learner has asserted it';
+  }
+  if (closure?.phase === 'closed') {
+    return `dialogue closed conversationally on ${closure.basis || 'public proof'}; strict learner-record audit remains ${
+      assessment.bottleneck || 'open'
+    }`;
+  }
+  if (closure?.phase === 'awaiting_checkin') {
+    return `closing: verdict stated on ${closure.basis || 'public proof'}; one optional learner check-in remains`;
   }
   if (assessment.finalSecretEntailed) {
     return 'ready for verdict: evidence entails the answer, but the learner has not fully stated it';
@@ -7317,6 +7623,7 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
         0,
       ),
     },
+    dialogueClosure: last.dialogueClosure?.lifecycle || state.dialogueClosure || null,
     field: field.summary,
     finalTurn: {
       turnId: last.turnId || turnDebugId(state, last.turn),
@@ -7324,6 +7631,7 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
       tutor: last.tutor || '',
       register: normalizeStoredRegisterSelection(last.registerSelection)?.selected_register || null,
       leakOk: last.tutorLeakAudit?.ok ?? null,
+      closure: last.dialogueClosure || null,
     },
   };
 
@@ -7397,6 +7705,7 @@ async function callTutor({
   tutorLearnerDagModel,
   registerSelection,
   humanDiscourseFrame = null,
+  dialogueClosureFrame = null,
   trace = null,
   stream = null,
   cliEffort = null,
@@ -7410,7 +7719,12 @@ async function callTutor({
   const advisory = classifierTutorContext(classification);
   const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel);
   const humanDiscourseAdvisory = humanDiscourseTutorContext(humanDiscourseFrame);
-  const registerAdvisory = registerSelectionContext(registerSelection, { multipleChoice });
+  const dialogueClosureAdvisory = dialogueClosureTutorContext(dialogueClosureFrame);
+  const registerAdvisory = registerSelectionContext(registerSelection, {
+    multipleChoice,
+    humanDiscourseFrame,
+    dialogueClosureFrame,
+  });
   const effectiveSystemPrompt = registerAdvisory ? `${systemPrompt}\n\n${registerAdvisory}` : systemPrompt;
   const learnerPrompt = `Learner says:\n${learnerText}`;
   const promptParts = [
@@ -7419,19 +7733,33 @@ async function callTutor({
     advisory,
     learnerDagAdvisory,
     humanDiscourseAdvisory,
+    dialogueClosureAdvisory,
     learnerPrompt,
   ].filter(Boolean);
   const userPrompt = promptParts.join('\n\n');
   const leakGuardEnabled = Boolean(dag && world);
+  const scaffoldGuardEnabled = Boolean(humanDiscourseFrame?.generousInference?.applied);
+  const closureGuardEnabled = Boolean(
+    dialogueClosureFrame?.enabled && (dialogueClosureFrame.mandatory || dialogueClosureFrame.available),
+  );
+  const responseGuardEnabled = leakGuardEnabled || scaffoldGuardEnabled || closureGuardEnabled;
   const canStreamTutor = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
-  const tutorStreamMode = canStreamTutor ? (leakGuardEnabled ? 'buffered' : 'live') : 'none';
+  const tutorStreamMode = canStreamTutor ? (responseGuardEnabled ? 'buffered' : 'live') : 'none';
 
   async function invokeTutorAttempt({ attemptUserPrompt, role, streamMode = 'none', repairAttempt = 0 }) {
     const startedAt = new Date().toISOString();
     const request = {
       systemPrompt: effectiveSystemPrompt,
       messages: [...context, { role: 'user', content: attemptUserPrompt }],
-      config: { temperature, maxTokens, historyTurns, leakGuard: leakGuardEnabled, repairAttempt },
+      config: {
+        temperature,
+        maxTokens,
+        historyTurns,
+        leakGuard: leakGuardEnabled,
+        scaffoldGuard: scaffoldGuardEnabled,
+        closureGuard: closureGuardEnabled,
+        repairAttempt,
+      },
     };
     if (cliEffort) request.config.cliEffort = cliEffort;
     const useStreamingApi = streamMode === 'live' || streamMode === 'buffered';
@@ -7523,6 +7851,62 @@ async function callTutor({
     return response;
   }
 
+  function auditTutorDraft(response, { role, attempt }) {
+    const leakAudit = leakGuardEnabled
+      ? auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText })
+      : { ok: true, leaks: [] };
+    const scaffoldAudit = scaffoldGuardEnabled
+      ? auditTutorStubGenerousInferenceResponse({
+          text: response.text,
+          resolution: humanDiscourseFrame.generousInference,
+        })
+      : { ok: true, issues: [], similarity: 0 };
+    const closureAudit = closureGuardEnabled
+      ? auditTutorStubDialogueClosureResponse({ text: response.text, frame: dialogueClosureFrame })
+      : { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [] };
+    if (leakGuardEnabled) {
+      appendTraceEvent(trace, {
+        type: 'tutor_response_audit',
+        role,
+        turn: tutorTurn,
+        attempt,
+        ok: leakAudit.ok,
+        leaks: leakAudit.leaks,
+      });
+    }
+    if (scaffoldGuardEnabled) {
+      appendTraceEvent(trace, {
+        type: 'tutor_human_scaffold_audit',
+        role,
+        turn: tutorTurn,
+        attempt,
+        ok: scaffoldAudit.ok,
+        issues: scaffoldAudit.issues,
+        similarity: scaffoldAudit.similarity,
+        generousInference: humanDiscourseFrame.generousInference,
+      });
+    }
+    if (closureGuardEnabled) {
+      appendTraceEvent(trace, {
+        type: 'tutor_dialogue_closure_audit',
+        role,
+        turn: tutorTurn,
+        attempt,
+        ok: closureAudit.ok,
+        closesDialogue: closureAudit.closesDialogue,
+        invitesCheckIn: closureAudit.invitesCheckIn,
+        issues: closureAudit.issues,
+        frame: dialogueClosureFrame,
+      });
+    }
+    return {
+      ok: leakAudit.ok && scaffoldAudit.ok && closureAudit.ok,
+      leakAudit,
+      scaffoldAudit,
+      closureAudit,
+    };
+  }
+
   try {
     let response = await invokeTutorAttempt({
       attemptUserPrompt: userPrompt,
@@ -7531,19 +7915,13 @@ async function callTutor({
       repairAttempt: 0,
     });
 
-    if (!leakGuardEnabled) return response;
+    if (!responseGuardEnabled) return response;
 
-    let audit = auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText });
-    appendTraceEvent(trace, {
-      type: 'tutor_response_audit',
-      role: roleBase,
-      turn: tutorTurn,
-      attempt: 0,
-      ok: audit.ok,
-      leaks: audit.leaks,
-    });
-    if (audit.ok) {
-      response.leakAudit = audit;
+    let audits = auditTutorDraft(response, { role: roleBase, attempt: 0 });
+    if (audits.ok) {
+      response.leakAudit = audits.leakAudit;
+      response.scaffoldAudit = audits.scaffoldAudit;
+      response.closureAudit = audits.closureAudit;
       if (response.bufferedStream) {
         response.guardedStreamReplay = true;
       }
@@ -7551,22 +7929,23 @@ async function callTutor({
     }
 
     response = await invokeTutorAttempt({
-      attemptUserPrompt: tutorLeakRepairPrompt({ originalUserPrompt: userPrompt, unsafeDraft: response.text, audit }),
+      attemptUserPrompt: tutorResponseRepairPrompt({
+        originalUserPrompt: userPrompt,
+        unsafeDraft: response.text,
+        leakAudit: audits.leakAudit,
+        scaffoldAudit: audits.scaffoldAudit,
+        closureAudit: audits.closureAudit,
+        dialogueClosureFrame,
+      }),
       role: `${roleBase}_repair`,
       streamMode: canStreamTutor ? 'buffered' : 'none',
       repairAttempt: 1,
     });
-    audit = auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText });
-    appendTraceEvent(trace, {
-      type: 'tutor_response_audit',
-      role: `${roleBase}_repair`,
-      turn: tutorTurn,
-      attempt: 1,
-      ok: audit.ok,
-      leaks: audit.leaks,
-    });
-    if (audit.ok) {
-      response.leakAudit = audit;
+    audits = auditTutorDraft(response, { role: `${roleBase}_repair`, attempt: 1 });
+    if (audits.ok) {
+      response.leakAudit = audits.leakAudit;
+      response.scaffoldAudit = audits.scaffoldAudit;
+      response.closureAudit = audits.closureAudit;
       response.repaired = true;
       if (response.bufferedStream) {
         response.guardedStreamReplay = true;
@@ -7574,16 +7953,29 @@ async function callTutor({
       return response;
     }
 
-    const fallbackText = deterministicLeakFallback({ learnerText, audit });
+    const closureFallbackSelected = Boolean(
+      closureGuardEnabled && (dialogueClosureFrame.mandatory || audits.closureAudit.closesDialogue),
+    );
+    const fallbackText = closureFallbackSelected
+      ? deterministicTutorStubClosureResponse(dialogueClosureFrame)
+      : scaffoldGuardEnabled
+        ? deterministicGenerousInferenceFallback()
+        : deterministicLeakFallback({ learnerText });
+    const fallbackClosureAudit = closureGuardEnabled
+      ? auditTutorStubDialogueClosureResponse({ text: fallbackText, frame: dialogueClosureFrame })
+      : audits.closureAudit;
     const fallback = {
       text: fallbackText,
       provider: resolved.provider,
       model: resolved.model,
       latencyMs: response.latencyMs || 0,
       usage: response.usage || { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
-      leakAudit: audit,
+      leakAudit: audits.leakAudit,
+      scaffoldAudit: audits.scaffoldAudit,
+      closureAudit: fallbackClosureAudit,
       repaired: true,
       deterministicFallback: true,
+      deterministicClosure: closureFallbackSelected,
     };
     if (canStreamTutor) {
       fallback.guardedStreamReplay = true;
@@ -7592,7 +7984,9 @@ async function callTutor({
       type: 'tutor_response_fallback',
       role: roleBase,
       turn: tutorTurn,
-      leaks: audit.leaks,
+      leaks: audits.leakAudit.leaks,
+      scaffoldIssues: audits.scaffoldAudit.issues,
+      closureIssues: audits.closureAudit.issues,
       text: fallbackText,
     });
     return fallback;
@@ -7659,14 +8053,14 @@ function buildTutorClarificationPrompt({ state, term = '' }) {
     '',
     compactPublicTranscriptForPrompt(state, state.historyTurns, { includeAnalysis: false }),
     '',
-    '# Latest tutor message to clarify',
+    '# Latest line to clarify',
     '',
     latestTutor || '(No tutor message is available yet.)',
     '',
     '# Learner clarification request',
     '',
     requestedTerm
-      ? `Explain this term or phrase from the tutor dialogue: "${requestedTerm}".`
+      ? `Explain this term or phrase from the line above: "${requestedTerm}".`
       : 'No term was supplied. Pick up to three likely confusing words or phrases from the latest tutor message and explain them.',
     '',
     '# Output rules',
@@ -7675,16 +8069,17 @@ function buildTutorClarificationPrompt({ state, term = '' }) {
     '- Do not add new evidence, new suspects, hidden conclusions, or next proof steps.',
     '- Prefer one short paragraph, or at most three bullets.',
     '- If the requested term is not in the latest tutor message or public transcript, say so briefly and ask which phrase the learner means.',
-    '- If the latest tutor message ended with a question, preserve that question as still pending rather than answering it.',
+    '- If the latest line ended with a question, explain the wording and then restate that live question directly. Never say that a tutor question is "pending".',
   ].join('\n');
 }
 
-function cleanClarificationReply(text) {
-  return String(text || '')
+function cleanClarificationReply(text, latestTutor = '') {
+  const cleaned = String(text || '')
     .replace(/^```(?:text|markdown)?/iu, '')
     .replace(/```$/u, '')
     .replace(/^\s*(clarify|clarification|explain|explanation)\s*:\s*/iu, '')
     .trim();
+  return cleanTutorStubClarificationSpeech(cleaned, latestTutor);
 }
 
 async function generateTutorClarification({ state, term = '', resolved, cliEffort = null }) {
@@ -7701,16 +8096,17 @@ async function generateTutorClarification({ state, term = '', resolved, cliEffor
   });
   return {
     ...raw,
-    text: cleanClarificationReply(raw.text),
+    text: cleanClarificationReply(raw.text, latestTutorMessage(state)),
   };
 }
 
 function cleanAutomatedLearnerReply(text) {
-  return String(text || '')
+  const cleaned = String(text || '')
     .replace(/^```(?:text|markdown)?/iu, '')
     .replace(/```$/u, '')
     .replace(/^\s*(learner|student)\s*:\s*/iu, '')
     .trim();
+  return cleanTutorStubStageSpeech(cleaned, { voice: 'learner' });
 }
 
 function deterministicAutomatedLearnerFallback({ state }) {
@@ -7740,18 +8136,27 @@ function mixedLearnerArtifactsSystemPrompt(profile) {
     'Use only the public transcript and latest tutor message. Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
     'The private learner-profile contract defines the answer. Preserve its failure operator and repair limits.',
     'The clue describes where to look or what kind of move to make, but must not state or paraphrase the answer.',
+    'The learner turn may be a concrete question. Keep all learner speech inside the scene and address the other speaker directly.',
+    'Never write "the tutor", "the learner", "the dialogue", "the prompt", or commentary about a question being pending.',
+    'The profile_signal field is private UI metadata, not learner speech. It may describe only how the visible answer expresses the profile.',
     '',
     '# Private learner-profile contract',
     '',
     profile,
     '',
-    'Never quote or describe the private contract. Return one JSON object only.',
+    'Never quote or name the private contract. The profile_signal may explain only visible response behavior in plain language. Return one JSON object only.',
   ].join('\n');
 }
 
 function automatedLearnerProfileId(profile) {
   const match = String(profile || '').match(/simulating this automated learner profile:\s*([a-z0-9_-]+)/iu);
   return match ? match[1].toLowerCase().replace(/-/gu, '_') : null;
+}
+
+function explicitRecollectionFrame(text) {
+  return /\b(?:(?:we|i)\s+(?:already\s+)?(?:saw|read|heard|recorded|remember(?:ed)?|recall(?:ed)?)|the\s+(?:record|trial-book|book)\s+(?:already\s+)?(?:said|showed|recorded|proved))\b/iu.test(
+    String(text || ''),
+  );
 }
 
 function automatedLearnerMarkerValue(turn, field) {
@@ -7762,6 +8167,7 @@ function automatedLearnerMarkerValue(turn, field) {
     evidenceUse: classifier.evidence_use,
     epistemicStance: classifier.epistemic_stance,
     agency: classifier.agency,
+    explicitRecollection: explicitRecollectionFrame(turn?.learner),
   };
   return fields[field] ?? null;
 }
@@ -7871,6 +8277,7 @@ function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeed
     'First preserve the private learner-profile condition. A required distortion, omitted warrant, refusal, resistance, or withheld evidence step takes priority over generic progress.',
     'Only when the profile permits progress: if the tutor asks for a trial-book line, write one concise public evidence claim and treat it as both deduction and book entry.',
     'Only when the profile permits a help request: if you are stuck, ask one concrete question about what evidence would count.',
+    'Write only speech the learner could say aloud inside the scene. Address the other speaker as "you"; never refer to "the tutor", "the learner", "the dialogue", or "the prompt".',
   ].join('\n');
 }
 
@@ -7913,10 +8320,14 @@ async function generateMixedLearnerArtifacts({
     '',
     '# Mixed learner artifacts',
     '',
-    'Return one JSON object with exactly two string fields: "clue" and "answer".',
-    'answer: the learner turn requested above.',
+    'Return one JSON object with exactly four string fields: "move", "clue", "answer", and "profile_signal".',
+    'move: "ask_question" when the learner turn asks a useful question; otherwise "respond".',
+    'answer: the learner turn requested above. It may be a direct in-scene question when clarification is the best next move.',
     'clue: a short directional cue that helps a human learner understand what kind of move the tutor is inviting.',
+    'profile_signal: one short plain-language observation explaining how this exact answer visibly expresses the active learner profile. Describe behavior only; do not name a contract, failure operator, classifier label, hidden fact, or private instruction.',
+    'When move is "ask_question", make the clue begin with "Ask" and name what uncertainty or evidence to ask about without writing the exact question.',
     'The clue must not contain, paraphrase, quote, complete, or reveal the answer. It may name the distinction, evidence source, operation, or question to attend to.',
+    'The answer must be speakable inside the scene. Never mention "the tutor", "the learner", "the dialogue", "the prompt", or say a question is pending.',
     'Keep the clue under 18 words and the answer concise. Return JSON only.',
   ].join('\n');
   const raw = await callPromptModel({
@@ -7932,10 +8343,13 @@ async function generateMixedLearnerArtifacts({
     signal,
   });
   const artifacts = parseMixedLearnerArtifacts(raw.text);
+  const answer = cleanAutomatedLearnerReply(artifacts.answer);
   return {
     ...raw,
-    answer: cleanAutomatedLearnerReply(artifacts.answer),
+    answer,
     clue: artifacts.clue,
+    move: mixedLearnerSuggestionMove(answer, artifacts.move),
+    profileSignal: artifacts.profileSignal,
     parsedArtifacts: artifacts.parsed,
   };
 }
@@ -7951,10 +8365,10 @@ function automatedLearnerDraftMatchesRuntime({ text, raw, state, runtime }) {
 
 function automatedLearnerRepairInstruction(profileId) {
   if (profileId === 'proof_skipper') {
-    return 'State the conclusion as if the clue were sufficient. Remove because, since, so, therefore, if, then, would need, would want, and any sentence that explains or requests the missing bridge.';
+    return 'State an unsupported downstream attribution, source, actor, or trial-book judgment as if the clue were sufficient; do not merely restate the clue. Remove because, since, so, therefore, if, then, would need, would want, and any sentence that explains or requests the missing bridge. Do not hedge or ask a question.';
   }
   if (profileId === 'false_memory') {
-    return 'Assert one specific but wrong remembered public detail as already seen or established. Do not hedge, describe a future test, or correct the distortion in this turn.';
+    return 'Begin naturally with "We already saw", "I remember", "The record said", or an equivalent explicit recollection, then state one concrete observation that the public record did not actually establish. Misquote the clue itself rather than drawing a bad inference from a true clue. Do not hedge, describe a future test, or correct the distortion in this turn.';
   }
   if (profileId === 'affective_resistant') {
     return "Object to the tutor's pressure only. Do not add a clue, trial-book line, warrant, inference, or useful evidence step in the same turn.";
@@ -8010,6 +8424,19 @@ async function enforceAutomatedLearnerProfile({ state, resolved, profile, turnNu
   return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
 }
 
+function tutorDialogueClosureFrameForTurn({ state, tutorTurn, tutorLearnerDag }) {
+  const tutorDagSnapshot = buildTutorDagSnapshot(state, tutorTurn);
+  return {
+    tutorDagSnapshot,
+    frame: buildTutorStubDialogueClosureFrame({
+      lifecycle: state.dialogueClosure,
+      learnerDagModel: tutorLearnerDag?.model || tutorLearnerDag || null,
+      tutorDagSnapshot,
+      answerTerm: answerTermForWorld(state.world),
+    }),
+  };
+}
+
 async function runOneTurn(
   inputText,
   state,
@@ -8036,6 +8463,11 @@ async function runOneTurn(
     classification,
     learnerText,
   });
+  const { tutorDagSnapshot: dagSnapshot, frame: dialogueClosureFrame } = tutorDialogueClosureFrameForTurn({
+    state,
+    tutorTurn,
+    tutorLearnerDag,
+  });
 
   const response =
     precomputedResponse ||
@@ -8054,12 +8486,28 @@ async function runOneTurn(
       tutorLearnerDagModel: tutorLearnerDag,
       registerSelection,
       humanDiscourseFrame,
+      dialogueClosureFrame,
       trace: state.trace,
       stream: state.stream,
       cliEffort: state.cliEffort,
       multipleChoice: state.multipleChoice,
     }));
-  const dagSnapshot = buildTutorDagSnapshot(state, tutorTurn);
+  const priorDialogueClosure = state.dialogueClosure;
+  state.dialogueClosure = advanceTutorStubDialogueClosure(priorDialogueClosure, {
+    frame: dialogueClosureFrame,
+    audit: response.closureAudit,
+    turn: tutorTurn,
+  });
+  if (state.dialogueClosure?.phase !== priorDialogueClosure?.phase) {
+    appendTraceEvent(state.trace, {
+      type: 'dialogue_closure_transition',
+      turn: tutorTurn,
+      from: priorDialogueClosure?.phase || 'open',
+      to: state.dialogueClosure.phase,
+      basis: state.dialogueClosure.basis,
+      audit: response.closureAudit || null,
+    });
+  }
 
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
@@ -8081,13 +8529,23 @@ async function runOneTurn(
     sideArc: humanDiscourseFrame.sideArc,
     proofDebt: humanDiscourseFrame.proofDebt,
     warrantPremiseAudit: humanDiscourseFrame.warrantPremiseAudit,
+    generousInference: humanDiscourseFrame.generousInference,
+    dialogueClosure: {
+      frame: dialogueClosureFrame,
+      audit: response.closureAudit || null,
+      lifecycle: state.dialogueClosure,
+    },
+    closureCheckIn: dialogueClosureFrame.phase === 'final_checkin_response',
     registerSelection,
     previousRegisterEfficacy,
     tutor: response.text,
     tutorDag: dagSnapshot,
     tutorLeakAudit: response.leakAudit || null,
+    tutorHumanScaffoldAudit: response.scaffoldAudit || null,
+    tutorDialogueClosureAudit: response.closureAudit || null,
     tutorResponseRepaired: Boolean(response.repaired),
     tutorDeterministicFallback: Boolean(response.deterministicFallback),
+    tutorDeterministicClosure: Boolean(response.deterministicClosure),
     provider: response.provider,
     model: response.model,
     latencyMs: response.latencyMs,
@@ -8154,11 +8612,7 @@ function emitTutorOpeningToState(state, { enabled = true, reason = 'start' } = {
 
 function learnerDagReachedGroundedClosure(state) {
   const model = state.turns.at(-1)?.tutorLearnerDagModel || null;
-  const assessment = model?.assessment || {};
-  return Boolean(
-    assessment.bottleneck === 'grounded_asserted_secret' ||
-    (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
-  );
+  return tutorStubLearnerDagGrounded(model);
 }
 
 async function runAutomatedLearnerDialogue({
@@ -8402,6 +8856,15 @@ async function main() {
   const fieldVisualizationEnabled = Boolean(args['field-viz']);
   const openingEnabled = Boolean(STUB.opening && !args['no-opening']);
   const closeoutReportEnabled = Boolean(STUB.closeoutReport && !args['no-closeout-report']);
+  const dialogueClosureConfig = createTutorStubDialogueClosureLifecycle({
+    enabled: Boolean(
+      args.dag &&
+        worldBundle &&
+        (!autoLearnerEnabled || (tutorLearnerDagEnabled && autoStopOnGrounded)),
+    ),
+    allowCheckIn: Boolean(!autoLearnerEnabled && !firstMessage),
+    allowAuthoredDagClosure: Boolean(!autoLearnerEnabled),
+  });
   const cliEffort = normalizeCliEffort(args['cli-effort']);
   const tutorStreamState = !streamEnabled
     ? 'off'
@@ -8470,6 +8933,11 @@ async function main() {
                 accept: 'Tab on an empty learner prompt, /use, or /accept',
                 inspect: '/suggest',
                 regenerate: '/regen',
+                profilePresentation: {
+                  promptLabel: true,
+                  intendedPattern: true,
+                  visibleExpression: 'profile_signal',
+                },
               }
             : { enabled: false, requested: mixedLearnerRequested },
           registerSelection: registerSelectionEnabled
@@ -8528,6 +8996,7 @@ async function main() {
           },
           opening: { enabled: openingEnabled, printedByDefault: Boolean(openingEnabled && !firstMessage) },
           closeoutReport: { enabled: closeoutReportEnabled },
+          dialogueClosure: dialogueClosureConfig,
           multipleChoice: { enabled: multipleChoiceEnabled },
           interimAnimation: {
             enabled: interimAnimationEnabled,
@@ -8615,6 +9084,11 @@ async function main() {
             accept: 'Tab on an empty learner prompt, /use, or /accept',
             inspect: '/suggest',
             regenerate: '/regen',
+            profilePresentation: {
+              promptLabel: true,
+              intendedPattern: true,
+              visibleExpression: 'profile_signal',
+            },
           }
         : { enabled: false, requested: mixedLearnerRequested },
       registerSelection: registerSelectionEnabled
@@ -8663,6 +9137,7 @@ async function main() {
       },
       opening: { enabled: openingEnabled, printedByDefault: Boolean(openingEnabled && !firstMessage) },
       closeoutReport: { enabled: closeoutReportEnabled },
+      dialogueClosure: dialogueClosureConfig,
       multipleChoice: { enabled: multipleChoiceEnabled },
       interimAnimation: {
         enabled: interimAnimationEnabled,
@@ -8704,6 +9179,7 @@ async function main() {
     dag: args.dag,
     dagMode,
     humanDiscourse: humanDiscourseConfig,
+    dialogueClosure: { ...dialogueClosureConfig },
     tutorDag,
     classifier: {
       enabled: classifierEnabled,
@@ -8755,6 +9231,7 @@ async function main() {
       turns: resumedDialogue.turns,
       register: resumedDialogue.register,
       learnerDag: resumedDialogue.learnerDag,
+      dialogueClosure: resumedDialogue.dialogueClosure,
       warnings: resumedDialogue.warnings,
     });
   } else if (args['resume-last']) {
@@ -8866,6 +9343,9 @@ async function main() {
   );
   console.log(`${C.dim}opening prompt: ${openingEnabled && !firstMessage ? 'on' : 'off'}${C.reset}`);
   console.log(`${C.dim}closeout report: ${closeoutReportEnabled ? 'on' : 'off'}${C.reset}`);
+  console.log(
+    `${C.dim}dialogue closure: ${dialogueClosureConfig.enabled ? `on; ${dialogueClosureConfig.allowCheckIn ? 'one optional final check-in' : 'terminal close without check-in'}` : 'off'}${C.reset}`,
+  );
   if (cliEffort) {
     console.log(`${C.dim}cli effort: ${cliEffort}${C.reset}`);
   }
@@ -8880,6 +9360,13 @@ async function main() {
     }
     for (const warning of resumedDialogue.warnings) {
       console.log(`${C.red}resume warning${C.reset}${C.dim}: ${warning}${C.reset}`);
+    }
+    if (state.dialogueClosure?.phase === 'awaiting_checkin') {
+      console.log(
+        `${C.cyan}resume closure >${C.reset} the saved dialogue had already stated its verdict; one final learner check-in remains`,
+      );
+    } else if (state.dialogueClosure?.phase === 'closed') {
+      console.log(`${C.cyan}resume closure >${C.reset} the saved dialogue is already closed`);
     }
   } else if (args['resume-last']) {
     console.log(`${C.dim}resume: no completed dialogue found in ${path.relative(ROOT, traceDir)}${C.reset}`);
@@ -8930,6 +9417,7 @@ async function main() {
         registerSelection: registerSelectionEnabled
           ? { enabled: true, palette: registerPalette, policy: registerPolicy, history: state.register.history }
           : null,
+        dialogueClosure: state.dialogueClosure,
         directorContext,
         trace: traceDisplayPath(state.trace),
         fieldVisualization: state.fieldViz?.lastWrite || null,
@@ -8987,6 +9475,7 @@ async function main() {
         registerSelection: registerSelectionEnabled
           ? { enabled: true, palette: registerPalette, policy: registerPolicy, history: state.register.history }
           : null,
+        dialogueClosure: state.dialogueClosure,
         directorContext,
         trace: traceDisplayPath(state.trace),
         fieldVisualization: state.fieldViz?.lastWrite || null,
@@ -9025,10 +9514,36 @@ async function main() {
     },
   };
 
+  function mixedLearnerProfilePresentation(suggestion = null) {
+    const profileId = suggestion?.profileId || mixedLearner.profileId || null;
+    const contract = profileId ? learnerProfileContract(profileId) : null;
+    return {
+      id: profileId || 'custom',
+      name: contract?.intent?.shortName || 'Custom learner',
+      pattern:
+        contract?.intent?.failureOperator || oneLine(suggestion?.profile || mixedLearner.profile, { max: 180 }),
+      signal:
+        oneLine(suggestion?.profileSignal, { max: 220 }) ||
+        'This draft was generated under the active profile; no separate visible-behavior note was returned.',
+    };
+  }
+
+  function mixedLearnerPromptText() {
+    if (!mixedLearner.enabled) return `${C.bold}learner >${C.reset} `;
+    return `${C.bold}learner[${mixedLearnerProfilePresentation().id}] >${C.reset} `;
+  }
+
+  function printMixedLearnerProfilePresentation(suggestion, { verb = 'drafted as' } = {}) {
+    const presentation = mixedLearnerProfilePresentation(suggestion);
+    console.log(`${C.magenta}profile >${C.reset} ${presentation.id} — ${presentation.name}`);
+    console.log(`${C.dim}  pattern: ${presentation.pattern}${C.reset}`);
+    console.log(`${C.dim}  ${verb}: ${presentation.signal}${C.reset}`);
+  }
+
   const rl = readline.createInterface({
     input,
     output,
-    prompt: `${C.bold}learner >${C.reset} `,
+    prompt: mixedLearnerPromptText(),
     completer(line) {
       const mixedCompletion = mixedLearnerCompletionForLine(line);
       if (mixedCompletion) return [[mixedCompletion], line];
@@ -9065,33 +9580,37 @@ async function main() {
   function resetMixedLearnerSuggestion(reason, { preserveAnalysisCache = false } = {}) {
     if (!mixedLearner.enabled) return;
     const cachedAnalysis = mixedLearner.analysisCache;
-    mixedLearner.artifactAbortController?.abort();
-    mixedLearner.artifactAbortController = null;
-    const hadState = Boolean(mixedLearner.pending || mixedLearner.suggestion || mixedLearner.error || cachedAnalysis);
-    if (cachedAnalysis && !preserveAnalysisCache) {
-      cachedAnalysis.abortController?.abort();
+    const cachedAnalysisSnapshot = cachedAnalysis
+      ? {
+          key: cachedAnalysis.key,
+          status: cachedAnalysis.status,
+          tutorStatus: cachedAnalysis.tutorStatus,
+          turn: cachedAnalysis.turn,
+          turnId: cachedAnalysis.turnId,
+        }
+      : null;
+    const invalidated = invalidateMixedLearnerCache(mixedLearner, { preserveAnalysisCache });
+    if (invalidated.discardedAnalysis) {
       mixedLearner.cacheStats.discarded += 1;
       appendTraceEvent(state.trace, {
         type: 'mixed_learner_analysis_cache_discarded',
         reason,
-        turn: cachedAnalysis.turn,
-        turnId: cachedAnalysis.turnId,
-        status: cachedAnalysis.status,
-        key: cachedAnalysis.key,
+        turn: cachedAnalysisSnapshot.turn,
+        turnId: cachedAnalysisSnapshot.turnId,
+        status: cachedAnalysisSnapshot.status,
+        tutorStatus: cachedAnalysisSnapshot.tutorStatus,
+        tutorResponseDiscarded: invalidated.discardedTutorResponse,
+        key: cachedAnalysisSnapshot.key,
       });
     }
-    mixedLearner.seq += 1;
-    mixedLearner.pending = null;
-    mixedLearner.suggestion = null;
-    mixedLearner.error = null;
-    if (!preserveAnalysisCache) mixedLearner.analysisCache = null;
-    if (hadState) {
+    if (invalidated.hadState) {
       appendTraceEvent(state.trace, {
         type: 'mixed_learner_suggestion_cleared',
         reason,
         turns: state.turns.length,
       });
     }
+    return invalidated;
   }
 
   function currentMixedLearnerAnalysisKey(answer, turnNumber = state.turns.length + 1) {
@@ -9128,6 +9647,7 @@ async function main() {
       turns: structuredClone(state.turns),
       learnerDag: structuredClone(state.learnerDag),
       register: structuredClone(state.register),
+      dialogueClosure: structuredClone(state.dialogueClosure),
       stream: { enabled: false, interim: state.interim },
     };
   }
@@ -9138,14 +9658,20 @@ async function main() {
     tutorLearnerDag,
     registerSelection,
     humanDiscourseFrame,
+    dialogueClosureFrame,
   }) {
     return mixedLearnerAnalysisCacheKey({
       learnerText,
       history: state.history,
       classifier: classifierTutorContext(classification),
       learnerDag: tutorLearnerDagModelContext(tutorLearnerDag?.model || tutorLearnerDag),
-      register: registerSelectionContext(registerSelection, { multipleChoice: state.multipleChoice }),
+      register: registerSelectionContext(registerSelection, {
+        multipleChoice: state.multipleChoice,
+        humanDiscourseFrame,
+        dialogueClosureFrame,
+      }),
       humanDiscourse: humanDiscourseTutorContext(humanDiscourseFrame),
+      dialogueClosure: dialogueClosureTutorContext(dialogueClosureFrame),
       dagTurn: state.dag && state.world ? dagTurnContext(state.world, state.turns.length + 1) : null,
       systemPrompt: state.systemPrompt,
       tutorModel: state.resolved,
@@ -9186,12 +9712,18 @@ async function main() {
         classification,
         learnerText: entry.answer,
       });
+      const { frame: dialogueClosureFrame } = tutorDialogueClosureFrameForTurn({
+        state: speculativeState,
+        tutorTurn: entry.turn,
+        tutorLearnerDag,
+      });
       entry.tutorContextKey = mixedLearnerTutorContextKey({
         learnerText: entry.answer,
         classification,
         tutorLearnerDag,
         registerSelection,
         humanDiscourseFrame,
+        dialogueClosureFrame,
       });
       appendTraceEvent(state.trace, {
         type: 'mixed_learner_tutor_prefetch_start',
@@ -9216,6 +9748,7 @@ async function main() {
         tutorLearnerDagModel: tutorLearnerDag,
         registerSelection,
         humanDiscourseFrame,
+        dialogueClosureFrame,
         trace: state.trace,
         stream: { enabled: false, interim: state.interim },
         cliEffort: speculativeState.cliEffort,
@@ -9256,7 +9789,7 @@ async function main() {
 
   async function takeMixedLearnerTutorPrefetch(
     entry,
-    { learnerText, classification, tutorLearnerDag, registerSelection, humanDiscourseFrame },
+    { learnerText, classification, tutorLearnerDag, registerSelection, humanDiscourseFrame, dialogueClosureFrame },
   ) {
     if (!entry || mixedLearner.analysisCache !== entry) return null;
     const liveContextKey = mixedLearnerTutorContextKey({
@@ -9265,6 +9798,7 @@ async function main() {
       tutorLearnerDag,
       registerSelection,
       humanDiscourseFrame,
+      dialogueClosureFrame,
     });
     if (!entry.tutorContextKey || entry.tutorContextKey !== liveContextKey) {
       mixedLearner.cacheStats.tutorMisses += 1;
@@ -9439,7 +9973,7 @@ async function main() {
   }
 
   function startMixedLearnerPrefetch(reason = 'turn_complete', { force = false } = {}) {
-    if (!mixedLearner.enabled || exiting) return false;
+    if (!mixedLearner.enabled || exiting || state.dialogueClosure?.phase === 'closed') return false;
     const turnNumber = state.turns.length + 1;
     const turnId = turnDebugId(state, turnNumber);
     if (!force && (mixedLearner.pending?.turn === turnNumber || mixedLearner.suggestion?.turn === turnNumber)) {
@@ -9475,6 +10009,8 @@ async function main() {
         }
         const text = String(generated.answer || '').trim();
         const clue = String(generated.clue || '').trim();
+        const move = mixedLearnerSuggestionMove(text, generated.move);
+        const profileSignal = String(generated.profileSignal || '').trim() || null;
         if (!mixedLearner.enabled || mixedLearner.seq !== requestId || exiting) {
           appendTraceEvent(state.trace, {
             type: 'mixed_learner_prefetch_discarded',
@@ -9492,6 +10028,10 @@ async function main() {
           turnId,
           text,
           clue: clue || null,
+          move,
+          profileId: mixedLearner.profileId,
+          profile: mixedLearner.profile,
+          profileSignal,
           provider: generated.provider,
           model: generated.model,
           latencyMs: generated.latencyMs,
@@ -9504,6 +10044,9 @@ async function main() {
           requestId,
           text,
           clue: clue || null,
+          move,
+          profileId: mixedLearner.profileId,
+          profileSignal,
           parsedArtifacts: generated.parsedArtifacts,
           provider: generated.provider,
           model: generated.model,
@@ -9519,8 +10062,9 @@ async function main() {
         if (!processingTurn && !exiting) {
           clearStatusLine();
           console.log(
-            `${C.dim}mixed learner answer + clue ready for ${turnId}${analysisWarming ? '; analysis warming in background' : ''}; /clue for direction, Tab or /suggest for the answer, /use to send${C.reset}`,
+            `${C.dim}mixed learner answer + clue ready for ${turnId}; suggested move: ${move === 'ask_question' ? 'ask a question' : 'respond'}${analysisWarming ? '; analysis warming in background' : ''}; Tab inserts this ${mixedLearner.profileId || 'custom'} draft; /suggest inspects it; /use sends it${C.reset}`,
           );
+          printMixedLearnerProfilePresentation(mixedLearner.suggestion);
           refreshMixedLearnerPrompt(rl);
         }
       })
@@ -9557,7 +10101,10 @@ async function main() {
       return;
     }
     if (mixedLearner.suggestion?.text) {
-      console.log(`${C.cyan}learner suggestion >${C.reset} ${mixedLearner.suggestion.turnId}`);
+      console.log(
+        `${C.cyan}learner suggestion >${C.reset} ${mixedLearner.suggestion.turnId} · ${mixedLearner.suggestion.move === 'ask_question' ? 'ask a question' : 'respond'}`,
+      );
+      printMixedLearnerProfilePresentation(mixedLearner.suggestion);
       console.log(`${mixedLearner.suggestion.text}\n`);
       return;
     }
@@ -9590,7 +10137,9 @@ async function main() {
       return;
     }
     if (mixedLearner.suggestion?.clue) {
-      console.log(`${C.cyan}learner clue >${C.reset} ${mixedLearner.suggestion.turnId}`);
+      console.log(
+        `${C.cyan}learner clue >${C.reset} ${mixedLearner.suggestion.turnId} · ${mixedLearner.suggestion.move === 'ask_question' ? 'ask a question' : 'respond'}`,
+      );
       console.log(`${mixedLearner.suggestion.clue}\n`);
       return;
     }
@@ -9633,13 +10182,21 @@ async function main() {
         : `custom: ${oneLine(mixedLearner.profile, { max: 180 })}`;
       console.log(`${C.cyan}learner profile >${C.reset} ${label}`);
       console.log(
-        `${C.dim}  use /profile list, /profile <id>, /profile default, or /profile custom <description>${C.reset}\n`,
+        `${C.dim}  use /profile list, /profile example, /profile <id>, /profile default, or /profile custom <description>${C.reset}\n`,
       );
       return;
     }
     if (requested === 'list') {
       console.log(`${C.cyan}learner profiles >${C.reset}`);
       console.log(`${learnerProfileListText()}\n`);
+      return;
+    }
+    if (requested === 'example') {
+      console.log(`${C.cyan}custom learner profile example >${C.reset}`);
+      console.log(`/profile custom ${CUSTOM_LEARNER_PROFILE_EXAMPLE}`);
+      console.log(
+        `${C.dim}  describe an observable pattern, its trigger, and the tutor support that permits progress; do not add hidden case facts${C.reset}\n`,
+      );
       return;
     }
 
@@ -9665,9 +10222,10 @@ async function main() {
     }
 
     const previousProfileId = mixedLearner.profileId;
-    resetMixedLearnerSuggestion('profile_changed');
+    const invalidated = resetMixedLearnerSuggestion('profile_changed');
     mixedLearner.profile = nextProfile;
     mixedLearner.profileId = nextProfileId;
+    rl.setPrompt(mixedLearnerPromptText());
     appendTraceEvent(state.trace, {
       type: 'mixed_learner_profile_changed',
       previousProfileId,
@@ -9675,6 +10233,11 @@ async function main() {
       custom: !nextProfileId,
       duringTurn,
       turn: state.turns.length + 1,
+      cacheRefresh: {
+        priorStateCleared: Boolean(invalidated?.hadState),
+        analysisDiscarded: Boolean(invalidated?.discardedAnalysis),
+        tutorResponseDiscarded: Boolean(invalidated?.discardedTutorResponse),
+      },
     });
     const label = nextProfileId ? `${nextProfileId}: ${learnerProfileDescription(nextProfileId)}` : 'custom profile';
     console.log(`${C.cyan}learner profile >${C.reset} switched to ${label}`);
@@ -9683,7 +10246,7 @@ async function main() {
     } else if (latestTutorMessage(state)) {
       startMixedLearnerPrefetch('profile_changed');
       console.log(
-        `${C.dim}  regenerating clue, answer, analysis, and tutor prefetch for the current turn; Tab activates when the ready message appears${C.reset}\n`,
+        `${C.dim}  cleared the prior clue, answer, analysis, and tutor-response cache; regenerating for the current turn; Tab activates when the ready message appears${C.reset}\n`,
       );
     } else {
       console.log(`${C.dim}  applies after the next tutor message${C.reset}\n`);
@@ -9714,8 +10277,12 @@ async function main() {
       turnId: suggestion.turnId,
       requestId: suggestion.requestId,
       text: suggestion.text,
+      move: suggestion.move,
+      profileId: suggestion.profileId,
+      profileSignal: suggestion.profileSignal,
       duringTurn,
     });
+    printMixedLearnerProfilePresentation(suggestion, { verb: 'visible in response' });
     console.log(`${C.bold}learner(mixed) >${C.reset} ${suggestion.text}\n`);
     if (processingTurn || duringTurn) {
       pendingLearnerLines.push(suggestion.text);
@@ -9733,6 +10300,7 @@ async function main() {
       registerSelection: registerSelectionEnabled
         ? { enabled: true, palette: registerPalette, policy: registerPolicy, history: state.register.history }
         : null,
+      dialogueClosure: state.dialogueClosure,
       directorContext,
       trace: traceDisplayPath(state.trace),
       fieldVisualization: state.fieldViz?.lastWrite || null,
@@ -9862,6 +10430,7 @@ async function main() {
     state.history = [];
     state.turns = [];
     state.printedDebugIds = new Set();
+    state.dialogueClosure = { ...dialogueClosureConfig };
     state.learnerDag = createLearnerDagState({
       enabled: tutorLearnerDagEnabled,
       resolved: learnerRecordResolved,
@@ -9977,6 +10546,19 @@ async function main() {
       finishSlashCommand();
       return true;
     }
+    if (trimmed === '/id' || trimmed === '/turn-id' || trimmed === '/debug-id') {
+      clearStatusLine();
+      const debug = printCurrentDebugId(state, { duringTurn });
+      appendTraceEvent(state.trace, {
+        type: 'debug_id_popup',
+        turn: state.turns[state.turns.length - 1]?.turn || null,
+        duringTurn,
+        debug,
+      });
+      if (duringTurn) console.log(`${C.dim}tutor is still thinking; the in-progress trace may still be incomplete${C.reset}\n`);
+      finishSlashCommand();
+      return true;
+    }
     if (trimmed === '/suggest') {
       showMixedLearnerSuggestion({ duringTurn });
       appendTraceEvent(state.trace, {
@@ -10055,13 +10637,73 @@ async function main() {
 
   async function processLearnerLine(trimmed) {
     if (exiting) return;
+    if (state.dialogueClosure?.phase === 'closed') {
+      console.log(`${C.cyan}dialogue closed >${C.reset} this inquiry has already ended`);
+      console.log(`${C.dim}  use /report to inspect it, /clear to begin again, or /quit to leave${C.reset}\n`);
+      return;
+    }
     processingTurn = true;
     let completedTurn = false;
-    const prefetchedAnalysis = await takeMixedLearnerAnalysisPrefetch(trimmed);
+    const closureAcknowledgement = Boolean(
+      state.dialogueClosure?.phase === 'awaiting_checkin' && tutorStubClosureAcknowledgement(trimmed),
+    );
+    const prefetchedAnalysis = closureAcknowledgement ? null : await takeMixedLearnerAnalysisPrefetch(trimmed);
     resetMixedLearnerSuggestion('learner_turn_started', {
       preserveAnalysisCache: Boolean(prefetchedAnalysis?.entry),
     });
     try {
+      if (closureAcknowledgement) {
+        const tutorTurn = state.turns.length + 1;
+        const inheritedModel = state.turns.at(-1)?.tutorLearnerDagModel || null;
+        const tutorLearnerDag = { model: inheritedModel };
+        const { frame } = tutorDialogueClosureFrameForTurn({ state, tutorTurn, tutorLearnerDag });
+        const text = deterministicTutorStubClosureResponse(frame, { acknowledgement: true });
+        const closureAudit = auditTutorStubDialogueClosureResponse({ text, frame });
+        printTurnDebugLine(state, tutorTurn);
+        const response = await runOneTurn(
+          trimmed,
+          state,
+          {
+            turn: {
+              summary: 'Learner declines the optional final check-in.',
+              request_type: 'off_task_or_mixed',
+              discourse_move: 'claim',
+              evidence_use: 'none',
+              epistemic_stance: 'grounded',
+              affect: 'settled',
+              agency: 'steering',
+              scores: {},
+              pedagogical_need: 'Close the inquiry without another question.',
+            },
+            overall: {
+              summary: 'The learner accepts dialogue closure.',
+              trajectory: 'terminal closure',
+              current_state: 'settled',
+              next_best_tutor_move: 'Close the inquiry.',
+            },
+          },
+          tutorLearnerDag,
+          null,
+          null,
+          {
+            text,
+            provider: state.resolved.provider,
+            model: state.resolved.model,
+            latencyMs: 0,
+            usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
+            leakAudit: { ok: true, leaks: [] },
+            scaffoldAudit: { ok: true, issues: [], similarity: 0 },
+            closureAudit,
+            deterministicClosure: true,
+          },
+        );
+        printTutorDagSnapshot(response.dagSnapshot);
+        printTutorResponse(response, state.stream);
+        console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+        writeFieldVisualization(state, { reason: 'dialogue_closure_acknowledgement' });
+        completedTurn = true;
+        return;
+      }
       const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
         trimmed,
         state,
@@ -10075,12 +10717,18 @@ async function main() {
         classification,
         learnerText: trimmed,
       });
+      const { frame: dialogueClosureFrame } = tutorDialogueClosureFrameForTurn({
+        state,
+        tutorTurn: state.turns.length + 1,
+        tutorLearnerDag,
+      });
       const prefetchedResponse = await takeMixedLearnerTutorPrefetch(prefetchedAnalysis?.entry, {
         learnerText: trimmed,
         classification,
         tutorLearnerDag,
         registerSelection,
         humanDiscourseFrame,
+        dialogueClosureFrame,
       });
       if (!prefetchedResponse) {
         startInterimAnimation(
@@ -10114,6 +10762,12 @@ async function main() {
       printTutorDagSnapshot(response.dagSnapshot);
       printTutorResponse(response, state.stream);
       console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
+      if (state.dialogueClosure?.phase === 'awaiting_checkin') {
+        console.log(
+          `${C.cyan}dialogue closing >${C.reset} the verdict has reached closure; one optional learner check-in remains`,
+        );
+        console.log(`${C.dim}  reply once to revisit a link, or say “no thanks” to close immediately${C.reset}\n`);
+      }
       writeFieldVisualization(state, { reason: 'turn_complete' });
       completedTurn = true;
     } catch (err) {
@@ -10123,13 +10777,18 @@ async function main() {
     } finally {
       processingTurn = false;
       if (!exiting) {
-        const next = pendingLearnerLines.shift();
-        if (next) {
-          console.log(`${C.dim}running queued learner turn (${pendingLearnerLines.length} still queued)${C.reset}`);
-          void processLearnerLine(next);
+        if (state.dialogueClosure?.phase === 'closed') {
+          pendingLearnerLines.length = 0;
+          requestExit('dialogue_grounded_closure');
         } else {
-          if (completedTurn) startMixedLearnerPrefetch('turn_complete');
-          promptIfIdle();
+          const next = pendingLearnerLines.shift();
+          if (next) {
+            console.log(`${C.dim}running queued learner turn (${pendingLearnerLines.length} still queued)${C.reset}`);
+            void processLearnerLine(next);
+          } else {
+            if (completedTurn) startMixedLearnerPrefetch('turn_complete');
+            promptIfIdle();
+          }
         }
       }
     }
