@@ -438,6 +438,9 @@ function main() {
     const summary = JSON.parse(fs.readFileSync(file, 'utf8'));
     const profile = summary.config?.autoLearnerProfileId || summary.config?.autoLearnerProfile || 'unknown';
     for (const row of summary.rows || []) {
+      // Quota- or error-killed rows carry truncated per-turn series; carrying
+      // their last state to the horizon would bias cells downward. Skip them.
+      if (row.error || (row.exitCode !== undefined && row.exitCode !== null && Number(row.exitCode) !== 0)) continue;
       const analyzed = analyzeRow(row, profile, horizons, aucHorizon, pressure);
       if (analyzed) rows.push(analyzed);
     }

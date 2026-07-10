@@ -99,6 +99,19 @@ Verdict against the frozen reading:
   learners); adaptive selection buys no measurable outcome advantage over a
   plain fixed register at n=3."
 
+## Cross-model replication (Sonnet 5, 2026-07-11)
+
+Run `.tutor-stub-auto-eval/headroom-sonnet5-pressure-n3-live/` (SHA d265edad,
+claude-code.sonnet-5, interleaved, turn-6 pressure probe, 60/60 after quota
+resume): interaction STRUCTURE replicates (rank crossings; bland leads
+diligent on both models) but the winning stress arm is model-dependent
+(terra: dynamic/field; Sonnet: field/negative) and dynamic collapses on
+Sonnet (closure 0.083). v3 gates: affective_resistant + false_memory PASS on
+Sonnet (pooled 0.565, best anywhere); proof_skipper misses only its
+recurrence floor. Details:
+PLAN_4_0/2026-07-10-headroom-fixed-horizon-interactions.md (cross-model
+section).
+
 Coordinate with the in-flight contract-v2 sentinel matrix
 (`profile-policy-sentinel-v2-n3-live`) — the designs overlap; merge into one
 run rather than paying twice.
