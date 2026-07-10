@@ -44,6 +44,10 @@ import {
 } from '../services/engagementRegisterRegistry.js';
 import { loadWorld, plotLint } from '../services/dramaticDerivation/world.js';
 import {
+  mixedLearnerAnalysisCacheKey,
+  parseMixedLearnerArtifacts,
+} from '../services/mixedLearnerArtifacts.js';
+import {
   buildContinuousRegisterPolicyMetadata,
   buildContinuousRegisterVector,
   continuousRegisterStyleInstruction,
@@ -64,9 +68,9 @@ const WARRANT_PREMISE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.warrant-premise-
 const HUMAN_DISCOURSE_PHASE = 'phase_2_human_scaffold_prompting';
 
 const STUB = {
-  model: process.env.TUTOR_STUB_MODEL || 'codex.gpt-5.5',
-  classifierModel: process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.5',
-  learnerRecordModel: process.env.TUTOR_STUB_LEARNER_RECORD_MODEL || process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.5',
+  model: process.env.TUTOR_STUB_MODEL || 'codex.gpt-5.6-terra',
+  classifierModel: process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.6-terra',
+  learnerRecordModel: process.env.TUTOR_STUB_LEARNER_RECORD_MODEL || process.env.TUTOR_STUB_CLASSIFIER_MODEL || 'codex.gpt-5.6-terra',
   topic: process.env.TUTOR_STUB_TOPIC || 'fractions',
   world: process.env.TUTOR_STUB_WORLD || 'world_005_marrick',
   learner: 'A curious learner who may be partly right, partly confused, and unsure how to explain their thinking.',
@@ -86,7 +90,7 @@ const STUB = {
   opening: process.env.TUTOR_STUB_OPENING !== '0',
   closeoutReport: process.env.TUTOR_STUB_CLOSEOUT_REPORT !== '0',
   fieldViz: process.env.TUTOR_STUB_FIELD_VIZ === '1',
-  autoLearnerModel: process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.5',
+  autoLearnerModel: process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.6-terra',
   autoTurns: process.env.TUTOR_STUB_AUTO_TURNS || 'until-grounded',
   autoSafetyTurns: Number.parseInt(process.env.TUTOR_STUB_AUTO_SAFETY_TURNS || '80', 10),
   autoLearnerProfile:
@@ -120,6 +124,8 @@ const SLASH_COMMANDS = [
   '/report',
   '/r',
   '/suggest',
+  '/clue',
+  '/hint',
   '/use',
   '/accept',
   '/regen',
@@ -274,7 +280,7 @@ function printHelp() {
 Options:
   --model <ref>          provider alias from config/providers.yaml
                          examples: openai.mini, openrouter.sonnet-5,
-                         codex.gpt-5.5, claude-code.sonnet
+                         codex.gpt-5.6-terra, claude-code.sonnet
   --classifier-model <ref>
                          learner-input classifier model (default: ${STUB.classifierModel})
   --no-classifier        skip the upfront learner-input classifier
@@ -342,10 +348,9 @@ Options:
   --no-auto-stop-on-grounded
                          keep running until --auto-turns even after the
                          learner-DAG reaches grounded asserted-secret closure
-  --mixed-learner        manual interactive mode with a prefetched automated
-                         learner suggestion after each tutor response; press
-                         Tab on an empty learner prompt when ready, or use
-                         /suggest, /use, /regen
+  --mixed-learner        manual interactive mode with a prefetched clue-answer
+                         pair after each tutor response; use /clue for direction,
+                         press Tab for the answer, or use /suggest, /use, /regen
   --mixed-mode           alias for --mixed-learner
   --save <path>          write transcript JSON on exit
   --trace-dir <path>     write JSONL model-call traces here
@@ -454,7 +459,7 @@ function assertSupportedModelRefs(refs) {
     if (UNSUPPORTED_CODEX_MINI_REFS.has(normalized)) {
       throw new Error(
         `${label}=${ref} is not supported by the local Codex CLI ChatGPT-account route. ` +
-          'Use codex.gpt-5.5 for CLI-backed Codex, or openai.mini/openrouter.gpt-mini for GPT mini.',
+          'Use codex.gpt-5.6-terra for CLI-backed Codex, or openai.mini/openrouter.gpt-mini for GPT mini.',
       );
     }
   }
@@ -1031,7 +1036,8 @@ function metadataLine(meta) {
   const effort = meta.effort || meta.reasoningEffort ? `, effort ${meta.effort || meta.reasoningEffort}` : '';
   const guard = meta.deterministicFallback ? ', leak-guard fallback' : meta.repaired ? ', leak-guard repaired' : '';
   const stream = meta.guardedStreamReplay ? ', guarded stream' : meta.streamed ? ', streamed' : '';
-  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${total} tokens${cost}${effort}${guard}${stream}`;
+  const cache = meta.speculativeCacheHit ? ', smart-cache hit' : '';
+  return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${total} tokens${cost}${effort}${guard}${stream}${cache}`;
 }
 
 function usesFixedOpenAITemperature(resolved) {
@@ -1525,18 +1531,46 @@ async function callPromptModel({
   stream = null,
   cliEffort = null,
   turn = null,
+  signal = null,
 }) {
   const startedAt = new Date().toISOString();
   const shouldStream = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
   try {
     let response;
     if (isCliProvider(resolved.provider)) {
+      const onEvent =
+        resolved.provider === 'codex'
+          ? (event) => {
+              const item = event?.item || {};
+              appendTraceEvent(trace, {
+                type: 'cli_stream_event',
+                role,
+                turn,
+                eventType: event?.type || 'unknown',
+                itemType: item?.type || null,
+              });
+              if (!stream?.enabled) return;
+              const active = getInterimState(stream?.interim)?.active;
+              if (!active) return;
+              const phase =
+                event?.type === 'thread.started'
+                  ? 'starting Codex'
+                  : event?.type === 'turn.started'
+                    ? 'model working'
+                    : event?.type === 'item.started' && item?.type
+                      ? item.type.replaceAll('_', ' ')
+                      : event?.type === 'item.completed' && item?.type === 'agent_message'
+                        ? 'finalizing result'
+                        : null;
+              if (phase) active.phase = `${active.basePhase || active.phase} · ${phase}`;
+            }
+          : null;
       const result = await callAIWithCliBridge(
         { provider: resolved.provider, model: resolved.model },
         systemPrompt,
         prompt,
         role,
-        { messageHistory: [], effort: cliEffort },
+        { messageHistory: [], effort: cliEffort, onEvent, signal },
       );
       response = {
         text: result.text,
@@ -1551,6 +1585,9 @@ async function callPromptModel({
         },
         effort: result.effort || result.reasoningEffort || null,
         reasoningEffort: result.reasoningEffort || result.effort || null,
+        streamedEvents: result.streamedEvents || 0,
+        invalidStreamLines: result.invalidStreamLines || 0,
+        outputSource: result.outputSource || null,
       };
     } else if (shouldStream) {
       const temperature = effectiveTemperatureForModel(resolved, 0.1);
@@ -1617,12 +1654,15 @@ async function callPromptModel({
         usage: response.usage,
         streamed: Boolean(response.streamed),
         effort: response.effort || response.reasoningEffort || null,
+        streamedEvents: response.streamedEvents || 0,
+        invalidStreamLines: response.invalidStreamLines || 0,
+        outputSource: response.outputSource || null,
       },
     });
     return response;
   } catch (err) {
     appendTraceEvent(trace, {
-      type: 'model_call_error',
+      type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
       role,
       turn,
       startedAt,
@@ -2052,6 +2092,7 @@ function startInterimAnimation(state, phase, context = null) {
     state,
     context: context || {},
     phase,
+    basePhase: phase,
     startedAt: Date.now(),
     tick: -1,
     interval: null,
@@ -2365,6 +2406,10 @@ function restoreDialogueFromTrace(state, resume, { currentWorld }) {
 
 function providerSupportsStreaming(resolved) {
   return Boolean(resolved?.provider && !isCliProvider(resolved.provider));
+}
+
+function providerSupportsEventStreaming(resolved) {
+  return resolved?.provider === 'codex';
 }
 
 function streamLabel(role) {
@@ -2925,58 +2970,39 @@ function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
 function learnerClassificationSchema() {
   return {
     turn: {
-      summary: 'plain-language sentence naming what the learner did in this turn',
-      request_type: 'logical request type, not a tutor register',
-      discourse_move: 'one controlled label',
-      evidence_use: 'one controlled label',
-      epistemic_stance: 'one controlled label',
-      affect: 'brief affect/energy label',
-      agency: 'one controlled label',
+      summary: 'one short sentence',
+      request_type: 'controlled label',
+      discourse_move: 'controlled label',
+      evidence_use: 'controlled label',
+      epistemic_stance: 'controlled label',
+      affect: 'short label',
+      agency: 'controlled label',
       scores: {
-        conceptual_engagement: { score: 1, reason: 'brief reason' },
-        epistemic_readiness: { score: 1, reason: 'brief reason' },
+        conceptual_engagement: { score: 1, reason: 'short phrase' },
+        epistemic_readiness: { score: 1, reason: 'short phrase' },
       },
-      pedagogical_need: 'what the tutor should attend to immediately',
+      pedagogical_need: 'one short phrase',
     },
     overall: {
-      summary: 'plain-language sentence naming what the learner has done overall',
-      trajectory: 'how their participation is changing or not changing',
-      recurring_pattern: 'dominant pattern across turns, or none yet',
-      current_state: 'where the learner seems to be now',
-      next_best_tutor_move: 'best immediate tutor move based on public evidence only',
+      summary: 'one short sentence',
+      trajectory: 'short phrase',
+      recurring_pattern: 'short phrase or none',
+      current_state: 'short phrase',
+      next_best_tutor_move: 'one short sentence',
     },
   };
 }
 
 function learnerRecordSchema() {
   return {
-    adopt: ['premise_id'],
-    retract: ['premise_id'],
-    derive: [['predicate', 'arg1', 'arg2']],
-    hypothesis: 'short hypothesis or null',
-    assert_answer: 'candidate name or null',
     human_discourse: humanDiscourseExtractionSchema(),
-    notes: 'brief reason for the extraction',
+    notes: 'one short sentence only when useful',
   };
 }
 
 function humanDiscourseExtractionSchema() {
   return {
-    proof_status: 'strict_proof | provisional_scaffold | side_arc | hidden_premise_risk | unclear',
-    provisional_claims: [{ surface: 'ordinary-language claim', warrant_needed: 'missing warrant or null' }],
-    implied_warrants: [{ surface: 'unstated inference rule in ordinary language', reason: 'why it is implied' }],
-    missing_warrants: [{ surface: 'claim needing a warrant', reason: 'what warrant is absent' }],
-    implied_public_premises: [{ surface: 'public premise implied but not strictly grounded', reason: 'why it matters' }],
-    suppressed_or_private_premises: [{ surface: 'unstated/private premise', reason: 'why it is not public enough' }],
-    common_sense_bridges: [{ surface: 'commonsense bridge', reason: 'why it is safe but not strict proof' }],
-    illicit_hidden_premises: [{ surface: 'hidden or unstaged premise', reason: 'why it must not be used' }],
-    proof_debt_candidates: [{ surface: 'provisional leap', reason: 'repair needed later', severity: 'low | medium | high' }],
-    side_arc: {
-      detected: false,
-      type: 'clarification_or_plain_language | warrant_challenge | affective_repair | off_task_or_contextual | null',
-      reason: 'why this is a side arc or null',
-      return_target: 'short phrase naming the proof-path point to return to, or null',
-    },
+    proof_status: 'strict_proof|provisional_scaffold|side_arc|hidden_premise_risk|unclear',
   };
 }
 
@@ -3038,6 +3064,8 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     '# Task',
     '',
     'Analyze the learner input once before the tutor responds.',
+    'Be terse. Keep every summary or reason to one short sentence or phrase.',
+    'Return sparse JSON: omit empty arrays, null optional learner_record fields, and absent human_discourse fields. Do not restate the same issue across arrays.',
     'Return both:',
     '1. A pedagogical discourse classification.',
     '2. A conservative public learner-record update for the tutor-side learner-DAG model.',
@@ -3109,52 +3137,36 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     '',
     '# Compact pedagogical discourse rubric',
     '',
-    'Conceptual engagement score:',
-    '1 = parrots or only asks for an answer; 2 = procedural or surface focus; 3 = some conceptual engagement but mostly paraphrase; 4 = substantive connections or reasoning; 5 = constructs, tests, or revises an interpretation.',
-    '',
-    'Epistemic readiness score:',
-    '1 = pure information reception; 2 = minimal metacognition; 3 = generic awareness of confusion or strategy; 4 = distinguishes genuine understanding from performance and asks evidence-generating questions; 5 = actively monitors bias, uncertainty, evidence, and what would count as knowing.',
-    '',
-    'Use these controlled classifier labels where possible:',
+    'Scores (1-5): conceptual_engagement = parroting, surface, partial concept, substantive reasoning, constructing/testing/revising; epistemic_readiness = reception, minimal awareness, generic awareness, evidence-aware monitoring, active bias/uncertainty monitoring.',
+    'Use controlled labels:',
     '- request_type: conceptual_clarity_request, stepwise_support_request, authority_refusal_or_status_challenge, plain_language_request, plain_simplification_followup, transfer_demand_or_named_material, vulnerability_or_moral_exposure, resistance_or_low_agency, answer_seeking_or_overreach, off_task_or_mixed',
     '- discourse_move: question, claim, hypothesis, inference, evidence_adoption, challenge, repair_request, affective_signal, answer_seeking, metacognitive_reflection, off_task',
     '- evidence_use: none, repeats_setup, cites_public_evidence, omits_warrant, links_evidence_to_rule, overleaps_evidence, distorts_public_evidence, revises_from_evidence',
-    '- Use omits_warrant when the learner states a correct public clue and a conclusion but leaves out the bridge that licenses the conclusion. Do not call that links_evidence_to_rule merely because the bridge is easy to infer.',
-    '- Use distorts_public_evidence only when the learner misstates, blends, or reassigns an already public clue. Use overleaps_evidence for a premature conclusion or missing warrant without distorted recall.',
-    '- Precedence rule: choose distorts_public_evidence, not overleaps_evidence, when the learner says or implies that an earlier/public clue existed when it did not, changes what a public clue said, or blends two public clues into a false remembered detail. This remains true when the distortion also supports a premature conclusion.',
-    '- Otherwise choose omits_warrant over links_evidence_to_rule when the bridge is absent; reserve overleaps_evidence for a claim that outruns the currently public evidence, especially a premature culprit or case-closing inference.',
+    '- evidence precedence: distorted/misattributed public clue => distorts_public_evidence; correct clue plus conclusion but no bridge => omits_warrant; conclusion beyond available evidence => overleaps_evidence; explicit bridge => links_evidence_to_rule.',
     '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
     '- agency: passive, complying, attempting, steering, self_correcting',
     '',
-    '# Request type registry',
-    '',
-    'Request type belongs to the logical armature: it describes what kind of move/device the learner turn calls for in the DAG or proof path. It is not the tutor register.',
-    requestTypePromptRows(),
-    '',
-    '# Action-family registry',
-    '',
-    'Action family belongs to the DAG/device armature: it describes what the tutor response is trying to do structurally. It is not the tutor register.',
-    actionFamilyPromptRows(),
-    '',
+    includeRegisterSelection ? '# Request type registry' : null,
+    includeRegisterSelection ? '' : null,
+    includeRegisterSelection
+      ? 'Request type belongs to the logical armature: it describes what kind of move/device the learner turn calls for in the DAG or proof path. It is not the tutor register.'
+      : null,
+    includeRegisterSelection ? requestTypePromptRows() : null,
+    includeRegisterSelection ? '' : null,
+    includeRegisterSelection ? '# Action-family registry' : null,
+    includeRegisterSelection ? '' : null,
+    includeRegisterSelection
+      ? 'Action family belongs to the DAG/device armature: it describes what the tutor response is trying to do structurally. It is not the tutor register.'
+      : null,
+    includeRegisterSelection ? actionFamilyPromptRows() : null,
+    includeRegisterSelection ? '' : null,
     '# Learner-record extraction rules',
     '',
-    '- adopt: include only staged premise ids the learner explicitly accepts, uses, restates, or treats as evidence.',
-    '- retract: include only staged premise ids the learner explicitly rejects or withdraws.',
-    '- derive: include fact arrays only when the learner voices a conclusion supported by adopted/staged evidence and public rules.',
-    '- Single-step trial-book rule: if the learner states a warranted conclusion from staged evidence, include both the supporting staged premise ids in adopt and the conclusion fact in derive. Do not require a separate "add it to the book" utterance.',
-    '- hypothesis: one short sentence if the learner offers a conjecture, uncertainty, or provisional theory.',
-    '- assert_answer: the named answer candidate if the learner directly answers the public question; otherwise null.',
-    '- human_discourse.proof_status: strict_proof, provisional_scaffold, side_arc, hidden_premise_risk, or unclear.',
-    '- human_discourse.provisional_claims: claims the learner is allowed to hold provisionally before strict proof is complete.',
-    '- human_discourse.implied_warrants: ordinary-language inference rules the learner is using without spelling them out.',
-    '- human_discourse.missing_warrants: warrants the learner still owes before a claim counts as strict proof.',
-    '- human_discourse.implied_public_premises: public assumptions suggested by the transcript but not yet stored as strict grounded premises.',
-    '- human_discourse.suppressed_or_private_premises: premises the learner seems to rely on that are not public in the staged evidence.',
-    '- human_discourse.common_sense_bridges: harmless everyday bridges that can be allowed provisionally but may need repair.',
-    '- human_discourse.illicit_hidden_premises: any apparent use of hidden or unstaged story facts.',
-    '- human_discourse.proof_debt_candidates: provisional leaps or missing warrants the tutor should keep visible for later repair.',
-    '- human_discourse.side_arc: clarification, vocabulary, affective, trust, or off-path requests that should be answered briefly before returning to the proof path.',
-    '- Be conservative. Do not mark staged evidence adopted merely because it exists.',
+    '- adopt/retract: only staged premise ids the learner explicitly accepts/uses or rejects/withdraws.',
+    '- derive: only learner-voiced conclusions supported by adopted or staged evidence plus public rules. For a warranted one-step conclusion, include its supporting premise ids in adopt and its fact in derive.',
+    '- hypothesis: one learner conjecture or uncertainty, else null. assert_answer: direct answer candidate, else null.',
+    '- human_discourse: record only concrete current-turn material. proof_status uses the schema enum. provisional_claims are allowable but not strict; implied_warrants are unstated bridges; missing_warrants are still owed; implied_public_premises are public but ungrounded; suppressed_or_private_premises and illicit_hidden_premises are not public enough; common_sense_bridges are safe provisional steps; proof_debt_candidates need later repair; side_arc covers clarification, vocabulary, affect, trust, or off-path requests.',
+    '- Be conservative: staged evidence is not adopted merely because it exists.',
     includeRegisterSelection ? '' : null,
     includeRegisterSelection ? '# Tutor-register selection' : null,
     includeRegisterSelection
@@ -3220,18 +3232,26 @@ async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn }) {
   };
 }
 
-async function extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn }) {
+async function extractCombinedLearnerAnalysis({
+  learnerText,
+  state,
+  tutorTurn,
+  role = 'tutor_stub_learner_analysis',
+  stream = state.stream,
+  signal = null,
+}) {
   const prompt = buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn });
   const raw = await callPromptModel({
     prompt,
     resolved: state.learnerDag.resolved,
     systemPrompt: LEARNER_ANALYSIS_SYSTEM_PROMPT,
-    role: 'tutor_stub_learner_analysis',
+    role,
     maxTokens: Math.max(2500, state.maxTokens || 0),
     trace: state.trace,
-    stream: state.stream,
+    stream,
     cliEffort: state.cliEffort,
     turn: tutorTurn,
+    signal,
   });
   const { parsed, parseError } = parseClassifierJson(raw.text);
   return {
@@ -6287,7 +6307,7 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printInteractiveHelp() {
   console.log(
-    `${C.cyan}slash commands >${C.reset} /analysis, /a, /field, /f, /viz, /v, /clarify [phrase], /explain [phrase], /report, /r, /suggest, /use, /regen, /clear, /help, /quit\n`,
+    `${C.cyan}slash commands >${C.reset} /analysis, /a, /field, /f, /viz, /v, /clarify [phrase], /explain [phrase], /report, /r, /clue, /hint, /suggest, /use, /regen, /clear, /help, /quit\n`,
   );
 }
 
@@ -7052,6 +7072,8 @@ async function callTutor({
   stream = null,
   cliEffort = null,
   multipleChoice = false,
+  roleBase = 'tutor_stub_tutor',
+  signal = null,
 }) {
   const context = trimHistory(history, historyTurns);
   const tutorTurn = Math.floor(history.length / 2) + 1;
@@ -7093,7 +7115,7 @@ async function callTutor({
         effectiveSystemPrompt,
         attemptUserPrompt,
         role,
-        { messageHistory: context, effort: cliEffort },
+        { messageHistory: context, effort: cliEffort, signal },
       );
       response = {
         text: result.text,
@@ -7177,7 +7199,7 @@ async function callTutor({
   try {
     let response = await invokeTutorAttempt({
       attemptUserPrompt: userPrompt,
-      role: 'tutor_stub_tutor',
+      role: roleBase,
       streamMode: tutorStreamMode,
       repairAttempt: 0,
     });
@@ -7187,6 +7209,7 @@ async function callTutor({
     let audit = auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText });
     appendTraceEvent(trace, {
       type: 'tutor_response_audit',
+      role: roleBase,
       turn: tutorTurn,
       attempt: 0,
       ok: audit.ok,
@@ -7202,13 +7225,14 @@ async function callTutor({
 
     response = await invokeTutorAttempt({
       attemptUserPrompt: tutorLeakRepairPrompt({ originalUserPrompt: userPrompt, unsafeDraft: response.text, audit }),
-      role: 'tutor_stub_tutor_repair',
+      role: `${roleBase}_repair`,
       streamMode: canStreamTutor ? 'buffered' : 'none',
       repairAttempt: 1,
     });
     audit = auditTutorResponseLeak({ text: response.text, world, tutorTurn, learnerText });
     appendTraceEvent(trace, {
       type: 'tutor_response_audit',
+      role: `${roleBase}_repair`,
       turn: tutorTurn,
       attempt: 1,
       ok: audit.ok,
@@ -7239,6 +7263,7 @@ async function callTutor({
     }
     appendTraceEvent(trace, {
       type: 'tutor_response_fallback',
+      role: roleBase,
       turn: tutorTurn,
       leaks: audit.leaks,
       text: fallbackText,
@@ -7246,8 +7271,8 @@ async function callTutor({
     return fallback;
   } catch (err) {
     appendTraceEvent(trace, {
-      type: 'model_call_error',
-      role: 'tutor_stub_tutor',
+      type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
+      role: roleBase,
       turn: tutorTurn,
       provider: resolved.provider,
       model: resolved.model,
@@ -7378,6 +7403,21 @@ function automatedLearnerSystemPrompt(profile) {
     profile,
     '',
     'Apply this contract to every public learner turn. Never quote or describe the contract.',
+  ].join('\n');
+}
+
+function mixedLearnerArtifactsSystemPrompt(profile) {
+  return [
+    'You generate a paired learner answer and non-revealing clue for an experimental tutoring dialogue.',
+    'Use only the public transcript and latest tutor message. Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
+    'The private learner-profile contract defines the answer. Preserve its failure operator and repair limits.',
+    'The clue describes where to look or what kind of move to make, but must not state or paraphrase the answer.',
+    '',
+    '# Private learner-profile contract',
+    '',
+    profile,
+    '',
+    'Never quote or describe the private contract. Return one JSON object only.',
   ].join('\n');
 }
 
@@ -7531,6 +7571,46 @@ async function generateAutomatedLearnerTurn({
   };
 }
 
+async function generateMixedLearnerArtifacts({
+  state,
+  resolved,
+  profile,
+  turnNumber,
+  cliEffort = null,
+  signal = null,
+}) {
+  const prompt = [
+    buildAutomatedLearnerPrompt({ state, profile, turnNumber }),
+    '',
+    '# Mixed learner artifacts',
+    '',
+    'Return one JSON object with exactly two string fields: "clue" and "answer".',
+    'answer: the learner turn requested above.',
+    'clue: a short directional cue that helps a human learner understand what kind of move the tutor is inviting.',
+    'The clue must not contain, paraphrase, quote, complete, or reveal the answer. It may name the distinction, evidence source, operation, or question to attend to.',
+    'Keep the clue under 18 words and the answer concise. Return JSON only.',
+  ].join('\n');
+  const raw = await callPromptModel({
+    prompt,
+    resolved,
+    systemPrompt: mixedLearnerArtifactsSystemPrompt(profile),
+    role: 'tutor_stub_mixed_learner_artifacts',
+    maxTokens: 1100,
+    trace: state.trace,
+    stream: { enabled: false, interim: state.interim },
+    cliEffort,
+    turn: turnNumber,
+    signal,
+  });
+  const artifacts = parseMixedLearnerArtifacts(raw.text);
+  return {
+    ...raw,
+    answer: cleanAutomatedLearnerReply(artifacts.answer),
+    clue: artifacts.clue,
+    parsedArtifacts: artifacts.parsed,
+  };
+}
+
 function automatedLearnerDraftMatchesRuntime({ text, raw, state, runtime }) {
   if (!runtime?.requiredNow) return true;
   const classification = classificationFromCombinedAnalysis(raw, state);
@@ -7615,6 +7695,7 @@ async function runOneTurn(
   tutorLearnerDag = null,
   registerSelection = null,
   previousRegisterEfficacy = null,
+  precomputedResponse = null,
 ) {
   const learnerText = String(inputText || '').trim();
   if (!learnerText) {
@@ -7634,26 +7715,28 @@ async function runOneTurn(
     learnerText,
   });
 
-  const response = await callTutor({
-    learnerText,
-    history: state.history,
-    state,
-    systemPrompt: state.systemPrompt,
-    resolved: state.resolved,
-    temperature: state.temperature,
-    maxTokens: state.maxTokens,
-    historyTurns: state.historyTurns,
-    world: state.world,
-    dag: state.dag,
-    classification,
-    tutorLearnerDagModel: tutorLearnerDag,
-    registerSelection,
-    humanDiscourseFrame,
-    trace: state.trace,
-    stream: state.stream,
-    cliEffort: state.cliEffort,
-    multipleChoice: state.multipleChoice,
-  });
+  const response =
+    precomputedResponse ||
+    (await callTutor({
+      learnerText,
+      history: state.history,
+      state,
+      systemPrompt: state.systemPrompt,
+      resolved: state.resolved,
+      temperature: state.temperature,
+      maxTokens: state.maxTokens,
+      historyTurns: state.historyTurns,
+      world: state.world,
+      dag: state.dag,
+      classification,
+      tutorLearnerDagModel: tutorLearnerDag,
+      registerSelection,
+      humanDiscourseFrame,
+      trace: state.trace,
+      stream: state.stream,
+      cliEffort: state.cliEffort,
+      multipleChoice: state.multipleChoice,
+    }));
   const dagSnapshot = buildTutorDagSnapshot(state, tutorTurn);
 
   state.history.push({ role: 'user', content: learnerText });
@@ -7992,6 +8075,8 @@ async function main() {
   const cliEffort = normalizeCliEffort(args['cli-effort']);
   const tutorStreamState = !streamEnabled
     ? 'off'
+    : providerSupportsEventStreaming(resolved)
+      ? 'cli_events'
     : !providerSupportsStreaming(resolved)
       ? 'unavailable_cli_buffered'
       : args.dag && worldBundle
@@ -8051,6 +8136,7 @@ async function main() {
                 modelRef: args['auto-learner-model'],
                 resolved: visibleAutoLearnerModel,
                 profile: args['auto-learner-profile'],
+                clue: '/clue or /hint',
                 accept: 'Tab on an empty learner prompt, /use, or /accept',
                 inspect: '/suggest',
                 regenerate: '/regen',
@@ -8100,8 +8186,14 @@ async function main() {
             tutor: tutorStreamState,
             tutorLive: tutorStreamState === 'live',
             tutorGuardedAfterAudit: tutorStreamState === 'guarded_after_audit',
-            classifier: streamEnabled && classifierResolved ? providerSupportsStreaming(classifierResolved) : false,
-            learnerAnalysis: streamEnabled && learnerRecordResolved ? providerSupportsStreaming(learnerRecordResolved) : false,
+            classifier:
+              streamEnabled && classifierResolved
+                ? providerSupportsStreaming(classifierResolved) || providerSupportsEventStreaming(classifierResolved)
+                : false,
+            learnerAnalysis:
+              streamEnabled && learnerRecordResolved
+                ? providerSupportsStreaming(learnerRecordResolved) || providerSupportsEventStreaming(learnerRecordResolved)
+                : false,
           },
           opening: { enabled: openingEnabled, printedByDefault: Boolean(openingEnabled && !firstMessage) },
           closeoutReport: { enabled: closeoutReportEnabled },
@@ -8188,6 +8280,7 @@ async function main() {
             modelRef: args['auto-learner-model'],
             resolved: visibleAutoLearnerModel,
             profile: args['auto-learner-profile'],
+            clue: '/clue or /hint',
             accept: 'Tab on an empty learner prompt, /use, or /accept',
             inspect: '/suggest',
             regenerate: '/regen',
@@ -8223,8 +8316,14 @@ async function main() {
         tutor: tutorStreamState,
         tutorLive: tutorStreamState === 'live',
         tutorGuardedAfterAudit: tutorStreamState === 'guarded_after_audit',
-        classifier: streamEnabled && classifierResolved ? providerSupportsStreaming(classifierResolved) : false,
-        learnerAnalysis: streamEnabled && learnerRecordResolved ? providerSupportsStreaming(learnerRecordResolved) : false,
+        classifier:
+          streamEnabled && classifierResolved
+            ? providerSupportsStreaming(classifierResolved) || providerSupportsEventStreaming(classifierResolved)
+            : false,
+        learnerAnalysis:
+          streamEnabled && learnerRecordResolved
+            ? providerSupportsStreaming(learnerRecordResolved) || providerSupportsEventStreaming(learnerRecordResolved)
+            : false,
       },
       memorySummary: {
         enabled: memorySummaryEnabled,
@@ -8369,7 +8468,7 @@ async function main() {
     );
   } else if (mixedLearnerEnabled) {
     console.log(
-      `${C.dim}mixed learner: on via ${args['auto-learner-model']} -> ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; Tab autocomplete, /suggest, /use, /regen${C.reset}`,
+      `${C.dim}mixed learner: on via ${args['auto-learner-model']} -> ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; /clue, Tab autocomplete, /suggest, /use, /regen${C.reset}`,
     );
   } else if (mixedLearnerRequested) {
     console.log(`${C.dim}mixed learner: requested, but off because --auto-learner is running unattended${C.reset}`);
@@ -8409,8 +8508,13 @@ async function main() {
     const streamBits = [
       tutorStreamState === 'live' ? 'tutor live' : null,
       tutorStreamState === 'guarded_after_audit' ? 'tutor guarded-after-audit' : null,
+      tutorStreamState === 'cli_events' ? 'tutor CLI events' : null,
       classifierResolved && providerSupportsStreaming(classifierResolved) ? 'classifier' : null,
       learnerRecordResolved && providerSupportsStreaming(learnerRecordResolved) ? 'learner-DAG/analysis' : null,
+      classifierResolved && providerSupportsEventStreaming(classifierResolved) ? 'classifier CLI events' : null,
+      learnerRecordResolved && providerSupportsEventStreaming(learnerRecordResolved)
+        ? 'learner-DAG/analysis CLI events'
+        : null,
     ].filter(Boolean);
     const streamSummary = streamBits.length
       ? `on for ${streamBits.join(', ')}`
@@ -8576,6 +8680,18 @@ async function main() {
     pending: null,
     suggestion: null,
     error: null,
+    artifactAbortController: null,
+    analysisCache: null,
+    cacheStats: {
+      analysisStarted: 0,
+      analysisHits: 0,
+      analysisMisses: 0,
+      tutorStarted: 0,
+      tutorHits: 0,
+      tutorMisses: 0,
+      discarded: 0,
+      errors: 0,
+    },
   };
 
   const rl = readline.createInterface({
@@ -8615,13 +8731,29 @@ async function main() {
     return text.toLowerCase().startsWith(raw.trim().toLowerCase()) ? text : null;
   }
 
-  function resetMixedLearnerSuggestion(reason) {
+  function resetMixedLearnerSuggestion(reason, { preserveAnalysisCache = false } = {}) {
     if (!mixedLearner.enabled) return;
-    const hadState = Boolean(mixedLearner.pending || mixedLearner.suggestion || mixedLearner.error);
+    const cachedAnalysis = mixedLearner.analysisCache;
+    mixedLearner.artifactAbortController?.abort();
+    mixedLearner.artifactAbortController = null;
+    const hadState = Boolean(mixedLearner.pending || mixedLearner.suggestion || mixedLearner.error || cachedAnalysis);
+    if (cachedAnalysis && !preserveAnalysisCache) {
+      cachedAnalysis.abortController?.abort();
+      mixedLearner.cacheStats.discarded += 1;
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_analysis_cache_discarded',
+        reason,
+        turn: cachedAnalysis.turn,
+        turnId: cachedAnalysis.turnId,
+        status: cachedAnalysis.status,
+        key: cachedAnalysis.key,
+      });
+    }
     mixedLearner.seq += 1;
     mixedLearner.pending = null;
     mixedLearner.suggestion = null;
     mixedLearner.error = null;
+    if (!preserveAnalysisCache) mixedLearner.analysisCache = null;
     if (hadState) {
       appendTraceEvent(state.trace, {
         type: 'mixed_learner_suggestion_cleared',
@@ -8629,6 +8761,353 @@ async function main() {
         turns: state.turns.length,
       });
     }
+  }
+
+  function currentMixedLearnerAnalysisKey(answer, turnNumber = state.turns.length + 1) {
+    return mixedLearnerAnalysisCacheKey({
+      answer: String(answer || '').trim(),
+      turn: turnNumber,
+      history: state.history,
+      world: state.world?.id || null,
+      learnerDag: state.learnerDag?.lastModel
+        ? {
+            turn: state.learnerDag.lastModel.turn || null,
+            metrics: state.learnerDag.lastModel.metrics || null,
+            assessment: state.learnerDag.lastModel.assessment || null,
+          }
+        : null,
+      registerPolicy: state.register?.policy || null,
+      registerHistory: (state.register?.history || []).map((entry) => ({
+        turn: entry.turn || null,
+        selectedRegister: entry.selected_register || null,
+        source: entry.source || null,
+      })),
+      analysisModel: state.learnerDag?.resolved || state.classifier?.resolved || null,
+      dagMode: state.dagMode,
+      systemPrompt: state.systemPrompt,
+      schema: 'mixed-learner-analysis-cache.v1',
+    });
+  }
+
+  function cloneStateForMixedLearnerSpeculation() {
+    return {
+      ...state,
+      history: structuredClone(state.history),
+      turns: structuredClone(state.turns),
+      learnerDag: structuredClone(state.learnerDag),
+      register: structuredClone(state.register),
+      stream: { enabled: false, interim: state.interim },
+    };
+  }
+
+  function mixedLearnerTutorContextKey({
+    learnerText,
+    classification,
+    tutorLearnerDag,
+    registerSelection,
+    humanDiscourseFrame,
+  }) {
+    return mixedLearnerAnalysisCacheKey({
+      learnerText,
+      history: state.history,
+      classifier: classifierTutorContext(classification),
+      learnerDag: tutorLearnerDagModelContext(tutorLearnerDag?.model || tutorLearnerDag),
+      register: registerSelectionContext(registerSelection, { multipleChoice: state.multipleChoice }),
+      humanDiscourse: humanDiscourseTutorContext(humanDiscourseFrame),
+      dagTurn: state.dag && state.world ? dagTurnContext(state.world, state.turns.length + 1) : null,
+      systemPrompt: state.systemPrompt,
+      tutorModel: state.resolved,
+      temperature: state.temperature,
+      maxTokens: state.maxTokens,
+      historyTurns: state.historyTurns,
+      schema: 'mixed-learner-tutor-cache.v1',
+    });
+  }
+
+  async function startMixedLearnerTutorPrefetch(entry, raw) {
+    if (mixedLearner.analysisCache !== entry || exiting) return null;
+    entry.tutorStatus = 'pending';
+    entry.tutorStartedAt = Date.now();
+    mixedLearner.cacheStats.tutorStarted += 1;
+    try {
+      const speculativeState = cloneStateForMixedLearnerSpeculation();
+      const classification = classificationFromCombinedAnalysis(raw, speculativeState);
+      const update = learnerRecordFromCombinedAnalysis(raw);
+      const tutorLearnerDag = applyLearnerRecordUpdate({
+        update,
+        state: speculativeState,
+        tutorTurn: entry.turn,
+        learnerText: entry.answer,
+      });
+      speculativeState.learnerDag.lastModel = tutorLearnerDag.model;
+      const previousRegisterEfficacy = evaluatePendingRegisterEfficacy(
+        speculativeState,
+        tutorLearnerDag,
+        classification,
+      );
+      const registerSelection = normalizeRegisterSelection(registerSelectionFromCombinedAnalysis(raw), {
+        state: speculativeState,
+        classification,
+        tutorLearnerDag,
+        raw,
+      });
+      const humanDiscourseFrame = buildHumanDiscourseFrame({
+        state: speculativeState,
+        tutorTurn: entry.turn,
+        tutorLearnerDag,
+        classification,
+        learnerText: entry.answer,
+      });
+      entry.tutorContextKey = mixedLearnerTutorContextKey({
+        learnerText: entry.answer,
+        classification,
+        tutorLearnerDag,
+        registerSelection,
+        humanDiscourseFrame,
+      });
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_tutor_prefetch_start',
+        turn: entry.turn,
+        turnId: entry.turnId,
+        requestId: entry.requestId,
+        analysisKey: entry.key,
+        tutorContextKey: entry.tutorContextKey,
+      });
+      entry.tutorPromise = callTutor({
+        learnerText: entry.answer,
+        history: speculativeState.history,
+        state: speculativeState,
+        systemPrompt: speculativeState.systemPrompt,
+        resolved: speculativeState.resolved,
+        temperature: speculativeState.temperature,
+        maxTokens: speculativeState.maxTokens,
+        historyTurns: speculativeState.historyTurns,
+        world: speculativeState.world,
+        dag: speculativeState.dag,
+        classification,
+        tutorLearnerDagModel: tutorLearnerDag,
+        registerSelection,
+        humanDiscourseFrame,
+        trace: state.trace,
+        stream: { enabled: false, interim: state.interim },
+        cliEffort: speculativeState.cliEffort,
+        multipleChoice: speculativeState.multipleChoice,
+        roleBase: 'tutor_stub_tutor_prefetch',
+        signal: entry.abortController.signal,
+      });
+      const response = await entry.tutorPromise;
+      if (mixedLearner.analysisCache !== entry || exiting) return null;
+      entry.tutorStatus = 'ready';
+      entry.tutorResponse = response;
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_tutor_prefetch_ready',
+        turn: entry.turn,
+        turnId: entry.turnId,
+        requestId: entry.requestId,
+        tutorContextKey: entry.tutorContextKey,
+        latencyMs: Date.now() - entry.tutorStartedAt,
+      });
+      return response;
+    } catch (err) {
+      if (err?.name === 'AbortError') return null;
+      if (mixedLearner.analysisCache === entry) {
+        entry.tutorStatus = 'error';
+        entry.tutorError = err.message;
+      }
+      mixedLearner.cacheStats.errors += 1;
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_tutor_prefetch_error',
+        turn: entry.turn,
+        turnId: entry.turnId,
+        requestId: entry.requestId,
+        error: err.message,
+      });
+      return null;
+    }
+  }
+
+  async function takeMixedLearnerTutorPrefetch(
+    entry,
+    { learnerText, classification, tutorLearnerDag, registerSelection, humanDiscourseFrame },
+  ) {
+    if (!entry || mixedLearner.analysisCache !== entry) return null;
+    const liveContextKey = mixedLearnerTutorContextKey({
+      learnerText,
+      classification,
+      tutorLearnerDag,
+      registerSelection,
+      humanDiscourseFrame,
+    });
+    if (!entry.tutorContextKey || entry.tutorContextKey !== liveContextKey) {
+      mixedLearner.cacheStats.tutorMisses += 1;
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_tutor_cache_miss',
+        turn: entry.turn,
+        turnId: entry.turnId,
+        reason: !entry.tutorContextKey ? 'not_prefetched' : 'context_changed',
+        cachedKey: entry.tutorContextKey || null,
+        liveKey: liveContextKey,
+      });
+      mixedLearner.analysisCache = null;
+      return null;
+    }
+    const waited = entry.tutorStatus === 'pending';
+    if (waited) {
+      startInterimAnimation(state, 'awaiting prefetched tutor response', {
+        learnerText,
+        tutorTurn: entry.turn,
+        classification,
+        tutorLearnerDag,
+        registerSelection,
+      });
+      await entry.tutorPromise;
+      stopInterimAnimation(state);
+    }
+    if (!entry.tutorResponse || entry.tutorStatus !== 'ready') {
+      mixedLearner.cacheStats.tutorMisses += 1;
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_tutor_cache_miss',
+        turn: entry.turn,
+        turnId: entry.turnId,
+        reason: entry.tutorError ? 'prefetch_error' : 'prefetch_unavailable',
+        key: liveContextKey,
+      });
+      mixedLearner.analysisCache = null;
+      return null;
+    }
+    const response = { ...entry.tutorResponse, speculativeCacheHit: true };
+    mixedLearner.analysisCache = null;
+    mixedLearner.cacheStats.tutorHits += 1;
+    appendTraceEvent(state.trace, {
+      type: 'mixed_learner_tutor_cache_hit',
+      turn: entry.turn,
+      turnId: entry.turnId,
+      key: liveContextKey,
+      waited,
+      ageMs: Date.now() - entry.tutorStartedAt,
+    });
+    return response;
+  }
+
+  function startMixedLearnerAnalysisPrefetch({ answer, turnNumber, turnId, requestId }) {
+    if (!state.classifier.enabled || !state.learnerDag.enabled || !state.world || !answer) return false;
+    const key = currentMixedLearnerAnalysisKey(answer, turnNumber);
+    const entry = {
+      key,
+      answer,
+      turn: turnNumber,
+      turnId,
+      requestId,
+      status: 'pending',
+      startedAt: Date.now(),
+      raw: null,
+      error: null,
+      promise: null,
+      tutorStatus: 'idle',
+      tutorContextKey: null,
+      tutorPromise: null,
+      tutorResponse: null,
+      tutorError: null,
+      abortController: new AbortController(),
+    };
+    mixedLearner.analysisCache = entry;
+    mixedLearner.cacheStats.analysisStarted += 1;
+    appendTraceEvent(state.trace, {
+      type: 'mixed_learner_analysis_prefetch_start',
+      turn: turnNumber,
+      turnId,
+      requestId,
+      key,
+    });
+    entry.promise = extractCombinedLearnerAnalysis({
+      learnerText: answer,
+      state,
+      tutorTurn: turnNumber,
+      role: 'tutor_stub_learner_analysis_prefetch',
+      stream: { enabled: false, interim: state.interim },
+      signal: entry.abortController.signal,
+    })
+      .then((raw) => {
+        if (mixedLearner.analysisCache !== entry) return null;
+        entry.status = 'ready';
+        entry.raw = raw;
+        appendTraceEvent(state.trace, {
+          type: 'mixed_learner_analysis_prefetch_ready',
+          turn: turnNumber,
+          turnId,
+          requestId,
+          key,
+          latencyMs: Date.now() - entry.startedAt,
+        });
+        void startMixedLearnerTutorPrefetch(entry, raw);
+        return raw;
+      })
+      .catch((err) => {
+        if (err?.name === 'AbortError') return null;
+        if (mixedLearner.analysisCache === entry) {
+          entry.status = 'error';
+          entry.error = err.message;
+        }
+        mixedLearner.cacheStats.errors += 1;
+        appendTraceEvent(state.trace, {
+          type: 'mixed_learner_analysis_prefetch_error',
+          turn: turnNumber,
+          turnId,
+          requestId,
+          key,
+          error: err.message,
+        });
+        return null;
+      });
+    return true;
+  }
+
+  async function takeMixedLearnerAnalysisPrefetch(learnerText) {
+    if (!mixedLearner.enabled) return null;
+    const entry = mixedLearner.analysisCache;
+    const answer = String(learnerText || '').trim();
+    const expectedKey = currentMixedLearnerAnalysisKey(answer);
+    if (!entry || entry.answer !== answer || entry.key !== expectedKey) {
+      mixedLearner.cacheStats.analysisMisses += 1;
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_analysis_cache_miss',
+        turn: state.turns.length + 1,
+        reason: !entry ? 'not_prefetched' : entry.answer !== answer ? 'answer_changed' : 'state_changed',
+        cachedKey: entry?.key || null,
+        submittedKey: expectedKey,
+      });
+      return null;
+    }
+    const waited = entry.status === 'pending';
+    if (waited) {
+      startInterimAnimation(state, 'awaiting prefetched learner analysis', {
+        learnerText: answer,
+        tutorTurn: state.turns.length + 1,
+      });
+      await entry.promise;
+      stopInterimAnimation(state);
+    }
+    if (!entry.raw || entry.status !== 'ready') {
+      mixedLearner.cacheStats.analysisMisses += 1;
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_analysis_cache_miss',
+        turn: entry.turn,
+        turnId: entry.turnId,
+        reason: entry.error ? 'prefetch_error' : 'prefetch_unavailable',
+        key: entry.key,
+      });
+      return null;
+    }
+    mixedLearner.cacheStats.analysisHits += 1;
+    appendTraceEvent(state.trace, {
+      type: 'mixed_learner_analysis_cache_hit',
+      turn: entry.turn,
+      turnId: entry.turnId,
+      key: entry.key,
+      waited,
+      ageMs: Date.now() - entry.startedAt,
+    });
+    return { raw: entry.raw, entry };
   }
 
   function startMixedLearnerPrefetch(reason = 'turn_complete', { force = false } = {}) {
@@ -8647,6 +9126,8 @@ async function main() {
     mixedLearner.pending = { requestId, turn: turnNumber, turnId };
     mixedLearner.suggestion = null;
     mixedLearner.error = null;
+    const artifactAbortController = new AbortController();
+    mixedLearner.artifactAbortController = artifactAbortController;
     appendTraceEvent(state.trace, {
       type: 'mixed_learner_prefetch_start',
       turn: turnNumber,
@@ -8655,23 +9136,27 @@ async function main() {
       reason,
       model: mixedLearner.resolved,
     });
-    void generateAutomatedLearnerTurn({
+    void generateMixedLearnerArtifacts({
       state,
       resolved: mixedLearner.resolved,
       profile: mixedLearner.profile,
       turnNumber,
-      stream: { enabled: false, interim: state.interim },
       cliEffort,
+      signal: artifactAbortController.signal,
     })
       .then((generated) => {
-        const text = String(generated.text || '').trim();
-        if (!mixedLearner.enabled || mixedLearner.seq !== requestId) {
+        if (mixedLearner.artifactAbortController === artifactAbortController) {
+          mixedLearner.artifactAbortController = null;
+        }
+        const text = String(generated.answer || '').trim();
+        const clue = String(generated.clue || '').trim();
+        if (!mixedLearner.enabled || mixedLearner.seq !== requestId || exiting) {
           appendTraceEvent(state.trace, {
             type: 'mixed_learner_prefetch_discarded',
             turn: turnNumber,
             turnId,
             requestId,
-            reason: 'stale',
+            reason: exiting ? 'exiting' : 'stale',
           });
           return;
         }
@@ -8681,6 +9166,7 @@ async function main() {
           turn: turnNumber,
           turnId,
           text,
+          clue: clue || null,
           provider: generated.provider,
           model: generated.model,
           latencyMs: generated.latencyMs,
@@ -8692,20 +9178,32 @@ async function main() {
           turnId,
           requestId,
           text,
+          clue: clue || null,
+          parsedArtifacts: generated.parsedArtifacts,
           provider: generated.provider,
           model: generated.model,
           latencyMs: generated.latencyMs,
           usage: generated.usage,
         });
+        const analysisWarming = startMixedLearnerAnalysisPrefetch({
+          answer: text,
+          turnNumber,
+          turnId,
+          requestId,
+        });
         if (!processingTurn && !exiting) {
           clearStatusLine();
           console.log(
-            `${C.dim}mixed learner ready for ${turnId}; press Tab on an empty prompt, /suggest to view, /use to send${C.reset}`,
+            `${C.dim}mixed learner answer + clue ready for ${turnId}${analysisWarming ? '; analysis warming in background' : ''}; /clue for direction, Tab or /suggest for the answer, /use to send${C.reset}`,
           );
           rl.prompt(true);
         }
       })
       .catch((err) => {
+        if (mixedLearner.artifactAbortController === artifactAbortController) {
+          mixedLearner.artifactAbortController = null;
+        }
+        if (err?.name === 'AbortError') return;
         if (!mixedLearner.enabled || mixedLearner.seq !== requestId) return;
         mixedLearner.pending = null;
         mixedLearner.error = { turn: turnNumber, turnId, message: err.message };
@@ -8754,6 +9252,37 @@ async function main() {
     startMixedLearnerPrefetch('suggest');
   }
 
+  function showMixedLearnerClue({ duringTurn = false } = {}) {
+    clearStatusLine();
+    if (!mixedLearner.enabled) {
+      console.log(`${C.dim}mixed learner is off; run with --mixed-learner to enable /clue${C.reset}\n`);
+      return;
+    }
+    if (mixedLearner.suggestion?.clue) {
+      console.log(`${C.cyan}learner clue >${C.reset} ${mixedLearner.suggestion.turnId}`);
+      console.log(`${mixedLearner.suggestion.clue}\n`);
+      return;
+    }
+    if (mixedLearner.suggestion?.text) {
+      console.log(`${C.dim}the answer is ready, but no safe non-revealing clue was returned; /regen retries the pair${C.reset}\n`);
+      return;
+    }
+    if (mixedLearner.pending) {
+      console.log(`${C.dim}mixed learner is drafting the clue and answer for ${mixedLearner.pending.turnId}${C.reset}\n`);
+      return;
+    }
+    if (mixedLearner.error) {
+      console.log(`${C.red}mixed learner error:${C.reset} ${mixedLearner.error.message}${C.dim} (/regen to retry)${C.reset}\n`);
+      return;
+    }
+    if (duringTurn) {
+      console.log(`${C.dim}tutor is still thinking; clue generation starts after the tutor responds${C.reset}\n`);
+      return;
+    }
+    console.log(`${C.dim}no mixed learner clue is ready; starting the clue-answer pair now${C.reset}\n`);
+    startMixedLearnerPrefetch('clue');
+  }
+
   function acceptMixedLearnerSuggestion({ duringTurn = false } = {}) {
     clearStatusLine();
     if (!mixedLearner.enabled) {
@@ -8770,7 +9299,6 @@ async function main() {
       return;
     }
     mixedLearner.suggestion = null;
-    mixedLearner.seq += 1;
     appendTraceEvent(state.trace, {
       type: 'mixed_learner_suggestion_accepted',
       turn: suggestion.turn,
@@ -8807,7 +9335,12 @@ async function main() {
   function finalizeInteractive(reason) {
     if (finalized) return;
     finalized = true;
-    appendTraceEvent(state.trace, { type: 'run_end', reason, turns: state.turns.length });
+    appendTraceEvent(state.trace, {
+      type: 'run_end',
+      reason,
+      turns: state.turns.length,
+      mixedLearnerCache: { ...mixedLearner.cacheStats },
+    });
     if (closeoutReportEnabled) {
       const report = printDialogueCloseout(state, { reason, trace: state.trace });
       appendTraceEvent(state.trace, { type: 'closeout_report', reason, report });
@@ -8820,6 +9353,7 @@ async function main() {
   function requestExit(reason) {
     exiting = true;
     stopInterimAnimation(state);
+    resetMixedLearnerSuggestion(reason);
     finalizeInteractive(reason);
     rl.close();
     resolveInteractive();
@@ -8937,6 +9471,7 @@ async function main() {
         stopInterimAnimation(state);
         clearStatusLine();
         console.log(`${C.dim}exit requested; stopping this stub now${C.reset}`);
+        resetMixedLearnerSuggestion('exit_requested_during_turn');
         finalizeInteractive('exit_requested_during_turn');
         process.exit(0);
       }
@@ -9027,6 +9562,18 @@ async function main() {
       finishSlashCommand();
       return true;
     }
+    if (trimmed === '/clue' || trimmed === '/hint') {
+      showMixedLearnerClue({ duringTurn });
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_clue_popup',
+        turn: mixedLearner.suggestion?.turn || state.turns.length + 1,
+        duringTurn,
+        ready: Boolean(mixedLearner.suggestion?.clue),
+        pending: Boolean(mixedLearner.pending),
+      });
+      finishSlashCommand();
+      return true;
+    }
     if (trimmed === '/use' || trimmed === '/accept') {
       acceptMixedLearnerSuggestion({ duringTurn });
       finishSlashCommand();
@@ -9040,7 +9587,7 @@ async function main() {
         console.log(`${C.dim}tutor is still thinking; /regen is available after the tutor responds${C.reset}\n`);
       } else {
         startMixedLearnerPrefetch('regen', { force: true });
-        console.log(`${C.dim}regenerating mixed learner suggestion${C.reset}\n`);
+        console.log(`${C.dim}regenerating mixed learner clue-answer pair${C.reset}\n`);
       }
       finishSlashCommand();
       return true;
@@ -9074,25 +9621,45 @@ async function main() {
     if (exiting) return;
     processingTurn = true;
     let completedTurn = false;
-    resetMixedLearnerSuggestion('learner_turn_started');
+    const prefetchedAnalysis = await takeMixedLearnerAnalysisPrefetch(trimmed);
+    resetMixedLearnerSuggestion('learner_turn_started', {
+      preserveAnalysisCache: Boolean(prefetchedAnalysis?.entry),
+    });
     try {
       const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
         trimmed,
         state,
+        { precomputedRaw: prefetchedAnalysis?.raw || null },
       );
       if (exiting) return;
-      startInterimAnimation(
+      const humanDiscourseFrame = buildHumanDiscourseFrame({
         state,
-        'calling tutor',
-        buildTutorInterimContext({
-          learnerText: trimmed,
+        tutorTurn: state.turns.length + 1,
+        tutorLearnerDag,
+        classification,
+        learnerText: trimmed,
+      });
+      const prefetchedResponse = await takeMixedLearnerTutorPrefetch(prefetchedAnalysis?.entry, {
+        learnerText: trimmed,
+        classification,
+        tutorLearnerDag,
+        registerSelection,
+        humanDiscourseFrame,
+      });
+      if (!prefetchedResponse) {
+        startInterimAnimation(
           state,
-          classification,
-          tutorLearnerDag,
-          registerSelection,
-          previousRegisterEfficacy,
-        }),
-      );
+          'calling tutor',
+          buildTutorInterimContext({
+            learnerText: trimmed,
+            state,
+            classification,
+            tutorLearnerDag,
+            registerSelection,
+            previousRegisterEfficacy,
+          }),
+        );
+      }
       let response;
       try {
         response = await runOneTurn(
@@ -9102,6 +9669,7 @@ async function main() {
           tutorLearnerDag,
           registerSelection,
           previousRegisterEfficacy,
+          prefetchedResponse,
         );
       } finally {
         stopInterimAnimation(state);

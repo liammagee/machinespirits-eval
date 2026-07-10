@@ -69,6 +69,58 @@ export function isProviderConfigured(provider, providerConfig) {
   return isCliProvider(provider) || Boolean(providerConfig?.isConfigured);
 }
 
+export function createCodexJsonlEventParser(onEvent = null) {
+  let buffer = '';
+  const events = [];
+  const invalidLines = [];
+
+  const consumeLine = (rawLine) => {
+    const line = String(rawLine || '').trim();
+    if (!line) return;
+    try {
+      const event = JSON.parse(line);
+      events.push(event);
+      try {
+        onEvent?.(event);
+      } catch (_) {
+        /* A display callback must never fail the model call. */
+      }
+    } catch (_) {
+      invalidLines.push(line);
+    }
+  };
+
+  return {
+    events,
+    invalidLines,
+    push(chunk) {
+      buffer += String(chunk || '');
+      const lines = buffer.split(/\r?\n/u);
+      buffer = lines.pop() || '';
+      for (const line of lines) consumeLine(line);
+    },
+    end() {
+      consumeLine(buffer);
+      buffer = '';
+      return { events, invalidLines };
+    },
+  };
+}
+
+export function codexFinalMessageFromEvents(events = []) {
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index] || {};
+    const item = event.item || {};
+    const text =
+      (item.type === 'agent_message' && item.text) ||
+      (event.type === 'agent_message' && (event.text || event.message)) ||
+      event.final_output ||
+      null;
+    if (typeof text === 'string' && text.trim()) return text.trim();
+  }
+  return '';
+}
+
 function buildCliUserText(userPrompt, messageHistory) {
   let userText = '';
   if (Array.isArray(messageHistory) && messageHistory.length > 0) {
@@ -77,6 +129,12 @@ function buildCliUserText(userPrompt, messageHistory) {
   }
   userText += `Latest message:\n${userPrompt}`;
   return userText;
+}
+
+function abortError(role) {
+  const error = new Error(`CLI model call aborted (role=${role})`);
+  error.name = 'AbortError';
+  return error;
 }
 
 async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHistory, timeoutMs, effort }) {
@@ -137,7 +195,8 @@ async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHis
   });
 }
 
-async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHistory, timeoutMs, effort }) {
+async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHistory, timeoutMs, effort, onEvent, signal }) {
+  if (signal?.aborted) throw abortError(role);
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-cli-provider-codex-'));
   const outFile = path.join(tmpDir, 'last-message.txt');
   const start = Date.now();
@@ -164,6 +223,7 @@ async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHist
         tmpDir,
         '--color',
         'never',
+        '--json',
       ];
       if (effectiveEffort && effectiveEffort !== 'config') {
         args.push('-c', `model_reasoning_effort="${effectiveEffort}"`);
@@ -173,6 +233,17 @@ async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHist
 
       const child = spawn('codex', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
       let err = '';
+      let stdout = '';
+      const jsonl = createCodexJsonlEventParser(onEvent);
+      const onAbort = () => {
+        try {
+          child.kill('SIGKILL');
+        } catch (_) {
+          /* already gone */
+        }
+        reject(abortError(role));
+      };
+      signal?.addEventListener('abort', onAbort, { once: true });
       const cliTimeout = setTimeout(() => {
         try {
           child.kill('SIGKILL');
@@ -184,19 +255,28 @@ async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHist
       child.stderr.on('data', (d) => {
         err += d;
       });
-      child.stdout.on('data', () => {});
+      child.stdout.on('data', (data) => {
+        const chunk = String(data || '');
+        stdout += chunk;
+        jsonl.push(chunk);
+      });
       child.on('error', (e) => {
         clearTimeout(cliTimeout);
+        signal?.removeEventListener('abort', onAbort);
         reject(e);
       });
       child.on('close', (code) => {
         clearTimeout(cliTimeout);
+        signal?.removeEventListener('abort', onAbort);
+        const parsedStream = jsonl.end();
         if (code !== 0) {
-          reject(new Error(err.trim() || `codex CLI exited with code ${code} (role=${role})`));
+          reject(new Error(err.trim() || stdout.trim() || `codex CLI exited with code ${code} (role=${role})`));
           return;
         }
 
-        const text = fs.existsSync(outFile) ? fs.readFileSync(outFile, 'utf8').trim() : '';
+        const fileText = fs.existsSync(outFile) ? fs.readFileSync(outFile, 'utf8').trim() : '';
+        const eventText = codexFinalMessageFromEvents(parsedStream.events);
+        const text = fileText || eventText;
         if (!text) {
           reject(new Error(`codex CLI produced no output message (role=${role})`));
           return;
@@ -211,6 +291,9 @@ async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHist
           inputTokens: 0,
           outputTokens: 0,
           cost: 0,
+          streamedEvents: parsedStream.events.length,
+          invalidStreamLines: parsedStream.invalidLines.length,
+          outputSource: fileText ? 'output_file' : 'jsonl_event_fallback',
         });
       });
       child.stdin.write(prompt);
@@ -242,6 +325,8 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       messageHistory: opts?.messageHistory,
       timeoutMs: opts?.timeoutMs,
       effort: opts?.effort,
+      onEvent: opts?.onEvent,
+      signal: opts?.signal,
     });
   }
   if (!opts?.fallbackCallAI) {

@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import {
   callAIWithCliBridge,
   cliAwareProviderConfig,
+  codexFinalMessageFromEvents,
+  createCodexJsonlEventParser,
   isCliProvider,
   isProviderConfigured,
   normalizeCliEffort,
@@ -100,5 +102,47 @@ describe('cliProviderBridge', () => {
       if (oldClaudeLegacy === undefined) delete process.env.CLAUDE_EFFORT;
       else process.env.CLAUDE_EFFORT = oldClaudeLegacy;
     }
+  });
+
+  it('parses chunked Codex JSONL events incrementally', () => {
+    const seen = [];
+    const parser = createCodexJsonlEventParser((event) => seen.push(event.type));
+    parser.push('{"type":"thread.started"}\n{"type":"item.com');
+    parser.push('pleted","item":{"type":"agent_message","text":"done"}}\nnot-json\n');
+    const parsed = parser.end();
+
+    assert.deepEqual(seen, ['thread.started', 'item.completed']);
+    assert.equal(parsed.events.length, 2);
+    assert.deepEqual(parsed.invalidLines, ['not-json']);
+  });
+
+  it('keeps parsing when a stream display callback fails', () => {
+    const parser = createCodexJsonlEventParser(() => {
+      throw new Error('display failed');
+    });
+    parser.push('{"type":"turn.started"}\n');
+    assert.equal(parser.end().events.length, 1);
+  });
+
+  it('extracts the newest final agent message as the output-file fallback', () => {
+    const events = [
+      { type: 'item.completed', item: { type: 'agent_message', text: 'first' } },
+      { type: 'turn.completed' },
+      { type: 'item.completed', item: { type: 'agent_message', text: ' final answer ' } },
+    ];
+    assert.equal(codexFinalMessageFromEvents(events), 'final answer');
+    assert.equal(codexFinalMessageFromEvents([{ type: 'turn.completed' }]), '');
+  });
+
+  it('rejects a pre-aborted Codex call without launching it', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    await assert.rejects(
+      () =>
+        callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'learner', {
+          signal: controller.signal,
+        }),
+      (error) => error?.name === 'AbortError',
+    );
   });
 });

@@ -32,7 +32,7 @@ Key choices and defaults:
 - Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v2`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
 - Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
 - Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
-- Models: default tutor `codex.gpt-5.5`, analysis/classifier/DAG `codex.gpt-5.5`, automated learner `codex.gpt-5.5`.
+- Models: default tutor `codex.gpt-5.6-terra`, analysis/classifier/DAG `codex.gpt-5.6-terra`, automated learner `codex.gpt-5.6-terra`.
 - Parallelism: default `8` for `auto-eval`; ABM panel is currently serial.
 - Turn stopping: default `--turns until-grounded --safety-turns 120`.
 - Token cap: default `--max-tokens 4096` for `auto-eval` and resumes to avoid output-limit failures.
@@ -42,7 +42,7 @@ Key choices and defaults:
 - Debug turn ids: tutor-stub prints `turn id > <run-id>:tNNN` at each learner turn; ask the user for that id when debugging a specific turn.
 
 Do not recommend `codex.mini`, `codex.gpt-mini`, or `codex.gpt-5-mini`; the local
-Codex ChatGPT-account route rejects those. Use `codex.gpt-5.5` for CLI-backed
+Codex ChatGPT-account route rejects those. Use `codex.gpt-5.6-terra` for CLI-backed
 Codex, or `openai.mini` / `openrouter.gpt-mini` for GPT mini.
 
 ## Human Learner Session
@@ -75,13 +75,22 @@ Useful variants:
 - Add `--resume-last` to continue the latest dialogue in the trace dir.
 - Add `--register-policy bland` for a non-dynamic-feeling baseline.
 - Add `--model`, `--classifier-model`, `--learner-record-model`, or
-  `--auto-learner-model` only when overriding the default `codex.gpt-5.5`.
+  `--auto-learner-model` only when overriding the default `codex.gpt-5.6-terra`.
 - Add `--multiple-choice` only when explicitly requested.
-- Add `--mixed-learner` for manual play with a prefetched learner draft after
-  each tutor turn. Press Tab on an empty learner prompt to insert the draft for
-  editing, or use `/suggest`, `/use`, `/regen`.
+- Add `--mixed-learner` for manual play with a prefetched clue-answer pair after
+  each tutor turn. Use `/clue` or `/hint` for non-revealing direction, press Tab
+  on an empty learner prompt to insert the answer for editing, or use
+  `/suggest`, `/use`, `/regen`.
+- Mixed mode also pre-analyzes the exact cached answer in the background. An
+  unchanged Tab or `/use` submission reuses that result; edited text or changed
+  turn state invalidates it and runs the normal analysis path.
+- After that analysis, mixed mode speculatively generates the tutor response on
+  a cloned state. It is reused only when the exact rendered classifier,
+  learner-DAG, register, scaffold, transcript, and tutor configuration context
+  still matches; otherwise the normal tutor call runs. Regeneration, clear,
+  turn invalidation, and exit abort stale Codex subprocesses.
 - Use slash commands during a run: `/analysis`, `/field`, `/viz`, `/clarify [phrase]`,
-  `/explain [phrase]`, `/suggest`, `/use`, `/regen`, `/quit`.
+  `/explain [phrase]`, `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, `/quit`.
 
 ## Automated Single-Learner Eval
 
