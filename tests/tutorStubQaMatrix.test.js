@@ -219,6 +219,32 @@ test('headroom suite defaults to discriminable profiles under a binding cap', ()
   assert.equal(equalsForm.safetyTurns, 100);
 });
 
+test('qa matrix threads interleave and pressure-probe flags to auto-eval children', () => {
+  const plan = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-qa-matrix.js',
+        '--print-plan',
+        '--json',
+        '--suite',
+        'headroom',
+        '--interleave-policies',
+        '--pressure-turns',
+        '6',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    ),
+  );
+  assert.equal(plan.interleavePolicies, true);
+  assert.equal(plan.pressureTurns, '6');
+  for (const job of plan.jobs) {
+    const command = job.command.join(' ');
+    assert.ok(command.includes('--interleave-policies'));
+    assert.ok(command.includes('--pressure-turns 6'));
+  }
+});
+
 test('auto-eval forwards its declared default models to every child dialogue', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-model-forwarding-'));
   try {

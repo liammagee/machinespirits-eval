@@ -55,6 +55,8 @@ const { values: args } = parseArgs({
     'baseline-policy': { type: 'string', default: 'bland' },
     'first-message': { type: 'string', default: '' },
     'from-dir': { type: 'string', default: '' },
+    'interleave-policies': { type: 'boolean', default: false },
+    'pressure-turns': { type: 'string', default: '' },
     'print-plan': { type: 'boolean', default: false },
     json: { type: 'boolean', default: false },
     'dry-run': { type: 'boolean', default: false },
@@ -230,6 +232,8 @@ function autoEvalArgsForProfile({ profile, traceDir, policies }) {
   pushOptionalFlag(command, '--cli-effort', args['cli-effort']);
   pushOptionalFlag(command, '--max-tokens', args['max-tokens']);
   pushOptionalFlag(command, '--history-turns', args['history-turns']);
+  pushOptionalFlag(command, '--pressure-turns', args['pressure-turns']);
+  if (args['interleave-policies']) command.push('--interleave-policies');
   pushOptionalFlag(command, '--first-message', args['first-message']);
   if (args['dry-run']) command.push('--dry-run');
   if (args['no-html-report']) command.push('--no-html-report');
@@ -315,6 +319,8 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
     runs,
     turns: args.turns,
     safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
+    interleavePolicies: Boolean(args['interleave-policies']),
+    pressureTurns: args['pressure-turns'] || null,
     parallelism: positiveInt(args.parallelism, '--parallelism'),
     model: args.model,
     analysisModel: args['analysis-model'],

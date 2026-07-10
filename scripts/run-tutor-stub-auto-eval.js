@@ -41,31 +41,30 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
 const DEFAULT_CODEX_MODEL_REF = 'codex.gpt-5.5';
-const argvHasOption = (name) =>
-  process.argv.slice(2).some((arg) => arg === name || arg.startsWith(`${name}=`));
+const argvHasOption = (name) => process.argv.slice(2).some((arg) => arg === name || arg.startsWith(`${name}=`));
 const MODEL_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_MODEL || argvHasOption('--model'));
 const ANALYSIS_MODEL_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || argvHasOption('--analysis-model'),
 );
 const AUTO_LEARNER_MODEL_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL ||
-    process.env.TUTOR_STUB_AUTO_LEARNER_MODEL ||
-    argvHasOption('--auto-learner-model'),
+  process.env.TUTOR_STUB_AUTO_LEARNER_MODEL ||
+  argvHasOption('--auto-learner-model'),
 );
 const ENGAGEMENT_STANCE_TEMPERATURE_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_REGISTER_TEMPERATURE ||
-    process.env.TUTOR_STUB_REGISTER_TEMPERATURE ||
-    process.argv.slice(2).some((arg) => arg === '--register-temperature' || arg.startsWith('--register-temperature=')),
+  process.env.TUTOR_STUB_REGISTER_TEMPERATURE ||
+  process.argv.slice(2).some((arg) => arg === '--register-temperature' || arg.startsWith('--register-temperature=')),
 );
 const DAG_FACT_DROPOUT_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_DAG_FACT_DROPOUT ||
-    process.env.TUTOR_STUB_DAG_FACT_DROPOUT ||
-    argvHasOption('--dag-fact-dropout'),
+  process.env.TUTOR_STUB_DAG_FACT_DROPOUT ||
+  argvHasOption('--dag-fact-dropout'),
 );
 const DAG_FACT_DROPOUT_SEED_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_DAG_FACT_DROPOUT_SEED ||
-    process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED ||
-    argvHasOption('--dag-fact-dropout-seed'),
+  process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED ||
+  argvHasOption('--dag-fact-dropout-seed'),
 );
 
 const { values: args } = parseArgs({
@@ -142,6 +141,8 @@ const { values: args } = parseArgs({
     'no-ledger': { type: 'boolean', default: false },
     'no-memory-summary': { type: 'boolean', default: false },
     'keep-going': { type: 'boolean', default: false },
+    'interleave-policies': { type: 'boolean', default: false },
+    'pressure-turns': { type: 'string', default: '' },
     'dry-run': { type: 'boolean', default: false },
     'list-learner-profiles': { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
@@ -192,6 +193,12 @@ Options:
   --no-ledger                skip the ignored auto-eval ledger
   --no-memory-summary        disable tutor-stub compact dialogue memory
   --keep-going               continue after a failed run
+  --interleave-policies      order jobs run-index-major (round-robin across
+                             policies) so provider timing and quota windows do
+                             not band with the policy factor
+  --pressure-turns <csv>     predeclared pressure probe: force the hostile
+                             face_threat register at these learner turns in
+                             EVERY arm (design event; recovery scored post-hoc)
   --dry-run                  print commands only
   --list-learner-profiles    print built-in automated learner profiles
 `);
@@ -1567,9 +1574,7 @@ function summarizeTrace(tracePath, traceDir) {
     .filter(Boolean);
   const actionFamilies = turnRecords.map((turn) => turn.registerSelection?.action_family).filter(Boolean);
   const audienceRegisters = turnRecords.map((turn) => turn.registerSelection?.audience_register).filter(Boolean);
-  const lexicalAccessibility = turnRecords
-    .map((turn) => turn.registerSelection?.lexical_accessibility)
-    .filter(Boolean);
+  const lexicalAccessibility = turnRecords.map((turn) => turn.registerSelection?.lexical_accessibility).filter(Boolean);
   const sceneImmersion = turnRecords.map((turn) => turn.registerSelection?.scene_immersion).filter(Boolean);
   const efficacies = turns.map((event) => event.turnRecord?.previousRegisterEfficacy?.label).filter(Boolean);
   const leakCount = turns.reduce((sum, event) => {
@@ -6108,9 +6113,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
           row.responseConfigurationVisibility?.pairwise_visible_difference_rate === null ||
           row.responseConfigurationVisibility?.pairwise_visible_difference_rate === undefined
             ? 'n/a'
-            : `${Math.round(
-                Number(row.responseConfigurationVisibility.pairwise_visible_difference_rate) * 100,
-              )}%`
+            : `${Math.round(Number(row.responseConfigurationVisibility.pairwise_visible_difference_rate) * 100)}%`
         }</td>
         <td>${escapeHtml(row.leakCount)}</td>
         <td>${transcriptId ? `<a href="#transcripts" data-transcript-jump="${escapeHtml(transcriptId)}">transcript</a>` : ''}</td>
@@ -9322,7 +9325,9 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     '--register-palette',
     registerPalette,
     '--register-temperature',
-    String(normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' })),
+    String(
+      normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' }),
+    ),
     '--dag-fact-dropout',
     String(normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], { label: '--dag-fact-dropout' })),
     '--dag-fact-dropout-seed',
@@ -9334,6 +9339,7 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
   ];
   if (!args['no-dag']) command.push('--dag');
   if (args['no-stop-on-grounded']) command.push('--no-auto-stop-on-grounded');
+  if (args['pressure-turns']) command.push('--pressure-turns', args['pressure-turns']);
   if (args['first-message']) command.push('--once', args['first-message']);
   if (args['cli-effort']) command.push('--cli-effort', args['cli-effort']);
   if (args['max-tokens']) command.push('--max-tokens', String(positiveInt(args['max-tokens'], '--max-tokens')));
@@ -9344,24 +9350,37 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
   return command;
 }
 
-function buildJobs({ policies, runs, traceDir, parallelism }) {
-  const jobs = [];
-  for (const policy of policies) {
+function buildJobs({ policies, runs, traceDir, parallelism, interleavePolicies = false }) {
+  // Default order is policy-major (all runs of policy A, then B, ...), which
+  // bands provider timing and quota windows with the policy factor. With
+  // --interleave-policies the order is run-index-major (round-robin across
+  // policies), spreading each policy across the run's wall-clock windows.
+  // Both orders are deterministic functions of the CLI args.
+  const pairs = [];
+  if (interleavePolicies) {
     for (let runIndex = 1; runIndex <= runs; runIndex += 1) {
-      const key = `${safeSlug(policy)}-r${runIndex}`;
-      const childTraceDir = parallelism > 1 ? path.join(traceDir, 'traces', key) : traceDir;
-      const logPath = path.join(traceDir, 'logs', `${key}.log`);
-      jobs.push({
-        ordinal: jobs.length + 1,
-        policy,
-        runIndex,
-        runs,
-        key,
-        traceDir: childTraceDir,
-        logPath,
-        childArgs: tutorStubArgs({ policy, runIndex, totalRuns: runs, traceDir: childTraceDir }),
-      });
+      for (const policy of policies) pairs.push({ policy, runIndex });
     }
+  } else {
+    for (const policy of policies) {
+      for (let runIndex = 1; runIndex <= runs; runIndex += 1) pairs.push({ policy, runIndex });
+    }
+  }
+  const jobs = [];
+  for (const { policy, runIndex } of pairs) {
+    const key = `${safeSlug(policy)}-r${runIndex}`;
+    const childTraceDir = parallelism > 1 ? path.join(traceDir, 'traces', key) : traceDir;
+    const logPath = path.join(traceDir, 'logs', `${key}.log`);
+    jobs.push({
+      ordinal: jobs.length + 1,
+      policy,
+      runIndex,
+      runs,
+      key,
+      traceDir: childTraceDir,
+      logPath,
+      childArgs: tutorStubArgs({ policy, runIndex, totalRuns: runs, traceDir: childTraceDir }),
+    });
   }
   return jobs;
 }
@@ -9411,9 +9430,7 @@ function buildResumePlan(summaryPath) {
       '--auto-learner-model',
       AUTO_LEARNER_MODEL_OVERRIDE
         ? args['auto-learner-model']
-        : flagValue(childArgs, '--auto-learner-model') ||
-            source.config?.autoLearnerModel ||
-            args['auto-learner-model'],
+        : flagValue(childArgs, '--auto-learner-model') || source.config?.autoLearnerModel || args['auto-learner-model'],
     );
     adjustedChildArgs = withFlagValue(
       adjustedChildArgs,
@@ -9429,7 +9446,9 @@ function buildResumePlan(summaryPath) {
       adjustedChildArgs,
       '--register-temperature',
       ENGAGEMENT_STANCE_TEMPERATURE_OVERRIDE
-        ? normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' })
+        ? normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
+            label: '--register-temperature',
+          })
         : '',
     );
     adjustedChildArgs = withFlagValue(
@@ -9491,22 +9510,26 @@ function buildResumePlan(summaryPath) {
         ? positiveInt(args['history-turns'], '--history-turns')
         : source.config?.historyTurns || null,
       registerTemperature: ENGAGEMENT_STANCE_TEMPERATURE_OVERRIDE
-        ? normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' })
-        : source.config?.registerTemperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+        ? normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
+            label: '--register-temperature',
+          })
+        : (source.config?.registerTemperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
       engagementStanceTemperature: ENGAGEMENT_STANCE_TEMPERATURE_OVERRIDE
-        ? normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' })
-        : source.config?.engagementStanceTemperature ??
+        ? normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
+            label: '--register-temperature',
+          })
+        : (source.config?.engagementStanceTemperature ??
           source.config?.registerTemperature ??
-          DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+          DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
       temperatureScope: 'engagement_stance_only',
       dagFactDropout: DAG_FACT_DROPOUT_OVERRIDE
         ? normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], { label: '--dag-fact-dropout' })
-        : source.config?.dagFactDropout ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+        : (source.config?.dagFactDropout ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
       dagFactDropoutSeed: DAG_FACT_DROPOUT_SEED_OVERRIDE
         ? normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], {
             label: '--dag-fact-dropout-seed',
           })
-        : source.config?.dagFactDropoutSeed ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED,
+        : (source.config?.dagFactDropoutSeed ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
       memorySummary: args['no-memory-summary'] ? { enabled: false } : source.config?.memorySummary || null,
       resumedFrom: path.relative(ROOT, resolvedSummaryPath),
       resumeStatuses: Array.from(retryStatuses),
@@ -9529,6 +9552,8 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       autoLearnerProfileId: autoLearnerProfileLabel(),
       autoLearnerProfileContract:
         autoLearnerProfileLabel() === 'custom' ? null : learnerProfileContractSummary(resolvedAutoLearnerProfileId()),
+      interleavePolicies: Boolean(args['interleave-policies']),
+      pressureTurns: args['pressure-turns'] || null,
       dagMode: args['dag-mode'],
       registerTemperature: normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
         label: '--register-temperature',
@@ -9864,7 +9889,13 @@ async function main() {
   fs.mkdirSync(traceDir, { recursive: true });
 
   const startedAt = new Date().toISOString();
-  const jobs = buildJobs({ policies, runs, traceDir, parallelism });
+  const jobs = buildJobs({
+    policies,
+    runs,
+    traceDir,
+    parallelism,
+    interleavePolicies: Boolean(args['interleave-policies']),
+  });
   printProgress({ completed: 0, total: jobs.length, label: `starting; parallelism ${parallelism}` });
   const { results, aborted } = await runJobs({ jobs, parallelism, traceDir, startedAt });
   writeSummary({ traceDir, startedAt, results, failed: aborted });

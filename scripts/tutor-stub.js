@@ -50,10 +50,7 @@ import {
   parseMixedLearnerArtifacts,
   refreshMixedLearnerPrompt,
 } from '../services/mixedLearnerArtifacts.js';
-import {
-  cleanTutorStubClarificationSpeech,
-  cleanTutorStubStageSpeech,
-} from '../services/tutorStubStageSpeech.js';
+import { cleanTutorStubClarificationSpeech, cleanTutorStubStageSpeech } from '../services/tutorStubStageSpeech.js';
 import {
   auditTutorStubGenerousInferenceResponse,
   resolveTutorStubGenerousInference,
@@ -147,10 +144,8 @@ const STUB = {
   registerPolicy: process.env.TUTOR_STUB_REGISTER_POLICY || 'dynamic',
   registerTemperature:
     process.env.TUTOR_STUB_REGISTER_TEMPERATURE || String(DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
-  dagFactDropout:
-    process.env.TUTOR_STUB_DAG_FACT_DROPOUT || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
-  dagFactDropoutSeed:
-    process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
+  dagFactDropout: process.env.TUTOR_STUB_DAG_FACT_DROPOUT || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
+  dagFactDropoutSeed: process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
   dagMode: process.env.TUTOR_STUB_DAG_MODE || 'strict_dag',
   multipleChoice: process.env.TUTOR_STUB_MULTIPLE_CHOICE === '1',
   opening: process.env.TUTOR_STUB_OPENING !== '0',
@@ -159,9 +154,7 @@ const STUB = {
   autoLearnerModel: process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.6-terra',
   autoTurns: process.env.TUTOR_STUB_AUTO_TURNS || 'until-grounded',
   autoSafetyTurns: Number.parseInt(process.env.TUTOR_STUB_AUTO_SAFETY_TURNS || '80', 10),
-  autoLearnerProfile:
-    process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE ||
-    'diligent',
+  autoLearnerProfile: process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE || 'diligent',
   mixedLearner: process.env.TUTOR_STUB_MIXED_LEARNER === '1',
 };
 
@@ -314,6 +307,11 @@ const { values: args, positionals } = parseArgs({
     'no-register-selection': { type: 'boolean', default: false },
     'register-palette': { type: 'string', default: 'all' },
     'register-policy': { type: 'string', default: STUB.registerPolicy },
+    // Predeclared pressure probe: at these learner turns the selected
+    // register is forced hostile (face_threat) regardless of policy, so
+    // post-trigger recovery can be scored as a designed event rather than a
+    // policy-endogenous one. CSV of learner turn numbers, e.g. "6".
+    'pressure-turns': { type: 'string', default: '' },
     'register-temperature': { type: 'string', default: STUB.registerTemperature },
     'dag-fact-dropout': { type: 'string', default: STUB.dagFactDropout },
     'dag-fact-dropout-seed': { type: 'string', default: STUB.dagFactDropoutSeed },
@@ -1586,7 +1584,9 @@ function parseClassifierJson(rawText) {
   const text = String(rawText || '').trim();
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]?.trim();
   const originalCandidates = [text, fenced, firstJsonObjectCandidate(text)].filter(Boolean);
-  const candidates = originalCandidates.flatMap((candidate) => [candidate, closeTruncatedTutorStubJson(candidate)]).filter(Boolean);
+  const candidates = originalCandidates
+    .flatMap((candidate) => [candidate, closeTruncatedTutorStubJson(candidate)])
+    .filter(Boolean);
 
   for (const candidate of candidates) {
     try {
@@ -2606,7 +2606,10 @@ function restoreRegisterStateFromTurns(state, turns) {
 function restoreComprehensionState(state, turns, events = []) {
   const eventSnapshot = [...events]
     .reverse()
-    .find((event) => event?.comprehensionState || event?.state?.schema === 'machinespirits.tutor-stub.comprehension-side-state.v1');
+    .find(
+      (event) =>
+        event?.comprehensionState || event?.state?.schema === 'machinespirits.tutor-stub.comprehension-side-state.v1',
+    );
   const turnSnapshot = [...turns]
     .reverse()
     .map((turn) => turn?.comprehension?.afterTutor || turn?.comprehension?.state || null)
@@ -2638,10 +2641,7 @@ function replayLearnerDagFromTurns(state, turns) {
         state,
         tutorTurn: Number(turn.turn) || replayed + 1,
         learnerText: turn.learner || '',
-        dropoutReplay:
-          turn?.dagFactDropout ||
-          turn?.tutorLearnerDagUpdate?.dagFactDropout ||
-          { legacyNoDropout: true },
+        dropoutReplay: turn?.dagFactDropout || turn?.tutorLearnerDagUpdate?.dagFactDropout || { legacyNoDropout: true },
       });
       state.learnerDag.lastModel = result.model;
       replayed += 1;
@@ -4367,7 +4367,10 @@ function buildFieldRegisterScores({ state, classification, tutorLearnerDag }) {
   return { features, scores, drivers };
 }
 
-function normalizeEngagementStanceDistribution(scores, { temperature = DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE } = {}) {
+function normalizeEngagementStanceDistribution(
+  scores,
+  { temperature = DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE } = {},
+) {
   const sourceScores = Object.fromEntries(
     Object.entries(scores || {}).map(([register, weight]) => [register, Math.max(0.02, Number(weight) || 0)]),
   );
@@ -4451,8 +4454,8 @@ function fieldEngagementStanceSelection({ state, classification, tutorLearnerDag
       Number(features.comprehension?.pressure || 0) > 0
         ? 'Hold learner-DAG advancement while the wording gap is repaired.'
         : features.field.relation === 'field_without_dag'
-        ? 'Elicit one public evidence claim that converts learner-field movement into proof-state movement.'
-        : 'Elicit one public, checkable learner move that can update the learner-DAG record.',
+          ? 'Elicit one public evidence claim that converts learner-field movement into proof-state movement.'
+          : 'Elicit one public, checkable learner move that can update the learner-DAG record.',
     expected_field_move: expectedFieldMoveForRegister(selected, features),
     expected_progress_marker:
       'Next learner turn should show movement in agency, evidence use, epistemic stance, or learner-DAG coverage.',
@@ -5027,10 +5030,7 @@ function buildDynamicalSystemState({ state, classification, tutorLearnerDag }) {
       languageOpacity * 0.25,
   );
   const compressionNeed = clampField01(
-    (plainNeed ? 0.5 : 0) +
-      languageOpacity * 0.35 +
-      lowSurface * 0.35 +
-      (features.dag.finalSecretEntailed ? 0.15 : 0),
+    (plainNeed ? 0.5 : 0) + languageOpacity * 0.35 + lowSurface * 0.35 + (features.dag.finalSecretEntailed ? 0.15 : 0),
   );
   const momentum = clampField01(
     positivePart(trajectory.field?.slope, 4) * 0.2 +
@@ -5849,7 +5849,22 @@ function stateEngagementStanceSelection({ state, classification, tutorLearnerDag
   };
 }
 
-function normalizeResponseConfigurationSelection(rawSelection, { state, classification, tutorLearnerDag, raw, learnerText = '' }) {
+let cachedPressureTurns = null;
+function predeclaredPressureTurns() {
+  if (cachedPressureTurns) return cachedPressureTurns;
+  cachedPressureTurns = new Set(
+    String(args['pressure-turns'] || '')
+      .split(',')
+      .map((part) => Number.parseInt(part.trim(), 10))
+      .filter((value) => Number.isFinite(value) && value > 0),
+  );
+  return cachedPressureTurns;
+}
+
+function normalizeResponseConfigurationSelection(
+  rawSelection,
+  { state, classification, tutorLearnerDag, raw, learnerText = '' },
+) {
   if (!state.register?.enabled) return null;
   const palette = new Set(state.register.palette || []);
   const policy = state.register?.policy || 'dynamic';
@@ -5929,6 +5944,19 @@ function normalizeResponseConfigurationSelection(rawSelection, { state, classifi
       source: 'dynamic_comprehension_guard',
     };
   }
+  const pressureProbeTurn = tutorLearnerDag?.model?.turn ?? state.turns.length + 1;
+  if (predeclaredPressureTurns().has(pressureProbeTurn)) {
+    source = {
+      ...source,
+      engagement_stance: 'face_threat',
+      selected_register: 'face_threat',
+      register_reason: `Predeclared pressure probe: hostile register forced at learner turn ${pressureProbeTurn} by design, independent of the register policy. The policy resumes control next turn.`,
+      expected_dag_move: 'Learner-DAG advancement may stall or regress this turn; recovery is measured afterward.',
+      expected_field_move: 'Interactional pressure spikes by design this turn.',
+      source: 'predeclared_pressure_probe',
+      predeclared_pressure: true,
+    };
+  }
   const selectedRaw = String(source.engagement_stance || source.selected_register || source.register || '').trim();
   const selectedResolution = resolveEngagementStance(selectedRaw, { fallback: 'precise' });
   const selected = selectedResolution?.register || selectedRaw;
@@ -6001,8 +6029,7 @@ function normalizeResponseConfigurationSelection(rawSelection, { state, classifi
     expected_field_move: String(source.expected_field_move || source.expected_learner_field_move || ''),
     expected_progress_marker: String(source.expected_progress_marker || ''),
     temperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-    engagement_stance_temperature:
-      state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+    engagement_stance_temperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
     temperature_scope: 'engagement_stance_only',
     confidence: Number.isFinite(Number(source.confidence)) ? Number(source.confidence) : null,
     selected_probability: Number.isFinite(Number(source.selected_probability))
@@ -6032,6 +6059,7 @@ function normalizeResponseConfigurationSelection(rawSelection, { state, classifi
     response_configuration: responseConfiguration,
     state_policy: source.state_policy || null,
     source: source.source || 'combined_learner_analysis',
+    ...(source.predeclared_pressure === true ? { predeclared_pressure: true } : {}),
     random: source.random || null,
     model: raw ? { provider: raw.provider, model: raw.model, latencyMs: raw.latencyMs, usage: raw.usage } : null,
     selectedAtDag: tutorLearnerDag?.model || null,
@@ -6316,13 +6344,7 @@ async function buildTutorLearnerDagForTurn(learnerText, state) {
   }
 }
 
-function updateComprehensionForLearnerTurn({
-  learnerText,
-  state,
-  classification,
-  tutorTurn,
-  recordTrace = true,
-}) {
+function updateComprehensionForLearnerTurn({ learnerText, state, classification, tutorTurn, recordTrace = true }) {
   const request = detectTutorStubComprehensionRequest({
     text: learnerText,
     classification,
@@ -6332,10 +6354,10 @@ function updateComprehensionForLearnerTurn({
   const previous = state.comprehension?.lastRequest || null;
   const duplicate = Boolean(
     request.detected &&
-      previous &&
-      Number(previous.turn) === Number(request.turn) &&
-      previous.source === request.source &&
-      previous.text === request.text,
+    previous &&
+    Number(previous.turn) === Number(request.turn) &&
+    previous.source === request.source &&
+    previous.text === request.text,
   );
   if (request.detected) {
     if (duplicate) {
@@ -6612,15 +6634,14 @@ function responseConfigurationContext(
       ? 'This is a simulated-only register; do not use it unless the operator explicitly enabled it.'
       : null,
   ].filter(Boolean);
-  const responseConfiguration =
-    selection.response_configuration || {
-      engagement_stance: engagementStance,
-      action_family: selection.action_family,
-      audience_register: selection.audience_register,
-      lexical_accessibility: selection.lexical_accessibility,
-      scene_immersion: selection.scene_immersion,
-      unresolved_terms: selection.unresolved_terms || [],
-    };
+  const responseConfiguration = selection.response_configuration || {
+    engagement_stance: engagementStance,
+    action_family: selection.action_family,
+    audience_register: selection.audience_register,
+    lexical_accessibility: selection.lexical_accessibility,
+    scene_immersion: selection.scene_immersion,
+    unresolved_terms: selection.unresolved_terms || [],
+  };
   return [
     tutorStubResponseConfigurationPrompt(responseConfiguration),
     '[Tutor-only response-policy evidence]',
@@ -7234,7 +7255,10 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
     turnAnalysis.summary || overall.summary || 'No plain-language reading is available.',
   );
   if (generousInference?.applied) {
-    printAnalysisLine('generous inference', 'accepted the short answer in context; the local question counts as answered');
+    printAnalysisLine(
+      'generous inference',
+      'accepted the short answer in context; the local question counts as answered',
+    );
     printAnalysisLine('what was carried forward', generousInference.resolvedMeaning);
   }
   if (dialogueClosure?.lifecycle?.phase && dialogueClosure.lifecycle.phase !== 'open') {
@@ -7261,13 +7285,19 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
         : `${dagFactDropout.activeDropped.length} accumulated evidence item(s) remain out of the learner’s active reasoning record`,
     );
   } else if (dagFactDropout?.repairedNow?.length) {
-    printAnalysisLine('memory recovery', `${dagFactDropout.repairedNow.length} dropped evidence item(s) were re-adopted`);
+    printAnalysisLine(
+      'memory recovery',
+      `${dagFactDropout.repairedNow.length} dropped evidence item(s) were re-adopted`,
+    );
   }
   printAnalysisLine('policy', `${plainPolicyLabel(policy)}${policy === 'off' ? '' : ` (${policy})`}`);
   if (registerSelection) {
     printAnalysisLine(
       'engagement stance',
-      distribution || registerSelection.engagement_stance || registerSelection.selected_register || 'No stance was stored.',
+      distribution ||
+        registerSelection.engagement_stance ||
+        registerSelection.selected_register ||
+        'No stance was stored.',
     );
     printAnalysisLine('response action', registerSelection.action_family || 'No action family was stored.');
     printAnalysisLine(
@@ -7315,7 +7345,10 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
     printAnalysisLine('safety check', 'the first tutor draft revealed too much and was repaired or replaced');
   }
   if (turn.tutorResponseRepaired && generousInference?.applied) {
-    printAnalysisLine('response guard', 'an initial tutor draft failed a safety or scaffold check and was replaced before display');
+    printAnalysisLine(
+      'response guard',
+      'an initial tutor draft failed a safety or scaffold check and was replaced before display',
+    );
   }
   console.log(`${C.dim}  more evidence: /analysis technical (or /a technical)${C.reset}\n`);
 }
@@ -9069,10 +9102,7 @@ async function runOneTurn(
     source: 'tutor_turn',
   });
   const comprehensionAfterTutor = comprehensionResponse.snapshot;
-  if (
-    comprehensionResponse.explainedTerms.length ||
-    comprehensionBeforeTutor.lastRequest?.turn === tutorTurn
-  ) {
+  if (comprehensionResponse.explainedTerms.length || comprehensionBeforeTutor.lastRequest?.turn === tutorTurn) {
     appendTraceEvent(state.trace, {
       type: 'comprehension_response',
       turn: tutorTurn,
@@ -9461,9 +9491,7 @@ async function main() {
   const closeoutReportEnabled = Boolean(STUB.closeoutReport && !args['no-closeout-report']);
   const dialogueClosureConfig = createTutorStubDialogueClosureLifecycle({
     enabled: Boolean(
-      args.dag &&
-        worldBundle &&
-        (!autoLearnerEnabled || (tutorLearnerDagEnabled && autoStopOnGrounded)),
+      args.dag && worldBundle && (!autoLearnerEnabled || (tutorLearnerDagEnabled && autoStopOnGrounded)),
     ),
     allowCheckIn: Boolean(!autoLearnerEnabled && !firstMessage),
     allowAuthoredDagClosure: Boolean(!autoLearnerEnabled),
@@ -10200,8 +10228,7 @@ async function main() {
     return {
       id: profileId || 'custom',
       name: contract?.intent?.shortName || 'Custom learner',
-      pattern:
-        contract?.intent?.failureOperator || oneLine(suggestion?.profile || mixedLearner.profile, { max: 180 }),
+      pattern: contract?.intent?.failureOperator || oneLine(suggestion?.profile || mixedLearner.profile, { max: 180 }),
       signal:
         oneLine(suggestion?.profileSignal, { max: 220 }) ||
         'This draft was generated under the active profile; no separate visible-behavior note was returned.',
@@ -11237,16 +11264,24 @@ async function main() {
 
   function handleDialogueSettings(argument = '', { duringTurn = false } = {}) {
     clearStatusLine();
-    const parts = String(argument || '').trim().split(/\s+/u).filter(Boolean);
+    const parts = String(argument || '')
+      .trim()
+      .split(/\s+/u)
+      .filter(Boolean);
     const temperatureNames = ['temp', 'temperature', 'stance-temp'];
     const dropoutNames = ['dropout', 'dag-dropout', 'dag-fact-dropout'];
-    if (!parts.length || (parts.length === 1 && [...temperatureNames, ...dropoutNames].includes(parts[0].toLowerCase()))) {
+    if (
+      !parts.length ||
+      (parts.length === 1 && [...temperatureNames, ...dropoutNames].includes(parts[0].toLowerCase()))
+    ) {
       printDialogueSettings();
       return;
     }
     const setting = parts[0].toLowerCase();
     if (![...temperatureNames, ...dropoutNames].includes(setting) || parts.length !== 2) {
-      console.log(`${C.red}settings error:${C.reset} use /settings, /settings stance-temp <n>, or /settings dropout <0-1>`);
+      console.log(
+        `${C.red}settings error:${C.reset} use /settings, /settings stance-temp <n>, or /settings dropout <0-1>`,
+      );
       console.log(`${C.dim}  examples: /settings temp 0.4 | /settings dropout 0.15${C.reset}\n`);
       return;
     }
@@ -11472,7 +11507,8 @@ async function main() {
         duringTurn,
         debug,
       });
-      if (duringTurn) console.log(`${C.dim}tutor is still thinking; the in-progress trace may still be incomplete${C.reset}\n`);
+      if (duringTurn)
+        console.log(`${C.dim}tutor is still thinking; the in-progress trace may still be incomplete${C.reset}\n`);
       finishSlashCommand();
       return true;
     }

@@ -26,6 +26,8 @@ const { values: args, positionals } = parseArgs({
   options: {
     horizons: { type: 'string', default: '8,12,16' },
     'auc-horizon': { type: 'string', default: '16' },
+    'pressure-turn': { type: 'string', default: '' },
+    'recovery-window': { type: 'string', default: '4' },
     baseline: { type: 'string', default: 'bland' },
     out: { type: 'string', default: '' },
     json: { type: 'boolean', default: false },
@@ -40,6 +42,9 @@ function usage() {
 Options:
   --horizons <csv>      fixed learner-turn horizons (default: 8,12,16)
   --auc-horizon <n>     AUC horizon in learner turns (default: 16)
+  --pressure-turn <n>   predeclared pressure-probe turn; enables recovery
+                        scoring (post-probe vs pre-probe movement)
+  --recovery-window <n> turns on each side of the probe (default: 4)
   --baseline <policy>   per-profile delta baseline (default: bland)
   --out <path>          write report (md, or json with --json)
   --json                emit JSON instead of markdown
@@ -112,6 +117,7 @@ function rowSeries(row) {
     if (Number.isFinite(Number(dag.bestPathCoverage))) entry.coverage = Number(dag.bestPathCoverage);
     entry.missing = Number.isFinite(Number(dag.missingPremiseCount)) ? Number(dag.missingPremiseCount) : entry.missing;
     entry.asserted = Boolean(dag.assertedSecret) && Boolean(dag.finalSecretEntailed);
+    if (frame.selectedRegister) entry.register = String(frame.selectedRegister);
     byTurn.set(turn, entry);
   }
   return [...byTurn.values()].sort((a, b) => a.turn - b.turn);
@@ -154,7 +160,29 @@ function aucTo(series, key, horizon, { invert = false } = {}) {
   return span > 0 ? round(area / span) : null;
 }
 
-function analyzeRow(row, profile, horizons, aucHorizon) {
+// Recovery around a predeclared pressure probe at turn t: movement in the
+// window after the probe versus the window before it, per channel. A policy
+// that absorbs the designed rupture keeps postDelta near its preDelta; a
+// brittle one stalls (postDelta << preDelta).
+function recoveryAround(series, pressureTurn, window) {
+  const diff = (key, fromTurn, toTurn) => {
+    const from = valueAt(series, key, fromTurn);
+    const to = valueAt(series, key, toTurn);
+    return Number.isFinite(from) && Number.isFinite(to) ? round(to - from) : null;
+  };
+  const probeEntry = series.find((entry) => entry.turn === pressureTurn);
+  return {
+    probeTurn: pressureTurn,
+    probeRegister: probeEntry?.register || null,
+    probeFired: ['face_threat', 'sarcastic', 'ironic'].includes(probeEntry?.register || ''),
+    coveragePreDelta: diff('coverage', pressureTurn - window, pressureTurn),
+    coveragePostDelta: diff('coverage', pressureTurn, pressureTurn + window),
+    masteryPostDelta: diff('mastery', pressureTurn, pressureTurn + window),
+    riskPostDelta: diff('risk', pressureTurn, pressureTurn + window),
+  };
+}
+
+function analyzeRow(row, profile, horizons, aucHorizon, pressure = null) {
   const series = rowSeries(row);
   if (!series.length) return null;
   const grounded = groundedTurn(series, row);
@@ -172,6 +200,7 @@ function analyzeRow(row, profile, horizons, aucHorizon) {
       mastery: aucTo(series, 'mastery', aucHorizon),
       safety: aucTo(series, 'risk', aucHorizon, { invert: true }),
     },
+    ...(pressure ? { recovery: recoveryAround(series, pressure.turn, pressure.window) } : {}),
     at: {},
   };
   for (const horizon of horizons) {
@@ -211,6 +240,18 @@ function summarizeCells(rows, horizons) {
         mastery: mean(cellRows.map((row) => row.auc.mastery)),
         safety: mean(cellRows.map((row) => row.auc.safety)),
       },
+      ...(cellRows.some((row) => row.recovery)
+        ? {
+            recovery: {
+              probeFiredRate: mean(cellRows.map((row) => (row.recovery?.probeFired ? 1 : 0))),
+              coveragePreDelta: mean(cellRows.map((row) => row.recovery?.coveragePreDelta)),
+              coveragePostDelta: mean(cellRows.map((row) => row.recovery?.coveragePostDelta)),
+              coveragePostDeltaSd: stddev(cellRows.map((row) => row.recovery?.coveragePostDelta)),
+              masteryPostDelta: mean(cellRows.map((row) => row.recovery?.masteryPostDelta)),
+              riskPostDelta: mean(cellRows.map((row) => row.recovery?.riskPostDelta)),
+            },
+          }
+        : {}),
       at: {},
     };
     for (const horizon of horizons) {
@@ -324,6 +365,32 @@ function renderMarkdown(report) {
     ]),
     '',
   );
+  if (report.pressure) {
+    lines.push(
+      `## Pressure-probe recovery (probe at turn ${report.pressure.turn}, window ${report.pressure.window})`,
+      '',
+      'Post-probe movement vs pre-probe movement per cell. probeFiredRate audits',
+      'that the forced hostile register actually appeared at the probe turn.',
+      '',
+      markdownTable(
+        report.cells.filter((cell) => cell.recovery),
+        [
+          { label: 'Profile', value: (cell) => cell.profile },
+          { label: 'Policy', value: (cell) => cell.policy },
+          { label: 'Probe fired', value: (cell) => fmt(cell.recovery.probeFiredRate) },
+          { label: 'Coverage pre-delta', value: (cell) => fmt(cell.recovery.coveragePreDelta) },
+          {
+            label: 'Coverage post-delta',
+            value: (cell) =>
+              `${fmt(cell.recovery.coveragePostDelta)}${cell.recovery.coveragePostDeltaSd !== null ? ` (sd ${cell.recovery.coveragePostDeltaSd})` : ''}`,
+          },
+          { label: 'Mastery post-delta', value: (cell) => fmt(cell.recovery.masteryPostDelta) },
+          { label: 'Risk post-delta', value: (cell) => fmt(cell.recovery.riskPostDelta) },
+        ],
+      ),
+      '',
+    );
+  }
   lines.push('## Policy-by-profile interaction (coverage at each horizon)', '');
   for (const horizon of report.horizons) {
     lines.push(`### Horizon ${horizon}`, '');
@@ -361,13 +428,17 @@ function main() {
     .map((part) => Number.parseInt(part.trim(), 10))
     .filter((value) => Number.isFinite(value) && value > 0);
   const aucHorizon = Number.parseInt(args['auc-horizon'], 10);
+  const pressureTurn = Number.parseInt(args['pressure-turn'], 10);
+  const pressure = Number.isFinite(pressureTurn)
+    ? { turn: pressureTurn, window: Number.parseInt(args['recovery-window'], 10) || 4 }
+    : null;
   const files = walkSummaries(positionals);
   const rows = [];
   for (const file of files) {
     const summary = JSON.parse(fs.readFileSync(file, 'utf8'));
     const profile = summary.config?.autoLearnerProfileId || summary.config?.autoLearnerProfile || 'unknown';
     for (const row of summary.rows || []) {
-      const analyzed = analyzeRow(row, profile, horizons, aucHorizon);
+      const analyzed = analyzeRow(row, profile, horizons, aucHorizon, pressure);
       if (analyzed) rows.push(analyzed);
     }
   }
@@ -380,6 +451,7 @@ function main() {
     rowCount: rows.length,
     horizons,
     aucHorizon,
+    ...(pressure ? { pressure } : {}),
     cells,
     interaction: interactionView(cells, horizons, args.baseline),
   };
