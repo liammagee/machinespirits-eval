@@ -341,6 +341,9 @@ action_families:
   reanchor_lived_stake:
     role: dag_device
     description: Add one ordinary lived stake, then return to a compact proof/check move.
+  reanchor_public_evidence:
+    role: dag_device
+    description: Restage one previously public clue so a slipped reasoning link can be rebuilt without testing or shaming memory.
   ground_in_material:
     role: dag_device
     description: Bind the next move to a named artifact, case, material, or curriculum object.

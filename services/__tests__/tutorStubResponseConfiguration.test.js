@@ -122,6 +122,27 @@ test('unresolved terms select a gloss action, novice audience, plain lexicon, an
   assert.match(tutorStubResponseConfigurationPrompt(configuration), /Unresolved terms: cupel/u);
 });
 
+test('active accumulated-fact dropout independently selects a public-evidence re-anchor', () => {
+  const dag = learnerDag({ bottleneck: 'learner_integration_gap', coverage: 0.2 });
+  dag.model.memoryReliability = {
+    activeDroppedCount: 1,
+    droppedThisTurn: 1,
+    visibility: 'conduct',
+  };
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    classification: classification({ requestType: 'stepwise_support_request' }),
+    tutorLearnerDag: dag,
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    learnerText: 'What follows from that?',
+    world: testWorld(),
+  });
+
+  assert.equal(configuration.action_family, 'reanchor_public_evidence');
+  assert.match(configuration.selection_reasons.action_family, /restage one clue/u);
+  assert.match(tutorStubResponseConfigurationPrompt(configuration), /without testing or shaming memory/u);
+});
+
 test('child audience register requires an explicit public age signal', () => {
   const child = buildTutorStubResponseConfiguration({
     engagementStance: 'warm',

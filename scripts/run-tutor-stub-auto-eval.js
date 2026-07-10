@@ -21,6 +21,12 @@ import {
   DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
   normalizeTutorStubEngagementStanceTemperature,
 } from '../services/tutorStubRegisterTemperature.js';
+import {
+  DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+  DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED,
+  normalizeTutorStubDagFactDropoutRate,
+  normalizeTutorStubDagFactDropoutSeed,
+} from '../services/tutorStubDagFactDropout.js';
 import { summarizeTutorStubResponseConfigurationAudits } from '../services/tutorStubResponseConfiguration.js';
 import {
   learnerProfileContract,
@@ -50,6 +56,16 @@ const ENGAGEMENT_STANCE_TEMPERATURE_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_REGISTER_TEMPERATURE ||
     process.env.TUTOR_STUB_REGISTER_TEMPERATURE ||
     process.argv.slice(2).some((arg) => arg === '--register-temperature' || arg.startsWith('--register-temperature=')),
+);
+const DAG_FACT_DROPOUT_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_DAG_FACT_DROPOUT ||
+    process.env.TUTOR_STUB_DAG_FACT_DROPOUT ||
+    argvHasOption('--dag-fact-dropout'),
+);
+const DAG_FACT_DROPOUT_SEED_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_DAG_FACT_DROPOUT_SEED ||
+    process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED ||
+    argvHasOption('--dag-fact-dropout-seed'),
 );
 
 const { values: args } = parseArgs({
@@ -92,6 +108,20 @@ const { values: args } = parseArgs({
         process.env.TUTOR_STUB_EVAL_REGISTER_TEMPERATURE ||
         process.env.TUTOR_STUB_REGISTER_TEMPERATURE ||
         String(DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
+    },
+    'dag-fact-dropout': {
+      type: 'string',
+      default:
+        process.env.TUTOR_STUB_EVAL_DAG_FACT_DROPOUT ||
+        process.env.TUTOR_STUB_DAG_FACT_DROPOUT ||
+        String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
+    },
+    'dag-fact-dropout-seed': {
+      type: 'string',
+      default:
+        process.env.TUTOR_STUB_EVAL_DAG_FACT_DROPOUT_SEED ||
+        process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED ||
+        String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
     },
     'dag-mode': {
       type: 'string',
@@ -144,6 +174,8 @@ Options:
   --ledger <path>            append/upsert eval ledger JSONL (default: .tutor-stub-auto-eval/ledger.jsonl)
   --register-palette <mode>  default: all
   --register-temperature <n> stance-only: lower sharpens; higher broadens (default: 0.85)
+  --dag-fact-dropout <n>     accumulated learner-DAG premise loss rate, 0-1 (default: 0)
+  --dag-fact-dropout-seed <n> deterministic non-negative dropout seed (default: 1)
   --dag-mode <mode>          strict_dag, human_scaffold, or defeasible_human_scaffold
   --first-message <text>     seed the first learner turn instead of using tutor opening
   --cli-effort <level>       low, medium, high, xhigh, max, or config for CLI providers
@@ -917,6 +949,7 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
     selectedRegister: selection.selected_register || selection.engagement_stance || null,
     responseConfiguration: turn?.responseConfiguration || selection.response_configuration || null,
     responseConfigurationAudit: turn?.responseConfigurationAudit || null,
+    dagFactDropout: turn?.dagFactDropout || null,
     register: {
       policy: selection.policy || null,
       engagementStance: selection.engagement_stance || selection.selected_register || null,
@@ -1511,6 +1544,17 @@ function summarizeTrace(tracePath, traceDir) {
   const responseConfigurationVisibility = summarizeTutorStubResponseConfigurationAudits(
     turnRecords.map((turn) => turn.responseConfigurationAudit),
   );
+  const dropoutTurns = turnRecords.map((turn) => turn.dagFactDropout).filter(Boolean);
+  const dagFactDropout = dropoutTurns.length
+    ? {
+        configuredRate: dropoutTurns.at(-1)?.configuredRate ?? null,
+        seed: dropoutTurns.at(-1)?.seed ?? null,
+        eligibleOpportunities: dropoutTurns.reduce((sum, row) => sum + Number(row.eligibleCount || 0), 0),
+        dropped: dropoutTurns.reduce((sum, row) => sum + Number(row.droppedNow?.length || 0), 0),
+        repaired: dropoutTurns.reduce((sum, row) => sum + Number(row.repairedNow?.length || 0), 0),
+        activeAtEnd: dropoutTurns.at(-1)?.activeDropped?.length || 0,
+      }
+    : null;
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
@@ -1560,6 +1604,7 @@ function summarizeTrace(tracePath, traceDir) {
     lexicalAccessibilityCounts: countBy(lexicalAccessibility),
     sceneImmersionCounts: countBy(sceneImmersion),
     responseConfigurationVisibility,
+    dagFactDropout,
     efficacyCounts: countBy(efficacies),
     leakCount,
     repairedCount: turns.filter((event) => event.turnRecord?.tutorResponseRepaired).length,
@@ -9278,6 +9323,10 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     registerPalette,
     '--register-temperature',
     String(normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' })),
+    '--dag-fact-dropout',
+    String(normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], { label: '--dag-fact-dropout' })),
+    '--dag-fact-dropout-seed',
+    String(normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], { label: '--dag-fact-dropout-seed' })),
     '--trace-dir',
     traceDir,
     '--no-stream',
@@ -9383,6 +9432,22 @@ function buildResumePlan(summaryPath) {
         ? normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' })
         : '',
     );
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
+      '--dag-fact-dropout',
+      DAG_FACT_DROPOUT_OVERRIDE
+        ? normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], { label: '--dag-fact-dropout' })
+        : '',
+    );
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
+      '--dag-fact-dropout-seed',
+      DAG_FACT_DROPOUT_SEED_OVERRIDE
+        ? normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], {
+            label: '--dag-fact-dropout-seed',
+          })
+        : '',
+    );
     adjustedChildArgs = withBooleanFlag(adjustedChildArgs, '--no-memory-summary', args['no-memory-summary']);
     assertSupportedChildArgs(adjustedChildArgs);
     const childTraceDir = flagValue(adjustedChildArgs, '--trace-dir');
@@ -9434,6 +9499,14 @@ function buildResumePlan(summaryPath) {
           source.config?.registerTemperature ??
           DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
       temperatureScope: 'engagement_stance_only',
+      dagFactDropout: DAG_FACT_DROPOUT_OVERRIDE
+        ? normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], { label: '--dag-fact-dropout' })
+        : source.config?.dagFactDropout ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+      dagFactDropoutSeed: DAG_FACT_DROPOUT_SEED_OVERRIDE
+        ? normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], {
+            label: '--dag-fact-dropout-seed',
+          })
+        : source.config?.dagFactDropoutSeed ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED,
       memorySummary: args['no-memory-summary'] ? { enabled: false } : source.config?.memorySummary || null,
       resumedFrom: path.relative(ROOT, resolvedSummaryPath),
       resumeStatuses: Array.from(retryStatuses),
@@ -9464,6 +9537,19 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
         label: '--register-temperature',
       }),
       temperatureScope: 'engagement_stance_only',
+      dagFactDropout: normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], {
+        label: '--dag-fact-dropout',
+      }),
+      dagFactDropoutSeed: normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], {
+        label: '--dag-fact-dropout-seed',
+      }),
+      dagFactDropoutSemantics: {
+        eligibleFacts: 'adopted_public_premises_only',
+        backgroundFactsImmune: true,
+        graceTurns: 2,
+        maxConcurrent: 2,
+        visibility: 'conduct',
+      },
       responseConfiguration: {
         schema: 'machinespirits.tutor-stub.response-configuration.v1',
         independentAxes: [

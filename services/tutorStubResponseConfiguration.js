@@ -54,7 +54,9 @@ function configurationSignal({ learnerText, classification }) {
 export function selectTutorStubActionFamily({ classification, tutorLearnerDag, comprehension } = {}) {
   const requestType = requestTypeFrom(classification);
   const features = comprehensionFeatures(comprehension);
-  const assessment = modelFrom(tutorLearnerDag).assessment || {};
+  const model = modelFrom(tutorLearnerDag);
+  const assessment = model.assessment || {};
+  const memoryReliability = model.memoryReliability || {};
   let actionFamily = 'clarify_distinction';
   let reason = 'Default to one inspectable distinction or check.';
 
@@ -64,6 +66,9 @@ export function selectTutorStubActionFamily({ classification, tutorLearnerDag, c
   } else if (assessment.finalSecretEntailed === true && assessment.assertedSecret === true) {
     actionFamily = 'close_inquiry';
     reason = 'The public proof and learner assertion are complete, so the next action is closure.';
+  } else if (Number(memoryReliability.activeDroppedCount || 0) > 0) {
+    actionFamily = 'reanchor_public_evidence';
+    reason = 'Previously accumulated public evidence has slipped from the active record, so restage one clue without making memory itself the test.';
   } else if (requestType === 'vulnerability_or_moral_exposure') {
     actionFamily = 'receive_vulnerability';
     reason = 'Affective or moral exposure requires an agency-preserving reception before evidence pressure.';
@@ -354,6 +359,9 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
   }
   if (actionFamily === 'compress_sayback') return metrics.wordCount <= 85 && metrics.questionCount > 0;
   if (actionFamily === 'reanchor_lived_stake') return metrics.secondPerson && metrics.concreteSceneTermCount > 0;
+  if (actionFamily === 'reanchor_public_evidence') {
+    return metrics.concreteSceneTermCount > 0 && metrics.questionCount > 0;
+  }
   if (actionFamily === 'ground_in_material') return metrics.concreteSceneTermCount > 0;
   if (actionFamily === 'challenge_resistance') return /\b(?:but|instead|choose|test|stop|risk|refuse|try)\b/iu.test(text);
   if (actionFamily === 'receive_vulnerability') {

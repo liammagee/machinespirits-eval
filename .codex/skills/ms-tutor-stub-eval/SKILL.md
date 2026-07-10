@@ -28,6 +28,7 @@ Key choices and defaults:
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep `selected_register` and `register_vector` as compatibility aliases while using `engagement_stance` and a weighted engagement-stance blend internally; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
 - Engagement-stance temperature: default `0.85`. Use the backward-compatible `--register-temperature <n>` launch flag or `/settings stance-temp <n>` (`/settings temp` remains an alias). Standard semantics apply: lower values sharpen the dominant engagement stance; higher values broaden only that stance distribution. Action family, audience register, lexical accessibility, and scene immersion are deterministic and are never temperature-scaled. The supported range is `0.05` to `3.0`. Live changes invalidate and regenerate mixed suggestion analysis/prefetch state.
+- Accumulated DAG-fact dropout: default `0` (off). Use `--dag-fact-dropout <0..1>` and optional deterministic `--dag-fact-dropout-seed <n>`, or change the live rate with `/settings dropout <0..1>`. Only adopted public premises are eligible; background facts are immune; facts receive two grace turns; at most two may be dropped concurrently. A learner can repair a dropped fact by explicitly using or re-adopting it. The public transcript remains intact, exact dropped premise ids stay in technical traces rather than tutor speech, and `0` stops new losses without silently restoring already dropped facts. Live changes invalidate mixed suggestion analysis/prefetch state.
 - DAG discourse mode: default `strict_dag` is the proof-audit baseline. Use `--dag-mode human_scaffold` or `--dag-mode defeasible_human_scaffold` when testing the human-facing scaffold that allows ordinary-language warrant framing, side arcs, compressed human inference, and internal proof debt while the strict DAG remains the audit.
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
 - Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v3`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
@@ -170,11 +171,16 @@ Useful variants:
   distributions; `/settings stance-temp 1.4` broadens them. No other response
   axis is temperature-scaled. Changes are rejected while a tutor turn is in
   progress so each turn has one deterministic setting.
+- `/settings dropout 0.15` gives each eligible accumulated public premise a
+  seeded 15% per-turn chance of leaving the active learner DAG; `/settings
+  dropout 0` disables new losses. Dropout is harness-owned, not a role-play
+  instruction, and a visible lapse independently selects the
+  `reanchor_public_evidence` action family.
 - Interim waiting lines rotate labeled plain-language views such as Tutor
   focus, Evidence pacing, Learner reading, Reasoning state, Tutor style, and
   Clue progress. `view n/N` is a carousel position, not a score; restrained
   color distinguishes phase, view number, and panel category.
-- Use slash commands during a run: `/analysis`, `/settings [temp n]`, `/field`, `/viz`, `/clarify [phrase]`,
+- Use slash commands during a run: `/analysis`, `/settings [temp n|dropout n]`, `/field`, `/viz`, `/clarify [phrase]`,
   `/explain [phrase]`, `/id`, `/profile`, `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, `/quit`.
 
 ## Automated Single-Learner Eval
@@ -507,6 +513,7 @@ Prefer the latest `auto-eval-*.json` / `.html` in the trace dir. Report:
 - Per-policy comparison: `negative`, `bland`, `dynamic`, `state`, `field`, `trajectory`, `dynamical_system`, `empirical_dynamical_system`, `continuous_dynamical_system`, `continuous_empirical_dynamical_system`, `random`.
 - Engagement-stance entropy and dominant stances (`register` remains a legacy report label in older artifacts).
 - Response-configuration realization rate and pairwise transcript-visible difference rate; `n/a` means the run did not contain two distinct configurations to compare.
+- DAG-fact dropout opportunities, drops, re-adoptions, and active dropped facts at the end when `--dag-fact-dropout` is non-zero.
 - Bottlenecks: `learner_integration_gap`, `release_or_pacing_gap`, `assertion_gap`, `premature_assertion`, `grounded_asserted_secret`.
 - Check `.tutor-stub-auto-eval/ledger.md` for the local cross-run ledger before comparing recent evals.
 - For multi-eval comparisons, prefer `npm run analyze:tutor-stub-auto-evals`

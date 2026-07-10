@@ -122,6 +122,22 @@ test('tutor-stub dry run exposes configurable register temperature', () => {
   assert.equal(config.registerSelection.policy, 'continuous_dynamical_system');
 });
 
+test('tutor-stub dry run exposes seeded accumulated DAG-fact dropout', () => {
+  const config = tutorStubDryRun(['--dag-fact-dropout', '0.15', '--dag-fact-dropout-seed', '7']);
+
+  assert.deepEqual(config.dagFactDropout, {
+    schema: 'machinespirits.tutor-stub.dag-fact-dropout.v1',
+    rate: 0.15,
+    seed: 7,
+    enabled: true,
+    graceTurns: 2,
+    maxConcurrent: 2,
+    eligibleFacts: 'adopted_public_premises_only',
+    backgroundFactsImmune: true,
+    visibility: 'conduct',
+  });
+});
+
 test('tutor-stub dry run exposes independent response-configuration axes', () => {
   const config = tutorStubDryRun();
 
@@ -191,6 +207,46 @@ test('tutor-stub changes register temperature through live settings', () => {
   }
 });
 
+test('tutor-stub changes DAG-fact dropout through live settings', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-dag-dropout-'));
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+        '--tutor-learner-dag',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '/settings\n/settings dropout 0.15\n/settings dropout\n/quit\n',
+      },
+    );
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /DAG fact dropout: 0 \(off\)/u);
+    assert.match(result.stdout, /DAG fact dropout 0 → 0\.15/u);
+    assert.match(result.stdout, /DAG fact dropout: 0\.15 \(on\)/u);
+    const traces = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .map((name) => fs.readFileSync(path.join(tmp, name), 'utf8'))
+      .join('\n');
+    assert.match(traces, /"type":"dag_fact_dropout_changed"/u);
+    assert.match(traces, /"previous":0,"rate":0\.15,"seed":1/u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('tutor-stub rejects register temperatures outside the documented range', () => {
   const result = spawnSync(
     process.execPath,
@@ -200,6 +256,17 @@ test('tutor-stub rejects register temperatures outside the documented range', ()
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /--register-temperature must be between 0\.05 and 3/u);
+});
+
+test('tutor-stub rejects DAG-fact dropout outside the closed unit interval', () => {
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/tutor-stub.js', '--dry-run', '--no-trace', '--dag-fact-dropout', '1.1'],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /--dag-fact-dropout must be between 0 and 1/u);
 });
 
 test('tutor-stub rejects unknown DAG discourse modes', () => {
@@ -398,6 +465,10 @@ test('auto-eval dry run forwards DAG discourse mode and register temperature to 
         'human-scaffold',
         '--register-temperature',
         '0.4',
+        '--dag-fact-dropout',
+        '0.15',
+        '--dag-fact-dropout-seed',
+        '7',
         '--dry-run',
         '--no-html-report',
         '--no-ledger',
@@ -416,6 +487,9 @@ test('auto-eval dry run forwards DAG discourse mode and register temperature to 
     assert.equal(summary.config.registerTemperature, 0.4);
     assert.equal(summary.config.engagementStanceTemperature, 0.4);
     assert.equal(summary.config.temperatureScope, 'engagement_stance_only');
+    assert.equal(summary.config.dagFactDropout, 0.15);
+    assert.equal(summary.config.dagFactDropoutSeed, 7);
+    assert.equal(summary.config.dagFactDropoutSemantics.visibility, 'conduct');
     assert.deepEqual(summary.config.responseConfiguration.independentAxes, [
       'engagement_stance',
       'action_family',
@@ -430,6 +504,12 @@ test('auto-eval dry run forwards DAG discourse mode and register temperature to 
     const temperatureIndex = command.indexOf('--register-temperature');
     assert.ok(temperatureIndex > 0);
     assert.equal(command[temperatureIndex + 1], '0.4');
+    const dropoutIndex = command.indexOf('--dag-fact-dropout');
+    assert.ok(dropoutIndex > 0);
+    assert.equal(command[dropoutIndex + 1], '0.15');
+    const dropoutSeedIndex = command.indexOf('--dag-fact-dropout-seed');
+    assert.ok(dropoutSeedIndex > 0);
+    assert.equal(command[dropoutSeedIndex + 1], '7');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

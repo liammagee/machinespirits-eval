@@ -76,6 +76,16 @@ import {
   temperTutorStubEngagementStanceScores,
 } from '../services/tutorStubRegisterTemperature.js';
 import {
+  DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+  DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED,
+  TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
+  applyTutorStubDagFactDropout,
+  createTutorStubDagFactDropoutState,
+  normalizeTutorStubDagFactDropoutRate,
+  normalizeTutorStubDagFactDropoutSeed,
+  tutorStubDagFactDropoutSnapshot,
+} from '../services/tutorStubDagFactDropout.js';
+import {
   applyTutorStubComprehensionRequest,
   applyTutorStubComprehensionResponse,
   createTutorStubComprehensionState,
@@ -137,6 +147,10 @@ const STUB = {
   registerPolicy: process.env.TUTOR_STUB_REGISTER_POLICY || 'dynamic',
   registerTemperature:
     process.env.TUTOR_STUB_REGISTER_TEMPERATURE || String(DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
+  dagFactDropout:
+    process.env.TUTOR_STUB_DAG_FACT_DROPOUT || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
+  dagFactDropoutSeed:
+    process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
   dagMode: process.env.TUTOR_STUB_DAG_MODE || 'strict_dag',
   multipleChoice: process.env.TUTOR_STUB_MULTIPLE_CHOICE === '1',
   opening: process.env.TUTOR_STUB_OPENING !== '0',
@@ -301,6 +315,8 @@ const { values: args, positionals } = parseArgs({
     'register-palette': { type: 'string', default: 'all' },
     'register-policy': { type: 'string', default: STUB.registerPolicy },
     'register-temperature': { type: 'string', default: STUB.registerTemperature },
+    'dag-fact-dropout': { type: 'string', default: STUB.dagFactDropout },
+    'dag-fact-dropout-seed': { type: 'string', default: STUB.dagFactDropoutSeed },
     'register-empirical-prior': {
       type: 'string',
       default: process.env.TUTOR_STUB_REGISTER_EMPIRICAL_PRIOR || '',
@@ -395,6 +411,12 @@ Options:
                          register-selection temperature; lower is sharper,
                          higher is broader (default: ${STUB.registerTemperature};
                          range: ${MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}-${MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE})
+  --dag-fact-dropout <n> probability in [0,1] that an eligible accumulated
+                         learner-DAG premise drops after a learner turn
+                         (default: ${STUB.dagFactDropout}; off at 0)
+  --dag-fact-dropout-seed <n>
+                         non-negative deterministic seed for fact dropout
+                         (default: ${STUB.dagFactDropoutSeed})
   --world <id|path|none> detective-story world (default: ${STUB.world})
   --dag                  add hidden proof DAG + release schedule to tutor prompt;
                          also prints the tutor desire-DAG after each turn
@@ -471,6 +493,7 @@ Interactive commands:
   /r                     alias for /report
   /settings              show live dialogue settings
   /settings temp <n>     change engagement-stance temperature for subsequent turns
+  /settings dropout <n>  change accumulated DAG-fact dropout rate (0-1)
   /id                    show the last completed turn id and trace path
   /turn-id, /debug-id    aliases for /id
   /profile               show the active mixed learner profile
@@ -1356,6 +1379,7 @@ function learnerDagPromptSummary(model) {
       turn: model.turn ?? null,
       metrics: model.metrics || {},
       assessment: model.assessment || {},
+      memoryReliability: model.memoryReliability || null,
       learnerRecord: {
         grounded: (record.grounded || []).slice(-8),
         voicedDerived: (record.voicedDerived || []).slice(-8),
@@ -2614,6 +2638,10 @@ function replayLearnerDagFromTurns(state, turns) {
         state,
         tutorTurn: Number(turn.turn) || replayed + 1,
         learnerText: turn.learner || '',
+        dropoutReplay:
+          turn?.dagFactDropout ||
+          turn?.tutorLearnerDagUpdate?.dagFactDropout ||
+          { legacyNoDropout: true },
       });
       state.learnerDag.lastModel = result.model;
       replayed += 1;
@@ -6035,7 +6063,7 @@ function proofBaseKeys(closed, key, seen = new Set()) {
   return proof.premises.flatMap((premiseKey) => proofBaseKeys(closed, premiseKey, seen));
 }
 
-function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText }) {
+function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText, dropoutReplay = null }) {
   const record = state.learnerDag.record;
   const world = state.world;
   const released = new Map(stagedEvidenceRows(world, tutorTurn).map((row) => [row.premise, row]));
@@ -6134,6 +6162,16 @@ function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText }) {
     accepted.assertAnswer = null;
   }
 
+  const dagFactDropout = applyTutorStubDagFactDropout({
+    dropout: state.learnerDag.dropout,
+    board: record.board,
+    world,
+    turn: tutorTurn,
+    adoptedPremiseIds: accepted.adopt,
+    retractedPremiseIds: accepted.retract,
+    replay: dropoutReplay,
+  });
+
   const ledger = releaseLedgerForTurn(world, tutorTurn);
   const snapshot = buildLearnerDagSnapshot(world, {
     turn: tutorTurn,
@@ -6163,9 +6201,20 @@ function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText }) {
     proxyDagMemory,
     assessment: learnerDag.assessment,
   });
+  model.memoryReliability = dagFactDropout
+    ? {
+        schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
+        configuredRate: dagFactDropout.configuredRate,
+        activeDroppedCount: dagFactDropout.activeDropped.length,
+        droppedThisTurn: dagFactDropout.droppedNow.length,
+        repairedThisTurn: dagFactDropout.repairedNow.length,
+        visibility: 'conduct',
+      }
+    : null;
 
   return {
     model,
+    dagFactDropout,
     accepted,
     rejected,
     extractor: {
@@ -6183,6 +6232,12 @@ function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText }) {
 function emptyTutorLearnerDagModel(state, tutorTurn) {
   const record = state.learnerDag.record;
   const world = state.world;
+  const dagFactDropout = applyTutorStubDagFactDropout({
+    dropout: state.learnerDag.dropout,
+    board: record.board,
+    world,
+    turn: tutorTurn,
+  });
   const snapshot = buildLearnerDagSnapshot(world, {
     turn: tutorTurn,
     boardFacts: [...record.board.values()],
@@ -6203,12 +6258,23 @@ function emptyTutorLearnerDagModel(state, tutorTurn) {
     hypotheses: record.hypotheses,
     factSurface: (fact) => factSurface(world, fact),
   });
-  return buildTutorLearnerDagModel({
+  const model = buildTutorLearnerDagModel({
     turn: tutorTurn,
     role: 'tutor',
     proxyDagMemory,
     assessment: learnerDag.assessment,
   });
+  model.memoryReliability = dagFactDropout
+    ? {
+        schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
+        configuredRate: dagFactDropout.configuredRate,
+        activeDroppedCount: dagFactDropout.activeDropped.length,
+        droppedThisTurn: dagFactDropout.droppedNow.length,
+        repairedThisTurn: dagFactDropout.repairedNow.length,
+        visibility: 'conduct',
+      }
+    : null;
+  return { model, dagFactDropout };
 }
 
 async function buildTutorLearnerDagForTurn(learnerText, state) {
@@ -6223,9 +6289,11 @@ async function buildTutorLearnerDagForTurn(learnerText, state) {
     printTutorLearnerDagModel(result);
     return result;
   } catch (err) {
-    const model = emptyTutorLearnerDagModel(state, tutorTurn);
+    const empty = emptyTutorLearnerDagModel(state, tutorTurn);
+    const model = empty.model;
     const result = {
       model,
+      dagFactDropout: empty.dagFactDropout,
       accepted: {
         adopt: [],
         retract: [],
@@ -6334,9 +6402,11 @@ async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw =
       resolved: state.learnerDag.resolved,
       latencyMs: Date.now() - startedAt,
     });
-    const model = emptyTutorLearnerDagModel(state, tutorTurn);
+    const empty = emptyTutorLearnerDagModel(state, tutorTurn);
+    const model = empty.model;
     const tutorLearnerDag = {
       model,
+      dagFactDropout: empty.dagFactDropout,
       accepted: {
         adopt: [],
         retract: [],
@@ -6417,6 +6487,15 @@ function printTutorLearnerDagModel(result) {
       assessment.bottleneck || 'unknown'
     }`,
   );
+  const dropout = result.dagFactDropout || null;
+  if (dropout?.droppedNow?.length || dropout?.repairedNow?.length || dropout?.activeDropped?.length) {
+    const parts = [
+      dropout.droppedNow?.length ? `${dropout.droppedNow.length} slipped now` : null,
+      dropout.repairedNow?.length ? `${dropout.repairedNow.length} re-adopted` : null,
+      `${dropout.activeDropped?.length || 0} currently dropped`,
+    ].filter(Boolean);
+    console.log(`${C.dim}  accumulated evidence memory: ${parts.join('; ')}${C.reset}`);
+  }
   console.log(
     `${C.dim}  grounded ${metrics.groundedCount || 0}, voiced ${metrics.voicedDerivedCount || 0}, hypotheses ${
       metrics.hypothesisCount || 0
@@ -6585,6 +6664,7 @@ function tutorLearnerDagModelContext(result) {
   const metrics = model.metrics || {};
   const assessment = model.assessment || {};
   const record = model.learnerRecord || {};
+  const memoryReliability = model.memoryReliability || null;
   const grounded = (record.grounded || []).map((row) => `- ${row.surface}`).join('\n') || '- none';
   const hypotheses = (record.hypotheses || []).map((row) => `- ${row.text}`).join('\n') || '- none';
   const candidates = (record.answerCandidates || []).map((row) => `- ${row.surface}`).join('\n') || '- none';
@@ -6595,6 +6675,9 @@ function tutorLearnerDagModelContext(result) {
     `Counts: grounded=${metrics.groundedCount || 0}, voiced=${metrics.voicedDerivedCount || 0}, hypotheses=${
       metrics.hypothesisCount || 0
     }, answerCandidates=${metrics.answerCandidateCount || 0}, missing=${metrics.missingPremiseCount || 0}`,
+    memoryReliability?.activeDroppedCount
+      ? `Memory reliability: ${memoryReliability.activeDroppedCount} previously accumulated public evidence item(s) are no longer active in the redacted record. Re-anchor gently from public evidence; do not announce forgetting, dropout, or an internal memory test.`
+      : null,
     'Grounded public record:',
     grounded,
     'Learner hypotheses:',
@@ -6721,7 +6804,7 @@ function dialogueClosureTutorContext(frame) {
   ].join('\n');
 }
 
-function createLearnerDagState({ enabled, resolved, world }) {
+function createLearnerDagState({ enabled, resolved, world, dropout = null }) {
   const board = new Map();
   if (world) {
     for (const fact of world.background || []) board.set(factKey(fact), fact);
@@ -6729,6 +6812,7 @@ function createLearnerDagState({ enabled, resolved, world }) {
   return {
     enabled,
     resolved,
+    dropout: createTutorStubDagFactDropoutState(dropout || {}),
     record: {
       board,
       voiced: [],
@@ -7047,10 +7131,10 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printInteractiveHelp() {
   console.log(
-    `${C.cyan}slash commands >${C.reset} /analysis [technical], /a [technical], /field, /f, /viz, /v, /clarify [phrase], /explain [phrase], /report, /r, /settings [temp n], /id, /profile [list|example|id|default|custom text], /clue, /hint, /suggest, /use, /regen, /clear, /help, /quit`,
+    `${C.cyan}slash commands >${C.reset} /analysis [technical], /a [technical], /field, /f, /viz, /v, /clarify [phrase], /explain [phrase], /report, /r, /settings [temp n|dropout n], /id, /profile [list|example|id|default|custom text], /clue, /hint, /suggest, /use, /regen, /clear, /help, /quit`,
   );
   console.log(
-    `${C.dim}  /settings temp 0.4 sharpens only the dominant engagement stance; 1.4 broadens only that blend. Tab names the profile; /suggest shows its profile expression; /use repeats the profile expression before sending.${C.reset}\n`,
+    `${C.dim}  /settings temp 0.4 sharpens only the dominant engagement stance. /settings dropout 0.15 enables seeded loss of accumulated DAG facts; 0 turns it off. Tab names the profile; /suggest shows its profile expression; /use repeats the profile expression before sending.${C.reset}\n`,
   );
 }
 
@@ -7141,6 +7225,7 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
   const generousInference = turn.generousInference || turn.humanDiscourseFrame?.generousInference || null;
   const dialogueClosure = turn.dialogueClosure || null;
   const comprehension = turn.comprehension?.beforeTutor?.features || null;
+  const dagFactDropout = turn.dagFactDropout || null;
 
   console.log(`${C.cyan}analysis >${C.reset} turn ${turn.turn}`);
   printAnalysisLine('learner said', turn.learner);
@@ -7167,6 +7252,16 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
         ? `the learner asked about ${comprehension.unresolvedTerms.join(', ')}`
         : 'the learner recently asked for plainer wording',
     );
+  }
+  if (dagFactDropout?.droppedNow?.length || dagFactDropout?.activeDropped?.length) {
+    printAnalysisLine(
+      'memory pressure',
+      dagFactDropout.droppedNow?.length
+        ? `${dagFactDropout.droppedNow.length} previously accumulated evidence item(s) slipped on this turn; the tutor should re-anchor without turning it into a memory test`
+        : `${dagFactDropout.activeDropped.length} accumulated evidence item(s) remain out of the learner’s active reasoning record`,
+    );
+  } else if (dagFactDropout?.repairedNow?.length) {
+    printAnalysisLine('memory recovery', `${dagFactDropout.repairedNow.length} dropped evidence item(s) were re-adopted`);
   }
   printAnalysisLine('policy', `${plainPolicyLabel(policy)}${policy === 'off' ? '' : ` (${policy})`}`);
   if (registerSelection) {
@@ -7253,6 +7348,7 @@ function printCurrentTurnTechnicalAnalysis(state) {
   const previousEfficacy = normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null);
   const tracePath = traceDisplayPath(state.trace);
   const comprehension = turn.comprehension?.beforeTutor || null;
+  const dagFactDropout = turn.dagFactDropout || null;
   const field = buildLightweightDialogueField(state.turns);
   const fieldRow = field.rows.at(-1) || null;
   const previousFieldRow = field.rows.at(-2) || null;
@@ -7268,6 +7364,16 @@ function printCurrentTurnTechnicalAnalysis(state) {
       `pressure=${comprehension.features.pressure}; unresolved=${
         comprehension.features.unresolvedTerms?.join(',') || 'none'
       }; explained=${comprehension.features.explainedTerms?.join(',') || 'none'}; advancesDAG=false`,
+    );
+  }
+  if (dagFactDropout) {
+    printAnalysisLine(
+      'DAG fact dropout',
+      `rate=${dagFactDropout.configuredRate}; seed=${dagFactDropout.seed}; eligible=${dagFactDropout.eligibleCount}; droppedNow=${
+        dagFactDropout.droppedNow?.map((row) => row.premiseId).join(',') || 'none'
+      }; repairedNow=${dagFactDropout.repairedNow?.map((row) => row.premiseId).join(',') || 'none'}; active=${
+        dagFactDropout.activeDropped?.map((row) => row.premiseId).join(',') || 'none'
+      }; visibility=conduct`,
     );
   }
 
@@ -8891,6 +8997,16 @@ async function runOneTurn(
     tutorLearnerDag,
   });
   const comprehensionBeforeTutor = tutorStubComprehensionSnapshot(state.comprehension, { turn: tutorTurn });
+  const dagFactDropout = tutorLearnerDag?.dagFactDropout || null;
+
+  if (dagFactDropout?.droppedNow?.length || dagFactDropout?.repairedNow?.length) {
+    appendTraceEvent(state.trace, {
+      type: 'dag_fact_dropout_update',
+      turn: tutorTurn,
+      turnId,
+      dropout: dagFactDropout,
+    });
+  }
 
   const response =
     precomputedResponse ||
@@ -8979,8 +9095,10 @@ async function runOneTurn(
           accepted: tutorLearnerDag.accepted || null,
           rejected: tutorLearnerDag.rejected || [],
           extractor: tutorLearnerDag.extractor || null,
+          dagFactDropout,
         }
       : null,
+    dagFactDropout,
     humanDiscourseFrame,
     scaffoldState: humanDiscourseFrame.scaffoldState,
     sideArc: humanDiscourseFrame.sideArc,
@@ -9197,6 +9315,23 @@ async function main() {
   const registerTemperature = normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
     label: '--register-temperature',
   });
+  const dagFactDropoutRate = normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], {
+    label: '--dag-fact-dropout',
+  });
+  const dagFactDropoutSeed = normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], {
+    label: '--dag-fact-dropout-seed',
+  });
+  const dagFactDropoutConfig = {
+    schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
+    rate: dagFactDropoutRate,
+    seed: dagFactDropoutSeed,
+    enabled: dagFactDropoutRate > 0,
+    graceTurns: 2,
+    maxConcurrent: 2,
+    eligibleFacts: 'adopted_public_premises_only',
+    backgroundFactsImmune: true,
+    visibility: 'conduct',
+  };
   const maxTokens = parsePositiveInt(args['max-tokens'], '--max-tokens');
   const historyTurns = parsePositiveInt(args['history-turns'], '--history-turns');
   const memorySummaryEnabled = Boolean(STUB.memorySummary && !args['no-memory-summary']);
@@ -9374,6 +9509,7 @@ async function main() {
             sources: ['learner_turn', 'slash_explain'],
             advancesLearnerDag: false,
           },
+          dagFactDropout: dagFactDropoutConfig,
           responseConfiguration: {
             schema: 'machinespirits.tutor-stub.response-configuration.v1',
             primaryStanceField: 'engagement_stance',
@@ -9559,6 +9695,7 @@ async function main() {
         sources: ['learner_turn', 'slash_explain'],
         advancesLearnerDag: false,
       },
+      dagFactDropout: dagFactDropoutConfig,
       responseConfiguration: {
         schema: 'machinespirits.tutor-stub.response-configuration.v1',
         primaryStanceField: 'engagement_stance',
@@ -9708,6 +9845,10 @@ async function main() {
       enabled: tutorLearnerDagEnabled,
       resolved: learnerRecordResolved,
       world: worldBundle?.world || null,
+      dropout: {
+        rate: dagFactDropoutRate,
+        seed: dagFactDropoutSeed,
+      },
     }),
     comprehension: createTutorStubComprehensionState(),
     register: {
@@ -9926,6 +10067,7 @@ async function main() {
         ...visibleModel,
         classifier: classifierEnabled ? visibleClassifierConfig : null,
         tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
+        dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag.dropout),
         autoLearner: {
           enabled: true,
           modelRef: args['auto-learner-model'],
@@ -10001,6 +10143,7 @@ async function main() {
         ...visibleModel,
         classifier: classifierEnabled ? visibleClassifierConfig : null,
         tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
+        dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag.dropout),
         registerSelection: registerSelectionEnabled
           ? {
               enabled: true,
@@ -10165,6 +10308,7 @@ async function main() {
         : null,
       registerPolicy: state.register?.policy || null,
       registerTemperature: state.register?.temperature ?? null,
+      dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout),
       comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: turnNumber }),
       registerHistory: (state.register?.history || []).map((entry) => ({
         turn: entry.turn || null,
@@ -10206,6 +10350,7 @@ async function main() {
       history: state.history,
       classifier: classifierTutorContext(classification),
       learnerDag: tutorLearnerDagModelContext(tutorLearnerDag?.model || tutorLearnerDag),
+      dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout),
       register: responseConfigurationContext(registerSelection, {
         multipleChoice: state.multipleChoice,
         humanDiscourseFrame,
@@ -10867,6 +11012,7 @@ async function main() {
       ...visibleModel,
       classifier: classifierEnabled ? visibleClassifierConfig : null,
       tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
+      dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag.dropout),
       registerSelection: registerSelectionEnabled
         ? {
             enabled: true,
@@ -11040,6 +11186,7 @@ async function main() {
   function resetInteractiveState() {
     const currentRegisterTemperature =
       state.register?.temperature ?? registerTemperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE;
+    const currentDagFactDropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
     state.history = [];
     state.turns = [];
     state.printedDebugIds = new Set();
@@ -11048,6 +11195,12 @@ async function main() {
       enabled: tutorLearnerDagEnabled,
       resolved: learnerRecordResolved,
       world: worldBundle?.world || null,
+      dropout: {
+        rate: currentDagFactDropout.rate,
+        seed: currentDagFactDropout.seed,
+        graceTurns: currentDagFactDropout.graceTurns,
+        maxConcurrent: currentDagFactDropout.maxConcurrent,
+      },
     });
     state.comprehension = createTutorStubComprehensionState();
     state.register = {
@@ -11073,36 +11226,86 @@ async function main() {
     console.log(
       `${C.dim}  policy: ${state.register?.policy || 'off'}; temperature ${active ? 'active for engagement stance only' : 'stored but not used by this policy'}${C.reset}`,
     );
+    const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
     console.log(
-      `${C.dim}  range: ${MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}-${MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}; set with /settings temp 1.0${C.reset}\n`,
+      `${C.dim}  DAG fact dropout: ${dropout.rate} (${dropout.rate > 0 ? 'on' : 'off'}); seed ${dropout.seed}; active dropped ${dropout.activeCount}; adopted facts tracked ${dropout.adoptedCount}${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  use /settings temp 1.0 or /settings dropout 0.15; dropout range 0-1 and 0 stops new losses${C.reset}\n`,
     );
   }
 
   function handleDialogueSettings(argument = '', { duringTurn = false } = {}) {
     clearStatusLine();
     const parts = String(argument || '').trim().split(/\s+/u).filter(Boolean);
-    if (
-      !parts.length ||
-      (parts.length === 1 && ['temp', 'temperature', 'stance-temp'].includes(parts[0].toLowerCase()))
-    ) {
+    const temperatureNames = ['temp', 'temperature', 'stance-temp'];
+    const dropoutNames = ['dropout', 'dag-dropout', 'dag-fact-dropout'];
+    if (!parts.length || (parts.length === 1 && [...temperatureNames, ...dropoutNames].includes(parts[0].toLowerCase()))) {
       printDialogueSettings();
       return;
     }
     const setting = parts[0].toLowerCase();
-    if (!['temp', 'temperature', 'stance-temp'].includes(setting) || parts.length !== 2) {
-      console.log(`${C.red}settings error:${C.reset} use /settings or /settings stance-temp <n>`);
-      console.log(`${C.dim}  example: /settings temp 0.4${C.reset}\n`);
+    if (![...temperatureNames, ...dropoutNames].includes(setting) || parts.length !== 2) {
+      console.log(`${C.red}settings error:${C.reset} use /settings, /settings stance-temp <n>, or /settings dropout <0-1>`);
+      console.log(`${C.dim}  examples: /settings temp 0.4 | /settings dropout 0.15${C.reset}\n`);
       return;
     }
     if (duringTurn) {
-      console.log(`${C.dim}engagement-stance temperature is unchanged while a tutor turn is in progress${C.reset}`);
+      console.log(`${C.dim}dialogue settings are unchanged while a tutor turn is in progress${C.reset}`);
       console.log(`${C.dim}  set it after the tutor response so the effective turn is deterministic${C.reset}\n`);
       appendTraceEvent(state.trace, {
-        type: 'register_temperature_change_rejected',
+        type: 'dialogue_setting_change_rejected',
+        setting,
         reason: 'turn_in_progress',
         requested: parts[1],
         turn: state.turns.length + 1,
       });
+      return;
+    }
+
+    if (dropoutNames.includes(setting)) {
+      let nextRate;
+      try {
+        nextRate = normalizeTutorStubDagFactDropoutRate(parts[1], { label: 'DAG fact dropout' });
+      } catch (error) {
+        console.log(`${C.red}settings error:${C.reset} ${error.message}\n`);
+        return;
+      }
+      const previousRate = state.learnerDag.dropout.rate;
+      if (nextRate === previousRate) {
+        console.log(`${C.cyan}settings >${C.reset} DAG fact dropout already ${nextRate}\n`);
+        return;
+      }
+      state.learnerDag.dropout.rate = nextRate;
+      const invalidated = resetMixedLearnerSuggestion('dag_fact_dropout_changed');
+      appendTraceEvent(state.trace, {
+        type: 'dag_fact_dropout_changed',
+        schema: 'machinespirits.tutor-stub.dag-fact-dropout-change.v1',
+        previous: previousRate,
+        rate: nextRate,
+        seed: state.learnerDag.dropout.seed,
+        effectiveTurn: state.turns.length + 1,
+        activeDroppedCount: Object.keys(state.learnerDag.dropout.activeDropped || {}).length,
+        cacheRefresh: {
+          priorStateCleared: Boolean(invalidated?.hadState),
+          analysisDiscarded: Boolean(invalidated?.discardedAnalysis),
+          tutorResponseDiscarded: Boolean(invalidated?.discardedTutorResponse),
+        },
+      });
+      console.log(
+        `${C.cyan}settings >${C.reset} DAG fact dropout ${previousRate} → ${nextRate}; applies from turn ${state.turns.length + 1}`,
+      );
+      console.log(
+        `${C.dim}  ${nextRate === 0 ? 'new losses are off; already dropped facts still need re-adoption or /clear' : 'each eligible accumulated premise now has this seeded per-turn loss probability'}${C.reset}`,
+      );
+      if (!state.learnerDag.enabled) {
+        console.log(`${C.dim}  stored but inactive because the tutor-side learner DAG is off${C.reset}`);
+      }
+      if (mixedLearner.enabled && latestTutorMessage(state)) {
+        startMixedLearnerPrefetch('dag_fact_dropout_changed');
+        console.log(`${C.dim}  refreshed the mixed suggestion, analysis, and prefetched tutor response${C.reset}`);
+      }
+      console.log();
       return;
     }
 
