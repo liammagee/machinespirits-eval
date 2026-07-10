@@ -84,6 +84,15 @@ Verdict against the frozen reading:
   bland anywhere). Bland never collapsed (worst cell 2/3). dynamic lost its
   edge on affective_resistant (2/3); dynamical_system ranks below bland on
   worst-case.
+- POST-HOC REVISION (fixed-horizon reanalysis, trajectory-analysis.{md,json}
+  in the artifact root; PLAN_4_0/2026-07-10-headroom-fixed-horizon-interactions.md):
+  the endpoint null was an until-grounded artifact. At fixed learner turns
+  8/12/16, policy rankings CROSS by profile — adaptive arms lead bland by
+  +0.22 to +0.33 coverage on affective_resistant and false_memory at turn 16,
+  while bland leads on diligent. Exploratory (n=3, coarse 1/6 coverage quanta).
+- MODEL PROVENANCE: all 60 rows executed on gpt-5.6-terra, not the requested
+  codex.gpt-5.5 (child model-flag forwarding bug, fixed in 7d50c8f0 after this
+  run). Treat the stack as gpt-5.6-terra.
 - Per the card: follow-up for any claim = same-design replication on a second
   model family; the defensible exploratory sentence today is "register choice
   has outcome consequences (hostile registers collapse on affect-sensitive
