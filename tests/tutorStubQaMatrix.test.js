@@ -219,6 +219,44 @@ test('headroom suite defaults to discriminable profiles under a binding cap', ()
   assert.equal(equalsForm.safetyTurns, 100);
 });
 
+test('auto-eval forwards its declared default models to every child dialogue', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-model-forwarding-'));
+  try {
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-auto-eval.js',
+        '--dry-run',
+        '--runs',
+        '1',
+        '--policies',
+        'dynamic',
+        '--turns',
+        '1',
+        '--trace-dir',
+        tmp,
+        '--no-progress',
+        '--no-html-report',
+        '--no-ledger',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+
+    const summaryName = fs.readdirSync(tmp).find((name) => /^auto-eval-.*\.json$/u.test(name));
+    assert.ok(summaryName, 'dry run should write a structured summary');
+    const summary = JSON.parse(fs.readFileSync(path.join(tmp, summaryName), 'utf8'));
+    const command = summary.results[0].command;
+    const commandValue = (flag) => command[command.indexOf(flag) + 1];
+
+    assert.equal(commandValue('--model'), 'codex.gpt-5.5');
+    assert.equal(commandValue('--classifier-model'), 'codex.gpt-5.5');
+    assert.equal(commandValue('--learner-record-model'), 'codex.gpt-5.5');
+    assert.equal(commandValue('--auto-learner-model'), 'codex.gpt-5.5');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('qa matrix runner prints a reproducible focused-suite plan', () => {
   const plan = JSON.parse(
     execFileSync(

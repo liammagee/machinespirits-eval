@@ -428,9 +428,13 @@ function compactTrace(file, root, args) {
       startedAt: start?.ts || events[0]?.ts || null,
       turnCount: compactTurns.length,
       world: metadata.world?.id || metadata.worldId || null,
+      modelRef: metadata.modelRef || null,
       model: finalTurn?.model || metadata.resolved?.model || metadata.modelRef || null,
       provider: finalTurn?.provider || metadata.resolved?.provider || null,
+      analysisModelRef: metadata.classifier?.modelRef || null,
       analysisModel: metadata.classifier?.resolved?.model || metadata.classifier?.modelRef || null,
+      learnerModelRef: metadata.autoLearner?.modelRef || null,
+      learnerModel: metadata.autoLearner?.resolved?.model || metadata.autoLearner?.modelRef || null,
       memorySummary: metadata.memorySummary || null,
     },
     final: {
@@ -446,6 +450,18 @@ function compactTrace(file, root, args) {
     },
     turns: compactTurns,
   };
+}
+
+function observedModelCounts(traces, modelKey, refKey, providerKey = 'provider') {
+  const counts = new Map();
+  for (const trace of traces) {
+    const model = trace.run?.[modelKey] || trace.run?.[refKey] || null;
+    if (!model) continue;
+    const provider = trace.run?.[providerKey] || null;
+    const label = provider && !String(model).startsWith(`${provider}.`) ? `${provider}.${model}` : String(model);
+    counts.set(label, (counts.get(label) || 0) + 1);
+  }
+  return Object.fromEntries([...counts.entries()].sort((a, b) => a[0].localeCompare(b[0])));
 }
 
 function readCompacted(file) {
@@ -903,6 +919,11 @@ function buildReport(compactedTraces, args, compactedWrites) {
       traces: compactedTraces.length,
       profiles: profiles.length,
       turns: compactedTraces.reduce((sum, trace) => sum + (trace.turns || []).length, 0),
+      observedModels: {
+        tutor: observedModelCounts(compactedTraces, 'model', 'modelRef'),
+        analysis: observedModelCounts(compactedTraces, 'analysisModel', 'analysisModelRef'),
+        learner: observedModelCounts(compactedTraces, 'learnerModel', 'learnerModelRef'),
+      },
       averagePairwiseCosine,
       maxPairwiseCosine: Number.isFinite(maxPairwiseCosine) ? maxPairwiseCosine : null,
       controlProfile: args.controlProfile,
@@ -943,6 +964,11 @@ function formatObjectCounts(counts, max = 4) {
     .join(', ');
 }
 
+function formatModelCounts(counts) {
+  const entries = Object.entries(counts || {});
+  return entries.length ? entries.map(([model, count]) => `${model} (${count})`).join(', ') : 'unknown';
+}
+
 function formatMarkdown(report) {
   const lines = [];
   lines.push('# Tutor Stub Profile Discrimination');
@@ -954,6 +980,9 @@ function formatMarkdown(report) {
   lines.push(`- Compacted traces: ${report.summary.traces}`);
   lines.push(`- Profiles: ${report.summary.profiles}`);
   lines.push(`- Turns: ${report.summary.turns}`);
+  lines.push(`- Observed tutor models: ${formatModelCounts(report.summary.observedModels?.tutor)}`);
+  lines.push(`- Observed analysis models: ${formatModelCounts(report.summary.observedModels?.analysis)}`);
+  lines.push(`- Observed learner models: ${formatModelCounts(report.summary.observedModels?.learner)}`);
   lines.push(`- Pooled average pairwise cosine: ${report.summary.averagePairwiseCosine ?? 'n/a'}`);
   lines.push(`- Pooled max pairwise cosine: ${report.summary.maxPairwiseCosine ?? 'n/a'}`);
   lines.push(

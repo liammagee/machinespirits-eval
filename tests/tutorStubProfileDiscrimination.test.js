@@ -73,8 +73,10 @@ function writeTrace(root, profile, turns) {
       type: 'run_start',
       metadata: {
         world: { id: 'world_005_marrick' },
+        modelRef: 'codex.gpt-5.5',
         resolved: { provider: 'codex', model: 'gpt-5.5' },
-        classifier: { resolved: { model: 'gpt-5.5' } },
+        classifier: { modelRef: 'codex.gpt-5.5', resolved: { provider: 'codex', model: 'gpt-5.5' } },
+        autoLearner: { modelRef: 'codex.gpt-5.5', resolved: { provider: 'codex', model: 'gpt-5.5' } },
       },
     },
     ...turns,
@@ -157,6 +159,11 @@ test('profile discrimination analyzer writes compacted traces and cosine report'
     assert.equal(report.schema, 'machinespirits.tutor-stub.profile-discrimination.v3');
     assert.equal(report.summary.profiles, 2);
     assert.equal(report.summary.traces, 2);
+    assert.deepEqual(report.summary.observedModels, {
+      tutor: { 'codex.gpt-5.5': 2 },
+      analysis: { 'codex.gpt-5.5': 2 },
+      learner: { 'codex.gpt-5.5': 2 },
+    });
     assert.equal(report.input.compactedWrites.length, 2);
     assert.ok(report.summary.averagePairwiseCosine < 0.5);
     assert.equal(report.gate.mode, 'contract_conditioned');
@@ -168,6 +175,8 @@ test('profile discrimination analyzer writes compacted traces and cosine report'
     const compacted = JSON.parse(fs.readFileSync(path.join(compactedDir, 'diligent', compactedFiles[0]), 'utf8'));
     assert.equal(compacted.schema, 'machinespirits.tutor-stub.compacted-trace.v2');
     assert.equal(compacted.run.profile, 'diligent');
+    assert.equal(compacted.run.modelRef, 'codex.gpt-5.5');
+    assert.equal(compacted.run.learnerModel, 'gpt-5.5');
     assert.equal(compacted.turns[0].classifier.discourseMove, 'metacognitive_reflection');
     assert.equal(compacted.turns[0].text, undefined);
   } finally {

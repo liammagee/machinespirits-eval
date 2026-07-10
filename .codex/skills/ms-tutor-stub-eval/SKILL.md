@@ -35,6 +35,11 @@ Key choices and defaults:
 - Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
 - Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
 - Models: default tutor `codex.gpt-5.6-terra`, analysis/classifier/DAG `codex.gpt-5.6-terra`, automated learner `codex.gpt-5.6-terra`.
+- Model provenance: treat the observed tutor, analysis, and learner models in
+  `profile-discrimination.md/json` as authoritative. A requested model in
+  `qa-plan.json` is configuration intent only. Once a same-model profile gate
+  passes at `n=3`, a different-model rerun is optional cross-model robustness,
+  not a prerequisite for profile discrimination.
 - Parallelism: default `8` for `auto-eval`; ABM panel is currently serial.
 - Turn stopping: default `--turns until-grounded --safety-turns 120`.
 - Token cap: default `--max-tokens 4096` for `auto-eval` and resumes to avoid output-limit failures.

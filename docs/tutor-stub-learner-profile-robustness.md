@@ -219,6 +219,49 @@ one artifact root. Its dry run is recorded at
 `.tutor-stub-auto-eval/profile-policy-sentinel-v2-n3-dry-2026-07-10`: 60 dry
 rows and all 20 profile-policy cells reached the consolidated QA report.
 
+### Contract v3 frozen-control confirmation
+
+The follow-up contract-v3 run freezes the discriminating learner subset and
+tests it across four policy treatments under one model and code snapshot:
+
+- artifact root:
+  `.tutor-stub-auto-eval/profile-v3-frozen-control-n3-live-2026-07-10T12-09Z`;
+- profiles: `diligent`, `false_memory`, `proof_skipper`;
+- policies: `dynamic,dynamical_system,field,negative`; `n=3`;
+- observed trace provenance: `codex.gpt-5.6-terra` for tutor, classifier/DAG,
+  and automated learner on all `36` dialogues and `288` learner turns;
+- pooled average cosine `0.737`, max similarity to diligent `0.699`;
+- matched-policy macro average cosine `0.711`, max matched-policy similarity
+  to diligent `0.712`;
+- `false_memory`: recurrence `0.573`, deadline `12/12`, max control cosine
+  `0.712`;
+- `proof_skipper`: recurrence `0.760`, deadline `12/12`, max control cosine
+  `0.640`;
+- result: pooled and both contract-conditioned gates pass.
+
+The behaviors are not solely products of bounded adherence repair.
+`false_memory` passed natively on `27/40` required turns and needed `13`
+single-repair turns; `proof_skipper` passed natively on `38/43` required turns
+and needed `5` repaired turns (`6` total attempts). Their dominant mechanisms
+also differ: `false_memory` produced `55` public-evidence distortions, while
+`proof_skipper` produced `62` evidence overleaps. The closest stress-profile
+pair remains `false_memory` versus `proof_skipper` at cosine `0.861`, so the
+profiles are discriminable rather than perfectly orthogonal.
+
+The short cap also produced an outcome ordering consistent with the intended
+failure operators: mean final coverage was `0.167` for diligent, `0.111` for
+false memory, and `0.125` for proof skipping; mean missing premises were
+`5.000`, `5.333`, and `5.250`. These are descriptive mechanism-check outcomes,
+not closure-effect estimates.
+
+The original QA plan recorded requested `codex.gpt-5.5` defaults, but the
+authoritative `run_start` events show that this completed run used
+`gpt-5.6-terra`; child model flags had not yet been forwarded when the run
+started. Profile-discrimination reports now print observed tutor, analysis,
+and learner models from trace metadata. A true GPT-5.5 rerun is optional
+cross-model robustness work, not required to establish the current profile
+divergence result.
+
 ## Reproducible Commands
 
 Dry-run a cheap sentinel screen:
