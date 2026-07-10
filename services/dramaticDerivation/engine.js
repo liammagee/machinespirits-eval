@@ -89,7 +89,7 @@ import { buildDynamicLearnerField } from './learnerField.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
 import { buildLearnerProxyDagMemory, buildTutorLearnerDagModel, deriveProxyDagPacingSignal } from './proxyDagMemory.js';
 import { buildPedagogicalInteractionField } from './interactionField.js';
-import { selectFieldPlannerMove, summarizeFieldPlannerOutcome } from './fieldPlanner.js';
+import { buildFieldReportContext, selectFieldPlannerMove, summarizeFieldPlannerOutcome } from './fieldPlanner.js';
 import {
   classifyLearnerExchange,
   applyRecognitionNeedPolicy,
@@ -304,6 +304,16 @@ export async function runDrama({ world, roles, options = {} }) {
       'field planner currently requires non-acts mode; acts mode redacts learner-store state from the tutor view',
     );
   }
+  // Instrumentation placebo (Phase 6 `field_report_only` arm): the coupled
+  // field summary enters the tutor context with no planner authority. Shares
+  // the planner's non-acts constraint because it reads the same learner-store
+  // channel.
+  const fieldReportContextActive = Boolean(options.fieldReportContext);
+  if (fieldReportContextActive && acts) {
+    throw new Error(
+      'field report context currently requires non-acts mode; acts mode redacts learner-store state from the tutor view',
+    );
+  }
   // Strategy ledger (LAYERED-DECISION-LOOPS-PLAN.md Phases 0-2): opt-in and,
   // like decay/acts, absent means absent — no block state, no commitment or
   // audit rows, no new result fields. Both dials need the scene/exchange
@@ -434,6 +444,7 @@ export async function runDrama({ world, roles, options = {} }) {
   const proxyDagPacingRows = []; // harness-only advisory assessment rows, if enabled
   const tutorLearnerDagRows = []; // redacted tutor-side model of learner DAG state, if enabled
   const fieldPlannerRows = []; // coupled-field runtime policy choices and post-turn outcomes
+  const fieldReportRows = []; // report-only field context injections (instrumentation placebo arm)
   let sceneState = null;
   const ledger = []; // {turn, premiseId, via}
   const releasedKeys = new Set();
@@ -806,6 +817,37 @@ export async function runDrama({ world, roles, options = {} }) {
       canAssertFinal: entails(validGroundedFacts(), world.rules, world.secret.fact),
       proofDebt: currentProofDebt(turn),
     });
+  };
+
+  // Report-only sibling of currentFieldPlanner: same snapshot and coupled
+  // field, no candidate projection and no move selection. Feeds the tutor
+  // context in the field_report_only placebo arm.
+  const currentFieldReportContext = (turn) => {
+    const snapshot = buildLearnerDagSnapshot(world, {
+      turn,
+      boardFacts: learnerBoardFacts(),
+      validFacts: validGroundedFacts(),
+      voiced: voicedLedger,
+      hypotheses,
+      ledger,
+      source: 'engine_field_report_context',
+    });
+    const snapshots = [...learnerDagSnapshots.filter((row) => Number(row.turn) < Number(turn)), snapshot];
+    const learnerDag = buildLearnerDag(snapshots, world);
+    const learnerField = buildDynamicLearnerField(world, learnerDag);
+    const resultLike = {
+      worldId: world.id,
+      events: [...events],
+      trajectory: [...trajectory],
+      transcript: [...transcript],
+      ledger: [...ledger],
+      firstForcedTurn,
+      assertedGroundedTurn,
+      turnsPlayed: Math.max(0, turn - 1),
+      learnerDag,
+    };
+    const interactionField = buildPedagogicalInteractionField(world, resultLike, { learnerField });
+    return buildFieldReportContext({ turn, interactionField, learnerField });
   };
 
   const openSceneForTurn = (turn, reason = 'opening') => {
@@ -1289,6 +1331,8 @@ export async function runDrama({ world, roles, options = {} }) {
       opts.tutorLearnerDag && roleName === 'tutor' && !actState ? currentTutorLearnerDagModel(turn, roleName) : null;
     const fieldPlanner =
       fieldPlannerActive && roleName === 'tutor' && !actState ? currentFieldPlanner(turn, roleName) : null;
+    const fieldReportContext =
+      fieldReportContextActive && roleName === 'tutor' && !actState ? currentFieldReportContext(turn) : null;
     const conductTriggerOverride =
       roleName === 'tutor' && (conductPolicyActive || conductPolicyEnforceActive)
         ? conductTriggerOverrides.find((trigger) => Number(trigger?.turn) === turn) || null
@@ -1312,6 +1356,7 @@ export async function runDrama({ world, roles, options = {} }) {
       ...(proxyDagPacing ? { proxyDagPacing } : {}),
       ...(tutorLearnerDagModel ? { tutorLearnerDagModel } : {}),
       ...(fieldPlanner ? { fieldPlanner } : {}),
+      ...(fieldReportContext ? { fieldReportContext } : {}),
       ...(conductEntitlement ? { conductEntitlement } : {}),
       ...(conductTriggerOverride ? { conductTriggerOverride } : {}),
       ...(ledgerState && roleName === 'tutor' ? { strategyLedger: strategyLedgerView() } : {}),
@@ -1516,6 +1561,17 @@ export async function runDrama({ world, roles, options = {} }) {
       });
     }
     const tutorOut = (await roles.tutor(tutorView)) || {};
+    if (tutorView.fieldReportContext) {
+      const report = tutorView.fieldReportContext;
+      fieldReportRows.push({
+        turn,
+        schema: report.schema,
+        scriptStage: report.scriptStage || null,
+        jointAttractor: report.jointAttractor || null,
+        metrics: report.metrics || null,
+        nonLeakAuditOk: report.nonLeakAudit?.ok === true,
+      });
+    }
     if (tutorOut.fieldPlanner || tutorView.fieldPlanner) {
       const planner = tutorOut.fieldPlanner || tutorView.fieldPlanner;
       fieldPlannerRow = {
@@ -2781,6 +2837,7 @@ export async function runDrama({ world, roles, options = {} }) {
     ...(tutorLearnerDagRows.length ? { tutorLearnerDagModel: tutorLearnerDagRows } : {}),
     ...(proxyDagPacingRows.length ? { proxyDagPacing: proxyDagPacingRows } : {}),
     ...(fieldPlannerRows.length ? { fieldPlanner: fieldPlannerRows } : {}),
+    ...(fieldReportRows.length ? { fieldReportContext: fieldReportRows } : {}),
     ...(logicSnapshots.length ? { logicSnapshots } : {}),
     ...(corruption
       ? {

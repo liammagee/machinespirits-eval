@@ -151,11 +151,14 @@ test('profile discrimination analyzer writes compacted traces and cosine report'
       ),
     );
 
-    assert.equal(report.schema, 'machinespirits.tutor-stub.profile-discrimination.v1');
+    assert.equal(report.schema, 'machinespirits.tutor-stub.profile-discrimination.v2');
     assert.equal(report.summary.profiles, 2);
     assert.equal(report.summary.traces, 2);
     assert.equal(report.input.compactedWrites.length, 2);
     assert.ok(report.summary.averagePairwiseCosine < 0.5);
+    assert.equal(report.gate.mode, 'contract_conditioned');
+    assert.equal(report.gate.conditioned.profiles[0].profile, 'proof_skipper');
+    assert.equal(report.profiles.find((profile) => profile.profile === 'proof_skipper').observability.observedRate, 1);
 
     const compactedFiles = fs.readdirSync(path.join(compactedDir, 'diligent'));
     assert.equal(compactedFiles.length, 1);

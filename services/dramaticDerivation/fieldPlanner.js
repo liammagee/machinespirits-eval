@@ -9,6 +9,7 @@ import { auditDidacticModePublicInput, deriveDidacticOpportunityBudget, DIDACTIC
 
 export const FIELD_PLANNER_SCHEMA = 'machinespirits.derivation.field-planner.v1';
 export const FIELD_PLANNER_PROJECTION_SCHEMA = 'machinespirits.derivation.field-planner.projection.v1';
+export const FIELD_REPORT_CONTEXT_SCHEMA = 'machinespirits.derivation.field-report-context.v1';
 
 const DIDACTIC_BY_MOVE = Object.freeze({
   repair_dependency: 'slow_recap',
@@ -173,6 +174,88 @@ function fieldMetrics(interactionField = {}, learnerField = {}) {
     scriptAntiPatterns: final.script?.antiPatterns || [],
     scriptExpectedFieldMovement: final.script?.expectedFieldMovement || {},
     learnerMeanSpeed: round3(final.learner?.meanSpeed || finalLearnerSnapshot(learnerField)?.summary?.meanSpeed || 0),
+  };
+}
+
+// Instrumentation placebo for the Phase 6 gate's `field_report_only` arm: the
+// same coupled-field summary the planner reads, projected into the tutor
+// context WITHOUT any candidate projection, move selection, or conduct
+// authority. This is what lets decision rule 2 ("improvement not reproduced by
+// field_report_only") actually bind — the arm differs from baseline by the
+// report block alone.
+export function buildFieldReportContext({ turn, interactionField, learnerField } = {}) {
+  const metrics = fieldMetrics(interactionField, learnerField);
+  const joint = metrics.joint || {};
+  const learner = metrics.learner || {};
+  const attractorText =
+    Object.entries(metrics.attractors || {})
+      .map(([name, count]) => `${name} x${count}`)
+      .join(', ') || 'none';
+  const view = {
+    turn,
+    scriptStage: metrics.scriptStage || null,
+    jointAttractor: metrics.jointAttractor || null,
+    joint,
+    learner,
+    attractorText,
+    learnerMeanSpeed: metrics.learnerMeanSpeed,
+  };
+  const nonLeakAudit = auditConductTutorView(view);
+  const dims = (pairs) =>
+    pairs
+      .filter(([, value]) => Number.isFinite(value))
+      .map(([label, value]) => `${label} ${round3(value)}`)
+      .join('; ');
+  const promptLines = [
+    `- script stage: ${view.scriptStage || 'unknown'}; joint attractor: ${view.jointAttractor || 'unknown'}`,
+    ...(dims([
+      ['coupling', joint.couplingStrength],
+      ['alignment', joint.pedagogicalAlignment],
+      ['tension', joint.productiveTension],
+      ['momentum', joint.interactionMomentum],
+      ['risk', joint.trajectoryRisk],
+    ])
+      ? [
+          `- joint field: ${dims([
+            ['coupling', joint.couplingStrength],
+            ['alignment', joint.pedagogicalAlignment],
+            ['tension', joint.productiveTension],
+            ['momentum', joint.interactionMomentum],
+            ['risk', joint.trajectoryRisk],
+          ])}`,
+        ]
+      : []),
+    ...(dims([
+      ['mastery', learner.mastery],
+      ['grounding', learner.evidenceGrounding],
+      ['confusion', learner.productiveConfusion],
+    ])
+      ? [
+          `- learner field: ${dims([
+            ['mastery', learner.mastery],
+            ['grounding', learner.evidenceGrounding],
+            ['confusion', learner.productiveConfusion],
+          ])}; mean speed ${round3(metrics.learnerMeanSpeed || 0)}`,
+        ]
+      : []),
+    `- learner attractors: ${attractorText}`,
+  ];
+  return {
+    schema: FIELD_REPORT_CONTEXT_SCHEMA,
+    active: true,
+    turn,
+    authority: 'runtime_instrumentation',
+    conductAuthority: false,
+    scriptStage: view.scriptStage,
+    jointAttractor: view.jointAttractor,
+    metrics: {
+      joint,
+      learner,
+      attractors: { ...(metrics.attractors || {}) },
+      learnerMeanSpeed: metrics.learnerMeanSpeed,
+    },
+    nonLeakAudit,
+    promptLines,
   };
 }
 
@@ -374,9 +457,7 @@ function reasonCodeForCandidate(moveFamily, context) {
   if (moveFamily === 'release_next_evidence') return 'field_release_due';
   if (moveFamily === 'ask_scope_test') return 'field_destabilize_misconception';
   if (moveFamily === 'ask_diagnostic') {
-    return context.momentum < 0.2 && context.risk >= 0.5
-      ? 'field_low_momentum_diagnostic'
-      : 'field_route_diagnostic';
+    return context.momentum < 0.2 && context.risk >= 0.5 ? 'field_low_momentum_diagnostic' : 'field_route_diagnostic';
   }
   if (moveFamily === 'repair_recognition_rupture') return 'field_repair_recognition_rupture';
   if (moveFamily === 'block_assertion') return 'field_block_unsupported_assertion';
@@ -415,7 +496,9 @@ function candidateProjection({ moveFamily, turn, metrics, context }) {
       `trajectory risk ${round3(context.risk)}`,
       `script stage ${metrics.scriptStage || 'unknown'}`,
       ...(context.proofDebtActive ? ['proof-debt signal is active'] : []),
-      ...(context.currentReleaseDue && context.releaseTarget ? [`scheduled release ${context.releaseTarget} is due`] : []),
+      ...(context.currentReleaseDue && context.releaseTarget
+        ? [`scheduled release ${context.releaseTarget} is due`]
+        : []),
     ],
     sourceTriggerId: `t${turn}:field-planner:candidate:${moveFamily}`,
   };

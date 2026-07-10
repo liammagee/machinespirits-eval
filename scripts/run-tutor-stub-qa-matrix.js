@@ -12,65 +12,25 @@ import process from 'node:process';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import {
+  learnerProfileSuite,
+  learnerProfileSuiteIds,
+  learnerProfileSuiteNames,
+  normalizeLearnerProfileSuiteId,
+} from './tutor-stub-learner-profile-contracts.js';
+import {
+  normalizePolicyName,
+  normalizePolicySuiteId,
+  tutorStubPolicySuite,
+  tutorStubPolicySuiteNames,
+  tutorStubPolicySuitePolicies,
+} from './tutor-stub-policy-suites.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const DEFAULT_LEARNER_PROFILES = [
-  'diligent',
-  'answer_seeking',
-  'skeptical',
-  'overconfident',
-  'low_agency',
-  'memory_limited',
-];
-
-const STRESS_LEARNER_PROFILES = [
-  'premature_closure',
-  'proof_skipper',
-  'false_memory',
-  'contradiction_keeper',
-  'affective_resistant',
-  'low_trust_skeptic',
-];
-
-const PROFILE_SUITES = {
-  core: DEFAULT_LEARNER_PROFILES,
-  sentinel: ['diligent', 'proof_skipper', 'false_memory', 'affective_resistant'],
-  stress: STRESS_LEARNER_PROFILES,
-  all: [...DEFAULT_LEARNER_PROFILES, ...STRESS_LEARNER_PROFILES],
-};
-
-const POLICY_SUITES = {
-  focused: ['bland', 'dynamic', 'state', 'field', 'trajectory', 'dynamical_system', 'empirical_dynamical_system'],
-  adaptive: [
-    'dynamic',
-    'state',
-    'field',
-    'trajectory',
-    'dynamical_system',
-    'empirical_dynamical_system',
-    'continuous_dynamical_system',
-    'continuous_empirical_dynamical_system',
-  ],
-  controls: ['negative', 'bland', 'random'],
-  full: [
-    'negative',
-    'bland',
-    'random',
-    'dynamic',
-    'state',
-    'field',
-    'trajectory',
-    'dynamical_system',
-    'empirical_dynamical_system',
-    'continuous_dynamical_system',
-    'continuous_empirical_dynamical_system',
-  ],
-};
-
 const { values: args } = parseArgs({
   options: {
-    suite: { type: 'string', default: 'focused' },
+    suite: { type: 'string', default: 'core' },
     'profile-suite': { type: 'string', default: 'core' },
     profiles: { type: 'string', default: '' },
     policies: { type: 'string', default: '' },
@@ -113,10 +73,24 @@ function usage() {
   npm run tutor:stub:qa -- [options]
 
 Options:
-  --suite <focused|adaptive|controls|full>
-                         policy suite when --policies is omitted (default: focused)
-  --profile-suite <core|sentinel|stress|all>
+  --suite <controls|core|pressure|sentinel|headroom|adaptive|frontier|audit>
+                         policy suite when --policies is omitted (default: core)
+                         controls = bland/random/negative calibration
+                         core = routine baseline + discrete adaptive comparison
+                         pressure = field + negative screen for pressure-sensitive learners
+                         sentinel = representative five-policy discrimination ladder
+                         headroom = outcome contrast on discriminable stress profiles under a
+                                    binding cap (defaults --profile-suite sentinel and
+                                    --safety-turns 40 unless passed explicitly)
+                         adaptive = adaptive-only sweep without controls
+                         frontier = baseline + rich/continuous state policies
+                         audit = expensive all-policy sweep ("focused", "full", and "all" aliases accepted)
+  --profile-suite <core|sentinel|stress|audit>
                          learner profile suite when --profiles is omitted (default: core)
+                         core = routine policy robustness
+                         sentinel = cheap profile-discrimination screen
+                         stress = targeted failure-mode probes
+                         audit = expensive all-profile audit ("all" is accepted as an alias)
   --profiles <csv>       automated learner profiles
                          overrides --profile-suite
   --policies <csv>       explicit policies; overrides --suite
@@ -148,13 +122,6 @@ function positiveInt(value, name) {
   return parsed;
 }
 
-function normalizePolicyName(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/-/gu, '_');
-}
-
 function normalizeProfileName(value) {
   return String(value || '')
     .trim()
@@ -179,21 +146,40 @@ function resolvePath(value) {
 
 function policyList() {
   if (args.policies) return csv(args.policies).map(normalizePolicyName);
-  const suite = String(args.suite || 'focused')
-    .trim()
-    .toLowerCase();
-  if (!POLICY_SUITES[suite])
-    throw new Error(`Unknown --suite ${args.suite}. Known: ${Object.keys(POLICY_SUITES).join(', ')}`);
-  return POLICY_SUITES[suite];
+  const suite = normalizePolicySuiteId(args.suite || 'core');
+  const policies = tutorStubPolicySuitePolicies(suite);
+  if (!policies) {
+    throw new Error(
+      `Unknown --suite ${args.suite}. Known: ${tutorStubPolicySuiteNames({ includeAliases: true }).join(', ')}`,
+    );
+  }
+  return policies;
+}
+
+// The headroom suite exists to create outcome variance: discriminable stress
+// profiles + a binding cap. Without both, its contrast collapses back to the
+// all-policies-ground-at-the-floor ceiling, so resolve its companion defaults
+// unless the caller explicitly overrode them on the command line.
+function explicitCliFlag(name) {
+  return process.argv.some((token) => token === `--${name}` || token.startsWith(`--${name}=`));
+}
+
+function resolveHeadroomDefaults() {
+  if (args.policies || normalizePolicySuiteId(args.suite || 'core') !== 'headroom') return;
+  if (!args.profiles && !explicitCliFlag('profile-suite')) args['profile-suite'] = 'sentinel';
+  if (!explicitCliFlag('safety-turns')) args['safety-turns'] = '40';
 }
 
 function profileList() {
   if (!args.profiles) {
-    const suite = normalizeProfileName(args['profile-suite'] || 'core');
-    if (!PROFILE_SUITES[suite]) {
-      throw new Error(`Unknown --profile-suite ${args['profile-suite']}. Known: ${Object.keys(PROFILE_SUITES).join(', ')}`);
+    const suite = normalizeLearnerProfileSuiteId(args['profile-suite'] || 'core');
+    const profiles = learnerProfileSuiteIds(suite);
+    if (!profiles) {
+      throw new Error(
+        `Unknown --profile-suite ${args['profile-suite']}. Known: ${learnerProfileSuiteNames({ includeAliases: true }).join(', ')}`,
+      );
     }
-    return PROFILE_SUITES[suite];
+    return profiles;
   }
   const profiles = csv(args.profiles).map(normalizeProfileName);
   if (!profiles.length) throw new Error('--profiles must include at least one learner profile');
@@ -253,9 +239,53 @@ function autoEvalArgsForProfile({ profile, traceDir, policies }) {
   return command;
 }
 
+function buildPlanWarnings({ policySuite, profileSuite, profiles, policies, runs }) {
+  const warnings = [];
+  if (policySuite?.id === 'audit') {
+    warnings.push(
+      'audit runs every register policy, including controls and continuous policies; use it as an expensive periodic audit, not as the default policy comparison.',
+    );
+  }
+  if (policySuite?.id === 'adaptive') {
+    warnings.push(
+      'adaptive omits bland/random/negative controls; use core, frontier, or audit when same-run baselines matter.',
+    );
+  }
+  if (profileSuite?.id === 'audit') {
+    warnings.push(
+      'audit runs every core and stress profile; use it as an expensive periodic audit, not as the default policy comparison.',
+    );
+  }
+  if (profiles.includes('affective_resistant') && !policies.includes('negative')) {
+    warnings.push('affective_resistant separates best when the policy set includes a pressure arm such as negative.');
+  }
+  if (policySuite?.id === 'headroom') {
+    if (profileSuite?.id === 'core') {
+      warnings.push(
+        'headroom on the core profiles runs against near-clone learners (discrimination gate fail); use the sentinel or stress profile suites.',
+      );
+    }
+    if (args.turns === 'until-grounded' && positiveInt(args['safety-turns'], '--safety-turns') > 60) {
+      warnings.push(
+        'headroom needs a binding turn cap to create outcome variance; with --safety-turns above 60 every policy likely grounds at the ceiling again.',
+      );
+    }
+  }
+  const rowCount = profiles.length * policies.length * runs;
+  if (rowCount >= 100) {
+    warnings.push(
+      `this plan expands to ${rowCount} dialogue rows; dry-run first and prefer sentinel/core unless the audit is intentional.`,
+    );
+  }
+  return warnings;
+}
+
 function buildPlan({ rootDir = qaRootDir() } = {}) {
   const profiles = profileList();
   const policies = policyList();
+  const policySuite = args.policies ? null : tutorStubPolicySuite(args.suite || 'core');
+  const profileSuite = args.profiles ? null : learnerProfileSuite(args['profile-suite'] || 'core');
+  const runs = positiveInt(args.runs, '--runs');
   const jobs = profiles.map((profile, index) => {
     const traceDir = path.join(rootDir, safeSlug(profile));
     return {
@@ -268,14 +298,21 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
   return {
     schema: 'machinespirits.tutor-stub.qa-matrix-plan.v1',
     generatedAt: new Date().toISOString(),
-    suite: args.policies ? 'custom' : args.suite,
-    profileSuite: args.profiles ? 'custom' : normalizeProfileName(args['profile-suite'] || 'core'),
+    suite: args.policies ? 'custom' : policySuite.id,
+    policySuite: args.policies ? 'custom' : policySuite.id,
+    policySuitePurpose: args.policies ? 'Explicit policy list supplied by --policies.' : policySuite.purpose,
+    policySuiteCost: args.policies ? 'custom' : policySuite.cost,
+    policySuiteAliases: args.policies ? [] : policySuite.aliases,
+    profileSuite: args.profiles ? 'custom' : profileSuite.id,
+    profileSuitePurpose: args.profiles ? 'Explicit profile list supplied by --profiles.' : profileSuite.purpose,
+    profileSuiteCost: args.profiles ? 'custom' : profileSuite.cost,
+    profileSuiteAliases: args.profiles ? [] : profileSuite.aliases,
     dryRun: Boolean(args['dry-run']),
     rootDir: path.relative(ROOT, rootDir),
     profiles,
     policies,
     baselinePolicy: normalizePolicyName(args['baseline-policy']) || 'bland',
-    runs: positiveInt(args.runs, '--runs'),
+    runs,
     turns: args.turns,
     safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
     parallelism: positiveInt(args.parallelism, '--parallelism'),
@@ -283,7 +320,8 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
     analysisModel: args['analysis-model'],
     autoLearnerModel: args['auto-learner-model'],
     world: args.world,
-    expectedDialogueRows: profiles.length * policies.length * positiveInt(args.runs, '--runs'),
+    expectedDialogueRows: profiles.length * policies.length * runs,
+    warnings: buildPlanWarnings({ policySuite, profileSuite, profiles, policies, runs }),
     outputs: {
       plan: path.relative(ROOT, path.join(rootDir, 'qa-plan.json')),
       markdown: path.relative(ROOT, path.join(rootDir, 'qa-matrix.md')),
@@ -299,16 +337,23 @@ function renderPlanMarkdown(plan) {
     '',
     `Generated: ${plan.generatedAt}`,
     `Root: ${plan.rootDir}`,
-    `Suite: ${plan.suite}`,
+    `Policy suite: ${plan.policySuite}`,
+    `Policy suite purpose: ${plan.policySuitePurpose}`,
+    `Profile suite: ${plan.profileSuite}`,
+    `Profile suite purpose: ${plan.profileSuitePurpose}`,
     `Profiles: ${plan.profiles.join(', ')}`,
     `Policies: ${plan.policies.join(', ')}`,
     `Runs: ${plan.runs}`,
     `Expected dialogue rows: ${plan.expectedDialogueRows}`,
     `Dry run: ${plan.dryRun ? 'yes' : 'no'}`,
     '',
-    '| # | Profile | Trace Dir | Command |',
-    '|---:|---|---|---|',
   ];
+  if (plan.warnings.length) {
+    lines.push('Warnings:', '');
+    for (const warning of plan.warnings) lines.push(`- ${warning}`);
+    lines.push('');
+  }
+  lines.push('| # | Profile | Trace Dir | Command |', '|---:|---|---|---|');
   for (const job of plan.jobs) {
     lines.push(`| ${job.ordinal} | ${job.profile} | ${job.traceDir} | \`${job.command.join(' ')}\` |`);
   }
@@ -370,6 +415,7 @@ function main() {
     usage();
     return;
   }
+  resolveHeadroomDefaults();
   const rootDir = qaRootDir();
   const plan = buildPlan({ rootDir });
   if (args['print-plan']) {
@@ -378,6 +424,9 @@ function main() {
   }
 
   fs.mkdirSync(rootDir, { recursive: true });
+  for (const warning of plan.warnings) {
+    console.warn(`[qa-matrix] warning: ${warning}`);
+  }
   const planPath = path.join(rootDir, 'qa-plan.json');
   fs.writeFileSync(planPath, `${JSON.stringify(plan, null, 2)}\n`);
   console.log(`[qa-matrix] wrote ${planPath}`);

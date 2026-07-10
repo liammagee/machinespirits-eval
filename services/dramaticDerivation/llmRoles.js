@@ -607,6 +607,19 @@ function fieldPlannerLines(state, { enforce = false } = {}) {
   ];
 }
 
+// Instrumentation placebo block (field_report_only arm): the coupled-field
+// summary as pure context — no recommended move, no candidates, no authority.
+function fieldReportLines(state) {
+  if (!state || state.active !== true || state.nonLeakAudit?.ok !== true) return [];
+  const lines = Array.isArray(state.promptLines) ? state.promptLines : [];
+  return [
+    '',
+    'FIELD REPORT (runtime instrumentation; no recommendation, no proof-control authority):',
+    ...lines,
+    '- This block describes the current interaction field only. It recommends nothing and changes no obligations.',
+  ];
+}
+
 function didacticActFallbackLines(acts, turn) {
   if (!acts || acts.startTurn !== turn) return [];
   const closed = acts.closed?.[acts.closed.length - 1] || null;
@@ -2256,6 +2269,7 @@ export function makeLlmTutor(
     didacticMode = false,
     fieldPlanner = false,
     fieldPlannerEnforce = false,
+    fieldReportContext = false,
     conductPolicy = false,
     conductPolicyEnforce = false,
     conductProgressPolicy = false,
@@ -3003,6 +3017,8 @@ export function makeLlmTutor(
     }
     const fieldPlannerState =
       fieldPlannerEnabled && view.fieldPlanner?.active === true ? { ...view.fieldPlanner } : null;
+    const fieldReportState =
+      fieldReportContext && view.fieldReportContext?.active === true ? { ...view.fieldReportContext } : null;
     const didacticModeStateBase = didacticMode
       ? deriveDidacticModeState({
           currentObject: didacticCurrentObject,
@@ -3156,6 +3172,7 @@ export function makeLlmTutor(
     }
     const didacticModeSection = didacticModeLines(didacticModeState);
     const fieldPlannerSection = fieldPlannerLines(fieldPlannerState, { enforce: fieldPlannerEnforce });
+    const fieldReportSection = fieldReportLines(fieldReportState);
     const actDidacticFallbackSection = didacticActFallbackLines(view.acts, view.turn);
     const castLayerSection = castLayerLines(castState, 'tutor');
     const learnerTransformationSection = learnerTransformationLines(learnerTransformationState);
@@ -3480,6 +3497,7 @@ export function makeLlmTutor(
         ...castLayerSection,
         ...actDidacticFallbackSection,
         ...didacticModeSection,
+        ...fieldReportSection,
         ...fieldPlannerSection,
         ...learnerTransformationSection,
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
@@ -3539,6 +3557,7 @@ export function makeLlmTutor(
         ...publicRegisterTurnLines(activeRegisterName, publicRegister),
         ...(visibleConsolidation?.lines.length ? ['', ...visibleConsolidation.lines] : []),
         ...didacticModeSection,
+        ...fieldReportSection,
         ...fieldPlannerSection,
         ...learnerTransformationSection,
         ...strategyLedgerSection,

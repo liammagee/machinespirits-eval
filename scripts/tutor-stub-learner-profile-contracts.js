@@ -1,4 +1,4 @@
-const CONTRACT_SCHEMA = 'machinespirits.tutor-stub.learner-profile-contract.v1';
+const CONTRACT_SCHEMA = 'machinespirits.tutor-stub.learner-profile-contract.v2';
 
 const PUBLIC_TURN_RULES = [
   'Write only the learner public turn, not analysis.',
@@ -20,6 +20,7 @@ function contract({
   dag,
   repair,
   gate,
+  observability = null,
   publicRules = [],
 }) {
   return {
@@ -39,6 +40,17 @@ function contract({
     },
     traceSignatureTargets: signature,
     dagSignatureTargets: dag,
+    observabilityContract: observability
+      ? {
+          eligiblePolicies: observability.eligiblePolicies || ['*'],
+          markerGroups: observability.markerGroups || [],
+          markerClauses: observability.markerClauses || [observability.markerGroups || []],
+          match: observability.match || 'all',
+          eligibility: observability.eligibility || 'all_turns',
+          mustShowByTurn: observability.mustShowByTurn ?? stableFailure.mustShowByTurn,
+          minEligibleRate: observability.minEligibleRate ?? stableFailure.mustRecurMinRate,
+        }
+      : null,
     repairModel: repair,
     discriminationGate: gate,
   };
@@ -329,10 +341,20 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       'Do not consistently link evidence to rule.',
       'Do not self-correct unless the tutor explicitly names the missing bridge.',
     ],
+    publicRules: [
+      'On at least four of the first eight learner turns, state a polished conclusion but omit the bridge that licenses it.',
+      'On omission turns, do not use because, therefore, since, so, or an if-then warrant; give the claim as if the clue were enough.',
+      'An explicit missing-warrant correction may improve the next turn once, but skip a bridge again later rather than becoming diligent.',
+    ],
     signature: {
       requestType: { stepwise_support_request: [0.45, 0.75], conceptual_clarity_request: [0.1, 0.35] },
       discourseMove: { claim: [0.45, 0.75], inference: [0, 0.25], evidence_adoption: [0, 0.2] },
-      evidenceUse: { overleaps_evidence: [0.35, 0.65], cites_public_evidence: [0.15, 0.4], links_evidence_to_rule: [0, 0.25] },
+      evidenceUse: {
+        omits_warrant: [0.35, 0.65],
+        overleaps_evidence: [0.05, 0.35],
+        cites_public_evidence: [0.05, 0.35],
+        links_evidence_to_rule: [0, 0.25],
+      },
       epistemicStance: { overconfident: [0.25, 0.55], exploratory: [0.15, 0.35], grounded: [0, 0.25] },
       agency: { attempting: [0.45, 0.75], steering: [0, 0.25] },
       scoreBands: { conceptualScore: [2.5, 4], epistemicReadinessScore: [2, 3.5] },
@@ -344,7 +366,15 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       expectedBottlenecks: ['learner_integration_gap', 'assertion_gap'],
     },
     repair: { firstCorrection: 'partial', repeatedCorrection: 'improves wording before improving warrant', maxFullRepairsPer8Turns: 1 },
-    gate: { maxCosineToDiligent: 0.9, expectedNearestNeighbor: 'overconfident' },
+    observability: {
+      eligiblePolicies: ['*'],
+      markerClauses: [
+        [{ field: 'evidenceUse', values: ['omits_warrant'] }],
+        [{ field: 'evidenceUse', values: ['overleaps_evidence'] }],
+        [{ field: 'epistemicStance', values: ['overconfident'] }],
+      ],
+    },
+    gate: { maxCosineToDiligent: 0.9, minSignatureTargetPassRate: 0.4, expectedNearestNeighbor: 'overconfident' },
   }),
 
   false_memory: contract({
@@ -388,14 +418,15 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       requestType: { conceptual_clarity_request: [0.15, 0.4], stepwise_support_request: [0.1, 0.35] },
       discourseMove: { claim: [0.45, 0.75], repair_request: [0, 0.2], evidence_adoption: [0, 0.18] },
       evidenceUse: {
-        repeats_setup: [0.35, 0.65],
+        distorts_public_evidence: [0.35, 0.65],
+        repeats_setup: [0.05, 0.3],
         revises_from_evidence: [0.25, 0.55],
-        overleaps_evidence: [0.25, 0.55],
+        overleaps_evidence: [0.05, 0.3],
         links_evidence_to_rule: [0, 0.18],
       },
       epistemicStance: { overconfident: [0.25, 0.55], confused: [0.15, 0.4], grounded: [0, 0.2] },
       agency: { attempting: [0.35, 0.65], self_correcting: [0.1, 0.35] },
-      scoreBands: { conceptualScore: [1.8, 3.5], epistemicReadinessScore: [1.6, 3.4] },
+      scoreBands: { conceptualScore: [3, 4.5], epistemicReadinessScore: [2, 4] },
     },
     dag: {
       coverageVelocity: 'uneven',
@@ -404,7 +435,11 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       expectedBottlenecks: ['assertion_gap', 'learner_integration_gap'],
     },
     repair: { firstCorrection: 'self_corrects_if_record_contrasted', repeatedCorrection: 'introduces a smaller distorted detail later', maxFullRepairsPer8Turns: 1 },
-    gate: { maxCosineToDiligent: 0.9, expectedNearestNeighbor: 'memory_limited' },
+    observability: {
+      eligiblePolicies: ['*'],
+      markerClauses: [[{ field: 'evidenceUse', values: ['distorts_public_evidence'] }]],
+    },
+    gate: { maxCosineToDiligent: 0.9, minSignatureTargetPassRate: 0.4, expectedNearestNeighbor: 'memory_limited' },
   }),
 
   contradiction_keeper: contract({
@@ -454,7 +489,7 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     },
     stableFailure: {
       mustShowByTurn: 2,
-      mustRecurMinRate: 0.6,
+      mustRecurMinRate: 0.5,
       description: 'Treat direct or negative tutor moves as face pressure; the first pressure events should be pressure-only responses, not pressure plus useful evidence.',
     },
     triggers: [
@@ -484,15 +519,15 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     ],
     signature: {
       requestType: {
-        authority_refusal_or_status_challenge: [0.3, 0.6],
-        resistance_or_low_agency: [0.3, 0.65],
-        stepwise_support_request: [0, 0.25],
+        authority_refusal_or_status_challenge: [0.25, 0.6],
+        resistance_or_low_agency: [0, 0.3],
+        stepwise_support_request: [0, 0.35],
       },
-      discourseMove: { challenge: [0.45, 0.75], repair_request: [0.25, 0.55], affective_signal: [0.2, 0.5], claim: [0, 0.12] },
-      evidenceUse: { none: [0.45, 0.75], repeats_setup: [0.15, 0.4], links_evidence_to_rule: [0, 0.1] },
-      epistemicStance: { resistant: [0.55, 0.85], confused: [0.05, 0.25], exploratory: [0, 0.15], grounded: [0, 0.1] },
-      agency: { passive: [0.3, 0.6], steering: [0.25, 0.55], attempting: [0, 0.12] },
-      scoreBands: { conceptualScore: [1.2, 2.8], epistemicReadinessScore: [1, 2.8] },
+      discourseMove: { challenge: [0.15, 0.45], repair_request: [0.15, 0.45], affective_signal: [0, 0.3], claim: [0, 0.15] },
+      evidenceUse: { none: [0.4, 0.7], repeats_setup: [0, 0.25], links_evidence_to_rule: [0.15, 0.45] },
+      epistemicStance: { resistant: [0.25, 0.6], reflective: [0.15, 0.5], grounded: [0.2, 0.5] },
+      agency: { passive: [0, 0.25], steering: [0.35, 0.7], attempting: [0.15, 0.5] },
+      scoreBands: { conceptualScore: [2.5, 4.2], epistemicReadinessScore: [2.5, 4.5] },
     },
     dag: {
       coverageVelocity: 'stalls_under_pressure',
@@ -501,7 +536,24 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       expectedBottlenecks: ['release_or_pacing_gap', 'learner_integration_gap'],
     },
     repair: { firstCorrection: 'pressure_only_pushback', repeatedCorrection: 're-engages only after explicit face repair', maxFullRepairsPer8Turns: 1 },
-    gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'low_agency' },
+    observability: {
+      eligiblePolicies: ['negative'],
+      eligibility: 'public_tutor_pressure',
+      markerClauses: [
+        [
+          {
+            field: 'requestType',
+            values: ['authority_refusal_or_status_challenge', 'resistance_or_low_agency'],
+          },
+          { field: 'evidenceUse', values: ['none'] },
+        ],
+        [
+          { field: 'discourseMove', values: ['challenge', 'repair_request', 'affective_signal'] },
+          { field: 'evidenceUse', values: ['none'] },
+        ],
+      ],
+    },
+    gate: { maxCosineToDiligent: 0.88, minSignatureTargetPassRate: 0.4, expectedNearestNeighbor: 'low_agency' },
   }),
 
   low_trust_skeptic: contract({
@@ -541,6 +593,63 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
   }),
 });
 
+const CORE_LEARNER_PROFILE_IDS = Object.freeze([
+  'diligent',
+  'answer_seeking',
+  'skeptical',
+  'overconfident',
+  'low_agency',
+  'memory_limited',
+]);
+
+const STRESS_LEARNER_PROFILE_IDS = Object.freeze([
+  'premature_closure',
+  'proof_skipper',
+  'false_memory',
+  'contradiction_keeper',
+  'affective_resistant',
+  'low_trust_skeptic',
+]);
+
+export const AUTO_LEARNER_PROFILE_SUITES = Object.freeze({
+  core: Object.freeze({
+    id: 'core',
+    label: 'Core robustness',
+    purpose: 'Routine policy robustness across the ordinary learner profiles used in headline QA reports.',
+    cost: 'standard',
+    ids: CORE_LEARNER_PROFILE_IDS,
+    aliases: Object.freeze([]),
+  }),
+  sentinel: Object.freeze({
+    id: 'sentinel',
+    label: 'Profile sentinel',
+    purpose: 'Cheap discrimination screen before larger learner-profile comparisons.',
+    cost: 'screen',
+    ids: Object.freeze(['diligent', 'proof_skipper', 'false_memory', 'affective_resistant']),
+    aliases: Object.freeze([]),
+  }),
+  stress: Object.freeze({
+    id: 'stress',
+    label: 'Stress profiles',
+    purpose: 'Targeted failure-mode probes; use after the sentinel shows separable behavior.',
+    cost: 'targeted',
+    ids: STRESS_LEARNER_PROFILE_IDS,
+    aliases: Object.freeze([]),
+  }),
+  audit: Object.freeze({
+    id: 'audit',
+    label: 'Full profile audit',
+    purpose: 'Expensive all-profile audit; not a routine policy-comparison default.',
+    cost: 'expensive',
+    ids: Object.freeze([...CORE_LEARNER_PROFILE_IDS, ...STRESS_LEARNER_PROFILE_IDS]),
+    aliases: Object.freeze(['all']),
+  }),
+});
+
+const AUTO_LEARNER_PROFILE_SUITE_ALIASES = Object.freeze({
+  all: 'audit',
+});
+
 function title(value) {
   return String(value || '')
     .replace(/_/gu, ' ')
@@ -578,8 +687,43 @@ export function normalizeLearnerProfileId(value) {
     .replace(/-/gu, '_');
 }
 
+export function normalizeLearnerProfileSuiteId(value) {
+  const id = normalizeLearnerProfileId(value || 'core');
+  return AUTO_LEARNER_PROFILE_SUITE_ALIASES[id] || id;
+}
+
 export function learnerProfileIds() {
   return Object.keys(AUTO_LEARNER_PROFILE_CONTRACTS);
+}
+
+export function learnerProfileSuite(id) {
+  const suite = AUTO_LEARNER_PROFILE_SUITES[normalizeLearnerProfileSuiteId(id)];
+  if (!suite) return null;
+  return {
+    ...suite,
+    ids: [...suite.ids],
+    aliases: [...(suite.aliases || [])],
+  };
+}
+
+export function learnerProfileSuiteIds(id) {
+  const suite = learnerProfileSuite(id);
+  return suite ? suite.ids : null;
+}
+
+export function learnerProfileSuiteNames({ includeAliases = false } = {}) {
+  const names = Object.keys(AUTO_LEARNER_PROFILE_SUITES);
+  if (!includeAliases) return names;
+  return [...names, ...Object.keys(AUTO_LEARNER_PROFILE_SUITE_ALIASES)];
+}
+
+export function learnerProfileSuiteListText() {
+  return Object.values(AUTO_LEARNER_PROFILE_SUITES)
+    .map((suite) => {
+      const aliasText = suite.aliases.length ? ` (alias: ${suite.aliases.join(', ')})` : '';
+      return `${suite.id}${aliasText}: ${suite.label}; ${suite.purpose} Profiles: ${suite.ids.join(', ')}`;
+    })
+    .join('\n');
 }
 
 export function learnerProfileContract(id) {
@@ -604,6 +748,7 @@ export function learnerProfileContractSummary(id) {
     stableFailure: profile.behaviorContract.stableFailure,
     traceSignatureTargets: profile.traceSignatureTargets,
     dagSignatureTargets: profile.dagSignatureTargets,
+    observabilityContract: profile.observabilityContract,
     repairModel: profile.repairModel,
     discriminationGate: profile.discriminationGate,
   };
@@ -658,10 +803,12 @@ export function learnerProfilePrompt(id) {
 }
 
 export function learnerProfileListText() {
-  return learnerProfileIds()
+  const suites = ['Profile suites:', learnerProfileSuiteListText(), ''].join('\n');
+  const profiles = learnerProfileIds()
     .map((id) => {
       const profile = AUTO_LEARNER_PROFILE_CONTRACTS[id];
       return `${id}: ${title(profile.family)} - ${profile.intent.shortName}; ${profile.intent.failureOperator}`;
     })
     .join('\n');
+  return `${suites}Profiles:\n${profiles}`;
 }

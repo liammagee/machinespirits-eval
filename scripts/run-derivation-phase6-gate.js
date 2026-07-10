@@ -65,7 +65,11 @@ const ARM_REGISTRY = Object.freeze({
   field_report_only: Object.freeze({
     key: 'field_report_only',
     label: 'field_report_only',
-    flags: Object.freeze({}),
+    // Instrumentation placebo: the coupled-field summary enters the tutor
+    // context with no planner authority. Must NOT be flag-identical to
+    // baseline, or decision rule 2 (improvement not reproduced by
+    // field_report_only) passes vacuously.
+    flags: Object.freeze({ 'field-report-context': true }),
   }),
   field_planner_advisory: Object.freeze({
     key: 'field_planner_advisory',
@@ -339,6 +343,14 @@ function round3(value) {
   return Number.isFinite(number) ? Number(number.toFixed(3)) : null;
 }
 
+function fieldReportContextMetrics(result) {
+  const rows = Array.isArray(result?.fieldReportContext) ? result.fieldReportContext : [];
+  return {
+    count: rows.length,
+    nonLeakAuditFailures: rows.filter((row) => row.nonLeakAuditOk === false).length,
+  };
+}
+
 function fieldPlannerMetrics(result, dialogueReport) {
   const rows = Array.isArray(result?.fieldPlanner) ? result.fieldPlanner : [];
   const efficacies = rows.map((row) => row.outcome?.efficacy || 'unknown');
@@ -353,7 +365,8 @@ function fieldPlannerMetrics(result, dialogueReport) {
     .filter(Number.isFinite);
   return {
     count: rows.length,
-    movementObserved: rows.filter((row) => ['movement_observed', 'closure_realized'].includes(row.outcome?.efficacy)).length,
+    movementObserved: rows.filter((row) => ['movement_observed', 'closure_realized'].includes(row.outcome?.efficacy))
+      .length,
     noImmediateMovement: rows.filter((row) => row.outcome?.efficacy === 'no_immediate_movement').length,
     efficacyCounts: countBy(efficacies),
     selectedCounts: countBy(selected),
@@ -380,8 +393,14 @@ function rowAnalysis(row, exitCode = null) {
     (diagnosis?.verdict === 'lucky_leap_only' ? 1 : 0);
   const fabricated = (diagnosis?.fabricatedFacts || []).length;
   const fieldPlanner = fieldPlannerMetrics(result, dialogueReport);
+  const fieldReportContext = fieldReportContextMetrics(result);
   const safetyFailures =
-    releaseFailures + lucky + fabricated + Number(fieldPlanner.nonLeakAuditFailures || 0) + (exitCode ? 1 : 0);
+    releaseFailures +
+    lucky +
+    fabricated +
+    Number(fieldPlanner.nonLeakAuditFailures || 0) +
+    Number(fieldReportContext.nonLeakAuditFailures || 0) +
+    (exitCode ? 1 : 0);
   return {
     ...row,
     relRunDir: rel(row.runDir),
@@ -407,6 +426,7 @@ function rowAnalysis(row, exitCode = null) {
     luckyLeapSignals: lucky,
     fabricatedFacts: fabricated,
     fieldPlanner,
+    fieldReportContext,
     usage: diagnosis?.usage
       ? {
           calls: diagnosis.usage.calls,
@@ -576,10 +596,7 @@ export function renderGateMarkdown(report) {
 }
 
 function renderGateHtml(report, markdown) {
-  const escaped = markdown
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
+  const escaped = markdown.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   return `<!doctype html>
 <html lang="en">
 <head>

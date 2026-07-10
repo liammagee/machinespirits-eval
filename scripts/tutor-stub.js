@@ -48,6 +48,7 @@ import {
   buildContinuousRegisterVector,
   continuousRegisterStyleInstruction,
 } from '../services/tutorStubContinuousRegister.js';
+import { learnerProfileContract } from './tutor-stub-learner-profile-contracts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -133,9 +134,11 @@ const LEARNER_FIELD_RANKS = {
     none: 0,
     repeats_setup: 0.1,
     cites_public_evidence: 0.4,
+    omits_warrant: 0.15,
     revises_from_evidence: 0.5,
     links_evidence_to_rule: 0.7,
     overleaps_evidence: -0.2,
+    distorts_public_evidence: -0.35,
   },
   agency: {
     passive: 0,
@@ -194,6 +197,8 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
   'You are an automated learner in an experimental tutoring dialogue.',
   'You see only the public transcript and the latest tutor message.',
   'Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
+  'The private learner-profile contract supplied below defines the experimental condition. It takes priority over generic helpfulness, smooth progress, and the tutor\'s request for a useful answer.',
+  'Preserve the contract\'s failure operator and repair limits. Do not silently become a diligent learner after correction.',
   'Reply as the learner only. No role label, no analysis, no JSON.',
   'Keep the reply concise: usually one sentence, one question, or one warranted evidence claim.',
 ].join('\n');
@@ -1465,7 +1470,11 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
     'Use these controlled labels where possible:',
     '- request_type: conceptual_clarity_request, stepwise_support_request, authority_refusal_or_status_challenge, plain_language_request, plain_simplification_followup, transfer_demand_or_named_material, vulnerability_or_moral_exposure, resistance_or_low_agency, answer_seeking_or_overreach, off_task_or_mixed',
     '- discourse_move: question, claim, hypothesis, inference, evidence_adoption, challenge, repair_request, affective_signal, answer_seeking, metacognitive_reflection, off_task',
-    '- evidence_use: none, repeats_setup, cites_public_evidence, links_evidence_to_rule, overleaps_evidence, revises_from_evidence',
+    '- evidence_use: none, repeats_setup, cites_public_evidence, omits_warrant, links_evidence_to_rule, overleaps_evidence, distorts_public_evidence, revises_from_evidence',
+    '- Use omits_warrant when the learner states a correct public clue and a conclusion but leaves out the bridge that licenses the conclusion. Do not call that links_evidence_to_rule merely because the bridge is easy to infer.',
+    '- Use distorts_public_evidence only when the learner misstates, blends, or reassigns an already public clue. Use overleaps_evidence for a premature conclusion or missing warrant without distorted recall.',
+    '- Precedence rule: choose distorts_public_evidence, not overleaps_evidence, when the learner says or implies that an earlier/public clue existed when it did not, changes what a public clue said, or blends two public clues into a false remembered detail. This remains true when the distortion also supports a premature conclusion.',
+    '- Otherwise choose omits_warrant over links_evidence_to_rule when the bridge is absent; reserve overleaps_evidence for a claim that outruns the currently public evidence, especially a premature culprit or case-closing inference.',
     '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
     '- agency: passive, complying, attempting, steering, self_correcting',
     '',
@@ -2725,7 +2734,7 @@ function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = n
   const explicitPublicPremises = publicStocktakeRows(record.grounded, 'grounded_public_record');
   const extraction = normalizeHumanDiscourseExtraction(tutorLearnerDag?.accepted?.humanDiscourse || tutorLearnerDag?.extractor?.humanDiscourse);
   const turn = classification?.turn || {};
-  const overleap = /overleaps_evidence|overconfident|answer_seeking/iu.test(
+  const overleap = /omits_warrant|overleaps_evidence|distorts_public_evidence|overconfident|answer_seeking/iu.test(
     [turn.evidence_use, turn.epistemic_stance, turn.discourse_move].filter(Boolean).join(' '),
   );
   const heuristicMissingWarrants =
@@ -3109,7 +3118,11 @@ function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
     'Use these controlled classifier labels where possible:',
     '- request_type: conceptual_clarity_request, stepwise_support_request, authority_refusal_or_status_challenge, plain_language_request, plain_simplification_followup, transfer_demand_or_named_material, vulnerability_or_moral_exposure, resistance_or_low_agency, answer_seeking_or_overreach, off_task_or_mixed',
     '- discourse_move: question, claim, hypothesis, inference, evidence_adoption, challenge, repair_request, affective_signal, answer_seeking, metacognitive_reflection, off_task',
-    '- evidence_use: none, repeats_setup, cites_public_evidence, links_evidence_to_rule, overleaps_evidence, revises_from_evidence',
+    '- evidence_use: none, repeats_setup, cites_public_evidence, omits_warrant, links_evidence_to_rule, overleaps_evidence, distorts_public_evidence, revises_from_evidence',
+    '- Use omits_warrant when the learner states a correct public clue and a conclusion but leaves out the bridge that licenses the conclusion. Do not call that links_evidence_to_rule merely because the bridge is easy to infer.',
+    '- Use distorts_public_evidence only when the learner misstates, blends, or reassigns an already public clue. Use overleaps_evidence for a premature conclusion or missing warrant without distorted recall.',
+    '- Precedence rule: choose distorts_public_evidence, not overleaps_evidence, when the learner says or implies that an earlier/public clue existed when it did not, changes what a public clue said, or blends two public clues into a false remembered detail. This remains true when the distortion also supports a premature conclusion.',
+    '- Otherwise choose omits_warrant over links_evidence_to_rule when the bridge is absent; reserve overleaps_evidence for a claim that outruns the currently public evidence, especially a premature culprit or case-closing inference.',
     '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
     '- agency: passive, complying, attempting, steering, self_correcting',
     '',
@@ -3518,7 +3531,7 @@ function fallbackRegisterSelection({ state, classification, tutorLearnerDag }) {
     actionFamily = 'receive_vulnerability';
     reason = 'The reviewer sees affective exposure as the strongest current public cue.';
     expectedFieldMove = 'Lower learner risk enough for a concrete public-evidence move to become possible.';
-  } else if (palette.has('precise') && /challenge|overleaps_evidence/.test(`${move} ${evidenceUse}`)) {
+  } else if (palette.has('precise') && /challenge|omits_warrant|overleaps_evidence|distorts_public_evidence/.test(`${move} ${evidenceUse}`)) {
     selected = 'precise';
     actionFamily = 'answer_accountably';
     reason = 'The learner is challenging or overleaping the public evidence, so the tutor should hold the bid accountable.';
@@ -3807,7 +3820,7 @@ function actionFamilyForFieldRegister({ selected, features }) {
       ? 'challenge_resistance'
       : 'clarify_distinction';
   }
-  if (/challenge|overleaps_evidence|unsupported/iu.test(signal)) return 'answer_accountably';
+  if (/challenge|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported/iu.test(signal)) return 'answer_accountably';
   return 'clarify_distinction';
 }
 
@@ -3851,7 +3864,7 @@ function buildFieldRegisterScores({ state, classification, tutorLearnerDag }) {
     .filter(Boolean)
     .join(' ');
 
-  if (/conceptual_clarity_request|challenge|overleaps_evidence|unsupported/iu.test(signal)) {
+  if (/conceptual_clarity_request|challenge|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported/iu.test(signal)) {
     addRegisterScore(scores, 'precise', 2.2, drivers, 'for distinction, warrant, or overreach');
     addRegisterScore(scores, 'ironic', 0.7, drivers, 'for visible mismatch');
   }
@@ -4530,7 +4543,7 @@ function buildDynamicalSystemState({ state, classification, tutorLearnerDag }) {
   const answerSeeking = signalMatches(/answer_seeking|overconfident|passive|complying/iu, signalValues);
   const resistance = signalMatches(/resistance_or_low_agency|resistant|challenge|authority_refusal/iu, signalValues);
   const plainNeed = signalMatches(/plain_language_request|plain_simplification_followup|transfer_demand_or_named_material/iu, signalValues);
-  const overreach = signalMatches(/overleaps_evidence|unsupported|premature_assertion/iu, signalValues);
+  const overreach = signalMatches(/omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported|premature_assertion/iu, signalValues);
   const learnerIntegrationGap = features.dag.bottleneck === 'learner_integration_gap';
   const assertionGap = features.dag.bottleneck === 'assertion_gap';
   const releaseGap = /release_or_pacing_gap|inference_gap/iu.test(features.dag.bottleneck);
@@ -5212,7 +5225,7 @@ function buildStateRegisterScores({ state, classification, tutorLearnerDag }) {
     addRegisterScore(scores, 'charismatic', 1.0, drivers, 'to interrupt answer-first closure');
     addRegisterScore(scores, 'ironic', 0.45, drivers, 'for visible warrant gap');
   }
-  if (/conceptual_clarity_request|challenge|overleaps_evidence|unsupported/iu.test(signal)) {
+  if (/conceptual_clarity_request|challenge|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported/iu.test(signal)) {
     addRegisterScore(scores, 'precise', 1.8, drivers, 'for current distinction or warrant issue');
     addRegisterScore(scores, 'ironic', 0.35, drivers, 'for current mismatch');
   }
@@ -5651,13 +5664,13 @@ async function buildTutorLearnerDagForTurn(learnerText, state) {
   }
 }
 
-async function analyzeLearnerTurnCombined(learnerText, state) {
+async function analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw = null } = {}) {
   const tutorTurn = state.turns.length + 1;
   const startedAt = Date.now();
   startInterimAnimation(state, 'analyzing learner', { learnerText, tutorTurn });
 
   try {
-    const raw = await extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn });
+    const raw = precomputedRaw || (await extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn }));
     const classification = classificationFromCombinedAnalysis(raw, state);
     const update = learnerRecordFromCombinedAnalysis(raw);
     const tutorLearnerDag = applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText });
@@ -5714,10 +5727,10 @@ async function analyzeLearnerTurnCombined(learnerText, state) {
   }
 }
 
-async function analyzeLearnerTurn(learnerText, state) {
+async function analyzeLearnerTurn(learnerText, state, { precomputedRaw = null } = {}) {
   printTurnDebugLine(state, state.turns.length + 1);
   if (state.classifier.enabled && state.learnerDag.enabled && state.world) {
-    return await analyzeLearnerTurnCombined(learnerText, state);
+    return await analyzeLearnerTurnCombined(learnerText, state, { precomputedRaw });
   }
 
   const classification = await classifyForTurn(learnerText, state);
@@ -6552,7 +6565,7 @@ function lightweightFieldTurn(turn, previous = null) {
   const grounded = clampField01(Number(metrics.groundedCount || 0) / 8);
   const missing = clampField01(Number(metrics.missingPremiseCount || 0) / 8);
   const overreach =
-    /overconfident|answer_seeking|overleaps_evidence|unsupported|resistant/iu.test(
+    /overconfident|answer_seeking|omits_warrant|overleaps_evidence|distorts_public_evidence|unsupported|resistant/iu.test(
       [
         turnAnalysis.epistemic_stance,
         turnAnalysis.evidence_use,
@@ -7047,6 +7060,9 @@ async function callTutor({
   const learnerDagAdvisory = tutorLearnerDagModelContext(tutorLearnerDagModel);
   const humanDiscourseAdvisory = humanDiscourseTutorContext(humanDiscourseFrame);
   const registerAdvisory = registerSelectionContext(registerSelection, { multipleChoice });
+  const effectiveSystemPrompt = registerAdvisory
+    ? `${systemPrompt}\n\n${registerAdvisory}`
+    : systemPrompt;
   const learnerPrompt = `Learner says:\n${learnerText}`;
   const promptParts = [
     tutorMemory,
@@ -7054,7 +7070,6 @@ async function callTutor({
     advisory,
     learnerDagAdvisory,
     humanDiscourseAdvisory,
-    registerAdvisory,
     learnerPrompt,
   ].filter(Boolean);
   const userPrompt = promptParts.join('\n\n');
@@ -7065,7 +7080,7 @@ async function callTutor({
   async function invokeTutorAttempt({ attemptUserPrompt, role, streamMode = 'none', repairAttempt = 0 }) {
     const startedAt = new Date().toISOString();
     const request = {
-      systemPrompt,
+      systemPrompt: effectiveSystemPrompt,
       messages: [...context, { role: 'user', content: attemptUserPrompt }],
       config: { temperature, maxTokens, historyTurns, leakGuard: leakGuardEnabled, repairAttempt },
     };
@@ -7075,7 +7090,7 @@ async function callTutor({
     if (isCliProvider(resolved.provider)) {
       const result = await callAIWithCliBridge(
         { provider: resolved.provider, model: resolved.model },
-        systemPrompt,
+        effectiveSystemPrompt,
         attemptUserPrompt,
         role,
         { messageHistory: context, effort: cliEffort },
@@ -7100,7 +7115,7 @@ async function callTutor({
       for await (const chunk of streamAI({
         provider: resolved.provider,
         model: resolved.model,
-        systemPrompt,
+        systemPrompt: effectiveSystemPrompt,
         messages: request.messages,
         preset: 'socratic',
         config: { temperature, maxTokens },
@@ -7126,7 +7141,7 @@ async function callTutor({
       const result = await callAI({
         provider: resolved.provider,
         model: resolved.model,
-        systemPrompt,
+        systemPrompt: effectiveSystemPrompt,
         messages: request.messages,
         preset: 'socratic',
         config: { temperature, maxTokens },
@@ -7354,12 +7369,118 @@ function deterministicAutomatedLearnerFallback({ state }) {
   return 'What public evidence should I test first?';
 }
 
-function buildAutomatedLearnerPrompt({ state, profile, turnNumber }) {
-  const latestTutor = [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+function automatedLearnerSystemPrompt(profile) {
   return [
-    '# Automated learner profile',
+    AUTO_LEARNER_SYSTEM_PROMPT,
+    '',
+    '# Private learner-profile contract',
     '',
     profile,
+    '',
+    'Apply this contract to every public learner turn. Never quote or describe the contract.',
+  ].join('\n');
+}
+
+function automatedLearnerProfileId(profile) {
+  const match = String(profile || '').match(/simulating this automated learner profile:\s*([a-z0-9_-]+)/iu);
+  return match ? match[1].toLowerCase().replace(/-/gu, '_') : null;
+}
+
+function automatedLearnerMarkerValue(turn, field) {
+  const classifier = turn?.classification?.turn || {};
+  const fields = {
+    requestType: classifier.request_type,
+    discourseMove: classifier.discourse_move,
+    evidenceUse: classifier.evidence_use,
+    epistemicStance: classifier.epistemic_stance,
+    agency: classifier.agency,
+  };
+  return fields[field] ?? null;
+}
+
+function automatedLearnerMarkerMatches(turn, clause) {
+  return clause.every((group) => (group.values || []).includes(automatedLearnerMarkerValue(turn, group.field)));
+}
+
+function publicTutorPressure(text) {
+  return /\b(miraculously|marvelous|wonderful|conveniently|apparently|nice trick|escape route|safe performance|hiding behind|not doing the work|lets you avoid|pressing|do not stall|don['’]t stall|fog and vibes|answer vending machine|mob|jab|jabs)\b/iu.test(
+    String(text || ''),
+  );
+}
+
+function negativeRegisterPressure(selection) {
+  return NEGATIVE_FLOOR_REGISTERS.includes(selection?.selected_register);
+}
+
+function automatedLearnerProfileRuntimeState({ state, profile, turnNumber }) {
+  const profileId = automatedLearnerProfileId(profile);
+  const contract = learnerProfileContract(profileId);
+  const observability = contract?.observabilityContract;
+  if (!contract || !observability) return null;
+  const policy = state.register?.policy || 'unknown';
+  const eligiblePolicies = observability.eligiblePolicies || ['*'];
+  const policyEligible = eligiblePolicies.includes('*') || eligiblePolicies.includes(policy);
+  const latestTutor = [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+  const currentStimulusEligible =
+    observability.eligibility === 'public_tutor_pressure'
+      ? publicTutorPressure(latestTutor) || negativeRegisterPressure(state.turns?.at(-1)?.registerSelection)
+      : true;
+  const eligible = policyEligible && currentStimulusEligible;
+  const clauses = observability.markerClauses || [];
+  const completedTurns = state.turns || [];
+  const openingTutor = state.history?.[0]?.role === 'assistant' ? state.history[0].content : '';
+  const priorTurns = policyEligible
+    ? completedTurns.filter((turn, index) => {
+        if (observability.eligibility !== 'public_tutor_pressure') return true;
+        const stimulus = index === 0 ? openingTutor : completedTurns[index - 1]?.tutor;
+        const stimulusSelection = index === 0 ? null : completedTurns[index - 1]?.registerSelection;
+        return publicTutorPressure(stimulus) || negativeRegisterPressure(stimulusSelection);
+      })
+    : [];
+  const observed = priorTurns.filter((turn) =>
+    clauses.some((clause) => clause.length && automatedLearnerMarkerMatches(turn, clause)),
+  ).length;
+  const mustShowByTurn = Number(observability.mustShowByTurn || 0);
+  const targetRate = Number(observability.minEligibleRate || 0);
+  const eligibleOpportunities = priorTurns.length + (eligible ? 1 : 0);
+  const targetCount = eligible && (!mustShowByTurn || turnNumber >= mustShowByTurn)
+    ? Math.ceil(eligibleOpportunities * targetRate)
+    : 0;
+  const deadlineDue = eligible && mustShowByTurn > 0 && turnNumber >= mustShowByTurn && observed === 0;
+  const requiredNow = Boolean(eligible && (deadlineDue || observed < targetCount));
+  return {
+    profileId,
+    contract,
+    observability,
+    eligible,
+    priorEligibleTurns: priorTurns.length,
+    observed,
+    targetCount,
+    mustShowByTurn,
+    requiredNow,
+  };
+}
+
+function automatedLearnerProfileRuntime({ state, profile, turnNumber }) {
+  const runtime = automatedLearnerProfileRuntimeState({ state, profile, turnNumber });
+  if (!runtime) return '';
+  return [
+    '# Private profile recurrence state',
+    '',
+    `Profile: ${runtime.profileId}. The current public tutor message is an eligible trigger: ${runtime.eligible ? 'yes' : 'no'}.`,
+    `Completed eligible learner turns: ${runtime.priorEligibleTurns}. Visible failure markers so far: ${runtime.observed}.`,
+    `Minimum markers expected through turn ${turnNumber}: ${runtime.targetCount}. Must first appear by turn: ${runtime.mustShowByTurn || 'not forced'}.`,
+    runtime.requiredNow
+      ? `This turn MUST visibly perform the primary failure operator: ${runtime.contract.intent.failureOperator}. Do not combine it with a fully repaired or fully warranted answer in the same turn.`
+      : 'This turn may repair or progress if the contract permits, but the profile remains active on later eligible turns.',
+    'This state is private. Never mention counts, policies, profiles, markers, or experimental conditions publicly.',
+  ].join('\n');
+}
+
+function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback = '' }) {
+  const latestTutor = [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+  return [
+    automatedLearnerProfileRuntime({ state, profile, turnNumber }),
     '',
     '# Public scene',
     '',
@@ -7375,17 +7496,28 @@ function buildAutomatedLearnerPrompt({ state, profile, turnNumber }) {
     '',
     '# Task',
     '',
+    adherenceFeedback || null,
+    adherenceFeedback ? '' : null,
     `Write learner turn ${turnNumber}. Use only public evidence and the public transcript.`,
-    'If the tutor asks for a trial-book line, write one concise public evidence claim. Treat that claim as your deduction and the book entry; do not ask for a separate bookkeeping step.',
-    'If you are stuck, ask one concrete question about what evidence would count.',
+    'First preserve the private learner-profile condition. A required distortion, omitted warrant, refusal, resistance, or withheld evidence step takes priority over generic progress.',
+    'Only when the profile permits progress: if the tutor asks for a trial-book line, write one concise public evidence claim and treat it as both deduction and book entry.',
+    'Only when the profile permits a help request: if you are stuck, ask one concrete question about what evidence would count.',
   ].join('\n');
 }
 
-async function generateAutomatedLearnerTurn({ state, resolved, profile, turnNumber, stream = null, cliEffort = null }) {
+async function generateAutomatedLearnerTurn({
+  state,
+  resolved,
+  profile,
+  turnNumber,
+  adherenceFeedback = '',
+  stream = null,
+  cliEffort = null,
+}) {
   const raw = await callPromptModel({
-    prompt: buildAutomatedLearnerPrompt({ state, profile, turnNumber }),
+    prompt: buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback }),
     resolved,
-    systemPrompt: AUTO_LEARNER_SYSTEM_PROMPT,
+    systemPrompt: automatedLearnerSystemPrompt(profile),
     role: 'tutor_stub_auto_learner',
     maxTokens: 900,
     trace: state.trace,
@@ -7397,6 +7529,83 @@ async function generateAutomatedLearnerTurn({ state, resolved, profile, turnNumb
     ...raw,
     text: cleanAutomatedLearnerReply(raw.text),
   };
+}
+
+function automatedLearnerDraftMatchesRuntime({ text, raw, state, runtime }) {
+  if (!runtime?.requiredNow) return true;
+  const classification = classificationFromCombinedAnalysis(raw, state);
+  const syntheticTurn = { learner: text, classification };
+  return (runtime.observability.markerClauses || []).some(
+    (clause) => clause.length > 0 && automatedLearnerMarkerMatches(syntheticTurn, clause),
+  );
+}
+
+function automatedLearnerRepairInstruction(profileId) {
+  if (profileId === 'proof_skipper') {
+    return 'State the conclusion as if the clue were sufficient. Remove because, since, so, therefore, if, then, would need, would want, and any sentence that explains or requests the missing bridge.';
+  }
+  if (profileId === 'false_memory') {
+    return 'Assert one specific but wrong remembered public detail as already seen or established. Do not hedge, describe a future test, or correct the distortion in this turn.';
+  }
+  if (profileId === 'affective_resistant') {
+    return 'Object to the tutor\'s pressure only. Do not add a clue, trial-book line, warrant, inference, or useful evidence step in the same turn.';
+  }
+  return 'Make the required failure public and unmistakable without repairing it in the same turn.';
+}
+
+async function enforceAutomatedLearnerProfile({
+  state,
+  resolved,
+  profile,
+  turnNumber,
+  generated,
+  cliEffort = null,
+}) {
+  const runtime = automatedLearnerProfileRuntimeState({ state, profile, turnNumber });
+  const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
+  if (!runtime?.requiredNow || !canPreclassify || !generated.text) {
+    return { generated, precomputedRaw: null, repaired: false, passed: null };
+  }
+
+  const maxRepairs = 2;
+  let candidate = generated;
+  let raw = null;
+  let passed = false;
+  let repairs = 0;
+  while (repairs <= maxRepairs) {
+    raw = await extractCombinedLearnerAnalysis({ learnerText: candidate.text, state, tutorTurn: turnNumber });
+    passed = automatedLearnerDraftMatchesRuntime({ text: candidate.text, raw, state, runtime });
+    if (passed || repairs === maxRepairs) break;
+    appendTraceEvent(state.trace, {
+      type: 'auto_learner_profile_repair_requested',
+      turn: turnNumber,
+      profile: runtime.profileId,
+      attempt: repairs + 1,
+      failureOperator: runtime.contract.intent.failureOperator,
+      draft: candidate.text,
+    });
+    const repaired = await generateAutomatedLearnerTurn({
+      state,
+      resolved,
+      profile,
+      turnNumber,
+      adherenceFeedback: `Your previous draft was too normalized and did not visibly perform the required failure operator (${runtime.contract.intent.failureOperator}). Rewrite the learner turn. ${automatedLearnerRepairInstruction(runtime.profileId)} Keep it natural and concise.`,
+      stream: { enabled: false, interim: state.interim },
+      cliEffort,
+    });
+    if (repaired.text) candidate = repaired;
+    repairs += 1;
+  }
+  appendTraceEvent(state.trace, {
+    type: 'auto_learner_profile_adherence',
+    turn: turnNumber,
+    profile: runtime.profileId,
+    required: true,
+    passed,
+    repaired: repairs > 0,
+    repairAttempts: repairs,
+  });
+  return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
 }
 
 async function runOneTurn(
@@ -7489,10 +7698,11 @@ async function runOneTurn(
   return { ...response, dagSnapshot };
 }
 
-async function runAnalyzedTutorTurn(learnerText, state) {
+async function runAnalyzedTutorTurn(learnerText, state, { precomputedRaw = null } = {}) {
   const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
     learnerText,
     state,
+    { precomputedRaw },
   );
   startInterimAnimation(
     state,
@@ -7578,6 +7788,7 @@ async function runAutomatedLearnerDialogue({
       break;
     }
     const turnNumber = state.turns.length + 1;
+    let precomputedRaw = null;
     if (!nextLearnerText) {
       startInterimAnimation(state, 'calling auto learner', { tutorTurn: turnNumber });
       let generated;
@@ -7593,6 +7804,16 @@ async function runAutomatedLearnerDialogue({
       } finally {
         stopInterimAnimation(state);
       }
+      const enforced = await enforceAutomatedLearnerProfile({
+        state,
+        resolved: autoLearnerResolved,
+        profile: autoLearnerProfile,
+        turnNumber,
+        generated,
+        cliEffort,
+      });
+      generated = enforced.generated;
+      precomputedRaw = enforced.precomputedRaw;
       nextLearnerText = generated.text;
       if (!nextLearnerText) {
         nextLearnerText = deterministicAutomatedLearnerFallback({ state });
@@ -7612,6 +7833,8 @@ async function runAutomatedLearnerDialogue({
         model: generated.model,
         latencyMs: generated.latencyMs,
         usage: generated.usage,
+        profileRepaired: enforced.repaired,
+        profileAdherencePassed: enforced.passed,
       });
       printTurnDebugLine(state, turnNumber);
       console.log(`${C.bold}learner(auto) >${C.reset} ${nextLearnerText}\n`);
@@ -7620,7 +7843,7 @@ async function runAutomatedLearnerDialogue({
       console.log(`${C.bold}learner(auto) >${C.reset} ${nextLearnerText}\n`);
     }
 
-    await runAnalyzedTutorTurn(nextLearnerText, state);
+    await runAnalyzedTutorTurn(nextLearnerText, state, { precomputedRaw });
     nextLearnerText = '';
 
     if (autoStopOnGrounded && learnerDagReachedGroundedClosure(state)) {

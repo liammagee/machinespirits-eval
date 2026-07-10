@@ -295,8 +295,10 @@ export {
 export { buildTutorFieldFrame, TUTOR_FIELD_SCHEMA } from './tutorField.js';
 export { buildDiscourseFieldFrame, DISCOURSE_FIELD_SCHEMA } from './discourseField.js';
 export {
+  buildFieldReportContext,
   FIELD_PLANNER_PROJECTION_SCHEMA,
   FIELD_PLANNER_SCHEMA,
+  FIELD_REPORT_CONTEXT_SCHEMA,
   projectFieldPlannerCandidates,
   selectFieldPlannerMove,
   summarizeFieldPlannerOutcome,

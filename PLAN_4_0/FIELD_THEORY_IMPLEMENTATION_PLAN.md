@@ -97,7 +97,7 @@ Implemented in `services/dramaticDerivation/fieldPlanner.js` as a deterministic 
 
 Keep field planning in three levels:
 
-- `--field-report`: report-only instrumentation.
+- `--field-report-context`: report-only instrumentation — the coupled-field summary enters the tutor context with no move recommendation and no conduct authority (the Phase 6 `field_report_only` placebo arm).
 - `--field-planner`: advisory selection of conduct family and didactic mode.
 - `--field-planner-enforce`: opt-in enforcement through existing conduct-policy machinery.
 

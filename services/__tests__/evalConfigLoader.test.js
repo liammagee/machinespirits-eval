@@ -230,6 +230,15 @@ describe('resolveModel (string format)', () => {
     assert.strictEqual(r.isConfigured, true);
   });
 
+  for (const model of ['gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna']) {
+    it(`resolves "codex.${model}"`, () => {
+      const r = resolveModel(`codex.${model}`);
+      assert.strictEqual(r.provider, 'codex');
+      assert.strictEqual(r.model, model);
+      assert.strictEqual(r.isConfigured, true);
+    });
+  }
+
   it('passes through unknown alias as-is', () => {
     const r = resolveModel('openrouter.some-future-model');
     assert.strictEqual(r.provider, 'openrouter');

@@ -4,11 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import {
-  analyzeGateArtifacts,
-  buildGatePlan,
-  renderGateMarkdown,
-} from '../scripts/run-derivation-phase6-gate.js';
+import { analyzeGateArtifacts, buildGatePlan, renderGateMarkdown } from '../scripts/run-derivation-phase6-gate.js';
 
 function writeJson(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -32,6 +28,60 @@ test('buildGatePlan freezes rows across worlds, arms, and seeds', () => {
   assert.match(plan.rows[0].command, /--decay/);
   assert.match(plan.rows[1].command, /--field-planner/);
   assert.equal(plan.decay.rate, 0.08);
+});
+
+test('field_report_only placebo arm is flag-distinct from baseline', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-gate-placebo-'));
+  const plan = buildGatePlan({
+    label: 'unit',
+    out: root,
+    worlds: ['marrick'],
+    arms: ['baseline', 'field_report_only', 'field_planner_advisory', 'field_planner_enforce'],
+    seeds: ['1'],
+    mode: 'mock',
+  });
+  const commandByArm = Object.fromEntries(plan.rows.map((row) => [row.armKey, row.command]));
+  // Decision rule 2 of the gate plan is only dischargeable if the placebo arm
+  // actually differs from baseline at the command level.
+  assert.notEqual(commandByArm.field_report_only, commandByArm.baseline);
+  assert.match(commandByArm.field_report_only, /--field-report-context/u);
+  assert.doesNotMatch(commandByArm.field_report_only, /--field-planner/u);
+  assert.doesNotMatch(commandByArm.baseline, /--field-report-context/u);
+});
+
+test('analyzeGateArtifacts counts field-report-context non-leak audit failures as safety failures', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-gate-report-audit-'));
+  const plan = buildGatePlan({
+    label: 'unit',
+    out: root,
+    worlds: ['marrick'],
+    arms: ['field_report_only'],
+    seeds: ['1'],
+    mode: 'mock',
+  });
+  const row = plan.rows[0];
+  writeJson(path.join(row.runDir, 'diagnosis.json'), {
+    verdict: 'grounded_anagnorisis',
+    turnsPlayed: 12,
+    turnCap: 20,
+    releaseAdherence: { onCue: 3, rows: [{}, {}, {}], deviations: [], missed: [], unscheduled: [] },
+    eventsByType: { grounded_anagnorisis: 1 },
+    fabricatedFacts: [],
+  });
+  writeJson(path.join(row.runDir, 'result.json'), {
+    fieldReportContext: [
+      { turn: 1, nonLeakAuditOk: true },
+      { turn: 2, nonLeakAuditOk: false },
+    ],
+  });
+  writeJson(path.join(row.runDir, 'dialogue-report.json'), { summary: {} });
+  fs.writeFileSync(path.join(row.runDir, 'dialogue-report.md'), '# report\n');
+  fs.writeFileSync(path.join(row.runDir, 'dynamic-field.svg'), '<svg></svg>\n');
+
+  const report = analyzeGateArtifacts(plan, { [row.id]: 0 });
+  assert.equal(report.rows[0].fieldReportContext.count, 2);
+  assert.equal(report.rows[0].fieldReportContext.nonLeakAuditFailures, 1);
+  assert.equal(report.rows[0].safetyFailures, 1);
 });
 
 test('analyzeGateArtifacts summarizes field-planner movement and safety gates', () => {

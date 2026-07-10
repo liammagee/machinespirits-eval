@@ -494,6 +494,17 @@ async function main() {
     );
     process.exit(1);
   }
+  const fieldReportContext = track(
+    'field-report-context',
+    triState('field-report-context', Boolean(srcDiag.fieldReportContext)),
+    Boolean(srcDiag.fieldReportContext),
+  );
+  if (fieldReportContext && acts) {
+    console.error(
+      '--field-report-context on currently requires non-acts mode (acts redacts learner-store state from the tutor)',
+    );
+    process.exit(1);
+  }
   const castLayer = track('cast-layer', triState('cast-layer', Boolean(srcDiag.castLayer)), Boolean(srcDiag.castLayer));
   const castReinvention = track(
     'cast-reinvention',
@@ -821,6 +832,7 @@ async function main() {
       didacticMode,
       fieldPlanner,
       fieldPlannerEnforce,
+      fieldReportContext,
       castLayer,
       castReinvention,
       ownershipProof,
@@ -924,6 +936,9 @@ async function main() {
         : 'field   PLANNER ON — coupled field selects tutor conduct family and didactic mode',
     );
   }
+  if (fieldReportContext) {
+    console.log('field   REPORT CONTEXT ON — coupled field summary enters the tutor context; no conduct authority');
+  }
   if (castLayer) {
     console.log(`cast    LAYER ON${castReinvention ? ' + REINVENTION ON' : ''} — public conduct advisory only`);
   }
@@ -1013,6 +1028,7 @@ async function main() {
       didacticMode,
       fieldPlanner,
       fieldPlannerEnforce,
+      fieldReportContext,
       castLayer,
       castReinvention,
       ownershipTarget: world.ownershipTarget,
@@ -1075,6 +1091,7 @@ async function main() {
         publicRegister,
         fieldPlanner,
         fieldPlannerEnforce,
+        fieldReportContext,
         ...(sceneMode ? { sceneMode } : {}),
         ...(decay ? { decay } : {}),
         ...(acts ? { acts } : {}),
@@ -1175,6 +1192,7 @@ async function main() {
     didacticMode,
     fieldPlanner,
     fieldPlannerEnforce,
+    fieldReportContext,
     castLayer,
     castReinvention,
     ownershipProof,

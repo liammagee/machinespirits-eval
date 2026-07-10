@@ -21,16 +21,17 @@ Key choices and defaults:
 
 - Mode: `human`, `auto-eval`, `resume`, `abm-panel`, `analyze`, `multi-eval`; default `auto-eval` for comparisons, `human` when the user will play the learner.
 - World: default `world_005_marrick`.
-- Register policies: default comparison `negative,bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,random`; focused adaptive comparison `dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system`.
-- QA policy suite: `focused` means the seven-policy robust comparison `bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system`; `full` adds `negative` and `random` controls.
+- Register policies: default comparison `negative,bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,random`; adaptive-only comparison `dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system`.
+- QA policy suites: `core` is the routine baseline + discrete adaptive comparison (`bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system`); `controls` is `negative,bland,random`; `pressure` is the cheap `field,negative` screen for pressure-sensitive learner profiles; `sentinel` is the representative five-policy ladder (`bland,field,trajectory,dynamical_system,negative`) for the 60-dialogue sentinel-profile `n=3` comparison; `frontier` adds the richer/continuous state policies against `bland`; `audit` is the expensive all-policy sweep. `focused` aliases `core`; `full`/`all` alias `audit`.
 - Trajectory policy: `--register-policy trajectory` leaves `field` unchanged and adds recent finite-difference velocity/slope/acceleration/risk-trend adjustments for benchmarking against `field`.
 - Dynamical-system policy: `--register-policy dynamical_system` maps a continuous state/derivative vector through theory priors plus within-dialogue empirical efficacy corrections; `dynamical-system` is accepted as an alias.
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep a nearest `selected_register` for compatibility while passing a weighted `register_vector`/style blend to the tutor; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
 - DAG discourse mode: default `strict_dag` is the proof-audit baseline. Use `--dag-mode human_scaffold` or `--dag-mode defeasible_human_scaffold` when testing the human-facing scaffold that allows ordinary-language warrant framing, side arcs, compressed human inference, and internal proof debt while the strict DAG remains the audit.
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
-- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v1`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
-- Runs: default `3` for baseline comparisons, `5` for focused policy comparisons, `1` for ABM panels.
+- Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v2`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
+- Learner profile suites: `core` is the routine robustness suite; `sentinel` is the cheap discrimination screen; `stress` is targeted failure-mode probing; `audit` is the expensive all-profile sweep. `all` remains accepted as an alias for `audit`, but do not use it as the default QA matrix.
+- Runs: default `3` for baseline comparisons, `5` for core/frontier policy comparisons, `1` for ABM panels.
 - Models: default tutor `codex.gpt-5.5`, analysis/classifier/DAG `codex.gpt-5.5`, automated learner `codex.gpt-5.5`.
 - Parallelism: default `8` for `auto-eval`; ABM panel is currently serial.
 - Turn stopping: default `--turns until-grounded --safety-turns 120`.
@@ -215,14 +216,14 @@ then one normal auto-eval report per learner profile, then consolidated
 Dry-run the full command expansion first:
 
 ```bash
-npm run tutor:stub:qa -- --suite focused --runs 1 --dry-run
+npm run tutor:stub:qa -- --suite core --runs 1 --dry-run
 ```
 
-Run the focused seven-policy QA matrix:
+Run the core seven-policy QA matrix:
 
 ```bash
 npm run tutor:stub:qa -- \
-  --suite focused \
+  --suite core \
   --runs 1 \
   --profiles diligent,answer_seeking,skeptical,overconfident,low_agency,memory_limited \
   --turns until-grounded \
@@ -235,13 +236,20 @@ npm run tutor:stub:qa -- \
   --keep-going
 ```
 
-Use `--suite adaptive` or `--suite full` to include `continuous_dynamical_system`
-and `continuous_empirical_dynamical_system`. Use `--suite full` when you also
-need the `negative` floor and `random` control.
+Use `--suite pressure` for the cheap `field,negative` profile-discrimination
+screen. After it passes, pair `--suite sentinel --profile-suite sentinel
+--runs 3` for the representative 60-dialogue comparison. Use `--suite
+frontier` when comparing `field`, `trajectory`, the
+dynamical-system policies, and continuous policies against `bland`. Use
+`--suite adaptive` only when you intentionally want adaptive policies without
+same-run controls. Use `--suite audit` when you also need the `negative` floor,
+`random` control, and every adaptive policy. `focused` aliases `core`;
+`full`/`all` alias `audit`.
 Use `--profile-suite sentinel` for a cheaper profile screen (`diligent`,
 `proof_skipper`, `false_memory`, `affective_resistant`) and `--profile-suite
-stress` for only the sharper failure-mode profiles. Explicit `--profiles`
-overrides the profile suite.
+stress` for only the sharper failure-mode profiles. Use `--profile-suite audit`
+only for an intentional all-profile sweep; `all` is a backward-compatible alias.
+Explicit `--profiles` overrides the profile suite.
 When testing `affective_resistant`, include a pressure arm such as
 `--policies field,negative` so the profile has a real interactional trigger.
 Use `--from-dir .tutor-stub-auto-eval/qa-matrix-<timestamp>` to rebuild only the

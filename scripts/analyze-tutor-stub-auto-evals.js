@@ -446,6 +446,21 @@ function runFieldPoint(summary, totals = summary.totals) {
     meanTurns: round(meanTurns),
     registerEntropy: round(registerEntropy),
   };
+  // Outcome-only composite: every term is a channel the register policy does
+  // not control by construction. registerDiversity is EXCLUDED — it is a
+  // direct readout of the policy under test (zero for bland by definition),
+  // so any composite that includes it manufactures an adaptive-vs-bland gap
+  // even when all outcome channels are tied at ceiling. Policy comparisons
+  // must use this score.
+  point.outcomeScore = round(
+    0.26 * point.reliability +
+      0.26 * point.effectiveClosure +
+      0.18 * point.coverage +
+      0.16 * point.turnEfficiency +
+      0.14 * point.leakDiscipline,
+  );
+  // Legacy process composite (includes registerDiversity). Kept only for
+  // trend continuity in cross-run trajectories; never use it to rank policies.
   point.score = round(
     0.22 * point.reliability +
       0.22 * point.effectiveClosure +
@@ -468,7 +483,10 @@ function buildRunTrajectory(summaries) {
   return summaries.map((summary, index) => {
     const field = runFieldPoint(summary);
     const previous = index > 0 ? runFieldPoint(summaries[index - 1]) : null;
-    const deltaScore = previous ? round(field.score - previous.score) : null;
+    // Movement is labeled from the outcome-only delta; the process delta
+    // (incl. registerDiversity) rides along for trend continuity.
+    const deltaScore = previous ? round(field.outcomeScore - previous.outcomeScore) : null;
+    const deltaProcessScore = previous ? round(field.score - previous.score) : null;
     return {
       runId: summary.runId,
       recordedAt: summary.recordedAt,
@@ -485,6 +503,7 @@ function buildRunTrajectory(summaries) {
       movement: {
         label: movementLabel(deltaScore),
         deltaScore,
+        deltaProcessScore,
         deltaReliability: previous ? round(field.reliability - previous.reliability) : null,
         deltaClosure: previous ? round(field.effectiveClosure - previous.effectiveClosure) : null,
         deltaTurns: previous ? round(field.meanTurns - previous.meanTurns) : null,
@@ -556,6 +575,7 @@ function cellSummary(rows) {
   return {
     observations: rows.length,
     score,
+    outcomeScore: mean(fields.map((field) => field.outcomeScore)),
     reliability: mean(fields.map((field) => field.reliability)),
     effectiveClosure: mean(fields.map((field) => field.effectiveClosure)),
     coverage: mean(fields.map((field) => field.coverage)),
@@ -575,12 +595,16 @@ function summarizePolicyRobustness(cells, learnerProfiles, baselinePolicy) {
   return sortPolicyNames([...byPolicy.keys()])
     .map((policy) => {
       const policyCells = byPolicy.get(policy) || [];
-      const scores = policyCells.map((cell) => cell.score);
+      // Policy ranking, spreads, and the robustness verdict all run on the
+      // outcome-only score; the process score (incl. registerDiversity) is
+      // carried as a clearly-labeled side channel.
+      const outcomeScores = policyCells.map((cell) => cell.outcomeScore);
+      const processScores = policyCells.map((cell) => cell.score);
       const deltas = policyCells.map((cell) => cell.deltaVsBaseline).filter((value) => value !== null);
       const observedLearners = policyCells.filter((cell) => cell.observations > 0).length;
       const learnerCoverage = learnerProfiles.length ? round(observedLearners / learnerProfiles.length) : 0;
-      const worstScore = min(scores);
-      const meanScore = mean(scores);
+      const worstScore = min(outcomeScores);
+      const meanScore = mean(outcomeScores);
       return {
         policy,
         baselinePolicy,
@@ -589,8 +613,11 @@ function summarizePolicyRobustness(cells, learnerProfiles, baselinePolicy) {
         observations: policyCells.reduce((sum, cell) => sum + Number(cell.observations || 0), 0),
         meanScore,
         worstScore,
-        bestScore: max(scores),
-        scoreStddev: stddev(scores),
+        bestScore: max(outcomeScores),
+        scoreStddev: stddev(outcomeScores),
+        meanProcessScore: mean(processScores),
+        worstProcessScore: min(processScores),
+        meanRegisterDiversity: mean(policyCells.map((cell) => cell.registerDiversity)),
         meanDeltaVsBaseline: deltas.length ? mean(deltas) : null,
         worstDeltaVsBaseline: deltas.length ? min(deltas) : null,
         meanEffectiveClosure: mean(policyCells.map((cell) => cell.effectiveClosure)),
@@ -641,7 +668,14 @@ function buildQaMatrix(policyRows, { baselinePolicy = 'bland' } = {}) {
         ...cellSummary(rows),
       };
       const learnerBaseline = baselineByLearner.get(learnerProfile);
+      // Headline delta is OUTCOME-only. The legacy process delta (which
+      // includes registerDiversity) is kept under an explicit name so no
+      // report can silently present it as a policy effect.
       cell.deltaVsBaseline =
+        learnerBaseline && cell.outcomeScore !== null && learnerBaseline.outcomeScore !== null
+          ? round(cell.outcomeScore - learnerBaseline.outcomeScore)
+          : null;
+      cell.processScoreDeltaVsBaseline =
         learnerBaseline && cell.score !== null && learnerBaseline.score !== null
           ? round(cell.score - learnerBaseline.score)
           : null;
@@ -659,6 +693,7 @@ function buildQaMatrix(policyRows, { baselinePolicy = 'bland' } = {}) {
       'QA robustness aggregates policy rows by automated learner profile before ranking policies.',
       `Delta columns compare each policy against ${baselinePolicy} within the same learner profile when that baseline is present.`,
       'Worst score is intentionally prominent: a policy that only works for diligent learners should not outrank one that holds up across harder learner profiles.',
+      'Scores and deltas here are OUTCOME-only (reliability, closure, coverage, turn efficiency, leak discipline). Register diversity is reported separately and never enters policy rankings: it is a direct readout of the policy under test and would manufacture an adaptive-vs-bland gap at outcome ceiling.',
     ],
   };
 }
@@ -677,6 +712,8 @@ function summarizePolicies(policyRows) {
       return {
         policy,
         observations: rows.length,
+        meanOutcomeScore: mean(rows.map((row) => row.field.outcomeScore)),
+        latestOutcomeScore: last?.field.outcomeScore ?? null,
         meanScore: mean(rows.map((row) => row.field.score)),
         meanReliability: mean(rows.map((row) => row.field.reliability)),
         meanEffectiveClosure: mean(rows.map((row) => row.field.effectiveClosure)),
@@ -687,7 +724,11 @@ function summarizePolicies(policyRows) {
         latestRegisters: last?.totals.registerCounts || {},
       };
     })
-    .sort((a, b) => Number(b.latestScore ?? b.meanScore ?? 0) - Number(a.latestScore ?? a.meanScore ?? 0));
+    .sort(
+      (a, b) =>
+        Number(b.latestOutcomeScore ?? b.meanOutcomeScore ?? 0) -
+        Number(a.latestOutcomeScore ?? a.meanOutcomeScore ?? 0),
+    );
 }
 
 function buildReport(summaries) {
@@ -718,6 +759,7 @@ function buildReport(summaries) {
     policySummary,
     qaMatrix,
     notes: [
+      'Policy comparisons use the OUTCOME-only score (reliability, effective closure, coverage, turn efficiency, leak discipline). The process score additionally includes register diversity — a channel the policy under test controls directly — and must never be used to rank policies.',
       'Cross-run field axes differ from dialogue fields: reliability, effective closure, coverage, turn efficiency, register diversity, and leak discipline.',
       'Effective closure counts grounded runs over all rows, so technical failures lower the field point.',
       'Register diversity uses entropy normalized against the v2 all-register palette size.',
@@ -754,7 +796,7 @@ function renderMarkdown(report) {
   ];
   if (report.latest) {
     lines.push(
-      `Latest field: score ${report.latest.field.score}; reliability ${report.latest.field.reliability}; effective closure ${report.latest.field.effectiveClosure}; diversity ${report.latest.field.registerDiversity}`,
+      `Latest field: outcome score ${report.latest.field.outcomeScore}; process score ${report.latest.field.score}; reliability ${report.latest.field.reliability}; effective closure ${report.latest.field.effectiveClosure}; diversity ${report.latest.field.registerDiversity}`,
       '',
     );
   }
@@ -766,7 +808,7 @@ function renderMarkdown(report) {
       { label: 'OK/Failed', value: (row) => `${row.totals.ok}/${row.totals.failed}` },
       { label: 'Grounded', value: (row) => row.totals.grounded },
       { label: 'Mean Turns', value: (row) => row.totals.meanTurns },
-      { label: 'Field Score', value: (row) => row.field.score },
+      { label: 'Outcome Score', value: (row) => row.field.outcomeScore },
       { label: 'Movement', value: (row) => `${row.movement.label} (${signed(row.movement.deltaScore)})` },
       {
         label: 'Reports',
@@ -782,13 +824,13 @@ function renderMarkdown(report) {
     markdownTable(report.policySummary, [
       { label: 'Policy', value: (row) => row.policy },
       { label: 'Obs', value: (row) => row.observations },
-      { label: 'Latest Score', value: (row) => row.latestScore ?? 'n/a' },
-      { label: 'Mean Score', value: (row) => row.meanScore ?? 'n/a' },
-      { label: 'Score Delta', value: (row) => signed(row.scoreDelta) },
+      { label: 'Outcome Score', value: (row) => row.latestOutcomeScore ?? row.meanOutcomeScore ?? 'n/a' },
+      { label: 'Mean Outcome', value: (row) => row.meanOutcomeScore ?? 'n/a' },
       { label: 'Reliability', value: (row) => row.meanReliability ?? 'n/a' },
       { label: 'Effective Closure', value: (row) => row.meanEffectiveClosure ?? 'n/a' },
       { label: 'Mean Turns', value: (row) => row.meanTurns ?? 'n/a' },
-      { label: 'Diversity', value: (row) => row.meanRegisterDiversity ?? 'n/a' },
+      { label: 'Diversity (process)', value: (row) => row.meanRegisterDiversity ?? 'n/a' },
+      { label: 'Process Score', value: (row) => row.meanScore ?? 'n/a' },
       { label: 'Latest Registers', value: (row) => topCounts(row.latestRegisters) || 'none' },
     ]),
   );
@@ -799,14 +841,15 @@ function renderMarkdown(report) {
       markdownTable(report.qaMatrix.policyRobustness, [
         { label: 'Policy', value: (row) => row.policy },
         { label: 'Learners', value: (row) => `${row.observedLearners}/${report.qaMatrix.learnerProfiles.length}` },
-        { label: 'Worst Score', value: (row) => row.worstScore ?? 'n/a' },
-        { label: 'Mean Score', value: (row) => row.meanScore ?? 'n/a' },
+        { label: 'Worst Outcome', value: (row) => row.worstScore ?? 'n/a' },
+        { label: 'Mean Outcome', value: (row) => row.meanScore ?? 'n/a' },
         { label: `Mean Delta vs ${report.qaMatrix.baselinePolicy}`, value: (row) => signed(row.meanDeltaVsBaseline) },
         { label: `Worst Delta vs ${report.qaMatrix.baselinePolicy}`, value: (row) => signed(row.worstDeltaVsBaseline) },
         { label: 'Closure', value: (row) => row.meanEffectiveClosure ?? 'n/a' },
         { label: 'Coverage', value: (row) => row.meanCoverage ?? 'n/a' },
         { label: 'Turns', value: (row) => row.meanTurns ?? 'n/a' },
         { label: 'Failures', value: (row) => row.meanFailureRate ?? 'n/a' },
+        { label: 'Diversity (process)', value: (row) => row.meanRegisterDiversity ?? 'n/a' },
         { label: 'QA Read', value: (row) => row.qaInterpretation },
       ]),
     );
@@ -824,7 +867,7 @@ function renderMarkdown(report) {
               );
               if (!cell) return 'n/a';
               const delta = cell.deltaVsBaseline === null ? '' : ` (${signed(cell.deltaVsBaseline)})`;
-              return `${cell.score ?? 'n/a'}${delta}`;
+              return `${cell.outcomeScore ?? 'n/a'}${delta}`;
             },
           })),
         ],
@@ -832,7 +875,7 @@ function renderMarkdown(report) {
     );
     lines.push(
       '',
-      'Matrix cells show QA score, with parenthesized same-learner delta against the configured baseline when available.',
+      'Matrix cells show the OUTCOME-only QA score, with parenthesized same-learner outcome delta against the configured baseline when available. Register diversity is reported separately and never enters these cells.',
       '',
     );
   }

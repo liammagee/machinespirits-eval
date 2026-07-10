@@ -41,6 +41,52 @@ The auto-eval runner renders these contracts into the learner prompt and stores
 a contract summary in the report config. This keeps the profile prompt, report,
 and discrimination audit tied to the same schema.
 
+The profile library is now split by purpose rather than treated as one default
+factorial set:
+
+- `core`: routine policy robustness across the ordinary learner profiles
+  (`diligent`, `answer_seeking`, `skeptical`, `overconfident`, `low_agency`,
+  `memory_limited`);
+- `sentinel`: cheap discrimination screen (`diligent`, `proof_skipper`,
+  `false_memory`, `affective_resistant`);
+- `stress`: targeted failure-mode probes (`premature_closure`,
+  `proof_skipper`, `false_memory`, `contradiction_keeper`,
+  `affective_resistant`, `low_trust_skeptic`);
+- `audit`: expensive all-profile sweep. The older `all` spelling is still
+  accepted as an alias, but it should not be used for routine policy
+  comparisons.
+
+This cleanup keeps the ordinary QA matrix from inflating into every learner
+contract every time. Use `core` to ask whether a policy is robust under ordinary
+profile variation, `sentinel` to ask whether the profile schema is separating
+behavior at all, `stress` to probe specific failure modes, and `audit` only as a
+periodic full-library check.
+
+Policy suites follow the same convention:
+
+- `controls`: `negative`, `bland`, and `random` for calibration;
+- `core`: routine baseline plus the main discrete adaptive policies
+  (`bland`, `dynamic`, `state`, `field`, `trajectory`,
+  `dynamical_system`, `empirical_dynamical_system`);
+- `pressure`: `field,negative`, the cheap pressure-sensitive screen for
+  affective-resistance checks;
+- `sentinel`: `bland,field,trajectory,dynamical_system,negative`, the compact
+  five-policy ladder for an `n=3` profile-discrimination comparison;
+- `adaptive`: adaptive policies only, without same-run controls;
+- `frontier`: `bland` plus the field/trajectory/dynamical and continuous
+  policies for comparing increasingly rich state maps;
+- `audit`: every policy. The older `focused` spelling aliases `core`; `full`
+  and `all` alias `audit`.
+
+Recommended combinations:
+
+- `--profile-suite sentinel --suite pressure` before larger profile work;
+- `--profile-suite sentinel --suite sentinel --runs 3` for the representative
+  60-dialogue comparison after the cheap screen passes;
+- `--profile-suite core --suite core` for routine policy robustness;
+- `--profile-suite stress --suite frontier` for targeted expensive probes;
+- `--profile-suite audit --suite audit` only for periodic full sweeps.
+
 Compacted traces use `machinespirits.tutor-stub.compacted-trace.v1`. They remove
 raw transcript bulk and retain behavior-bearing features: classifier labels,
 conceptual/readiness scores, proof-DAG counters, bottlenecks, field state, and
@@ -139,6 +185,40 @@ The closest non-control pair was `false_memory` versus `proof_skipper` at
 `0.903`, so the next schema iteration should watch whether distorted evidence
 and warrant-skipping remain separable under larger samples.
 
+The contract-v2 implementation then added explicit observability clauses,
+controlled `omits_warrant` and `distorts_public_evidence` labels, deadline and
+recurrence checks, and bounded learner-draft repair when a required profile
+marker was absent. Reprocessing the earlier matching 60-row run with the v2
+analyzer establishes the pre-change baseline:
+
+- artifact root:
+  `.tutor-stub-auto-eval/profile-policy-discriminating-n3-live-2026-07-09T12-03-17`;
+- profiles: the four sentinel profiles; policies:
+  `bland,field,trajectory,dynamical_system,negative`; `n=3`;
+- pooled average cosine `0.924`, max similarity to diligent `0.964`;
+- matched-policy macro average cosine `0.894`;
+- all three stress-profile contract gates failed.
+
+An `n=3` negative-pressure calibration using complete traces from the bounded
+contract-v2 pilots then passed:
+
+- combined analysis root:
+  `.tutor-stub-auto-eval/profile-contract-v2-negative-confirmatory-mixed-n3-2026-07-10`;
+- traces: `12` dialogues and `96` learner turns, three per profile;
+- pooled average cosine `0.679`, max similarity to diligent `0.806`;
+- `proof_skipper`: marker recurrence `0.667`, deadline `3/3`;
+- `false_memory`: marker recurrence `0.542`, deadline `3/3`;
+- `affective_resistant`: eligible-pressure recurrence `0.571`, deadline `3/3`;
+- result: pooled and contract-conditioned gates both passed.
+
+This last artifact combines complete profile traces from adjacent calibration
+roots because the final all-in-one retry hit the external Codex usage limit.
+It is therefore a go/no-go calibration, not the final comparative result. The
+next test is the same five-policy matrix at `n=3` under one code snapshot and
+one artifact root. Its dry run is recorded at
+`.tutor-stub-auto-eval/profile-policy-sentinel-v2-n3-dry-2026-07-10`: 60 dry
+rows and all 20 profile-policy cells reached the consolidated QA report.
+
 ## Reproducible Commands
 
 Dry-run a cheap sentinel screen:
@@ -179,6 +259,49 @@ npm run tutor:stub:qa -- \
   --no-analyze
 ```
 
+Run the representative `n=3` matrix after the pressure screen passes:
+
+```bash
+npm run tutor:stub:qa -- \
+  --suite sentinel \
+  --profile-suite sentinel \
+  --runs 3 \
+  --turns 8 \
+  --safety-turns 80 \
+  --parallelism 4 \
+  --trace-dir .tutor-stub-auto-eval/profile-policy-sentinel-v2-n3-live \
+  --world world_005_marrick \
+  --cli-effort low \
+  --history-turns 4 \
+  --max-tokens 4096 \
+  --keep-going
+```
+
+Once discrimination holds, run the outcome-headroom contrast — the first
+policy comparison where adaptive-vs-bland differences can register on the
+outcome channels rather than on register diversity. The `headroom` suite
+defaults to the sentinel profiles, until-grounded stopping, and a binding
+`--safety-turns 40` cap, so grounding rate and turns can actually vary by
+policy instead of saturating at the release-schedule floor:
+
+```bash
+npm run tutor:stub:qa -- \
+  --suite headroom \
+  --runs 3 \
+  --parallelism 4 \
+  --trace-dir .tutor-stub-auto-eval/headroom-contrast-n3-live \
+  --world world_005_marrick \
+  --cli-effort low \
+  --history-turns 4 \
+  --max-tokens 4096 \
+  --keep-going
+```
+
+The consolidated `qa-matrix.md` now ranks policies by the outcome-only score
+(reliability, closure, coverage, turn efficiency, leak discipline); register
+diversity is reported as a separate process column and never enters the
+ranking or the baseline deltas.
+
 Analyze compacted traces:
 
 ```bash
@@ -205,5 +328,6 @@ matrix where:
   face repair;
 - the compacted vectors separate enough to justify larger policy comparisons.
 
-Once the sentinel passes, run the focused or full QA matrix and treat policy
-effects as more credible because they survived realistic learner variation.
+Once the sentinel passes, run the `core` or `frontier` QA matrix and treat
+policy effects as more credible because they survived realistic learner
+variation. Reserve `audit` for periodic full-library checks.

@@ -2298,22 +2298,22 @@ function machineSpiritsReportCss() {
       text-transform:uppercase;
     }
     .scope-badge.matrix {
-      background:var(--red);
+      background:var(--yellow-soft);
       border-color:var(--ink);
-      color:var(--paper);
+      color:var(--ink);
     }
     .scope-note {
       display:block;
       margin-top:4px;
-      color:var(--brick-d);
+      color:var(--ink-3);
       font-size:11px;
       line-height:1.35;
       letter-spacing:0.02em;
     }
     .scope-notice {
       margin:0 0 16px;
-      border-left:8px solid var(--red);
-      background:var(--brick-soft);
+      border-left:8px solid var(--yellow);
+      background:var(--yellow-soft);
       padding:12px 14px;
       color:var(--ink-2);
       box-shadow:4px 4px 0 var(--ink);
@@ -3372,8 +3372,8 @@ function machineSpiritsReportCss() {
     }
     .flat-signal strong { font-size:clamp(20px, 3vw, 32px); line-height:1.05; }
     .flat-signal p { max-width:620px; margin:10px 0 0; color:var(--ink-2); }
-    .cohort-actions, .cohort-children { margin-top:10px; font-size:12px; }
-    .cohort-actions a, .cohort-children a {
+    .cohort-actions { margin-top:10px; font-size:12px; }
+    .cohort-actions a {
       display:inline-block;
       margin:0 7px 6px 0;
       border:2px solid var(--ink);
@@ -3386,7 +3386,57 @@ function machineSpiritsReportCss() {
       font-weight:700;
       text-transform:uppercase;
     }
-    .cohort-history, .stale-run-group, .filter-panel {
+    .evaluation-profiles {
+      margin-top:12px;
+      border:2px solid var(--ink);
+      background:var(--paper-2);
+    }
+    .evaluation-profiles > summary {
+      cursor:pointer;
+      padding:10px 12px;
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .profile-list { border-top:2px solid var(--ink); }
+    .profile-row {
+      display:grid;
+      grid-template-columns:minmax(140px,1.2fr) 90px 100px 105px 105px minmax(110px,.8fr);
+      gap:10px;
+      align-items:center;
+      padding:9px 11px;
+      border-top:1px solid var(--ink);
+      font-size:11px;
+    }
+    .profile-row:first-child { border-top:0; }
+    .profile-row.profile-head {
+      background:var(--paper-3);
+      color:var(--ink-3);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:9px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .profile-name strong, .profile-name span { display:block; overflow-wrap:anywhere; }
+    .profile-name span { margin-top:2px; color:var(--ink-3); font-size:9px; }
+    .profile-value strong, .profile-value span { display:block; }
+    .profile-value span { margin-top:2px; color:var(--ink-3); font-size:9px; }
+    .profile-actions a {
+      display:inline-block;
+      border:2px solid var(--ink);
+      background:var(--paper);
+      box-shadow:2px 2px 0 var(--yellow);
+      padding:4px 6px;
+      color:var(--ink);
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:9px;
+      font-weight:800;
+      text-transform:uppercase;
+    }
+    .cohort-history, .stale-run-group, .filter-panel, .artifact-history {
       margin-top:14px;
       border:2px solid var(--ink);
       background:var(--paper-2);
@@ -3401,6 +3451,20 @@ function machineSpiritsReportCss() {
       text-transform:uppercase;
     }
     .cohort-history-grid { display:grid; gap:12px; padding:0 12px 14px; }
+    .artifact-history { margin-top:20px; }
+    .artifact-history > summary {
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      cursor:pointer;
+      padding:12px 14px;
+      list-style:none;
+    }
+    .artifact-history > summary::-webkit-details-marker { display:none; }
+    .artifact-history > summary h2 { margin:0; }
+    .artifact-history > summary p { max-width:820px; margin:4px 0 0; color:var(--ink-3); font-size:12px; }
+    .artifact-history-body { border-top:2px solid var(--ink); padding:12px; }
     .live-run-list { display:grid; gap:8px; }
     details.live-run-card { padding:0; margin:0; }
     .live-run-card > summary {
@@ -3518,6 +3582,8 @@ function machineSpiritsReportCss() {
       .live-run-progress { grid-template-columns:1fr; }
       .cohort-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .cohort-metric:last-child { grid-column:1 / -1; }
+      .profile-row { grid-template-columns:minmax(130px,1.2fr) 80px 90px 90px minmax(100px,.8fr); }
+      .profile-row > :nth-child(5) { display:none; }
       .report-index-scroll { display:none; }
       .report-card-list { display:grid; }
       .filter-panel .toolbar { grid-template-columns:1fr; }
@@ -3542,6 +3608,13 @@ function machineSpiritsReportCss() {
       .cohort-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .cohort-read { display:block; }
       .cohort-read span { display:block; margin-top:4px; }
+      .artifact-history > summary { display:block; }
+      .artifact-history > summary .live-count { display:inline-block; margin-top:8px; }
+      .profile-row { grid-template-columns:minmax(0,1fr) auto; gap:7px; }
+      .profile-row.profile-head { display:none; }
+      .profile-row > * { display:block !important; }
+      .profile-row > .profile-value { text-align:right; }
+      .profile-row > .profile-actions { grid-column:1 / -1; text-align:left; }
       .policy-bar-row { grid-template-columns:1fr; gap:5px; }
       .policy-bar-meta { white-space:normal; }
     }
@@ -4027,14 +4100,14 @@ function renderReportMetricGuide() {
 
 function renderReportSectionNav() {
   const sections = [
-    ['run-summary', 'Run Summary'],
+    ['run-summary', 'Profile Summary'],
     ['read-first', 'Read This First'],
     ['learner-profile', 'Learner Profile'],
     ['policy-comparison', 'Policy Comparison'],
     ['turn-replay', 'Turn Replay'],
     ['transcripts', 'Transcripts'],
     ['field-trajectories', 'Field Trajectories'],
-    ['run-details', 'Run Details'],
+    ['run-details', 'Trial Details'],
   ];
   return `<aside class="report-nav" aria-label="Eval report sections">
     <div class="report-nav-title">Sections</div>
@@ -5538,14 +5611,14 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tutor Stub Auto-Eval Report</title>
+  <title>${reportScope.kind === 'qa_matrix_child' ? 'Tutor Stub Profile Report' : 'Tutor Stub Auto-Eval Report'}</title>
   <style>
     ${machineSpiritsReportCss()}
   </style>
 </head>
 <body>
   <header>
-    <h1>Tutor Stub Auto-Eval Report</h1>
+    <h1>${reportScope.kind === 'qa_matrix_child' ? 'Tutor Stub Profile Report' : 'Tutor Stub Auto-Eval Report'}</h1>
     ${renderReportScopeBadge(reportScope)}
     <div class="sub">Started ${escapeHtml(summary.startedAt)} · completed ${escapeHtml(summary.completedAt)} · world ${escapeHtml(summary.config.world)} · DAG discourse ${escapeHtml(summary.config.dagMode || 'strict_dag')}</div>
     <div class="header-links">
@@ -5558,11 +5631,11 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
       ${renderReportSectionNav()}
       <div class="report-content">
         <section id="run-summary" class="report-section">
-          <h2 class="visually-hidden">Run Summary</h2>
+          <h2 class="visually-hidden">Profile Summary</h2>
           ${renderReportScopeNotice(reportScope)}
           <div class="summary-panel">
             <div class="metrics">
-              ${htmlMetricInfo('Rows', REPORT_TERM_TOOLTIPS.ok, summary.aggregates.rows, `${summary.aggregates.failed} failed · ${summary.aggregates.dryRun} dry-run`)}
+              ${htmlMetricInfo('Trials', REPORT_TERM_TOOLTIPS.ok, summary.aggregates.rows, `${summary.aggregates.failed} failed · ${summary.aggregates.dryRun} dry-run`)}
               ${htmlMetricInfo('Grounded', REPORT_TERM_TOOLTIPS.grounded, `${summary.aggregates.grounded}/${summary.aggregates.ok}`, `${Math.round(summary.aggregates.groundedRate * 100)}% closure`)}
               ${htmlMetricInfo('Mean Turns', REPORT_TERM_TOOLTIPS.meanTurns, summary.aggregates.meanTurns, `safety cap ${summary.config.safetyTurns}`)}
               ${htmlMetricInfo('Mean Coverage', REPORT_TERM_TOOLTIPS.meanCoverage, summary.aggregates.meanCoverage, 'learner-DAG best path')}
@@ -5618,12 +5691,12 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         </section>
 
         <section id="run-details" class="report-section">
-          <h2>Run Details</h2>
-          <div class="table-scroll" role="region" aria-label="Run details table" tabindex="0">
+          <h2>Trial Details</h2>
+          <div class="table-scroll" role="region" aria-label="Trial details table" tabindex="0">
           <table class="run-details-table">
       <thead><tr>
         <th>Policy</th>
-        <th>Run</th>
+        <th>Trial</th>
         <th>Status</th>
         <th>${reportInfoTerm('grounded', 'Grounded')}</th>
         <th>Stop</th>
@@ -5988,8 +6061,8 @@ function reportScopeForSummary({ jsonPath = '', summary = {}, config = {}, rootD
   };
   return {
     kind: qaChild.kind,
-    label: `QA matrix child: ${qaChild.profile}`,
-    note: `One learner-profile slice of ${qaChild.matrixId}; not the consolidated QA matrix.`,
+    label: `Profile: ${qaChild.profile}`,
+    note: `Part of evaluation ${qaChild.matrixId}.`,
     matrixId: qaChild.matrixId,
     profile: qaChild.profile,
     matrixRootHref: hrefRelative(rootDir, qaChild.matrixRoot),
@@ -6025,8 +6098,8 @@ function renderReportScopeNotice(scope) {
     .map(([label, href]) => `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`)
     .join(' ');
   return `<div class="scope-notice">
-    <strong>${escapeHtml(scope.label)}</strong>
-    <p>${escapeHtml(scope.note)} ${links}</p>
+    <strong>Evaluation → Profile → Trial</strong>
+    <p><b>${escapeHtml(scope.matrixId)}</b> → ${escapeHtml(scope.profile)}. Individual trials are listed below. ${links}</p>
   </div>`;
 }
 
@@ -6658,6 +6731,48 @@ function indexCohortModels(rows, activeRuns, rootDir) {
         ...bucket.activeRuns.map((run) => Number(run.updatedMs || 0)),
         0,
       );
+      const reportsByProfile = new Map(
+        latestReports.map((row) => [row.learnerProfile || row.reportScope?.profile || 'default', row]),
+      );
+      const activeByProfile = new Map();
+      for (const run of bucket.activeRuns) {
+        const profile = run.learnerProfile || run.reportScope?.profile || 'default';
+        const previous = activeByProfile.get(profile);
+        if (!previous || Number(run.updatedMs || 0) > Number(previous.updatedMs || 0)) activeByProfile.set(profile, run);
+      }
+      const profileNames = [
+        ...new Set([
+          ...profiles,
+          ...reportsByProfile.keys(),
+          ...activeByProfile.keys(),
+        ]),
+      ];
+      const profileReports = profileNames.map((profile) => {
+        const row = reportsByProfile.get(profile);
+        const active = activeByProfile.get(profile);
+        const completedTrials = active ? Number(active.totals?.completed || 0) : Number(row?.rows || 0);
+        const expectedTrials = active
+          ? Number(active.totals?.jobs || 0)
+          : Number(row?.rows || (row?.policies?.length || policies.length) * Number(qaPlan?.runs || 0));
+        return {
+          learnerProfile: profile,
+          status: active?.status || row?.status || 'pending',
+          completedTrials,
+          expectedTrials,
+          ok: active ? Number(active.totals?.ok || 0) : Number(row?.ok || 0),
+          failed: active ? Number(active.totals?.failed || 0) : Number(row?.failed || 0),
+          grounded: Number(row?.grounded || 0),
+          groundedRate: row?.groundedRate ?? null,
+          meanCoverage: row?.meanCoverage ?? null,
+          meanTurns: row?.meanTurns ?? null,
+          policies: row?.policies || active?.policies || policies,
+          model: row?.autoLearnerModel || active?.config?.autoLearnerModel || '',
+          completedAt: row?.completedAt || active?.updatedAt || '',
+          htmlHref: row?.htmlHref || '',
+          jsonHref: row?.jsonHref || '',
+          stateHref: active?.stateHref || '',
+        };
+      });
       return {
         id: scope.matrixId,
         key: bucket.key,
@@ -6699,14 +6814,7 @@ function indexCohortModels(rows, activeRuns, rootDir) {
             }
           : null,
         links: reportScopeLinks(scope).map(([label, href]) => ({ label, href })),
-        childReports: latestReports.map((row) => ({
-          learnerProfile: row.learnerProfile || row.reportScope?.profile || 'default',
-          htmlHref: row.htmlHref || '',
-          jsonHref: row.jsonHref || '',
-          status: row.status,
-          ok: row.ok,
-          failed: row.failed,
-        })),
+        childReports: profileReports,
       };
     })
     .filter(Boolean)
@@ -7333,7 +7441,7 @@ function tutorStubIndexClientJs() {
   }
   function scopeBadge(scope) {
     if (scope && scope.kind === 'qa_matrix_child') {
-      return '<span class="scope-badge matrix">' + esc(scope.label || 'QA matrix child') + '</span>';
+      return '<span class="scope-badge matrix">' + esc(scope.label || 'Profile artifact') + '</span>';
     }
     return '';
   }
@@ -7346,7 +7454,7 @@ function tutorStubIndexClientJs() {
       ].filter(function (item) { return item[1]; }).map(function (item) {
         return '<a href="' + esc(item[1]) + '">' + esc(item[0]) + '</a>';
       }).join(' ');
-      return '<span class="scope-note">' + esc(scope.note || 'QA matrix child report.') + (links ? ' ' + links : '') + '</span>';
+      return '<span class="scope-note">Evaluation: ' + esc(scope.matrixId || 'unknown') + (links ? ' · ' + links : '') + '</span>';
     }
     return '';
   }
@@ -7601,6 +7709,29 @@ function tutorStubIndexClientJs() {
     if (!links || !links.length) return '<span class="muted">Consolidated artifacts pending.</span>';
     return links.map(function (link) { return '<a href="' + esc(link.href) + '">' + esc(link.label) + '</a>'; }).join(' ');
   }
+  function renderEvaluationProfiles(cohort, primary) {
+    var reports = cohort.childReports || [];
+    if (!reports.length) return '<div class="muted">Profile slices have not started.</div>';
+    var completed = cohort.completedProfiles != null ? cohort.completedProfiles : reports.filter(function (report) { return report.htmlHref || report.jsonHref; }).length;
+    var expected = cohort.expectedProfiles != null ? cohort.expectedProfiles : reports.length;
+    var rows = reports.map(function (report) {
+      var completedTrials = Number(report.completedTrials || 0);
+      var expectedTrials = Number(report.expectedTrials || 0);
+      var trialValue = expectedTrials ? completedTrials + '/' + expectedTrials : String(completedTrials);
+      var trialNote = Number(report.ok || 0) + ' OK · ' + Number(report.failed || 0) + ' failed';
+      var closure = report.groundedRate == null ? 'pending' : pct(report.groundedRate);
+      var coverage = report.meanCoverage == null ? 'pending' : pct(report.meanCoverage);
+      var action = report.htmlHref
+        ? '<a href="' + esc(report.htmlHref) + '">Open profile</a>'
+        : report.stateHref
+          ? '<a href="' + esc(report.stateHref) + '">View state</a>'
+          : report.jsonHref
+            ? '<a href="' + esc(report.jsonHref) + '">Profile data</a>'
+            : '<span class="muted">pending</span>';
+      return '<div class="profile-row"><div class="profile-name"><strong>' + esc(report.learnerProfile) + '</strong><span>' + esc(report.model || '') + '</span></div><div><span class="status ' + esc(report.status || 'pending') + '">' + esc(report.status || 'pending') + '</span></div><div class="profile-value"><strong>' + esc(trialValue) + '</strong><span>' + esc(trialNote) + '</span></div><div class="profile-value"><strong>' + esc(closure) + '</strong><span>closure</span></div><div class="profile-value"><strong>' + esc(coverage) + '</strong><span>evidence path</span></div><div class="profile-actions">' + action + '</div></div>';
+    }).join('');
+    return '<details class="evaluation-profiles" data-persist-details="evaluation-profiles:' + esc(cohort.id) + '"' + (primary ? ' open' : '') + '><summary>Profiles (' + esc(completed) + '/' + esc(expected) + ' complete)</summary><div class="profile-list"><div class="profile-row profile-head"><span>Profile</span><span>Status</span><span>Trials</span><span>Closure</span><span>Coverage</span><span>Open</span></div>' + rows + '</div></details>';
+  }
   function renderCohortCard(cohort, primary) {
     var gate = cohort.discriminationGate;
     var gateValue = gate ? (gate.pass ? 'pass' : 'fail') : 'not run';
@@ -7610,29 +7741,28 @@ function tutorStubIndexClientJs() {
     var topPolicy = cohort.topPolicy
       ? '<div class="cohort-read"><strong>Current policy read</strong><span>' + esc(cohort.topPolicy.policy) + ' leads the consolidated QA score at ' + esc(measure(cohort.topPolicy.meanScore)) + '. Read this only inside this matched cohort.</span></div>'
       : '';
-    var childLinks = (cohort.childReports || []).map(function (report) {
-      var href = report.htmlHref || report.jsonHref;
-      return href ? '<a href="' + esc(href) + '">' + esc(report.learnerProfile) + '</a>' : '';
-    }).filter(Boolean).join(' ');
     var partialNote = cohort.status === 'running' ? 'completed slices only' : 'matched cohort';
     var completedProfiles = cohort.completedProfiles != null ? cohort.completedProfiles : (cohort.childReports || []).length;
     var expectedProfiles = cohort.expectedProfiles != null ? cohort.expectedProfiles : (cohort.profiles || []).length;
-    return '<article class="cohort-card ' + esc(cohort.decisionTone || 'pending') + (primary ? ' primary' : '') + '"><div class="cohort-card-head"><div><span class="cohort-eyebrow">' + (primary ? 'Selected cohort' : 'QA cohort') + '</span><h3>' + esc(cohort.id) + '</h3><p>' + esc(shortDate(cohort.completedAt)) + ' · baseline ' + esc(cohort.baselinePolicy || 'not declared') + '</p></div><span class="status ' + esc(cohort.status) + '">' + esc(cohort.status) + '</span></div><div class="cohort-decision ' + esc(cohort.decisionTone || 'pending') + '"><strong>' + esc(cohort.decision) + '</strong></div><div class="cohort-metrics">' + cohortMetric('Profiles', completedProfiles + '/' + expectedProfiles + ' complete', (cohort.profiles || []).join(', ')) + cohortMetric('Policies', (cohort.policies || []).length, (cohort.policies || []).join(', ')) + cohortMetric('Rows', Number(cohort.ok || 0) + Number(cohort.failed || 0), (cohort.ok || 0) + ' OK · ' + (cohort.failed || 0) + ' failed · ' + partialNote) + cohortMetric('Closure', pct(cohort.closureRate), 'mean coverage ' + pct(cohort.meanCoverage) + ' · ' + partialNote) + cohortMetric('Profile gate', gateValue, gateNote) + '</div>' + topPolicy + '<div class="cohort-actions">' + renderCohortLinks(cohort.links || []) + '</div>' + (childLinks ? '<div class="cohort-children"><strong>Child reports</strong> ' + childLinks + '</div>' : '') + '</article>';
+    return '<article class="cohort-card ' + esc(cohort.decisionTone || 'pending') + (primary ? ' primary' : '') + '"><div class="cohort-card-head"><div><span class="cohort-eyebrow">' + (primary ? 'Selected evaluation' : 'Evaluation') + '</span><h3>' + esc(cohort.id) + '</h3><p>' + esc(shortDate(cohort.completedAt)) + ' · baseline ' + esc(cohort.baselinePolicy || 'not declared') + '</p></div><span class="status ' + esc(cohort.status) + '">' + esc(cohort.status) + '</span></div><div class="cohort-decision ' + esc(cohort.decisionTone || 'pending') + '"><strong>' + esc(cohort.decision) + '</strong></div><div class="cohort-metrics">' + cohortMetric('Profiles', completedProfiles + '/' + expectedProfiles + ' complete', (cohort.profiles || []).join(', ')) + cohortMetric('Policies', (cohort.policies || []).length, (cohort.policies || []).join(', ')) + cohortMetric('Trials', Number(cohort.ok || 0) + Number(cohort.failed || 0), (cohort.ok || 0) + ' OK · ' + (cohort.failed || 0) + ' failed · ' + partialNote) + cohortMetric('Closure', pct(cohort.closureRate), 'mean coverage ' + pct(cohort.meanCoverage) + ' · ' + partialNote) + cohortMetric('Profile gate', gateValue, gateNote) + '</div>' + topPolicy + '<div class="cohort-actions">' + renderCohortLinks(cohort.links || []) + '</div>' + renderEvaluationProfiles(cohort, primary) + '</article>';
   }
-  function renderCohortWorkspace(cohorts) {
+  function renderEvaluationWorkspace(cohorts) {
     cohorts = cohorts || [];
-    if (!cohorts.length) return '<section class="cohort-workspace" id="current-experiment"><div class="cohort-workspace-head"><div><h2>Current Experiment</h2><p>No QA cohort has been detected yet. Standalone reports remain available below.</p></div></div></section>';
+    if (!cohorts.length) return '<section class="cohort-workspace" id="evaluations"><div class="cohort-workspace-head"><div><h2>Evaluations</h2><p>No matched evaluation has been detected yet. Standalone artifacts remain available below.</p></div></div></section>';
     var current = cohorts[0];
     var history = cohorts.slice(1);
-    return '<section class="cohort-workspace" id="current-experiment" aria-label="Current experiment cohort"><div class="cohort-workspace-head"><div><h2>Current Experiment</h2><p>One matched policy-by-learner cohort. Its QA and profile-separation decisions stay together here.</p></div><span class="live-count">' + esc(cohorts.length) + ' cohort' + (cohorts.length === 1 ? '' : 's') + '</span></div>' + renderCohortCard(current, true) + (history.length ? '<details class="cohort-history" data-persist-details="cohort-history"><summary>Earlier QA cohorts (' + esc(history.length) + ')</summary><div class="cohort-history-grid">' + history.slice(0, 8).map(function (cohort) { return renderCohortCard(cohort, false); }).join('') + '</div></details>' : '') + '</section>';
+    return '<section class="cohort-workspace" id="evaluations" aria-label="Evaluations"><div class="cohort-workspace-head"><div><h2>Evaluations</h2><p>Evaluation → Profile → Trial. Decisions stay at the matched evaluation level; open a profile only when you need its trials and replay.</p></div><span class="live-count">' + esc(cohorts.length) + ' evaluation' + (cohorts.length === 1 ? '' : 's') + '</span></div>' + renderCohortCard(current, true) + (history.length ? '<details class="cohort-history" data-persist-details="evaluation-history"><summary>Earlier evaluations (' + esc(history.length) + ')</summary><div class="cohort-history-grid">' + history.map(function (cohort) { return renderCohortCard(cohort, false); }).join('') + '</div></details>' : '') + '</section>';
+  }
+  function renderCohortWorkspace(cohorts) {
+    return renderEvaluationWorkspace(cohorts);
   }
   function renderBigPicture(model) {
     model = model || { bullets: [], cautions: [], policyStats: [], learnerStats: [], reportCount: 0 };
-    return '<details class="big-picture" id="big-picture" aria-label="Cross-run context" data-persist-details="cross-run-context"><summary class="big-picture-head"><div><h2>Cross-run Context</h2><p>Exploratory context over recent real reports. It may mix cohorts; use the selected experiment above for matched decisions.</p></div><span class="live-count">' + esc(model.reportCount) + ' report' + (model.reportCount === 1 ? '' : 's') + '</span></summary><div class="big-picture-body"><div class="big-picture-grid"><div class="big-picture-panel big-picture-panel-wide"><h3>Overall Read</h3><ul class="big-picture-read">' + (model.bullets || []).map(function (bullet) { return '<li>' + esc(bullet) + '</li>'; }).join('\n') + '</ul>' + ((model.cautions || []).length ? '<div class="big-picture-cautions">' + model.cautions.map(function (caution) { return '<div>' + esc(caution) + '</div>'; }).join('\n') + '</div>' : '') + '</div><div class="big-picture-panel big-picture-panel-wide"><h3>Learner Robustness</h3>' + renderLearnerRobustness(model) + '</div></div><div class="big-picture-panel"><h3>Exploratory Composite Policy Signal</h3><p class="muted">Weighted composite of closure, coverage, mastery, risk, leak discipline, turn efficiency, and progress. Compare only inside a coherent cohort.</p>' + renderPolicySignal(model) + '</div></div></details>';
+    return '<details class="big-picture" id="big-picture" aria-label="Cross-run context" data-persist-details="cross-run-context"><summary class="big-picture-head"><div><h2>Cross-run Context</h2><p>Exploratory context over recent real artifacts. It may mix evaluations; use the selected evaluation above for matched decisions.</p></div><span class="live-count">' + esc(model.reportCount) + ' profile artifact' + (model.reportCount === 1 ? '' : 's') + '</span></summary><div class="big-picture-body"><div class="big-picture-grid"><div class="big-picture-panel big-picture-panel-wide"><h3>Overall Read</h3><ul class="big-picture-read">' + (model.bullets || []).map(function (bullet) { return '<li>' + esc(bullet) + '</li>'; }).join('\n') + '</ul>' + ((model.cautions || []).length ? '<div class="big-picture-cautions">' + model.cautions.map(function (caution) { return '<div>' + esc(caution) + '</div>'; }).join('\n') + '</div>' : '') + '</div><div class="big-picture-panel big-picture-panel-wide"><h3>Learner Robustness</h3>' + renderLearnerRobustness(model) + '</div></div><div class="big-picture-panel"><h3>Exploratory Composite Policy Signal</h3><p class="muted">Weighted composite of closure, coverage, mastery, risk, leak discipline, turn efficiency, and progress. Compare only inside a coherent evaluation.</p>' + renderPolicySignal(model) + '</div></div></details>';
   }
   function reportDataAttrs(row) {
     var scope = row.reportScope || {};
-    return 'data-search="' + esc(row.searchText) + '" data-status="' + esc(row.status) + '" data-learner="' + esc(row.learnerProfile || '') + '" data-policies="' + esc((row.policies || []).join('|')) + '" data-policy-text="' + esc(row.policyText || '') + '" data-world="' + esc(row.world || '') + '" data-dag-mode="' + esc(row.dagMode || 'strict_dag') + '" data-completed-ms="' + esc(row.completedMs || 0) + '" data-report-name="' + esc(row.reportName || '') + '" data-report-scope="' + esc(scope.kind || 'standalone') + '" data-run-kind="' + esc(row.runKind || 'real') + '" data-grounded-rate="' + esc(row.groundedRate == null ? '' : row.groundedRate) + '" data-turns="' + esc(row.meanTurns == null ? '' : row.meanTurns) + '" data-coverage="' + esc(row.meanCoverage == null ? '' : row.meanCoverage) + '" data-rows="' + esc(row.rows || 0) + '" data-ok="' + esc(row.ok || 0) + '" data-failed="' + esc(row.failed || 0) + '" data-svgs="' + esc(row.svgCount || 0) + '"';
+    return 'data-search="' + esc(row.searchText) + '" data-evaluation="' + esc(scope.matrixId || '__standalone__') + '" data-status="' + esc(row.status) + '" data-learner="' + esc(row.learnerProfile || '') + '" data-policies="' + esc((row.policies || []).join('|')) + '" data-policy-text="' + esc(row.policyText || '') + '" data-world="' + esc(row.world || '') + '" data-dag-mode="' + esc(row.dagMode || 'strict_dag') + '" data-completed-ms="' + esc(row.completedMs || 0) + '" data-report-name="' + esc(row.reportName || '') + '" data-report-scope="' + esc(scope.kind || 'standalone') + '" data-run-kind="' + esc(row.runKind || 'real') + '" data-grounded-rate="' + esc(row.groundedRate == null ? '' : row.groundedRate) + '" data-turns="' + esc(row.meanTurns == null ? '' : row.meanTurns) + '" data-coverage="' + esc(row.meanCoverage == null ? '' : row.meanCoverage) + '" data-rows="' + esc(row.rows || 0) + '" data-ok="' + esc(row.ok || 0) + '" data-failed="' + esc(row.failed || 0) + '" data-svgs="' + esc(row.svgCount || 0) + '"';
   }
   function reportRow(row) {
     var scope = row.reportScope || {};
@@ -7644,6 +7774,48 @@ function tutorStubIndexClientJs() {
     var closure = Math.round(Number(row.groundedRate || 0) * 100) + '%';
     var coverage = Number.isFinite(Number(row.meanCoverage)) ? Math.round(Number(row.meanCoverage) * 100) + '%' : 'n/a';
     return '<article class="report-index-card" ' + reportDataAttrs(row) + '><div class="report-index-card-head"><div><strong>' + esc(scope.kind === 'qa_matrix_child' ? (row.learnerProfile || scope.profile) : (shortDate(row.completedAt) || row.reportName)) + '</strong><span>' + esc(shortDate(row.completedAt)) + '</span></div><span class="status ' + esc(row.status) + '">' + esc(row.status) + '</span></div><p>' + esc(row.reportName) + '</p><div class="report-card-stats"><span><b>' + esc(row.ok) + '/' + esc(row.failed) + '</b> OK/failed</span><span><b>' + esc(closure) + '</b> closure</span><span><b>' + esc(coverage) + '</b> coverage</span><span><b>' + esc(row.meanTurns) + '</b> turns</span></div><div class="report-card-policies">' + policyChips((row.policies || []).slice(0, 4)) + '</div><div class="report-card-actions actions">' + reportActionLinks(row) + '</div></article>';
+  }
+  function upgradeArtifactHistory(data) {
+    var section = app.querySelector('.report-list');
+    if (!section || !section.parentNode) return;
+    var head = section.querySelector('.report-list-head');
+    if (head) {
+      var title = head.querySelector('h2');
+      var note = head.querySelector('p');
+      if (title) title.textContent = 'Artifact history';
+      if (note) note.textContent = 'Raw profile and standalone report files. This is a diagnostic archive, not the primary evaluation view.';
+    }
+    var details = document.createElement('details');
+    details.className = 'artifact-history';
+    details.id = 'artifact-history';
+    details.setAttribute('data-persist-details', 'artifact-history');
+    var summary = document.createElement('summary');
+    if (head) summary.appendChild(head);
+    details.appendChild(summary);
+    section.parentNode.replaceChild(details, section);
+    var body = document.createElement('div');
+    body.className = 'artifact-history-body';
+    body.appendChild(section);
+    details.appendChild(body);
+
+    var toolbar = section.querySelector('.toolbar');
+    if (!toolbar) return;
+    var label = document.createElement('label');
+    label.className = 'control';
+    var labelText = document.createElement('span');
+    labelText.textContent = 'Evaluation';
+    var select = document.createElement('select');
+    select.setAttribute('data-evaluation-filter', '');
+    select.setAttribute('aria-label', 'Choose evaluation artifacts');
+    var selectedId = data.cohorts && data.cohorts[0] ? data.cohorts[0].id : '__all__';
+    var options = [{ value: selectedId, label: selectedId ? 'Selected evaluation' : 'All artifacts' }, { value: '__all__', label: 'All evaluations and standalone' }, { value: '__standalone__', label: 'Standalone only' }];
+    (data.cohorts || []).forEach(function (cohort) {
+      if (cohort.id !== selectedId) options.push({ value: cohort.id, label: cohort.id });
+    });
+    select.innerHTML = options.map(function (option) { return '<option value="' + esc(option.value) + '">' + esc(option.label) + '</option>'; }).join('');
+    label.appendChild(labelText);
+    label.appendChild(select);
+    toolbar.insertBefore(label, toolbar.children[1] || null);
   }
   function readStoredUiState() {
     try { return JSON.parse(window.sessionStorage.getItem(uiStorageKey) || 'null'); } catch (error) { return null; }
@@ -7657,7 +7829,7 @@ function tutorStubIndexClientJs() {
     var filterPanel = app.querySelector('[data-filter-panel]');
     return {
       controls: {
-        search: value('[data-filter]'), scope: value('[data-scope-filter]'), from: value('[data-date-from]'), to: value('[data-date-to]'),
+        search: value('[data-filter]'), evaluation: value('[data-evaluation-filter]'), scope: value('[data-scope-filter]'), from: value('[data-date-from]'), to: value('[data-date-to]'),
         status: value('[data-status-filter]'), learner: value('[data-learner-filter]'), policy: value('[data-policy-filter]'), world: value('[data-world-filter]'),
         sort: value('[data-sort-key]'), direction: value('[data-sort-dir]')
       },
@@ -7681,6 +7853,7 @@ function tutorStubIndexClientJs() {
     var rowsHtml = (data.rows || []).map(reportRow).join('\n') || '<tr><td colspan="10">No reports found.</td></tr>';
     var cardsHtml = (data.rows || []).map(reportCard).join('\n') || '<p>No reports found.</p>';
     app.innerHTML = '<header><h1>Tutor Stub Reports</h1><div class="muted">Updated ' + esc(shortDate(data.generatedAt)) + ' · root ' + esc(data.rootLabel || '.') + ' · <a href="' + esc(data.guideHref || 'docs/tutor-stub-arc-guide.html') + '">arc guide</a></div></header><main>' + renderCohortWorkspace(data.cohorts || []) + renderLiveRuns(data.activeRuns || []) + renderBigPicture(data.bigPicture) + '<section class="metrics">' + htmlMetric('Reports', totals.reports || 0, (totals.htmlReports || 0) + ' with HTML · ' + (totals.totalReports || 0) + ' total') + htmlMetric('Rows', Number(totals.ok || 0) + Number(totals.failed || 0) + Number(totals.dryRun || 0), (totals.failed || 0) + ' failed · ' + (totals.hiddenByDefault || 0) + ' hidden by default') + htmlMetric('Grounded', (totals.grounded || 0) + '/' + (totals.ok || 0), Math.round(groundedRate * 100) + '% closure') + htmlMetric(infoTerm('Field Snapshots', "Static SVG exports written beside reports for inspecting each row's interaction-field visualization. They are report artifacts, not scored rows."), totals.svgs || 0, 'static visualization exports') + htmlMetric('Operations', runningCount, staleCount + ' stale need attention') + '</section><section class="report-list" id="report-list"><div class="report-list-head"><div><h2>All Reports</h2><p>Search individual report artifacts after reading the cohort decision above.</p></div><span class="muted" data-count>0 shown</span></div><details class="filter-panel" data-filter-panel open><summary>Filters and sorting <span data-active-filter-count>default view</span></summary><div class="toolbar"><label class="control"><span>Search</span><input data-filter placeholder="Search reports, policies, learner, model" aria-label="Search reports"></label><label class="control"><span>Run Set</span><select data-scope-filter aria-label="Choose which reports to include"><option value="real" selected>Real runs</option><option value="all">Everything</option></select></label><label class="control"><span>From</span><input type="date" data-date-from aria-label="Filter from completed date"></label><label class="control"><span>To</span><input type="date" data-date-to aria-label="Filter to completed date"></label><label class="control"><span>Status</span><select data-status-filter aria-label="Filter by status"><option value="">All</option>' + optionHtml(options.status) + '</select></label><label class="control"><span>Learner</span><select data-learner-filter aria-label="Filter by learner"><option value="">All</option>' + optionHtml(options.learner) + '</select></label><label class="control"><span>Policy</span><select data-policy-filter aria-label="Filter by policy"><option value="">All</option>' + optionHtml(options.policy) + '</select></label><label class="control"><span>World</span><select data-world-filter aria-label="Filter by world"><option value="">All</option>' + optionHtml(options.world) + '</select></label><label class="control"><span>Sort</span><select data-sort-key aria-label="Sort reports"><option value="date">Date</option><option value="status">Status</option><option value="learner">Learner</option><option value="policy">Policy</option><option value="grounded">Grounded</option><option value="coverage">Evidence Path</option><option value="turns">Turns</option><option value="rows">Rows</option><option value="failed">Failed</option><option value="svgs">Field Snapshots</option><option value="report">Report</option></select></label><label class="control"><span>Direction</span><select data-sort-dir aria-label="Sort direction"><option value="desc">Desc</option><option value="asc">Asc</option></select></label><button type="button" data-reset>Reset</button></div></details><div class="report-card-list" data-report-card-list>' + cardsHtml + '</div><div class="table-scroll report-index-scroll" role="region" aria-label="Report table" tabindex="0"><table class="report-index-table"><thead><tr><th>Completed</th><th class="links-cell">Links</th><th>' + infoTerm('Status', 'Run-level technical status: ok has no failed rows, failed has one or more failed rows, dry_run is configuration-only output.') + '</th><th>Policies</th><th>Learner</th><th>' + infoTerm('OK/Failed', 'OK rows completed without a technical failure. Failed rows are generation, resume, or evaluation failures.') + '</th><th>' + infoTerm('Grounded', 'Rows where the learner reached grounded asserted-secret closure, shown as grounded over OK rows plus percentage.') + '</th><th>' + infoTerm('Turns', 'Mean learner turns used by completed rows before grounded closure or another stop condition.') + '</th><th>' + infoTerm('Evidence Path', 'Mean learner-DAG best-path coverage: how much of the target evidence path is grounded, shown as a percentage with the raw 0 to 1 coverage score underneath.') + '</th><th>' + infoTerm('Field Snapshots', 'Count of static SVG exports emitted beside the report for inspecting per-row interaction-field visualizations. This is an artifact count, not an evaluation score.') + '</th></tr></thead><tbody>' + rowsHtml + '</tbody></table></div></section></main>';
+    upgradeArtifactHistory(data);
     bindControls(saved);
     state.rendered = true;
     if (window.location.hash) {
@@ -7692,6 +7865,7 @@ function tutorStubIndexClientJs() {
   }
   function bindControls(saved) {
     var input = app.querySelector('[data-filter]');
+    var evaluationFilter = app.querySelector('[data-evaluation-filter]');
     var scopeFilter = app.querySelector('[data-scope-filter]');
     var dateFrom = app.querySelector('[data-date-from]');
     var dateTo = app.querySelector('[data-date-to]');
@@ -7709,6 +7883,7 @@ function tutorStubIndexClientJs() {
     var cards = Array.from(app.querySelectorAll('.report-index-card[data-search]'));
     var count = app.querySelector('[data-count]');
     var activeFilterCount = app.querySelector('[data-active-filter-count]');
+    var defaultEvaluation = state.data && state.data.cohorts && state.data.cohorts[0] ? state.data.cohorts[0].id : '__all__';
     var numericSortKeys = new Set(['date', 'grounded', 'coverage', 'turns', 'rows', 'failed', 'svgs']);
     var sortMap = { date: 'completedMs', status: 'status', learner: 'learner', policy: 'policyText', grounded: 'groundedRate', coverage: 'coverage', turns: 'turns', rows: 'rows', failed: 'failed', svgs: 'svgs', report: 'reportName' };
     function numberValue(row, key) {
@@ -7738,6 +7913,7 @@ function tutorStubIndexClientJs() {
     }
     function rowMatches(row) {
       var q = (input && input.value || '').trim().toLowerCase();
+      var evaluation = evaluationFilter && evaluationFilter.value || defaultEvaluation;
       var scope = scopeFilter && scopeFilter.value || 'real';
       var status = statusFilter && statusFilter.value || '';
       var learner = learnerFilter && learnerFilter.value || '';
@@ -7746,6 +7922,7 @@ function tutorStubIndexClientJs() {
       var fromMs = dayStartMs(dateFrom && dateFrom.value || '');
       var toMs = dayEndMs(dateTo && dateTo.value || '');
       var completedMs = numberValue(row, 'completedMs');
+      if (evaluation !== '__all__' && row.dataset.evaluation !== evaluation) return false;
       if (scope === 'real' && row.dataset.runKind !== 'real') return false;
       if (q && !row.dataset.search.includes(q)) return false;
       if (fromMs !== null && (completedMs === null || completedMs < fromMs)) return false;
@@ -7782,11 +7959,12 @@ function tutorStubIndexClientJs() {
         if (cardList) cardList.appendChild(card);
       });
       if (count) count.textContent = shown + ' shown';
-      var active = [input && input.value, scopeFilter && scopeFilter.value !== 'real' ? scopeFilter.value : '', dateFrom && dateFrom.value, dateTo && dateTo.value, statusFilter && statusFilter.value, learnerFilter && learnerFilter.value, policyFilter && policyFilter.value, worldFilter && worldFilter.value, sortKey && sortKey.value !== 'date' ? sortKey.value : '', sortDir && sortDir.value !== 'desc' ? sortDir.value : ''].filter(Boolean).length;
+      var active = [input && input.value, evaluationFilter && evaluationFilter.value !== defaultEvaluation ? evaluationFilter.value : '', scopeFilter && scopeFilter.value !== 'real' ? scopeFilter.value : '', dateFrom && dateFrom.value, dateTo && dateTo.value, statusFilter && statusFilter.value, learnerFilter && learnerFilter.value, policyFilter && policyFilter.value, worldFilter && worldFilter.value, sortKey && sortKey.value !== 'date' ? sortKey.value : '', sortDir && sortDir.value !== 'desc' ? sortDir.value : ''].filter(Boolean).length;
       if (activeFilterCount) activeFilterCount.textContent = active ? active + ' active' : 'default view';
     }
     var controls = saved && saved.controls || {};
     if (input) input.value = controls.search || '';
+    if (evaluationFilter) evaluationFilter.value = controls.evaluation || defaultEvaluation;
     if (scopeFilter) scopeFilter.value = controls.scope || 'real';
     if (dateFrom) dateFrom.value = controls.from || '';
     if (dateTo) dateTo.value = controls.to || '';
@@ -7803,11 +7981,12 @@ function tutorStubIndexClientJs() {
       node.addEventListener('toggle', persistUiState);
     });
     if (filterPanel) filterPanel.addEventListener('toggle', persistUiState);
-    [input, scopeFilter, dateFrom, dateTo, statusFilter, learnerFilter, policyFilter, worldFilter, sortKey, sortDir].forEach(function (control) {
+    [input, evaluationFilter, scopeFilter, dateFrom, dateTo, statusFilter, learnerFilter, policyFilter, worldFilter, sortKey, sortDir].forEach(function (control) {
       if (control) control.addEventListener(control === input ? 'input' : 'change', function () { applyIndexControls(); persistUiState(); });
     });
     if (reset) reset.addEventListener('click', function () {
       if (input) input.value = '';
+      if (evaluationFilter) evaluationFilter.value = defaultEvaluation;
       if (scopeFilter) scopeFilter.value = 'real';
       if (dateFrom) dateFrom.value = '';
       if (dateTo) dateTo.value = '';

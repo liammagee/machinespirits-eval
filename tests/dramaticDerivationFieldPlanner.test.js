@@ -5,8 +5,10 @@ import test from 'node:test';
 
 import {
   buildDialogueReport,
+  buildFieldReportContext,
   FIELD_PLANNER_SCHEMA,
   FIELD_PLANNER_PROJECTION_SCHEMA,
+  FIELD_REPORT_CONTEXT_SCHEMA,
   loadWorld,
   runDrama,
   selectFieldPlannerMove,
@@ -120,6 +122,79 @@ test('field planner cannot let consolidation outrank a due scheduled release', (
   assert.equal(plan.selectedMoveFamily, 'release_next_evidence');
   assert.equal(plan.targetPremise, 'p1');
   assert.equal(plan.conductDecision.selectedMoveFamily, 'release_next_evidence');
+});
+
+test('field report context carries field summary without any move recommendation', () => {
+  const report = buildFieldReportContext({
+    turn: 3,
+    interactionField: {
+      final: {
+        turn: 3,
+        learner: {
+          dimensions: { mastery: 0.1, evidenceGrounding: 0.1, productiveConfusion: 0.2 },
+          attractorCounts: { misconception_attractor: 1 },
+          meanSpeed: 0.1,
+        },
+        tutor: { dimensions: { pedagogicalUncertainty: 0.8 } },
+        discourse: { dimensions: { openQuestions: 0.8 } },
+        joint: {
+          dimensions: {
+            couplingStrength: 0.2,
+            pedagogicalAlignment: 0.3,
+            productiveTension: 0.25,
+            interactionMomentum: 0.2,
+            trajectoryRisk: 0.75,
+          },
+          attractor: 'asymmetric_drift',
+        },
+        script: { stage: 'failure' },
+      },
+    },
+    learnerField: { turns: [] },
+  });
+
+  assert.equal(report.schema, FIELD_REPORT_CONTEXT_SCHEMA);
+  assert.equal(report.active, true);
+  assert.equal(report.conductAuthority, false);
+  assert.equal(report.nonLeakAudit.ok, true);
+  const text = report.promptLines.join('\n');
+  assert.match(text, /joint field:/u);
+  assert.match(text, /script stage: failure/u);
+  // The placebo block must describe, never recommend: no conduct family, no
+  // candidate projection, no release language.
+  assert.doesNotMatch(text, /conduct family/u);
+  assert.doesNotMatch(text, /candidate/u);
+  assert.doesNotMatch(text, /release/u);
+});
+
+test('runDrama records field report context rows without planner authority', async () => {
+  const tutorViews = [];
+  const result = await runDrama({
+    world: SMOKE_WORLD,
+    roles: {
+      director: async () => ({ direction: '[The inquiry opens.]' }),
+      tutor: async (view) => {
+        tutorViews.push(JSON.parse(JSON.stringify(view)));
+        return { dialogue: 'Say what the current public object licenses.' };
+      },
+      learner: async () => ({ dialogue: 'I am listening.' }),
+    },
+    options: {
+      fieldReportContext: true,
+      maxTurns: 1,
+      stopOnStall: false,
+    },
+  });
+
+  assert.equal(tutorViews.length, 1);
+  assert.equal(tutorViews[0].fieldReportContext.schema, FIELD_REPORT_CONTEXT_SCHEMA);
+  assert.equal(tutorViews[0].fieldReportContext.active, true);
+  // Report-only arm: no planner state on the view, no planner rows recorded.
+  assert.equal(tutorViews[0].fieldPlanner, undefined);
+  assert.equal(result.fieldPlanner, undefined);
+  assert.equal(result.fieldReportContext.length, 1);
+  assert.equal(result.fieldReportContext[0].nonLeakAuditOk, true);
+  assert.ok(result.fieldReportContext[0].metrics);
 });
 
 test('runDrama computes and records field planner rows before tutor turns', async () => {

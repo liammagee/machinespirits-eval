@@ -35,9 +35,17 @@ Run the same worlds, seeds, learner profile, tutor model stack, stop rules, and 
 | arm | runtime flags | purpose |
 | --- | --- | --- |
 | `baseline_hidden_proofdebt` | current best hidden+proofDebt configuration, no field planner | primary control |
-| `field_report_only` | field reporting enabled, no planner authority | instrumentation placebo/control |
+| `field_report_only` | `--field-report-context` — the coupled-field summary is injected into the tutor context with no move recommendation and no conduct authority | instrumentation placebo/control |
 | `field_planner_advisory` | `--field-planner` | tests whether planner advice changes tutor conduct without enforced control |
 | `field_planner_enforce` | `--field-planner-enforce` | tests whether candidate-projection control helps when made binding |
+
+The placebo arm must stay flag-distinct from baseline (enforced by test): if
+`field_report_only` ran the same command as baseline, decision rule 2 below
+would pass vacuously and a planner "win" could not be separated from the
+prompt-context change of merely showing the tutor the field report. Note that
+in mock mode the deterministic tutor ignores prompt content, so mock rows
+cannot exercise this arm (or the advisory arm) behaviorally — mock validates
+plumbing and trace coherence only.
 
 Optional secondary arms may be added only after the primary four-arm gate is registered:
 
@@ -68,6 +76,11 @@ Minimum:
 - `k = 10` seeds per arm per world for the first promotable local claim.
 
 The same seed indexes must be used across arms. Failed rows caused by provider/network errors may be resumed, but no semantic rerolls are allowed.
+
+Seed scope caveat: the seed parameterizes the decay process and row identity
+only. In real mode the model backend is not seeded, so "same seed across arms"
+pairs decay trajectories, not model behavior — report per-arm distributions,
+not seed-paired deltas, for real-mode rows.
 
 ## Primary Endpoints
 

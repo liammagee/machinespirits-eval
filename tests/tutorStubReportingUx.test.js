@@ -116,7 +116,7 @@ function writeRunState(dir, learnerProfile, updatedAt) {
   );
 }
 
-test('tutor-stub report index is cohort-first and preserves reporting UX state', () => {
+test('tutor-stub report index nests profiles under evaluations and preserves reporting UX state', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-reporting-ux-'));
   const cohortRoot = path.join(root, 'custom-profile-pressure-run');
   const diligentDir = path.join(cohortRoot, 'diligent');
@@ -185,6 +185,9 @@ test('tutor-stub report index is cohort-first and preserves reporting UX state',
   assert.ok(cohort.links.some((link) => link.label === 'QA summary'));
   assert.ok(cohort.links.some((link) => link.label === 'profile gate'));
   assert.equal(cohort.childReports.length, 2);
+  assert.ok(cohort.childReports.every((profile) => profile.completedTrials === 1));
+  assert.ok(cohort.childReports.every((profile) => profile.expectedTrials === 2));
+  assert.ok(cohort.childReports.every((profile) => profile.model === 'codex.gpt-5.5'));
   assert.ok(data.rows.every((row) => row.reportScope.kind === 'qa_matrix_child'));
   assert.deepEqual(
     data.activeRuns.map((run) => run.status).sort(),
@@ -195,11 +198,18 @@ test('tutor-stub report index is cohort-first and preserves reporting UX state',
   const css = fs.readFileSync(path.join(root, 'assets', 'tutor-stub-report.css'), 'utf8');
   const shell = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   assert.match(client, /renderCohortWorkspace/);
+  assert.match(client, /renderEvaluationWorkspace/);
+  assert.match(client, /Evaluation → Profile → Trial/);
+  assert.match(client, /evaluation-profiles/);
+  assert.match(client, /Artifact history/);
+  assert.match(client, /data-evaluation-filter/);
   assert.match(client, /machinespirits\.tutorStub\.reportIndex\.v1/);
   assert.match(client, /sessionStorage\.setItem/);
   assert.match(client, /report-index-card/);
   assert.match(client, /Needs attention/);
   assert.match(css, /\.cohort-workspace/);
+  assert.match(css, /\.evaluation-profiles/);
+  assert.match(css, /\.artifact-history/);
   assert.match(css, /\.report-card-list/);
   assert.match(css, /\.report-shell \{ display:block; \}/);
   assert.match(shell, /data-index-data="index-data\.json"/);
@@ -213,6 +223,10 @@ test('tutor-stub report index is cohort-first and preserves reporting UX state',
 test('individual tutor-stub reports expose progressive summaries and accessible replay tabs', () => {
   const source = fs.readFileSync(path.join(ROOT, 'scripts', 'run-tutor-stub-auto-eval.js'), 'utf8');
   assert.match(source, /class="read-first-cards"/);
+  assert.match(source, /Tutor Stub Profile Report/);
+  assert.match(source, /<h2>Trial Details<\/h2>/);
+  assert.match(source, /Evaluation → Profile → Trial/);
+  assert.doesNotMatch(source, /not the consolidated QA matrix/);
   assert.match(source, /Full policy ranking and secondary metrics/);
   assert.match(source, /<details class="viz-sidebar"/);
   assert.match(source, /role="tab" aria-selected="true" aria-controls="tutor-stub-viz-canvas"/);
