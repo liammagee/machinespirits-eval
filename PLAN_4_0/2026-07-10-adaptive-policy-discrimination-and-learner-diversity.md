@@ -131,6 +131,9 @@ without enough pedagogical leverage.
 
 ## Related notes
 
+- `PLAN_4_0/2026-07-10-headroom-fixed-horizon-interactions.md` — post-hoc
+  fixed-horizon reanalysis of the headroom run confirming the predicted
+  profile-policy rank crossings (exploratory, n=3)
 - `PLAN_4_0/2026-07-10-phase6-gate-explainer-and-headroom-result.md`
 - `PLAN_4_0/2026-07-10-preconscious-adaptation-review.md`
 - `PLAN_4_0/PHASE_6_EVIDENCE_GATE_PLAN.md`
