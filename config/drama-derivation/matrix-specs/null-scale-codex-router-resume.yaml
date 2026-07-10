@@ -1,0 +1,30 @@
+# TRIMMED RESUME of null-scale-codex-router (codex quota wall at 12/20;
+# operator confirmed quota refreshed): same labels + seeds, missing arms.
+base:
+  world: config/drama-derivation/world-005-marrick.yaml
+  script: config/drama-derivation/tutor-scripts/marrick-v001.md
+  mode: real
+  flags:
+    scene-mode: true
+    didactic-mode: true
+    register: modern
+    release-authority: true
+    pacing-guard: true
+concurrency: 3
+arms:
+  - label: register-router-r6
+    flags: { decay: '{"seed":631,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: register-router-r7
+    flags: { decay: '{"seed":641,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r8
+    flags: { decay: '{"seed":643,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r8
+    flags: { decay: '{"seed":643,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r9
+    flags: { decay: '{"seed":647,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r9
+    flags: { decay: '{"seed":647,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }
+  - label: baseline-r10
+    flags: { decay: '{"seed":653,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}' }
+  - label: register-router-r10
+    flags: { decay: '{"seed":653,"rate":0.35,"mutateShare":0.5,"maxConcurrent":3}', register-router: true }

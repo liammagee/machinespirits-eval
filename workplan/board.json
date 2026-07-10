@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-10T11:00:40.807Z",
+  "generated": "2026-07-10T13:29:53.897Z",
   "counts": {
-    "total": 104,
+    "total": 105,
     "byStatus": {
-      "done": 85,
+      "done": 86,
       "blocked": 1,
       "dropped": 2,
       "review": 4,
@@ -13,7 +13,7 @@
     },
     "byType": {
       "research": 41,
-      "experiment": 35,
+      "experiment": 36,
       "infra": 11,
       "content": 2,
       "maintenance": 5,
@@ -1002,6 +1002,32 @@
       ],
       "branch": "codex/ux-enhancements",
       "milestone": "desktop-app"
+    },
+    {
+      "id": "shrinkage-probes",
+      "title": "Shrinkage probes: within-seed replication + null-scaling controls",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-07",
+      "updated": "2026-07-07",
+      "branch": "worktree-classifier-dag-register",
+      "verification": "Both limbs run under the frozen prereg; the pre-stated reads recorded; §5.12.7's 'neither has been run' sentence replaced under the usual audit.",
+      "claim_status": "methods",
+      "links": {
+        "notes": "SHRINKAGE-PROBES-PREREGISTRATION.md",
+        "items": [
+          "register-router-contrast",
+          "classifier-dag-register"
+        ]
+      },
+      "tags": [
+        "methodology",
+        "shrinkage",
+        "derivation"
+      ]
     },
     {
       "id": "strategy-refusal-smoke",

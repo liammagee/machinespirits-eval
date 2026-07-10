@@ -135,6 +135,27 @@ export async function generateSuperegoCritique(options) {
     ? JSON.stringify(writingPad.preconscious.recentPatterns.slice(0, 3), null, 2)
     : '[]';
 
+  // Recognition Engine read-path fix (Line A, notes/2026-07-06-longitudinal-
+  // drift-adaptation-prereg.md §8.8, bug 1): unconscious.permanentTraces is
+  // the one Writing Pad layer the live path already populates with real
+  // content (writingPadService.settleToUnconscious, called from this
+  // module's own negotiateDialectically below on a real superego-
+  // disapproval synthesis), but until now nothing downstream ever read it
+  // back into a prompt — recognitionOrchestrator.js was meant to be that
+  // reader but has zero callers on this request path. Added directly here,
+  // minimal and additive, since this function already owns the one prompt
+  // where "Learner archetype"/"Recent patterns" are embedded the same way.
+  const priorSessionMemory = writingPad && Array.isArray(writingPad.unconscious.permanentTraces)
+    ? JSON.stringify(
+        writingPad.unconscious.permanentTraces.slice(-3).map((trace) => ({
+          synthesis: trace.synthesis || null,
+          recognitionType: trace.recognitionType || null,
+        })),
+        null,
+        2
+      )
+    : '[]';
+
   // Build priority/depriority criteria guidance from behavioral overrides
   let criteriaGuidance = '';
   if (behavioralOverrides?.priority_criteria?.length > 0 || behavioralOverrides?.deprioritized_criteria?.length > 0) {
@@ -164,6 +185,9 @@ ${unconsciousContext}
 
 Recent patterns (from preconscious):
 ${recentPatterns}
+
+Prior recognition moments (from unconscious memory, most recent last):
+${priorSessionMemory}
 
 Your pedagogical principles:
 1. SOCRATIC RIGOR: Never give direct answers. Make learners work for understanding.

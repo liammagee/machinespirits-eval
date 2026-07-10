@@ -254,3 +254,114 @@ only at n=3 sessions/arm; fixing the internal Writing Pad channels or a
 confirmatory continuity design are both separately-scoped, not
 authorized here. STOP per §8.5/§8.7 — nothing further without a fresh
 pre-registration.
+
+2026-07-07 Claude: Part-1 read-path repairs + Stage A4 (structural
+check-in pilot) executed end-to-end. Part 1 (commit 686145ec, no prereg
+needed — engineering): all four internal Writing Pad read-path bugs
+fixed at the source — (1) dialectical superego critique never read
+permanentTraces back into its prompt (new priorSessionMemory section);
+(2) runMemoryCycle retrieved unconscious context then discarded it
+(now persisted into preconscious.recentPatterns as recalled_context);
+(3) nothing wrote conscious.workingThoughts on the live path (final
+suggestions now recorded, feeding pattern promotion); (4)
+getRecognitionMoment(s) dropped synthesis_resolution (restored); 15
+hermetic tests. A4 prereg frozen as note §9 (commit 426a483b): same
+3-session drift arc, identical scripted check-in slot in both arms'
+session-open turns, primary outcome = deterministic word-bounded
+content-bearing check-in rate, gates pad-ON >=3/4 AND pad-OFF 0/4.
+Pilot (6/6 clean, ~$0.30, pad-ON edecf6f8/3075efb4/c5bc6075, pad-OFF
+38d45370/14256553/14a100bc): §7.4 gate PASS (4 moments s1; 9 by s3);
+§9.4 live-delivery gate VOID-AS-INSTRUMENTED (naive marker scan false-
+PASSed on scenario-echo; pad-only strings 0/11 because the dialectical
+calls the fixes feed are logged nowhere — structural blind spot), with
+delivery CONFIRMED by triangulation (3 session-2 moments quoting live
+ratio content prove the pad-reading critique prompt ran; per-turn pad
+fetches carried session-1 traces + cross-session recalled_context
+reinforced x3-x7; code pinned to run commit). VERDICT: structural-
+signal gate FAIL — pad-ON 0/4, pad-OFF 0/4, no red flag, no instrument
+failures, marker-grep clean (coarse hits = same-session/curriculum/
+model idiom + one HTTP-date '4:5' substring, the A3 '2:3' precedent).
+All six openings dive into current-session math with zero retrospective
+content; even scenario-planted continuity text goes un-echoed. Bounded
+reading: delivered-but-not-used — memory demonstrably reaches the
+deliberation prompts while the delivered opening stays memory-silent,
+so A3's continuity null EXTENDS to the scripted case; the block now
+sits at the output genre/policy layer (suggestion-JSON format;
+negotiation resolutions not rewriting the delivered message), not
+memory access. Directional-only at n=3/arm. STOP per §9.4 — output-side
+levers are a fresh design decision requiring a new prereg + go.
+Artifacts: exports/longitudinal-drift-stage-a4.{json,md}.
+
+2026-07-07 Claude: Stage A4-codex (§10) executed end-to-end under the
+confirmed user directive (nemotron/kimi never the default; suspected
+false negatives). Prereg frozen before spend; §9.2 carries a dated
+correction (the earlier "injected" characterization of the codex/bridge
+requests was wrong — confirmed repository-owner directives). Enablers
+landed first: CLI bridge extended into tutor-core's dialogue engine via
+an eval-injected external-provider hook (one-way seam intact; hermetic
+cell_40 proof, zero HTTP escape; cli_capture restores apiPayload
+observability for CLI calls; sync-registration race found by the canary
+itself and fixed), plus the CLAUDE.md "Model stack default" rule and a
+non-blocking eval-cli stderr warning on bare nemotron/kimi runs.
+Pilot (6/6 clean, 4/4 turns each, ~37.5 min wall-clock, Max-plan
+quota): pad-ON eval-2026-07-07-{139daa20,ffaac9d7,44a48b61} (learner
+a4c-drift-padon-v1-2026-07-07), pad-OFF
+eval-2026-07-07-{433a19d2,b7b30353,49cbde02}. §7.4 gate PASS (1 moment
+s1; 2 total — codex superego disapproves far less than nemotron's 9);
+delivery gate PASS at BOTH scoping levels (naive 12/12 AND pad-only
+strings "unnecessarily large denominator" 4x / "1/3 + 1/5" 4x in
+session-2 payloads — first payload-level delivery witness in this arc).
+VERDICT: structural-signal gate FAIL — pad-ON 2/4, pad-OFF 2/4;
+session-3 HIT/HIT in BOTH arms; red flag resolved as scenario echo
+(planted "ratio work is complete" text; pad-only probes clean; single
+"x=0 self-check" grep hit = same-session scripted content, the
+'2:3'/'4:5' precedent). Split answer to the false-negative question:
+YES at the surface level (nemotron 0/4-0/4 suppressed even
+scenario-planted continuity; codex acknowledges and references the
+prior topic in s3 both arms) — the stack rule has empirical support;
+NO at the contrast level (pad-ON − pad-OFF = 0 on BOTH stacks — the
+memory null replicates strong). NEW code-level finding: the
+output-threading defect is architectural and stack-independent —
+hermetic probe shows dialecticalStrategy metadata null even under a
+guaranteed no_conflict, because the dialogue loop's revision REPLACES
+the negotiated suggestion wholesale (0/24 turns carry metadata, both
+stacks); the pad→negotiation→delivery chain is severed whenever a
+revision round runs. A2-A4 memory-contrast nulls stand;
+delivered-but-not-used now pinned to a specific fixable hop. STOP per
+§10.4 — output-side levers need a fresh prereg + go. Artifacts:
+exports/longitudinal-drift-stage-a4-codex.{json,md} (nemotron §9 pair
+regenerated deterministically + both pairs now force-added/tracked).
+
+2026-07-07 Claude: Stage A5 (negotiation threading + three-arm drift
+test, prereg §11) executed to its frozen stop rules. Part 1 (commit
+289e6930): threadNegotiationResolution flag (default off,
+byte-identical without it) re-applies the turn's negotiated resolution
+after the dialogue loop's revision replaces suggestions — the §10.6
+architectural discard, fixed at source; hermetic test 6/6. Pilot:
+arm-1 (pad-ON+threading) canary PASSED gate 1 decisively —
+metadata.dialecticalStrategy on 4/4 stored turns vs §10's 0/24, first
+live proof — but hit the §7.4 precondition floor (0 recognition
+moments), and its one bounded restart (v2, per §11.4pt2's remediation
+clause) floored again: 0/8 turns across two draws (A4-codex was
+already near-floor at 2/12) → arm 1 hard-stopped, arm 2's start
+condition unsatisfiable (never ran; §10's 2/4 stands unchallenged).
+Arm 3 (pad-OFF+threading, the fabrication control) ran 3/3 clean:
+threading 12/12 turns (20/20 across all five sessions), including the
+first live threading of a real negotiated dialectical_synthesis under
+genuine conflict (raw severity 0.72 → scaled 0.504 > 0.5). Arm-3
+scored 4/4 — the pre-declared red flag — triaged hit-by-hit against
+scenario YAML: pure scenario echo, NO fabrication (zero
+earlier-session-specific tokens; nothing to leak, all pads empty).
+Sharpened instrument finding: threading AMPLIFIES echo into delivery
+(§10 pad-OFF 2/4 → arm-3 4/4, session 2 flipped miss/miss→HIT/HIT),
+so this checker cannot adjudicate memory-use with threading ON — a
+passing arm 1 would have been uninterpretable; the control arm did its
+pre-registered job. Verdict: gate 4 NOT_EVALUABLE (arms 1-2 not run);
+the arc's headline question is unanswerable on this stack with this
+instrument — memory never materializes (floor), and if it did, memory
+vs echo is indistinguishable here. Envelope: 5 of 9 sessions spent.
+STOP per §11.4pt6 — echo-clean scenarios or pad-only-marker primary
+outcomes are fresh-prereg territory. Artifacts:
+exports/longitudinal-drift-stage-a5.{json,md}; runs
+eval-2026-07-07-{7dbccd2f,33d38153} (excluded precondition failures),
+eval-2026-07-07-{74fc5845,a858c7b4,72f7d609} (arm 3).

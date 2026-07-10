@@ -1,0 +1,229 @@
+{
+  "checkerVersion": "1.2",
+  "rows": [
+    {
+      "arm": "padOn",
+      "sessionIndex": 1,
+      "runId": "eval-2026-07-07-139daa20",
+      "openingChars": 107,
+      "contentBearing": {
+        "applicable": false,
+        "hit": null,
+        "evidence": null
+      },
+      "continuity": {
+        "applicable": false,
+        "hit": null,
+        "evidence": null
+      }
+    },
+    {
+      "arm": "padOn",
+      "sessionIndex": 2,
+      "runId": "eval-2026-07-07-ffaac9d7",
+      "openingChars": 119,
+      "contentBearing": {
+        "applicable": true,
+        "hit": false,
+        "evidence": null
+      },
+      "continuity": {
+        "applicable": true,
+        "hit": false,
+        "evidence": null
+      }
+    },
+    {
+      "arm": "padOn",
+      "sessionIndex": 3,
+      "runId": "eval-2026-07-07-44a48b61",
+      "openingChars": 113,
+      "contentBearing": {
+        "applicable": true,
+        "hit": true,
+        "evidence": "ratios"
+      },
+      "continuity": {
+        "applicable": true,
+        "hit": true,
+        "evidence": "ratios"
+      }
+    },
+    {
+      "arm": "padOff",
+      "sessionIndex": 1,
+      "runId": "eval-2026-07-07-433a19d2",
+      "openingChars": 126,
+      "contentBearing": {
+        "applicable": false,
+        "hit": null,
+        "evidence": null
+      },
+      "continuity": {
+        "applicable": false,
+        "hit": null,
+        "evidence": null
+      }
+    },
+    {
+      "arm": "padOff",
+      "sessionIndex": 2,
+      "runId": "eval-2026-07-07-b7b30353",
+      "openingChars": 103,
+      "contentBearing": {
+        "applicable": true,
+        "hit": false,
+        "evidence": null
+      },
+      "continuity": {
+        "applicable": true,
+        "hit": false,
+        "evidence": null
+      }
+    },
+    {
+      "arm": "padOff",
+      "sessionIndex": 3,
+      "runId": "eval-2026-07-07-49cbde02",
+      "openingChars": 153,
+      "contentBearing": {
+        "applicable": true,
+        "hit": true,
+        "evidence": "ratio"
+      },
+      "continuity": {
+        "applicable": true,
+        "hit": true,
+        "evidence": "ratio"
+      }
+    }
+  ],
+  "summary": {
+    "padOn": {
+      "slotsHit": 2,
+      "slotsApplicable": 4,
+      "instrumentFailures": 0,
+      "detail": [
+        {
+          "sessionIndex": 1,
+          "checker": "contentBearing",
+          "applicable": false,
+          "hit": null,
+          "evidence": null
+        },
+        {
+          "sessionIndex": 1,
+          "checker": "continuity",
+          "applicable": false,
+          "hit": null,
+          "evidence": null
+        },
+        {
+          "sessionIndex": 2,
+          "checker": "contentBearing",
+          "applicable": true,
+          "hit": false,
+          "evidence": null
+        },
+        {
+          "sessionIndex": 2,
+          "checker": "continuity",
+          "applicable": true,
+          "hit": false,
+          "evidence": null
+        },
+        {
+          "sessionIndex": 3,
+          "checker": "contentBearing",
+          "applicable": true,
+          "hit": true,
+          "evidence": "ratios"
+        },
+        {
+          "sessionIndex": 3,
+          "checker": "continuity",
+          "applicable": true,
+          "hit": true,
+          "evidence": "ratios"
+        }
+      ]
+    },
+    "padOff": {
+      "slotsHit": 2,
+      "slotsApplicable": 4,
+      "instrumentFailures": 0,
+      "detail": [
+        {
+          "sessionIndex": 1,
+          "checker": "contentBearing",
+          "applicable": false,
+          "hit": null,
+          "evidence": null
+        },
+        {
+          "sessionIndex": 1,
+          "checker": "continuity",
+          "applicable": false,
+          "hit": null,
+          "evidence": null
+        },
+        {
+          "sessionIndex": 2,
+          "checker": "contentBearing",
+          "applicable": true,
+          "hit": false,
+          "evidence": null
+        },
+        {
+          "sessionIndex": 2,
+          "checker": "continuity",
+          "applicable": true,
+          "hit": false,
+          "evidence": null
+        },
+        {
+          "sessionIndex": 3,
+          "checker": "contentBearing",
+          "applicable": true,
+          "hit": true,
+          "evidence": "ratio"
+        },
+        {
+          "sessionIndex": 3,
+          "checker": "continuity",
+          "applicable": true,
+          "hit": true,
+          "evidence": "ratio"
+        }
+      ]
+    },
+    "verdict": "FAIL",
+    "redFlag": true
+  },
+  "padContentTrace": {
+    "learnerId": "a4c-drift-padon-v1-2026-07-07",
+    "padExists": true,
+    "totalRecognitionMoments": 2,
+    "rawMomentCount": 2,
+    "createdAt": "2026-07-07 09:27:37",
+    "updatedAt": "2026-07-07 09:49:33",
+    "moments": [
+      {
+        "voice": "The suggestion correctly honors the learner's x=0 self-check, but it still evades the exact rule the learner is asking for. Framing this as 'experience corrects a first answer' turns a concrete algebra misconception into an abstract review target.",
+        "principle": "intellectual_autonomy",
+        "need": "support_during_struggle",
+        "synthesis": "Flip the **inequality** sign exactly when you multiply or divide both sides by a negative number. Do not flip it when you add, subtract, or multiply/divide by a positive number; and an **equation** sign = never flips. So in -2x > 6, dividing by -2 changes > to <, giving x < -3. Test the rule: for -5x >= 10, what operation isolates x, and which way should the sign face?",
+        "transformative": true,
+        "layer": "unconscious"
+      },
+      {
+        "voice": "The suggestion correctly targets the learner’s denominator habit, but it misfires on this example: for 1/3 + 1/5, 15 is already the least common denominator. A stronger intervention would validate this case, then ask the learner to explain why 1/4 + 1/6 has a smaller shared denominator while 1/3 + 1/5 does not.",
+        "principle": "socratic_rigor",
+        "need": "support_during_struggle",
+        "synthesis": "Yes: for 1/3 + 1/5, 15 is the least common denominator because 3 and 5 share no factors besides 1. But compare that with 1/4 + 1/6: 4 and 6 do share a factor, so 12 is a smaller common denominator than 24. Why does multiplying work cleanly for 3 and 5, but give an unnecessarily large denominator for 4 and 6?",
+        "transformative": true,
+        "layer": "unconscious"
+      }
+    ]
+  }
+}

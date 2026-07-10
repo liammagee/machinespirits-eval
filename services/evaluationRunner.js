@@ -26,6 +26,27 @@ import {
 // future tutor-core re-exports it, this resolver picks it up.
 import * as _tutorCore from '../tutor-core/index.js';
 const setQuietMode = typeof _tutorCore.setQuietMode === 'function' ? _tutorCore.setQuietMode : () => {};
+import { buildCliProviderHook } from './cliProviderBridge.js';
+// Extend CLI providers (codex / claude-code) into tutor-core's dialogue
+// engine: the hook is injected from the eval side so tutor-core never
+// imports eval code (one-way seam). Covers the callAI standard loop
+// (ego/superego/ego-revise) and the unified/aiService dialectical layer,
+// making --ego-model codex.gpt-5.5 / --superego-model claude-code.sonnet
+// work for standard-runner cells (e.g. cell_40/93), not just id-director
+// and learner engines.
+//
+// MUST register synchronously at module load (not in the lazy dynamic-import
+// .then below): a run whose path to the first LLM call is sync/microtask-only
+// (sqlite + config reads are synchronous) never yields to the event loop, so
+// a dynamic import()'s continuation would fire only at process teardown and
+// the first codex/claude-code call would fail "Provider not configured".
+if (typeof _tutorCore.setExternalAIProviderHook === 'function') {
+  try {
+    _tutorCore.setExternalAIProviderHook(buildCliProviderHook());
+  } catch (err) {
+    console.error(`[evaluationRunner] CLI provider hook registration failed: ${err?.message || err}`);
+  }
+}
 import * as rubricEvaluator from './rubricEvaluator.js';
 import {
   buildLearnerEvaluationPrompt,
@@ -46,6 +67,7 @@ import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
 import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.js';
+import { warnIfWeakStackDefault } from './stackDefaultWarning.js';
 import { formatApiMessages } from './apiMessageFormatter.js';
 import { LiveApiReporter } from './liveApiReporter.js';
 import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
@@ -196,6 +218,9 @@ function resolveRejudgeScenarioAndDialogueLog(result, preloadedDialogueLog = nul
 }
 
 // Redirect tutor-core logs to the same root the eval runner uses.
+// (The CLI provider hook is registered synchronously above — do NOT move it
+// into this lazy .then: its continuation can starve until process teardown
+// on sync-only run paths.)
 import('../tutor-core/index.js')
   .then((mod) => {
     if (typeof mod.setLogDir === 'function') mod.setLogDir(LOGS_ROOT);
@@ -1937,6 +1962,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     superegoPromptExtension = null, // Dynamic disposition adjustments for superego
     learnerId = null, // For Writing Pad memory persistence
     dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
+    threadNegotiationResolution = false, // A5: carry negotiated resolution into the delivered suggestion across revision rounds
     behavioralOverrides = null, // Quantitative params from superego self-reflection
     dryRun = false,
     captureApiPayloads = process.env.EVAL_CAPTURE_API_PAYLOADS !== 'false',
@@ -2051,6 +2077,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
               superegoPromptExtension, // Dynamic disposition adjustments for superego
               learnerId, // Activates Writing Pad three-layer memory
               dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
+              threadNegotiationResolution, // A5: carry negotiated resolution into the delivered suggestion across revision rounds
               behavioralOverrides, // Quantitative params from superego self-reflection
               conversationMode, // 'messages' for multi-turn message chains
               internalHistory, // Optional internal ego/superego message transcript
@@ -2215,6 +2242,7 @@ export async function runEvaluation(options = {}) {
     showMessages = false, // true for truncated, 'full' for untruncated API message display
     liveApi = false, // --live: stream one-line display per API call in real time
     learnerId: explicitLearnerId = null, // A7 Longitudinal: shared Writing Pad across runs
+    threadNegotiationResolution: explicitThreadNegotiationResolution = false, // A5 CLI --thread-negotiation-resolution: carry negotiated resolution into the delivered suggestion across revision rounds (OR'd with the profile-level thread_negotiation_resolution flag in runMultiTurnTest)
     externalEgoExtension = null, // opt-in ego prompt extension (e.g. cross-session memory narrative); multi-turn only, folded into fullEgoExtension in runMultiTurnTest
   } = options;
 
@@ -2308,7 +2336,14 @@ export async function runEvaluation(options = {}) {
       label: p.name,
     }));
   } else if (Array.isArray(configurations)) {
-    targetConfigs = configurations;
+    // Normalize string entries ("cell_40_...") into config objects. Passing a
+    // bare string previously spread into per-character garbage downstream —
+    // config.profileName came out undefined and the run silently used the
+    // DEFAULT tutor-core profile instead of the named cell (with none of the
+    // cell's feature flags: dialectical negotiation, prompt rewriting, ...).
+    targetConfigs = configurations.map((c) =>
+      typeof c === 'string' ? { provider: null, model: null, profileName: c, label: c } : c,
+    );
   }
 
   // Apply model overrides: CLI flags take precedence over YAML-level config
@@ -2355,6 +2390,11 @@ export async function runEvaluation(options = {}) {
     throw new Error('No configurations to test');
   }
 
+  // Model-stack default check (CLAUDE.md "Model stack default"): warn — never
+  // block — when a run would put cells on the weak nemotron/kimi pairing with
+  // no explicit model override.
+  warnIfWeakStackDefault(targetConfigs);
+
   log(`\nStarting evaluation:`);
   log(`  Scenarios: ${targetScenarios.length}`);
   log(`  Configurations: ${targetConfigs.length}`);
@@ -2379,6 +2419,9 @@ export async function runEvaluation(options = {}) {
       learnerModelOverride: effectiveLearnerModelOverride || null,
       learnerEgoModelOverride: effectiveLearnerEgoModelOverride || null,
       learnerSuperegoModelOverride: effectiveLearnerSuperegoModelOverride || null,
+      // A5: run-wide threading arm, re-applied on resume (see resumeEvaluation)
+      // so a test resumed before its first checkpoint still gets the right arm.
+      threadNegotiationResolution: explicitThreadNegotiationResolution || null,
       maxTokensOverride: maxTokensOverride || null,
       dryRun: dryRun || false,
       // Store scenario IDs and profile names for accurate resume
@@ -2504,6 +2547,7 @@ export async function runEvaluation(options = {}) {
           runNum,
           liveApiReporter,
           learnerId: explicitLearnerId,
+          threadNegotiationResolution: explicitThreadNegotiationResolution,
           externalEgoExtension,
         });
 
@@ -3227,6 +3271,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     checkpointState = null,
     liveApiReporter: liveReporter = null,
     learnerId: explicitLearnerId = null, // A7 Longitudinal: pre-empts the synthetic ID
+    threadNegotiationResolution: explicitThreadNegotiationResolution = false, // A5 CLI --thread-negotiation-resolution override
     externalEgoExtension = null, // approach A (#3): opt-in cross-session memory narrative, prepended to fullEgoExtension below
   } = options;
 
@@ -3518,6 +3563,19 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   }
 
   const dialecticalNegotiation = rawProfile?.dialectical_negotiation ?? false;
+  // A5: CLI --thread-negotiation-resolution OR's with an optional static per-cell
+  // default (rawProfile.thread_negotiation_resolution) — lets the SAME cell run
+  // with threading on or off across different invocations (needed for the A5
+  // three-arm design, which reuses cell_40 for both the threaded and unthreaded
+  // arms) without registering a duplicate cell. Precedence mirrors learnerId
+  // above: checkpoint (resume-safety, so a kill mid-dialogue can't silently
+  // flip a session's arm to "threading off") > explicit CLI flag > per-cell
+  // YAML default. Nullish (not ||) coalescing on the checkpoint value: a
+  // checkpointed `false` (e.g. arm-2/arm-3's off-arms) must be honored as-is,
+  // not treated as "unset" and re-derived.
+  const threadNegotiationResolution =
+    cs?.threadNegotiationResolution ??
+    (explicitThreadNegotiationResolution || (rawProfile?.thread_negotiation_resolution ?? false));
   const promptRewritingEnabled = rawProfile?.prompt_rewriting?.enabled ?? false;
   const promptRewritingStrategy = rawProfile?.prompt_rewriting?.strategy ?? 'template';
   const superegoDispositionRewriting = rawProfile?.superego_disposition_rewriting ?? false;
@@ -3548,6 +3606,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     scenarioId: scenario.id,
     learnerId,
     dialecticalNegotiation,
+    threadNegotiationResolution,
     dryRun,
     conversationMode,
     internalHistory,
@@ -4673,6 +4732,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         totalTurns: totalTurnCount,
         dialogueId,
         learnerId,
+        threadNegotiationResolution, // A5: preserve this session's arm across resume-after-kill
         turns,
         turnResults,
         conversationHistory,
@@ -5034,6 +5094,13 @@ export async function resumeEvaluation(options = {}) {
   const learnerModelOverride = metadata.learnerModelOverride || null;
   const learnerEgoModelOverride = metadata.learnerEgoModelOverride || null;
   const learnerSuperegoModelOverride = metadata.learnerSuperegoModelOverride || null;
+  // A5: run-wide threading arm (set once at `run` time, see runEvaluation's metadata
+  // block below). Re-applied per test below so a test resumed from scratch (no
+  // checkpoint yet written, e.g. killed before its first turn completed) still gets
+  // the correct arm instead of silently falling back to threading-off. Any
+  // already-checkpointed test overrides this with its own checkpointed value
+  // (see the cs?.threadNegotiationResolution ?? ... precedence in runMultiTurnTest).
+  const threadNegotiationResolution = metadata.threadNegotiationResolution || null;
 
   // 3. Get existing results for completion checking
   const existingResults = evaluationStore.getResults(runId);
@@ -5269,6 +5336,7 @@ export async function resumeEvaluation(options = {}) {
         verbose,
         runId,
         checkpointState: checkpointState || null,
+        threadNegotiationResolution: threadNegotiationResolution ?? false, // A5: resume-safety (see metadata extraction above)
       });
 
       evaluationStore.storeResult(runId, result);

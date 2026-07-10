@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { recordExternalApiCall } from './apiPayloadCapture.js';
 
 function positiveIntEnv(name, fallback) {
   const raw = process.env[name];
@@ -302,6 +303,101 @@ async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHist
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
+}
+
+/**
+ * Split a provider-shaped messages array (OpenAI-style {role, content})
+ * into the (systemPrompt, userPrompt, messageHistory) triple the CLI
+ * call functions expect. System-role messages are folded into the system
+ * prompt (deduped against an explicitly-passed one — tutor-core's
+ * _callAIOnce sends the same system text both ways); the last non-system
+ * message becomes the user prompt; the rest become history.
+ *
+ * @param {Array} messages - Provider-shaped message array
+ * @param {string} [systemPrompt] - Separately-passed system prompt
+ * @returns {{systemPrompt: string, userPrompt: string, messageHistory: Array}}
+ */
+export function splitProviderMessages(messages, systemPrompt = '') {
+  const systemParts = systemPrompt ? [systemPrompt] : [];
+  const rest = [];
+  for (const m of Array.isArray(messages) ? messages : []) {
+    if (!m || typeof m !== 'object') continue;
+    const content = typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '');
+    if (m.role === 'system') {
+      if (content && !systemParts.includes(content)) systemParts.push(content);
+    } else {
+      rest.push({ role: m.role || 'user', content });
+    }
+  }
+  const last = rest.length > 0 ? rest[rest.length - 1] : null;
+  return {
+    systemPrompt: systemParts.join('\n\n'),
+    userPrompt: last ? last.content : '',
+    messageHistory: rest.slice(0, -1),
+  };
+}
+
+/**
+ * Build a tutor-core external-AI-provider hook backed by this CLI bridge.
+ *
+ * Registered from the eval side via tutor-core's setExternalAIProviderHook()
+ * (see services/evaluationRunner.js), which extends CLI providers
+ * (codex / claude-code) into tutor-core's dialogue engine — the callAI
+ * standard loop AND the unified/aiService dialectical layer — without
+ * tutor-core importing any eval code.
+ *
+ * Every call is also pushed through apiPayloadCapture's external-record
+ * channel so dialogue-log apiPayload entries (and payload-grep delivery
+ * verification) keep working on the CLI path, where the fetch wrapper
+ * sees nothing.
+ *
+ * @param {Object} [opts]
+ * @param {Function} [opts.callCli] - Injection point for tests (defaults to
+ *   the real callAIWithCliBridge; same signature)
+ * @param {Function} [opts.recordCall] - Injection point for tests (defaults
+ *   to apiPayloadCapture.recordExternalApiCall)
+ * @returns {{handles: Function, call: Function}}
+ */
+export function buildCliProviderHook({ callCli = callAIWithCliBridge, recordCall = recordExternalApiCall } = {}) {
+  return {
+    handles: (provider) => isCliProvider(provider),
+    call: async (request = {}) => {
+      const { provider, model, channel } = request;
+      const split = splitProviderMessages(request.messages, request.systemPrompt);
+      const started = Date.now();
+      const requestBody = {
+        model,
+        provider,
+        channel: channel || null,
+        systemPrompt: split.systemPrompt,
+        messages: [...split.messageHistory, ...(split.userPrompt ? [{ role: 'user', content: split.userPrompt }] : [])],
+      };
+      try {
+        const result = await callCli(
+          { provider, model },
+          split.systemPrompt,
+          split.userPrompt,
+          `dialogue-engine:${channel || 'unknown'}`,
+          { messageHistory: split.messageHistory.length > 0 ? split.messageHistory : undefined },
+        );
+        recordCall({
+          provider,
+          requestBody,
+          responseBody: { text: result?.text ?? '', model: result?.model || model },
+          durationMs: Date.now() - started,
+        });
+        return result;
+      } catch (error) {
+        recordCall({
+          provider,
+          requestBody,
+          durationMs: Date.now() - started,
+          error,
+        });
+        throw error;
+      }
+    },
+  };
 }
 
 export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role, opts = {}) {

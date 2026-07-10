@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Plan — review of 13 Jun – 5 Jul 2026 roundups</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 900px; margin: 2rem auto;
+           padding: 0 1.5rem; line-height: 1.65; color: #1a1a1a; background: #fafaf8; }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; color: #444; text-transform: uppercase; letter-spacing: .06em; }
+    .item { border-left: 3px solid #aaa; padding: .5rem 1rem; margin: 1rem 0; background: #fff; }
+    .item.p1 { border-left-color: #c0392b; } .item.p2 { border-left-color: #1a5276; } .item.p3 { border-left-color: #1e8449; }
+    .item h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+    .item .row { font-size: .9rem; margin: .25rem 0; }
+    .k { font-weight: bold; color: #555; }
+    .cost { display:inline-block; font-size:.74rem; font-weight:bold; padding:.1rem .45rem; border-radius:3px; background:#1e8449; color:#fff; }
+    .cost.amber { background: #d4a017; }
+    .intro-note { font-size: .9rem; color: #555; background: #f0f0ea; border: 1px solid #ddd;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .brake { background: #fbeee6; border: 1px solid #e0c0a0; padding: .6rem 1rem; border-radius: 3px; }
+    a { color: #1a5276; } footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+    code { font-size: .88em; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-06 reviews=2026-06-13,2026-06-14,2026-06-15,2026-06-16,2026-06-17,2026-06-18,2026-06-23,2026-06-24,2026-06-25,2026-06-26,2026-06-27,2026-07-02,2026-07-03,2026-07-05 generator=ms-research-review -->
+
+<h1>Research Plan <small style="font-weight:normal;font-size:.85em">review of the 13 Jun – 5 Jul 2026 roundups</small></h1>
+
+<div class="intro-note">
+  <strong>Review → plan</strong> over roughly 50 papers across 14 daily roundups. Clusters this window:
+  narrative/dramatic form and character portrayal (7 papers — CASPER, the Freytag/Labov/Genette survey,
+  DramaDirector, Fabula, MAGNET, SemEval narrative-similarity, RPGAgent), prompt/pipeline optimization
+  (6 — FAPO, APEX, SePO, MAS-PromptBench, environment-grounded APO, ARMOR-MAD debate routing), agent
+  memory (5 — bi-temporal memory, EvoMem, Multi-Agent Transactive Memory, GitOfThoughts, DRIFTLENS), and
+  a late-window pair on persona/self-presentation (Fluid Personality Framework, Dual Nature of Persona)
+  that lands squarely on the id-director charisma family. "Geist in the Machine" (2603.10450) resurfaced
+  once more as an apparent external hit in the 15 Jun roundup — before the 20 Jun harden action landed —
+  and has not reappeared since; excluded here as usual.<br><br>
+  A prior triage pass (codex, 2026-06-24) already closed a batch of the strongest earlier candidates —
+  teach-vs-solve (2606.16206), the rubric survey (2606.08625), SePO (2606.04465), and GroupToM-Bench
+  (2606.04184, landed as a §6.8.8 citation) — so all three items below are drawn from what's still open
+  after that pass, concentrated in the back half of the window (CASPER and the persona pair only surfaced
+  02–05 Jul). <code>workplan/inbox/</code> now holds ~45 un-triaged captures; the two newest ones already
+  independently name the exact cross-walks below. <strong>Implement and evaluate are human-gated</strong>
+  (see the brake).
+</div>
+
+<h2>The plan</h2>
+
+<div class="item p1">
+  <h3>P1 · Audit ego/superego incorporation with "What LLM Agents Say When No One Is Watching" (2607.02507)</h3>
+  <div class="row"><span class="k">Why:</span> a dual-channel debate framework — public utterances vs
+    off-the-record (OTR) responses never shown to the other agent — finds that alignment-inducing social
+    structure (role framing, audience, hierarchy) widens the public/OTR gap: agents perform convergence
+    publicly while private reasoning diverges more under exactly the framings meant to produce agreement.
+    The bilateral ego/superego architecture already has this structural split built in — superego critique
+    is private (<code>tutor_deliberation_*</code>), the ego's revision is public (<code>suggestions</code>) —
+    but nothing currently measures whether the public revision <em>tracks</em> the private critique or just
+    performs having addressed it.</div>
+  <div class="row"><span class="k">Do:</span> extend <code>services/dialogueTraceAnalyzer.js</code>'s
+    <code>analyzeSuperegoIncorporation()</code> (already computes <code>incorporation_rate</code>) with a
+    public/private divergence measure — critique points raised by the superego that the ego's revision does
+    not actually address. Run it across the superego-configured cells (3-4, 7-8, and the divergent-superego
+    family 22-33, which spans suspicious/adversary/advocate framings) to check whether the more adversarial
+    framings (28-33, dialectical ego + divergent superego) produce genuinely tighter incorporation or just a
+    wider performative gap — the mechanistic question 2607.02507 raises but doesn't have this architecture to
+    test.</div>
+  <div class="row"><span class="k">Evaluate:</span> existing dialogue logs already in the DB
+    (<code>tutor_deliberation_*</code>, <code>incorporation_rate</code>, <code>dimension_convergence</code>)
+    for cells 3-4, 7-8, 22-33 — a new analysis script, no new generation. <span class="cost">existing data</span></div>
+</div>
+
+<div class="item p2">
+  <h3>P2 · Diagnose the poetics κ failure with CASPER (2606.22454) + the narrative-theory survey (2602.15851)</h3>
+  <div class="row"><span class="k">Why:</span> CASPER pairs 4,400 LLM-generated stories against human-written
+    twins on the same prompt and codes character portrayal on 8 category-pairs (coherent/complex/dynamic/closed
+    vs their opposites); its headline finding is that LLM stories give characters tidier, more over-resolved
+    arcs than human writing. The Freytag/Labov/Genette survey separately notes the field still lacks a unified
+    way to score cross-disciplinary narrative form. Both are a plausible mechanism behind the already-documented
+    phase-2 poetics transfer failure — weighted κ = 0.044 against the 0.60 bar, <code>DRAMATIC-RECOGNITION-PLAN.md</code>
+    line 18 — and both were already independently flagged for exactly this cross-walk in
+    <code>workplan/inbox/2026-07-02-arxiv-2606.22454.md</code> (still un-triaged).</div>
+  <div class="row"><span class="k">Do:</span> apply CASPER's closed/open-arc coding to the existing phase-2
+    calibration sample (<code>config/poetics-calibration/phase2-*.yaml</code>, already human-labeled) and
+    correlate "closedness" of the learner-character's arc against the poetics rubric's
+    <code>cathartic_closure</code> and <code>anagnorisis</code> dimension scores. If tidy/closed arcs correlate
+    with high <code>cathartic_closure</code> but low <code>anagnorisis</code>, that's evidence the critic is
+    rewarding resolution rather than genuine recognition — precisely the failure mode Dimension 3
+    (<code>surprise_and_inevitability</code>)'s anti-simulation guard was designed to catch, and a concrete
+    target for strengthening it.</div>
+  <div class="row"><span class="k">Evaluate:</span> hand-coding the already-labeled phase-2 sample against
+    CASPER's scheme is fully read-only. If instead an LLM classifier is used to code a larger, unlabeled
+    transcript sample, that's a light paid classification pass (not a rescoring run) — flag separately for
+    approval. <span class="cost">existing data (read-only path available)</span>
+    <span class="cost amber">LLM-coding path needs light API spend</span></div>
+</div>
+
+<div class="item p3">
+  <h3>P3 · Check the id-director register/charisma pilot against persona-geometry papers (2607.01034, 2607.02368)</h3>
+  <div class="row"><span class="k">Why:</span> the Fluid Personality Framework argues conversational agents
+    should jointly adapt both which persona is active <em>and</em> its expression intensity to the moment,
+    rather than fixing either for a session. The id-director architecture (cells 101-109) already does
+    something structurally adjacent — per-turn <code>persona_delta</code> and register selection persisted to
+    <code>id_construction_trace</code> — but the cell_105/106 pilot (n=27 each,
+    <code>config/tutor-agents.yaml</code> ~line 4654) found the verbose/charisma-tuned register beating the
+    terse/pedagogy-tuned register on <em>both</em> rubrics, contradicting the expected intensity trade-off.
+    The Dual Nature of Persona paper's finding — that persona expression under IPIP-50-style measurement is
+    frame-dependent (its correlation geometry shifts under manipulated question ordering) rather than a fixed
+    trait — is a direct methodological caution: if the charisma judge's <code>persona_signature</code> /
+    <code>affective_intensity</code> scoring is itself sensitive to turn position or prior register history,
+    the cell_105/106 null result could be partly a scoring-order artifact rather than a settled design finding.</div>
+  <div class="row"><span class="k">Do:</span> no new cell. Re-cross existing cell_101-109 rows: register-shift
+    frequency (from <code>id_construction_trace</code>) against <code>tutor_charisma_scores</code> by turn
+    index, checking for drift in <code>persona_signature</code> / <code>affective_intensity</code> that tracks
+    turn position rather than actual register content — the within-instance geometry check 2607.02368 uses,
+    applied to our own judge instead of a questionnaire.</div>
+  <div class="row"><span class="k">Evaluate:</span> existing rows only — <code>id_construction_trace</code>,
+    <code>tutor_charisma_scores</code>, <code>tutor_charisma_overall_score</code> for cells 101-109, including
+    the already-collected cell_105/106 pilot (n=27 each). A new analysis script, no new run.
+    <span class="cost">existing data</span></div>
+</div>
+
+<h2>Backlog (named, not started)</h2>
+<ul style="font-size:.92rem;">
+  <li><strong>MAS-PromptBench</strong> (2606.23664) — prompt optimization helps multi-agent pipelines by up to
+    +24 points but hurts by as much as -16; worth a sanity pass before any prompt-lab autotune run targets a
+    multi-agent (superego-configured) cell rather than a single-agent one.</li>
+  <li><strong>FAPO / APEX / environment-grounded APO</strong> (2606.19605, 2606.11459, 2606.17838) — escalating
+    or attribution-driven prompt-optimization loops, all candidates for hardening <code>prompt-lab</code>'s
+    autotune beyond flat evolutionary search.</li>
+  <li><strong>ARMOR-MAD</strong> (2606.13197) — pre-debate agreement routing + early-stopping for multi-agent
+    debate; a plausible stopping-criterion upgrade for the two-pass superego variant (cell 98).</li>
+  <li><strong>DRIFTLENS</strong> (2607.02374) — measures memory-induced drift in the reasoning trajectory, not
+    just the final answer; relevant to the Writing Pad (cell 21) and prompt-erosion cells 48-49.</li>
+  <li><strong>MAGNET / ATLAS</strong> (2607.00918) — graph-based cross-scene character-consistency checking;
+    could flag hallucinated learner-character actions in <code>drama-generator.js</code> output.</li>
+  <li><strong>Bi-temporal memory / EvoMem / Multi-Agent Transactive Memory</strong> (2606.09900, 2606.13681,
+    2606.19911) — a memory cluster relevant to any future Writing Pad or cross-run trajectory-sharing work.</li>
+</ul>
+
+<h2>The brake</h2>
+<div class="brake">
+  P1 and P3 are fully read-only / existing-data. P2 has a read-only path (hand-code the already-labeled
+  phase-2 sample) and an optional light-paid path (LLM-coding a larger sample) — pick the read-only path unless
+  told otherwise. No paid eval runs, no quota spend, and nothing lands in the paper without sign-off. Backlog
+  items needing fresh paid runs or new cells are the user's to authorize, given the pre-registration /
+  single-paper discipline.
+</div>
+
+<footer>Generated by <code>ms-research-review</code> from the 13 Jun – 5 Jul 2026 daily roundups · reviewed by a human before any implementation.</footer>
+</body>
+</html>
