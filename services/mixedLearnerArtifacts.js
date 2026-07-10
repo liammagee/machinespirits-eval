@@ -30,6 +30,14 @@ export function mixedLearnerSuggestionMove(answer, declaredMove = '') {
   return 'respond';
 }
 
+export function consumeMixedLearnerReadyAnnouncement(mixedLearner) {
+  if (!mixedLearner) return false;
+  const profileKey = oneLine(mixedLearner.profileId || mixedLearner.profile || 'custom').toLowerCase();
+  if (mixedLearner.readyAnnouncementProfileKey === profileKey) return false;
+  mixedLearner.readyAnnouncementProfileKey = profileKey;
+  return true;
+}
+
 export function profileSignalSafelyDescribesAnswer(profileSignal, answer) {
   const signal = oneLine(profileSignal);
   const response = oneLine(answer);

@@ -78,6 +78,10 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
             finalTutor: 'Case closed.',
             registerCounts: { plain: 2, precise: 3 },
             registerEntropy: 0.971,
+            responseConfigurationVisibility: {
+              mean_realization_rate: 0.8,
+              pairwise_visible_difference_rate: 1,
+            },
             efficacyCounts: { positive_progress: 1 },
             leakCount: 0,
             repairedCount: 1,
@@ -94,7 +98,23 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
                   turn: 1,
                   policy: 'field',
                   action: {
+                    engagementStance: 'precise',
                     selectedRegister: 'precise',
+                    actionFamily: 'close_inquiry',
+                    audienceRegister: 'informed_peer',
+                    lexicalAccessibility: 'technical',
+                    sceneImmersion: 'immersive',
+                    responseConfiguration: {
+                      engagement_stance: 'precise',
+                      action_family: 'close_inquiry',
+                      audience_register: 'informed_peer',
+                      lexical_accessibility: 'technical',
+                      scene_immersion: 'immersive',
+                    },
+                    responseConfigurationAudit: {
+                      realization_rate: 0.8,
+                      transcript_visible: true,
+                    },
                     registerPolicy: 'field',
                     registerVector: { precise: 0.72, warm: 0.28 },
                     registerDistribution: [
@@ -188,17 +208,28 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
     assert.equal(run.ok_rows, 1);
     assert.equal(run.grounded_rows, 1);
 
-    const row = db.prepare('SELECT policy, turn_count, grounded_closure FROM tutor_stub_eval_rows').get();
+    const row = db
+      .prepare(
+        `SELECT policy, turn_count, grounded_closure, configuration_realization_rate,
+                configuration_visible_difference_rate
+         FROM tutor_stub_eval_rows`,
+      )
+      .get();
     assert.equal(row.policy, 'field');
     assert.equal(row.turn_count, 12);
     assert.equal(row.grounded_closure, 1);
+    assert.equal(row.configuration_realization_rate, 0.8);
+    assert.equal(row.configuration_visible_difference_rate, 1);
 
     const registerTotal = db.prepare('SELECT SUM(count) AS total FROM tutor_stub_register_counts').get();
     assert.equal(registerTotal.total, 5);
 
     const turnFrame = db
       .prepare(
-        `SELECT selected_register, register_vector_json, state_vector_json, dag_json,
+        `SELECT engagement_stance, selected_register, action_family, audience_register,
+                lexical_accessibility, scene_immersion, response_configuration_json,
+                response_configuration_audit_json, configuration_realization_rate,
+                configuration_transcript_visible, register_vector_json, state_vector_json, dag_json,
                 human_discourse_json, scaffold_state_json, side_arc_json,
                 proof_debt_json, warrant_premise_audit_json,
                 learner_text, tutor_text, delta_mastery, delta_risk, delta_coverage
@@ -206,6 +237,15 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
       )
       .get();
     assert.equal(turnFrame.selected_register, 'precise');
+    assert.equal(turnFrame.engagement_stance, 'precise');
+    assert.equal(turnFrame.action_family, 'close_inquiry');
+    assert.equal(turnFrame.audience_register, 'informed_peer');
+    assert.equal(turnFrame.lexical_accessibility, 'technical');
+    assert.equal(turnFrame.scene_immersion, 'immersive');
+    assert.equal(JSON.parse(turnFrame.response_configuration_json).engagement_stance, 'precise');
+    assert.equal(JSON.parse(turnFrame.response_configuration_audit_json).transcript_visible, true);
+    assert.equal(turnFrame.configuration_realization_rate, 0.8);
+    assert.equal(turnFrame.configuration_transcript_visible, 1);
     assert.deepEqual(JSON.parse(turnFrame.register_vector_json), { precise: 0.72, warm: 0.28 });
     assert.deepEqual(JSON.parse(turnFrame.state_vector_json), { evidence_gap: 0.25, warrant_gap: 0.4 });
     assert.equal(JSON.parse(turnFrame.dag_json).bottleneck, 'assertion_gap');
@@ -221,10 +261,21 @@ test('tutor-stub auto-eval summaries ingest into namespaced SQL tables', () => {
     assert.equal(turnFrame.delta_coverage, 0.25);
 
     const trainingView = db
-      .prepare('SELECT policy, selected_register, delta_mastery, human_discourse_json FROM v_tutor_stub_turn_training')
+      .prepare(
+        `SELECT policy, engagement_stance, selected_register, action_family,
+                audience_register, lexical_accessibility, scene_immersion,
+                configuration_realization_rate, delta_mastery, human_discourse_json
+         FROM v_tutor_stub_turn_training`,
+      )
       .get();
     assert.equal(trainingView.policy, 'field');
     assert.equal(trainingView.selected_register, 'precise');
+    assert.equal(trainingView.engagement_stance, 'precise');
+    assert.equal(trainingView.action_family, 'close_inquiry');
+    assert.equal(trainingView.audience_register, 'informed_peer');
+    assert.equal(trainingView.lexical_accessibility, 'technical');
+    assert.equal(trainingView.scene_immersion, 'immersive');
+    assert.equal(trainingView.configuration_realization_rate, 0.8);
     assert.equal(trainingView.delta_mastery, 0.2);
     assert.equal(JSON.parse(trainingView.human_discourse_json).scaffoldActive, true);
 

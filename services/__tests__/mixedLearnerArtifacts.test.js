@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   clueSafelySignalsAnswer,
+  consumeMixedLearnerReadyAnnouncement,
   invalidateMixedLearnerCache,
   mixedLearnerAnalysisCacheKey,
   mixedLearnerSuggestionMove,
@@ -12,6 +13,16 @@ import {
 } from '../mixedLearnerArtifacts.js';
 
 describe('mixed learner artifacts', () => {
+  it('announces readiness only once per active learner profile', () => {
+    const mixedLearner = { profileId: 'diligent', profile: 'ignored', readyAnnouncementProfileKey: null };
+    assert.equal(consumeMixedLearnerReadyAnnouncement(mixedLearner), true);
+    assert.equal(consumeMixedLearnerReadyAnnouncement(mixedLearner), false);
+
+    mixedLearner.profileId = 'skeptical';
+    assert.equal(consumeMixedLearnerReadyAnnouncement(mixedLearner), true);
+    assert.equal(consumeMixedLearnerReadyAnnouncement(mixedLearner), false);
+  });
+
   it('parses a fenced clue-answer pair', () => {
     const result = parseMixedLearnerArtifacts(`\n\`\`\`json\n{"clue":"Separate what the mark proves from who made it.","answer":"The mark proves the coin is false, not who struck it."}\n\`\`\`\n`);
     assert.equal(result.parsed, true);

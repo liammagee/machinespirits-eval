@@ -26,7 +26,8 @@ Key choices and defaults:
 - Trajectory policy: `--register-policy trajectory` leaves `field` unchanged and adds recent finite-difference velocity/slope/acceleration/risk-trend adjustments for benchmarking against `field`.
 - Dynamical-system policy: `--register-policy dynamical_system` maps a continuous state/derivative vector through theory priors plus within-dialogue empirical efficacy corrections; `dynamical-system` is accepted as an alias.
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
-- Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep a nearest `selected_register` for compatibility while passing a weighted `register_vector`/style blend to the tutor; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
+- Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep `selected_register` and `register_vector` as compatibility aliases while using `engagement_stance` and a weighted engagement-stance blend internally; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
+- Engagement-stance temperature: default `0.85`. Use the backward-compatible `--register-temperature <n>` launch flag or `/settings stance-temp <n>` (`/settings temp` remains an alias). Standard semantics apply: lower values sharpen the dominant engagement stance; higher values broaden only that stance distribution. Action family, audience register, lexical accessibility, and scene immersion are deterministic and are never temperature-scaled. The supported range is `0.05` to `3.0`. Live changes invalidate and regenerate mixed suggestion analysis/prefetch state.
 - DAG discourse mode: default `strict_dag` is the proof-audit baseline. Use `--dag-mode human_scaffold` or `--dag-mode defeasible_human_scaffold` when testing the human-facing scaffold that allows ordinary-language warrant framing, side arcs, compressed human inference, and internal proof debt while the strict DAG remains the audit.
 - Negative floor: `--register-policy negative` samples only `ironic`, `sarcastic`, and `face_threat`; use it as an explicit lower-bound/control arm, not as recommended pedagogy.
 - Automated learner profile: default `diligent`; vary with `--auto-learner-profile-id answer_seeking|skeptical|overconfident|low_agency|memory_limited|premature_closure|proof_skipper|false_memory|contradiction_keeper|affective_resistant|low_trust_skeptic`, or list presets with `--list-learner-profiles`. Built-ins are structured learner-profile contracts (`machinespirits.tutor-stub.learner-profile-contract.v3`) rendered into automated-learner prompts and preserved in report config. The first six are core profiles; the latter six are sharper failure-mode stress profiles.
@@ -87,15 +88,35 @@ Useful variants:
   prompts may invite one concrete in-scene question when clarification is more
   useful than guessing.
 - Mixed artifacts also carry a separate `profile_signal`: a short account of
-  how the visible draft expresses the active learner profile. The ready/Tab
-  surface, `/suggest`, and `/use` show a compact profile card with the profile
-  id, intended pattern, and visible expression; only the learner response is
-  inserted or spoken, so this metadata does not break the dramatic frame.
+  how the visible draft expresses the active learner profile. The full ready
+  notice and compact profile card appear once per active profile; later
+  suggestions activate Tab silently so they do not interrupt the dramatic
+  flow. `/suggest` and `/use` still expose the profile id, intended pattern,
+  and visible expression on demand; only the learner response is inserted or
+  spoken, so this metadata does not break the dramatic frame.
 - Learner suggestions and clarifications are kept inside the dramatic frame,
   and tutor prompts require the same: generated speech addresses the other
   speaker directly and does not say `the tutor`, `the learner`, `the dialogue`,
   `the prompt`, or that a question is `pending`. Clarification restates the
   live question directly.
+- `/explain [phrase]` and natural vocabulary questions such as `what does cupel
+  mean?` update a persistent comprehension side-state without advancing the
+  learner DAG. Unresolved terms raise `language_opacity` and
+  `compression_need`, favour plain/warm explanation, and suppress charismatic
+  or negative pressure. A successful gloss marks the term explained while
+  retaining recent clarification pressure for the next turn; unresolved and
+  explained terms survive memory compaction, traces, resumes, reports, and
+  mixed-cache regeneration. Inspect them with `/analysis` or `/analysis
+  technical`.
+- Tutor response configuration has five independent axes:
+  `engagement_stance`, `action_family`, `audience_register`,
+  `lexical_accessibility`, and `scene_immersion`. `selected_register` remains a
+  backward-compatible alias for `engagement_stance`; it must not be used to
+  derive the action family. `child_accessible` audience register requires an
+  explicit public age signal—ordinary confusion defaults to `adult_novice`,
+  never to child-directed speech. Every completed tutor response stores a
+  deterministic surface audit for whether each configured axis became visible
+  in the transcript.
 - In `defeasible_human_scaffold`, high-confidence adjacent ellipsis such as
   `it will be the same` is resolved against the immediately preceding
   single-referent public question. The strict learner-DAG may retain an audit
@@ -139,15 +160,21 @@ Useful variants:
   /profile custom The learner can identify individual clues but struggles to connect them. When asked for a conclusion, they repeat the newest clue. They progress only when the tutor asks them to connect two specific public facts.
   ```
 - `/analysis` and `/a` default to a plain policy-centered account of the latest
-  learner move, selected response-style blend, main signals, tutor aim, and
-  prior strategy result. Use `/analysis technical` or `/a technical` for the
-  classifier labels, learner/tutor DAGs, field metrics, register vectors,
-  scaffold audit, leak guard, and trace path.
+  learner move, engagement-stance blend, independent action/audience/language/
+  scene configuration, main signals, tutor aim, and transcript-visible
+  realization count. Use `/analysis technical` or `/a technical` for the
+  classifier labels, learner/tutor DAGs, field metrics, stance vectors,
+  per-axis realization audit, scaffold audit, leak guard, and trace path.
+- `/settings` shows the active policy and engagement-stance temperature.
+  `/settings stance-temp 0.4` sharpens subsequent locally selected stance
+  distributions; `/settings stance-temp 1.4` broadens them. No other response
+  axis is temperature-scaled. Changes are rejected while a tutor turn is in
+  progress so each turn has one deterministic setting.
 - Interim waiting lines rotate labeled plain-language views such as Tutor
   focus, Evidence pacing, Learner reading, Reasoning state, Tutor style, and
   Clue progress. `view n/N` is a carousel position, not a score; restrained
   color distinguishes phase, view number, and panel category.
-- Use slash commands during a run: `/analysis`, `/field`, `/viz`, `/clarify [phrase]`,
+- Use slash commands during a run: `/analysis`, `/settings [temp n]`, `/field`, `/viz`, `/clarify [phrase]`,
   `/explain [phrase]`, `/id`, `/profile`, `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, `/quit`.
 
 ## Automated Single-Learner Eval
@@ -454,12 +481,13 @@ Useful views after ingest:
 - `v_tutor_stub_turn_training`
 - `v_tutor_stub_failures`
 
-SQL coverage includes run/row/policy/register/effectiveness summaries plus
+SQL coverage includes run/row/policy/stance/effectiveness summaries plus
 `tutor_stub_turn_frames`, a per-turn table for transition/reward modeling. It
-normalizes register vectors, selected registers, learner/DAG/field state,
-dynamical state and derivative vectors, transcript text, response metadata, and
-next-turn deltas. The full row JSON is still preserved for backward-compatible
-reconstruction.
+normalizes stance vectors, the legacy selected-register alias, independent
+action/audience/lexical/scene fields, response-configuration audits,
+learner/DAG/field state, dynamical state and derivative vectors, transcript
+text, response metadata, and next-turn deltas. The full row JSON is still
+preserved for backward-compatible reconstruction.
 
 Example:
 
@@ -477,7 +505,8 @@ Prefer the latest `auto-eval-*.json` / `.html` in the trace dir. Report:
 - `ok/failed`, and whether failures are technical or pedagogical.
 - Grounded closure rate, mean turns, mean coverage, missing premise count.
 - Per-policy comparison: `negative`, `bland`, `dynamic`, `state`, `field`, `trajectory`, `dynamical_system`, `empirical_dynamical_system`, `continuous_dynamical_system`, `continuous_empirical_dynamical_system`, `random`.
-- Register entropy and dominant registers.
+- Engagement-stance entropy and dominant stances (`register` remains a legacy report label in older artifacts).
+- Response-configuration realization rate and pairwise transcript-visible difference rate; `n/a` means the run did not contain two distinct configurations to compare.
 - Bottlenecks: `learner_integration_gap`, `release_or_pacing_gap`, `assertion_gap`, `premature_assertion`, `grounded_asserted_secret`.
 - Check `.tutor-stub-auto-eval/ledger.md` for the local cross-run ledger before comparing recent evals.
 - For multi-eval comparisons, prefer `npm run analyze:tutor-stub-auto-evals`

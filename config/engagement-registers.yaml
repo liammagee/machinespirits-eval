@@ -1,13 +1,14 @@
-# First-class tutor engagement registers and request armature.
+# First-class tutor engagement stances and response armature.
 #
-# Registers are reviewer-chosen stance/tone/posture decisions for the next tutor
+# Engagement stances are reviewer-chosen tone/posture decisions for the next tutor
 # response. Request types describe the learner turn's logical role in the DAG or
-# proof path. Do not treat request type as the register, and do not imply that
-# the learner selects or licenses the register.
+# proof path. Action family, audience register, lexical accessibility, and scene
+# immersion are selected independently. `registers` remains a compatibility name
+# in older traces and consumers; new runtime state uses `engagement_stance`.
 
-register_ontology_version: 2
+register_ontology_version: 3
 
-registers:
+engagement_stances:
   plain:
     valence: positive
     router_selectable: true
@@ -322,6 +323,9 @@ request_types:
     dag_use: Keep updates conservative and ask for a diagnostic public move.
 
 action_families:
+  clarify_term:
+    role: dag_device
+    description: Gloss one unresolved term or phrase before asking for any further proof move.
   clarify_distinction:
     role: dag_device
     description: Define or sharpen one conceptual edge.
@@ -346,6 +350,74 @@ action_families:
   receive_vulnerability:
     role: dag_device
     description: Protect learner agency under affective or moral exposure before asking for evidence.
+  close_inquiry:
+    role: dag_device
+    description: State the warranted closeout and end the inquiry without opening another proof step.
+  baseline_plain_response:
+    role: control_device
+    description: Use a fixed compact response action for the bland comparison arm.
+
+audience_registers:
+  child_accessible:
+    contract: |
+      Use concrete examples and short sentences suitable for a younger learner,
+      without baby talk, praise theatre, or condescension. Select this only when
+      public dialogue evidence explicitly indicates a child or young learner.
+    max_average_sentence_words: 13
+  adult_novice:
+    contract: |
+      Presume adult intelligence but no domain fluency. Explain specialist terms
+      locally, use one idea per sentence, and never equate confusion with low ability.
+    max_average_sentence_words: 18
+  domain_apprentice:
+    contract: |
+      Address a learner who can work with the domain once terms are anchored.
+      Permit precise domain vocabulary, but keep each inference inspectable.
+    max_average_sentence_words: 23
+  informed_peer:
+    contract: |
+      Use compact peer-level reasoning and domain vocabulary. Do not unpack basic
+      ideas unless the learner explicitly asks for it.
+    max_average_sentence_words: 30
+
+lexical_accessibility_levels:
+  glossed_plain:
+    contract: |
+      Use common words and short sentences. Define every unresolved term in place
+      before using it to ask another question.
+    max_average_sentence_words: 16
+  plain:
+    contract: |
+      Prefer common words, short sentences, and one relation at a time. Avoid
+      unexplained specialist vocabulary.
+    max_average_sentence_words: 17
+  standard:
+    contract: |
+      Use ordinary educated prose. Specialist story terms are allowed when their
+      meaning is clear from the sentence.
+    max_average_sentence_words: 23
+  technical:
+    contract: |
+      Precise domain vocabulary and denser inferential syntax are allowed, while
+      remaining concise and answerable.
+    max_average_sentence_words: 32
+
+scene_immersion_levels:
+  minimal:
+    contract: |
+      Speak directly with minimal scenic ornament. Never mention prompts, models,
+      policies, DAGs, tutors, or learners as external machinery.
+    min_scene_terms: 0
+  grounded:
+    contract: |
+      Stay inside the dramatic world and use at least one concrete scene object,
+      but make comprehension more important than atmospheric flourish.
+    min_scene_terms: 1
+  immersive:
+    contract: |
+      Make the action feel situated in the dramatic world through at least two
+      concrete scene objects or setting-specific terms. Do not break the fourth wall.
+    min_scene_terms: 2
 
 routing_patterns:
   transfer:

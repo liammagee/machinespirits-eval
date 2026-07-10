@@ -18,6 +18,11 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import {
+  DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+  normalizeTutorStubEngagementStanceTemperature,
+} from '../services/tutorStubRegisterTemperature.js';
+import { summarizeTutorStubResponseConfigurationAudits } from '../services/tutorStubResponseConfiguration.js';
+import {
   learnerProfileContract,
   learnerProfileContractSummary,
   learnerProfileDescription,
@@ -30,6 +35,22 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
 const DEFAULT_CODEX_MODEL_REF = 'codex.gpt-5.5';
+const argvHasOption = (name) =>
+  process.argv.slice(2).some((arg) => arg === name || arg.startsWith(`${name}=`));
+const MODEL_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_MODEL || argvHasOption('--model'));
+const ANALYSIS_MODEL_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || argvHasOption('--analysis-model'),
+);
+const AUTO_LEARNER_MODEL_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL ||
+    process.env.TUTOR_STUB_AUTO_LEARNER_MODEL ||
+    argvHasOption('--auto-learner-model'),
+);
+const ENGAGEMENT_STANCE_TEMPERATURE_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_REGISTER_TEMPERATURE ||
+    process.env.TUTOR_STUB_REGISTER_TEMPERATURE ||
+    process.argv.slice(2).some((arg) => arg === '--register-temperature' || arg.startsWith('--register-temperature=')),
+);
 
 const { values: args } = parseArgs({
   options: {
@@ -65,6 +86,13 @@ const { values: args } = parseArgs({
     'trace-dir': { type: 'string', default: process.env.TUTOR_STUB_EVAL_TRACE_DIR || '.tutor-stub-auto-eval' },
     ledger: { type: 'string', default: process.env.TUTOR_STUB_EVAL_LEDGER || '.tutor-stub-auto-eval/ledger.jsonl' },
     'register-palette': { type: 'string', default: 'all' },
+    'register-temperature': {
+      type: 'string',
+      default:
+        process.env.TUTOR_STUB_EVAL_REGISTER_TEMPERATURE ||
+        process.env.TUTOR_STUB_REGISTER_TEMPERATURE ||
+        String(DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
+    },
     'dag-mode': {
       type: 'string',
       default: process.env.TUTOR_STUB_EVAL_DAG_MODE || process.env.TUTOR_STUB_DAG_MODE || 'strict_dag',
@@ -115,6 +143,7 @@ Options:
   --trace-dir <path>         default: .tutor-stub-auto-eval
   --ledger <path>            append/upsert eval ledger JSONL (default: .tutor-stub-auto-eval/ledger.jsonl)
   --register-palette <mode>  default: all
+  --register-temperature <n> stance-only: lower sharpens; higher broadens (default: 0.85)
   --dag-mode <mode>          strict_dag, human_scaffold, or defeasible_human_scaffold
   --first-message <text>     seed the first learner turn instead of using tutor opening
   --cli-effort <level>       low, medium, high, xhigh, max, or config for CLI providers
@@ -341,6 +370,11 @@ function mean(values) {
   const finite = values.map(Number).filter(Number.isFinite);
   if (!finite.length) return 0;
   return Number((finite.reduce((sum, value) => sum + value, 0) / finite.length).toFixed(3));
+}
+
+function meanOrNull(values) {
+  const finite = values.map(Number).filter(Number.isFinite);
+  return finite.length ? Number((finite.reduce((sum, value) => sum + value, 0) / finite.length).toFixed(3)) : null;
 }
 
 function entropy(values) {
@@ -879,10 +913,14 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
     schema: 'machinespirits.tutor-stub.animated-viz-frame.v1',
     turn: turn?.turn ?? index + 1,
     policy: selection.policy || null,
-    selectedRegister: selection.selected_register || null,
+    selectedEngagementStance: selection.engagement_stance || selection.selected_register || null,
+    selectedRegister: selection.selected_register || selection.engagement_stance || null,
+    responseConfiguration: turn?.responseConfiguration || selection.response_configuration || null,
+    responseConfigurationAudit: turn?.responseConfigurationAudit || null,
     register: {
       policy: selection.policy || null,
-      selected: selection.selected_register || null,
+      engagementStance: selection.engagement_stance || selection.selected_register || null,
+      selected: selection.selected_register || selection.engagement_stance || null,
       probability: roundOptionalField(selection.selected_probability),
       vector: selection.register_vector || selection.continuous_register_policy?.register_vector || null,
       vectorEntropyBits: roundOptionalField(
@@ -986,9 +1024,13 @@ function compactTranscriptTurn({ turn, index, fieldRows }) {
     },
     register: {
       policy: selection.policy || null,
-      selected: selection.selected_register || null,
+      engagementStance: selection.engagement_stance || selection.selected_register || null,
+      selected: selection.selected_register || selection.engagement_stance || null,
       mode: selection.selected_mode || null,
       actionFamily: selection.action_family || null,
+      audienceRegister: selection.audience_register || null,
+      lexicalAccessibility: selection.lexical_accessibility || null,
+      sceneImmersion: selection.scene_immersion || null,
       valence: selection.valence || null,
       probability: roundOptionalField(selection.selected_probability ?? selection.confidence),
       vector: selection.register_vector || selection.continuous_register_policy?.register_vector || null,
@@ -1002,6 +1044,8 @@ function compactTranscriptTurn({ turn, index, fieldRows }) {
       expectedFieldMove: textSnippet(selection.expected_field_move, 260),
       riskFlags: Array.isArray(selection.risk_flags) ? selection.risk_flags.slice(0, 8) : [],
     },
+    responseConfiguration: turn?.responseConfiguration || selection.response_configuration || null,
+    responseConfigurationAudit: turn?.responseConfigurationAudit || null,
     learnerState: {
       summary: textSnippet(analysis.summary, 320),
       requestType: state.classifier.requestType || analysis.request_type || 'unknown',
@@ -1118,7 +1162,20 @@ function buildTurnTrainingExamples({ animatedViz = null, transcript = null } = {
       turn: frame.turn ?? turn.turn ?? index + 1,
       policy: frame.policy || turn.register?.policy || null,
       action: {
+        engagementStance:
+          frame.selectedEngagementStance ||
+          frame.selectedRegister ||
+          turn.register?.engagementStance ||
+          turn.register?.selected ||
+          null,
         selectedRegister: frame.selectedRegister || turn.register?.selected || null,
+        actionFamily: turn.register?.actionFamily || frame.responseConfiguration?.action_family || null,
+        audienceRegister: turn.register?.audienceRegister || frame.responseConfiguration?.audience_register || null,
+        lexicalAccessibility:
+          turn.register?.lexicalAccessibility || frame.responseConfiguration?.lexical_accessibility || null,
+        sceneImmersion: turn.register?.sceneImmersion || frame.responseConfiguration?.scene_immersion || null,
+        responseConfiguration: turn.responseConfiguration || frame.responseConfiguration || null,
+        responseConfigurationAudit: turn.responseConfigurationAudit || frame.responseConfigurationAudit || null,
         registerPolicy: frame.register?.policy || turn.register?.policy || null,
         registerVector: frame.register?.vector || turn.register?.vector || null,
         registerDistribution: frame.register?.distribution || null,
@@ -1451,10 +1508,25 @@ function summarizeTrace(tracePath, traceDir) {
   const trainingExamples = buildTurnTrainingExamples({ animatedViz, transcript });
   const learnerBehavior = summarizeLearnerBehavior(turnRecords);
   const humanDiscourse = summarizeHumanDiscourse(turnRecords);
+  const responseConfigurationVisibility = summarizeTutorStubResponseConfigurationAudits(
+    turnRecords.map((turn) => turn.responseConfigurationAudit),
+  );
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
-  const registers = turns.map((event) => event.turnRecord?.registerSelection?.selected_register).filter(Boolean);
+  const registers = turns
+    .map(
+      (event) =>
+        event.turnRecord?.registerSelection?.engagement_stance ||
+        event.turnRecord?.registerSelection?.selected_register,
+    )
+    .filter(Boolean);
+  const actionFamilies = turnRecords.map((turn) => turn.registerSelection?.action_family).filter(Boolean);
+  const audienceRegisters = turnRecords.map((turn) => turn.registerSelection?.audience_register).filter(Boolean);
+  const lexicalAccessibility = turnRecords
+    .map((turn) => turn.registerSelection?.lexical_accessibility)
+    .filter(Boolean);
+  const sceneImmersion = turnRecords.map((turn) => turn.registerSelection?.scene_immersion).filter(Boolean);
   const efficacies = turns.map((event) => event.turnRecord?.previousRegisterEfficacy?.label).filter(Boolean);
   const leakCount = turns.reduce((sum, event) => {
     const leaks = event.turnRecord?.tutorLeakAudit?.leaks;
@@ -1481,6 +1553,13 @@ function summarizeTrace(tracePath, traceDir) {
     finalTutor: lastTurn.tutor || '',
     registerCounts: countBy(registers),
     registerEntropy: entropy(registers),
+    engagementStanceCounts: countBy(registers),
+    engagementStanceEntropy: entropy(registers),
+    actionFamilyCounts: countBy(actionFamilies),
+    audienceRegisterCounts: countBy(audienceRegisters),
+    lexicalAccessibilityCounts: countBy(lexicalAccessibility),
+    sceneImmersionCounts: countBy(sceneImmersion),
+    responseConfigurationVisibility,
     efficacyCounts: countBy(efficacies),
     leakCount,
     repairedCount: turns.filter((event) => event.turnRecord?.tutorResponseRepaired).length,
@@ -1602,6 +1681,16 @@ function summarizeRows(rows) {
       meanFieldRiskDelta: mean(okRows.map((row) => row.field?.delta?.learnerRisk)),
       registerCounts: countBy(registers),
       registerEntropy: entropy(registers),
+      meanConfigurationRealization: mean(
+        okRows
+          .map((row) => row.responseConfigurationVisibility?.mean_realization_rate)
+          .filter((value) => value !== null && value !== undefined),
+      ),
+      meanConfigurationVisibleDifference: meanOrNull(
+        okRows
+          .map((row) => row.responseConfigurationVisibility?.pairwise_visible_difference_rate)
+          .filter((value) => value !== null && value !== undefined),
+      ),
       leakCount: okRows.reduce((sum, row) => sum + Number(row.leakCount || 0), 0),
       errorCount: okRows.reduce((sum, row) => sum + Number(row.errorCount || 0), 0),
     };
@@ -1621,6 +1710,16 @@ function summarizeRows(rows) {
     meanMissing: mean(scored.map((row) => row.missingPremiseCount)),
     registerCounts: countBy(scoredRegisters),
     registerEntropy: entropy(scoredRegisters),
+    meanConfigurationRealization: mean(
+      scored
+        .map((row) => row.responseConfigurationVisibility?.mean_realization_rate)
+        .filter((value) => value !== null && value !== undefined),
+    ),
+    meanConfigurationVisibleDifference: meanOrNull(
+      scored
+        .map((row) => row.responseConfigurationVisibility?.pairwise_visible_difference_rate)
+        .filter((value) => value !== null && value !== undefined),
+    ),
     leakCount: scored.reduce((sum, row) => sum + Number(row.leakCount || 0), 0),
     errorCount: scored.reduce((sum, row) => sum + Number(row.errorCount || 0), 0),
     byPolicy: Object.fromEntries(
@@ -4041,13 +4140,13 @@ const REPORT_TERM_TOOLTIPS = {
     'Mean change in the reconstructed learner-mastery field from first to final turn for OK rows. Higher gain is better.',
   riskDelta:
     'Risk reduction is the fall in reconstructed learner risk from first to final turn. Positive values mean risk went down.',
-  topRegisters: 'Most frequently selected tutor discourse registers in the OK rows for this policy.',
+  topRegisters: 'Most frequently selected tutor engagement stances in the OK rows for this policy.',
   entropy:
-    'Shannon entropy in bits over selected tutor registers for OK rows. 0 means one register dominated; higher means more register diversity.',
+    'Shannon entropy in bits over selected engagement stances for OK rows. 0 means one stance dominated; higher means more stance diversity.',
   bottleneck:
     'The final learner-DAG limiting condition. Grounded asserted-secret closure is displayed as closed rather than as a remaining bottleneck.',
   fieldDelta: 'Compact field movement: learner mastery gain and learner risk reduction from first to final turn.',
-  efficacy: 'Counts of register-selection efficacy labels emitted by the register policy or classifier.',
+  efficacy: 'Counts of engagement-stance efficacy labels emitted by the policy or classifier.',
   leaks: 'Tutor leak audit count: places where the tutor appears to reveal or overgive protected solution information.',
 };
 
@@ -4468,7 +4567,7 @@ function renderTranscriptExplorer(rows) {
         </div>
       </div>
       <label class="transcript-turn-control"><span>Turn</span><select data-transcript-turn></select></label>
-      <label class="transcript-search-control"><span>Search</span><input type="search" data-transcript-search placeholder="text, register, event"></label>
+      <label class="transcript-search-control"><span>Search</span><input type="search" data-transcript-search placeholder="text, stance, action, event"></label>
     </div>
     <div class="transcript-summary" data-transcript-summary></div>
     <div class="transcript-body" data-transcript-body aria-live="polite"></div>
@@ -4569,6 +4668,10 @@ function renderTranscriptExplorer(rows) {
         turn.learner,
         turn.tutor,
         turn.register && turn.register.selected,
+        turn.register && turn.register.actionFamily,
+        turn.register && turn.register.audienceRegister,
+        turn.register && turn.register.lexicalAccessibility,
+        turn.register && turn.register.sceneImmersion,
         turn.register && turn.register.reason,
         turn.field && turn.field.bottleneck,
         turn.learnerState && turn.learnerState.discourseMove,
@@ -4589,6 +4692,8 @@ function renderTranscriptExplorer(rows) {
       var state = turn.learnerState || {};
       var dag = turn.dag || {};
       var response = turn.response || {};
+      var configuration = turn.responseConfiguration || {};
+      var configurationAudit = turn.responseConfigurationAudit || {};
       return '<div class="transcript-meta-strip">' +
         chip('proof status', proofStatus((turn.field && turn.field.bottleneck) || dag.bottleneck)) +
         chip('coverage', pct(dag.bestPathCoverage)) +
@@ -4596,6 +4701,11 @@ function renderTranscriptExplorer(rows) {
         chip('move', state.discourseMove) +
         chip('stance', state.epistemicStance) +
         chip('agency', state.agency) +
+        chip('action', configuration.action_family || (turn.register && turn.register.actionFamily)) +
+        chip('audience', configuration.audience_register || (turn.register && turn.register.audienceRegister)) +
+        chip('language', configuration.lexical_accessibility || (turn.register && turn.register.lexicalAccessibility)) +
+        chip('scene', configuration.scene_immersion || (turn.register && turn.register.sceneImmersion)) +
+        chip('configuration visible', configurationAudit.axis_count ? configurationAudit.visible_axis_count + '/' + configurationAudit.axis_count : null) +
         chip('efficacy', response.efficacyLabel) +
         (response.repaired ? chip('repair', 'yes', 'good') : '') +
         eventChips(turn) +
@@ -4675,7 +4785,7 @@ function renderTranscriptExplorer(rows) {
           '</div>' +
           metaStrip(turn) +
           '<div class="transcript-plate-reason">' +
-            '<strong>Register rationale:</strong> ' + esc(register.reason || 'No register rationale was captured for this turn.') +
+            '<strong>Engagement-stance rationale:</strong> ' + esc(register.reason || 'No stance rationale was captured for this turn.') +
             (register.expectedDagMove ? '<br><strong>DAG move:</strong> ' + esc(register.expectedDagMove) : '') +
             (register.expectedFieldMove ? '<br><strong>Field move:</strong> ' + esc(register.expectedFieldMove) : '') +
           '</div>' +
@@ -5917,6 +6027,12 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <td>${formatPositiveField(-Number(bucket.meanFieldRiskDelta))}</td>
         <td>${escapeHtml(formatCounts(bucket.registerCounts))}</td>
         <td>${bucket.registerEntropy}</td>
+        <td>${Math.round(Number(bucket.meanConfigurationRealization || 0) * 100)}%</td>
+        <td>${
+          bucket.meanConfigurationVisibleDifference === null
+            ? 'n/a'
+            : `${Math.round(Number(bucket.meanConfigurationVisibleDifference) * 100)}%`
+        }</td>
       </tr>`,
     )
     .join('\n');
@@ -5942,6 +6058,15 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         )}</td>
         <td>${escapeHtml(formatCounts(row.registerCounts, { limit: 4 }))}</td>
         <td>${escapeHtml(formatCounts(row.efficacyCounts, { limit: 4 }))}</td>
+        <td>${Math.round(Number(row.responseConfigurationVisibility?.mean_realization_rate || 0) * 100)}%</td>
+        <td>${
+          row.responseConfigurationVisibility?.pairwise_visible_difference_rate === null ||
+          row.responseConfigurationVisibility?.pairwise_visible_difference_rate === undefined
+            ? 'n/a'
+            : `${Math.round(
+                Number(row.responseConfigurationVisibility.pairwise_visible_difference_rate) * 100,
+              )}%`
+        }</td>
         <td>${escapeHtml(row.leakCount)}</td>
         <td>${transcriptId ? `<a href="#transcripts" data-transcript-jump="${escapeHtml(transcriptId)}">transcript</a>` : ''}</td>
         <td>${row.trace ? `<a href="${escapeHtml(path.relative(summary.config.traceDir || '.', path.join(ROOT, row.trace)))}">trace</a>` : ''}</td>
@@ -5983,6 +6108,8 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
               ${htmlMetricInfo('Mean Turns', REPORT_TERM_TOOLTIPS.meanTurns, summary.aggregates.meanTurns, `safety cap ${summary.config.safetyTurns}`)}
               ${htmlMetricInfo('Mean Coverage', REPORT_TERM_TOOLTIPS.meanCoverage, summary.aggregates.meanCoverage, 'learner-DAG best path')}
               ${htmlMetricInfo('Mean Missing', REPORT_TERM_TOOLTIPS.meanMissing, summary.aggregates.meanMissing, 'remaining premises')}
+              ${htmlMetricInfo('Configuration Realization', 'Mean share of independently selected response axes with deterministic transcript-visible evidence.', `${Math.round(Number(summary.aggregates.meanConfigurationRealization || 0) * 100)}%`, 'stance · action · audience · language · scene')}
+              ${htmlMetricInfo('Visible Difference', 'For pairs of turns with different selected configurations, the share with different surface-feature signatures.', summary.aggregates.meanConfigurationVisibleDifference === null ? 'n/a' : `${Math.round(Number(summary.aggregates.meanConfigurationVisibleDifference) * 100)}%`, 'n/a when a run used only one configuration')}
               ${htmlMetricInfo('DAG Mode', 'Discourse mode for translating the strict proof DAG into tutor behavior. strict_dag is the audit baseline; human_scaffold and defeasible_human_scaffold add human-facing warrant/proof-debt scaffolds.', summary.config.dagMode || 'strict_dag', summary.config.dagMode === 'strict_dag' || !summary.config.dagMode ? 'strict audit' : 'human scaffold active')}
             </div>
             ${renderReportMetricGuide()}
@@ -6010,17 +6137,19 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>${reportInfoTerm('meanMissing', 'Mean Missing')}</th>
         <th>${reportInfoTerm('masteryDelta', 'Mastery Gain')}</th>
         <th>${reportInfoTerm('riskDelta', 'Risk Reduction')}</th>
-        <th>${reportInfoTerm('topRegisters', 'Top Registers')}</th>
+        <th>${reportInfoTerm('topRegisters', 'Top Stances')}</th>
         <th>${reportInfoTerm('entropy', 'Entropy')}</th>
+        <th>Configuration Realization</th>
+        <th>Visible Difference</th>
       </tr></thead>
-      <tbody>${policyRows || '<tr><td colspan="11">No policy rows.</td></tr>'}</tbody>
+      <tbody>${policyRows || '<tr><td colspan="13">No policy rows.</td></tr>'}</tbody>
           </table>
           </div>
         </section>
 
         <section id="adaptation-timeline" class="report-section">
           <h2>Adaptation Timeline</h2>
-          <p class="read-first-note">Each turn connects the learner state seen by the policy, the selected register, and the next-turn exploratory reward proxy. Use it to inspect whether strategy changes were contingent and useful, not merely varied.</p>
+          <p class="read-first-note">Each turn connects the learner state seen by the policy, the selected engagement stance and independent response configuration, and the next-turn exploratory reward proxy. Use it to inspect whether strategy changes were contingent, transcript-visible, and useful, not merely relabeled.</p>
           ${renderAdaptationTimeline(orderedRows)}
         </section>
 
@@ -6054,14 +6183,16 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>${reportInfoTerm('meanMissing', 'Missing')}</th>
         <th>${reportInfoTerm('bottleneck', 'Proof Status')}</th>
         <th>${reportInfoTerm('fieldDelta', 'Field Movement')}</th>
-        <th>${reportInfoTerm('topRegisters', 'Registers')}</th>
+        <th>${reportInfoTerm('topRegisters', 'Engagement Stances')}</th>
         <th>${reportInfoTerm('efficacy', 'Efficacy')}</th>
+        <th>Configuration Realization</th>
+        <th>Visible Difference</th>
         <th>${reportInfoTerm('leaks', 'Leaks')}</th>
         <th>Transcript</th>
         <th>Trace</th>
         <th>Log</th>
       </tr></thead>
-      <tbody>${runRows || '<tr><td colspan="16">No run rows.</td></tr>'}</tbody>
+      <tbody>${runRows || '<tr><td colspan="18">No run rows.</td></tr>'}</tbody>
           </table>
           </div>
         </section>
@@ -9126,6 +9257,14 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     autoTurns,
     '--auto-safety-turns',
     String(positiveInt(args['safety-turns'], '--safety-turns')),
+    '--model',
+    args.model,
+    '--classifier-model',
+    args['analysis-model'],
+    '--learner-record-model',
+    args['analysis-model'],
+    '--auto-learner-model',
+    args['auto-learner-model'],
     '--auto-learner-profile',
     resolvedAutoLearnerProfile(),
     '--tutor-learner-dag',
@@ -9137,19 +9276,13 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     policy,
     '--register-palette',
     registerPalette,
+    '--register-temperature',
+    String(normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' })),
     '--trace-dir',
     traceDir,
     '--no-stream',
     '--no-interim-animation',
   ];
-  if (args.model !== DEFAULT_CODEX_MODEL_REF) command.push('--model', args.model);
-  if (args['analysis-model'] !== DEFAULT_CODEX_MODEL_REF) {
-    command.push('--classifier-model', args['analysis-model']);
-    command.push('--learner-record-model', args['analysis-model']);
-  }
-  if (args['auto-learner-model'] !== DEFAULT_CODEX_MODEL_REF) {
-    command.push('--auto-learner-model', args['auto-learner-model']);
-  }
   if (!args['no-dag']) command.push('--dag');
   if (args['no-stop-on-grounded']) command.push('--no-auto-stop-on-grounded');
   if (args['first-message']) command.push('--once', args['first-message']);
@@ -9207,6 +9340,34 @@ function buildResumePlan(summaryPath) {
     const childArgs = command[0] === 'node' ? command.slice(1) : command;
     let adjustedChildArgs = withFlagValue(
       childArgs,
+      '--model',
+      MODEL_OVERRIDE ? args.model : flagValue(childArgs, '--model') || source.config?.model || args.model,
+    );
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
+      '--classifier-model',
+      ANALYSIS_MODEL_OVERRIDE
+        ? args['analysis-model']
+        : flagValue(childArgs, '--classifier-model') || source.config?.analysisModel || args['analysis-model'],
+    );
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
+      '--learner-record-model',
+      ANALYSIS_MODEL_OVERRIDE
+        ? args['analysis-model']
+        : flagValue(childArgs, '--learner-record-model') || source.config?.analysisModel || args['analysis-model'],
+    );
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
+      '--auto-learner-model',
+      AUTO_LEARNER_MODEL_OVERRIDE
+        ? args['auto-learner-model']
+        : flagValue(childArgs, '--auto-learner-model') ||
+            source.config?.autoLearnerModel ||
+            args['auto-learner-model'],
+    );
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
       '--max-tokens',
       args['max-tokens'] ? positiveInt(args['max-tokens'], '--max-tokens') : '',
     );
@@ -9214,6 +9375,13 @@ function buildResumePlan(summaryPath) {
       adjustedChildArgs,
       '--history-turns',
       args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : '',
+    );
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
+      '--register-temperature',
+      ENGAGEMENT_STANCE_TEMPERATURE_OVERRIDE
+        ? normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' })
+        : '',
     );
     adjustedChildArgs = withBooleanFlag(adjustedChildArgs, '--no-memory-summary', args['no-memory-summary']);
     assertSupportedChildArgs(adjustedChildArgs);
@@ -9257,6 +9425,15 @@ function buildResumePlan(summaryPath) {
       historyTurns: args['history-turns']
         ? positiveInt(args['history-turns'], '--history-turns')
         : source.config?.historyTurns || null,
+      registerTemperature: ENGAGEMENT_STANCE_TEMPERATURE_OVERRIDE
+        ? normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' })
+        : source.config?.registerTemperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+      engagementStanceTemperature: ENGAGEMENT_STANCE_TEMPERATURE_OVERRIDE
+        ? normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], { label: '--register-temperature' })
+        : source.config?.engagementStanceTemperature ??
+          source.config?.registerTemperature ??
+          DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+      temperatureScope: 'engagement_stance_only',
       memorySummary: args['no-memory-summary'] ? { enabled: false } : source.config?.memorySummary || null,
       resumedFrom: path.relative(ROOT, resolvedSummaryPath),
       resumeStatuses: Array.from(retryStatuses),
@@ -9280,6 +9457,24 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       autoLearnerProfileContract:
         autoLearnerProfileLabel() === 'custom' ? null : learnerProfileContractSummary(resolvedAutoLearnerProfileId()),
       dagMode: args['dag-mode'],
+      registerTemperature: normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
+        label: '--register-temperature',
+      }),
+      engagementStanceTemperature: normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
+        label: '--register-temperature',
+      }),
+      temperatureScope: 'engagement_stance_only',
+      responseConfiguration: {
+        schema: 'machinespirits.tutor-stub.response-configuration.v1',
+        independentAxes: [
+          'engagement_stance',
+          'action_family',
+          'audience_register',
+          'lexical_accessibility',
+          'scene_immersion',
+        ],
+        transcriptVisibilityAudit: true,
+      },
       maxTokens: args['max-tokens'] ? positiveInt(args['max-tokens'], '--max-tokens') : null,
       historyTurns: args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : null,
       memorySummary: {

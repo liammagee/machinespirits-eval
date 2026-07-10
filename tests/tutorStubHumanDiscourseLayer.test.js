@@ -97,13 +97,109 @@ test('mixed tutor-stub advertises profile expression beside Tab, suggest, and us
   const config = tutorStubDryRun(['--mixed-learner']);
 
   assert.equal(config.mixedLearner.enabled, true);
+  assert.equal(config.mixedLearner.profileId, 'diligent');
   assert.deepEqual(config.mixedLearner.profilePresentation, {
     promptLabel: true,
     intendedPattern: true,
     visibleExpression: 'profile_signal',
+    readyAnnouncement: 'once_per_profile',
   });
   assert.match(config.mixedLearner.accept, /Tab/u);
   assert.equal(config.mixedLearner.inspect, '/suggest');
+});
+
+test('tutor-stub dry run exposes configurable register temperature', () => {
+  const config = tutorStubDryRun([
+    '--register-policy',
+    'continuous_dynamical_system',
+    '--register-temperature',
+    '0.4',
+  ]);
+
+  assert.equal(config.registerSelection.temperature, 0.4);
+  assert.equal(config.registerSelection.engagementStanceTemperature, 0.4);
+  assert.equal(config.registerSelection.temperatureScope, 'engagement_stance_only');
+  assert.equal(config.registerSelection.policy, 'continuous_dynamical_system');
+});
+
+test('tutor-stub dry run exposes independent response-configuration axes', () => {
+  const config = tutorStubDryRun();
+
+  assert.equal(config.responseConfiguration.primaryStanceField, 'engagement_stance');
+  assert.equal(config.responseConfiguration.temperatureScope, 'engagement_stance_only');
+  assert.deepEqual(config.responseConfiguration.independentAxes, [
+    'engagement_stance',
+    'action_family',
+    'audience_register',
+    'lexical_accessibility',
+    'scene_immersion',
+  ]);
+  assert.equal(config.responseConfiguration.transcriptVisibilityAudit, true);
+});
+
+test('tutor-stub dry run exposes the non-DAG comprehension side-state', () => {
+  const config = tutorStubDryRun();
+
+  assert.deepEqual(config.comprehensionSideState, {
+    enabled: true,
+    schema: 'machinespirits.tutor-stub.comprehension-side-state.v1',
+    sources: ['learner_turn', 'slash_explain'],
+    advancesLearnerDag: false,
+  });
+});
+
+test('tutor-stub changes register temperature through live settings', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-register-temp-'));
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+        '--register-policy',
+        'continuous_dynamical_system',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '/settings\n/settings temp 1.0\n/settings temp\n/quit\n',
+      },
+    );
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /stance temp: 0\.85/u);
+    assert.match(result.stdout, /stance temp 0\.85 → 1/u);
+    assert.match(result.stdout, /stance temp: 1/u);
+    assert.match(result.stdout, /lower sharpens the dominant engagement stance/u);
+    const traces = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .map((name) => fs.readFileSync(path.join(tmp, name), 'utf8'))
+      .join('\n');
+    assert.match(traces, /"type":"register_temperature_changed"/u);
+    assert.match(traces, /"previous":0\.85,"temperature":1/u);
+    assert.match(traces, /"scope":"engagement_stance_only"/u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('tutor-stub rejects register temperatures outside the documented range', () => {
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/tutor-stub.js', '--dry-run', '--no-trace', '--register-temperature', '0'],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /--register-temperature must be between 0\.05 and 3/u);
 });
 
 test('tutor-stub rejects unknown DAG discourse modes', () => {
@@ -279,10 +375,11 @@ test('mixed tutor-stub can list and switch learner profiles interactively', () =
   assert.match(result.stdout, /observable pattern, its trigger, and the tutor support that permits progress/u);
   assert.match(result.stdout, /switched to diligent:/u);
   assert.match(result.stdout, /diligent: Diligent control/u);
-  assert.match(result.stdout, /switched to custom profile/u);
+  assert.doesNotMatch(result.stdout, /switched to custom profile/u);
+  assert.equal((result.stdout.match(/switched to diligent:/gu) || []).length, 2);
 });
 
-test('auto-eval dry run forwards DAG discourse mode to tutor-stub children', () => {
+test('auto-eval dry run forwards DAG discourse mode and register temperature to tutor-stub children', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-human-scaffold-auto-'));
   try {
     execFileSync(
@@ -299,6 +396,8 @@ test('auto-eval dry run forwards DAG discourse mode to tutor-stub children', () 
         tmp,
         '--dag-mode',
         'human-scaffold',
+        '--register-temperature',
+        '0.4',
         '--dry-run',
         '--no-html-report',
         '--no-ledger',
@@ -314,10 +413,23 @@ test('auto-eval dry run forwards DAG discourse mode to tutor-stub children', () 
     assert.ok(summaryPath);
     const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
     assert.equal(summary.config.dagMode, 'human-scaffold');
+    assert.equal(summary.config.registerTemperature, 0.4);
+    assert.equal(summary.config.engagementStanceTemperature, 0.4);
+    assert.equal(summary.config.temperatureScope, 'engagement_stance_only');
+    assert.deepEqual(summary.config.responseConfiguration.independentAxes, [
+      'engagement_stance',
+      'action_family',
+      'audience_register',
+      'lexical_accessibility',
+      'scene_immersion',
+    ]);
     const command = summary.results[0].command;
     const modeIndex = command.indexOf('--dag-mode');
     assert.ok(modeIndex > 0);
     assert.equal(command[modeIndex + 1], 'human-scaffold');
+    const temperatureIndex = command.indexOf('--register-temperature');
+    assert.ok(temperatureIndex > 0);
+    assert.equal(command[temperatureIndex + 1], '0.4');
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

@@ -159,7 +159,20 @@ function fallbackTrainingExamples(row = {}) {
       turn: frame.turn ?? turn.turn ?? index + 1,
       policy: frame.policy || turn.register?.policy || row.policy || null,
       action: {
+        engagementStance:
+          frame.selectedEngagementStance ||
+          frame.selectedRegister ||
+          turn.register?.engagementStance ||
+          turn.register?.selected ||
+          null,
         selectedRegister: frame.selectedRegister || turn.register?.selected || null,
+        actionFamily: turn.register?.actionFamily || frame.responseConfiguration?.action_family || null,
+        audienceRegister: turn.register?.audienceRegister || frame.responseConfiguration?.audience_register || null,
+        lexicalAccessibility:
+          turn.register?.lexicalAccessibility || frame.responseConfiguration?.lexical_accessibility || null,
+        sceneImmersion: turn.register?.sceneImmersion || frame.responseConfiguration?.scene_immersion || null,
+        responseConfiguration: turn.responseConfiguration || frame.responseConfiguration || null,
+        responseConfigurationAudit: turn.responseConfigurationAudit || frame.responseConfigurationAudit || null,
         registerPolicy: frame.register?.policy || turn.register?.policy || row.policy || null,
         registerVector: frame.register?.vector || turn.register?.vector || null,
         registerDistribution: frame.register?.distribution || null,
@@ -309,6 +322,9 @@ function migrate(db) {
       mean_coverage REAL,
       mean_missing REAL,
       register_entropy REAL,
+      configuration_realization_rate REAL,
+      configuration_visible_difference_rate REAL,
+      response_configuration_visibility_json TEXT,
       leak_count INTEGER,
       error_count INTEGER,
       world TEXT,
@@ -391,7 +407,16 @@ function migrate(db) {
 	      policy TEXT,
 	      run_index INTEGER,
 	      turn INTEGER,
+	      engagement_stance TEXT,
 	      selected_register TEXT,
+	      action_family TEXT,
+	      audience_register TEXT,
+	      lexical_accessibility TEXT,
+	      scene_immersion TEXT,
+	      response_configuration_json TEXT,
+	      response_configuration_audit_json TEXT,
+	      configuration_realization_rate REAL,
+	      configuration_transcript_visible INTEGER,
 	      register_policy TEXT,
 	      register_vector_json TEXT,
 	      register_distribution_json TEXT,
@@ -455,6 +480,8 @@ function migrate(db) {
         ROUND(AVG(CASE WHEN rows.status = 'ok' THEN rows.missing_premise_count END), 3) AS mean_missing_ok,
         ROUND(AVG(CASE WHEN rows.status = 'ok' THEN rows.leak_count END), 3) AS mean_leaks_ok,
         ROUND(AVG(CASE WHEN rows.status = 'ok' THEN rows.register_entropy END), 3) AS mean_register_entropy_ok,
+        ROUND(AVG(CASE WHEN rows.status = 'ok' THEN rows.configuration_realization_rate END), 3) AS mean_configuration_realization_ok,
+        ROUND(AVG(CASE WHEN rows.status = 'ok' THEN rows.configuration_visible_difference_rate END), 3) AS mean_configuration_visible_difference_ok,
         MIN(runs.completed_at) AS first_completed_at,
         MAX(runs.completed_at) AS last_completed_at
       FROM tutor_stub_eval_rows rows
@@ -484,7 +511,16 @@ function migrate(db) {
 	        frames.policy,
 	        frames.run_index,
 	        frames.turn,
+	        frames.engagement_stance,
 	        frames.selected_register,
+	        frames.action_family,
+	        frames.audience_register,
+	        frames.lexical_accessibility,
+	        frames.scene_immersion,
+	        frames.configuration_realization_rate,
+	        frames.configuration_transcript_visible,
+	        frames.response_configuration_json,
+	        frames.response_configuration_audit_json,
 	        frames.register_policy,
 	        frames.register_entropy_bits,
 	        frames.delta_mastery,
@@ -532,6 +568,18 @@ function migrate(db) {
   addColumnIfMissing(db, 'tutor_stub_turn_frames', 'side_arc_json', 'TEXT');
   addColumnIfMissing(db, 'tutor_stub_turn_frames', 'proof_debt_json', 'TEXT');
   addColumnIfMissing(db, 'tutor_stub_turn_frames', 'warrant_premise_audit_json', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_eval_rows', 'configuration_realization_rate', 'REAL');
+  addColumnIfMissing(db, 'tutor_stub_eval_rows', 'configuration_visible_difference_rate', 'REAL');
+  addColumnIfMissing(db, 'tutor_stub_eval_rows', 'response_configuration_visibility_json', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'engagement_stance', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'action_family', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'audience_register', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'lexical_accessibility', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'scene_immersion', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'response_configuration_json', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'response_configuration_audit_json', 'TEXT');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'configuration_realization_rate', 'REAL');
+  addColumnIfMissing(db, 'tutor_stub_turn_frames', 'configuration_transcript_visible', 'INTEGER');
 }
 
 function ingestSummary(db, summaryPath) {
@@ -671,14 +719,18 @@ function ingestSummary(db, summaryPath) {
         id, eval_run_id, policy, run_index, status, exit_code, signal, log_path,
         trace_path, trace_relative, events, turn_count, last_turn, stop_reason,
         grounded_closure, best_path_coverage, missing_premise_count, bottleneck,
-        final_learner, final_tutor, register_entropy, leak_count, repaired_count,
+        final_learner, final_tutor, register_entropy, configuration_realization_rate,
+        configuration_visible_difference_rate, response_configuration_visibility_json,
+        leak_count, repaired_count,
         fallback_count, error_count, register_counts_json, efficacy_counts_json,
         field_json, row_json
       ) VALUES (
         @id, @eval_run_id, @policy, @run_index, @status, @exit_code, @signal, @log_path,
         @trace_path, @trace_relative, @events, @turn_count, @last_turn, @stop_reason,
         @grounded_closure, @best_path_coverage, @missing_premise_count, @bottleneck,
-        @final_learner, @final_tutor, @register_entropy, @leak_count, @repaired_count,
+        @final_learner, @final_tutor, @register_entropy, @configuration_realization_rate,
+        @configuration_visible_difference_rate, @response_configuration_visibility_json,
+        @leak_count, @repaired_count,
         @fallback_count, @error_count, @register_counts_json, @efficacy_counts_json,
         @field_json, @row_json
       )
@@ -693,7 +745,10 @@ function ingestSummary(db, summaryPath) {
     `);
     const insertTurnFrame = db.prepare(`
       INSERT INTO tutor_stub_turn_frames (
-        id, eval_run_id, row_id, policy, run_index, turn, selected_register,
+        id, eval_run_id, row_id, policy, run_index, turn, engagement_stance, selected_register,
+        action_family, audience_register, lexical_accessibility, scene_immersion,
+        response_configuration_json, response_configuration_audit_json,
+        configuration_realization_rate, configuration_transcript_visible,
         register_policy, register_vector_json, register_distribution_json,
         register_entropy_bits, state_vector_json, derivative_vector_json,
         dag_json, learner_state_json, field_json, trajectory_json,
@@ -703,7 +758,10 @@ function ingestSummary(db, summaryPath) {
         delta_coverage, delta_alignment, delta_momentum, reward_proxy_json,
         frame_json, transcript_turn_json
       ) VALUES (
-        @id, @eval_run_id, @row_id, @policy, @run_index, @turn, @selected_register,
+        @id, @eval_run_id, @row_id, @policy, @run_index, @turn, @engagement_stance, @selected_register,
+        @action_family, @audience_register, @lexical_accessibility, @scene_immersion,
+        @response_configuration_json, @response_configuration_audit_json,
+        @configuration_realization_rate, @configuration_transcript_visible,
         @register_policy, @register_vector_json, @register_distribution_json,
         @register_entropy_bits, @state_vector_json, @derivative_vector_json,
         @dag_json, @learner_state_json, @field_json, @trajectory_json,
@@ -741,6 +799,13 @@ function ingestSummary(db, summaryPath) {
         final_learner: row.finalLearner || null,
         final_tutor: row.finalTutor || null,
         register_entropy: numberOrNull(row.registerEntropy),
+        configuration_realization_rate: numberOrNull(
+          row.responseConfigurationVisibility?.mean_realization_rate,
+        ),
+        configuration_visible_difference_rate: numberOrNull(
+          row.responseConfigurationVisibility?.pairwise_visible_difference_rate,
+        ),
+        response_configuration_visibility_json: safeJson(row.responseConfigurationVisibility || null),
         leak_count: integerOrNull(row.leakCount),
         repaired_count: integerOrNull(row.repairedCount),
         fallback_count: integerOrNull(row.fallbackCount),
@@ -764,6 +829,8 @@ function ingestSummary(db, summaryPath) {
         const outcome = example.outcomeAfterNextLearner || null;
         const reward = example.rewardProxy || {};
         const deltas = reward.deltas || {};
+        const responseConfiguration = action.responseConfiguration || null;
+        const responseConfigurationAudit = action.responseConfigurationAudit || null;
         const turn = integerOrNull(example.turn) ?? exampleIndex + 1;
         const humanDiscourse = before.humanDiscourse || example.humanDiscourse || example.frame?.humanDiscourse || null;
         insertTurnFrame.run({
@@ -773,7 +840,17 @@ function ingestSummary(db, summaryPath) {
           policy: example.policy || policy,
           run_index: runIndex,
           turn,
-          selected_register: action.selectedRegister || null,
+          engagement_stance: action.engagementStance || action.selectedRegister || null,
+          selected_register: action.selectedRegister || action.engagementStance || null,
+          action_family: action.actionFamily || responseConfiguration?.action_family || null,
+          audience_register: action.audienceRegister || responseConfiguration?.audience_register || null,
+          lexical_accessibility:
+            action.lexicalAccessibility || responseConfiguration?.lexical_accessibility || null,
+          scene_immersion: action.sceneImmersion || responseConfiguration?.scene_immersion || null,
+          response_configuration_json: safeJson(responseConfiguration),
+          response_configuration_audit_json: safeJson(responseConfigurationAudit),
+          configuration_realization_rate: numberOrNull(responseConfigurationAudit?.realization_rate),
+          configuration_transcript_visible: boolInt(responseConfigurationAudit?.transcript_visible),
           register_policy: action.registerPolicy || null,
           register_vector_json: safeJson(action.registerVector || null),
           register_distribution_json: safeJson(action.registerDistribution || []),

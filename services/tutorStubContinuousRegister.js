@@ -23,6 +23,7 @@ function normalizeVectorRows(rows) {
     };
   }
   return normalized.map((row) => ({
+    engagement_stance: row.register,
     register: row.register,
     weight: row.weight,
     probability: row.weight,
@@ -49,6 +50,7 @@ function fallbackRows({ palette = [], definitions = {}, allowUnsafe = false }) {
     'precise';
   return [
     {
+      engagement_stance: selected,
       register: selected,
       weight: 1,
       probability: 1,
@@ -57,7 +59,7 @@ function fallbackRows({ palette = [], definitions = {}, allowUnsafe = false }) {
   ];
 }
 
-export function buildContinuousRegisterVector({
+export function buildContinuousEngagementStanceVector({
   scores = {},
   palette = Object.keys(scores || {}),
   definitions = {},
@@ -80,7 +82,10 @@ export function buildContinuousRegisterVector({
   const vectorRows = rows.length ? rows : fallbackRows({ palette: [...paletteSet], definitions, allowUnsafe });
   const vector = Object.fromEntries(vectorRows.map((row) => [row.register, row.weight]));
   return {
-    schema: 'machinespirits.tutor-stub.continuous-register-vector.v1',
+    schema: 'machinespirits.tutor-stub.continuous-engagement-stance-vector.v2',
+    engagementStanceVector: vector,
+    engagementStanceRows: vectorRows,
+    selectedEngagementStance: vectorRows[0]?.register || 'precise',
     vector,
     rows: vectorRows,
     selectedRegister: vectorRows[0]?.register || 'precise',
@@ -92,7 +97,9 @@ export function buildContinuousRegisterVector({
   };
 }
 
-export function continuousRegisterStyleInstruction(blend, definitions = {}) {
+export const buildContinuousRegisterVector = buildContinuousEngagementStanceVector;
+
+export function continuousEngagementStanceInstruction(blend, definitions = {}) {
   const rows = Array.isArray(blend?.rows) ? blend.rows : [];
   if (!rows.length) return '';
   const anchorLines = rows.slice(0, 3).map((row) => {
@@ -100,37 +107,44 @@ export function continuousRegisterStyleInstruction(blend, definitions = {}) {
     return `- ${Math.round(Number(row.weight || 0) * 100)}% ${row.register}: ${contract || 'Use this anchor as subtle stance modulation.'}`;
   });
   return [
-    'Continuous register blend:',
+    'Continuous engagement-stance blend:',
     dominantBlend(rows),
     'Use the highest-weight anchor as the main stance and the lower-weight anchors as subtle modulation.',
-    'Do not name the blend, register weights, classifier, or learner-DAG machinery to the learner.',
+    'Do not name the blend, stance weights, classifier, or learner-DAG machinery to the learner.',
     ...anchorLines,
   ].join('\n');
 }
 
+export const continuousRegisterStyleInstruction = continuousEngagementStanceInstruction;
+
 export function buildContinuousRegisterPolicyMetadata({
   blend,
+  temperature = null,
   useCorpusPrior = false,
   empirical = null,
   corpusEmpirical = null,
   styleInstruction = '',
 } = {}) {
   return {
-    schema: 'machinespirits.tutor-stub.continuous-register-policy.v1',
+    schema: 'machinespirits.tutor-stub.continuous-engagement-stance-policy.v2',
     mapping: {
       type: useCorpusPrior
         ? 'continuous_softmax_affinity_matrix_with_local_and_corpus_empirical_correction'
         : 'continuous_softmax_affinity_matrix_with_empirical_correction',
       source_policy: useCorpusPrior ? 'empirical_dynamical_system' : 'dynamical_system',
+      temperature: Number.isFinite(Number(temperature)) ? Number(temperature) : null,
       vector_limit: blend?.limit ?? DEFAULT_VECTOR_LIMIT,
       unsafe_registers_allowed: blend?.allowUnsafe === true,
       anchor_filter: blend?.allowUnsafe === true ? 'active_palette' : 'router_selectable_non_simulated_non_negative',
     },
+    engagement_stance_vector: blend?.vector || {},
+    engagement_stance_vector_rows: Array.isArray(blend?.rows) ? blend.rows : [],
     register_vector: blend?.vector || {},
     register_vector_rows: Array.isArray(blend?.rows) ? blend.rows : [],
     entropy_bits: blend?.entropyBits ?? 0,
     dominant_blend: blend?.dominantBlend || '',
     selected_anchor: blend?.selectedRegister || null,
+    selected_engagement_stance: blend?.selectedRegister || null,
     style_instruction: styleInstruction,
     empirical,
     corpus_empirical: corpusEmpirical,

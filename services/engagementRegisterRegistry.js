@@ -28,9 +28,12 @@ export function loadEngagementRegisterRegistry({ forceReload = false } = {}) {
   return readRegistryFile();
 }
 
-export function getEngagementRegisterDefinitions() {
-  return loadEngagementRegisterRegistry().registers || {};
+export function getEngagementStanceDefinitions() {
+  const registry = loadEngagementRegisterRegistry();
+  return registry.engagement_stances || registry.registers || {};
 }
+
+export const getEngagementRegisterDefinitions = getEngagementStanceDefinitions;
 
 export function getRegisterOntologyVersion() {
   return loadEngagementRegisterRegistry().register_ontology_version || 1;
@@ -40,19 +43,21 @@ export function getLegacyEngagementRegisterAliases() {
   return loadEngagementRegisterRegistry().legacy_register_aliases || {};
 }
 
-export function getEngagementRegisterNames({ includeArmAssigned = true } = {}) {
-  return Object.entries(getEngagementRegisterDefinitions())
+export function getEngagementStanceNames({ includeArmAssigned = true } = {}) {
+  return Object.entries(getEngagementStanceDefinitions())
     .filter(([, definition]) => includeArmAssigned || definition.router_selectable !== false)
     .map(([name]) => name);
 }
+
+export const getEngagementRegisterNames = getEngagementStanceNames;
 
 export function getLegacyEngagementRegisterNames() {
   return Object.keys(getLegacyEngagementRegisterAliases());
 }
 
-export function resolveEngagementRegister(name, { fallback = null } = {}) {
+export function resolveEngagementStance(name, { fallback = null } = {}) {
   const raw = typeof name === 'string' ? name.trim() : '';
-  const definitions = getEngagementRegisterDefinitions();
+  const definitions = getEngagementStanceDefinitions();
   const aliases = getLegacyEngagementRegisterAliases();
   const ontologyVersion = getRegisterOntologyVersion();
 
@@ -110,8 +115,10 @@ export function resolveEngagementRegister(name, { fallback = null } = {}) {
   return null;
 }
 
-export function getEngagementRegisterDefinition(name) {
-  const resolved = resolveEngagementRegister(name);
+export const resolveEngagementRegister = resolveEngagementStance;
+
+export function getEngagementStanceDefinition(name) {
+  const resolved = resolveEngagementStance(name);
   if (!resolved) return null;
   return {
     ...resolved.definition,
@@ -123,6 +130,8 @@ export function getEngagementRegisterDefinition(name) {
     ontology_version: resolved.ontology_version,
   };
 }
+
+export const getEngagementRegisterDefinition = getEngagementStanceDefinition;
 
 export function getRoutingPatternGroups() {
   return loadEngagementRegisterRegistry().routing_patterns || {};
@@ -136,6 +145,18 @@ export function getActionFamilyDefinitions() {
   return loadEngagementRegisterRegistry().action_families || {};
 }
 
+export function getAudienceRegisterDefinitions() {
+  return loadEngagementRegisterRegistry().audience_registers || {};
+}
+
+export function getLexicalAccessibilityDefinitions() {
+  return loadEngagementRegisterRegistry().lexical_accessibility_levels || {};
+}
+
+export function getSceneImmersionDefinitions() {
+  return loadEngagementRegisterRegistry().scene_immersion_levels || {};
+}
+
 export function getResistanceSignalDefinitions() {
   return loadEngagementRegisterRegistry().resistance_signals || {};
 }
@@ -145,6 +166,6 @@ export function getResistanceStrategies() {
 }
 
 export function getRegisterRubricPath(registerName) {
-  const rubric = resolveEngagementRegister(registerName)?.definition?.rubric;
+  const rubric = resolveEngagementStance(registerName)?.definition?.rubric;
   return rubric && rubric !== 'null' ? rubric : null;
 }
