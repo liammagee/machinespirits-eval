@@ -130,6 +130,88 @@ test('cross-run analyzer emits policy x learner QA robustness', () => {
   }
 });
 
+test('report-only QA rebuild preserves the original run plan', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-report-only-'));
+  try {
+    const planPath = path.join(tmp, 'qa-plan.json');
+    const originalPlan = `${JSON.stringify(
+      {
+        schema: 'machinespirits.tutor-stub.qa-matrix-plan.v1',
+        generatedAt: '2026-07-10T00:00:00.000Z',
+        marker: 'original-frozen-plan',
+      },
+      null,
+      2,
+    )}\n`;
+    fs.writeFileSync(planPath, originalPlan);
+    writeSummary(path.join(tmp, 'auto-eval-existing.json'), {
+      learnerProfile: 'diligent',
+      bland: { grounded: 1, turns: 24, coverage: 1, missing: 0 },
+      field: { grounded: 1, turns: 18, coverage: 1, missing: 0 },
+    });
+
+    const output = execFileSync(
+      process.execPath,
+      ['scripts/run-tutor-stub-qa-matrix.js', '--from-dir', tmp],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+
+    assert.match(output, /report-only mode; preserved/);
+    assert.equal(fs.readFileSync(planPath, 'utf8'), originalPlan);
+    assert.ok(fs.existsSync(path.join(tmp, 'qa-matrix.md')));
+    assert.ok(fs.existsSync(path.join(tmp, 'qa-matrix.json')));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('live QA launch refuses to overwrite an existing frozen plan', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-frozen-plan-'));
+  try {
+    const planPath = path.join(tmp, 'qa-plan.json');
+    const originalPlan = `${JSON.stringify(
+      {
+        schema: 'machinespirits.tutor-stub.qa-matrix-plan.v1',
+        generatedAt: '2026-07-10T00:00:00.000Z',
+        marker: 'original-frozen-plan',
+      },
+      null,
+      2,
+    )}\n`;
+    fs.writeFileSync(planPath, originalPlan);
+
+    assert.throws(
+      () =>
+        execFileSync(
+          process.execPath,
+          [
+            'scripts/run-tutor-stub-qa-matrix.js',
+            '--trace-dir',
+            tmp,
+            '--profiles',
+            'diligent',
+            '--policies',
+            'bland',
+            '--runs',
+            '1',
+            '--dry-run',
+            '--no-analyze',
+          ],
+          { cwd: ROOT, encoding: 'utf8', stdio: 'pipe' },
+        ),
+      (error) => {
+        assert.equal(error.status, 1);
+        assert.match(error.stderr, /Refusing to overwrite frozen QA plan/);
+        assert.match(error.stderr, /new --trace-dir/);
+        return true;
+      },
+    );
+    assert.equal(fs.readFileSync(planPath, 'utf8'), originalPlan);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('register diversity alone cannot manufacture an adaptive-vs-bland outcome delta', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-diversity-'));
   try {

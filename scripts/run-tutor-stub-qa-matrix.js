@@ -100,8 +100,10 @@ Options:
   --turns <n|until-grounded>
   --safety-turns <n>     runaway guard for until-grounded (default: 120)
   --parallelism <n>      child dialogues per learner-profile auto-eval (default: 6)
-  --trace-dir <path>     QA artifact root (default: .tutor-stub-auto-eval/qa-matrix-<timestamp>)
-  --from-dir <path>      build only consolidated QA reports from existing summaries
+  --trace-dir <path>     New QA artifact root; live plans are create-once
+                         (default: .tutor-stub-auto-eval/qa-matrix-<timestamp>)
+  --from-dir <path>      build only consolidated QA reports from existing summaries;
+                         preserve any existing qa-plan.json
   --baseline-policy <p>  same-learner comparison baseline (default: bland)
   --dry-run              pass --dry-run to auto-eval children
   --print-plan           print the reproducible plan and exit
@@ -416,6 +418,19 @@ function runAnalyzer({ rootDir, summaryFiles, json }) {
   return outPath;
 }
 
+function writeFrozenPlan(planPath, plan) {
+  try {
+    fs.writeFileSync(planPath, `${JSON.stringify(plan, null, 2)}\n`, { flag: 'wx' });
+  } catch (error) {
+    if (error?.code === 'EEXIST') {
+      throw new Error(
+        `Refusing to overwrite frozen QA plan at ${planPath}; use a new --trace-dir for a live run or --from-dir to rebuild reports`,
+      );
+    }
+    throw error;
+  }
+}
+
 function main() {
   if (args.help) {
     usage();
@@ -430,14 +445,19 @@ function main() {
   }
 
   fs.mkdirSync(rootDir, { recursive: true });
-  for (const warning of plan.warnings) {
-    console.warn(`[qa-matrix] warning: ${warning}`);
-  }
   const planPath = path.join(rootDir, 'qa-plan.json');
-  fs.writeFileSync(planPath, `${JSON.stringify(plan, null, 2)}\n`);
-  console.log(`[qa-matrix] wrote ${planPath}`);
-
-  if (!args['from-dir']) {
+  if (args['from-dir']) {
+    console.log(
+      fs.existsSync(planPath)
+        ? `[qa-matrix] report-only mode; preserved ${planPath}`
+        : `[qa-matrix] report-only mode; no qa-plan.json written under ${rootDir}`,
+    );
+  } else {
+    for (const warning of plan.warnings) {
+      console.warn(`[qa-matrix] warning: ${warning}`);
+    }
+    writeFrozenPlan(planPath, plan);
+    console.log(`[qa-matrix] wrote ${planPath}`);
     for (const job of plan.jobs) {
       const status = runCommand(job.command, { label: `profile ${job.profile} (${job.ordinal}/${plan.jobs.length})` });
       if (status !== 0 && !args['keep-going']) {
