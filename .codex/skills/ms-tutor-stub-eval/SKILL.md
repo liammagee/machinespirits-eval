@@ -95,11 +95,17 @@ Useful variants:
   useful than guessing.
 - Mixed artifacts also carry a separate `profile_signal`: a short account of
   how the visible draft expresses the active learner profile. The full ready
-  notice and compact profile card appear once per active profile; later
-  suggestions activate Tab silently so they do not interrupt the dramatic
-  flow. `/suggest` and `/use` still expose the profile id, intended pattern,
-  and visible expression on demand; only the learner response is inserted or
-  spoken, so this metadata does not break the dramatic frame.
+  notice and compact profile card appear once per active profile. A fresh mixed
+  session first asks `Pick a learner profile [diligent] >`; Enter accepts the
+  default, while a built-in profile id selects another contract before any
+  learner artifact is generated. The opening tutor text is then buffered until
+  that first notice and card are ready, and the card is printed immediately
+  before the first tutor message. This adds first-reveal latency but makes the
+  controls legible before the drama begins. Later suggestions activate Tab
+  silently so they do not interrupt the dramatic flow. `/suggest` and `/use`
+  still expose the profile id, intended pattern, and visible expression on
+  demand; only the learner response is inserted or spoken, so this metadata
+  does not break the dramatic frame.
 - Learner suggestions and clarifications are kept inside the dramatic frame,
   and tutor prompts require the same: generated speech addresses the other
   speaker directly and does not say `the tutor`, `the learner`, `the dialogue`,

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -25,6 +25,12 @@ function tutorStubDryRun(extraArgs = []) {
       { cwd: ROOT, encoding: 'utf8' },
     ),
   );
+}
+
+function plainTerminalText(value) {
+  return String(value || '')
+    .replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/gu, '')
+    .replace(/\r/gu, '');
 }
 
 test('tutor-stub dry run exposes human discourse trace schemas', () => {
@@ -103,9 +109,119 @@ test('mixed tutor-stub advertises profile expression beside Tab, suggest, and us
     intendedPattern: true,
     visibleExpression: 'profile_signal',
     readyAnnouncement: 'once_per_profile',
+    firstTutorOrdering: 'ready_profile_then_tutor',
+    initialPicker: {
+      enabled: true,
+      defaultProfileId: 'diligent',
+    },
   });
   assert.match(config.mixedLearner.accept, /Tab/u);
   assert.equal(config.mixedLearner.inspect, '/suggest');
+});
+
+test('fresh mixed session prints the ready profile card before the first tutor message', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-mixed-opening-'));
+  const fakeCodex = path.join(tmp, 'codex');
+  fs.writeFileSync(
+    fakeCodex,
+    `#!/usr/bin/env node
+const fs = require('node:fs');
+const args = process.argv.slice(2);
+const outputIndex = args.indexOf('-o');
+const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
+let input = '';
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', (chunk) => { input += chunk; });
+process.stdin.on('end', () => {
+  const response = input.includes('# Mixed learner artifacts')
+    ? JSON.stringify({
+        move: 'ask_question',
+        clue: 'Ask which assay record would distinguish the two hands.',
+        answer: 'Which assay record would show whose hand worked the metal?',
+        profile_signal: 'Requests a specific evidentiary basis before making a conclusion.'
+      })
+    : '{}';
+  if (outputPath) fs.writeFileSync(outputPath, response);
+  process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
+});
+`,
+    'utf8',
+  );
+  fs.chmodSync(fakeCodex, 0o755);
+
+  let stdout = '';
+  let stderr = '';
+  try {
+    const child = spawn(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--mixed-learner',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        env: {
+          ...process.env,
+          PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+          CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+        },
+        stdio: ['pipe', 'pipe', 'pipe'],
+      },
+    );
+    await new Promise((resolve, reject) => {
+      let acceptedDefault = false;
+      let requestedExit = false;
+      const timer = setTimeout(() => {
+        child.kill('SIGKILL');
+        reject(new Error(`mixed opening test timed out\nstdout:\n${stdout}\nstderr:\n${stderr}`));
+      }, 10_000);
+      child.stdout.setEncoding('utf8');
+      child.stderr.setEncoding('utf8');
+      child.stdout.on('data', (chunk) => {
+        stdout += chunk;
+        const plain = plainTerminalText(stdout);
+        if (!acceptedDefault && plain.includes('learner profile [diligent] >')) {
+          acceptedDefault = true;
+          child.stdin.write('\n');
+        } else if (!requestedExit && plain.includes('tutor >')) {
+          requestedExit = true;
+          child.stdin.end('/quit\n');
+        }
+      });
+      child.stderr.on('data', (chunk) => {
+        stderr += chunk;
+      });
+      child.on('error', (error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+      child.on('close', (code) => {
+        clearTimeout(timer);
+        if (code === 0) resolve();
+        else reject(new Error(`mixed opening exited ${code}\nstdout:\n${stdout}\nstderr:\n${stderr}`));
+      });
+    });
+
+    const plain = plainTerminalText(stdout);
+    const pickerIndex = plain.indexOf('Pick a learner profile');
+    const readyIndex = plain.indexOf('mixed learner answer + clue ready');
+    const profileIndex = plain.indexOf('profile > diligent — Diligent control');
+    const tutorIndex = plain.indexOf('tutor >');
+    assert.ok(pickerIndex >= 0, plain);
+    assert.match(plain, /learner profile \[diligent\] >/u);
+    assert.ok(readyIndex > pickerIndex, plain);
+    assert.ok(profileIndex > readyIndex, plain);
+    assert.ok(tutorIndex > profileIndex, plain);
+    assert.match(plain, /drafted as: Requests a specific evidentiary basis before making a conclusion\./u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });
 
 test('tutor-stub dry run exposes configurable register temperature', () => {

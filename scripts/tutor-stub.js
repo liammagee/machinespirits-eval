@@ -9594,6 +9594,11 @@ async function main() {
                   intendedPattern: true,
                   visibleExpression: 'profile_signal',
                   readyAnnouncement: 'once_per_profile',
+                  firstTutorOrdering: 'ready_profile_then_tutor',
+                  initialPicker: {
+                    enabled: Boolean(openingEnabled && !firstMessage && !resumeCandidate),
+                    defaultProfileId: automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
+                  },
                 },
               }
             : { enabled: false, requested: mixedLearnerRequested },
@@ -9771,6 +9776,11 @@ async function main() {
               intendedPattern: true,
               visibleExpression: 'profile_signal',
               readyAnnouncement: 'once_per_profile',
+              firstTutorOrdering: 'ready_profile_then_tutor',
+              initialPicker: {
+                enabled: Boolean(openingEnabled && !firstMessage && !resumeCandidate),
+                defaultProfileId: automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
+              },
             },
           }
         : { enabled: false, requested: mixedLearnerRequested },
@@ -10708,7 +10718,7 @@ async function main() {
     return { raw: entry.raw, entry };
   }
 
-  function startMixedLearnerPrefetch(reason = 'turn_complete', { force = false } = {}) {
+  function startMixedLearnerPrefetch(reason = 'turn_complete', { force = false, refreshPrompt = true } = {}) {
     if (!mixedLearner.enabled || exiting || state.dialogueClosure?.phase === 'closed') return false;
     const turnNumber = state.turns.length + 1;
     const turnId = turnDebugId(state, turnNumber);
@@ -10731,7 +10741,7 @@ async function main() {
       reason,
       model: mixedLearner.resolved,
     });
-    void generateMixedLearnerArtifacts({
+    const prefetchPromise = generateMixedLearnerArtifacts({
       state,
       resolved: mixedLearner.resolved,
       profile: mixedLearner.profile,
@@ -10810,7 +10820,7 @@ async function main() {
               move,
             });
           }
-          refreshMixedLearnerPrompt(rl);
+          if (refreshPrompt) refreshMixedLearnerPrompt(rl);
         }
       })
       .catch((err) => {
@@ -10831,10 +10841,10 @@ async function main() {
         if (!processingTurn && !exiting) {
           clearStatusLine();
           console.log(`${C.red}mixed learner error:${C.reset} ${err.message}${C.dim} (/regen to retry)${C.reset}`);
-          refreshMixedLearnerPrompt(rl);
+          if (refreshPrompt) refreshMixedLearnerPrompt(rl);
         }
       });
-    return true;
+    return prefetchPromise;
   }
 
   function showMixedLearnerSuggestion({ duringTurn = false } = {}) {
@@ -10914,6 +10924,27 @@ async function main() {
     startMixedLearnerPrefetch('clue');
   }
 
+  function printMixedLearnerProfileList(listScope = 'core') {
+    const scopeConfig = {
+      core: { suite: 'core', label: 'ordinary choices' },
+      stress: { suite: 'stress', label: 'specialist failure modes' },
+      all: { suite: 'audit', label: 'complete v3 registry' },
+      audit: { suite: 'audit', label: 'complete v3 registry' },
+    }[String(listScope || 'core').trim().toLowerCase()];
+    if (!scopeConfig) return false;
+    const profileIds = learnerProfileSuiteIds(scopeConfig.suite);
+    console.log(`${C.cyan}learner profiles > ${scopeConfig.label} (${profileIds.length})${C.reset}`);
+    console.log(learnerProfileListText({ ids: profileIds, includeSuites: false }));
+    if (scopeConfig.suite === 'core') {
+      console.log(
+        `${C.dim}  specialist profiles: /profile list stress · complete registry: /profile list all${C.reset}\n`,
+      );
+    } else {
+      console.log(`${C.dim}  ordinary choices: /profile list · complete registry: /profile list all${C.reset}\n`);
+    }
+    return true;
+  }
+
   function handleMixedLearnerProfileCommand(argument = '', { duringTurn = false } = {}) {
     clearStatusLine();
     if (!mixedLearner.enabled) {
@@ -10933,26 +10964,9 @@ async function main() {
     }
     if (requested === 'list' || requested.startsWith('list ')) {
       const listScope = requested.slice('list'.length).trim().toLowerCase() || 'core';
-      const scopeConfig = {
-        core: { suite: 'core', label: 'ordinary choices' },
-        stress: { suite: 'stress', label: 'specialist failure modes' },
-        all: { suite: 'audit', label: 'complete v3 registry' },
-        audit: { suite: 'audit', label: 'complete v3 registry' },
-      }[listScope];
-      if (!scopeConfig) {
+      if (!printMixedLearnerProfileList(listScope)) {
         console.log(`${C.red}unknown learner profile list: ${listScope}${C.reset}`);
         console.log(`${C.dim}  use /profile list, /profile list stress, or /profile list all${C.reset}\n`);
-        return;
-      }
-      const profileIds = learnerProfileSuiteIds(scopeConfig.suite);
-      console.log(`${C.cyan}learner profiles > ${scopeConfig.label} (${profileIds.length})${C.reset}`);
-      console.log(learnerProfileListText({ ids: profileIds, includeSuites: false }));
-      if (scopeConfig.suite === 'core') {
-        console.log(
-          `${C.dim}  specialist profiles: /profile list stress · complete registry: /profile list all${C.reset}\n`,
-        );
-      } else {
-        console.log(`${C.dim}  ordinary choices: /profile list · complete registry: /profile list all${C.reset}\n`);
       }
       return;
     }
@@ -11016,6 +11030,75 @@ async function main() {
     } else {
       console.log(`${C.dim}  applies after the next tutor message${C.reset}\n`);
     }
+  }
+
+  async function pickInitialMixedLearnerProfile() {
+    if (!mixedLearner.enabled || !openingEnabled || state.history.length) return true;
+    const defaultProfileId = mixedLearner.profileId || 'custom';
+    console.log(`${C.cyan}Pick a learner profile${C.reset}`);
+    console.log(
+      `${C.dim}  enter a profile id, or press Enter for ${defaultProfileId}; type list, stress, or all to browse${C.reset}`,
+    );
+    while (!exiting) {
+      const answer = await new Promise((resolve) => {
+        const finish = (value) => {
+          rl.removeListener('line', onLine);
+          rl.removeListener('SIGINT', onSigint);
+          resolve(value);
+        };
+        const onLine = (line) => finish(line);
+        const onSigint = () => finish('/quit');
+        rl.once('line', onLine);
+        rl.once('SIGINT', onSigint);
+        output.write(`${C.bold}learner profile [${defaultProfileId}] >${C.reset} `);
+      });
+      const rawRequested = String(answer || '').trim().toLowerCase();
+      if (rawRequested === '/quit' || rawRequested === 'quit' || rawRequested === 'exit') {
+        requestExit('initial_profile_picker_exit');
+        return false;
+      }
+      const requested = rawRequested.replace(/^\/profile(?:\s+|$)/u, '');
+      const browseScope =
+        requested === 'list' || requested === 'core'
+          ? 'core'
+          : requested === 'stress' || requested === 'list stress'
+            ? 'stress'
+            : requested === 'all' || requested === 'audit' || requested === 'list all'
+              ? 'all'
+              : null;
+      if (browseScope) {
+        printMixedLearnerProfileList(browseScope);
+        continue;
+      }
+      if (!requested) {
+        appendTraceEvent(state.trace, {
+          type: 'mixed_learner_initial_profile_selected',
+          profileId: mixedLearner.profileId,
+          custom: !mixedLearner.profileId,
+          usedDefault: true,
+        });
+        console.log();
+        return true;
+      }
+      const profileId = requested.replace(/-/gu, '_');
+      if (!learnerProfileIds().includes(profileId)) {
+        console.log(`${C.red}unknown learner profile: ${requested}${C.reset}`);
+        console.log(`${C.dim}  type list, stress, or all to browse; press Enter for ${defaultProfileId}${C.reset}`);
+        continue;
+      }
+      mixedLearner.profileId = profileId;
+      mixedLearner.profile = learnerProfilePrompt(profileId);
+      rl.setPrompt(mixedLearnerPromptText());
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_initial_profile_selected',
+        profileId,
+        custom: false,
+        usedDefault: false,
+      });
+      console.log();
+      return true;
+    }
+    return false;
   }
 
   function acceptMixedLearnerSuggestion({ duringTurn = false } = {}) {
@@ -11222,14 +11305,20 @@ async function main() {
     }
   }
 
-  function emitOpeningPrompt(reason = 'start') {
+  function printInteractiveTutorOpening(opening) {
+    if (!opening || exiting) return false;
+    printOpeningDebugLine(state);
+    console.log(`${C.magenta}tutor >${C.reset} ${opening}\n`);
+    return true;
+  }
+
+  function emitOpeningPrompt(reason = 'start', { display = true } = {}) {
     if (!openingEnabled || state.history.length) return null;
     const opening = buildTutorOpening(state);
     state.history.push({ role: 'assistant', content: opening });
     const turnId = openingDebugId(stateRunDebugId(state));
     appendTraceEvent(state.trace, { type: 'tutor_opening', turnId, reason, text: opening });
-    printOpeningDebugLine(state);
-    console.log(`${C.magenta}tutor >${C.reset} ${opening}\n`);
+    if (display) printInteractiveTutorOpening(opening);
     return opening;
   }
 
@@ -11770,6 +11859,12 @@ async function main() {
     }
   }
 
+  const initialProfileSelected = await pickInitialMixedLearnerProfile();
+  if (!initialProfileSelected) {
+    await interactiveDone;
+    return;
+  }
+
   rl.on('line', (line) => {
     const trimmed = line.trim();
     if (!trimmed) {
@@ -11816,8 +11911,17 @@ async function main() {
     resolveInteractive();
   });
 
-  const opening = emitOpeningPrompt('start');
-  if (opening) startMixedLearnerPrefetch('opening');
+  const deferOpeningForMixedPrelude = mixedLearner.enabled;
+  const opening = emitOpeningPrompt('start', { display: !deferOpeningForMixedPrelude });
+  if (opening) {
+    const openingPrefetch = startMixedLearnerPrefetch('opening', {
+      refreshPrompt: !deferOpeningForMixedPrelude,
+    });
+    if (deferOpeningForMixedPrelude) {
+      if (openingPrefetch) await openingPrefetch;
+      printInteractiveTutorOpening(opening);
+    }
+  }
 
   promptIfIdle();
   await interactiveDone;
