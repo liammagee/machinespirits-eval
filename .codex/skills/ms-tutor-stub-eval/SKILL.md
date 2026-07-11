@@ -100,8 +100,13 @@ Useful variants:
   default, while a built-in profile id selects another contract before any
   learner artifact is generated. At this picker, `list`, `stress`, and `all`
   browse profile groups rather than selecting a profile; after browsing, enter
-  one of the displayed profile ids. Tab completes picker commands and ids. The
-  opening tutor text is then buffered until
+  one of the displayed profile ids. Tab completes picker commands and ids.
+  Before any clue or answer generation, the same fresh-session prelude asks for
+  engagement-stance temperature when the active policy uses it (`0.85` is the
+  recommended default) and accumulated DAG-fact dropout when the learner DAG is
+  enabled (`0` is the recommended reliable-memory default). Enter accepts the
+  launch value, including any command-line override. Resumed and `--no-opening`
+  sessions skip the prelude. The opening tutor text is then buffered until
   that first notice and card are ready, and the card is printed immediately
   before the first tutor message. This adds first-reveal latency but makes the
   controls legible before the drama begins. Later suggestions activate Tab

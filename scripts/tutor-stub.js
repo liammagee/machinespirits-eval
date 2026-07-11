@@ -9510,6 +9510,32 @@ async function main() {
           ? 'guarded_after_audit'
           : 'live';
   const resumeCandidate = args['resume-last'] ? latestDialogueTrace(args['trace-dir']) : null;
+  const initialMixedLearnerSetupEnabled = Boolean(
+    mixedLearnerEnabled && openingEnabled && !firstMessage && !resumeCandidate,
+  );
+  const mixedLearnerStartupPrompts = {
+    enabled: initialMixedLearnerSetupEnabled,
+    order: [
+      'learner_profile',
+      ...(registerSelectionEnabled && registerTemperatureApplies(registerPolicy)
+        ? ['engagement_stance_temperature']
+        : []),
+      ...(tutorLearnerDagEnabled ? ['dag_fact_dropout'] : []),
+    ],
+    engagementStanceTemperature: {
+      enabled: Boolean(registerSelectionEnabled && registerTemperatureApplies(registerPolicy)),
+      default: registerTemperature,
+      recommended: DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+      range: [MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE, MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE],
+    },
+    dagFactDropout: {
+      enabled: tutorLearnerDagEnabled,
+      default: dagFactDropoutRate,
+      recommended: DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+      range: [0, 1],
+      seed: dagFactDropoutSeed,
+    },
+  };
 
   if (args['show-prompt']) {
     console.log(`${C.dim}--- system prompt ---${C.reset}`);
@@ -9596,10 +9622,11 @@ async function main() {
                   readyAnnouncement: 'once_per_profile',
                   firstTutorOrdering: 'ready_profile_then_tutor',
                   initialPicker: {
-                    enabled: Boolean(openingEnabled && !firstMessage && !resumeCandidate),
+                    enabled: initialMixedLearnerSetupEnabled,
                     defaultProfileId: automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
                   },
                 },
+                startupPrompts: mixedLearnerStartupPrompts,
               }
             : { enabled: false, requested: mixedLearnerRequested },
           registerSelection: registerSelectionEnabled
@@ -9778,10 +9805,11 @@ async function main() {
               readyAnnouncement: 'once_per_profile',
               firstTutorOrdering: 'ready_profile_then_tutor',
               initialPicker: {
-                enabled: Boolean(openingEnabled && !firstMessage && !resumeCandidate),
+                enabled: initialMixedLearnerSetupEnabled,
                 defaultProfileId: automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
               },
             },
+            startupPrompts: mixedLearnerStartupPrompts,
           }
         : { enabled: false, requested: mixedLearnerRequested },
       registerSelection: registerSelectionEnabled
@@ -10260,13 +10288,13 @@ async function main() {
     console.log(`${C.dim}  ${verb}: ${presentation.signal}${C.reset}`);
   }
 
-  let initialProfilePickerActive = false;
+  let initialSetupStage = 'off';
   const rl = readline.createInterface({
     input,
     output,
     prompt: mixedLearnerPromptText(),
     completer(line) {
-      if (initialProfilePickerActive) {
+      if (initialSetupStage === 'profile') {
         const raw = String(line || '');
         const normalized = raw.trim().toLowerCase().replace(/-/gu, '_');
         const candidates = ['list', 'stress', 'all', ...learnerProfileIds()];
@@ -11044,13 +11072,11 @@ async function main() {
     }
   }
 
-  async function pickInitialMixedLearnerProfile() {
+  async function runInitialMixedLearnerSetup() {
     if (!mixedLearner.enabled || !openingEnabled || state.history.length) return true;
     const defaultProfileId = mixedLearner.profileId || 'custom';
     console.log(`${C.cyan}Pick a learner profile${C.reset}`);
-    console.log(
-      `${C.dim}  enter a profile id and press Enter, or press Enter for ${defaultProfileId}${C.reset}`,
-    );
+    console.log(`${C.dim}  enter a profile id and press Enter, or press Enter for ${defaultProfileId}${C.reset}`);
     console.log(
       `${C.dim}  browse groups: list = ordinary profiles · stress = stress profiles · all = every profile${C.reset}`,
     );
@@ -11074,15 +11100,18 @@ async function main() {
           });
     const onLine = (line) => enqueueLine(line);
     const onSigint = () => enqueueLine('/quit');
-    initialProfilePickerActive = true;
+    initialSetupStage = 'profile';
     rl.on('line', onLine);
     rl.on('SIGINT', onSigint);
     try {
+      let profileSelected = false;
       while (!exiting) {
         rl.setPrompt(`${C.bold}learner profile [${defaultProfileId}] >${C.reset} `);
         rl.prompt();
         const answer = await nextLine();
-        const rawRequested = String(answer || '').trim().toLowerCase();
+        const rawRequested = String(answer || '')
+          .trim()
+          .toLowerCase();
         if (rawRequested === '/quit' || rawRequested === 'quit' || rawRequested === 'exit') {
           requestExit('initial_profile_picker_exit');
           return false;
@@ -11108,7 +11137,8 @@ async function main() {
             usedDefault: true,
           });
           console.log();
-          return true;
+          profileSelected = true;
+          break;
         }
         const profileId = requested.replace(/-/gu, '_');
         if (!learnerProfileIds().includes(profileId)) {
@@ -11125,11 +11155,100 @@ async function main() {
           usedDefault: false,
         });
         console.log();
-        return true;
+        profileSelected = true;
+        break;
       }
-      return false;
+      if (!profileSelected || exiting) return false;
+
+      const temperaturePromptEnabled = Boolean(
+        state.register?.enabled && registerTemperatureApplies(state.register.policy),
+      );
+      const dropoutPromptEnabled = Boolean(state.learnerDag?.enabled);
+      if (!temperaturePromptEnabled && !dropoutPromptEnabled) return true;
+
+      console.log(`${C.cyan}Tune the dialogue${C.reset}`);
+      console.log(`${C.dim}  press Enter to accept each launch value; recommendations are shown beside it${C.reset}`);
+
+      const promptForSetting = async ({ stage, label, defaultValue, recommendedValue, guidance, normalize }) => {
+        console.log(`${C.dim}  ${guidance}${C.reset}`);
+        while (!exiting) {
+          initialSetupStage = stage;
+          const defaultLabel =
+            defaultValue === recommendedValue
+              ? `${defaultValue}; recommended`
+              : `${defaultValue}; recommended ${recommendedValue}`;
+          rl.setPrompt(`${C.bold}${label} [${defaultLabel}] >${C.reset} `);
+          rl.prompt();
+          const answer = String((await nextLine()) || '').trim();
+          if (['/quit', 'quit', 'exit'].includes(answer.toLowerCase())) {
+            requestExit('initial_settings_exit');
+            return null;
+          }
+          if (!answer) return { value: defaultValue, usedDefault: true };
+          try {
+            return { value: normalize(answer), usedDefault: false };
+          } catch (error) {
+            console.log(`${C.red}setting error:${C.reset} ${error.message}`);
+          }
+        }
+        return null;
+      };
+
+      let temperatureSelection = null;
+      if (temperaturePromptEnabled) {
+        temperatureSelection = await promptForSetting({
+          stage: 'temperature',
+          label: 'stance temperature',
+          defaultValue: state.register.temperature,
+          recommendedValue: DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+          guidance: `0.85 balances a clear dominant stance with some blend; lower sharpens, higher broadens (${MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE}-${MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE})`,
+          normalize: (value) =>
+            normalizeTutorStubEngagementStanceTemperature(value, {
+              label: 'engagement-stance temperature',
+            }),
+        });
+        if (!temperatureSelection) return false;
+        state.register.temperature = temperatureSelection.value;
+        console.log();
+      }
+
+      let dropoutSelection = null;
+      if (dropoutPromptEnabled) {
+        dropoutSelection = await promptForSetting({
+          stage: 'dropout',
+          label: 'DAG fact dropout',
+          defaultValue: state.learnerDag.dropout.rate,
+          recommendedValue: DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+          guidance: '0 keeps accumulated public facts reliable; values above 0 add seeded memory loss (0-1)',
+          normalize: (value) => normalizeTutorStubDagFactDropoutRate(value, { label: 'DAG fact dropout' }),
+        });
+        if (!dropoutSelection) return false;
+        state.learnerDag.dropout.rate = dropoutSelection.value;
+        console.log();
+      }
+
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_initial_settings_selected',
+        schema: 'machinespirits.tutor-stub.initial-dialogue-settings.v1',
+        engagementStanceTemperature: temperatureSelection
+          ? {
+              value: temperatureSelection.value,
+              recommended: DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+              usedDefault: temperatureSelection.usedDefault,
+            }
+          : null,
+        dagFactDropout: dropoutSelection
+          ? {
+              value: dropoutSelection.value,
+              recommended: DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+              seed: state.learnerDag.dropout.seed,
+              usedDefault: dropoutSelection.usedDefault,
+            }
+          : null,
+      });
+      return true;
     } finally {
-      initialProfilePickerActive = false;
+      initialSetupStage = 'off';
       rl.removeListener('line', onLine);
       rl.removeListener('SIGINT', onSigint);
       resolveNextLine = null;
@@ -11895,8 +12014,8 @@ async function main() {
     }
   }
 
-  const initialProfileSelected = await pickInitialMixedLearnerProfile();
-  if (!initialProfileSelected) {
+  const initialSetupCompleted = await runInitialMixedLearnerSetup();
+  if (!initialSetupCompleted) {
     await interactiveDone;
     return;
   }

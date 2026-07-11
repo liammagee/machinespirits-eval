@@ -117,6 +117,9 @@ test('mixed tutor-stub advertises profile expression beside Tab, suggest, and us
   });
   assert.match(config.mixedLearner.accept, /Tab/u);
   assert.equal(config.mixedLearner.inspect, '/suggest');
+  assert.deepEqual(config.mixedLearner.startupPrompts.order, ['learner_profile', 'dag_fact_dropout']);
+  assert.equal(config.mixedLearner.startupPrompts.engagementStanceTemperature.recommended, 0.85);
+  assert.equal(config.mixedLearner.startupPrompts.dagFactDropout.recommended, 0);
 });
 
 test('fresh mixed session prints the ready profile card before the first tutor message', async () => {
@@ -157,6 +160,10 @@ process.stdin.on('end', () => {
       [
         'scripts/tutor-stub.js',
         '--mixed-learner',
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'continuous_dynamical_system',
         '--no-closeout-report',
         '--no-interim-animation',
         '--no-stream',
@@ -177,6 +184,8 @@ process.stdin.on('end', () => {
     await new Promise((resolve, reject) => {
       let browsedStressProfiles = false;
       let acceptedDefault = false;
+      let acceptedTemperature = false;
+      let acceptedDropout = false;
       let requestedExit = false;
       const timer = setTimeout(() => {
         child.kill('SIGKILL');
@@ -192,6 +201,12 @@ process.stdin.on('end', () => {
           child.stdin.write('stress\n');
         } else if (!acceptedDefault && plain.includes('learner profiles > specialist failure modes (6)')) {
           acceptedDefault = true;
+          child.stdin.write('\n');
+        } else if (!acceptedTemperature && plain.includes('stance temperature [0.85; recommended] >')) {
+          acceptedTemperature = true;
+          child.stdin.write('\n');
+        } else if (!acceptedDropout && plain.includes('DAG fact dropout [0; recommended] >')) {
+          acceptedDropout = true;
           child.stdin.write('\n');
         } else if (!requestedExit && plain.includes('tutor >')) {
           requestedExit = true;
@@ -214,6 +229,8 @@ process.stdin.on('end', () => {
 
     const plain = plainTerminalText(stdout);
     const pickerIndex = plain.indexOf('Pick a learner profile');
+    const temperatureIndex = plain.indexOf('stance temperature [0.85; recommended] >');
+    const dropoutIndex = plain.indexOf('DAG fact dropout [0; recommended] >');
     const readyIndex = plain.indexOf('mixed learner answer + clue ready');
     const profileIndex = plain.indexOf('profile > diligent — Diligent control');
     const tutorIndex = plain.indexOf('tutor >');
@@ -222,7 +239,9 @@ process.stdin.on('end', () => {
     assert.match(plain, /learner profiles > specialist failure modes \(6\)/u);
     assert.match(plain, /proof_skipper: Stress - Proof skipper/u);
     assert.ok((plain.match(/learner profile \[diligent\] >/gu) || []).length >= 2, plain);
-    assert.ok(readyIndex > pickerIndex, plain);
+    assert.ok(temperatureIndex > pickerIndex, plain);
+    assert.ok(dropoutIndex > temperatureIndex, plain);
+    assert.ok(readyIndex > dropoutIndex, plain);
     assert.ok(profileIndex > readyIndex, plain);
     assert.ok(tutorIndex > profileIndex, plain);
     assert.match(plain, /drafted as: Requests a specific evidentiary basis before making a conclusion\./u);
@@ -243,6 +262,39 @@ test('tutor-stub dry run exposes configurable register temperature', () => {
   assert.equal(config.registerSelection.engagementStanceTemperature, 0.4);
   assert.equal(config.registerSelection.temperatureScope, 'engagement_stance_only');
   assert.equal(config.registerSelection.policy, 'continuous_dynamical_system');
+});
+
+test('mixed startup prompts preserve launch overrides while showing recommendations', () => {
+  const config = tutorStubDryRun([
+    '--mixed-learner',
+    '--register-policy',
+    'continuous_dynamical_system',
+    '--register-temperature',
+    '0.4',
+    '--dag-fact-dropout',
+    '0.15',
+    '--dag-fact-dropout-seed',
+    '7',
+  ]);
+
+  assert.deepEqual(config.mixedLearner.startupPrompts.order, [
+    'learner_profile',
+    'engagement_stance_temperature',
+    'dag_fact_dropout',
+  ]);
+  assert.deepEqual(config.mixedLearner.startupPrompts.engagementStanceTemperature, {
+    enabled: true,
+    default: 0.4,
+    recommended: 0.85,
+    range: [0.05, 3],
+  });
+  assert.deepEqual(config.mixedLearner.startupPrompts.dagFactDropout, {
+    enabled: true,
+    default: 0.15,
+    recommended: 0,
+    range: [0, 1],
+    seed: 7,
+  });
 });
 
 test('tutor-stub dry run exposes seeded accumulated DAG-fact dropout', () => {
