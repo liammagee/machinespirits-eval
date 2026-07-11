@@ -1,6 +1,6 @@
 # The Drama Spec — How to Declare a Drama
 
-**Status:** design / v0.1 (2026-06-02). The `drama:` block reflects fields that **run today**; `cast:`, `audience:`, `turn_plan:`, `act_structure:`, and `learners:` are the **declarative target** — some lower to existing CLI flags (marked WIRED), some need a small loader/engine extension (marked TO-BUILD). The [`/ms-drama-machine`](../../../.claude/skills/ms-drama-machine/SKILL.md) skill is the lowering layer until a unified loader exists (roadmap #1).
+**Status:** design / v0.2 (2026-07-11). The `drama:` block reflects fields that **run today**; `cast:`, `audience:`, `turn_plan:`, `act_structure:`, and `learners:` are the **declarative target** — some lower to existing CLI flags (marked WIRED), some need a small loader/engine extension (marked TO-BUILD). The [`/ms-drama-machine`](../../../.claude/skills/ms-drama-machine/SKILL.md) skill is the lowering layer until a unified loader exists (roadmap #1).
 **Companions:** [`TAXONOMY.md`](TAXONOMY.md) (the slots) · [`ADAPTATION-MOVES.md`](ADAPTATION-MOVES.md) (the `turn_plan:` moves) · [`example-drama.yaml`](example-drama.yaml) (runnable).
 
 ---
@@ -20,6 +20,9 @@ This policy deliberately avoids a broad rename:
 | `authorial_voice` | **reserved alias, not wired** | Candidate future field if the scene-authoring function is split from live staging. Not accepted by the loader today. |
 | `staging_director` | **conceptual split only** | The live or scheduled stage-control function (`interventions[]`, movement declarations, cue timing). Currently still serialized as `director`. |
 | `id_director` | **separate architecture** | The charisma-family tutor architecture where an id authors the tutor ego prompt. Do not conflate it with the drama-machine `director` role. |
+| `Audience` / `audience.context` | **first-order position, declarative** | Actual or implied non-speaking witnesses. Audience is not a role, cannot be cast, cannot speak, and cannot receive a `turn_plan` move. |
+| `CriticPanel` / flat `audience.panel` fields | **wired evaluative audience** | One implementation of Audience: the models or humans that judge the artifact. It is not identical to the audience presumed inside an utterance. |
+| persisted `audience_register` | **compatibility name** | The hearer's language/domain accessibility profile (`AddresseeProfile`), not the separate dramatic Audience. |
 
 Archived transcripts, run metadata, paper claims, and existing config files are
 read under the vocabulary they were produced with; this spec clarifies the
@@ -33,12 +36,16 @@ A single drama spec conflates three concerns today (a `dramas:` YAML entry is bo
 
 ```yaml
 drama:    { ... }     # WHAT the drama is — the six Aristotelian parts (TAXONOMY §2–§7)
-cast:     { ... }     # WHO plays each role — human | llm:<backend>:<model> | mock
-audience: { ... }     # the CRITIC config — panel, consensus, grading, blinding, rubric
+cast:     { ... }     # WHO plays each enacted role — human | llm:<backend>:<model> | mock
+audience: { ... }     # WHERE it is witnessed + HOW the evaluative audience judges it
 turn_plan: [ ... ]    # (optional) per-role, per-turn adaptation MOVES (ADAPTATION-MOVES §6)
 ```
 
-`drama:` is the same across runs; `cast:` and `audience:` vary how it's produced and judged. This is exactly what *"specify which roles are human / which LLMs, and which critics"* needs.
+`drama:` is the same across runs; `cast:` varies how it is produced;
+`audience.context` describes the non-enacted actual or implied audience; and the
+remaining `audience:` fields vary how the critic panel judges it. This is exactly
+what *"specify which roles are human / which LLMs, and which critics"* needs,
+without turning Audience into a role.
 
 ---
 
@@ -118,6 +125,10 @@ cast:
 
 **Value grammar:** `human` · `llm:<backend>:<model>` · `mock`. Backends: `claude` · `codex` · `gemini` · `api` (OpenRouter).
 
+There is intentionally no `cast.audience`: Audience is a dramatic position, not
+an enacted role. `cast.critic` binds evaluator execution; the resulting
+`CriticPanel` is one evaluative audience.
+
 **How it lowers (TAXONOMY §9):**
 
 | `cast:` value | Lowers to | Status |
@@ -130,10 +141,15 @@ cast:
 
 ---
 
-## 4. `audience:` — the critic config
+## 4. `audience:` — first-order context + critic config
 
 ```yaml
 audience:
+  context:                       # o   DECLARED / TO-BUILD at runtime
+    description: "an implied seminar audience following the exchange"
+    relation_to_speaker: "invited to inspect the tutor's framing"
+    relation_to_hearer: "witnesses without becoming a second learner"
+    knowledge: "knows the public scene, but not the withheld secret"
   panel: [gpt, deepseek-v4-pro, qwen3.7-max, gemini-3.5-flash]   # judge models (aliases or slugs)
   consensus: 3-of-4            # k-of-n   (lowers to --consensus on the binary critic)
   grading: graded             # binary | graded(0–4)
@@ -146,10 +162,17 @@ audience:
 
 | `audience:` field | Lowers to | Status |
 |---|---|---|
+| `context` | formal `Audience` position / future director and prompt context | **DECLARED / TO-BUILD** — accepted as free-text metadata, not yet injected |
 | `panel`, `consensus` | `critic-poetics-omniscient.js --panel … --consensus …` | **WIRED** |
 | `grading: graded` | `critic-poetics-omniscient-graded.js` (median 0–4) | **WIRED** (separate script) |
 | `blinding`, `rubric` | which critic script + prompt construction | **PARTIAL** — structural, not a flag |
 | one entry-point honouring the whole block | a unified critic dispatcher | **TO-BUILD** (roadmap #1) |
+
+Register is related to this block through a `RegisterRealization`: a speaker
+uses an engagement stance toward a hearer, optionally before the audience named
+by `context`. Sarcasm typically has the triadic shape speaker → hearer + an
+actual or implied audience invited to share the non-literal reading. This does
+not make the audience a speaker or move-bearing role.
 
 ---
 
@@ -171,7 +194,7 @@ turn_plan:
     forbid: [pseudo_catharsis]
 ```
 
-Tutor per-turn move-sets run today — the engine's `resolveTutorTurnPlan` reads the plan per turn and the generator's `withTurnPlan` threads `turn_plan` from the spec onto the director plan; learner/director entries lower to `interventions[]`. All **WIRED**. Only `beat:` addressing is **TO-BUILD** (needs act structure) — use `at: { turn: N }`. The ontology (`poetics-core.ttl`) validates a `turn_plan` for **form conflicts** (a turn targeting `catharsis` that includes `pseudo_catharsis` → flagged).
+Tutor per-turn move-sets run today — the engine's `resolveTutorTurnPlan` reads the plan per turn and the generator's `withTurnPlan` threads `turn_plan` from the spec onto the director plan; learner/director entries lower to `interventions[]`. All **WIRED**. Only `beat:` addressing is **TO-BUILD** (needs act structure) — use `at: { turn: N }`. The ontology (`poetics-core.ttl`) validates a `turn_plan` for **form conflicts** (a turn targeting `catharsis` that includes `pseudo_catharsis` → flagged). The only valid move-bearing roles are `tutor`, `learner`, and `director`; `role: audience` is rejected.
 
 ---
 

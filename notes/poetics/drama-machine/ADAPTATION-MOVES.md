@@ -27,6 +27,12 @@ The user asked for **dramaturgical and rhetorical** moves. They are two lenses o
 
 Most real moves carry **both** registers at once — a peripeteia (dramaturgical reversal) *is* a route-change-under-pressure (rhetorical). The catalog tags each move with its register(s) but does not force a move into one box.
 
+These are ontology `MoveRegister` tags: lenses on what a move does. They are not
+the communicative register realized by a speaker toward a hearer before an
+optional audience (`RegisterRealization`; TAXONOMY §5.1). Audience has no move
+repertoire and is never a valid `turn_plan.role`; changing the proof-audience in
+a `route_change` changes who the work is staged *for*, not who acts.
+
 ---
 
 ## 2. The anatomy of an adaptive turn (extracted from the engine)

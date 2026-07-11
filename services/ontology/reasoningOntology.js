@@ -329,6 +329,7 @@ function addToSetMap(map, key, value) {
 // to map `tpN` individuals back to {turn, role}.
 export async function validateTurnPlan(turnPlan = [], dramaTargets = [], options = {}) {
   const entries = Array.isArray(turnPlan) ? turnPlan : [];
+  const allowedRoles = new Set(['tutor', 'learner', 'director']);
   const abox = buildTurnPlanABox(entries, dramaTargets);
   const data = [loadSharedTBox(options.modules || ['poetics']), abox].join('\n\n');
   const closureText = await n3reasoner(data, undefined, {
@@ -363,10 +364,18 @@ export async function validateTurnPlan(turnPlan = [], dramaTargets = [], options
     role: entries[idx]?.role ?? null,
   });
   const conflicts = [];
+  const errors = [];
   const serves = [];
   const warnings = [];
 
   entries.forEach((entry, idx) => {
+    if (entry?.role != null && !allowedRoles.has(entry.role)) {
+      errors.push({
+        ...meta(idx),
+        code: 'unsupported_role',
+        message: `unsupported turn-plan role "${entry.role}"; audience is a non-enacted position`,
+      });
+    }
     const moveLocals = (entry?.moves || []).map((raw) => ({ raw, local: safeLocalName(raw) })).filter((m) => m.local);
     const explicitForms = new Set(
       []
@@ -386,7 +395,7 @@ export async function validateTurnPlan(turnPlan = [], dramaTargets = [], options
     }
   });
 
-  return { ok: conflicts.length === 0, turns: entries.length, conflicts, serves, warnings };
+  return { ok: conflicts.length === 0 && errors.length === 0, turns: entries.length, errors, conflicts, serves, warnings };
 }
 
 export async function buildOntologyGuidance({ observations = [], role = 'tutor_ego' } = {}) {

@@ -1,4 +1,4 @@
-# Belief–Desire DAG — role-playing formalism (v0.4, working draft)
+# Belief–Desire DAG — role-playing formalism (v0.5, working draft)
 
 This note begins a formalism that layers **desire** onto the existing proof DAG
 (`services/dramaticDerivation/`), distinguishes **belief** (how the world *is*) from
@@ -324,10 +324,11 @@ in the code, as validation.
 the swap — indeed it is the role that _stages_ the reversal (`Des_D(peripeteia)`). Three
 bearers; two reversible.
 
-**On the horizon — `D` as the Big Other.** `D` is the seam to Lacan's _grand Autre_: the
-symbolic locus (law / language / the third party) from which the subject is seen and by which
-recognition is guaranteed — not a person but a _place_, occupied in turn by author, director,
-audience, the **critic of the poetics arc**, the warden's assay, God. Two consequences,
+**`D` as the Big Other; `A` as the audience.** `D` is the seam to Lacan's _grand Autre_: the
+symbolic locus (law / language / the third party) from which recognition claims authority —
+not a person but a place articulated by author, director, public law, the warden's assay, or
+God. The **audience `A` is now kept distinct from `D`**: it is the actual or implied position
+from which the scene, the address, and the claim to authority are witnessed. Two consequences,
 developed in §11:
 
 - **Authority is delegated, not intrinsic.** The `Rec_T(L, ·)` authority-weight (§4) is not the
@@ -339,8 +340,19 @@ developed in §11:
   agent) as wanting. The migrating filler (verrell → edony, §9) is the learner's desire being
   re-aligned to the Other's law (the assay's rules).
 
-The Big Other is where `D`, Weber's authority, and the poetics-arc critic / audience converge —
-§11 develops it, §13 pins the mechanics.
+`A` is first-order, but it is **not a fourth bearer**. It has no belief/desire graph, interior
+agency, cast binding, or turn, and `buildSubjectState` remains exactly `{T,L,D}`. What `A`
+makes formally available is the pragmatic relation the old dyad left implicit:
+
+```
+Regᵤ(speaker, hearer, engagement_stance, audience?)
+```
+
+An ordinary tutor turn may remain dyadic. Sarcasm characteristically makes the relation
+triadic: it addresses a hearer while recruiting a separate actual or implied audience aligned
+with the speaker — the party meant to be “in on” the joke. The Big Other is where `D` and
+Weberian authority converge; `A` is where that convergence becomes legible, contestable, or
+divergent. §11 develops the former, while the register ontology pins the latter.
 
 ## 11. The Big Other, developed
 
@@ -369,11 +381,12 @@ no consistent, complete guarantor. Two correlates we already possess:
 - `D`'s law can be **inconsistent**: `plotLint` can _fail_ — a world whose constraints cannot be
   jointly met (the secret leaks before `t_min`, or no release path completes). A failed
   `plotLint` is the Other's law with a hole in it.
-- The `D`-place is occupied by **several, non-identical** parties — author, director, audience,
-  the poetics critic, the warden. When they disagree on whether `π` was earned, there is no
-  single conferral. **This is the project's critic-divergence finding** (the poetics κ-gap, the
-  critic-mirror) read structurally: critics diverge because _the Other does not exist as
-  univocal_. What looked like a measurement failure is the barred Other showing through.
+- `D`'s claim to guarantee is read from **several, non-identical occupants of `A`** — the
+  public audience and the poetics critics — rather than by one univocal witness. When they
+  disagree on whether `π` was earned, there is no single conferral. **This is the project's
+  critic-divergence finding** (the poetics κ-gap, the critic-mirror) read structurally: the
+  audience split makes the barred Other visible. What looked like a measurement failure is
+  the failure of `D` to secure one authoritative reading.
 
 **(c) The three registers — two clear, one that may not fit.** Imaginary = the **mirror** `M`
 (the false object, the learner's captured first-order desire). Symbolic = `D` with the public
@@ -605,6 +618,9 @@ explicit delegation plus the force-belief `Bel_recognised(auth_D(figure))`, kept
   `δ` now specified, §12), and the typed schema; §14 lands a tested scaffold (`beliefDesire.js`) that
   makes the tutor desire-DAG and `reverse()` executable. The Real is recorded as open and
   deliberately unused (§11c).
+- **v0.5: audience/register distinction.** `A` is first-order but not a fourth bearer or role;
+  register is reified as speaker–hearer–optional-audience relation, and the prior collapse of
+  audience/critic into `D` is removed without changing `{T,L,D}` runtime state.
 - **Live symmetry (§5): done.** The learner has real `𝔅_L`, `𝔇_L`, `𝔐_L(T)` (the learner→tutor model —
   the missing half of `proxyDagMemory`), `reverse()` runs over those live states, and it now classifies the
   recognition-vector `kind` (mutual / inverted / premature) at the swap. **Open:** the `δ`-dependence axis

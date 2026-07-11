@@ -1,6 +1,6 @@
 # The Drama Machine — A Structural Model for Pedagogical Dramaturgy
 
-**Status:** design / v0.1 (2026-06-02). Systematises machinery already in the repo; does **not** yet implement the to-build elements it names.
+**Status:** design / v0.2 (2026-07-11). Systematises machinery already in the repo; does **not** yet implement the to-build elements it names.
 **Companions:** [`ADAPTATION-MOVES.md`](ADAPTATION-MOVES.md) (the per-role move catalog) · [`SPEC.md`](SPEC.md) (how to declare a drama) · [`example-drama.yaml`](example-drama.yaml) (a runnable one) · [`config/ontology/poetics-core.ttl`](../../../config/ontology/poetics-core.ttl) (the formal ontology) · [`.claude/skills/ms-drama-machine/`](../../../.claude/skills/ms-drama-machine/SKILL.md) (the invocable assembler).
 **Arc:** serves `DRAMATIC-RECOGNITION-PLAN.md`. Makes no new empirical claims (those live only in `docs/research/paper-full-2.0.md`).
 
@@ -22,7 +22,7 @@ A **drama** is a *binding of values to slots*. The **drama machine** is three st
   language or         slots from priors     gical-dramas.js +     poetics rubric,
   partial spec)       / distributions)      the engine)           k-of-n consensus)
                             │                     │                    │
-                       the sampler          the assembler         the audience
+                       the sampler          the assembler         the audience-critic
                        [TO-BUILD]            [WIRED]               [WIRED]
 ```
 
@@ -34,7 +34,7 @@ The assembler and the audience exist. The **sampler** (turn a brief into a fille
 
 Aristotle (*Poetics* ch. 6) decomposes tragedy into **six parts**: *mythos* (plot), *ethos* (character), *dianoia* (thought), *lexis* (diction), *melos* (composition), *opsis* (spectacle). This project's poetics rubric is already Aristotle-derived, so the same decomposition is the natural spine for the *generation* side. To it we add:
 
-- **The Audience** (*theatron*) — the spectator-critic, where this project *locates* catharsis (the 25-century warrant). Not one of the six parts of the artifact; it is the *judge* of the artifact.
+- **The Audience** (*theatron*) — a first-order dramatic position from which the speech or drama is witnessed. It may be actual or implied, may coincide pragmatically with the hearer or be a distinct third party, and has **no enacted role**: no turn, cast binding, interior agency, or belief/desire graph. The critic panel is one evaluative implementation of this broader position; it does not exhaust it.
 - **The Cast** — a cross-cutting axis orthogonal to all six: *who plays each part* (human / LLM / mock). A character (ethos) is the same character whether a human or an LLM voices it; casting is independent of authorship.
 
 ```
@@ -51,15 +51,21 @@ Aristotle (*Poetics* ch. 6) decomposes tragedy into **six parts**: *mythos* (plo
         │               perego/id)  ontology                                             │
         │                                                                                │
         └───────────────────────────────────┬────────────────────────────────────────────┘
-            ▲ cross-cuts all six             │ is judged by
+            ▲ cross-cuts all six             │ is witnessed / judged from
         ┌───┴──────────────┐         ┌───────▼─────────────────┐
         │   THE CAST       │         │   THE AUDIENCE          │
-        │  who plays each  │         │  critic panel: members, │
-        │  role: human /   │         │  k-of-n consensus,      │
-        │  llm:<backend>   │         │  blinding, rubric →     │
-        │  / mock          │         │  catharsis adjudicated  │
+        │  who plays each  │         │  actual or implied;     │
+        │  role: human /   │         │  no role / turn / cast; │
+        │  llm:<backend>   │         │  critic panel = one     │
+        │  / mock          │         │  evaluative instance    │
         └──────────────────┘         └─────────────────────────┘
 ```
+
+The formal hierarchy is `DramaticPosition → {DramaticRole, Audience}`. Tutor,
+learner, director, and critic are enacted roles under `DramaticRole`; `Audience`
+is the sibling non-enacted position, with `CriticPanel` as a subtype. Audience is
+therefore first-order alongside the roles without becoming a fourth role or a
+fourth `{T,L,D}` belief/desire bearer.
 
 **Status legend** used in every table below:
 - **WIRED** — runs today; the skill can emit a spec that exercises it.
@@ -248,6 +254,25 @@ Carried by the `directorPlan` and `VOICE_VARIANTS` (6 seeded bundles), all injec
 | `direct_address_budget` | free text (default: ≤1 "you/your" validation beat per turn) |
 | `side_constraints.{tutor,learner}` | per-side speech constraints |
 
+### 5.1 Register is relational, not an intrinsic tone label
+
+The free-text `voice.register` and the tutor-stub's selected
+`engagement_stance` are realized in a communicative relation:
+
+```
+RegisterRealization(speaker, hearer, engagement_stance, audience?)
+```
+
+`speaker` and `hearer` are turn-relative roles. `audience` is optional and
+non-enacted. This makes a distinction the former dyadic vocabulary obscured:
+sarcasm typically addresses a hearer while recruiting a separate actual or
+implied audience that is expected to share the speaker's non-literal reading —
+to be “in on” the joke. The current persisted `audience_register` field is **not**
+this audience; it is a compatibility name for the hearer's language/domain
+profile (`AddresseeProfile`: child-accessible, adult novice, domain apprentice,
+or informed peer). `MoveRegister` in the ontology is different again: it marks
+an adaptation move as dramaturgical and/or rhetorical.
+
 ---
 
 ## 6. OPSIS — Spectacle (the staging) — **WIRED**
@@ -282,9 +307,22 @@ The temporal arrangement — the weakest-named but real dimension:
 
 ---
 
-## 8. THE AUDIENCE — the spectator-critic (where catharsis is adjudicated) — **WIRED**
+## 8. THE AUDIENCE — first-order position; critic implementation — **DECLARED + WIRED**
 
-The critic panel is the judge of the artifact. The project's signature: *catharsis is located in the audience-critic, not asserted by the tutor.*
+The audience is the actual or implied position from which address, uptake, and
+dramatic form become legible. It is declared under `audience.context` and backed
+by the ontology, but the generator does not yet condition speech on that context.
+
+| Context slot | Value space | Status |
+|---|---|---|
+| `description` | free text | DECLARED / TO-BUILD at runtime |
+| `relation_to_speaker` | free text | DECLARED / TO-BUILD |
+| `relation_to_hearer` | free text | DECLARED / TO-BUILD |
+| `knowledge` | free text (what the audience knows or is presumed to share) | DECLARED / TO-BUILD |
+
+The critic panel is the current **evaluative audience** and judge of the
+artifact. The project's signature remains: *catharsis is located in the
+audience-critic, not asserted by the tutor.*
 
 | Slot | Value space | Default | Surfaced today |
 |---|---|---|---|
@@ -304,6 +342,10 @@ The critic panel is the judge of the artifact. The project's signature: *cathars
 ## 9. THE CAST — role-binding (who plays each part) — **WIRED for LLM, [TO-BUILD] for human/declarative**
 
 Orthogonal to the six parts: each **role** can be played by a human, a specific LLM (on a chosen backend), or a deterministic mock.
+
+Audience is deliberately absent from this table: it is a dramatic position, not
+a role, and cannot be cast. `critic` remains a runtime evaluator role; a
+`CriticPanel` is the audience constituted by those evaluators, not a character.
 
 | Role | human? | LLM? | mock? | How expressed today |
 |---|---|---|---|---|
@@ -370,7 +412,8 @@ LEXIS     locale · register · person_policy · voice_constraints · direct_add
 OPSIS     scene_setting · relationship · stakes · opening_speaker · ending_speaker · public_reader_context
           · scene_object · stage_direction_policy · stage_direction_style
 MELOS     max_turns · cue.after_turn · cue.timing · beat_cadence[TO-BUILD]
-AUDIENCE  panel · consensus(k-of-n) · grading(binary|graded) · blinding · rubric · structure_critic
+AUDIENCE  context{description,relation_to_speaker,relation_to_hearer,knowledge}[DECLARED]
+          · panel · consensus(k-of-n) · grading(binary|graded) · blinding · rubric · structure_critic
 CAST      director · tutor_ego · tutor_superego · learner_ego · learner_superego · critic
           each: human | llm:<claude|codex|gemini|api>:<model> | mock
 ```

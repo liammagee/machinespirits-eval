@@ -1,22 +1,22 @@
 {
-  "generated": "2026-07-10T13:29:53.897Z",
+  "generated": "2026-07-11T07:38:51.692Z",
   "counts": {
-    "total": 105,
+    "total": 106,
     "byStatus": {
       "done": 86,
       "blocked": 1,
       "dropped": 2,
       "review": 4,
+      "triaged": 6,
       "active": 3,
-      "archived": 4,
-      "triaged": 5
+      "archived": 4
     },
     "byType": {
       "research": 41,
       "experiment": 36,
       "infra": 11,
+      "maintenance": 6,
       "content": 2,
-      "maintenance": 5,
       "paper": 4,
       "ops": 6
     }
@@ -75,6 +75,34 @@
         "transition-model",
         "neuro-symbolic",
         "paper-update"
+      ]
+    },
+    {
+      "id": "audience-register-pragmatics-runtime",
+      "title": "Carry first-order Audience into runtime register pragmatics",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-11",
+      "updated": "2026-07-11",
+      "verification": "A versioned runtime schema can represent speaker, hearer, optional audience, and audience alignment while Audience remains non-enacted; compatibility and focused tests pass.",
+      "links": {
+        "notes": [
+          "BELIEF-DESIRE-DAG.md",
+          "notes/poetics/drama-machine/TAXONOMY.md",
+          "notes/poetics/drama-machine/SPEC.md"
+        ],
+        "items": [
+          "register-taxonomy-negative-registers"
+        ]
+      },
+      "tags": [
+        "audience",
+        "registers",
+        "pragmatics",
+        "ontology"
       ]
     },
     {

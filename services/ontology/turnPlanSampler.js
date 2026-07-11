@@ -18,6 +18,7 @@ import { Parser } from 'n3';
 const NS = 'https://machinespirits.dev/ontology/reasoning#';
 const TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
 const ROLE_CLASS = { tutor: 'TutorRole', learner: 'LearnerRole', director: 'DirectorRole' };
+export const TURN_PLAN_ROLES = Object.freeze(Object.keys(ROLE_CLASS));
 const FORM_LOCAL = {
   peripeteia: 'Peripeteia',
   anagnorisis: 'Anagnorisis',
@@ -123,12 +124,18 @@ export async function moveCatalog() {
 // mechanism-critic to drive it). Returns snake_case names.
 export async function validMovesFor(role, targets = [], opts = {}) {
   const catalog = await moveCatalog();
-  const roleClass = ROLE_CLASS[role] || null;
+  const roleKey = String(role || '').toLowerCase();
+  const roleClass = ROLE_CLASS[roleKey] || null;
+  if (!roleClass) {
+    throw new RangeError(
+      `Unsupported turn-plan role "${role}". Expected one of: ${TURN_PLAN_ROLES.join(', ')}. Audience is a non-enacted position and cannot perform moves.`,
+    );
+  }
   const targetLocals = new Set((targets || []).map(formLocal));
   const present = opts.agencies ? new Set(opts.agencies.map((a) => AGENCY_LOCAL[a] || a)) : null;
   const pool = [];
   for (const [m, info] of Object.entries(catalog)) {
-    if (roleClass && !info.roles.has(roleClass)) continue;
+    if (!info.roles.has(roleClass)) continue;
     const serves = [...info.aims].some((f) => targetLocals.has(f));
     const conflicts = [...info.contra].some((f) => targetLocals.has(f));
     const agencyMissing = present && [...info.requires].some((a) => !present.has(a));
@@ -231,4 +238,4 @@ export async function sampleDramaSpec(opts = {}) {
   return { drama, cast, audience, turn_plan };
 }
 
-export default { moveCatalog, validMovesFor, sampleTurnPlan, agenciesForArchitecture, sampleDramaSpec };
+export default { moveCatalog, validMovesFor, sampleTurnPlan, agenciesForArchitecture, sampleDramaSpec, TURN_PLAN_ROLES };

@@ -21,6 +21,8 @@ test('derivation concept schema includes theory layer and requested concepts', (
     'superego',
     'id',
     'charisma',
+    'audience',
+    'register',
     'Bildung',
     'desire',
     'infosomatic',
@@ -32,6 +34,17 @@ test('derivation concept schema includes theory layer and requested concepts', (
   const theoryTokens = schema.layers.find((layer) => layer.id === 'theory')?.tokens || [];
   assert.ok(theoryTokens.includes('ego.superego'));
   assert.ok(theoryTokens.includes('charisma'));
+
+  const dramaTokens = schema.layers.find((layer) => layer.id === 'drama')?.tokens || [];
+  const rhetoricTokens = schema.layers.find((layer) => layer.id === 'rhetoric')?.tokens || [];
+  assert.ok(dramaTokens.includes('audience'));
+  assert.ok(rhetoricTokens.includes('register'));
+
+  const audience = schema.concepts.find((concept) => concept.id === 'drama.audience');
+  const register = schema.concepts.find((concept) => concept.id === 'rhetoric.register');
+  assert.equal(audience?.ontology, 'Audience');
+  assert.equal(register?.ontology, 'RegisterRealization');
+  assert.ok(register?.links.some((link) => link.target === 'drama.audience'));
 
   const novelTokens = schema.layers.find((layer) => layer.id === 'novel')?.tokens || [];
   assert.deepEqual(novelTokens, ['infosomatic', 'pleasurable guilt']);

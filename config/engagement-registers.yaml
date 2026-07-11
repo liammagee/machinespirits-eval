@@ -6,7 +6,58 @@
 # immersion are selected independently. `registers` remains a compatibility name
 # in older traces and consumers; new runtime state uses `engagement_stance`.
 
-register_ontology_version: 3
+register_ontology_version: 4
+
+# Formal pragmatic shell for register-in-use. This is descriptive metadata: it
+# does not change router choices or prompts. The default tutor-stub realization
+# is tutor -> learner; other surfaces may reverse the speaker/hearer roles.
+communicative_pragmatics:
+  ontology_module: poetics
+  position_model:
+    speaker:
+      ontology_property: hasSpeakerRole
+      default_role: tutor
+      enacted: true
+    hearer:
+      ontology_property: hasHearerRole
+      default_role: learner
+      enacted: true
+    audience:
+      ontology_class: Audience
+      ontology_property: hasAudience
+      enacted: false
+      optional: true
+      description: An actual or implied non-speaking position that may coincide pragmatically with the hearer or be a distinct third party.
+  register_realization:
+    ontology_class: RegisterRealization
+    stance_property: realizesEngagementStance
+    addressee_profile_property: usesAddresseeProfile
+    default_address_structure: dyadic
+    default_audience_presence: unspecified
+    default_audience_alignment: none
+  compatibility:
+    selected_register:
+      canonical_concept: engagement_stance
+      note: Persisted compatibility key for the stance realized by the tutor utterance.
+    audience_register:
+      canonical_concept: addressee_profile
+      note: Legacy name for hearer proficiency and readability calibration; it does not denote the separate dramatic Audience.
+  ontology_bindings:
+    engagement_stances:
+      plain: PlainStance
+      precise: PreciseStance
+      brisk: BriskStance
+      warm: WarmStance
+      witnessing: WitnessingStance
+      charismatic: CharismaticStance
+      ironic: IronicStance
+      sarcastic: SarcasticStance
+      face_threat: FaceThreatStance
+    addressee_profiles:
+      child_accessible: ChildAccessibleProfile
+      adult_novice: AdultNoviceProfile
+      domain_apprentice: DomainApprenticeProfile
+      informed_peer: InformedPeerProfile
 
 engagement_stances:
   plain:
@@ -176,6 +227,12 @@ engagement_stances:
       - misrecognition_cost
       - contempt_drift
     rubric: config/rubrics/registers/irony-sarcasm.yaml
+    pragmatics:
+      address_structure: triadic
+      audience_presence: implied
+      audience_distinct_from_hearer: true
+      audience_alignment: speaker
+      note: Sarcasm typically recruits a separate actual or implied audience that is invited to share the speaker's non-literal reading; this is a default shape, not a universal requirement.
 
   face_threat:
     valence: negative

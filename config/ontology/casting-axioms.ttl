@@ -15,7 +15,11 @@
 ms:CastingAxioms
   a owl:Ontology ;
   rdfs:label "Machine Spirits casting / structural consistency axioms" ;
-  rdfs:comment "Disjointness for scenario-setup validation (a role has one caster; the interior agencies are distinct). Loaded by spec validation, not by ToM consistency checks." .
+  rdfs:comment "Disjointness for scenario-setup validation (audience is not an enacted role; a role has one caster; the interior agencies are distinct). Loaded by spec validation, not by ToM consistency checks." .
+
+# Audience is first-order in the dramatic situation but has no enacted role. It
+# therefore cannot acquire a cast binding, a turn, or an adaptation move.
+ms:Audience owl:disjointWith ms:DramaticRole .
 
 # A role is played by exactly one kind of caster.
 ms:HumanCaster owl:disjointWith ms:LLMCaster .

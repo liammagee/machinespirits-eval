@@ -13,7 +13,8 @@
 # pipeline in services/ontology/reasoningOntology.js. It reuses the existing
 # ms:RoleView, ms:RecognitionState, ms:ReasoningMove, ms:PolicyAction classes and
 # adds the dramaturgical vocabulary the drama machine needs: dramatic forms,
-# plot devices, adaptation moves, characters/interior agencies, and casting.
+# plot devices, adaptation moves, characters/interior agencies, casting, and
+# the pragmatic relation among speaker, hearer, register, and audience.
 #
 # Companion docs: notes/poetics/drama-machine/TAXONOMY.md (the structural model)
 # and ADAPTATION-MOVES.md (the move catalog this formalises).
@@ -141,8 +142,13 @@ ms:Deliberative a owl:Class ; rdfs:subClassOf ms:RhetoricalGenre ; rdfs:label "d
 ms:Forensic a owl:Class ; rdfs:subClassOf ms:RhetoricalGenre ; rdfs:label "forensic (judicial): addressed to a court; about the past; the just vs the unjust." .
 ms:Epideictic a owl:Class ; rdfs:subClassOf ms:RhetoricalGenre ; rdfs:label "epideictic (ceremonial): addressed to spectators; about the present; the honourable vs the base (praise/blame)." .
 
-# ── Dramatic roles (reuse the existing RoleView) ──────────────────────────────
-ms:DramaticRole a owl:Class ; rdfs:subClassOf ms:RoleView .
+# ── Dramatic positions and enacted roles ─────────────────────────────────────
+# A position is first-order in the dramatic situation without necessarily being
+# enacted. Tutor, learner, director, and critic are roles; Audience is the
+# non-speaking sibling position defined below. This distinction is load-bearing:
+# an audience is witnessed/anticipated, not cast or given a turn.
+ms:DramaticPosition a owl:Class .
+ms:DramaticRole a owl:Class ; rdfs:subClassOf ms:DramaticPosition ; rdfs:subClassOf ms:RoleView .
 ms:TutorRole a owl:Class ; rdfs:subClassOf ms:DramaticRole .
 ms:LearnerRole a owl:Class ; rdfs:subClassOf ms:DramaticRole .
 ms:DirectorRole a owl:Class ; rdfs:subClassOf ms:DramaticRole .
@@ -177,8 +183,58 @@ ms:HumanCaster a owl:Class ; rdfs:subClassOf ms:Caster .
 ms:LLMCaster a owl:Class ; rdfs:subClassOf ms:Caster .
 ms:MockCaster a owl:Class ; rdfs:subClassOf ms:Caster .
 
-# ── The audience ──────────────────────────────────────────────────────────────
-ms:CriticPanel a owl:Class .
+# ── Audience and register-in-use ──────────────────────────────────────────────
+# Audience is a dramatic POSITION, not a role or a fourth belief/desire bearer.
+# It can be actual or implied and may coincide pragmatically with the hearer or
+# be a distinct third party. A critic panel is one evaluative Audience; it does
+# not exhaust the broader rhetorical/dramatic concept.
+ms:Audience a owl:Class ; rdfs:subClassOf ms:DramaticPosition ;
+  rdfs:label "audience: the actual or implied non-speaking position from which an utterance or drama is witnessed" .
+ms:CriticPanel a owl:Class ; rdfs:subClassOf ms:Audience ;
+  rdfs:label "critic panel: an evaluative audience that judges the artifact" .
+
+# `MoveRegister` above classifies a move as dramaturgical/rhetorical. The
+# following vocabulary is different: it reifies a communicative register as a
+# relation in use. An engagement stance is not intrinsically sarcastic, warm,
+# etc. in isolation; it is realised by a speaker toward a hearer, optionally
+# before an Audience. `AddresseeProfile` is the formal name for the current
+# runtime `audience_register` compatibility field (child/adult-novice/etc.).
+ms:PragmaticElement a owl:Class .
+ms:RegisterRealization a owl:Class ; rdfs:subClassOf ms:PragmaticElement ;
+  rdfs:label "register realization: an engagement stance used by a speaker toward a hearer, optionally before an audience" .
+ms:EngagementStance a owl:Class ; rdfs:subClassOf ms:PragmaticElement .
+ms:AddresseeProfile a owl:Class ; rdfs:subClassOf ms:PragmaticElement ;
+  rdfs:label "addressee profile: the hearer's presumed linguistic/domain accessibility profile (legacy key: audience_register)" .
+ms:AddressStructure a owl:Class ; rdfs:subClassOf ms:PragmaticElement .
+ms:AudienceAlignment a owl:Class ; rdfs:subClassOf ms:PragmaticElement .
+
+ms:DyadicAddress a ms:AddressStructure .
+ms:TriadicAddress a ms:AddressStructure .
+ms:NoPresumedAudienceAlignment a ms:AudienceAlignment .
+ms:SpeakerAlignedAudience a ms:AudienceAlignment .
+ms:HearerAlignedAudience a ms:AudienceAlignment .
+ms:OpenAudienceAlignment a ms:AudienceAlignment .
+
+# Current engagement-stance registry values, represented as ontology individuals.
+ms:PlainStance a ms:EngagementStance .
+ms:PreciseStance a ms:EngagementStance .
+ms:BriskStance a ms:EngagementStance .
+ms:WarmStance a ms:EngagementStance .
+ms:WitnessingStance a ms:EngagementStance .
+ms:CharismaticStance a ms:EngagementStance .
+ms:IronicStance a ms:EngagementStance ; rdfs:seeAlso ms:Irony .
+ms:SarcasticStance a ms:EngagementStance ;
+  rdfs:seeAlso ms:Irony ;
+  ms:hasDefaultAddressStructure ms:TriadicAddress ;
+  ms:hasDefaultAudienceAlignment ms:SpeakerAlignedAudience ;
+  rdfs:comment "Sarcasm typically recruits a distinct actual or implied audience invited to share the speaker's non-literal reading, while the hearer is its immediate addressee. This is a default pragmatic shape, not a claim that every sarcastic utterance has an empirically present third party." .
+ms:FaceThreatStance a ms:EngagementStance .
+
+# Current addressee-profile values (serialized today under `audience_register`).
+ms:ChildAccessibleProfile a ms:AddresseeProfile .
+ms:AdultNoviceProfile a ms:AddresseeProfile .
+ms:DomainApprenticeProfile a ms:AddresseeProfile .
+ms:InformedPeerProfile a ms:AddresseeProfile .
 
 # ── Object / datatype properties ──────────────────────────────────────────────
 ms:aimsAtForm a owl:ObjectProperty ; rdfs:comment "the dramatic form a move/device is FOR (generative intent, not a score)" .
@@ -193,6 +249,16 @@ ms:requiresAgency a owl:ObjectProperty ; rdfs:domain ms:AdaptationMove ; rdfs:ra
   rdfs:comment "the interior agency that DRIVES this move (the adaptation-core correctsAgency channels: the tutor superego = mechanism critic drives route_change/action_gate; the learner superego = costume guard drives reframe/perform_device). A role lacking the agency cannot perform the move — this is the sampler's alter-ego conditioning." .
 ms:playedBy a owl:ObjectProperty ; rdfs:domain ms:DramaticRole ; rdfs:range ms:Caster .
 ms:scoredBy a owl:ObjectProperty ; rdfs:range ms:CriticPanel .
+ms:hasSpeakerRole a owl:ObjectProperty ; rdfs:domain ms:RegisterRealization ; rdfs:range ms:DramaticRole .
+ms:hasHearerRole a owl:ObjectProperty ; rdfs:domain ms:RegisterRealization ; rdfs:range ms:DramaticRole .
+ms:hasAudience a owl:ObjectProperty ; rdfs:domain ms:RegisterRealization ; rdfs:range ms:Audience .
+ms:realizesEngagementStance a owl:ObjectProperty ; rdfs:domain ms:RegisterRealization ; rdfs:range ms:EngagementStance .
+ms:usesAddresseeProfile a owl:ObjectProperty ; rdfs:domain ms:RegisterRealization ; rdfs:range ms:AddresseeProfile .
+ms:hasAddressStructure a owl:ObjectProperty ; rdfs:domain ms:RegisterRealization ; rdfs:range ms:AddressStructure .
+ms:hasAudienceAlignment a owl:ObjectProperty ; rdfs:domain ms:RegisterRealization ; rdfs:range ms:AudienceAlignment .
+ms:invitesAudienceAlignmentWith a owl:ObjectProperty ; rdfs:domain ms:RegisterRealization ; rdfs:range ms:DramaticRole .
+ms:hasDefaultAddressStructure a owl:ObjectProperty ; rdfs:domain ms:EngagementStance ; rdfs:range ms:AddressStructure .
+ms:hasDefaultAudienceAlignment a owl:ObjectProperty ; rdfs:domain ms:EngagementStance ; rdfs:range ms:AudienceAlignment .
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ABox — concrete devices, triggers, and moves (named individuals)

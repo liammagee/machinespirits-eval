@@ -86,7 +86,7 @@ ms:DerivationWorldConcept
   rdfs:label "world" ;
   rdfs:comment "The authored conceptual stage: roles, question, secret, releases, proof paths, and dramatic timing." ;
   ms:belongsToConceptLayer ms:DramaConceptLayer ;
-  ms:containsConcept ms:SecretConcept ;
+  ms:containsConcept ms:SecretConcept, ms:AudienceConcept ;
   ms:stagesConcept ms:AuthoredProofDagConcept ;
   ms:pressesTowardConcept ms:AnagnorisisConcept .
 
@@ -116,7 +116,24 @@ ms:AnagnorisisConcept
   ms:realizesConcept ms:RecognitionConcept ;
   ms:requiresConcept ms:ProofOwnershipConcept .
 
+ms:AudienceConcept
+  a ms:DramaturgicalConcept ;
+  rdfs:label "audience" ;
+  rdfs:comment "A first-order but non-enacted dramatic position: actual or implied witnesses for whom address and uptake become legible, without a turn, cast binding, interior agency, or belief/desire graph." ;
+  ms:belongsToConceptLayer ms:DramaConceptLayer ;
+  rdfs:seeAlso ms:Audience ;
+  ms:readsConcept ms:RegisterRealizationConcept .
+
 # -- rhetoric ------------------------------------------------------------------
+
+ms:RegisterRealizationConcept
+  a ms:RhetoricalConcept ;
+  rdfs:label "register" ;
+  rdfs:comment "Register in use: an engagement stance realised by a speaker toward a hearer, optionally before an actual or implied audience; not an intrinsic tone label." ;
+  ms:belongsToConceptLayer ms:RhetoricConceptLayer ;
+  rdfs:seeAlso ms:RegisterRealization, ms:EngagementStance ;
+  ms:mediatesConcept ms:AudienceConcept ;
+  ms:risksConcept ms:MisrecognitionConcept .
 
 ms:FigureOfSpeechConcept
   a ms:RhetoricalConcept ;
@@ -124,6 +141,7 @@ ms:FigureOfSpeechConcept
   rdfs:comment "A controlled turn of language that changes salience, pressure, or address without adding hidden evidence." ;
   ms:belongsToConceptLayer ms:RhetoricConceptLayer ;
   rdfs:seeAlso ms:Figure ;
+  ms:mediatesConcept ms:RegisterRealizationConcept ;
   ms:requiresConcept ms:EntailmentConcept .
 
 ms:ErotemaConcept
@@ -328,6 +346,8 @@ ms:DerivationConceptWorld
     ms:SecretConcept,
     ms:AporiaConcept,
     ms:AnagnorisisConcept,
+    ms:AudienceConcept,
+    ms:RegisterRealizationConcept,
     ms:FigureOfSpeechConcept,
     ms:ErotemaConcept,
     ms:AnalogyConcept,

@@ -39,6 +39,10 @@ export function getRegisterOntologyVersion() {
   return loadEngagementRegisterRegistry().register_ontology_version || 1;
 }
 
+export function getCommunicativePragmatics() {
+  return loadEngagementRegisterRegistry().communicative_pragmatics || {};
+}
+
 export function getLegacyEngagementRegisterAliases() {
   return loadEngagementRegisterRegistry().legacy_register_aliases || {};
 }
@@ -133,6 +137,19 @@ export function getEngagementStanceDefinition(name) {
 
 export const getEngagementRegisterDefinition = getEngagementStanceDefinition;
 
+export function getEngagementStancePragmatics(name) {
+  const model = getCommunicativePragmatics();
+  const defaults = model.register_realization || {};
+  const definition = getEngagementStanceDefinition(name);
+  if (!definition) return null;
+  return {
+    address_structure: defaults.default_address_structure || null,
+    audience_presence: defaults.default_audience_presence || null,
+    audience_alignment: defaults.default_audience_alignment || null,
+    ...(definition.pragmatics || {}),
+  };
+}
+
 export function getRoutingPatternGroups() {
   return loadEngagementRegisterRegistry().routing_patterns || {};
 }
@@ -145,9 +162,13 @@ export function getActionFamilyDefinitions() {
   return loadEngagementRegisterRegistry().action_families || {};
 }
 
-export function getAudienceRegisterDefinitions() {
+export function getAddresseeProfileDefinitions() {
   return loadEngagementRegisterRegistry().audience_registers || {};
 }
+
+// Backward-compatible API: persisted `audience_register` values are addressee
+// profiles, not instances of the separate dramatic Audience position.
+export const getAudienceRegisterDefinitions = getAddresseeProfileDefinitions;
 
 export function getLexicalAccessibilityDefinitions() {
   return loadEngagementRegisterRegistry().lexical_accessibility_levels || {};

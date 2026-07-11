@@ -39,6 +39,9 @@ test('every drama-machine field is assigned to a valid component and surface', (
 
   assert.ok(fieldsForComponent('form', { surface: 'compose' }).some((field) => field.path === 'turn_plan'));
   assert.ok(fieldsForComponent('audience', { surface: 'run' }).some((field) => field.path === 'audience.panel'));
+  assert.ok(
+    fieldsForComponent('audience', { surface: 'compose' }).some((field) => field.path === 'audience.context'),
+  );
 });
 
 test('drama functional components name the architecture-facing subsystems', () => {
@@ -80,6 +83,11 @@ test('composer vocab composes fixed drama vocab with live learner vocab', () => 
   assert.ok(vocab.forms.includes('peripeteia'));
   assert.ok(vocab.adaptationPolicy.includes('socratic_discovery'));
   assert.ok(vocab.adaptationPolicy.includes('withhold_secret'));
+  assert.deepEqual(vocab.positions, ['tutor', 'learner', 'director', 'audience']);
+  assert.deepEqual(vocab.nonEnactedPositions, ['audience']);
+  assert.deepEqual(vocab.roles, ['tutor', 'learner', 'director']);
+  assert.deepEqual(vocab.speakers, ['learner', 'tutor', 'director']);
+  assert.equal(vocab.movesByRole.audience, undefined);
   assert.equal(vocab.components.length, DRAMA_PARAMETER_COMPONENTS.length);
   assert.equal(vocab.functionalComponents.length, DRAMA_FUNCTIONAL_COMPONENTS.length);
   assert.deepEqual(vocab.functionalComponentOrder, DRAMA_FUNCTIONAL_COMPONENT_ORDER);
