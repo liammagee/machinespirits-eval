@@ -1,7 +1,7 @@
 ---
 id: a22-green-room-coached-tutor-training
 title: A22. Green Room — coached tutor training, rehearsal, and the prompt book
-status: triaged
+status: active
 type: experiment
 priority: P1
 owner: unassigned
@@ -46,8 +46,17 @@ target actor's own transcripts (the gap between §7.8.1's +114% native
 optimisation and §7.8.3's insufficient hand-me-down transfer; A18.37 is the
 behavioural-channel precedent).
 
-Next action: P0 pre-registration (pin anchor cell, scenario split, coach
-model, token budget, gate thresholds) — then Gate 0 coach-quality screen on
-archived transcripts (~5 notes sessions, near-free).
+Next action: remaining P0 pins (token budget ratification, Ns + gate
+thresholds, Gate-0 note-quality checklist), push/share the preconscious
+worktree branch, then Gate 0 coach-quality screen (~5 notes sessions,
+owner-reviewed).
 
 2026-07-11 claude: arc proposed; plan doc drafted on branch, card opened.
+2026-07-11 human: GREENLIT. P0 decisions recorded in GREEN-ROOM-PLAN.md §0.1 —
+first wave binds to the preconscious tutor-stub variant on the Marrick family
+(world-005 train; hold-outs sealed: world-018-edmund near-transfer,
+world-009-ravensmark far-transfer); coach codex.sol / actor codex.luna;
+coach-informed but tutor-driven (registry-variance-failure trigger, ⚑ to
+reconcile against the worktree at P1); single anchor, no in-loop-superego arm
+(standing note: the coach may be an alternative superego architecture);
+Gate 0 owner-reviewed; cells 201-208 reserved for the later fold-in.

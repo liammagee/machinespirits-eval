@@ -1,6 +1,6 @@
 # The Green Room: Coached Tutor Training, Rehearsal, and the Prompt Book
 
-**Status:** proposal / pre-registration draft, 2026-07-11. No code yet; this document is the review + plan.
+**Status:** **greenlit 2026-07-11** (owner decisions recorded in §0.1); pre-registration draft — no code yet.
 **Branch:** `claude/tutor-coaching-memory-system-vvvrl8`.
 **Companions:** `MEMORY-ARCHITECTURE.md` + `MEMORY-MECHANISMS.md` (what memory already exists and what it returned), `LEARNED-ADAPTATION-PLAN.md` (the kill-gate discipline this plan inherits), `DRAMATIC-RECOGNITION-PLAN.md` (the theatrical register it extends), `ADAPTIVE-TUTOR-CAST-LAYER-PLAN.md` (character *within* a drama; this plan is character *across* dramas).
 **Workplan card:** `workplan/items/a22-green-room-coached-tutor-training.md`.
@@ -10,6 +10,18 @@
 ## 0. One-sentence shift
 
 The poetics arc taught the evaluator to watch the play; this arc builds the **green room behind the stage** — after every performance (human or simulated learner), a stronger model sits with the tutor for a **notes session**, and what survives that conversation is engraved into a durable, versioned, per-profile **prompt book** (`MEMORY.md`) that future performances open with; **rehearsal loops** against mock learners and **mid-performance side-coaching** complete the training apparatus, so that a tutor profile becomes something that *develops* — and documents its own development — rather than something that is merely configured.
+
+## 0.1 P0 decisions (owner, 2026-07-11)
+
+Recorded verbatim-in-substance from the greenlight exchange; two terms carry an interpretation flag (⚑) because their referent lives in an unpushed local worktree and must be reconciled at P1.
+
+1. **Greenlit**, priority P1; workplan card `a22-…` moves to `active`.
+2. **Gate 0 is owner-reviewed.** The five sample notes sessions go to the owner for the pablum-or-craft judgment before P1 substrate work is considered validated.
+3. **Single anchor, first wave** — no in-loop-superego second anchor. Owner note, recorded as a standing hypothesis: *the coach may itself be an alternative architecture for the superego* — i.e. the offstage, asynchronous, judge-tier coach as the replacement for (not a complement to) the in-loop critic. A later contrast (coach-trained ego with no superego vs classic ego+superego) is the natural test; not in the first wave.
+4. **Models:** coach = `codex.sol`, tutor/actor = `codex.luna`, both via the CLI bridge (dot-notation passthrough; neither name appears in-repo yet — Gate 0's smoke doubles as the bridge check). C3's distillation arm becomes: `luna`+coached book vs `luna` untrained vs `sol` untrained as ceiling.
+5. **Coach-informed default, but tutor-driven.** The notes session is *not* automatic after every performance: the **tutor initiates** the consult, and the default trigger is **registry-variance failure** — ⚑ interpreted here as: the stub's registered per-turn field vector (evidence_use / agency / epistemic_stance / discourse_move, per `scripts/analyze-tutor-stub-field-traces.js`) stops moving above a min-field-delta threshold across recent turns, i.e. the tutor's own repertoire ("all other passes") is demonstrably not moving the learner-state fields. Coaching therefore concentrates on *stalled* performances, with evaluation visible to the coach when it convenes. Reconcile ⚑ against the preconscious worktree's actual registry-variance check at P1; if they differ, the worktree's semantics win and this paragraph is amended.
+6. **Substrate pivot (the "important note").** The first wave binds to the **preconscious tutor-stub variant** (local worktree `../machinespirits-eval-preconscious`, currently unpushed): the lightweight field-traced tutor whose per-turn state lands in `.tutor-stub-traces/*.jsonl`. The green room's coach consumes those traces + transcripts; MEMORY.md injects into the stub's prompt assembly (adapter pinned at P1, in that worktree). **Folding into the general factorial architecture comes later** — cells 201–208 are *reserved but not registered* until the fold-in stage; first-wave conditions run as derivation-style run-groups (`marrick-greenroom-<condition>-rN`, the generalization-plan label convention). Logistics prerequisite: the worktree's branch must be pushed (or P1 executed inside it) before any shared engineering can land.
+7. **Scenario split.** Default/train = the **Marrick family**: `world-005-marrick` (the AND-join world) as the default performance world, with `world-019-marrick-resistant` and `world-020-marrick-confront` available for rehearsal variety inside the family. **Hold-outs, sealed from coach and rehearsal from this date:** `world-018-edmund` — near transfer (explicitly authored as *marrick's AND-join geometry in a fresh domain*, so it separates "learned the craft" from "learned the world") — and `world-009-ravensmark` — far transfer (small, diagnostic, dead-predicate trap; authored as a held-out probe and kept that way). `world-004-withercombe` (diamond reconvergence) is the optional middle-distance third if the first two disagree.
 
 ## 1. The proposal, in this repo's terms
 
@@ -93,7 +105,7 @@ Three theoretical anchors, each doing work:
 
 ## 5. Apparatus
 
-New module `services/greenroom/` (eval-side only — tutor-core is never touched; the one-way seam holds).
+New module `services/greenroom/` (eval-side only — tutor-core is never touched; the one-way seam holds). Post-P0 note: the store, coach engine, rehearsal loop, and profile ops below are substrate-independent; only the two marked seams — memory *injection* and the *performance runner* hooks — differ between the first-wave tutor-stub substrate (§0.1.6) and the later factorial fold-in. §5.2/§5.5 describe the fold-in seams (kept as written, they're validated); the stub-side equivalents are pinned at P1 in the preconscious worktree.
 
 ### 5.1 Store
 
@@ -124,7 +136,7 @@ DB index (same `evaluations.db`, `pilotStore.js` pattern — own `CREATE TABLE I
 
 ### 5.3 The coach engine (notes sessions)
 
-`services/greenroom/coachEngine.js`. One session per performance (or per rehearsal batch):
+`services/greenroom/coachEngine.js`. Sessions are **tutor-initiated** by default — convened when the registry-variance trigger fires (§0.1.5), plus per rehearsal batch; a `--every-performance` mode is kept for the training-arc conditions that need dense coaching. Each session:
 
 1. **Assemble:** dialogue log via `evaluationStore.loadDialogueLog(dialogueId)` (public turns + `dialogueTrace` internal deliberation), current MEMORY.md, scenario metadata; judge scores included by default (**coach-informed** — the user's stated intent) with a `--blind` variant preserved as the Goodhart probe (§6.3).
 2. **Coach opens** (judge-tier model): 2–3 observations, each **quoting transcript evidence**, plus one question to the actor.
@@ -183,9 +195,9 @@ A profile is the compartmentalization unit the idea asks for: {actor model} × {
 
 **C4 — Headline lift (weakest prior; pre-registered, run once).** Coached (203–205) vs untrained/placebo (201–202) on **held-out** scenarios, v2.2 overall, standard judge + second-judge rejudge. The §6.9.7 motif predicts ~null on a strong actor; the pre-registration says so, and a null here is a *reportable boundary* (coaching changes behaviour (C2) without moving rubric quality — itself a Finding-11-shaped result at the training level), not a failed arc.
 
-### 6.1 Cells (201–208)
+### 6.1 Conditions (first wave: run-groups; cells 201–208 reserved for the fold-in)
 
-Anchor: a standard-runner, multi-turn, **`superego: null`** recognition cell with the ego_superego learner (cell_60-family), so the coach channel is not confounded with in-loop superego critique; exact anchor pinned at P0 after checking current §6 standings. All eight register in `EVAL_ONLY_PROFILES` + YAML with a `greenroom:` block; names below are indicative and must clear `tests/factorial-design.test.js` naming rules (checked via `/ms-add-cell`):
+**P0 superseded the original anchor.** First wave runs on the dramatic-derivation tutor-stub substrate (§0.1.6) — conditions below execute as run-groups (`marrick-greenroom-<condition>-rN`), not factorial cells. The cell numbers 201–208 stay **reserved** for the fold-in stage, at which point they register in `EVAL_ONLY_PROFILES` + YAML with a `greenroom:` block and must clear `tests/factorial-design.test.js` naming rules (via `/ms-add-cell`). The condition structure is substrate-independent:
 
 | Cell | Condition | Memory |
 |---|---|---|
@@ -219,7 +231,7 @@ Budget shape (call-count, not dollars): Gate 0 ≈ 5 sessions; Gate 1 ≈ 6 sess
 
 ## 8. Phasing
 
-- **P0 — pre-registration.** Pin: anchor cell, scenario split, memory token budget, coach model, Ns, gate thresholds, note-quality checklist. Amend this doc in place (poetics-plan convention) + workplan card. *Zero code.*
+- **P0 — pre-registration.** **Substantially done 2026-07-11 (§0.1):** substrate, anchor world + hold-outs, coach/actor models, trigger, informed-default, owner-reviewed Gate 0. Remaining before Gate 1: memory token budget ratified (default 1,800), Ns + gate thresholds proposed-and-ratified, note-quality checklist for Gate 0, ⚑ reconciliations (§12.5). Amend this doc in place. *Zero code.*
 - **P1 — substrate.** `services/greenroom/` store + profile ops + injection + provenance columns + freeze assertion; `GREENROOM_DIR` desktop relocation (+ both tests); hermetic tests (versioning, hash stability, budget enforcement, freeze refusal, fork). Smoke: hand-written MEMORY.md injected, hash lands on the row, drift validator fires when the book changes.
 - **P2 — coach.** `coachEngine` + `eval-cli coach` + Gate 0 on archived transcripts. Then Gate 1 (first trained profile, uptake measurement extending `analyze-insight-action-gap.js`).
 - **P3 — rehearsal.** `rehearsalRunner` + diary + batch coaching + `GREENROOM_LLM` mock switch (hermetic loop test with mock learner). Cheap comparison: rehearsed-only book vs coached book on train scenarios.
@@ -258,14 +270,15 @@ Budget shape (call-count, not dollars): Gate 0 ≈ 5 sessions; Gate 1 ≈ 6 sess
 
 Single-paper discipline: results land as a new § of `docs/research/paper-full-2.0.md` (named anchor, not a bare number — post-poetics convention), whether positive or null. C1's biography artifacts (ledger excerpts, note taxonomy, uptake curves) are the section's figures. Spin-offs inherit. The workplan card (`a22-…`) tracks execution; this doc is amended in place with dated stamps, DRAMATIC-RECOGNITION-PLAN-style.
 
-## 12. Open decisions (for P0)
+## 12. Open decisions
 
-1. **Anchor cell** — cell_60-family default (superego-null, ego_superego learner, recognition); confirm against current §6 standings, and whether a second anchor *with* in-loop superego is worth the interaction cells later.
-2. **Coach model** — judge-tier default via CLI bridge; pick the specific model with an eye on Gate 0's quality screen (and on keeping coach ≠ headline judge for triangulation).
-3. **ACTOR.md layer** — ship in P1 (two files, two hash columns) or defer to P6's transfer study? Default: defer; keep P1 minimal.
-4. **Rehearsal scenario variants** — coach-authored perturbations vs fixed train-split only. Default: fixed split first; variants are a P5+ enrichment.
-5. **Notes-session transcript privacy class** — sessions quote learner transcripts; when human-pilot data arrives these inherit pilot consent scope. Flag for the IRB packet now.
-6. **Whether cell 206 (side-coaching) needs its own latency budget** in the runner (a judge-tier call inside the turn loop is the one place this touches interactive latency).
+Items 1, 2, and the split were **DECIDED 2026-07-11 — see §0.1** (anchor → tutor-stub substrate on the Marrick family; coach `codex.sol` / actor `codex.luna`; hold-outs edmund + ravensmark; informed-default with tutor-driven registry-variance trigger). Still open:
+
+1. **ACTOR.md layer** — ship in P1 (two files, two hash columns) or defer to the transfer study? Default: defer; keep P1 minimal.
+2. **Rehearsal scenario variants** — coach-authored perturbations vs fixed train-family only. Default: fixed family first (005/019/020); variants are a P5+ enrichment.
+3. **Notes-session transcript privacy class** — sessions quote learner transcripts; when human-pilot data arrives these inherit pilot consent scope. Flag for the IRB packet now.
+4. **Side-coaching latency budget** — a judge-tier call inside the turn loop is the one place this touches run latency; matters only at the sidecoached condition.
+5. **⚑ reconciliations at P1** (owner's terms grounded against the preconscious worktree): the exact registry-variance semantics, and the tutor-stub prompt-assembly point where MEMORY.md injects.
 
 ---
 
