@@ -8,6 +8,9 @@ import {
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
   TutorStubPublicLearnerAnalysisError,
   analyzeTutorStubPublicLearnerTurn,
+  buildTutorStubPublicLearnerAnalysisOutputSchema,
+  buildTutorStubPublicLearnerAnalysisPrompt,
+  buildTutorStubPublicLearnerAnalysisProviderOutputSchema,
   buildTutorStubPublicLearnerAnalysisWorld,
   extractTutorStubPublicLearnerAnalysis,
   parseTutorStubPublicLearnerAnalysisInteractive,
@@ -56,6 +59,68 @@ function validAnalysis({ learnerRecord = {}, turn = {}, root = {} } = {}) {
   };
 }
 
+function providerCompleteAnalysis() {
+  return validAnalysis({
+    learnerRecord: {
+      adopt: [],
+      retract: [],
+      derive: [],
+      hypothesis: null,
+      assert_answer: null,
+      human_discourse: {
+        proof_status: 'unclear',
+        provisional_claims: [],
+        implied_warrants: [],
+        missing_warrants: [],
+        implied_public_premises: [],
+        suppressed_or_private_premises: [],
+        common_sense_bridges: [],
+        illicit_hidden_premises: [],
+        proof_debt_candidates: [],
+        side_arc: {
+          detected: false,
+          type: null,
+          reason: null,
+          return_target: null,
+        },
+      },
+      notes: '',
+    },
+  });
+}
+
+const PROVIDER_SCHEMA_KEYWORDS = new Set([
+  'type',
+  'additionalProperties',
+  'required',
+  'properties',
+  'enum',
+  'items',
+  'anyOf',
+]);
+
+function assertCodexProviderSchema(schema, path = '$') {
+  assert.ok(schema && typeof schema === 'object' && !Array.isArray(schema), `${path} must be a schema object`);
+  for (const key of Object.keys(schema)) {
+    assert.ok(PROVIDER_SCHEMA_KEYWORDS.has(key), `${path} uses unsupported provider keyword ${key}`);
+  }
+  if (schema.type === 'object') {
+    assert.equal(schema.additionalProperties, false, `${path} must be closed`);
+    assert.deepEqual(
+      [...schema.required].sort(),
+      Object.keys(schema.properties).sort(),
+      `${path} must require every declared property`,
+    );
+    for (const [key, child] of Object.entries(schema.properties)) {
+      assertCodexProviderSchema(child, `${path}.properties.${key}`);
+    }
+  }
+  if (schema.items) assertCodexProviderSchema(schema.items, `${path}.items`);
+  for (const [index, branch] of (schema.anyOf || []).entries()) {
+    assertCodexProviderSchema(branch, `${path}.anyOf[${index}]`);
+  }
+}
+
 function modelResponse(value, overrides = {}) {
   return {
     text: JSON.stringify(value),
@@ -76,6 +141,40 @@ function modelResponse(value, overrides = {}) {
 }
 
 describe('strict public learner analysis', () => {
+  it('uses a separate recursively complete Codex-compatible provider schema', () => {
+    const semantic = buildTutorStubPublicLearnerAnalysisOutputSchema();
+    const provider = buildTutorStubPublicLearnerAnalysisProviderOutputSchema();
+    const providerWithRegister = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
+      includeRegisterSelection: true,
+    });
+    assert.notDeepEqual(provider, semantic);
+    assertCodexProviderSchema(provider);
+    assertCodexProviderSchema(providerWithRegister);
+    assert.equal(Object.hasOwn(provider, '$schema'), false);
+    assert.equal(Object.hasOwn(provider, 'title'), false);
+  });
+
+  it('uses complete-envelope instructions only for the strict provider prompt', () => {
+    const world = buildTutorStubPublicLearnerAnalysisWorld(smokeWorld());
+    const base = {
+      learnerText: 'I am considering the public clue.',
+      topic: 'inheritance reasoning',
+      world,
+      tutorTurn: 1,
+      publicStagedEvidence: [],
+    };
+    const interactivePrompt = buildTutorStubPublicLearnerAnalysisPrompt(base);
+    const strictPrompt = buildTutorStubPublicLearnerAnalysisPrompt({
+      ...base,
+      strictProviderEnvelope: true,
+    });
+    assert.match(interactivePrompt, /Return sparse JSON: omit empty arrays/u);
+    assert.doesNotMatch(interactivePrompt, /Return every field required by the supplied provider schema/u);
+    assert.match(strictPrompt, /Return every field required by the supplied provider schema/u);
+    assert.match(strictPrompt, /empty arrays, null hypothesis\/assert_answer, an empty notes string/u);
+    assert.doesNotMatch(strictPrompt, /Return sparse JSON: omit empty arrays/u);
+  });
+
   it('rejects fences, aliases, extra keys, wrong types, and unknown predictive labels locally', () => {
     const valid = validAnalysis();
     assert.doesNotThrow(() => parseTutorStubPublicLearnerAnalysisStrict(JSON.stringify(valid)));
@@ -153,6 +252,42 @@ describe('strict public learner analysis', () => {
         ),
       /unknown \$\.learner_record\.human_discourse\.side_arc\.type/u,
     );
+
+    assert.doesNotThrow(() =>
+      parseTutorStubPublicLearnerAnalysisStrict(JSON.stringify(providerCompleteAnalysis())),
+    );
+    assert.throws(
+      () =>
+        parseTutorStubPublicLearnerAnalysisStrict(
+          JSON.stringify(validAnalysis({ turn: { summary: ' ' } })),
+        ),
+      /requires non-empty string \$\.classification\.turn\.summary/u,
+    );
+    assert.throws(() => {
+      const outOfRange = validAnalysis();
+      outOfRange.classification.turn.scores.epistemic_readiness.score = 6;
+      parseTutorStubPublicLearnerAnalysisStrict(JSON.stringify(outOfRange));
+    }, /requires a 1-5 score/u);
+    assert.throws(
+      () =>
+        parseTutorStubPublicLearnerAnalysisStrict(
+          JSON.stringify(validAnalysis({ learnerRecord: { derive: [[]] } })),
+        ),
+      /requires fact arrays/u,
+    );
+    assert.throws(
+      () =>
+        parseTutorStubPublicLearnerAnalysisStrict(
+          JSON.stringify(
+            validAnalysis({
+              learnerRecord: {
+                human_discourse: { proof_status: 'unclear', provisional_claims: [' '] },
+              },
+            }),
+          ),
+        ),
+      /requires non-empty \$\.learner_record\.human_discourse\.provisional_claims\[0\]/u,
+    );
   });
 
   it('pins one structured call while preserving exact input, output, hashes, and bridge metadata', async () => {
@@ -190,8 +325,10 @@ describe('strict public learner analysis', () => {
     assert.equal(request.role, 'tutor_stub_public_learner_analysis');
     assert.equal(request.effort, 'low');
     assert.equal(request.timeoutMs, 300000);
-    assert.equal(request.outputSchema.title, 'TutorStubPublicLearnerAnalysis');
+    assertCodexProviderSchema(request.outputSchema);
+    assert.equal(request.outputSchema.title, undefined);
     assert.equal(request.outputSchema.forbidden, undefined);
+    assert.match(request.prompt, /Return every field required by the supplied provider schema/u);
     assert.equal(raw.prompt, request.prompt);
     assert.equal(raw.systemPrompt, request.systemPrompt);
     assert.deepEqual(raw.outputSchema, request.outputSchema);
@@ -459,14 +596,21 @@ describe('interactive public learner analysis parser', () => {
   });
 
   it('is selected only when explicitly requested', async () => {
+    let request = null;
     const raw = await extractTutorStubPublicLearnerAnalysis({
       learnerText: 'A turn.',
       topic: 'test',
       world: smokeWorld(),
       tutorTurn: 1,
       parseMode: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.INTERACTIVE,
-      callModel: async () => ({ text: 'not JSON', provider: 'fixture', model: 'fixture' }),
+      callModel: async (value) => {
+        request = value;
+        return { text: 'not JSON', provider: 'fixture', model: 'fixture' };
+      },
     });
+    assert.equal(Object.hasOwn(request, 'outputSchema'), false);
+    assert.match(request.prompt, /Return sparse JSON: omit empty arrays/u);
+    assert.doesNotMatch(request.prompt, /Return every field required by the supplied provider schema/u);
     assert.equal(raw.parseError, 'Classifier output was not parseable JSON.');
     assert.equal(raw.parsed.turn.request_type, 'off_task_or_mixed');
   });

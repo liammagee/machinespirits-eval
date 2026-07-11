@@ -10,10 +10,12 @@ export const ADAPTIVE_STATE_CLI_REALIZER_OUTPUT_JSON_SCHEMA = Object.freeze({
   required: Object.freeze(['learner_text', 'realized_public_event_ids']),
   additionalProperties: false,
   properties: Object.freeze({
-    learner_text: Object.freeze({ type: 'string', minLength: 1 }),
+    // Keep the provider-facing schema inside the strict structured-output
+    // subset. Non-empty text and unique event ids are enforced by the local
+    // parser below, because provider schemas reject minLength/uniqueItems.
+    learner_text: Object.freeze({ type: 'string' }),
     realized_public_event_ids: Object.freeze({
       type: 'array',
-      uniqueItems: true,
       items: Object.freeze({ type: 'string' }),
     }),
   }),

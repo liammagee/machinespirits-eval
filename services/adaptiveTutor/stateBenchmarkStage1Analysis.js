@@ -4,7 +4,7 @@ import yaml from 'yaml';
 
 import { canonicalJson, hashCanonicalJson, sha256 } from '../experimentRunArtifacts.js';
 import {
-  buildTutorStubPublicLearnerAnalysisOutputSchema,
+  buildTutorStubPublicLearnerAnalysisProviderOutputSchema,
   buildTutorStubPublicLearnerAnalysisPrompt,
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_SYSTEM_PROMPT,
 } from '../tutorStubPublicLearnerAnalysis.js';
@@ -218,12 +218,13 @@ function validateArtifactRecord(call) {
         currentTutorText: input.currentTutorText,
         publicTranscript: input.publicTranscript,
         publicStagedEvidence: input.publicStagedEvidence,
+        strictProviderEnvelope: true,
       });
       if (
         artifacts.system_prompt !== TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_SYSTEM_PROMPT ||
         artifacts.prompt !== reconstructedPrompt ||
         hashCanonicalJson(artifacts.output_schema) !==
-          hashCanonicalJson(buildTutorStubPublicLearnerAnalysisOutputSchema()) ||
+          hashCanonicalJson(buildTutorStubPublicLearnerAnalysisProviderOutputSchema()) ||
         hashCanonicalJson(call.provenance?.hashes || {}) !==
           hashCanonicalJson({
             input_sha256: expected.model_input_envelope_sha256,

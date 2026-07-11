@@ -247,9 +247,10 @@ function discourseOutputSchema() {
 }
 
 /**
- * Machine-readable output constraint for paid benchmark calls. The interactive
- * tutor does not use this constraint, so its existing tolerant parsing surface
- * is unchanged.
+ * Local semantic schema retained for documentation and non-provider
+ * validation. It deliberately expresses sparse optional fields and richer
+ * JSON-Schema constraints, so it must not be sent to OpenAI/Codex Structured
+ * Outputs. Interactive parsing remains schema-free and tolerant.
  */
 export function buildTutorStubPublicLearnerAnalysisOutputSchema({ includeRegisterSelection = false } = {}) {
   const properties = {
@@ -340,6 +341,114 @@ export function buildTutorStubPublicLearnerAnalysisOutputSchema({ includeRegiste
 
 export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_OUTPUT_SCHEMA = Object.freeze(
   buildTutorStubPublicLearnerAnalysisOutputSchema(),
+);
+
+function providerObjectSchema(properties) {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: Object.keys(properties),
+    properties,
+  };
+}
+
+function providerScoreOutputSchema() {
+  // OpenAI Structured Outputs does not enforce numeric ranges. The strict
+  // local semantic parser retains the authoritative 1-5 check.
+  return providerObjectSchema({
+    score: { type: 'number' },
+    reason: { type: 'string' },
+  });
+}
+
+function providerDiscourseOutputSchema() {
+  const discourseRow = {
+    anyOf: [
+      { type: 'string' },
+      providerObjectSchema(
+        Object.fromEntries(HUMAN_DISCOURSE_ROW_FIELDS.map((field) => [field, { type: 'string' }])),
+      ),
+    ],
+  };
+  return providerObjectSchema({
+    proof_status: {
+      type: 'string',
+      enum: [...CONTROLLED_ENUMS.proof_status],
+    },
+    ...Object.fromEntries(
+      HUMAN_DISCOURSE_ARRAY_FIELDS.map((field) => [field, { type: 'array', items: discourseRow }]),
+    ),
+    side_arc: providerObjectSchema({
+      detected: { type: 'boolean' },
+      type: { type: ['string', 'null'], enum: [...SIDE_ARC_TYPES, null] },
+      reason: { type: ['string', 'null'] },
+      return_target: { type: ['string', 'null'] },
+    }),
+  });
+}
+
+/**
+ * Provider-facing strict-benchmark schema for OpenAI/Codex Structured
+ * Outputs. Every object is closed and requires every declared property.
+ * Optional semantics use empty arrays, nullable strings, or documented empty
+ * strings; unsupported range/minimum/oneOf constraints remain local.
+ */
+export function buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
+  includeRegisterSelection = false,
+} = {}) {
+  const properties = {
+    classification: providerObjectSchema({
+      turn: providerObjectSchema({
+        summary: { type: 'string' },
+        request_type: { type: 'string', enum: [...CONTROLLED_ENUMS.request_type] },
+        discourse_move: { type: 'string', enum: [...CONTROLLED_ENUMS.discourse_move] },
+        evidence_use: { type: 'string', enum: [...CONTROLLED_ENUMS.evidence_use] },
+        epistemic_stance: { type: 'string', enum: [...CONTROLLED_ENUMS.epistemic_stance] },
+        affect: { type: 'string' },
+        agency: { type: 'string', enum: [...CONTROLLED_ENUMS.agency] },
+        scores: providerObjectSchema({
+          conceptual_engagement: providerScoreOutputSchema(),
+          epistemic_readiness: providerScoreOutputSchema(),
+        }),
+        pedagogical_need: { type: 'string' },
+      }),
+      overall: providerObjectSchema(
+        Object.fromEntries(CONTROLLED_OVERALL_FIELDS.map((field) => [field, { type: 'string' }])),
+      ),
+    }),
+    learner_record: providerObjectSchema({
+      adopt: { type: 'array', items: { type: 'string' } },
+      retract: { type: 'array', items: { type: 'string' } },
+      derive: {
+        type: 'array',
+        items: { type: 'array', items: { type: 'string' } },
+      },
+      hypothesis: { type: ['string', 'null'] },
+      assert_answer: { type: ['string', 'null'] },
+      human_discourse: providerDiscourseOutputSchema(),
+      notes: { type: 'string' },
+    }),
+  };
+  if (includeRegisterSelection) {
+    properties.register_selection = providerObjectSchema({
+      engagement_stance: { type: 'string' },
+      reviewer_signal: { type: 'string' },
+      request_type: { type: 'string' },
+      engagement_stance_reason: { type: 'string' },
+      evidence_span: { type: 'string' },
+      risk_flags: { type: 'array', items: { type: 'string' } },
+      expected_dag_move: { type: 'string' },
+      expected_field_move: { type: 'string' },
+      expected_progress_marker: { type: 'string' },
+      // The strict local parser retains the authoritative [0, 1] check.
+      confidence: { type: 'number' },
+    });
+  }
+  return providerObjectSchema(properties);
+}
+
+export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROVIDER_OUTPUT_SCHEMA = Object.freeze(
+  buildTutorStubPublicLearnerAnalysisProviderOutputSchema(),
 );
 
 export class TutorStubPublicLearnerAnalysisError extends Error {
@@ -829,6 +938,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   registerPalette = [],
   registerContext = {},
   publicStagedEvidence = null,
+  strictProviderEnvelope = false,
 } = {}) {
   if (!world) throw new TutorStubPublicLearnerAnalysisError('public learner analysis requires a world');
   if (!Number.isInteger(Number(tutorTurn)) || Number(tutorTurn) < 1) {
@@ -853,7 +963,9 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     'Analyze the learner input once before the tutor responds.',
     'Be terse. Keep every summary or reason to one short sentence or phrase.',
     comprehensionContext || null,
-    'Return sparse JSON: omit empty arrays, null optional learner_record fields, and absent human_discourse fields. Do not restate the same issue across arrays.',
+    strictProviderEnvelope
+      ? 'Return every field required by the supplied provider schema. Represent absent optional learner-record semantics with empty arrays, null hypothesis/assert_answer, an empty notes string, proof_status "unclear", empty human-discourse arrays, and side_arc {"detected":false,"type":null,"reason":null,"return_target":null}. Do not restate the same issue across arrays.'
+      : 'Return sparse JSON: omit empty arrays, null optional learner_record fields, and absent human_discourse fields. Do not restate the same issue across arrays.',
     'Return both:',
     '1. A pedagogical discourse classification.',
     '2. A conservative public learner-record update for the tutor-side learner-DAG model.',
@@ -1088,8 +1200,23 @@ function requireStringFields(value, fields, path) {
   }
 }
 
+function requireNonEmptyStringFields(value, fields, path) {
+  requireStringFields(value, fields, path);
+  for (const field of fields) {
+    if (!value[field].trim()) {
+      throw new TutorStubPublicLearnerAnalysisError(
+        `strict public learner analysis requires non-empty string ${path}.${field}`,
+        {
+          code: 'invalid_analysis_schema',
+          details: { path: `${path}.${field}` },
+        },
+      );
+    }
+  }
+}
+
 function requireStringArray(value, path) {
-  if (!Array.isArray(value) || value.some((row) => typeof row !== 'string')) {
+  if (!Array.isArray(value) || value.some((row) => typeof row !== 'string' || !row.trim())) {
     throw new TutorStubPublicLearnerAnalysisError(`strict public learner analysis requires string array ${path}`, {
       code: 'invalid_analysis_schema',
       details: { path },
@@ -1108,7 +1235,15 @@ function requireControlledEnum(value, field, path) {
 }
 
 function validateHumanDiscourseRow(row, path) {
-  if (typeof row === 'string') return;
+  if (typeof row === 'string') {
+    if (!row.trim()) {
+      throw new TutorStubPublicLearnerAnalysisError(`strict public learner analysis requires non-empty ${path}`, {
+        code: 'invalid_analysis_schema',
+        details: { path },
+      });
+    }
+    return;
+  }
   const object = requireObject(row, path);
   requireExactKeys(object, { allowed: HUMAN_DISCOURSE_ROW_FIELDS, path });
   if (!Object.keys(object).length) {
@@ -1121,7 +1256,7 @@ function validateHumanDiscourseRow(row, path) {
 }
 
 function requireNullableString(value, path) {
-  if (value !== null && typeof value !== 'string') {
+  if (value !== null && (typeof value !== 'string' || !value.trim())) {
     throw new TutorStubPublicLearnerAnalysisError(`strict public learner analysis requires string or null ${path}`, {
       code: 'invalid_analysis_schema',
       details: { path },
@@ -1151,7 +1286,7 @@ function validateStrictAnalysis(parsed, { includeRegisterSelection = false } = {
     required: CONTROLLED_OVERALL_FIELDS,
     path: '$.classification.overall',
   });
-  requireStringFields(
+  requireNonEmptyStringFields(
     turn,
     CONTROLLED_CLASSIFIER_FIELDS.filter((field) => field !== 'scores'),
     '$.classification.turn',
@@ -1159,7 +1294,7 @@ function validateStrictAnalysis(parsed, { includeRegisterSelection = false } = {
   for (const field of ['request_type', 'discourse_move', 'evidence_use', 'epistemic_stance', 'agency']) {
     requireControlledEnum(turn[field], field, `$.classification.turn.${field}`);
   }
-  requireStringFields(overall, CONTROLLED_OVERALL_FIELDS, '$.classification.overall');
+  requireNonEmptyStringFields(overall, CONTROLLED_OVERALL_FIELDS, '$.classification.overall');
   const scores = requireObject(turn.scores, '$.classification.turn.scores');
   requireExactKeys(scores, {
     allowed: ['conceptual_engagement', 'epistemic_readiness'],
@@ -1179,7 +1314,7 @@ function validateStrictAnalysis(parsed, { includeRegisterSelection = false } = {
         { code: 'invalid_analysis_schema', details: { path: `$.classification.turn.scores.${scoreName}.score` } },
       );
     }
-    if (typeof score.reason !== 'string') {
+    if (typeof score.reason !== 'string' || !score.reason.trim()) {
       throw new TutorStubPublicLearnerAnalysisError(
         `strict public learner analysis requires string $.classification.turn.scores.${scoreName}.reason`,
         { code: 'invalid_analysis_schema', details: { path: `$.classification.turn.scores.${scoreName}.reason` } },
@@ -1192,7 +1327,12 @@ function validateStrictAnalysis(parsed, { includeRegisterSelection = false } = {
     if (Object.hasOwn(learnerRecord, field)) requireStringArray(learnerRecord[field], `$.learner_record.${field}`);
   }
   if (Object.hasOwn(learnerRecord, 'derive')) {
-    if (!Array.isArray(learnerRecord.derive) || learnerRecord.derive.some((fact) => !validFactArray(fact))) {
+    if (
+      !Array.isArray(learnerRecord.derive) ||
+      learnerRecord.derive.some(
+        (fact) => !validFactArray(fact) || fact.some((part) => !part.trim()),
+      )
+    ) {
       throw new TutorStubPublicLearnerAnalysisError(
         'strict public learner analysis requires fact arrays at $.learner_record.derive',
         { code: 'invalid_analysis_schema', details: { path: '$.learner_record.derive' } },
@@ -1203,7 +1343,7 @@ function validateStrictAnalysis(parsed, { includeRegisterSelection = false } = {
     if (
       Object.hasOwn(learnerRecord, field) &&
       learnerRecord[field] !== null &&
-      typeof learnerRecord[field] !== 'string'
+      (typeof learnerRecord[field] !== 'string' || !learnerRecord[field].trim())
     ) {
       throw new TutorStubPublicLearnerAnalysisError(
         `strict public learner analysis requires string or null $.learner_record.${field}`,
@@ -1279,7 +1419,7 @@ function validateStrictAnalysis(parsed, { includeRegisterSelection = false } = {
       required: REGISTER_SELECTION_FIELDS,
       path: '$.register_selection',
     });
-    requireStringFields(
+    requireNonEmptyStringFields(
       register,
       REGISTER_SELECTION_FIELDS.filter((field) => !['risk_flags', 'confidence'].includes(field)),
       '$.register_selection',
@@ -1393,7 +1533,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
 } = {}) {
   const strict = parseMode === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK;
   const effectiveRole = strict ? 'tutor_stub_public_learner_analysis' : role;
-  const outputSchema = strict ? buildTutorStubPublicLearnerAnalysisOutputSchema() : null;
+  const outputSchema = strict ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema() : null;
   let analysisPrompt = typeof prompt === 'string' ? prompt : null;
   const preCallFailure = (error) =>
     attachCallFailure(error, {
@@ -1427,7 +1567,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
     registerPalette.length,
   );
   const effectiveOutputSchema = strict
-    ? buildTutorStubPublicLearnerAnalysisOutputSchema({ includeRegisterSelection })
+    ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeRegisterSelection })
     : null;
   try {
     const effectivePublicStagedEvidence = analysisPrompt
@@ -1451,6 +1591,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
         registerPalette,
         registerContext,
         publicStagedEvidence: effectivePublicStagedEvidence,
+        strictProviderEnvelope: strict,
       });
   } catch (error) {
     throw attachCallFailure(error, {

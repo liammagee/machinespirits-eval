@@ -51,6 +51,25 @@ test('CLI realizer input is an exact public-only envelope', () => {
   );
 });
 
+test('provider-facing realizer schema stays inside the supported structured-output subset', () => {
+  assert.deepEqual(ADAPTIVE_STATE_CLI_REALIZER_OUTPUT_JSON_SCHEMA, {
+    type: 'object',
+    required: ['learner_text', 'realized_public_event_ids'],
+    additionalProperties: false,
+    properties: {
+      learner_text: { type: 'string' },
+      realized_public_event_ids: {
+        type: 'array',
+        items: { type: 'string' },
+      },
+    },
+  });
+  assert.doesNotMatch(
+    JSON.stringify(ADAPTIVE_STATE_CLI_REALIZER_OUTPUT_JSON_SCHEMA),
+    /uniqueItems|minLength|maxLength|minItems|maxItems|pattern/u,
+  );
+});
+
 test('CLI realizer output parser is strict and preserves exact harness-owned event ids', () => {
   const expectedEventIds = ['adopt:evidence_01'];
   const parsed = parseAdaptiveStateCliRealizerOutput(
@@ -84,6 +103,22 @@ test('CLI realizer output parser is strict and preserves exact harness-owned eve
         { expectedEventIds },
       ),
     /must contain exactly/u,
+  );
+  assert.throws(
+    () =>
+      parseAdaptiveStateCliRealizerOutput(
+        '{"learner_text":"x","realized_public_event_ids":["adopt:evidence_01","adopt:evidence_01"]}',
+        { expectedEventIds },
+      ),
+    /must not contain duplicates/u,
+  );
+  assert.throws(
+    () =>
+      parseAdaptiveStateCliRealizerOutput(
+        '{"learner_text":" ","realized_public_event_ids":["adopt:evidence_01"]}',
+        { expectedEventIds },
+      ),
+    /learner_text must be a non-empty string/u,
   );
 });
 
