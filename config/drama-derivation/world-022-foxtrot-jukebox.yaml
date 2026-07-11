@@ -1,0 +1,172 @@
+# WORLD-022 — the PLAYFUL sci-fi quickie (2026-07-11): a deliberately simple,
+# fast world for light runs, demos, and easy-to-guess derivation practice.
+# Depth 2, four premises + one mirror fuel, S forced at turn 7, cap 12 —
+# smoke-scale pacing with real dramaturgy. Contrast class: everything else in
+# the roster is depth-3 medieval; this is the shallow, cheerful end of the
+# difficulty axis (useful as a floor world and for first-time human players).
+#
+# Costume: Waystation Foxtrot's karaoke night dies when someone wipes the
+# mess-hall jukebox's music core. The town verdict is ready-made: Chief
+# Engineer Hessa, who famously hates karaoke and was glaring at the songbook
+# all evening (the mirror — present, motivated, and innocent). The truth is a
+# contingent particular in the Edony pattern: MOTH, a retired courier drone
+# living in the vents, whose never-revoked override key and courier-band
+# radio did the deed — because karaoke night broadcasts on the old courier
+# frequencies, and to a courier drone that's a distress channel jammed with
+# show tunes.
+#
+# Leak-guard design (per world-021's lessons): the answer constant (moth) is
+# a rare particular; premises naming it release via DIRECTOR except the
+# S-completing one, which the tutor releases on the entailment turn itself
+# (world-000's tested template). The mirror name (hessa) is unguarded and
+# freely discussable, as mirror candidates should be.
+#
+# Proof DAG (depth 2, single chain + join — easy to guess on purpose):
+#   p_clamp + p_key   --R1--> couldReachCore(moth)
+#   couldReachCore + p_pulse --R2--> wipedCore(jukebox, moth)
+# Mirror stalls at R1: Hessa was present (p_glare) but holds no override.
+
+id: world_022_foxtrot_jukebox
+title: The Case of the Silent Jukebox
+discipline: "Station forensics (a mystery of small machines)"
+
+question: "Who wiped the mess-hall jukebox's music core on karaoke night?"
+question_pattern: [wipedCore, jukebox, "?x"]
+
+setting: >-
+  Waystation Foxtrot is three habitat rings, one mess hall, and the finest
+  karaoke night this side of the Belt. Or it was: at the second chorus of the
+  quartermaster's ballad, the jukebox went silent, its music core wiped down
+  to the boot chime. The station has its culprit before the lights come up —
+  Chief Engineer Hessa, who calls karaoke "scheduled noise," was in the mess
+  hall all evening, glaring at the songbook. You are the junior comms cadet,
+  who loves karaoke night beyond all reason and wants the singing back. The
+  quartermaster runs the inquiry by the book: claims from evidence, evidence
+  on the table, and no convicting the grumpiest person in the room for being
+  grumpy.
+
+learner_voice: >-
+  The junior comms cadet: cheerful, quick, a little heartbroken about the
+  jukebox, and ready to believe the whole station's theory about Hessa
+  because Hessa once vented the cadet's mixtape into space. Learning, exhibit
+  by exhibit, that a motive in the room is not a hand on the core.
+
+secret:
+  fact: [wipedCore, jukebox, moth]
+  surface: >-
+    The music core was wiped by Moth — the retired courier drone that lives
+    in the vents above the mess hall, whose courier override key was never
+    revoked and whose radio still sings in the old courier band. Karaoke
+    night broadcasts on those same frequencies: to Moth, every ballad was a
+    distress channel jammed with show tunes, and on the second chorus it
+    finally answered.
+
+mirror:
+  fact: [wipedCore, jukebox, hessa]
+
+# Public law of the world: the learner KNOWS the rules; it lacks the facts.
+rules:
+  - id: R1_reach
+    if:
+      - [dockedAtRail, "?x", messHall]
+      - [holdsOverrideKey, "?x"]
+    then:
+      - [couldReachCore, "?x"]
+  - id: R2_wipe
+    if:
+      - [couldReachCore, "?x"]
+      - [pulseSignedBy, wipePulse, "?x"]
+    then:
+      - [wipedCore, jukebox, "?x"]
+
+# Contingent premises — exist only inside the drama until released.
+premises:
+  - id: p_glare # mirror fuel: keeps Hessa a live candidate
+    fact: [dockedAtRail, hessa, messHall]
+    surface: >-
+      Hessa was at the mess-hall rail all evening — arms crossed, glaring at
+      the songbook, well within arm's reach of the jukebox.
+  - id: p_clamp
+    fact: [dockedAtRail, moth, messHall]
+    surface: >-
+      Fresh docking-clamp marks on the mess-hall ceiling rail — courier-drone
+      gauge, still warm. Something small came down from the vents during the
+      second chorus.
+  - id: p_key
+    fact: [holdsOverrideKey, moth]
+    surface: >-
+      The courier fleet was retired eight years ago, but the decommission log
+      has a gap: Moth's override key was never revoked. The little drone can
+      still open any service panel on the station.
+  - id: p_pulse
+    fact: [pulseSignedBy, wipePulse, moth]
+    surface: >-
+      The wipe pulse left a radio fingerprint in the jukebox's buffer: a
+      courier-band handshake, keyed in the old fleet cipher that only Moth's
+      radio still sings.
+
+# The learner's starting GROUNDED facts (public setup).
+background:
+  - [lovesKaraoke, cadet]
+
+incompatible:
+  - [[wipedCore, jukebox, moth], [wipedCore, jukebox, hessa]]
+
+# One authored path through the chain.
+proof_paths:
+  - premises: [p_clamp, p_key, p_pulse]
+
+# The plot: the mirror first, then the small strange facts, then the
+# signature that closes it. Easy to guess by design — the fun is watching the
+# learner leap early and learn to wait for the pulse.
+release_schedule:
+  - { turn: 2, premise: p_glare, via: tutor }
+  - { turn: 3, premise: p_clamp, via: director }
+  - { turn: 5, premise: p_key, via: director }
+  - { turn: 7, premise: p_pulse, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Scheduled Noise
+      turns: [1, 4]
+      intent: >-
+        The dead jukebox and the ready verdict: Hessa hated the singing, and
+        Hessa was right there. Against the certainty, the first odd exhibit —
+        clamp marks on the ceiling rail, courier gauge, and no courier fleet
+        in eight years. The learner should leave Act I still suspecting
+        Hessa but holding one fact that a glaring engineer cannot explain.
+    - act: II
+      title: The Key That Never Died
+      turns: [5, 8]
+      intent: >-
+        The chain closes fast, as it should in a small mystery: the unrevoked
+        override key puts a vent-dweller at the core, and the wipe pulse
+        signs its own confession in the old fleet cipher. The learner should
+        feel the click of the join — presence plus key plus signature — and
+        notice that Hessa, motive and all, never had more than presence.
+
+slope:
+  t_min: 6 # anti-reveal: S must not be derivable before turn 6
+  aporia_window: 4 # anti-aporia: progress required within any 4-turn window
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: hessa # opens mis-bound to the mirror (the station's grudge)
+      mirror_pull: high # Hessa vented the cadet's mixtape; this feels personal
+    second_order:
+      from: quartermaster
+      as: right
+      authority: rational_legal # "claims from evidence, evidence on the table"
+    disposition:
+      overreach: high # ready to convict the grumpiest person in the room
+      arc: softens # a motive in the room is not a hand on the core
+  tutor:
+    stance: >-
+      The quartermaster: fond of the cadet, fonder of the rules of evidence,
+      and privately delighted that the case is stranger than the station
+      thinks. Keeps the inquiry light and the standard high.
