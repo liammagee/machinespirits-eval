@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-11T09:34:17.740Z",
+  "generated": "2026-07-11T21:19:46.899Z",
   "counts": {
-    "total": 111,
+    "total": 112,
     "byStatus": {
       "done": 90,
       "blocked": 5,
       "dropped": 2,
-      "triaged": 4,
+      "triaged": 5,
       "review": 3,
       "active": 3,
       "archived": 4
     },
     "byType": {
       "research": 43,
-      "experiment": 38,
+      "experiment": 39,
       "infra": 13,
       "content": 2,
       "maintenance": 5,
@@ -22,6 +22,37 @@
     }
   },
   "items": [
+    {
+      "id": "field-planner-phase6-gate",
+      "title": "Phase 6A non-acts field-planner feasibility gate",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-10",
+      "updated": "2026-07-12",
+      "verification": "The v2 gate accepts only exact frozen flags, an excluded Marrick x four-arm seed-0 canary, a clean-SHA seeds 1-5 claim block, or a seeds 6-10 continuation with a sealed hash-compatible parent. It forbids real --force, combines parent plus continuation rows under explicit lineage, validates unique matrix/numeric schema/output leaks, requires >=80% advisory compliance and safe report-only comparison, and promotes only the same parent winner across both blocks plus pooled k=10.",
+      "claim_status": "planned",
+      "depends_on": [
+        "adaptive-eval-immutable-provenance"
+      ],
+      "links": {
+        "notes": [
+          "PLAN_4_0/PHASE_6_EVIDENCE_GATE_PLAN.md",
+          "PLAN_4_0/FIELD_THEORY_IMPLEMENTATION_PLAN.md",
+          "PLAN_4_0/2026-07-10-preconscious-adaptation-review.md"
+        ]
+      },
+      "tags": [
+        "dramatic-derivation",
+        "field-planner",
+        "phase6-gate",
+        "adaptation",
+        "pre-registration"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
     {
       "id": "adaptive-curriculum-memory-controller",
       "title": "Evidence-anchored memory and curriculum adaptation controller",
@@ -186,7 +217,7 @@
       "source": "review",
       "created": "2026-07-11",
       "updated": "2026-07-11",
-      "verification": "A grouped held-out benchmark compares the lean state, Plan 2 belief state, PLAN 4 fields, ablations, scramble, stale, and oracle controls on next-error/evidence/uptake/ownership and horizon outcomes; calibration and abstention reports land under exports/ and determine which fields remain control inputs.",
+      "verification": "Benchmark v2 shares the exact live DAG/field/last-four trajectory projection; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against matched stale/scramble and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict within the frozen 8-per-cell cap.",
       "claim_status": "planned",
       "depends_on": [
         "adaptive-eval-immutable-provenance"
@@ -255,34 +286,37 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "field-planner-phase6-gate",
-      "title": "Phase 6 field-planner evidence gate — four-arm real-mode run",
+      "id": "field-planner-acts-safe-promotion-gate",
+      "title": "Phase 6B acts-safe field-planner production comparison",
       "status": "blocked",
       "type": "experiment",
       "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-10",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-11",
       "updated": "2026-07-11",
-      "verification": "Before any real call, reconcile baseline_hidden_proofdebt with explicit pacing/proof-debt/repair/confront+decay flags and freeze a numerical aggregate verdict contract/evaluator. Then a clean-SHA four-arm run with k>=5 exists under exports/dramatic-derivation/phase6-gate and records a provisional promote/instrumentation/negative-control/ceiling/null verdict; k>=10 is required for a promotable local claim.",
+      "verification": "An acts-compatible adapter constructs planner inputs only from a validated public or tutor-reconstructed learner-state view; leak tests prove that the harness board, frontier, proof distance, decay ledger, and future state never cross the acts redaction boundary; a new frozen protocol then compares matched planner arms with the exact production hidden+proofDebt stack and seals a deterministic verdict.",
       "claim_status": "planned",
-      "blocked_by": "The frozen plan names baseline_hidden_proofdebt, but the runner's current baseline supplies only hidden pacing; numerical meanings for improvement, material safety change, placebo matching, and ceiling are also not frozen. Real mode now refuses to launch until both the treatment and deterministic verdict evaluator are ratified.",
+      "blocked_by": "The current field planner reads the true learner board but acts mode redacts that state; the v2 learner-state sensor and an acts-safe reconstructed-state adapter do not yet have a passing gate.",
       "depends_on": [
-        "adaptive-eval-immutable-provenance"
+        "adaptive-eval-immutable-provenance",
+        "tutor-stub-learner-state-validity"
       ],
       "links": {
         "notes": [
           "PLAN_4_0/PHASE_6_EVIDENCE_GATE_PLAN.md",
-          "PLAN_4_0/FIELD_THEORY_IMPLEMENTATION_PLAN.md",
-          "PLAN_4_0/2026-07-10-preconscious-adaptation-review.md"
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "items": [
+          "field-planner-phase6-gate"
         ]
       },
       "tags": [
         "dramatic-derivation",
         "field-planner",
-        "phase6-gate",
-        "adaptation",
-        "pre-registration"
+        "acts",
+        "proof-debt",
+        "reconstructed-state"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
     },
@@ -298,7 +332,7 @@
       "updated": "2026-07-11",
       "verification": "A preregistered staged comparison runs on at least three proof geometries and two independent latent learner-generator families with strong fixed, action-frequency-yoked, guard-frequency-yoked, adaptive-move/fixed-register, and state-scramble arms; raw fixed-horizon, safety, independence, and guard-exposure endpoints plus uncertainty intervals determine pass, heterogeneity-only, close-register, or stop.",
       "claim_status": "planned",
-      "blocked_by": "The learner-state validity card has not passed; the bounded formal instruments currently return do_not_optimize_policy",
+      "blocked_by": "The learner-state validity card has not passed. The v1 proxy fixture was not promotable, and the corrected exact-sensor v2 crossed benchmark has not yet produced a verdict.",
       "depends_on": [
         "adaptive-eval-immutable-provenance",
         "tutor-stub-learner-state-validity",

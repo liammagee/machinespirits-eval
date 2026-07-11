@@ -208,11 +208,12 @@ function sourceRows({
       .sort((left, right) => Number(left.turn || 0) - Number(right.turn || 0));
     if (rawTurns.length < 2) continue;
     const observations = [];
-    for (const turnRecord of rawTurns) {
+    for (const [turnIndex, turnRecord] of rawTurns.entries()) {
       observations.push(
         buildTutorStubStateObservation({
           turnRecord,
           previousObservation: observations.at(-1) || null,
+          previousTurnRecords: rawTurns.slice(0, turnIndex),
           provenance: {
             source_run_id: verification.plan.runId,
             source_trace: trace.path,

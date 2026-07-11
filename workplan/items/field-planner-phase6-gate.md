@@ -1,16 +1,15 @@
 ---
 id: field-planner-phase6-gate
-title: "Phase 6 field-planner evidence gate — four-arm real-mode run"
-status: blocked
+title: "Phase 6A non-acts field-planner feasibility gate"
+status: triaged
 type: experiment
 priority: P1
-owner: claude
+owner: unassigned
 source: manual
 created: 2026-07-10
-updated: 2026-07-11
-verification: "Before any real call, reconcile baseline_hidden_proofdebt with explicit pacing/proof-debt/repair/confront+decay flags and freeze a numerical aggregate verdict contract/evaluator. Then a clean-SHA four-arm run with k>=5 exists under exports/dramatic-derivation/phase6-gate and records a provisional promote/instrumentation/negative-control/ceiling/null verdict; k>=10 is required for a promotable local claim."
+updated: 2026-07-12
+verification: "The v2 gate accepts only exact frozen flags, an excluded Marrick x four-arm seed-0 canary, a clean-SHA seeds 1-5 claim block, or a seeds 6-10 continuation with a sealed hash-compatible parent. It forbids real --force, combines parent plus continuation rows under explicit lineage, validates unique matrix/numeric schema/output leaks, requires >=80% advisory compliance and safe report-only comparison, and promotes only the same parent winner across both blocks plus pooled k=10."
 claim_status: planned
-blocked_by: "The frozen plan names baseline_hidden_proofdebt, but the runner's current baseline supplies only hidden pacing; numerical meanings for improvement, material safety change, placebo matching, and ceiling are also not frozen. Real mode now refuses to launch until both the treatment and deterministic verdict evaluator are ratified."
 depends_on:
   - adaptive-eval-immutable-provenance
 links:
@@ -27,56 +26,48 @@ tags:
 milestone: adaptive-tutor-evidence-v1
 ---
 
-Run the pre-registered four-arm field-planner gate in real mode. As of
-2026-07-10 only plumbing exists: mock smokes (all arms at ceiling; decay smoke
-separation = release-forcing) and one real n=1 enforce-only row with no
-baseline. The placebo arm is now genuinely flag-distinct
-(`--field-report-context` injects the coupled-field summary with no conduct
-authority), so decision rule 2 can bind.
+Run the frozen Phase 6A **non-acts controller-feasibility** gate. It asks
+whether the hand-coded field planner converts the same available hidden state
+into better formal proof outcomes or fixed-turn efficiency than hidden pacing.
+It does not compare with the production hidden+proofDebt controller.
 
-Freeze BEFORE launch (in the manifest, not after results):
+Frozen protocol:
 
-- **Failure mode.** Baseline already grounds marrick/hethel at ~20-23 turns
-  without decay, so a no-decay gate returns "ceiling result" by its own
-  decision rules. Default: decay 0.08 / mutate-share 0.25 (matching the mock
-  decay smoke). Alternative: the resistant worlds (world-010, world-019).
-- **World set.** Smoke trio marrick + hethel + world-019 per the plan; the
-  runner profile is now regression-tested against exactly this set.
-- **Seeds.** k=5 per arm per world for the directional read (k=10 for a
-  promotable claim). Real-mode seeds are labels (decay pairing only) — report
-  per-arm distributions, not seed-paired deltas.
+- worlds: Marrick, Hethel, Marrick-resistant;
+- arms: baseline, field-report-only, advisory, enforce;
+- common base: non-acts scene/didactic mode, release authority, pacing guard,
+  conduct-visible decay, modern register, critic off;
+- decay: rate 0.08, grace 2, max concurrent 1, start turn 1, mutate share 0.25,
+  staged pool;
+- provisional seeds: 1–5;
+- replication seeds: execute only 6–10 after the sealed seeds 1–5
+  `provisional_promote` report becomes the immutable parent; the evaluator
+  combines the parent snapshot with the new block and requires the same winner;
+- numerical benefit, placebo, safety, negative-transfer, instrumentation,
+  manipulation, and verdict-precedence rules are frozen in the linked plan and
+  versioned JSON contract.
 
-Historical launch shape (now intentionally rejected until the blockers below
-are resolved; attended and sequential once ratified):
+Launch only from a clean committed SHA, attended and sequential. The first real
+route canary is technical and excluded from evidence. Do not tune the planner,
+worlds, thresholds, or decay after reading a gate result.
 
-```bash
-node scripts/run-derivation-phase6-gate.js \
-  --label phase6-gate-real-k5 \
-  --profile smoke \
-  --arms baseline,field_report_only,field_planner_advisory,field_planner_enforce \
-  --seeds 1,2,3,4,5 \
-  --decay-rate 0.08 \
-  --mode real
-```
+2026-07-11 Codex: The original `baseline_hidden_proofdebt` protocol was
+prospectively withdrawn before a four-arm real dataset existed. Proof debt
+requires acts/superego/confront/repair, while all field arms reject acts because
+the learner-store board is redacted there. Simply adding flags was impossible
+and exposing the true board would invalidate the comparison.
 
-Qualitative decision rules are preregistered in
-PHASE_6_EVIDENCE_GATE_PLAN.md, including: enforce wins that harm release
-adherence = negative control, not success; report-only matching planner arms =
-instrumentation effect, not planner control. Their numerical semantics still
-need ratification before outcomes exist. Run from a committed SHA only.
+2026-07-11 Codex: Added the frozen Phase 6A contract, pure deterministic
+evaluator, exact real-mode protocol enforcement, complete decay provenance,
+structured safety/manipulation/instrumentation metrics, advisory compliance
+logging, report/seal verdicts, and focused tests. Mock execution verifies
+plumbing only. No paid Phase 6A row has run.
 
-2026-07-11 Codex: Migrated the runner to the immutable evidence transaction,
-strict role-model provenance, and sealed reports without changing arm or
-planner code. The smoke world reconciliation is complete. No paid gate rows
-were launched; the subsequent audit below found that those preserved commands
-do not yet match the named control treatment.
-
-2026-07-11 Codex audit: Blocked real mode before calls after finding that the
-preregistered `baseline_hidden_proofdebt` treatment is not the runner's current
-`baseline_hidden_pacing` command. The proof-debt guard also requires a frozen
-repair/confront/decay configuration. The prose decision rules leave numerical
-comparison and safety margins underspecified, so a deterministic aggregate
-verdict cannot yet be implemented without post-outcome discretion. The runner
-now also refuses dirty/SHA-drifted real runs, requires the complete audit packet,
-separates execution from safety failures, and leaves incomplete transactions
-unsealed for same-plan resume. Mock plumbing remains available.
+2026-07-12 Codex: Superseded the still-unrun v1 contract with v2 after a
+pre-commit audit. V2 rejects extra base flags and real semantic rerolls, gives
+the route canary its own excluded contract, runs only seeds 6–10 on
+continuation, binds and re-evaluates the sealed parent under current hashes,
+records parent lineage, scans learner-facing tutor output for declared leak
+patterns, rejects malformed or duplicate evidence cells, freezes 80% advisory
+compliance, and invalidates an unsafe report-only comparator. No paid Phase 6A
+row has run.

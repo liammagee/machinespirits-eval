@@ -2429,7 +2429,7 @@ export function makeLlmTutor(
   }
   const fieldPlannerEnabled = Boolean(fieldPlanner || fieldPlannerEnforce);
   const conductPolicyEnabled = Boolean(
-    conductPolicy || conductPolicyEnforce || conductProgressPolicy || fieldPlannerEnforce,
+    conductPolicy || conductPolicyEnforce || conductProgressPolicy || fieldPlannerEnabled,
   );
   const rhetoricalPolicyConfig = rhetoricalPolicy ? normalizeRhetoricalPolicyConfig(rhetoricalPolicy) : null;
   const system = tutorSystem(world, script, dials, {

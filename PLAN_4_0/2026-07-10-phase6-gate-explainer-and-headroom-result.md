@@ -1,5 +1,13 @@
 # The Four-Arm Phase 6 Gate — and Where It Sits After the Headroom Contrast
 
+> **2026-07-11 protocol amendment:** This note preserves the original gate
+> rationale, but its claim that the four arms compare with the production
+> hidden+proofDebt baseline is superseded. That stack requires acts mode; the
+> field planner and report-only control reject acts mode because learner-store
+> state is redacted there. The runnable replacement is the non-acts Phase 6A
+> feasibility gate. The true production comparison is Phase 6B and remains
+> blocked. See `PHASE_6_EVIDENCE_GATE_PLAN.md`.
+
 Date: 2026-07-10
 Status: explainer + result note. No new empirical claims beyond the artifacts cited; the headroom result is exploratory (n=3 per cell, single model stack).
 

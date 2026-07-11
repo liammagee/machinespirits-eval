@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-07-11
-verification: "A grouped held-out benchmark compares the lean state, Plan 2 belief state, PLAN 4 fields, ablations, scramble, stale, and oracle controls on next-error/evidence/uptake/ownership and horizon outcomes; calibration and abstention reports land under exports/ and determine which fields remain control inputs."
+verification: "Benchmark v2 shares the exact live DAG/field/last-four trajectory projection; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against matched stale/scramble and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict within the frozen 8-per-cell cap."
 claim_status: planned
 depends_on:
   - adaptive-eval-immutable-provenance
@@ -47,3 +47,22 @@ the sealed 12-row formal instrument still returns
 `not_passed / do_not_optimize_policy`. The report now calls its statistical
 floor `claim_grade_settings`; that phrase describes bootstrap/calibration
 settings only, never the evidence or sensor status.
+
+2026-07-11 Codex correction: The 12-row v1 result did not test the exact live
+sensor. It lacked a true no-state baseline and last-four trajectory, confounded
+generator with model/source labels, repeated the same rows across holdout
+summaries, and included degenerate/world-local targets. Its correct verdict is
+"v1 proxies not promotable," not "the live sensor is invalid."
+
+2026-07-11 Codex: Extracted the exact runtime DAG/field/risk trajectory into a
+shared pure service, persisted that projection in benchmark observations,
+preserved missing observations instead of converting them to false zero
+movement, and added parity tests. Added the versioned v2 critical-path plan:
+three geometries × two transition kernels × two model-family realizers, two
+primary harness targets, nested representations with byte-equal recipient
+common input, strict oracle/proof-transition provenance, separate transfer
+lanes, 24-dialogue free contract stage, 24-dialogue paid technical pilot, and a
+confirmation cap of six or eight per cell. The planner is an immutable
+planning transaction; the generalized cross-world kernels, sequential realizer
+executor, and v2 dataset have not yet run, so the card remains active and no new
+sensor verdict exists.

@@ -173,6 +173,7 @@
           </tbody>
         </table></div>
         <div class="callout"><strong>Claim boundary</strong><br />The defensible statement today is: <em>the system can expose policy-dependent trajectories and profile interactions in a synthetic, formally scored environment.</em> “Improves learning,” “models the learner,” and “field theory works” are not yet licensed.</div>
+        <div class="callout"><strong>Implementation amendment · 2026-07-11</strong><br />The later 12-row learner-state gate tested partial proxy projections, not the tutor’s exact live DAG + field + last-four trajectory sensor. Its result is “v1 candidates not promotable,” not “the live sensor is useless.” Benchmark v2 now shares the exact runtime projection and freezes a bounded three-world × two-kernel × two-model test. The original Phase 6 control was also incompatible with the planner’s non-acts runtime; it is now split into a runnable non-acts feasibility gate (6A) and a blocked production hidden+proofDebt comparison (6B).</div>
       </div><div class="mr"><p class="note note--moss"><span class="note__lbl">Verdict</span> On the right path at the substrate level; one or two full evidence ladders short of a proper adaptive tutor.</p></div></div>
     </section>
 
@@ -469,7 +470,7 @@
           <article class="roadmap-step"><div><h3>Seal provenance before any paid gate</h3><p>Make manifests immutable; pin Git/config/prompt/model hashes; seed all randomness; preserve observed role models; checksum and archive artifacts; add resume lineage; fix the robustness label.</p><div class="gate"><strong>Exit gate</strong> Analysis cannot alter the manifest; a clean-room rerun can reproduce job order and policy draws from the artifact alone.</div></div></article>
           <article class="roadmap-step"><div><h3>Validate learner-state sensing</h3><p>Create ground-truth synthetic latent events and a human-coded authentic-dialogue slice. Compare lean difficulty-aware belief state, current fields, and scrambled-state controls on held-out next-error/evidence/outcome prediction.</p><div class="gate"><strong>Exit gate</strong> A state representation is calibrated and improves held-out log loss/Brier score beyond the lean baseline across worlds and model families.</div></div></article>
           <article class="roadmap-step"><div><h3>Orthogonalize the adaptive action</h3><p>Introduce a typed action schema. Run register-only and instructional-move-only ablations; add diagnosis, hint, explanation, worked/buggy example, retrieval, fade, and transfer actions plus fixed/yoked/random controls.</p><div class="gate"><strong>Exit gate</strong> The project can attribute a gain to move, task, support, or register rather than a bundled policy name.</div></div></article>
-          <article class="roadmap-step"><div><h3>Run the real Phase 6 four-arm gate</h3><p>Freeze the corrected code and manifest; reconcile worlds; use at least five seeds for the planned smoke, preferably ten for a claim; keep raw primary endpoints and apply the decision rules unchanged.</p><div class="gate"><strong>Exit gate</strong> Promote, retain as negative control, or declare ceiling. Do not tune on the gate and rerun under the same label.</div></div></article>
+          <article class="roadmap-step"><div><h3>Run Phase 6A; keep Phase 6B blocked</h3><p>Use the corrected non-acts four-arm feasibility protocol with five preregistered seeds, then an independent five-seed replication only after a provisional pass. Do not describe it as a comparison with production hidden+proofDebt. Build the acts-safe reconstructed-state adapter before Phase 6B.</p><div class="gate"><strong>Exit gate</strong> Apply the numerical verdict mechanically for 6A; run 6B only after the redaction-safe state adapter and a new frozen protocol exist.</div></div></article>
           <article class="roadmap-step"><div><h3>Replicate tutor-stub headroom properly</h3><p>Use multiple proof geometries/worlds, at least two independent learner-model families, separated tutor/analyzer roles, seeded interleaving, probe × policy factorial, and enough runs for interval or hierarchical estimates.</p><div class="gate"><strong>Exit gate</strong> A predeclared policy × profile interaction survives held-out worlds and model families, with raw coverage/safety endpoints and uncertainty intervals.</div></div></article>
           <article class="roadmap-step"><div><h3>Fit the first learned transition/reward baselines</h3><p>Log candidates and propensities. Fit interpretable ridge/logistic/tree models before RL; cross-fit by world/profile/model; compare hand-coded, learned, and hybrid guarded controllers with off-policy diagnostics.</p><div class="gate"><strong>Exit gate</strong> Predicted movement calibrates out of sample and a guarded learned ranker beats a strong fixed/yoked baseline without safety loss.</div></div></article>
           <article class="roadmap-step"><div><h3>Add closed-loop memory and curriculum adaptation</h3><p>Implement a minimal typed memory and outer-loop task selector. Test supersession, contradiction, forgetting, retrieval, spacing, and transfer of responsibility.</p><div class="gate"><strong>Exit gate</strong> Memory improves delayed independent performance; stale/conflicting memory is detected and abstained from.</div></div></article>
@@ -562,6 +563,9 @@
             <li><a href="../services/dramaticDerivation/fieldPlanner.js">fieldPlanner.js</a></li>
             <li><a href="../services/dramaticDerivation/pedagogicalScripts.js">pedagogicalScripts.js</a></li>
             <li><a href="../scripts/run-derivation-phase6-gate.js">Phase 6 runner</a></li>
+            <li><a href="../services/tutorStubFieldTrajectory.js">shared live field/trajectory projection</a></li>
+            <li><a href="../config/adaptive-state-benchmark-v2.yaml">learner-state benchmark v2 contract</a></li>
+            <li><a href="../scripts/run-adaptive-state-benchmark-v2.js">v2 critical-path planner</a></li>
             <li><a href="../scripts/tutor-stub.js">tutor-stub.js</a></li>
             <li><a href="../scripts/run-tutor-stub-auto-eval.js">auto-eval runner</a></li>
             <li><a href="../scripts/tutor-stub-learner-profile-contracts.js">learner profile contracts</a></li>
@@ -570,6 +574,8 @@
           </ul></article>
           <article class="reference-card"><span class="eyebrow">Workplan</span><h3>Decision surfaces</h3><ul class="source-list">
             <li><a href="../workplan/items/field-planner-phase6-gate.md">Phase 6 field-planner gate</a></li>
+            <li><a href="../workplan/items/field-planner-acts-safe-promotion-gate.md">Phase 6B acts-safe promotion gate</a></li>
+            <li><a href="../workplan/items/tutor-stub-learner-state-validity.md">learner-state validity</a></li>
             <li><a href="../workplan/items/tutor-stub-transition-reward-model.md">Transition/reward model</a></li>
             <li><a href="../workplan/items/tutor-stub-headroom-contrast.md">Headroom contrast</a></li>
             <li><a href="../workplan/items/tutor-stub-human-discourse-layer.md">Human discourse layer</a></li>

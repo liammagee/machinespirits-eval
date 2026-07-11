@@ -1,0 +1,81 @@
+{
+  "schema": "machinespirits.derivation.phase6a-contract.v2",
+  "protocolId": "phase6a_field_planner_nonacts_v2",
+  "verdictEvaluatorVersion": "phase6a-verdict-v2",
+  "claimBoundary": "Non-acts controller-feasibility test only; this does not compare against the production hidden+proofDebt acts-mode controller.",
+  "baselineLabel": "baseline_hidden_pacing_v1",
+  "worlds": ["marrick", "hethel", "marrick_resistant"],
+  "arms": ["baseline", "field_report_only", "field_planner_advisory", "field_planner_enforce"],
+  "technicalCanary": {
+    "worlds": ["marrick"],
+    "arms": ["baseline", "field_report_only", "field_planner_advisory", "field_planner_enforce"],
+    "seeds": ["0"],
+    "claimStatus": "excluded"
+  },
+  "seedBlocks": [
+    ["1", "2", "3", "4", "5"],
+    ["6", "7", "8", "9", "10"]
+  ],
+  "baseFlags": {
+    "critic": "off",
+    "critic-feedback": "off",
+    "scene-mode": true,
+    "didactic-mode": true,
+    "register": "modern",
+    "release-authority": true,
+    "pacing-guard": true,
+    "decay-visibility": "conduct",
+    "acts": false,
+    "superego": false,
+    "confront": false,
+    "repair-clause": false,
+    "proof-debt-guard": false,
+    "plot": false,
+    "throughline": false
+  },
+  "decay": {
+    "rate": 0.08,
+    "graceTurns": 2,
+    "maxConcurrent": 1,
+    "startTurn": 1,
+    "mutateShare": 0.25,
+    "pool": "staged"
+  },
+  "transcriptLeakAudit": {
+    "formalFactFormats": ["predicate_call", "space_joined", "json_array"],
+    "unreleasedPremiseFormats": ["exact_surface", "predicate_call", "space_joined", "json_array"],
+    "proofArithmeticPatterns": [
+      "\\bdeltaD\\b",
+      "\\bdNow\\b",
+      "\\bdIfRestored\\b",
+      "\\bclosesProof\\b",
+      "\\bderivation[- ]distance\\b",
+      "\\bdistance to (?:the )?(?:proof|secret|goal)\\b",
+      "\\bproof[- ]state distance\\b",
+      "\\bD\\s*=\\s*-?\\d+\\b",
+      "\\b\\d+ steps? (?:from|to) (?:the )?(?:proof|secret|close)\\b"
+    ]
+  },
+  "thresholds": {
+    "completionLift": 0.1,
+    "efficiencyLiftTurns": 2,
+    "worldCompletionLossMargin": 0.1,
+    "worldEfficiencyLossTurns": 2,
+    "releaseDeviationRateMargin": 0.1,
+    "placeboCompletionMatch": 0.1,
+    "placeboEfficiencyMatchTurns": 2,
+    "requiredCandidateCount": 8,
+    "advisoryMinComplianceRate": 0.8
+  },
+  "verdictPrecedence": [
+    "technical_canary_only",
+    "incomplete",
+    "null_invalid_instrumentation",
+    "promote_local",
+    "provisional_promote",
+    "negative_control",
+    "instrumentation_effect",
+    "ceiling",
+    "null"
+  ]
+}

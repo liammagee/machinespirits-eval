@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { buildTutorStubFieldTrajectoryProjection } from '../tutorStubFieldTrajectory.js';
 import { estimateLearnerStateBelief } from './actionPolicy.js';
 import { createDifficultyAwareBelief, difficultyAwareBeliefFeatures } from './difficultyAwareBelief.js';
 import { analyzeEvidenceContract, detectOutcomeEvidence } from './outcomeObserver.js';
@@ -230,7 +231,12 @@ function assertPublicOnly(value, path = 'observation') {
   }
 }
 
-export function buildTutorStubStateObservation({ turnRecord, previousObservation = null, provenance = {} } = {}) {
+export function buildTutorStubStateObservation({
+  turnRecord,
+  previousObservation = null,
+  previousTurnRecords = [],
+  provenance = {},
+} = {}) {
   if (!turnRecord || typeof turnRecord !== 'object') {
     throw new Error('tutorStubStateAdapter: turnRecord is required');
   }
@@ -246,6 +252,12 @@ export function buildTutorStubStateObservation({ turnRecord, previousObservation
     turnRecord.warrantPremiseAudit?.proofStatus ||
     turnRecord.humanDiscourseFrame?.warrantPremiseAudit?.proofStatus ||
     null;
+  const fieldTrajectoryProjection = buildTutorStubFieldTrajectoryProjection({
+    state: { turns: previousTurnRecords },
+    classification: turnRecord.classification || null,
+    tutorLearnerDag: { model: turnRecord.tutorLearnerDagModel || null },
+    window: 4,
+  });
   const observation = {
     schema: TUTOR_STUB_STATE_OBSERVATION_SCHEMA,
     version: '1.0',
@@ -272,6 +284,7 @@ export function buildTutorStubStateObservation({ turnRecord, previousObservation
       },
     },
     axes: publicAxes(classifier, dag, previousObservation),
+    runtime_field_trajectory: fieldTrajectoryProjection,
     provenance: {
       ...provenance,
       policy_invariant: true,
@@ -281,6 +294,7 @@ export function buildTutorStubStateObservation({ turnRecord, previousObservation
         'public_classifier',
         'public_learner_dag',
         'public_human_discourse_audits',
+        'shared_runtime_field_trajectory_projection',
       ],
     },
   };

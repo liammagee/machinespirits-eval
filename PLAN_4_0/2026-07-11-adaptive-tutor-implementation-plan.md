@@ -262,7 +262,14 @@ Phase 0 passes only when one archived mock QA run can be reconstructed in a fres
 
 **Kill rule:** no claim-bearing Phase 6 or tutor-stub matrix runs if any part of the plan can still be overwritten or any stochastic policy draw is unreplayable.
 
-## 6. Phase 1 — Close the frozen legacy Phase 6 question
+## 6. Phase 1 — Split and close the Phase 6 questions
+
+> **2026-07-11 protocol correction:** Sections 6.1–6.5 below preserve the
+> original implementation intent, but the instruction to run that four-arm
+> protocol unchanged is superseded. The audit proved that the named
+> `hidden+proofDebt` control requires acts mode while the field-planner and
+> report-only arms reject acts mode. The executable replacement is §6.6 and
+> [the canonical Phase 6 plan](PHASE_6_EVIDENCE_GATE_PLAN.md).
 
 - **Priority:** P1
 - **Engineering scale:** small after Phase 0
@@ -314,7 +321,33 @@ Produce a sealed four-arm artifact and a verdict of exactly one of:
 
 Then freeze the legacy planner result. Later action-schema work starts from a new version and must not rewrite the Phase 6 verdict.
 
+### 6.6 Executable replacement: Phase 6A and Phase 6B
+
+The correction happened before any claim-bearing four-arm real dataset existed.
+
+**Phase 6A** is a non-acts controller-feasibility gate. It freezes Marrick,
+Hethel, and Marrick-resistant; the non-acts hidden-pacing base; four arm deltas;
+the full staged decay object; numerical benefit, placebo, safety,
+instrumentation, and negative-transfer thresholds; and a deterministic verdict
+precedence. Seeds 1–5 can yield only `provisional_promote`. Seeds 6–10 run only
+after that result, and local promotion requires both blocks and pooled k=10 to
+pass.
+
+**Phase 6B** is the eventual true comparison with production
+`hidden+proofDebt`. It remains blocked until an acts-compatible planner consumes
+only a validated public or tutor-reconstructed learner-state view and a leak
+audit proves that the true board, proof distance, frontier, and decay ledger do
+not cross the acts-mode redaction boundary. Phase 6A cannot substitute for
+Phase 6B.
+
 ## 7. Phase 2 — Learner-state validity benchmark
+
+> **2026-07-11 benchmark correction:** Sections 7.1–7.7 describe the first
+> benchmark design. Its 12-row result says only that those proxy candidates did
+> not earn promotion. It did not contain a true no-state baseline or the exact
+> live last-four DAG/field/risk trajectory, and its generator/model/source axes
+> were confounded. The replacement critical path is §7.8 and
+> `config/adaptive-state-benchmark-v2.yaml`.
 
 - **Priority:** P1
 - **Engineering scale:** large
@@ -409,6 +442,58 @@ tests/adaptiveStateValidity.test.js
 **Demote fields:** full fields fail to improve held-out log loss/Brier over the lean state or lose under state-scramble controls. Retain them for visualization only.
 
 **Stop:** no representation clears the lean baseline or the authentic slice reverses the synthetic ordering. Do not proceed to policy learning; improve measurement/data instead.
+
+### 7.8 Benchmark v2 critical path
+
+The corrected question is whether the tutor's **exact live public learner-state
+projection** predicts world-general next-turn events beyond progressively
+simpler rungs. Runtime and benchmark now share one pure DAG/field/trajectory
+projection with parity tests.
+
+The nested ladder is:
+
+1. `no_state`: frozen task metadata, turn, and common action only;
+2. `lean_dag`: current world-general public DAG state, without local fact IDs or
+   learner text;
+3. `dag_trajectory`: lean DAG plus exact public DAG/risk trajectory;
+4. `field_trajectory`: DAG trajectory plus exact classifier field and full
+   last-four trajectory;
+5. matched cross-dialogue scramble and one-turn stale controls;
+6. oracle latent transition distribution, upper-bound only.
+
+Only two harness-owned co-primary targets bind the gate:
+
+- `next_dag_event_family`: retract, derive, adopt, or none;
+- `next_proof_trajectory`: advance, regress, or stall.
+
+The data design is a bounded 3 × 2 × 2 crossing:
+
+- Marrick, Hethel, and Ravensmark proof geometries;
+- generalized durable-state and DAG-dropout/readoption transition kernels;
+- `codex.gpt-5.6-terra` and `claude-code.sonnet` language realizers.
+
+One seed-balanced six-action schedule is common to every representation. There
+is no tutor-policy, profile, judge, or target sweep.
+
+The staged envelope is:
+
+- S0: 24 free contract dialogues, 144 transitions;
+- S1: 24 technical-pilot dialogues, 144 transitions, 168 base calls; excluded
+  from confirmation;
+- S2: 6/cell only after a frozen 5,000-simulation power pass (72 dialogues, 504
+  calls), otherwise 8/cell (96 dialogues, 672 calls). If 8/cell is
+  underpowered, stop and redesign.
+
+Including pilot, the paid ceiling is 96 or 120 dialogues and 672 or 840 base
+calls. Representations are computed offline on the same transitions and add no
+calls.
+
+Analysis uses separate world-, generator-, and realizer-transfer lanes, one
+small L2 multinomial head, whole-dialogue bootstrap, log loss, Brier, and ECE.
+The oracle must first validate the instrument. Then choose the simplest rung
+that beats no-state and matched controls across both targets without transfer
+failure. Valid outcomes are no sensor, lean DAG only, DAG trajectory, or full
+field trajectory—not only a global winner/null.
 
 ## 8. Phase 3 — Orthogonal pedagogical action contract
 
@@ -795,7 +880,10 @@ section records what was created or reconciled.
 
 ### 13.2 Existing cards
 
-- `field-planner-phase6-gate`: now depends on provenance and is blocked on the hidden+proofDebt treatment mismatch plus an executable verdict contract.
+- `field-planner-phase6-gate`: is now the triaged Phase 6A non-acts
+  feasibility experiment with a frozen executable verdict contract;
+  `field-planner-acts-safe-promotion-gate` preserves the blocked Phase 6B
+  production hidden+proofDebt question.
 - `tutor-stub-transition-reward-model`: now depends on multi-world replication, is blocked upstream, and requires logged propensities, overlap/ESS, grouped cross-fitting, and guarded learned-vs-yoked comparison.
 - `a1-human-learner-validation`: remains blocked and P0; its governance and human-learning design were not diluted.
 - `tutor-stub-headroom-contrast`: closed as exploratory evidence with model, guard, provenance, and post-hoc fixed-horizon limits recorded.
@@ -862,8 +950,8 @@ After Phase 0, safe parallelism is:
 
 | Lane | Work | Merge constraint |
 |---|---|---|
-| A | Phase 6 protocol reconciliation and mock-only runner checks | no real call until hidden+proofDebt and the aggregate verdict contract are frozen |
-| B | state benchmark and lean baseline | may change analyzers/adapters, not legacy planner |
+| A | Phase 6A protocol and runner; Phase 6B acts-safe adapter design | 6A uses non-acts hidden pacing; 6B remains blocked on reconstructed state |
+| B | exact-state benchmark v2 and crossed latent generators | no paid pilot until S0 oracle/control/leakage gates pass |
 | C | action-schema adapter and deterministic fixtures | build offline; no claim run before sensor gate |
 | D | A1 governance/content | independent human/legal track |
 
@@ -878,13 +966,32 @@ Implementation was authorized on 2026-07-11. The slice resolved as follows:
 3. Created the milestone/cards, updated dependencies and stop states, then rendered and validated the board.
 4. Added fail-closed tests for immutable plans, append-only events, exclusive seals, nested lineage, corruption, and replay.
 5. Implemented the shared run-artifact service and migrated tutor-stub QA.
-6. Migrated Phase 6 plumbing, then blocked real mode when audit showed that its preserved baseline command did not match the preregistered hidden+proofDebt treatment and its verdict rules lacked numerical semantics.
+6. Migrated Phase 6 plumbing, found that the original hidden+proofDebt
+   treatment was incompatible with every field arm, then prospectively split
+   Phase 6A from the blocked Phase 6B production comparison.
 7. Seeded tutor-stub policy/register draws and added exact replay contracts.
 8. Persisted original, repaired, fallback, delivered, and final-audit guard records.
 9. Corrected dispersion/adequacy, failed-row accounting, fixed-horizon endpoints, and guard coverage.
 10. Packaged the fake-CLI mock QA run and checksum-verified clean-room restore plus read-only report regeneration.
-11. Did **not** execute the staged real Phase 6 gate; its workplan card is blocked before paid calls pending protocol ratification and a clean committed SHA.
-12. Implemented the learner-state and Plan 2 action-adapter lanes. The formal sensor returned `not_passed / do_not_optimize_policy`, so Phase 4 and every learned or human-adaptive downstream lane remain blocked.
+11. Did **not** execute a staged real Phase 6 gate. Phase 6A is engineering-ready
+    but still awaits an attended clean-SHA paid run; Phase 6B remains blocked.
+12. Implemented the learner-state and Plan 2 action-adapter lanes. The v1 formal
+    proxy returned `not_passed / do_not_optimize_policy`, so Phase 4 and every
+    learned or human-adaptive downstream lane remain blocked pending v2.
+13. Extracted the exact live DAG, classifier-field, DAG/risk, and last-four
+    trajectory projection into one pure service shared by runtime and benchmark.
+14. Corrected missing observations that previously became false zero-valued
+    slopes, and added frozen parity/behavior tests.
+15. Froze benchmark v2's 3-world × 2-kernel × 2-realizer critical path, nested
+    representations, matched controls, strict oracle/proof-transition
+    provenance, two harness targets, and six/eight-per-cell confirmation cap.
+16. Added an immutable zero-call planning transaction and a deterministic
+    five-verdict sensor evaluator over precomputed world/generator/realizer
+    lanes. The cross-world kernel adapters, sequential realizer executor, and
+    confirmation data remain to be implemented/run.
+17. Froze and implemented Phase 6A's complete non-acts flags, decay process,
+    numerical thresholds, instrumentation/manipulation gates, k=5 parent
+    requirement for k=10, and deterministic report/seal verdict.
 
 ## 17. Things deliberately not scheduled
 
@@ -928,24 +1035,21 @@ Stopping at any earlier stage is still a valid result. It defines what the machi
   fixed shim. No remote model ran. This fixture tests methods only; its manifest
   explicitly excludes model-quality, state-validity, policy-effect, learning,
   and provider-attestation claims.
-- **The Phase 6 runner is migrated, audited, and protocol-blocked before real
-  calls:** its smoke profile matches world-005, world-006, and world-019, but
-  the preregistration names `baseline_hidden_proofdebt` while the existing
-  runner supplied only hidden pacing. Proof-debt also requires a frozen
-  repair/confront/decay configuration. The prose rules do not numerically define
-  improvement, material safety change, placebo matching, or comparable ceiling
-  performance. Real mode now refuses dirty/SHA-drifted code and refuses launch
-  until the treatment plus a deterministic aggregate verdict contract are
-  ratified. Incomplete attempts remain unsealed and resumable. No paid rows or
-  verdict were produced.
-- **Phase 2 engineering is implemented but the sensor gate is not passed:** the
-  sealed benchmark supports lean/Plan 2/field/ablation/placebo/oracle
-  representations, grouped holdouts, paired whole-dialogue uncertainty, and two
-  bounded formal families (A21 and exact DAG dropout). The first bounded formal
-  fixture returns `not_passed / do_not_optimize_policy`. Prompt personas do not
-  count as independent latent generators, and authentic learner data remain
-  governance-blocked. Its `claim_grade_settings` label refers only to the
-  resampling/calibration protocol; the evidence status remains `not_passed`.
+- **Phase 6 is split before real calls:** Phase 6A now freezes an executable
+  non-acts hidden-pacing feasibility test, its complete decay process, and
+  numerical verdict contract. Phase 6B retains the original production
+  question and remains blocked on an acts-safe reconstructed-state adapter; the
+  true learner board cannot be passed around that redaction boundary. No paid
+  rows or verdict were produced.
+- **The v1 sensor proxy is not passed; the live sensor has not yet been fairly
+  tested:** the 12-row fixture remains a useful negative instrument audit, but
+  it lacked a no-state baseline, exact runtime trajectory, independent crossed
+  generator/model axes, and nondegenerate world-general targets. Runtime and
+  benchmark now share one pure DAG/field/trajectory projection with parity
+  tests. Benchmark v2 freezes the 3-world × 2-kernel × 2-realizer critical path,
+  nested sensor ladder, two primary targets, staged call ceiling, and stop
+  rules. Its S0/S1/S2 data have not yet been generated, so no new sensor verdict
+  exists.
 - **Phase 3 engineering is in review:** the Plan 2 action registry is exposed
   through a default-off tutor-stub adapter with separate move, support, task,
   difficulty, and register axes; complete candidate/propensity provenance;
@@ -956,8 +1060,8 @@ Stopping at any earlier stage is still a valid result. It defines what the machi
   gate. Transition learning, memory/curriculum control, and human adaptation
   remain behind their original dependencies.
 
-This checkpoint is an engineering result, not an efficacy result. It records the
-failed sensor stop and gate-blocks the larger policy-optimization programme in
-the workplan. A future Phase 4 runner must additionally require a sealed passing
-sensor report before that governance block can become an executable runtime
-gate.
+This checkpoint is an engineering result, not an efficacy result. It records a
+failed **v1 proxy benchmark**, not a failure of the exact live sensor, and keeps
+the larger policy-optimization programme gate-blocked. A future Phase 4 runner
+must require a sealed passing v2 sensor report before that governance block can
+become an executable runtime gate.

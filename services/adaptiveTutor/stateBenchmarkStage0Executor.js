@@ -1,0 +1,418 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import yaml from 'yaml';
+
+import { hashCanonicalJson, hashFile } from '../experimentRunArtifacts.js';
+import { buildTutorStubStateObservation } from './tutorStubStateAdapter.js';
+import {
+  buildAdaptiveStateRepresentationsV2,
+  buildAdaptiveStateTargetsV2,
+  validateAdaptiveStateCriticalPathPlan,
+} from './stateBenchmarkV2.js';
+import { realizeAdaptiveStateStage0LearnerTurn } from './stateBenchmarkDeterministicRealizer.js';
+import {
+  adaptiveStateKernelTaskMetadata,
+  adaptiveStateLearnerKernel,
+  loadAdaptiveStateWorldAdapters,
+} from './learnerKernels/index.js';
+
+export const ADAPTIVE_STATE_STAGE0_DATASET_V2_SCHEMA =
+  'machinespirits.adaptive-state-stage0-dataset.v2';
+export const ADAPTIVE_STATE_BENCHMARK_ROW_V2_SCHEMA =
+  'machinespirits.adaptive-state-benchmark-row.v2';
+export const ADAPTIVE_STATE_STAGE0_DIALOGUE_V2_SCHEMA =
+  'machinespirits.adaptive-state-stage0-dialogue.v2';
+
+function clone(value) {
+  return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+}
+
+function taskForAdapter(adapter) {
+  return {
+    ...adaptiveStateKernelTaskMetadata(adapter),
+    provenance: {
+      kind: 'frozen_world_topology_metadata',
+      world_sha256: adapter.world_sha256,
+      geometry: adapter.geometry,
+    },
+  };
+}
+
+function benchmarkStratum(job, turn) {
+  return {
+    world_id: job.world.id,
+    generator_id: job.latent_generator.id,
+    action_id: job.action_schedule[turn - 1],
+    turn,
+  };
+}
+
+function observationProvenance(job, turn) {
+  return {
+    source: 'adaptive_state_stage0_kernel_projection',
+    source_dialogue_id: job.id,
+    latent_pair_id: job.latent_pair_id,
+    realizer_id: job.language_realizer.id,
+    benchmark_stratum:
+      turn >= 1 && turn <= job.scored_transitions
+        ? benchmarkStratum(job, turn)
+        : {
+            world_id: job.world.id,
+            generator_id: job.latent_generator.id,
+            action_id: turn === 0 ? 'bootstrap_public_observation' : 'terminal_observation',
+            turn,
+          },
+  };
+}
+
+function inputForRealizer(envelope, transcript, action) {
+  return {
+    currentPublicActEnvelope: {
+      ...clone(envelope.current_public_act_envelope),
+      turn: Number(envelope.turn),
+    },
+    priorPublicTranscript: clone(transcript),
+    currentAction: action ? { action_type: action } : null,
+    publicWorldVocabulary: clone(envelope.public_world_vocabulary || {}),
+  };
+}
+
+function initialEvent(adapter) {
+  return adapter.noneEvent({ semanticRole: 'initial_public_learner_state' });
+}
+
+function publicObservationSummary(observation, realizedEventIds) {
+  return {
+    turn: observation.turn,
+    learner_text: observation.learner_text,
+    realized_public_event_ids: [...realizedEventIds],
+    dag: clone(observation.dag),
+    classifier: clone(observation.classifier),
+    human_discourse: clone(observation.human_discourse),
+    axes: clone(observation.axes),
+    runtime_field_trajectory: clone(observation.runtime_field_trajectory),
+  };
+}
+
+function runDialogue(job, adapter) {
+  const kernel = adaptiveStateLearnerKernel(job.latent_generator.id);
+  const state0 = kernel.initialize({ adapter, seed: job.seed });
+  const bootstrapEvent = initialEvent(adapter);
+  const bootstrapRecord = kernel.turnRecord({
+    adapter,
+    turn: 0,
+    learnerText: '',
+    state: state0,
+    event: bootstrapEvent,
+  });
+  const bootstrapObservation = buildTutorStubStateObservation({
+    turnRecord: bootstrapRecord,
+    provenance: observationProvenance(job, 0),
+  });
+
+  const transcript = [];
+  const initialEnvelope = kernel.initialPublicEnvelope({ adapter, state: state0, turn: 1 });
+  const initialRealized = realizeAdaptiveStateStage0LearnerTurn({
+    realizerId: job.language_realizer.id,
+    ...inputForRealizer(initialEnvelope, transcript, null),
+  });
+  transcript.push({ turn: 1, role: 'learner', text: initialRealized.learner_text });
+  const firstRecord = kernel.turnRecord({
+    adapter,
+    turn: 1,
+    learnerText: initialRealized.learner_text,
+    state: state0,
+    event: bootstrapEvent,
+  });
+  const turnRecords = [bootstrapRecord, firstRecord];
+  const observations = [bootstrapObservation];
+  observations.push(
+    buildTutorStubStateObservation({
+      turnRecord: firstRecord,
+      previousObservation: bootstrapObservation,
+      previousTurnRecords: [bootstrapRecord],
+      provenance: observationProvenance(job, 1),
+    }),
+  );
+  const realizedEventIds = [[], initialRealized.realized_public_event_ids];
+  const transitions = [];
+  let state = state0;
+  for (let index = 0; index < job.action_schedule.length; index += 1) {
+    const predictionTurn = index + 1;
+    const action = job.action_schedule[index];
+    const forecast = kernel.oracleBeforeSample({
+      adapter,
+      state,
+      action,
+      turn: predictionTurn,
+      seed: job.seed,
+    });
+    const transition = kernel.transition({
+      adapter,
+      state,
+      action,
+      turn: predictionTurn,
+      seed: job.seed,
+      forecast,
+    });
+    const realized = realizeAdaptiveStateStage0LearnerTurn({
+      realizerId: job.language_realizer.id,
+      ...inputForRealizer(transition.public_envelope, transcript, action),
+    });
+    const expectedIds = transition.public_envelope.required_realizer_output.realized_public_event_ids;
+    if (JSON.stringify(realized.realized_public_event_ids) !== JSON.stringify(expectedIds)) {
+      throw new Error(`stateBenchmarkStage0: realizer changed the semantic event in ${job.id} turn ${predictionTurn + 1}`);
+    }
+    transcript.push({ turn: predictionTurn + 1, role: 'learner', text: realized.learner_text });
+    const record = kernel.turnRecord({
+      adapter,
+      turn: predictionTurn + 1,
+      learnerText: realized.learner_text,
+      state: transition.next_state,
+      event: transition.event,
+    });
+    const priorRecords = [...turnRecords];
+    const previousObservation = observations.at(-1);
+    turnRecords.push(record);
+    observations.push(
+      buildTutorStubStateObservation({
+        turnRecord: record,
+        previousObservation,
+        previousTurnRecords: priorRecords,
+        provenance: observationProvenance(job, predictionTurn + 1),
+      }),
+    );
+    realizedEventIds.push(realized.realized_public_event_ids);
+    transitions.push(transition);
+    state = transition.next_state;
+  }
+  return {
+    job,
+    adapter,
+    task: taskForAdapter(adapter),
+    observations,
+    transitions,
+    public: {
+      schema: ADAPTIVE_STATE_STAGE0_DIALOGUE_V2_SCHEMA,
+      id: job.id,
+      latent_pair_id: job.latent_pair_id,
+      cell_id: job.cell_id,
+      world_id: job.world.id,
+      generator_id: job.latent_generator.id,
+      realizer_id: job.language_realizer.id,
+      repetition: job.repetition,
+      seed: job.seed,
+      action_schedule: [...job.action_schedule],
+      bootstrap_public_observations: job.bootstrap_public_observations,
+      learner_turns: job.learner_turns,
+      scored_transitions: job.scored_transitions,
+      deterministic_realizer_calls: job.learner_turns,
+      model_calls: 0,
+      observations: observations.map((observation, index) =>
+        publicObservationSummary(observation, realizedEventIds[index] || []),
+      ),
+      target_sequence: transitions.map((transition) => clone(transition.targets)),
+      transition_audit: transitions.map((transition) => ({
+        prediction_turn: transition.prediction_turn,
+        realized_turn: transition.realized_turn,
+        plan_sha256: transition.plan_sha256,
+        selected_branch_id: transition.selected_branch_id,
+        audit_sequence: [...transition.audit_sequence],
+      })),
+    },
+  };
+}
+
+function donorFor(dialogues, recipient) {
+  const candidates = dialogues
+    .filter(
+      (row) =>
+        row.job.id !== recipient.job.id &&
+        row.job.world.id === recipient.job.world.id &&
+        row.job.latent_generator.id === recipient.job.latent_generator.id &&
+        row.job.language_realizer.id === recipient.job.language_realizer.id &&
+        row.job.seed !== recipient.job.seed,
+    )
+    .sort((left, right) => left.job.repetition - right.job.repetition || left.job.id.localeCompare(right.job.id));
+  if (!candidates.length) throw new Error(`stateBenchmarkStage0: no different-seed donor for ${recipient.job.id}`);
+  return candidates[0];
+}
+
+function rowFor(dialogue, donor, transitionIndex) {
+  const turn = transitionIndex + 1;
+  const currentObservation = dialogue.observations[turn];
+  const nextObservation = dialogue.observations[turn + 1];
+  const previousObservation = dialogue.observations[turn - 1];
+  const donorObservation = donor.observations[turn];
+  const transition = dialogue.transitions[transitionIndex];
+  const targets = buildAdaptiveStateTargetsV2({
+    currentObservation,
+    nextObservation,
+    proofTransition: transition.proof_transition,
+  });
+  if (JSON.stringify(targets) !== JSON.stringify(transition.targets)) {
+    throw new Error(`stateBenchmarkStage0: target harness mismatch in ${dialogue.job.id} turn ${turn}`);
+  }
+  const representations = buildAdaptiveStateRepresentationsV2({
+    observation: currentObservation,
+    task: dialogue.task,
+    previousObservation,
+    matchedDagDonorObservation: donorObservation,
+    matchedFieldDonorObservation: donorObservation,
+    oracleState: transition.oracle_before_sample,
+  });
+  return {
+    schema: ADAPTIVE_STATE_BENCHMARK_ROW_V2_SCHEMA,
+    version: '2.0',
+    id: `${dialogue.job.id}__predict_t${turn}`,
+    stage: 's0_contract',
+    turn,
+    groups: {
+      dialogue_id: dialogue.job.id,
+      latent_pair_id: dialogue.job.latent_pair_id,
+      cell_id: dialogue.job.cell_id,
+      world_id: dialogue.job.world.id,
+      generator_id: dialogue.job.latent_generator.id,
+      realizer_id: dialogue.job.language_realizer.id,
+      repetition: dialogue.job.repetition,
+      seed: dialogue.job.seed,
+    },
+    action: {
+      schema: 'machinespirits.adaptive-state-common-action.v2',
+      id: dialogue.job.action_schedule[transitionIndex],
+      action_type: dialogue.job.action_schedule[transitionIndex],
+    },
+    representations,
+    targets,
+    proof_transition: clone(transition.proof_transition),
+    controls: {
+      scramble_donor_dialogue_id: donor.job.id,
+      scramble_donor_seed: donor.job.seed,
+      scramble_donor_turn: turn,
+      stale_observation_turn: previousObservation.turn,
+    },
+    provenance: {
+      prediction_origin: 'after_learner_observation_before_frozen_action',
+      oracle_captured_before_sampling: transition.audit_sequence[0] === 'oracle_captured_before_transition_sampling',
+      transition_plan_sha256: transition.plan_sha256,
+      world_sha256: dialogue.adapter.world_sha256,
+      transition_kernel_sha256: transition.oracle_before_sample.kernel_provenance.transition_kernel_sha256,
+      deterministic_realizer: dialogue.job.language_realizer.model_ref,
+      model_calls: 0,
+    },
+  };
+}
+
+function worldLocalIds(config, repoRoot) {
+  return config.critical_path.worlds.flatMap((row) => {
+    const raw = yaml.parse(fs.readFileSync(path.resolve(repoRoot, row.source), 'utf8'));
+    return (raw.premises || []).map((premise) => premise.id);
+  });
+}
+
+function datasetContent(dataset) {
+  const content = { ...dataset };
+  delete content.content_sha256;
+  return content;
+}
+
+export function adaptiveStateStage0DatasetContentSha256(dataset) {
+  return hashCanonicalJson(datasetContent(dataset));
+}
+
+export function validateAdaptiveStateStage0DatasetContentSha256(dataset) {
+  if (dataset?.content_sha256 !== adaptiveStateStage0DatasetContentSha256(dataset)) {
+    throw new Error('stateBenchmarkStage0: dataset content SHA-256 mismatch');
+  }
+  return true;
+}
+
+function readJsonLines(filePath) {
+  return fs
+    .readFileSync(filePath, 'utf8')
+    .split('\n')
+    .filter((line) => line.trim())
+    .map((line, index) => {
+      try {
+        return JSON.parse(line);
+      } catch (error) {
+        throw new Error(`stateBenchmarkStage0: invalid JSONL at ${filePath}:${index + 1}: ${error.message}`);
+      }
+    });
+}
+
+function artifactPath(runDir, descriptor) {
+  const filePath = path.resolve(runDir, descriptor.path);
+  const relative = path.relative(path.resolve(runDir), filePath);
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error('stateBenchmarkStage0: dataset artifact path escapes the run directory');
+  }
+  if (hashFile(filePath) !== descriptor.sha256) {
+    throw new Error(`stateBenchmarkStage0: dataset artifact hash mismatch for ${descriptor.path}`);
+  }
+  return filePath;
+}
+
+/** Reconstruct and checksum-verify the analyzer input from sealed artifacts. */
+export function loadAdaptiveStateStage0Dataset(runDir) {
+  const root = path.resolve(runDir);
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, 'dataset-manifest.json'), 'utf8'));
+  if (manifest.schema !== 'machinespirits.adaptive-state-stage0-dataset-manifest.v2') {
+    throw new Error('stateBenchmarkStage0: unsupported dataset manifest schema');
+  }
+  const dialogues = readJsonLines(artifactPath(root, manifest.files.dialogues_jsonl));
+  const rows = readJsonLines(artifactPath(root, manifest.files.benchmark_rows_jsonl));
+  const dataset = {
+    schema: manifest.dataset_schema,
+    version: manifest.dataset_version,
+    stage: manifest.stage,
+    confirmation_eligible: manifest.confirmation_eligible,
+    design_sha256: manifest.design_sha256,
+    config_sha256: manifest.config_sha256,
+    model_call_count: manifest.model_calls,
+    deterministic_realizer_call_count: manifest.deterministic_realizer_calls,
+    world_local_fact_ids: [...(manifest.audit_world_local_fact_ids || [])],
+    dialogues,
+    rows,
+    content_sha256: manifest.dataset_content_sha256,
+  };
+  validateAdaptiveStateStage0DatasetContentSha256(dataset);
+  return dataset;
+}
+
+export function buildAdaptiveStateStage0Dataset({ plan, config, repoRoot = path.resolve('.') } = {}) {
+  validateAdaptiveStateCriticalPathPlan(plan);
+  if (plan.stage !== 's0_contract' || plan.paid || plan.counts.expected_model_calls !== 0) {
+    throw new Error('stateBenchmarkStage0: executor accepts only the frozen zero-call S0 plan');
+  }
+  const adapters = new Map(
+    loadAdaptiveStateWorldAdapters(config.critical_path.worlds, { repoRoot }).map((adapter) => [adapter.id, adapter]),
+  );
+  const internalDialogues = plan.jobs.map((job) => {
+    const adapter = adapters.get(job.world.id);
+    if (!adapter) throw new Error(`stateBenchmarkStage0: missing world adapter ${job.world.id}`);
+    return runDialogue(job, adapter);
+  });
+  const rows = internalDialogues.flatMap((dialogue) => {
+    const donor = donorFor(internalDialogues, dialogue);
+    return dialogue.transitions.map((_transition, index) => rowFor(dialogue, donor, index));
+  });
+  const dataset = {
+    schema: ADAPTIVE_STATE_STAGE0_DATASET_V2_SCHEMA,
+    version: '2.0',
+    stage: 's0_contract',
+    confirmation_eligible: false,
+    design_sha256: plan.design_sha256,
+    config_sha256: plan.config_sha256,
+    model_call_count: 0,
+    deterministic_realizer_call_count: internalDialogues.reduce(
+      (sum, dialogue) => sum + dialogue.public.deterministic_realizer_calls,
+      0,
+    ),
+    world_local_fact_ids: worldLocalIds(config, repoRoot),
+    dialogues: internalDialogues.map((dialogue) => dialogue.public),
+    rows,
+  };
+  dataset.content_sha256 = adaptiveStateStage0DatasetContentSha256(dataset);
+  return dataset;
+}
