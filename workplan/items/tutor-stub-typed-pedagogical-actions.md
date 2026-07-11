@@ -1,14 +1,18 @@
 ---
 id: tutor-stub-typed-pedagogical-actions
 title: Adapt Plan 2 typed pedagogical actions into tutor-stub
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
 source: review
 created: 2026-07-11
 updated: 2026-07-11
-verification: "Tutor-stub consumes the existing Plan 2 action registry through an additive adapter that independently records move, support, task/KC, difficulty, register, expected evidence, and fade condition; realization and guard audits pass deterministic controls without creating a second action registry."
+verification: Tutor-stub consumes the existing Plan 2 action registry through an
+  additive adapter that independently records move, support, task/KC,
+  difficulty, register, expected evidence, and fade condition; realization and
+  guard audits pass deterministic controls without creating a second action
+  registry.
 claim_status: methods
 depends_on:
   - adaptive-eval-immutable-provenance

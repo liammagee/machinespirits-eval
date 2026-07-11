@@ -41,6 +41,9 @@ const DEFAULT_OUT = path.join(ROOT, 'exports', 'adaptive-state-benchmark-v2');
 const ANALYZER = path.join(ROOT, 'services', 'adaptiveTutor', 'stateBenchmarkStage0Analysis.js');
 const EXECUTOR = path.join(ROOT, 'services', 'adaptiveTutor', 'stateBenchmarkStage0Executor.js');
 const REALIZER = path.join(ROOT, 'services', 'adaptiveTutor', 'stateBenchmarkDeterministicRealizer.js');
+const BENCHMARK = path.join(ROOT, 'services', 'adaptiveTutor', 'stateBenchmarkV2.js');
+const STATE_ADAPTER = path.join(ROOT, 'services', 'adaptiveTutor', 'tutorStubStateAdapter.js');
+const FIELD_TRAJECTORY = path.join(ROOT, 'services', 'tutorStubFieldTrajectory.js');
 
 function arg(argv, name, fallback = null) {
   const index = argv.indexOf(`--${name}`);
@@ -108,8 +111,16 @@ function executionRunPlan({ plan, config, configPath, runSeed }) {
     },
     requiredObservedModelRoles: [],
     hashes: {
-      runner: aggregateFileHash([path.relative(ROOT, SCRIPT), path.relative(ROOT, EXECUTOR)]),
-      analyzer: hashFile(ANALYZER),
+      runner: aggregateFileHash([
+        path.relative(ROOT, SCRIPT),
+        path.relative(ROOT, EXECUTOR),
+        path.relative(ROOT, BENCHMARK),
+      ]),
+      analyzer: aggregateFileHash([
+        path.relative(ROOT, ANALYZER),
+        path.relative(ROOT, STATE_ADAPTER),
+        path.relative(ROOT, FIELD_TRAJECTORY),
+      ]),
       policy: aggregateFileHash(
         config.critical_path.latent_generators.flatMap(
           (row) => adaptiveStateLearnerKernel(row.id).metadata.source_files,
@@ -142,7 +153,7 @@ function executionRunPlan({ plan, config, configPath, runSeed }) {
 
 export function renderAdaptiveStateStage0Report(report) {
   const lines = [
-    '# Adaptive learner-state benchmark v2 — Stage 0',
+    '# Adaptive learner-state benchmark v2.1 — Stage 0',
     '',
     `Status: **${report.status}**`,
     `Decision: \`${report.decision}\``,
@@ -159,7 +170,7 @@ export function renderAdaptiveStateStage0Report(report) {
     '',
     ...Object.entries(report.instrument).map(
       ([target, row]) =>
-        `- \`${target}\`: oracle ${row.oracle_beats_no_state_on_both_metrics ? 'beats' : 'does not beat'} no-state on log loss and Brier`,
+        `- \`${target}\`: oracle ${row.oracle_beats_all_state_blind_baselines_on_both_metrics ? 'beats' : 'does not beat'} no-state, training-fold class-prior, and uniform on log loss and Brier`,
     ),
     '',
     ...(report.stop_reasons.length ? ['## Stop reasons', '', ...report.stop_reasons.map((reason) => `- \`${reason}\``), ''] : []),
@@ -174,7 +185,7 @@ export function renderAdaptiveStateStage0Report(report) {
 function datasetManifest(dataset, files) {
   return {
     schema: 'machinespirits.adaptive-state-stage0-dataset-manifest.v2',
-    version: '2.0',
+    version: dataset.version,
     stage: 's0_contract',
     confirmation_eligible: false,
     dataset_schema: dataset.schema,

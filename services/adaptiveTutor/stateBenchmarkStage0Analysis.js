@@ -9,6 +9,33 @@ const TARGET_LABELS = Object.freeze({
   next_dag_event_family: Object.freeze(['retract', 'derive', 'adopt', 'none']),
   next_proof_trajectory: Object.freeze(['advance', 'regress', 'stall']),
 });
+const EXPECTED_TARGET_CONTRACTS = Object.freeze([
+  Object.freeze({
+    id: 'next_dag_event_family',
+    labels: TARGET_LABELS.next_dag_event_family,
+    owner: 'transition_harness',
+  }),
+  Object.freeze({
+    id: 'next_proof_trajectory',
+    labels: TARGET_LABELS.next_proof_trajectory,
+    owner: 'world_normalized_proof_distance_and_debt_harness',
+  }),
+]);
+
+export const ADAPTIVE_STATE_STATE_BLIND_BASELINE_CONTRACT = Object.freeze({
+  class_prior: Object.freeze({
+    training_scope: 'each_training_fold_only',
+    smoothing: 'symmetric_dirichlet',
+    alpha: 1,
+    label_set: 'frozen_target_labels',
+    absent_class_behavior: 'alpha_smoothed_nonzero',
+    test_frequency_access: false,
+  }),
+  uniform: Object.freeze({
+    probability: 'one_over_frozen_label_count',
+    label_set: 'frozen_target_labels',
+  }),
+});
 
 const FORBIDDEN_NON_ORACLE_KEY = /(?:^|_)(?:future|target|oracle|hidden|private|answer_key)(?:_|$)/iu;
 
@@ -219,6 +246,129 @@ export function predictAdaptiveStateStage0Head(model, rows) {
   });
 }
 
+export function adaptiveStateStateBlindBaselineContractSha256(contract) {
+  if (hashCanonicalJson(contract) !== hashCanonicalJson(ADAPTIVE_STATE_STATE_BLIND_BASELINE_CONTRACT)) {
+    throw new Error('stateBenchmarkStage0: state-blind baseline contract differs from the frozen protocol');
+  }
+  return hashCanonicalJson(contract);
+}
+
+function validateStateBlindBaselineInputs(rows, target, labels) {
+  if (!Array.isArray(rows) || !rows.length) {
+    throw new Error('stateBenchmarkStage0: state-blind baseline needs rows');
+  }
+  if (!target || !Array.isArray(labels) || labels.length < 2 || new Set(labels).size !== labels.length) {
+    throw new Error('stateBenchmarkStage0: state-blind baseline needs distinct frozen target labels');
+  }
+  if (rows.some((row) => !labels.includes(String(row.targets?.[target])))) {
+    throw new Error(`stateBenchmarkStage0: unknown ${target} label for state-blind baseline`);
+  }
+}
+
+export function fitAdaptiveStateTrainingFoldClassPrior(
+  trainingRows,
+  { target, labels = TARGET_LABELS[target], contract = ADAPTIVE_STATE_STATE_BLIND_BASELINE_CONTRACT } = {},
+) {
+  validateStateBlindBaselineInputs(trainingRows, target, labels);
+  const contractSha256 = adaptiveStateStateBlindBaselineContractSha256(contract);
+  const alpha = Number(contract.class_prior.alpha);
+  const counts = Object.fromEntries(labels.map((label) => [label, 0]));
+  for (const row of trainingRows) counts[String(row.targets[target])] += 1;
+  const denominator = trainingRows.length + alpha * labels.length;
+  const probabilities = Object.fromEntries(
+    labels.map((label) => [label, (counts[label] + alpha) / denominator]),
+  );
+  return {
+    schema: 'machinespirits.adaptive-state-training-fold-class-prior.v2.1',
+    target,
+    labels: [...labels],
+    training_rows: trainingRows.length,
+    counts,
+    smoothing: { kind: 'symmetric_dirichlet', alpha },
+    probabilities,
+    contract_sha256: contractSha256,
+  };
+}
+
+export function predictAdaptiveStateTrainingFoldClassPrior(model, testingRows) {
+  validateStateBlindBaselineInputs(testingRows, model.target, model.labels);
+  if (
+    model.smoothing?.kind !== 'symmetric_dirichlet' ||
+    Number(model.smoothing?.alpha) !== 1 ||
+    Object.values(model.probabilities || {}).some((probability) => !(Number(probability) > 0))
+  ) {
+    throw new Error('stateBenchmarkStage0: invalid frozen class-prior model');
+  }
+  return testingRows.map((row) => ({
+    id: row.id,
+    dialogue_id: row.groups.dialogue_id,
+    truth: String(row.targets[model.target]),
+    probabilities: clone(model.probabilities),
+  }));
+}
+
+export function predictAdaptiveStateUniformBaseline(
+  rows,
+  { target, labels = TARGET_LABELS[target], contract = ADAPTIVE_STATE_STATE_BLIND_BASELINE_CONTRACT } = {},
+) {
+  validateStateBlindBaselineInputs(rows, target, labels);
+  adaptiveStateStateBlindBaselineContractSha256(contract);
+  const probabilities = Object.fromEntries(labels.map((label) => [label, 1 / labels.length]));
+  return rows.map((row) => ({
+    id: row.id,
+    dialogue_id: row.groups.dialogue_id,
+    truth: String(row.targets[target]),
+    probabilities: clone(probabilities),
+  }));
+}
+
+export function buildAdaptiveStateOutOfFoldStateBlindBaselines(
+  rows,
+  splitManifest,
+  {
+    target,
+    labels = TARGET_LABELS[target],
+    contract = ADAPTIVE_STATE_STATE_BLIND_BASELINE_CONTRACT,
+    laneId = 'world_transfer',
+  } = {},
+) {
+  validateStateBlindBaselineInputs(rows, target, labels);
+  const contractSha256 = adaptiveStateStateBlindBaselineContractSha256(contract);
+  const lane = splitManifest?.lanes?.find((candidate) => candidate.id === laneId);
+  if (!lane) throw new Error(`stateBenchmarkStage0: missing state-blind baseline lane ${laneId}`);
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const classPriorPredictions = [];
+  const models = [];
+  for (const fold of lane.folds) {
+    const training = fold.train_ids.map((id) => byId.get(id));
+    const testing = fold.test_ids.map((id) => byId.get(id));
+    if (training.some((row) => !row) || testing.some((row) => !row)) {
+      throw new Error(`stateBenchmarkStage0: state-blind baseline fold ${fold.id} references an unknown row`);
+    }
+    const model = fitAdaptiveStateTrainingFoldClassPrior(training, { target, labels, contract });
+    models.push({
+      fold: fold.id,
+      training_rows: model.training_rows,
+      counts: clone(model.counts),
+      probabilities: clone(model.probabilities),
+      contract_sha256: model.contract_sha256,
+    });
+    classPriorPredictions.push(...predictAdaptiveStateTrainingFoldClassPrior(model, testing));
+  }
+  if (
+    classPriorPredictions.length !== rows.length ||
+    new Set(classPriorPredictions.map((row) => row.id)).size !== rows.length
+  ) {
+    throw new Error('stateBenchmarkStage0: state-blind baseline folds do not predict every row exactly once');
+  }
+  return {
+    contract: clone(contract),
+    contract_sha256: contractSha256,
+    class_prior: { predictions: classPriorPredictions, folds: models },
+    uniform: { predictions: predictAdaptiveStateUniformBaseline(rows, { target, labels, contract }) },
+  };
+}
+
 function normalizedProbabilities(probabilities, labels) {
   const values = Object.fromEntries(labels.map((label) => [label, Math.max(0, Number(probabilities?.[label] || 0))]));
   const total = Object.values(values).reduce((sum, value) => sum + value, 0);
@@ -285,7 +435,7 @@ export function buildAdaptiveStateStage0SplitManifest(rows, config) {
   });
   const manifest = {
     schema: ADAPTIVE_STATE_SPLIT_MANIFEST_V2_SCHEMA,
-    version: '2.0',
+    version: config.version,
     stage: 's0_contract',
     confirmation_eligible: false,
     atomic_unit: 'dialogue_id',
@@ -320,7 +470,7 @@ function scanForbidden(value, localIds, path = 'representation') {
   return failures;
 }
 
-export function auditAdaptiveStateStage0Dataset(dataset, plan, _config) {
+export function auditAdaptiveStateStage0Dataset(dataset, plan, config) {
   const rows = dataset.rows || [];
   const dialogues = dataset.dialogues || [];
   const failures = [];
@@ -394,6 +544,21 @@ export function auditAdaptiveStateStage0Dataset(dataset, plan, _config) {
     }
   }
   if (degeneracy.length) failures.push('target_degenerate_within_generator');
+  const targetContracts = config.targets.co_primary.map((target) => ({
+    id: target.id,
+    labels: [...target.labels],
+    owner: target.owner,
+  }));
+  if (
+    hashCanonicalJson(targetContracts) !== hashCanonicalJson(EXPECTED_TARGET_CONTRACTS) ||
+    hashCanonicalJson(targetContracts.map((target) => target.id)) !==
+      hashCanonicalJson(plan.co_primary_targets) ||
+    rows.some((row) =>
+      targetContracts.some((target) => !target.labels.includes(String(row.targets?.[target.id]))),
+    )
+  ) {
+    failures.push('target_contract_mismatch');
+  }
   const pairedTargetDrift = [];
   const byLatentPair = new Map();
   for (const row of rows) {
@@ -434,6 +599,7 @@ export function auditAdaptiveStateStage0Dataset(dataset, plan, _config) {
     },
     leakage: { count: leakagePaths.length, paths: leakagePaths.slice(0, 20) },
     target_degeneracy: degeneracy,
+    target_contracts: targetContracts,
     paired_realizer_target_drift: pairedTargetDrift,
   };
 }
@@ -487,43 +653,107 @@ export function validateAdaptiveStateStage0ReportContentSha256(report) {
   if (report?.content_sha256 !== adaptiveStateStage0ReportContentSha256(report)) {
     throw new Error('stateBenchmarkStage0: report content SHA-256 mismatch');
   }
+  if (
+    report.schema !== ADAPTIVE_STATE_STAGE0_REPORT_V2_SCHEMA ||
+    report.stage !== 's0_contract' ||
+    report.confirmation_eligible !== false ||
+    report.s2_validity_verdict !== null ||
+    report.protocol?.gate_eligible !== false ||
+    hashCanonicalJson(report.protocol?.target_contracts) !== hashCanonicalJson(EXPECTED_TARGET_CONTRACTS)
+  ) {
+    throw new Error('stateBenchmarkStage0: report contract differs from the frozen non-confirmatory protocol');
+  }
   return true;
 }
 
 export function buildAdaptiveStateStage0Report({ dataset, plan, config, splitManifest, replay }) {
   const audit = auditAdaptiveStateStage0Dataset(dataset, plan, config);
   const instrument = {};
+  const baselineContract = config.analysis.state_blind_baseline_contract;
+  const baselineContractSha256 = adaptiveStateStateBlindBaselineContractSha256(baselineContract);
+  const baselineSanity = {
+    passed: true,
+    contract: clone(baselineContract),
+    contract_sha256: baselineContractSha256,
+    targets: {},
+  };
   let oraclePass = true;
   let allHeadsConverged = true;
   for (const target of plan.co_primary_targets) {
     const labels = TARGET_LABELS[target];
     const baseline = outOfFoldNoStatePredictions(dataset.rows, splitManifest, target, config);
+    const stateBlind = buildAdaptiveStateOutOfFoldStateBlindBaselines(dataset.rows, splitManifest, {
+      target,
+      labels,
+      contract: baselineContract,
+    });
     const noStateMetrics = adaptiveStateStage0PredictionMetrics(baseline.predictions, labels);
+    const classPriorMetrics = adaptiveStateStage0PredictionMetrics(stateBlind.class_prior.predictions, labels);
+    const uniformMetrics = adaptiveStateStage0PredictionMetrics(stateBlind.uniform.predictions, labels);
     const oracleMetrics = adaptiveStateStage0PredictionMetrics(oraclePredictions(dataset.rows, target), labels);
-    const beats =
-      oracleMetrics.log_loss < noStateMetrics.log_loss && oracleMetrics.brier_score < noStateMetrics.brier_score;
+    const stateBlindMetrics = {
+      no_state: noStateMetrics,
+      class_prior: classPriorMetrics,
+      uniform: uniformMetrics,
+    };
+    const beats = Object.fromEntries(
+      Object.entries(stateBlindMetrics).map(([id, metrics]) => [
+        id,
+        oracleMetrics.log_loss < metrics.log_loss && oracleMetrics.brier_score < metrics.brier_score,
+      ]),
+    );
+    const beatsAll = Object.values(beats).every(Boolean);
     allHeadsConverged &&= baseline.models.every((row) => row.converged);
-    oraclePass &&= beats;
+    oraclePass &&= beatsAll;
+    const expectedUniform = 1 / labels.length;
+    const sanityPassed =
+      stateBlind.class_prior.folds.every(
+        (fold) =>
+          Object.values(fold.probabilities).every((probability) => Number(probability) > 0) &&
+          Math.abs(Object.values(fold.probabilities).reduce((sum, value) => sum + value, 0) - 1) < 1e-12,
+      ) &&
+      stateBlind.uniform.predictions.every((prediction) =>
+        labels.every((label) => prediction.probabilities[label] === expectedUniform),
+      );
+    baselineSanity.passed &&= sanityPassed;
+    baselineSanity.targets[target] = {
+      passed: sanityPassed,
+      class_prior_folds: clone(stateBlind.class_prior.folds),
+      uniform_probability: expectedUniform,
+      no_test_frequency_access: true,
+    };
     instrument[target] = {
       oracle: oracleMetrics,
       no_state: noStateMetrics,
-      delta_baseline_minus_oracle: {
-        log_loss: noStateMetrics.log_loss - oracleMetrics.log_loss,
-        brier_score: noStateMetrics.brier_score - oracleMetrics.brier_score,
-      },
-      oracle_beats_no_state_on_both_metrics: beats,
+      class_prior: classPriorMetrics,
+      uniform: uniformMetrics,
+      delta_state_blind_minus_oracle: Object.fromEntries(
+        Object.entries(stateBlindMetrics).map(([id, metrics]) => [
+          id,
+          {
+            log_loss: metrics.log_loss - oracleMetrics.log_loss,
+            brier_score: metrics.brier_score - oracleMetrics.brier_score,
+          },
+        ]),
+      ),
+      oracle_beats_each_state_blind_baseline_on_both_metrics: beats,
+      oracle_beats_all_state_blind_baselines_on_both_metrics: beatsAll,
+      // Compatibility diagnostic retained for existing S0 readers.
+      oracle_beats_no_state_on_both_metrics: beats.no_state,
       no_state_folds: baseline.models,
+      class_prior_folds: clone(stateBlind.class_prior.folds),
     };
   }
   const replayPassed = replay?.passed === true;
   const stopReasons = [...audit.failures];
   if (!allHeadsConverged) stopReasons.push('fixed_head_nonconvergence');
-  if (!oraclePass) stopReasons.push('oracle_failed_to_beat_no_state');
+  if (!baselineSanity.passed) stopReasons.push('state_blind_baseline_sanity_failure');
+  if (!oraclePass) stopReasons.push('oracle_fails_to_beat_all_state_blind_baselines_on_both_primary_targets');
   if (!replayPassed) stopReasons.push('deterministic_replay_failure');
   const passed = stopReasons.length === 0;
   const report = {
     schema: ADAPTIVE_STATE_STAGE0_REPORT_V2_SCHEMA,
-    version: '2.0',
+    version: config.version,
     stage: 's0_contract',
     status: passed ? 'pass' : 'stop',
     confirmation_eligible: false,
@@ -553,6 +783,17 @@ export function buildAdaptiveStateStage0Report({ dataset, plan, config, splitMan
         regularization_scaling: config.analysis.fixed_head_contract.regularization.scaling,
         all_folds_converged: allHeadsConverged,
       },
+      state_blind_baselines: {
+        ids: ['no_state', 'class_prior', 'uniform'],
+        contract: clone(baselineContract),
+        contract_sha256: baselineContractSha256,
+        no_test_time_baseline_selection: true,
+      },
+      target_contracts: config.targets.co_primary.map((target) => ({
+        id: target.id,
+        labels: [...target.labels],
+        owner: target.owner,
+      })),
       primary_lane: 'world_transfer',
       uncertainty_applied: false,
       gate_eligible: false,
@@ -560,6 +801,7 @@ export function buildAdaptiveStateStage0Report({ dataset, plan, config, splitMan
     },
     structural_audit: audit,
     deterministic_replay: clone(replay),
+    baseline_sanity: baselineSanity,
     instrument,
     stop_reasons: [...new Set(stopReasons)],
   };

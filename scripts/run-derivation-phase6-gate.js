@@ -22,6 +22,7 @@ import {
   createRunSeal,
   hashCanonicalJson,
   hashFile,
+  readRunEvents,
   validateExperimentRunPlan,
 } from '../services/experimentRunArtifacts.js';
 import { resolveTarget } from '../services/dramaticDerivation/llmClient.js';
@@ -31,7 +32,6 @@ import { loadWorld } from '../services/dramaticDerivation/world.js';
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const LOOP_SCRIPT = path.join(ROOT, 'scripts', 'run-derivation-loop.js');
-const FIELD_PLANNER = path.join(ROOT, 'services', 'dramaticDerivation', 'fieldPlanner.js');
 const PHASE6_VERDICT_EVALUATOR = path.join(ROOT, 'services', 'dramaticDerivation', 'phase6Verdict.js');
 const PHASE6_DECISION_RULES = path.join(ROOT, 'PLAN_4_0', 'PHASE_6_EVIDENCE_GATE_PLAN.md');
 const PHASE6_CONTRACT_PATH = path.join(ROOT, 'config', 'drama-derivation', 'phase6-field-planner-gate-v2.json');
@@ -107,6 +107,26 @@ const ARM_REGISTRY = Object.freeze({
 
 const DEFAULT_ARMS = ['baseline', 'field_report_only', 'field_planner_advisory', 'field_planner_enforce'];
 const DEFAULT_BASE_FLAGS = Object.freeze({ ...PHASE6_CONTRACT.baseFlags });
+const PHASE6_ROW_COMPLETION_SCHEMA = 'machinespirits.derivation.phase6a-row-completion.v2';
+const PHASE6_REAL_CONCURRENCY = 1;
+const PHASE6_DEFAULT_CLI_TIMEOUT_MS = 360_000;
+const PHASE6_DEFAULT_CODEX_EFFORT = 'medium';
+const PHASE6_REQUIRED_HASH_KINDS = Object.freeze([
+  'runner',
+  'analyzer',
+  'policy',
+  'profile',
+  'prompt',
+  'script',
+  'world',
+  'config',
+]);
+const PHASE6_CLI_PROVIDERS = Object.freeze({ codex: 'codex', claude: 'claude' });
+const PHASE6_INDETERMINATE_STATUS = 'indeterminate_same_label_forbidden';
+const PHASE6_CHILD_KILL_GRACE_MS = 5_000;
+
+const activePhase6Children = new Map();
+let phase6InterruptSignal = null;
 
 function arg(argv, name, fallback = null) {
   const i = argv.indexOf(`--${name}`);
@@ -177,6 +197,40 @@ function priorProvisionalMetadata(prior = null) {
   };
 }
 
+function phase6ParentPlanProvenanceBlockers(plan = {}) {
+  const blockers = [];
+  const runtime = plan.metadata?.phase6ModelRuntime;
+  const cliFingerprints = plan.metadata?.phase6CliFingerprints;
+  if (plan.provenance?.git?.dirty !== false || !String(plan.provenance?.git?.sha || '').trim()) {
+    blockers.push('parent Git provenance must name a clean committed SHA');
+  }
+  if (hashCanonicalJson(plan.requiredHashKinds) !== hashCanonicalJson([...PHASE6_REQUIRED_HASH_KINDS].sort())) {
+    blockers.push('parent required hash kinds differ from the Phase 6A source contract');
+  }
+  if (
+    PHASE6_REQUIRED_HASH_KINDS.some((kind) => !/^[0-9a-f]{64}$/u.test(String(plan.hashes?.[kind] || '')))
+  ) {
+    blockers.push('parent source hash set is incomplete');
+  }
+  if (
+    !runtime ||
+    plan.metadata?.phase6ModelRuntimeSha256 !== hashCanonicalJson(runtime) ||
+    hashCanonicalJson(plan.models) !== hashCanonicalJson(evidenceModels('real', runtime))
+  ) {
+    blockers.push('parent frozen role models/runtime are internally inconsistent');
+  }
+  if (
+    !cliFingerprints ||
+    plan.metadata?.phase6CliFingerprintsSha256 !== hashCanonicalJson(cliFingerprints)
+  ) {
+    blockers.push('parent CLI executable/version fingerprints are internally inconsistent');
+  }
+  if (Number(plan.metadata?.executionConcurrency) !== PHASE6_REAL_CONCURRENCY) {
+    blockers.push('parent paid execution was not frozen at concurrency 1');
+  }
+  return blockers;
+}
+
 export function loadPriorProvisionalReport(requestedPath) {
   if (!requestedPath) return null;
   const reportPath = resolveFromRoot(requestedPath);
@@ -190,6 +244,7 @@ export function loadPriorProvisionalReport(requestedPath) {
   const contractSha256 = hashFile(PHASE6_CONTRACT_PATH);
   const evaluatorSha256 = hashFile(PHASE6_VERDICT_EVALUATOR);
   const reevaluated = evaluatePhase6Verdict(report, PHASE6_CONTRACT);
+  const parentProvenanceBlockers = phase6ParentPlanProvenanceBlockers(verification.plan);
   if (
     verification.seal?.status !== 'complete' ||
     report.mode !== 'real' ||
@@ -205,7 +260,8 @@ export function loadPriorProvisionalReport(requestedPath) {
     verification.plan?.metadata?.phase6VerdictEvaluatorSha256 !== evaluatorSha256 ||
     hashCanonicalJson(verification.plan?.intent?.phase6Gate?.decisionContract) !== hashCanonicalJson(PHASE6_CONTRACT) ||
     reevaluated.verdict !== 'provisional_promote' ||
-    reevaluated.winner !== report.decision.winner
+    reevaluated.winner !== report.decision.winner ||
+    parentProvenanceBlockers.length
   ) {
     throw new Error(
       'Phase 6A seeds 6-10 require a sealed, hash-compatible real k=5 provisional_promote report reproduced by the current evaluator',
@@ -223,7 +279,18 @@ export function loadPriorProvisionalReport(requestedPath) {
     verdictEvaluatorSha256: evaluatorSha256,
     report: rel(reportPath),
     reportSha256: hashFile(reportPath),
-    sealSha256: verification.sealSha256 || hashFile(path.join(gateDir, 'run-seal.json')),
+    sealSha256: hashFile(path.join(gateDir, 'run-seal.json')),
+    planSha256: verification.seal.planSha256,
+    inventorySha256: verification.seal.inventorySha256,
+    git: structuredClone(verification.plan.provenance.git),
+    requiredHashKinds: structuredClone(verification.plan.requiredHashKinds),
+    hashes: structuredClone(verification.plan.hashes),
+    models: structuredClone(verification.plan.models),
+    phase6ModelRuntime: structuredClone(verification.plan.metadata.phase6ModelRuntime),
+    phase6ModelRuntimeSha256: verification.plan.metadata.phase6ModelRuntimeSha256,
+    phase6CliFingerprints: structuredClone(verification.plan.metadata.phase6CliFingerprints),
+    phase6CliFingerprintsSha256: verification.plan.metadata.phase6CliFingerprintsSha256,
+    executionConcurrency: verification.plan.metadata.executionConcurrency,
     rows: evidenceRows.map(phase6EvidenceRow),
   };
 }
@@ -258,8 +325,30 @@ export function assertPhase6ForcePolicy({ mode, force = false } = {}) {
   }
 }
 
+export function assertPhase6PaidConfirmation({ mode, confirmed = false } = {}) {
+  if (mode === 'real' && !confirmed) {
+    throw new Error('Paid Phase 6A is locked; pass --confirm-paid-phase6a-v2 after reviewing the frozen protocol');
+  }
+}
+
+export function assertPhase6ConcurrencyPolicy({ mode, concurrency } = {}) {
+  if (mode === 'real' && Number(concurrency) !== PHASE6_REAL_CONCURRENCY) {
+    throw new Error('Real Phase 6A requires --concurrency 1');
+  }
+}
+
 function manifestMatrixBlockers(manifest) {
   const blockers = [];
+  const expectedSchedule = balancedArmOrderSchedule(manifest.worlds || [], manifest.seeds || [], manifest.arms || []);
+  if (hashCanonicalJson(manifest.armOrderSchedule) !== hashCanonicalJson(expectedSchedule)) {
+    blockers.push('manifest arm order differs from the frozen deterministic balanced rotation');
+  }
+  const expectedRowOrder = expectedSchedule.flatMap((entry) =>
+    entry.arms.map((armKey) => `${entry.worldKey}-${armKey}-s${entry.seed}`),
+  );
+  if (hashCanonicalJson((manifest.rows || []).map((row) => row.id)) !== hashCanonicalJson(expectedRowOrder)) {
+    blockers.push('manifest row order differs from the frozen deterministic arm-order schedule');
+  }
   const expected = new Set();
   for (const world of manifest.worlds || []) {
     for (const seed of manifest.seeds || []) {
@@ -358,6 +447,22 @@ export function phase6RealGateProtocolBlockers(manifest = {}) {
         !String(manifest.priorProvisional?.parentRunId || '').trim() ||
         !/^[0-9a-f]{64}$/u.test(String(manifest.priorProvisional?.reportSha256 || '')) ||
         !/^[0-9a-f]{64}$/u.test(String(manifest.priorProvisional?.sealSha256 || '')) ||
+        !/^[0-9a-f]{64}$/u.test(String(manifest.priorProvisional?.planSha256 || '')) ||
+        !/^[0-9a-f]{64}$/u.test(String(manifest.priorProvisional?.inventorySha256 || '')) ||
+        manifest.priorProvisional?.git?.dirty !== false ||
+        !String(manifest.priorProvisional?.git?.sha || '').trim() ||
+        hashCanonicalJson(manifest.priorProvisional?.requiredHashKinds) !==
+          hashCanonicalJson([...PHASE6_REQUIRED_HASH_KINDS].sort()) ||
+        PHASE6_REQUIRED_HASH_KINDS.some(
+          (kind) => !/^[0-9a-f]{64}$/u.test(String(manifest.priorProvisional?.hashes?.[kind] || '')),
+        ) ||
+        hashCanonicalJson(Object.keys(manifest.priorProvisional?.models || {}).sort()) !==
+          hashCanonicalJson(['director', 'learner', 'tutor']) ||
+        manifest.priorProvisional?.phase6ModelRuntimeSha256 !==
+          hashCanonicalJson(manifest.priorProvisional?.phase6ModelRuntime) ||
+        manifest.priorProvisional?.phase6CliFingerprintsSha256 !==
+          hashCanonicalJson(manifest.priorProvisional?.phase6CliFingerprints) ||
+        Number(manifest.priorProvisional?.executionConcurrency) !== PHASE6_REAL_CONCURRENCY ||
         !Array.isArray(manifest.priorProvisional?.rows) ||
         manifest.priorProvisional.rows.length !==
           PHASE6_CONTRACT.worlds.length * PHASE6_CONTRACT.arms.length * firstSeeds.length)
@@ -424,6 +529,7 @@ function gateDesign(manifest) {
     seeds: manifest.seeds,
     decay: manifest.decay,
     baseFlags: manifest.baseFlags,
+    armOrderSchedule: manifest.armOrderSchedule,
     rows: manifest.rows.map((row) => ({
       id: row.id,
       worldKey: row.worldKey,
@@ -436,6 +542,20 @@ function gateDesign(manifest) {
       decay: row.decay,
     })),
   };
+}
+
+export function balancedArmOrderSchedule(worldKeys, seeds, armKeys) {
+  return worldKeys.flatMap((worldKey, worldIndex) =>
+    seeds.map((seed, seedIndex) => {
+      const offset = (worldIndex * seeds.length + seedIndex) % armKeys.length;
+      return {
+        worldKey,
+        seed: String(seed),
+        offset,
+        arms: [...armKeys.slice(offset), ...armKeys.slice(0, offset)],
+      };
+    }),
+  );
 }
 
 function logicalArg(value, manifest) {
@@ -460,26 +580,128 @@ function hashFileSet(paths) {
   );
 }
 
-function evidenceModels(mode) {
+function phase6CliFingerprint(command) {
+  const lookup = spawnSync('/usr/bin/which', [command], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    timeout: 10_000,
+  });
+  if (lookup.error || lookup.status !== 0 || !lookup.stdout.trim()) {
+    throw new Error(`Cannot freeze ${command} CLI executable: ${lookup.error?.message || lookup.stderr.trim()}`);
+  }
+  const executableRealpath = fs.realpathSync(lookup.stdout.trim());
+  const versionResult = spawnSync(executableRealpath, ['--version'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    timeout: 10_000,
+    maxBuffer: 256 * 1024,
+  });
+  const version = String(versionResult.stdout || versionResult.stderr || '').trim();
+  if (versionResult.error || versionResult.status !== 0 || !version) {
+    throw new Error(
+      `Cannot freeze ${command} CLI version: ${versionResult.error?.message || versionResult.stderr.trim()}`,
+    );
+  }
+  return {
+    command,
+    executable_realpath: executableRealpath,
+    version,
+  };
+}
+
+export function phase6CliFingerprints(runtime = {}) {
+  const providers = [
+    ...new Set(
+      Object.values(runtime)
+        .filter((row) => row?.transport === 'cli')
+        .map((row) => row.provider),
+    ),
+  ].sort();
   return Object.fromEntries(
-    ['director', 'tutor', 'learner'].map((role) => {
-      const resolved = mode === 'real' ? resolveTarget(role) : { provider: 'mock', model: 'mock' };
-      return [
-        role,
-        {
-          requested: requestedTarget(role, resolved, mode),
-          resolved: modelLabel(resolved),
-          observed: null,
-          ...(resolved.model ? {} : { allowCliDefaultResolution: true }),
-        },
-      ];
+    providers.map((provider) => {
+      const command = PHASE6_CLI_PROVIDERS[provider];
+      if (!command) throw new Error(`Phase 6A has no CLI fingerprint contract for provider ${provider}`);
+      return [provider, phase6CliFingerprint(command)];
     }),
   );
 }
 
-export function buildEvidencePlan(manifest, { masterSeed, dryRun, gitFingerprint = null }) {
+function phase6RoleRuntime(role, mode) {
+  const target = mode === 'real' ? resolveTarget(role) : { provider: 'mock', model: 'mock', cli: false };
+  if (mode === 'real' && !String(target.model || '').trim()) {
+    throw new Error(`Real Phase 6A requires an explicit ${role} model; CLI-default resolution is forbidden`);
+  }
+  const timeout = Number(process.env.DERIVATION_CLI_TIMEOUT_MS || PHASE6_DEFAULT_CLI_TIMEOUT_MS);
+  if (!Number.isSafeInteger(timeout) || timeout <= 0) {
+    throw new Error('DERIVATION_CLI_TIMEOUT_MS must be a positive integer for Phase 6A');
+  }
+  return {
+    role,
+    provider: target.provider,
+    transport: mode === 'real' ? (target.cli ? 'cli' : 'provider_api') : 'mock',
+    requested_model_ref: requestedTarget(role, target, mode),
+    resolved_model_ref: modelLabel(target),
+    effort:
+      target.provider === 'codex'
+        ? process.env.DERIVATION_CODEX_REASONING || PHASE6_DEFAULT_CODEX_EFFORT
+        : 'provider_managed',
+    timeout_ms: target.cli ? timeout : null,
+    timeout_scope: target.cli ? 'cli_process_wall_clock' : 'provider_managed',
+  };
+}
+
+export function phase6ModelRuntime(mode) {
+  return Object.fromEntries(
+    ['director', 'tutor', 'learner'].map((role) => [role, phase6RoleRuntime(role, mode)]),
+  );
+}
+
+function evidenceModels(mode, runtime = phase6ModelRuntime(mode)) {
+  return Object.fromEntries(
+    Object.entries(runtime).map(([role, row]) => [
+      role,
+      {
+        requested: row.requested_model_ref,
+        resolved: row.resolved_model_ref,
+        observed: null,
+      },
+    ]),
+  );
+}
+
+export function assertPhase6FrozenRuntime({ manifest, frozenPlan, concurrency } = {}) {
+  assertPhase6ConcurrencyPolicy({ mode: manifest?.mode, concurrency });
+  const currentRuntime = phase6ModelRuntime(manifest.mode);
+  const currentCliFingerprints = phase6CliFingerprints(currentRuntime);
+  if (
+    hashCanonicalJson(frozenPlan?.metadata?.phase6ModelRuntime) !== hashCanonicalJson(currentRuntime) ||
+    frozenPlan?.metadata?.phase6ModelRuntimeSha256 !== hashCanonicalJson(currentRuntime) ||
+    hashCanonicalJson(frozenPlan?.metadata?.phase6CliFingerprints) !== hashCanonicalJson(currentCliFingerprints) ||
+    frozenPlan?.metadata?.phase6CliFingerprintsSha256 !== hashCanonicalJson(currentCliFingerprints) ||
+    Number(frozenPlan?.metadata?.executionConcurrency) !== Number(concurrency) ||
+    hashCanonicalJson(frozenPlan?.models) !== hashCanonicalJson(evidenceModels(manifest.mode, currentRuntime))
+  ) {
+    throw new Error(
+      'Refusing to resume Phase 6 with different models, effort, timeouts, CLI executable/version, or concurrency',
+    );
+  }
+  return currentRuntime;
+}
+
+export function buildEvidencePlan(
+  manifest,
+  {
+    masterSeed,
+    dryRun,
+    gitFingerprint = null,
+    concurrency = manifest.mode === 'real' ? PHASE6_REAL_CONCURRENCY : 4,
+  },
+) {
   const design = gateDesign(manifest);
   const git = gitFingerprint || capturePhase6GitFingerprint();
+  assertPhase6ConcurrencyPolicy({ mode: manifest.mode, concurrency });
+  const modelRuntime = phase6ModelRuntime(manifest.mode);
+  const cliFingerprints = phase6CliFingerprints(modelRuntime);
   const jobs = manifest.rows.map((row) => ({
     id: row.id,
     worldKey: row.worldKey,
@@ -496,17 +718,24 @@ export function buildEvidencePlan(manifest, { masterSeed, dryRun, gitFingerprint
     createdAt: manifest.generatedAt,
     runner: 'scripts/run-derivation-phase6-gate.js',
     provenance: { git },
-    models: evidenceModels(manifest.mode),
+    models: evidenceModels(manifest.mode, modelRuntime),
+    requiredHashKinds: PHASE6_REQUIRED_HASH_KINDS,
     requiredObservedModelRoles: dryRun ? [] : ['director', 'tutor', 'learner'],
     hashes: {
-      runner: hashFile(__filename),
-      analyzer: hashFile(__filename),
-      policy: hashFile(FIELD_PLANNER),
+      runner: hashFileSet(['scripts/run-derivation-phase6-gate.js', 'scripts/run-derivation-loop.js']),
+      analyzer: hashFileSet([
+        'scripts/run-derivation-phase6-gate.js',
+        'services/dramaticDerivation/phase6Verdict.js',
+      ]),
+      policy: hashFileSet(['services/dramaticDerivation/fieldPlanner.js']),
       profile: hashCanonicalJson({ profile: manifest.profile, worlds: manifest.worlds, arms: manifest.arms }),
-      prompt: hashFileSet(manifest.rows.map((row) => row.script)),
+      prompt: hashFileSet([
+        'services/dramaticDerivation/llmRoles.js',
+        'services/dramaticDerivation/llmClient.js',
+      ]),
+      script: hashFileSet(manifest.rows.map((row) => row.script)),
       world: hashFileSet(manifest.rows.map((row) => row.world)),
       config: hashCanonicalJson({
-        design,
         decisionRulesSha256: hashFile(PHASE6_DECISION_RULES),
         decisionContractSha256: hashFile(PHASE6_CONTRACT_PATH),
         verdictEvaluatorSha256: hashFile(PHASE6_VERDICT_EVALUATOR),
@@ -516,7 +745,7 @@ export function buildEvidencePlan(manifest, { masterSeed, dryRun, gitFingerprint
     jobs,
     lineage: { parentRunId: manifest.priorProvisional?.parentRunId || null, resumeOf: null, supersedes: [] },
     intent: {
-      phase6Gate: design,
+      phase6Gate: { ...design, modelRuntime, concurrency },
       decisionRules: path.relative(ROOT, PHASE6_DECISION_RULES),
       claimBoundary: 'Mock validates plumbing only; real runs remain bounded tests of the frozen field planner.',
     },
@@ -525,8 +754,63 @@ export function buildEvidencePlan(manifest, { masterSeed, dryRun, gitFingerprint
       phase6DecisionRulesSha256: hashFile(PHASE6_DECISION_RULES),
       phase6DecisionContractSha256: hashFile(PHASE6_CONTRACT_PATH),
       phase6VerdictEvaluatorSha256: hashFile(PHASE6_VERDICT_EVALUATOR),
+      phase6ModelRuntime: modelRuntime,
+      phase6ModelRuntimeSha256: hashCanonicalJson(modelRuntime),
+      phase6CliFingerprints: cliFingerprints,
+      phase6CliFingerprintsSha256: hashCanonicalJson(cliFingerprints),
+      executionConcurrency: concurrency,
+      phase6ContinuationParentProvenance: priorProvisionalMetadata(manifest.priorProvisional),
     },
   });
+}
+
+export function phase6ContinuationCompatibilityBlockers({ manifest, plan } = {}) {
+  const parent = manifest?.priorProvisional;
+  if (!parent) return [];
+  const blockers = [];
+  if (
+    parent.git?.dirty !== false ||
+    plan?.provenance?.git?.dirty !== false ||
+    parent.git?.sha !== plan?.provenance?.git?.sha
+  ) {
+    blockers.push('parent and continuation must use the exact same clean Git SHA');
+  }
+  if (
+    hashCanonicalJson(parent.requiredHashKinds) !== hashCanonicalJson(plan?.requiredHashKinds) ||
+    hashCanonicalJson(parent.hashes) !== hashCanonicalJson(plan?.hashes)
+  ) {
+    blockers.push('parent and continuation runner/policy/world/script/prompt/profile/config hashes must match exactly');
+  }
+  if (hashCanonicalJson(parent.models) !== hashCanonicalJson(plan?.models)) {
+    blockers.push('parent and continuation frozen role model references must match exactly');
+  }
+  if (
+    parent.phase6ModelRuntimeSha256 !== plan?.metadata?.phase6ModelRuntimeSha256 ||
+    hashCanonicalJson(parent.phase6ModelRuntime) !== hashCanonicalJson(plan?.metadata?.phase6ModelRuntime)
+  ) {
+    blockers.push('parent and continuation role effort/timeout/runtime policies must match exactly');
+  }
+  if (
+    parent.phase6CliFingerprintsSha256 !== plan?.metadata?.phase6CliFingerprintsSha256 ||
+    hashCanonicalJson(parent.phase6CliFingerprints) !==
+      hashCanonicalJson(plan?.metadata?.phase6CliFingerprints)
+  ) {
+    blockers.push('parent and continuation CLI executable realpaths/versions must match exactly');
+  }
+  if (
+    Number(parent.executionConcurrency) !== PHASE6_REAL_CONCURRENCY ||
+    Number(plan?.metadata?.executionConcurrency) !== PHASE6_REAL_CONCURRENCY
+  ) {
+    blockers.push('parent and continuation paid execution must both be serial');
+  }
+  return blockers;
+}
+
+export function assertPhase6ContinuationCompatibility({ manifest, plan } = {}) {
+  const blockers = phase6ContinuationCompatibilityBlockers({ manifest, plan });
+  if (blockers.length) {
+    throw new Error(`Refusing Phase 6A seeds 6-10 continuation:\n- ${blockers.join('\n- ')}`);
+  }
 }
 
 function writeCompatibilityManifest(manifest) {
@@ -541,7 +825,10 @@ function writeCompatibilityManifest(manifest) {
   }
 }
 
-function prepareEvidenceTransaction(manifest, { masterSeed, dryRun, gitFingerprint = null }) {
+export function prepareEvidenceTransaction(
+  manifest,
+  { masterSeed, dryRun, gitFingerprint = null, concurrency = manifest.mode === 'real' ? 1 : 4 },
+) {
   fs.mkdirSync(manifest.gateDir, { recursive: true });
   fs.mkdirSync(manifest.logDir, { recursive: true });
   fs.mkdirSync(manifest.loopDir, { recursive: true });
@@ -560,7 +847,33 @@ function prepareEvidenceTransaction(manifest, { masterSeed, dryRun, gitFingerpri
     if (frozenPlan.randomization.masterSeed !== masterSeed) {
       throw new Error('Refusing to resume Phase 6 with a different --run-seed');
     }
-    if (!fs.existsSync(manifestPath)) writeCompatibilityManifest(manifest);
+    assertPhase6FrozenRuntime({ manifest, frozenPlan, concurrency });
+    if (!fs.existsSync(manifestPath)) {
+      throw new Error('Refusing to resume Phase 6 without its immutable compatibility manifest; use a superseding label');
+    }
+    const expectedManifest = { ...structuredClone(manifest), generatedAt: frozenPlan.createdAt };
+    if (hashCanonicalJson(readJson(manifestPath)) !== hashCanonicalJson(expectedManifest)) {
+      throw new Error('Refusing to resume Phase 6 because manifest.json differs from the frozen transaction');
+    }
+    const expectedPlan = buildEvidencePlan(expectedManifest, {
+      masterSeed,
+      dryRun,
+      gitFingerprint,
+      concurrency,
+    });
+    if (hashCanonicalJson(frozenPlan) !== hashCanonicalJson(expectedPlan)) {
+      throw new Error('Refusing to resume Phase 6 because the complete frozen run plan no longer matches');
+    }
+    assertPhase6ContinuationCompatibility({ manifest, plan: frozenPlan });
+    const events = readRunEvents(manifest.gateDir);
+    assertPhase6EventChain(events);
+    if (
+      events.some(
+        (event) => event.type === 'run_stopped' || event.status === PHASE6_INDETERMINATE_STATUS,
+      )
+    ) {
+      throw new Error('Refusing to resume a Phase 6 transaction marked same-label-forbidden; use a superseding label');
+    }
     appendRunEvent(manifest.gateDir, {
       type: 'run_resumed',
       mode: manifest.mode,
@@ -568,7 +881,8 @@ function prepareEvidenceTransaction(manifest, { masterSeed, dryRun, gitFingerpri
     });
     return frozenPlan;
   }
-  const plan = buildEvidencePlan(manifest, { masterSeed, dryRun, gitFingerprint });
+  const plan = buildEvidencePlan(manifest, { masterSeed, dryRun, gitFingerprint, concurrency });
+  assertPhase6ContinuationCompatibility({ manifest, plan });
   createRunPlan(manifest.gateDir, plan);
   writeCompatibilityManifest(manifest);
   appendRunEvent(manifest.gateDir, {
@@ -596,6 +910,7 @@ Options:
   --mutate-share <n>        Mock override. Real Phase 6A is frozen at ${PHASE6_CONTRACT.decay.mutateShare}
   --mode mock|real          Backend mode. Default: mock
   --real                    Alias for --mode real
+  --confirm-paid-phase6a-v2 Required acknowledgement for every real Phase 6A transaction
   --concurrency <n>         Default: 4 in mock, 1 in real
   --force                   Mock only; re-run rows even if artifacts already exist
   --dry-run                 Write manifest/report preview, run nothing
@@ -709,22 +1024,22 @@ export function buildGatePlan(options = {}) {
         }
       : null;
   const rows = [];
-  for (const worldKey of worldKeys) {
-    for (const seed of seeds) {
-      for (const armKey of armKeys) {
-        rows.push(
-          buildRow({
-            gateDir,
-            mode,
-            matrixLabel: gateLabel,
-            world: WORLD_REGISTRY[worldKey],
-            arm: ARM_REGISTRY[armKey],
-            seed,
-            baseFlags,
-            decay,
-          }),
-        );
-      }
+  const armOrderSchedule = balancedArmOrderSchedule(worldKeys, seeds, armKeys);
+  for (const schedule of armOrderSchedule) {
+    const { worldKey, seed } = schedule;
+    for (const armKey of schedule.arms) {
+      rows.push(
+        buildRow({
+          gateDir,
+          mode,
+          matrixLabel: gateLabel,
+          world: WORLD_REGISTRY[worldKey],
+          arm: ARM_REGISTRY[armKey],
+          seed,
+          baseFlags,
+          decay,
+        }),
+      );
     }
   }
   return {
@@ -747,6 +1062,7 @@ export function buildGatePlan(options = {}) {
     seeds: seeds.map(String),
     decay,
     baseFlags,
+    armOrderSchedule,
     rows,
   };
 }
@@ -762,17 +1078,83 @@ function artifactsComplete(row) {
   ].every((name) => fs.existsSync(path.join(row.runDir, name)));
 }
 
+function signalPhase6Child(record, signal) {
+  if (!record?.child || record.child.exitCode !== null || record.child.signalCode !== null) return;
+  try {
+    if (process.platform !== 'win32' && record.child.pid) process.kill(-record.child.pid, signal);
+    else record.child.kill(signal);
+  } catch {
+    try {
+      record.child.kill(signal);
+    } catch {
+      // The child may have closed between the state check and signal delivery.
+    }
+  }
+}
+
+export function requestPhase6Interruption(signal = 'SIGTERM') {
+  if (!phase6InterruptSignal) phase6InterruptSignal = signal;
+  for (const record of activePhase6Children.values()) {
+    signalPhase6Child(record, 'SIGTERM');
+    if (!record.killTimer) {
+      record.killTimer = setTimeout(() => signalPhase6Child(record, 'SIGKILL'), PHASE6_CHILD_KILL_GRACE_MS);
+      record.killTimer.unref?.();
+    }
+  }
+}
+
+export function installPhase6SignalHandlers() {
+  if (activePhase6Children.size) throw new Error('Cannot install Phase 6 signal handlers with active children');
+  phase6InterruptSignal = null;
+  const handlers = Object.fromEntries(
+    ['SIGINT', 'SIGTERM'].map((signal) => [
+      signal,
+      () => {
+        console.error(`Phase 6 received ${signal}; terminating the active row and forbidding same-label reuse`);
+        requestPhase6Interruption(signal);
+      },
+    ]),
+  );
+  for (const [signal, handler] of Object.entries(handlers)) process.once(signal, handler);
+  return () => {
+    for (const [signal, handler] of Object.entries(handlers)) process.removeListener(signal, handler);
+    phase6InterruptSignal = null;
+  };
+}
+
 function runRow(row) {
   return new Promise((resolve) => {
     fs.mkdirSync(path.dirname(row.logFile), { recursive: true });
     const log = fs.createWriteStream(row.logFile);
-    const child = spawn(process.execPath, row.args, { cwd: ROOT, env: process.env });
+    const child = spawn(process.execPath, row.args, {
+      cwd: ROOT,
+      env: process.env,
+      detached: process.platform !== 'win32',
+    });
+    const record = { child, rowId: row.id, killTimer: null };
+    activePhase6Children.set(row.id, record);
     child.stdout.pipe(log, { end: false });
     child.stderr.pipe(log, { end: false });
-    child.on('close', (code) => {
-      log.end();
-      resolve(code ?? 1);
+    let settled = false;
+    const finish = (code) => {
+      if (settled) return;
+      settled = true;
+      activePhase6Children.delete(row.id);
+      if (record.killTimer) clearTimeout(record.killTimer);
+      log.end(() => {
+        try {
+          fsyncFile(row.logFile);
+          resolve(code ?? 1);
+        } catch {
+          resolve(1);
+        }
+      });
+    };
+    child.on('error', (error) => {
+      log.write(`\nPhase 6 child spawn error: ${error.message}\n`);
+      finish(1);
     });
+    child.on('close', (code) => finish(code));
   });
 }
 
@@ -1092,6 +1474,242 @@ function rowAnalysis(row, exitCode = null) {
   };
 }
 
+function normalizedRelative(root, file) {
+  const relative = path.relative(root, file);
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error(`Phase 6 row artifact escapes its evidence directory: ${file}`);
+  }
+  return relative.split(path.sep).join('/');
+}
+
+function walkRowFiles(directory) {
+  if (!fs.existsSync(directory)) return [];
+  const files = [];
+  const stack = [directory];
+  while (stack.length) {
+    const current = stack.pop();
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const file = path.join(current, entry.name);
+      if (entry.isSymbolicLink()) throw new Error(`Phase 6 row artifacts may not contain symlinks: ${file}`);
+      if (entry.isDirectory()) stack.push(file);
+      else if (entry.isFile()) files.push(file);
+    }
+  }
+  return files.sort();
+}
+
+function phase6RowArtifactFiles(row) {
+  const files = walkRowFiles(row.runDir);
+  if (fs.existsSync(row.logFile) && !files.includes(row.logFile)) files.push(row.logFile);
+  return files.sort();
+}
+
+function fsyncFile(file) {
+  const handle = fs.openSync(file, 'r');
+  try {
+    fs.fsyncSync(handle);
+  } finally {
+    fs.closeSync(handle);
+  }
+}
+
+function fsyncDirectory(directory) {
+  const handle = fs.openSync(directory, 'r');
+  try {
+    fs.fsyncSync(handle);
+  } finally {
+    fs.closeSync(handle);
+  }
+}
+
+function phase6RowArtifactInventory(row, gateDir, { fsync = false } = {}) {
+  const files = phase6RowArtifactFiles(row);
+  if (fsync) {
+    files.forEach(fsyncFile);
+    [...new Set(files.map((file) => path.dirname(file)))]
+      .sort((left, right) => right.length - left.length)
+      .forEach(fsyncDirectory);
+  }
+  return files.map((file) => {
+    const stat = fs.statSync(file);
+    return {
+      path: normalizedRelative(gateDir, file),
+      sha256: hashFile(file),
+      bytes: stat.size,
+    };
+  });
+}
+
+function phase6RowConfiguration(row) {
+  return {
+    id: row.id,
+    worldKey: row.worldKey,
+    world: row.world,
+    script: row.script,
+    armKey: row.armKey,
+    armLabel: row.armLabel,
+    seed: String(row.seed),
+    mode: row.mode,
+    decay: structuredClone(row.decay),
+    args: structuredClone(row.args),
+  };
+}
+
+function assertPhase6RowArtifactSemantics(row, plan) {
+  const diagnosis = readJson(path.join(row.runDir, 'diagnosis.json'));
+  const expectedRuntime = plan.metadata?.phase6ModelRuntime || {};
+  const observedRoles = diagnosis.backend?.roles || {};
+  const expectedRoleNames = ['director', 'learner', 'tutor'];
+  if (
+    diagnosis.label !== row.label ||
+    diagnosis.worldPath !== row.world ||
+    diagnosis.scriptPath !== row.script ||
+    diagnosis.backend?.mode !== row.mode ||
+    hashCanonicalJson(Object.keys(observedRoles).sort()) !== hashCanonicalJson(expectedRoleNames) ||
+    expectedRoleNames.some(
+      (role) =>
+        modelLabel(observedRoles[role] || {}) !== expectedRuntime[role]?.resolved_model_ref ||
+        expectedRuntime[role]?.requested_model_ref !== plan.models?.[role]?.requested,
+    ) ||
+    hashCanonicalJson(diagnosis.decay) !== hashCanonicalJson(row.decay) ||
+    Boolean(diagnosis.fieldReportContext) !== (row.armKey === 'field_report_only') ||
+    Boolean(diagnosis.fieldPlanner) !== row.armKey.startsWith('field_planner') ||
+    Boolean(diagnosis.fieldPlannerEnforce) !== (row.armKey === 'field_planner_enforce')
+  ) {
+    throw new Error(`Phase 6 row ${row.id} artifacts do not match the frozen row/model semantics; use a superseding label`);
+  }
+}
+
+function buildPhase6RowCompletion(row, { gateDir, plan, fsync = false } = {}) {
+  if (!fs.existsSync(row.logFile)) {
+    throw new Error(`Phase 6 row ${row.id} is missing its execution log; use a superseding label`);
+  }
+  const analysis = rowAnalysis(row, 0);
+  if (!analysis.ok) {
+    throw new Error(`Phase 6 row ${row.id} failed semantic validation after exit 0; use a superseding label`);
+  }
+  assertPhase6RowArtifactSemantics(row, plan);
+  const artifacts = phase6RowArtifactInventory(row, gateDir, { fsync });
+  const semantic = phase6EvidenceRow(analysis);
+  const completion = {
+    schema: PHASE6_ROW_COMPLETION_SCHEMA,
+    job_id: row.id,
+    exit_code: 0,
+    run_plan_sha256: hashFile(path.join(gateDir, 'run-plan.json')),
+    run_id: plan.runId,
+    git_sha: plan.provenance?.git?.sha || null,
+    row_configuration_sha256: hashCanonicalJson(phase6RowConfiguration(row)),
+    world_sha256: hashFile(resolveFromRoot(row.world)),
+    script_sha256: hashFile(resolveFromRoot(row.script)),
+    model_runtime_sha256: plan.metadata?.phase6ModelRuntimeSha256 || null,
+    artifact_inventory_sha256: hashCanonicalJson(artifacts),
+    artifacts,
+    semantic_sha256: hashCanonicalJson(semantic),
+    semantic,
+  };
+  return { completion, analysis };
+}
+
+export function commitPhase6Row(row, { gateDir, plan } = {}) {
+  const events = readRunEvents(gateDir);
+  if (events.some((event) => event.type === 'phase6_row_committed' && event.jobId === row.id)) {
+    throw new Error(`Phase 6 row ${row.id} already has an immutable completion record`);
+  }
+  const { completion, analysis } = buildPhase6RowCompletion(row, { gateDir, plan, fsync: true });
+  const completionSha256 = hashCanonicalJson(completion);
+  const appended = appendRunEvent(gateDir, {
+    type: 'phase6_row_committed',
+    jobId: row.id,
+    completion,
+    completionSha256,
+  });
+  fsyncDirectory(gateDir);
+  return { ...appended, completion, completionSha256, analysis };
+}
+
+function assertPhase6EventChain(events) {
+  let previous = null;
+  for (const [index, event] of events.entries()) {
+    const payload = { ...event };
+    delete payload.eventSha256;
+    if (
+      event.schema !== 'machinespirits.experiment-run-event.v1' ||
+      Number(event.sequence) !== index + 1 ||
+      event.previousEventSha256 !== previous ||
+      event.eventSha256 !== hashCanonicalJson(payload)
+    ) {
+      throw new Error('Phase 6 run-event chain is invalid or tampered; use a superseding label');
+    }
+    previous = event.eventSha256;
+  }
+}
+
+export function inspectPhase6RowResumeState(row, { gateDir, plan, events = null } = {}) {
+  const runEvents = events || readRunEvents(gateDir);
+  assertPhase6EventChain(runEvents);
+  const rowEvents = runEvents.filter((event) => event.jobId === row.id);
+  const commits = rowEvents.filter((event) => event.type === 'phase6_row_committed');
+  const presentFiles = phase6RowArtifactFiles(row);
+  if (!commits.length) {
+    if (presentFiles.length || rowEvents.length) {
+      throw new Error(
+        `Phase 6 row ${row.id} is partial or present without a durable completion event; use a superseding label`,
+      );
+    }
+    return { disposition: 'run_missing', rowId: row.id };
+  }
+  if (commits.length !== 1) {
+    throw new Error(`Phase 6 row ${row.id} has duplicate completion events; use a superseding label`);
+  }
+  const commit = commits[0];
+  const started = rowEvents.filter((event) => event.type === 'job_started');
+  const completed = rowEvents.filter((event) => event.type === 'job_completed');
+  if (
+    started.length !== 1 ||
+    completed.length !== 1 ||
+    Number(completed[0].exitCode) !== 0 ||
+    started[0].sequence >= completed[0].sequence ||
+    completed[0].sequence >= commit.sequence
+  ) {
+    throw new Error(`Phase 6 row ${row.id} has an invalid execution/completion lifecycle; use a superseding label`);
+  }
+  const current = buildPhase6RowCompletion(row, { gateDir, plan, fsync: false });
+  if (
+    commit.completionSha256 !== hashCanonicalJson(commit.completion) ||
+    hashCanonicalJson(commit.completion) !== hashCanonicalJson(current.completion)
+  ) {
+    throw new Error(`Phase 6 row ${row.id} artifacts, provenance, or semantics changed; use a superseding label`);
+  }
+  return {
+    disposition: 'skip_verified',
+    rowId: row.id,
+    completionEventSha256: commit.eventSha256,
+    completionSha256: commit.completionSha256,
+    analysis: current.analysis,
+  };
+}
+
+export function inspectPhase6ResumeMatrix(manifest, { plan, events = null } = {}) {
+  const runEvents = events || readRunEvents(manifest.gateDir);
+  const states = new Map();
+  let reachedUntouchedTail = false;
+  for (const row of manifest.rows) {
+    const state = inspectPhase6RowResumeState(row, {
+      gateDir: manifest.gateDir,
+      plan,
+      events: runEvents,
+    });
+    if (state.disposition === 'run_missing') reachedUntouchedTail = true;
+    else if (reachedUntouchedTail) {
+      throw new Error(
+        `Phase 6 committed rows are not an exact prefix at ${row.id}; use a superseding label`,
+      );
+    }
+    states.set(row.id, state);
+  }
+  return states;
+}
+
 function summarizeGroups(rows) {
   const groups = new Map();
   for (const row of rows) {
@@ -1170,10 +1788,11 @@ export function analyzeGateArtifacts(manifest, exitCodes = {}) {
   return report;
 }
 
-export function phase6RunCloseoutDisposition(report = {}) {
-  return Number(report.okRows) === Number(report.rowCount) && Number(report.rowCount) > 0
-    ? 'seal_complete'
-    : 'pause_unsealed';
+export function phase6RunCloseoutDisposition(report = {}, { mode = 'mock' } = {}) {
+  if (Number(report.okRows) === Number(report.rowCount) && Number(report.rowCount) > 0) {
+    return 'seal_complete';
+  }
+  return mode === 'real' ? 'seal_indeterminate_same_label_forbidden' : 'pause_unsealed';
 }
 
 function mdTable(headers, rows) {
@@ -1336,10 +1955,57 @@ function appendObservedModelEvents(manifest, report, plan) {
   }
 }
 
-async function runGate(manifest, { plan, concurrency, force = false, dryRun = false } = {}) {
+function phase6StoppedError(message, { jobId = null, exitCode = null, signal = null } = {}) {
+  const error = new Error(message);
+  error.phase6JobId = jobId;
+  error.phase6ExitCode = exitCode;
+  error.phase6Signal = signal;
+  return error;
+}
+
+function sealPhase6Indeterminate(manifest, error, exitCodes = {}) {
+  appendRunEvent(manifest.gateDir, {
+    type: 'run_stopped',
+    status: PHASE6_INDETERMINATE_STATUS,
+    sameLabelResumeAllowed: false,
+    jobId: error?.phase6JobId || null,
+    exitCode: error?.phase6ExitCode ?? null,
+    signal: error?.phase6Signal || phase6InterruptSignal || null,
+    reason: error?.message || String(error),
+  });
+  fsyncDirectory(manifest.gateDir);
+  return createRunSeal(manifest.gateDir, {
+    status: PHASE6_INDETERMINATE_STATUS,
+    metadata: {
+      sameLabelResumeAllowed: false,
+      failedJobId: error?.phase6JobId || null,
+      exitCode: error?.phase6ExitCode ?? null,
+      signal: error?.phase6Signal || phase6InterruptSignal || null,
+      completedExitZeroRows: Object.values(exitCodes).filter((code) => code === 0).length,
+    },
+  });
+}
+
+export async function runGate(
+  manifest,
+  {
+    plan,
+    concurrency,
+    force = false,
+    dryRun = false,
+    rowRunner = runRow,
+    liveGitGuard = assertLivePhase6RealRunGitState,
+  } = {},
+) {
   assertPhase6ForcePolicy({ mode: manifest.mode, force });
+  assertPhase6ConcurrencyPolicy({ mode: manifest.mode, concurrency });
   assertPhase6RealGateProtocolReady(manifest);
-  assertLivePhase6RealRunGitState(manifest, plan);
+  liveGitGuard(manifest, plan);
+  let resumeStates = new Map();
+  if (manifest.mode === 'real' && !dryRun) {
+    const events = readRunEvents(manifest.gateDir);
+    resumeStates = inspectPhase6ResumeMatrix(manifest, { plan, events });
+  }
   appendRunEvent(manifest.gateDir, {
     type: 'run_started',
     mode: manifest.mode,
@@ -1366,30 +2032,88 @@ async function runGate(manifest, { plan, concurrency, force = false, dryRun = fa
     const verification = assertExperimentRun(manifest.gateDir);
     return { manifest, report, written, sealed, verification, dryRun: true };
   }
-  await pool(manifest.rows, concurrency, async (row) => {
-    assertLivePhase6RealRunGitState(manifest, plan);
-    if (!force && artifactsComplete(row)) {
-      console.log(`  skip ${row.id} complete`);
-      exitCodes[row.id] = 0;
-      appendRunEvent(manifest.gateDir, { type: 'job_skipped', jobId: row.id, reason: 'artifacts_complete' });
-      return;
+  try {
+    await pool(manifest.rows, concurrency, async (row) => {
+      if (manifest.mode === 'real' && phase6InterruptSignal) {
+        throw phase6StoppedError(`Phase 6 interrupted by ${phase6InterruptSignal} before ${row.id}`, {
+          jobId: row.id,
+          signal: phase6InterruptSignal,
+        });
+      }
+      liveGitGuard(manifest, plan);
+      const resumeState = resumeStates.get(row.id);
+      if (manifest.mode === 'real' && resumeState?.disposition === 'skip_verified') {
+        console.log(`  skip ${row.id} verified immutable completion`);
+        exitCodes[row.id] = 0;
+        appendRunEvent(manifest.gateDir, {
+          type: 'job_skipped',
+          jobId: row.id,
+          reason: 'verified_immutable_completion',
+          completionEventSha256: resumeState.completionEventSha256,
+          completionSha256: resumeState.completionSha256,
+        });
+        return;
+      }
+      if (manifest.mode !== 'real' && !force && artifactsComplete(row)) {
+        console.log(`  skip ${row.id} complete`);
+        exitCodes[row.id] = 0;
+        appendRunEvent(manifest.gateDir, { type: 'job_skipped', jobId: row.id, reason: 'artifacts_complete' });
+        return;
+      }
+      console.log(`  run ${row.id}`);
+      appendRunEvent(manifest.gateDir, { type: 'job_started', jobId: row.id });
+      const code = await rowRunner(row);
+      liveGitGuard(manifest, plan);
+      exitCodes[row.id] = code;
+      appendRunEvent(manifest.gateDir, { type: 'job_completed', jobId: row.id, exitCode: code });
+      if (manifest.mode === 'real' && phase6InterruptSignal) {
+        throw phase6StoppedError(`Phase 6 row ${row.id} was interrupted by ${phase6InterruptSignal}`, {
+          jobId: row.id,
+          exitCode: code,
+          signal: phase6InterruptSignal,
+        });
+      }
+      if (manifest.mode === 'real' && code !== 0) {
+        throw phase6StoppedError(`Phase 6 row ${row.id} exited ${code}; untouched rows were not started`, {
+          jobId: row.id,
+          exitCode: code,
+        });
+      }
+      if (manifest.mode === 'real') commitPhase6Row(row, { gateDir: manifest.gateDir, plan });
+      console.log(`  ${code === 0 ? 'ok' : 'fail'} ${row.id}${code === 0 ? '' : ` exit ${code}`}`);
+    });
+  } catch (error) {
+    if (manifest.mode === 'real') {
+      const stopped =
+        error?.phase6JobId || error?.phase6Signal
+          ? error
+          : phase6StoppedError(error?.message || String(error), {
+              signal: phase6InterruptSignal,
+            });
+      sealPhase6Indeterminate(manifest, stopped, exitCodes);
+      throw new Error(
+        `${stopped.message}. The transaction is sealed ${PHASE6_INDETERMINATE_STATUS}; use a superseding label.`,
+        { cause: stopped },
+      );
     }
-    console.log(`  run ${row.id}`);
-    appendRunEvent(manifest.gateDir, { type: 'job_started', jobId: row.id });
-    const code = await runRow(row);
-    assertLivePhase6RealRunGitState(manifest, plan);
-    exitCodes[row.id] = code;
-    appendRunEvent(manifest.gateDir, { type: 'job_completed', jobId: row.id, exitCode: code });
-    console.log(`  ${code === 0 ? 'ok' : 'fail'} ${row.id}${code === 0 ? '' : ` exit ${code}`}`);
-  });
-  assertLivePhase6RealRunGitState(manifest, plan);
+    throw error;
+  }
+  liveGitGuard(manifest, plan);
   const report = analyzeGateArtifacts(manifest, exitCodes);
   const written = writeReport(report);
   appendRunEvent(manifest.gateDir, {
     type: 'reports_written',
     reports: Object.values(written).map((file) => rel(file)),
   });
-  if (phase6RunCloseoutDisposition(report) === 'pause_unsealed') {
+  const closeout = phase6RunCloseoutDisposition(report, { mode: manifest.mode });
+  if (closeout === 'seal_indeterminate_same_label_forbidden') {
+    const stopped = phase6StoppedError('Phase 6 completed execution but the committed row matrix is incomplete');
+    sealPhase6Indeterminate(manifest, stopped, exitCodes);
+    throw new Error(
+      `Phase 6 committed row matrix is incomplete. The transaction is sealed ${PHASE6_INDETERMINATE_STATUS}; use a superseding label.`,
+    );
+  }
+  if (closeout === 'pause_unsealed') {
     appendRunEvent(manifest.gateDir, {
       type: 'run_paused',
       status: 'incomplete',
@@ -1397,7 +2121,15 @@ async function runGate(manifest, { plan, concurrency, force = false, dryRun = fa
       rowCount: report.rowCount,
       executionFailures: report.executionFailures,
     });
-    return { manifest, report, written, sealed: null, verification: null, dryRun: false, resumable: true };
+    return {
+      manifest,
+      report,
+      written,
+      sealed: null,
+      verification: null,
+      dryRun: false,
+      resumable: manifest.mode !== 'real',
+    };
   }
   appendObservedModelEvents(manifest, report, plan);
   const status = 'complete';
@@ -1429,6 +2161,7 @@ async function main(argv = process.argv.slice(2)) {
   }
   const mode = has(argv, 'real') ? 'real' : arg(argv, 'mode', 'mock');
   if (!['mock', 'real'].includes(mode)) throw new Error(`--mode must be mock or real (got ${mode})`);
+  assertPhase6PaidConfirmation({ mode, confirmed: has(argv, 'confirm-paid-phase6a-v2') });
   const forceRequested = has(argv, 'force');
   assertPhase6ForcePolicy({ mode, force: forceRequested });
   const technicalCanary = has(argv, 'technical-canary');
@@ -1464,22 +2197,31 @@ async function main(argv = process.argv.slice(2)) {
   const concurrency = Number(arg(argv, 'concurrency', mode === 'real' ? '1' : '4'));
   if (!Number.isSafeInteger(concurrency) || concurrency < 1)
     throw new Error('--concurrency must be a positive integer');
+  assertPhase6ConcurrencyPolicy({ mode, concurrency });
   const gitFingerprint = capturePhase6GitFingerprint();
   assertPhase6RealRunGitState({ mode, gitFingerprint });
   const plan = prepareEvidenceTransaction(manifest, {
     masterSeed: runSeed,
     dryRun: dryRunRequested,
     gitFingerprint,
+    concurrency,
   });
   console.log(
     `phase6 gate ${manifest.label}: ${manifest.rows.length} rows, ${manifest.worlds.length} worlds, ${manifest.arms.length} arms, mode ${manifest.mode}, concurrency ${concurrency}`,
   );
-  const { report, written, dryRun } = await runGate(manifest, {
-    plan,
-    concurrency,
-    force: forceRequested,
-    dryRun: dryRunRequested,
-  });
+  const removeSignalHandlers = mode === 'real' && !dryRunRequested ? installPhase6SignalHandlers() : () => {};
+  let outcome;
+  try {
+    outcome = await runGate(manifest, {
+      plan,
+      concurrency,
+      force: forceRequested,
+      dryRun: dryRunRequested,
+    });
+  } finally {
+    removeSignalHandlers();
+  }
+  const { report, written, dryRun } = outcome;
   console.log(
     `${dryRun ? 'dry-run ' : ''}complete ${report.okRows}/${report.rowCount}; grounded ${report.groundedRows}/${report.okRows}; safety failures ${report.safetyFailures}`,
   );

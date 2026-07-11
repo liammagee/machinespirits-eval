@@ -157,9 +157,13 @@ verdict is `null_invalid_instrumentation`, not `ceiling`.
    result all to pass independently for the same arm selected by the sealed
    parent.
 
-`--force` is forbidden in real mode. An interrupted real transaction resumes
-only missing rows; a completed row is immutable and cannot be semantically
-rerolled under the same evidence label.
+`--force` is forbidden in real mode. Same-label continuation is permitted only
+when the existing evidence is an exact prefix of durable, semantically verified
+row commits followed by a wholly never-started tail. A row with a start event,
+partial or complete artifacts without a durable commit, changed hashes, or a
+failed/interrupted child poisons that label; it is sealed
+`indeterminate_same_label_forbidden` and must be superseded. A verified committed
+row is immutable and cannot be semantically rerolled.
 
 Real backends are not seedable. Seed labels pair only the deterministic decay
 schedule; analysis macro-averages worlds and reports arm distributions rather
@@ -170,20 +174,27 @@ The bounded launch sequence from a clean committed SHA is:
 ```bash
 # Excluded route check: four paid rows, no efficacy claim.
 node scripts/run-derivation-phase6-gate.js \
-  --real --technical-canary --label phase6a-v2-route-canary
+  --real --confirm-paid-phase6a-v2 --technical-canary --label phase6a-v2-route-canary
 
 # Claim block 1: 3 worlds x 4 arms x 5 seeds = 60 rows.
 node scripts/run-derivation-phase6-gate.js \
-  --real --label phase6a-v2-k5
+  --real --confirm-paid-phase6a-v2 --label phase6a-v2-k5
 
 # Only after a sealed provisional_promote: 60 new rows for seeds 6-10.
 node scripts/run-derivation-phase6-gate.js \
-  --real --label phase6a-v2-k10-continuation \
+  --real --confirm-paid-phase6a-v2 --label phase6a-v2-k10-continuation \
   --prior-provisional exports/dramatic-derivation/phase6-gate/phase6a-v2-k5/phase6-gate-report.json
 ```
 
 Use the normal provider/model environment variables for the intended frozen
-stack. Do not add `--force` to a real command.
+stack. The run plan records explicit director, tutor, and learner model
+references together with their effort and timeout policies; real execution is
+strictly serial (`--concurrency 1`) and rotates arm order deterministically
+across world/seed blocks. It also freezes the realpath and version of every CLI
+backend in use. Do not add `--force` to a real command. A safely resumable label
+skips only its exact verified committed prefix; every row after that prefix must
+have no event and no artifact. Partial, tampered, artifact-only, failed, or
+interrupted rows require a superseding label.
 
 ## Phase 6A Frozen Endpoints
 
@@ -295,10 +306,12 @@ The gate is invalid unless:
 
 Apply this order mechanically:
 
-1. `incomplete` — expected rows or artifacts are missing; leave the
-   transaction unsealed and resumable. Duplicate/substituted matrix cells or
-   malformed required numeric fields also resolve here rather than being
-   coerced to zero.
+1. `incomplete` — expected rows or artifacts are missing. This is an analytical
+   verdict, not blanket authorization to resume a paid label: only a verified
+   committed prefix plus a wholly never-started tail is resumable. Any attempted
+   incomplete row makes the same label forbidden. Duplicate/substituted matrix
+   cells or malformed required numeric fields also resolve here rather than
+   being coerced to zero.
 2. `null_invalid_instrumentation` — configuration, manipulation, trace, or
    provenance checks fail.
 3. `promote_local` — seeds 1–5, seeds 6–10, and pooled k=10 all pass benefit,
@@ -328,9 +341,12 @@ evaluator version, and verdict precedence.
 
 For seeds 6–10, the plan must also set the sealed seeds 1–5 run as
 `lineage.parentRunId` and bind the parent report, seal, row snapshot, decision
-contract, and evaluator hashes. The current evaluator must reproduce the
-parent's `provisional_promote` and winner before any continuation job is
-planned.
+contract, and evaluator hashes. Pooling is allowed only when both blocks have
+the exact same clean Git SHA, complete runner/policy/world/script/prompt/profile/
+config hash set, director/tutor/learner model references, effort and timeout
+policies, serial concurrency, and CLI executable realpaths/versions. The current
+evaluator must reproduce the parent's `provisional_promote` and winner before
+any continuation job is planned.
 
 Preserve per row:
 

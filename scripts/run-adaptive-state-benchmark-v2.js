@@ -11,6 +11,10 @@ import {
   validateAdaptiveStateCriticalPathPlan,
 } from '../services/adaptiveTutor/stateBenchmarkV2.js';
 import {
+  assertAdaptiveStateS1PromotionParentAuthorization,
+  validateAdaptiveStateS1PromotionParent,
+} from '../services/adaptiveTutor/stateBenchmarkStage2Lineage.js';
+import {
   appendRunEvent,
   assertExperimentRun,
   buildExperimentRunPlan,
@@ -47,7 +51,9 @@ This command freezes a balanced critical-path plan. It never makes model calls.
 
 Options:
   --stage <name>       s0_contract, s1_technical_pilot, or s2_confirmation
-  --per-cell <6|8>     Required only for s2_confirmation after the power decision
+  --per-cell <8>       Optional S2 assertion; confirmation is frozen at eight per cell
+  --s0-parent <dir>    Required for S2: complete sealed current S0 run
+  --parent <dir>       Required for S2: complete sealed paid S1 run
   --label <id>         Plan label. Default: adaptive-state-v2-<stage>
   --run-seed <n>       Immutable job-order seed. Default: 20260711
   --config <path>      Default: config/adaptive-state-benchmark-v2.yaml
@@ -108,7 +114,21 @@ export function renderAdaptiveStateCriticalPathMarkdown(plan) {
   return lines.join('\n');
 }
 
-export function buildPlanArtifact({ config, configPath, stage, confirmationPerCell, label }) {
+export function buildPlanArtifact({ config, configPath, stage, confirmationPerCell, label, promotionParent = null }) {
+  if (stage === 's2_confirmation') assertAdaptiveStateS1PromotionParentAuthorization(promotionParent);
+  if (
+    stage === 's2_confirmation' &&
+    confirmationPerCell !== null &&
+    Number(confirmationPerCell) !== 8
+  ) {
+    throw new Error('S2 is frozen at --per-cell 8; no pilot-derived sample-size selection is permitted');
+  }
+  if (
+    stage === 's2_confirmation' &&
+    promotionParent.authorization.s1.config_sha256 !== hashCanonicalJson(config)
+  ) {
+    throw new Error('S2 planning requires an S1 parent produced under the current frozen config');
+  }
   const plan = buildAdaptiveStateCriticalPathPlan(config, { stage, confirmationPerCell, label });
   validateAdaptiveStateCriticalPathPlan(plan);
   const git = captureGitFingerprint({ repoRoot: ROOT });
@@ -121,6 +141,14 @@ export function buildPlanArtifact({ config, configPath, stage, confirmationPerCe
       config_sha256: hashFile(configPath),
       planner_path: path.relative(ROOT, SCRIPT),
       planner_sha256: hashFile(SCRIPT),
+      ...(promotionParent
+        ? {
+            parent_s1_authorization_sha256: promotionParent.authorization.authorization_sha256,
+            parent_s1_seal_sha256: promotionParent.authorization.s1.seal_sha256,
+            sample_size_basis: promotionParent.authorization.sample_size_basis,
+            power_claim: false,
+          }
+        : {}),
     },
   };
 }
@@ -131,7 +159,7 @@ function hashFileSet(paths) {
   );
 }
 
-function buildImmutablePlanningEnvelope(plan, { config, configPath, runSeed }) {
+function buildImmutablePlanningEnvelope(plan, { config, configPath, runSeed, promotionParent = null }) {
   const realizerModels = [...new Set(plan.jobs.map((job) => job.language_realizer.model_ref))].sort();
   return buildExperimentRunPlan({
     runId: plan.label,
@@ -157,9 +185,14 @@ function buildImmutablePlanningEnvelope(plan, { config, configPath, runSeed }) {
     },
     masterSeed: runSeed,
     jobs: plan.jobs,
-    lineage: { parentRunId: null, resumeOf: null, supersedes: [] },
+    lineage: {
+      parentRunId: promotionParent?.authorization?.s1?.run_id || null,
+      resumeOf: null,
+      supersedes: [],
+    },
     intent: {
       criticalPath: plan,
+      ...(promotionParent ? { s2Authorization: promotionParent.authorization } : {}),
       claimBoundary: config.claim_boundary,
       executionBoundary: 'Planning transaction only; no transition or model call was executed.',
     },
@@ -170,6 +203,15 @@ function buildImmutablePlanningEnvelope(plan, { config, configPath, runSeed }) {
       configSha256: plan.provenance.config_sha256,
       stage: plan.stage,
       paid: plan.paid,
+      ...(promotionParent
+        ? {
+            selectedSeedsPerCell: promotionParent.authorization.selected_seeds_per_cell,
+            s2AuthorizationSha256: promotionParent.authorization.authorization_sha256,
+            parentS1SealSha256: promotionParent.authorization.s1.seal_sha256,
+            sampleSizeBasis: promotionParent.authorization.sample_size_basis,
+            powerClaimMade: false,
+          }
+        : {}),
     },
   });
 }
@@ -187,7 +229,26 @@ async function main(argv = process.argv.slice(2)) {
   const outRoot = resolveFromRoot(arg(argv, 'out', DEFAULT_OUT));
   const config = yaml.parse(fs.readFileSync(configPath, 'utf8'));
   const label = arg(argv, 'label', `adaptive-state-v2-${stage}`);
-  const plan = buildPlanArtifact({ config, configPath, stage, confirmationPerCell, label });
+  const parentArg = arg(argv, 'parent', null);
+  const s0ParentArg = arg(argv, 's0-parent', null);
+  const promotionParent =
+    stage === 's2_confirmation'
+      ? validateAdaptiveStateS1PromotionParent({
+          parentRunDir: parentArg ? resolveFromRoot(parentArg) : null,
+          s0RunDir: s0ParentArg ? resolveFromRoot(s0ParentArg) : null,
+          config,
+          configPath,
+          repoRoot: ROOT,
+        })
+      : null;
+  const plan = buildPlanArtifact({
+    config,
+    configPath,
+    stage,
+    confirmationPerCell,
+    label,
+    promotionParent,
+  });
   if (has(argv, 'stdout')) {
     process.stdout.write(`${JSON.stringify(plan, null, 2)}\n`);
     return;
@@ -195,7 +256,7 @@ async function main(argv = process.argv.slice(2)) {
   const directory = path.join(outRoot, label);
   const jsonPath = path.join(directory, 'critical-path-plan.json');
   const markdownPath = path.join(directory, 'critical-path-plan.md');
-  const envelope = buildImmutablePlanningEnvelope(plan, { config, configPath, runSeed });
+  const envelope = buildImmutablePlanningEnvelope(plan, { config, configPath, runSeed, promotionParent });
   createRunPlan(directory, envelope);
   writeExclusive(jsonPath, `${JSON.stringify(plan, null, 2)}\n`);
   writeExclusive(markdownPath, renderAdaptiveStateCriticalPathMarkdown(plan));
@@ -213,6 +274,14 @@ async function main(argv = process.argv.slice(2)) {
       stage,
       designSha256: plan.design_sha256,
       executedModelCalls: 0,
+      ...(promotionParent
+        ? {
+            s2AuthorizationSha256: promotionParent.authorization.authorization_sha256,
+            parentS1SealSha256: promotionParent.authorization.s1.seal_sha256,
+            sampleSizeBasis: promotionParent.authorization.sample_size_basis,
+            powerClaimMade: false,
+          }
+        : {}),
     },
   });
   const verification = assertExperimentRun(directory);

@@ -7,10 +7,10 @@ priority: P1
 owner: unassigned
 source: review
 created: 2026-07-11
-updated: 2026-07-11
+updated: 2026-07-12
 verification: "A preregistered staged comparison runs on at least three proof geometries and two independent latent learner-generator families with strong fixed, action-frequency-yoked, guard-frequency-yoked, adaptive-move/fixed-register, and state-scramble arms; raw fixed-horizon, safety, independence, and guard-exposure endpoints plus uncertainty intervals determine pass, heterogeneity-only, close-register, or stop."
 claim_status: planned
-blocked_by: "The learner-state validity card has not passed. The v1 proxy fixture was not promotable, and the corrected exact-sensor v2 crossed benchmark has not yet produced a verdict."
+blocked_by: "The learner-state validity card has not passed. The v1 proxy fixture was not promotable, and the corrected canonical policy-invariant v2 crossed benchmark has not yet produced a verdict."
 depends_on:
   - adaptive-eval-immutable-provenance
   - tutor-stub-learner-state-validity
@@ -33,6 +33,6 @@ frequency, state artifacts, guard exposure, and register variation.
 
 2026-07-11 Codex: Blocked before paid policy calls. The first bounded formal
 benchmark did not clear its gates, but later audit showed it tested partial
-proxies rather than the exact live sensor. Reopen only after the corrected,
+proxies rather than the canonical policy-invariant sensor. Reopen only after the corrected,
 independently crossed v2 sensor dataset passes the upstream card; do not tune a
 policy on either the failed v1 fixture or the v2 pilot.

@@ -27,7 +27,7 @@ import { call as callAI, callStream as streamAI } from '../tutor-core/services/u
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
 import { getProviderConfig, resolveModel } from '../services/evalConfigLoader.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
-import { closure, factKey, matchPattern } from '../services/dramaticDerivation/chainer.js';
+import { closure, factKey } from '../services/dramaticDerivation/chainer.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from '../services/dramaticDerivation/learnerDag.js';
 import {
   buildLearnerProxyDagMemory,
@@ -55,7 +55,19 @@ import {
   auditTutorStubGenerousInferenceResponse,
   resolveTutorStubGenerousInference,
 } from '../services/tutorStubGenerousInference.js';
-import { closeTruncatedTutorStubJson, normalizeTutorStubAnalysisEnvelope } from '../services/tutorStubJson.js';
+import {
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
+  applyTutorStubPublicLearnerRecordUpdate as applyLearnerRecordUpdate,
+  buildTutorStubPublicLearnerAnalysisPrompt,
+  extractTutorStubPublicLearnerAnalysis,
+  normalizeTutorStubHumanDiscourseExtraction as normalizeHumanDiscourseExtraction,
+  normalizeTutorStubHumanDiscourseRows as normalizeDiscourseRows,
+  parseTutorStubPublicLearnerAnalysisInteractive as parseClassifierJson,
+  tutorStubHumanDiscoursePromptSchema as humanDiscourseExtractionSchema,
+  tutorStubPublicFactSurface as factSurface,
+  tutorStubPublicReleaseLedger as releaseLedgerForTurn,
+  tutorStubPublicStagedEvidence as stagedEvidenceRows,
+} from '../services/tutorStubPublicLearnerAnalysis.js';
 import {
   advanceTutorStubDialogueClosure,
   auditTutorStubDialogueClosureResponse,
@@ -273,14 +285,6 @@ const LEARNER_RECORD_SYSTEM_PROMPT = [
   'You are a conservative public-record extractor for a tutor-side learner-DAG model.',
   'Use only the learner input, the public transcript, public rules, and staged public evidence supplied in the prompt.',
   'Do not infer private mental states, unstaged evidence, concealed answers, proof paths, or release schedules beyond the staged list.',
-  'Return one JSON object only. No prose outside JSON.',
-].join('\n');
-
-const LEARNER_ANALYSIS_SYSTEM_PROMPT = [
-  'You are a compact up-front reviewer for an experimental tutor.',
-  'Return a pedagogical discourse classification, a conservative public learner-record update, and, only when requested, a reviewer-chosen tutor engagement stance.',
-  'Use only the learner input, the public transcript, public rules, and staged public evidence supplied in the prompt.',
-  'Do not infer hidden story facts, concealed answers, private tutor prompts, proof paths, or unstaged evidence.',
   'Return one JSON object only. No prose outside JSON.',
 ].join('\n');
 
@@ -1801,90 +1805,6 @@ function engagementStanceSelectionPolicyPrompt(state) {
   return lines.join('\n');
 }
 
-function firstJsonObjectCandidate(text) {
-  let start = -1;
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-
-  for (let i = 0; i < text.length; i += 1) {
-    const ch = text[i];
-    if (inString) {
-      if (escaped) {
-        escaped = false;
-      } else if (ch === '\\') {
-        escaped = true;
-      } else if (ch === '"') {
-        inString = false;
-      }
-      continue;
-    }
-
-    if (ch === '"') {
-      inString = true;
-      continue;
-    }
-    if (ch === '{') {
-      if (depth === 0) start = i;
-      depth += 1;
-      continue;
-    }
-    if (ch === '}' && depth > 0) {
-      depth -= 1;
-      if (depth === 0 && start !== -1) {
-        return text.slice(start, i + 1);
-      }
-    }
-  }
-
-  return null;
-}
-
-function parseClassifierJson(rawText) {
-  const text = String(rawText || '').trim();
-  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]?.trim();
-  const originalCandidates = [text, fenced, firstJsonObjectCandidate(text)].filter(Boolean);
-  const candidates = originalCandidates
-    .flatMap((candidate) => [candidate, closeTruncatedTutorStubJson(candidate)])
-    .filter(Boolean);
-
-  for (const candidate of candidates) {
-    try {
-      const parsed = JSON.parse(candidate);
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        return { parsed: normalizeTutorStubAnalysisEnvelope(parsed), parseError: null };
-      }
-    } catch (_) {
-      // Try the next extraction strategy.
-    }
-  }
-
-  return {
-    parsed: {
-      turn: {
-        summary: 'Classifier returned non-JSON output.',
-        request_type: 'off_task_or_mixed',
-        discourse_move: 'unknown',
-        evidence_use: 'unknown',
-        epistemic_stance: 'unknown',
-        affect: 'unknown',
-        agency: 'unknown',
-        scores: {},
-        pedagogical_need: 'Inspect the raw classifier output before relying on this turn label.',
-      },
-      overall: {
-        summary: 'No structured overall learner classification is available.',
-        trajectory: 'unknown',
-        recurring_pattern: 'unknown',
-        current_state: 'unknown',
-        next_best_tutor_move: 'Continue with a diagnostic question grounded in the learner input.',
-      },
-      raw: text,
-    },
-    parseError: 'Classifier output was not parseable JSON.',
-  };
-}
-
 function classifierWorldContext(state) {
   if (!state.world) return 'No detective-story world is active.';
   return [
@@ -3159,45 +3079,6 @@ async function classifyForTurn(learnerText, state) {
   return classification;
 }
 
-function releaseLedgerForTurn(world, turn) {
-  if (!world) return [];
-  return world.releaseSchedule
-    .filter((entry) => entry.turn <= turn)
-    .map((entry) => ({ turn: entry.turn, premiseId: entry.premise, via: entry.via }));
-}
-
-function factFromQuestionAnswer(world, answer) {
-  const cleaned = String(answer || '')
-    .trim()
-    .replace(/\s+/g, '_')
-    .replace(/[^A-Za-z0-9_:-]/g, '')
-    .toLowerCase();
-  if (!world || !cleaned) return null;
-  return world.questionPattern.map((part) => (typeof part === 'string' && part.startsWith('?') ? cleaned : part));
-}
-
-function factSurface(world, fact) {
-  if (!world || !Array.isArray(fact)) return factText(fact);
-  const key = factKey(fact);
-  for (const premise of world.premises || []) {
-    if (factKey(premise.fact) === key) return String(premise.surface || factText(fact)).trim();
-  }
-  return factText(fact);
-}
-
-function stagedEvidenceRows(world, turn) {
-  return releaseLedgerForTurn(world, turn).map((entry) => {
-    const premise = world.premiseById.get(entry.premiseId);
-    return {
-      premise: entry.premiseId,
-      turn: entry.turn,
-      via: entry.via,
-      surface: String(premise?.surface || '').trim(),
-      fact: premise?.fact || null,
-    };
-  });
-}
-
 function activeDramaturgyAct(world, tutorTurn) {
   const acts = world?.dramaturgy?.acts;
   if (!Array.isArray(acts)) return null;
@@ -3448,67 +3329,6 @@ function publicStocktakeRows(rows = [], source = 'learner_record') {
     .filter((row) => row.surface);
 }
 
-function normalizeDiscourseRows(rows = [], source = 'learner_record') {
-  return (Array.isArray(rows) ? rows : [])
-    .map((row) => {
-      if (typeof row === 'string') return { surface: row.trim(), source };
-      return {
-        surface: String(row?.surface || row?.text || row?.claim || row?.premise || '').trim(),
-        warrantNeeded: String(row?.warrant_needed || row?.warrantNeeded || row?.missing_warrant || '').trim() || null,
-        reason: String(row?.reason || row?.note || '').trim() || null,
-        severity: String(row?.severity || '').trim() || null,
-        source: String(row?.source || source).trim() || source,
-      };
-    })
-    .filter((row) => row.surface || row.reason || row.warrantNeeded);
-}
-
-function normalizeHumanDiscourseExtraction(raw = {}) {
-  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
-  const sideArc = source.side_arc || source.sideArc || {};
-  return {
-    proofStatus: String(source.proof_status || source.proofStatus || 'unclear').trim() || 'unclear',
-    provisionalClaims: normalizeDiscourseRows(
-      source.provisional_claims || source.provisionalClaims,
-      'extractor_provisional_claim',
-    ),
-    impliedWarrants: normalizeDiscourseRows(
-      source.implied_warrants || source.impliedWarrants,
-      'extractor_implied_warrant',
-    ),
-    missingWarrants: normalizeDiscourseRows(
-      source.missing_warrants || source.missingWarrants,
-      'extractor_missing_warrant',
-    ),
-    impliedPremises: normalizeDiscourseRows(
-      source.implied_public_premises || source.impliedPremises,
-      'extractor_implied_premise',
-    ),
-    suppressedPremises: normalizeDiscourseRows(
-      source.suppressed_or_private_premises || source.suppressedPremises,
-      'extractor_suppressed_premise',
-    ),
-    commonSenseBridges: normalizeDiscourseRows(
-      source.common_sense_bridges || source.commonSenseBridges,
-      'extractor_common_sense',
-    ),
-    illicitHiddenPremises: normalizeDiscourseRows(
-      source.illicit_hidden_premises || source.illicitHiddenPremises,
-      'extractor_hidden_premise',
-    ),
-    proofDebtCandidates: normalizeDiscourseRows(
-      source.proof_debt_candidates || source.proofDebtCandidates,
-      'extractor_proof_debt',
-    ),
-    sideArc: {
-      detected: sideArc.detected === true,
-      type: String(sideArc.type || '').trim() || null,
-      reason: String(sideArc.reason || '').trim() || null,
-      returnTarget: String(sideArc.return_target || sideArc.returnTarget || '').trim() || null,
-    },
-  };
-}
-
 function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = null, learnerText = '', world = null }) {
   const model = tutorLearnerDag?.model || tutorLearnerDag || null;
   const record = model?.learnerRecord || {};
@@ -3729,245 +3549,33 @@ function buildLearnerRecordPrompt({ learnerText, state, tutorTurn }) {
     .join('\n');
 }
 
-function learnerClassificationSchema() {
-  return {
-    turn: {
-      summary: 'one short sentence',
-      request_type: 'controlled label',
-      discourse_move: 'controlled label',
-      evidence_use: 'controlled label',
-      epistemic_stance: 'controlled label',
-      affect: 'short label',
-      agency: 'controlled label',
-      scores: {
-        conceptual_engagement: { score: 1, reason: 'short phrase' },
-        epistemic_readiness: { score: 1, reason: 'short phrase' },
-      },
-      pedagogical_need: 'one short phrase',
-    },
-    overall: {
-      summary: 'one short sentence',
-      trajectory: 'short phrase',
-      recurring_pattern: 'short phrase or none',
-      current_state: 'short phrase',
-      next_best_tutor_move: 'one short sentence',
-    },
-  };
-}
-
-function learnerRecordSchema() {
-  return {
-    human_discourse: humanDiscourseExtractionSchema(),
-    notes: 'one short sentence only when useful',
-  };
-}
-
-function humanDiscourseExtractionSchema() {
-  return {
-    proof_status: 'strict_proof|provisional_scaffold|side_arc|hidden_premise_risk|unclear',
-  };
-}
-
-function engagementStanceSelectionSchema() {
-  return {
-    engagement_stance: 'one available tutor engagement stance name',
-    reviewer_signal: 'brief up-front reviewer judgment that motivates this stance choice',
-    request_type: 'logical request type from the classifier; this is not the engagement stance',
-    engagement_stance_reason: 'why the up-front reviewer chose this stance for the next tutor response',
-    evidence_span: 'short quote or public-state cue supporting the choice',
-    risk_flags: ['guardrail flags, or empty array'],
-    expected_dag_move: 'what learner-DAG progress this register is meant to produce next',
-    expected_field_move: 'what learner-field movement this register is meant to produce next',
-    expected_progress_marker: 'what the next learner turn should show if this register worked',
-    confidence: 0.75,
-  };
-}
-
 function buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn }) {
-  const staged = stagedEvidenceRows(state.world, tutorTurn);
-  const includeRegisterSelection = Boolean(
-    state.register?.enabled &&
-    ![
-      'field',
-      'trajectory',
-      'dynamical_system',
-      'empirical_dynamical_system',
-      'continuous_dynamical_system',
-      'continuous_empirical_dynamical_system',
-      'state',
-      'random',
-      'bland',
-      'negative',
-    ].includes(state.register.policy) &&
-    state.register.palette?.length,
-  );
-  const localFieldPolicy = Boolean(state.register?.enabled && state.register.policy === 'field');
-  const localTrajectoryPolicy = Boolean(state.register?.enabled && state.register.policy === 'trajectory');
-  const localDynamicalSystemPolicy = Boolean(state.register?.enabled && state.register.policy === 'dynamical_system');
-  const localEmpiricalDynamicalSystemPolicy = Boolean(
-    state.register?.enabled && state.register.policy === 'empirical_dynamical_system',
-  );
-  const localContinuousDynamicalSystemPolicy = Boolean(
-    state.register?.enabled && state.register.policy === 'continuous_dynamical_system',
-  );
-  const localContinuousEmpiricalDynamicalSystemPolicy = Boolean(
-    state.register?.enabled && state.register.policy === 'continuous_empirical_dynamical_system',
-  );
-  const localStatePolicy = Boolean(state.register?.enabled && state.register.policy === 'state');
-  const fixedBlandPolicy = Boolean(state.register?.enabled && state.register.policy === 'bland');
-  const negativeFloorPolicy = Boolean(state.register?.enabled && state.register.policy === 'negative');
-  const schema = {
-    classification: learnerClassificationSchema(),
-    learner_record: learnerRecordSchema(),
-  };
-  if (includeRegisterSelection) schema.register_selection = engagementStanceSelectionSchema();
-  const comprehensionContext = tutorStubComprehensionPrompt(state.comprehension, { turn: tutorTurn });
-  return [
-    '# Task',
-    '',
-    'Analyze the learner input once before the tutor responds.',
-    'Be terse. Keep every summary or reason to one short sentence or phrase.',
-    comprehensionContext || null,
-    'Return sparse JSON: omit empty arrays, null optional learner_record fields, and absent human_discourse fields. Do not restate the same issue across arrays.',
-    'Return both:',
-    '1. A pedagogical discourse classification.',
-    '2. A conservative public learner-record update for the tutor-side learner-DAG model.',
-    includeRegisterSelection
-      ? '3. A tutor engagement-stance selection made by the up-front reviewer using the classification plus the tutor-side learner-DAG state.'
-      : null,
-    localFieldPolicy
-      ? 'Policy is field: do not choose an engagement stance. The runtime will map the classification plus learner-DAG update into a local engagement-stance distribution.'
-      : null,
-    localTrajectoryPolicy
-      ? 'Policy is trajectory: do not choose an engagement stance. The runtime will map classification, learner-DAG state, and recent trajectory into a local engagement-stance distribution.'
-      : null,
-    localDynamicalSystemPolicy
-      ? 'Policy is dynamical_system: do not choose an engagement stance. The runtime will map classification, learner-DAG state, derivatives, stance priors, and prior stance efficacy into a local distribution.'
-      : null,
-    localEmpiricalDynamicalSystemPolicy
-      ? 'Policy is empirical_dynamical_system: do not choose an engagement stance. The runtime will map classification, learner-DAG state, derivatives, stance priors, local stance efficacy, and cross-run priors into a local distribution.'
-      : null,
-    localContinuousDynamicalSystemPolicy
-      ? 'Policy is continuous_dynamical_system: do not choose an engagement stance. The runtime will map classification, learner-DAG state, derivatives, stance priors, and prior efficacy into a weighted engagement-stance blend.'
-      : null,
-    localContinuousEmpiricalDynamicalSystemPolicy
-      ? 'Policy is continuous_empirical_dynamical_system: do not choose an engagement stance. The runtime will map classification, learner-DAG state, derivatives, stance priors, local efficacy, and cross-run priors into a weighted engagement-stance blend.'
-      : null,
-    localStatePolicy
-      ? 'Policy is state: do not choose an engagement stance. The runtime will map current classification and learner-DAG assessment into a local engagement-stance distribution.'
-      : null,
-    fixedBlandPolicy
-      ? 'Policy is bland: do not choose an engagement stance. The runtime will use a fixed plain non-adaptive baseline stance.'
-      : null,
-    negativeFloorPolicy
-      ? 'Policy is negative: do not choose an engagement stance. The runtime will sample only ironic, sarcastic, and face_threat as an explicit negative-floor stance control.'
-      : null,
-    '',
-    '# Public tutoring context',
-    '',
-    `Topic: ${state.topic}`,
-    classifierWorldContext(state),
-    '',
-    '# Public question',
-    '',
-    state.world.question,
-    '',
-    '# Public rules',
-    '',
-    ...state.world.rules.map(ruleText),
-    '',
-    '# Staged public evidence available at or before this turn',
-    '',
-    staged.length
-      ? staged
-          .map((row) => {
-            return [
-              `- ${row.premise} (staged turn ${row.turn} via ${row.via})`,
-              `  surface: ${row.surface}`,
-              `  fact: ${JSON.stringify(row.fact)}`,
-            ].join('\n');
-          })
-          .join('\n')
-      : '- none',
-    '',
-    '# Previous public transcript',
-    '',
-    compactPublicTranscriptForPrompt(state, state.historyTurns),
-    '',
-    '# Current learner turn',
-    '',
+  return buildTutorStubPublicLearnerAnalysisPrompt({
     learnerText,
-    '',
-    '# Compact pedagogical discourse rubric',
-    '',
-    'Scores (1-5): conceptual_engagement = parroting, surface, partial concept, substantive reasoning, constructing/testing/revising; epistemic_readiness = reception, minimal awareness, generic awareness, evidence-aware monitoring, active bias/uncertainty monitoring.',
-    'Use controlled labels:',
-    '- request_type: conceptual_clarity_request, stepwise_support_request, authority_refusal_or_status_challenge, plain_language_request, plain_simplification_followup, transfer_demand_or_named_material, vulnerability_or_moral_exposure, resistance_or_low_agency, answer_seeking_or_overreach, off_task_or_mixed',
-    '- discourse_move: question, claim, hypothesis, inference, evidence_adoption, challenge, repair_request, affective_signal, answer_seeking, metacognitive_reflection, off_task',
-    '- evidence_use: none, repeats_setup, cites_public_evidence, omits_warrant, links_evidence_to_rule, overleaps_evidence, distorts_public_evidence, revises_from_evidence',
-    '- evidence precedence: distorted/misattributed public clue => distorts_public_evidence; correct clue plus conclusion but no bridge => omits_warrant; conclusion beyond available evidence => overleaps_evidence; explicit bridge => links_evidence_to_rule.',
-    '- Resolve short answers, pronouns, and ellipsis against the immediately preceding tutor question before assigning these labels. A reply such as "it will be the same" can fully answer a local single-referent question without repeating the noun.',
-    '- Do not call a contextually complete short answer confused, passive, or evidence-free merely because the preceding question supplies its referent. Record any genuinely omitted warrant separately for strict audit.',
-    '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
-    '- agency: passive, complying, attempting, steering, self_correcting',
-    '',
-    includeRegisterSelection ? '# Request type registry' : null,
-    includeRegisterSelection ? '' : null,
-    includeRegisterSelection
-      ? 'Request type belongs to the logical armature: it describes what kind of move/device the learner turn calls for in the DAG or proof path. It is not the engagement stance.'
-      : null,
-    includeRegisterSelection ? requestTypePromptRows() : null,
-    includeRegisterSelection ? '' : null,
-    '# Learner-record extraction rules',
-    '',
-    '- adopt/retract: only staged premise ids the learner explicitly accepts/uses or rejects/withdraws.',
-    '- derive: only learner-voiced conclusions supported by adopted or staged evidence plus public rules. For a warranted one-step conclusion, include its supporting premise ids in adopt and its fact in derive.',
-    '- Resolve pronouns and elliptical answers against the immediately preceding tutor question. If a short reply unambiguously answers that local question, the resolved content counts as learner-voiced; do not demand repeated nouns or names.',
-    '- hypothesis: one learner conjecture or uncertainty, else null. assert_answer: direct answer candidate, else null.',
-    '- human_discourse: record only concrete current-turn material. proof_status uses the schema enum. provisional_claims are allowable but not strict; implied_warrants are unstated bridges; missing_warrants are still owed; implied_public_premises are public but ungrounded; suppressed_or_private_premises and illicit_hidden_premises are not public enough; common_sense_bridges are safe provisional steps; proof_debt_candidates need later repair; side_arc covers clarification, vocabulary, affect, trust, or off-path requests.',
-    '- A wording-only or vocabulary-only clarification request is a non-DAG side-state: classify and record the side arc, but do not adopt premises, derive facts, or assert an answer from that request itself.',
-    '- Be conservative: staged evidence is not adopted merely because it exists.',
-    includeRegisterSelection ? '' : null,
-    includeRegisterSelection ? '# Tutor engagement-stance selection' : null,
-    includeRegisterSelection
-      ? 'As the up-front reviewer, select one engagement stance for the upcoming tutor response. The learner does not choose or license the stance.'
-      : null,
-    includeRegisterSelection
-      ? 'Keep request_type separate from engagement_stance: request_type is the logical/DAG armature; engagement_stance is the reviewer-chosen tone and posture.'
-      : null,
-    includeRegisterSelection
-      ? 'Do not select action_family here. The runtime selects it independently from the learner state after this analysis.'
-      : null,
-    includeRegisterSelection
-      ? 'The selected engagement stance should be appropriate to the classification, learner-DAG state, field movement, and recent stance efficacy, but it does not determine the action family, audience register, lexical accessibility, or scene immersion.'
-      : null,
-    includeRegisterSelection
-      ? 'Use expected_field_move for the discourse/agency/posture movement you want, and expected_dag_move for the proof-state movement you want.'
-      : null,
-    includeRegisterSelection
-      ? 'Never choose a stance outside the available palette. Negative/liminal stances appear only when explicitly included in that palette.'
-      : null,
-    includeRegisterSelection ? '' : null,
-    includeRegisterSelection ? '# Engagement-stance selection policy' : null,
-    includeRegisterSelection ? engagementStanceSelectionPolicyPrompt(state) : null,
-    includeRegisterSelection ? '' : null,
-    includeRegisterSelection ? '# Available tutor engagement-stance palette' : null,
-    includeRegisterSelection ? engagementStancePalettePromptRows(state.register.palette) : null,
-    includeRegisterSelection ? '' : null,
-    includeRegisterSelection ? '# Prior redacted tutor-side learner-DAG model' : null,
-    includeRegisterSelection ? learnerDagPromptSummary(state.learnerDag.lastModel) : null,
-    includeRegisterSelection ? '' : null,
-    includeRegisterSelection ? '# Prior tutor engagement stances and observed efficacy' : null,
-    includeRegisterSelection ? registerHistoryPromptSummary(state) : null,
-    '',
-    '# JSON schema',
-    '',
-    JSON.stringify(schema, null, 2),
-  ]
-    .filter((line) => line !== null)
-    .join('\n');
+    topic: state.topic,
+    world: state.world,
+    tutorTurn,
+    publicTranscript: compactPublicTranscriptForPrompt(state, state.historyTurns),
+    // Completed turns already contain their tutor response. Only the first
+    // learner analysis needs the opening assistant message supplied
+    // separately, matching the benchmark's T0 -> L1 chronology without
+    // duplicating later tutor turns.
+    currentTutorText: state.turns.length === 0 ? latestTutorMessage(state) : '',
+    historyTurns: state.historyTurns,
+    comprehensionContext: tutorStubComprehensionPrompt(state.comprehension, { turn: tutorTurn }),
+    learnerDagEnabled: Boolean(state.dag),
+    registerPolicy: state.register?.policy || null,
+    registerEnabled: Boolean(state.register?.enabled),
+    registerPalette: state.register?.palette || [],
+    registerContext: {
+      requestTypeRegistryPrompt: requestTypePromptRows(),
+      selectionPolicyPrompt: engagementStanceSelectionPolicyPrompt(state),
+      palettePrompt: engagementStancePalettePromptRows(state.register?.palette || []),
+      priorPublicLearnerDagPrompt: learnerDagPromptSummary(state.learnerDag.lastModel),
+      historyPrompt: registerHistoryPromptSummary(state),
+    },
+  });
 }
-
 async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn }) {
   const prompt = buildLearnerRecordPrompt({ learnerText, state, tutorTurn });
   const raw = await callPromptModel({
@@ -4001,27 +3609,24 @@ async function extractCombinedLearnerAnalysis({
   signal = null,
 }) {
   const prompt = buildCombinedLearnerAnalysisPrompt({ learnerText, state, tutorTurn });
-  const raw = await callPromptModel({
+  return await extractTutorStubPublicLearnerAnalysis({
+    learnerText,
+    topic: state.topic,
+    world: state.world,
+    tutorTurn,
     prompt,
-    resolved: state.learnerDag.resolved,
-    systemPrompt: LEARNER_ANALYSIS_SYSTEM_PROMPT,
+    callModel: callPromptModel,
+    parseMode: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.INTERACTIVE,
     role,
     maxTokens: Math.max(2500, state.maxTokens || 0),
-    trace: state.trace,
-    stream,
-    cliEffort: state.cliEffort,
-    turn: tutorTurn,
-    signal,
+    modelCallOptions: {
+      resolved: state.learnerDag.resolved,
+      trace: state.trace,
+      stream,
+      cliEffort: state.cliEffort,
+      signal,
+    },
   });
-  const { parsed, parseError } = parseClassifierJson(raw.text);
-  return {
-    parsed,
-    parseError,
-    provider: raw.provider,
-    model: raw.model,
-    latencyMs: raw.latencyMs,
-    usage: raw.usage,
-  };
 }
 
 function classificationFromCombinedAnalysis(raw, state) {
@@ -6152,184 +5757,6 @@ function normalizeResponseConfigurationSelection(
   state.register.history.push(selection);
   state.register.current = selection;
   return selection;
-}
-
-function validFactArray(value) {
-  return Array.isArray(value) && value.length > 0 && value.every((part) => typeof part === 'string');
-}
-
-function proofBaseKeys(closed, key, seen = new Set()) {
-  if (seen.has(key)) return [];
-  seen.add(key);
-  const proof = closed.proofs.get(key);
-  if (!proof) return [key];
-  return proof.premises.flatMap((premiseKey) => proofBaseKeys(closed, premiseKey, seen));
-}
-
-function applyLearnerRecordUpdate({ update, state, tutorTurn, learnerText, dropoutReplay = null }) {
-  const record = state.learnerDag.record;
-  const world = state.world;
-  const released = new Map(stagedEvidenceRows(world, tutorTurn).map((row) => [row.premise, row]));
-  const releasedByFactKey = new Map(
-    [...released.values()].filter((row) => row.fact).map((row) => [factKey(row.fact), row]),
-  );
-  const accepted = {
-    adopt: [],
-    retract: [],
-    derive: [],
-    hypothesis: null,
-    assertAnswer: null,
-    humanDiscourse: normalizeHumanDiscourseExtraction(update?.human_discourse || update?.humanDiscourse),
-  };
-  const rejected = [];
-  const retracted = new Set();
-
-  const adoptReleasedRow = (row) => {
-    if (!row?.fact || retracted.has(row.premise)) return false;
-    record.board.set(factKey(row.fact), row.fact);
-    if (!accepted.adopt.includes(row.premise)) accepted.adopt.push(row.premise);
-    return true;
-  };
-
-  for (const premiseId of Array.isArray(update?.retract) ? update.retract : []) {
-    const row = released.get(premiseId);
-    if (!row?.fact) {
-      rejected.push({ type: 'retract', value: premiseId, reason: 'not staged' });
-      continue;
-    }
-    record.board.delete(factKey(row.fact));
-    accepted.retract.push(premiseId);
-    retracted.add(premiseId);
-  }
-
-  for (const premiseId of Array.isArray(update?.adopt) ? update.adopt : []) {
-    const row = released.get(premiseId);
-    if (!row?.fact) {
-      rejected.push({ type: 'adopt', value: premiseId, reason: 'not staged' });
-      continue;
-    }
-    adoptReleasedRow(row);
-  }
-
-  for (const fact of Array.isArray(update?.derive) ? update.derive : []) {
-    if (!validFactArray(fact)) {
-      rejected.push({ type: 'derive', value: fact, reason: 'not a fact array' });
-      continue;
-    }
-    const key = factKey(fact);
-    const answersPublicQuestion = Boolean(matchPattern(world.questionPattern, fact));
-    let closed = closure([...record.board.values()], world.rules);
-    let canonical = closed.facts.get(key);
-    if ((!canonical || !closed.proofs.get(key)) && !answersPublicQuestion) {
-      const stagedFacts = [...released.values()]
-        .filter((row) => row.fact && !retracted.has(row.premise))
-        .map((row) => row.fact);
-      const stagedClosed = closure([...record.board.values(), ...stagedFacts], world.rules);
-      const stagedCanonical = stagedClosed.facts.get(key);
-      const stagedProof = stagedClosed.proofs.get(key);
-      if (stagedCanonical && stagedProof) {
-        for (const baseKey of proofBaseKeys(stagedClosed, key)) {
-          adoptReleasedRow(releasedByFactKey.get(baseKey));
-        }
-        closed = closure([...record.board.values()], world.rules);
-        canonical = closed.facts.get(key);
-      }
-    }
-    if (!canonical || !closed.proofs.get(key)) {
-      rejected.push({ type: 'derive', value: fact, reason: 'not derivable from accepted public record' });
-      continue;
-    }
-    if (!record.voicedKeys.has(key)) {
-      record.voicedKeys.add(key);
-      record.voiced.push({ turn: tutorTurn, fact: canonical });
-    }
-    accepted.derive.push(canonical);
-  }
-
-  if (typeof update?.hypothesis === 'string' && update.hypothesis.trim()) {
-    const hypothesis = update.hypothesis.trim();
-    record.hypotheses.push({ turn: tutorTurn, text: hypothesis });
-    accepted.hypothesis = hypothesis;
-  }
-
-  let assertion = null;
-  if (typeof update?.assert_answer === 'string' && update.assert_answer.trim()) {
-    assertion = factFromQuestionAnswer(world, update.assert_answer);
-    accepted.assertAnswer = update.assert_answer.trim();
-  } else if (validFactArray(update?.asserts)) {
-    assertion = update.asserts;
-  }
-  if (assertion && !matchPattern(world.questionPattern, assertion)) {
-    rejected.push({ type: 'assert', value: assertion, reason: 'does not match public question pattern' });
-    assertion = null;
-    accepted.assertAnswer = null;
-  }
-
-  const dagFactDropout = applyTutorStubDagFactDropout({
-    dropout: state.learnerDag.dropout,
-    board: record.board,
-    world,
-    turn: tutorTurn,
-    adoptedPremiseIds: accepted.adopt,
-    retractedPremiseIds: accepted.retract,
-    replay: dropoutReplay,
-  });
-
-  const ledger = releaseLedgerForTurn(world, tutorTurn);
-  const snapshot = buildLearnerDagSnapshot(world, {
-    turn: tutorTurn,
-    boardFacts: [...record.board.values()],
-    validFacts: [...record.board.values()],
-    voiced: record.voiced,
-    hypotheses: record.hypotheses,
-    assertion,
-    learnerText,
-    ledger,
-    source: 'tutor_stub_tutor_learner_dag_model',
-  });
-  record.snapshots.push(snapshot);
-  const learnerDag = buildLearnerDag(record.snapshots, world);
-  const proxyDagMemory = buildLearnerProxyDagMemory({
-    turn: tutorTurn,
-    questionPattern: world.questionPattern,
-    rules: world.rules,
-    groundedFacts: [...record.board.values()],
-    voiced: record.voiced,
-    hypotheses: record.hypotheses,
-    factSurface: (fact) => factSurface(world, fact),
-  });
-  const model = buildTutorLearnerDagModel({
-    turn: tutorTurn,
-    role: 'tutor',
-    proxyDagMemory,
-    assessment: learnerDag.assessment,
-  });
-  model.memoryReliability = dagFactDropout
-    ? {
-        schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
-        configuredRate: dagFactDropout.configuredRate,
-        activeDroppedCount: dagFactDropout.activeDropped.length,
-        droppedThisTurn: dagFactDropout.droppedNow.length,
-        repairedThisTurn: dagFactDropout.repairedNow.length,
-        visibility: 'conduct',
-      }
-    : null;
-
-  return {
-    model,
-    dagFactDropout,
-    accepted,
-    rejected,
-    extractor: {
-      provider: update?.provider || null,
-      model: update?.model || null,
-      latencyMs: update?.latencyMs || 0,
-      usage: update?.usage || null,
-      parseError: update?.parseError || null,
-      humanDiscourse: accepted.humanDiscourse,
-      notes: typeof update?.notes === 'string' ? update.notes : null,
-    },
-  };
 }
 
 function emptyTutorLearnerDagModel(state, tutorTurn) {

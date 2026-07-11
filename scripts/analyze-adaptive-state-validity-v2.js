@@ -6,6 +6,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
 import { evaluateAdaptiveStateValidityV2 } from '../services/adaptiveTutor/stateValidityMetricsV2.js';
+import { validateAdaptiveStateStage2Run } from '../services/adaptiveTutor/stateBenchmarkStage2Lineage.js';
 
 const SCRIPT = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT), '..');
@@ -25,14 +26,16 @@ function resolveFromRoot(value) {
 }
 
 function usage() {
-  return `Usage: node scripts/analyze-adaptive-state-validity-v2.js --report <precomputed-lane-report.json> [options]
+  return `Usage: node scripts/analyze-adaptive-state-validity-v2.js --run <sealed-s2-dir> --s0-parent <sealed-s0-dir> --parent <sealed-s1-dir> [options]
 
-Applies the frozen deterministic v2 gate to a precomputed confirmation report.
-It does not fit the prediction head or make model calls.
+Verifies the complete S0 -> paid S1 -> fixed-eight paid S2 artifact chain.
+The final gate remains fail-closed until deterministic S2 split/prediction/
+report regeneration is implemented. A loose report, planning-only run, mock
+run, partial run, or unsealed run is rejected.
 
 Options:
   --config <path>  Default: config/adaptive-state-benchmark-v2.yaml
-  --out <dir>      Default: directory containing --report
+  --out <dir>      Default: a derived sibling of the immutable S2 run
   --stdout         Print decision JSON without writing files
   --help           Show this help
 `;
@@ -73,18 +76,33 @@ async function main(argv = process.argv.slice(2)) {
     process.stdout.write(usage());
     return;
   }
-  const reportArg = arg(argv, 'report', null);
-  if (!reportArg) throw new Error('--report is required');
-  const reportPath = resolveFromRoot(reportArg);
+  if (arg(argv, 'report', null) || has(argv, 'report')) {
+    throw new Error('Bare --report input is forbidden; provide --run and --parent sealed transactions');
+  }
+  const runArg = arg(argv, 'run', null);
+  const s0ParentArg = arg(argv, 's0-parent', null);
+  const parentArg = arg(argv, 'parent', null);
+  if (!runArg || !s0ParentArg || !parentArg) throw new Error('--run, --s0-parent, and --parent are required');
+  const runDir = resolveFromRoot(runArg);
+  const s0RunDir = resolveFromRoot(s0ParentArg);
+  const parentRunDir = resolveFromRoot(parentArg);
   const configPath = resolveFromRoot(arg(argv, 'config', DEFAULT_CONFIG));
-  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
   const config = yaml.parse(fs.readFileSync(configPath, 'utf8'));
+  const { report } = validateAdaptiveStateStage2Run({
+    runDir,
+    parentRunDir,
+    s0RunDir,
+    config,
+    configPath,
+    repoRoot: ROOT,
+  });
   const decision = evaluateAdaptiveStateValidityV2(report, config);
   if (has(argv, 'stdout')) {
     process.stdout.write(`${JSON.stringify(decision, null, 2)}\n`);
     return;
   }
-  const out = resolveFromRoot(arg(argv, 'out', path.dirname(reportPath)));
+  const defaultOut = path.join(path.dirname(runDir), `${path.basename(runDir)}-validity-decision`);
+  const out = resolveFromRoot(arg(argv, 'out', defaultOut));
   const jsonPath = path.join(out, 'adaptive-state-validity-v2-decision.json');
   const markdownPath = path.join(out, 'adaptive-state-validity-v2-decision.md');
   writeExclusive(jsonPath, `${JSON.stringify(decision, null, 2)}\n`);

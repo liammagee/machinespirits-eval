@@ -6,12 +6,18 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
 
 import {
+  adaptiveStateStateBlindBaselineContractSha256,
   adaptiveStateStage0PredictionMetrics,
+  ADAPTIVE_STATE_STATE_BLIND_BASELINE_CONTRACT,
   auditAdaptiveStateStage0Dataset,
+  buildAdaptiveStateOutOfFoldStateBlindBaselines,
   buildAdaptiveStateStage0Report,
   buildAdaptiveStateStage0SplitManifest,
   fitAdaptiveStateStage0Head,
+  fitAdaptiveStateTrainingFoldClassPrior,
+  predictAdaptiveStateTrainingFoldClassPrior,
   predictAdaptiveStateStage0Head,
+  predictAdaptiveStateUniformBaseline,
 } from '../services/adaptiveTutor/stateBenchmarkStage0Analysis.js';
 import {
   buildAdaptiveStateStage0Dataset,
@@ -85,6 +91,55 @@ test('Stage-0 fixed head is deterministic and learns the common action signal', 
   assert.equal(metrics.predictions, rows.length);
 });
 
+test('state-blind baselines use only training-fold counts with alpha=1 and an exact uniform distribution', () => {
+  const labels = ['retract', 'derive', 'adopt', 'none'];
+  const rows = trainingRows().slice(0, 6);
+  for (const [index, row] of rows.entries()) {
+    row.targets.next_dag_event_family = index < 4 ? 'adopt' : 'none';
+  }
+  const model = fitAdaptiveStateTrainingFoldClassPrior(rows, {
+    target: 'next_dag_event_family',
+    labels,
+    contract: ADAPTIVE_STATE_STATE_BLIND_BASELINE_CONTRACT,
+  });
+  assert.deepEqual(model.counts, { retract: 0, derive: 0, adopt: 4, none: 2 });
+  assert.deepEqual(model.probabilities, { retract: 0.1, derive: 0.1, adopt: 0.5, none: 0.3 });
+  assert.ok(Object.values(model.probabilities).every((probability) => probability > 0));
+  const testing = trainingRows().slice(6, 9);
+  for (const row of testing) row.targets.next_dag_event_family = 'retract';
+  const predictions = predictAdaptiveStateTrainingFoldClassPrior(model, testing);
+  assert.deepEqual(predictions.map((row) => row.probabilities), Array(3).fill(model.probabilities));
+  const uniform = predictAdaptiveStateUniformBaseline(testing, {
+    target: 'next_dag_event_family',
+    labels,
+  });
+  assert.ok(uniform.every((row) => labels.every((label) => row.probabilities[label] === 0.25)));
+  assert.match(
+    adaptiveStateStateBlindBaselineContractSha256(ADAPTIVE_STATE_STATE_BLIND_BASELINE_CONTRACT),
+    /^[0-9a-f]{64}$/u,
+  );
+});
+
+test('out-of-fold state-blind baselines bind each class prior to that fold training set', () => {
+  const fixture = stage0Fixture();
+  const blind = buildAdaptiveStateOutOfFoldStateBlindBaselines(fixture.dataset.rows, fixture.splitManifest, {
+    target: 'next_dag_event_family',
+    labels: ['retract', 'derive', 'adopt', 'none'],
+    contract: fixture.config.analysis.state_blind_baseline_contract,
+  });
+  assert.equal(blind.class_prior.predictions.length, fixture.dataset.rows.length);
+  assert.equal(new Set(blind.class_prior.predictions.map((row) => row.id)).size, fixture.dataset.rows.length);
+  assert.equal(blind.class_prior.folds.length, 3);
+  assert.ok(
+    blind.class_prior.folds.every(
+      (fold) => fold.training_rows === 96 && Object.values(fold.probabilities).every((value) => value > 0),
+    ),
+  );
+  assert.ok(
+    blind.uniform.predictions.every((row) => Object.values(row.probabilities).every((value) => value === 0.25)),
+  );
+});
+
 test('Stage-0 executes the complete zero-call matrix and passes only its non-confirmatory contract gate', () => {
   const fixture = stage0Fixture();
   validateAdaptiveStateStage0DatasetContentSha256(fixture.dataset);
@@ -109,7 +164,11 @@ test('Stage-0 executes the complete zero-call matrix and passes only its non-con
   assert.deepEqual(report.stop_reasons, []);
   for (const row of Object.values(report.instrument)) {
     assert.equal(row.oracle_beats_no_state_on_both_metrics, true);
+    assert.equal(row.oracle_beats_all_state_blind_baselines_on_both_metrics, true);
   }
+  assert.equal(report.baseline_sanity.passed, true);
+  assert.match(report.protocol.state_blind_baselines.contract_sha256, /^[0-9a-f]{64}$/u);
+  assert.deepEqual(report.protocol.target_contracts, fixture.config.targets.co_primary);
 });
 
 test('Stage-0 content hash rejects post-seal dataset mutation', () => {

@@ -11,7 +11,19 @@ const VERDICTS = Object.freeze([
   'dag_trajectory',
   'field_trajectory',
 ]);
-const TARGETS = Object.freeze(['next_dag_event_family', 'next_proof_trajectory']);
+const EXPECTED_TARGET_CONTRACTS = Object.freeze([
+  Object.freeze({
+    id: 'next_dag_event_family',
+    labels: Object.freeze(['retract', 'derive', 'adopt', 'none']),
+    owner: 'transition_harness',
+  }),
+  Object.freeze({
+    id: 'next_proof_trajectory',
+    labels: Object.freeze(['advance', 'regress', 'stall']),
+    owner: 'world_normalized_proof_distance_and_debt_harness',
+  }),
+]);
+const TARGETS = Object.freeze(EXPECTED_TARGET_CONTRACTS.map((target) => target.id));
 const REPRESENTATIONS = Object.freeze([
   'no_state',
   'lean_dag',
@@ -24,6 +36,7 @@ const REPRESENTATIONS = Object.freeze([
   'oracle',
 ]);
 const CANDIDATES = Object.freeze(['lean_dag', 'dag_trajectory', 'field_trajectory']);
+const STATE_BLIND_BASELINES = Object.freeze(['no_state', 'class_prior', 'uniform']);
 const METRICS = Object.freeze(['log_loss', 'brier_score']);
 const LANE_LEVELS = Object.freeze({
   world_transfer: Object.freeze(['marrick', 'hethel', 'ravensmark']),
@@ -48,10 +61,28 @@ const EXPECTED_FIXED_HEAD_CONTRACT = Object.freeze({
   }),
   probability_clip: 1e-12,
 });
+const EXPECTED_STATE_BLIND_BASELINE_CONTRACT = Object.freeze({
+  class_prior: Object.freeze({
+    training_scope: 'each_training_fold_only',
+    smoothing: 'symmetric_dirichlet',
+    alpha: 1,
+    label_set: 'frozen_target_labels',
+    absent_class_behavior: 'alpha_smoothed_nonzero',
+    test_frequency_access: false,
+  }),
+  uniform: Object.freeze({
+    probability: 'one_over_frozen_label_count',
+    label_set: 'frozen_target_labels',
+  }),
+});
 const EXPECTED_SENSITIVITY_HEAD_CONTRACT = Object.freeze({ gate_eligible: false, neighbors: 7 });
 const EXPECTED_UNCERTAINTY_CONTRACT = Object.freeze({
   method: 'paired_cluster_bootstrap',
-  cluster: 'latent_dialogue',
+  cluster: 'groups.latent_pair_id',
+  estimand: 'conditional_paired_prediction_loss',
+  refit_within_bootstrap: false,
+  world_inference_scope: 'three_fixed_authored_worlds',
+  population_world_generalization_claim: false,
   iterations: 5000,
   seed: 20260711,
   confidence_level: 0.95,
@@ -64,14 +95,84 @@ const EXPECTED_CALIBRATION_CONTRACT = Object.freeze({
   empty_bins: 'exclude',
   minimum_predictions: 20,
 });
-const EXPECTED_POWER_CONTRACT = Object.freeze({
-  method: 'seeded_cluster_monte_carlo_fixed_effect',
-  seed: 20260712,
-  simulations: 5000,
-  minimum_power: 0.8,
-  candidate_seeds_per_cell: Object.freeze([6, 8]),
-  pilot_inputs: 'pooled_label_frequencies_and_nuisance_variance_only',
-  observed_candidate_effects_forbidden: true,
+const EXPECTED_SAMPLE_SIZE_CONTRACT = Object.freeze({
+  method: 'preregistered_bounded_maximum',
+  seeds_per_cell: 8,
+  power_claim: false,
+  selection_uses_pilot_effects: false,
+  imprecision_interpretation: 'sensor_not_validated_under_bounded_design',
+});
+const EXPECTED_PAID_EXECUTION_CONTRACT = Object.freeze({
+  schema: 'machinespirits.adaptive-state-paid-execution-contract.v2.1',
+  version: '2.1',
+  execution_order: 'serial_dialogues_and_turns',
+  job_order: 'paired_latent_realizer_interleaved_counterbalanced',
+  failure_policy: 'any_dialogue_failure_stops_stage',
+  semantic_rerolls: 0,
+  provider_canaries: Object.freeze({
+    calls: 2,
+    scope: 'one_per_language_realizer',
+    included_in_scored_call_count: false,
+    must_pass_before_matrix: true,
+  }),
+  analyzer_schema_canary: Object.freeze({
+    calls: 1,
+    scope: 'public_turn_analyzer_json_contract',
+    included_in_scored_call_count: false,
+    must_pass_before_matrix: true,
+  }),
+  technical_canaries: Object.freeze({
+    total_calls: 3,
+    roles: Object.freeze(['codex_realizer', 'claude_realizer', 'public_turn_analyzer']),
+    seeds: Object.freeze([910001, 910002, 910003]),
+    claim_eligible: false,
+  }),
+  per_dialogue: Object.freeze({
+    learner_realizer_calls: 7,
+    public_turn_analyzer_calls: 7,
+    scored_cli_process_dispatches: 14,
+  }),
+  public_turn_analyzer: Object.freeze({
+    id: 'tutor_stub_public_learner_analysis_strict',
+    sensor_profile: 'canonical_policy_invariant_no_memory_no_register',
+    live_default_equivalence_claimed: false,
+    deployment_claim_requires_integration_parity_bridge: true,
+    model_ref: 'codex.gpt-5.6-terra',
+    model_family: 'openai_gpt',
+    expected_cli_model_label: 'codex/gpt-5.6-terra',
+    model_attestation_basis: 'explicit_cli_argument_accepted',
+    effort: 'low',
+    timeout_ms: 300000,
+    parse_mode: 'strict_benchmark',
+    one_call_per_realized_turn: true,
+    retries: 0,
+    recovery_floor: Object.freeze({
+      metric: 'exact_harness_event_family_recovery',
+      overall_minimum: 0.8,
+      each_generator_minimum: 0.65,
+      each_realizer_minimum: 0.65,
+      disagreements_relabel_or_exclude_rows: false,
+    }),
+  }),
+  realizer_runtime: Object.freeze({
+    codex_terra: Object.freeze({
+      expected_cli_model_label: 'codex/gpt-5.6-terra',
+      model_attestation_basis: 'explicit_cli_argument_accepted',
+      effort: 'low',
+      timeout_ms: 300000,
+    }),
+    claude_sonnet: Object.freeze({
+      expected_cli_model_label: 'claude-code/claude-sonnet-4-6',
+      model_attestation_basis: 'explicit_cli_argument_accepted',
+      effort: 'low',
+      timeout_ms: 180000,
+    }),
+  }),
+  observation_contract: Object.freeze({
+    every_realized_turn_analyzed: true,
+    kernel_derived_classifier_forbidden: true,
+    future_state_hidden_from_analyzer: true,
+  }),
 });
 const EXPECTED_DECISION_CONTRACT = Object.freeze({
   report_schema: ADAPTIVE_STATE_PRECOMPUTED_LANE_REPORT_V2_SCHEMA,
@@ -79,6 +180,7 @@ const EXPECTED_DECISION_CONTRACT = Object.freeze({
   require_complete_crossed_matrix: true,
   delta_direction: 'baseline_loss_minus_candidate_loss',
   primary_lane: 'world_transfer',
+  state_blind_baselines: STATE_BLIND_BASELINES,
   superiority: Object.freeze({
     confidence_interval_lower_strictly_greater_than: 0,
     probability_of_improvement_at_least: 0.95,
@@ -106,11 +208,23 @@ const EXPECTED_DECISION_CONTRACT = Object.freeze({
     transfer_noninferiority_requires_every_level: true,
   }),
   matched_controls: Object.freeze({
-    dag_trajectory: Object.freeze(['dag_scramble', 'dag_stale']),
-    field_trajectory: Object.freeze(['field_scramble', 'field_stale']),
+    dag_trajectory: Object.freeze(['dag_stale']),
+    field_trajectory: Object.freeze(['field_stale']),
   }),
+  descriptive_only_controls: Object.freeze([
+    Object.freeze({
+      id: 'dag_scramble',
+      gate_eligible: false,
+      reason: 'donor_linked_cross_cluster_dependence',
+    }),
+    Object.freeze({
+      id: 'field_scramble',
+      gate_eligible: false,
+      reason: 'donor_linked_cross_cluster_dependence',
+    }),
+  ]),
   richness: Object.freeze({
-    minimum_superior_targets: 1,
+    minimum_superior_targets: 2,
     remaining_targets_must_be_noninferior: true,
     sequential: true,
   }),
@@ -192,8 +306,8 @@ function ids(rows, path) {
  */
 export function adaptiveStateValidityV2Contract(config) {
   assertObject(config, 'config');
-  if (config.schema !== 'machinespirits.adaptive-state-benchmark-config.v2' || String(config.version) !== '2.0') {
-    throw new Error('stateValidityMetricsV2: config must use the frozen adaptive-state v2 schema and version');
+  if (config.schema !== 'machinespirits.adaptive-state-benchmark-config.v2' || String(config.version) !== '2.1') {
+    throw new Error('stateValidityMetricsV2: config must use the frozen adaptive-state v2.1 protocol');
   }
   assertExact(ids(config.critical_path?.worlds, 'critical_path.worlds'), LANE_LEVELS.world_transfer, 'world ids');
   assertExact(
@@ -239,9 +353,14 @@ export function adaptiveStateValidityV2Contract(config) {
     REPRESENTATIONS,
     'representation set',
   );
-  assertExact(ids(config.targets?.co_primary, 'targets.co_primary'), TARGETS, 'co-primary targets');
+  assertExact(config.targets?.co_primary, EXPECTED_TARGET_CONTRACTS, 'co-primary target contracts');
   assertExact(config.analysis?.fixed_head, 'l2_multinomial_logistic', 'analysis.fixed_head');
   assertExact(config.analysis?.fixed_head_contract, EXPECTED_FIXED_HEAD_CONTRACT, 'analysis.fixed_head_contract');
+  assertExact(
+    config.analysis?.state_blind_baseline_contract,
+    EXPECTED_STATE_BLIND_BASELINE_CONTRACT,
+    'analysis.state_blind_baseline_contract',
+  );
   assertExact(config.analysis?.sensitivity_head, 'mixed_feature_knn', 'analysis.sensitivity_head');
   assertExact(
     config.analysis?.sensitivity_head_contract,
@@ -267,13 +386,32 @@ export function adaptiveStateValidityV2Contract(config) {
     'analysis.metrics',
   );
   assertExact(config.analysis?.calibration_contract, EXPECTED_CALIBRATION_CONTRACT, 'analysis.calibration_contract');
-  assertExact(config.analysis?.power_contract, EXPECTED_POWER_CONTRACT, 'analysis.power_contract');
+  assertExact(
+    config.analysis?.sample_size_contract,
+    EXPECTED_SAMPLE_SIZE_CONTRACT,
+    'analysis.sample_size_contract',
+  );
+  assertExact(config.paid_execution_contract, EXPECTED_PAID_EXECUTION_CONTRACT, 'paid execution contract');
   assertExact(config.minimum_useful_effects, { log_loss_nats: 0.05, brier_score: 0.02 }, 'minimum useful effects');
   assertExact(config.gate?.decision_contract, EXPECTED_DECISION_CONTRACT, 'gate.decision_contract');
   assertExact(config.gate?.noninferiority_margins, { log_loss_nats: 0.02, brier_score: 0.01 }, 'margins');
   assertExact(config.gate?.valid_verdicts, VERDICTS, 'valid verdicts');
-  assertExact(config.stages?.s2_confirmation?.seeds_per_cell_options, [6, 8], 'confirmation sample sizes');
+  assertExact(config.stages?.s2_confirmation?.seeds_per_cell, 8, 'confirmation sample size');
   assertExact(config.stages?.s2_confirmation?.max_seeds_per_cell, 8, 'confirmation maximum sample size');
+  assertExact(
+    {
+      sample_size_basis: config.stages?.s2_confirmation?.sample_size_basis,
+      power_claim: config.stages?.s2_confirmation?.power_claim,
+      imprecision_interpretation: config.stages?.s2_confirmation?.imprecision_interpretation,
+    },
+    {
+      sample_size_basis: 'preregistered_bounded_maximum',
+      power_claim: false,
+      imprecision_interpretation:
+        'Failure to clear the frozen interval and useful-effect gates means the sensor was not validated under this bounded design; it is not evidence that the true effect is null.',
+    },
+    'confirmation sample-size interpretation',
+  );
   assertExact(
     config.complexity_cap,
     {
@@ -287,20 +425,23 @@ export function adaptiveStateValidityV2Contract(config) {
   );
 
   return {
-    schema: 'machinespirits.adaptive-state-validity-statistical-contract.v2',
-    version: '2.0',
+    schema: 'machinespirits.adaptive-state-validity-statistical-contract.v2.1',
+    version: '2.1',
     axes: clone(LANE_LEVELS),
     targets: [...TARGETS],
+    targetContracts: clone(EXPECTED_TARGET_CONTRACTS),
     representations: [...REPRESENTATIONS],
     actionSchedule: [...config.critical_path.action_schedule],
     dialogue: clone(config.critical_path.dialogue),
     head: { id: config.analysis.fixed_head, ...clone(config.analysis.fixed_head_contract) },
+    stateBlindBaselines: clone(config.analysis.state_blind_baseline_contract),
     sensitivityHead: { id: config.analysis.sensitivity_head, ...clone(config.analysis.sensitivity_head_contract) },
     lanes: clone(config.analysis.split_lanes),
     uncertainty: clone(config.analysis.uncertainty),
     metrics: clone(config.analysis.metrics),
     calibration: clone(config.analysis.calibration_contract),
-    power: clone(config.analysis.power_contract),
+    sampleSize: clone(config.analysis.sample_size_contract),
+    paidExecution: clone(config.paid_execution_contract),
     minimumUsefulEffects: {
       log_loss: Number(config.minimum_useful_effects.log_loss_nats),
       brier_score: Number(config.minimum_useful_effects.brier_score),
@@ -310,7 +451,7 @@ export function adaptiveStateValidityV2Contract(config) {
       brier_score: Number(config.gate.noninferiority_margins.brier_score),
     },
     decision: clone(config.gate.decision_contract),
-    confirmationSeedsPerCell: [...config.stages.s2_confirmation.seeds_per_cell_options],
+    confirmationSeedsPerCell: [Number(config.stages.s2_confirmation.seeds_per_cell)],
     complexityCap: clone(config.complexity_cap),
     verdicts: [...VERDICTS],
   };
@@ -336,15 +477,21 @@ function reportContent(report) {
 }
 
 function expectedGroupsForLaneLevel(contract, seedsPerCell, lane, level) {
-  if (level === 'pooled') return 12 * seedsPerCell;
+  // The two realized language surfaces share one latent trajectory. Bootstrap
+  // units are therefore latent_pair_id clusters, not realized
+  // dialogues. Counting both realizers as independent would halve the
+  // uncertainty while adding no new latent draw.
+  if (level === 'pooled') {
+    return contract.axes.world_transfer.length * contract.axes.generator_transfer.length * seedsPerCell;
+  }
   if (!contract.axes[lane]?.includes(level)) {
     throw new Error(`stateValidityMetricsV2: ${lane}/${level} is not a frozen lane level`);
   }
   if (lane === 'world_transfer') {
-    return contract.axes.generator_transfer.length * contract.axes.realizer_transfer.length * seedsPerCell;
+    return contract.axes.generator_transfer.length * seedsPerCell;
   }
   if (lane === 'generator_transfer') {
-    return contract.axes.world_transfer.length * contract.axes.realizer_transfer.length * seedsPerCell;
+    return contract.axes.world_transfer.length * seedsPerCell;
   }
   if (lane === 'realizer_transfer') {
     return contract.axes.world_transfer.length * contract.axes.generator_transfer.length * seedsPerCell;
@@ -352,8 +499,48 @@ function expectedGroupsForLaneLevel(contract, seedsPerCell, lane, level) {
   throw new Error(`stateValidityMetricsV2: unsupported lane ${lane}`);
 }
 
+function expectedPredictionsForLaneLevel(contract, seedsPerCell, lane, level) {
+  let realizedDialogues;
+  if (level === 'pooled') {
+    realizedDialogues =
+      contract.axes.world_transfer.length *
+      contract.axes.generator_transfer.length *
+      contract.axes.realizer_transfer.length *
+      seedsPerCell;
+  } else if (!contract.axes[lane]?.includes(level)) {
+    throw new Error(`stateValidityMetricsV2: ${lane}/${level} is not a frozen lane level`);
+  } else if (lane === 'world_transfer') {
+    realizedDialogues = contract.axes.generator_transfer.length * contract.axes.realizer_transfer.length * seedsPerCell;
+  } else if (lane === 'generator_transfer') {
+    realizedDialogues = contract.axes.world_transfer.length * contract.axes.realizer_transfer.length * seedsPerCell;
+  } else if (lane === 'realizer_transfer') {
+    realizedDialogues = contract.axes.world_transfer.length * contract.axes.generator_transfer.length * seedsPerCell;
+  } else {
+    throw new Error(`stateValidityMetricsV2: unsupported lane ${lane}`);
+  }
+  return realizedDialogues * contract.dialogue.scored_transitions;
+}
+
+function supportContextKey({ lane, level, target }) {
+  return [lane, level, target].join('|');
+}
+
+function expectedSupportBinding(report, row) {
+  return sha256(
+    canonicalJson({
+      lane: row.lane,
+      level: row.level,
+      target: row.target,
+      paired_support_sha256: row.paired_support_sha256,
+      predictions_sha256: report.provenance.predictions_sha256,
+      split_manifest_sha256: report.provenance.split_manifest_sha256,
+    }),
+  );
+}
+
 function validateProtocol(protocol, contract, seedsPerCell) {
   assertObject(protocol, 'report.protocol');
+  assertExact(protocol.target_contracts, contract.targetContracts, 'report.protocol.target_contracts');
   assertExact(
     protocol.fixed_head,
     {
@@ -370,12 +557,24 @@ function validateProtocol(protocol, contract, seedsPerCell) {
     },
     'report.protocol.fixed_head',
   );
+  assertExact(
+    protocol.state_blind_baselines,
+    {
+      ids: [...contract.decision.state_blind_baselines],
+      contract: contract.stateBlindBaselines,
+    },
+    'report.protocol.state_blind_baselines',
+  );
   assertExact(protocol.sensitivity_head_gate_eligible, false, 'report.protocol.sensitivity_head_gate_eligible');
   assertExact(
     protocol.bootstrap,
     {
       method: contract.uncertainty.method,
       cluster: contract.uncertainty.cluster,
+      estimand: contract.uncertainty.estimand,
+      refit_within_bootstrap: contract.uncertainty.refit_within_bootstrap,
+      world_inference_scope: contract.uncertainty.world_inference_scope,
+      population_world_generalization_claim: contract.uncertainty.population_world_generalization_claim,
       iterations: contract.uncertainty.iterations,
       seed: contract.uncertainty.seed,
       confidence_level: contract.uncertainty.confidence_level,
@@ -397,7 +596,10 @@ function validateProtocol(protocol, contract, seedsPerCell) {
     {
       rows_counted_once_per_lane: true,
       adjacent_turn_split_count: 0,
-      latent_dialogue_split_count: 0,
+      realized_dialogue_split_count: 0,
+      latent_pair_atomic_lanes: ['world_transfer', 'generator_transfer'],
+      realizer_lane_pairing: 'same_latent_pair_opposite_surface_in_train',
+      realizer_lane_latent_pair_overlap_expected: true,
     },
     'report.protocol.split_integrity',
   );
@@ -411,45 +613,17 @@ function validateProtocol(protocol, contract, seedsPerCell) {
     },
     'report.protocol.control_integrity',
   );
-  const power = assertObject(protocol.power, 'report.protocol.power');
   assertExact(
+    protocol.sample_size,
     {
-      method: power.method,
-      seed: power.seed,
-      simulations: power.simulations,
-      minimum_power: power.minimum_power,
-      selected_seeds_per_cell: power.selected_seeds_per_cell,
-      pilot_inputs: power.pilot_inputs,
-      observed_candidate_effects_used: power.observed_candidate_effects_used,
+      method: contract.sampleSize.method,
+      seeds_per_cell: seedsPerCell,
+      power_claim: false,
+      selection_uses_pilot_effects: false,
+      imprecision_interpretation: contract.sampleSize.imprecision_interpretation,
     },
-    {
-      method: contract.power.method,
-      seed: contract.power.seed,
-      simulations: contract.power.simulations,
-      minimum_power: contract.power.minimum_power,
-      selected_seeds_per_cell: seedsPerCell,
-      pilot_inputs: contract.power.pilot_inputs,
-      observed_candidate_effects_used: false,
-    },
-    'report.protocol.power decision',
+    'report.protocol.sample_size',
   );
-  assertExact(
-    Object.keys(assertObject(power.achieved_power, 'report.protocol.power.achieved_power')).sort(),
-    [...TARGETS].sort(),
-    'power target keys',
-  );
-  for (const target of TARGETS) {
-    const metrics = assertObject(power.achieved_power[target], `report.protocol.power.achieved_power.${target}`);
-    assertExact(Object.keys(metrics).sort(), [...METRICS].sort(), `power metric keys for ${target}`);
-    for (const metric of METRICS) {
-      const achieved = assertFinite(metrics[metric], `report.protocol.power.achieved_power.${target}.${metric}`);
-      if (achieved < contract.power.minimum_power || achieved > 1) {
-        throw new Error(
-          `stateValidityMetricsV2: power for ${target}/${metric} must be in [${contract.power.minimum_power}, 1]`,
-        );
-      }
-    }
-  }
 }
 
 export function adaptiveStateValidityV2ReportContentSha256(report) {
@@ -480,7 +654,7 @@ function validateMetric(metric, path) {
 
 function validateReport(report, contract) {
   assertObject(report, 'report');
-  if (report.schema !== ADAPTIVE_STATE_PRECOMPUTED_LANE_REPORT_V2_SCHEMA || String(report.version) !== '2.0') {
+  if (report.schema !== ADAPTIVE_STATE_PRECOMPUTED_LANE_REPORT_V2_SCHEMA || String(report.version) !== '2.1') {
     throw new Error('stateValidityMetricsV2: report schema/version is not the frozen v2 precomputed-lane contract');
   }
   const expectedContractSha = sha256(canonicalJson(contract));
@@ -512,8 +686,15 @@ function validateReport(report, contract) {
     throw new Error('stateValidityMetricsV2: report must contain exactly 12 crossed cells');
   }
   const expectedDialogues = 12 * seedsPerCell;
-  if (assertInteger(coverage.latent_dialogues, 'report.coverage.latent_dialogues', 1) !== expectedDialogues) {
-    throw new Error('stateValidityMetricsV2: latent-dialogue count does not match the crossed confirmation plan');
+  const expectedLatentClusters = 6 * seedsPerCell;
+  if (assertInteger(coverage.realized_dialogues, 'report.coverage.realized_dialogues', 1) !== expectedDialogues) {
+    throw new Error('stateValidityMetricsV2: realized-dialogue count does not match the crossed confirmation plan');
+  }
+  if (
+    assertInteger(coverage.independent_latent_clusters, 'report.coverage.independent_latent_clusters', 1) !==
+    expectedLatentClusters
+  ) {
+    throw new Error('stateValidityMetricsV2: independent latent-pair count does not match the crossed plan');
   }
   if (
     assertInteger(coverage.scored_transitions, 'report.coverage.scored_transitions', 1) !==
@@ -534,6 +715,7 @@ function validateReport(report, contract) {
   }
 
   const comparisons = new Map();
+  const supportByContext = new Map();
   for (const [index, comparison] of assertArray(report.comparisons, 'report.comparisons').entries()) {
     const path = `report.comparisons[${index}]`;
     assertObject(comparison, path);
@@ -547,7 +729,7 @@ function validateReport(report, contract) {
     }
     if (
       !contract.representations.includes(comparison.candidate) ||
-      !contract.representations.includes(comparison.baseline)
+      ![...contract.representations, ...contract.decision.state_blind_baselines].includes(comparison.baseline)
     ) {
       throw new Error(`stateValidityMetricsV2: ${path} uses an unknown representation`);
     }
@@ -560,11 +742,21 @@ function validateReport(report, contract) {
     }
     if (
       assertInteger(comparison.predictions, `${path}.predictions`, contract.calibration.minimum_predictions) !==
-      expectedGroups * contract.dialogue.scored_transitions
+      expectedPredictionsForLaneLevel(contract, seedsPerCell, comparison.lane, comparison.level)
     ) {
       throw new Error(`stateValidityMetricsV2: ${path}.predictions does not match its lane-level support`);
     }
     assertHash(comparison.paired_support_sha256, `${path}.paired_support_sha256`);
+    assertHash(comparison.support_binding_sha256, `${path}.support_binding_sha256`);
+    if (comparison.support_binding_sha256 !== expectedSupportBinding(report, comparison)) {
+      throw new Error(`stateValidityMetricsV2: ${path}.support_binding_sha256 is not bound to predictions/splits`);
+    }
+    const supportKey = supportContextKey(comparison);
+    const priorSupport = supportByContext.get(supportKey);
+    if (priorSupport && priorSupport !== comparison.paired_support_sha256) {
+      throw new Error(`stateValidityMetricsV2: ${supportKey} comparisons do not share canonical paired support`);
+    }
+    supportByContext.set(supportKey, comparison.paired_support_sha256);
     assertExact(
       Object.keys(assertObject(comparison.metrics, `${path}.metrics`)).sort(),
       [...METRICS].sort(),
@@ -588,13 +780,27 @@ function validateReport(report, contract) {
     if (!contract.targets.includes(row.target) || !contract.representations.includes(row.representation)) {
       throw new Error(`stateValidityMetricsV2: ${path} is outside the frozen target/representation set`);
     }
+    assertHash(row.paired_support_sha256, `${path}.paired_support_sha256`);
+    assertHash(row.support_binding_sha256, `${path}.support_binding_sha256`);
+    if (row.support_binding_sha256 !== expectedSupportBinding(report, row)) {
+      throw new Error(`stateValidityMetricsV2: ${path}.support_binding_sha256 is not bound to predictions/splits`);
+    }
+    const supportKey = supportContextKey(row);
+    const expectedSupport = supportByContext.get(supportKey);
+    if (!expectedSupport || expectedSupport !== row.paired_support_sha256) {
+      throw new Error(`stateValidityMetricsV2: ${path} calibration support differs from paired comparisons`);
+    }
     assertInteger(row.predictions, `${path}.predictions`, 1);
     const ece = assertFinite(row.ece, `${path}.ece`);
     if (ece < 0 || ece > 1) throw new Error(`stateValidityMetricsV2: ${path}.ece must be in [0, 1]`);
     const key = calibrationKey(row);
     if (calibration.has(key)) throw new Error(`stateValidityMetricsV2: duplicate calibration row ${key}`);
-    const expectedPredictions =
-      expectedGroupsForLaneLevel(contract, seedsPerCell, row.lane, row.level) * contract.dialogue.scored_transitions;
+    const expectedPredictions = expectedPredictionsForLaneLevel(
+      contract,
+      seedsPerCell,
+      row.lane,
+      row.level,
+    );
     if (Number(row.predictions) !== expectedPredictions) {
       throw new Error(`stateValidityMetricsV2: ${path}.predictions does not match its lane-level support`);
     }
@@ -683,13 +889,22 @@ function allPointDeltasPositive(comparisons) {
 function instrumentGate(indexes, contract) {
   const reasons = [];
   for (const target of contract.targets) {
-    const comparison = comparisonFrom(indexes.comparisons, 'world_transfer', 'pooled', target, 'oracle', 'no_state');
-    reasons.push(
-      ...superiorityFailures(comparison, contract, {
-        practical: false,
-        context: `instrument:${target}:oracle_over_no_state`,
-      }),
-    );
+    for (const baseline of contract.decision.state_blind_baselines) {
+      const comparison = comparisonFrom(
+        indexes.comparisons,
+        'world_transfer',
+        'pooled',
+        target,
+        'oracle',
+        baseline,
+      );
+      reasons.push(
+        ...superiorityFailures(comparison, contract, {
+          practical: false,
+          context: `instrument:${target}:oracle_over_${baseline}`,
+        }),
+      );
+    }
     const calibration = calibrationFrom(indexes.calibration, target, 'oracle');
     if (calibration.predictions < contract.decision.calibration.minimum_predictions) {
       reasons.push(
@@ -716,13 +931,22 @@ function instrumentGate(indexes, contract) {
 function candidateAdequacy(candidate, indexes, contract) {
   const reasons = [];
   for (const target of contract.targets) {
-    const comparison = comparisonFrom(indexes.comparisons, 'world_transfer', 'pooled', target, candidate, 'no_state');
-    reasons.push(
-      ...superiorityFailures(comparison, contract, {
-        practical: true,
-        context: `adequacy:${candidate}:${target}:over_no_state`,
-      }),
-    );
+    for (const baseline of contract.decision.state_blind_baselines) {
+      const comparison = comparisonFrom(
+        indexes.comparisons,
+        'world_transfer',
+        'pooled',
+        target,
+        candidate,
+        baseline,
+      );
+      reasons.push(
+        ...superiorityFailures(comparison, contract, {
+          practical: baseline === 'no_state',
+          context: `adequacy:${candidate}:${target}:over_${baseline}`,
+        }),
+      );
+    }
     const calibration = calibrationFrom(indexes.calibration, target, candidate);
     if (calibration.predictions < contract.decision.calibration.minimum_predictions) {
       reasons.push(
@@ -759,8 +983,10 @@ function candidateAdequacy(candidate, indexes, contract) {
   }
 
   const improvingWorlds = contract.axes.world_transfer.filter((level) => {
-    const rows = contract.targets.map((target) =>
-      comparisonFrom(indexes.comparisons, 'world_transfer', level, target, candidate, 'no_state'),
+    const rows = contract.targets.flatMap((target) =>
+      contract.decision.state_blind_baselines.map((baseline) =>
+        comparisonFrom(indexes.comparisons, 'world_transfer', level, target, candidate, baseline),
+      ),
     );
     return allPointDeltasPositive(rows);
   });
@@ -777,16 +1003,18 @@ function candidateAdequacy(candidate, indexes, contract) {
   for (const lane of ['generator_transfer', 'realizer_transfer']) {
     const improving = [];
     for (const level of contract.axes[lane]) {
-      const rows = contract.targets.map((target) =>
-        comparisonFrom(indexes.comparisons, lane, level, target, candidate, 'no_state'),
+      const rows = contract.targets.flatMap((target) =>
+        contract.decision.state_blind_baselines.map((baseline) =>
+          comparisonFrom(indexes.comparisons, lane, level, target, candidate, baseline),
+        ),
       );
       if (allPointDeltasPositive(rows)) improving.push(level);
-      for (const [targetIndex, comparison] of rows.entries()) {
+      for (const comparison of rows) {
         reasons.push(
           ...noninferiorityFailures(
             comparison,
             contract,
-            `transfer:${candidate}:${lane}:${level}:${contract.targets[targetIndex]}`,
+            `transfer:${candidate}:${lane}:${level}:${comparison.target}:over_${comparison.baseline}`,
           ),
         );
       }
@@ -833,6 +1061,53 @@ function richnessGate(candidate, baseline, indexes, contract) {
   return { passed: reasons.length === 0, reasons, superiorTargets };
 }
 
+function boundedDesignInterpretation(verdict, reasons) {
+  if (verdict === 'invalid_instrument') {
+    return {
+      status: 'instrument_invalid',
+      null_effect_claim: false,
+      population_world_generalization_claim: false,
+    };
+  }
+  if (verdict === 'no_sensor') {
+    const codes = new Set((reasons || []).map((row) => row.code));
+    const drivers = [];
+    if (codes.has('minimum_useful_effect_failed')) drivers.push('estimate_below_minimum_useful_effect');
+    if (
+      [...codes].some((code) =>
+        [
+          'superiority_interval_failed',
+          'superiority_probability_failed',
+          'noninferiority_failed',
+          'world_point_improvement_failed',
+          'transfer_point_improvement_failed',
+        ].includes(code),
+      )
+    ) {
+      drivers.push('bounded_design_imprecision_or_instability');
+    }
+    return {
+      status: 'sensor_not_validated_under_bounded_design',
+      drivers,
+      null_effect_claim: false,
+      population_world_generalization_claim: false,
+    };
+  }
+  return {
+    status: 'representation_validated_for_three_fixed_authored_worlds',
+    null_effect_claim: false,
+    population_world_generalization_claim: false,
+  };
+}
+
+function notEligibleGate(reasonCode) {
+  return {
+    status: 'not_eligible',
+    passed: false,
+    reasons: [reason(reasonCode)],
+  };
+}
+
 /**
  * Apply the frozen v2 gate to a precomputed report. Structural omissions,
  * contract drift, and hash tampering throw. Scientifically valid negative
@@ -851,15 +1126,26 @@ export function evaluateAdaptiveStateValidityV2(report, config) {
       reasons: instrument.reasons,
       contract_sha256: contractSha256,
       report_content_sha256: report.content_sha256,
+      bounded_design_interpretation: boundedDesignInterpretation('invalid_instrument', instrument.reasons),
       gates: { instrument },
     };
   }
 
   const lean = candidateAdequacy('lean_dag', indexes, contract);
-  const dag = candidateAdequacy('dag_trajectory', indexes, contract);
-  const field = candidateAdequacy('field_trajectory', indexes, contract);
-  const dagRichness = richnessGate('dag_trajectory', 'lean_dag', indexes, contract);
-  const fieldRichness = richnessGate('field_trajectory', 'dag_trajectory', indexes, contract);
+  const dagEligible = lean.passed;
+  const dag = dagEligible
+    ? candidateAdequacy('dag_trajectory', indexes, contract)
+    : notEligibleGate('lean_dag_failed');
+  const dagRichness = dagEligible
+    ? richnessGate('dag_trajectory', 'lean_dag', indexes, contract)
+    : notEligibleGate('lean_dag_failed');
+  const fieldEligible = dagEligible && dag.passed && dagRichness.passed;
+  const field = fieldEligible
+    ? candidateAdequacy('field_trajectory', indexes, contract)
+    : notEligibleGate('dag_trajectory_failed');
+  const fieldRichness = fieldEligible
+    ? richnessGate('field_trajectory', 'dag_trajectory', indexes, contract)
+    : notEligibleGate('dag_trajectory_failed');
 
   let verdict = 'no_sensor';
   let selectedRepresentation = null;
@@ -869,7 +1155,10 @@ export function evaluateAdaptiveStateValidityV2(report, config) {
     selectedRepresentation = 'lean_dag';
     reasons = [reason('lean_dag_is_simplest_adequate_rung')];
   }
-  if (dag.passed && dagRichness.passed) {
+  // Closed sequential hierarchy: a richer rung may be considered only after
+  // every simpler rung below it has cleared adequacy. This prevents a noisy
+  // DAG trajectory from leapfrogging a failed lean-DAG sensor.
+  if (fieldEligible) {
     verdict = 'dag_trajectory';
     selectedRepresentation = 'dag_trajectory';
     reasons = [reason('dag_trajectory_adds_preregistered_incremental_value')];
@@ -880,7 +1169,7 @@ export function evaluateAdaptiveStateValidityV2(report, config) {
     reasons = [reason('field_trajectory_adds_preregistered_incremental_value')];
   }
   if (verdict === 'no_sensor') {
-    reasons.push(...lean.reasons, ...dag.reasons, ...dagRichness.reasons);
+    reasons.push(...lean.reasons);
   } else if (verdict === 'lean_dag_only') {
     reasons.push(...dag.reasons, ...dagRichness.reasons);
   } else if (verdict === 'dag_trajectory') {
@@ -894,6 +1183,7 @@ export function evaluateAdaptiveStateValidityV2(report, config) {
     reasons,
     contract_sha256: contractSha256,
     report_content_sha256: report.content_sha256,
+    bounded_design_interpretation: boundedDesignInterpretation(verdict, reasons),
     gates: {
       instrument,
       adequacy: { lean_dag: lean, dag_trajectory: dag, field_trajectory: field },

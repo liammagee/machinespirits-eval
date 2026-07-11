@@ -1,6 +1,6 @@
 schema: machinespirits.adaptive-state-benchmark-config.v2
-version: "2.0"
-status: critical_path_frozen_executor_and_data_pending
+version: "2.1"
+status: s0_implemented_s1_live_observation_protocol_frozen
 claim_boundary: >-
   This benchmark tests whether public learner-state representations predict
   harness-owned next-turn events. It does not test tutor efficacy, human
@@ -44,6 +44,68 @@ realizer_contract:
         items: { type: string }
   calls: one_turn_per_call
   contract_failure: technical_failure_no_semantic_reroll
+
+paid_execution_contract:
+  schema: machinespirits.adaptive-state-paid-execution-contract.v2.1
+  version: "2.1"
+  execution_order: serial_dialogues_and_turns
+  job_order: paired_latent_realizer_interleaved_counterbalanced
+  failure_policy: any_dialogue_failure_stops_stage
+  semantic_rerolls: 0
+  provider_canaries:
+    calls: 2
+    scope: one_per_language_realizer
+    included_in_scored_call_count: false
+    must_pass_before_matrix: true
+  analyzer_schema_canary:
+    calls: 1
+    scope: public_turn_analyzer_json_contract
+    included_in_scored_call_count: false
+    must_pass_before_matrix: true
+  technical_canaries:
+    total_calls: 3
+    roles: [codex_realizer, claude_realizer, public_turn_analyzer]
+    seeds: [910001, 910002, 910003]
+    claim_eligible: false
+  per_dialogue:
+    learner_realizer_calls: 7
+    public_turn_analyzer_calls: 7
+    scored_cli_process_dispatches: 14
+  public_turn_analyzer:
+    id: tutor_stub_public_learner_analysis_strict
+    sensor_profile: canonical_policy_invariant_no_memory_no_register
+    live_default_equivalence_claimed: false
+    deployment_claim_requires_integration_parity_bridge: true
+    model_ref: codex.gpt-5.6-terra
+    model_family: openai_gpt
+    expected_cli_model_label: codex/gpt-5.6-terra
+    model_attestation_basis: explicit_cli_argument_accepted
+    effort: low
+    timeout_ms: 300000
+    parse_mode: strict_benchmark
+    one_call_per_realized_turn: true
+    retries: 0
+    recovery_floor:
+      metric: exact_harness_event_family_recovery
+      overall_minimum: 0.80
+      each_generator_minimum: 0.65
+      each_realizer_minimum: 0.65
+      disagreements_relabel_or_exclude_rows: false
+  realizer_runtime:
+    codex_terra:
+      expected_cli_model_label: codex/gpt-5.6-terra
+      model_attestation_basis: explicit_cli_argument_accepted
+      effort: low
+      timeout_ms: 300000
+    claude_sonnet:
+      expected_cli_model_label: claude-code/claude-sonnet-4-6
+      model_attestation_basis: explicit_cli_argument_accepted
+      effort: low
+      timeout_ms: 180000
+  observation_contract:
+    every_realized_turn_analyzed: true
+    kernel_derived_classifier_forbidden: true
+    future_state_hidden_from_analyzer: true
 
 critical_path:
   worlds:
@@ -147,6 +209,17 @@ analysis:
       convergence_tolerance: 1.0e-5
       convergence_criterion: absolute_objective_delta
     probability_clip: 1.0e-12
+  state_blind_baseline_contract:
+    class_prior:
+      training_scope: each_training_fold_only
+      smoothing: symmetric_dirichlet
+      alpha: 1.0
+      label_set: frozen_target_labels
+      absent_class_behavior: alpha_smoothed_nonzero
+      test_frequency_access: false
+    uniform:
+      probability: one_over_frozen_label_count
+      label_set: frozen_target_labels
   sensitivity_head: mixed_feature_knn
   sensitivity_head_contract:
     gate_eligible: false
@@ -166,7 +239,11 @@ analysis:
       primary: false
   uncertainty:
     method: paired_cluster_bootstrap
-    cluster: latent_dialogue
+    cluster: groups.latent_pair_id
+    estimand: conditional_paired_prediction_loss
+    refit_within_bootstrap: false
+    world_inference_scope: three_fixed_authored_worlds
+    population_world_generalization_claim: false
     iterations: 5000
     seed: 20260711
     confidence_level: 0.95
@@ -180,14 +257,12 @@ analysis:
     bins: 10
     empty_bins: exclude
     minimum_predictions: 20
-  power_contract:
-    method: seeded_cluster_monte_carlo_fixed_effect
-    seed: 20260712
-    simulations: 5000
-    minimum_power: 0.80
-    candidate_seeds_per_cell: [6, 8]
-    pilot_inputs: pooled_label_frequencies_and_nuisance_variance_only
-    observed_candidate_effects_forbidden: true
+  sample_size_contract:
+    method: preregistered_bounded_maximum
+    seeds_per_cell: 8
+    power_claim: false
+    selection_uses_pilot_effects: false
+    imprecision_interpretation: sensor_not_validated_under_bounded_design
 
 stages:
   s0_contract:
@@ -198,28 +273,32 @@ stages:
       - any_crossed_cell_missing
       - either_primary_target_degenerate_within_a_generator
       - leakage_or_replay_failure
-      - oracle_fails_to_beat_no_state_on_both_primary_targets
+      - oracle_fails_to_beat_all_state_blind_baselines_on_both_primary_targets
   s1_technical_pilot:
     paid: true
     realizers: language_realizers
     seeds_per_cell: 2
     confirmation_eligible: false
+    execution_order: serial_dialogues_and_turns
     stop_if:
-      - more_than_one_dialogue_fails
+      - any_dialogue_fails
       - observed_model_differs_from_plan
       - any_crossed_cell_missing
       - realizer_changes_latent_target
-      - oracle_or_control_sensitivity_fails
+      - public_analyzer_event_family_recovery_below_floor
+      - oracle_fails_to_beat_all_state_blind_baselines_on_both_primary_targets
+      - control_sensitivity_fails
   s2_confirmation:
     paid: true
     realizers: language_realizers
-    seeds_per_cell_options: [6, 8]
+    seeds_per_cell: 8
     max_seeds_per_cell: 8
-    selection: >-
-      Use 5000 seeded cluster simulations with pilot label frequencies and
-      nuisance variance only. Choose six per cell only if power is at least
-      0.80 for both metrics on both targets; otherwise choose eight. If eight
-      is insufficient, stop and redesign rather than enlarge the matrix.
+    sample_size_basis: preregistered_bounded_maximum
+    power_claim: false
+    imprecision_interpretation: >-
+      Failure to clear the frozen interval and useful-effect gates means the
+      sensor was not validated under this bounded design; it is not evidence
+      that the true effect is null.
 
 minimum_useful_effects:
   log_loss_nats: 0.05
@@ -232,6 +311,7 @@ gate:
     require_complete_crossed_matrix: true
     delta_direction: baseline_loss_minus_candidate_loss
     primary_lane: world_transfer
+    state_blind_baselines: [no_state, class_prior, uniform]
     superiority:
       confidence_interval_lower_strictly_greater_than: 0
       probability_of_improvement_at_least: 0.95
@@ -255,19 +335,27 @@ gate:
       point_improvement_requires_both_metrics_and_targets: true
       transfer_noninferiority_requires_every_level: true
     matched_controls:
-      dag_trajectory: [dag_scramble, dag_stale]
-      field_trajectory: [field_scramble, field_stale]
+      dag_trajectory: [dag_stale]
+      field_trajectory: [field_stale]
+    descriptive_only_controls:
+      - id: dag_scramble
+        gate_eligible: false
+        reason: donor_linked_cross_cluster_dependence
+      - id: field_scramble
+        gate_eligible: false
+        reason: donor_linked_cross_cluster_dependence
     richness:
-      minimum_superior_targets: 1
+      minimum_superior_targets: 2
       remaining_targets_must_be_noninferior: true
       sequential: true
   instrument:
-    - oracle_beats_no_state_on_both_metrics_and_targets
+    - oracle_beats_no_state_class_prior_and_uniform_on_both_metrics_and_targets
     - oracle_ece_at_most_0.10
   candidate_adequacy:
-    - candidate_beats_no_state_on_both_metrics_and_targets_in_world_lane
+    - candidate_beats_no_state_class_prior_and_uniform_on_both_metrics_and_targets_in_world_lane
     - candidate_ece_at_most_0.20
-    - candidate_beats_matched_scramble_and_stale_controls
+    - rich_candidates_beat_matched_stale_controls
+    - matched_scramble_controls_are_descriptive_only
     - point_improvement_in_at_least_two_of_three_worlds
     - point_improvement_in_both_generators_and_both_realizers
     - generator_and_realizer_transfer_noninferior

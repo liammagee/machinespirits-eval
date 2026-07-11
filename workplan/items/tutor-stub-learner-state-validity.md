@@ -7,8 +7,8 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-11
-updated: 2026-07-11
-verification: "Benchmark v2 shares the exact live DAG/field/last-four trajectory projection; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against matched stale/scramble and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict within the frozen 8-per-cell cap."
+updated: 2026-07-12
+verification: "Benchmark v2 uses the canonical policy-invariant no-memory/no-register DAG/field/last-four sensor; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against no-state, training-fold class-prior, uniform, matched stale, descriptive-only scramble, and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict at the fixed 8-per-cell confirmation size."
 claim_status: planned
 depends_on:
   - adaptive-eval-immutable-provenance
@@ -48,21 +48,48 @@ the sealed 12-row formal instrument still returns
 floor `claim_grade_settings`; that phrase describes bootstrap/calibration
 settings only, never the evidence or sensor status.
 
-2026-07-11 Codex correction: The 12-row v1 result did not test the exact live
-sensor. It lacked a true no-state baseline and last-four trajectory, confounded
+2026-07-11 Codex correction: The 12-row v1 result did not test the canonical
+policy-invariant sensor. It lacked a true no-state baseline and last-four trajectory, confounded
 generator with model/source labels, repeated the same rows across holdout
 summaries, and included degenerate/world-local targets. Its correct verdict is
-"v1 proxies not promotable," not "the live sensor is invalid."
+"v1 proxies not promotable," not "the canonical sensor is invalid."
 
-2026-07-11 Codex: Extracted the exact runtime DAG/field/risk trajectory into a
+2026-07-11 Codex: Extracted a shared policy-invariant DAG/field/risk trajectory into a
 shared pure service, persisted that projection in benchmark observations,
-preserved missing observations instead of converting them to false zero
-movement, and added parity tests. Added the versioned v2 critical-path plan:
+preserved missing observations instead of converting them to false zero movement,
+and added parity tests. This freezes the benchmark sensor, not equivalence to the
+memory/register-enriched live default; deployment requires a separate integration
+parity bridge. Added the versioned v2 critical-path plan:
 three geometries × two transition kernels × two model-family realizers, two
 primary harness targets, nested representations with byte-equal recipient
 common input, strict oracle/proof-transition provenance, separate transfer
 lanes, 24-dialogue free contract stage, 24-dialogue paid technical pilot, and a
-confirmation cap of six or eight per cell. The planner is an immutable
+fixed confirmation size of eight per cell. The planner is an immutable
 planning transaction; the generalized cross-world kernels, sequential realizer
 executor, and v2 dataset have not yet run, so the card remains active and no new
 sensor verdict exists.
+
+2026-07-12 Codex: Implemented the generalized Marrick/Hethel/Ravensmark
+durable-state and DAG-dropout kernels plus the sealed Stage-0 executor. The
+canonical clean-tree run `adaptive-state-v2-s0-clean-18293291` at commit
+`182932911cd3834666d9b6b5d37c8661d9d11790` passed: 24 dialogues, 144 scored
+transitions, exact replay, all controls legal, zero model calls, and the oracle
+beat no-state on both metrics for both targets. Dataset SHA-256 is
+`08c09840af22e7c3e8c5209494e27f36ff5b1380c352e3d41837e2b5dbe6aa9a`; report
+SHA-256 is `69311d0d01274c2c08eff32a605423b6ccca493e79e859fce0003b4ff6654068`.
+This is a plumbing/instrument pass, not a sensor verdict. A pre-paid audit found
+that the original S1 kernel-authored observation path made the language-model
+realizer axis inert; S1 remains blocked until protocol 2.1 routes every
+utterance through the shared live public text-to-classifier/DAG analyzer and
+freezes the resulting doubled call budget.
+
+2026-07-12 Codex protocol 2.1 amendment: The clean
+`adaptive-state-v2-s0-clean-18293291` artifact is retained only as a historical
+plumbing pass. It is not promotion-eligible because the source/config hashes and
+gate contract changed. A fresh sealed S0 must pass before any paid S1. The
+amended instrument requires the oracle and every candidate to beat three fixed
+state-blind baselines (`no_state`, training-fold-only Laplace-smoothed
+`class_prior`, and exact `uniform`). Matched stale controls remain inferential;
+donor-linked scramble controls are wiring/descriptive checks only. Richer rungs
+must improve both co-primary targets, uncertainty clusters on latent pairs, and
+the fixed eight-per-cell S2 makes no power or population-world claim.

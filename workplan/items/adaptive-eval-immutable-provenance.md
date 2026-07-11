@@ -1,7 +1,7 @@
 ---
 id: adaptive-eval-immutable-provenance
 title: Immutable evidence kernel for adaptive-tutor experiments
-status: review
+status: done
 type: infra
 priority: P0
 owner: codex
@@ -9,7 +9,12 @@ source: review
 created: 2026-07-11
 updated: 2026-07-11
 branch: codex/adaptive-tutor-implementation
-verification: "Repository manifest phase0-mock-qa-evidence-v1-61ceb224bb43 checksum-binds a fake-CLI QA parent and semantic child; clean-room restore verifies 11/12 hash-chained events, 14/8 artifacts, two jobs, one seeded draw, and tutor/learner/analyzer role plumbing, then regenerates reports without source mutation. Mock Phase 6, corruption, resume, packaging, focused, lint, workplan, provenance, and hermetic checks pass."
+verification: Repository manifest phase0-mock-qa-evidence-v1-61ceb224bb43
+  checksum-binds a fake-CLI QA parent and semantic child; clean-room restore
+  verifies 11/12 hash-chained events, 14/8 artifacts, two jobs, one seeded draw,
+  and tutor/learner/analyzer role plumbing, then regenerates reports without
+  source mutation. Mock Phase 6, corruption, resume, packaging, focused, lint,
+  workplan, provenance, and hermetic checks pass.
 claim_status: methods
 links:
   notes:

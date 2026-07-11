@@ -50,7 +50,14 @@ test('S0 builds a balanced free 3 x 2 x 2 x 2 contract matrix', () => {
     seeds_per_cell: 2,
     dialogue_jobs: 24,
     scored_transitions: 144,
+    expected_learner_realizer_calls: 0,
+    expected_public_turn_analyzer_calls: 0,
+    expected_cli_process_dispatches: 0,
     expected_model_calls: 0,
+    expected_model_calls_deprecated_alias_semantics: 'cli_process_dispatches_not_backend_requests',
+    excluded_provider_canary_calls: 0,
+    excluded_analyzer_schema_canary_calls: 0,
+    excluded_technical_canary_calls: 0,
   });
   assert.equal(new Set(plan.jobs.map((job) => job.cell_id)).size, 12);
   assert.ok(
@@ -95,44 +102,53 @@ test('S1 crosses both language-model families without expanding policies, profil
   const summary = adaptiveStateCriticalPathSummary(plan);
   assert.equal(summary.dialogues, 24);
   assert.equal(summary.transitions, 144);
-  assert.equal(summary.modelCalls, 168);
+  assert.equal(summary.learnerRealizerCalls, 168);
+  assert.equal(summary.publicTurnAnalyzerCalls, 168);
+  assert.equal(summary.cliProcessDispatches, 336);
+  assert.equal(summary.backendRequestCount, 'unknown');
+  assert.equal(summary.modelCalls, 336);
+  assert.equal(summary.modelCallsDeprecatedAliasSemantics, 'cli_process_dispatches_not_backend_requests');
+  assert.equal(summary.excludedTechnicalCanaryCalls, 3);
   assert.deepEqual(plan.axes.realizers, ['codex_terra', 'claude_sonnet']);
   assert.equal(plan.complexity_cap.no_policy_sweep, true);
   assert.equal(plan.complexity_cap.no_profile_sweep, true);
   assert.equal(plan.complexity_cap.no_judge_model_sweep, true);
   assert.deepEqual(plan.co_primary_targets, ['next_dag_event_family', 'next_proof_trajectory']);
+  const firstRealizers = [];
+  for (let index = 0; index < plan.jobs.length; index += 2) {
+    const pair = plan.jobs.slice(index, index + 2);
+    assert.equal(pair.length, 2);
+    assert.equal(pair[0].latent_pair_id, pair[1].latent_pair_id);
+    assert.notEqual(pair[0].language_realizer.id, pair[1].language_realizer.id);
+    firstRealizers.push(pair[0].language_realizer.id);
+  }
+  assert.deepEqual(
+    Object.fromEntries(
+      plan.axes.realizers.map((id) => [id, firstRealizers.filter((realizer) => realizer === id).length]),
+    ),
+    { codex_terra: 6, claude_sonnet: 6 },
+  );
 });
 
-test('S2 is capped at six or eight per cell and produces the frozen call envelope', () => {
+test('S2 is fixed at eight per cell with no pilot-derived size branch', () => {
   assert.throws(
-    () => buildAdaptiveStateCriticalPathPlan(config(), { stage: 's2_confirmation' }),
-    /requires --per-cell 6 or 8/u,
+    () => buildAdaptiveStateCriticalPathPlan(config(), { stage: 's2_confirmation', confirmationPerCell: 6 }),
+    /fixed at --per-cell 8/u,
   );
-  assert.throws(
-    () => buildAdaptiveStateCriticalPathPlan(config(), { stage: 's2_confirmation', confirmationPerCell: 10 }),
-    /requires --per-cell 6 or 8/u,
-  );
-  const six = buildAdaptiveStateCriticalPathPlan(config(), {
-    stage: 's2_confirmation',
-    confirmationPerCell: 6,
-  });
-  const eight = buildAdaptiveStateCriticalPathPlan(config(), {
-    stage: 's2_confirmation',
-    confirmationPerCell: 8,
-  });
-  assert.deepEqual(six.counts, {
-    crossed_cells: 12,
-    seeds_per_cell: 6,
-    dialogue_jobs: 72,
-    scored_transitions: 432,
-    expected_model_calls: 504,
-  });
-  assert.deepEqual(eight.counts, {
+  const fixed = buildAdaptiveStateCriticalPathPlan(config(), { stage: 's2_confirmation' });
+  assert.deepEqual(fixed.counts, {
     crossed_cells: 12,
     seeds_per_cell: 8,
     dialogue_jobs: 96,
     scored_transitions: 576,
-    expected_model_calls: 672,
+    expected_learner_realizer_calls: 672,
+    expected_public_turn_analyzer_calls: 672,
+    expected_cli_process_dispatches: 1344,
+    expected_model_calls: 1344,
+    expected_model_calls_deprecated_alias_semantics: 'cli_process_dispatches_not_backend_requests',
+    excluded_provider_canary_calls: 2,
+    excluded_analyzer_schema_canary_calls: 1,
+    excluded_technical_canary_calls: 3,
   });
 });
 
@@ -166,7 +182,7 @@ test('plan validation detects semantic tampering and report states the planning-
   assert.match(markdown, /does not execute a model/u);
 });
 
-test('v2 representation ladder consumes the exact shared runtime projection without local fact ids', () => {
+test('v2 representation ladder consumes the canonical policy-invariant projection without local fact ids', () => {
   const firstTurn = {
     turn: 1,
     learner: 'I can use the public assay premise.',
@@ -280,6 +296,16 @@ test('v2 representation ladder consumes the exact shared runtime projection with
   assert.doesNotMatch(JSON.stringify(representations.lean_dag), /world_local_assay_id/u);
   assert.equal(representations.lean_dag.additional_state.dag.event_kind_counts.derive, 1);
   assert.equal(representations.field_trajectory.additional_state.trajectory.field.velocity, 0.2);
+  assert.deepEqual(representations.oracle.additional_state, {
+    distributions: {
+      next_dag_event_family: { retract: 0, derive: 1, adopt: 0, none: 0 },
+      next_proof_trajectory: { advance: 1, regress: 0, stall: 0 },
+    },
+  });
+  assert.doesNotMatch(
+    JSON.stringify(representations.oracle.additional_state),
+    /seed|generator|action|source|sha256|provenance|kernel/u,
+  );
   const expectedCommon = JSON.stringify(representations.no_state.common);
   for (const [name, representation] of Object.entries(representations)) {
     assert.equal(
@@ -342,7 +368,7 @@ test('v2 representation ladder consumes the exact shared runtime projection with
   );
 });
 
-test('S0 planner writes a sealed immutable planning transaction without model calls', () => {
+test('S0 planner writes a sealed immutable planning transaction without paid CLI dispatches', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'adaptive-state-v2-plan-'));
   const label = 's0-transaction-unit';
   const runDir = path.join(root, label);

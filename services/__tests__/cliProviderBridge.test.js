@@ -1,5 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { EventEmitter } from 'node:events';
+import { PassThrough } from 'node:stream';
 
 import {
   callAIWithCliBridge,
@@ -11,6 +14,26 @@ import {
   normalizeCliEffort,
   resolveCliEffort,
 } from '../cliProviderBridge.js';
+
+function fakeChild({ stdoutText = '', onEnd = null } = {}) {
+  const child = new EventEmitter();
+  child.stdout = new PassThrough();
+  child.stderr = new PassThrough();
+  child.kill = () => {};
+  child.stdin = {
+    write() {},
+    end() {
+      onEnd?.();
+      queueMicrotask(() => {
+        if (stdoutText) child.stdout.write(stdoutText);
+        child.stdout.end();
+        child.stderr.end();
+        child.emit('close', 0);
+      });
+    },
+  };
+  return child;
+}
 
 describe('cliProviderBridge', () => {
   it('recognizes repo-local CLI providers', () => {
@@ -144,5 +167,96 @@ describe('cliProviderBridge', () => {
         }),
       (error) => error?.name === 'AbortError',
     );
+  });
+
+  it('passes an opt-in JSON schema file to Codex without changing legacy callers', async () => {
+    const calls = [];
+    const outputSchema = {
+      type: 'object',
+      required: ['learner_text'],
+      additionalProperties: false,
+      properties: { learner_text: { type: 'string' } },
+    };
+    const spawnImpl = (command, args, options) => {
+      const schemaPath = args[args.indexOf('--output-schema') + 1];
+      const outputPath = args[args.indexOf('-o') + 1];
+      calls.push({ command, args, options, schema: JSON.parse(fs.readFileSync(schemaPath, 'utf8')) });
+      return fakeChild({
+        stdoutText: '{"type":"turn.completed"}\n',
+        onEnd: () => fs.writeFileSync(outputPath, '{"learner_text":"ready"}\n'),
+      });
+    };
+
+    const result = await callAIWithCliBridge(
+      { provider: 'codex', model: 'gpt-test' },
+      'system',
+      'user',
+      'learner',
+      { outputSchema, effort: 'low', timeoutMs: 1000, spawnImpl },
+    );
+
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].command, 'codex');
+    assert.deepEqual(calls[0].schema, outputSchema);
+    assert.ok(calls[0].args.includes('--output-schema'));
+    assert.ok(calls[0].args.includes('--ignore-rules'));
+    assert.equal(result.structuredOutput, true);
+    assert.equal(result.prohibitedToolEventCount, 0);
+    assert.deepEqual(result.structuredEventAudit.prohibited_events, []);
+    assert.equal(result.modelAttestationBasis, 'explicit_cli_model_argument_accepted_bridge_echo');
+    assert.equal(result.modelIndependentlyAttested, false);
+  });
+
+  it('marks unknown or tool-capable Codex JSONL events as prohibited for structured calls', async () => {
+    const outputSchema = { type: 'object', properties: {}, additionalProperties: false };
+    const spawnImpl = (_command, args) => {
+      const outputPath = args[args.indexOf('-o') + 1];
+      return fakeChild({
+        stdoutText:
+          '{"type":"thread.started"}\n{"type":"item.completed","item":{"type":"command_execution"}}\n',
+        onEnd: () => fs.writeFileSync(outputPath, '{}\n'),
+      });
+    };
+    const result = await callAIWithCliBridge(
+      { provider: 'codex', model: 'gpt-test' },
+      'system',
+      'user',
+      'learner',
+      { outputSchema, effort: 'low', timeoutMs: 1000, spawnImpl },
+    );
+    assert.equal(result.prohibitedToolEventCount, 1);
+    assert.deepEqual(result.structuredEventAudit.prohibited_events[0], {
+      index: 1,
+      event_type: 'item.completed',
+      item_type: 'command_execution',
+    });
+    assert.equal(result.structuredEventAudit.policy, 'strict_no_tools_allowlist');
+  });
+
+  it('passes an opt-in JSON schema and isolation flags to Claude', async () => {
+    const calls = [];
+    const outputSchema = { type: 'object', properties: {}, additionalProperties: false };
+    const spawnImpl = (command, args, options) => {
+      calls.push({ command, args, options });
+      return fakeChild({ stdoutText: '{}\n' });
+    };
+
+    const result = await callAIWithCliBridge(
+      { provider: 'claude-code', model: 'claude-test' },
+      'system',
+      'user',
+      'learner',
+      { outputSchema, effort: 'low', timeoutMs: 1000, spawnImpl },
+    );
+
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].command, 'claude');
+    assert.ok(calls[0].args.includes('--json-schema'));
+    assert.ok(calls[0].args.includes('--no-session-persistence'));
+    assert.ok(calls[0].args.includes('--safe-mode'));
+    assert.ok(calls[0].args.includes('--tools'));
+    assert.deepEqual(JSON.parse(calls[0].args[calls[0].args.indexOf('--json-schema') + 1]), outputSchema);
+    assert.equal(calls[0].options.env.ANTHROPIC_API_KEY, undefined);
+    assert.equal(result.structuredOutput, true);
   });
 });

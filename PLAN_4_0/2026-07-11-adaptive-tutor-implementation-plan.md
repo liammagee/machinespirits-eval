@@ -439,16 +439,22 @@ tests/adaptiveStateValidity.test.js
 
 **Pass:** at least one representation is calibrated and improves held-out prediction over the lean baseline across more than one world and model/learner family, without relying on a self-scoring channel.
 
-**Demote fields:** full fields fail to improve held-out log loss/Brier over the lean state or lose under state-scramble controls. Retain them for visualization only.
+**Demote fields:** full fields fail to improve held-out log loss/Brier over the
+lean state or fail the matched one-turn-stale inferential control. Retain them
+for visualization only. Cross-dialogue scramble is a descriptive wiring check,
+not a promotion/demotion gate, because donor-linked rows are not independent.
 
 **Stop:** no representation clears the lean baseline or the authentic slice reverses the synthetic ordering. Do not proceed to policy learning; improve measurement/data instead.
 
-### 7.8 Benchmark v2 critical path
+### 7.8 Benchmark v2.1 critical path
 
-The corrected question is whether the tutor's **exact live public learner-state
-projection** predicts world-general next-turn events beyond progressively
-simpler rungs. Runtime and benchmark now share one pure DAG/field/trajectory
-projection with parity tests.
+The corrected question is whether a **canonical policy-invariant public
+learner-state sensor** predicts next-turn events on three fixed authored worlds
+beyond progressively simpler rungs. The sensor intentionally disables compact
+memory summaries, register selection, and other policy-dependent context. It
+shares the runtime's pure DAG/field/trajectory postprocessor, but it is not
+claimed to equal the current interactive tutor's default combined prompt. A
+separate integration-parity bridge is required before deployment claims.
 
 The nested ladder is:
 
@@ -458,8 +464,15 @@ The nested ladder is:
 3. `dag_trajectory`: lean DAG plus exact public DAG/risk trajectory;
 4. `field_trajectory`: DAG trajectory plus exact classifier field and full
    last-four trajectory;
-5. matched cross-dialogue scramble and one-turn stale controls;
+5. one-turn stale controls for inferential gating, plus cross-dialogue scramble
+   controls for descriptive wiring sensitivity only;
 6. oracle latent transition distribution, upper-bound only.
+
+Two additional state-blind references are fitted without external dispatches:
+a symmetric Dirichlet/Laplace class prior with `alpha=1`, fitted separately on
+each training fold over the frozen target labels, and an exact `1/K` uniform
+predictor. The common-feature `no_state` head remains a diagnostic baseline;
+no baseline is selected after inspecting held-out labels.
 
 Only two harness-owned co-primary targets bind the gate:
 
@@ -475,25 +488,60 @@ The data design is a bounded 3 × 2 × 2 crossing:
 One seed-balanced six-action schedule is common to every representation. There
 is no tutor-policy, profile, judge, or target sweep.
 
+Execution is serial across dialogues and turns, with no retries or semantic
+rerolls. Paired realizers are adjacent and their first/second order is
+deterministically counterbalanced across latent pairs, limiting temporal or
+provider-drift confounding without adding another factor. One public-analyzer
+call follows every realized turn. Any dialogue
+failure stops the whole stage; a failed dialogue is never dropped, replaced, or
+rerun. Model provenance is stated honestly: `explicit_cli_argument_accepted`
+means that the explicit CLI model argument was accepted, not that the backend
+identity was independently attested.
+
 The staged envelope is:
 
 - S0: 24 free contract dialogues, 144 transitions;
-- S1: 24 technical-pilot dialogues, 144 transitions, 168 base calls; excluded
-  from confirmation;
-- S2: 6/cell only after a frozen 5,000-simulation power pass (72 dialogues, 504
-  calls), otherwise 8/cell (96 dialogues, 672 calls). If 8/cell is
-  underpowered, stop and redesign.
+- S1: 24 technical-pilot dialogues, 144 transitions, and
+  `24 × (7 learner-realizer + 7 public-analyzer) = 336` scored CLI dispatches,
+  plus three excluded technical canaries: two provider-realizer canaries and
+  one analyzer-schema canary;
+- S2: one preregistered bounded confirmation at 8/cell: 96 dialogues and 1,344
+  scored CLI dispatches, plus the same three excluded technical canaries. The
+  size is not selected from S1 effects and carries no 80%-power claim. If the
+  interval/useful-effect gates remain imprecise, report that the sensor was not
+  validated under this bounded design; do not describe that as a null effect.
 
-Including pilot, the paid ceiling is 96 or 120 dialogues and 672 or 840 base
-calls. Representations are computed offline on the same transitions and add no
-calls.
+Across S1 and S2, the paid ceiling is therefore 120 dialogues and 1,680 scored
+CLI dispatches, plus six excluded technical-canary dispatches. Backend request
+counts inside the Codex and Claude CLIs are not observed. The
+nested representations are computed offline from the public analyses and add
+no further CLI process dispatches. S1 is excluded from confirmation and cannot produce or stand
+in for the untouched S2 sensor verdict.
+
+The paid S1 seal binds exact S1-relevant runner, analyzer, policy, profile,
+prompt, world, configuration, and CLI executable/version fingerprints, plus a
+historical clean-Git attestation. Later unrelated S2 implementation commits do
+not invalidate that seal and do not force another 339-dispatch pilot. Any drift
+in an S1-relevant hash or CLI fingerprint does invalidate it; S2 separately
+binds its own clean Git state.
 
 Analysis uses separate world-, generator-, and realizer-transfer lanes, one
-small L2 multinomial head, whole-dialogue bootstrap, log loss, Brier, and ECE.
-The oracle must first validate the instrument. Then choose the simplest rung
-that beats no-state and matched controls across both targets without transfer
-failure. Valid outcomes are no sensor, lean DAG only, DAG trajectory, or full
-field trajectory—not only a global winner/null.
+small L2 multinomial head, latent-pair clustered conditional prediction-loss
+bootstrap, log loss, Brier, and ECE. The intervals condition on the fitted OOF
+heads; they do not include model-refit uncertainty. The three fixed worlds do
+not license population-level world-generalization claims.
+The oracle must first beat all three state-blind references (`no_state`,
+training-fold class prior, and uniform) on both losses for both targets. Then
+choose the simplest rung with statistically supported superiority over all
+three references across both targets and no transfer failure. The preregistered
+minimum useful effect applies to candidate-over-`no_state`; superiority over
+class-prior and uniform does not silently inherit that larger threshold.
+Same-recipient stale controls remain inferential gates. Richer-rung promotion
+requires incremental superiority on both co-primary targets. Scramble controls
+must react to state identity in every generator/realizer but remain
+gate-ineligible because cyclic donors create cross-cluster dependence. Valid
+outcomes are no sensor, lean DAG only, DAG trajectory, or full field
+trajectory—not only a global winner/null.
 
 ## 8. Phase 3 — Orthogonal pedagogical action contract
 
@@ -978,13 +1026,16 @@ Implementation was authorized on 2026-07-11. The slice resolved as follows:
 12. Implemented the learner-state and Plan 2 action-adapter lanes. The v1 formal
     proxy returned `not_passed / do_not_optimize_policy`, so Phase 4 and every
     learned or human-adaptive downstream lane remain blocked pending v2.
-13. Extracted the exact live DAG, classifier-field, DAG/risk, and last-four
-    trajectory projection into one pure service shared by runtime and benchmark.
+13. Extracted the canonical policy-invariant DAG, classifier-field, DAG/risk,
+    and last-four trajectory projection into one pure service shared by runtime
+    and benchmark. This no-memory/no-register sensor is not claimed equivalent
+    to the enriched live default.
 14. Corrected missing observations that previously became false zero-valued
     slopes, and added frozen parity/behavior tests.
 15. Froze benchmark v2's 3-world × 2-kernel × 2-realizer critical path, nested
     representations, matched controls, strict oracle/proof-transition
-    provenance, two harness targets, and six/eight-per-cell confirmation cap.
+    provenance, two frozen harness target vocabularies, and fixed eight-per-cell
+    confirmation size with no power claim.
 16. Added an immutable zero-call planning transaction and a deterministic
     five-verdict sensor evaluator over precomputed world/generator/realizer
     lanes. The cross-world kernel adapters, sequential realizer executor, and
@@ -1041,9 +1092,10 @@ Stopping at any earlier stage is still a valid result. It defines what the machi
   question and remains blocked on an acts-safe reconstructed-state adapter; the
   true learner board cannot be passed around that redaction boundary. No paid
   rows or verdict were produced.
-- **The v1 sensor proxy is not passed; the live sensor has not yet been fairly
-  tested:** the 12-row fixture remains a useful negative instrument audit, but
-  it lacked a no-state baseline, exact runtime trajectory, independent crossed
+- **The v1 sensor proxy is not passed; the canonical policy-invariant sensor has
+  not yet been fairly tested:** the 12-row fixture remains a useful negative
+  instrument audit, but it lacked strong state-blind baselines, canonical
+  trajectory projection, independent crossed
   generator/model axes, and nondegenerate world-general targets. Runtime and
   benchmark now share one pure DAG/field/trajectory projection with parity
   tests. Benchmark v2 freezes the 3-world × 2-kernel × 2-realizer critical path,
@@ -1061,7 +1113,8 @@ Stopping at any earlier stage is still a valid result. It defines what the machi
   remain behind their original dependencies.
 
 This checkpoint is an engineering result, not an efficacy result. It records a
-failed **v1 proxy benchmark**, not a failure of the exact live sensor, and keeps
+failed **v1 proxy benchmark**, not a failure of the canonical policy-invariant
+sensor or a validation of the enriched live default, and keeps
 the larger policy-optimization programme gate-blocked. A future Phase 4 runner
 must require a sealed passing v2 sensor report before that governance block can
 become an executable runtime gate.

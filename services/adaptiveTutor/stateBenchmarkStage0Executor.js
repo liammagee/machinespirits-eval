@@ -13,7 +13,9 @@ import { realizeAdaptiveStateStage0LearnerTurn } from './stateBenchmarkDetermini
 import {
   adaptiveStateKernelTaskMetadata,
   adaptiveStateLearnerKernel,
+  createAdaptiveStateKernelSession,
   loadAdaptiveStateWorldAdapters,
+  stepAdaptiveStateKernelSession,
 } from './learnerKernels/index.js';
 
 export const ADAPTIVE_STATE_STAGE0_DATASET_V2_SCHEMA =
@@ -96,7 +98,8 @@ function publicObservationSummary(observation, realizedEventIds) {
 
 function runDialogue(job, adapter) {
   const kernel = adaptiveStateLearnerKernel(job.latent_generator.id);
-  const state0 = kernel.initialize({ adapter, seed: job.seed });
+  let session = createAdaptiveStateKernelSession({ adapter, kernel, seed: job.seed });
+  const state0 = session.state;
   const bootstrapEvent = initialEvent(adapter);
   const bootstrapRecord = kernel.turnRecord({
     adapter,
@@ -136,25 +139,11 @@ function runDialogue(job, adapter) {
   );
   const realizedEventIds = [[], initialRealized.realized_public_event_ids];
   const transitions = [];
-  let state = state0;
   for (let index = 0; index < job.action_schedule.length; index += 1) {
     const predictionTurn = index + 1;
     const action = job.action_schedule[index];
-    const forecast = kernel.oracleBeforeSample({
-      adapter,
-      state,
-      action,
-      turn: predictionTurn,
-      seed: job.seed,
-    });
-    const transition = kernel.transition({
-      adapter,
-      state,
-      action,
-      turn: predictionTurn,
-      seed: job.seed,
-      forecast,
-    });
+    const stepped = stepAdaptiveStateKernelSession({ session, action, predictionTurn });
+    const transition = stepped.transition;
     const realized = realizeAdaptiveStateStage0LearnerTurn({
       realizerId: job.language_realizer.id,
       ...inputForRealizer(transition.public_envelope, transcript, action),
@@ -184,7 +173,7 @@ function runDialogue(job, adapter) {
     );
     realizedEventIds.push(realized.realized_public_event_ids);
     transitions.push(transition);
-    state = transition.next_state;
+    session = stepped.next_session;
   }
   return {
     job,
@@ -238,7 +227,7 @@ function donorFor(dialogues, recipient) {
   return candidates[0];
 }
 
-function rowFor(dialogue, donor, transitionIndex) {
+function rowFor(dialogue, donor, transitionIndex, version) {
   const turn = transitionIndex + 1;
   const currentObservation = dialogue.observations[turn];
   const nextObservation = dialogue.observations[turn + 1];
@@ -263,7 +252,7 @@ function rowFor(dialogue, donor, transitionIndex) {
   });
   return {
     schema: ADAPTIVE_STATE_BENCHMARK_ROW_V2_SCHEMA,
-    version: '2.0',
+    version,
     id: `${dialogue.job.id}__predict_t${turn}`,
     stage: 's0_contract',
     turn,
@@ -395,11 +384,11 @@ export function buildAdaptiveStateStage0Dataset({ plan, config, repoRoot = path.
   });
   const rows = internalDialogues.flatMap((dialogue) => {
     const donor = donorFor(internalDialogues, dialogue);
-    return dialogue.transitions.map((_transition, index) => rowFor(dialogue, donor, index));
+    return dialogue.transitions.map((_transition, index) => rowFor(dialogue, donor, index, plan.version));
   });
   const dataset = {
     schema: ADAPTIVE_STATE_STAGE0_DATASET_V2_SCHEMA,
-    version: '2.0',
+    version: plan.version,
     stage: 's0_contract',
     confirmation_eligible: false,
     design_sha256: plan.design_sha256,

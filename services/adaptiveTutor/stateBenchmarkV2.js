@@ -7,7 +7,7 @@ export const ADAPTIVE_STATE_ORACLE_V2_SCHEMA = 'machinespirits.adaptive-state-or
 export const ADAPTIVE_STATE_PROOF_TRANSITION_V2_SCHEMA = 'machinespirits.adaptive-state-proof-transition.v2';
 
 const STAGES = new Set(['s0_contract', 's1_technical_pilot', 's2_confirmation']);
-const CONFIRMATION_SIZES = new Set([6, 8]);
+const CONFIRMATION_SIZES = new Set([8]);
 const PRIMARY_TARGETS = Object.freeze(['next_dag_event_family', 'next_proof_trajectory']);
 const REQUIRED_REPRESENTATIONS = Object.freeze([
   'no_state',
@@ -289,7 +289,13 @@ export function buildAdaptiveStateRepresentationsV2({
       predictionTurn: observation.turn,
       benchmarkStratum: observation.provenance?.benchmark_stratum || null,
     });
-    representations.oracle = wrappedRepresentation(common, oracleState);
+    // The upper bound may use only the frozen probability distributions. Seed,
+    // generator/action identity, source hashes, and provenance remain in the
+    // transition audit; exposing them as head features would create an oracle
+    // identifier channel rather than a state-information upper bound.
+    representations.oracle = wrappedRepresentation(common, {
+      distributions: jsonClone(oracleState.distributions),
+    });
   }
   return representations;
 }
@@ -404,6 +410,34 @@ export function validateAdaptiveStateBenchmarkV2Config(config) {
   ) {
     throw new Error('stateBenchmarkV2: sequential learner-realizer JSON contract is incomplete');
   }
+  const paid = config.paid_execution_contract || {};
+  if (
+    paid.execution_order !== 'serial_dialogues_and_turns' ||
+    paid.job_order !== 'paired_latent_realizer_interleaved_counterbalanced' ||
+    paid.failure_policy !== 'any_dialogue_failure_stops_stage' ||
+    Number(paid.semantic_rerolls) !== 0 ||
+    Number(paid.provider_canaries?.calls) !== 2 ||
+    paid.provider_canaries?.included_in_scored_call_count !== false ||
+    Number(paid.analyzer_schema_canary?.calls) !== 1 ||
+    paid.analyzer_schema_canary?.included_in_scored_call_count !== false ||
+    Number(paid.technical_canaries?.total_calls) !== 3 ||
+    paid.technical_canaries?.claim_eligible !== false ||
+    Number(paid.per_dialogue?.learner_realizer_calls) !== 7 ||
+    Number(paid.per_dialogue?.public_turn_analyzer_calls) !== 7 ||
+    Number(paid.per_dialogue?.scored_cli_process_dispatches) !== 14 ||
+    paid.public_turn_analyzer?.sensor_profile !== 'canonical_policy_invariant_no_memory_no_register' ||
+    paid.public_turn_analyzer?.live_default_equivalence_claimed !== false ||
+    paid.public_turn_analyzer?.deployment_claim_requires_integration_parity_bridge !== true ||
+    paid.public_turn_analyzer?.recovery_floor?.metric !== 'exact_harness_event_family_recovery' ||
+    Number(paid.public_turn_analyzer?.recovery_floor?.overall_minimum) !== 0.8 ||
+    Number(paid.public_turn_analyzer?.recovery_floor?.each_generator_minimum) !== 0.65 ||
+    Number(paid.public_turn_analyzer?.recovery_floor?.each_realizer_minimum) !== 0.65 ||
+    paid.public_turn_analyzer?.recovery_floor?.disagreements_relabel_or_exclude_rows !== false ||
+    paid.observation_contract?.every_realized_turn_analyzed !== true ||
+    paid.observation_contract?.kernel_derived_classifier_forbidden !== true
+  ) {
+    throw new Error('stateBenchmarkV2: paid serial public-observation contract is incomplete');
+  }
   const schedule = requireArray(critical.action_schedule, 'critical_path.action_schedule', 1);
   const dialogue = critical.dialogue || {};
   if (Number(dialogue.scored_transitions) !== schedule.length) {
@@ -433,9 +467,20 @@ export function validateAdaptiveStateBenchmarkV2Config(config) {
   if (config.complexity_cap?.no_policy_sweep !== true || config.complexity_cap?.no_judge_model_sweep !== true) {
     throw new Error('stateBenchmarkV2: policy and judge sweeps must remain disabled on the critical path');
   }
-  const confirmationOptions = config.stages?.s2_confirmation?.seeds_per_cell_options || [];
-  if (JSON.stringify(confirmationOptions) !== JSON.stringify([6, 8])) {
-    throw new Error('stateBenchmarkV2: confirmation sizes must remain frozen to 6 or 8 per crossed cell');
+  const confirmation = config.stages?.s2_confirmation || {};
+  if (
+    Number(confirmation.seeds_per_cell) !== 8 ||
+    Number(confirmation.max_seeds_per_cell) !== 8 ||
+    confirmation.sample_size_basis !== 'preregistered_bounded_maximum' ||
+    confirmation.power_claim !== false
+  ) {
+    throw new Error('stateBenchmarkV2: confirmation must remain fixed at eight per cell with no power claim');
+  }
+  if (
+    config.stages?.s1_technical_pilot?.execution_order !== 'serial_dialogues_and_turns' ||
+    !config.stages?.s1_technical_pilot?.stop_if?.includes('any_dialogue_fails')
+  ) {
+    throw new Error('stateBenchmarkV2: S1 must stop on any failure and execute serially');
   }
   adaptiveStateValidityV2Contract(config);
   return true;
@@ -445,9 +490,9 @@ function stageContract(config, stage, confirmationPerCell) {
   if (!STAGES.has(stage)) throw new Error(`stateBenchmarkV2: unknown stage ${JSON.stringify(stage)}`);
   const contract = config.stages[stage];
   if (stage === 's2_confirmation') {
-    const requested = Number(confirmationPerCell);
+    const requested = confirmationPerCell === null ? Number(contract.seeds_per_cell) : Number(confirmationPerCell);
     if (!CONFIRMATION_SIZES.has(requested)) {
-      throw new Error('stateBenchmarkV2: confirmation requires --per-cell 6 or 8 after the frozen power check');
+      throw new Error('stateBenchmarkV2: confirmation is fixed at --per-cell 8 with no power claim');
     }
     return { ...contract, seedsPerCell: requested, realizerKey: 'language_realizers' };
   }
@@ -483,13 +528,19 @@ export function buildAdaptiveStateCriticalPathPlan(
   let latentPairIndex = 0;
   for (const world of critical.worlds) {
     for (const generator of critical.latent_generators) {
-      for (const realizer of realizers) {
-        const cellId = `${world.id}__${generator.id}__${realizer.id}`;
-        for (let repetition = 1; repetition <= contract.seedsPerCell; repetition += 1) {
+      for (let repetition = 1; repetition <= contract.seedsPerCell; repetition += 1) {
+        // Keep paired language surfaces adjacent, and rotate which provider
+        // runs first. This bounds temporal/provider-drift confounding without
+        // adding another experimental factor.
+        const orderedRealizers = rotateSchedule(realizers, latentPairIndex + repetition - 1);
+        for (const realizer of orderedRealizers) {
+          const cellId = `${world.id}__${generator.id}__${realizer.id}`;
           // The realizer is a surface-only axis. Give both realizers the same
           // latent seed and action order for a world x generator x repetition
           // pair so a realizer can never change the harness-owned target.
           const seed = stageSeed(stage, latentPairIndex, repetition);
+          const learnerRealizerCalls = contract.paid ? Number(critical.dialogue.learner_turns) : 0;
+          const publicTurnAnalyzerCalls = contract.paid ? Number(critical.dialogue.learner_turns) : 0;
           jobs.push({
             id: `${stage}__${cellId}__r${repetition}`,
             stage,
@@ -507,7 +558,15 @@ export function buildAdaptiveStateCriticalPathPlan(
             bootstrap_public_observations: Number(critical.dialogue.bootstrap_public_observations),
             learner_turns: Number(critical.dialogue.learner_turns),
             scored_transitions: Number(critical.dialogue.scored_transitions),
-            expected_model_calls: contract.paid ? Number(critical.dialogue.learner_turns) : 0,
+            expected_learner_realizer_calls: learnerRealizerCalls,
+            expected_public_turn_analyzer_calls: publicTurnAnalyzerCalls,
+            expected_cli_process_dispatches: learnerRealizerCalls + publicTurnAnalyzerCalls,
+            // Compatibility alias for v2.0 readers. A CLI process may make an
+            // unknown number of provider requests, so this is never a backend
+            // request count.
+            expected_model_calls: learnerRealizerCalls + publicTurnAnalyzerCalls,
+            expected_model_calls_deprecated_alias_semantics:
+              'cli_process_dispatches_not_backend_requests',
           });
         }
       }
@@ -518,6 +577,11 @@ export function buildAdaptiveStateCriticalPathPlan(
   const expectedJobs = cellCount * contract.seedsPerCell;
   if (jobs.length !== expectedJobs) throw new Error('stateBenchmarkV2: internal crossed-plan count mismatch');
   const expectedTransitions = jobs.reduce((sum, job) => sum + job.scored_transitions, 0);
+  const expectedLearnerRealizerCalls = jobs.reduce((sum, job) => sum + job.expected_learner_realizer_calls, 0);
+  const expectedPublicTurnAnalyzerCalls = jobs.reduce(
+    (sum, job) => sum + job.expected_public_turn_analyzer_calls,
+    0,
+  );
   const expectedCalls = jobs.reduce((sum, job) => sum + job.expected_model_calls, 0);
   const generatedLabel = label || `adaptive-state-v2-${stage}`;
   const plan = {
@@ -537,7 +601,19 @@ export function buildAdaptiveStateCriticalPathPlan(
       seeds_per_cell: contract.seedsPerCell,
       dialogue_jobs: jobs.length,
       scored_transitions: expectedTransitions,
+      expected_learner_realizer_calls: expectedLearnerRealizerCalls,
+      expected_public_turn_analyzer_calls: expectedPublicTurnAnalyzerCalls,
+      expected_cli_process_dispatches: expectedCalls,
       expected_model_calls: expectedCalls,
+      expected_model_calls_deprecated_alias_semantics:
+        'cli_process_dispatches_not_backend_requests',
+      excluded_provider_canary_calls: contract.paid ? Number(config.paid_execution_contract.provider_canaries.calls) : 0,
+      excluded_analyzer_schema_canary_calls: contract.paid
+        ? Number(config.paid_execution_contract.analyzer_schema_canary.calls)
+        : 0,
+      excluded_technical_canary_calls: contract.paid
+        ? Number(config.paid_execution_contract.technical_canaries.total_calls)
+        : 0,
     },
     representations: representationIds(config),
     co_primary_targets: config.targets.co_primary.map((row) => row.id),
@@ -635,9 +711,21 @@ export function validateAdaptiveStateCriticalPathPlan(plan) {
     if (Number(job.bootstrap_public_observations) !== 1) {
       throw new Error(`stateBenchmarkV2: job ${job.id} is missing the unscored bootstrap observation`);
     }
-    const expectedCalls = plan.paid ? Number(job.learner_turns) : 0;
-    if (Number(job.expected_model_calls) !== expectedCalls) {
-      throw new Error(`stateBenchmarkV2: job ${job.id} has an invalid expected model-call count`);
+    const expectedRoleCalls = plan.paid ? Number(job.learner_turns) : 0;
+    if (
+      Number(job.expected_learner_realizer_calls) !== expectedRoleCalls ||
+      Number(job.expected_public_turn_analyzer_calls) !== expectedRoleCalls
+    ) {
+      throw new Error(`stateBenchmarkV2: job ${job.id} has invalid paid role-call counts`);
+    }
+    const expectedCalls = expectedRoleCalls * 2;
+    if (
+      Number(job.expected_cli_process_dispatches) !== expectedCalls ||
+      Number(job.expected_model_calls) !== expectedCalls ||
+      job.expected_model_calls_deprecated_alias_semantics !==
+        'cli_process_dispatches_not_backend_requests'
+    ) {
+      throw new Error(`stateBenchmarkV2: job ${job.id} has an invalid expected CLI-dispatch count`);
     }
   }
   const pairedJobs = new Map();
@@ -683,17 +771,40 @@ export function validateAdaptiveStateCriticalPathPlan(plan) {
   }
   const expectedDialogueCount = expectedCells.size * Number(plan.counts.seeds_per_cell);
   const expectedTransitions = jobs.reduce((sum, job) => sum + Number(job.scored_transitions), 0);
+  const expectedLearnerRealizerCalls = jobs.reduce(
+    (sum, job) => sum + Number(job.expected_learner_realizer_calls),
+    0,
+  );
+  const expectedPublicTurnAnalyzerCalls = jobs.reduce(
+    (sum, job) => sum + Number(job.expected_public_turn_analyzer_calls),
+    0,
+  );
   const expectedCalls = jobs.reduce((sum, job) => sum + Number(job.expected_model_calls), 0);
   if (
     jobs.length !== expectedDialogueCount ||
     Number(plan.counts.dialogue_jobs) !== expectedDialogueCount ||
     Number(plan.counts.scored_transitions) !== expectedTransitions ||
-    Number(plan.counts.expected_model_calls) !== expectedCalls
+    Number(plan.counts.expected_learner_realizer_calls) !== expectedLearnerRealizerCalls ||
+    Number(plan.counts.expected_public_turn_analyzer_calls) !== expectedPublicTurnAnalyzerCalls ||
+    Number(plan.counts.expected_cli_process_dispatches) !== expectedCalls ||
+    Number(plan.counts.expected_model_calls) !== expectedCalls ||
+    plan.counts.expected_model_calls_deprecated_alias_semantics !==
+      'cli_process_dispatches_not_backend_requests'
   ) {
     throw new Error('stateBenchmarkV2: plan aggregate counts do not match its jobs');
   }
+  const expectedProviderCanaries = plan.paid ? 2 : 0;
+  const expectedAnalyzerCanaries = plan.paid ? 1 : 0;
+  const expectedTechnicalCanaries = plan.paid ? 3 : 0;
+  if (
+    Number(plan.counts.excluded_provider_canary_calls) !== expectedProviderCanaries ||
+    Number(plan.counts.excluded_analyzer_schema_canary_calls) !== expectedAnalyzerCanaries ||
+    Number(plan.counts.excluded_technical_canary_calls) !== expectedTechnicalCanaries
+  ) {
+    throw new Error('stateBenchmarkV2: excluded technical-canary counts differ from the frozen paid contract');
+  }
   if (plan.stage === 's2_confirmation' && !CONFIRMATION_SIZES.has(Number(plan.counts.seeds_per_cell))) {
-    throw new Error('stateBenchmarkV2: confirmation plan exceeds or misses the frozen sample-size choices');
+    throw new Error('stateBenchmarkV2: confirmation plan must use the frozen eight seeds per cell');
   }
   if (
     plan.complexity_cap?.no_policy_sweep !== true ||
@@ -715,6 +826,14 @@ export function adaptiveStateCriticalPathSummary(plan) {
     dialogues: plan.counts.dialogue_jobs,
     transitions: plan.counts.scored_transitions,
     modelCalls: plan.counts.expected_model_calls,
+    modelCallsDeprecatedAliasSemantics: plan.counts.expected_model_calls_deprecated_alias_semantics,
+    cliProcessDispatches: plan.counts.expected_cli_process_dispatches,
+    backendRequestCount: 'unknown',
+    learnerRealizerCalls: plan.counts.expected_learner_realizer_calls,
+    publicTurnAnalyzerCalls: plan.counts.expected_public_turn_analyzer_calls,
+    excludedProviderCanaryCalls: plan.counts.excluded_provider_canary_calls,
+    excludedAnalyzerSchemaCanaryCalls: plan.counts.excluded_analyzer_schema_canary_calls,
+    excludedTechnicalCanaryCalls: plan.counts.excluded_technical_canary_calls,
     representationsPerTransition: plan.representations.length,
     primaryTargets: [...plan.co_primary_targets],
   };

@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-11T21:19:46.899Z",
+  "generated": "2026-07-11T23:20:21.772Z",
   "counts": {
     "total": 112,
     "byStatus": {
-      "done": 90,
+      "done": 92,
       "blocked": 5,
       "dropped": 2,
       "triaged": 5,
-      "review": 3,
+      "review": 1,
       "active": 3,
       "archived": 4
     },
@@ -216,8 +216,8 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-11",
-      "updated": "2026-07-11",
-      "verification": "Benchmark v2 shares the exact live DAG/field/last-four trajectory projection; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against matched stale/scramble and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict within the frozen 8-per-cell cap.",
+      "updated": "2026-07-12",
+      "verification": "Benchmark v2 uses the canonical policy-invariant no-memory/no-register DAG/field/last-four sensor; crosses Marrick, Hethel, and Ravensmark with two independent latent kernels and two language-model families; evaluates a no-state -> lean-DAG -> DAG-trajectory -> field-trajectory ladder against no-state, training-fold class-prior, uniform, matched stale, descriptive-only scramble, and oracle controls on two harness-owned targets; and seals an untouched world/generator/realizer-transfer verdict at the fixed 8-per-cell confirmation size.",
       "claim_status": "planned",
       "depends_on": [
         "adaptive-eval-immutable-provenance"
@@ -329,10 +329,10 @@
       "owner": "unassigned",
       "source": "review",
       "created": "2026-07-11",
-      "updated": "2026-07-11",
+      "updated": "2026-07-12",
       "verification": "A preregistered staged comparison runs on at least three proof geometries and two independent latent learner-generator families with strong fixed, action-frequency-yoked, guard-frequency-yoked, adaptive-move/fixed-register, and state-scramble arms; raw fixed-horizon, safety, independence, and guard-exposure endpoints plus uncertainty intervals determine pass, heterogeneity-only, close-register, or stop.",
       "claim_status": "planned",
-      "blocked_by": "The learner-state validity card has not passed. The v1 proxy fixture was not promotable, and the corrected exact-sensor v2 crossed benchmark has not yet produced a verdict.",
+      "blocked_by": "The learner-state validity card has not passed. The v1 proxy fixture was not promotable, and the corrected canonical policy-invariant v2 crossed benchmark has not yet produced a verdict.",
       "depends_on": [
         "adaptive-eval-immutable-provenance",
         "tutor-stub-learner-state-validity",
@@ -422,9 +422,33 @@
       "milestone": "human-pilot-prep"
     },
     {
+      "id": "agon-adversarial-game-ledger",
+      "title": "Agon — adversarial tutoring game with an external referee ledger",
+      "status": "review",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-05",
+      "branch": "worktree-agon-game",
+      "verification": "Hermetic suite green (18 referee tests + exact-valued dry episode); real-CLI smoke passes P1/P2 apparatus bars; A0-vs-A1 pilot report generated from ledger JSON only.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": "AGON-GAME-PLAN.md"
+      },
+      "tags": [
+        "adaptive-tutor",
+        "agon",
+        "game",
+        "ledger",
+        "adversarial-learner"
+      ]
+    },
+    {
       "id": "adaptive-eval-immutable-provenance",
       "title": "Immutable evidence kernel for adaptive-tutor experiments",
-      "status": "review",
+      "status": "done",
       "type": "infra",
       "priority": "P0",
       "owner": "codex",
@@ -452,60 +476,6 @@
         "phase6-gate"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "agon-adversarial-game-ledger",
-      "title": "Agon — adversarial tutoring game with an external referee ledger",
-      "status": "review",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-agon-game",
-      "verification": "Hermetic suite green (18 referee tests + exact-valued dry episode); real-CLI smoke passes P1/P2 apparatus bars; A0-vs-A1 pilot report generated from ledger JSON only.",
-      "claim_status": "scope-bound",
-      "links": {
-        "notes": "AGON-GAME-PLAN.md"
-      },
-      "tags": [
-        "adaptive-tutor",
-        "agon",
-        "game",
-        "ledger",
-        "adversarial-learner"
-      ]
-    },
-    {
-      "id": "tutor-stub-typed-pedagogical-actions",
-      "title": "Adapt Plan 2 typed pedagogical actions into tutor-stub",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-11",
-      "updated": "2026-07-11",
-      "verification": "Tutor-stub consumes the existing Plan 2 action registry through an additive adapter that independently records move, support, task/KC, difficulty, register, expected evidence, and fade condition; realization and guard audits pass deterministic controls without creating a second action registry.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptive-eval-immutable-provenance"
-      ],
-      "links": {
-        "notes": [
-          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md",
-          "PLAN_2_0/GENUINE-ADAPTATION-IMPLEMENTATION-PLAN.md"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "tutor-stub",
-        "typed-actions",
-        "scaffolding"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "codex/adaptive-tutor-implementation"
     },
     {
       "id": "scriptorium-control-room-first-run",
@@ -1290,6 +1260,36 @@
         "proof-debt",
         "side-arcs"
       ]
+    },
+    {
+      "id": "tutor-stub-typed-pedagogical-actions",
+      "title": "Adapt Plan 2 typed pedagogical actions into tutor-stub",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-11",
+      "updated": "2026-07-11",
+      "verification": "Tutor-stub consumes the existing Plan 2 action registry through an additive adapter that independently records move, support, task/KC, difficulty, register, expected evidence, and fade condition; realization and guard audits pass deterministic controls without creating a second action registry.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptive-eval-immutable-provenance"
+      ],
+      "links": {
+        "notes": [
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md",
+          "PLAN_2_0/GENUINE-ADAPTATION-IMPLEMENTATION-PLAN.md"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "tutor-stub",
+        "typed-actions",
+        "scaffolding"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "codex/adaptive-tutor-implementation"
     },
     {
       "id": "a-model-of-multi-turn-human-persuadability-using-probabilist",

@@ -7,23 +7,38 @@ import test from 'node:test';
 
 import {
   analyzeGateArtifacts,
+  assertPhase6ContinuationCompatibility,
+  assertPhase6ConcurrencyPolicy,
   assertPhase6ForcePolicy,
+  assertPhase6FrozenRuntime,
+  assertPhase6PaidConfirmation,
   assertPhase6RealGateProtocolReady,
   assertPhase6RealRunGitState,
   auditPhase6TutorTranscript,
+  balancedArmOrderSchedule,
   buildEvidencePlan,
   buildGatePlan,
+  commitPhase6Row,
+  inspectPhase6ResumeMatrix,
+  inspectPhase6RowResumeState,
+  installPhase6SignalHandlers,
   loadPriorProvisionalReport,
+  phase6ModelRuntime,
+  phase6ContinuationCompatibilityBlockers,
   phase6RunCloseoutDisposition,
   phase6RealGateProtocolBlockers,
+  prepareEvidenceTransaction,
+  requestPhase6Interruption,
   renderGateMarkdown,
+  runGate,
 } from '../scripts/run-derivation-phase6-gate.js';
 import {
   appendRunEvent,
-  buildExperimentRunPlan,
   createRunPlan,
   createRunSeal,
   hashFile,
+  hashCanonicalJson,
+  readRunEvents,
   verifyExperimentRun,
 } from '../services/experimentRunArtifacts.js';
 import { evaluatePhase6Verdict } from '../services/dramaticDerivation/phase6Verdict.js';
@@ -37,7 +52,91 @@ function writeJson(file, value) {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function writeSafeCompletedRow(row) {
+  writeJson(path.join(row.runDir, 'diagnosis.json'), {
+    label: row.label,
+    worldPath: row.world,
+    scriptPath: row.script,
+    backend: {
+      mode: row.mode,
+      roles: Object.fromEntries(
+        ['director', 'tutor', 'learner'].map((role) => [role, { provider: 'mock', model: 'mock' }]),
+      ),
+    },
+    decay: row.decay,
+    fieldReportContext: row.armKey === 'field_report_only',
+    fieldPlanner: row.armKey.startsWith('field_planner'),
+    fieldPlannerEnforce: row.armKey === 'field_planner_enforce',
+    verdict: 'grounded_anagnorisis',
+    turnsPlayed: 12,
+    turnCap: 20,
+    releaseAdherence: { onCue: 0, rows: [], deviations: [], missed: [], unscheduled: [] },
+    eventsByType: { grounded_anagnorisis: 1 },
+    fabricatedFacts: [],
+  });
+  writeJson(path.join(row.runDir, 'result.json'), { transcript: [], ledger: [] });
+  writeJson(path.join(row.runDir, 'dialogue-report.json'), { summary: {} });
+  fs.writeFileSync(path.join(row.runDir, 'transcript.md'), '# transcript\n');
+  fs.writeFileSync(path.join(row.runDir, 'dialogue-report.md'), '# report\n');
+  fs.writeFileSync(path.join(row.runDir, 'dynamic-field.svg'), '<svg></svg>\n');
+  fs.mkdirSync(path.dirname(row.logFile), { recursive: true });
+  fs.writeFileSync(row.logFile, 'row complete\n');
+}
+
+function rowResumeFixture({ withArtifacts = true, lifecycle = 'ordered' } = {}) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-row-resume-'));
+  const manifest = buildGatePlan({
+    label: 'resume-unit',
+    out: root,
+    worlds: ['marrick'],
+    arms: ['baseline'],
+    seeds: ['1'],
+    mode: 'mock',
+  });
+  const plan = buildEvidencePlan(manifest, {
+    masterSeed: 1701,
+    dryRun: false,
+    concurrency: 1,
+    gitFingerprint: {
+      sha: 'f'.repeat(40),
+      branch: 'test',
+      dirty: false,
+      fingerprintSha256: 'e'.repeat(64),
+    },
+  });
+  fs.mkdirSync(manifest.gateDir, { recursive: true });
+  createRunPlan(manifest.gateDir, plan);
+  const row = manifest.rows[0];
+  if (withArtifacts) writeSafeCompletedRow(row);
+  if (lifecycle === 'ordered') {
+    appendRunEvent(manifest.gateDir, { type: 'job_started', jobId: row.id });
+    appendRunEvent(manifest.gateDir, { type: 'job_completed', jobId: row.id, exitCode: 0 });
+  } else if (lifecycle === 'reversed') {
+    appendRunEvent(manifest.gateDir, { type: 'job_completed', jobId: row.id, exitCode: 0 });
+    appendRunEvent(manifest.gateDir, { type: 'job_started', jobId: row.id });
+  }
+  return { root, manifest, plan, row };
+}
+
 function compatiblePrior(rows = Array.from({ length: 60 }, () => ({}))) {
+  const parentManifest = buildGatePlan({
+    label: 'parent-k5',
+    out: os.tmpdir(),
+    profile: 'smoke',
+    seeds: [...contract.seedBlocks[0]],
+    mode: 'real',
+  });
+  const parentPlan = buildEvidencePlan(parentManifest, {
+    masterSeed: 1701,
+    dryRun: false,
+    concurrency: 1,
+    gitFingerprint: {
+      sha: 'f'.repeat(40),
+      branch: 'test',
+      dirty: false,
+      fingerprintSha256: 'e'.repeat(64),
+    },
+  });
   return {
     parentRunId: 'parent-k5',
     label: 'parent-k5',
@@ -50,6 +149,17 @@ function compatiblePrior(rows = Array.from({ length: 60 }, () => ({}))) {
     report: 'exports/example/phase6-gate-report.json',
     reportSha256: 'a'.repeat(64),
     sealSha256: 'b'.repeat(64),
+    planSha256: 'c'.repeat(64),
+    inventorySha256: 'd'.repeat(64),
+    git: structuredClone(parentPlan.provenance.git),
+    requiredHashKinds: structuredClone(parentPlan.requiredHashKinds),
+    hashes: structuredClone(parentPlan.hashes),
+    models: structuredClone(parentPlan.models),
+    phase6ModelRuntime: structuredClone(parentPlan.metadata.phase6ModelRuntime),
+    phase6ModelRuntimeSha256: parentPlan.metadata.phase6ModelRuntimeSha256,
+    phase6CliFingerprints: structuredClone(parentPlan.metadata.phase6CliFingerprints),
+    phase6CliFingerprintsSha256: parentPlan.metadata.phase6CliFingerprintsSha256,
+    executionConcurrency: parentPlan.metadata.executionConcurrency,
     rows,
   };
 }
@@ -108,7 +218,10 @@ function validK5EvidenceRows() {
   return rows;
 }
 
-function writeSealedK5Parent(root, { contractSha256 = hashFile(CONTRACT_PATH) } = {}) {
+function writeSealedK5Parent(
+  root,
+  { contractSha256 = hashFile(CONTRACT_PATH), mutatePlan = (plan) => plan } = {},
+) {
   const rows = validK5EvidenceRows();
   const report = {
     schema: 'machinespirits.derivation.phase6-gate.report.v1',
@@ -125,37 +238,37 @@ function writeSealedK5Parent(root, { contractSha256 = hashFile(CONTRACT_PATH) } 
   assert.equal(report.decision.verdict, 'provisional_promote');
   assert.equal(report.decision.winner, 'field_planner_advisory');
 
-  const plan = buildExperimentRunPlan({
-    runId: report.label,
-    createdAt: '2026-07-12T00:00:00.000Z',
-    runner: 'scripts/run-derivation-phase6-gate.js',
-    provenance: {
-      git: {
-        sha: 'f'.repeat(40),
-        branch: 'test',
-        dirty: false,
-        fingerprintSha256: 'e'.repeat(64),
-      },
-    },
-    models: { tutor: { requested: 'mock/mock', resolved: 'mock/mock', observed: null } },
-    requiredObservedModelRoles: [],
-    hashes: Object.fromEntries(
-      ['runner', 'analyzer', 'policy', 'profile', 'prompt', 'world', 'config'].map((kind, index) => [
-        kind,
-        String(index + 1).repeat(64),
-      ]),
-    ),
+  const manifest = buildGatePlan({
+    label: report.label,
+    out: path.dirname(root),
+    profile: 'smoke',
+    seeds: [...contract.seedBlocks[0]],
+    mode: 'real',
+  });
+  let plan = buildEvidencePlan(manifest, {
     masterSeed: 1701,
-    jobs: [{ id: 'synthetic-parent-evidence' }],
-    lineage: { parentRunId: null, resumeOf: null, supersedes: [] },
-    intent: { phase6Gate: { decisionContract: contract } },
-    metadata: {
-      phase6DecisionContractSha256: contractSha256,
-      phase6VerdictEvaluatorSha256: hashFile(EVALUATOR_PATH),
+    dryRun: false,
+    concurrency: 1,
+    gitFingerprint: {
+      sha: 'f'.repeat(40),
+      branch: 'test',
+      dirty: false,
+      fingerprintSha256: 'e'.repeat(64),
     },
   });
+  plan.metadata.phase6DecisionContractSha256 = contractSha256;
+  plan = mutatePlan(structuredClone(plan)) || plan;
   createRunPlan(root, plan);
   writeJson(path.join(root, 'phase6-gate-report.json'), report);
+  for (const role of plan.requiredObservedModelRoles) {
+    appendRunEvent(root, {
+      type: 'model_observed',
+      role,
+      requested: plan.models[role].requested,
+      resolved: plan.models[role].resolved,
+      observed: plan.models[role].resolved,
+    });
+  }
   appendRunEvent(root, { type: 'run_completed', status: 'complete' });
   createRunSeal(root, { status: 'complete' });
   return path.join(root, 'phase6-gate-report.json');
@@ -178,6 +291,39 @@ test('buildGatePlan freezes rows across worlds, arms, and seeds', () => {
   assert.match(plan.rows[0].command, /--decay/);
   assert.match(plan.rows[1].command, /--field-planner/);
   assert.equal(plan.decay.rate, 0.08);
+});
+
+test('Phase 6 freezes a deterministic arm-order rotation balanced across worlds and seeds', () => {
+  const worlds = ['marrick', 'hethel', 'marrick_resistant'];
+  const seeds = ['1', '2', '3', '4', '5'];
+  const arms = ['baseline', 'field_report_only', 'field_planner_advisory', 'field_planner_enforce'];
+  const schedule = balancedArmOrderSchedule(worlds, seeds, arms);
+  assert.deepEqual(schedule, balancedArmOrderSchedule(worlds, seeds, arms));
+  for (let ordinal = 0; ordinal < arms.length; ordinal += 1) {
+    const counts = Object.fromEntries(arms.map((arm) => [arm, 0]));
+    for (const entry of schedule) counts[entry.arms[ordinal]] += 1;
+    assert.ok(Math.max(...Object.values(counts)) - Math.min(...Object.values(counts)) <= 1);
+  }
+
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-balanced-order-'));
+  try {
+    const manifest = buildGatePlan({ label: 'balanced', out: root, worlds, arms, seeds, mode: 'real' });
+    assert.deepEqual(manifest.armOrderSchedule, schedule);
+    assert.deepEqual(
+      manifest.rows.map((row) => row.id),
+      schedule.flatMap((entry) => entry.arms.map((arm) => `${entry.worldKey}-${arm}-s${entry.seed}`)),
+    );
+    const tampered = structuredClone(manifest);
+    [tampered.armOrderSchedule[0].arms[0], tampered.armOrderSchedule[0].arms[1]] = [
+      tampered.armOrderSchedule[0].arms[1],
+      tampered.armOrderSchedule[0].arms[0],
+    ];
+    assert.ok(
+      phase6RealGateProtocolBlockers(tampered).some((reason) => reason.includes('balanced rotation')),
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('Phase 6 smoke profile freezes the preregistered world-005, world-006, and world-019 coverage', () => {
@@ -313,6 +459,13 @@ test('Phase 6A real mode accepts only the frozen non-acts hidden-pacing contract
   assert.equal(continuationEvidencePlan.lineage.parentRunId, 'parent-k5');
   assert.equal(continuationEvidencePlan.jobs.length, 60);
   assert.deepEqual([...new Set(continuationEvidencePlan.jobs.map((job) => job.seedLabel))], ['6', '7', '8', '9', '10']);
+  assert.deepEqual(
+    phase6ContinuationCompatibilityBlockers({ manifest: gatedSecondBlock, plan: continuationEvidencePlan }),
+    [],
+  );
+  assert.doesNotThrow(() =>
+    assertPhase6ContinuationCompatibility({ manifest: gatedSecondBlock, plan: continuationEvidencePlan }),
+  );
 
   const canary = buildGatePlan({ label: 'technical-canary', out: root, mode: 'real', technicalCanary: true });
   assert.equal(canary.evidenceKind, 'technical_canary');
@@ -339,6 +492,398 @@ test('Phase 6 real mode rejects semantic rerolls while mock force remains availa
   assert.throws(() => assertPhase6ForcePolicy({ mode: 'real', force: true }), /completed evidence rows are immutable/u);
 });
 
+test('real Phase 6A requires explicit paid acknowledgement and serial concurrency', () => {
+  assert.doesNotThrow(() => assertPhase6PaidConfirmation({ mode: 'mock', confirmed: false }));
+  assert.doesNotThrow(() => assertPhase6PaidConfirmation({ mode: 'real', confirmed: true }));
+  assert.throws(
+    () => assertPhase6PaidConfirmation({ mode: 'real', confirmed: false }),
+    /--confirm-paid-phase6a-v2/u,
+  );
+  assert.doesNotThrow(() => assertPhase6ConcurrencyPolicy({ mode: 'real', concurrency: 1 }));
+  assert.throws(() => assertPhase6ConcurrencyPolicy({ mode: 'real', concurrency: 2 }), /--concurrency 1/u);
+  assert.throws(
+    () =>
+      execFileSync(process.execPath, ['scripts/run-derivation-phase6-gate.js', '--real', '--dry-run'], {
+        cwd: path.resolve('.'),
+        encoding: 'utf8',
+        stdio: 'pipe',
+      }),
+    /--confirm-paid-phase6a-v2/u,
+  );
+});
+
+test('Phase 6 evidence plan freezes explicit role models, effort, timeouts, and concurrency', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-runtime-plan-'));
+  try {
+    const manifest = buildGatePlan({
+      label: 'runtime-unit',
+      out: root,
+      mode: 'real',
+      technicalCanary: true,
+    });
+    const plan = buildEvidencePlan(manifest, {
+      masterSeed: 1701,
+      dryRun: true,
+      concurrency: 1,
+      gitFingerprint: {
+        sha: 'f'.repeat(40),
+        branch: 'test',
+        dirty: false,
+        fingerprintSha256: 'e'.repeat(64),
+      },
+    });
+    assert.equal(plan.metadata.executionConcurrency, 1);
+    assert.equal(plan.metadata.phase6ModelRuntimeSha256.length, 64);
+    assert.deepEqual(Object.keys(plan.metadata.phase6ModelRuntime).sort(), ['director', 'learner', 'tutor']);
+    for (const role of ['director', 'tutor', 'learner']) {
+      const runtime = plan.metadata.phase6ModelRuntime[role];
+      assert.ok(runtime.requested_model_ref && !runtime.requested_model_ref.includes('(cli-default)'));
+      assert.ok(runtime.resolved_model_ref && !runtime.resolved_model_ref.includes('(cli-default)'));
+      assert.equal(Object.hasOwn(runtime, 'effort'), true);
+      assert.equal(Object.hasOwn(runtime, 'timeout_ms'), true);
+      assert.equal(plan.models[role].requested, runtime.requested_model_ref);
+      assert.equal(plan.models[role].resolved, runtime.resolved_model_ref);
+    }
+    assert.deepEqual(plan.metadata.phase6ModelRuntime, phase6ModelRuntime('real'));
+    assert.doesNotThrow(() => assertPhase6FrozenRuntime({ manifest, frozenPlan: plan, concurrency: 1 }));
+    const drifted = structuredClone(plan);
+    drifted.metadata.phase6ModelRuntime.tutor.effort = 'drifted';
+    assert.throws(
+      () => assertPhase6FrozenRuntime({ manifest, frozenPlan: drifted, concurrency: 1 }),
+      /different models, effort, timeouts, CLI executable\/version, or concurrency/u,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 durable row completion skips only exact hash- and semantic-verified evidence', () => {
+  const fixture = rowResumeFixture();
+  try {
+    const committed = commitPhase6Row(fixture.row, {
+      gateDir: fixture.manifest.gateDir,
+      plan: fixture.plan,
+    });
+    assert.match(committed.completionSha256, /^[0-9a-f]{64}$/u);
+    assert.equal(committed.completion.artifacts.length >= 7, true);
+    const state = inspectPhase6RowResumeState(fixture.row, {
+      gateDir: fixture.manifest.gateDir,
+      plan: fixture.plan,
+    });
+    assert.equal(state.disposition, 'skip_verified');
+    assert.equal(state.completionSha256, committed.completionSha256);
+  } finally {
+    fs.rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 durable completion rejects artifacts from the wrong frozen row semantics', () => {
+  const fixture = rowResumeFixture();
+  try {
+    const diagnosisPath = path.join(fixture.row.runDir, 'diagnosis.json');
+    const diagnosis = JSON.parse(fs.readFileSync(diagnosisPath, 'utf8'));
+    diagnosis.label = 'different-row';
+    writeJson(diagnosisPath, diagnosis);
+    assert.throws(
+      () => commitPhase6Row(fixture.row, { gateDir: fixture.manifest.gateDir, plan: fixture.plan }),
+      /do not match the frozen row\/model semantics.*superseding label/u,
+    );
+  } finally {
+    fs.rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 row resume rejects artifact tampering after a durable completion event', () => {
+  const fixture = rowResumeFixture();
+  try {
+    commitPhase6Row(fixture.row, { gateDir: fixture.manifest.gateDir, plan: fixture.plan });
+    fs.appendFileSync(path.join(fixture.row.runDir, 'result.json'), ' ');
+    assert.throws(
+      () =>
+        inspectPhase6RowResumeState(fixture.row, {
+          gateDir: fixture.manifest.gateDir,
+          plan: fixture.plan,
+        }),
+      /artifacts, provenance, or semantics changed.*superseding label/u,
+    );
+  } finally {
+    fs.rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 row resume rejects a tampered durable event chain', () => {
+  const fixture = rowResumeFixture();
+  try {
+    commitPhase6Row(fixture.row, { gateDir: fixture.manifest.gateDir, plan: fixture.plan });
+    const eventsFile = path.join(fixture.manifest.gateDir, 'run-events.jsonl');
+    const events = fs
+      .readFileSync(eventsFile, 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line));
+    events.at(-1).completion.semantic.ok = false;
+    fs.writeFileSync(eventsFile, `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
+    assert.throws(
+      () =>
+        inspectPhase6RowResumeState(fixture.row, {
+          gateDir: fixture.manifest.gateDir,
+          plan: fixture.plan,
+        }),
+      /run-event chain is invalid or tampered.*superseding label/u,
+    );
+  } finally {
+    fs.rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 row resume rejects partial or complete artifacts without a durable completion event', () => {
+  const partial = rowResumeFixture({ withArtifacts: false, lifecycle: 'none' });
+  const present = rowResumeFixture({ withArtifacts: true, lifecycle: 'ordered' });
+  try {
+    fs.mkdirSync(partial.row.runDir, { recursive: true });
+    fs.writeFileSync(path.join(partial.row.runDir, 'result.json'), '{}\n');
+    assert.throws(
+      () =>
+        inspectPhase6RowResumeState(partial.row, {
+          gateDir: partial.manifest.gateDir,
+          plan: partial.plan,
+        }),
+      /partial or present without a durable completion event.*superseding label/u,
+    );
+    assert.throws(
+      () =>
+        inspectPhase6RowResumeState(present.row, {
+          gateDir: present.manifest.gateDir,
+          plan: present.plan,
+        }),
+      /partial or present without a durable completion event.*superseding label/u,
+    );
+  } finally {
+    fs.rmSync(partial.root, { recursive: true, force: true });
+    fs.rmSync(present.root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 row resume runs only a never-started row with no artifacts', () => {
+  const fixture = rowResumeFixture({ withArtifacts: false, lifecycle: 'none' });
+  try {
+    assert.deepEqual(
+      inspectPhase6RowResumeState(fixture.row, {
+        gateDir: fixture.manifest.gateDir,
+        plan: fixture.plan,
+      }),
+      { disposition: 'run_missing', rowId: fixture.row.id },
+    );
+  } finally {
+    fs.rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 row resume rejects duplicate or reordered completion lifecycles', () => {
+  const duplicate = rowResumeFixture();
+  const reordered = rowResumeFixture({ lifecycle: 'reversed' });
+  try {
+    const committed = commitPhase6Row(duplicate.row, {
+      gateDir: duplicate.manifest.gateDir,
+      plan: duplicate.plan,
+    });
+    appendRunEvent(duplicate.manifest.gateDir, {
+      type: 'phase6_row_committed',
+      jobId: duplicate.row.id,
+      completion: committed.completion,
+      completionSha256: committed.completionSha256,
+    });
+    assert.throws(
+      () =>
+        inspectPhase6RowResumeState(duplicate.row, {
+          gateDir: duplicate.manifest.gateDir,
+          plan: duplicate.plan,
+        }),
+      /duplicate completion events/u,
+    );
+
+    commitPhase6Row(reordered.row, { gateDir: reordered.manifest.gateDir, plan: reordered.plan });
+    assert.throws(
+      () =>
+        inspectPhase6RowResumeState(reordered.row, {
+          gateDir: reordered.manifest.gateDir,
+          plan: reordered.plan,
+        }),
+      /invalid execution\/completion lifecycle/u,
+    );
+  } finally {
+    fs.rmSync(duplicate.root, { recursive: true, force: true });
+    fs.rmSync(reordered.root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 resume accepts only an exact committed prefix followed by a never-started tail', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-prefix-resume-'));
+  try {
+    const manifest = buildGatePlan({
+      label: 'prefix',
+      out: root,
+      worlds: ['marrick'],
+      arms: ['baseline', 'field_planner_advisory'],
+      seeds: ['1'],
+      mode: 'mock',
+    });
+    const plan = buildEvidencePlan(manifest, {
+      masterSeed: 1701,
+      dryRun: false,
+      concurrency: 1,
+      gitFingerprint: {
+        sha: 'f'.repeat(40),
+        branch: 'test',
+        dirty: false,
+        fingerprintSha256: 'e'.repeat(64),
+      },
+    });
+    fs.mkdirSync(manifest.gateDir, { recursive: true });
+    createRunPlan(manifest.gateDir, plan);
+    const [first, second] = manifest.rows;
+    writeSafeCompletedRow(first);
+    appendRunEvent(manifest.gateDir, { type: 'job_started', jobId: first.id });
+    appendRunEvent(manifest.gateDir, { type: 'job_completed', jobId: first.id, exitCode: 0 });
+    commitPhase6Row(first, { gateDir: manifest.gateDir, plan });
+    const states = inspectPhase6ResumeMatrix(manifest, { plan });
+    assert.equal(states.get(first.id).disposition, 'skip_verified');
+    assert.equal(states.get(second.id).disposition, 'run_missing');
+
+    const nonPrefixRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-non-prefix-resume-'));
+    try {
+      const nonPrefix = buildGatePlan({
+        label: 'non-prefix',
+        out: nonPrefixRoot,
+        worlds: ['marrick'],
+        arms: ['baseline', 'field_planner_advisory'],
+        seeds: ['1'],
+        mode: 'mock',
+      });
+      const nonPrefixPlan = buildEvidencePlan(nonPrefix, {
+        masterSeed: 1701,
+        dryRun: false,
+        concurrency: 1,
+        gitFingerprint: plan.provenance.git,
+      });
+      fs.mkdirSync(nonPrefix.gateDir, { recursive: true });
+      createRunPlan(nonPrefix.gateDir, nonPrefixPlan);
+      const late = nonPrefix.rows[1];
+      writeSafeCompletedRow(late);
+      appendRunEvent(nonPrefix.gateDir, { type: 'job_started', jobId: late.id });
+      appendRunEvent(nonPrefix.gateDir, { type: 'job_completed', jobId: late.id, exitCode: 0 });
+      commitPhase6Row(late, { gateDir: nonPrefix.gateDir, plan: nonPrefixPlan });
+      assert.throws(
+        () => inspectPhase6ResumeMatrix(nonPrefix, { plan: nonPrefixPlan }),
+        /not an exact prefix.*superseding label/u,
+      );
+    } finally {
+      fs.rmSync(nonPrefixRoot, { recursive: true, force: true });
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 transaction resume rejects complete-plan or compatibility-manifest tampering', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-exact-plan-resume-'));
+  const gitFingerprint = {
+    sha: 'f'.repeat(40),
+    branch: 'test',
+    dirty: false,
+    fingerprintSha256: 'e'.repeat(64),
+  };
+  try {
+    const manifest = buildGatePlan({
+      label: 'exact-plan',
+      out: root,
+      worlds: ['marrick'],
+      arms: ['baseline'],
+      seeds: ['1'],
+      mode: 'mock',
+    });
+    const frozen = prepareEvidenceTransaction(manifest, {
+      masterSeed: 1701,
+      dryRun: false,
+      gitFingerprint,
+      concurrency: 1,
+    });
+    const resumedManifest = buildGatePlan({
+      label: 'exact-plan',
+      out: root,
+      worlds: ['marrick'],
+      arms: ['baseline'],
+      seeds: ['1'],
+      mode: 'mock',
+    });
+    assert.equal(
+      prepareEvidenceTransaction(resumedManifest, {
+        masterSeed: 1701,
+        dryRun: false,
+        gitFingerprint,
+        concurrency: 1,
+      }).runId,
+      frozen.runId,
+    );
+
+    const planPath = path.join(manifest.gateDir, 'run-plan.json');
+    const tampered = JSON.parse(fs.readFileSync(planPath, 'utf8'));
+    tampered.jobs[0].command.push('--tampered');
+    writeJson(planPath, tampered);
+    assert.throws(
+      () =>
+        prepareEvidenceTransaction(resumedManifest, {
+          masterSeed: 1701,
+          dryRun: false,
+          gitFingerprint,
+          concurrency: 1,
+        }),
+      /complete frozen run plan no longer matches/u,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+
+  const manifestRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-manifest-resume-'));
+  try {
+    const manifest = buildGatePlan({
+      label: 'manifest',
+      out: manifestRoot,
+      worlds: ['marrick'],
+      arms: ['baseline'],
+      seeds: ['1'],
+      mode: 'mock',
+    });
+    prepareEvidenceTransaction(manifest, {
+      masterSeed: 1701,
+      dryRun: false,
+      gitFingerprint,
+      concurrency: 1,
+    });
+    const manifestPath = path.join(manifest.gateDir, 'manifest.json');
+    const tampered = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    tampered.rows[0].armLabel = 'tampered';
+    writeJson(manifestPath, tampered);
+    assert.throws(
+      () =>
+        prepareEvidenceTransaction(
+          buildGatePlan({
+            label: 'manifest',
+            out: manifestRoot,
+            worlds: ['marrick'],
+            arms: ['baseline'],
+            seeds: ['1'],
+            mode: 'mock',
+          }),
+          { masterSeed: 1701, dryRun: false, gitFingerprint, concurrency: 1 },
+        ),
+      /manifest\.json differs/u,
+    );
+  } finally {
+    fs.rmSync(manifestRoot, { recursive: true, force: true });
+  }
+});
+
 test('Phase 6 continuation loads only a sealed parent with current contract and evaluator hashes', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-sealed-parent-'));
   try {
@@ -349,6 +894,21 @@ test('Phase 6 continuation loads only a sealed parent with current contract and 
     assert.equal(prior.rows.length, 60);
     assert.equal(prior.decisionContractSha256, hashFile(CONTRACT_PATH));
     assert.equal(prior.verdictEvaluatorSha256, hashFile(EVALUATOR_PATH));
+    assert.equal(prior.git.sha, 'f'.repeat(40));
+    assert.equal(prior.executionConcurrency, 1);
+    assert.deepEqual(Object.keys(prior.models).sort(), ['director', 'learner', 'tutor']);
+    assert.deepEqual(prior.requiredHashKinds, [
+      'analyzer',
+      'config',
+      'policy',
+      'profile',
+      'prompt',
+      'runner',
+      'script',
+      'world',
+    ]);
+    assert.equal(prior.phase6ModelRuntimeSha256, hashCanonicalJson(prior.phase6ModelRuntime));
+    assert.equal(prior.phase6CliFingerprintsSha256, hashCanonicalJson(prior.phase6CliFingerprints));
 
     const stalePath = writeSealedK5Parent(path.join(root, 'stale-parent'), {
       contractSha256: '0'.repeat(64),
@@ -359,10 +919,168 @@ test('Phase 6 continuation loads only a sealed parent with current contract and 
   }
 });
 
-test('Phase 6 incomplete rows remain unsealed and resumable', () => {
+test('Phase 6 continuation rejects Git, source, model, runtime, and CLI drift from sealed k=5', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-parent-continuity-'));
+  try {
+    const parentPath = writeSealedK5Parent(path.join(root, 'parent'));
+    const prior = loadPriorProvisionalReport(parentPath);
+    const manifest = buildGatePlan({
+      label: 'continuation',
+      out: root,
+      profile: 'smoke',
+      seeds: [...contract.seedBlocks[1]],
+      mode: 'real',
+      priorProvisional: prior,
+    });
+    const plan = buildEvidencePlan(manifest, {
+      masterSeed: 1701,
+      dryRun: false,
+      concurrency: 1,
+      gitFingerprint: structuredClone(prior.git),
+    });
+    assert.deepEqual(phase6ContinuationCompatibilityBlockers({ manifest, plan }), []);
+
+    const mutations = [
+      ['Git SHA', (copy) => (copy.priorProvisional.git.sha = '0'.repeat(40)), /same clean Git SHA/u],
+      ['source hash', (copy) => (copy.priorProvisional.hashes.runner = '0'.repeat(64)), /hashes must match/u],
+      ['model', (copy) => (copy.priorProvisional.models.tutor.resolved = 'openrouter/drifted'), /model references/u],
+      ['runtime', (copy) => (copy.priorProvisional.phase6ModelRuntime.tutor.timeout_ms = 1), /runtime policies/u],
+      [
+        'CLI',
+        (copy) => {
+          copy.priorProvisional.phase6CliFingerprints = {
+            codex: { command: 'codex', executable_realpath: '/tmp/drifted', version: 'drifted' },
+          };
+          copy.priorProvisional.phase6CliFingerprintsSha256 = hashCanonicalJson(
+            copy.priorProvisional.phase6CliFingerprints,
+          );
+        },
+        /CLI executable realpaths\/versions/u,
+      ],
+    ];
+    for (const [label, mutate, pattern] of mutations) {
+      const changed = structuredClone(manifest);
+      mutate(changed);
+      assert.throws(
+        () => assertPhase6ContinuationCompatibility({ manifest: changed, plan }),
+        pattern,
+        label,
+      );
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 incomplete real rows are same-label-forbidden while mock plumbing may resume', () => {
   assert.equal(phase6RunCloseoutDisposition({ okRows: 3, rowCount: 4 }), 'pause_unsealed');
+  assert.equal(
+    phase6RunCloseoutDisposition({ okRows: 3, rowCount: 4 }, { mode: 'real' }),
+    'seal_indeterminate_same_label_forbidden',
+  );
   assert.equal(phase6RunCloseoutDisposition({ okRows: 4, rowCount: 4 }), 'seal_complete');
   assert.equal(phase6RunCloseoutDisposition({ okRows: 0, rowCount: 0 }), 'pause_unsealed');
+});
+
+test('Phase 6 real execution fails fast, leaves the tail untouched, and seals the label indeterminate', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-fail-fast-'));
+  try {
+    const manifest = buildGatePlan({
+      label: 'fail-fast',
+      out: root,
+      profile: 'smoke',
+      seeds: [...contract.seedBlocks[0]],
+      mode: 'real',
+    });
+    const plan = buildEvidencePlan(manifest, {
+      masterSeed: 1701,
+      dryRun: false,
+      concurrency: 1,
+      gitFingerprint: {
+        sha: 'f'.repeat(40),
+        branch: 'test',
+        dirty: false,
+        fingerprintSha256: 'e'.repeat(64),
+      },
+    });
+    fs.mkdirSync(manifest.gateDir, { recursive: true });
+    createRunPlan(manifest.gateDir, plan);
+    appendRunEvent(manifest.gateDir, { type: 'run_planned', mode: 'real', dryRun: false });
+    const started = [];
+    await assert.rejects(
+      () =>
+        runGate(manifest, {
+          plan,
+          concurrency: 1,
+          rowRunner: async (row) => {
+            started.push(row.id);
+            return 17;
+          },
+          liveGitGuard: () => {},
+        }),
+      /sealed indeterminate_same_label_forbidden.*superseding label/u,
+    );
+    assert.deepEqual(started, [manifest.rows[0].id]);
+    const events = readRunEvents(manifest.gateDir);
+    assert.equal(events.filter((event) => event.type === 'job_started').length, 1);
+    assert.equal(events.filter((event) => event.type === 'job_completed').length, 1);
+    assert.equal(events.at(-1).type, 'run_stopped');
+    const seal = JSON.parse(fs.readFileSync(path.join(manifest.gateDir, 'run-seal.json'), 'utf8'));
+    assert.equal(seal.status, 'indeterminate_same_label_forbidden');
+    assert.equal(seal.metadata.sameLabelResumeAllowed, false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('Phase 6 interruption path seals the active label and never starts the tail', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-interrupt-'));
+  const removeHandlers = installPhase6SignalHandlers();
+  try {
+    const manifest = buildGatePlan({
+      label: 'interrupt',
+      out: root,
+      profile: 'smoke',
+      seeds: [...contract.seedBlocks[0]],
+      mode: 'real',
+    });
+    const plan = buildEvidencePlan(manifest, {
+      masterSeed: 1701,
+      dryRun: false,
+      concurrency: 1,
+      gitFingerprint: {
+        sha: 'f'.repeat(40),
+        branch: 'test',
+        dirty: false,
+        fingerprintSha256: 'e'.repeat(64),
+      },
+    });
+    fs.mkdirSync(manifest.gateDir, { recursive: true });
+    createRunPlan(manifest.gateDir, plan);
+    appendRunEvent(manifest.gateDir, { type: 'run_planned', mode: 'real', dryRun: false });
+    let calls = 0;
+    await assert.rejects(
+      () =>
+        runGate(manifest, {
+          plan,
+          concurrency: 1,
+          rowRunner: async () => {
+            calls += 1;
+            requestPhase6Interruption('SIGTERM');
+            return 143;
+          },
+          liveGitGuard: () => {},
+        }),
+      /interrupted by SIGTERM.*same_label_forbidden/u,
+    );
+    assert.equal(calls, 1);
+    const seal = JSON.parse(fs.readFileSync(path.join(manifest.gateDir, 'run-seal.json'), 'utf8'));
+    assert.equal(seal.status, 'indeterminate_same_label_forbidden');
+    assert.equal(seal.metadata.signal, 'SIGTERM');
+  } finally {
+    removeHandlers();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('field_report_only placebo arm is flag-distinct from baseline', () => {
