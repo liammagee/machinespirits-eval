@@ -814,13 +814,18 @@ export function learnerProfilePrompt(id) {
   ].join('\n');
 }
 
-export function learnerProfileListText() {
-  const suites = ['Profile suites:', learnerProfileSuiteListText(), ''].join('\n');
-  const profiles = learnerProfileIds()
+export function learnerProfileListText({ ids = learnerProfileIds(), includeSuites = true } = {}) {
+  const selectedIds = [...ids];
+  const unknownIds = selectedIds.filter((id) => !AUTO_LEARNER_PROFILE_CONTRACTS[id]);
+  if (unknownIds.length) {
+    throw new Error(`Unknown learner profile ids: ${unknownIds.join(', ')}`);
+  }
+  const suites = includeSuites ? ['Profile suites:', learnerProfileSuiteListText(), ''].join('\n') : '';
+  const profiles = selectedIds
     .map((id) => {
       const profile = AUTO_LEARNER_PROFILE_CONTRACTS[id];
       return `${id}: ${title(profile.family)} - ${profile.intent.shortName}; ${profile.intent.failureOperator}`;
     })
     .join('\n');
-  return `${suites}Profiles:\n${profiles}`;
+  return `${suites}${includeSuites ? 'Profiles:\n' : ''}${profiles}`;
 }

@@ -152,11 +152,13 @@ Useful variants:
   still matches; otherwise the normal tutor call runs. Regeneration, clear,
   turn invalidation, and exit abort stale Codex subprocesses.
 - Change the mixed learner interactively with `/profile <id>`. Use `/profile`
-  for the current profile, `/profile list` for built-ins, `/profile default` to
-  restore the launch-time profile, or `/profile custom <description>` for an
-  ad-hoc behavior sketch. Switching aborts and clears the old clue, answer,
-  analysis, and prefetched tutor response before regenerating the full chain;
-  Tab activates when the replacement answer's ready message appears.
+  for the current profile, `/profile list` for the six ordinary/core choices,
+  `/profile list stress` for the six specialist failure modes, `/profile list
+  all` for the complete v3 registry, `/profile default` to restore the
+  launch-time profile, or `/profile custom <description>` for an ad-hoc
+  behavior sketch. Switching aborts and clears the old clue, answer, analysis,
+  and prefetched tutor response before regenerating the full chain; Tab
+  activates when the replacement answer's ready message appears.
 - Use `/profile example` for a copyable custom profile. A useful custom sketch
   names an observable recurring behavior, the situation that triggers it, and
   the tutor support that permits progress, without adding hidden case facts.

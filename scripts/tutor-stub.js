@@ -108,6 +108,7 @@ import {
   learnerProfileIds,
   learnerProfileListText,
   learnerProfilePrompt,
+  learnerProfileSuiteIds,
 } from './tutor-stub-learner-profile-contracts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -495,7 +496,9 @@ Interactive commands:
   /id                    show the last completed turn id and trace path
   /turn-id, /debug-id    aliases for /id
   /profile               show the active mixed learner profile
-  /profile list          list built-in learner profile ids
+  /profile list          list the six ordinary learner profiles
+  /profile list stress   list six specialist failure-mode profiles
+  /profile list all      list the complete v3 profile registry
   /profile example       show a copyable custom-profile example
   /profile <id>          switch profile and regenerate mixed artifacts
   /profile default       restore the command-line/default profile
@@ -10924,13 +10927,33 @@ async function main() {
         : `custom: ${oneLine(mixedLearner.profile, { max: 180 })}`;
       console.log(`${C.cyan}learner profile >${C.reset} ${label}`);
       console.log(
-        `${C.dim}  use /profile list, /profile example, /profile <id>, /profile default, or /profile custom <description>${C.reset}\n`,
+        `${C.dim}  use /profile list, /profile list stress, /profile list all, /profile example, /profile <id>, /profile default, or /profile custom <description>${C.reset}\n`,
       );
       return;
     }
-    if (requested === 'list') {
-      console.log(`${C.cyan}learner profiles >${C.reset}`);
-      console.log(`${learnerProfileListText()}\n`);
+    if (requested === 'list' || requested.startsWith('list ')) {
+      const listScope = requested.slice('list'.length).trim().toLowerCase() || 'core';
+      const scopeConfig = {
+        core: { suite: 'core', label: 'ordinary choices' },
+        stress: { suite: 'stress', label: 'specialist failure modes' },
+        all: { suite: 'audit', label: 'complete v3 registry' },
+        audit: { suite: 'audit', label: 'complete v3 registry' },
+      }[listScope];
+      if (!scopeConfig) {
+        console.log(`${C.red}unknown learner profile list: ${listScope}${C.reset}`);
+        console.log(`${C.dim}  use /profile list, /profile list stress, or /profile list all${C.reset}\n`);
+        return;
+      }
+      const profileIds = learnerProfileSuiteIds(scopeConfig.suite);
+      console.log(`${C.cyan}learner profiles > ${scopeConfig.label} (${profileIds.length})${C.reset}`);
+      console.log(learnerProfileListText({ ids: profileIds, includeSuites: false }));
+      if (scopeConfig.suite === 'core') {
+        console.log(
+          `${C.dim}  specialist profiles: /profile list stress · complete registry: /profile list all${C.reset}\n`,
+        );
+      } else {
+        console.log(`${C.dim}  ordinary choices: /profile list · complete registry: /profile list all${C.reset}\n`);
+      }
       return;
     }
     if (requested === 'example') {
@@ -10957,7 +10980,7 @@ async function main() {
       nextProfileId = requested.toLowerCase().replace(/-/gu, '_');
       if (!learnerProfileIds().includes(nextProfileId)) {
         console.log(`${C.red}unknown learner profile:${C.reset} ${requested}`);
-        console.log(`${C.dim}  use /profile list to see valid ids${C.reset}\n`);
+        console.log(`${C.dim}  use /profile list, /profile list stress, or /profile list all to see valid ids${C.reset}\n`);
         return;
       }
       nextProfile = learnerProfilePrompt(nextProfileId);

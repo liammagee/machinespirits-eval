@@ -435,8 +435,10 @@ test('mixed tutor-stub can list and switch learner profiles interactively', () =
   );
 
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /learner profiles >/u);
+  assert.match(result.stdout, /learner profiles > ordinary choices \(6\)/u);
   assert.match(result.stdout, /answer_seeking:/u);
+  assert.match(result.stdout, /specialist profiles: \/profile list stress/u);
+  assert.doesNotMatch(result.stdout, /premature_closure:/u);
   assert.match(result.stdout, /custom learner profile example >/u);
   assert.match(result.stdout, /struggles to connect them/u);
   assert.match(result.stdout, /observable pattern, its trigger, and the tutor support that permits progress/u);
@@ -444,6 +446,37 @@ test('mixed tutor-stub can list and switch learner profiles interactively', () =
   assert.match(result.stdout, /diligent: Diligent control/u);
   assert.doesNotMatch(result.stdout, /switched to custom profile/u);
   assert.equal((result.stdout.match(/switched to diligent:/gu) || []).length, 2);
+});
+
+test('mixed tutor-stub separates stress profiles from the ordinary interactive list', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--mixed-learner',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+      '--world',
+      'world_005_marrick',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      input: '/profile list stress\n/profile list all\n/profile list sentinel\n/quit\n',
+    },
+  );
+
+  assert.equal(result.status, 0);
+  assert.match(result.stdout, /learner profiles > specialist failure modes \(6\)/u);
+  assert.match(result.stdout, /premature_closure:/u);
+  assert.match(result.stdout, /learner profiles > complete v3 registry \(12\)/u);
+  assert.match(result.stdout, /answer_seeking:/u);
+  assert.match(result.stdout, /low_trust_skeptic:/u);
+  assert.match(result.stdout, /unknown learner profile list: sentinel/u);
+  assert.match(result.stdout, /use \/profile list, \/profile list stress, or \/profile list all/u);
 });
 
 test('auto-eval dry run forwards DAG discourse mode and register temperature to tutor-stub children', () => {

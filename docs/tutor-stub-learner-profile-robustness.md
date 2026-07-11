@@ -25,7 +25,7 @@ same interaction pattern.
 ## Current Method
 
 Built-in automated learner profiles are now structured as
-`machinespirits.tutor-stub.learner-profile-contract.v1` contracts. A contract
+`machinespirits.tutor-stub.learner-profile-contract.v3` contracts. A contract
 specifies:
 
 - the intended failure operator;
@@ -40,6 +40,11 @@ specifies:
 The auto-eval runner renders these contracts into the learner prompt and stores
 a contract summary in the report config. This keeps the profile prompt, report,
 and discrimination audit tied to the same schema.
+
+Contract v1, v2, and v3 are successive schemas for the same named profile
+registry, not parallel sets of selectable learners. Only v3 is active in the
+current code. Historical run artifacts retain their original schema version so
+earlier evidence remains reproducible.
 
 The profile library is now split by purpose rather than treated as one default
 factorial set:
@@ -61,6 +66,11 @@ contract every time. Use `core` to ask whether a policy is robust under ordinary
 profile variation, `sentinel` to ask whether the profile schema is separating
 behavior at all, `stress` to probe specific failure modes, and `audit` only as a
 periodic full-library check.
+
+The human mixed-learner interface applies the same separation without exposing
+evaluation-suite machinery: `/profile list` shows the six ordinary/core choices,
+`/profile list stress` shows the six specialist failure modes, and `/profile
+list all` shows the complete v3 registry.
 
 Policy suites follow the same convention:
 
