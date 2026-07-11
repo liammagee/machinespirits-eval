@@ -26,13 +26,16 @@
  */
 
 import Database from 'better-sqlite3';
+import fs from 'node:fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DB_PATH = path.join(__dirname, '..', 'data', 'evaluations.db');
+const ROOT_DIR = path.resolve(__dirname, '..');
+const DB_PATH = resolveEvaluationDbPath(ROOT_DIR);
 
 // Parse CLI args
 const args = process.argv.slice(2);
@@ -144,6 +147,10 @@ function simpleHash(str) {
 
 // Main analysis
 function analyzeJudgeReliability() {
+  if (!fs.existsSync(DB_PATH)) {
+    console.log(`No evaluation database found at ${DB_PATH}; nothing to analyze.`);
+    return;
+  }
   const db = new Database(DB_PATH, { readonly: true });
 
   const epoch = parseEpochArg(process.argv);

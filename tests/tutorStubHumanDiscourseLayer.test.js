@@ -28,8 +28,10 @@ function tutorStubDryRun(extraArgs = []) {
 }
 
 function plainTerminalText(value) {
+  const ansiCsiPattern = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'gu');
+
   return String(value || '')
-    .replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/gu, '')
+    .replace(ansiCsiPattern, '')
     .replace(/\r/gu, '');
 }
 
@@ -232,12 +234,7 @@ process.stdin.on('end', () => {
 });
 
 test('tutor-stub dry run exposes configurable register temperature', () => {
-  const config = tutorStubDryRun([
-    '--register-policy',
-    'continuous_dynamical_system',
-    '--register-temperature',
-    '0.4',
-  ]);
+  const config = tutorStubDryRun(['--register-policy', 'continuous_dynamical_system', '--register-temperature', '0.4']);
 
   assert.equal(config.registerSelection.temperature, 0.4);
   assert.equal(config.registerSelection.engagementStanceTemperature, 0.4);
@@ -395,15 +392,7 @@ test('tutor-stub rejects DAG-fact dropout outside the closed unit interval', () 
 test('tutor-stub rejects unknown DAG discourse modes', () => {
   const result = spawnSync(
     process.execPath,
-    [
-      'scripts/tutor-stub.js',
-      '--dry-run',
-      '--no-trace',
-      '--world',
-      'world_005_marrick',
-      '--dag-mode',
-      'guesswork',
-    ],
+    ['scripts/tutor-stub.js', '--dry-run', '--no-trace', '--world', 'world_005_marrick', '--dag-mode', 'guesswork'],
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);

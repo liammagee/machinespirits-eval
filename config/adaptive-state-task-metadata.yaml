@@ -1,0 +1,26 @@
+schema: machinespirits.adaptive-state-task-metadata.v1
+version: "1.0"
+status: provisional_author_frozen_for_engineering
+claim_boundary: >-
+  Difficulty and discrimination values are preregistered benchmark metadata,
+  not estimates of human item difficulty. Replace or calibrate them only in a
+  new version before a claim-bearing run.
+worlds:
+  world_005_marrick:
+    task_id: marrick-public-proof-path
+    knowledge_component: public evidence to warranted attribution
+    prerequisite_path:
+      - distinguish evidence from attribution
+      - connect public marks to a warrant
+      - assert only after entailment
+    item_difficulty: 0.62
+    item_discrimination: 1.0
+  world-005-marrick:
+    task_id: marrick-public-proof-path
+    knowledge_component: public evidence to warranted attribution
+    prerequisite_path:
+      - distinguish evidence from attribution
+      - connect public marks to a warrant
+      - assert only after entailment
+    item_difficulty: 0.62
+    item_discrimination: 1.0

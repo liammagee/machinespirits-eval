@@ -1,10 +1,20 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { analyzeGateArtifacts, buildGatePlan, renderGateMarkdown } from '../scripts/run-derivation-phase6-gate.js';
+import {
+  analyzeGateArtifacts,
+  assertPhase6RealGateProtocolReady,
+  assertPhase6RealRunGitState,
+  buildGatePlan,
+  phase6RunCloseoutDisposition,
+  phase6RealGateProtocolBlockers,
+  renderGateMarkdown,
+} from '../scripts/run-derivation-phase6-gate.js';
+import { verifyExperimentRun } from '../services/experimentRunArtifacts.js';
 
 function writeJson(file, value) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -28,6 +38,89 @@ test('buildGatePlan freezes rows across worlds, arms, and seeds', () => {
   assert.match(plan.rows[0].command, /--decay/);
   assert.match(plan.rows[1].command, /--field-planner/);
   assert.equal(plan.decay.rate, 0.08);
+});
+
+test('Phase 6 smoke profile freezes the preregistered world-005, world-006, and world-019 coverage', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-gate-smoke-worlds-'));
+  const plan = buildGatePlan({
+    label: 'smoke-worlds',
+    out: root,
+    profile: 'smoke',
+    arms: ['baseline'],
+    seeds: ['1'],
+    mode: 'mock',
+  });
+
+  assert.deepEqual(plan.worlds, ['marrick', 'hethel', 'marrick_resistant']);
+  assert.deepEqual(
+    plan.rows.map((row) => row.worldKey),
+    ['marrick', 'hethel', 'marrick_resistant'],
+  );
+});
+
+test('Phase 6 real mode requires a clean tree at the exact frozen SHA while mock mode remains available', () => {
+  const clean = { sha: 'abc123', dirty: false };
+  const dirty = { sha: 'abc123', dirty: true };
+  const frozenPlan = { provenance: { git: { sha: 'abc123', dirty: false } } };
+
+  assert.doesNotThrow(() => assertPhase6RealRunGitState({ mode: 'real', gitFingerprint: clean, frozenPlan }));
+  assert.doesNotThrow(() => assertPhase6RealRunGitState({ mode: 'mock', gitFingerprint: dirty, frozenPlan }));
+  assert.throws(
+    () => assertPhase6RealRunGitState({ mode: 'real', gitFingerprint: dirty, frozenPlan }),
+    /dirty working tree/u,
+  );
+  assert.throws(
+    () =>
+      assertPhase6RealRunGitState({
+        mode: 'real',
+        gitFingerprint: clean,
+        frozenPlan: { provenance: { git: { sha: 'abc123', dirty: true } } },
+      }),
+    /frozen run plan was created from a dirty tree/u,
+  );
+  assert.throws(
+    () =>
+      assertPhase6RealRunGitState({
+        mode: 'real',
+        gitFingerprint: { sha: 'def456', dirty: false },
+        frozenPlan,
+      }),
+    /frozen run plan requires abc123/u,
+  );
+});
+
+test('Phase 6 real mode is fail-closed while the hidden+proofDebt baseline and verdict contract are unresolved', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-gate-protocol-block-'));
+  const realPlan = buildGatePlan({
+    label: 'blocked-real',
+    out: root,
+    profile: 'smoke',
+    seeds: ['1', '2', '3', '4', '5'],
+    decayRate: 0.08,
+    mode: 'real',
+  });
+  const blockers = phase6RealGateProtocolBlockers(realPlan);
+  assert.ok(blockers.some((reason) => reason.includes('--proof-debt-guard')));
+  assert.ok(blockers.some((reason) => reason.includes('decision contract')));
+  assert.ok(blockers.some((reason) => reason.includes('verdict evaluator')));
+  assert.throws(() => assertPhase6RealGateProtocolReady(realPlan), /Refusing Phase 6 real run/u);
+
+  const mockPlan = buildGatePlan({
+    label: 'mock-still-available',
+    out: root,
+    worlds: ['marrick'],
+    arms: ['baseline'],
+    seeds: ['1'],
+    mode: 'mock',
+  });
+  assert.deepEqual(phase6RealGateProtocolBlockers(mockPlan), []);
+  assert.doesNotThrow(() => assertPhase6RealGateProtocolReady(mockPlan));
+});
+
+test('Phase 6 incomplete rows remain unsealed and resumable', () => {
+  assert.equal(phase6RunCloseoutDisposition({ okRows: 3, rowCount: 4 }), 'pause_unsealed');
+  assert.equal(phase6RunCloseoutDisposition({ okRows: 4, rowCount: 4 }), 'seal_complete');
+  assert.equal(phase6RunCloseoutDisposition({ okRows: 0, rowCount: 0 }), 'pause_unsealed');
 });
 
 test('field_report_only placebo arm is flag-distinct from baseline', () => {
@@ -75,6 +168,7 @@ test('analyzeGateArtifacts counts field-report-context non-leak audit failures a
     ],
   });
   writeJson(path.join(row.runDir, 'dialogue-report.json'), { summary: {} });
+  fs.writeFileSync(path.join(row.runDir, 'transcript.md'), '# transcript\n');
   fs.writeFileSync(path.join(row.runDir, 'dialogue-report.md'), '# report\n');
   fs.writeFileSync(path.join(row.runDir, 'dynamic-field.svg'), '<svg></svg>\n');
 
@@ -125,6 +219,7 @@ test('analyzeGateArtifacts summarizes field-planner movement and safety gates', 
   writeJson(path.join(row.runDir, 'dialogue-report.json'), {
     summary: { fieldPlannerNonLeakAuditFailures: 0 },
   });
+  fs.writeFileSync(path.join(row.runDir, 'transcript.md'), '# transcript\n');
   fs.writeFileSync(path.join(row.runDir, 'dialogue-report.md'), '# report\n');
   fs.writeFileSync(path.join(row.runDir, 'dynamic-field.svg'), '<svg></svg>\n');
 
@@ -159,6 +254,7 @@ test('analyzeGateArtifacts leaves mean turns blank when no rows ground', () => {
   });
   writeJson(path.join(row.runDir, 'result.json'), {});
   writeJson(path.join(row.runDir, 'dialogue-report.json'), { summary: {} });
+  fs.writeFileSync(path.join(row.runDir, 'transcript.md'), '# transcript\n');
   fs.writeFileSync(path.join(row.runDir, 'dialogue-report.md'), '# report\n');
   fs.writeFileSync(path.join(row.runDir, 'dynamic-field.svg'), '<svg></svg>\n');
 
@@ -166,4 +262,87 @@ test('analyzeGateArtifacts leaves mean turns blank when no rows ground', () => {
   assert.equal(report.groups[0].grounded, 0);
   assert.equal(report.groups[0].meanTurns, null);
   assert.match(renderGateMarkdown(report), /\| baseline \| 1\/1 \| 0\/1 \(0%\) \| - \| 0 \| 0 \| - \|/u);
+});
+
+test('Phase 6 dry-run writes an immutable, checksummed, replayable evidence transaction', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phase6-gate-transaction-'));
+  const label = 'sealed-dry-run';
+  const gateDir = path.join(root, label);
+  try {
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-derivation-phase6-gate.js',
+        '--label',
+        label,
+        '--out',
+        root,
+        '--worlds',
+        'marrick',
+        '--arms',
+        'baseline',
+        '--seeds',
+        '7',
+        '--run-seed',
+        '1701',
+        '--mode',
+        'mock',
+        '--dry-run',
+      ],
+      { cwd: path.resolve('.'), encoding: 'utf8' },
+    );
+
+    for (const name of [
+      'run-plan.json',
+      'run-events.jsonl',
+      'run-seal.json',
+      'manifest.json',
+      'phase6-gate-report.json',
+      'phase6-gate-report.md',
+      'phase6-gate-report.html',
+    ]) {
+      assert.ok(fs.existsSync(path.join(gateDir, name)), `${name} should exist`);
+    }
+    const plan = JSON.parse(fs.readFileSync(path.join(gateDir, 'run-plan.json'), 'utf8'));
+    assert.equal(plan.schema, 'machinespirits.experiment-run-plan.v1');
+    assert.equal(plan.randomization.masterSeed, 1701);
+    assert.deepEqual(plan.randomization.jobOrder, ['marrick-baseline-s7']);
+    assert.equal(plan.requiredObservedModelRoles.length, 0, 'dry-run makes no model calls');
+    assert.ok(Object.values(plan.hashes).every((digest) => /^[0-9a-f]{64}$/u.test(digest)));
+    assert.match(plan.metadata.phase6DecisionRulesSha256, /^[0-9a-f]{64}$/u);
+
+    const verification = verifyExperimentRun(gateDir);
+    assert.equal(verification.ok, true, verification.errors.join('\n'));
+    assert.ok(verification.inventory.some((entry) => entry.path === 'manifest.json'));
+    assert.ok(verification.inventory.some((entry) => entry.path === 'phase6-gate-report.json'));
+
+    assert.throws(
+      () =>
+        execFileSync(
+          process.execPath,
+          [
+            'scripts/run-derivation-phase6-gate.js',
+            '--label',
+            label,
+            '--out',
+            root,
+            '--worlds',
+            'marrick',
+            '--arms',
+            'baseline',
+            '--seeds',
+            '7',
+            '--run-seed',
+            '1701',
+            '--mode',
+            'mock',
+            '--dry-run',
+          ],
+          { cwd: path.resolve('.'), encoding: 'utf8', stdio: 'pipe' },
+        ),
+      /already sealed|immutable run plan/u,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });

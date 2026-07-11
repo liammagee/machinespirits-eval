@@ -17,7 +17,11 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'node:url';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
+
+const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // ── Stopwords ────────────────────────────────────────────────────────────
 
@@ -465,10 +469,10 @@ async function main() {
   console.log('='.repeat(70));
   console.log('');
 
-  const dbPath = path.join(process.cwd(), 'data', 'evaluations.db');
+  const dbPath = resolveEvaluationDbPath(ROOT_DIR);
   if (!fs.existsSync(dbPath)) {
-    console.error('Database not found:', dbPath);
-    process.exit(1);
+    console.log(`No evaluation database found at ${dbPath}; nothing to analyze.`);
+    return;
   }
 
   const db = new Database(dbPath);

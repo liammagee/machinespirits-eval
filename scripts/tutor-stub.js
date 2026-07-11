@@ -110,6 +110,30 @@ import {
   learnerProfilePrompt,
   learnerProfileSuiteIds,
 } from './tutor-stub-learner-profile-contracts.js';
+import { sampleTutorStubPolicyDistribution } from '../services/tutorStubPolicySampler.js';
+import { buildTutorStubStateObservation } from '../services/adaptiveTutor/tutorStubStateAdapter.js';
+import {
+  ADAPTATION_ACTIONS,
+  estimateLearnerStateBelief,
+  selectPedagogicalAction,
+} from '../services/adaptiveTutor/actionPolicy.js';
+import { createAdaptationContract } from '../services/adaptiveTutor/adaptationContract.js';
+import {
+  appendPendingIntervention,
+  closePendingIntervention,
+  createPendingIntervention,
+} from '../services/adaptiveTutor/interventionLedger.js';
+import {
+  buildTutorStubTypedActionDecision,
+  tutorStubMoveFamilyForAction,
+} from '../services/adaptiveTutor/tutorStubActionAdapter.js';
+import {
+  advanceScaffoldLifecycle,
+  allowedMoveFamiliesForScaffoldPhase,
+  createScaffoldLifecycle,
+  SCAFFOLD_LIFECYCLE_SCHEMA,
+  validateScaffoldLifecycle,
+} from '../services/adaptiveTutor/scaffoldLifecycle.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -123,6 +147,10 @@ const SIDE_ARC_SCHEMA = 'machinespirits.tutor-stub.side-arc.v1';
 const PROOF_DEBT_SCHEMA = 'machinespirits.tutor-stub.proof-debt-state.v1';
 const WARRANT_PREMISE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.warrant-premise-audit.v1';
 const HUMAN_DISCOURSE_PHASE = 'phase_2_human_scaffold_prompting';
+const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
+const TUTOR_GUARD_SUMMARY_SCHEMA = 'machinespirits.tutor-stub.guard-accounting-summary.v1';
+const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
+const TUTOR_TYPED_ACTION_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.typed-action-outcome.v1';
 
 const STUB = {
   model: process.env.TUTOR_STUB_MODEL || 'codex.gpt-5.6-terra',
@@ -147,6 +175,15 @@ const STUB = {
     process.env.TUTOR_STUB_REGISTER_TEMPERATURE || String(DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE),
   dagFactDropout: process.env.TUTOR_STUB_DAG_FACT_DROPOUT || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
   dagFactDropoutSeed: process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
+  runSeed: process.env.TUTOR_STUB_RUN_SEED || '1',
+  typedActions: process.env.TUTOR_STUB_TYPED_ACTIONS === '1',
+  typedActionTaskId: process.env.TUTOR_STUB_TYPED_ACTION_TASK_ID || 'tutor-stub-public-reasoning',
+  typedActionKnowledgeComponent:
+    process.env.TUTOR_STUB_TYPED_ACTION_KNOWLEDGE_COMPONENT || 'public-evidence-to-warrant-linkage',
+  typedActionPrerequisites:
+    process.env.TUTOR_STUB_TYPED_ACTION_PREREQUISITES || 'identify public evidence,state a warranted link',
+  typedActionItemDifficulty: process.env.TUTOR_STUB_TYPED_ACTION_ITEM_DIFFICULTY || '0.5',
+  typedActionSupportLevel: process.env.TUTOR_STUB_TYPED_ACTION_SUPPORT_LEVEL || '',
   dagMode: process.env.TUTOR_STUB_DAG_MODE || 'strict_dag',
   multipleChoice: process.env.TUTOR_STUB_MULTIPLE_CHOICE === '1',
   opening: process.env.TUTOR_STUB_OPENING !== '0',
@@ -316,6 +353,15 @@ const { values: args, positionals } = parseArgs({
     'register-temperature': { type: 'string', default: STUB.registerTemperature },
     'dag-fact-dropout': { type: 'string', default: STUB.dagFactDropout },
     'dag-fact-dropout-seed': { type: 'string', default: STUB.dagFactDropoutSeed },
+    'run-seed': { type: 'string', default: STUB.runSeed },
+    'eval-repeat': { type: 'string', default: '1' },
+    'eval-job-id': { type: 'string', default: '' },
+    'typed-actions': { type: 'boolean', default: STUB.typedActions },
+    'typed-action-task-id': { type: 'string', default: STUB.typedActionTaskId },
+    'typed-action-knowledge-component': { type: 'string', default: STUB.typedActionKnowledgeComponent },
+    'typed-action-prerequisites': { type: 'string', default: STUB.typedActionPrerequisites },
+    'typed-action-item-difficulty': { type: 'string', default: STUB.typedActionItemDifficulty },
+    'typed-action-support-level': { type: 'string', default: STUB.typedActionSupportLevel },
     'register-empirical-prior': {
       type: 'string',
       default: process.env.TUTOR_STUB_REGISTER_EMPIRICAL_PRIOR || '',
@@ -416,6 +462,21 @@ Options:
   --dag-fact-dropout-seed <n>
                          non-negative deterministic seed for fact dropout
                          (default: ${STUB.dagFactDropoutSeed})
+  --run-seed <n>         non-negative master seed for policy draws (default: ${STUB.runSeed})
+  --eval-repeat <n>      repetition identity used in policy draw keys (default: 1)
+  --eval-job-id <id>     optional stable job identity used in policy draw keys
+  --typed-actions        opt into Plan 2 typed pedagogical-action selection;
+                         default off, with the decision persisted before output
+  --typed-action-task-id <id>
+                         stable task identity for typed actions
+  --typed-action-knowledge-component <text>
+                         knowledge component targeted by the task
+  --typed-action-prerequisites <csv>
+                         ordered prerequisite path for the task
+  --typed-action-item-difficulty <0..1>
+                         task difficulty supplied independently of move/support/register
+  --typed-action-support-level <0..3>
+                         optional fixed support level; blank uses the action default
   --world <id|path|none> detective-story world (default: ${STUB.world})
   --dag                  add hidden proof DAG + release schedule to tutor prompt;
                          also prints the tutor desire-DAG after each turn
@@ -545,6 +606,14 @@ Environment:
                          optional JSON prior path for empirical register mapping
   TUTOR_STUB_REGISTER_TEMPERATURE
                          optional default register-selection temperature
+  TUTOR_STUB_TYPED_ACTIONS=1
+                         enable opt-in typed pedagogical-action selection
+  TUTOR_STUB_TYPED_ACTION_TASK_ID
+  TUTOR_STUB_TYPED_ACTION_KNOWLEDGE_COMPONENT
+  TUTOR_STUB_TYPED_ACTION_PREREQUISITES
+  TUTOR_STUB_TYPED_ACTION_ITEM_DIFFICULTY
+  TUTOR_STUB_TYPED_ACTION_SUPPORT_LEVEL
+                         optional typed-action task/support defaults
   TUTOR_STUB_AUTO_LEARNER_MODEL
                          optional default automated learner model
   TUTOR_STUB_AUTO_TURNS  optional default automated learner turn cap
@@ -571,6 +640,23 @@ function parsePositiveInt(value, name) {
     throw new Error(`${name} must be a positive integer`);
   }
   return parsed;
+}
+
+function parseOptionalBoundedInt(value, name, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
+    throw new Error(`${name} must be an integer between ${min} and ${max}`);
+  }
+  return parsed;
+}
+
+function commaSeparatedStrings(value) {
+  return String(value || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 function assertSupportedModelRefs(refs) {
@@ -942,6 +1028,208 @@ function deterministicGenerousInferenceFallback() {
     'Yes—that answers this local question, so we can carry that step forward.',
     'What other public mark would you test next before reaching a verdict?',
   ].join(' ');
+}
+
+function tutorGuardIssueRows(audits) {
+  return [
+    ...(audits?.leakAudit?.leaks || []).map((issue) => ({ guard: 'leak', ...issue })),
+    ...(audits?.scaffoldAudit?.issues || []).map((issue) => ({ guard: 'human_scaffold', ...issue })),
+    ...(audits?.closureAudit?.issues || []).map((issue) => ({ guard: 'dialogue_closure', ...issue })),
+  ];
+}
+
+function literalTutorGuardSpans(text, needle, issue) {
+  const source = String(text || '');
+  const target = String(needle || '').trim();
+  if (!target) return [];
+  const escaped = target.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const pattern = new RegExp(escaped, 'giu');
+  return [...source.matchAll(pattern)].map((match) => ({
+    guard: issue.guard,
+    issueType: issue.type || 'unknown',
+    reason: issue.reason || null,
+    start: match.index,
+    end: match.index + match[0].length,
+    text: match[0],
+    offsetEncoding: 'utf16_code_units',
+    basis: 'literal_audit_match',
+  }));
+}
+
+function tutorQuestionSpans(text, issue) {
+  const source = String(text || '');
+  const rows = [];
+  for (const match of source.matchAll(/[^.!?]*\?/gu)) {
+    const raw = match[0];
+    const leading = raw.length - raw.trimStart().length;
+    const surface = raw.trimStart();
+    rows.push({
+      guard: issue.guard,
+      issueType: issue.type || 'unknown',
+      reason: issue.reason || null,
+      start: match.index + leading,
+      end: match.index + raw.length,
+      text: surface,
+      offsetEncoding: 'utf16_code_units',
+      basis: 'question_audit_match',
+    });
+  }
+  return rows;
+}
+
+function tutorGuardedSpans(text, audits) {
+  const source = String(text || '');
+  const spans = [];
+  for (const issue of tutorGuardIssueRows(audits)) {
+    const needles = [...(issue.matches || []), issue.responseQuestion].filter(Boolean);
+    let issueSpans = needles.flatMap((needle) => literalTutorGuardSpans(source, needle, issue));
+    if (
+      !issueSpans.length &&
+      issue.guard === 'dialogue_closure' &&
+      ['closure_response_opens_another_turn', 'multiple_closure_questions', 'closure_reopens_proof_work'].includes(
+        issue.type,
+      )
+    ) {
+      issueSpans = tutorQuestionSpans(source, issue);
+    }
+    if (!issueSpans.length && issue.type === 'missing_explicit_dialogue_close') {
+      issueSpans = [
+        {
+          guard: issue.guard,
+          issueType: issue.type,
+          reason: issue.reason || null,
+          start: source.length,
+          end: source.length,
+          text: '',
+          offsetEncoding: 'utf16_code_units',
+          basis: 'required_insertion_at_end',
+        },
+      ];
+    }
+    if (!issueSpans.length) {
+      issueSpans = [
+        {
+          guard: issue.guard,
+          issueType: issue.type || 'unknown',
+          reason: issue.reason || null,
+          start: 0,
+          end: source.length,
+          text: source,
+          offsetEncoding: 'utf16_code_units',
+          basis: 'whole_candidate_audit_scope',
+        },
+      ];
+    }
+    spans.push(...issueSpans);
+  }
+  const unique = new Map();
+  for (const span of spans) {
+    const key = [span.guard, span.issueType, span.start, span.end, span.text].join('\u0000');
+    if (!unique.has(key)) unique.set(key, span);
+  }
+  return [...unique.values()].sort(
+    (left, right) => left.start - right.start || left.end - right.end || left.guard.localeCompare(right.guard),
+  );
+}
+
+function exactTutorRepairSpans(originalText, repairedText) {
+  const original = String(originalText || '');
+  const repaired = String(repairedText || '');
+  if (original === repaired) return [];
+  let prefix = 0;
+  while (prefix < original.length && prefix < repaired.length && original[prefix] === repaired[prefix]) prefix += 1;
+  let suffix = 0;
+  while (
+    suffix < original.length - prefix &&
+    suffix < repaired.length - prefix &&
+    original[original.length - 1 - suffix] === repaired[repaired.length - 1 - suffix]
+  ) {
+    suffix += 1;
+  }
+  return [
+    {
+      offsetEncoding: 'utf16_code_units',
+      original: {
+        start: prefix,
+        end: original.length - suffix,
+        text: original.slice(prefix, original.length - suffix),
+      },
+      repaired: {
+        start: prefix,
+        end: repaired.length - suffix,
+        text: repaired.slice(prefix, repaired.length - suffix),
+      },
+    },
+  ];
+}
+
+function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
+  const text = String(response?.text || '');
+  return {
+    kind,
+    attempt,
+    provider: response?.provider || null,
+    model: response?.model || null,
+    candidate: {
+      start: 0,
+      end: text.length,
+      text,
+      offsetEncoding: 'utf16_code_units',
+    },
+    audits,
+    guardedSpans: audits ? tutorGuardedSpans(text, audits) : [],
+    repairedSpans,
+  };
+}
+
+function attachTutorGuardAccounting({
+  response,
+  state,
+  trace,
+  tutorTurn,
+  role = 'tutor_stub_tutor',
+  guards,
+  attempts,
+  repairsApplied,
+  finalSource,
+  finalAudits = null,
+  outcome,
+}) {
+  const finalText = String(response?.text || '');
+  const accounting = jsonClone({
+    schema: TUTOR_GUARD_ACCOUNTING_SCHEMA,
+    turn: tutorTurn,
+    policy: state?.experiment?.policy || state?.register?.policy || null,
+    profile: state?.experiment?.profile || null,
+    guards,
+    outcome,
+    originalCandidate: attempts[0] || null,
+    attempts,
+    repairsApplied,
+    finalDelivery: {
+      source: finalSource,
+      provider: response?.provider || null,
+      model: response?.model || null,
+      deterministicFallback: Boolean(response?.deterministicFallback),
+      deterministicClosure: Boolean(response?.deterministicClosure),
+      candidate: {
+        start: 0,
+        end: finalText.length,
+        text: finalText,
+        offsetEncoding: 'utf16_code_units',
+      },
+      audits: finalAudits,
+      auditOk: finalAudits?.ok ?? null,
+    },
+  });
+  response.guardAccounting = accounting;
+  appendTraceEvent(trace, {
+    type: 'tutor_response_guard_accounting',
+    role,
+    turn: tutorTurn,
+    accounting,
+  });
+  return response;
 }
 
 function buildTutorOpening(state) {
@@ -2501,27 +2789,33 @@ function printCurrentDebugId(state, { duringTurn = false } = {}) {
   return { runId: stateRunDebugId(state), completedId, activeId, tracePath: state?.trace?.filePath || null };
 }
 
-function redactTraceSecrets(value, seen = new WeakSet()) {
+function redactTraceSecrets(value, ancestors = new WeakSet()) {
   if (value === null || value === undefined) return value;
   if (typeof value === 'string') {
     return /^sk-[A-Za-z0-9_-]{12,}/u.test(value) ? '[redacted]' : value;
   }
   if (typeof value !== 'object') return value;
-  if (seen.has(value)) return '[circular]';
-  seen.add(value);
-  if (Array.isArray(value)) return value.map((item) => redactTraceSecrets(item, seen));
-  const redacted = {};
-  for (const [key, nested] of Object.entries(value)) {
-    const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/gu, '');
-    if (
-      ['apikey', 'authorization', 'bearer', 'secret', 'password', 'accesstoken', 'refreshtoken'].includes(normalizedKey)
-    ) {
-      redacted[key] = '[redacted]';
-    } else {
-      redacted[key] = redactTraceSecrets(nested, seen);
+  if (ancestors.has(value)) return '[circular]';
+  ancestors.add(value);
+  try {
+    if (Array.isArray(value)) return value.map((item) => redactTraceSecrets(item, ancestors));
+    const redacted = {};
+    for (const [key, nested] of Object.entries(value)) {
+      const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/gu, '');
+      if (
+        ['apikey', 'authorization', 'bearer', 'secret', 'password', 'accesstoken', 'refreshtoken'].includes(
+          normalizedKey,
+        )
+      ) {
+        redacted[key] = '[redacted]';
+      } else {
+        redacted[key] = redactTraceSecrets(nested, ancestors);
+      }
     }
+    return redacted;
+  } finally {
+    ancestors.delete(value);
   }
-  return redacted;
 }
 
 function traceDisplayPath(trace) {
@@ -2625,6 +2919,118 @@ function restoreComprehensionState(state, turns, events = []) {
   };
 }
 
+function typedActionDecisionFromTurn(turn) {
+  const candidates = [
+    turn?.typedActionDecision,
+    turn?.typed_action_decision,
+    turn?.registerSelection?.typed_action_decision,
+  ];
+  return candidates.find((candidate) => candidate && typeof candidate === 'object' && candidate.contract_id) || null;
+}
+
+function restoreTypedActionState(state, turns, events = []) {
+  if (!state.typedActions?.enabled) {
+    return { enabled: false, restored: false, ledgerRecords: 0, pendingContractId: null, phase: null };
+  }
+  const lastClear = events.reduce(
+    (index, event, candidate) => (event?.type === 'history_clear' ? candidate : index),
+    -1,
+  );
+  const activeEvents = events.slice(lastClear + 1);
+  const records = new Map();
+  const order = [];
+  const decisions = new Map();
+  let lifecycle = null;
+  const rememberRecord = (record) => {
+    const contractId = record?.contract_id;
+    if (!contractId) return;
+    if (records.get(contractId)?.status === 'closed' && record.status !== 'closed') return;
+    if (!records.has(contractId)) order.push(contractId);
+    records.set(contractId, jsonClone(record));
+  };
+  const rememberDecision = (decision, pendingIntervention = null) => {
+    const contractId = decision?.contract_id;
+    if (!contractId || typeof decision !== 'object') return;
+    decisions.set(contractId, jsonClone(decision));
+    if (pendingIntervention?.contract_id === contractId) {
+      rememberRecord(pendingIntervention);
+      return;
+    }
+    if (!records.has(contractId) && decision.adaptation_contract?.contract_id === contractId) {
+      rememberRecord(createPendingIntervention(decision.adaptation_contract));
+    }
+  };
+
+  for (const event of activeEvents) {
+    if (event?.type === 'tutor_typed_action_decision') {
+      rememberDecision(event.decision, event.pendingIntervention);
+    } else if (event?.type === 'tutor_typed_action_outcome_closed') {
+      rememberRecord(event.outcome?.closed_record);
+    } else if (event?.type === 'tutor_scaffold_lifecycle_transition' && event.lifecycle) {
+      lifecycle = jsonClone(event.lifecycle);
+    }
+  }
+  for (const turn of turns) {
+    const decision = typedActionDecisionFromTurn(turn);
+    if (decision) rememberDecision(decision);
+    const closedRecord =
+      turn?.typedActionOutcomeAfterNextLearner?.closed_record || turn?.typedActionPriorOutcome?.closed_record || null;
+    if (closedRecord) rememberRecord(closedRecord);
+  }
+
+  const ledger = order.map((contractId) => records.get(contractId)).filter(Boolean);
+  const pending = ledger.filter((record) => record.status === 'pending');
+  if (pending.length > 1) {
+    throw new Error(
+      `resume typed-action trace has multiple pending interventions: ${pending.map((record) => record.contract_id).join(', ')}`,
+    );
+  }
+  const pendingContractId = pending[0]?.contract_id || null;
+  const currentDecision = pendingContractId ? decisions.get(pendingContractId) || null : null;
+  if (pendingContractId && !currentDecision) {
+    throw new Error(`resume typed-action trace is missing decision provenance for ${pendingContractId}`);
+  }
+
+  lifecycle =
+    lifecycle ||
+    [...turns]
+      .reverse()
+      .map((turn) => turn?.scaffoldLifecycle || null)
+      .find(Boolean) ||
+    createScaffoldLifecycle();
+  if (pendingContractId && !lifecycle.pending_contract_id && currentDecision) {
+    lifecycle = advanceScaffoldLifecycle(createScaffoldLifecycle(), {
+      kind: 'typed_action_decision',
+      turn: currentDecision.chosen_action?.turn || currentDecision.adaptation_contract?.turn_index || null,
+      decision: currentDecision,
+    }).lifecycle;
+  }
+  validateScaffoldLifecycle(lifecycle);
+  if (pendingContractId && lifecycle.pending_contract_id !== pendingContractId) {
+    throw new Error(
+      `resume typed-action lifecycle pending contract ${lifecycle.pending_contract_id || 'none'} does not match ledger ${pendingContractId}`,
+    );
+  }
+  if (!pendingContractId && lifecycle.pending_contract_id) {
+    throw new Error(
+      `resume typed-action lifecycle has orphaned pending contract ${lifecycle.pending_contract_id} without a ledger record`,
+    );
+  }
+  state.typedActions.ledger = ledger;
+  state.typedActions.currentDecision = currentDecision;
+  state.typedActions.scaffoldLifecycle = lifecycle;
+  return {
+    enabled: true,
+    restored: Boolean(ledger.length || currentDecision || lifecycle.transition_count),
+    ledgerRecords: ledger.length,
+    closedRecords: ledger.filter((record) => record.status === 'closed').length,
+    pendingContractId,
+    currentActionType: currentDecision?.chosen_action?.action_type || null,
+    phase: lifecycle.phase,
+    lifecycleTransitions: lifecycle.transition_count,
+  };
+}
+
 function replayLearnerDagFromTurns(state, turns) {
   if (!state.learnerDag?.enabled || !state.world) return { replayed: 0, skipped: 0 };
   let replayed = 0;
@@ -2671,6 +3077,7 @@ function restoreDialogueFromTrace(state, resume, { currentWorld }) {
   const register = restoreRegisterStateFromTurns(state, turns);
   const comprehension = restoreComprehensionState(state, turns, resume.events || []);
   const learnerDag = replayLearnerDagFromTurns(state, turns);
+  const typedActions = restoreTypedActionState(state, turns, resume.events || []);
   const storedClosure = turns.at(-1)?.dialogueClosure?.lifecycle || null;
   if (storedClosure && state.dialogueClosure?.enabled) {
     state.dialogueClosure = {
@@ -2715,6 +3122,7 @@ function restoreDialogueFromTrace(state, resume, { currentWorld }) {
     register,
     comprehension,
     learnerDag,
+    typedActions,
     dialogueClosure: state.dialogueClosure,
     metadata: resume.metadata || null,
     warnings,
@@ -4041,11 +4449,32 @@ function fixedBlandEngagementStanceSelection({ state, classification }) {
   };
 }
 
+function policySamplingContext(state, decisionKind) {
+  const experiment = state.experiment || {};
+  return {
+    runSeed: experiment.runSeed ?? 1,
+    profile: experiment.profile || automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
+    policy: state.register?.policy || 'unknown',
+    repeat: experiment.repeat ?? 1,
+    learnerTurn: state.turns.length + 1,
+    decisionKind,
+    jobId: experiment.jobId || null,
+  };
+}
+
+function uniformEngagementStanceDistribution(registers) {
+  const probability = registers.length ? 1 / registers.length : 0;
+  return registers.map((register) => ({ register, weight: 1, probability }));
+}
+
 function randomEngagementStanceSelection({ state, classification }) {
   const palette = state.register?.palette || [];
-  const randomValue = Math.random();
-  const index = Math.min(palette.length - 1, Math.floor(randomValue * palette.length));
-  const selected = palette[index] || firstAvailableRegister(new Set(palette), ['precise', 'plain', 'brisk']);
+  const distribution = uniformEngagementStanceDistribution(palette);
+  const sampled = sampleTutorStubPolicyDistribution(
+    distribution,
+    policySamplingContext(state, 'random_engagement_stance'),
+  );
+  const selected = sampled.entry?.register || firstAvailableRegister(new Set(palette), ['precise', 'plain', 'brisk']);
   return {
     selected_register: selected,
     request_type: classification?.turn?.request_type || 'random_policy',
@@ -4068,12 +4497,9 @@ function randomEngagementStanceSelection({ state, classification }) {
       'Use the next learner turn to observe whether this random register coincides with learner-DAG progress.',
     confidence: null,
     source: 'random_register_policy',
-    random: {
-      method: 'Math.random',
-      value: Number(randomValue.toFixed(6)),
-      index,
-      population: palette.length,
-    },
+    distribution,
+    selected_probability: sampled.entry?.probability ?? null,
+    random: sampled.audit,
   };
 }
 
@@ -4081,9 +4507,12 @@ function negativeEngagementStanceSelection({ state, classification }) {
   const active = new Set(state.register?.palette || []);
   const palette = NEGATIVE_FLOOR_REGISTERS.filter((register) => active.has(register));
   const population = palette.length ? palette : NEGATIVE_FLOOR_REGISTERS;
-  const randomValue = Math.random();
-  const index = Math.min(population.length - 1, Math.floor(randomValue * population.length));
-  const selected = population[index] || 'ironic';
+  const distribution = uniformEngagementStanceDistribution(population);
+  const sampled = sampleTutorStubPolicyDistribution(
+    distribution,
+    policySamplingContext(state, 'negative_floor_engagement_stance'),
+  );
+  const selected = sampled.entry?.register || 'ironic';
   return {
     selected_register: selected,
     request_type: classification?.turn?.request_type || 'negative_floor_policy',
@@ -4106,13 +4535,9 @@ function negativeEngagementStanceSelection({ state, classification }) {
       'Compare learner-DAG progress against field movement and recognition-cost signals after the negative stance.',
     confidence: null,
     source: 'negative_register_policy',
-    random: {
-      method: 'Math.random',
-      value: Number(randomValue.toFixed(6)),
-      index,
-      population: population.length,
-      floor: NEGATIVE_FLOOR_REGISTERS,
-    },
+    distribution,
+    selected_probability: sampled.entry?.probability ?? null,
+    random: { ...sampled.audit, floor: NEGATIVE_FLOOR_REGISTERS },
   };
 }
 
@@ -4394,32 +4819,9 @@ function normalizeEngagementStanceDistribution(
   }));
 }
 
-function sampleEngagementStanceDistribution(distribution) {
-  const total = distribution.reduce((sum, entry) => sum + entry.weight, 0) || 1;
-  const randomValue = Math.random();
-  const threshold = randomValue * total;
-  let cumulative = 0;
-  for (const entry of distribution) {
-    cumulative += entry.weight;
-    if (threshold <= cumulative) {
-      return {
-        entry,
-        random: {
-          method: 'Math.random',
-          value: Number(randomValue.toFixed(6)),
-          threshold: Number(threshold.toFixed(6)),
-        },
-      };
-    }
-  }
-  return {
-    entry: distribution[distribution.length - 1],
-    random: {
-      method: 'Math.random',
-      value: Number(randomValue.toFixed(6)),
-      threshold: Number(threshold.toFixed(6)),
-    },
-  };
+function sampleEngagementStanceDistribution(distribution, { state, decisionKind }) {
+  const sampled = sampleTutorStubPolicyDistribution(distribution, policySamplingContext(state, decisionKind));
+  return { entry: sampled.entry, random: sampled.audit };
 }
 
 function formatEngagementStanceDistribution(distribution, { limit = 5 } = {}) {
@@ -4434,7 +4836,10 @@ function formatEngagementStanceDistribution(distribution, { limit = 5 } = {}) {
 function fieldEngagementStanceSelection({ state, classification, tutorLearnerDag }) {
   const { features, scores, drivers } = buildFieldRegisterScores({ state, classification, tutorLearnerDag });
   const distribution = normalizeEngagementStanceDistribution(scores, { temperature: state.register?.temperature });
-  const sampled = sampleEngagementStanceDistribution(distribution);
+  const sampled = sampleEngagementStanceDistribution(distribution, {
+    state,
+    decisionKind: 'field_engagement_stance',
+  });
   const selected =
     sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = null;
@@ -4778,7 +5183,10 @@ function trajectoryEngagementStanceSelection({ state, classification, tutorLearn
     tutorLearnerDag,
   });
   const distribution = normalizeEngagementStanceDistribution(scores, { temperature: state.register?.temperature });
-  const sampled = sampleEngagementStanceDistribution(distribution);
+  const sampled = sampleEngagementStanceDistribution(distribution, {
+    state,
+    decisionKind: 'trajectory_engagement_stance',
+  });
   const selected =
     sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = null;
@@ -5420,7 +5828,12 @@ function dynamicalSystemEngagementStanceSelection({ state, classification, tutor
       useCorpusPrior,
     });
   const distribution = normalizeEngagementStanceDistribution(scores, { temperature: 1 });
-  const sampled = sampleEngagementStanceDistribution(distribution);
+  const sampled = sampleEngagementStanceDistribution(distribution, {
+    state,
+    decisionKind: useCorpusPrior
+      ? 'empirical_dynamical_system_engagement_stance'
+      : 'dynamical_system_engagement_stance',
+  });
   const selected =
     sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = null;
@@ -5812,7 +6225,10 @@ function buildStateRegisterScores({ state, classification, tutorLearnerDag }) {
 function stateEngagementStanceSelection({ state, classification, tutorLearnerDag }) {
   const { features, scores, drivers } = buildStateRegisterScores({ state, classification, tutorLearnerDag });
   const distribution = normalizeEngagementStanceDistribution(scores, { temperature: state.register?.temperature });
-  const sampled = sampleEngagementStanceDistribution(distribution);
+  const sampled = sampleEngagementStanceDistribution(distribution, {
+    state,
+    decisionKind: 'state_engagement_stance',
+  });
   const selected =
     sampled.entry?.register || firstAvailableRegister(new Set(state.register?.palette || []), ['precise', 'plain']);
   const actionFamily = null;
@@ -6645,8 +7061,27 @@ function responseConfigurationContext(
     scene_immersion: selection.scene_immersion,
     unresolved_terms: selection.unresolved_terms || [],
   };
+  const typedAction = selection.typed_action_decision?.chosen_action || null;
+  const typedActionContext = typedAction
+    ? [
+        '[Tutor-only typed pedagogical action]',
+        `Action type: ${typedAction.action_type}`,
+        `Move family: ${typedAction.move_family}`,
+        `Support level: ${typedAction.support_level} of 3`,
+        `Task: ${typedAction.task_id}`,
+        `Knowledge component: ${typedAction.knowledge_component}`,
+        `Prerequisite path: ${typedAction.prerequisite_path.join(' -> ') || 'none specified'}`,
+        `Item difficulty: ${typedAction.item_difficulty}`,
+        `Expected learner evidence: ${typedAction.expected_evidence.success.join(', ') || 'none specified'}`,
+        `Forbidden learner evidence: ${typedAction.expected_evidence.failure.join(', ') || 'none specified'}`,
+        `Responsibility owner: ${typedAction.responsibility_owner}`,
+        'The move family, support level, engagement stance, and task are independent controls. Realize each exactly as selected; do not infer one from another.',
+        '[End tutor-only typed pedagogical action]',
+      ].join('\n')
+    : null;
   return [
     tutorStubResponseConfigurationPrompt(responseConfiguration),
+    typedActionContext,
     '[Tutor-only response-policy evidence]',
     `Selected engagement stance: ${engagementStance}`,
     selection.legacy_selected_register ? `Legacy register alias: ${selection.legacy_selected_register}` : null,
@@ -8062,6 +8497,68 @@ function compactCounts(items, { limit = 5 } = {}) {
     .join(', ');
 }
 
+function summarizeTutorGuardAccounting(turns, { policy = null, profile = null } = {}) {
+  const rows = turns.map((turn) => turn?.tutorGuardAccounting).filter(Boolean);
+  const outcomes = {};
+  const deliveries = {};
+  const guards = {
+    leak: { issues: 0, guardedSpans: 0 },
+    human_scaffold: { issues: 0, guardedSpans: 0 },
+    dialogue_closure: { issues: 0, guardedSpans: 0 },
+  };
+  let repairActions = 0;
+  let modelRepairTurns = 0;
+  let deterministicFallbackTurns = 0;
+  let guardTriggeredTurns = 0;
+  let guardedSpans = 0;
+  let repairedSpans = 0;
+  let finalDeliveryAuditFailures = 0;
+  for (const row of rows) {
+    outcomes[row.outcome || 'unknown'] = (outcomes[row.outcome || 'unknown'] || 0) + 1;
+    const delivery = row.finalDelivery?.source || 'unknown';
+    deliveries[delivery] = (deliveries[delivery] || 0) + 1;
+    if (row.attempts?.[0]?.guardedSpans?.length) guardTriggeredTurns += 1;
+    if (row.repairsApplied?.some((repair) => repair.kind === 'model_rewrite')) modelRepairTurns += 1;
+    if (delivery === 'deterministic_fallback') deterministicFallbackTurns += 1;
+    repairActions += row.repairsApplied?.length || 0;
+    if (row.finalDelivery?.auditOk === false) finalDeliveryAuditFailures += 1;
+    for (const attempt of row.attempts || []) {
+      guardedSpans += attempt.guardedSpans?.length || 0;
+      repairedSpans += attempt.repairedSpans?.length || 0;
+      for (const issue of tutorGuardIssueRows(attempt.audits)) {
+        const bucket = guards[issue.guard] || (guards[issue.guard] = { issues: 0, guardedSpans: 0 });
+        bucket.issues += 1;
+      }
+      for (const span of attempt.guardedSpans || []) {
+        const bucket = guards[span.guard] || (guards[span.guard] = { issues: 0, guardedSpans: 0 });
+        bucket.guardedSpans += 1;
+      }
+    }
+  }
+  const metrics = {
+    turns: turns.length,
+    accountedTurns: rows.length,
+    guardEnabledTurns: rows.filter((row) => row.guards?.enabled).length,
+    guardTriggeredTurns,
+    modelRepairTurns,
+    deterministicFallbackTurns,
+    repairActions,
+    guardedSpans,
+    repairedSpans,
+    finalDeliveryAuditFailures,
+    outcomes,
+    deliveries,
+    guards,
+  };
+  return {
+    schema: TUTOR_GUARD_SUMMARY_SCHEMA,
+    policy,
+    profile,
+    ...metrics,
+    byPolicyProfile: [{ policy, profile, ...metrics }],
+  };
+}
+
 function dialogueCaseStatus(turn) {
   const assessment = turn?.tutorLearnerDagModel?.assessment || {};
   const closure = turn?.dialogueClosure?.lifecycle || null;
@@ -8117,6 +8614,10 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
   const responseConfigurationVisibility = summarizeTutorStubResponseConfigurationAudits(
     state.turns.map((turn) => turn.responseConfigurationAudit),
   );
+  const guardAccounting = summarizeTutorGuardAccounting(state.turns, {
+    policy: state.experiment?.policy || state.register?.policy || null,
+    profile: state.experiment?.profile || null,
+  });
   const payload = {
     schema: 'machinespirits.tutor-stub.closeout-report.v1',
     reason,
@@ -8145,6 +8646,7 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
       turn: state.turns.length + 1,
     }),
     responseConfigurationVisibility,
+    guardAccounting,
     dialogueClosure: last.dialogueClosure?.lifecycle || state.dialogueClosure || null,
     field: field.summary,
     finalTurn: {
@@ -8190,6 +8692,13 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
       } across ${responseConfigurationVisibility.distinct_configuration_count} configuration(s)${C.reset}`,
     );
   }
+  console.log(
+    `${C.dim}  response guards: accounted ${guardAccounting.accountedTurns}/${guardAccounting.turns}; triggered ${
+      guardAccounting.guardTriggeredTurns
+    }; model repairs ${guardAccounting.modelRepairTurns}; deterministic fallbacks ${
+      guardAccounting.deterministicFallbackTurns
+    }; final audit failures ${guardAccounting.finalDeliveryAuditFailures}${C.reset}`,
+  );
   console.log(`${C.dim}  bottlenecks: ${bottleneckCounts}${C.reset}`);
   if (payload.humanDiscourse.config?.scaffoldActive) {
     console.log(
@@ -8295,6 +8804,12 @@ async function callTutor({
     dialogueClosureFrame?.enabled && (dialogueClosureFrame.mandatory || dialogueClosureFrame.available),
   );
   const responseGuardEnabled = leakGuardEnabled || scaffoldGuardEnabled || closureGuardEnabled;
+  const guards = {
+    enabled: responseGuardEnabled,
+    leak: leakGuardEnabled,
+    humanScaffold: scaffoldGuardEnabled,
+    dialogueClosure: closureGuardEnabled,
+  };
   const canStreamTutor = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
   const tutorStreamMode = canStreamTutor ? (responseGuardEnabled ? 'buffered' : 'live') : 'none';
 
@@ -8460,6 +8975,8 @@ async function callTutor({
   }
 
   try {
+    const attempts = [];
+    const repairsApplied = [];
     let response = await invokeTutorAttempt({
       attemptUserPrompt: userPrompt,
       role: roleBase,
@@ -8467,9 +8984,24 @@ async function callTutor({
       repairAttempt: 0,
     });
 
-    if (!responseGuardEnabled) return response;
+    if (!responseGuardEnabled) {
+      attempts.push(tutorGuardAttemptEnvelope({ kind: 'original_candidate', attempt: 0, response }));
+      return attachTutorGuardAccounting({
+        response,
+        state,
+        trace,
+        tutorTurn,
+        role: roleBase,
+        guards,
+        attempts,
+        repairsApplied,
+        finalSource: 'original_candidate',
+        outcome: 'unguarded_original',
+      });
+    }
 
     let audits = auditTutorDraft(response, { role: roleBase, attempt: 0 });
+    attempts.push(tutorGuardAttemptEnvelope({ kind: 'original_candidate', attempt: 0, response, audits }));
     if (audits.ok) {
       response.leakAudit = audits.leakAudit;
       response.scaffoldAudit = audits.scaffoldAudit;
@@ -8477,9 +9009,22 @@ async function callTutor({
       if (response.bufferedStream) {
         response.guardedStreamReplay = true;
       }
-      return response;
+      return attachTutorGuardAccounting({
+        response,
+        state,
+        trace,
+        tutorTurn,
+        role: roleBase,
+        guards,
+        attempts,
+        repairsApplied,
+        finalSource: 'original_candidate',
+        finalAudits: audits,
+        outcome: 'guarded_original_accepted',
+      });
     }
 
+    const firstRepairTriggers = tutorGuardIssueRows(audits);
     response = await invokeTutorAttempt({
       attemptUserPrompt: tutorResponseRepairPrompt({
         originalUserPrompt: userPrompt,
@@ -8494,6 +9039,24 @@ async function callTutor({
       repairAttempt: 1,
     });
     audits = auditTutorDraft(response, { role: `${roleBase}_repair`, attempt: 1 });
+    const modelRepairSpans = exactTutorRepairSpans(attempts[0].candidate.text, response.text);
+    attempts.push(
+      tutorGuardAttemptEnvelope({
+        kind: 'model_repair_candidate',
+        attempt: 1,
+        response,
+        audits,
+        repairedSpans: modelRepairSpans,
+      }),
+    );
+    repairsApplied.push({
+      kind: 'model_rewrite',
+      fromAttempt: 0,
+      toAttempt: 1,
+      triggeredBy: firstRepairTriggers,
+      guardedSpans: attempts[0].guardedSpans,
+      repairedSpans: modelRepairSpans,
+    });
     if (audits.ok) {
       response.leakAudit = audits.leakAudit;
       response.scaffoldAudit = audits.scaffoldAudit;
@@ -8502,7 +9065,19 @@ async function callTutor({
       if (response.bufferedStream) {
         response.guardedStreamReplay = true;
       }
-      return response;
+      return attachTutorGuardAccounting({
+        response,
+        state,
+        trace,
+        tutorTurn,
+        role: roleBase,
+        guards,
+        attempts,
+        repairsApplied,
+        finalSource: 'model_repair_candidate',
+        finalAudits: audits,
+        outcome: 'guarded_model_repair_accepted',
+      });
     }
 
     const closureFallbackSelected = Boolean(
@@ -8532,6 +9107,25 @@ async function callTutor({
     if (canStreamTutor) {
       fallback.guardedStreamReplay = true;
     }
+    const fallbackAudits = auditTutorDraft(fallback, { role: `${roleBase}_fallback`, attempt: 2 });
+    const fallbackRepairSpans = exactTutorRepairSpans(attempts[1].candidate.text, fallbackText);
+    attempts.push(
+      tutorGuardAttemptEnvelope({
+        kind: 'deterministic_fallback',
+        attempt: 2,
+        response: fallback,
+        audits: fallbackAudits,
+        repairedSpans: fallbackRepairSpans,
+      }),
+    );
+    repairsApplied.push({
+      kind: 'deterministic_fallback',
+      fromAttempt: 1,
+      toAttempt: 2,
+      triggeredBy: tutorGuardIssueRows(audits),
+      guardedSpans: attempts[1].guardedSpans,
+      repairedSpans: fallbackRepairSpans,
+    });
     appendTraceEvent(trace, {
       type: 'tutor_response_fallback',
       role: roleBase,
@@ -8541,7 +9135,19 @@ async function callTutor({
       closureIssues: audits.closureAudit.issues,
       text: fallbackText,
     });
-    return fallback;
+    return attachTutorGuardAccounting({
+      response: fallback,
+      state,
+      trace,
+      tutorTurn,
+      role: roleBase,
+      guards,
+      attempts,
+      repairsApplied,
+      finalSource: 'deterministic_fallback',
+      finalAudits: fallbackAudits,
+      outcome: 'guarded_deterministic_fallback',
+    });
   } catch (err) {
     appendTraceEvent(trace, {
       type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
@@ -9001,6 +9607,329 @@ function tutorDialogueClosureFrameForTurn({ state, tutorTurn, tutorLearnerDag })
   };
 }
 
+function typedActionStateBelief({ state, learnerText, stateObservation, turn }) {
+  const dialogue = state.turns.flatMap((row) => [
+    { role: 'learner', content: row.learner || '' },
+    { role: 'tutor', content: row.tutor || '' },
+  ]);
+  dialogue.push({ role: 'learner', content: learnerText });
+  const belief = estimateLearnerStateBelief({
+    dialogue,
+    interventionLedger: state.typedActions.ledger,
+    turnIndex: turn,
+  });
+  belief.axes = {
+    ...belief.axes,
+    proof: stateObservation.axes.proof,
+    release: stateObservation.axes.release,
+    ownership: stateObservation.axes.ownership,
+    conceptual_mastery: stateObservation.axes.conceptual_mastery,
+    metacognitive_accuracy: stateObservation.axes.metacognitive_accuracy,
+    affective_readiness: stateObservation.axes.affective_readiness,
+  };
+  return belief;
+}
+
+function advanceRuntimeScaffoldLifecycle(state, event) {
+  if (!state.typedActions?.enabled) return null;
+  const result = advanceScaffoldLifecycle(state.typedActions.scaffoldLifecycle, event);
+  state.typedActions.scaffoldLifecycle = result.lifecycle;
+  appendTraceEvent(state.trace, {
+    type: 'tutor_scaffold_lifecycle_transition',
+    turn: event.turn,
+    transition: result.transition,
+    lifecycle: result.lifecycle,
+  });
+  return result;
+}
+
+function scaffoldLifecycleActionGate(lifecycle) {
+  const phase = lifecycle?.phase || 'diagnose';
+  const allowedMoveFamilies = allowedMoveFamiliesForScaffoldPhase(phase);
+  const allowedActionTypes = ADAPTATION_ACTIONS.filter((action) =>
+    allowedMoveFamilies.includes(tutorStubMoveFamilyForAction(action.action_type)),
+  ).map((action) => action.action_type);
+  if (!allowedActionTypes.length) {
+    throw new Error(`typed scaffold lifecycle phase ${phase} has no permitted pedagogical actions`);
+  }
+  return {
+    phase,
+    allowedMoveFamilies,
+    allowedActionTypes,
+    policySpec: {
+      id: `tutor-stub-scaffold-lifecycle-${phase}`,
+      version: '1.0',
+      module_id: `scaffold_lifecycle:${phase}`,
+      spec_hash: `scaffold-lifecycle.v1:${phase}:${allowedActionTypes.join(',')}`,
+      action_policy: {
+        allowed_action_families: allowedActionTypes,
+        preferred_action_families: allowedActionTypes,
+        disallowed_action_families: ADAPTATION_ACTIONS.map((action) => action.action_type).filter(
+          (actionType) => !allowedActionTypes.includes(actionType),
+        ),
+      },
+    },
+  };
+}
+
+function closePriorTypedAction({ state, learnerText, turn }) {
+  if (!state.typedActions?.enabled) return null;
+  const result = closePendingIntervention({
+    ledger: state.typedActions.ledger,
+    learnerTurn: learnerText,
+    turnIndex: turn,
+    config: { semanticOutcomeObserver: true },
+  });
+  state.typedActions.ledger = result.ledger;
+  if (!result.closedRecord) return null;
+  const envelope = {
+    schema: TUTOR_TYPED_ACTION_OUTCOME_SCHEMA,
+    contract_id: result.closedRecord.contract_id,
+    decision_turn: result.closedRecord.turn_index,
+    observation_turn: turn,
+    public_learner_observation: learnerText,
+    outcome: result.closedRecord.outcome,
+    observed_transition: result.closedRecord.observed_transition,
+    evidence: result.closedRecord.evidence,
+    evidence_contract: result.closedRecord.evidence_contract || null,
+    policy_update: result.closedRecord.policy_update || null,
+    closed_record: result.closedRecord,
+  };
+  const lifecycle = advanceRuntimeScaffoldLifecycle(state, {
+    kind: 'closed_public_outcome',
+    turn,
+    outcome: envelope,
+  });
+  envelope.scaffold_lifecycle_transition = lifecycle?.transition || null;
+  envelope.scaffold_lifecycle = lifecycle?.lifecycle || null;
+  const priorTurn = [...state.turns]
+    .reverse()
+    .find((row) => Number(row.turn) === Number(result.closedRecord.turn_index));
+  if (priorTurn?.typedActionDecision) priorTurn.typedActionOutcomeAfterNextLearner = jsonClone(envelope);
+  appendTraceEvent(state.trace, {
+    type: 'tutor_typed_action_outcome_closed',
+    turn,
+    decisionTurn: result.closedRecord.turn_index,
+    outcome: envelope,
+  });
+  return envelope;
+}
+
+function typedActionRegisterSelection({
+  state,
+  learnerText,
+  classification,
+  tutorLearnerDag,
+  registerSelection,
+  decision,
+}) {
+  const register =
+    registerSelection?.engagement_stance ||
+    registerSelection?.selected_register ||
+    decision.register_selection.engagement_stance ||
+    'precise';
+  const baseConfiguration =
+    registerSelection?.response_configuration ||
+    buildTutorStubResponseConfiguration({
+      engagementStance: register,
+      legacySelectedRegister: register,
+      temperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+      policy: state.register?.policy || 'typed_action',
+      learnerText,
+      classification,
+      tutorLearnerDag,
+      comprehension: tutorStubComprehensionFeatures(state.comprehension, { turn: state.turns.length + 1 }),
+      world: state.world,
+    });
+  const patch = decision.response_configuration_patch;
+  const responseConfiguration = {
+    ...jsonClone(baseConfiguration),
+    action_family: patch.action_family,
+    support_level: patch.support_level,
+    task_id: patch.task_id,
+    knowledge_component: patch.knowledge_component,
+    item_difficulty: patch.item_difficulty,
+    typed_action_schema: decision.schema,
+    selection_reasons: {
+      ...(baseConfiguration.selection_reasons || {}),
+      action_family: `Selected by the opt-in typed pedagogical-action policy as ${decision.chosen_action.action_type}.`,
+      support_level: 'Selected independently from move family, engagement stance, and task.',
+      task: 'Supplied by the explicit typed-action task configuration.',
+    },
+  };
+  const definition = getEngagementStanceDefinition(register) || {};
+  const effective = {
+    ...(registerSelection ? jsonClone(registerSelection) : {}),
+    schema: registerSelection?.schema || 'machinespirits.tutor-stub.response-configuration-selection.v3',
+    policy: registerSelection?.policy || state.register?.policy || 'typed_action',
+    turn: registerSelection?.turn || state.turns.length + 1,
+    engagement_stance: register,
+    selected_register: register,
+    selected_mode: register,
+    legacy_selected_register: registerSelection?.legacy_selected_register || register,
+    action_family: patch.action_family,
+    support_level: patch.support_level,
+    task_id: patch.task_id,
+    knowledge_component: patch.knowledge_component,
+    item_difficulty: patch.item_difficulty,
+    audience_register: responseConfiguration.audience_register,
+    lexical_accessibility: responseConfiguration.lexical_accessibility,
+    scene_immersion: responseConfiguration.scene_immersion,
+    unresolved_terms: responseConfiguration.unresolved_terms,
+    valence: registerSelection?.valence || definition.valence || null,
+    request_type:
+      registerSelection?.request_type ||
+      classification?.turn?.request_type ||
+      classification?.turn?.discourse_move ||
+      'unknown',
+    reviewer_signal:
+      registerSelection?.reviewer_signal || classification?.turn?.pedagogical_need || 'typed pedagogical action',
+    register_reason: registerSelection?.register_reason || 'Default precise stance for the typed-action runtime.',
+    response_configuration: responseConfiguration,
+    typed_action_decision: decision,
+    source: registerSelection?.source || 'typed_action_runtime',
+  };
+  if (state.register?.enabled) {
+    if (state.register.history.length && state.register.history.at(-1)?.turn === effective.turn) {
+      state.register.history[state.register.history.length - 1] = effective;
+    } else {
+      state.register.history.push(effective);
+    }
+    state.register.current = effective;
+  }
+  return effective;
+}
+
+function planTypedAction({
+  state,
+  learnerText,
+  stateObservation,
+  turn,
+  classification,
+  tutorLearnerDag,
+  registerSelection,
+}) {
+  if (!state.typedActions?.enabled) {
+    return { registerSelection, decision: null, priorOutcome: null };
+  }
+  const priorOutcome = closePriorTypedAction({ state, learnerText, turn });
+  const stateBelief = typedActionStateBelief({ state, learnerText, stateObservation, turn });
+  const lifecycleBeforeDecision = jsonClone(state.typedActions.scaffoldLifecycle);
+  const lifecycleGate = scaffoldLifecycleActionGate(lifecycleBeforeDecision);
+  const selection = selectPedagogicalAction({
+    stateBelief,
+    interventionLedger: state.typedActions.ledger,
+    mode: 'closed_loop',
+    config: {
+      maxActionCandidates: ADAPTATION_ACTIONS.length,
+      worldAdaptationSpec: lifecycleGate.policySpec,
+    },
+  });
+  const considered = new Set(selection.candidateActions.map((candidate) => candidate.action_type));
+  const vetoes = ADAPTATION_ACTIONS.filter((action) => !considered.has(action.action_type)).map((action) => {
+    const moveFamily = tutorStubMoveFamilyForAction(action.action_type);
+    const lifecycleVeto = !lifecycleGate.allowedMoveFamilies.includes(moveFamily);
+    return {
+      action_type: action.action_type,
+      move_family: moveFamily,
+      stage: lifecycleVeto ? 'scaffold_lifecycle_gate' : 'state_conditioned_candidate_generation',
+      disposition: lifecycleVeto ? 'vetoed' : 'not_considered',
+      reason: lifecycleVeto
+        ? `Move family ${moveFamily} is not permitted during scaffold phase ${lifecycleGate.phase}.`
+        : 'The current public learner-state hypotheses did not place this action in the policy candidate set.',
+    };
+  });
+  const register = registerSelection?.engagement_stance || registerSelection?.selected_register || 'precise';
+  let decision = buildTutorStubTypedActionDecision({
+    selection,
+    stateBelief,
+    task: state.typedActions.config.task,
+    register,
+    supportLevel: state.typedActions.config.supportLevel,
+    selectionProbability: 1,
+    vetoes,
+    modelVersion: 'programmatic/adaptive-action-policy',
+  });
+  const contractId = `${stateRunDebugId(state)}-typed-action-t${turn}`;
+  const contract = createAdaptationContract({
+    contractId,
+    dialogueId: stateRunDebugId(state),
+    turnIndex: turn,
+    stateBelief,
+    selectedAction: decision.chosen_action,
+    candidateActions: selection.candidateActions,
+    gateResult: { allowed: true, violations: [], repairs: [] },
+    policyMode: 'closed_loop',
+    worldAdaptationSpec: selection.worldAdaptationSpec,
+  });
+  decision = jsonClone({
+    ...decision,
+    contract_id: contractId,
+    decision_provenance: {
+      timing: 'after_current_public_learner_observation_before_tutor_output',
+      public_observation_schema: stateObservation.schema,
+      public_only: true,
+      selection_method: 'deterministic_closed_loop_argmax',
+      propensity: {
+        selected_action_probability: 1,
+        method: 'deterministic_policy',
+      },
+      candidate_universe: ADAPTATION_ACTIONS.map((action) => action.action_type),
+      considered_candidates: selection.candidateActions.map((candidate) => candidate.action_type),
+      vetoed_or_not_considered: vetoes.map((row) => row.action_type),
+      task_axis_source: 'explicit_typed_action_config',
+      register_axis_source: registerSelection ? 'existing_tutor_stub_register_policy' : 'typed_action_precise_fallback',
+      support_axis_source:
+        state.typedActions.config.supportLevel === null ? 'action_default' : 'explicit_typed_action_config',
+      scaffold_lifecycle_gate: {
+        phase: lifecycleGate.phase,
+        allowed_move_families: lifecycleGate.allowedMoveFamilies,
+        allowed_action_types: lifecycleGate.allowedActionTypes,
+        policy_spec: lifecycleGate.policySpec,
+      },
+    },
+    adaptation_contract: contract,
+  });
+  const lifecycleDecision = advanceRuntimeScaffoldLifecycle(state, {
+    kind: 'typed_action_decision',
+    turn,
+    decision,
+  });
+  decision = jsonClone({
+    ...decision,
+    scaffold_lifecycle: {
+      before: lifecycleBeforeDecision,
+      transition: lifecycleDecision.transition,
+      after: lifecycleDecision.lifecycle,
+    },
+  });
+  const pending = appendPendingIntervention(state.typedActions.ledger, contract);
+  state.typedActions.ledger = pending.ledger;
+  state.typedActions.currentDecision = decision;
+  const effectiveRegisterSelection = typedActionRegisterSelection({
+    state,
+    learnerText,
+    classification,
+    tutorLearnerDag,
+    registerSelection,
+    decision,
+  });
+  appendTraceEvent(state.trace, {
+    type: 'tutor_typed_action_decision',
+    turn,
+    phase: 'before_tutor_output',
+    stateObservation,
+    decision,
+    pendingIntervention: pending.pendingIntervention,
+  });
+  console.log(
+    `${C.cyan}typed action >${C.reset} ${decision.chosen_action.action_type}; move ${
+      decision.chosen_action.move_family
+    }; support ${decision.chosen_action.support_level}; task ${decision.chosen_action.task_id}; stance ${register}`,
+  );
+  return { registerSelection: effectiveRegisterSelection, decision, priorOutcome };
+}
+
 async function runOneTurn(
   inputText,
   state,
@@ -9034,6 +9963,31 @@ async function runOneTurn(
   });
   const comprehensionBeforeTutor = tutorStubComprehensionSnapshot(state.comprehension, { turn: tutorTurn });
   const dagFactDropout = tutorLearnerDag?.dagFactDropout || null;
+  const stateObservation = buildTutorStubStateObservation({
+    turnRecord: {
+      turn: tutorTurn,
+      learner: learnerText,
+      classification,
+      tutorLearnerDagModel: tutorLearnerDag?.model || null,
+      tutorLearnerDagUpdate: tutorLearnerDag
+        ? {
+            accepted: tutorLearnerDag.accepted || null,
+            rejected: tutorLearnerDag.rejected || [],
+            extractor: tutorLearnerDag.extractor || null,
+            dagFactDropout,
+          }
+        : null,
+      humanDiscourseFrame,
+      scaffoldState: humanDiscourseFrame.scaffoldState,
+      proofDebt: humanDiscourseFrame.proofDebt,
+      warrantPremiseAudit: humanDiscourseFrame.warrantPremiseAudit,
+    },
+    previousObservation: state.turns.at(-1)?.stateObservation || null,
+    provenance: {
+      prediction_origin: 'after_learner_observation_before_tutor_realization',
+      observed_before_tutor_call: true,
+    },
+  });
 
   if (dagFactDropout?.droppedNow?.length || dagFactDropout?.repairedNow?.length) {
     appendTraceEvent(state.trace, {
@@ -9042,6 +9996,32 @@ async function runOneTurn(
       turnId,
       dropout: dagFactDropout,
     });
+  }
+
+  const typedAction =
+    state.typedActions?.enabled && precomputedResponse?.deterministicClosure
+      ? {
+          registerSelection,
+          decision: null,
+          priorOutcome: closePriorTypedAction({ state, learnerText, turn: tutorTurn }),
+        }
+      : planTypedAction({
+          state,
+          learnerText,
+          stateObservation,
+          turn: tutorTurn,
+          classification,
+          tutorLearnerDag,
+          registerSelection,
+        });
+  registerSelection = typedAction.registerSelection;
+  if (precomputedResponse?.speculativeCacheHit && typedAction.decision) {
+    appendTraceEvent(state.trace, {
+      type: 'mixed_learner_tutor_prefetch_bypassed',
+      turn: tutorTurn,
+      reason: 'typed_action_must_precede_tutor_output_generation',
+    });
+    precomputedResponse = null;
   }
 
   const response =
@@ -9121,6 +10101,7 @@ async function runOneTurn(
     turnId,
     turn: tutorTurn,
     learner: learnerText,
+    stateObservation,
     classification,
     tutorLearnerDagModel: tutorLearnerDag?.model || null,
     tutorLearnerDagUpdate: tutorLearnerDag
@@ -9149,9 +10130,22 @@ async function runOneTurn(
     },
     closureCheckIn: dialogueClosureFrame.phase === 'final_checkin_response',
     registerSelection,
-    responseConfiguration: registerSelection?.response_configuration || null,
+    responseConfiguration: jsonClone(registerSelection?.response_configuration || null),
     responseConfigurationAudit,
     previousRegisterEfficacy,
+    ...(typedAction.decision || typedAction.priorOutcome
+      ? {
+          typedActionDecision: jsonClone(typedAction.decision),
+          typedActionPriorOutcome: jsonClone(typedAction.priorOutcome),
+          scaffoldLifecycle: jsonClone(state.typedActions.scaffoldLifecycle),
+          scaffoldLifecycleTransitions: [
+            typedAction.priorOutcome?.scaffold_lifecycle_transition,
+            typedAction.decision?.scaffold_lifecycle?.transition,
+          ]
+            .filter(Boolean)
+            .map((transition) => jsonClone(transition)),
+        }
+      : {}),
     tutor: response.text,
     tutorDag: dagSnapshot,
     tutorLeakAudit: response.leakAudit || null,
@@ -9160,6 +10154,7 @@ async function runOneTurn(
     tutorResponseRepaired: Boolean(response.repaired),
     tutorDeterministicFallback: Boolean(response.deterministicFallback),
     tutorDeterministicClosure: Boolean(response.deterministicClosure),
+    tutorGuardAccounting: response.guardAccounting || null,
     provider: response.provider,
     model: response.model,
     latencyMs: response.latencyMs,
@@ -9354,6 +10349,46 @@ async function main() {
   const dagFactDropoutSeed = normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], {
     label: '--dag-fact-dropout-seed',
   });
+  const experimentRunSeed = normalizeTutorStubDagFactDropoutSeed(args['run-seed'], {
+    label: '--run-seed',
+  });
+  const experimentRepeat = parsePositiveInt(args['eval-repeat'], '--eval-repeat');
+  const typedActionsEnabled = Boolean(args['typed-actions']);
+  const typedActionSupportLevel = parseOptionalBoundedInt(
+    args['typed-action-support-level'],
+    '--typed-action-support-level',
+    { min: 0, max: 3 },
+  );
+  const typedActionTask = {
+    taskId: String(args['typed-action-task-id'] || '').trim(),
+    knowledgeComponent: String(args['typed-action-knowledge-component'] || '').trim(),
+    prerequisitePath: commaSeparatedStrings(args['typed-action-prerequisites']),
+    itemDifficulty: parseNumber(args['typed-action-item-difficulty'], '--typed-action-item-difficulty', {
+      min: 0,
+      max: 1,
+    }),
+  };
+  if (typedActionsEnabled && (!typedActionTask.taskId || !typedActionTask.knowledgeComponent)) {
+    throw new Error('--typed-actions requires non-empty task id and knowledge component');
+  }
+  const typedActionConfig = {
+    schema: TUTOR_TYPED_ACTION_CONFIG_SCHEMA,
+    enabled: typedActionsEnabled,
+    defaultOff: true,
+    policyMode: 'closed_loop',
+    decisionTiming: 'after_current_public_learner_observation_before_tutor_output',
+    outcomeHorizon: 'next_public_learner_observation',
+    selectionMethod: 'deterministic_closed_loop_argmax',
+    selectionProbability: 1,
+    scaffoldLifecycle: {
+      enabled: typedActionsEnabled,
+      schema: SCAFFOLD_LIFECYCLE_SCHEMA,
+      phases: ['diagnose', 'support', 'observe_uptake', 'fade', 'independent_work', 'transfer', 'recover'],
+      drivenBy: ['typed_action_decision', 'closed_public_outcome'],
+    },
+    supportLevel: typedActionSupportLevel,
+    task: typedActionTask,
+  };
   const dagFactDropoutConfig = {
     schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
     rate: dagFactDropoutRate,
@@ -9424,6 +10459,16 @@ async function main() {
   });
   const combinedLearnerAnalysisEnabled = Boolean(classifierEnabled && tutorLearnerDagEnabled);
   const registerPolicy = normalizeRegisterPolicy(args['register-policy']);
+  const experimentConfig = {
+    schema: 'machinespirits.tutor-stub.experiment-identity.v1',
+    runSeed: experimentRunSeed,
+    profile: automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
+    policy: registerPolicy,
+    repeat: experimentRepeat,
+    jobId: String(args['eval-job-id'] || '').trim() || null,
+    dagFactDropoutSeed,
+    independentSeeds: true,
+  };
   const registerEmpiricalPrior = loadRegisterEmpiricalPrior(args['register-empirical-prior'], {
     policy: registerPolicy,
   });
@@ -9541,6 +10586,8 @@ async function main() {
             advancesLearnerDag: false,
           },
           dagFactDropout: dagFactDropoutConfig,
+          experiment: experimentConfig,
+          typedPedagogicalActions: typedActionConfig,
           responseConfiguration: {
             schema: 'machinespirits.tutor-stub.response-configuration.v1',
             primaryStanceField: 'engagement_stance',
@@ -9732,6 +10779,8 @@ async function main() {
         advancesLearnerDag: false,
       },
       dagFactDropout: dagFactDropoutConfig,
+      experiment: experimentConfig,
+      typedPedagogicalActions: typedActionConfig,
       responseConfiguration: {
         schema: 'machinespirits.tutor-stub.response-configuration.v1',
         primaryStanceField: 'engagement_stance',
@@ -9904,6 +10953,14 @@ async function main() {
       current: null,
       history: [],
     },
+    experiment: experimentConfig,
+    typedActions: {
+      enabled: typedActionConfig.enabled,
+      config: typedActionConfig,
+      ledger: [],
+      currentDecision: null,
+      scaffoldLifecycle: createScaffoldLifecycle(),
+    },
     trace,
     debugRunId: trace.runId || safeTimestampForFile(),
     printedDebugIds: new Set(),
@@ -9933,6 +10990,7 @@ async function main() {
       turns: resumedDialogue.turns,
       register: resumedDialogue.register,
       learnerDag: resumedDialogue.learnerDag,
+      typedActions: resumedDialogue.typedActions,
       dialogueClosure: resumedDialogue.dialogueClosure,
       warnings: resumedDialogue.warnings,
     });
@@ -9984,6 +11042,15 @@ async function main() {
     console.log(`${C.dim}mixed learner: requested, but off because --auto-learner is running unattended${C.reset}`);
   } else {
     console.log(`${C.dim}auto learner: off${C.reset}`);
+  }
+  if (typedActionConfig.enabled) {
+    console.log(
+      `${C.dim}typed pedagogical actions: on | task ${typedActionTask.taskId} | knowledge component ${
+        typedActionTask.knowledgeComponent
+      } | difficulty ${typedActionTask.itemDifficulty} | support ${
+        typedActionSupportLevel === null ? 'action default' : typedActionSupportLevel
+      }${C.reset}`,
+    );
   }
   if (registerSelectionEnabled) {
     console.log(
@@ -10060,6 +11127,13 @@ async function main() {
     if (resumedDialogue.learnerDag.skipped) {
       console.log(
         `${C.dim}resume: learner-DAG replayed ${resumedDialogue.learnerDag.replayed}, reused ${resumedDialogue.learnerDag.skipped} stored model snapshot(s)${C.reset}`,
+      );
+    }
+    if (resumedDialogue.typedActions.enabled) {
+      console.log(
+        `${C.dim}resume: typed actions restored ${resumedDialogue.typedActions.ledgerRecords} ledger record(s); phase ${
+          resumedDialogue.typedActions.phase
+        }; pending ${resumedDialogue.typedActions.pendingContractId || 'none'}${C.reset}`,
       );
     }
     for (const warning of resumedDialogue.warnings) {
@@ -10421,6 +11495,16 @@ async function main() {
 
   async function startMixedLearnerTutorPrefetch(entry, raw) {
     if (mixedLearner.analysisCache !== entry || exiting) return null;
+    if (state.typedActions?.enabled) {
+      entry.tutorStatus = 'disabled';
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_tutor_prefetch_skipped',
+        turn: entry.turn,
+        turnId: entry.turnId,
+        reason: 'typed_action_must_precede_tutor_output_generation',
+      });
+      return null;
+    }
     entry.tutorStatus = 'pending';
     entry.tutorStartedAt = Date.now();
     mixedLearner.cacheStats.tutorStarted += 1;
@@ -10938,7 +12022,11 @@ async function main() {
       stress: { suite: 'stress', label: 'specialist failure modes' },
       all: { suite: 'audit', label: 'complete v3 registry' },
       audit: { suite: 'audit', label: 'complete v3 registry' },
-    }[String(listScope || 'core').trim().toLowerCase()];
+    }[
+      String(listScope || 'core')
+        .trim()
+        .toLowerCase()
+    ];
     if (!scopeConfig) return false;
     const profileIds = learnerProfileSuiteIds(scopeConfig.suite);
     console.log(`${C.cyan}learner profiles > ${scopeConfig.label} (${profileIds.length})${C.reset}`);
@@ -11006,7 +12094,9 @@ async function main() {
       nextProfileId = requested.toLowerCase().replace(/-/gu, '_');
       if (!learnerProfileIds().includes(nextProfileId)) {
         console.log(`${C.red}unknown learner profile:${C.reset} ${requested}`);
-        console.log(`${C.dim}  use /profile list, /profile list stress, or /profile list all to see valid ids${C.reset}\n`);
+        console.log(
+          `${C.dim}  use /profile list, /profile list stress, or /profile list all to see valid ids${C.reset}\n`,
+        );
         return;
       }
       nextProfile = learnerProfilePrompt(nextProfileId);
@@ -11048,9 +12138,7 @@ async function main() {
     if (!mixedLearner.enabled || !openingEnabled || state.history.length) return true;
     const defaultProfileId = mixedLearner.profileId || 'custom';
     console.log(`${C.cyan}Pick a learner profile${C.reset}`);
-    console.log(
-      `${C.dim}  enter a profile id and press Enter, or press Enter for ${defaultProfileId}${C.reset}`,
-    );
+    console.log(`${C.dim}  enter a profile id and press Enter, or press Enter for ${defaultProfileId}${C.reset}`);
     console.log(
       `${C.dim}  browse groups: list = ordinary profiles · stress = stress profiles · all = every profile${C.reset}`,
     );
@@ -11082,7 +12170,9 @@ async function main() {
         rl.setPrompt(`${C.bold}learner profile [${defaultProfileId}] >${C.reset} `);
         rl.prompt();
         const answer = await nextLine();
-        const rawRequested = String(answer || '').trim().toLowerCase();
+        const rawRequested = String(answer || '')
+          .trim()
+          .toLowerCase();
         if (rawRequested === '/quit' || rawRequested === 'quit' || rawRequested === 'exit') {
           requestExit('initial_profile_picker_exit');
           return false;

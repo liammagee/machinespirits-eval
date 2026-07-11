@@ -1,15 +1,15 @@
 ---
 id: tutor-stub-human-discourse-layer
 title: "Human discourse layer for tutor-stub proof DAGs"
-status: active
+status: done
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-09
-updated: 2026-07-09
+updated: 2026-07-11
 verification: "Tutor-stub supports a labelled human-scaffold DAG mode with trace/report fields for scaffold state, proof debt, side arcs, and warrant/premise stocktake; Marrick dry-run and targeted tests show strict DAG audit remains intact."
-claim_status: planned
+claim_status: methods
 links:
   notes:
     - docs/tutor-stub-human-discourse-layer.md
@@ -68,7 +68,7 @@ Implementation phases:
    from provisional scaffold acceptance.
 6. Done: update reports, SQL ingest, and QA labels to separate strict and
    human-scaffold metrics.
-7. In progress: run targeted tests plus a Marrick mixed/human-scaffold smoke
+7. Done: run targeted tests plus a Marrick mixed/human-scaffold smoke
    before any larger eval comparison.
 
 This item is intentionally breaking for eval comparability. Historical Marrick
@@ -90,3 +90,7 @@ Progress log:
   plausible learner leaps now carry implied proof debt internally, while
   explicit warrant prompts are reserved for unsafe, contradictory, hidden, or
   case-closing leaps.
+- 2026-07-11: Closeout verification passed in the branch-wide hermetic suite:
+  Marrick dry-run contracts, fake-CLI mixed-mode startup/closure, settings,
+  trace schemas, SQL/report preservation, and strict-DAG default regressions.
+  Closed as infrastructure only; no efficacy or human-learning claim follows.

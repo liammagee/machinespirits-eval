@@ -18,11 +18,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DATA_DIR = path.join(ROOT_DIR, 'data');
 
 // ANSI colors
 const c = {
@@ -356,12 +356,11 @@ Examples:
 
 // Main analysis function
 async function analyzeResults(options) {
-  const dbPath = path.join(DATA_DIR, 'evaluations.db');
+  const dbPath = resolveEvaluationDbPath(ROOT_DIR);
 
   if (!fs.existsSync(dbPath)) {
-    console.error(`${c.red}Error: Database not found at ${dbPath}${c.reset}`);
-    console.log('Run some evaluations first with: node scripts/eval-tutor.js run');
-    process.exit(1);
+    console.log(`${c.dim}No evaluation database found at ${dbPath}; nothing to analyze.${c.reset}`);
+    return;
   }
 
   const db = new Database(dbPath, { readonly: true });

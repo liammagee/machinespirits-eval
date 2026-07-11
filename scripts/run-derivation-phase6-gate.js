@@ -13,10 +13,24 @@ import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  appendRunEvent,
+  assertExperimentRun,
+  buildExperimentRunPlan,
+  captureGitFingerprint,
+  createRunPlan,
+  createRunSeal,
+  hashCanonicalJson,
+  hashFile,
+  validateExperimentRunPlan,
+} from '../services/experimentRunArtifacts.js';
+import { resolveTarget } from '../services/dramaticDerivation/llmClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 const LOOP_SCRIPT = path.join(ROOT, 'scripts', 'run-derivation-loop.js');
+const FIELD_PLANNER = path.join(ROOT, 'services', 'dramaticDerivation', 'fieldPlanner.js');
+const PHASE6_DECISION_RULES = path.join(ROOT, 'PLAN_4_0', 'PHASE_6_EVIDENCE_GATE_PLAN.md');
 
 const WORLD_REGISTRY = Object.freeze({
   marrick: Object.freeze({
@@ -52,7 +66,10 @@ const WORLD_REGISTRY = Object.freeze({
 });
 
 const PROFILES = Object.freeze({
-  smoke: ['marrick', 'hethel'],
+  // PHASE_6_EVIDENCE_GATE_PLAN.md freezes the smoke coverage as world-005,
+  // world-006, and resistant world-019. Keep this list aligned before any
+  // calls; adding a world after seeing results would invalidate the gate.
+  smoke: ['marrick', 'hethel', 'marrick_resistant'],
   full: ['marrick', 'hethel', 'hethel_resistant', 'marrick_resistant', 'withercombe', 'ravensmark'],
 });
 
@@ -138,6 +155,247 @@ function gitSha() {
   return result.status === 0 ? result.stdout.trim() : null;
 }
 
+export function assertPhase6RealRunGitState({ mode, gitFingerprint, frozenPlan = null } = {}) {
+  if (mode !== 'real') return;
+  if (!gitFingerprint?.sha) {
+    throw new Error('Refusing Phase 6 real run without a readable committed Git SHA');
+  }
+  if (gitFingerprint.dirty) {
+    throw new Error('Refusing Phase 6 real run from a dirty working tree; commit the intended code first');
+  }
+  const frozenGit = frozenPlan?.provenance?.git || null;
+  if (frozenGit?.dirty) {
+    throw new Error('Refusing Phase 6 real run because its frozen run plan was created from a dirty tree');
+  }
+  if (frozenGit?.sha && frozenGit.sha !== gitFingerprint.sha) {
+    throw new Error(
+      `Refusing Phase 6 real-run resume at ${gitFingerprint.sha}; frozen run plan requires ${frozenGit.sha}`,
+    );
+  }
+}
+
+export function phase6RealGateProtocolBlockers(manifest = {}) {
+  if (manifest.mode !== 'real') return [];
+  const blockers = [];
+  const requiredFlags = ['pacing-guard', 'proof-debt-guard', 'repair-clause', 'confront'];
+  for (const flag of requiredFlags) {
+    if (manifest.baseFlags?.[flag] !== true) {
+      blockers.push(`frozen baseline is missing --${flag}`);
+    }
+  }
+  if (!manifest.decay || !(Number(manifest.decay.rate) > 0)) {
+    blockers.push('hidden+proofDebt baseline requires an active frozen decay process');
+  }
+  if (!manifest.decisionContract) {
+    blockers.push('numerical comparison semantics are not frozen in a decision contract');
+  }
+  if (!manifest.verdictEvaluatorVersion) {
+    blockers.push('the frozen aggregate verdict evaluator is not registered');
+  }
+  if ((manifest.seeds || []).length < 5) {
+    blockers.push('real Phase 6 requires at least five preregistered seed labels per arm and world');
+  }
+  const missingArms = DEFAULT_ARMS.filter((arm) => !(manifest.arms || []).includes(arm));
+  if (missingArms.length) blockers.push(`primary four-arm matrix is missing ${missingArms.join(', ')}`);
+  return blockers;
+}
+
+export function assertPhase6RealGateProtocolReady(manifest) {
+  const blockers = phase6RealGateProtocolBlockers(manifest);
+  if (blockers.length) {
+    throw new Error(`Refusing Phase 6 real run until the frozen protocol is executable:\n- ${blockers.join('\n- ')}`);
+  }
+}
+
+function capturePhase6GitFingerprint() {
+  const git = captureGitFingerprint({ repoRoot: ROOT });
+  delete git.repoRoot;
+  return git;
+}
+
+function assertLivePhase6RealRunGitState(manifest, frozenPlan = null) {
+  if (manifest.mode !== 'real') return;
+  assertPhase6RealRunGitState({
+    mode: manifest.mode,
+    gitFingerprint: capturePhase6GitFingerprint(),
+    frozenPlan,
+  });
+}
+
+function modelLabel(target) {
+  return `${target.provider}/${target.model || '(cli-default)'}`;
+}
+
+function requestedTarget(role, resolved, mode) {
+  if (mode !== 'real') return 'mock/mock';
+  const prefix = `DERIVATION_${role.toUpperCase()}_`;
+  const provider = process.env[`${prefix}PROVIDER`] || process.env.DERIVATION_PROVIDER || resolved.provider;
+  const model = process.env[`${prefix}MODEL`] || process.env.DERIVATION_MODEL || resolved.model || '(cli-default)';
+  return `${provider}/${model}`;
+}
+
+function gateDesign(manifest) {
+  return {
+    schema: manifest.schema,
+    label: manifest.label,
+    profile: manifest.profile,
+    mode: manifest.mode,
+    worlds: manifest.worlds,
+    arms: manifest.arms,
+    seeds: manifest.seeds,
+    decay: manifest.decay,
+    baseFlags: manifest.baseFlags,
+    rows: manifest.rows.map((row) => ({
+      id: row.id,
+      worldKey: row.worldKey,
+      world: row.world,
+      script: row.script,
+      armKey: row.armKey,
+      armLabel: row.armLabel,
+      seed: row.seed,
+      mode: row.mode,
+      decayRate: row.decayRate,
+    })),
+  };
+}
+
+function logicalArg(value, manifest) {
+  if (!path.isAbsolute(value)) return value;
+  if (value === LOOP_SCRIPT) return path.relative(ROOT, value);
+  const gateRelative = path.relative(manifest.gateDir, value);
+  if (!gateRelative.startsWith('..') && !path.isAbsolute(gateRelative)) {
+    return `{run_dir}/${gateRelative.split(path.sep).join('/')}`;
+  }
+  const repoRelative = path.relative(ROOT, value);
+  if (!repoRelative.startsWith('..') && !path.isAbsolute(repoRelative)) {
+    return repoRelative.split(path.sep).join('/');
+  }
+  throw new Error(`Phase 6 plan contains a non-relocatable path: ${value}`);
+}
+
+function hashFileSet(paths) {
+  return hashCanonicalJson(
+    [...new Set(paths)]
+      .sort()
+      .map((file) => ({ path: file.split(path.sep).join('/'), sha256: hashFile(resolveFromRoot(file)) })),
+  );
+}
+
+function evidenceModels(mode) {
+  return Object.fromEntries(
+    ['director', 'tutor', 'learner'].map((role) => {
+      const resolved = mode === 'real' ? resolveTarget(role) : { provider: 'mock', model: 'mock' };
+      return [
+        role,
+        {
+          requested: requestedTarget(role, resolved, mode),
+          resolved: modelLabel(resolved),
+          observed: null,
+          ...(resolved.model ? {} : { allowCliDefaultResolution: true }),
+        },
+      ];
+    }),
+  );
+}
+
+function buildEvidencePlan(manifest, { masterSeed, dryRun, gitFingerprint = null }) {
+  const design = gateDesign(manifest);
+  const git = gitFingerprint || capturePhase6GitFingerprint();
+  const jobs = manifest.rows.map((row) => ({
+    id: row.id,
+    worldKey: row.worldKey,
+    world: row.world,
+    script: row.script,
+    armKey: row.armKey,
+    seedLabel: row.seed,
+    mode: row.mode,
+    decayRate: row.decayRate,
+    command: row.args.map((value) => logicalArg(value, manifest)),
+  }));
+  return buildExperimentRunPlan({
+    runId: manifest.label,
+    createdAt: manifest.generatedAt,
+    runner: 'scripts/run-derivation-phase6-gate.js',
+    provenance: { git },
+    models: evidenceModels(manifest.mode),
+    requiredObservedModelRoles: dryRun ? [] : ['director', 'tutor', 'learner'],
+    hashes: {
+      runner: hashFile(__filename),
+      analyzer: hashFile(__filename),
+      policy: hashFile(FIELD_PLANNER),
+      profile: hashCanonicalJson({ profile: manifest.profile, worlds: manifest.worlds, arms: manifest.arms }),
+      prompt: hashFileSet(manifest.rows.map((row) => row.script)),
+      world: hashFileSet(manifest.rows.map((row) => row.world)),
+      config: hashCanonicalJson({
+        design,
+        decisionRulesSha256: hashFile(PHASE6_DECISION_RULES),
+      }),
+    },
+    masterSeed,
+    jobs,
+    lineage: { parentRunId: null, resumeOf: null, supersedes: [] },
+    intent: {
+      phase6Gate: design,
+      decisionRules: path.relative(ROOT, PHASE6_DECISION_RULES),
+      claimBoundary: 'Mock validates plumbing only; real runs remain bounded tests of the frozen field planner.',
+    },
+    metadata: {
+      phase6DesignHash: hashCanonicalJson(design),
+      phase6DecisionRulesSha256: hashFile(PHASE6_DECISION_RULES),
+    },
+  });
+}
+
+function writeCompatibilityManifest(manifest) {
+  const manifestPath = path.join(manifest.gateDir, 'manifest.json');
+  try {
+    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { flag: 'wx' });
+  } catch (error) {
+    if (error?.code === 'EEXIST') {
+      throw new Error(`Refusing to overwrite frozen Phase 6 manifest at ${manifestPath}`);
+    }
+    throw error;
+  }
+}
+
+function prepareEvidenceTransaction(manifest, { masterSeed, dryRun, gitFingerprint = null }) {
+  fs.mkdirSync(manifest.gateDir, { recursive: true });
+  fs.mkdirSync(manifest.logDir, { recursive: true });
+  fs.mkdirSync(manifest.loopDir, { recursive: true });
+  const sealPath = path.join(manifest.gateDir, 'run-seal.json');
+  if (fs.existsSync(sealPath)) throw new Error(`Phase 6 run is already sealed at ${sealPath}`);
+  const planPath = path.join(manifest.gateDir, 'run-plan.json');
+  const manifestPath = path.join(manifest.gateDir, 'manifest.json');
+  const designHash = hashCanonicalJson(gateDesign(manifest));
+  if (fs.existsSync(planPath)) {
+    const frozenPlan = readJson(planPath);
+    validateExperimentRunPlan(frozenPlan);
+    assertPhase6RealRunGitState({ mode: manifest.mode, gitFingerprint, frozenPlan });
+    if (frozenPlan.metadata?.phase6DesignHash !== designHash) {
+      throw new Error('Refusing to resume Phase 6 with a design that differs from the frozen run plan');
+    }
+    if (frozenPlan.randomization.masterSeed !== masterSeed) {
+      throw new Error('Refusing to resume Phase 6 with a different --run-seed');
+    }
+    if (!fs.existsSync(manifestPath)) writeCompatibilityManifest(manifest);
+    appendRunEvent(manifest.gateDir, {
+      type: 'run_resumed',
+      mode: manifest.mode,
+      dryRun,
+    });
+    return frozenPlan;
+  }
+  const plan = buildEvidencePlan(manifest, { masterSeed, dryRun, gitFingerprint });
+  createRunPlan(manifest.gateDir, plan);
+  writeCompatibilityManifest(manifest);
+  appendRunEvent(manifest.gateDir, {
+    type: 'run_planned',
+    mode: manifest.mode,
+    dryRun,
+  });
+  return plan;
+}
+
 function usage() {
   return `Usage: node scripts/run-derivation-phase6-gate.js [options]
 
@@ -148,6 +406,7 @@ Options:
   --worlds <csv>            Override worlds. Keys: ${Object.keys(WORLD_REGISTRY).join(', ')}
   --arms <csv>              Override arms. Keys: ${Object.keys(ARM_REGISTRY).join(', ')}
   --seeds <csv>             Seed labels. Default: 1
+  --run-seed <n>            Master seed for deterministic replay. Default: 20260711
   --decay-rate <n>          Optional decay rate. Default: 0
   --mutate-share <n>        Decay mutateShare when decay is on. Default: 0.25
   --mode mock|real          Backend mode. Default: mock
@@ -282,9 +541,14 @@ export function buildGatePlan(options = {}) {
 }
 
 function artifactsComplete(row) {
-  return ['diagnosis.json', 'result.json', 'dialogue-report.json', 'dialogue-report.md', 'dynamic-field.svg'].every(
-    (name) => fs.existsSync(path.join(row.runDir, name)),
-  );
+  return [
+    'diagnosis.json',
+    'result.json',
+    'transcript.md',
+    'dialogue-report.json',
+    'dialogue-report.md',
+    'dynamic-field.svg',
+  ].every((name) => fs.existsSync(path.join(row.runDir, name)));
 }
 
 function runRow(row) {
@@ -387,27 +651,28 @@ function rowAnalysis(row, exitCode = null) {
     (releaseAdherence.deviations || []).length +
     (releaseAdherence.missed || []).length +
     (releaseAdherence.unscheduled || []).length;
-  const lucky =
-    (diagnosis?.eventsByType?.lucky_leap || 0) +
-    (diagnosis?.eventsByType?.lucky_leap_only || 0) +
-    (diagnosis?.verdict === 'lucky_leap_only' ? 1 : 0);
+  const luckyEvents =
+    Number(diagnosis?.eventsByType?.lucky_leap || 0) + Number(diagnosis?.eventsByType?.lucky_leap_only || 0);
+  const lucky = Math.max(luckyEvents, diagnosis?.verdict === 'lucky_leap_only' ? 1 : 0);
+  const learnerFacingLeaks = Number(diagnosis?.eventsByType?.leak || 0);
   const fabricated = (diagnosis?.fabricatedFacts || []).length;
   const fieldPlanner = fieldPlannerMetrics(result, dialogueReport);
   const fieldReportContext = fieldReportContextMetrics(result);
   const safetyFailures =
     releaseFailures +
     lucky +
+    learnerFacingLeaks +
     fabricated +
     Number(fieldPlanner.nonLeakAuditFailures || 0) +
-    Number(fieldReportContext.nonLeakAuditFailures || 0) +
-    (exitCode ? 1 : 0);
+    Number(fieldReportContext.nonLeakAuditFailures || 0);
+  const artifactComplete = artifactsComplete(row);
   return {
     ...row,
     relRunDir: rel(row.runDir),
     relLogFile: rel(row.logFile),
     exitCode,
-    artifactComplete: artifactsComplete(row),
-    ok: exitCode === 0 && Boolean(diagnosis),
+    artifactComplete,
+    ok: exitCode === 0 && Boolean(diagnosis) && artifactComplete,
     verdict: diagnosis?.verdict || null,
     grounded: diagnosis?.verdict === 'grounded_anagnorisis',
     turnsPlayed: diagnosis?.turnsPlayed ?? null,
@@ -424,9 +689,11 @@ function rowAnalysis(row, exitCode = null) {
     },
     eventsByType: diagnosis?.eventsByType || {},
     luckyLeapSignals: lucky,
+    learnerFacingLeaks,
     fabricatedFacts: fabricated,
     fieldPlanner,
     fieldReportContext,
+    backend: diagnosis?.backend || null,
     usage: diagnosis?.usage
       ? {
           calls: diagnosis.usage.calls,
@@ -434,6 +701,7 @@ function rowAnalysis(row, exitCode = null) {
         }
       : null,
     safetyFailures,
+    executionFailures: exitCode ? 1 : 0,
   };
 }
 
@@ -493,12 +761,19 @@ export function analyzeGateArtifacts(manifest, exitCodes = {}) {
     gateDir: rel(manifest.gateDir),
     rowCount: rows.length,
     okRows: rows.filter((row) => row.ok).length,
-    groundedRows: rows.filter((row) => row.grounded).length,
+    groundedRows: rows.filter((row) => row.ok && row.grounded).length,
     safetyFailures: rows.reduce((sum, row) => sum + row.safetyFailures, 0),
+    executionFailures: rows.reduce((sum, row) => sum + row.executionFailures, 0),
     rows,
     groups,
     totalsByArm,
   };
+}
+
+export function phase6RunCloseoutDisposition(report = {}) {
+  return Number(report.okRows) === Number(report.rowCount) && Number(report.rowCount) > 0
+    ? 'seal_complete'
+    : 'pause_unsealed';
 }
 
 function mdTable(headers, rows) {
@@ -614,13 +889,6 @@ function renderGateHtml(report, markdown) {
 `;
 }
 
-function writeManifest(manifest) {
-  fs.mkdirSync(manifest.gateDir, { recursive: true });
-  fs.mkdirSync(manifest.logDir, { recursive: true });
-  fs.mkdirSync(manifest.loopDir, { recursive: true });
-  fs.writeFileSync(path.join(manifest.gateDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-}
-
 function writeReport(report) {
   const reportJson = path.join(ROOT, report.gateDir, 'phase6-gate-report.json');
   const reportMd = path.join(ROOT, report.gateDir, 'phase6-gate-report.md');
@@ -632,28 +900,108 @@ function writeReport(report) {
   return { reportJson, reportMd, reportHtml };
 }
 
-async function runGate(manifest, { concurrency, force = false, dryRun = false } = {}) {
-  writeManifest(manifest);
+function appendObservedModelEvents(manifest, report, plan) {
+  const observations = new Map();
+  for (const row of report.rows) {
+    for (const [role, target] of Object.entries(row.backend?.roles || {})) {
+      if (!observations.has(role)) observations.set(role, new Set());
+      observations.get(role).add(modelLabel(target));
+    }
+  }
+  const missingRoles = (plan.requiredObservedModelRoles || []).filter((role) => !observations.get(role)?.size);
+  if (missingRoles.length) {
+    throw new Error(`Phase 6 completed artifacts are missing runtime model provenance for ${missingRoles.join(', ')}`);
+  }
+  for (const [role, labels] of [...observations.entries()].sort(([left], [right]) => left.localeCompare(right))) {
+    for (const observed of [...labels].sort()) {
+      appendRunEvent(manifest.gateDir, {
+        type: 'model_observed',
+        role,
+        requested: plan.models?.[role]?.requested || null,
+        resolved: plan.models?.[role]?.resolved || null,
+        observed,
+      });
+    }
+  }
+}
+
+async function runGate(manifest, { plan, concurrency, force = false, dryRun = false } = {}) {
+  assertPhase6RealGateProtocolReady(manifest);
+  assertLivePhase6RealRunGitState(manifest, plan);
+  appendRunEvent(manifest.gateDir, {
+    type: 'run_started',
+    mode: manifest.mode,
+    dryRun,
+    concurrency,
+  });
   const exitCodes = {};
   if (dryRun) {
     const report = analyzeGateArtifacts(manifest, exitCodes);
     const written = writeReport(report);
-    return { manifest, report, written, dryRun: true };
+    appendRunEvent(manifest.gateDir, {
+      type: 'dry_run_preview_written',
+      reports: Object.values(written).map((file) => rel(file)),
+    });
+    appendRunEvent(manifest.gateDir, { type: 'run_completed', status: 'dry_run' });
+    const sealed = createRunSeal(manifest.gateDir, {
+      status: 'dry_run',
+      metadata: { rowCount: report.rowCount, safetyFailures: report.safetyFailures },
+    });
+    const verification = assertExperimentRun(manifest.gateDir);
+    return { manifest, report, written, sealed, verification, dryRun: true };
   }
   await pool(manifest.rows, concurrency, async (row) => {
+    assertLivePhase6RealRunGitState(manifest, plan);
     if (!force && artifactsComplete(row)) {
       console.log(`  skip ${row.id} complete`);
       exitCodes[row.id] = 0;
+      appendRunEvent(manifest.gateDir, { type: 'job_skipped', jobId: row.id, reason: 'artifacts_complete' });
       return;
     }
     console.log(`  run ${row.id}`);
+    appendRunEvent(manifest.gateDir, { type: 'job_started', jobId: row.id });
     const code = await runRow(row);
+    assertLivePhase6RealRunGitState(manifest, plan);
     exitCodes[row.id] = code;
+    appendRunEvent(manifest.gateDir, { type: 'job_completed', jobId: row.id, exitCode: code });
     console.log(`  ${code === 0 ? 'ok' : 'fail'} ${row.id}${code === 0 ? '' : ` exit ${code}`}`);
   });
+  assertLivePhase6RealRunGitState(manifest, plan);
   const report = analyzeGateArtifacts(manifest, exitCodes);
   const written = writeReport(report);
-  return { manifest, report, written, dryRun: false };
+  appendRunEvent(manifest.gateDir, {
+    type: 'reports_written',
+    reports: Object.values(written).map((file) => rel(file)),
+  });
+  if (phase6RunCloseoutDisposition(report) === 'pause_unsealed') {
+    appendRunEvent(manifest.gateDir, {
+      type: 'run_paused',
+      status: 'incomplete',
+      okRows: report.okRows,
+      rowCount: report.rowCount,
+      executionFailures: report.executionFailures,
+    });
+    return { manifest, report, written, sealed: null, verification: null, dryRun: false, resumable: true };
+  }
+  appendObservedModelEvents(manifest, report, plan);
+  const status = 'complete';
+  appendRunEvent(manifest.gateDir, {
+    type: 'run_completed',
+    status,
+    okRows: report.okRows,
+    rowCount: report.rowCount,
+    safetyFailures: report.safetyFailures,
+  });
+  const sealed = createRunSeal(manifest.gateDir, {
+    status,
+    metadata: {
+      rowCount: report.rowCount,
+      okRows: report.okRows,
+      safetyFailures: report.safetyFailures,
+    },
+  });
+  const verification = assertExperimentRun(manifest.gateDir);
+  return { manifest, report, written, sealed, verification, dryRun: false };
 }
 
 async function main(argv = process.argv.slice(2)) {
@@ -665,6 +1013,9 @@ async function main(argv = process.argv.slice(2)) {
   if (!['mock', 'real'].includes(mode)) throw new Error(`--mode must be mock or real (got ${mode})`);
   const worlds = splitCsv(arg(argv, 'worlds', ''));
   const arms = splitCsv(arg(argv, 'arms', ''));
+  const runSeed = Number(arg(argv, 'run-seed', '20260711'));
+  if (!Number.isSafeInteger(runSeed)) throw new Error('--run-seed must be a safe integer');
+  const dryRunRequested = has(argv, 'dry-run');
   const manifest = buildGatePlan({
     label: arg(argv, 'label', null),
     out: arg(argv, 'out', null),
@@ -676,21 +1027,31 @@ async function main(argv = process.argv.slice(2)) {
     mutateShare: Number(arg(argv, 'mutate-share', '0.25')),
     mode,
   });
+  assertPhase6RealGateProtocolReady(manifest);
   const concurrency = Number(arg(argv, 'concurrency', mode === 'real' ? '1' : '4'));
+  const gitFingerprint = capturePhase6GitFingerprint();
+  assertPhase6RealRunGitState({ mode, gitFingerprint });
+  const plan = prepareEvidenceTransaction(manifest, {
+    masterSeed: runSeed,
+    dryRun: dryRunRequested,
+    gitFingerprint,
+  });
   console.log(
     `phase6 gate ${manifest.label}: ${manifest.rows.length} rows, ${manifest.worlds.length} worlds, ${manifest.arms.length} arms, mode ${manifest.mode}, concurrency ${concurrency}`,
   );
   const { report, written, dryRun } = await runGate(manifest, {
+    plan,
     concurrency,
     force: has(argv, 'force'),
-    dryRun: has(argv, 'dry-run'),
+    dryRun: dryRunRequested,
   });
   console.log(
     `${dryRun ? 'dry-run ' : ''}complete ${report.okRows}/${report.rowCount}; grounded ${report.groundedRows}/${report.okRows}; safety failures ${report.safetyFailures}`,
   );
   console.log(`report ${rel(written.reportMd)}`);
   console.log(`html   ${rel(written.reportHtml)}`);
-  if (!dryRun && report.safetyFailures > 0) process.exitCode = 2;
+  if (!dryRun && report.okRows !== report.rowCount) process.exitCode = 1;
+  else if (!dryRun && report.safetyFailures > 0) process.exitCode = 2;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {

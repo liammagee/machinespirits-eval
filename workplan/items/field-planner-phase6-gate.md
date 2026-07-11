@@ -1,15 +1,18 @@
 ---
 id: field-planner-phase6-gate
 title: "Phase 6 field-planner evidence gate — four-arm real-mode run"
-status: triaged
+status: blocked
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-10
-updated: 2026-07-10
-verification: "A real-mode gate run (baseline, field_report_only, field_planner_advisory, field_planner_enforce; k>=5 seeds; frozen manifest with git SHA written before model calls) exists under exports/dramatic-derivation/phase6-gate; the decision rules of PHASE_6_EVIDENCE_GATE_PLAN.md are applied as written and the verdict (promote / negative control / ceiling) is recorded."
+updated: 2026-07-11
+verification: "Before any real call, reconcile baseline_hidden_proofdebt with explicit pacing/proof-debt/repair/confront+decay flags and freeze a numerical aggregate verdict contract/evaluator. Then a clean-SHA four-arm run with k>=5 exists under exports/dramatic-derivation/phase6-gate and records a provisional promote/instrumentation/negative-control/ceiling/null verdict; k>=10 is required for a promotable local claim."
 claim_status: planned
+blocked_by: "The frozen plan names baseline_hidden_proofdebt, but the runner's current baseline supplies only hidden pacing; numerical meanings for improvement, material safety change, placebo matching, and ceiling are also not frozen. Real mode now refuses to launch until both the treatment and deterministic verdict evaluator are ratified."
+depends_on:
+  - adaptive-eval-immutable-provenance
 links:
   notes:
     - PLAN_4_0/PHASE_6_EVIDENCE_GATE_PLAN.md
@@ -21,6 +24,7 @@ tags:
   - phase6-gate
   - adaptation
   - pre-registration
+milestone: adaptive-tutor-evidence-v1
 ---
 
 Run the pre-registered four-arm field-planner gate in real mode. As of
@@ -37,13 +41,13 @@ Freeze BEFORE launch (in the manifest, not after results):
   decision rules. Default: decay 0.08 / mutate-share 0.25 (matching the mock
   decay smoke). Alternative: the resistant worlds (world-010, world-019).
 - **World set.** Smoke trio marrick + hethel + world-019 per the plan; the
-  runner's smoke profile currently omits world-019 — add it or record the
-  deviation.
+  runner profile is now regression-tested against exactly this set.
 - **Seeds.** k=5 per arm per world for the directional read (k=10 for a
   promotable claim). Real-mode seeds are labels (decay pairing only) — report
   per-arm distributions, not seed-paired deltas.
 
-Launch command shape (attended, sequential in real mode, checkpointable):
+Historical launch shape (now intentionally rejected until the blockers below
+are resolved; attended and sequential once ratified):
 
 ```bash
 node scripts/run-derivation-phase6-gate.js \
@@ -55,7 +59,24 @@ node scripts/run-derivation-phase6-gate.js \
   --mode real
 ```
 
-Decision rules are already frozen in PHASE_6_EVIDENCE_GATE_PLAN.md, including:
-enforce wins that harm release adherence = negative control, not success;
-report-only matching planner arms = instrumentation effect, not planner
-control. Run from a committed SHA only.
+Qualitative decision rules are preregistered in
+PHASE_6_EVIDENCE_GATE_PLAN.md, including: enforce wins that harm release
+adherence = negative control, not success; report-only matching planner arms =
+instrumentation effect, not planner control. Their numerical semantics still
+need ratification before outcomes exist. Run from a committed SHA only.
+
+2026-07-11 Codex: Migrated the runner to the immutable evidence transaction,
+strict role-model provenance, and sealed reports without changing arm or
+planner code. The smoke world reconciliation is complete. No paid gate rows
+were launched; the subsequent audit below found that those preserved commands
+do not yet match the named control treatment.
+
+2026-07-11 Codex audit: Blocked real mode before calls after finding that the
+preregistered `baseline_hidden_proofdebt` treatment is not the runner's current
+`baseline_hidden_pacing` command. The proof-debt guard also requires a frozen
+repair/confront/decay configuration. The prose decision rules leave numerical
+comparison and safety margins underspecified, so a deterministic aggregate
+verdict cannot yet be implemented without post-outcome discretion. The runner
+now also refuses dirty/SHA-drifted real runs, requires the complete audit packet,
+separates execution from safety failures, and leaves incomplete transactions
+unsealed for same-plan resume. Mock plumbing remains available.

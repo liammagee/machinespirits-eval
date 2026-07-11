@@ -2,6 +2,8 @@ import { getActionDefinition } from './actionPolicy.js';
 
 export const ADAPTATION_CONTRACT_VERSION = '1.0';
 export const ADAPTATION_CONTRACT_SCHEMA = 'adaptive-tutor.adaptation-contract.v1.0';
+export const PEDAGOGICAL_ACTION_VERSION = '2.0';
+export const PEDAGOGICAL_ACTION_SCHEMA = 'adaptive-tutor.pedagogical-action.v2.0';
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -67,7 +69,7 @@ export function validateLearnerStateBelief(belief, { probabilityTolerance = 0.02
 
 export function validatePedagogicalAction(action) {
   requireObject(action, 'selected_action');
-  if (action.version !== ADAPTATION_CONTRACT_VERSION) {
+  if (![ADAPTATION_CONTRACT_VERSION, PEDAGOGICAL_ACTION_VERSION].includes(action.version)) {
     throw new Error(`adaptationContract: unsupported action version ${JSON.stringify(action.version)}`);
   }
   const def = getActionDefinition(action.action_type);
@@ -94,7 +96,44 @@ export function validatePedagogicalAction(action) {
   if ((action.target_axes || []).includes('ownership') && !action.success_signal.required_evidence?.length) {
     throw new Error('adaptationContract: ownership-targeting action needs observable success evidence');
   }
+  if (action.version === PEDAGOGICAL_ACTION_VERSION) validatePedagogicalActionV2Fields(action);
   return action;
+}
+
+function validatePedagogicalActionV2Fields(action) {
+  if (action.schema !== PEDAGOGICAL_ACTION_SCHEMA) {
+    throw new Error(`adaptationContract: unsupported pedagogical action schema ${JSON.stringify(action.schema)}`);
+  }
+  if (typeof action.move_family !== 'string' || !action.move_family.trim()) {
+    throw new Error('adaptationContract: selected_action.move_family is required');
+  }
+  if (!Number.isInteger(action.support_level) || action.support_level < 0 || action.support_level > 3) {
+    throw new Error('adaptationContract: selected_action.support_level must be an integer in [0, 3]');
+  }
+  if (typeof action.task_id !== 'string' || !action.task_id.trim()) {
+    throw new Error('adaptationContract: selected_action.task_id is required');
+  }
+  if (typeof action.knowledge_component !== 'string' || !action.knowledge_component.trim()) {
+    throw new Error('adaptationContract: selected_action.knowledge_component is required');
+  }
+  assertStringArray(action.prerequisite_path, 'selected_action.prerequisite_path');
+  assertBounded(action.item_difficulty, 'selected_action.item_difficulty');
+  if (typeof action.register !== 'string' || !action.register.trim()) {
+    throw new Error('adaptationContract: selected_action.register is required');
+  }
+  requireObject(action.expected_evidence, 'selected_action.expected_evidence');
+  assertStringArray(action.expected_evidence.success, 'selected_action.expected_evidence.success');
+  assertStringArray(action.expected_evidence.failure, 'selected_action.expected_evidence.failure');
+  requireObject(action.fade_condition, 'selected_action.fade_condition');
+  if (typeof action.fade_condition.when !== 'string' || !action.fade_condition.when.trim()) {
+    throw new Error('adaptationContract: selected_action.fade_condition.when is required');
+  }
+  if (!Number.isInteger(action.independent_work_window) || action.independent_work_window < 0) {
+    throw new Error('adaptationContract: selected_action.independent_work_window must be a non-negative integer');
+  }
+  if (!['tutor', 'shared', 'learner'].includes(action.responsibility_owner)) {
+    throw new Error('adaptationContract: selected_action.responsibility_owner must be tutor, shared, or learner');
+  }
 }
 
 export function validateGateResult(gateResult = { allowed: true, violations: [], repairs: [] }) {
