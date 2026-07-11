@@ -175,6 +175,7 @@ process.stdin.on('end', () => {
       },
     );
     await new Promise((resolve, reject) => {
+      let browsedStressProfiles = false;
       let acceptedDefault = false;
       let requestedExit = false;
       const timer = setTimeout(() => {
@@ -186,7 +187,10 @@ process.stdin.on('end', () => {
       child.stdout.on('data', (chunk) => {
         stdout += chunk;
         const plain = plainTerminalText(stdout);
-        if (!acceptedDefault && plain.includes('learner profile [diligent] >')) {
+        if (!browsedStressProfiles && plain.includes('learner profile [diligent] >')) {
+          browsedStressProfiles = true;
+          child.stdin.write('stress\n');
+        } else if (!acceptedDefault && plain.includes('learner profiles > specialist failure modes (6)')) {
           acceptedDefault = true;
           child.stdin.write('\n');
         } else if (!requestedExit && plain.includes('tutor >')) {
@@ -215,6 +219,9 @@ process.stdin.on('end', () => {
     const tutorIndex = plain.indexOf('tutor >');
     assert.ok(pickerIndex >= 0, plain);
     assert.match(plain, /learner profile \[diligent\] >/u);
+    assert.match(plain, /learner profiles > specialist failure modes \(6\)/u);
+    assert.match(plain, /proof_skipper: Stress - Proof skipper/u);
+    assert.ok((plain.match(/learner profile \[diligent\] >/gu) || []).length >= 2, plain);
     assert.ok(readyIndex > pickerIndex, plain);
     assert.ok(profileIndex > readyIndex, plain);
     assert.ok(tutorIndex > profileIndex, plain);

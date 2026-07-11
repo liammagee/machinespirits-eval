@@ -98,7 +98,10 @@ Useful variants:
   notice and compact profile card appear once per active profile. A fresh mixed
   session first asks `Pick a learner profile [diligent] >`; Enter accepts the
   default, while a built-in profile id selects another contract before any
-  learner artifact is generated. The opening tutor text is then buffered until
+  learner artifact is generated. At this picker, `list`, `stress`, and `all`
+  browse profile groups rather than selecting a profile; after browsing, enter
+  one of the displayed profile ids. Tab completes picker commands and ids. The
+  opening tutor text is then buffered until
   that first notice and card are ready, and the card is printed immediately
   before the first tutor message. This adds first-reveal latency but makes the
   controls legible before the drama begins. Later suggestions activate Tab

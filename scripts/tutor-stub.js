@@ -10260,11 +10260,19 @@ async function main() {
     console.log(`${C.dim}  ${verb}: ${presentation.signal}${C.reset}`);
   }
 
+  let initialProfilePickerActive = false;
   const rl = readline.createInterface({
     input,
     output,
     prompt: mixedLearnerPromptText(),
     completer(line) {
+      if (initialProfilePickerActive) {
+        const raw = String(line || '');
+        const normalized = raw.trim().toLowerCase().replace(/-/gu, '_');
+        const candidates = ['list', 'stress', 'all', ...learnerProfileIds()];
+        const matches = candidates.filter((candidate) => candidate.startsWith(normalized));
+        return [matches.length ? matches : candidates, raw];
+      }
       const mixedCompletion = mixedLearnerCompletionForLine(line);
       if (mixedCompletion) return [[mixedCompletion], line];
       const trimmed = line.trimStart();
@@ -10924,7 +10932,7 @@ async function main() {
     startMixedLearnerPrefetch('clue');
   }
 
-  function printMixedLearnerProfileList(listScope = 'core') {
+  function printMixedLearnerProfileList(listScope = 'core', { picker = false } = {}) {
     const scopeConfig = {
       core: { suite: 'core', label: 'ordinary choices' },
       stress: { suite: 'stress', label: 'specialist failure modes' },
@@ -10935,7 +10943,11 @@ async function main() {
     const profileIds = learnerProfileSuiteIds(scopeConfig.suite);
     console.log(`${C.cyan}learner profiles > ${scopeConfig.label} (${profileIds.length})${C.reset}`);
     console.log(learnerProfileListText({ ids: profileIds, includeSuites: false }));
-    if (scopeConfig.suite === 'core') {
+    if (picker) {
+      console.log(
+        `${C.dim}  choose a learner by entering one profile id above; browse list (ordinary), stress, or all${C.reset}\n`,
+      );
+    } else if (scopeConfig.suite === 'core') {
       console.log(
         `${C.dim}  specialist profiles: /profile list stress · complete registry: /profile list all${C.reset}\n`,
       );
@@ -11037,68 +11049,92 @@ async function main() {
     const defaultProfileId = mixedLearner.profileId || 'custom';
     console.log(`${C.cyan}Pick a learner profile${C.reset}`);
     console.log(
-      `${C.dim}  enter a profile id, or press Enter for ${defaultProfileId}; type list, stress, or all to browse${C.reset}`,
+      `${C.dim}  enter a profile id and press Enter, or press Enter for ${defaultProfileId}${C.reset}`,
     );
-    while (!exiting) {
-      const answer = await new Promise((resolve) => {
-        const finish = (value) => {
-          rl.removeListener('line', onLine);
-          rl.removeListener('SIGINT', onSigint);
-          resolve(value);
-        };
-        const onLine = (line) => finish(line);
-        const onSigint = () => finish('/quit');
-        rl.once('line', onLine);
-        rl.once('SIGINT', onSigint);
-        output.write(`${C.bold}learner profile [${defaultProfileId}] >${C.reset} `);
-      });
-      const rawRequested = String(answer || '').trim().toLowerCase();
-      if (rawRequested === '/quit' || rawRequested === 'quit' || rawRequested === 'exit') {
-        requestExit('initial_profile_picker_exit');
-        return false;
+    console.log(
+      `${C.dim}  browse groups: list = ordinary profiles · stress = stress profiles · all = every profile${C.reset}`,
+    );
+
+    const queuedLines = [];
+    let resolveNextLine = null;
+    const enqueueLine = (line) => {
+      if (resolveNextLine) {
+        const resolve = resolveNextLine;
+        resolveNextLine = null;
+        resolve(line);
+      } else {
+        queuedLines.push(line);
       }
-      const requested = rawRequested.replace(/^\/profile(?:\s+|$)/u, '');
-      const browseScope =
-        requested === 'list' || requested === 'core'
-          ? 'core'
-          : requested === 'stress' || requested === 'list stress'
-            ? 'stress'
-            : requested === 'all' || requested === 'audit' || requested === 'list all'
-              ? 'all'
-              : null;
-      if (browseScope) {
-        printMixedLearnerProfileList(browseScope);
-        continue;
-      }
-      if (!requested) {
+    };
+    const nextLine = () =>
+      queuedLines.length
+        ? Promise.resolve(queuedLines.shift())
+        : new Promise((resolve) => {
+            resolveNextLine = resolve;
+          });
+    const onLine = (line) => enqueueLine(line);
+    const onSigint = () => enqueueLine('/quit');
+    initialProfilePickerActive = true;
+    rl.on('line', onLine);
+    rl.on('SIGINT', onSigint);
+    try {
+      while (!exiting) {
+        rl.setPrompt(`${C.bold}learner profile [${defaultProfileId}] >${C.reset} `);
+        rl.prompt();
+        const answer = await nextLine();
+        const rawRequested = String(answer || '').trim().toLowerCase();
+        if (rawRequested === '/quit' || rawRequested === 'quit' || rawRequested === 'exit') {
+          requestExit('initial_profile_picker_exit');
+          return false;
+        }
+        const requested = rawRequested.replace(/^\/profile(?:\s+|$)/u, '');
+        const browseScope =
+          requested === 'list' || requested === 'core'
+            ? 'core'
+            : requested === 'stress' || requested === 'list stress'
+              ? 'stress'
+              : requested === 'all' || requested === 'audit' || requested === 'list all'
+                ? 'all'
+                : null;
+        if (browseScope) {
+          printMixedLearnerProfileList(browseScope, { picker: true });
+          continue;
+        }
+        if (!requested) {
+          appendTraceEvent(state.trace, {
+            type: 'mixed_learner_initial_profile_selected',
+            profileId: mixedLearner.profileId,
+            custom: !mixedLearner.profileId,
+            usedDefault: true,
+          });
+          console.log();
+          return true;
+        }
+        const profileId = requested.replace(/-/gu, '_');
+        if (!learnerProfileIds().includes(profileId)) {
+          console.log(`${C.red}unknown learner profile: ${requested}${C.reset}`);
+          console.log(`${C.dim}  type list, stress, or all to browse; press Enter for ${defaultProfileId}${C.reset}`);
+          continue;
+        }
+        mixedLearner.profileId = profileId;
+        mixedLearner.profile = learnerProfilePrompt(profileId);
         appendTraceEvent(state.trace, {
           type: 'mixed_learner_initial_profile_selected',
-          profileId: mixedLearner.profileId,
-          custom: !mixedLearner.profileId,
-          usedDefault: true,
+          profileId,
+          custom: false,
+          usedDefault: false,
         });
         console.log();
         return true;
       }
-      const profileId = requested.replace(/-/gu, '_');
-      if (!learnerProfileIds().includes(profileId)) {
-        console.log(`${C.red}unknown learner profile: ${requested}${C.reset}`);
-        console.log(`${C.dim}  type list, stress, or all to browse; press Enter for ${defaultProfileId}${C.reset}`);
-        continue;
-      }
-      mixedLearner.profileId = profileId;
-      mixedLearner.profile = learnerProfilePrompt(profileId);
+      return false;
+    } finally {
+      initialProfilePickerActive = false;
+      rl.removeListener('line', onLine);
+      rl.removeListener('SIGINT', onSigint);
+      resolveNextLine = null;
       rl.setPrompt(mixedLearnerPromptText());
-      appendTraceEvent(state.trace, {
-        type: 'mixed_learner_initial_profile_selected',
-        profileId,
-        custom: false,
-        usedDefault: false,
-      });
-      console.log();
-      return true;
     }
-    return false;
   }
 
   function acceptMixedLearnerSuggestion({ duringTurn = false } = {}) {
