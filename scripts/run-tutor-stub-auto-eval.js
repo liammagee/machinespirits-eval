@@ -3694,6 +3694,22 @@ function machineSpiritsReportCss() {
       font-weight:800;
       text-transform:uppercase;
     }
+    .experiment-arms { display:grid; gap:9px; margin-top:12px; }
+    .experiment-arm {
+      display:grid;
+      grid-template-columns:minmax(180px,1.2fr) minmax(130px,.7fr) minmax(210px,1fr) minmax(120px,.6fr);
+      gap:12px;
+      align-items:center;
+      border:2px solid var(--ink);
+      background:var(--paper-2);
+      padding:11px 12px;
+    }
+    .experiment-arm h4 { margin:2px 0 3px; font-size:17px; }
+    .experiment-arm p { margin:0; color:var(--ink-3); font-size:10px; }
+    .experiment-arm-status, .experiment-arm-result { display:grid; gap:3px; }
+    .experiment-arm-status strong, .experiment-arm-result strong { font-size:12px; }
+    .experiment-arm-status > span:not(.status) { color:var(--ink-3); font-size:9px; }
+    .experiment-arm-result .chip { margin:2px 3px 0 0; }
     .cohort-history, .stale-run-group, .filter-panel, .artifact-history {
       margin-top:14px;
       border:2px solid var(--ink);
@@ -3883,6 +3899,7 @@ function machineSpiritsReportCss() {
       .cohort-metric:last-child { grid-column:1 / -1; }
       .profile-row { grid-template-columns:minmax(130px,1.2fr) 80px 90px 90px minmax(100px,.8fr); }
       .profile-row > :nth-child(5) { display:none; }
+      .experiment-arm { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .report-index-scroll { display:none; }
       .report-card-list { display:grid; }
       .filter-panel .toolbar { grid-template-columns:1fr; }
@@ -3915,6 +3932,7 @@ function machineSpiritsReportCss() {
       .profile-row > * { display:block !important; }
       .profile-row > .profile-value { text-align:right; }
       .profile-row > .profile-actions { grid-column:1 / -1; text-align:left; }
+      .experiment-arm { grid-template-columns:1fr; }
       .policy-bar-row { grid-template-columns:1fr; gap:5px; }
       .policy-bar-meta { white-space:normal; }
       .research-verdict-grid { grid-template-columns:1fr; }
@@ -6449,6 +6467,30 @@ function listAutoEvalRunStateFiles(rootDir) {
   return files;
 }
 
+function listTutorStubExperimentPlanFiles(rootDir) {
+  if (!fs.existsSync(rootDir)) return [];
+  const files = [];
+  const stack = [rootDir];
+  while (stack.length) {
+    const dir = stack.pop();
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const entryPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (!skipIndexScanDir(entry.name)) stack.push(entryPath);
+        continue;
+      }
+      if (entry.name === 'experiment-plan.json') files.push(entryPath);
+    }
+  }
+  return files;
+}
+
+function indexPathIsWithin(filePath, parentDir) {
+  if (!filePath || !parentDir) return false;
+  const relative = path.relative(parentDir, filePath);
+  return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
+}
+
 function reportHtmlPathForSummary(summary, jsonPath) {
   const sibling = jsonPath.replace(/\.json$/u, '.html');
   const reported = summary?.report?.html ? resolvePath(summary.report.html) : null;
@@ -7269,6 +7311,166 @@ function cohortAdaptationModel(profileReports, policies, baselinePolicy) {
   };
 }
 
+function readTutorStubExperimentPlan(planPath) {
+  try {
+    const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
+    if (plan?.schema !== 'machinespirits.tutor-stub.experiment-plan.v1') return null;
+    if (!Array.isArray(plan.arms) || !plan.arms.length) return null;
+    return plan;
+  } catch {
+    return null;
+  }
+}
+
+function latestIndexArtifact(items, timeSelector) {
+  return items
+    .slice()
+    .sort((left, right) => Number(timeSelector(right) || 0) - Number(timeSelector(left) || 0))[0] || null;
+}
+
+function indexExperimentModels(rows, activeRuns, rootDir) {
+  return listTutorStubExperimentPlanFiles(rootDir)
+    .map((planPath) => {
+      const plan = readTutorStubExperimentPlan(planPath);
+      if (!plan) return null;
+      const experimentRoot = path.dirname(planPath);
+      const id = String(plan.id || path.basename(experimentRoot));
+      const arms = plan.arms.map((arm, armIndex) => {
+        const armId = String(arm.id || `arm-${armIndex + 1}`);
+        const armPath = path.resolve(experimentRoot, arm.path || armId);
+        const report = latestIndexArtifact(
+          rows.filter((row) => indexPathIsWithin(row.jsonPath, armPath)),
+          (row) => row.completedMs,
+        );
+        const active = latestIndexArtifact(
+          activeRuns.filter((run) => indexPathIsWithin(run.statePath, armPath)),
+          (run) => run.updatedMs,
+        );
+        const completedTrials = active ? Number(active.totals?.completed || 0) : Number(report?.rows || 0);
+        const expectedTrials = active
+          ? Number(active.totals?.jobs || 0)
+          : Number(arm.expectedTrials || report?.rows || plan.expectedTrialsPerArm || 0);
+        const status = active?.status || (report ? (report.failed ? 'attention' : 'completed') : 'pending');
+        return {
+          armId,
+          learnerProfile: String(arm.label || armId),
+          description: String(arm.description || ''),
+          status,
+          configuration: arm.configuration || {},
+          completedTrials,
+          expectedTrials,
+          ok: active ? Number(active.totals?.ok || 0) : Number(report?.ok || 0),
+          failed: active ? Number(active.totals?.failed || 0) : Number(report?.failed || 0),
+          grounded: Number(report?.grounded || 0),
+          groundedRate: report?.groundedRate ?? null,
+          meanCoverage: report?.meanCoverage ?? null,
+          meanTurns: report?.meanTurns ?? null,
+          policies: report?.policies || active?.policies || arm.policies || plan.sharedConfig?.policies || [],
+          model: report?.autoLearnerModel || active?.config?.autoLearnerModel || plan.sharedConfig?.model || '',
+          completedAt: report?.completedAt || active?.updatedAt || '',
+          htmlHref: report?.htmlHref || '',
+          jsonHref: report?.jsonHref || '',
+          stateHref: active?.stateHref || hrefRelative(rootDir, path.join(armPath, 'run-state.json')),
+          artifactHref: `${hrefRelative(rootDir, armPath).replace(/\/$/u, '')}/`,
+          activeJobs: active?.activeJobs || [],
+          totals: active?.totals || null,
+        };
+      });
+      const running = arms.filter((arm) => arm.status === 'running');
+      const stale = arms.filter((arm) => arm.status === 'stale');
+      const completedArms = arms.filter((arm) => arm.status === 'completed').length;
+      const status = running.length
+        ? 'running'
+        : stale.length
+          ? 'stale'
+          : completedArms === arms.length
+            ? 'completed'
+            : 'pending';
+      const trialsCompleted = arms.reduce((sum, arm) => sum + Number(arm.completedTrials || 0), 0);
+      const trialsExpected = arms.reduce((sum, arm) => sum + Number(arm.expectedTrials || 0), 0);
+      const failed = arms.reduce((sum, arm) => sum + Number(arm.failed || 0), 0);
+      const completedMs = Math.max(...arms.map((arm) => Date.parse(arm.completedAt || '') || 0), fs.statSync(planPath).mtimeMs);
+      const headline =
+        status === 'completed'
+          ? 'Data collection is complete; the declared paired analysis is ready to run.'
+          : status === 'stale'
+            ? 'Work in progress is stale; inspect the affected arm before interpreting partial data.'
+            : `Work in progress: ${trialsCompleted}/${trialsExpected || '?'} planned trials have finished across ${arms.length} arms.`;
+      return {
+        kind: 'experiment_placeholder',
+        id,
+        key: hrefRelative(rootDir, experimentRoot),
+        title: String(plan.title || id),
+        status,
+        decision: headline,
+        decisionTone: status === 'stale' || failed ? 'attention' : 'pending',
+        completedAt: new Date(completedMs).toISOString(),
+        profiles: arms.map((arm) => arm.learnerProfile),
+        policies: [...new Set(arms.flatMap((arm) => arm.policies || []))],
+        baselinePolicy: String(plan.baselinePolicy || ''),
+        completedProfiles: completedArms,
+        expectedProfiles: arms.length,
+        unitLabel: 'arm',
+        progress: {
+          trialsCompleted,
+          trialsExpected,
+          trialRate: trialsExpected ? Number((trialsCompleted / trialsExpected).toFixed(3)) : null,
+          liveProfiles: arms
+            .filter((arm) => arm.status === 'running' || arm.status === 'stale')
+            .map((arm) => ({
+              profile: arm.learnerProfile,
+              status: arm.status,
+              completedTrials: arm.completedTrials,
+              expectedTrials: arm.expectedTrials,
+              repairPass: false,
+              retriedStatuses: [],
+            })),
+          lastActivityAt: new Date(completedMs).toISOString(),
+        },
+        ok: arms.reduce((sum, arm) => sum + Number(arm.ok || 0), 0),
+        failed,
+        grounded: arms.reduce((sum, arm) => sum + Number(arm.grounded || 0), 0),
+        closureRate: null,
+        meanCoverage: null,
+        runningCount: running.length,
+        staleCount: stale.length,
+        topPolicy: null,
+        discriminationGate: null,
+        links: [
+          { label: 'experiment plan', href: hrefRelative(rootDir, planPath) },
+          { label: 'live report', href: `${hrefRelative(rootDir, experimentRoot).replace(/\/$/u, '')}/` },
+        ],
+        childReports: arms,
+        adaptation: {
+          schema: 'machinespirits.tutor-stub.adaptation-matrix.v1',
+          verdict: 'pending',
+          headline,
+          outcomeAchieved: false,
+          baselinePolicy: String(plan.baselinePolicy || ''),
+          profiles: [],
+          policies: [],
+          cells: [],
+          note: 'No comparative verdict is computed from an in-progress experiment placeholder.',
+        },
+        study: studyMetadataForCohort(id, plan),
+        experiment: {
+          factor: plan.factor || null,
+          sharedConfig: plan.sharedConfig || {},
+          measures: Array.isArray(plan.measures) ? plan.measures : [],
+          analysisStatus: status === 'completed' ? 'ready' : 'waiting_for_all_arms',
+          statusNote: String(plan.statusNote || ''),
+        },
+        lab3d: {
+          eligible: false,
+          reasons: ['paired analysis has not been generated'],
+          linked2dRequired: true,
+          drivesVerdict: false,
+        },
+      };
+    })
+    .filter(Boolean);
+}
+
 function indexCohortModels(rows, activeRuns, rootDir) {
   const buckets = new Map();
   const add = (scope, kind, value) => {
@@ -7453,6 +7655,14 @@ function indexCohortModels(rows, activeRuns, rootDir) {
         Date.parse(right.completedAt) - Date.parse(left.completedAt)
       );
     });
+  cohorts.push(...indexExperimentModels(rows, activeRuns, rootDir));
+  cohorts.sort((left, right) => {
+    const rank = { running: 4, pending: 3, completed: 2, stale: 1 };
+    return (
+      (rank[right.status] || 0) - (rank[left.status] || 0) ||
+      Date.parse(right.completedAt || '') - Date.parse(left.completedAt || '')
+    );
+  });
   const byStudy = new Map();
   for (const cohort of cohorts) {
     const studyId = cohort.study?.id || 'unassigned-study';
@@ -8144,6 +8354,70 @@ function tutorStubIndexClientJs() {
     });
     return Object.assign({}, liveData, { cohorts: cohorts, rows: rows });
   }
+  function mergeExperimentData(liveData, experimentData) {
+    if (!experimentData || !Array.isArray(experimentData.cohorts)) return liveData;
+    var experiments = {};
+    experimentData.cohorts.forEach(function (cohort) { experiments[cohort.id] = cohort; });
+    var cohorts = (liveData.cohorts || []).filter(function (cohort) { return !experiments[cohort.id]; });
+    cohorts = cohorts.concat(experimentData.cohorts || []).sort(function (left, right) {
+      var rank = { running:4, pending:3, completed:2, stale:1 };
+      return (rank[right.status] || 0) - (rank[left.status] || 0) || Date.parse(right.completedAt || '') - Date.parse(left.completedAt || '');
+    });
+    return Object.assign({}, liveData, { cohorts:cohorts });
+  }
+  async function refreshExperimentProgress(data) {
+    var experiments = (data.cohorts || []).filter(function (cohort) { return cohort.kind === 'experiment_placeholder'; });
+    await Promise.all(experiments.map(async function (cohort) {
+      var arms = cohort.childReports || [];
+      await Promise.all(arms.map(async function (arm) {
+        if (!arm.stateHref) return;
+        try {
+          var response = await fetch(arm.stateHref + (arm.stateHref.indexOf('?') >= 0 ? '&' : '?') + 'ts=' + Date.now(), { cache:'no-store' });
+          if (!response.ok) return;
+          var state = await response.json();
+          var updatedMs = Date.parse(state.updatedAt || '');
+          arm.status = state.status === 'running' && Number.isFinite(updatedMs) && Date.now() - updatedMs > 900000 ? 'stale' : (state.status || arm.status);
+          arm.completedTrials = Number(state.totals && state.totals.completed || 0);
+          arm.expectedTrials = Number(state.totals && state.totals.jobs || arm.expectedTrials || 0);
+          arm.ok = Number(state.totals && state.totals.ok || 0);
+          arm.failed = Number(state.totals && state.totals.failed || 0);
+          arm.totals = state.totals || arm.totals;
+          arm.completedAt = state.updatedAt || arm.completedAt;
+          if (state.config && state.config.policies) arm.policies = state.config.policies;
+        } catch (error) { /* arm state can legitimately be absent before launch */ }
+      }));
+      var completed = arms.reduce(function (sum, arm) { return sum + Number(arm.completedTrials || 0); }, 0);
+      var expected = arms.reduce(function (sum, arm) { return sum + Number(arm.expectedTrials || 0); }, 0);
+      var completedArms = arms.filter(function (arm) { return arm.status === 'completed'; }).length;
+      var runningArms = arms.filter(function (arm) { return arm.status === 'running'; }).length;
+      var staleArms = arms.filter(function (arm) { return arm.status === 'stale'; }).length;
+      var failed = arms.reduce(function (sum, arm) { return sum + Number(arm.failed || 0); }, 0);
+      cohort.status = runningArms ? 'running' : staleArms ? 'stale' : completedArms === arms.length ? 'completed' : 'pending';
+      cohort.completedProfiles = completedArms;
+      cohort.runningCount = runningArms;
+      cohort.staleCount = staleArms;
+      cohort.failed = failed;
+      cohort.completedAt = arms.reduce(function (latest, arm) {
+        return Date.parse(arm.completedAt || '') > Date.parse(latest || '') ? arm.completedAt : latest;
+      }, cohort.completedAt || '');
+      cohort.progress = {
+        trialsCompleted:completed,
+        trialsExpected:expected,
+        trialRate:expected ? completed/expected : null,
+        liveProfiles:arms.filter(function (arm) { return arm.status === 'running' || arm.status === 'stale'; }).map(function (arm) { return { profile:arm.learnerProfile, status:arm.status, completedTrials:arm.completedTrials, expectedTrials:arm.expectedTrials, repairPass:false, retriedStatuses:[] }; }),
+        lastActivityAt:cohort.completedAt || ''
+      };
+      var headline = cohort.status === 'completed'
+        ? 'Data collection is complete; the declared paired analysis is ready to run.'
+        : cohort.status === 'stale'
+          ? 'Work in progress is stale; inspect the affected arm before interpreting partial data.'
+          : 'Work in progress: ' + completed + '/' + (expected || '?') + ' planned trials have finished across ' + arms.length + ' arms.';
+      cohort.decision = headline;
+      if (cohort.adaptation) cohort.adaptation.headline = headline;
+      if (cohort.experiment) cohort.experiment.analysisStatus = cohort.status === 'completed' ? 'ready' : 'waiting_for_all_arms';
+    }));
+    return data;
+  }
   function esc(value) {
     return String(value == null ? '' : value)
       .replace(/&/g, '&amp;')
@@ -8193,7 +8467,8 @@ function tutorStubIndexClientJs() {
   function statusExplainer(status) {
     if (status === 'running') return 'A runner reported progress within the last 15 minutes. All numbers on this card cover finished trials only and will keep changing.';
     if (status === 'stale') return 'A runner stopped reporting for more than 15 minutes without finishing its plan. Check its log under Run Operations before trusting these partial numbers.';
-    return 'No runner is active for this evaluation. Every number reads from the latest saved report of each profile.';
+    if (status === 'pending') return 'The experiment is declared, but one or more arms have not started or have not written a report yet.';
+    return 'No runner is active for this evaluation. Every number reads from the latest saved report of each reported unit.';
   }
   function evaluationProgressModel(cohort) {
     if (cohort.progress && Number(cohort.progress.trialsExpected || 0) > 0) return cohort.progress;
@@ -8226,20 +8501,21 @@ function tutorStubIndexClientJs() {
     var completed = Number(progress.trialsCompleted || 0);
     var rate = progress.trialRate == null ? completed / expected : Number(progress.trialRate);
     var live = progress.liveProfiles || [];
+    var unitLabel = cohort.unitLabel || 'profile';
     var hasRepairPass = live.some(function (slice) { return slice.repairPass; });
     var chips = live.map(function (slice) {
       var label = slice.profile + ' ' + slice.completedTrials + '/' + slice.expectedTrials + (slice.repairPass ? ' repair pass' : '');
       var tip = slice.repairPass
         ? 'This pass re-runs only trials that previously failed; earlier finished trials are kept on disk and stay in the report.'
-        : 'First pass over the planned trials for this profile.';
+        : 'First pass over the planned trials for this ' + unitLabel + '.';
       return '<span class="live-slice ' + esc(slice.status) + '" title="' + esc(tip) + '">' + esc(label) + '</span>';
     }).join('');
-    var profileCount = cohort.expectedProfiles ? (cohort.completedProfiles || 0) + '/' + cohort.expectedProfiles + ' profiles reported' : '';
+    var profileCount = cohort.expectedProfiles ? (cohort.completedProfiles || 0) + '/' + cohort.expectedProfiles + ' ' + unitLabel + (Number(cohort.expectedProfiles) === 1 ? '' : 's') + ' reported' : '';
     var activity = progress.lastActivityAt ? 'last activity ' + relativeTime(progress.lastActivityAt) : '';
     var note = statusExplainer(cohort.status);
     if (hasRepairPass) note += ' Live profiles count their current pass, so trial totals can be smaller than the original plan.';
     if (cohort.status === 'completed' && cohort.expectedProfiles && Number(cohort.completedProfiles || 0) < Number(cohort.expectedProfiles)) {
-      note += ' Some planned profiles never produced a report; resume them or the verdict stays partial.';
+      note += ' Some planned ' + unitLabel + 's never produced a report; resume them or the verdict stays partial.';
     }
     return '<div class="evaluation-progress" aria-label="Evaluation progress"><div class="evaluation-progress-track">' + progressBar(rate) + '<strong>' + esc(completed) + '/' + esc(expected) + ' trials finished (' + Math.round(Math.max(0, Math.min(1, rate)) * 100) + '%)</strong></div><div class="evaluation-progress-meta">' + (profileCount ? '<span>' + esc(profileCount) + '</span>' : '') + chips + (activity ? '<span class="muted">' + esc(activity) + '</span>' : '') + '</div><p class="evaluation-progress-note">' + esc(note) + '</p></div>';
   }
@@ -8557,6 +8833,38 @@ function tutorStubIndexClientJs() {
     }).join('');
     return '<div class="evaluation-profiles"><div class="profile-list"><div class="profile-row profile-head"><span>Profile</span><span>Status</span><span>Trials</span><span>Outcome</span><span>Adaptation</span><span>Open</span></div>' + rows + '</div></div>';
   }
+  function renderExperimentArms(cohort) {
+    var arms = cohort.childReports || [];
+    var rows = arms.map(function (arm) {
+      var expected = Number(arm.expectedTrials || 0);
+      var completed = Number(arm.completedTrials || 0);
+      var progress = expected ? completed + '/' + expected : String(completed);
+      var result = arm.groundedRate == null
+        ? 'not scored'
+        : pct(arm.groundedRate) + ' closure · ' + pct(arm.meanCoverage) + ' coverage';
+      var action = arm.htmlHref
+        ? '<a href="' + esc(arm.htmlHref) + '">Open report</a>'
+        : arm.stateHref
+          ? '<a href="' + esc(arm.stateHref) + '">View state</a>'
+          : '<a href="' + esc(arm.artifactHref || '') + '">Artifacts</a>';
+      var config = Object.entries(arm.configuration || {}).map(function (entry) {
+        return entry[0] + ' ' + String(entry[1]);
+      }).join(' · ');
+      return '<div class="experiment-arm"><div><span class="cohort-eyebrow">' + esc(arm.armId) + '</span><h4>' + esc(arm.learnerProfile) + '</h4><p>' + esc(arm.description || config || 'Declared experiment arm') + '</p></div><div class="experiment-arm-status"><span class="status ' + esc(arm.status || 'pending') + '">' + esc(arm.status || 'pending') + '</span><strong>' + esc(progress) + ' trials</strong><span>' + esc(Number(arm.ok || 0)) + ' OK · ' + esc(Number(arm.failed || 0)) + ' failed</span></div><div class="experiment-arm-result"><strong>' + esc(result) + '</strong><span>' + policyChips(arm.policies || []) + '</span></div><div class="profile-actions">' + action + (arm.artifactHref ? ' <a href="' + esc(arm.artifactHref) + '">Artifacts</a>' : '') + '</div></div>';
+    }).join('');
+    return '<div class="experiment-arms">' + (rows || '<div class="muted">No arms have been declared.</div>') + '</div>';
+  }
+  function renderExperimentPlaceholder(cohort, view) {
+    var experiment = cohort.experiment || {};
+    var factor = experiment.factor || {};
+    var completed = Number((cohort.progress || {}).trialsCompleted || 0);
+    var expected = Number((cohort.progress || {}).trialsExpected || 0);
+    var measures = (experiment.measures || []).map(function (measure) { return '<li>' + esc(measure) + '</li>'; }).join('');
+    var design = '<section class="study-panel"><span class="cohort-eyebrow">Declared paired design</span><h4>' + esc(factor.name || 'Experiment factor') + '</h4><p>' + esc(experiment.statusNote || 'The report shows collection state only. Comparative interpretation remains withheld until every arm has completed.') + '</p><dl>' + Object.entries(factor).filter(function (entry) { return entry[0] !== 'name'; }).map(function (entry) { return '<div><dt>' + esc(entry[0]) + '</dt><dd>' + esc(entry[1]) + '</dd></div>'; }).join('') + '</dl></section>';
+    var metrics = '<div class="research-verdict-grid">' + cohortMetric('Collection', expected ? Math.round((completed / expected) * 100) + '%' : 'pending', completed + '/' + (expected || '?') + ' planned trials') + cohortMetric('Arms', (cohort.completedProfiles || 0) + '/' + (cohort.expectedProfiles || 0), 'complete reports') + cohortMetric('Failures', cohort.failed || 0, 'technical failures only') + cohortMetric('Analysis', experiment.analysisStatus === 'ready' ? 'ready' : 'waiting', experiment.analysisStatus === 'ready' ? 'all arms collected' : 'no interim verdict') + '</div>';
+    var measurePanel = measures ? '<details class="reading-guide" open><summary>Planned readout</summary><div class="reading-guide-body"><div><strong>Measures</strong><ul>' + measures + '</ul></div><div><strong>Interpretation rule</strong><p>Compare matched arms only after collection completes. Until then, progress and technical failures are descriptive operational signals, not evidence for or against the hypothesis.</p></div></div></details>' : '';
+    return renderStudyPanel(cohort) + design + metrics + (view === 'profiles' ? '' : measurePanel) + renderExperimentArms(cohort);
+  }
   function renderAdaptationMatrix(cohort) {
     var matrix = cohort.adaptation || { cells: [], profiles: [], policies: [] };
     var cells = matrix.cells || [];
@@ -8602,13 +8910,17 @@ function tutorStubIndexClientJs() {
     return '<div class="lab-view"><div class="lab-warning"><strong>Research safeguard</strong><span>3D never drives verdicts. Every verdict on this page is computed from the flat numbers alone (the Profile × Policy matrix and per-turn transition counts); the 3D projection only re-plots those same numbers. It stays locked until each plotted point can be checked as a plain 2D row, because depth and perspective can make weak separation look strong. Use it to spot clusters worth checking in 2D, never to conclude.</span></div>' + linked + gate + projection + renderReadingGuide() + '</div>';
   }
   function renderCohortCard(cohort, primary, view, compared) {
-    var viewBody = view === 'matrix' ? renderAdaptationMatrix(cohort) : view === 'profiles' ? renderEvaluationProfiles(cohort, primary) : view === 'lineage' ? renderLineageView(cohort) : view === 'lab' ? renderLabView(cohort) : renderVerdictView(cohort);
+    var isExperiment = cohort.kind === 'experiment_placeholder';
+    var viewBody = isExperiment ? renderExperimentPlaceholder(cohort, view) : view === 'matrix' ? renderAdaptationMatrix(cohort) : view === 'profiles' ? renderEvaluationProfiles(cohort, primary) : view === 'lineage' ? renderLineageView(cohort) : view === 'lab' ? renderLabView(cohort) : renderVerdictView(cohort);
     var interim = cohort.status === 'running'
-      ? '<span class="decision-caveat">Interim read: trials are still running, so this verdict can change as more evidence lands.</span>'
+      ? isExperiment
+        ? '<span class="decision-caveat">Collection is still running. This placeholder deliberately withholds the treatment verdict.</span>'
+        : '<span class="decision-caveat">Interim read: trials are still running, so this verdict can change as more evidence lands.</span>'
       : cohort.status === 'stale'
         ? '<span class="decision-caveat">Interim read: the last pass stalled before finishing, so treat this verdict as incomplete.</span>'
         : '';
-    return '<article class="cohort-card ' + esc(cohort.adaptation && cohort.adaptation.verdict || 'pending') + (primary ? ' primary' : '') + '"><div class="cohort-card-head"><div><span class="cohort-eyebrow">Selected evaluation</span><h3>' + esc(cohort.id) + '</h3><p><span class="evaluation-timestamp">' + esc(evaluationTimestamp(cohort)) + '</span> · baseline ' + esc(cohort.baselinePolicy || 'not declared') + '</p></div><div class="cohort-head-actions"><span class="status ' + esc(cohort.status) + '" title="' + esc(statusExplainer(cohort.status)) + '">' + esc(cohort.status) + '</span><button type="button" data-compare-toggle="' + esc(cohort.id) + '">' + (compared ? 'Unpin comparison' : 'Pin comparison') + '</button></div></div>' + renderEvaluationProgress(cohort) + '<div class="cohort-decision adaptation-' + esc(cohort.adaptation && cohort.adaptation.verdict || 'pending') + '"><strong>' + esc(cohort.adaptation && cohort.adaptation.headline || cohort.decision) + '</strong>' + interim + '</div>' + viewBody + '</article>';
+    var contextLabel = isExperiment ? 'paired experiment · analysis pending' : 'baseline ' + esc(cohort.baselinePolicy || 'not declared');
+    return '<article class="cohort-card ' + esc(cohort.adaptation && cohort.adaptation.verdict || 'pending') + (primary ? ' primary' : '') + '"><div class="cohort-card-head"><div><span class="cohort-eyebrow">Selected evaluation</span><h3>' + esc(cohort.title || cohort.id) + '</h3><p><span class="evaluation-timestamp">' + esc(evaluationTimestamp(cohort)) + '</span> · ' + contextLabel + '</p></div><div class="cohort-head-actions"><span class="status ' + esc(cohort.status) + '" title="' + esc(statusExplainer(cohort.status)) + '">' + esc(cohort.status) + '</span><button type="button" data-compare-toggle="' + esc(cohort.id) + '">' + (compared ? 'Unpin comparison' : 'Pin comparison') + '</button></div></div>' + renderEvaluationProgress(cohort) + '<div class="cohort-decision adaptation-' + esc(cohort.adaptation && cohort.adaptation.verdict || 'pending') + '"><strong>' + esc(cohort.adaptation && cohort.adaptation.headline || cohort.decision) + '</strong>' + interim + '</div>' + viewBody + '</article>';
   }
   function renderComparisonTray(cohorts, route) {
     if (!route.compare.length) return '';
@@ -8620,7 +8932,8 @@ function tutorStubIndexClientJs() {
     if (!cohorts.length) return '<section class="cohort-workspace" id="evaluations"><div class="cohort-workspace-head"><div><h2>Evaluations</h2><p>No matched evaluation has been detected yet. Standalone artifacts remain available below.</p></div></div></section>';
     var current = cohorts.find(function (cohort) { return cohort.id === route.evaluation; }) || cohorts[0];
     var options = cohorts.map(function (cohort) { return '<option value="' + esc(cohort.id) + '"' + (cohort.id === current.id ? ' selected' : '') + '>' + esc(cohort.id) + ' · ' + esc(evaluationTimestamp(cohort)) + '</option>'; }).join('');
-    var tabs = [['verdict', 'Verdict'], ['matrix', 'Profile × Policy'], ['profiles', 'Profiles'], ['lineage', 'Study Lineage'], ['lab', '3D Lab']].map(function (item) { return '<button type="button" data-view-select="' + item[0] + '" class="' + (route.view === item[0] ? 'active' : '') + '">' + item[1] + '</button>'; }).join('');
+    var tabSpec = current.kind === 'experiment_placeholder' ? [['verdict', 'Progress'], ['profiles', 'Arms']] : [['verdict', 'Verdict'], ['matrix', 'Profile × Policy'], ['profiles', 'Profiles'], ['lineage', 'Study Lineage'], ['lab', '3D Lab']];
+    var tabs = tabSpec.map(function (item) { return '<button type="button" data-view-select="' + item[0] + '" class="' + (route.view === item[0] ? 'active' : '') + '">' + item[1] + '</button>'; }).join('');
     return '<section class="cohort-workspace" id="evaluations" aria-label="Evaluations"><div class="cohort-workspace-head"><div><h2>Adaptation Research Console</h2><p>Evaluation → Profile → Trial. Every pathway answers the same question: are strategy changes contingent on learner state, and do they improve grounded adaptation?</p></div><span class="live-count">' + esc(cohorts.length) + ' evaluation' + (cohorts.length === 1 ? '' : 's') + '</span></div><div class="evaluation-routebar"><label><span>Evaluation</span><select data-evaluation-select>' + options + '</select></label><nav aria-label="Evaluation views">' + tabs + '</nav></div>' + renderCohortCard(current, true, route.view, route.compare.indexOf(current.id) >= 0) + renderComparisonTray(cohorts, route) + '</section>';
   }
   function renderCohortWorkspace(cohorts, route) {
@@ -8902,6 +9215,11 @@ function tutorStubIndexClientJs() {
         var researchResponse = await fetch('index-research-data.json', { cache: 'no-store' });
         if (researchResponse.ok) data = mergeResearchData(data, await researchResponse.json());
       } catch (researchError) { /* compatibility sidecar is optional */ }
+      try {
+        var experimentResponse = await fetch('index-experiment-data.json', { cache: 'no-store' });
+        if (experimentResponse.ok) data = mergeExperimentData(data, await experimentResponse.json());
+      } catch (experimentError) { /* experiment sidecar is optional */ }
+      data = await refreshExperimentProgress(data);
       render(data);
       if ((data.activeRuns || []).length) {
         window.setTimeout(load, Number(data.refreshMs || 30000));
@@ -8913,6 +9231,121 @@ function tutorStubIndexClientJs() {
   window.addEventListener('popstate', function () { if (state.data) render(state.data); });
   load();
 })();`;
+}
+
+function renderTutorStubExperimentPlaceholderShell({ plan, planPath, rootDir }) {
+  const experimentRoot = path.dirname(planPath);
+  const id = String(plan.id || path.basename(experimentRoot));
+  const title = String(plan.title || id);
+  const cssHref = hrefRelative(experimentRoot, path.join(rootDir, 'assets', 'tutor-stub-report.css'));
+  const consoleHref = `${hrefRelative(experimentRoot, path.join(rootDir, 'index.html'))}?evaluation=${encodeURIComponent(id)}`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(title)} · work in progress</title>
+  <link rel="stylesheet" href="${escapeHtml(cssHref)}">
+  <style>
+    .experiment-live-shell { max-width:1280px; margin:0 auto; }
+    .experiment-live-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+    .experiment-live-head h1 { margin-bottom:4px; }
+    .experiment-live-head nav { display:flex; flex-wrap:wrap; gap:8px; }
+    .experiment-live-head nav a { border:2px solid var(--ink); box-shadow:3px 3px 0 var(--red-mark); padding:6px 9px; font-family:"JetBrains Mono",ui-monospace,monospace; font-size:10px; font-weight:800; text-transform:uppercase; }
+    .experiment-live-arms { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-top:14px; }
+    .experiment-live-arm { border:2px solid var(--ink); background:var(--paper); box-shadow:5px 5px 0 var(--ink); padding:12px; }
+    .experiment-live-arm h3 { margin:3px 0; }
+    .experiment-live-arm-meta { display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center; margin:8px 0; font-size:11px; }
+    .experiment-live-jobs { display:grid; gap:5px; margin-top:10px; }
+    .experiment-live-job { display:grid; grid-template-columns:minmax(120px,1fr) auto; gap:8px; border-top:1px solid var(--ink); padding-top:5px; font-size:10px; }
+    .experiment-live-job span:last-child { text-align:right; color:var(--ink-3); }
+    @media (max-width:560px) { .experiment-live-head { display:block; } .experiment-live-head nav { margin-top:10px; } }
+  </style>
+</head>
+<body>
+  <div class="experiment-live-shell" data-experiment-live>
+    <header class="experiment-live-head">
+      <div><span class="cohort-eyebrow">Paired experiment · live placeholder</span><h1>${escapeHtml(title)}</h1><p class="muted">Live arm state refreshes every 15 seconds.</p></div>
+      <nav><a href="${escapeHtml(consoleHref)}">Research console</a><a href="experiment-plan.json">Experiment plan</a></nav>
+    </header>
+    <main data-experiment-body><section class="cohort-card primary"><p>Loading run state…</p></section></main>
+  </div>
+  <script>
+  (function () {
+    var body = document.querySelector('[data-experiment-body]');
+    function esc(value) { return String(value == null ? '' : value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+    function pct(value) { var n = Number(value); return Number.isFinite(n) ? Math.round(Math.max(0,Math.min(1,n))*100) + '%' : 'pending'; }
+    function status(state) {
+      if (!state) return 'pending';
+      var updated = Date.parse(state.updatedAt || '');
+      return state.status === 'running' && Number.isFinite(updated) && Date.now() - updated > 900000 ? 'stale' : (state.status || 'pending');
+    }
+    function bar(completed, expected) {
+      var rate = expected ? Math.max(0,Math.min(1,completed/expected)) : 0;
+      return '<span class="live-progress" aria-label="' + Math.round(rate*100) + '% complete"><span style="width:' + Math.round(rate*100) + '%"></span></span>';
+    }
+    function armHtml(arm, state) {
+      var totals = state && state.totals || {};
+      var expected = Number(totals.jobs || arm.expectedTrials || 0);
+      var completed = Number(totals.completed || 0);
+      var jobs = state && state.jobs || [];
+      var visible = jobs.filter(function (job) { return job.status !== 'queued'; }).slice(-8);
+      var config = Object.entries(arm.configuration || {}).map(function (entry) { return entry[0] + ' ' + entry[1]; }).join(' · ');
+      var jobRows = visible.map(function (job) {
+        var detail = (job.turns || 0) + ' turns' + (job.coverage == null ? '' : ' · ' + pct(job.coverage) + ' coverage') + (job.bottleneck ? ' · ' + (job.bottleneck === 'grounded_asserted_secret' ? 'closed' : job.bottleneck) : '');
+        return '<div class="experiment-live-job"><strong>' + esc(job.policy) + ' r' + esc(job.runIndex) + ' · ' + esc(job.status) + '</strong><span>' + esc(detail) + '</span></div>';
+      }).join('');
+      return '<article class="experiment-live-arm"><span class="cohort-eyebrow">' + esc(arm.id) + '</span><h3>' + esc(arm.label || arm.id) + '</h3><p>' + esc(arm.description || config || 'Declared experiment arm') + '</p><div class="experiment-live-arm-meta"><span class="status ' + esc(status(state)) + '">' + esc(status(state)) + '</span><strong>' + completed + '/' + (expected || '?') + ' trials</strong><span>' + Number(totals.active || 0) + ' active · ' + Number(totals.queued || 0) + ' queued · ' + Number(totals.failed || 0) + ' failed</span></div>' + bar(completed,expected) + '<div class="experiment-live-jobs">' + (jobRows || '<span class="muted">Waiting for the first trajectory.</span>') + '</div><div class="cohort-actions"><a href="' + esc((arm.path || arm.id).replace(/\\/$/,'') + '/run-state.json') + '">state json</a> <a href="' + esc((arm.path || arm.id).replace(/\\/$/,'') + '/') + '">artifacts</a></div></article>';
+    }
+    async function load() {
+      try {
+        var planResponse = await fetch('experiment-plan.json?ts=' + Date.now(), { cache:'no-store' });
+        if (!planResponse.ok) throw new Error('experiment plan ' + planResponse.status);
+        var plan = await planResponse.json();
+        var states = await Promise.all((plan.arms || []).map(async function (arm) {
+          try {
+            var response = await fetch((arm.path || arm.id).replace(/\\/$/,'') + '/run-state.json?ts=' + Date.now(), { cache:'no-store' });
+            return response.ok ? response.json() : null;
+          } catch (error) { return null; }
+        }));
+        var totalExpected = 0, totalCompleted = 0, running = 0, failed = 0, completedArms = 0;
+        states.forEach(function (state, index) {
+          var totals = state && state.totals || {};
+          totalExpected += Number(totals.jobs || plan.arms[index].expectedTrials || 0);
+          totalCompleted += Number(totals.completed || 0);
+          failed += Number(totals.failed || 0);
+          if (status(state) === 'running') running += 1;
+          if (status(state) === 'completed') completedArms += 1;
+        });
+        var allComplete = completedArms === (plan.arms || []).length;
+        var headline = allComplete ? 'Data collection complete; paired analysis is ready.' : 'Work in progress: no comparative verdict is reported until every arm completes.';
+        var study = plan.study || {};
+        var question = plan.researchQuestion || study.researchQuestion || '';
+        var factor = plan.factor || {};
+        var factorRows = Object.entries(factor).filter(function (entry) { return entry[0] !== 'name'; }).map(function (entry) { return '<div><dt>' + esc(entry[0]) + '</dt><dd>' + esc(entry[1]) + '</dd></div>'; }).join('');
+        body.innerHTML = '<section class="cohort-card primary"><div class="cohort-card-head"><div><span class="cohort-eyebrow">' + esc(plan.id || '${escapeHtml(id)}') + '</span><h2>' + esc(headline) + '</h2></div><span class="status ' + (allComplete ? 'completed' : running ? 'running' : 'pending') + '">' + (allComplete ? 'completed' : running ? 'running' : 'pending') + '</span></div><div class="evaluation-progress"><div class="evaluation-progress-track">' + bar(totalCompleted,totalExpected) + '<strong>' + totalCompleted + '/' + (totalExpected || '?') + ' trials finished</strong></div><div class="evaluation-progress-meta"><span>' + completedArms + '/' + (plan.arms || []).length + ' arms complete</span><span>' + failed + ' technical failures</span><span>updated ' + esc(new Date().toLocaleString()) + '</span></div><p class="evaluation-progress-note">This page refreshes live run-state files. Progress is operational evidence only; it does not establish the treatment effect.</p></div><section class="study-panel"><span class="cohort-eyebrow">Declared design</span><h4>Research question</h4><p>' + esc(question) + '</p><dl><div><dt>Primary contrast</dt><dd>' + esc(plan.primaryContrast || study.primaryContrast || '') + '</dd></div><div><dt>Decision rule</dt><dd>' + esc(plan.decisionRule || study.decisionRule || '') + '</dd></div><div><dt>Factor</dt><dd>' + esc(factor.name || '') + '</dd></div>' + factorRows + '</dl></section><div class="experiment-live-arms">' + (plan.arms || []).map(function (arm,index) { return armHtml(arm,states[index]); }).join('') + '</div></section>';
+      } catch (error) {
+        body.innerHTML = '<section class="cohort-card primary"><h2>Placeholder unavailable</h2><p>' + esc(error.message || error) + '</p></section>';
+      }
+      window.setTimeout(load, 15000);
+    }
+    load();
+  })();
+  </script>
+</body>
+</html>
+`;
+}
+
+function writeTutorStubExperimentPlaceholderShells(rootDir) {
+  for (const planPath of listTutorStubExperimentPlanFiles(rootDir)) {
+    const plan = readTutorStubExperimentPlan(planPath);
+    if (!plan) continue;
+    fs.writeFileSync(
+      path.join(path.dirname(planPath), 'index.html'),
+      renderTutorStubExperimentPlaceholderShell({ plan, planPath, rootDir }),
+    );
+  }
 }
 
 function writeReportIndexAssets(rootDir) {
@@ -9237,9 +9670,15 @@ function writeReportIndex({ rootDir = indexRootDir(), quiet = false, updateShell
     .sort((a, b) => b.updatedMs - a.updatedMs || a.runName.localeCompare(b.runName));
   const generatedAt = new Date().toISOString();
   if (updateAssets) writeReportIndexAssets(rootDir);
+  writeTutorStubExperimentPlaceholderShells(rootDir);
   const dataModel = indexDataModel({ rows, activeRuns, rootDir, generatedAt });
   writeJsonAtomic(path.join(rootDir, 'index-data.json'), dataModel);
   writeJsonAtomic(path.join(rootDir, 'index-research-data.json'), dataModel);
+  writeJsonAtomic(path.join(rootDir, 'index-experiment-data.json'), {
+    schema: 'machinespirits.tutor-stub.experiment-index-data.v1',
+    generatedAt,
+    cohorts: dataModel.cohorts.filter((cohort) => cohort.kind === 'experiment_placeholder'),
+  });
   const indexPath = path.join(rootDir, 'index.html');
   const dynamicIndexPath = path.join(rootDir, 'index-dynamic.html');
   const dynamicShell = renderReportIndexShell({ rootDir, generatedAt });

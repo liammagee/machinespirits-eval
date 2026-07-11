@@ -277,7 +277,7 @@ test('tutor-stub report index nests profiles under evaluations and preserves rep
   assert.match(client, /function renderEvaluationProgress\(cohort\)/);
   assert.match(client, /function statusExplainer\(status\)/);
   assert.match(client, /trials finished \(/);
-  assert.match(client, /profiles reported/);
+  assert.match(client, /unitLabel/);
   assert.match(client, /repair pass/);
   assert.match(client, /Interim read: trials are still running/);
   assert.match(client, /How to read these numbers/);
@@ -313,6 +313,72 @@ test('tutor-stub report index nests profiles under evaluations and preserves rep
     cwd: ROOT,
     encoding: 'utf8',
   });
+});
+
+test('paired tutor-stub experiments get a live placeholder without an interim verdict', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-experiment-placeholder-'));
+  const experimentRoot = path.join(root, 'dag-dropout-paired-smoke');
+  const controlDir = path.join(experimentRoot, 'control');
+  const treatmentDir = path.join(experimentRoot, 'dropout-015');
+  fs.mkdirSync(controlDir, { recursive: true });
+  fs.mkdirSync(treatmentDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(experimentRoot, 'experiment-plan.json'),
+    `${JSON.stringify({
+      schema: 'machinespirits.tutor-stub.experiment-plan.v1',
+      id: 'dag-dropout-paired-smoke',
+      title: 'DAG Dropout Paired Smoke',
+      studyId: 'dag-dropout',
+      researchQuestion: 'Does premise dropout change recovery behavior?',
+      primaryContrast: '15% dropout versus no dropout',
+      decisionRule: 'Wait for every arm before interpreting the contrast.',
+      baselinePolicy: 'bland',
+      factor: { name: 'DAG premise dropout', control: '0%', treatment: '15%' },
+      measures: ['closure', 'coverage', 'turn cost', 'premise re-adoption'],
+      sharedConfig: { policies: ['bland', 'continuous_dynamical_system'], model: 'codex.gpt-5.5' },
+      arms: [
+        { id: 'control', label: 'No dropout', path: 'control', expectedTrials: 2 },
+        { id: 'dropout-015', label: '15% dropout', path: 'dropout-015', expectedTrials: 2 },
+      ],
+    }, null, 2)}\n`,
+  );
+  writeRunState(controlDir, 'diligent', new Date().toISOString());
+  writeRunState(treatmentDir, 'diligent', new Date().toISOString());
+
+  execFileSync(process.execPath, ['scripts/run-tutor-stub-auto-eval.js', '--index', '--index-root', root], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+
+  const data = JSON.parse(fs.readFileSync(path.join(root, 'index-data.json'), 'utf8'));
+  const experimentData = JSON.parse(fs.readFileSync(path.join(root, 'index-experiment-data.json'), 'utf8'));
+  const cohort = data.cohorts.find((item) => item.id === 'dag-dropout-paired-smoke');
+  assert.ok(cohort);
+  assert.equal(cohort.kind, 'experiment_placeholder');
+  assert.equal(cohort.status, 'running');
+  assert.equal(cohort.unitLabel, 'arm');
+  assert.equal(cohort.progress.trialsCompleted, 2);
+  assert.equal(cohort.progress.trialsExpected, 4);
+  assert.equal(cohort.childReports.length, 2);
+  assert.deepEqual(cohort.childReports.map((arm) => arm.armId), ['control', 'dropout-015']);
+  assert.equal(cohort.adaptation.verdict, 'pending');
+  assert.match(cohort.adaptation.headline, /Work in progress/);
+  assert.equal(cohort.experiment.analysisStatus, 'waiting_for_all_arms');
+  assert.equal(experimentData.schema, 'machinespirits.tutor-stub.experiment-index-data.v1');
+  assert.deepEqual(experimentData.cohorts.map((item) => item.id), ['dag-dropout-paired-smoke']);
+
+  const client = fs.readFileSync(path.join(root, 'assets', 'tutor-stub-index.js'), 'utf8');
+  const placeholder = fs.readFileSync(path.join(experimentRoot, 'index.html'), 'utf8');
+  assert.match(client, /renderExperimentPlaceholder/);
+  assert.match(client, /mergeExperimentData/);
+  assert.match(client, /refreshExperimentProgress/);
+  assert.match(client, /index-experiment-data\.json/);
+  assert.match(client, /Declared paired design/);
+  assert.match(client, /no interim verdict/);
+  assert.match(placeholder, /live placeholder/i);
+  assert.match(placeholder, /experiment-plan\.json/);
+  assert.match(placeholder, /no comparative verdict is reported until every arm completes/i);
+  assert.match(placeholder, /\?evaluation=dag-dropout-paired-smoke/);
 });
 
 test('individual tutor-stub reports expose progressive summaries and accessible replay tabs', () => {
