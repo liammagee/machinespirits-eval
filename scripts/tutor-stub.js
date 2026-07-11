@@ -720,6 +720,7 @@ const PRIVATE_TOKEN_STOPWORDS = new Set([
   'answer',
   'assay',
   'because',
+  'built',
   'before',
   'bench',
   'blank',
@@ -728,31 +729,53 @@ const PRIVATE_TOKEN_STOPWORDS = new Set([
   'cast',
   'coin',
   'coins',
+  'contrast',
+  'counts',
   'could',
+  'differs',
   'down',
+  'every',
+  'exactly',
   'evidence',
   'false',
+  'finish',
+  'finished',
   'hand',
+  'lesson',
+  'lessons',
   'line',
   'make',
+  'measure',
+  'measures',
   'mark',
   'name',
+  'nothing',
   'only',
+  'progress',
   'public',
+  'record',
+  'results',
   'rule',
   'says',
+  'scored',
   'shilling',
   'shillings',
   'should',
+  'shown',
   'single',
   'struck',
   'that',
   'their',
+  'thing',
+  'things',
   'them',
   'these',
   'this',
   'trial',
   'turn',
+  'twice',
+  'verdict',
+  'warrant',
   'what',
   'when',
   'where',
@@ -928,7 +951,7 @@ function deterministicLeakFallback({ learnerText }) {
   if (asksForChoice) {
     return [
       "I can't put a name or private conclusion in the trial-book yet.",
-      'State the next warranted public claim in one line: what mark on the coin, metal, tool, hand, or record licenses it?',
+      'State the next warranted public claim in one line: what mark in the evidence before us licenses it?',
     ].join(' ');
   }
   return [
@@ -949,7 +972,7 @@ function buildTutorOpening(state) {
   if (world) {
     return [
       `Before we write a name in the trial-book, keep the public question in view: ${world.question}`,
-      'Start with one mark the evidence can actually bear: what public claim about the coin follows from the mark?',
+      'Start with one mark the evidence can actually bear: what public claim follows from it?',
     ].join(' ');
   }
   return [
@@ -10966,7 +10989,11 @@ async function main() {
       stress: { suite: 'stress', label: 'specialist failure modes' },
       all: { suite: 'audit', label: 'complete v3 registry' },
       audit: { suite: 'audit', label: 'complete v3 registry' },
-    }[String(listScope || 'core').trim().toLowerCase()];
+    }[
+      String(listScope || 'core')
+        .trim()
+        .toLowerCase()
+    ];
     if (!scopeConfig) return false;
     const profileIds = learnerProfileSuiteIds(scopeConfig.suite);
     console.log(`${C.cyan}learner profiles > ${scopeConfig.label} (${profileIds.length})${C.reset}`);
@@ -11034,7 +11061,9 @@ async function main() {
       nextProfileId = requested.toLowerCase().replace(/-/gu, '_');
       if (!learnerProfileIds().includes(nextProfileId)) {
         console.log(`${C.red}unknown learner profile:${C.reset} ${requested}`);
-        console.log(`${C.dim}  use /profile list, /profile list stress, or /profile list all to see valid ids${C.reset}\n`);
+        console.log(
+          `${C.dim}  use /profile list, /profile list stress, or /profile list all to see valid ids${C.reset}\n`,
+        );
         return;
       }
       nextProfile = learnerProfilePrompt(nextProfileId);

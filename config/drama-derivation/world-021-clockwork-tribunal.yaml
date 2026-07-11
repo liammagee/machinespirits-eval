@@ -1,0 +1,295 @@
+# WORLD-021 — the REFLEXIVE world (2026-07-11): the proof DAG teaches the
+# research program's own epistemology. The concealed conclusion is the
+# methodological thesis this repo earned across the preconscious arc: an
+# adaptation claim is EARNED only by a two-pillar demonstration — a clean
+# instrument AND an observable contrast — sealed before results and replicated
+# elsewhere. Teaching this world walks a learner through exactly what we had
+# to learn to pursue the aims at all.
+#
+# Each premise is a costumed version of a real finding, with its provenance:
+#
+#   p_channel  -> the register-diversity confound: a score containing a
+#                 policy-controlled term manufactures wins; policy comparisons
+#                 must run on channels the policy does not control
+#                 (outcome-only QA score, 2026-07-10 review blocker 2).
+#   p_sham     -> the degenerate placebo: field_report_only was byte-identical
+#                 to baseline; a control must differ by exactly the
+#                 instrumentation (--field-report-context fix, blocker 1).
+#   p_gate     -> the near-clone learners: profiles at cosine 0.986 cannot
+#                 discriminate policies; the population must pass a behavioral
+#                 discrimination gate (v3 contracts, pooled 0.565 on Sonnet 5).
+#   p_cap      -> the outcome ceiling: when every arm succeeds, no policy
+#                 difference can show; the task must be able to fail
+#                 (headroom suite, binding safety-turns 40).
+#   p_bell     -> the until-grounded catch-up: endpoint measurement hid the
+#                 interaction that fixed-horizon reading (coverage@t16)
+#                 revealed (trajectory analyzer, 2026-07-10).
+#   p_seal     -> frozen provenance: the terra model-forwarding bug and the
+#                 overwritten qa-plan; terms are sealed before results or the
+#                 claim is unanchored (plan-freeze guards, 8f6f6baa).
+#   p_second   -> cross-stack replication: terra's best arm (dynamic) was
+#                 Sonnet 5's worst; one stack's effect may be its costume
+#                 (Sonnet-5 confirmatory matrix, 2026-07-11).
+#
+# The MIRROR is the diversity confound personified: the maker's ledger shows
+# the automaton spoke in many voices, and the town reads variety as proof of
+# adaptation. R6 would attribute the good name to the ledger — but only with
+# strokesBoundToLedger(makersLedger), which is never released, because it is
+# false: the ledger counts the tutor's own flourishes. Varied conduct is a
+# performer's virtue, not a teacher's proof.
+#
+# DESIGN NOTE (v2, after the first live smoke): a reflexive world's hazard is
+# that its premise CONTENT is methodological language — exactly the vocabulary
+# a tutor must use in ordinary tutoring talk — so the unreleased-premise leak
+# guard fires constantly and the tutor collapses into fallback (5/8 canned
+# turns in the first smoke). The fix follows the repo's own Oedipal-particular
+# lesson: meaning lives in PREDICATES (excluded from the fact-token audit),
+# fact ARGUMENTS are setting-public names (hallTrial, threeApprentices,
+# makersLedger) or rare particulars (counterfeitTwin, Otterby), and each
+# revelation wears a concrete costume (the noon bell, the wax seal).
+#
+# Shape: marrick's validated AND-join geometry. Two independent sub-chains
+# (alpha: the instrument is clean; beta: the effect is observable) converge
+# through the demonstration join, then seal + replication close S.
+# S first entailed at turn 20 (p_second); t_min 19.
+#
+#   alpha (instrument):
+#     p_channel + p_sham            --R1--> cleanInstrument(hallTrial)
+#   beta (observability):
+#     p_gate + p_cap                --R2--> discriminatingTrial(hallTrial)
+#     discriminatingTrial + p_bell  --R3--> observableContrast(hallTrial)
+#   join:
+#     cleanInstrument + observableContrast --R4--> demonstrationStands(hallTrial)
+#     demonstrationStands + p_seal + p_second --R5--> earnedBy(goodName, wardensQuittance)
+#   mirror (never completes):
+#     p_ledger --R0--> variedConduct(clockworkTutor)
+#     variedConduct + strokesBoundToLedger(makersLedger) [NEVER RELEASED] --R6--> earnedBy(goodName, makersLedger)
+
+id: world_021_clockwork_tribunal
+title: The Tribunal of the Clockwork Tutor
+discipline: "Guild inquiry (a trial of a teaching engine)"
+
+question: "By what was the clockwork tutor's good name for true adaptation earned?"
+question_pattern: [earnedBy, goodName, "?x"]
+
+setting: >-
+  The Guild of Instrument-Makers has convened a tribunal in the long hall. A
+  maker has built a clockwork tutor — an automaton of brass and patience that
+  is said to truly adapt: to teach each apprentice as that apprentice needs,
+  not as the machine prefers. Two things lie on the table. The first is the
+  maker's ledger, and the town has settled its verdict on it before the
+  inquiry opens: the ledger shows the automaton speaking in a dozen voices —
+  warm, precise, brisk, even sharp — and surely a machine of many voices is a
+  machine that adapts. The second is the hall trial: the tribunal has
+  summoned three apprentices and will stage its own trial of lessons under
+  the hall's bells. You are the recorder's apprentice, sent to keep the
+  minute-book. The tribunal trusts demonstrations, not testimonials, and
+  nothing else.
+
+learner_voice: >-
+  The recorder's apprentice: neat-handed with the minute-book, delighted by
+  the automaton's many voices, eager — too eager — to enter the maker's claim
+  as proven. Respectful of the tribunal's presiding examiner, hungry to close
+  the record, and learning, exhibit by exhibit, that what a machine performs
+  and what a machine accomplishes are entered on different pages.
+
+secret:
+  fact: [earnedBy, goodName, wardensQuittance]
+  surface: >-
+    The clockwork tutor's good name for true adaptation was earned by the
+    wardens' quittance — the demonstration of record the hall trial became:
+    a trial whose measure counted only
+    the apprentices' new strokes, whose three apprentices could genuinely
+    fail and fail apart, whose progress was read at the noon bell, whose
+    terms were waxed under the Guild seal before the first lesson, and
+    whose contrast held again in the Otterby workshop.
+
+mirror:
+  fact: [earnedBy, goodName, makersLedger]
+
+# Public law of the world: the learner KNOWS the rules; it lacks the facts.
+rules:
+  - id: R0_voices
+    if:
+      - [showsManyVoices, makersLedger]
+    then:
+      - [variedConduct, clockworkTutor]
+  - id: R1_instrument
+    if:
+      - [countsOnlyApprenticeStrokes, hallTrial]
+      - [differsOnlyByDial, counterfeitTwin]
+    then:
+      - [cleanInstrument, hallTrial]
+  - id: R2_discriminate
+    if:
+      - [provenToFailApart, threeApprentices]
+      - [boundByClosingBell, hallTrial]
+    then:
+      - [discriminatingTrial, hallTrial]
+  - id: R3_observe
+    if:
+      - [discriminatingTrial, hallTrial]
+      - [noonBellReadsProgress, hallTrial]
+    then:
+      - [observableContrast, hallTrial]
+  - id: R4_demonstration
+    if:
+      - [cleanInstrument, hallTrial]
+      - [observableContrast, hallTrial]
+    then:
+      - [demonstrationStands, hallTrial]
+  - id: R5_earned
+    if:
+      - [demonstrationStands, hallTrial]
+      - [waxSealedBeforeFirstLesson, hallTrial]
+      - [contrastHeldAtOtterby, hallTrial]
+    then:
+      - [earnedBy, goodName, wardensQuittance]
+  # The town's inference, stated as law so its missing premise is public: a
+  # ledger of varied conduct earns the good name only if its voices are bound
+  # to the apprentices' own strokes. That binding is never released — the
+  # ledger counts the tutor's flourishes, not the apprentice's work.
+  - id: R6_ledger
+    if:
+      - [variedConduct, clockworkTutor]
+      - [strokesBoundToLedger, makersLedger]
+    then:
+      - [earnedBy, goodName, makersLedger]
+
+# Contingent premises — exist only inside the drama until released.
+premises:
+  - id: p_ledger # mirror fuel: makes the maker's ledger a live candidate
+    fact: [showsManyVoices, makersLedger]
+    surface: >-
+      The maker's ledger records the automaton speaking in a dozen registers
+      across the season — warm, precise, brisk, sharp — a different voice for
+      a different hour.
+  - id: p_channel
+    fact: [countsOnlyApprenticeStrokes, hallTrial]
+    surface: >-
+      The hall trial counts one thing only: the new strokes each apprentice
+      can show at the bench. Nothing the automaton does is scored — no voice,
+      no flourish, no variety — only the apprentice's own new work.
+  - id: p_gate
+    fact: [provenToFailApart, threeApprentices]
+    surface: >-
+      At the Michaelmas examination the three apprentices were tested apart
+      and shown to fail differently: one leaps from evidence to verdict with
+      no warrant between, one misremembers what the record established, one
+      falls silent under a hard word. Their failures are told apart on the
+      page itself.
+  - id: p_cap
+    fact: [boundByClosingBell, hallTrial]
+    surface: >-
+      Every trial lesson ends at the closing bell whether finished or not. No
+      apprentice is guaranteed to finish; a lesson can genuinely fail, and
+      some do.
+  - id: p_bell
+    fact: [noonBellReadsProgress, hallTrial]
+    surface: >-
+      Progress is read at the noon bell, in the middle of the lesson, not
+      only at the closing bell. What a slow lesson recovers by evening, the
+      noon bell has already recorded as slow.
+  - id: p_sham
+    fact: [differsOnlyByDial, counterfeitTwin]
+    surface: >-
+      The tribunal built a counterfeit twin of the automaton for comparison,
+      and built it twice: the first twin was the plain machine under another
+      nameplate and proved nothing. The second differs from the plain machine
+      by one part alone — the dial — so whatever divides the apprentices is
+      the dial's work and no other's.
+  - id: p_seal
+    fact: [waxSealedBeforeFirstLesson, hallTrial]
+    surface: >-
+      The terms of the hall trial — which apprentices, which lessons, which
+      bells, which measures — were waxed under the Guild seal before the
+      first lesson rang. Nothing was amended after results began to arrive.
+  - id: p_second
+    fact: [contrastHeldAtOtterby, hallTrial]
+    surface: >-
+      The Otterby workshop, with an automaton of a different maker, staged
+      the same waxed trial — and the contrast held there too. What held in
+      one hall alone might have been that hall's costume.
+
+# The learner's starting GROUNDED facts (public setup).
+background:
+  - [keeperOf, apprentice, minuteBook]
+
+incompatible:
+  - [[earnedBy, goodName, wardensQuittance], [earnedBy, goodName, makersLedger]]
+
+# One authored path through both sub-chains and the join.
+proof_paths:
+  - premises: [p_channel, p_sham, p_gate, p_cap, p_bell, p_seal, p_second]
+
+# The plot: releases follow the order the research arc itself learned these
+# lessons — the tempting claim first, then instrument, population, headroom,
+# horizon, placebo, provenance, and replication last.
+release_schedule:
+  - { turn: 2, premise: p_ledger, via: director }
+  - { turn: 4, premise: p_channel, via: tutor }
+  - { turn: 7, premise: p_gate, via: tutor }
+  - { turn: 9, premise: p_cap, via: director }
+  - { turn: 12, premise: p_bell, via: tutor }
+  - { turn: 15, premise: p_sham, via: tutor }
+  - { turn: 17, premise: p_seal, via: director }
+  - { turn: 20, premise: p_second, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Ledger of Many Voices
+      turns: [1, 6]
+      intent: >-
+        The maker's claim and the town's ready verdict: a machine of many
+        voices is a machine that adapts. Against the certainty, the first
+        hard exhibit — the hall trial counts only the apprentice's new
+        strokes, and the ledger counts only the automaton's performance. The
+        learner should leave Act I holding a verdict and a measure that does
+        not credit it, noticing that variety was scored by the party that
+        produced it.
+    - act: II
+      title: The Three Apprentices
+      turns: [7, 14]
+      intent: >-
+        The trial's design, piece by piece: apprentices proven at Michaelmas
+        to fail apart (a trial of identical apprentices tests nothing), the
+        closing bell that lets lessons fail (a trial everyone passes shows
+        nothing), the noon bell that reads progress before slow lessons catch
+        up. The learner should end Act II seeing that observability is
+        built, not assumed — and that the ledger has none of these.
+    - act: III
+      title: The Sealed Book
+      turns: [15, 24]
+      intent: >-
+        The join. The counterfeit twin that differs by exactly the dial, the
+        terms waxed before the first lesson, the Otterby workshop where the
+        contrast held again. Instrument and observation meet, and the good
+        name is earned by the demonstration — while the ledger still waits,
+        as it always will, for the one binding it cannot produce: its voices
+        tied to any apprentice's own strokes.
+
+slope:
+  t_min: 19 # anti-reveal: S must not be derivable before turn 19
+  aporia_window: 6 # anti-aporia: progress required within any 6-turn window
+
+turn_cap: 28
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: makersLedger # opens mis-bound to the mirror (the town's ready verdict)
+      mirror_pull: high # "eager — too eager — to enter the maker's claim as proven"
+    second_order:
+      from: examiner
+      as: right
+      authority: rational_legal # "the tribunal trusts demonstrations, not testimonials"
+    disposition:
+      overreach: high # apt to close the record before the demonstration stands
+      arc: softens # learning that performance and accomplishment are different pages
+  tutor:
+    stance: >-
+      The presiding examiner's clerk: patient with the apprentice's delight in
+      the many voices, relentless about the difference between what the
+      automaton performed and what the apprentices newly did.
