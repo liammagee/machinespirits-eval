@@ -10,7 +10,7 @@ import {
 describe('tutor-stub stage speech', () => {
   it('keeps learner speech inside the scene', () => {
     assert.equal(
-      cleanTutorStubStageSpeech("The tutor’s question is clear, but the learner’s answer is not."),
+      cleanTutorStubStageSpeech('The tutor’s question is clear, but the learner’s answer is not.'),
       'Your question is clear, but my answer is not.',
     );
     assert.equal(

@@ -5,7 +5,9 @@ function roundWeight(value) {
 }
 
 function isSafeContinuousAnchor(definition = {}) {
-  return definition.router_selectable === true && definition.simulated_only !== true && definition.valence !== 'negative';
+  return (
+    definition.router_selectable === true && definition.simulated_only !== true && definition.valence !== 'negative'
+  );
 }
 
 function normalizeVectorRows(rows) {
@@ -103,7 +105,9 @@ export function continuousEngagementStanceInstruction(blend, definitions = {}) {
   const rows = Array.isArray(blend?.rows) ? blend.rows : [];
   if (!rows.length) return '';
   const anchorLines = rows.slice(0, 3).map((row) => {
-    const contract = String(definitions[row.register]?.stance_contract || '').trim().replace(/\s+/gu, ' ');
+    const contract = String(definitions[row.register]?.stance_contract || '')
+      .trim()
+      .replace(/\s+/gu, ' ');
     return `- ${Math.round(Number(row.weight || 0) * 100)}% ${row.register}: ${contract || 'Use this anchor as subtle stance modulation.'}`;
   });
   return [

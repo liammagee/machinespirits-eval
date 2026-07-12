@@ -9,7 +9,10 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function plainTerminalText(value) {
-  return String(value || '').replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/gu, '');
+  // Build the ESC char dynamically so the ANSI-strip regex carries no
+  // control-character escape in a literal (no-control-regex).
+  const ansi = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'gu');
+  return String(value || '').replace(ansi, '');
 }
 
 test('one advanced learner turn can add several warranted DAG premises and changes the tutor stance', () => {

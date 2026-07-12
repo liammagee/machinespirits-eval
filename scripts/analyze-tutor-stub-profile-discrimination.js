@@ -239,21 +239,27 @@ function explicitRecollectionFrame(text) {
 }
 
 function snippet(value, max = 220) {
-  const text = String(value || '').replace(/\s+/gu, ' ').trim();
+  const text = String(value || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
   if (text.length <= max) return text;
   return `${text.slice(0, max - 1)}...`;
 }
 
 function safeSlug(value) {
-  return String(value || 'unknown')
-    .trim()
-    .replace(/[^a-zA-Z0-9._-]+/gu, '-')
-    .replace(/^-+|-+$/gu, '')
-    .slice(0, 120) || 'unknown';
+  return (
+    String(value || 'unknown')
+      .trim()
+      .replace(/[^a-zA-Z0-9._-]+/gu, '-')
+      .replace(/^-+|-+$/gu, '')
+      .slice(0, 120) || 'unknown'
+  );
 }
 
 function canonicalAffect(value) {
-  const affect = String(value || '').trim().toLowerCase();
+  const affect = String(value || '')
+    .trim()
+    .toLowerCase();
   if (!affect) return null;
   if (/resist|frustrat|pressur|defens|guarded|strain|overload|sharp|trust-sensitive/u.test(affect)) return 'resistant';
   if (/vulnerab|anxious|ashamed|exposed|hurt/u.test(affect)) return 'vulnerable';
@@ -404,9 +410,7 @@ function compactTrace(file, root, args) {
   const start = events.find((event) => event.type === 'run_start') || null;
   const metadata = start?.metadata || {};
   const turnEvents = events.filter((event) => event.type === 'turn_complete' && event.turnRecord);
-  const turns = turnEvents
-    .map((event) => event.turnRecord)
-    .sort((a, b) => Number(a.turn || 0) - Number(b.turn || 0));
+  const turns = turnEvents.map((event) => event.turnRecord).sort((a, b) => Number(a.turn || 0) - Number(b.turn || 0));
   const firstTurn = turns[0] || null;
   const finalTurn = turns.at(-1) || null;
   const profile = inferProfile(file, root, metadata);
@@ -454,7 +458,7 @@ function compactTrace(file, root, args) {
       assertedSecret: Boolean(finalDag.assertedSecret),
       groundedClosure: Boolean(
         finalDag.bottleneck === 'grounded_asserted_secret' ||
-          (finalDag.finalSecretEntailed === true && finalDag.assertedSecret === true),
+        (finalDag.finalSecretEntailed === true && finalDag.assertedSecret === true),
       ),
     },
     turns: compactTurns,
@@ -711,10 +715,7 @@ function summarizeObservability(profile, traces) {
       matchingTurns: matching.length,
       observedRate: round(turns.length ? matching.length / turns.length : null),
       firstMatchTurn: matching.length ? Math.min(...matching.map((turn) => Number(turn.turn || 0))) : null,
-      deadlinePass:
-        deadline == null
-          ? true
-          : matching.some((turn) => Number(turn.turn || 0) <= deadline),
+      deadlinePass: deadline == null ? true : matching.some((turn) => Number(turn.turn || 0) <= deadline),
     };
   });
   const eligibleTurns = eligibleTraces.flatMap((trace) =>
@@ -722,13 +723,14 @@ function summarizeObservability(profile, traces) {
   );
   const matchingTurns = eligibleTurns.filter((turn) => observabilityMatches(turn, observability));
   const deadline = observability.mustShowByTurn;
-  const runsMeetingDeadline = deadline == null
-    ? eligibleTraces.length
-    : eligibleTraces.filter((trace) =>
-        (trace.turns || []).filter((turn) => turnIsObservableOpportunity(turn, observability)).some(
-          (turn) => Number(turn.turn || 0) <= deadline && observabilityMatches(turn, observability),
-        ),
-      ).length;
+  const runsMeetingDeadline =
+    deadline == null
+      ? eligibleTraces.length
+      : eligibleTraces.filter((trace) =>
+          (trace.turns || [])
+            .filter((turn) => turnIsObservableOpportunity(turn, observability))
+            .some((turn) => Number(turn.turn || 0) <= deadline && observabilityMatches(turn, observability)),
+        ).length;
   const observedRate = eligibleTurns.length ? matchingTurns.length / eligibleTurns.length : null;
   const deadlinePass = eligibleTraces.length > 0 && runsMeetingDeadline === eligibleTraces.length;
   const recurrencePass = observedRate != null && observedRate >= Number(observability.minEligibleRate || 0);
@@ -862,8 +864,7 @@ function buildReport(compactedTraces, args, compactedWrites) {
     : null;
 
   const averagePass = averagePairwiseCosine != null && averagePairwiseCosine <= args.targetAverageCosine;
-  const controlPass =
-    maxSimilarityToControl == null ? null : maxSimilarityToControl <= args.targetMaxToControl;
+  const controlPass = maxSimilarityToControl == null ? null : maxSimilarityToControl <= args.targetMaxToControl;
   const pooledPass = Boolean(averagePass && (controlPass === true || controlPass == null));
 
   const conditionedProfileGates = profileSummaries
@@ -1003,9 +1004,7 @@ function formatMarkdown(report) {
   );
   lines.push(`- Matched-policy macro average cosine: ${report.summary.macroAveragePolicyPairwiseCosine ?? 'n/a'}`);
   lines.push(`- Matched-policy max similarity to control: ${report.summary.maxPolicySimilarityToControl ?? 'n/a'}`);
-  lines.push(
-    `- Primary gate: ${report.gate.pass ? 'pass' : 'fail'} (${report.gate.mode})`,
-  );
+  lines.push(`- Primary gate: ${report.gate.pass ? 'pass' : 'fail'} (${report.gate.mode})`);
   lines.push(
     `- Pooled diagnostic: ${report.gate.pooled.pass ? 'pass' : 'fail'} (average <= ${report.gate.targetAverageCosine}; max-to-control <= ${report.gate.targetMaxToControl})`,
   );
@@ -1013,7 +1012,9 @@ function formatMarkdown(report) {
 
   lines.push('## Profiles');
   lines.push('');
-  lines.push('| Profile | Traces | Turns | Final coverage | Missing | Conceptual | Epistemic | Signature targets | Failure rate | Failure observed by deadline | Top evidence | Top stance | Top agency |');
+  lines.push(
+    '| Profile | Traces | Turns | Final coverage | Missing | Conceptual | Epistemic | Signature targets | Failure rate | Failure observed by deadline | Top evidence | Top stance | Top agency |',
+  );
   lines.push('| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- | --- |');
   for (const profile of report.profiles) {
     lines.push(
@@ -1025,7 +1026,9 @@ function formatMarkdown(report) {
   lines.push('## Contract-Conditioned Gates');
   lines.push('');
   if (report.gate.conditioned.profiles.length) {
-    lines.push('| Profile | Probe policies | Max cosine to control | Target | Signature pass rate | Failure recurrence | Result |');
+    lines.push(
+      '| Profile | Probe policies | Max cosine to control | Target | Signature pass rate | Failure recurrence | Result |',
+    );
     lines.push('| --- | --- | ---: | ---: | ---: | --- | --- |');
     for (const profile of report.gate.conditioned.profiles) {
       const summary = report.profiles.find((row) => row.profile === profile.profile);
@@ -1079,10 +1082,7 @@ function formatMarkdown(report) {
 }
 
 function collectInputs(args) {
-  const traceFiles = [
-    ...args.traces,
-    ...walkFiles(args.traceRoot, (file) => file.endsWith('.jsonl')),
-  ];
+  const traceFiles = [...args.traces, ...walkFiles(args.traceRoot, (file) => file.endsWith('.jsonl'))];
   const compactedFiles = [
     ...args.compacted,
     ...walkFiles(args.compactedRoot, (file) => file.endsWith('.json') && file.includes('compact-trace')),

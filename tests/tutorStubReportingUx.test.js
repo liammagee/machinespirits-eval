@@ -324,23 +324,27 @@ test('paired tutor-stub experiments get a live placeholder without an interim ve
   fs.mkdirSync(treatmentDir, { recursive: true });
   fs.writeFileSync(
     path.join(experimentRoot, 'experiment-plan.json'),
-    `${JSON.stringify({
-      schema: 'machinespirits.tutor-stub.experiment-plan.v1',
-      id: 'dag-dropout-paired-smoke',
-      title: 'DAG Dropout Paired Smoke',
-      studyId: 'dag-dropout',
-      researchQuestion: 'Does premise dropout change recovery behavior?',
-      primaryContrast: '15% dropout versus no dropout',
-      decisionRule: 'Wait for every arm before interpreting the contrast.',
-      baselinePolicy: 'bland',
-      factor: { name: 'DAG premise dropout', control: '0%', treatment: '15%' },
-      measures: ['closure', 'coverage', 'turn cost', 'premise re-adoption'],
-      sharedConfig: { policies: ['bland', 'continuous_dynamical_system'], model: 'codex.gpt-5.5' },
-      arms: [
-        { id: 'control', label: 'No dropout', path: 'control', expectedTrials: 2 },
-        { id: 'dropout-015', label: '15% dropout', path: 'dropout-015', expectedTrials: 2 },
-      ],
-    }, null, 2)}\n`,
+    `${JSON.stringify(
+      {
+        schema: 'machinespirits.tutor-stub.experiment-plan.v1',
+        id: 'dag-dropout-paired-smoke',
+        title: 'DAG Dropout Paired Smoke',
+        studyId: 'dag-dropout',
+        researchQuestion: 'Does premise dropout change recovery behavior?',
+        primaryContrast: '15% dropout versus no dropout',
+        decisionRule: 'Wait for every arm before interpreting the contrast.',
+        baselinePolicy: 'bland',
+        factor: { name: 'DAG premise dropout', control: '0%', treatment: '15%' },
+        measures: ['closure', 'coverage', 'turn cost', 'premise re-adoption'],
+        sharedConfig: { policies: ['bland', 'continuous_dynamical_system'], model: 'codex.gpt-5.5' },
+        arms: [
+          { id: 'control', label: 'No dropout', path: 'control', expectedTrials: 2 },
+          { id: 'dropout-015', label: '15% dropout', path: 'dropout-015', expectedTrials: 2 },
+        ],
+      },
+      null,
+      2,
+    )}\n`,
   );
   writeRunState(controlDir, 'diligent', new Date().toISOString());
   writeRunState(treatmentDir, 'diligent', new Date().toISOString());
@@ -360,12 +364,18 @@ test('paired tutor-stub experiments get a live placeholder without an interim ve
   assert.equal(cohort.progress.trialsCompleted, 2);
   assert.equal(cohort.progress.trialsExpected, 4);
   assert.equal(cohort.childReports.length, 2);
-  assert.deepEqual(cohort.childReports.map((arm) => arm.armId), ['control', 'dropout-015']);
+  assert.deepEqual(
+    cohort.childReports.map((arm) => arm.armId),
+    ['control', 'dropout-015'],
+  );
   assert.equal(cohort.adaptation.verdict, 'pending');
   assert.match(cohort.adaptation.headline, /Work in progress/);
   assert.equal(cohort.experiment.analysisStatus, 'waiting_for_all_arms');
   assert.equal(experimentData.schema, 'machinespirits.tutor-stub.experiment-index-data.v1');
-  assert.deepEqual(experimentData.cohorts.map((item) => item.id), ['dag-dropout-paired-smoke']);
+  assert.deepEqual(
+    experimentData.cohorts.map((item) => item.id),
+    ['dag-dropout-paired-smoke'],
+  );
 
   const client = fs.readFileSync(path.join(root, 'assets', 'tutor-stub-index.js'), 'utf8');
   const placeholder = fs.readFileSync(path.join(experimentRoot, 'index.html'), 'utf8');
@@ -419,34 +429,39 @@ test('report regeneration persists DAG dropout metrics from JSONL-safe nested tu
   fs.writeFileSync(tracePath, `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
   fs.writeFileSync(
     summaryPath,
-    `${JSON.stringify({
-      schema: 'machinespirits.tutor-stub.auto-eval.v1',
-      startedAt: '2026-07-11T00:00:00.000Z',
-      completedAt: '2026-07-11T00:01:00.000Z',
-      config: {
-        traceDir: root,
-        policies: ['continuous_dynamical_system'],
-        autoLearnerProfileId: 'diligent',
-        world: 'world_005_marrick',
-        dagMode: 'defeasible_human_scaffold',
+    `${JSON.stringify(
+      {
+        schema: 'machinespirits.tutor-stub.auto-eval.v1',
+        startedAt: '2026-07-11T00:00:00.000Z',
+        completedAt: '2026-07-11T00:01:00.000Z',
+        config: {
+          traceDir: root,
+          policies: ['continuous_dynamical_system'],
+          autoLearnerProfileId: 'diligent',
+          world: 'world_005_marrick',
+          dagMode: 'defeasible_human_scaffold',
+        },
+        results: [
+          {
+            key: 'continuous-r1',
+            policy: 'continuous_dynamical_system',
+            runIndex: 1,
+            status: 'ok',
+            traces: [tracePath],
+            traceSummaries: [{ dagFactDropout: null }],
+          },
+        ],
+        report: { json: summaryPath, html: summaryPath.replace(/\.json$/u, '.html') },
       },
-      results: [{
-        key: 'continuous-r1',
-        policy: 'continuous_dynamical_system',
-        runIndex: 1,
-        status: 'ok',
-        traces: [tracePath],
-        traceSummaries: [{ dagFactDropout: null }],
-      }],
-      report: { json: summaryPath, html: summaryPath.replace(/\.json$/u, '.html') },
-    }, null, 2)}\n`,
+      null,
+      2,
+    )}\n`,
   );
 
-  execFileSync(
-    process.execPath,
-    ['scripts/run-tutor-stub-auto-eval.js', '--report-from', summaryPath, '--no-ledger'],
-    { cwd: ROOT, encoding: 'utf8' },
-  );
+  execFileSync(process.execPath, ['scripts/run-tutor-stub-auto-eval.js', '--report-from', summaryPath, '--no-ledger'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
 
   const repaired = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
   assert.deepEqual(repaired.rows[0].dagFactDropout, {

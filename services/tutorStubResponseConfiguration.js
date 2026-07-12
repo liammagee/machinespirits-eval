@@ -16,7 +16,9 @@ const WORLD_STOP_WORDS = new Set(
 );
 
 function oneLine(value) {
-  return String(value || '').replace(/\s+/gu, ' ').trim();
+  return String(value || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
 }
 
 function numericScore(score) {
@@ -73,7 +75,8 @@ export function selectTutorStubActionFamily({ classification, tutorLearnerDag, c
     reason = 'The public proof and learner assertion are complete, so the next action is closure.';
   } else if (Number(memoryReliability.activeDroppedCount || 0) > 0) {
     actionFamily = 'reanchor_public_evidence';
-    reason = 'Previously accumulated public evidence has slipped from the active record, so restage one clue without making memory itself the test.';
+    reason =
+      'Previously accumulated public evidence has slipped from the active record, so restage one clue without making memory itself the test.';
   } else if (requestType === 'vulnerability_or_moral_exposure') {
     actionFamily = 'receive_vulnerability';
     reason = 'Affective or moral exposure requires an agency-preserving reception before evidence pressure.';
@@ -86,7 +89,10 @@ export function selectTutorStubActionFamily({ classification, tutorLearnerDag, c
   } else if (learnerAdvance?.accelerated) {
     actionFamily = 'clarify_distinction';
     reason = `The learner supplied ${learnerAdvance.supportedMoveCount} warranted proof moves, so credit the whole chain and test only its next unresolved edge.`;
-  } else if (requestType === 'stepwise_support_request' || /release_or_pacing_gap|inference_gap/iu.test(assessment.bottleneck)) {
+  } else if (
+    requestType === 'stepwise_support_request' ||
+    /release_or_pacing_gap|inference_gap/iu.test(assessment.bottleneck)
+  ) {
     actionFamily = 'stage_next_step';
     reason = 'The current need is the next public step, independently of the stance used to stage it.';
   } else if (requestType === 'plain_language_request' || assessment.bottleneck === 'learner_integration_gap') {
@@ -197,7 +203,10 @@ export function selectTutorStubSceneImmersion({ classification, comprehension, w
   const requestType = requestTypeFrom(classification);
   const features = comprehensionFeatures(comprehension);
   if (!world) return { sceneImmersion: 'minimal', reason: 'No dramatic world is active.' };
-  if (Number(features.pressure || 0) > 0 || ['plain_language_request', 'plain_simplification_followup'].includes(requestType)) {
+  if (
+    Number(features.pressure || 0) > 0 ||
+    ['plain_language_request', 'plain_simplification_followup'].includes(requestType)
+  ) {
     return {
       sceneImmersion: 'grounded',
       reason: 'Keep one concrete scene anchor while making the wording repair more important than flourish.',
@@ -320,7 +329,9 @@ function responseWords(text) {
 }
 
 function normalizedTerm(value) {
-  return oneLine(value).toLowerCase().replace(/[^\p{L}\p{N}' -]/gu, '');
+  return oneLine(value)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}' -]/gu, '');
 }
 
 function termIsGlossed(text, term) {
@@ -334,12 +345,23 @@ function termIsGlossed(text, term) {
 
 function worldLexicon(world) {
   if (!world) return [];
-  const strings = [world.title, world.setting, world.question, world.publicQuestion, world.opening, world.openingSituation];
+  const strings = [
+    world.title,
+    world.setting,
+    world.question,
+    world.publicQuestion,
+    world.opening,
+    world.openingSituation,
+  ];
   if (world.premiseById instanceof Map) {
-    for (const premise of world.premiseById.values()) strings.push(premise?.surface, JSON.stringify(premise?.fact || ''));
+    for (const premise of world.premiseById.values())
+      strings.push(premise?.surface, JSON.stringify(premise?.fact || ''));
   }
   const counts = new Map();
-  for (const word of strings.join(' ').toLowerCase().match(/[\p{L}][\p{L}'-]{3,}/gu) || []) {
+  for (const word of strings
+    .join(' ')
+    .toLowerCase()
+    .match(/[\p{L}][\p{L}'-]{3,}/gu) || []) {
     if (WORLD_STOP_WORDS.has(word)) continue;
     counts.set(word, (counts.get(word) || 0) + 1);
   }
@@ -357,10 +379,12 @@ function stanceVisible(stance, text, metrics) {
     return cues.some((cue) => lower.includes(String(cue).toLowerCase()));
   }
   if (stance === 'plain') return metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100;
-  if (stance === 'precise') return /\b(?:if|because|means|rather than|not .{0,24} but|would count|distinction)\b/iu.test(text);
+  if (stance === 'precise')
+    return /\b(?:if|because|means|rather than|not .{0,24} but|would count|distinction)\b/iu.test(text);
   if (stance === 'brisk') return metrics.wordCount <= 70 && metrics.sentenceCount <= 4;
   if (stance === 'warm') return /\b(?:let's|we can|try|notice|you can|start with|take)\b/iu.test(text);
-  if (stance === 'witnessing') return /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|there is no need)\b/iu.test(text);
+  if (stance === 'witnessing')
+    return /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|there is no need)\b/iu.test(text);
   if (stance === 'charismatic') return /\b(?:but|yet|choose|risk|refuse|test|stake|stop|now)\b/iu.test(text);
   return true;
 }
@@ -368,12 +392,13 @@ function stanceVisible(stance, text, metrics) {
 function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
   const glossed = unresolvedTerms.filter((term) => termIsGlossed(text, term));
   if (actionFamily === 'clarify_term') {
-    return unresolvedTerms.length ? glossed.length === unresolvedTerms.length : /\b(?:is|means|refers to)\b/iu.test(text);
+    return unresolvedTerms.length
+      ? glossed.length === unresolvedTerms.length
+      : /\b(?:is|means|refers to)\b/iu.test(text);
   }
   if (actionFamily === 'clarify_distinction') {
     return (
-      /\b(?:means|rather than|not .{0,24} but|distinction|difference|which)\b/iu.test(text) ||
-      metrics.questionCount > 0
+      /\b(?:means|rather than|not .{0,24} but|distinction|difference|which)\b/iu.test(text) || metrics.questionCount > 0
     );
   }
   if (actionFamily === 'stage_next_step') return metrics.questionCount > 0 && metrics.wordCount <= 110;
@@ -386,11 +411,13 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
     return metrics.concreteSceneTermCount > 0 && metrics.questionCount > 0;
   }
   if (actionFamily === 'ground_in_material') return metrics.concreteSceneTermCount > 0;
-  if (actionFamily === 'challenge_resistance') return /\b(?:but|instead|choose|test|stop|risk|refuse|try)\b/iu.test(text);
+  if (actionFamily === 'challenge_resistance')
+    return /\b(?:but|instead|choose|test|stop|risk|refuse|try)\b/iu.test(text);
   if (actionFamily === 'receive_vulnerability') {
     return /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|you can)\b/iu.test(text);
   }
-  if (actionFamily === 'close_inquiry') return metrics.questionCount === 0 && /\b(?:closed|settled|conclude|therefore)\b/iu.test(text);
+  if (actionFamily === 'close_inquiry')
+    return metrics.questionCount === 0 && /\b(?:closed|settled|conclude|therefore)\b/iu.test(text);
   return metrics.wordCount <= 110;
 }
 
@@ -405,11 +432,13 @@ function visibleSignature(metrics) {
     `glosses:${Math.min(2, metrics.glossedTerms.length)}`,
     `scene:${Math.min(3, metrics.concreteSceneTermCount)}`,
     `second_person:${metrics.secondPerson ? 1 : 0}`,
-    `cues:${Object.entries(metrics.surfaceCueProfile || {})
-      .filter(([, present]) => present)
-      .map(([cue]) => cue)
-      .sort()
-      .join(',') || 'none'}`,
+    `cues:${
+      Object.entries(metrics.surfaceCueProfile || {})
+        .filter(([, present]) => present)
+        .map(([cue]) => cue)
+        .sort()
+        .join(',') || 'none'
+    }`,
   ].join('|');
 }
 
@@ -445,16 +474,14 @@ export function auditTutorStubResponseConfiguration({ text = '', configuration, 
   const lexicalDefinition = getLexicalAccessibilityDefinitions()[configuration.lexical_accessibility] || {};
   const sceneDefinition = getSceneImmersionDefinitions()[configuration.scene_immersion] || {};
   const audiencePass = metrics.averageSentenceWords <= Number(audienceDefinition.max_average_sentence_words || 30);
-  const lexicalLengthPass =
-    metrics.averageSentenceWords <= Number(lexicalDefinition.max_average_sentence_words || 32);
+  const lexicalLengthPass = metrics.averageSentenceWords <= Number(lexicalDefinition.max_average_sentence_words || 32);
   const lexicalPass =
     lexicalLengthPass &&
     (configuration.lexical_accessibility !== 'glossed_plain' ||
       unresolvedTerms.length === 0 ||
       glossedTerms.length === unresolvedTerms.length);
   const scenePass =
-    !metrics.fourthWallBreak &&
-    metrics.concreteSceneTermCount >= Number(sceneDefinition.min_scene_terms || 0);
+    !metrics.fourthWallBreak && metrics.concreteSceneTermCount >= Number(sceneDefinition.min_scene_terms || 0);
   const axes = {
     engagement_stance: {
       selected: configuration.engagement_stance,
@@ -519,9 +546,7 @@ export function summarizeTutorStubResponseConfigurationAudits(audits = []) {
     axis_visibility_rate: Object.fromEntries(
       axes.map((axis) => [
         axis,
-        rows.length
-          ? Number((rows.filter((audit) => audit.axes?.[axis]?.visible).length / rows.length).toFixed(3))
-          : 0,
+        rows.length ? Number((rows.filter((audit) => audit.axes?.[axis]?.visible).length / rows.length).toFixed(3)) : 0,
       ]),
     ),
     distinct_configuration_count: Object.keys(configurationCounts).length,

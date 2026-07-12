@@ -56,11 +56,11 @@ test('continuous empirical register metadata records corpus-prior mapping', () =
   });
   const metadata = buildContinuousRegisterPolicyMetadata({ blend, useCorpusPrior: true });
 
-  assert.equal(
-    metadata.mapping.type,
-    'continuous_softmax_affinity_matrix_with_local_and_corpus_empirical_correction',
-  );
+  assert.equal(metadata.mapping.type, 'continuous_softmax_affinity_matrix_with_local_and_corpus_empirical_correction');
   assert.equal(metadata.mapping.source_policy, 'empirical_dynamical_system');
   assert.equal(metadata.selected_anchor, 'precise');
-  assert.equal(continuousRegisterStyleInstruction(blend, definitions), continuousEngagementStanceInstruction(blend, definitions));
+  assert.equal(
+    continuousRegisterStyleInstruction(blend, definitions),
+    continuousEngagementStanceInstruction(blend, definitions),
+  );
 });

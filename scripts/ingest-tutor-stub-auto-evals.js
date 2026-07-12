@@ -221,7 +221,9 @@ function fallbackTrainingExamples(row = {}) {
 }
 
 function trainingExamplesFromRow(row = {}) {
-  const examples = Array.isArray(row.trainingExamples?.examples) ? row.trainingExamples.examples : fallbackTrainingExamples(row);
+  const examples = Array.isArray(row.trainingExamples?.examples)
+    ? row.trainingExamples.examples
+    : fallbackTrainingExamples(row);
   return examples.filter((example) => example && typeof example === 'object');
 }
 
@@ -799,9 +801,7 @@ function ingestSummary(db, summaryPath) {
         final_learner: row.finalLearner || null,
         final_tutor: row.finalTutor || null,
         register_entropy: numberOrNull(row.registerEntropy),
-        configuration_realization_rate: numberOrNull(
-          row.responseConfigurationVisibility?.mean_realization_rate,
-        ),
+        configuration_realization_rate: numberOrNull(row.responseConfigurationVisibility?.mean_realization_rate),
         configuration_visible_difference_rate: numberOrNull(
           row.responseConfigurationVisibility?.pairwise_visible_difference_rate,
         ),
@@ -844,8 +844,7 @@ function ingestSummary(db, summaryPath) {
           selected_register: action.selectedRegister || action.engagementStance || null,
           action_family: action.actionFamily || responseConfiguration?.action_family || null,
           audience_register: action.audienceRegister || responseConfiguration?.audience_register || null,
-          lexical_accessibility:
-            action.lexicalAccessibility || responseConfiguration?.lexical_accessibility || null,
+          lexical_accessibility: action.lexicalAccessibility || responseConfiguration?.lexical_accessibility || null,
           scene_immersion: action.sceneImmersion || responseConfiguration?.scene_immersion || null,
           response_configuration_json: safeJson(responseConfiguration),
           response_configuration_audit_json: safeJson(responseConfigurationAudit),
@@ -914,7 +913,9 @@ function main() {
           const raw = fs.readFileSync(summaryPath, 'utf8');
           const summary = JSON.parse(raw);
           const rows = rowsFromSummary(summary);
-          const dryRunRows = Number(summary.aggregates?.dryRun || rows.filter((row) => row.status === 'dry_run').length || 0);
+          const dryRunRows = Number(
+            summary.aggregates?.dryRun || rows.filter((row) => row.status === 'dry_run').length || 0,
+          );
           const realRows = rows.length - dryRunRows;
           if (!args['include-empty'] && rows.length === 0) return { skipped: true, reason: 'empty' };
           if (!args['include-dry-run'] && rows.length > 0 && realRows <= 0) return { skipped: true, reason: 'dry_run' };
@@ -937,7 +938,9 @@ function main() {
 
   if (db) db.close();
   const prefix = args['dry-run'] ? '[tutor-stub-ingest] dry run' : '[tutor-stub-ingest]';
-  console.log(`${prefix} db=${path.relative(ROOT, dbPath)} summaries=${paths.length} ingested=${ingested} skipped=${skipped}`);
+  console.log(
+    `${prefix} db=${path.relative(ROOT, dbPath)} summaries=${paths.length} ingested=${ingested} skipped=${skipped}`,
+  );
   for (const detail of details.slice(0, 8)) {
     console.log(`  ${detail.id}: ${detail.rows} rows`);
   }

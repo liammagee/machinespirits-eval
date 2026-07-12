@@ -238,4 +238,11 @@ export async function sampleDramaSpec(opts = {}) {
   return { drama, cast, audience, turn_plan };
 }
 
-export default { moveCatalog, validMovesFor, sampleTurnPlan, agenciesForArchitecture, sampleDramaSpec, TURN_PLAN_ROLES };
+export default {
+  moveCatalog,
+  validMovesFor,
+  sampleTurnPlan,
+  agenciesForArchitecture,
+  sampleDramaSpec,
+  TURN_PLAN_ROLES,
+};

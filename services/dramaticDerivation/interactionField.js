@@ -232,7 +232,9 @@ export function buildPedagogicalInteractionField(world, result = {}, { learnerFi
     const script = {
       ...stage,
       index: stageIndex(stage.stage, scriptSpec),
-      progress: round3(normalizeBy(stageIndex(stage.stage, scriptSpec), pedagogicalScriptStageIds(scriptSpec).length - 1)),
+      progress: round3(
+        normalizeBy(stageIndex(stage.stage, scriptSpec), pedagogicalScriptStageIds(scriptSpec).length - 1),
+      ),
       preferredMoves: stageSpec?.preferredMoves || [],
       antiPatterns: stageSpec?.antiPatterns || [],
       expectedFieldMovement: stageSpec?.expectedFieldMovement || {},
