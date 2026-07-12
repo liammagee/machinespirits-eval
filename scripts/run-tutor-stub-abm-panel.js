@@ -64,7 +64,8 @@ const CLI_OPTIONS = {
   'analysis-model': { type: 'string', default: process.env.TUTOR_STUB_ABM_ANALYSIS_MODEL || 'codex.gpt-5.5' },
   'auto-learner-model': {
     type: 'string',
-    default: process.env.TUTOR_STUB_ABM_AUTO_LEARNER_MODEL || process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.5',
+    default:
+      process.env.TUTOR_STUB_ABM_AUTO_LEARNER_MODEL || process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.5',
   },
   world: { type: 'string', default: process.env.TUTOR_STUB_ABM_WORLD || 'world_005_marrick' },
   'register-policy': { type: 'string', default: process.env.TUTOR_STUB_ABM_REGISTER_POLICY || 'dynamic' },
@@ -164,7 +165,9 @@ export function buildPanelDraws({ personaIds = DEFAULT_PERSONA_IDS, runs = 1 } =
 }
 
 function escapeMd(value) {
-  return String(value ?? '').replace(/\|/g, '/').replace(/\n/g, ' ');
+  return String(value ?? '')
+    .replace(/\|/g, '/')
+    .replace(/\n/g, ' ');
 }
 
 function mdTable(headers, rows) {
@@ -291,7 +294,7 @@ export function summarizeTutorStubTranscript({ transcript, transcriptPath = '', 
   const fieldSummary = maybeReadFieldSummary(transcript, transcriptPath);
   const groundedClosure = Boolean(
     assessment.bottleneck === 'grounded_asserted_secret' ||
-      (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
+    (assessment.finalSecretEntailed === true && assessment.assertedSecret === true),
   );
   const registerTransitions = registers
     .map((register, index) => (index === 0 ? register : `${registers[index - 1]}->${register}`))
@@ -551,14 +554,19 @@ function printPanelCheck(personaIds) {
       `| ${personaId} | ${persona.capability_tier} | ${persona.resistance_style} | ${persona.sycophancy_mode} | ${persona.formal_interior.blocking_element.id} |`,
     );
   }
-  console.log(`\n${personaIds.length} persona(s) validate. Use --dry-run to see child tutor-stub commands, or --live to execute.`);
+  console.log(
+    `\n${personaIds.length} persona(s) validate. Use --dry-run to see child tutor-stub commands, or --live to execute.`,
+  );
 }
 
 function summarizeExistingRun(runDir, args) {
   const transcriptsDir = path.join(runDir, 'transcripts');
   if (!fs.existsSync(transcriptsDir)) throw new Error(`no transcripts dir found at ${transcriptsDir}`);
   const rows = [];
-  for (const file of fs.readdirSync(transcriptsDir).filter((name) => name.endsWith('.json')).sort()) {
+  for (const file of fs
+    .readdirSync(transcriptsDir)
+    .filter((name) => name.endsWith('.json'))
+    .sort()) {
     const match = file.match(/^(.*)__r(\d+)\.json$/);
     if (!match) continue;
     rows.push(

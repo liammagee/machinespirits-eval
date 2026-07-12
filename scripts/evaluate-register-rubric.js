@@ -146,7 +146,9 @@ function makeSlices(row, { registerFilter = null } = {}) {
     const resolvedRegister = resolveEngagementRegister(rawRegisterName);
     const registerName = resolvedRegister?.register || rawRegisterName;
     if (!registerName) continue;
-    const resolvedFilter = registerFilter ? resolveEngagementRegister(registerFilter)?.register || registerFilter : null;
+    const resolvedFilter = registerFilter
+      ? resolveEngagementRegister(registerFilter)?.register || registerFilter
+      : null;
     if (resolvedFilter && registerName !== resolvedFilter) continue;
 
     const rubricPath = rubricPathForRegister(registerName);

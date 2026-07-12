@@ -39,9 +39,7 @@ test('every drama-machine field is assigned to a valid component and surface', (
 
   assert.ok(fieldsForComponent('form', { surface: 'compose' }).some((field) => field.path === 'turn_plan'));
   assert.ok(fieldsForComponent('audience', { surface: 'run' }).some((field) => field.path === 'audience.panel'));
-  assert.ok(
-    fieldsForComponent('audience', { surface: 'compose' }).some((field) => field.path === 'audience.context'),
-  );
+  assert.ok(fieldsForComponent('audience', { surface: 'compose' }).some((field) => field.path === 'audience.context'));
 });
 
 test('drama functional components name the architecture-facing subsystems', () => {

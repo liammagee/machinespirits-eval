@@ -7,7 +7,9 @@ function stripFence(text) {
 }
 
 function oneLine(value) {
-  return String(value || '').replace(/\s+/gu, ' ').trim();
+  return String(value || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
 }
 
 export function clueSafelySignalsAnswer(clue, answer) {
@@ -23,7 +25,9 @@ export function clueSafelySignalsAnswer(clue, answer) {
 export function mixedLearnerSuggestionMove(answer, declaredMove = '') {
   const response = oneLine(answer);
   if (/\?/u.test(response)) return 'ask_question';
-  const normalized = oneLine(declaredMove).toLowerCase().replace(/[\s-]+/gu, '_');
+  const normalized = oneLine(declaredMove)
+    .toLowerCase()
+    .replace(/[\s-]+/gu, '_');
   if (['ask', 'question', 'ask_question', 'clarify', 'request_clarification'].includes(normalized)) {
     return 'ask_question';
   }
@@ -83,13 +87,11 @@ export function mixedLearnerAnalysisCacheKey(snapshot) {
 
 export function invalidateMixedLearnerCache(mixedLearner, { preserveAnalysisCache = false } = {}) {
   const cachedAnalysis = mixedLearner?.analysisCache || null;
-  const hadState = Boolean(
-    mixedLearner?.pending || mixedLearner?.suggestion || mixedLearner?.error || cachedAnalysis,
-  );
+  const hadState = Boolean(mixedLearner?.pending || mixedLearner?.suggestion || mixedLearner?.error || cachedAnalysis);
   const discardedTutorResponse = Boolean(
     cachedAnalysis &&
-      !preserveAnalysisCache &&
-      (cachedAnalysis.tutorPromise || cachedAnalysis.tutorResponse || cachedAnalysis.tutorStatus !== 'idle'),
+    !preserveAnalysisCache &&
+    (cachedAnalysis.tutorPromise || cachedAnalysis.tutorResponse || cachedAnalysis.tutorStatus !== 'idle'),
   );
 
   mixedLearner?.artifactAbortController?.abort();

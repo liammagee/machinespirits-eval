@@ -18,18 +18,12 @@ test('register-policy stack parses a primary plus ordered state/field overlays',
     overlays: ['state', 'field'],
     id: 'dynamical_system+state+field',
   });
-  assert.throws(
-    () => parseTutorStubRegisterPolicyStack('negative+state'),
-    /control negative cannot have overlays/u,
-  );
+  assert.throws(() => parseTutorStubRegisterPolicyStack('negative+state'), /control negative cannot have overlays/u);
   assert.throws(
     () => parseTutorStubRegisterPolicyStack('dynamical_system+trajectory'),
     /Unknown register-policy overlay/u,
   );
-  assert.throws(
-    () => parseTutorStubRegisterPolicyStack('field+field'),
-    /duplicates the primary/u,
-  );
+  assert.throws(() => parseTutorStubRegisterPolicyStack('field+field'), /duplicates the primary/u);
 });
 
 test('register overlay threshold accepts the closed unit interval', () => {

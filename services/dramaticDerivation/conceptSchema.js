@@ -342,7 +342,14 @@ export const DERIVATION_CONCEPT_ACTS = Object.freeze([
   {
     title: 'Act II: address',
     note: 'Rhetorical figures and register position speaker, hearer, and any actual or implied audience while preserving proof authority.',
-    concepts: ['rhetoric.figure', 'rhetoric.register', 'drama.audience', 'rhetoric.erotema', 'rhetoric.analogy', 'theory.charisma'],
+    concepts: [
+      'rhetoric.figure',
+      'rhetoric.register',
+      'drama.audience',
+      'rhetoric.erotema',
+      'rhetoric.analogy',
+      'theory.charisma',
+    ],
   },
   {
     title: 'Act III: warrant',

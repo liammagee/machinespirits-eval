@@ -151,7 +151,8 @@ function makeSlices(rows, cache) {
       const dims = Object.fromEntries(TUTOR_DIMS.map((dim) => [dim, dimScore(tutorScores, turn, dim)]));
       const group = profileGroup(row.profile_name);
       const expectedRegister = group === 'router_register_family' ? (turn === 0 ? 'brisk' : 'charismatic') : 'unrouted';
-      const rawRegister = traceTurn.engagementState?.selected_register || traceTurn.engagementState?.selected_mode || 'unrouted';
+      const rawRegister =
+        traceTurn.engagementState?.selected_register || traceTurn.engagementState?.selected_mode || 'unrouted';
       const register = resolveEngagementRegister(rawRegister)?.register || rawRegister;
       return {
         rowId: row.id,

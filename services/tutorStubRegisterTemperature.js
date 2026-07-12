@@ -7,10 +7,7 @@ export const DEFAULT_TUTOR_STUB_REGISTER_TEMPERATURE = DEFAULT_TUTOR_STUB_ENGAGE
 export const MIN_TUTOR_STUB_REGISTER_TEMPERATURE = MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE;
 export const MAX_TUTOR_STUB_REGISTER_TEMPERATURE = MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE;
 
-export function normalizeTutorStubEngagementStanceTemperature(
-  value,
-  { label = 'engagement-stance temperature' } = {},
-) {
+export function normalizeTutorStubEngagementStanceTemperature(value, { label = 'engagement-stance temperature' } = {}) {
   const temperature = Number(value);
   if (
     !Number.isFinite(temperature) ||
@@ -38,10 +35,7 @@ export function temperTutorStubEngagementStanceScores(
   if (!entries.length) return {};
   const maxScore = Math.max(...entries.map(([, score]) => score), floor);
   return Object.fromEntries(
-    entries.map(([register, score]) => [
-      register,
-      Math.pow(score / maxScore, 1 / normalizedTemperature),
-    ]),
+    entries.map(([register, score]) => [register, Math.pow(score / maxScore, 1 / normalizedTemperature)]),
   );
 }
 

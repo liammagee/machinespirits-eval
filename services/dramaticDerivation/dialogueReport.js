@@ -108,9 +108,8 @@ function fieldPlannerSummary(rows = []) {
   return {
     rows: normalized,
     count: normalized.length,
-    movementObserved: normalized.filter((row) =>
-      ['movement_observed', 'closure_realized'].includes(row.efficacy || ''),
-    ).length,
+    movementObserved: normalized.filter((row) => ['movement_observed', 'closure_realized'].includes(row.efficacy || ''))
+      .length,
     notObservedYet: normalized.filter((row) => row.efficacy === 'no_immediate_movement').length,
     nonLeakAuditFailures: normalized.filter((row) => row.nonLeakAuditOk === false).length,
   };

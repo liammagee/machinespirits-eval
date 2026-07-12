@@ -111,7 +111,10 @@ test('only accumulated premise facts drop; background remains and grace delays e
   assert.equal(board.has(factKey(first.fact)), true);
 
   const t3 = applyTutorStubDagFactDropout({ dropout, board, world, turn: 3 });
-  assert.deepEqual(t3.droppedNow.map((row) => row.premiseId), [first.id]);
+  assert.deepEqual(
+    t3.droppedNow.map((row) => row.premiseId),
+    [first.id],
+  );
   assert.equal(board.has(factKey(first.fact)), false);
   assert.equal(board.has(factKey(background)), true);
 });
@@ -138,7 +141,10 @@ test('explicit learner re-adoption repairs a dropped fact and resets its grace p
     turn: 2,
     adoptedPremiseIds: [first.id],
   });
-  assert.deepEqual(repaired.repairedNow.map((row) => row.premiseId), [first.id]);
+  assert.deepEqual(
+    repaired.repairedNow.map((row) => row.premiseId),
+    [first.id],
+  );
   assert.equal(repaired.droppedNow.length, 0);
   assert.equal(board.has(factKey(first.fact)), true);
   assert.equal(tutorStubDagFactDropoutSnapshot(dropout).activeCount, 0);

@@ -38,7 +38,10 @@ export function resolveCliEffort(provider, explicitEffort = null) {
   if (explicit) return explicit;
   if (normalizedProvider === 'codex') {
     return normalizeCliEffort(
-      process.env.CLI_PROVIDER_CODEX_EFFORT || process.env.CLI_PROVIDER_EFFORT || process.env.CODEX_REASONING_EFFORT || 'xhigh',
+      process.env.CLI_PROVIDER_CODEX_EFFORT ||
+        process.env.CLI_PROVIDER_EFFORT ||
+        process.env.CODEX_REASONING_EFFORT ||
+        'xhigh',
     );
   }
   if (normalizedProvider === 'claude-code') {
@@ -196,7 +199,17 @@ async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHis
   });
 }
 
-async function callCodexCli({ systemPrompt, userPrompt, model, role, messageHistory, timeoutMs, effort, onEvent, signal }) {
+async function callCodexCli({
+  systemPrompt,
+  userPrompt,
+  model,
+  role,
+  messageHistory,
+  timeoutMs,
+  effort,
+  onEvent,
+  signal,
+}) {
   if (signal?.aborted) throw abortError(role);
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-cli-provider-codex-'));
   const outFile = path.join(tmpDir, 'last-message.txt');

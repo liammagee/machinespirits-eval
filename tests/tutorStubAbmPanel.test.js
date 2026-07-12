@@ -56,10 +56,7 @@ describe('tutor-stub ABM panel helpers', () => {
       'continuous_empirical_dynamical_system',
     );
     assert.equal(normalizeRegisterPolicy('STATE'), 'state');
-    assert.equal(
-      normalizeRegisterPolicy('dynamical-system+state+field'),
-      'dynamical_system+state+field',
-    );
+    assert.equal(normalizeRegisterPolicy('dynamical-system+state+field'), 'dynamical_system+state+field');
     assert.throws(() => normalizeRegisterPolicy('legacy'), /--register-policy/);
   });
 

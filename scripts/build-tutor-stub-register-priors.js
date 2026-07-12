@@ -117,11 +117,7 @@ function discoverTraceFiles() {
   for (const root of roots) {
     walkFiles(root, (file) => file.endsWith('.jsonl'), files);
   }
-  walkFiles(
-    exportRoot,
-    (file) => file.endsWith('.jsonl') && file.includes(`${path.sep}traces${path.sep}`),
-    files,
-  );
+  walkFiles(exportRoot, (file) => file.endsWith('.jsonl') && file.includes(`${path.sep}traces${path.sep}`), files);
   return [...new Set(files)].sort();
 }
 
@@ -229,7 +225,10 @@ function buildStateVector(turn) {
   );
   const answerSeeking = signalMatches(/answer_seeking|overconfident|passive|complying/iu, signalValues);
   const resistance = signalMatches(/resistance_or_low_agency|resistant|challenge|authority_refusal/iu, signalValues);
-  const plainNeed = signalMatches(/plain_language_request|plain_simplification_followup|transfer_demand_or_named_material/iu, signalValues);
+  const plainNeed = signalMatches(
+    /plain_language_request|plain_simplification_followup|transfer_demand_or_named_material/iu,
+    signalValues,
+  );
   const overreach = signalMatches(/overleaps_evidence|unsupported|premature_assertion/iu, signalValues);
   const learnerIntegrationGap = assessment.bottleneck === 'learner_integration_gap';
   const assertionGap = assessment.bottleneck === 'assertion_gap';
@@ -239,7 +238,9 @@ function buildStateVector(turn) {
   const affectiveRisk = clamp((explicitAffective ? 0.55 : 0) + (1 - epistemic) * 0.15);
   const coercionRisk = clamp((answerSeeking ? 0.2 : 0) + affectiveRisk * 0.25);
   const agencyDeficit = clamp(1 - agency + (answerSeeking ? 0.25 : 0) + (resistance ? 0.15 : 0));
-  const evidenceGap = clamp((1 - bestPathCoverage) * 0.45 + missingNeed * 0.35 + (1 - evidence) * 0.15 + (releaseGap ? 0.15 : 0));
+  const evidenceGap = clamp(
+    (1 - bestPathCoverage) * 0.45 + missingNeed * 0.35 + (1 - evidence) * 0.15 + (releaseGap ? 0.15 : 0),
+  );
   const warrantGap = clamp(
     unsupportedNeed * 0.35 +
       (overreach ? 0.3 : 0) +
@@ -248,14 +249,29 @@ function buildStateVector(turn) {
       (1 - epistemic) * 0.1,
   );
   const recognitionPressure = clamp(
-    agencyDeficit * 0.35 + (resistance ? 0.25 : 0) + (answerSeeking ? 0.25 : 0) + coercionRisk * 0.25 + affectiveRisk * 0.15,
+    agencyDeficit * 0.35 +
+      (resistance ? 0.25 : 0) +
+      (answerSeeking ? 0.25 : 0) +
+      coercionRisk * 0.25 +
+      affectiveRisk * 0.15,
   );
   const integrationNeed = clamp(lowSurface * 0.35 + (learnerIntegrationGap ? 0.25 : 0) + (plainNeed ? 0.2 : 0));
-  const compressionNeed = clamp((plainNeed ? 0.5 : 0) + lowSurface * 0.35 + (assessment.finalSecretEntailed ? 0.15 : 0));
-  const closurePressure = clamp((assessment.finalSecretEntailed ? 0.35 : 0) + bestPathCoverage * 0.45 + (assertionGap ? 0.2 : 0));
+  const compressionNeed = clamp(
+    (plainNeed ? 0.5 : 0) + lowSurface * 0.35 + (assessment.finalSecretEntailed ? 0.15 : 0),
+  );
+  const closurePressure = clamp(
+    (assessment.finalSecretEntailed ? 0.35 : 0) + bestPathCoverage * 0.45 + (assertionGap ? 0.2 : 0),
+  );
   const stagnation = clamp((answerSeeking ? 0.25 : 0) + lowSurface * 0.2 + (releaseGap ? 0.1 : 0));
-  const disruptionNeed = clamp(stagnation * 0.5 + (resistance ? 0.25 : 0) + agencyDeficit * 0.2 - affectiveRisk * 0.35 - coercionRisk * 0.35);
-  const momentum = clamp(bestPathCoverage * 0.25 + evidence * 0.25 + agency * 0.2 + (classification.request_type === 'stepwise_support_request' ? 0.2 : 0));
+  const disruptionNeed = clamp(
+    stagnation * 0.5 + (resistance ? 0.25 : 0) + agencyDeficit * 0.2 - affectiveRisk * 0.35 - coercionRisk * 0.35,
+  );
+  const momentum = clamp(
+    bestPathCoverage * 0.25 +
+      evidence * 0.25 +
+      agency * 0.2 +
+      (classification.request_type === 'stepwise_support_request' ? 0.2 : 0),
+  );
   const tempoAffordance = clamp(momentum * (1 - affectiveRisk) * (1 - coercionRisk));
   return {
     evidence_gap: round(evidenceGap),
@@ -357,8 +373,7 @@ function analyzeTrace(file) {
     if (!efficacy?.selected_register) continue;
     const register = canonicalRegister(efficacy.selected_register);
     if (!register) continue;
-    const sourceTurn =
-      byTurn.get(Number(efficacy.registerTurn)) || byTurn.get(Number(turn.turn) - 1) || null;
+    const sourceTurn = byTurn.get(Number(efficacy.registerTurn)) || byTurn.get(Number(turn.turn) - 1) || null;
     const selection = sourceTurn?.registerSelection || { selected_register: register };
     const outcome = outcomeFromEfficacy(efficacy, sourceTurn);
     observations.push({
