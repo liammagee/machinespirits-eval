@@ -256,7 +256,9 @@ node scripts/greenroom-gate0.js \
 # session-N.{md,json}, gate0-review-checklist.md  ← score this, fill the verdict.
 ```
 
-Prerequisites: `codex` CLI authenticated with access to `sol` and `luna` (the first real session doubles as the bridge-name check); transcripts can be any mix of `.json`/`.jsonl`/`.md`/`.txt` — the runner extracts speaker/text generically and truncates long records head+tail. `--dry-run` first if you want to eyeball the prompts for free. The house worktree pattern works too: `git worktree add ../machinespirits-eval-greenroom claude/tutor-coaching-memory-system-vvvrl8`.
+Prerequisites: `codex` CLI authenticated with access to `sol` and `luna` (the first real session doubles as the bridge-name check); transcripts can be any mix of `.json`/`.jsonl`/`.md`/`.txt` — the runner extracts speaker/text generically and truncates long records head+tail. `--dry-run` first if you want to eyeball the prompts for free.
+
+Checkout *or* worktree — not both: git refuses to check the same branch out twice, so if a checkout already holds the branch (`fatal: '…' is already used by worktree at …`), just `git pull` there and run from it. For a separate worktree instead, first `git checkout main` in the holding checkout, or use a detached worktree: `git worktree add --detach ../machinespirits-eval-greenroom origin/claude/tutor-coaching-memory-system-vvvrl8` (pushing results from detached HEAD: `git push origin HEAD:claude/tutor-coaching-memory-system-vvvrl8`).
 
 Budget shape (call-count, not dollars): Gate 0 ≈ 5 sessions; Gate 1 ≈ 6 sessions + ~10 scored dialogues; Gate 2 ≈ 2 training arcs + 4 cells × pilot-N; Gate 3 is the only full-width spend. Rehearsal learner-side runs mock/cheap throughout.
 
