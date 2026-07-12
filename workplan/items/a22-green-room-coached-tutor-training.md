@@ -46,11 +46,10 @@ target actor's own transcripts (the gap between §7.8.1's +114% native
 optimisation and §7.8.3's insufficient hand-me-down transfer; A18.37 is the
 behavioural-channel precedent).
 
-Next action: OWNER runs Gate 0 locally per plan §7.1 —
-`node scripts/greenroom-gate0.js --transcripts <stub records> --sessions 5`
-on the PR branch, then scores gate0-review-checklist.md (pass = 4/5 sessions
-yield a qualifying note). Gate 1-2 outcome contrasts run in the stub's
-headroom arena per plan §0.2.
+Next action: OWNER scores exports/greenroom-gate0-2026-07-12/
+gate0-review-checklist.md (pass = 4/5 sessions yield a qualifying note).
+On pass -> P1 substrate build. Gate 1-2 outcome contrasts run in the
+stub's headroom arena per plan §0.2.
 
 2026-07-11 claude: arc proposed; plan doc drafted on branch, card opened.
 2026-07-11 human: GREENLIT. P0 decisions recorded in GREEN-ROOM-PLAN.md §0.1 —
@@ -83,3 +82,15 @@ preconscious branch: 2/2 sessions completed, 6/6 bankable notes with
 verbatim quotes + third-party checks, confidence 0.82 both. One parser
 lesson banked: lenient trailing-comma JSON handling (test added). Evidence
 committed at exports/greenroom-gate0-dress-rehearsal-2026-07-11/.
+2026-07-12 human: models RE-PINNED to the Claude stack (plan §0.1.4) —
+coach claude-code.claude-opus-4-8, actor claude-code.claude-sonnet-5, weak
+actor claude-code.claude-haiku-4-5-20251001; codex sol/luna kept as
+preferred restoration. Non-Anthropic rejudge now REQUIRED before any
+positive C3/C4 claim (§0.2.2).
+2026-07-12 claude: RATIFIED GATE 0 RUN in-session (5 sessions, seed 1, six
+committed cast-layer transcripts, manifest at commit 7164538): 5/5 sessions
+completed, 15/15 notes parsed, confidences 0.78-0.82. Cross-session
+convergence observed: over-braking after correct statements, withholding
+terminal recognition, re-eliciting already-produced distinctions each
+flagged independently in 2-3 sessions — the C1 notes-taxonomy signal.
+Evidence at exports/greenroom-gate0-2026-07-12/. Awaiting owner scoring.

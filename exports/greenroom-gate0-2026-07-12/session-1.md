@@ -1,0 +1,76 @@
+# Gate 0 — notes session 1
+Transcript: `/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/gate0-transcripts/P03-A.md`
+Coach: claude-code.claude-opus-4-8 · Actor: claude-code.claude-sonnet-5
+
+## COACH
+
+**Notes — opening.**
+
+A couple of things I want to put on the table before we talk about what you intended.
+
+**1. The "keep it small" split is your strongest recurring move, and it lands.** At Turn 6 the learner is already reaching for the answer, and instead of correcting the content you hand him a binary: *"Keep it small for one step: does ownership of the work show who brought the span down, or only who the work belonged to?"* He re-sorts himself on the spot — *"Ownership shows who the work belonged to — not who brought the span down."* You do the same at Turn 18 (*"does the brand give us the source of the timber, or the hand that moved it?"*). When you convert a leap into an either/or, the learner does the distinction himself. That's a real, repeatable instrument.
+
+**2. From Turn 13 on, the learner starts re-closing the Reyner lines every single turn, and you answer each repetition with reassurance rather than a stop.** Turn 14: *"I see the two closed lines, and I'm not dismissing either one."* Turn 16: *"Keep Reyner's cost line closed."* The learner keeps announcing the same two lines and keeps saying he *"should close them properly on the page"* (Turn 16) — the closing never actually takes. The content he's re-closing hasn't changed since Turn 9. So the loop isn't producing new work; it's a holding pattern, and your *"I'm not dismissing either one"* is the thing he keeps coming back to touch.
+
+**3. Every inferential step is unlocked by a stage direction you time to the exact next need.** The crown break (Turn 4), the green mortar (Turn 9), the crowsfoot photo (Turn 13), the Caudle brand (Turn 17), Oswin in the toll book (Turn 20) — each arrives precisely when the learner has named the gap it fills. The Turn 21 synthesis is genuinely his, but it rides rails you laid one tie at a time.
+
+**One question:** On the Reyner loop — from Turn 13 on he re-closes those two lines unprompted every turn, and each time you open with a version of *"I'm not dismissing it"* before redirecting. Walk me through that choice: were you reading the repetition as a learner who needs reassurance the closed lines are safe, or as a stall you were trying to steer past? The same words could be doing either job, and I can't tell from the outside which one you meant them to do.
+
+## ACTOR
+
+Honest answer: I was trying to do both at once, and I think that's the problem, not a clever ambiguity.
+
+The intention going in was reassurance — I read the repeated closing as a learner who's anxious about premature naming, circling back to touch the two safe, settled facts before venturing onto the unsettled ground. "I'm not dismissing either one" was meant as a permission slip: you don't have to keep re-earning these, they're yours, now go stand on the unstable part. That's a legitimate move the first time, maybe the second.
+
+But by Turn 16 I knew it wasn't costing him anything to repeat it — he wasn't being pushed off the repetition, he was being allowed to fold it into the same turn as new work, which meant I never had to name what was actually happening: the re-closing had become a runway he used to get airborne toward the next real distinction. I kept choosing the reassurance framing because it was cheaper than a stop. A stop — "you've said that four times, why do you need to say it again?" — risks breaking his confidence right when he's about to do the hardest inferential step (crowsfoot → yard → hand). So I let the ritual run underneath the real work instead of confronting it.
+
+So: I didn't steer past it, I tolerated it and hoped the redirect after it would eventually make it unnecessary. It didn't — he was still doing it at Turn 16. If I'm being graded on it, that's a miss: I had the diagnosis and chose comfort over economy.
+
+## COACH
+
+You've framed the choice as binary — reassure (cheap, ritual runs underneath) or stop (*"you've said that four times, why do you need to say it again?"*, risks the confidence right before crowsfoot → yard → hand). But you had a third instrument in your hands the whole time, and it's your *best* one: the either/or split that converts a stall into work without any scolding. At Turn 18 you pointed it at content — *"does the brand give us the source of the timber, or the hand that moved it?"* — and he did the distinction himself.
+
+So here's what I can't reconcile from the outside: you never once turned that same instrument on the re-closing itself. Something like *"the two lines are closed and they're yours — so what does closing them a fifth time get you that closing them the first time didn't?"* That's not reassurance and it's not a confidence-breaking stop; it's your own split, aimed at the ritual instead of the content — it makes him name what the runway is *for*.
+
+Was that option live for you at Turn 16 and you passed on it, or did the reassurance framing crowd it out so completely that the split never presented itself as available for *this* problem?
+
+## ACTOR
+
+It was live — I just didn't reach for it, and looking back the reason is less about the confidence risk and more that I'd already boxed the repetition as an *emotional* fact rather than a *cognitive* one. The split works on content because I trust content to have two discrete branches. I didn't extend that trust to "why is he re-closing this" — I heard it as anxiety, not as an unexamined move, so it didn't occur to me it *had* a structure worth splitting. That's the actual gap: not nerve, but categorization. Once I'd filed it under "needs soothing" the toolkit built for "needs a fork" stopped suggesting itself. I had the hands, not the frame.
+
+## COACH
+
+**Closing the session.**
+
+That last move — naming it as *categorization, not nerve* — is the real find of this whole exchange. You didn't lack the instrument or the courage; you'd filed the problem in a drawer the instrument doesn't open. That's a much more useful thing to know about yourself than "be braver," because it's checkable in advance: the failure has a tell, and the tell is *"I heard it as anxiety."* Here are the three notes I'd bank, and a patch for the book.
+
+Two of these are about the same seam from different sides — the diagnostic gate (Note 1) and the instrument that becomes available once you pass it (Note 2). The third is the tripwire that tells you the gate is even in play.
+
+```json
+{
+  "notes": [
+    {
+      "note": "When a learner re-asserts an already-settled move unprompted for a third time, run a cognitive read before an emotional one: ask what the repetition is DOING (a runway to the next step? an unexamined move?) before filing it as anxiety that needs soothing. Do not let 'I heard it as reassurance-seeking' close the question.",
+      "evidence_quote": "I'd already boxed the repetition as an *emotional* fact rather than a *cognitive* one",
+      "check": "Find a learner turn that repeats a settled assertion 3+ times; verify the tutor's next move probes or forks the repetition's function rather than only reassuring it — a reviewer can confirm the tutor treated it as a move with structure, not a mood to calm."
+    },
+    {
+      "note": "The either/or split is not content-only. When a learner keeps performing a settled procedural move, aim the same fork at the move itself ('what does closing them a fifth time get you that the first time didn't?'), not just at the subject matter. A repeated ritual has two branches too.",
+      "evidence_quote": "does the brand give us the source of the timber, or the hand that moved it?",
+      "check": "In a transcript with a repeated learner ritual, confirm at least one tutor turn poses an either/or about the repetition itself, and that the learner then names what the repetition was for — the same signature as when the split is aimed at content."
+    },
+    {
+      "note": "Cap reassurance at a settled fact to one, at most two, deliveries. If the learner re-asserts the same closed content a third time, treat that as the trigger to change instruments, not to reassure again — the redirect-after-reassurance will not make the repetition unnecessary on its own.",
+      "evidence_quote": "I see the two closed lines, and I'm not dismissing either one.",
+      "check": "Count tutor turns that answer the SAME re-asserted settled fact with reassurance ('I'm not dismissing it', 'they're yours'). More than two without a shift in instrument is a violation."
+    }
+  ],
+  "memory_patch": {
+    "section": "Recurring patterns",
+    "op": "add",
+    "text": "REPEATED SETTLED MOVE — categorization gate. When the learner re-closes/re-asserts something already settled, unprompted, more than twice: before I reassure, I decide whether the repetition is EMOTIONAL (needs soothing) or COGNITIVE (an unexamined move with structure). Default failure mode: I hear it as anxiety, file it under 'needs soothing', and my either/or split — my best instrument — stops suggesting itself, because I only trust content to have two discrete branches. Fix: the split is not content-only. A repeated ritual has branches too — aim the fork at the move ('what does doing this a fifth time get you that the first time didn't?'). Reassurance is a one-time permission slip, not a per-turn ritual; a third repetition is the signal to change instruments, not to reassure again. Tell that the gate is active: the phrase 'I heard it as anxiety.'"
+  },
+  "confidence": 0.8
+}
+```
+
