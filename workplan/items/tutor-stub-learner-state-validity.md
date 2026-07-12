@@ -20,6 +20,7 @@ links:
     - adaptive-state-v2-s1-technical-5a3e5aae-v21
     - adaptive-state-v2-s1-technical-b69775b6-v21
     - adaptive-state-v2-s1-repair-bb65da27-v21
+    - adaptive-state-v2-observability-preflight-5fda0824-v21
 tags:
   - adaptive-tutor
   - learner-state
@@ -132,3 +133,31 @@ world/realizer combination and exact-span enforcement active. Keep this card
 shadow-pilot, efficacy, and human-learning claims remain blocked. Phase 6A
 v2.1 canary-lineage engineering is committed at `1e106783`; no new paid Phase
 6 execution occurred.
+
+2026-07-12 Codex observability-preflight result: Commit `5fda0824` added the
+immutable fail-closed gate and made it a mandatory parent of any later full S1.
+The sealed paid run `adaptive-state-v2-observability-preflight-5fda0824-v21`
+completed all 24 isolated cases and 48/48 serial CLI dispatches with zero
+technical failures, retries, rerolls, repairs, fallbacks, exclusions, partial
+reuse, or learner-text event-ID leaks. Exact evidence-span validation passed
+24/24, but intended-family recovery was only 19/24, so the frozen decision was
+`stop_and_repair_observability_preflight` and S1 retry eligibility remained
+false. Recovery was derive 6/6, retract 6/6, adopt 4/6, and none 3/6; Claude
+passed 10/12 and Codex 9/12. All five mismatches were observed as `derive`:
+both Marrick `none` turns, Codex Ravensmark `none`, and both Hethel `adopt`
+turns. They are not interchangeable analyzer errors: the Marrick turns voiced
+genuine new conclusions, the Ravensmark turn was only an insufficiency
+statement, and the Hethel evidence surface itself bundled a causal conclusion
+into the premise being adopted.
+
+2026-07-12 Codex next gate after the stop: Do not lower the 24/24 threshold,
+reuse this label, or expose harness targets to the analyzer. First freeze and
+regression-test the public transition ontology without relabeling genuine
+derivations: make `none` fixtures start with no unvoiced derivable fact (or put
+those facts in the prior voiced state), classify pure insufficiency as `none`,
+and give `adopt` a premise-only surface rather than one that already states a
+rule consequence. Preserve the five failed outputs as regression cases, add
+transition-clean replacements, then run a fresh-label 24-case preflight with
+the same matrix and zero-repair rules.
+The 339-call S1, S2, policy optimization, Phase 6B, shadow pilot, efficacy, and
+human-learning claims remain blocked.
