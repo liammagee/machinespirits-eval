@@ -14,7 +14,6 @@ import { buildTutorStubStateObservation } from './tutorStubStateAdapter.js';
 import {
   buildAdaptiveStateRepresentationsV2,
   buildAdaptiveStateCriticalPathPlan,
-  nextDagEventFamily,
   validateAdaptiveStateCriticalPathPlan,
 } from './stateBenchmarkV2.js';
 import {
@@ -80,6 +79,36 @@ function publicWorldForAnalyzer(world) {
     rules: clone(world.rules || []),
     background: clone(world.background || []),
   };
+}
+
+function emptyPriorPublicLearnerState() {
+  return {
+    adopted_premise_ids: [],
+    voiced_derived_facts: [],
+    prior_hypotheses: [],
+    asserted_answers: [],
+  };
+}
+
+function advancePriorPublicLearnerState(previous, analysis) {
+  const next = clone(previous || emptyPriorPublicLearnerState());
+  const accepted = analysis?.tutorLearnerDag?.accepted || {};
+  const adopted = new Set(next.adopted_premise_ids || []);
+  for (const premiseId of accepted.retract || []) adopted.delete(String(premiseId));
+  for (const premiseId of accepted.adopt || []) adopted.add(String(premiseId));
+  next.adopted_premise_ids = [...adopted].sort();
+  const derived = new Map(
+    (next.voiced_derived_facts || []).map((fact) => [hashCanonicalJson(fact), clone(fact)]),
+  );
+  for (const fact of accepted.derive || []) derived.set(hashCanonicalJson(fact), clone(fact));
+  next.voiced_derived_facts = [...derived.values()];
+  if (typeof accepted.hypothesis === 'string' && accepted.hypothesis.trim()) {
+    next.prior_hypotheses = [...new Set([...(next.prior_hypotheses || []), accepted.hypothesis.trim()])];
+  }
+  if (typeof accepted.assertAnswer === 'string' && accepted.assertAnswer.trim()) {
+    next.asserted_answers = [...new Set([...(next.asserted_answers || []), accepted.assertAnswer.trim()])];
+  }
+  return next;
 }
 
 function stagedEvidenceForAnalyzer(world, envelope, firstSeenByPremise, turn) {
@@ -466,6 +495,10 @@ function observationFromAnalysis(result, record, priorObservation, priorRecords,
     ...observationProvenance(job, turn),
     kernel_derived_classifier: false,
   };
+  if (!result?.benchmarkTransitionEvent) {
+    throw new Error('stateBenchmarkStage1: analyzer omitted benchmark transition observation');
+  }
+  observation.benchmark_transition = clone(result.benchmarkTransitionEvent);
   return observation;
 }
 
@@ -475,6 +508,7 @@ function publicObservationSummary(observation, realizedEventIds) {
     learner_text: observation.learner_text,
     realized_public_event_ids: [...realizedEventIds],
     accepted_event_kinds: (observation.accepted_events || []).map((event) => String(event.kind || 'other')),
+    benchmark_transition: clone(observation.benchmark_transition || null),
     dag: clone(observation.dag),
     classifier: clone(observation.classifier),
     human_discourse: clone(observation.human_discourse),
@@ -526,10 +560,11 @@ function rowFor(dialogue, donor, transitionIndex, version) {
   // analyzer. Analyzer disagreement is retained descriptively below and may
   // not rewrite, drop, or exclude a transition.
   const targets = clone(transition.targets);
-  const analyzerEventFamilies = [
-    ...new Set((nextObservation.accepted_events || []).map((event) => String(event.kind || 'none'))),
-  ].sort();
-  const analyzerEventFamily = nextDagEventFamily(nextObservation);
+  const analyzerEventFamily = String(nextObservation.benchmark_transition?.family || '');
+  if (!['retract', 'derive', 'adopt', 'none'].includes(analyzerEventFamily)) {
+    throw new Error('stateBenchmarkStage1: next observation lacks a valid explicit benchmark transition family');
+  }
+  const analyzerEventFamilies = [analyzerEventFamily];
   return {
     schema: 'machinespirits.adaptive-state-benchmark-row.v2',
     version,
@@ -1012,7 +1047,7 @@ async function runAnalyzerCall({
       });
     }
     record.artifact_hashes = artifactHashes;
-    if (!result?.classification || !result?.learnerRecordUpdate) {
+    if (!result?.classification || !result?.learnerRecordUpdate || !result?.benchmarkTransitionEvent) {
       throw Object.assign(new Error('stateBenchmarkStage1: analyzer omitted strict parsed public analysis'), {
         callMetadata: metadata,
       });
@@ -1187,6 +1222,7 @@ async function runTechnicalCanaries({
       tutorTurn: 1,
       currentTutorText: publicTutorTurn(null, 1, worlds.get(firstWorld.id).question).text,
       publicTranscript: [],
+      priorPublicLearnerState: emptyPriorPublicLearnerState(),
       promptContext: {
         benchmark: 'adaptive_state_v2.1',
         world_id: firstWorld.id,
@@ -1231,6 +1267,9 @@ async function runTechnicalCanaries({
   if (!analyzerCanary.tutorLearnerDag?.accepted?.adopt?.includes(canaryPremise.id)) {
     throw new Error('stateBenchmarkStage1: analyzer canary did not apply its one staged public premise');
   }
+  if (analyzerCanary.benchmarkTransitionEvent?.family !== 'adopt') {
+    throw new Error('stateBenchmarkStage1: analyzer canary did not classify its explicit adoption transition');
+  }
   if (ledger.length !== Number(plan.counts.excluded_technical_canary_calls)) {
     throw new Error('stateBenchmarkStage1: technical canaries did not use exactly three excluded calls');
   }
@@ -1261,6 +1300,7 @@ async function runDialogue({
   let pendingLearner = null;
   let learnerRecord = null;
   let analysisDropout = null;
+  let priorPublicLearnerState = emptyPriorPublicLearnerState();
   const firstSeenByPremise = new Map();
   const publicWorld = publicWorldForAnalyzer(world);
   const realizerRuntime = frozenRealizerRuntime(config, job.language_realizer);
@@ -1309,6 +1349,7 @@ async function runDialogue({
       tutorTurn: turn,
       currentTutorText: turn === 1 ? tutorTurn.text : '',
       publicTranscript: clone(analyzerHistory),
+      priorPublicLearnerState: clone(priorPublicLearnerState),
       promptContext: {
         benchmark: 'adaptive_state_v2.1',
         world_id: job.world.id,
@@ -1372,6 +1413,7 @@ async function runDialogue({
     realizedEventIds.push(realized.realizer_output.realized_public_event_ids);
     analysisDropout = analysis.dropout || analysisDropout;
     learnerRecord = analysis.learnerRecord || learnerRecord;
+    priorPublicLearnerState = advancePriorPublicLearnerState(priorPublicLearnerState, analysis);
     publicHistory = analyzerHistory;
     pendingLearner = realized.realizer_output.learner_text;
   };

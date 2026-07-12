@@ -16,6 +16,7 @@ import {
   parseTutorStubPublicLearnerAnalysisInteractive,
   parseTutorStubPublicLearnerAnalysisStrict,
   postprocessTutorStubPublicLearnerAnalysis,
+  splitTutorStubPublicLearnerAnalysis,
 } from '../tutorStubPublicLearnerAnalysis.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -288,6 +289,116 @@ describe('strict public learner analysis', () => {
         ),
       /requires non-empty \$\.learner_record\.human_discourse\.provisional_claims\[0\]/u,
     );
+  });
+
+  it('adds an opt-in four-family benchmark transition with an exact current-turn evidence span', () => {
+    const learnerTurns = {
+      retract: 'I withdraw my earlier guess.',
+      derive: 'So the supported answer is Marin.',
+      adopt: 'I can use the public mark as evidence.',
+      none: 'Could you restate the question?',
+    };
+    const providerSchema = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
+      includeBenchmarkTransitionEvent: true,
+    });
+    assert.deepEqual(providerSchema.properties.benchmark_transition.properties.family.enum, [
+      'retract',
+      'derive',
+      'adopt',
+      'none',
+    ]);
+    for (const [family, learnerText] of Object.entries(learnerTurns)) {
+      const analysis = validAnalysis({
+        root: { benchmark_transition: { family, evidence_span: learnerText } },
+      });
+      assert.doesNotThrow(() =>
+        parseTutorStubPublicLearnerAnalysisStrict(JSON.stringify(analysis), {
+          includeBenchmarkTransitionEvent: true,
+          benchmarkLearnerText: learnerText,
+        }),
+      );
+    }
+    assert.throws(
+      () =>
+        parseTutorStubPublicLearnerAnalysisStrict(
+          JSON.stringify(
+            validAnalysis({
+              root: { benchmark_transition: { family: 'derive', evidence_span: 'not in the turn' } },
+            }),
+          ),
+          {
+            includeBenchmarkTransitionEvent: true,
+            benchmarkLearnerText: learnerTurns.derive,
+          },
+        ),
+      /not an exact learner-turn substring/u,
+    );
+    const prompt = buildTutorStubPublicLearnerAnalysisPrompt({
+      learnerText: learnerTurns.adopt,
+      topic: 'inheritance reasoning',
+      world: smokeWorld(),
+      tutorTurn: 2,
+      includeBenchmarkTransitionEvent: true,
+      priorPublicLearnerState: {
+        adopted_premise_ids: ['p3'],
+        voiced_derived_facts: [],
+        prior_hypotheses: ['Marin may be the heir.'],
+        asserted_answers: [],
+      },
+    });
+    assert.match(prompt, /Prior redacted public learner state/u);
+    assert.match(prompt, /Reusing an already-held premise is none/u);
+    assert.match(prompt, /previously voiced hypothesis/u);
+    assert.match(prompt, /retract, then derive, then adopt, then none/u);
+
+    const duplicateUse = validAnalysis({
+      learnerRecord: { adopt: ['p3'] },
+      root: {
+        benchmark_transition: {
+          family: 'none',
+          evidence_span: 'I can use the public mark as evidence.',
+        },
+      },
+    });
+    const duplicateSplit = splitTutorStubPublicLearnerAnalysis(duplicateUse, {
+      strict: true,
+      includeBenchmarkTransitionEvent: true,
+    });
+    assert.deepEqual(duplicateSplit.learnerRecordUpdate.adopt, ['p3']);
+    assert.equal(duplicateSplit.benchmarkTransitionEvent.family, 'none');
+
+    const multiEvent = validAnalysis({
+      learnerRecord: { adopt: ['p4'], derive: [['heir', 'marin']] },
+      root: {
+        benchmark_transition: {
+          family: 'derive',
+          evidence_span: 'I use the seal, so Marin is the heir.',
+        },
+      },
+    });
+    const multiSplit = splitTutorStubPublicLearnerAnalysis(multiEvent, {
+      strict: true,
+      includeBenchmarkTransitionEvent: true,
+    });
+    assert.deepEqual(multiSplit.learnerRecordUpdate.adopt, ['p4']);
+    assert.deepEqual(multiSplit.learnerRecordUpdate.derive, [['heir', 'marin']]);
+    assert.equal(multiSplit.benchmarkTransitionEvent.family, 'derive');
+
+    const unsupportedHypothesisRetraction = validAnalysis({
+      learnerRecord: { retract: [] },
+      root: {
+        benchmark_transition: {
+          family: 'retract',
+          evidence_span: 'I withdraw my earlier guess.',
+        },
+      },
+    });
+    const retractionSplit = splitTutorStubPublicLearnerAnalysis(unsupportedHypothesisRetraction, {
+      strict: true,
+      includeBenchmarkTransitionEvent: true,
+    });
+    assert.deepEqual(retractionSplit.learnerRecordUpdate.retract, []);
+    assert.equal(retractionSplit.benchmarkTransitionEvent.family, 'retract');
   });
 
   it('pins one structured call while preserving exact input, output, hashes, and bridge metadata', async () => {

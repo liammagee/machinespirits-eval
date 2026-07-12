@@ -5,10 +5,21 @@ import {
   ADAPTIVE_STATE_CLI_REALIZER_CALL_SCHEMA,
   ADAPTIVE_STATE_CLI_REALIZER_OUTPUT_JSON_SCHEMA,
   buildAdaptiveStateCliRealizerInput,
+  buildAdaptiveStateCliRealizerSystemPrompt,
   callAdaptiveStateCliRealizer,
   parseAdaptiveStateCliRealizerOutput,
   validateAdaptiveStateCliRealizerInput,
 } from '../services/adaptiveTutor/stateBenchmarkCliRealizer.js';
+
+test('realizer prompt requires semantic fidelity for all four transition families', () => {
+  const prompt = buildAdaptiveStateCliRealizerSystemPrompt();
+  assert.match(prompt, /adopt.*newly accept or use/iu);
+  assert.match(prompt, /retract.*withdraw/iu);
+  assert.match(prompt, /derive.*new supported conclusion or answer/iu);
+  assert.match(prompt, /For none, introduce no new adoption, retraction, conclusion, or answer/iu);
+  assert.match(prompt, /Do not add a second event family/iu);
+  assert.match(prompt, /Do not write literal public event ids or event-family labels/iu);
+});
 
 function publicInput() {
   return buildAdaptiveStateCliRealizerInput({

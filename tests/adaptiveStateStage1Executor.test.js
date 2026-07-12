@@ -47,7 +47,7 @@ let parent;
 let completeDataset;
 let capturedAnalyzerInputs;
 
-function validAnalysis({ learnerRecord = {} } = {}) {
+function validAnalysis({ learnerRecord = {}, benchmarkTransition = null } = {}) {
   return {
     classification: {
       turn: {
@@ -77,6 +77,7 @@ function validAnalysis({ learnerRecord = {} } = {}) {
       notes: 'Fixture analyzer intentionally codes only adoption.',
       ...learnerRecord,
     },
+    ...(benchmarkTransition ? { benchmark_transition: benchmarkTransition } : {}),
   };
 }
 
@@ -199,7 +200,21 @@ function createAnalyzerText({ capture = null, mutateMetadata = null, fail = null
     const learnerRecord = publicModelInput.learnerText.startsWith('I withdraw')
       ? { retract: voiced.length ? [voiced.at(-1).premise] : [] }
       : { adopt: voiced.length ? [voiced.at(-1).premise] : [] };
-    const payload = validAnalysis({ learnerRecord });
+    const alreadyAdopted = new Set(publicModelInput.priorPublicLearnerState.adopted_premise_ids);
+    const family = publicModelInput.learnerText.startsWith('I withdraw')
+      ? 'retract'
+      : publicModelInput.learnerText.includes('supported inference')
+        ? 'derive'
+        : voiced.some((row) => !alreadyAdopted.has(row.premise))
+          ? 'adopt'
+          : 'none';
+    const payload = validAnalysis({
+      learnerRecord,
+      benchmarkTransition: {
+        family,
+        evidence_span: publicModelInput.learnerText,
+      },
+    });
     const rawAnalysis = await extractTutorStubPublicLearnerAnalysis({
       learnerText: publicModelInput.learnerText,
       topic: publicModelInput.topic,
@@ -208,6 +223,8 @@ function createAnalyzerText({ capture = null, mutateMetadata = null, fail = null
       currentTutorText: publicModelInput.currentTutorText,
       publicTranscript: publicModelInput.publicTranscript,
       publicStagedEvidence: publicModelInput.publicStagedEvidence,
+      priorPublicLearnerState: publicModelInput.priorPublicLearnerState,
+      includeBenchmarkTransitionEvent: true,
       parseMode,
       promptContext: publicModelInput.promptContext,
       modelCallOptions: {
@@ -241,12 +258,16 @@ function createAnalyzerText({ capture = null, mutateMetadata = null, fail = null
         },
       }),
     });
-    const split = splitTutorStubPublicLearnerAnalysis(rawAnalysis, { strict: true });
+    const split = splitTutorStubPublicLearnerAnalysis(rawAnalysis, {
+      strict: true,
+      includeBenchmarkTransitionEvent: true,
+    });
     const result = {
       rawAnalysis,
       call_metadata: rawAnalysis.call_metadata,
       classification: split.classification,
       learnerRecordUpdate: split.learnerRecordUpdate,
+      benchmarkTransitionEvent: split.benchmarkTransitionEvent,
     };
     result.call_metadata.stream_event_type_counts = {};
     result.call_metadata.stream_item_type_counts = {};
@@ -371,6 +392,16 @@ test('public analyzer sees only prior completed exchanges and currently staged e
     assert.equal(Object.hasOwn(input, 'currentPublicActEnvelope'), false);
     assert.equal(Object.hasOwn(input, 'event_ids'), false);
     assert.equal(Object.hasOwn(input, 'proof_transition'), false);
+    assert.deepEqual(Object.keys(input.priorPublicLearnerState).sort(), [
+      'adopted_premise_ids',
+      'asserted_answers',
+      'prior_hypotheses',
+      'voiced_derived_facts',
+    ]);
+    assert.doesNotMatch(
+      JSON.stringify(input.priorPublicLearnerState),
+      /event_family|event_ids|proof_transition|target|oracle|hidden|private|answer_key/iu,
+    );
     assert.equal(Object.hasOwn(input.world, 'secret'), false);
     assert.equal(Object.hasOwn(input.world, 'proofPaths'), false);
     assert.deepEqual(input.publicReleaseLedger, input.publicStagedEvidence);
@@ -434,7 +465,12 @@ test('public analyzer sees only prior completed exchanges and currently staged e
 });
 
 test('harness labels survive descriptive analyzer disagreement and paired realizers keep identical targets', () => {
-  assert.ok(completeDataset.rows.some((row) => row.descriptive_analyzer_alignment.agrees === false));
+  const simulatedDisagreement = structuredClone(completeDataset.rows[0]);
+  const frozenTarget = structuredClone(simulatedDisagreement.targets);
+  simulatedDisagreement.descriptive_analyzer_alignment.analyzer_next_event_family =
+    frozenTarget.next_dag_event_family === 'none' ? 'adopt' : 'none';
+  simulatedDisagreement.descriptive_analyzer_alignment.agrees = false;
+  assert.deepEqual(simulatedDisagreement.targets, frozenTarget);
   const dialogueById = new Map(completeDataset.dialogues.map((row) => [row.id, row]));
   for (const row of completeDataset.rows) {
     assert.deepEqual(row.targets, dialogueById.get(row.groups.dialogue_id).target_sequence[row.turn - 1]);
@@ -470,6 +506,7 @@ test('S1 evaluator passes structural machinery but keeps injected execution non-
   const expectedPublicKeys = [
     'currentTutorText',
     'learnerText',
+    'priorPublicLearnerState',
     'promptContext',
     'publicReleaseLedger',
     'publicStagedEvidence',
@@ -482,6 +519,12 @@ test('S1 evaluator passes structural machinery but keeps injected execution non-
   for (const call of completeDataset.calls.filter((row) => row.role === 'public_turn_analyzer')) {
     assert.deepEqual(Object.keys(call.public_model_input).sort(), expectedPublicKeys);
   }
+  const observedFamilies = new Set(
+    completeDataset.dialogues.flatMap((dialogue) =>
+      dialogue.observations.slice(1).map((observation) => observation.benchmark_transition.family),
+    ),
+  );
+  assert.deepEqual([...observedFamilies].sort(), ['adopt', 'derive', 'none', 'retract']);
   const audit = auditAdaptiveStateStage1Dataset(completeDataset, plan, config, { repoRoot: ROOT });
   assert.equal(audit.controls.passed, true, JSON.stringify(audit.controls.by_generator, null, 2));
   assert.deepEqual(audit.failures, []);
@@ -854,7 +897,15 @@ test('live analyzer adapter preserves strict stream audit and rejects any prohib
     (row) => row.promptContext.technical_canary !== true && row.turn === 1,
   );
   const responseFor = (prohibited = 0) => ({
-    text: JSON.stringify(validAnalysis({ learnerRecord: {} })),
+    text: JSON.stringify(
+      validAnalysis({
+        learnerRecord: {},
+        benchmarkTransition: {
+          family: 'none',
+          evidence_span: publicModelInput.learnerText,
+        },
+      }),
+    ),
     provider: 'codex',
     model: 'gpt-5.6-terra',
     structuredOutput: true,

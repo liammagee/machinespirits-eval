@@ -187,6 +187,11 @@ export function buildAdaptiveStateCliRealizerSystemPrompt() {
   return [
     'Realize exactly one learner turn from the supplied public transition envelope.',
     'Use only the supplied public information. Do not invent, preview, or infer a later transition.',
+    'The learner_text must make exactly the current envelope event semantically explicit in ordinary language, not merely copy its id into the sidecar.',
+    'For adopt, newly accept or use the named current evidence; for retract, explicitly withdraw the named prior premise or hypothesis; for derive, state one new supported conclusion or answer.',
+    'For none, introduce no new adoption, retraction, conclusion, or answer; you may ask a question, report uncertainty, or refer to already-held evidence without presenting it as newly accepted.',
+    'Do not add a second event family to learner_text.',
+    'Do not write literal public event ids or event-family labels such as adopt, retract, derive, or none in learner_text.',
     'Copy the current public event ids exactly into realized_public_event_ids.',
     'Do not use tools, commands, files, browsing, external retrieval, or side effects.',
     'Return only one JSON object with learner_text and realized_public_event_ids.',

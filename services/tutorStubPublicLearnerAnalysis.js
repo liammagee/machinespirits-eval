@@ -85,6 +85,8 @@ const CONTROLLED_OVERALL_FIELDS = [
 ];
 
 const LEARNER_RECORD_FIELDS = ['adopt', 'retract', 'derive', 'hypothesis', 'assert_answer', 'human_discourse', 'notes'];
+const BENCHMARK_TRANSITION_FAMILIES = ['retract', 'derive', 'adopt', 'none'];
+const BENCHMARK_TRANSITION_FIELDS = ['family', 'evidence_span'];
 
 const REGISTER_SELECTION_FIELDS = [
   'engagement_stance',
@@ -252,7 +254,10 @@ function discourseOutputSchema() {
  * JSON-Schema constraints, so it must not be sent to OpenAI/Codex Structured
  * Outputs. Interactive parsing remains schema-free and tolerant.
  */
-export function buildTutorStubPublicLearnerAnalysisOutputSchema({ includeRegisterSelection = false } = {}) {
+export function buildTutorStubPublicLearnerAnalysisOutputSchema({
+  includeRegisterSelection = false,
+  includeBenchmarkTransitionEvent = false,
+} = {}) {
   const properties = {
     classification: {
       type: 'object',
@@ -309,6 +314,18 @@ export function buildTutorStubPublicLearnerAnalysisOutputSchema({ includeRegiste
     },
   };
   const required = ['classification', 'learner_record'];
+  if (includeBenchmarkTransitionEvent) {
+    properties.benchmark_transition = {
+      type: 'object',
+      additionalProperties: false,
+      required: BENCHMARK_TRANSITION_FIELDS,
+      properties: {
+        family: { type: 'string', enum: [...BENCHMARK_TRANSITION_FAMILIES] },
+        evidence_span: { type: 'string' },
+      },
+    };
+    required.push('benchmark_transition');
+  }
   if (includeRegisterSelection) {
     properties.register_selection = {
       type: 'object',
@@ -395,6 +412,7 @@ function providerDiscourseOutputSchema() {
  */
 export function buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
   includeRegisterSelection = false,
+  includeBenchmarkTransitionEvent = false,
 } = {}) {
   const properties = {
     classification: providerObjectSchema({
@@ -429,6 +447,12 @@ export function buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
       notes: { type: 'string' },
     }),
   };
+  if (includeBenchmarkTransitionEvent) {
+    properties.benchmark_transition = providerObjectSchema({
+      family: { type: 'string', enum: [...BENCHMARK_TRANSITION_FAMILIES] },
+      evidence_span: { type: 'string' },
+    });
+  }
   if (includeRegisterSelection) {
     properties.register_selection = providerObjectSchema({
       engagement_stance: { type: 'string' },
@@ -938,6 +962,8 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   registerPalette = [],
   registerContext = {},
   publicStagedEvidence = null,
+  priorPublicLearnerState = null,
+  includeBenchmarkTransitionEvent = false,
   strictProviderEnvelope = false,
 } = {}) {
   if (!world) throw new TutorStubPublicLearnerAnalysisError('public learner analysis requires a world');
@@ -953,6 +979,12 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     classification: tutorStubLearnerClassificationPromptSchema(),
     learner_record: tutorStubLearnerRecordPromptSchema(),
   };
+  if (includeBenchmarkTransitionEvent) {
+    schema.benchmark_transition = {
+      family: BENCHMARK_TRANSITION_FAMILIES.join('|'),
+      evidence_span: 'exact non-empty substring of the current learner turn',
+    };
+  }
   if (includeRegisterSelection) schema.register_selection = tutorStubEngagementStancePromptSchema();
   const policyInstruction =
     registerEnabled && LOCAL_REGISTER_POLICIES.has(policy) ? localPolicyInstruction(policy) : null;
@@ -1042,6 +1074,44 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     '- human_discourse: record only concrete current-turn material. proof_status uses the schema enum. provisional_claims are allowable but not strict; implied_warrants are unstated bridges; missing_warrants are still owed; implied_public_premises are public but ungrounded; suppressed_or_private_premises and illicit_hidden_premises are not public enough; common_sense_bridges are safe provisional steps; proof_debt_candidates need later repair; side_arc covers clarification, vocabulary, affect, trust, or off-path requests.',
     '- A wording-only or vocabulary-only clarification request is a non-DAG side-state: classify and record the side arc, but do not adopt premises, derive facts, or assert an answer from that request itself.',
     '- Be conservative: staged evidence is not adopted merely because it exists.',
+    includeBenchmarkTransitionEvent ? '' : null,
+    includeBenchmarkTransitionEvent ? '# Prior redacted public learner state' : null,
+    includeBenchmarkTransitionEvent ? '' : null,
+    includeBenchmarkTransitionEvent
+      ? JSON.stringify(
+          priorPublicLearnerState || {
+            adopted_premise_ids: [],
+            voiced_derived_facts: [],
+            prior_hypotheses: [],
+            asserted_answers: [],
+          },
+          null,
+          2,
+        )
+      : null,
+    includeBenchmarkTransitionEvent ? '' : null,
+    includeBenchmarkTransitionEvent ? '# Benchmark transition observation' : null,
+    includeBenchmarkTransitionEvent
+      ? 'Classify the single primary learner-state transition newly expressed in the current learner turn. This field is an observation from public text, never a prediction or target.'
+      : null,
+    includeBenchmarkTransitionEvent
+      ? '- retract: the learner explicitly withdraws either a previously adopted premise or a previously voiced hypothesis.'
+      : null,
+    includeBenchmarkTransitionEvent
+      ? '- derive: the learner voices a new supported conclusion or direct answer not already present in the prior public learner state.'
+      : null,
+    includeBenchmarkTransitionEvent
+      ? '- adopt: the learner newly accepts or uses a staged premise that is not already adopted.'
+      : null,
+    includeBenchmarkTransitionEvent
+      ? '- none: no new retract, derive, or adopt transition. Reusing an already-held premise is none.'
+      : null,
+    includeBenchmarkTransitionEvent
+      ? '- If more than one new transition appears, choose the primary family in this order: retract, then derive, then adopt, then none. Keep all supported learner_record updates separately.'
+      : null,
+    includeBenchmarkTransitionEvent
+      ? '- evidence_span must copy an exact, non-empty substring from the current learner turn that best supports the selected family. Do not copy a span from prior turns or the staged evidence block.'
+      : null,
     includeRegisterSelection ? '' : null,
     includeRegisterSelection ? '# Tutor engagement-stance selection' : null,
     includeRegisterSelection
@@ -1264,9 +1334,17 @@ function requireNullableString(value, path) {
   }
 }
 
-function validateStrictAnalysis(parsed, { includeRegisterSelection = false } = {}) {
+function validateStrictAnalysis(
+  parsed,
+  { includeRegisterSelection = false, includeBenchmarkTransitionEvent = false, benchmarkLearnerText = null } = {},
+) {
   const root = requireObject(parsed, '$');
-  const rootFields = ['classification', 'learner_record', ...(includeRegisterSelection ? ['register_selection'] : [])];
+  const rootFields = [
+    'classification',
+    'learner_record',
+    ...(includeRegisterSelection ? ['register_selection'] : []),
+    ...(includeBenchmarkTransitionEvent ? ['benchmark_transition'] : []),
+  ];
   requireExactKeys(root, { allowed: rootFields, required: rootFields, path: '$' });
   const classification = requireObject(root.classification, '$.classification');
   requireExactKeys(classification, {
@@ -1437,6 +1515,38 @@ function validateStrictAnalysis(parsed, { includeRegisterSelection = false } = {
       );
     }
   }
+  if (includeBenchmarkTransitionEvent) {
+    const transition = requireObject(root.benchmark_transition, '$.benchmark_transition');
+    requireExactKeys(transition, {
+      allowed: BENCHMARK_TRANSITION_FIELDS,
+      required: BENCHMARK_TRANSITION_FIELDS,
+      path: '$.benchmark_transition',
+    });
+    if (!BENCHMARK_TRANSITION_FAMILIES.includes(transition.family)) {
+      throw new TutorStubPublicLearnerAnalysisError(
+        `strict public learner analysis has unknown $.benchmark_transition.family: ${String(transition.family)}`,
+        {
+          code: 'invalid_analysis_enum',
+          details: { path: '$.benchmark_transition.family', value: transition.family },
+        },
+      );
+    }
+    if (typeof transition.evidence_span !== 'string' || !transition.evidence_span.trim()) {
+      throw new TutorStubPublicLearnerAnalysisError(
+        'strict public learner analysis requires non-empty $.benchmark_transition.evidence_span',
+        { code: 'invalid_analysis_schema', details: { path: '$.benchmark_transition.evidence_span' } },
+      );
+    }
+    if (
+      typeof benchmarkLearnerText === 'string' &&
+      !benchmarkLearnerText.includes(transition.evidence_span)
+    ) {
+      throw new TutorStubPublicLearnerAnalysisError(
+        'strict public learner analysis benchmark transition evidence_span is not an exact learner-turn substring',
+        { code: 'invalid_analysis_evidence_span', details: { path: '$.benchmark_transition.evidence_span' } },
+      );
+    }
+  }
   return root;
 }
 
@@ -1468,7 +1578,10 @@ export function parseTutorStubPublicLearnerAnalysisStrict(rawText, options = {})
   return { parsed, parseError: null };
 }
 
-function analysisParts(raw, { strict = false, includeRegisterSelection = false } = {}) {
+function analysisParts(
+  raw,
+  { strict = false, includeRegisterSelection = false, includeBenchmarkTransitionEvent = false } = {},
+) {
   const parsed = raw?.parsed || raw || {};
   const classification =
     parsed.classification ||
@@ -1482,10 +1595,11 @@ function analysisParts(raw, { strict = false, includeRegisterSelection = false }
     parsed.register_selection ||
     (!strict && (parsed.registerSelection || parsed.tutor_register || parsed.register)) ||
     null;
+  const benchmarkTransition = parsed.benchmark_transition || null;
   if (strict) {
-    validateStrictAnalysis(parsed, { includeRegisterSelection });
+    validateStrictAnalysis(parsed, { includeRegisterSelection, includeBenchmarkTransitionEvent });
   }
-  return { classification, learnerRecord, registerSelection };
+  return { classification, learnerRecord, registerSelection, benchmarkTransition };
 }
 
 function responseMetadata(raw = {}) {
@@ -1506,6 +1620,7 @@ export function splitTutorStubPublicLearnerAnalysis(raw, options = {}) {
     classification: parts.classification ? { ...parts.classification, ...metadata } : null,
     learnerRecordUpdate: parts.learnerRecord ? { ...parts.learnerRecord, ...metadata } : null,
     registerSelection: parts.registerSelection,
+    benchmarkTransitionEvent: parts.benchmarkTransition,
   };
 }
 
@@ -1524,6 +1639,8 @@ export async function extractTutorStubPublicLearnerAnalysis({
   registerPalette = [],
   registerContext = {},
   publicStagedEvidence = null,
+  priorPublicLearnerState = null,
+  includeBenchmarkTransitionEvent = false,
   callModel,
   parseMode = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK,
   role = 'tutor_stub_public_learner_analysis',
@@ -1533,7 +1650,9 @@ export async function extractTutorStubPublicLearnerAnalysis({
 } = {}) {
   const strict = parseMode === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK;
   const effectiveRole = strict ? 'tutor_stub_public_learner_analysis' : role;
-  const outputSchema = strict ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema() : null;
+  const outputSchema = strict
+    ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeBenchmarkTransitionEvent })
+    : null;
   let analysisPrompt = typeof prompt === 'string' ? prompt : null;
   const preCallFailure = (error) =>
     attachCallFailure(error, {
@@ -1567,7 +1686,10 @@ export async function extractTutorStubPublicLearnerAnalysis({
     registerPalette.length,
   );
   const effectiveOutputSchema = strict
-    ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeRegisterSelection })
+    ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
+        includeRegisterSelection,
+        includeBenchmarkTransitionEvent,
+      })
     : null;
   try {
     const effectivePublicStagedEvidence = analysisPrompt
@@ -1591,6 +1713,8 @@ export async function extractTutorStubPublicLearnerAnalysis({
         registerPalette,
         registerContext,
         publicStagedEvidence: effectivePublicStagedEvidence,
+        priorPublicLearnerState,
+        includeBenchmarkTransitionEvent,
         strictProviderEnvelope: strict,
       });
   } catch (error) {
@@ -1760,7 +1884,11 @@ export async function extractTutorStubPublicLearnerAnalysis({
   let parsedResult;
   try {
     parsedResult = strict
-      ? parseTutorStubPublicLearnerAnalysisStrict(rawText, { includeRegisterSelection })
+      ? parseTutorStubPublicLearnerAnalysisStrict(rawText, {
+          includeRegisterSelection,
+          includeBenchmarkTransitionEvent,
+          benchmarkLearnerText: learnerText,
+        })
       : parseTutorStubPublicLearnerAnalysisInteractive(rawText);
   } catch (error) {
     throw attachCallFailure(error, {
@@ -2131,6 +2259,7 @@ export function postprocessTutorStubPublicLearnerAnalysis({
   humanDiscourseFrame = null,
   publicStagedEvidence = null,
   publicReleaseLedger = null,
+  includeBenchmarkTransitionEvent = false,
 } = {}) {
   const record = learnerRecord || createTutorStubPublicLearnerRecord(world);
   const dropoutState = dropout || createTutorStubDagFactDropoutState();
@@ -2149,10 +2278,12 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       Array.isArray(promptContext.registerPalette) &&
       promptContext.registerPalette.length,
     );
-    const { classification, learnerRecordUpdate, registerSelection } = splitTutorStubPublicLearnerAnalysis(
-      rawAnalysis,
-      { strict, includeRegisterSelection },
-    );
+    const { classification, learnerRecordUpdate, registerSelection, benchmarkTransitionEvent } =
+      splitTutorStubPublicLearnerAnalysis(rawAnalysis, {
+        strict,
+        includeRegisterSelection,
+        includeBenchmarkTransitionEvent,
+      });
     if (!classification || !learnerRecordUpdate) {
       throw new TutorStubPublicLearnerAnalysisError(
         'public learner analysis did not provide both classification and learner_record',
@@ -2195,6 +2326,7 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       classification,
       learnerRecordUpdate,
       registerSelection,
+      benchmarkTransitionEvent,
       tutorLearnerDag,
       turnRecord,
       stateObservation,

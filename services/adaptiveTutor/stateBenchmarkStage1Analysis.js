@@ -45,6 +45,7 @@ const EXPECTED_TARGET_CONTRACTS = Object.freeze([
 const PUBLIC_INPUT_KEYS = Object.freeze([
   'currentTutorText',
   'learnerText',
+  'priorPublicLearnerState',
   'promptContext',
   'publicReleaseLedger',
   'publicStagedEvidence',
@@ -218,13 +219,19 @@ function validateArtifactRecord(call) {
         currentTutorText: input.currentTutorText,
         publicTranscript: input.publicTranscript,
         publicStagedEvidence: input.publicStagedEvidence,
+        priorPublicLearnerState: input.priorPublicLearnerState,
+        includeBenchmarkTransitionEvent: true,
         strictProviderEnvelope: true,
       });
       if (
         artifacts.system_prompt !== TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_SYSTEM_PROMPT ||
         artifacts.prompt !== reconstructedPrompt ||
         hashCanonicalJson(artifacts.output_schema) !==
-          hashCanonicalJson(buildTutorStubPublicLearnerAnalysisProviderOutputSchema()) ||
+          hashCanonicalJson(
+            buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
+              includeBenchmarkTransitionEvent: true,
+            }),
+          ) ||
         hashCanonicalJson(call.provenance?.hashes || {}) !==
           hashCanonicalJson({
             input_sha256: expected.model_input_envelope_sha256,
@@ -299,6 +306,26 @@ function auditPublicAnalyzerCall(call, premisesByWorld) {
     failures.push('public_world_not_redacted');
   }
   if (scanForbiddenKeys(input).length) failures.push('forbidden_analyzer_input_key');
+  const prior = input.priorPublicLearnerState;
+  if (
+    !prior ||
+    hashCanonicalJson(Object.keys(prior).sort()) !==
+      hashCanonicalJson(
+        ['adopted_premise_ids', 'asserted_answers', 'prior_hypotheses', 'voiced_derived_facts'].sort(),
+      ) ||
+    !Array.isArray(prior.adopted_premise_ids) ||
+    prior.adopted_premise_ids.some((value) => typeof value !== 'string') ||
+    !Array.isArray(prior.voiced_derived_facts) ||
+    prior.voiced_derived_facts.some(
+      (fact) => !Array.isArray(fact) || !fact.length || fact.some((value) => typeof value !== 'string'),
+    ) ||
+    !Array.isArray(prior.prior_hypotheses) ||
+    prior.prior_hypotheses.some((value) => typeof value !== 'string') ||
+    !Array.isArray(prior.asserted_answers) ||
+    prior.asserted_answers.some((value) => typeof value !== 'string')
+  ) {
+    failures.push('prior_public_learner_state_schema');
+  }
   if (
     !Array.isArray(input.publicTranscript) ||
     input.publicTranscript.some(

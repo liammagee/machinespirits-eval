@@ -173,6 +173,8 @@ export function createAdaptiveStateStage1LiveSeams({
         currentTutorText: publicModelInput.currentTutorText,
         publicTranscript: publicModelInput.publicTranscript,
         publicStagedEvidence: publicModelInput.publicStagedEvidence,
+        priorPublicLearnerState: publicModelInput.priorPublicLearnerState,
+        includeBenchmarkTransitionEvent: true,
         parseMode,
         promptContext: publicModelInput.promptContext,
         modelCallOptions: {
@@ -266,12 +268,16 @@ export function createAdaptiveStateStage1LiveSeams({
       rawAnalysis.call_metadata.invalid_stream_lines = Number(
         rawAnalysis.callMetadata.injectedCallMetadata?.invalid_stream_lines || 0,
       );
-      const split = splitTutorStubPublicLearnerAnalysis(rawAnalysis, { strict: true });
+      const split = splitTutorStubPublicLearnerAnalysis(rawAnalysis, {
+        strict: true,
+        includeBenchmarkTransitionEvent: true,
+      });
       const result = {
         rawAnalysis,
         call_metadata: rawAnalysis.call_metadata,
         classification: split.classification,
         learnerRecordUpdate: split.learnerRecordUpdate,
+        benchmarkTransitionEvent: split.benchmarkTransitionEvent,
       };
       await notify(onFinished, {
         type: 'call_finished',
@@ -317,6 +323,7 @@ export function createAdaptiveStateStage1LiveSeams({
       previousTurnRecords: deterministicPostprocessorInput.previousTurnRecords,
       publicStagedEvidence: publicModelInput.publicStagedEvidence,
       publicReleaseLedger: publicModelInput.publicReleaseLedger,
+      includeBenchmarkTransitionEvent: true,
     });
 
   return { realizeTurn, analyzePublicText, postprocessPublicAnalysis };
