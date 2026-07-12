@@ -5,7 +5,9 @@ import {
   applyTutorStubDagFactDropout,
   createTutorStubDagFactDropoutState,
   normalizeTutorStubDagFactDropoutRate,
+  summarizeTutorStubDagFactDropoutTrace,
   tutorStubDagFactDropoutSnapshot,
+  tutorStubDagFactDropoutTurnFromTraceRecord,
 } from '../tutorStubDagFactDropout.js';
 
 function fixture() {
@@ -29,6 +31,61 @@ test('DAG fact dropout rate accepts only the closed unit interval', () => {
   assert.equal(normalizeTutorStubDagFactDropoutRate(1), 1);
   assert.throws(() => normalizeTutorStubDagFactDropoutRate(-0.1), /between 0 and 1/u);
   assert.throws(() => normalizeTutorStubDagFactDropoutRate(1.1), /between 0 and 1/u);
+});
+
+test('trace extraction falls back from a circular alias to the persisted learner-DAG update', () => {
+  const persisted = {
+    schema: 'machinespirits.tutor-stub.dag-fact-dropout-turn.v1',
+    configuredRate: 0.15,
+    seed: 7,
+    eligibleCount: 3,
+    droppedNow: [{ premiseId: 'p_first' }],
+    repairedNow: [],
+    activeDropped: [{ premiseId: 'p_first' }],
+  };
+  const turnRecord = {
+    dagFactDropout: '[circular]',
+    tutorLearnerDagUpdate: { dagFactDropout: persisted },
+  };
+
+  assert.equal(tutorStubDagFactDropoutTurnFromTraceRecord(turnRecord), persisted);
+  assert.deepEqual(summarizeTutorStubDagFactDropoutTrace([turnRecord]), {
+    configuredRate: 0.15,
+    seed: 7,
+    eligibleOpportunities: 3,
+    dropped: 1,
+    repaired: 0,
+    activeAtEnd: 1,
+  });
+});
+
+test('trace summary accumulates dropout and re-adoption events across turns', () => {
+  const turn = (overrides) => ({
+    dagFactDropout: {
+      schema: 'machinespirits.tutor-stub.dag-fact-dropout-turn.v1',
+      configuredRate: 0.2,
+      seed: 9,
+      eligibleCount: 2,
+      droppedNow: [],
+      repairedNow: [],
+      activeDropped: [],
+      ...overrides,
+    },
+  });
+  assert.deepEqual(
+    summarizeTutorStubDagFactDropoutTrace([
+      turn({ droppedNow: [{ premiseId: 'p_first' }], activeDropped: [{ premiseId: 'p_first' }] }),
+      turn({ eligibleCount: 1, repairedNow: [{ premiseId: 'p_first' }], activeDropped: [] }),
+    ]),
+    {
+      configuredRate: 0.2,
+      seed: 9,
+      eligibleOpportunities: 3,
+      dropped: 1,
+      repaired: 1,
+      activeAtEnd: 0,
+    },
+  );
 });
 
 test('only accumulated premise facts drop; background remains and grace delays eligibility', () => {

@@ -86,6 +86,45 @@ export function tutorStubDagFactDropoutSnapshot(state) {
   };
 }
 
+function isDagFactDropoutTurn(value) {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      (value.schema === TUTOR_STUB_DAG_FACT_DROPOUT_TURN_SCHEMA ||
+        Object.hasOwn(value, 'configuredRate') ||
+        Object.hasOwn(value, 'droppedNow') ||
+        Object.hasOwn(value, 'repairedNow')),
+  );
+}
+
+// JSONL serialization replaces repeated object references with "[circular]".
+// The nested learner-DAG update is the canonical persisted copy in that case.
+export function tutorStubDagFactDropoutTurnFromTraceRecord(turnRecord) {
+  const candidates = [
+    turnRecord?.dagFactDropout,
+    turnRecord?.tutorLearnerDagUpdate?.dagFactDropout,
+  ];
+  return candidates.find(isDagFactDropoutTurn) || null;
+}
+
+export function summarizeTutorStubDagFactDropoutTrace(turnRecords = []) {
+  const turns = turnRecords.map(tutorStubDagFactDropoutTurnFromTraceRecord).filter(Boolean);
+  if (!turns.length) return null;
+  const lastConfigured = turns
+    .slice()
+    .reverse()
+    .find((turn) => turn.configuredRate !== undefined || turn.seed !== undefined);
+  return {
+    configuredRate: lastConfigured?.configuredRate ?? null,
+    seed: lastConfigured?.seed ?? null,
+    eligibleOpportunities: turns.reduce((sum, turn) => sum + Number(turn.eligibleCount || 0), 0),
+    dropped: turns.reduce((sum, turn) => sum + Number(turn.droppedNow?.length || 0), 0),
+    repaired: turns.reduce((sum, turn) => sum + Number(turn.repairedNow?.length || 0), 0),
+    activeAtEnd: turns.at(-1)?.activeDropped?.length || 0,
+  };
+}
+
 function restoreState(target, snapshot) {
   const restored = normalizedStateSnapshot(snapshot);
   for (const key of Object.keys(target || {})) delete target[key];

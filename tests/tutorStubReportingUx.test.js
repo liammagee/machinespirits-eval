@@ -381,6 +381,90 @@ test('paired tutor-stub experiments get a live placeholder without an interim ve
   assert.match(placeholder, /\?evaluation=dag-dropout-paired-smoke/);
 });
 
+test('report regeneration persists DAG dropout metrics from JSONL-safe nested turn data', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-dropout-report-repair-'));
+  const traceDir = path.join(root, 'traces', 'continuous-r1');
+  const tracePath = path.join(traceDir, 'trace.jsonl');
+  const summaryPath = path.join(root, 'auto-eval-fixture.json');
+  fs.mkdirSync(traceDir, { recursive: true });
+  const dropout = {
+    schema: 'machinespirits.tutor-stub.dag-fact-dropout-turn.v1',
+    configuredRate: 0.15,
+    seed: 17,
+    eligibleCount: 2,
+    droppedNow: [{ premiseId: 'p_alloy' }],
+    repairedNow: [],
+    activeDropped: [{ premiseId: 'p_alloy' }],
+  };
+  const events = [
+    {
+      type: 'turn_complete',
+      turn: 1,
+      turnRecord: {
+        turn: 1,
+        learner: 'I remember the assay but not its source.',
+        tutor: 'Return to the cupel record.',
+        dagFactDropout: '[circular]',
+        tutorLearnerDagUpdate: { dagFactDropout: dropout },
+        tutorLearnerDagModel: {
+          assessment: { bestPathCoverage: 0.5, bottleneck: 'learner_integration_gap' },
+          metrics: { missingPremiseCount: 1 },
+        },
+        registerSelection: { selected_register: 'plain' },
+        tutorLeakAudit: { ok: true, leaks: [] },
+      },
+    },
+    { type: 'auto_learner_run_end', reason: 'auto_safety_turn_cap' },
+  ];
+  fs.writeFileSync(tracePath, `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
+  fs.writeFileSync(
+    summaryPath,
+    `${JSON.stringify({
+      schema: 'machinespirits.tutor-stub.auto-eval.v1',
+      startedAt: '2026-07-11T00:00:00.000Z',
+      completedAt: '2026-07-11T00:01:00.000Z',
+      config: {
+        traceDir: root,
+        policies: ['continuous_dynamical_system'],
+        autoLearnerProfileId: 'diligent',
+        world: 'world_005_marrick',
+        dagMode: 'defeasible_human_scaffold',
+      },
+      results: [{
+        key: 'continuous-r1',
+        policy: 'continuous_dynamical_system',
+        runIndex: 1,
+        status: 'ok',
+        traces: [tracePath],
+        traceSummaries: [{ dagFactDropout: null }],
+      }],
+      report: { json: summaryPath, html: summaryPath.replace(/\.json$/u, '.html') },
+    }, null, 2)}\n`,
+  );
+
+  execFileSync(
+    process.execPath,
+    ['scripts/run-tutor-stub-auto-eval.js', '--report-from', summaryPath, '--no-ledger'],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+
+  const repaired = JSON.parse(fs.readFileSync(summaryPath, 'utf8'));
+  assert.deepEqual(repaired.rows[0].dagFactDropout, {
+    configuredRate: 0.15,
+    seed: 17,
+    eligibleOpportunities: 2,
+    dropped: 1,
+    repaired: 0,
+    activeAtEnd: 1,
+  });
+  assert.deepEqual(repaired.results[0].traceSummaries[0].dagFactDropout, repaired.rows[0].dagFactDropout);
+  const htmlPath = summaryPath.replace(/\.json$/u, '.html');
+  assert.ok(fs.existsSync(htmlPath));
+  const html = fs.readFileSync(htmlPath, 'utf8');
+  assert.match(html, /DAG Dropout/u);
+  assert.match(html, /15% · 2 eligible · 1 dropped \/ 0 re-adopted · 1 active at end/u);
+});
+
 test('individual tutor-stub reports expose progressive summaries and accessible replay tabs', () => {
   const source = fs.readFileSync(path.join(ROOT, 'scripts', 'run-tutor-stub-auto-eval.js'), 'utf8');
   assert.match(source, /class="read-first-cards"/);

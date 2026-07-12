@@ -26,6 +26,8 @@ import {
   DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED,
   normalizeTutorStubDagFactDropoutRate,
   normalizeTutorStubDagFactDropoutSeed,
+  summarizeTutorStubDagFactDropoutTrace,
+  tutorStubDagFactDropoutTurnFromTraceRecord,
 } from '../services/tutorStubDagFactDropout.js';
 import { summarizeTutorStubResponseConfigurationAudits } from '../services/tutorStubResponseConfiguration.js';
 import {
@@ -956,7 +958,7 @@ function buildAnimatedVizFrame({ turn, index, fieldRows }) {
     selectedRegister: selection.selected_register || selection.engagement_stance || null,
     responseConfiguration: turn?.responseConfiguration || selection.response_configuration || null,
     responseConfigurationAudit: turn?.responseConfigurationAudit || null,
-    dagFactDropout: turn?.dagFactDropout || null,
+    dagFactDropout: tutorStubDagFactDropoutTurnFromTraceRecord(turn),
     register: {
       policy: selection.policy || null,
       engagementStance: selection.engagement_stance || selection.selected_register || null,
@@ -1551,17 +1553,7 @@ function summarizeTrace(tracePath, traceDir) {
   const responseConfigurationVisibility = summarizeTutorStubResponseConfigurationAudits(
     turnRecords.map((turn) => turn.responseConfigurationAudit),
   );
-  const dropoutTurns = turnRecords.map((turn) => turn.dagFactDropout).filter(Boolean);
-  const dagFactDropout = dropoutTurns.length
-    ? {
-        configuredRate: dropoutTurns.at(-1)?.configuredRate ?? null,
-        seed: dropoutTurns.at(-1)?.seed ?? null,
-        eligibleOpportunities: dropoutTurns.reduce((sum, row) => sum + Number(row.eligibleCount || 0), 0),
-        dropped: dropoutTurns.reduce((sum, row) => sum + Number(row.droppedNow?.length || 0), 0),
-        repaired: dropoutTurns.reduce((sum, row) => sum + Number(row.repairedNow?.length || 0), 0),
-        activeAtEnd: dropoutTurns.at(-1)?.activeDropped?.length || 0,
-      }
-    : null;
+  const dagFactDropout = summarizeTutorStubDagFactDropoutTrace(turnRecords);
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
@@ -4204,6 +4196,8 @@ const REPORT_TERM_TOOLTIPS = {
     'Mean learner-DAG best-path coverage across OK rows. It is a 0 to 1 score for how much of the target evidence path is grounded.',
   meanMissing:
     'Mean count of still-missing premises on the learner-DAG best path at the end of OK rows. Lower is better.',
+  dagFactDropout:
+    'Accumulated learner-DAG premise-loss audit: configured rate, eligible fact-turn opportunities, premises dropped, premises explicitly re-adopted, and premises still dropped at the end.',
   masteryDelta:
     'Mean change in the reconstructed learner-mastery field from first to final turn for OK rows. Higher gain is better.',
   riskDelta:
@@ -6067,6 +6061,11 @@ function renderFieldTrajectories(rows) {
   </div>`;
 }
 
+function formatDagFactDropoutSummary(value) {
+  if (!value || value.configuredRate === null || value.configuredRate === undefined) return 'not recorded';
+  return `${Math.round(Number(value.configuredRate || 0) * 100)}% · ${Number(value.eligibleOpportunities || 0)} eligible · ${Number(value.dropped || 0)} dropped / ${Number(value.repaired || 0)} re-adopted · ${Number(value.activeAtEnd || 0)} active at end`;
+}
+
 function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
   const reportDir = htmlPath
     ? path.dirname(resolvePath(htmlPath))
@@ -6116,6 +6115,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <td>${escapeHtml(row.turnCount)}</td>
         <td>${row.bestPathCoverage} ${pctBar(row.bestPathCoverage)}</td>
         <td>${escapeHtml(row.missingPremiseCount ?? '')}</td>
+        <td>${escapeHtml(formatDagFactDropoutSummary(row.dagFactDropout))}</td>
         <td>${escapeHtml(displayBottleneck(row.bottleneck, { groundedClosure: row.groundedClosure }))}</td>
         <td>${escapeHtml(
           row.field?.delta
@@ -6247,6 +6247,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>${reportInfoTerm('meanTurns', 'Turns')}</th>
         <th>${reportInfoTerm('meanCoverage', 'Coverage')}</th>
         <th>${reportInfoTerm('meanMissing', 'Missing')}</th>
+        <th>${reportInfoTerm('dagFactDropout', 'DAG Dropout')}</th>
         <th>${reportInfoTerm('bottleneck', 'Proof Status')}</th>
         <th>${reportInfoTerm('fieldDelta', 'Field Movement')}</th>
         <th>${reportInfoTerm('topRegisters', 'Engagement Stances')}</th>
@@ -6258,7 +6259,7 @@ function renderHtmlReport(summary, rows, { htmlPath = '' } = {}) {
         <th>Trace</th>
         <th>Log</th>
       </tr></thead>
-      <tbody>${runRows || '<tr><td colspan="18">No run rows.</td></tr>'}</tbody>
+      <tbody>${runRows || '<tr><td colspan="19">No run rows.</td></tr>'}</tbody>
           </table>
           </div>
         </section>
@@ -9730,6 +9731,7 @@ function writeReportFromSummary(summaryPath) {
     ...(summary.report || {}),
     html: resolvedSummaryPath.replace(/\.json$/u, '.html'),
   };
+  writeJsonAtomic(resolvedSummaryPath, summary);
   writeHtmlReport({ summary, rows, htmlPath: summary.report.html });
   writeEvalLedger({ summary, summaryPath: resolvedSummaryPath, htmlPath: summary.report.html });
 }
