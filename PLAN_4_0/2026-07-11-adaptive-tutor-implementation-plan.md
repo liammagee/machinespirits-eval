@@ -546,8 +546,8 @@ trajectory—not only a global winner/null.
 ### 7.9 Execution record — 2026-07-12
 
 The v2.1 sequence has produced one valid contract pass, one completed full-S1
-technical stop, two earlier fail-closed technical stops, and one completed
-bounded-preflight stop. None is a learner-state validity or efficacy result.
+technical stop, two earlier fail-closed technical stops, and two completed
+bounded-preflight stops. None is a learner-state validity or efficacy result.
 
 1. **Fresh S0 passed at `5a3e5aae`.** The sealed zero-model-call run
    `adaptive-state-v2-s0-clean-5a3e5aae-v21` contains 24 dialogues and 144
@@ -607,27 +607,50 @@ bounded-preflight stop. None is a learner-state validity or efficacy result.
    All five mismatches were classified as `derive`: both Marrick `none` turns,
    Codex Ravensmark `none`, and both Hethel `adopt` turns. Report SHA-256 is
    `f83173712350f67723694ed1cd10ed16295e5985862e23eca411f9f1ebf51b5f`.
-7. **S2 was not run and remains fail-closed.** No passing preflight or S1 seal
+7. **The zero-call repair improved a fresh preflight to 22/24 but did not clear
+   the gate.** Commit `8d6d2b22` froze the five prior mismatches as semantic
+   regression evidence, settled every `none` fixture by pre-voicing already
+   supported facts, made the Hethel `adopt` surface premise-only through a
+   hash-guarded public projection shared by preflight and S1, and distinguished
+   pure epistemic insufficiency from an object-level derivation. The sealed paid
+   run `adaptive-state-v2-observability-preflight-8d6d2b22-v21` again completed
+   all 24 cases and 48/48 serial CLI dispatches with zero technical failures,
+   retries, rerolls, repairs, fallbacks, exclusions, partial reuse, or event-ID
+   leaks. Exact-family recovery rose to 22/24 (`0.916667`): `none`, `adopt`, and
+   `retract` passed 6/6; `derive` passed 4/6; each realizer passed 11/12; Hethel
+   passed 8/8 and Marrick/Ravensmark 7/8. The two remaining failures are both
+   on the public `derive` boundary. Codex rendered Marrick's event only as “a
+   further intermediate inference,” without voicing any conclusion, so the
+   conservative analyzer correctly returned `none`. Claude's Ravensmark turn
+   voiced the supported intermediate proposition that the dusk-seal was the
+   operative seal, then added a conditional signer relation whose holder
+   premise was still absent; the analyzer treated the whole turn as
+   provisional and returned `none`. This exposes a clause-wise derive-recovery
+   ambiguity rather than evidence for or against the learner-state sensor. The
+   frozen decision remains `stop_and_repair_observability_preflight`,
+   `s1_retry_eligible: false`; report SHA-256 is
+   `b89390acca11a6d7a73977c1dc71406529d3ee7c7f6a83e5630a2bbebfd69b05`.
+8. **S2 was not run and remains fail-closed.** No passing preflight or S1 seal
    exists, so the fixed eight-per-cell confirmation and every downstream
    policy, efficacy, Phase 6B, shadow-pilot, and human-learning claim remain
    blocked.
 
-The preflight did not clear the gate, so the next permitted paid step is
-**not** another 339-call S1. The next work is a zero-call protocol repair built
-from the five frozen failures. Do not teach the analyzer to ignore genuine
-derivations: both Marrick `none` realizations really did voice new conclusions,
-and both Hethel `adopt` stimuli bundled uptake with a causal conclusion. Instead,
-make a `none` fixture admissible by pre-voicing already-supported conclusions or
-starting where none is derivable; define an insufficiency statement such as “I
-cannot yet determine” as `none`; and give `adopt` a premise-only surface rather
-than an authored surface that already states its rule consequence. Freeze the
-five outputs as regression cases: Marrick and Hethel remain `derive`, while the
-Ravensmark insufficiency statement becomes `none`; then add transition-clean
-replacement fixtures. This must not weaken the 24/24 threshold or expose the
-harness family/IDs to the analyzer. Only then may a fresh-label 24-case
-preflight run under the same serial, zero-repair contract. The stopped label
-and its rows are never resumed or reused. No new full S1 may launch until a
-fresh preflight passes 24/24.
+The second preflight did not clear the gate, so the next permitted paid step is
+**not** another 339-call S1 and not another preflight until a zero-call repair
+passes regression review. Freeze the two new outputs with their semantic
+expectations: Marrick's generic meta-statement remains `none`, while the
+supported Ravensmark operative-seal clause remains `derive` even though a later
+clause carries proof debt. Strengthen the public derive realization contract so
+it must name a substantive conclusion licensed by the released evidence and
+public rules, never merely announce that “an inference” exists. Make analyzer
+recovery clause-wise: a supported new object-level conclusion still counts as
+`derive` when a separate later clause is provisional or lacks a warrant. This
+must not reveal the harness target/fact, weaken the 24/24 threshold, or teach the
+analyzer to accept an unsupported conclusion. Only after those zero-call tests
+pass may another fresh-label 24-case preflight run under the same serial,
+zero-repair contract. Both stopped labels and all their rows remain immutable
+and non-reusable. No new full S1 may launch until a fresh preflight passes
+24/24.
 
 Separately, Phase 6A v2.1 canary-lineage engineering was sealed in commit
 `1e106783`. No new paid Phase 6 execution occurred, so its empirical status and
@@ -1149,6 +1172,18 @@ Implementation was authorized on 2026-07-11. The slice resolved as follows:
     non-atomic Hethel `adopt` stimuli. The next repair preserves those failures
     as regression evidence and reruns the entire 24-cell matrix from a fresh
     label rather than relabeling, rerolling, or partially reusing them.
+21. Implemented that zero-call repair at `8d6d2b22` without changing any
+    S0-bound world or transition kernel. The shared public projection is bound
+    into both preflight and S1 source hashes; 114/114 adaptive-state tests and
+    the full 5,265-test repository suite completed with zero failures (one
+    expected skip), and the sealed S0/stopped-S1 ancestors revalidated before
+    launch.
+22. Completed the second fresh 48-dispatch preflight at
+    `adaptive-state-v2-observability-preflight-8d6d2b22-v21`. It improved exact
+    recovery from 19/24 to 22/24 and closed every prior `none`/`adopt` mismatch,
+    but two `derive` cases still failed, so the run sealed stopped and S1
+    remained unauthorized. The remaining repair is deliberately smaller:
+    substantive derive realization plus clause-wise conservative recovery.
 
 ## 17. Things deliberately not scheduled
 
@@ -1210,11 +1245,14 @@ Stopping at any earlier stage is still a valid result. It defines what the machi
   rules. Fresh S0 passed. The completed `b69775b6` S1 stopped on analyzer
   recovery, and the repaired superseding S1 stopped technically after 73/339
   dispatches because an evidence span was not an exact learner-turn substring.
-  The subsequent balanced 24-turn claim-ineligible preflight completed all 48
-  serial calls without a technical or span failure but stopped semantically at
-  19/24 exact-family recovery. S2 was not run. The next gate is a bounded
-  ontology/fixture repair followed by a fresh complete 24-cell preflight, so no
-  new sensor verdict exists.
+  The first balanced 24-turn claim-ineligible preflight completed all 48 serial
+  calls without a technical or span failure but stopped semantically at 19/24
+  exact-family recovery. A zero-call ontology/fixture repair then closed every
+  prior `none` and `adopt` mismatch; the second fresh 48-dispatch preflight
+  improved to 22/24 but still stopped on two `derive` boundary failures. S2 was
+  not run. The next gate is a bounded derive-realization/clause-recovery repair
+  followed by another fresh complete 24-cell preflight, so no new sensor verdict
+  exists.
 - **Phase 3 engineering is in review:** the Plan 2 action registry is exposed
   through a default-off tutor-stub adapter with separate move, support, task,
   difficulty, and register axes; complete candidate/propensity provenance;

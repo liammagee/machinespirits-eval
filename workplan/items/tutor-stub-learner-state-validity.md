@@ -21,6 +21,7 @@ links:
     - adaptive-state-v2-s1-technical-b69775b6-v21
     - adaptive-state-v2-s1-repair-bb65da27-v21
     - adaptive-state-v2-observability-preflight-5fda0824-v21
+    - adaptive-state-v2-observability-preflight-8d6d2b22-v21
 tags:
   - adaptive-tutor
   - learner-state
@@ -161,3 +162,38 @@ transition-clean replacements, then run a fresh-label 24-case preflight with
 the same matrix and zero-repair rules.
 The 339-call S1, S2, policy optimization, Phase 6B, shadow pilot, efficacy, and
 human-learning claims remain blocked.
+
+2026-07-12 Codex second preflight repair: Commit `8d6d2b22` froze the five
+prior mismatches, settled `none` fixtures by pre-voicing supported derivations,
+isolated Hethel's premise-only `adopt` surface through a provider-neutral
+hash-guarded projection shared by preflight and S1, and made pure epistemic
+insufficiency explicitly non-derivational. The shared projection is included in
+both preflight and S1 static contracts. Zero-call verification passed 114/114
+adaptive-state tests and the full 5,265-test repository suite with zero failures
+(one expected skip); the sealed S0 and stopped-S1 ancestors revalidated before
+launch.
+
+2026-07-12 Codex second observability-preflight result: The sealed paid run
+`adaptive-state-v2-observability-preflight-8d6d2b22-v21` completed 24/24 cases
+and 48/48 unique serial CLI dispatches at clean pushed SHA `8d6d2b22`, with
+every call successful on one attempt and zero retries, semantic rerolls,
+repairs, fallbacks, exclusions, partial reuse, invalid stream lines, tool
+events, or learner-text event-ID leaks. Exact spans passed 24/24. Exact-family
+recovery improved from 19/24 to 22/24 (`0.916667`): `none`, `adopt`, and
+`retract` passed 6/6; `derive` passed 4/6; each realizer passed 11/12; Hethel
+passed 8/8 and Marrick/Ravensmark 7/8. The run validly sealed
+`stop_and_repair_observability_preflight`; `s1_retry_eligible` remains false.
+Report SHA-256 is
+`b89390acca11a6d7a73977c1dc71406529d3ee7c7f6a83e5630a2bbebfd69b05`.
+
+2026-07-12 Codex next gate after 22/24: Preserve both new failures as semantic
+regressions. Marrick/Codex merely announced that an inference existed and
+voiced no object-level fact, so `none` is correct for that text. Ravensmark/
+Claude did voice the supported intermediate `materialSealAtIssue` proposition
+before adding a later signer clause with a missing holder premise; the analyzer
+must retain the supported `derive` and record the later step as proof debt.
+Make `derive` realization forbid generic meta-inference wording, and make
+analysis clause-wise without exposing harness targets or accepting unsupported
+claims. Only after that zero-call repair passes may another complete fresh-label
+24-cell preflight run. The full S1, S2, policy optimization, Phase 6B,
+shadow-pilot, efficacy, and human-learning claims remain blocked.
