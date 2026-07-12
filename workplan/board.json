@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-11T07:38:51.692Z",
+  "generated": "2026-07-12T07:48:55.024Z",
   "counts": {
-    "total": 106,
+    "total": 107,
     "byStatus": {
       "done": 86,
       "blocked": 1,
       "dropped": 2,
       "review": 4,
       "triaged": 6,
-      "active": 3,
+      "active": 4,
       "archived": 4
     },
     "byType": {
       "research": 41,
       "experiment": 36,
-      "infra": 11,
+      "infra": 12,
       "maintenance": 6,
       "content": 2,
       "paper": 4,
@@ -279,6 +279,30 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "scenario-presentation-variety",
+      "title": "Scenario presentation variety — de-medievalize the derivation-world roster",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-12",
+      "updated": "2026-07-12",
+      "verification": "Generic tutor-stub prompts carry no unconditional assay vocabulary (period worlds opt in via presentation metadata); the world picker groups controlled variants by family; the featured set mixes period/contemporary/speculative; audit-world-variety reports family-normalized distributions; at least four non-period base worlds lint PASS.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "tutor-stub-headroom-contrast"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "derivation-worlds",
+        "presentation",
+        "authoring"
+      ]
     },
     {
       "id": "a1-human-learner-validation",

@@ -286,3 +286,10 @@ motivation:
     second_order: null
     disposition:
       withhold: lawful
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: lantern
+  temporal_frame: period

@@ -34,27 +34,40 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORLDS_DIR = path.join(__dirname, '..', 'config', 'drama-derivation');
 const DEFAULT_WORLD = 'world-005-marrick';
 
-// Three featured examples — same apparatus, three shapes.
+// Featured examples — same apparatus, deliberately mixed presentation:
+// period, contemporary-everyday, speculative-playful, and reflexive. The
+// full period families (hethel, marrick variants) remain reachable through
+// the world list; this shelf is the storefront, so it carries the variety.
 const CURATED = [
   {
     stem: 'world-005-marrick',
     blurb:
-      'A moneyer’s assay. The false coins were struck by a hand the town never named — two independent sub-chains (the cast blank, the cut die) must converge on one name (an AND-join).',
+      'A moneyer’s assay (period). The false coins were struck by a hand the town never named — two independent sub-chains (the cast blank, the cut die) must converge on one name (an AND-join).',
   },
   {
-    stem: 'world-002-lantern',
+    stem: 'world-023-greyfen-lab',
     blurb:
-      'A court of inquiry on a wreck. The named keeper is eliminated (his light was sealed dark) and the truth is a contingent particular nobody had named.',
+      'A shared wet-lab, the night before a grant deadline (contemporary). Everyone blames the postdoc who never labels anything; the culture was killed by an off-books incubator with a perished seal.',
   },
   {
-    stem: 'world-016-ai-syllabus-af1',
+    stem: 'world-022-foxtrot-jukebox',
     blurb:
-      'AI Foundations. Should the campus FAQ tool be generative AI (because it talks) or a rule-based baseline? The conversational surface is the mirror; the formulation card grounds the answer.',
+      'Waystation Foxtrot, karaoke night (speculative, playful). The jukebox’s music core is wiped, the grumpy engineer is the obvious suspect, and the truth lives in the vents. Solvable in ten turns.',
+  },
+  {
+    stem: 'world-024-emberwick-forum',
+    blurb:
+      'An online hobby forum (contemporary). A beloved nine-year thread is brigaded and locked; the rival board’s troll gloats, but the mod log convicts a quiet insider.',
+  },
+  {
+    stem: 'world-021-clockwork-tribunal',
+    blurb:
+      'The reflexive capstone. A guild tribunal asks whether a clockwork tutor earned its name for true adaptation — and the proof DAG is this research program’s own methodology.',
   },
   {
     stem: 'world-017-saintcloud',
     blurb:
-      'A guild demonstration. The master-horologist seeks the council’s verdict too — so when the journeyman grounds the truth, the reversal is MUTUAL: the dethroned master, now the learner, still wants recognition.',
+      'A guild demonstration (period). The master-horologist seeks the council’s verdict too — so when the journeyman grounds the truth, the reversal is MUTUAL: the dethroned master, now the learner, still wants recognition.',
   },
 ];
 

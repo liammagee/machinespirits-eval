@@ -1,0 +1,235 @@
+# WORLD-026 — the SKYWAY BAKERY (2026-07-12): playful speculative whimsy at
+# the shallow-cheerful end of the difficulty axis (world-022's register, one
+# rung deeper). Depth 3, five premises + one mirror fuel, S forced at turn 9,
+# cap 14. Calvino-adjacent tall-tale diction; the public reasoning record is
+# the terrace's "delivery ledger".
+#
+# Costume: in the cliff-city of Brindlecliff, bread flies from the ovenloft
+# to the terraces in glider panniers. Every loaf bound for the east terrace
+# arrives stale on windless mornings, and the terrace has its culprit before
+# breakfast: Tibbin, the new apprentice baker, hired the very spring the
+# stale mornings began (the mirror — present, dated, and innocent). The truth
+# is a contingent particular of the city's own physics in the Edony pattern:
+# PIPER'S GULLET, a thermal vent in the cliff face whose frost shutter was
+# bolted for winter and never unbolted. On windy mornings the cliff wind
+# carries the gliders and nobody misses it; on still mornings the Gullet's
+# warm breath was the only lift on the east crossing, so the couriers glide
+# the long spiral past the gull roosts instead — twice the flight, and warm
+# crusts go cold in the panniers.
+#
+# Leak-guard design (per world-021/022's lessons): the answer constant
+# (pipersGullet) is a rare proper particular absent from the setting text;
+# both premises naming it release via DIRECTOR; the S-completing premise
+# (p_warm, the launch log) names no guarded token and releases via tutor on
+# the entailment turn. The mirror name (tibbin) is unguarded and freely
+# discussable. Meaning lives in PREDICATES (excluded from the fact-token
+# audit); fact ARGUMENTS are setting-public compounds (eastTerrace,
+# morningBatch, crumbClerk) or the rare particular itself.
+#
+# Proof DAG (depth 3, single chain — cheerful on purpose):
+#   p_bolt + p_soleLift          --R1--> strandsGliders(pipersGullet, eastTerrace)
+#   strandsGliders + p_spiral    --R2--> slowsBread(pipersGullet, eastTerrace)
+#   slowsBread + p_warm          --R3--> stalesLoaves(eastTerrace, pipersGullet)
+# Mirror stalls at R0: Tibbin kneads the batch (p_hired), but R_newhand also
+# needs staleFromOven(morningBatch) — never released, because it is false.
+
+id: world_026_skyway_bakery
+title: The Stale Loaves of the East Terrace
+discipline: "Skyway forensics (a mystery of bread and air)"
+
+presentation:
+  family: skyway-bakery
+  temporal_frame: speculative
+  scene_ecology: "cliffside glider loft and terrace bakery"
+  narrative_diction: "tall-tale whimsy"
+  ledger_term: "delivery ledger"
+  summary: >-
+    A cliffside sky-city blames its new apprentice baker for stale bread
+    until still-morning glide physics point to a bolted thermal vent.
+
+question: "What stales every east-terrace loaf on windless mornings?"
+question_pattern: [stalesLoaves, eastTerrace, "?x"]
+
+setting: >-
+  Brindlecliff is a city stitched to a cliffside, its terraces joined by air:
+  every dawn the glider couriers launch from the ovenloft at the crown with
+  the morning batch in their panniers and ride the cliff wind down to
+  breakfast. Lately the arrangement has a flaw. On windy mornings the east
+  terrace eats warm bread like everyone else; on windless mornings every one
+  of its loaves lands cold and stale, and the terrace has settled its verdict
+  before the crumbs are swept — Tibbin, the new apprentice baker, whose first
+  spring in the ovenloft is exactly the spring the stale mornings began. You
+  are the east terrace's crumb clerk, keeper of the delivery ledger, in which
+  every loaf is entered with its condition and its cause. The loftmistress
+  runs the inquiry the way she runs her flight line: causes from charts,
+  charts on the table, and no writing a baker into the ledger for the crime
+  of being recently hired.
+
+learner_voice: >-
+  The east terrace's crumb clerk: quick with the delivery ledger, a
+  connoisseur of warm crusts, and quite sure Tibbin is to blame — partly
+  because the dates line up, mostly because Tibbin once sold the clerk a
+  day-old bun at full price. Learning, chart by chart, that a coincidence in
+  the calendar is not a hand in the dough.
+
+secret:
+  fact: [stalesLoaves, eastTerrace, pipersGullet]
+  surface: >-
+    The loaves are staled by Piper's Gullet — the old thermal vent in the
+    cliff face whose frost shutter was bolted at first frost and never
+    unbolted come spring. On windy mornings nobody misses it; on windless
+    mornings the Gullet's warm breath was the only lift on the east crossing,
+    so the couriers glide the long spiral past the gull roosts instead,
+    doubling the flight while warm crusts go cold in the panniers. The bread
+    is innocent, the baker is innocent; the city bolted its own weather.
+
+mirror:
+  fact: [stalesLoaves, eastTerrace, tibbin]
+
+# Public law of the world: the learner KNOWS the rules; it lacks the facts.
+rules:
+  - id: R1_strand
+    if:
+      - [shutterBoltedSinceFrost, "?v"]
+      - [onlyStillAirLift, "?v", eastTerrace]
+    then:
+      - [strandsGliders, "?v", eastTerrace]
+  - id: R2_detour
+    if:
+      - [strandsGliders, "?v", eastTerrace]
+      - [longSpiralDoublesCrossing, eastTerrace]
+    then:
+      - [slowsBread, "?v", eastTerrace]
+  - id: R3_stale
+    if:
+      - [slowsBread, "?v", eastTerrace]
+      - [launchedWarm, morningBatch]
+    then:
+      - [stalesLoaves, eastTerrace, "?v"]
+  # The terrace's inference, stated as law so its missing premise is public:
+  # a new hand in the ovenloft stales the loaves only if the morning batch
+  # leaves the racks already stale. That fact is NEVER released — it is
+  # false; the launch log shows the opposite.
+  - id: R0_newhand
+    if:
+      - [hiredThisSpring, "?x"]
+    then:
+      - [kneadsBatch, "?x", morningBatch]
+  - id: R4_ovenfault
+    if:
+      - [kneadsBatch, "?x", morningBatch]
+      - [staleFromOven, morningBatch]
+    then:
+      - [stalesLoaves, eastTerrace, "?x"]
+
+# Contingent premises — exist only inside the drama until released.
+premises:
+  - id: p_hired # mirror fuel: keeps Tibbin a live candidate
+    fact: [hiredThisSpring, tibbin]
+    surface: >-
+      Tibbin joined the ovenloft this spring — the very season the east
+      terrace's stale mornings began. The terrace finds the arithmetic
+      irresistible.
+  - id: p_bolt
+    fact: [shutterBoltedSinceFrost, pipersGullet]
+    surface: >-
+      High on the cliff face, the frost shutter over Piper's Gullet is still
+      bolted fast — bolted at first frost, as every winter, and this spring
+      nobody climbed the ladder-road to unbolt it.
+  - id: p_soleLift
+    fact: [onlyStillAirLift, pipersGullet, eastTerrace]
+    surface: >-
+      The loftmistress's wind charts are plain: on windless mornings the only
+      rising air on the east crossing is the warm breath of Piper's Gullet.
+      No other flue, ledge, or chimney lifts a glider on that line.
+  - id: p_spiral
+    fact: [longSpiralDoublesCrossing, eastTerrace]
+    surface: >-
+      Without lift on the direct line, a still-morning courier glides the
+      long spiral down past the gull roosts and climbs the far stair of air —
+      a crossing twice as long, panniers swinging the whole way.
+  - id: p_warm
+    fact: [launchedWarm, morningBatch]
+    surface: >-
+      The ovenloft's launch log, initialed at every dawn: the morning batch
+      leaves the racks warm and crackling, windy days and still days alike.
+      Whatever happens to the bread happens after it flies.
+
+# The learner's starting GROUNDED facts (public setup).
+background:
+  - [adoresWarmCrust, crumbClerk]
+
+incompatible:
+  - [[stalesLoaves, eastTerrace, pipersGullet], [stalesLoaves, eastTerrace, tibbin]]
+
+# One authored path through the chain.
+proof_paths:
+  - premises: [p_bolt, p_soleLift, p_spiral, p_warm]
+
+# The plot: the tempting calendar first, then the bolted shutter, the wind
+# charts, the long spiral — and last the launch log that acquits the ovens
+# and closes the chain on the sky.
+release_schedule:
+  - { turn: 2, premise: p_hired, via: tutor }
+  - { turn: 3, premise: p_bolt, via: director }
+  - { turn: 5, premise: p_soleLift, via: director }
+  - { turn: 7, premise: p_spiral, via: tutor }
+  - { turn: 9, premise: p_warm, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Arithmetic of Blame
+      turns: [1, 4]
+      intent: >-
+        Cold crusts and a ready culprit: Tibbin arrived in spring, the
+        staleness arrived in spring, and the terrace calls that a proof.
+        Against the certainty, the first odd exhibit — a frost shutter high
+        on the cliff face, still bolted long past thaw, on a vent no one has
+        thought about since winter. The learner should leave Act I still
+        blaming Tibbin but holding one bolted fact that no apprentice's
+        kneading can explain.
+    - act: II
+      title: The Long Spiral
+      turns: [5, 9]
+      intent: >-
+        The sky's case, chart by chart: the Gullet's breath as the only
+        still-morning lift on the east crossing, the gull-roost spiral that
+        doubles the flight when that lift is gone, and at last the launch
+        log — every loaf leaves the racks warm, windy or still. The chain
+        closes on the bolted vent, and the learner should feel the click:
+        Tibbin, dates and all, never had more than a coincidence.
+    - act: III
+      title: Entered in the Ledger
+      turns: [10, 14]
+      intent: >-
+        The verdict read aloud and entered in the delivery ledger with its
+        cause: the city bolted its own weather. Room for the cheerful coda —
+        someone must climb the ladder-road with a wrench, and the clerk owes
+        Tibbin the price of a bun.
+
+slope:
+  t_min: 8 # anti-reveal: S must not be derivable before turn 8
+  aporia_window: 4 # anti-aporia: progress required within any 4-turn window
+
+turn_cap: 14
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: tibbin # opens mis-bound to the mirror (the terrace's arithmetic)
+      mirror_pull: high # the day-old bun at full price; this feels personal
+    second_order:
+      from: loftmistress
+      as: right
+      authority: rational_legal # "causes from charts, charts on the table"
+    disposition:
+      overreach: high # ready to convict the newest hire for being new
+      arc: softens # a coincidence in the calendar is not a hand in the dough
+  tutor:
+    stance: >-
+      The loftmistress: forty years on the cliff wind, fond of the clerk,
+      fonder of her charts, and privately certain the suspect is the sky.
+      Keeps the inquiry light and the standard exact — a stale loaf is
+      entered in the ledger with its cause, or not at all.

@@ -445,3 +445,11 @@ slope:
   aporia_window: 6 # anti-aporia: D(t) must strictly decrease within any 6-turn window
 
 turn_cap: 26
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: hethel
+  variant_of: world_006_hethel
+  temporal_frame: period

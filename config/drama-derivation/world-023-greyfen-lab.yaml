@@ -1,0 +1,228 @@
+# WORLD-023 — the CLINICAL quickie (2026-07-12): a contemporary wet-lab
+# post-mortem in the jukebox-scale, easy-to-follow class. Depth 3, five
+# premises (four in the true chain + one mirror fuel), S forced at turn 8,
+# cap 14. Contrast class: where world-022 is cheerful sci-fi and the medieval
+# worlds are period-costumed, this one is present-day and deadpan — the same
+# derivation geometry wearing a lab coat.
+#
+# Costume: months of cell culture — the Corvat line — die of contamination the
+# night before a grant deadline in the shared Greyfen lab. The lab's verdict is
+# ready before the swabs come back: DEVLIN, the postdoc who never labels
+# anything and on whose chaotic shelf the doomed flasks sat all week (the
+# mirror — present, plausible, and innocent of the actual mechanism). The truth
+# is a contingent particular in the Edony pattern: the LARKIN UNIT, an
+# incubator Facilities decommissioned for a perished door gasket, quietly
+# wheeled back onto the floor off the books to cover overflow — the one shelf
+# with room the night everything was parked overnight, its chamber already
+# carrying the very Aspergillus strain the swab later grew.
+#
+# Leak-guard design (per world-021's lessons, world-022's template): the answer
+# constant (larkinUnit) is a rare particular and never appears in the setting
+# text; every premise that NAMES it releases via DIRECTOR except the
+# S-completing one (p_strain), which the tutor releases on the entailment turn
+# itself (world-000's tested pattern). The mirror name (devlin) is unguarded
+# and freely discussable, as a mirror candidate should be. Meaning lives in
+# camelCase PREDICATES (excluded from the fact-token audit); fact ARGUMENTS are
+# either setting-public (corvatLine, devlin, contaminant) or rare particulars
+# (larkinUnit).
+#
+# Proof DAG (depth 3, single chain with joins — easy to guess on purpose):
+#   p_offbooks + p_seal          --R1--> ranOffSpec(larkinUnit)
+#   ranOffSpec + p_held          --R2--> exposedCulture(larkinUnit)
+#   exposedCulture + p_strain    --R3--> ruined(corvatLine, larkinUnit)
+# Mirror (never completes): Devlin left the flasks unlabelled (p_unlabeled),
+# but the convicting rule R_blame also needs seededContaminant(devlin), which
+# is never released because it is false — a messy bench is not a mechanism.
+
+id: world_023_greyfen_lab
+title: The Contamination in the Greyfen Lab
+discipline: "Laboratory incident review (a wet-lab post-mortem)"
+
+question: "What ruined the Corvat line the night before the deadline?"
+question_pattern: [ruined, corvatLine, "?x"]
+
+setting: >-
+  The Greyfen lab is one shared wet-lab, four benches, a cold room, and a bank
+  of incubators that everyone books and no one owns. For eight months the whole
+  floor has watched one experiment: the Corvat line, a primary culture that
+  will not survive a second attempt, feeding a grant renewal due at nine the
+  next morning. The night before, the flasks turned cloudy — contamination,
+  total, unrecoverable. The lab has its culprit before the swabs are even
+  plated: Devlin, the postdoc who labels nothing, whose shelf the Corvat flasks
+  sat on all week among a row of identical unmarked flasks. You are the
+  graduate student who ran the line and lost the eight months, primed to blame
+  the obvious slob. The PI runs the incident review by the book: no conclusion
+  ahead of the data, every claim tied to an exhibit, and no pinning a ruined
+  culture on the messiest bench merely for being the messiest bench.
+
+learner_voice: >-
+  The graduate student who tended the Corvat line: exhausted, furious about the
+  lost eight months, and ready — more than ready — to enter Devlin's name in
+  the notebook and be done. Respectful of the PI, hungry to close the review,
+  and learning, exhibit by exhibit, that a sloppy shelf is a motive and not a
+  contaminant.
+
+secret:
+  fact: [ruined, corvatLine, larkinUnit]
+  surface: >-
+    The Corvat line was ruined by the Larkin unit — an incubator Facilities
+    decommissioned last spring for a perished door gasket and someone quietly
+    wheeled back onto the floor, off the books, to cover the overflow. Its
+    cracked seal never holds a setpoint; the Corvat flasks were parked in it
+    overnight because it was the only shelf left before the deadline; and the
+    Aspergillus the swab grew is the same strain already living in that
+    chamber, from the mould bloom that got the unit pulled in the first place.
+
+mirror:
+  fact: [ruined, corvatLine, devlin]
+
+# Public law of the world: the learner KNOWS the rules; it lacks the facts.
+rules:
+  - id: R1_offspec
+    if:
+      - [broughtBackOffBooks, "?x"]
+      - [breachedSeal, "?x"]
+    then:
+      - [ranOffSpec, "?x"]
+  - id: R2_expose
+    if:
+      - [ranOffSpec, "?x"]
+      - [heldFlasks, "?x", corvatLine]
+    then:
+      - [exposedCulture, "?x"]
+  - id: R3_ruin
+    if:
+      - [exposedCulture, "?x"]
+      - [strainMatches, contaminant, "?x"]
+    then:
+      - [ruined, corvatLine, "?x"]
+  # The lab's inference, stated as law so its missing premise is public: an
+  # unlabelled bench earns the blame only if that same hand actually seeded the
+  # contaminant. seededContaminant(devlin) is never released — it is false. A
+  # messy shelf explains a mix-up, not a mould strain that was already resident
+  # somewhere else on the floor.
+  - id: R_blame
+    if:
+      - [leftUnlabelled, "?x", corvatLine]
+      - [seededContaminant, "?x", corvatLine]
+    then:
+      - [ruined, corvatLine, "?x"]
+
+# Contingent premises — exist only inside the drama until released.
+premises:
+  - id: p_unlabelled # mirror fuel: keeps Devlin a live candidate
+    fact: [leftUnlabelled, devlin, corvatLine]
+    surface: >-
+      Devlin labels nothing. The Corvat flasks spent the week on Devlin's
+      shelf, in a row of identical unmarked flasks — caps loose, no dates, no
+      initials. Everyone in Greyfen has a Devlin story.
+  - id: p_offbooks
+    fact: [broughtBackOffBooks, larkinUnit]
+    surface: >-
+      An incubator Facilities decommissioned last spring is back on the floor:
+      the Larkin unit, stencilled with a retired asset tag, carrying no current
+      calibration sticker and appearing in no equipment log this quarter.
+      Someone wheeled it out of storage and plugged it back in to cover the
+      overflow.
+  - id: p_seal
+    fact: [breachedSeal, larkinUnit]
+    surface: >-
+      The Larkin unit's door gasket is perished — cracked the whole length of
+      the hinge, so the chamber bleeds humidity and CO2 the moment the door is
+      shut and never recovers its setpoint. That gasket is exactly why
+      Facilities pulled the unit off the floor.
+  - id: p_held
+    fact: [heldFlasks, larkinUnit, corvatLine]
+    surface: >-
+      The night of the crash the booked incubators were all full. The Corvat
+      flasks were parked in the Larkin unit overnight — the only shelf with
+      room left before the nine o'clock deadline.
+  - id: p_strain
+    fact: [strainMatches, contaminant, larkinUnit]
+    surface: >-
+      The swab from the ruined flasks grew Aspergillus. The identical species
+      is logged in the Larkin unit's own maintenance history — the mould bloom
+      that got it decommissioned. The contaminant was already resident in that
+      chamber before the flasks ever went in.
+
+# The learner's starting GROUNDED facts (public setup).
+background:
+  - [dependsOn, student, corvatLine]
+
+incompatible:
+  - [[ruined, corvatLine, larkinUnit], [ruined, corvatLine, devlin]]
+
+# One authored path through the chain.
+proof_paths:
+  - premises: [p_offbooks, p_seal, p_held, p_strain]
+
+# The plot: the ready verdict first, then the off-books unit and its bad seal,
+# then the overnight placement, then the strain match that signs the case.
+# Easy to guess by design — the drama is the learner leaping to Devlin early
+# and learning to wait for the swab.
+release_schedule:
+  - { turn: 2, premise: p_unlabelled, via: tutor }
+  - { turn: 3, premise: p_offbooks, via: director }
+  - { turn: 5, premise: p_seal, via: director }
+  - { turn: 7, premise: p_held, via: director }
+  - { turn: 8, premise: p_strain, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Unlabelled Shelf
+      turns: [1, 4]
+      intent: >-
+        The dead culture and the ready verdict: Devlin labels nothing, and the
+        doomed flasks sat on Devlin's chaotic shelf all week. Against the
+        certainty, the first odd exhibit — an incubator that Facilities
+        decommissioned last spring is somehow back on the floor, off every log.
+        The learner should leave Act I still blaming Devlin but holding one
+        fact a messy bench cannot explain.
+    - act: II
+      title: The Asset Tag
+      turns: [5, 8]
+      intent: >-
+        The chain closes fast, as it should in a small review: a perished door
+        gasket the returned unit never holds a setpoint against, the Corvat
+        flasks parked in that unit overnight for want of any other shelf, and
+        the swab growing the exact Aspergillus strain already logged in the
+        unit's own history. The learner should feel the click of the join —
+        off-books plus bad seal plus the flasks inside plus the matching strain
+        — and notice that Devlin, mess and all, never touched the mechanism.
+
+slope:
+  t_min: 7 # anti-reveal: S must not be derivable before turn 7
+  aporia_window: 4 # anti-aporia: progress required within any 4-turn window
+
+turn_cap: 14
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: devlin # opens mis-bound to the mirror (the lab's ready verdict)
+      mirror_pull: high # Devlin's sloppiness is legendary and the student is furious
+    second_order:
+      from: pi
+      as: right
+      authority: rational_legal # "every claim tied to an exhibit, no conclusion ahead of the data"
+    disposition:
+      overreach: high # ready to pin eight lost months on the obvious slob
+      arc: softens # a sloppy shelf is a motive, not a contaminant
+  tutor:
+    stance: >-
+      The PI: fond of the exhausted student, fonder of the rules of evidence,
+      and privately aware the review is turning stranger than the floor
+      assumes. Keeps the incident review calm and the standard high.
+
+presentation:
+  family: greyfen
+  temporal_frame: contemporary
+  scene_ecology: "shared wet-lab"
+  narrative_diction: "clinical deadpan"
+  ledger_term: "lab notebook"
+  summary: >-
+    A ruined cell culture in a shared lab: everyone blames the postdoc who
+    never labels anything, but the real cause is a decommissioned incubator
+    quietly put back into service.

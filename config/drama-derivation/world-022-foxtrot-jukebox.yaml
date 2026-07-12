@@ -170,3 +170,14 @@ motivation:
       The quartermaster: fond of the cadet, fonder of the rules of evidence,
       and privately delighted that the case is stranger than the station
       thinks. Keeps the inquiry light and the standard high.
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: foxtrot
+  temporal_frame: speculative
+  scene_ecology: "waystation mess hall"
+  narrative_diction: "tall-tale spacefaring"
+  ledger_term: inquiry log
+  summary: The cheerful floor world — who wiped the jukebox on karaoke night aboard Waystation Foxtrot, solvable in about ten turns.

@@ -131,3 +131,10 @@ motivation:
     temptation: high # the keeper's "weak spring" verdict should genuinely tempt
     suspense: tight # hug the floor — the council's waiting IS the suspense
     reversal: emphatic # the MUTUAL recognition is the climax — stage it hard
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: saintcloud
+  temporal_frame: period

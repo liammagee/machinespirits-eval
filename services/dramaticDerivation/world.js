@@ -73,6 +73,12 @@ export function validateWorld(raw, source = '<inline>') {
     // Authorial fields: K_L prose for the underivability screen + register
     // notes for the real role bridges. Never read by the engine/chainer.
     discipline: raw.discipline || null,
+    // Authorial presentation metadata (scenario ecology, narrative diction,
+    // picker grouping, in-world ledger term). This is deliberately NOT
+    // register: public register controls speech and engagement stance the
+    // speaker-hearer relation; presentation is how the author costumes the
+    // world. Never read by the engine/chainer.
+    presentation: raw.presentation || null,
     setting: raw.setting || null,
     learnerVoice: raw.learner_voice || null,
     learnerDrift: raw.learner_drift || null,

@@ -202,3 +202,10 @@ motivation:
     temptation: high # Crale's reputation should genuinely tempt
     suspense: tight # hug the floor — the wardens' waiting IS the suspense
     reversal: emphatic # the MUTUAL recognition, against the master's own interest, is the climax
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: edmund
+  temporal_frame: period

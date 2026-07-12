@@ -295,3 +295,14 @@ motivation:
       The presiding examiner's clerk: patient with the apprentice's delight in
       the many voices, relentless about the difference between what the
       automaton performed and what the apprentices newly did.
+
+# Authorial presentation metadata (picker grouping + costume knobs).
+# Deliberately NOT register: presentation is how the author costumes the
+# world; defaults elsewhere preserve legacy behavior for untagged fields.
+presentation:
+  family: clockwork-tribunal
+  temporal_frame: period
+  scene_ecology: "guild tribunal of a teaching engine"
+  narrative_diction: "guild-hall formal"
+  ledger_term: minute-book
+  summary: The reflexive capstone — a tribunal decides whether a clockwork tutor earned its name for true adaptation, and the proof is the research method itself.
