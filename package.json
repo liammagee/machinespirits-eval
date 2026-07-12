@@ -93,6 +93,7 @@
     "adaptive:plan-state-benchmark-v2": "node scripts/run-adaptive-state-benchmark-v2.js",
     "adaptive:execute-state-benchmark-v2-s0": "node scripts/execute-adaptive-state-benchmark-v2-s0.js",
     "adaptive:execute-state-benchmark-v2-s1": "node scripts/execute-adaptive-state-benchmark-v2-s1.js",
+    "adaptive:execute-state-observability-preflight-v2": "node scripts/execute-adaptive-state-observability-preflight-v2.js",
     "adaptive:decide-state-validity-v2": "node scripts/analyze-adaptive-state-validity-v2.js",
     "seed": "node scripts/seed-db.js",
     "paper:bug-audit": "node scripts/validate-bug-claims.js",

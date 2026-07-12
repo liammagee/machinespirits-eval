@@ -268,6 +268,7 @@ function validateCanonicalS1Transaction({
     config,
     configPath: path.resolve(configPath),
     parent: verifiedS0,
+    preflight: verification.plan.metadata?.observabilityPreflight || null,
     runSeed: verification.plan.randomization.masterSeed,
     cliVersions,
     supersedes: verification.plan.lineage?.supersedes || [],

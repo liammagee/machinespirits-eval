@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
@@ -36,7 +35,16 @@ import {
   validateAdaptiveStateStage1SplitManifestContentSha256,
 } from '../services/adaptiveTutor/stateBenchmarkStage1Analysis.js';
 import { createAdaptiveStateStage1ProductionLiveSeams } from '../services/adaptiveTutor/stateBenchmarkStage1LiveAdapters.js';
-import { adaptiveStateLearnerKernel } from '../services/adaptiveTutor/learnerKernels/index.js';
+import {
+  adaptiveStateStage1StaticExecutionContract,
+  cliFingerprint,
+} from '../services/adaptiveTutor/stateBenchmarkStage1Contracts.js';
+import { validateAdaptiveStateObservabilityPreflightParent } from '../services/adaptiveTutor/stateObservabilityPreflightLineage.js';
+
+export {
+  adaptiveStateStage1StaticExecutionContract,
+  cliFingerprint,
+} from '../services/adaptiveTutor/stateBenchmarkStage1Contracts.js';
 
 const SCRIPT = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT), '..');
@@ -64,6 +72,7 @@ process dispatches: 336 matrix dispatches plus three excluded canaries.
 
 Required:
   --s0-parent <dir>             Fresh sealed passing benchmark-v2.1 S0 run
+  --preflight-parent <dir>      Sealed passing 24-case observability preflight
   --confirm-paid-s1-v2.1        Explicit paid-execution acknowledgement
 
 Options:
@@ -89,78 +98,6 @@ function writeExclusive(filePath, content) {
 
 function jsonl(rows) {
   return `${rows.map((row) => canonicalJson(row)).join('\n')}\n`;
-}
-
-function aggregateFileHash(paths) {
-  return hashCanonicalJson(
-    [...new Set(paths)].sort().map((file) => ({ path: file, sha256: hashFile(path.resolve(ROOT, file)) })),
-  );
-}
-
-function cliVersion(command) {
-  try {
-    return execFileSync(command, ['--version'], { cwd: ROOT, encoding: 'utf8', timeout: 10_000 }).trim();
-  } catch (error) {
-    throw new Error(`Cannot freeze ${command} CLI version: ${error.message}`);
-  }
-}
-
-export function cliFingerprint(command) {
-  const executable = execFileSync('/usr/bin/which', [command], {
-    cwd: ROOT,
-    encoding: 'utf8',
-    timeout: 10_000,
-  }).trim();
-  return {
-    version: cliVersion(command),
-    executable_realpath: fs.realpathSync(executable),
-  };
-}
-
-export function adaptiveStateStage1StaticExecutionContract({ config, configPath }) {
-  return {
-    hashes: {
-      runner: aggregateFileHash([
-        path.relative(ROOT, SCRIPT),
-        'services/adaptiveTutor/stateBenchmarkStage1Executor.js',
-        'services/adaptiveTutor/stateBenchmarkStage1LiveAdapters.js',
-        'services/adaptiveTutor/stateBenchmarkCliRealizer.js',
-        'services/cliProviderBridge.js',
-        'services/evalConfigLoader.js',
-        'services/adaptiveTutor/stateBenchmarkV2.js',
-      ]),
-      analyzer: aggregateFileHash([
-        'services/adaptiveTutor/stateBenchmarkStage1Analysis.js',
-        'services/adaptiveTutor/stateBenchmarkStage0Analysis.js',
-        'services/tutorStubPublicLearnerAnalysis.js',
-        'services/adaptiveTutor/tutorStubStateAdapter.js',
-        'services/tutorStubFieldTrajectory.js',
-      ]),
-      policy: aggregateFileHash(
-        config.critical_path.latent_generators.flatMap(
-          (row) => adaptiveStateLearnerKernel(row.id).metadata.source_files,
-        ),
-      ),
-      profile: hashCanonicalJson({
-        complexity_cap: config.complexity_cap,
-        providers_yaml_sha256: hashFile(path.join(ROOT, 'config/providers.yaml')),
-        eval_config_loader_sha256: hashFile(path.join(ROOT, 'services/evalConfigLoader.js')),
-      }),
-      prompt: hashCanonicalJson({
-        realizer: config.realizer_contract,
-        analyzer: config.paid_execution_contract.public_turn_analyzer,
-      }),
-      world: aggregateFileHash(config.critical_path.worlds.map((row) => row.source)),
-      config: hashFile(configPath),
-    },
-    call_contract: {
-      scored_cli_dispatches: 336,
-      excluded_technical_canary_cli_dispatches: 3,
-      execution_order: 'serial_dialogues_and_turns',
-      semantic_rerolls: 0,
-      backend_request_count: 'unknown',
-    },
-  };
 }
 
 function readJson(filePath) {
@@ -255,6 +192,7 @@ export function executionRunPlan({
   config,
   configPath,
   parent,
+  preflight = null,
   runSeed,
   cliVersions,
   supersedes = [],
@@ -264,7 +202,7 @@ export function executionRunPlan({
   const realizer = Object.fromEntries(config.critical_path.language_realizers.map((row) => [row.id, row]));
   const runtime = config.paid_execution_contract.realizer_runtime;
   const analyzer = config.paid_execution_contract.public_turn_analyzer;
-  const staticContract = adaptiveStateStage1StaticExecutionContract({ config, configPath });
+  const staticContract = adaptiveStateStage1StaticExecutionContract({ config, configPath, repoRoot: ROOT });
   return buildExperimentRunPlan({
     runId: plan.label,
     runner: path.relative(ROOT, SCRIPT),
@@ -317,6 +255,7 @@ export function executionRunPlan({
       downstreamCurrentRepoShaEqualityRequired: false,
       designSha256: plan.design_sha256,
       parentS0ReportSha256: parent.report_sha256,
+      observabilityPreflight: preflight ? JSON.parse(JSON.stringify(preflight)) : null,
     },
   });
 }
@@ -353,7 +292,9 @@ async function main(argv = process.argv.slice(2)) {
     throw new Error('Paid S1 is locked; pass --confirm-paid-s1-v2.1 after reviewing the 339-dispatch contract');
   }
   const parentArg = arg(argv, 's0-parent');
+  const preflightArg = arg(argv, 'preflight-parent');
   if (!parentArg) throw new Error('--s0-parent is required');
+  if (!preflightArg) throw new Error('--preflight-parent is required; full S1 cannot bypass the sealed 24-case observability gate');
   const parentRunDir = resolveFromRoot(parentArg);
   const configPath = resolveFromRoot(arg(argv, 'config', DEFAULT_CONFIG));
   const outRoot = resolveFromRoot(arg(argv, 'out', DEFAULT_OUT));
@@ -367,6 +308,13 @@ async function main(argv = process.argv.slice(2)) {
     throw new Error('Paid S1 requires a clean committed Git worktree with no untracked critical files');
   }
   const parent = validateAdaptiveStateStage1Parent({ parentRunDir, config, configPath, repoRoot: ROOT });
+  const preflight = validateAdaptiveStateObservabilityPreflightParent({
+    preflightRunDir: resolveFromRoot(preflightArg),
+    s0Parent: parent,
+    config,
+    configPath,
+    repoRoot: ROOT,
+  });
   const plan = buildAdaptiveStateCriticalPathPlan(config, { stage: 's1_technical_pilot', label });
   validateAdaptiveStateCriticalPathPlan(plan);
   const superseded = supersededArg
@@ -378,12 +326,16 @@ async function main(argv = process.argv.slice(2)) {
       })
     : null;
   const runDir = path.join(outRoot, label);
-  const cliVersions = { codex: cliFingerprint('codex'), claude: cliFingerprint('claude') };
+  const cliVersions = {
+    codex: cliFingerprint('codex', { repoRoot: ROOT }),
+    claude: cliFingerprint('claude', { repoRoot: ROOT }),
+  };
   const runPlan = executionRunPlan({
     plan,
     config,
     configPath,
     parent,
+    preflight,
     runSeed,
     cliVersions,
     supersedes: superseded ? [superseded.run_id] : [],
@@ -396,6 +348,8 @@ async function main(argv = process.argv.slice(2)) {
     plannedExcludedCanaryCliDispatches: 3,
     executionOrder: 'serial_dialogues_and_turns',
     backendRequestCount: 'unknown',
+    observabilityPreflightRunId: preflight.run_id,
+    observabilityPreflightReportSha256: preflight.report_sha256,
   });
 
   const abortController = new AbortController();
@@ -620,6 +574,8 @@ async function main(argv = process.argv.slice(2)) {
       fixedS2SeedsPerCell: 8,
       powerClaimMade: false,
       decision: report.decision,
+      observabilityPreflightRunId: preflight.run_id,
+      observabilityPreflightReportSha256: preflight.report_sha256,
     },
   });
     const verified = assertExperimentRun(runDir);

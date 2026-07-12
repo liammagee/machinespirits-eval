@@ -91,6 +91,24 @@ test('CLI realizer output parser is strict and preserves exact harness-owned eve
     learner_text: 'I can use that clue.',
     realized_public_event_ids: expectedEventIds,
   });
+  assert.deepEqual(
+    parseAdaptiveStateCliRealizerOutput(
+      '{"learner_text":"I adopt that clue in my reasoning.","realized_public_event_ids":["adopt:evidence_01"]}',
+      { expectedEventIds },
+    ),
+    {
+      learner_text: 'I adopt that clue in my reasoning.',
+      realized_public_event_ids: expectedEventIds,
+    },
+  );
+  assert.throws(
+    () =>
+      parseAdaptiveStateCliRealizerOutput(
+        '{"learner_text":"I can use adopt:evidence_01 now.","realized_public_event_ids":["adopt:evidence_01"]}',
+        { expectedEventIds },
+      ),
+    /learner_text contains a harness-owned public event id/u,
+  );
   assert.throws(
     () =>
       parseAdaptiveStateCliRealizerOutput(

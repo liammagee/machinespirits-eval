@@ -177,8 +177,12 @@ export function parseAdaptiveStateCliRealizerOutput(raw, { expectedEventIds } = 
   if (JSON.stringify(parsed.realized_public_event_ids) !== JSON.stringify(expected)) {
     throw new Error('stateBenchmarkCliRealizer: realized_public_event_ids differ from the harness-owned event ids');
   }
+  const learnerText = parsed.learner_text.trim();
+  if (expected.some((eventId) => eventId && learnerText.includes(eventId))) {
+    throw new Error('stateBenchmarkCliRealizer: learner_text contains a harness-owned public event id');
+  }
   return {
-    learner_text: parsed.learner_text.trim(),
+    learner_text: learnerText,
     realized_public_event_ids: [...parsed.realized_public_event_ids],
   };
 }

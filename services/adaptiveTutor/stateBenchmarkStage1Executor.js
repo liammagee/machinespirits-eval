@@ -305,7 +305,11 @@ function rawAnalyzerMetadata(result) {
   return metadata;
 }
 
-function validateCallMetadata(metadata, frozen, role) {
+export function adaptiveStateAnalyzerCallMetadata(result) {
+  return rawAnalyzerMetadata(result);
+}
+
+export function validateAdaptiveStateCallMetadata(metadata, frozen, role) {
   if (!metadata || typeof metadata !== 'object') {
     throw new Error(`stateBenchmarkStage1: ${role} call omitted model provenance`);
   }
@@ -695,7 +699,7 @@ function callRecord({ index, role, claimEligible, canary, jobId, turn, frozen, m
     canary: canary || null,
     job_id: jobId || null,
     turn: turn ?? null,
-    provenance: validateCallMetadata(metadata, frozen, role),
+    provenance: validateAdaptiveStateCallMetadata(metadata, frozen, role),
     call_metadata: clone(metadata),
   };
 }
