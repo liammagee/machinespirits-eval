@@ -20,16 +20,18 @@ Do register policies produce profile-contingent mid-dialogue progress effects �
 
 | Seam | Flag | Family block A (runs first) | Family block B (second window) |
 | --- | --- | --- | --- |
-| Tutor | `--model` | `codex.gpt-5.5` | `claude-code` Sonnet 5 |
-| Automated learner | `--auto-learner-model` | `codex.gpt-5.5` | `claude-code` Sonnet 5 |
-| Turn classifier | `--analysis-model` → classifier | `codex.gpt-5.5` | `claude-code` Sonnet 5 |
-| Learner-record (DAG extractor; source of the coverage endpoint) | `--analysis-model` → learner-record | `codex.gpt-5.5` | `claude-code` Sonnet 5 |
+| Tutor | `--model` | `codex.gpt-5.6-terra` | `claude-code` Sonnet 5 |
+| Automated learner | `--auto-learner-model` | `codex.gpt-5.6-terra` | `claude-code` Sonnet 5 |
+| Turn classifier | `--analysis-model` → classifier | `codex.gpt-5.6-terra` | `claude-code` Sonnet 5 |
+| Learner-record (DAG extractor; source of the coverage endpoint) | `--analysis-model` → learner-record | `codex.gpt-5.6-terra` | `claude-code` Sonnet 5 |
 
-Rationale, binding at freeze:
+Rationale, binding at freeze (amended 2026-07-13 after review — block A moved from `codex.gpt-5.5` to `codex.gpt-5.6-terra`):
 
-- **Codex first** (user direction 2026-07-13), at the standing default stack `codex.gpt-5.5` — not gpt-5.6-terra. Terra was only ever reached through the since-fixed flag-forwarding bug; the in-run discrimination gate (above) supplies the profile validation that 5.5 never had, which is exactly what design law 6 of the plan exists for. Model identity is verified from `run_start` provenance (now stamped) and `model_observed` events, never from the requesting flag.
+- **Codex first** (user direction 2026-07-13), and specifically **terra, because a confirmation holds the instrument fixed.** The exploratory crossings being confirmed were measured on gpt-5.6-terra, and the arc's own headline finding is that policy effects are model-dependent — so confirming on a different codex model would make a null uninterpretable (effect not real vs effect terra-specific). A terra null at n=5 is a clean kill; a terra pass plus a Sonnet pass exactly reproduces the two exploratory stacks at claimable n, which is what confirmation means. The v3 profiles are also gate-validated on terra (pooled cosine 0.737) and Sonnet (0.565) but never on gpt-5.5, so terra minimizes the risk of buying a block that the in-run gate then declares instrument-invalid. Terra's bug-tainted provenance history is not a design argument: the flag-forwarding bug is fixed, `gpt-5.6-terra` is listed live in `config/providers.yaml` (CLI-probed 2026-07-12, codex 0.144.1), and model identity is verified from `run_start` provenance and `model_observed` events, never from the requesting flag.
+- **Rejected alternative, recorded:** `codex.gpt-5.5` (the standing default stack) was the draft's original block A. Rejected for confirmation because no profile gate has ever passed there and a null would be stack-ambiguous. It remains the natural *generalization* block: an optional Step 2b (own go, after a confirmed effect), not part of this design.
 - **Per-block monoculture is deliberate:** all four seams run the same family within a block, matching the exploratory runs this design confirms (changing seam assignments would change the instrument mid-confirmation). The known caveat — the record extractor scoring its own family's dialogues — is carried unchanged and is exactly what the second family block checks.
 - **There is no judge seam:** outcomes are computed by the harness from grounding, closure, coverage, and leak discipline; no rubric LLM is involved.
+- **Rotation note:** terra is a preview-generation model and may leave the CLI sooner than 5.5; stamped run headers, the sealed artifacts, and the archive manifests carry reproducibility if it does.
 
 ## Endpoints and decision rules (binding at freeze)
 

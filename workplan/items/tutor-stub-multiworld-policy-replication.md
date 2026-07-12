@@ -70,3 +70,15 @@ the exploratory instrument being confirmed; the cross-family block is the
 check). No judge seam exists — outcomes are harness-computed. Launch = flip
 the prereg Status to FROZEN, commit, run block A (60 dialogues, ~1 attended
 day), block B in a later window.
+
+2026-07-13 Claude: Model decision AMENDED after review (user challenge:
+why not terra?). Block A = codex.gpt-5.6-terra at all four seams, not
+gpt-5.5. A confirmation holds the instrument fixed: the exploratory
+crossings were measured on terra, the arc's headline finding is that policy
+effects are model-dependent (so a 5.5 null would be stack-ambiguous), and
+the v3 profiles are gate-validated on terra but never on 5.5. Terra is
+listed live in providers.yaml (CLI-probed 2026-07-12, codex 0.144.1);
+identity verified from run_start provenance. gpt-5.5 is recorded in the
+prereg as the rejected alternative, available as an optional post-confirmation
+generalization block (Step 2b, own go). Prereg draft amended in place
+(still DRAFT; freezes at launch go).
