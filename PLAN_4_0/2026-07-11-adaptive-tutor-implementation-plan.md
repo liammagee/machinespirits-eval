@@ -543,6 +543,72 @@ gate-ineligible because cyclic donors create cross-cluster dependence. Valid
 outcomes are no sensor, lean DAG only, DAG trajectory, or full field
 trajectory—not only a global winner/null.
 
+### 7.9 Execution record — 2026-07-12
+
+The v2.1 sequence has produced one valid contract pass, one completed technical
+stop, and two fail-closed technical stops. None is a learner-state validity or
+efficacy result.
+
+1. **Fresh S0 passed at `5a3e5aae`.** The sealed zero-model-call run
+   `adaptive-state-v2-s0-clean-5a3e5aae-v21` contains 24 dialogues and 144
+   scored transitions and returned `pass / advance_to_s1_technical_pilot`.
+   Its dataset SHA-256 is
+   `5364a5210675b1f0770dc7db39f130fb783e052c37c45f9c603cc3372a953720`,
+   report SHA-256 is
+   `10fd8330849e4998dbe267c432a8376a7158a337e6c27dc53beb8f9c943b817b`,
+   split content SHA-256 is
+   `8d7eab2de1c7a37e5bad1bdbbb325fc8002f6cee3964f7c2c715034ad9e4142f`,
+   design SHA-256 is
+   `02cd3acf58f4fac7e06c13fe5082bc4ad0442868d51a3a80783b8221c015a87f`,
+   canonical-config SHA-256 is
+   `e085f5f88539c8e124f05c7ffc9d3290f74e04972ad0bcbfffcec47c3fff015e`,
+   and config-file SHA-256 is
+   `bc49c1b02cfb8e8f75b452915200d674bea904b2991ca07d349aff7f5683d08f`.
+   This is an instrument/plumbing pass only.
+2. **The first S1 schema canary stopped at 1/339.** The sealed run
+   `adaptive-state-v2-s1-technical-5a3e5aae-v21` reached and dispatched one
+   Codex realizer canary, which failed because the provider rejected
+   `uniqueItems` in the structured-output schema. It completed no call and no
+   dialogue and produced no scientific result.
+3. **The first full S1 completed at `b69775b6` and stopped.** The sealed run
+   `adaptive-state-v2-s1-technical-b69775b6-v21` completed all 339/339 CLI
+   dispatches (336 scored plus three excluded canaries), but exact public
+   analyzer event-family recovery was `0.395833`: durable-state `0.333333`,
+   DAG-dropout `0.458333`, Claude `0.361111`, and Codex `0.430556`. Its sole
+   stop reason was `public_analyzer_event_family_recovery_below_floor`; the
+   frozen decision was `stop_and_repair_s1`. No S2, efficacy, or learner-state
+   validity claim follows from this stopped technical pilot.
+4. **The measurement repair is committed.** Commit `6d40a1ba` added the
+   benchmark-only explicit primary transition family, exact evidence span,
+   prior redacted public learner record, and stronger realizer fidelity
+   instructions without changing shared accepted-event semantics. Commit
+   `bb65da27` made recovery recompute family equality, bound row ↔ dialogue
+   observation ↔ parsed analyzer output, reconstructed prior public state from
+   hashed deterministic updates, revalidated saved spans, and fail-closed the
+   replacement lineage against the stopped S1.
+5. **The repaired S1 also stopped technically.** The sealed superseding run
+   `adaptive-state-v2-s1-repair-bb65da27-v21` reached and dispatched 73/339
+   calls, completed 72, failed one, and completed four dialogues. The turn-7
+   analyzer for Marrick/DAG-dropout/Claude returned an `evidence_span` that was
+   not an exact substring of the learner turn. The strict parser stopped the
+   transaction as designed. This incomplete run has no technical-report
+   verdict and no scientific result; its completed rows must not be reused.
+6. **S2 was not run and remains fail-closed.** No passing S1 seal exists, so
+   the fixed eight-per-cell confirmation and every downstream policy,
+   efficacy, Phase 6B, shadow-pilot, and human-learning claim remain blocked.
+
+The next permitted paid step is **not** another 339-call S1. First run a
+claim-ineligible, fail-closed preflight of exactly 24 isolated turns:
+`3 worlds × 4 event families × 2 realizers`, with every world/family/realizer
+cell represented once. It must exercise retract, derive, adopt, and none
+through both realizers and the strict analyzer boundary, including exact
+learner-text evidence spans. No new full S1 may launch until this balanced
+preflight completes without a technical failure.
+
+Separately, Phase 6A v2.1 canary-lineage engineering was sealed in commit
+`1e106783`. No new paid Phase 6 execution occurred, so its empirical status and
+all Phase 6 claims are unchanged.
+
 ## 8. Phase 3 — Orthogonal pedagogical action contract
 
 - **Priority:** P1
@@ -1021,8 +1087,9 @@ Implementation was authorized on 2026-07-11. The slice resolved as follows:
 8. Persisted original, repaired, fallback, delivered, and final-audit guard records.
 9. Corrected dispersion/adequacy, failed-row accounting, fixed-horizon endpoints, and guard coverage.
 10. Packaged the fake-CLI mock QA run and checksum-verified clean-room restore plus read-only report regeneration.
-11. Did **not** execute a staged real Phase 6 gate. Phase 6A is engineering-ready
-    but still awaits an attended clean-SHA paid run; Phase 6B remains blocked.
+11. Did **not** execute a staged real Phase 6 gate. Phase 6A v2.1's sealed
+    canary-lineage engineering landed at `1e106783`, but it still awaits an
+    attended clean-SHA paid run; Phase 6B remains blocked.
 12. Implemented the learner-state and Plan 2 action-adapter lanes. The v1 formal
     proxy returned `not_passed / do_not_optimize_policy`, so Phase 4 and every
     learned or human-adaptive downstream lane remain blocked pending v2.
@@ -1036,13 +1103,21 @@ Implementation was authorized on 2026-07-11. The slice resolved as follows:
     representations, matched controls, strict oracle/proof-transition
     provenance, two frozen harness target vocabularies, and fixed eight-per-cell
     confirmation size with no power claim.
-16. Added an immutable zero-call planning transaction and a deterministic
-    five-verdict sensor evaluator over precomputed world/generator/realizer
-    lanes. The cross-world kernel adapters, sequential realizer executor, and
-    confirmation data remain to be implemented/run.
+16. Added an immutable zero-call planning transaction, generalized cross-world
+    kernels, sequential public realizer/analyzer execution, and a deterministic
+    five-verdict sensor evaluator over world/generator/realizer lanes. Fresh S0
+    passed; the subsequent S1 executions are recorded in §7.9 and did not
+    authorize confirmation.
 17. Froze and implemented Phase 6A's complete non-acts flags, decay process,
     numerical thresholds, instrumentation/manipulation gates, k=5 parent
     requirement for k=10, and deterministic report/seal verdict.
+18. Preserved the full `b69775b6` S1 stop, added the benchmark-only measurement
+    repair at `6d40a1ba`, and added audit/replacement-lineage hardening at
+    `bb65da27`. The superseding run then stopped technically after 73/339
+    dispatches, so no partial row was promoted and S2 remained locked.
+19. Replaced another full-run retry with a required 24-turn claim-ineligible
+    preflight balanced over three worlds, four event families, and two
+    realizers. This preflight must pass before another 339-call S1 is allowed.
 
 ## 17. Things deliberately not scheduled
 
@@ -1088,20 +1163,24 @@ Stopping at any earlier stage is still a valid result. It defines what the machi
   and provider-attestation claims.
 - **Phase 6 is split before real calls:** Phase 6A now freezes an executable
   non-acts hidden-pacing feasibility test, its complete decay process, and
-  numerical verdict contract. Phase 6B retains the original production
+  numerical verdict contract; v2.1 canary-lineage hardening is committed at
+  `1e106783`, with no new paid Phase 6 rows. Phase 6B retains the original production
   question and remains blocked on an acts-safe reconstructed-state adapter; the
   true learner board cannot be passed around that redaction boundary. No paid
   rows or verdict were produced.
-- **The v1 sensor proxy is not passed; the canonical policy-invariant sensor has
-  not yet been fairly tested:** the 12-row fixture remains a useful negative
+- **The v1 sensor proxy is not passed; v2.1 still has no scientific sensor
+  verdict:** the 12-row fixture remains a useful negative
   instrument audit, but it lacked strong state-blind baselines, canonical
   trajectory projection, independent crossed
   generator/model axes, and nondegenerate world-general targets. Runtime and
   benchmark now share one pure DAG/field/trajectory projection with parity
   tests. Benchmark v2 freezes the 3-world × 2-kernel × 2-realizer critical path,
   nested sensor ladder, two primary targets, staged call ceiling, and stop
-  rules. Its S0/S1/S2 data have not yet been generated, so no new sensor verdict
-  exists.
+  rules. Fresh S0 passed. The completed `b69775b6` S1 stopped on analyzer
+  recovery, and the repaired superseding S1 stopped technically after 73/339
+  dispatches because an evidence span was not an exact learner-turn substring.
+  S2 was not run. The next gate is the balanced 24-turn claim-ineligible
+  preflight in §7.9, so no new sensor verdict exists.
 - **Phase 3 engineering is in review:** the Plan 2 action registry is exposed
   through a default-off tutor-stub adapter with separate move, support, task,
   difficulty, and register axes; complete candidate/propensity provenance;

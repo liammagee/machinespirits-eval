@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-12T00:57:22.298Z",
+  "generated": "2026-07-12T01:40:39.726Z",
   "counts": {
     "total": 112,
     "byStatus": {
@@ -225,6 +225,12 @@
       "links": {
         "notes": [
           "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
+        ],
+        "runs": [
+          "adaptive-state-v2-s0-clean-5a3e5aae-v21",
+          "adaptive-state-v2-s1-technical-5a3e5aae-v21",
+          "adaptive-state-v2-s1-technical-b69775b6-v21",
+          "adaptive-state-v2-s1-repair-bb65da27-v21"
         ]
       },
       "tags": [

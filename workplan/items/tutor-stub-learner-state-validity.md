@@ -15,6 +15,11 @@ depends_on:
 links:
   notes:
     - PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md
+  runs:
+    - adaptive-state-v2-s0-clean-5a3e5aae-v21
+    - adaptive-state-v2-s1-technical-5a3e5aae-v21
+    - adaptive-state-v2-s1-technical-b69775b6-v21
+    - adaptive-state-v2-s1-repair-bb65da27-v21
 tags:
   - adaptive-tutor
   - learner-state
@@ -93,3 +98,37 @@ state-blind baselines (`no_state`, training-fold-only Laplace-smoothed
 donor-linked scramble controls are wiring/descriptive checks only. Richer rungs
 must improve both co-primary targets, uncertainty clusters on latent pairs, and
 the fixed eight-per-cell S2 makes no power or population-world claim.
+
+2026-07-12 Codex final execution record: Fresh sealed S0
+`adaptive-state-v2-s0-clean-5a3e5aae-v21` at `5a3e5aae` passed with zero model
+calls, 24 dialogues, and 144 transitions. Dataset/report SHA-256 values are
+`5364a5210675b1f0770dc7db39f130fb783e052c37c45f9c603cc3372a953720`
+and `10fd8330849e4998dbe267c432a8376a7158a337e6c27dc53beb8f9c943b817b`;
+design/canonical-config/config-file SHA-256 values are
+`02cd3acf58f4fac7e06c13fe5082bc4ad0442868d51a3a80783b8221c015a87f`,
+`e085f5f88539c8e124f05c7ffc9d3290f74e04972ad0bcbfffcec47c3fff015e`,
+and `bc49c1b02cfb8e8f75b452915200d674bea904b2991ca07d349aff7f5683d08f`.
+The first S1 schema-canary run stopped fail-closed after 1/339 dispatches. The
+full `b69775b6` S1 completed 339/339 and sealed
+`stop / stop_and_repair_s1`: exact event-family recovery was `0.395833`
+(durable `0.333333`, dropout `0.458333`, Claude `0.361111`, Codex `0.430556`).
+This is a measurement stop, not a learner-state or efficacy verdict.
+
+2026-07-12 Codex repair record: `6d40a1ba` added the benchmark-only explicit
+transition/evidence-span and prior-public-state repair; `bb65da27` bound the
+saved row/observation/analyzer artifacts, reconstructed prior states, and
+sealed supersession lineage. The superseding run
+`adaptive-state-v2-s1-repair-bb65da27-v21` stopped technically after 73 reached
+and dispatched, 72 completed, one failed, and four completed dialogues because
+the analyzer returned a non-exact learner-text evidence span. It produced no
+scientific result; partial rows are not reusable. S2 was not run and remains
+fail-closed.
+
+2026-07-12 Codex next gate: Before any new 339-call S1, run exactly 24
+claim-ineligible isolated turns balanced as 3 worlds × 4 event families × 2
+realizers, with retract/derive/adopt/none represented once in every
+world/realizer combination and exact-span enforcement active. Keep this card
+`active` with `claim_status: planned`; policy optimization, Phase 6B,
+shadow-pilot, efficacy, and human-learning claims remain blocked. Phase 6A
+v2.1 canary-lineage engineering is committed at `1e106783`; no new paid Phase
+6 execution occurred.
