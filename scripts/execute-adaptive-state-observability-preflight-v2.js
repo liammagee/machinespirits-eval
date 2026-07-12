@@ -68,6 +68,8 @@ Required:
   --confirm-paid-observability-preflight-v2.1
 
 Options:
+  --diagnostic-s0-parent <dir>  Original S0 of the stopped S1; required only
+                                when a construct repair required a fresh S0
   --label <id>       Default: adaptive-state-v2-observability-preflight-v21
   --run-seed <n>     Immutable artifact seed; execution order is fixed. Default: 20260712
   --config <path>    Default: config/adaptive-state-benchmark-v2.yaml
@@ -140,7 +142,7 @@ function executionRunPlan({
     }),
     masterSeed: runSeed,
     jobs: plan.jobs,
-    lineage: { parentRunId: stoppedS1.run_id, resumeOf: null, supersedes: [] },
+    lineage: { parentRunId: s0Parent.run_id, resumeOf: null, supersedes: [] },
     intent: {
       observabilityPreflight: plan,
       claimBoundary:
@@ -160,6 +162,17 @@ function executionRunPlan({
       s0ParentReportSha256: s0Parent.report_sha256,
       diagnosesStoppedS1RunId: stoppedS1.run_id,
       diagnosesStoppedS1PlanSha256: stoppedS1.plan_sha256,
+      diagnosesStoppedS1SealInventorySha256: stoppedS1.seal_inventory_sha256,
+      diagnosticS0ParentRunId: stoppedS1.s0_lineage.diagnostic_s0_parent_run_id,
+      diagnosticS0ParentPlanSha256: stoppedS1.s0_lineage.diagnostic_s0_parent_plan_sha256,
+      diagnosticS0SealInventorySha256: stoppedS1.s0_lineage.diagnostic_s0_seal_inventory_sha256,
+      diagnosticS0ReportSha256: stoppedS1.s0_lineage.diagnostic_s0_report_sha256,
+      diagnosticS0DatasetSha256: stoppedS1.s0_lineage.diagnostic_s0_dataset_sha256,
+      diagnosticS0ConfigSha256: stoppedS1.s0_lineage.diagnostic_s0_config_sha256,
+      currentS0ParentPlanSha256: stoppedS1.s0_lineage.current_s0_parent_plan_sha256,
+      currentS0SealInventorySha256: stoppedS1.s0_lineage.current_s0_seal_inventory_sha256,
+      currentS0ConfigSha256: stoppedS1.s0_lineage.current_s0_config_sha256,
+      s0LineageMode: stoppedS1.s0_lineage.mode,
       cliFingerprints,
       cliFingerprintsSha256: hashCanonicalJson(cliFingerprints),
       s1RelevantHashes: s1Contract.hashes,
@@ -210,6 +223,7 @@ async function main(argv = process.argv.slice(2)) {
   }
   const s0Arg = arg(argv, 's0-parent');
   const stoppedArg = arg(argv, 'diagnoses-stopped-s1');
+  const diagnosticS0Arg = arg(argv, 'diagnostic-s0-parent');
   if (!s0Arg) throw new Error('--s0-parent is required');
   if (!stoppedArg) throw new Error('--diagnoses-stopped-s1 is required');
   const configPath = resolveFromRoot(arg(argv, 'config', DEFAULT_CONFIG));
@@ -231,6 +245,7 @@ async function main(argv = process.argv.slice(2)) {
   const stoppedS1 = validateAdaptiveStateStoppedS1DiagnosticParent({
     stoppedRunDir: resolveFromRoot(stoppedArg),
     s0Parent,
+    diagnosticS0ParentRunDir: diagnosticS0Arg ? resolveFromRoot(diagnosticS0Arg) : null,
   });
   const plan = buildAdaptiveStateObservabilityPreflightPlan(config, { label });
   const runDir = path.join(outRoot, label);

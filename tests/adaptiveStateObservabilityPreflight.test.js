@@ -31,7 +31,10 @@ import {
   adaptiveStateStage1StaticExecutionContract,
   cliFingerprint,
 } from '../services/adaptiveTutor/stateBenchmarkStage1Contracts.js';
-import { validateAdaptiveStateObservabilityPreflightParent } from '../services/adaptiveTutor/stateObservabilityPreflightLineage.js';
+import {
+  resolveAdaptiveStateDiagnosticS0Lineage,
+  validateAdaptiveStateObservabilityPreflightParent,
+} from '../services/adaptiveTutor/stateObservabilityPreflightLineage.js';
 import { adaptiveStateObservabilityPreflightStaticExecutionContract } from '../services/adaptiveTutor/stateObservabilityPreflightContracts.js';
 import { loadAdaptiveStateWorldAdapters } from '../services/adaptiveTutor/learnerKernels/index.js';
 
@@ -233,6 +236,7 @@ test('paid preflight is explicitly locked and full S1 cannot bypass its parent',
   assert.equal(help.status, 0);
   assert.match(help.stdout, /48 serial CLI dispatches/u);
   assert.match(help.stdout, /never launches the 339-dispatch S1 matrix automatically/u);
+  assert.match(help.stdout, /--diagnostic-s0-parent/u);
 
   const locked = spawnSync(process.execPath, ['scripts/execute-adaptive-state-observability-preflight-v2.js'], {
     cwd: ROOT,
@@ -253,6 +257,69 @@ test('paid preflight is explicitly locked and full S1 cannot bypass its parent',
   );
   assert.notEqual(bypass.status, 0);
   assert.match(bypass.stderr, /--preflight-parent is required/u);
+});
+
+test('diagnostic S0 lineage permits an explicit changed-config replacement but never an implicit cross-parent join', () => {
+  const current = {
+    run_id: 's0-current',
+    plan_sha256: 'a'.repeat(64),
+    seal_inventory_sha256: 'e'.repeat(64),
+    report_sha256: 'f'.repeat(64),
+    dataset_sha256: '1'.repeat(64),
+    config_sha256: 'b'.repeat(64),
+  };
+  assert.deepEqual(
+    resolveAdaptiveStateDiagnosticS0Lineage({
+      stoppedS1ParentRunId: current.run_id,
+      currentS0: current,
+    }),
+    {
+      mode: 'current_s0_is_diagnostic_parent',
+      diagnostic_s0_parent_run_id: current.run_id,
+      diagnostic_s0_parent_plan_sha256: current.plan_sha256,
+      diagnostic_s0_seal_inventory_sha256: current.seal_inventory_sha256,
+      diagnostic_s0_report_sha256: current.report_sha256,
+      diagnostic_s0_dataset_sha256: current.dataset_sha256,
+      diagnostic_s0_config_sha256: current.config_sha256,
+      current_s0_parent_run_id: current.run_id,
+      current_s0_parent_plan_sha256: current.plan_sha256,
+      current_s0_seal_inventory_sha256: current.seal_inventory_sha256,
+      current_s0_config_sha256: current.config_sha256,
+    },
+  );
+  assert.throws(
+    () =>
+      resolveAdaptiveStateDiagnosticS0Lineage({
+        stoppedS1ParentRunId: 's0-old',
+        currentS0: current,
+      }),
+    /--diagnostic-s0-parent is required/u,
+  );
+  const historical = {
+    run_id: 's0-old',
+    plan_sha256: 'c'.repeat(64),
+    seal_inventory_sha256: '2'.repeat(64),
+    report_sha256: '3'.repeat(64),
+    dataset_sha256: '4'.repeat(64),
+    config_sha256: 'd'.repeat(64),
+  };
+  assert.equal(
+    resolveAdaptiveStateDiagnosticS0Lineage({
+      stoppedS1ParentRunId: historical.run_id,
+      currentS0: current,
+      diagnosticS0: historical,
+    }).mode,
+    'replacement_s0_after_observability_repair',
+  );
+  assert.throws(
+    () =>
+      resolveAdaptiveStateDiagnosticS0Lineage({
+        stoppedS1ParentRunId: historical.run_id,
+        currentS0: current,
+        diagnosticS0: { ...historical, config_sha256: current.config_sha256 },
+      }),
+    /changed current config/u,
+  );
 });
 
 test('preflight executes 24 isolated public cases and passes only at 24/24', async () => {
@@ -543,7 +610,14 @@ test('a sealed passing preflight is a current-runtime S1 prerequisite', async ()
     configPath: path.join(ROOT, 'config/adaptive-state-benchmark-v2.yaml'),
     repoRoot: ROOT,
   });
-  const s0Parent = { run_id: 'fixture-s0', report_sha256: 'a'.repeat(64) };
+  const s0Parent = {
+    run_id: 'fixture-s0',
+    report_sha256: 'a'.repeat(64),
+    plan_sha256: 'b'.repeat(64),
+    seal_inventory_sha256: 'e'.repeat(64),
+    dataset_sha256: 'f'.repeat(64),
+    config_sha256: 'c'.repeat(64),
+  };
   try {
     const git = captureGitFingerprint({ repoRoot: ROOT });
     delete git.repoRoot;
@@ -586,7 +660,7 @@ test('a sealed passing preflight is a current-runtime S1 prerequisite', async ()
       hashes: preflightContract,
       masterSeed: 20260712,
       jobs: plan.jobs,
-      lineage: { parentRunId: 'fixture-stopped-s1', resumeOf: null, supersedes: [] },
+      lineage: { parentRunId: s0Parent.run_id, resumeOf: null, supersedes: [] },
       intent: { observabilityPreflight: plan },
       metadata: {
         stage: 's1_observability_preflight',
@@ -595,6 +669,18 @@ test('a sealed passing preflight is a current-runtime S1 prerequisite', async ()
         expectedCliDispatches: 48,
         s0ParentRunId: s0Parent.run_id,
         diagnosesStoppedS1RunId: 'fixture-stopped-s1',
+        diagnosesStoppedS1PlanSha256: 'd'.repeat(64),
+        diagnosesStoppedS1SealInventorySha256: '1'.repeat(64),
+        diagnosticS0ParentRunId: s0Parent.run_id,
+        diagnosticS0ParentPlanSha256: s0Parent.plan_sha256,
+        diagnosticS0SealInventorySha256: s0Parent.seal_inventory_sha256,
+        diagnosticS0ReportSha256: s0Parent.report_sha256,
+        diagnosticS0DatasetSha256: s0Parent.dataset_sha256,
+        diagnosticS0ConfigSha256: s0Parent.config_sha256,
+        currentS0ParentPlanSha256: s0Parent.plan_sha256,
+        currentS0SealInventorySha256: s0Parent.seal_inventory_sha256,
+        currentS0ConfigSha256: s0Parent.config_sha256,
+        s0LineageMode: 'current_s0_is_diagnostic_parent',
         cliFingerprints,
         cliFingerprintsSha256: hashCanonicalJson(cliFingerprints),
         s1RelevantHashesSha256: hashCanonicalJson(s1Contract.hashes),
@@ -699,6 +785,9 @@ test('a sealed passing preflight is a current-runtime S1 prerequisite', async ()
     assert.equal(verified.run_id, plan.label);
     assert.equal(verified.decision, 'authorize_full_s1_retry');
     assert.equal(verified.diagnoses_stopped_s1_run_id, 'fixture-stopped-s1');
+    assert.equal(verified.s0_parent_run_id, s0Parent.run_id);
+    assert.equal(verified.diagnostic_s0_parent_run_id, s0Parent.run_id);
+    assert.equal(verified.s0_lineage_mode, 'current_s0_is_diagnostic_parent');
   } finally {
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }

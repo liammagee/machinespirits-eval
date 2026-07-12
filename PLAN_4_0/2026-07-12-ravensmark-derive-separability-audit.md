@@ -89,6 +89,19 @@ runner/policy/config hashes. A fresh zero-call S0 must pass and seal before any
 new paid preflight. The third stopped preflight cannot authorize S1 under the
 new contract.
 
+The stopped S1 remains diagnostic history under its original S0; it does not
+become a child of the replacement S0. The preflight runner therefore requires
+both lineages when the config changed:
+
+- the original sealed S0 that actually parented the stopped S1; and
+- the fresh current S0 that parents the new preflight and any later S1.
+
+It verifies the original S0 independently, requires the stopped S1 to name it,
+requires the old and current canonical config hashes to differ, and binds both
+S0 plan hashes plus the stopped-S1 plan hash into the new preflight plan. This
+is lineage transport, not row reuse: no stopped S1 or preflight call is copied
+into the new transaction.
+
 ## Exit gates
 
 1. Freeze the exact third-run learner/analyzer record as a test-only fixture.

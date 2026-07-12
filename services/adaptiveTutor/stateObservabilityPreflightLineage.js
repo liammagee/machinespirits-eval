@@ -18,6 +18,11 @@ import {
   validateAdaptiveStateObservabilityPreflightResult,
 } from './stateObservabilityPreflight.js';
 import { adaptiveStateObservabilityPreflightStaticExecutionContract } from './stateObservabilityPreflightContracts.js';
+import { validateAdaptiveStateStage0ReportContentSha256 } from './stateBenchmarkStage0Analysis.js';
+import {
+  loadAdaptiveStateStage0Dataset,
+  validateAdaptiveStateStage0DatasetContentSha256,
+} from './stateBenchmarkStage0Executor.js';
 import { validateAdaptiveStateCriticalPathPlan } from './stateBenchmarkV2.js';
 
 export const ADAPTIVE_STATE_OBSERVABILITY_PREFLIGHT_FILES = Object.freeze({
@@ -70,9 +75,126 @@ function assertHistoricalCleanGitAttestation(git) {
   return true;
 }
 
+function validateHistoricalAdaptiveStateS0(runDirInput) {
+  const runDir = path.resolve(runDirInput);
+  const verification = assertExperimentRun(runDir);
+  const plan = verification.plan;
+  assertHistoricalCleanGitAttestation(plan?.provenance?.git);
+  for (const fileName of [
+    'critical-path-plan.json',
+    'dataset-manifest.json',
+    'benchmark-rows.jsonl',
+    'dialogues.jsonl',
+    'stage0-contract-report.json',
+  ]) {
+    if (!inventoryHas(verification, fileName)) {
+      throw new Error(`stateObservabilityPreflightLineage: historical S0 seal omits ${fileName}`);
+    }
+  }
+  const criticalPlan = readJson(runDir, 'critical-path-plan.json');
+  validateAdaptiveStateCriticalPathPlan(criticalPlan);
+  const dataset = loadAdaptiveStateStage0Dataset(runDir);
+  validateAdaptiveStateStage0DatasetContentSha256(dataset);
+  const report = readJson(runDir, 'stage0-contract-report.json');
+  validateAdaptiveStateStage0ReportContentSha256(report);
+  if (
+    verification.seal?.status !== 'complete' ||
+    plan?.runner !== 'scripts/execute-adaptive-state-benchmark-v2-s0.js' ||
+    plan?.metadata?.stage !== 's0_contract' ||
+    String(plan?.metadata?.benchmarkVersion) !== '2.1' ||
+    Number(plan?.metadata?.expectedModelCalls) !== 0 ||
+    plan?.metadata?.paid !== false ||
+    criticalPlan.label !== plan.runId ||
+    report.status !== 'pass' ||
+    report.decision !== 'advance_to_s1_technical_pilot' ||
+    report.confirmation_eligible !== false ||
+    report.s2_validity_verdict !== null ||
+    report.content_sha256 !== verification.seal.metadata?.reportSha256 ||
+    dataset.content_sha256 !== verification.seal.metadata?.datasetSha256
+  ) {
+    throw new Error('stateObservabilityPreflightLineage: historical diagnostic S0 is incomplete or non-passing');
+  }
+  return {
+    run_id: plan.runId,
+    plan_sha256: verification.seal.planSha256,
+    seal_inventory_sha256: verification.seal.inventorySha256,
+    config_sha256: criticalPlan.config_sha256,
+    report_sha256: report.content_sha256,
+    dataset_sha256: dataset.content_sha256,
+  };
+}
+
+export function resolveAdaptiveStateDiagnosticS0Lineage({
+  stoppedS1ParentRunId,
+  currentS0,
+  diagnosticS0 = null,
+} = {}) {
+  if (
+    !stoppedS1ParentRunId ||
+    !currentS0?.run_id ||
+    !currentS0?.config_sha256 ||
+    !currentS0?.plan_sha256 ||
+    !currentS0?.seal_inventory_sha256 ||
+    !currentS0?.report_sha256 ||
+    !currentS0?.dataset_sha256
+  ) {
+    throw new Error('stateObservabilityPreflightLineage: stopped-S1 parent and current S0 are required');
+  }
+  if (stoppedS1ParentRunId === currentS0.run_id) {
+    if (diagnosticS0 && diagnosticS0.run_id !== currentS0.run_id) {
+      throw new Error('stateObservabilityPreflightLineage: unnecessary diagnostic S0 differs from the current parent');
+    }
+    return {
+      mode: 'current_s0_is_diagnostic_parent',
+      diagnostic_s0_parent_run_id: currentS0.run_id,
+      diagnostic_s0_parent_plan_sha256: currentS0.plan_sha256,
+      diagnostic_s0_seal_inventory_sha256: currentS0.seal_inventory_sha256,
+      diagnostic_s0_report_sha256: currentS0.report_sha256,
+      diagnostic_s0_dataset_sha256: currentS0.dataset_sha256,
+      diagnostic_s0_config_sha256: currentS0.config_sha256,
+      current_s0_parent_run_id: currentS0.run_id,
+      current_s0_parent_plan_sha256: currentS0.plan_sha256,
+      current_s0_seal_inventory_sha256: currentS0.seal_inventory_sha256,
+      current_s0_config_sha256: currentS0.config_sha256,
+    };
+  }
+  if (!diagnosticS0?.run_id) {
+    throw new Error(
+      'stateObservabilityPreflightLineage: stopped S1 belongs to an earlier S0; --diagnostic-s0-parent is required',
+    );
+  }
+  if (
+    diagnosticS0.run_id !== stoppedS1ParentRunId ||
+    !diagnosticS0.config_sha256 ||
+    !diagnosticS0.plan_sha256 ||
+    !diagnosticS0.seal_inventory_sha256 ||
+    !diagnosticS0.report_sha256 ||
+    !diagnosticS0.dataset_sha256 ||
+    diagnosticS0.config_sha256 === currentS0.config_sha256
+  ) {
+    throw new Error(
+      'stateObservabilityPreflightLineage: replacement S0 lineage must bind the stopped S1 original parent and a changed current config',
+    );
+  }
+  return {
+    mode: 'replacement_s0_after_observability_repair',
+    diagnostic_s0_parent_run_id: diagnosticS0.run_id,
+    diagnostic_s0_parent_plan_sha256: diagnosticS0.plan_sha256,
+    diagnostic_s0_seal_inventory_sha256: diagnosticS0.seal_inventory_sha256,
+    diagnostic_s0_report_sha256: diagnosticS0.report_sha256,
+    diagnostic_s0_dataset_sha256: diagnosticS0.dataset_sha256,
+    diagnostic_s0_config_sha256: diagnosticS0.config_sha256,
+    current_s0_parent_run_id: currentS0.run_id,
+    current_s0_parent_plan_sha256: currentS0.plan_sha256,
+    current_s0_seal_inventory_sha256: currentS0.seal_inventory_sha256,
+    current_s0_config_sha256: currentS0.config_sha256,
+  };
+}
+
 export function validateAdaptiveStateStoppedS1DiagnosticParent({
   stoppedRunDir,
   s0Parent,
+  diagnosticS0ParentRunDir = null,
 } = {}) {
   if (!stoppedRunDir || !s0Parent?.run_id) {
     throw new Error('stateObservabilityPreflightLineage: stopped S1 and verified S0 parent are required');
@@ -85,14 +207,24 @@ export function validateAdaptiveStateStoppedS1DiagnosticParent({
     plan?.runner !== 'scripts/execute-adaptive-state-benchmark-v2-s1.js' ||
     plan?.metadata?.stage !== 's1_technical_pilot' ||
     String(plan?.metadata?.benchmarkVersion) !== '2.1' ||
-    plan?.metadata?.paid !== true ||
-    plan?.lineage?.parentRunId !== s0Parent.run_id
+    plan?.metadata?.paid !== true
   ) {
-    throw new Error('stateObservabilityPreflightLineage: diagnostic parent is not a sealed stopped paid v2.1 S1 on the supplied S0');
+    throw new Error('stateObservabilityPreflightLineage: diagnostic parent is not a sealed stopped paid v2.1 S1');
   }
   const criticalPlan = readJson(runDir, 'critical-path-plan.json');
   validateAdaptiveStateCriticalPathPlan(criticalPlan);
-  if (criticalPlan.label !== plan.runId || criticalPlan.config_sha256 !== s0Parent.config_sha256) {
+  const diagnosticS0 = diagnosticS0ParentRunDir
+    ? validateHistoricalAdaptiveStateS0(diagnosticS0ParentRunDir)
+    : null;
+  const s0Lineage = resolveAdaptiveStateDiagnosticS0Lineage({
+    stoppedS1ParentRunId: plan?.lineage?.parentRunId,
+    currentS0: s0Parent,
+    diagnosticS0,
+  });
+  if (
+    criticalPlan.label !== plan.runId ||
+    criticalPlan.config_sha256 !== s0Lineage.diagnostic_s0_config_sha256
+  ) {
     throw new Error('stateObservabilityPreflightLineage: stopped S1 plan differs from its S0 design/config lineage');
   }
   const reason = String(verification.seal.metadata?.reason || '');
@@ -116,7 +248,8 @@ export function validateAdaptiveStateStoppedS1DiagnosticParent({
     seal_inventory_sha256: verification.seal.inventorySha256,
     reason,
     call_accounting: partial.call_accounting,
-    s0_parent_run_id: s0Parent.run_id,
+    s0_parent_run_id: s0Lineage.diagnostic_s0_parent_run_id,
+    s0_lineage: s0Lineage,
   };
 }
 
@@ -167,7 +300,25 @@ export function validateAdaptiveStateObservabilityPreflightParent({
     metadata.claimEligible !== false ||
     Number(metadata.expectedCliDispatches) !== 48 ||
     metadata.s0ParentRunId !== s0Parent.run_id ||
-    verification.plan?.lineage?.parentRunId !== metadata.diagnosesStoppedS1RunId ||
+    verification.plan?.lineage?.parentRunId !== s0Parent.run_id ||
+    !['current_s0_is_diagnostic_parent', 'replacement_s0_after_observability_repair'].includes(
+      metadata.s0LineageMode,
+    ) ||
+    metadata.currentS0ConfigSha256 !== s0Parent.config_sha256 ||
+    (metadata.s0LineageMode === 'current_s0_is_diagnostic_parent' &&
+      (metadata.diagnosticS0ParentRunId !== s0Parent.run_id ||
+        metadata.diagnosticS0ConfigSha256 !== s0Parent.config_sha256)) ||
+    (metadata.s0LineageMode === 'replacement_s0_after_observability_repair' &&
+      (metadata.diagnosticS0ParentRunId === s0Parent.run_id ||
+        metadata.diagnosticS0ConfigSha256 === s0Parent.config_sha256)) ||
+    !/^[0-9a-f]{64}$/u.test(String(metadata.diagnosticS0ParentPlanSha256 || '')) ||
+    !/^[0-9a-f]{64}$/u.test(String(metadata.diagnosticS0SealInventorySha256 || '')) ||
+    !/^[0-9a-f]{64}$/u.test(String(metadata.diagnosticS0ReportSha256 || '')) ||
+    !/^[0-9a-f]{64}$/u.test(String(metadata.diagnosticS0DatasetSha256 || '')) ||
+    metadata.currentS0ParentPlanSha256 !== s0Parent.plan_sha256 ||
+    metadata.currentS0SealInventorySha256 !== s0Parent.seal_inventory_sha256 ||
+    !/^[0-9a-f]{64}$/u.test(String(metadata.diagnosesStoppedS1PlanSha256 || '')) ||
+    !/^[0-9a-f]{64}$/u.test(String(metadata.diagnosesStoppedS1SealInventorySha256 || '')) ||
     hashCanonicalJson(verification.plan?.hashes) !== hashCanonicalJson(currentPreflightContract) ||
     hashCanonicalJson(verification.plan?.intent?.observabilityPreflight) !== hashCanonicalJson(plan) ||
     hashCanonicalJson(verification.plan?.jobs) !== hashCanonicalJson(plan.jobs) ||
@@ -269,6 +420,8 @@ export function validateAdaptiveStateObservabilityPreflightParent({
     decision: report.decision,
     diagnoses_stopped_s1_run_id: metadata.diagnosesStoppedS1RunId,
     s0_parent_run_id: metadata.s0ParentRunId,
+    diagnostic_s0_parent_run_id: metadata.diagnosticS0ParentRunId,
+    s0_lineage_mode: metadata.s0LineageMode,
     s1_relevant_hashes_sha256: metadata.s1RelevantHashesSha256,
     cli_fingerprints_sha256: metadata.cliFingerprintsSha256,
   };
