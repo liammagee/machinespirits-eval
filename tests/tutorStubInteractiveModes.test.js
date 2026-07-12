@@ -10,9 +10,12 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function plainTerminalText(value) {
-  return String(value || '')
-    .replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/gu, '')
-    .replace(/\r/gu, '');
+  return (
+    String(value || '')
+      // eslint-disable-next-line no-control-regex -- strips ANSI escape sequences
+      .replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/gu, '')
+      .replace(/\r/gu, '')
+  );
 }
 
 function installFakeCodex(tmp) {

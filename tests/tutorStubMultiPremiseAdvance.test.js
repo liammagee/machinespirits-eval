@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function plainTerminalText(value) {
+  // eslint-disable-next-line no-control-regex -- strips ANSI escape sequences
   return String(value || '').replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/gu, '');
 }
 
