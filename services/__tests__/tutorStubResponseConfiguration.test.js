@@ -160,9 +160,44 @@ test('child audience register requires an explicit public age signal', () => {
     comprehension: { pressure: 0, unresolvedTerms: [] },
     world: testWorld(),
   });
+  const genealogicalChild = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: "Marin is Tessa's child, so the lineage continues through Tessa.",
+    classification: classification({ conceptual: 4 }),
+    tutorLearnerDag: learnerDag(),
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    world: testWorld(),
+  });
 
   assert.equal(child.audience_register, 'child_accessible');
   assert.equal(adult.audience_register, 'adult_novice');
+  assert.notEqual(genealogicalChild.audience_register, 'child_accessible');
+});
+
+test('accelerated multi-premise reasoning selects a peer-level, pace-matching response', () => {
+  const dag = learnerDag({ bottleneck: 'release_or_pacing_gap', coverage: 0.5 });
+  dag.advance = {
+    accelerated: true,
+    supportedMoveCount: 3,
+    adoptedPremiseCount: 2,
+    derivedFactCount: 1,
+  };
+  dag.model.learnerAdvance = dag.advance;
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'brisk',
+    learnerText: 'These two facts establish the lineage, so Marin is the founder’s grandchild.',
+    classification: classification({ conceptual: 4, readiness: 4 }),
+    tutorLearnerDag: dag,
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    world: testWorld(),
+  });
+
+  assert.equal(configuration.action_family, 'clarify_distinction');
+  assert.equal(configuration.audience_register, 'informed_peer');
+  assert.equal(configuration.lexical_accessibility, 'technical');
+  assert.equal(configuration.learner_advance.supportedMoveCount, 3);
+  assert.match(configuration.selection_reasons.action_family, /credit the whole chain/u);
+  assert.match(tutorStubResponseConfigurationPrompt(configuration), /do not ask for any of them again/u);
 });
 
 test('surface audit measures realization and differences between selected configurations', () => {

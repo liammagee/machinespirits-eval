@@ -35,6 +35,32 @@ If a loop IS running, STOP and tell the user — do not launch a parallel paid g
 
 ## 1. Compile the chain (all free, deterministic, side-effect = writes a YAML)
 
+For a new curriculum, start with the builder rather than cloning the AI
+Foundations YAML by hand:
+
+```bash
+# Interactive field-by-field authoring
+npm run curriculum:build
+
+# Deterministic brief -> canonical curriculum + worlds + dramas + DAG report
+npm run curriculum:build -- \
+  --brief curriculum/examples/evidence-reasoning.brief.yaml \
+  --out /tmp/evidence-reasoning.curriculum.yaml
+
+# Model-assisted drafting with source provenance (explicit model call)
+npm run curriculum:build -- \
+  --brief curriculum/my-course.brief.yaml --generate \
+  --source https://example.org/standard
+```
+
+The builder records source ids, locations, access times, extracted-content
+hashes, and excerpts; modules/KCs cite those ids. It rejects cyclic
+prerequisites and modules without tasks, verifiers, or misconception evidence.
+`--dry-run --generate` never calls the model. Use `--check`, `--no-compile`,
+`--rhetorical`, and `--force` for validation-only, canonical-only, additional
+rhetorical artifacts, and deliberate overwrite respectively. Its
+`*.builder-report.md` is an authoring/readiness report, not an outcome evaluator.
+
 Run only the stretch the request needs. Each step's input defaults to the previous artifact; pass `--check` to validate without writing.
 
 ```bash

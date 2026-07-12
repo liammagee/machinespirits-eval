@@ -70,6 +70,7 @@ function stageCard(snapshot) {
 function registerPills(turn) {
   const selection = turn.registerSelection || {};
   const configuration = turn.responseConfiguration || selection.response_configuration || {};
+  const learnerAdvance = turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || null;
   const values = [
     ['policy', selection.policy],
     ['active', selection.activated_policy],
@@ -78,6 +79,7 @@ function registerPills(turn) {
     ['audience', configuration.audience_register],
     ['language', configuration.lexical_accessibility],
     ['scene', configuration.scene_immersion],
+    ['pace', learnerAdvance?.accelerated ? `${learnerAdvance.pace} (${learnerAdvance.supportedMoveCount} moves)` : null],
   ];
   return `<div class="pills">${values
     .filter(([, value]) => value !== undefined && value !== null && value !== '')
@@ -147,6 +149,7 @@ function analysisCard(turn) {
   const selection = turn.registerSelection || {};
   const classification = turn.classification || {};
   const configuration = turn.responseConfiguration || selection.response_configuration || {};
+  const learnerAdvance = turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || null;
   const summary = classification.turn?.summary || classification.overall?.summary || 'No plain summary captured.';
   const rationale =
     selection.register_reason ||
@@ -157,6 +160,7 @@ function analysisCard(turn) {
   return `<article class="analysis-card">
     <header><h3>Turn ${escapeHtml(turn.turn)}</h3><strong>${escapeHtml(selection.engagement_stance || selection.selected_register || 'no stance')}</strong></header>
     <p><b>Learner reading:</b> ${escapeHtml(summary)}</p>
+    ${learnerAdvance?.accelerated ? `<p><b>Learning pace:</b> accelerating — ${escapeHtml(learnerAdvance.adoptedPremiseCount)} premises and ${escapeHtml(learnerAdvance.derivedFactCount)} supported inferences accepted together.</p>` : ''}
     <p><b>Selection rationale:</b> ${escapeHtml(rationale)}</p>
     ${registerPills(turn)}
     <details><summary>Full learner analysis</summary><pre>${escapeHtml(safeJson(classification))}</pre></details>

@@ -1,0 +1,53 @@
+title: Evidence and Reasoning
+id: evidence_reasoning_v1
+version: 1.0.0
+discipline: evidence_reasoning
+audience: Adult and early undergraduate learners
+delivery: Adaptive tutor-supported short course
+course_goal: Build and defend conclusions whose scope matches publicly checkable evidence.
+module_prefix: ER
+sequential_prerequisites: false
+
+modules:
+  - id: ER1
+    title: Claims, observations, and warrants
+    essential_question: What makes an observation relevant to a claim?
+    main_artifact: claim-evidence-warrant map
+    primary_verifier: structural map checker plus learner-authored warrant review
+    knowledge_components:
+      - Distinguish claims from observations
+      - State the warrant connecting evidence to a claim
+      - Limit a claim to the scope licensed by its evidence
+    canonical_tasks:
+      - Separate claims, observations, and warrants in a short case
+      - Repair an overbroad conclusion
+    verifiers:
+      - The map checker confirms every conclusion has cited evidence and an explicit warrant; a transfer item changes the surface case.
+    misconception_signatures:
+      - A relevant-sounding observation automatically proves the conclusion.
+      - More evidence always licenses a broader claim.
+    mastery_gate: Produce a complete map for a novel case and explain one rejected warrant.
+    transfer_challenge: Audit a persuasive paragraph whose evidence is accurate but insufficient for its conclusion.
+    prerequisite_ids: []
+
+  - id: ER2
+    title: Competing explanations and discriminating tests
+    essential_question: Which new observation would distinguish two plausible explanations?
+    main_artifact: competing-explanation test plan
+    primary_verifier: prediction-difference and test-discrimination checker
+    knowledge_components:
+      - Generate at least two explanations consistent with current evidence
+      - Derive a different observable prediction from each explanation
+      - Select a feasible discriminating test
+    canonical_tasks:
+      - Construct competing explanations for an ambiguous result
+      - Reject a test that both explanations predict equally
+    verifiers:
+      - The checker confirms that the proposed observation has different predicted outcomes under the competing explanations.
+    misconception_signatures:
+      - The first explanation consistent with the evidence is therefore correct.
+      - Repeating the original measurement is always a discriminating test.
+    mastery_gate: Design and justify a discriminating test for a novel pair of explanations.
+    transfer_challenge: Compare two causal stories in a new domain and identify the cheapest decisive observation.
+    prerequisite_ids:
+      - ER1

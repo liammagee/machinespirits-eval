@@ -3,6 +3,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import pty from 'node-pty';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
@@ -27,14 +28,17 @@ let input = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
-  if (process.env.FAKE_CODEX_LOG) fs.appendFileSync(process.env.FAKE_CODEX_LOG, input + '\\n---CALL---\\n');
-  const response = input.includes('# Explanatory debug task')
-    ? 'The learner is asking for orientation, so the central need is a concrete link between the assay and the evidence. The exchange leaves understanding tentative but gives the next turn a clearer starting point. You held a warm, re-anchoring stance because explanation still matters more than pressure.'
-    : input.includes('Write learner turn')
-      ? 'I would compare the metal residues first.'
-      : 'Take the crucible as a fingerprint: which public mark would let you match it to one hand?';
-  if (outputPath) fs.writeFileSync(outputPath, response);
-  process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
+  const finish = () => {
+    if (process.env.FAKE_CODEX_LOG) fs.appendFileSync(process.env.FAKE_CODEX_LOG, input + '\\n---CALL---\\n');
+    const response = input.includes('# Explanatory debug task')
+      ? 'The learner is asking for orientation, so the central need is a concrete link between the assay and the evidence. The exchange leaves understanding tentative but gives the next turn a clearer starting point. You held a warm, re-anchoring stance because explanation still matters more than pressure.'
+      : input.includes('Write learner turn')
+        ? 'I would compare the metal residues first.'
+        : 'Take the crucible as a fingerprint: which public mark would let you match it to one hand?';
+    if (outputPath) fs.writeFileSync(outputPath, response);
+    process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
+  };
+  setTimeout(finish, Number(process.env.FAKE_CODEX_DELAY_MS || 0));
 });
 `,
     'utf8',
@@ -144,6 +148,177 @@ test('/quit writes a learner-centred HTML summary after a completed turn', async
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test(
+  'auto mode keeps a separate editable command line while model output is generated',
+  { skip: process.platform === 'win32', timeout: 15_000 },
+  async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-concurrent-auto-terminal-'));
+    try {
+      installFakeCodex(tmp);
+      let terminalOutput = '';
+      let autoStarted = false;
+      let partialCommandEntered = false;
+      let commandCompleted = false;
+      let requestedExit = false;
+      const terminal = pty.spawn(
+        process.execPath,
+        [
+          'scripts/tutor-stub.js',
+          '--no-opening',
+          '--no-classifier',
+          '--no-register-selection',
+          '--no-closeout-report',
+          '--no-stream',
+          '--trace-dir',
+          tmp,
+          '--world',
+          'world_005_marrick',
+        ],
+        {
+          cwd: ROOT,
+          cols: 120,
+          rows: 24,
+          name: 'xterm-color',
+          env: {
+            ...process.env,
+            PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+            TERM: 'xterm-color',
+            FAKE_CODEX_DELAY_MS: '800',
+            CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+            TUTOR_STUB_SUMMARY_OPEN: '0',
+          },
+        },
+      );
+
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          terminal.kill();
+          reject(new Error(`concurrent auto terminal timed out\n${plainTerminalText(terminalOutput)}`));
+        }, 12_000);
+        terminal.onData((chunk) => {
+          terminalOutput += chunk;
+          const plain = plainTerminalText(terminalOutput);
+          if (!autoStarted && plain.includes('learner >')) {
+            autoStarted = true;
+            terminal.write('/auto 1\r');
+          } else if (!partialCommandEntered && plain.includes('calling auto learner')) {
+            partialCommandEntered = true;
+            terminal.write('/sta');
+          } else if (!commandCompleted && plain.includes('learner(auto) >')) {
+            commandCompleted = true;
+            terminal.write('tus\r');
+          } else if (!requestedExit && plain.includes('session status > AUTO')) {
+            requestedExit = true;
+            terminal.write('/quit\r');
+          }
+        });
+        terminal.onExit(({ exitCode, signal }) => {
+          clearTimeout(timer);
+          if (exitCode === 0) resolve();
+          else reject(new Error(`concurrent auto terminal exited ${exitCode} (${signal})\n${terminalOutput}`));
+        });
+      });
+
+      const plain = plainTerminalText(terminalOutput);
+      assert.match(plain, /calling auto learner[^\n]*\nauto > \/sta/u);
+      assert.match(plain, /learner\(auto\) >/u);
+      assert.match(plain, /session status > AUTO/u);
+      assert.match(plain, /learning summary: automatic on close/u);
+      assert.doesNotMatch(plain, /unknown command/u);
+      assert.ok(plain.indexOf('learner(auto) >') < plain.indexOf('session status > AUTO'), plain);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  'typing slash opens a filtered command palette and Tab completes the selection',
+  { skip: process.platform === 'win32', timeout: 15_000 },
+  async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-slash-palette-'));
+    try {
+      installFakeCodex(tmp);
+      let terminalOutput = '';
+      let slashEntered = false;
+      let filterEntered = false;
+      let tabPressed = false;
+      let statusSubmitted = false;
+      let requestedExit = false;
+      const terminal = pty.spawn(
+        process.execPath,
+        [
+          'scripts/tutor-stub.js',
+          '--no-opening',
+          '--no-classifier',
+          '--no-register-selection',
+          '--no-closeout-report',
+          '--no-interim-animation',
+          '--no-stream',
+          '--trace-dir',
+          tmp,
+          '--world',
+          'world_005_marrick',
+        ],
+        {
+          cwd: ROOT,
+          cols: 120,
+          rows: 30,
+          name: 'xterm-color',
+          env: {
+            ...process.env,
+            PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+            TERM: 'xterm-color',
+            CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+            TUTOR_STUB_SUMMARY_OPEN: '0',
+          },
+        },
+      );
+
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          terminal.kill();
+          reject(new Error(`slash palette terminal timed out\n${plainTerminalText(terminalOutput)}`));
+        }, 12_000);
+        terminal.onData((chunk) => {
+          terminalOutput += chunk;
+          const plain = plainTerminalText(terminalOutput);
+          if (!slashEntered && plain.includes('learner >')) {
+            slashEntered = true;
+            terminal.write('/');
+          } else if (!filterEntered && plain.includes('slash commands ·') && plain.includes('available')) {
+            filterEntered = true;
+            terminal.write('sta');
+          } else if (!tabPressed && plain.includes('1 match for /sta')) {
+            tabPressed = true;
+            terminal.write('\t');
+          } else if (!statusSubmitted && plain.includes('learner > /status')) {
+            statusSubmitted = true;
+            terminal.write('\r');
+          } else if (!requestedExit && plain.includes('session status > LEARNER')) {
+            requestedExit = true;
+            terminal.write('/quit\r');
+          }
+        });
+        terminal.onExit(({ exitCode, signal }) => {
+          clearTimeout(timer);
+          if (exitCode === 0) resolve();
+          else reject(new Error(`slash palette terminal exited ${exitCode} (${signal})\n${terminalOutput}`));
+        });
+      });
+
+      const plain = plainTerminalText(terminalOutput);
+      assert.match(plain, /slash commands · \d+ available/u);
+      assert.match(plain, /1 match for \/sta/u);
+      assert.match(plain, /learner > \/status/u);
+      assert.match(plain, /session status > LEARNER/u);
+      assert.doesNotMatch(plain, /unknown command/u);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  },
+);
 
 test('a non-interactive single run also writes its learning summary', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-learning-summary-once-'));

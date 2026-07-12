@@ -133,6 +133,30 @@ test('field overlay fires on a strong field/DAG divergence but not an aligned re
   assert.equal(aligned.eligible, false);
 });
 
+test('field overlay treats an accelerated learner-owned advance as a strong turn change', () => {
+  const result = evaluateTutorStubRegisterPolicyOverlay({
+    overlay: 'field',
+    state: { turns: [] },
+    classification: { turn: {} },
+    candidate: {
+      selected_register: 'brisk',
+      field_policy: {
+        features: {
+          field: { relation: 'initial', delta: null },
+          dag: { progressScore: 3 },
+          advance: { accelerated: true, supportedMoveCount: 3 },
+        },
+      },
+    },
+    primaryRegister: 'warm',
+    threshold: 0.7,
+  });
+
+  assert.equal(result.signal_strength, 0.9);
+  assert.equal(result.eligible, true);
+  assert.match(result.reasons.join(' '), /3 warranted learner-owned proof moves/u);
+});
+
 test('tutor-stub dry run exposes the composed policy and threshold', () => {
   const config = JSON.parse(
     execFileSync(

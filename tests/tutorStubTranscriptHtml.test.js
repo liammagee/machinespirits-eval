@@ -37,6 +37,13 @@ function fixtureSnapshot() {
           overall: { trajectory: 'careful inquiry' },
         },
         tutorLearnerDagModel: { adopted: ['p1'], missing: ['p2'] },
+        learnerAdvance: {
+          pace: 'accelerating',
+          accelerated: true,
+          supportedMoveCount: 3,
+          adoptedPremiseCount: 2,
+          derivedFactCount: 1,
+        },
         registerSelection: {
           engagement_stance: 'warm',
           register_reason: 'The unresolved evidentiary distinction calls for a calm re-anchor.',
@@ -102,6 +109,8 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, and setti
   assert.match(html, /FULL EFFECTIVE TUTOR SYSTEM PROMPT/u);
   assert.match(html, /FULL USED LEARNER USER PROMPT/u);
   assert.match(html, /The unresolved evidentiary distinction calls for a calm re-anchor/u);
+  assert.match(html, /Learning pace:<\/b> accelerating/u);
+  assert.match(html, /pace: accelerating \(3 moves\)/u);
   assert.match(html, /&quot;missing&quot;: \[/u);
   assert.match(html, /register\.engagementStanceTemperature/u);
   assert.match(html, /0\.85/u);

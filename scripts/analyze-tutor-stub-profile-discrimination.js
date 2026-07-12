@@ -62,6 +62,8 @@ const VECTOR_FIELDS = [
   'epistemicStance',
   'agency',
   'affectClass',
+  'reasoningSpan',
+  'learningPace',
 ];
 
 function parseArgs(argv) {
@@ -297,6 +299,7 @@ function dagSnapshot(turn) {
   const model = turn.tutorLearnerDagModel || {};
   const assessment = model.assessment || {};
   const metrics = model.metrics || {};
+  const learnerAdvance = turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || model.learnerAdvance || null;
   return {
     status: assessment.status || null,
     bestPathCoverage: asNumber(assessment.bestPathCoverage),
@@ -311,6 +314,7 @@ function dagSnapshot(turn) {
     assertedSecret: Boolean(assessment.assertedSecret),
     assertedMirror: Boolean(assessment.assertedMirror),
     bottleneck: assessment.bottleneck || null,
+    learnerAdvance,
   };
 }
 
@@ -347,6 +351,8 @@ function compactTurn(turn, args, { stimulusTutor = '', stimulusRegister = null }
       conceptualScore: asNumber(classifier.scores?.conceptual_engagement?.score),
       epistemicReadinessScore: asNumber(classifier.scores?.epistemic_readiness?.score),
       pedagogicalNeed: snippet(classifier.pedagogical_need, 280) || null,
+      reasoningSpan: classifier.reasoning_span || null,
+      learningPace: classifier.learning_pace || null,
     },
     field: scoreTurnField(classifier),
     dag: dagSnapshot(turn),
@@ -379,6 +385,9 @@ function compactTurn(turn, args, { stimulusTutor = '', stimulusRegister = null }
     },
     markers: {
       explicitRecollection: explicitRecollectionFrame(turn.learner),
+      learnerAcceleration: Boolean(
+        turn.learnerAdvance?.accelerated || turn.tutorLearnerDagUpdate?.advance?.accelerated,
+      ),
     },
   };
   if (args.includeText) {
@@ -551,6 +560,10 @@ function vectorForTrace(compacted) {
     if (turn.markers?.explicitRecollection) {
       addVector(vector, 'marker:explicitRecollection');
       addVector(vector, `phase:${phase}:marker:explicitRecollection`, 0.4);
+    }
+    if (turn.markers?.learnerAcceleration) {
+      addVector(vector, 'marker:learnerAcceleration');
+      addVector(vector, `phase:${phase}:marker:learnerAcceleration`, 0.5);
     }
 
     addCategorical(vector, 'dag:bottleneck', turn.dag?.bottleneck, 0.35);

@@ -4,6 +4,8 @@ const UNCERTAINTY_OR_QUESTION_PATTERN = /\?|\b(?:maybe|perhaps|possibly|i guess|
 const CONTRADICTION_PATTERN = /\b(?:but|however|instead|different|not the same|someone else)\b/iu;
 const CASE_CLOSING_PATTERN = /\b(?:culprit|guilty|verdict|final answer|who (?:struck|made|coined)|write (?:their|the) name|name the (?:person|suspect|culprit))\b/iu;
 const SINGLE_REFERENT_PATTERN = /\b(?:one hand alone|one person alone|the same hand|a single hand|a single person|only (?:one|that person|that hand|the person|the hand)|the one hand)\b/iu;
+const OPEN_LOCAL_QUESTION_PATTERN = /^(?:what|which|who)\b/iu;
+const OPEN_LOCAL_SCOPE_PATTERN = /\b(?:rule out|compare|feature|mark|difference|change|show|follow)\b/iu;
 
 const QUESTION_STOPWORDS = new Set([
   'a',
@@ -125,18 +127,25 @@ export function resolveTutorStubGenerousInference({
   if (UNCERTAINTY_OR_QUESTION_PATTERN.test(surface) || CONTRADICTION_PATTERN.test(surface)) {
     return { ...base, reason: 'learner_did_not_make_a_clear_affirmative_move' };
   }
-  if (/distorts_public_evidence|overleaps_evidence|resistant/iu.test(labels)) {
-    return { ...base, reason: 'classifier_detected_unsafe_or_conflicting_move' };
-  }
-
   const sameReply = ELLIPTICAL_SAME_PATTERN.test(surface);
   const binaryReply = BINARY_REPLY_PATTERN.test(surface) && isBinaryQuestion(sourceQuestion);
-  if (!sameReply && !binaryReply) return { ...base, reason: 'not_a_supported_elliptical_reply' };
+  const openLocalReply =
+    OPEN_LOCAL_QUESTION_PATTERN.test(sourceQuestion) &&
+    OPEN_LOCAL_SCOPE_PATTERN.test(sourceQuestion) &&
+    surface.split(/\s+/u).length <= 6 &&
+    !/[.!?]\s+\S/u.test(surface);
+  if (/distorts_public_evidence|resistant/iu.test(labels)) {
+    return { ...base, reason: 'classifier_detected_unsafe_or_conflicting_move' };
+  }
+  if (/overleaps_evidence/iu.test(labels) && !openLocalReply) {
+    return { ...base, reason: 'classifier_detected_unsafe_or_conflicting_move' };
+  }
+  if (!sameReply && !binaryReply && !openLocalReply) return { ...base, reason: 'not_a_supported_elliptical_reply' };
   if (sameReply && !SINGLE_REFERENT_PATTERN.test(tutorText)) {
     return { ...base, reason: 'no_single_public_referent_to_resolve_same' };
   }
 
-  const kind = sameReply ? 'contextual_same_referent' : 'contextual_binary_answer';
+  const kind = sameReply ? 'contextual_same_referent' : binaryReply ? 'contextual_binary_answer' : 'contextual_open_answer';
   return {
     ...base,
     applied: true,
@@ -144,7 +153,9 @@ export function resolveTutorStubGenerousInference({
     confidence: 'high',
     resolvedMeaning: sameReply
       ? 'The learner affirms that the current local conclusion has the same single referent identified in the preceding public question.'
-      : 'The learner directly answers the preceding yes-or-no question.',
+      : binaryReply
+        ? 'The learner directly answers the preceding yes-or-no question.'
+        : 'The learner gives a short answer whose referent and scope are supplied by the immediately preceding public question.',
     reason: 'The immediately preceding public question supplies one unambiguous local referent and the reply resolves against it.',
     tutorInstruction:
       'Treat the immediately preceding local question as answered. Do not ask the learner to restate, rename, or re-prove that step; carry the obvious public bridge internally and advance.',

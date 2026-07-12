@@ -81,7 +81,7 @@ npm run tutor:stub -- \
   --tutor-learner-dag \
   --dag-mode defeasible_human_scaffold \
   --register-policy field \
-  --cli-effort low \
+  --cli-effort medium \
   --history-turns 4 \
   --max-tokens 4096
 ```
@@ -103,6 +103,14 @@ Useful variants:
   and then returns to the prior learner/coach role. It uses the active learner
   profile and `--auto-learner-model`; it does not restart the scene or repeat an
   existing opening.
+- Interactive TTY sessions keep a persistent editable command line beneath the
+  animated activity line while tutor, learner, analysis, clarification, or auto
+  work is running. Readline is not paused in `/auto`: commands such as
+  `/status`, `/analysis`, `/transcript`, `/field`, `/coach`, and `/quit` can be
+  entered while generation continues, and partially typed commands survive
+  activity redraws and completed model output. API text streams are displayed
+  as a completed block while this command surface is live so token writes do
+  not corrupt the input cursor; non-interactive streaming behavior is unchanged.
 - `/status` prints the current role, turn, learner profile, mixed-cache state,
   register policy/temperature, DAG dropout, closure phase, and pending/applied
   coach guidance. Role prompts and tutor/system output use distinct terminal
@@ -111,7 +119,17 @@ Useful variants:
 - Add `--register-policy bland` for a non-dynamic-feeling baseline.
 - Add `--model`, `--classifier-model`, `--learner-record-model`, or
   `--auto-learner-model` only when overriding the default `codex.gpt-5.6-terra`.
-- Add `--multiple-choice` only when explicitly requested.
+- Fresh mixed sessions include a scrolling tutor-model chooser in the settings
+  prelude, with the launch model highlighted and configured provider aliases
+  described as they are selected. This changes only the speaking tutor; the
+  analysis/DAG and automated-learner models remain independent. During a run,
+  `/settings model` lists choices and `/settings model <provider.alias>` changes
+  subsequent tutor turns, records provenance, and refreshes stale mixed caches.
+- Multiple choice is opt-in globally with `--multiple-choice`, but the human
+  scaffold may use one bounded public-safe choice after uncertainty when an
+  open question would otherwise ask the learner to invent unstaged information.
+- Codex tutor-stub calls default to `gpt-5.6-terra` at `medium` effort; pass
+  `--cli-effort low|high|xhigh` only for an intentional override.
 - Add `--mixed-learner` for manual play with a prefetched clue-answer pair after
   each tutor turn. Use `/clue` or `/hint` for non-revealing direction, press Tab
   on an empty learner prompt to insert the answer for editing, or use
@@ -142,15 +160,17 @@ Useful variants:
   profiles. Pipes and other non-TTY callers retain the typed-ID profile
   fallback; there, `list`, `stress`, and `all` browse profile groups and Tab
   completes picker commands and ids.
-  Before any clue or answer generation, the same fresh-session prelude asks for
-  engagement-stance temperature when the active policy uses it (`0.85` is the
+  Before any clue or answer generation, the same fresh-session prelude chooses
+  the speaking tutor model, then asks for engagement-stance temperature when the active policy uses it (`0.85` is the
   recommended default) and accumulated DAG-fact dropout when the learner DAG is
   enabled (`0` is the recommended reliable-memory default). Enter accepts the
   launch value, including any command-line override. Resumed and `--no-opening`
   sessions skip the prelude. The opening tutor text is then buffered until
-  that first notice and card are ready, and the card is printed immediately
-  before the first tutor message. This adds first-reveal latency but makes the
-  controls legible before the drama begins. Later suggestions activate Tab
+  that first notice and card are ready. The card is printed, then the selected
+  scenario's director block is printed once as the final visible prelude
+  immediately before the first tutor line. This makes the stage directions and
+  opening speech read as one script opening while keeping the controls legible.
+  Later suggestions activate Tab
   silently so they do not interrupt the dramatic flow. `/suggest` and `/use`
   still expose the profile id, intended pattern, and visible expression on
   demand; only the learner response is inserted or spoken, so this metadata
@@ -169,6 +189,18 @@ Useful variants:
   explained terms survive memory compaction, traces, resumes, reports, and
   mixed-cache regeneration. Inspect them with `/analysis` or `/analysis
   technical`.
+- A single learner turn may adopt several already-staged public premises and
+  voice several supported intermediate conclusions. The extractor returns the
+  full warranted chain rather than truncating it after one step; unstaged or
+  underived follow-ups remain rejected. Accepted spans are recorded as
+  `learnerAdvance`, deterministically update `reasoning_span`, `learning_pace`,
+  evidence use, agency, and rubric floors, and feed the field, trajectory,
+  dynamical state, policy overlays, engagement stance, response configuration,
+  transcript, closeout, learning summary, and auto-eval reports. An accelerated
+  turn favours brisk/precise peer-level continuation and tells the tutor to
+  credit the whole chain and test only the next unresolved edge. Bland, random,
+  negative, comprehension, dropout, closure, and predeclared-pressure controls
+  retain their declared priority or non-adaptive behavior.
 - Tutor response configuration has five independent axes:
   `engagement_stance`, `action_family`, `audience_register`,
   `lexical_accessibility`, and `scene_immersion`. `selected_register` remains a
@@ -256,11 +288,26 @@ Useful variants:
   evidence, and learner-visible clarification state, so an early exit does not
   disclose unreleased premises or the concealed answer. Finalization is
   idempotent and excludes any tutor turn still in progress.
-- `/settings` shows the active policy and engagement-stance temperature.
-  `/settings stance-temp 0.4` sharpens subsequent locally selected stance
+- In an interactive TTY, `/settings` opens a keyboard control panel rather than
+  a read-only dump. Up/Down selects the tutor model, stance temperature, DAG
+  dropout, state/field overlays, overlay threshold, or Done; Enter opens a
+  model chooser or numeric slider, toggles an overlay, or closes the panel.
+  Left/Right makes fine slider changes, Page Up/Down makes coarse changes, `R`
+  restores the recommended value, Enter applies, and Escape cancels. The panel
+  stays open for several edits. Pipes and non-TTY callers retain the settings
+  summary and direct command behavior.
+  `/settings model` opens the configured model chooser in a TTY and lists
+  configured choices otherwise; `/settings model codex.gpt-5.6-luna` changes
+  the tutor from the next turn without changing the classifier/DAG or learner
+  models. Model changes are rejected during an in-flight tutor turn and
+  invalidate mixed suggestion/analysis/tutor-prefetch state before regeneration.
+  `/settings stance-temp` opens its slider in a TTY, while `/settings
+  stance-temp 0.4` sharpens subsequent locally selected stance
   distributions; `/settings stance-temp 1.4` broadens them. No other response
-  axis is temperature-scaled. Changes are rejected while a tutor turn is in
-  progress so each turn has one deterministic setting.
+  axis is temperature-scaled. `/settings dropout` likewise opens its slider;
+  all direct forms remain available for fast or scripted changes. Interactive
+  editing and direct changes are rejected while a tutor turn is in progress so
+  each turn has one deterministic setting.
 - `/settings policy add state` and `/settings policy add field` add live
   strong-change overlays without replacing the primary policy. Use `/settings
   policy remove <state|field>`, `/settings policy clear`, or `/settings policy
@@ -276,8 +323,12 @@ Useful variants:
   focus, Evidence pacing, Learner reading, Reasoning state, Tutor style, and
   Clue progress. `view n/N` is a carousel position, not a score; restrained
   color distinguishes phase, view number, and panel category.
-- Use slash commands during a run: `/analysis`, `/settings [temp n|dropout n]`, `/field`, `/viz`, `/transcript`,
-  `/clarify [phrase]`, `/explain [phrase]`, `/id`, `/profile`, `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, `/quit`.
+- Type `/` during a run to open the live slash-command palette above the
+  editable prompt. Keep typing to filter it and press Tab to complete; the
+  palette remains usable while tutor or learner generation continues. Commands
+  include `/analysis`, `/settings [model|temp n|dropout n]`, `/field`, `/viz`,
+  `/transcript`, `/clarify [phrase]`, `/explain [phrase]`, `/id`, `/profile`,
+  `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
 
 ## Automated Single-Learner Eval
 
@@ -294,7 +345,7 @@ npm run tutor:stub:auto-eval -- \
   --auto-learner-profile-id diligent \
   --world world_005_marrick \
   --dag-mode strict_dag \
-  --cli-effort low \
+  --cli-effort medium \
   --history-turns 4 \
   --max-tokens 4096 \
   --trace-dir .tutor-stub-auto-eval/baseline-register-policy-p8 \
@@ -313,7 +364,7 @@ npm run tutor:stub:auto-eval -- \
   --safety-turns 120 \
   --world world_005_marrick \
   --dag-mode strict_dag \
-  --cli-effort low \
+  --cli-effort medium \
   --history-turns 4 \
   --max-tokens 4096 \
   --trace-dir .tutor-stub-auto-eval/adaptive-register-policy-p8 \
@@ -387,7 +438,7 @@ npm run tutor:stub:abm-panel -- \
   --world world_005_marrick \
   --register-policy field \
   --register-palette all \
-  --cli-effort low \
+  --cli-effort medium \
   --keep-going
 ```
 
@@ -426,7 +477,7 @@ npm run tutor:stub:qa -- \
   --safety-turns 120 \
   --parallelism 6 \
   --world world_005_marrick \
-  --cli-effort low \
+  --cli-effort medium \
   --history-turns 4 \
   --max-tokens 4096 \
   --keep-going

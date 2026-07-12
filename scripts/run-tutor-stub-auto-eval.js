@@ -527,6 +527,7 @@ function lightweightFieldTurn(turn, previous = null) {
   const assessment = model.assessment || {};
   const register = turn?.registerSelection || {};
   const priorEfficacy = turn?.previousRegisterEfficacy || null;
+  const learnerAdvance = turn?.learnerAdvance || turn?.tutorLearnerDagUpdate?.advance || model.learnerAdvance || null;
   const leakOk = !turn?.tutorLeakAudit || turn.tutorLeakAudit.ok === true;
   const conceptual = fieldScore(scores.conceptual_engagement);
   const readiness = fieldScore(scores.epistemic_readiness);
@@ -575,6 +576,7 @@ function lightweightFieldTurn(turn, previous = null) {
     register: register.selected_register || null,
     bottleneck: assessment.bottleneck || 'unknown',
     learnerMove: turnAnalysis.discourse_move || 'unknown',
+    learnerAdvance,
     speed: previous
       ? roundField(
           Math.sqrt(
@@ -942,6 +944,7 @@ function compactFrameState({ turn, fieldRow, selection }) {
       finalSecretEntailed: assessment.finalSecretEntailed === true,
       assertedSecret: assessment.assertedSecret === true,
       assertedMirror: assessment.assertedMirror === true,
+      learnerAdvance: turn?.learnerAdvance || turn?.tutorLearnerDagUpdate?.advance || model.learnerAdvance || null,
     },
   };
 }
@@ -1575,6 +1578,9 @@ function summarizeTrace(tracePath, traceDir) {
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
   const metrics = lastTurn.tutorLearnerDagModel?.metrics || {};
+  const learnerAdvances = turnRecords
+    .map((turn) => turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || turn.tutorLearnerDagModel?.learnerAdvance)
+    .filter(Boolean);
   const registers = turns
     .map(
       (event) =>
@@ -1618,6 +1624,13 @@ function summarizeTrace(tracePath, traceDir) {
     audienceRegisterCounts: countBy(audienceRegisters),
     lexicalAccessibilityCounts: countBy(lexicalAccessibility),
     sceneImmersionCounts: countBy(sceneImmersion),
+    learnerAdvance: {
+      observedTurns: learnerAdvances.length,
+      acceleratedTurns: learnerAdvances.filter((advance) => advance.accelerated).length,
+      multiPremiseTurns: learnerAdvances.filter((advance) => advance.multiPremise).length,
+      multiStepTurns: learnerAdvances.filter((advance) => advance.multiStep).length,
+      maxSupportedMoves: Math.max(0, ...learnerAdvances.map((advance) => Number(advance.supportedMoveCount || 0))),
+    },
     responseConfigurationVisibility,
     dagFactDropout,
     efficacyCounts: countBy(efficacies),
@@ -1751,6 +1764,8 @@ function summarizeRows(rows) {
           .map((row) => row.responseConfigurationVisibility?.pairwise_visible_difference_rate)
           .filter((value) => value !== null && value !== undefined),
       ),
+      acceleratedTurns: okRows.reduce((sum, row) => sum + Number(row.learnerAdvance?.acceleratedTurns || 0), 0),
+      multiPremiseTurns: okRows.reduce((sum, row) => sum + Number(row.learnerAdvance?.multiPremiseTurns || 0), 0),
       leakCount: okRows.reduce((sum, row) => sum + Number(row.leakCount || 0), 0),
       errorCount: okRows.reduce((sum, row) => sum + Number(row.errorCount || 0), 0),
     };
@@ -1780,6 +1795,8 @@ function summarizeRows(rows) {
         .map((row) => row.responseConfigurationVisibility?.pairwise_visible_difference_rate)
         .filter((value) => value !== null && value !== undefined),
     ),
+    acceleratedTurns: scored.reduce((sum, row) => sum + Number(row.learnerAdvance?.acceleratedTurns || 0), 0),
+    multiPremiseTurns: scored.reduce((sum, row) => sum + Number(row.learnerAdvance?.multiPremiseTurns || 0), 0),
     leakCount: scored.reduce((sum, row) => sum + Number(row.leakCount || 0), 0),
     errorCount: scored.reduce((sum, row) => sum + Number(row.errorCount || 0), 0),
     byPolicy: Object.fromEntries(

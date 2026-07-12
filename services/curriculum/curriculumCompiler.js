@@ -461,6 +461,12 @@ function dramaIdFor(moduleId) {
   return `D_${moduleId}_CURRICULUM`;
 }
 
+function disciplineForCurriculum(curriculum) {
+  return String(curriculum?.discipline || curriculum?.id || 'curriculum')
+    .replace(/_v\d+$/u, '')
+    .toLowerCase();
+}
+
 function routeChangeFrom(module) {
   return sentenceFragment(firstOrFallback(module.misconception_signatures, module.essential_question || module.title));
 }
@@ -561,7 +567,7 @@ function dramaForModule(module, curriculum) {
   const worldBinding = worldDramaBindingForModule(module, curriculum);
   return {
     id: dramaIdFor(module.id),
-    discipline: 'ai_foundations',
+    discipline: disciplineForCurriculum(curriculum),
     topic: module.essential_question || module.title,
     persona: defaults.persona,
     condition: 'recognition',
@@ -1180,7 +1186,9 @@ export function dramaForRhetoricalDramaticPlan(plan) {
   const defaults = MODULE_DRAMA_DEFAULTS[plan.module_id] || MODULE_DRAMA_DEFAULTS.AF1;
   return {
     id: dramaIdForRhetoricalPlan(plan),
-    discipline: 'ai_foundations',
+    discipline: String(plan.discipline || plan.source_curriculum_id || 'curriculum')
+      .replace(/_v\d+$/u, '')
+      .toLowerCase(),
     topic: plan.curriculum_spine.target_task || plan.module_title,
     persona: plan.character.learner.persona,
     condition: plan.arm === 'dogmatic_routine_control' ? 'routine_control' : 'recognition',

@@ -49,6 +49,7 @@ function journey(summary) {
           <div class="speech tutor"><b>Tutor</b><p>${escapeHtml(row.tutor)}</p></div>
           ${row.newEvidence?.length ? `<div class="movement"><b>New evidence held</b>${list(row.newEvidence, '')}</div>` : ''}
           ${row.newReasoning?.length ? `<div class="movement"><b>New reasoning voiced</b>${list(row.newReasoning, '')}</div>` : ''}
+          ${row.learnerAdvance?.accelerated ? `<div class="movement"><b>Accelerated learner move</b><p>${escapeHtml(row.learnerAdvance.supportedMoveCount)} warranted proof moves were accepted together (${escapeHtml(row.learnerAdvance.adoptedPremiseCount)} premises, ${escapeHtml(row.learnerAdvance.derivedFactCount)} inferences).</p></div>` : ''}
         </div>
       </details>`,
     )
@@ -79,7 +80,7 @@ export function renderTutorStubLearningSummaryHtml(summary = {}) {
 <section class="grid">
   <article class="card"><h2>Learning arc</h2><p>${escapeHtml(summary.arc?.summary || 'The completed public turns are collected below.')}</p><p>${escapeHtml(
     summary.arc?.trajectory || '',
-  )}</p>${summary.arc?.recurringPattern ? `<p><b>Recurring pattern:</b> ${escapeHtml(summary.arc.recurringPattern)}</p>` : ''}</article>
+  )}</p>${summary.progress?.acceleratedTurnCount ? `<p><b>Accelerated turns:</b> ${escapeHtml(summary.progress.acceleratedTurnCount)}; largest accepted span ${escapeHtml(summary.progress.maxSupportedMoves)} warranted moves.</p>` : ''}${summary.arc?.recurringPattern ? `<p><b>Recurring pattern:</b> ${escapeHtml(summary.arc.recurringPattern)}</p>` : ''}</article>
   <article class="card"><h2>Where this leaves you</h2><p>${escapeHtml(summary.progress?.plainStatus || summary.finalStatus || '')}</p><p><b>Next useful move:</b> ${escapeHtml(
     summary.nextStep || 'Carry the reasoning into another case.',
   )}</p></article>

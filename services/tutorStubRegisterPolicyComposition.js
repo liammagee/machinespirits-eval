@@ -94,6 +94,8 @@ function stateChangeSignal({ state, classification }) {
     epistemic_stance: 0.2,
     affect: 0.16,
     agency: 0.18,
+    reasoning_span: 0.16,
+    learning_pace: 0.2,
   };
   const changedFields = Object.entries(weights)
     .filter(([field]) => changed(previous[field], current[field]))
@@ -129,6 +131,9 @@ function stateChangeSignal({ state, classification }) {
   ) {
     strength = Math.max(strength, 0.9);
   }
+  if (current.learning_pace === 'accelerating' && previous.learning_pace !== 'accelerating') {
+    strength = Math.max(strength, 0.9);
+  }
   return {
     strength: Number(strength.toFixed(3)),
     reasons: [
@@ -155,16 +160,21 @@ function fieldChangeSignal(candidate) {
   }[relation] ?? 0;
   let strength = Math.max(relationFloor, Math.min(1, absoluteDelta / 0.25));
   if (Number.isFinite(delta) && delta <= -0.1) strength = Math.max(strength, 0.85);
+  if (features.advance?.accelerated) strength = Math.max(strength, 0.9);
   return {
     strength: Number(strength.toFixed(3)),
     reasons: [
       `field/DAG relation ${relation}`,
       Number.isFinite(delta) ? `field delta ${delta.toFixed(3)}` : 'no prior field delta',
-    ],
+      features.advance?.accelerated
+        ? `${features.advance.supportedMoveCount} warranted learner-owned proof moves`
+        : null,
+    ].filter(Boolean),
     details: {
       relation,
       fieldDelta: Number.isFinite(delta) ? Number(delta.toFixed(3)) : null,
       dagProgressScore: Number(features.dag?.progressScore ?? 0),
+      learnerAdvance: features.advance || null,
     },
   };
 }

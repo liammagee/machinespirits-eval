@@ -29,6 +29,8 @@ function fixtureSummary() {
     progress: {
       bestPathCoverage: 0.5,
       plainStatus: 'The learner can now connect the residue to a specific crucible.',
+      acceleratedTurnCount: 1,
+      maxSupportedMoves: 3,
     },
     arc: {
       summary: 'The learner moved from uncertainty to a concrete comparison.',
@@ -60,6 +62,12 @@ function fixtureSummary() {
         coverage: 0.5,
         newEvidence: ['The residue matches the <mint crucible>.'],
         newReasoning: ['A matching residue can identify which crucible was used.'],
+        learnerAdvance: {
+          accelerated: true,
+          supportedMoveCount: 3,
+          adoptedPremiseCount: 2,
+          derivedFactCount: 1,
+        },
       },
     ],
     boundary: 'This report uses public dialogue evidence only.',
@@ -76,6 +84,8 @@ test('learning summary HTML renders the learner arc, evidence, vocabulary, and j
   assert.match(html, /Reasoning you established/u);
   assert.match(html, /Evidence held by the end/u);
   assert.match(html, /How the reasoning developed/u);
+  assert.match(html, /Accelerated turns:<\/b> 1/u);
+  assert.match(html, /3 warranted proof moves were accepted together/u);
   assert.match(html, /Connect the crucible to its documented user/u);
   assert.match(html, /blank/u);
   assert.match(html, /cupel/u);

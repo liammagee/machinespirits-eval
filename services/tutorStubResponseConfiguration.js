@@ -33,6 +33,10 @@ function modelFrom(tutorLearnerDag) {
   return tutorLearnerDag?.model || tutorLearnerDag || {};
 }
 
+function learnerAdvanceFrom(tutorLearnerDag) {
+  return tutorLearnerDag?.advance || modelFrom(tutorLearnerDag).learnerAdvance || null;
+}
+
 function comprehensionFeatures(comprehension) {
   return comprehension?.features || comprehension || {};
 }
@@ -57,6 +61,7 @@ export function selectTutorStubActionFamily({ classification, tutorLearnerDag, c
   const model = modelFrom(tutorLearnerDag);
   const assessment = model.assessment || {};
   const memoryReliability = model.memoryReliability || {};
+  const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
   let actionFamily = 'clarify_distinction';
   let reason = 'Default to one inspectable distinction or check.';
 
@@ -78,6 +83,9 @@ export function selectTutorStubActionFamily({ classification, tutorLearnerDag, c
   } else if (requestType === 'authority_refusal_or_status_challenge') {
     actionFamily = 'answer_accountably';
     reason = 'The learner is testing authority, so the tutor must expose warrants and correction conditions.';
+  } else if (learnerAdvance?.accelerated) {
+    actionFamily = 'clarify_distinction';
+    reason = `The learner supplied ${learnerAdvance.supportedMoveCount} warranted proof moves, so credit the whole chain and test only its next unresolved edge.`;
   } else if (requestType === 'stepwise_support_request' || /release_or_pacing_gap|inference_gap/iu.test(assessment.bottleneck)) {
     actionFamily = 'stage_next_step';
     reason = 'The current need is the next public step, independently of the stance used to stage it.';
@@ -105,10 +113,15 @@ export function selectTutorStubAudienceRegister({ learnerText, classification, t
   const signal = configurationSignal({ learnerText, classification });
   const features = comprehensionFeatures(comprehension);
   const assessment = modelFrom(tutorLearnerDag).assessment || {};
+  const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
   const conceptual = numericScore(classification?.turn?.scores?.conceptual_engagement);
   const readiness = numericScore(classification?.turn?.scores?.epistemic_readiness);
 
-  if (/\b(?:i am|i'm|learner is|aged?)\s+(?:[5-9]|1[0-3])\b|\b(?:child|young learner|primary school)\b/iu.test(signal)) {
+  if (
+    /\b(?:i am|i'm|learner is|aged?)\s+(?:[5-9]|1[0-3])\b|\b(?:i am|i'm|learner is)\s+(?:a\s+)?child\b|\b(?:young learner|primary school (?:learner|student|pupil))\b/iu.test(
+      signal,
+    )
+  ) {
     return {
       audienceRegister: 'child_accessible',
       reason: 'Public dialogue explicitly indicates a child or young learner.',
@@ -125,11 +138,12 @@ export function selectTutorStubAudienceRegister({ learnerText, classification, t
     };
   }
   if (
-    conceptual !== null &&
-    readiness !== null &&
-    conceptual >= 4 &&
-    readiness >= 4 &&
-    (assessment.bestPathCoverage >= 0.7 || assessment.finalSecretEntailed === true)
+    learnerAdvance?.accelerated ||
+    (conceptual !== null &&
+      readiness !== null &&
+      conceptual >= 4 &&
+      readiness >= 4 &&
+      (assessment.bestPathCoverage >= 0.7 || assessment.finalSecretEntailed === true))
   ) {
     return {
       audienceRegister: 'informed_peer',
@@ -147,6 +161,7 @@ export function selectTutorStubLexicalAccessibility({ classification, tutorLearn
   const features = comprehensionFeatures(comprehension);
   const conceptual = numericScore(classification?.turn?.scores?.conceptual_engagement);
   const assessment = modelFrom(tutorLearnerDag).assessment || {};
+  const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
 
   if (Number(features.pressure || 0) > 0 || (features.unresolvedTerms || []).length) {
     return {
@@ -163,7 +178,10 @@ export function selectTutorStubLexicalAccessibility({ classification, tutorLearn
       reason: 'The learner requested or currently needs low-density language.',
     };
   }
-  if (conceptual !== null && conceptual >= 4 && assessment.bestPathCoverage >= 0.7) {
+  if (
+    (learnerAdvance?.accelerated && conceptual !== null && conceptual >= 3) ||
+    (conceptual !== null && conceptual >= 4 && assessment.bestPathCoverage >= 0.7)
+  ) {
     return {
       lexicalAccessibility: 'technical',
       reason: 'The learner is using the domain fluently enough for precise technical vocabulary.',
@@ -215,6 +233,7 @@ export function buildTutorStubResponseConfiguration({
   const audience = selectTutorStubAudienceRegister({ learnerText, classification, tutorLearnerDag, comprehension });
   const lexical = selectTutorStubLexicalAccessibility({ classification, tutorLearnerDag, comprehension });
   const scene = selectTutorStubSceneImmersion({ classification, comprehension, world });
+  const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
   const unresolvedTerms = [...(comprehensionFeatures(comprehension).unresolvedTerms || [])];
   return {
     schema: RESPONSE_CONFIGURATION_SCHEMA,
@@ -225,6 +244,7 @@ export function buildTutorStubResponseConfiguration({
     lexical_accessibility: lexical.lexicalAccessibility,
     scene_immersion: scene.sceneImmersion,
     unresolved_terms: unresolvedTerms,
+    learner_advance: learnerAdvance ? structuredClone(learnerAdvance) : null,
     engagement_stance_distribution: Array.isArray(stanceDistribution) ? structuredClone(stanceDistribution) : null,
     engagement_stance_vector: stanceVector && typeof stanceVector === 'object' ? structuredClone(stanceVector) : null,
     engagement_stance_temperature: Number.isFinite(Number(temperature)) ? Number(temperature) : null,
@@ -277,6 +297,9 @@ export function tutorStubResponseConfigurationPrompt(configuration) {
       configuration.scene_immersion,
     )}`,
     `Unresolved terms: ${unresolved}.`,
+    configuration.learner_advance?.accelerated
+      ? `Learner pace: accelerating. Credit all ${configuration.learner_advance.supportedMoveCount} warranted learner-owned proof moves already made; do not ask for any of them again. Test or extend only the next unresolved edge.`
+      : 'Learner pace: steady unless the public turn itself warrants otherwise.',
     'These are independent axes. Perform the action family; do not infer the action from the engagement stance.',
     'Temperature applies only to the engagement-stance distribution. Do not blur the audience, lexical, action, or scene contracts.',
     'Make every selected axis visible in the wording while never naming this configuration or its machinery.',

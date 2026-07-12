@@ -37,6 +37,38 @@ describe('tutor-stub generous inference', () => {
     assert.equal(resolution.reason, 'case_closing_question_requires_explicit_grounding');
   });
 
+  it('resolves a short open-question answer before trusting an overleap label', () => {
+    const resolution = resolveTutorStubGenerousInference({
+      mode: 'defeasible_human_scaffold',
+      learnerText: 'not Verrell',
+      previousTutorText:
+        'The worn burin leaves the notch; Verrell’s broad graver cuts clean. What does that rule out about the town’s easy case?',
+      branchId: 'die_chain',
+      classification: {
+        turn: { discourse_move: 'claim', evidence_use: 'overleaps_evidence', epistemic_stance: 'exploratory' },
+      },
+    });
+
+    assert.equal(resolution.applied, true);
+    assert.equal(resolution.kind, 'contextual_open_answer');
+    assert.match(resolution.resolvedMeaning, /immediately preceding public question/u);
+  });
+
+  it('does not compress a guessed identity requested by an open question', () => {
+    const resolution = resolveTutorStubGenerousInference({
+      mode: 'defeasible_human_scaffold',
+      learnerText: 'Edony',
+      previousTutorText: 'What name would make that tool safely traceable?',
+      branchId: 'die_chain',
+      classification: {
+        turn: { discourse_move: 'claim', evidence_use: 'overleaps_evidence', epistemic_stance: 'exploratory' },
+      },
+    });
+
+    assert.equal(resolution.applied, false);
+    assert.equal(resolution.reason, 'classifier_detected_unsafe_or_conflicting_move');
+  });
+
   it('rejects same when the preceding question has no single referent', () => {
     const resolution = resolveTutorStubGenerousInference({
       mode: 'defeasible_human_scaffold',

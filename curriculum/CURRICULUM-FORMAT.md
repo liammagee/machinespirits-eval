@@ -127,5 +127,53 @@ npm run curriculum:compile:drama -- --mvp --from-rhetorical-plans \
 npm run drama:render -- --transcript <run>/transcripts/<id>.json --out exports/<id>.html
 ```
 
+## Curriculum Builder
+
+`npm run curriculum:build` is the authoring entry point for new curricula. It
+does not replace the compiler contracts above. It produces a canonical
+curriculum object, validates that the prerequisite associations form a DAG,
+requires runtime-ready verifier and misconception evidence for every module,
+and then uses the existing compilers to write worlds and drama seeds.
+
+The deterministic path starts from a YAML brief:
+
+```bash
+npm run curriculum:build -- \
+  --brief curriculum/examples/evidence-reasoning.brief.yaml \
+  --out /tmp/evidence-reasoning.curriculum.yaml
+```
+
+Run with no arguments for a field-by-field interactive wizard. Add `--generate`
+to let a configured model draft module structure from the high-level brief.
+Model drafting is explicit: `--dry-run` never calls a model or writes files.
+
+Optional web and local references are first-class provenance records:
+
+```bash
+npm run curriculum:build -- \
+  --brief curriculum/my-course.brief.yaml \
+  --generate \
+  --source https://example.org/standard \
+  --source-file notes/local-reading.md
+```
+
+Each source receives a stable build-local id such as `REF01`, along with its
+title, location, access time, media type, extracted-text SHA-256 hash, and a
+short excerpt. Modules and knowledge components cite those ids through
+`reference_ids`. Sources may inform authoring, but they are not mastery
+evidence and cannot substitute for module verifiers.
+
+Default outputs share one basename:
+
+- `*.curriculum.yaml` — canonical source of truth;
+- `*.worlds.yaml` — locked world contracts;
+- `*.dramas.yaml` — runnable drama seeds;
+- `*.builder-report.md` — Mermaid prerequisite DAG, readiness counts, source
+  ledger, and artifact map.
+
+Use `--rhetorical` for the additional rhetorical-plan and rhetorical-drama
+artifacts, `--no-compile` to stop after the canonical object, `--check` to
+validate without writing, and `--force` to replace existing artifacts.
+
 Generation itself (`scripts/generate-pedagogical-dramas.js`) follows a dry-run -> mock -> attended-real cost
 ladder; the `/ms-curriculum-drama` skill drives the whole chain.
