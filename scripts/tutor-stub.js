@@ -6478,7 +6478,7 @@ function composeRegisterPolicySelection({ primarySelection, state, classificatio
     overlay_policies: [...overlays],
     overlay_threshold: threshold,
     primary_selection: registerPolicySelectionSummary(primarySelection),
-    overlay_evaluations: evaluated.map(({ candidate, order, ...entry }) => entry),
+    overlay_evaluations: evaluated.map(({ candidate: _candidate, order: _order, ...entry }) => entry),
     activated_overlay: winner?.policy || null,
     activated_strength: winner?.signal_strength ?? null,
   };
@@ -6611,7 +6611,14 @@ function normalizeResponseConfigurationSelection(
     tutorLearnerDag?.model?.assessment?.finalSecretEntailed !== true &&
     tutorLearnerDag?.model?.assessment?.assertedSecret !== true
   ) {
-    const acceleratedStance = palette.has('brisk') ? 'brisk' : palette.has('precise') ? 'precise' : selectedRegister;
+    const currentStanceForAcceleration = String(
+      source.engagement_stance || source.selected_register || source.register || 'plain',
+    );
+    const acceleratedStance = palette.has('brisk')
+      ? 'brisk'
+      : palette.has('precise')
+        ? 'precise'
+        : currentStanceForAcceleration;
     source = {
       ...source,
       engagement_stance: acceleratedStance,
@@ -11289,7 +11296,7 @@ async function main() {
           directorContext,
           temperature: effectiveTemperature,
           requestedTemperature: temperature,
-          cliEffort,
+          cliEffort: cliEffort || null,
           classifier: visibleClassifierConfig,
           tutorLearnerDag: tutorLearnerDagEnabled
             ? {
@@ -11393,7 +11400,6 @@ async function main() {
             publicSummary: memorySummaryEnabled,
             tutorStateFieldSummary: memorySummaryEnabled,
           },
-          cliEffort: cliEffort || null,
           trace: traceEnabled
             ? {
                 enabled: true,
