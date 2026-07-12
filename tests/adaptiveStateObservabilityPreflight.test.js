@@ -43,6 +43,12 @@ const SEMANTIC_REGRESSIONS = JSON.parse(
     'utf8',
   ),
 );
+const DERIVE_SEMANTIC_REGRESSIONS = JSON.parse(
+  fs.readFileSync(
+    path.join(ROOT, 'tests/fixtures/adaptive-state-observability-8d6d2b22-v21.json'),
+    'utf8',
+  ),
+);
 
 function label(modelRef) {
   return modelRef === 'codex.gpt-5.6-terra'
@@ -348,6 +354,71 @@ test('the five stopped-run outputs remain frozen semantic evidence rather than a
   for (const file of runtimeFiles) {
     const source = fs.readFileSync(path.join(ROOT, file), 'utf8');
     assert.doesNotMatch(source, /adaptive-state-observability-5fda0824|preflight__marrick__none/u);
+  }
+});
+
+test('the two second-run derive failures stay frozen with clause-level semantic expectations', () => {
+  assert.equal(
+    DERIVE_SEMANTIC_REGRESSIONS.schema,
+    'machinespirits.adaptive-state-observability-semantic-regression.v1',
+  );
+  assert.deepEqual(DERIVE_SEMANTIC_REGRESSIONS.source, {
+    run_id: 'adaptive-state-v2-observability-preflight-8d6d2b22-v21',
+    git_sha: '8d6d2b2214c923ec4c63b72c964fdeee4f0f47f7',
+    call_ledger_file_sha256: '4e34d416a40a55363917ed14cdc0c0647a6dff91087d421c35c17f50f1916d53',
+    cases_file_sha256: 'fb0cc09fc83974339457d1c4e834b6ef4d1615b42305b7c3771f59362f4cadcc',
+    run_seal_file_sha256: '1b0c3141a65a3c524a05cd369d5e22887a206a120413a4cf789f2986b3e9952b',
+    seal_inventory_sha256: '47b710c6201d7d93c1d1d60747fd75ee35abbb3276662d223a6114fedd38bf0b',
+    report_content_sha256: 'b89390acca11a6d7a73977c1dc71406529d3ee7c7f6a83e5630a2bbebfd69b05',
+    result_content_sha256: 'eca6ad06cdc19b40a0a2b727d30f5b0288c315185614b7f109a1fe541a29af15',
+  });
+  assert.equal(
+    hashCanonicalJson(DERIVE_SEMANTIC_REGRESSIONS),
+    '053ee83dcf59ca8df6436756d38fec5fd44dc26bc47f07e87c4c380a7741f6ff',
+  );
+  assert.deepEqual(
+    DERIVE_SEMANTIC_REGRESSIONS.cases.map((row) => row.semantic_expected_family),
+    ['none', 'derive'],
+  );
+  assert.deepEqual(DERIVE_SEMANTIC_REGRESSIONS.cases[0].harness_target_fact, [
+    'blankFrom',
+    'falseShilling',
+    'weirCrucible',
+  ]);
+  assert.equal(DERIVE_SEMANTIC_REGRESSIONS.cases[0].semantic_fact_in_source_text, null);
+  assert.deepEqual(DERIVE_SEMANTIC_REGRESSIONS.cases[1].harness_target_fact, [
+    'materialSealAtIssue',
+    'gatePass',
+    'duskSeal',
+  ]);
+  assert.deepEqual(
+    DERIVE_SEMANTIC_REGRESSIONS.cases[1].semantic_fact_in_source_text,
+    DERIVE_SEMANTIC_REGRESSIONS.cases[1].harness_target_fact,
+  );
+  for (const row of DERIVE_SEMANTIC_REGRESSIONS.cases) {
+    assert.equal(sha256(row.learner_text), row.learner_text_sha256);
+    assert.ok(row.learner_text.includes(row.semantic_evidence_span));
+    assert.equal(row.analyzer_public_input.learnerText, row.learner_text);
+    assert.equal(hashCanonicalJson(row.analyzer_public_input), row.source_analyzer_input_sha256);
+    assert.match(row.source_realizer_input_sha256, /^[0-9a-f]{64}$/u);
+    assert.match(row.source_realizer_output_sha256, /^[0-9a-f]{64}$/u);
+    assert.match(row.source_parsed_analyzer_output_sha256, /^[0-9a-f]{64}$/u);
+  }
+  const runtimeFiles = [
+    ...fs
+      .readdirSync(path.join(ROOT, 'services/adaptiveTutor'))
+      .filter((file) => file.endsWith('.js'))
+      .map((file) => `services/adaptiveTutor/${file}`),
+    'services/tutorStubPublicLearnerAnalysis.js',
+    'scripts/execute-adaptive-state-observability-preflight-v2.js',
+    'scripts/execute-adaptive-state-benchmark-v2-s1.js',
+  ];
+  for (const file of runtimeFiles) {
+    const source = fs.readFileSync(path.join(ROOT, file), 'utf8');
+    assert.doesNotMatch(
+      source,
+      /adaptive-state-observability-8d6d2b22|preflight__marrick__derive__codex_terra|preflight__ravensmark__derive__claude_sonnet/u,
+    );
   }
 });
 

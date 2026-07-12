@@ -1070,6 +1070,8 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     '- adopt/retract: only staged premise ids the learner explicitly accepts/uses or rejects/withdraws.',
     '- derive: only learner-voiced object-level conclusions or answers about the world, supported by adopted or staged evidence plus public rules. For a warranted one-step conclusion, include its supporting premise ids in adopt and its fact in derive.',
     '- A pure epistemic-status statement that the public record is insufficient, something remains unknown, or an answer cannot yet be determined is not a derived world fact and must not enter learner_record.derive. If the same turn also voices a substantive new object-level world conclusion, keep that conclusion in derive.',
+    '- Evaluate multi-clause turns clause by clause. Retain every new supported object-level conclusion in learner_record.derive even when a separate later clause is provisional or unsupported; record the later gap as a missing warrant or proof-debt candidate instead of erasing the supported conclusion.',
+    '- A generic meta-statement that evidence supports an inference or conclusion, without naming the inferred proposition, is not an object-level derivation.',
     '- Resolve pronouns and elliptical answers against the immediately preceding tutor question. If a short reply unambiguously answers that local question, the resolved content counts as learner-voiced; do not demand repeated nouns or names.',
     '- hypothesis: one learner conjecture or uncertainty, else null. assert_answer: direct answer candidate, else null.',
     '- human_discourse: record only concrete current-turn material. proof_status uses the schema enum. provisional_claims are allowable but not strict; implied_warrants are unstated bridges; missing_warrants are still owed; implied_public_premises are public but ungrounded; suppressed_or_private_premises and illicit_hidden_premises are not public enough; common_sense_bridges are safe provisional steps; proof_debt_candidates need later repair; side_arc covers clarification, vocabulary, affect, trust, or off-path requests.',
@@ -1100,6 +1102,15 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
       : null,
     includeBenchmarkTransitionEvent
       ? '- derive: the learner voices a new supported object-level world conclusion or direct answer not already present in the prior public learner state.'
+      : null,
+    includeBenchmarkTransitionEvent
+      ? '- A supported intermediate conclusion counts as derive even when it does not identify the final answer to the inquiry.'
+      : null,
+    includeBenchmarkTransitionEvent
+      ? '- Assess clauses independently. If any clause voices a new supported intermediate or final conclusion, retain derive under the priority rule even when a separate later clause lacks a warrant; record that later gap as proof debt and do not downgrade the supported derive to none.'
+      : null,
+    includeBenchmarkTransitionEvent
+      ? '- Merely announcing that an inference or conclusion exists without stating its object-level proposition is none, not derive.'
       : null,
     includeBenchmarkTransitionEvent
       ? '- adopt: the learner newly accepts or uses a staged premise that is not already adopted.'

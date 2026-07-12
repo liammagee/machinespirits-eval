@@ -351,6 +351,11 @@ describe('strict public learner analysis', () => {
     assert.match(prompt, /pure epistemic-status statement.*not a derived world fact/iu);
     assert.match(prompt, /evidence is insufficient.*answer remains unknown.*cannot yet determine.*is none/iu);
     assert.match(prompt, /unless it also voices a substantive new object-level world conclusion or direct answer/iu);
+    assert.match(prompt, /Evaluate multi-clause turns clause by clause.*Retain every new supported object-level conclusion/iu);
+    assert.match(prompt, /record the later gap as a missing warrant or proof-debt candidate/iu);
+    assert.match(prompt, /supported intermediate conclusion counts as derive.*does not identify the final answer/iu);
+    assert.match(prompt, /Assess clauses independently.*do not downgrade the supported derive to none/iu);
+    assert.match(prompt, /Merely announcing that an inference or conclusion exists.*is none, not derive/iu);
     assert.match(prompt, /previously voiced hypothesis/u);
     assert.match(prompt, /retract, then derive, then adopt, then none/u);
 

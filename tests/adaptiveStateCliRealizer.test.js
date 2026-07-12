@@ -17,7 +17,10 @@ test('realizer prompt requires semantic fidelity for all four transition familie
   const prompt = buildAdaptiveStateCliRealizerSystemPrompt();
   assert.match(prompt, /adopt.*newly accept or use/iu);
   assert.match(prompt, /retract.*withdraw/iu);
-  assert.match(prompt, /derive.*new supported conclusion or answer/iu);
+  assert.match(prompt, /derive.*concrete object-level conclusion or answer/iu);
+  assert.match(prompt, /intermediate conclusion is valid and need not answer the inquiry/iu);
+  assert.match(prompt, /merely says the evidence supports an inference or conclusion.*does not realize derive/iu);
+  assert.match(prompt, /do not append a later conclusion that needs an unstated or unreleased premise/iu);
   assert.match(prompt, /For none, introduce no new adoption, retraction, conclusion, or answer/iu);
   assert.match(prompt, /For adopt,.*do not apply a rule, combine it with prior evidence, or state what follows/iu);
   assert.match(prompt, /For none,.*do not combine prior clues or summarize their consequences/iu);
