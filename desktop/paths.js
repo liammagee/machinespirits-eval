@@ -13,6 +13,7 @@
 //   AUTH_DB_PATH         tutor-core's own SQLite (tutor-core/services/dbService)
 //   EVAL_WRITING_PAD_DIR learner/tutor writing-pad DBs (services/memory/*)
 //   TUTOR_CORE_LOG_DIR   tutor-core dialogue/api logs (tutor-core dialogue engine)
+//   GREENROOM_DIR        tutor profiles + prompt books + ledgers (services/greenroom/store)
 // MS_APP_ROOT carries the resource root for packaged-mode resolution.
 //
 // NOTE for future maintainers: if you add a NEW writable store, give it an env
@@ -32,6 +33,7 @@ export function resolvePaths(electronApp, repoRoot) {
   const authDbPath = process.env.AUTH_DB_PATH || path.join(dataDir, 'lms.sqlite');
   const writingPadDir = process.env.EVAL_WRITING_PAD_DIR || path.join(dataDir, 'writing-pads');
   const tutorCoreLogDir = process.env.TUTOR_CORE_LOG_DIR || path.join(logsDir, 'tutor-core');
+  const greenroomDir = process.env.GREENROOM_DIR || path.join(dataDir, 'greenroom');
 
   for (const d of [
     path.dirname(dbPath),
@@ -40,11 +42,22 @@ export function resolvePaths(electronApp, repoRoot) {
     path.dirname(authDbPath),
     writingPadDir,
     tutorCoreLogDir,
+    greenroomDir,
   ]) {
     fs.mkdirSync(d, { recursive: true });
   }
 
-  return { userData, appRoot: repoRoot, dbPath, logsDir, exportsDir, authDbPath, writingPadDir, tutorCoreLogDir };
+  return {
+    userData,
+    appRoot: repoRoot,
+    dbPath,
+    logsDir,
+    exportsDir,
+    authDbPath,
+    writingPadDir,
+    tutorCoreLogDir,
+    greenroomDir,
+  };
 }
 
 /** Build the env object for the forked server child from resolved paths. */
@@ -57,6 +70,7 @@ export function serverEnv(paths) {
     AUTH_DB_PATH: paths.authDbPath,
     EVAL_WRITING_PAD_DIR: paths.writingPadDir,
     TUTOR_CORE_LOG_DIR: paths.tutorCoreLogDir,
+    GREENROOM_DIR: paths.greenroomDir,
     MS_APP_ROOT: paths.appRoot,
   };
 }

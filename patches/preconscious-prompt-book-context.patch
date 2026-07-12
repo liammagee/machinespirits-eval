@@ -1,0 +1,35 @@
+diff --git a/scripts/tutor-stub.js b/scripts/tutor-stub.js
+index c3dee2b..041b57c 100644
+--- a/scripts/tutor-stub.js
++++ b/scripts/tutor-stub.js
+@@ -340,6 +340,7 @@ const { values: args, positionals } = parseArgs({
+     'mixed-learner': { type: 'boolean', default: STUB.mixedLearner },
+     'mixed-mode': { type: 'boolean', default: false },
+     save: { type: 'string' },
++    'prompt-book-context': { type: 'string' },
+     'trace-dir': { type: 'string', default: STUB.traceDir },
+     'no-trace': { type: 'boolean', default: false },
+     'resume-last': { type: 'boolean', default: false },
+@@ -9414,12 +9415,21 @@ async function main() {
+     '--learner-record-model': args['learner-record-model'],
+     '--auto-learner-model': args['auto-learner-model'],
+   });
+-  const systemPrompt = loadSystemPrompt({
++  let systemPrompt = loadSystemPrompt({
+     worldBundle,
+     dag: args.dag,
+     topic: effectiveTopic,
+     multipleChoice: multipleChoiceEnabled,
+   });
++  // Green Room prompt-book injection (GREEN-ROOM-PLAN.md §0.1.6): a static,
++  // per-performance role memory appended to the tutor system prompt. Frozen
++  // for the whole run; craft guidance only — never overrides world rules or
++  // the release schedule.
++  if (args['prompt-book-context']) {
++    const promptBookText = fs.readFileSync(path.resolve(args['prompt-book-context']), 'utf8');
++    systemPrompt = `${systemPrompt}\n\n[Prompt book — your durable role memory from prior performances. Honour its notes as craft guidance; it never overrides world rules or the release schedule.]\n${promptBookText}\n[End prompt book]`;
++    console.log(`[greenroom] prompt book injected: ${promptBookText.length} chars from ${args['prompt-book-context']}`);
++  }
+   const tutorDag = args.dag && worldBundle ? buildTutorDesireDag(worldBundle.world) : null;
+   const resolved = resolveModel(args.model);
+   const providerConfig = getProviderConfig(resolved.provider);

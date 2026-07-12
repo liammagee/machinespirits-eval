@@ -1,0 +1,42 @@
+{
+  "gate": "greenroom-gate0",
+  "gitSha": "7164538cea7a5c954e8b4aa4acf92cc72616ba73",
+  "args": {
+    "transcripts": [
+      "/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/gate0-transcripts"
+    ],
+    "sessions": 5,
+    "coach": "claude-code.claude-opus-4-8",
+    "actor": "claude-code.claude-sonnet-5",
+    "out": "exports/greenroom-gate0-2026-07-12",
+    "seed": 1,
+    "maxTranscriptChars": 16000,
+    "dryRun": false
+  },
+  "coach": "claude-code.claude-opus-4-8",
+  "actor": "claude-code.claude-sonnet-5",
+  "seed": 1,
+  "selected": [
+    {
+      "file": "/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/gate0-transcripts/P03-A.md",
+      "sha256": "2447470971da4b673c4b08e9d98be84baa6505f27e1381052987f7d33ef54d71"
+    },
+    {
+      "file": "/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/gate0-transcripts/P01-B.md",
+      "sha256": "74c8c7cba55a98267abb05a165c58c5ea251106e0337558c273bd4ac22b1edb3"
+    },
+    {
+      "file": "/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/gate0-transcripts/P03-B.md",
+      "sha256": "b6ea3caf8644481872d7e8993207960c8945adfe64110562b3b332e0b2cf4c83"
+    },
+    {
+      "file": "/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/gate0-transcripts/P02-A.md",
+      "sha256": "e013443a30d59a2dd15ef56c9b3f7e26c1adb2dc4a2c17c3ab7a8e6f4a52ccf6"
+    },
+    {
+      "file": "/tmp/claude-0/-home-user-machinespirits-eval/1c30a4c2-2041-53c2-a552-90e5ffe2f60d/scratchpad/gate0-transcripts/P01-A.md",
+      "sha256": "24f06a42367ae1c687d63ea0cf2b041be5c46241eaadb02c0960df6e81b3d56a"
+    }
+  ],
+  "startedAt": "2026-07-12T01:21:21.627Z"
+}

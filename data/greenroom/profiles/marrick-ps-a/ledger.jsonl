@@ -1,0 +1,14 @@
+{"ts":"2026-07-12T02:01:24.795Z","type":"create","version":0,"after_hash":"9f1931d54b58911b4c0c0b72cbf7128af8d570ed69b53c1fb3b1efefd2172123","source":null}
+{"ts":"2026-07-12T03:06:03.785Z","type":"note","version":0,"source":{"transcript":"P1.md"},"session_file":"001-notes.json"}
+{"ts":"2026-07-12T03:06:03.792Z","type":"patch:add","source":{"session_file":"001-notes.json","transcript":"P1.md"},"version":1,"before_hash":"9f1931d54b58911b4c0c0b72cbf7128af8d570ed69b53c1fb3b1efefd2172123","after_hash":"e4f72be6227134a6f0cf870cb3c55c818dbb48e1c02f81526380cc0c06729311","tokens":220}
+{"ts":"2026-07-12T03:09:33.752Z","type":"note","version":1,"source":{"transcript":"P2.md"},"session_file":"002-notes.json"}
+{"ts":"2026-07-12T03:09:33.760Z","type":"patch:add","source":{"session_file":"002-notes.json","transcript":"P2.md"},"version":2,"before_hash":"e4f72be6227134a6f0cf870cb3c55c818dbb48e1c02f81526380cc0c06729311","after_hash":"e59309a07a9f07d4d47fc85ba63fc52afde6e17fef4a50c58c36b3a8778beda5","tokens":339}
+{"ts":"2026-07-12T03:34:21.441Z","type":"note","version":2,"source":{"transcript":"P3.md"},"session_file":"003-notes.json"}
+{"ts":"2026-07-12T03:34:21.447Z","type":"patch:edit","source":{"session_file":"003-notes.json","transcript":"P3.md"},"version":3,"before_hash":"e59309a07a9f07d4d47fc85ba63fc52afde6e17fef4a50c58c36b3a8778beda5","after_hash":"1466d9a907de9514c447702497dfc15499008a7c6b86aafdb9b7b3439a7dcbeb","tokens":304}
+{"ts":"2026-07-12T03:51:26.047Z","type":"note","version":3,"source":{"transcript":"P4.md"},"session_file":"004-notes.json"}
+{"ts":"2026-07-12T03:52:31.536Z","type":"patch:add","source":{"session_file":"004-notes.json","downgraded_from":"edit","failed_match":"certainty-word","applied_by":"post-hoc after S4 CLI failure"},"version":4,"before_hash":"1466d9a907de9514c447702497dfc15499008a7c6b86aafdb9b7b3439a7dcbeb","after_hash":"42f2c78a8886fd5f9043d08209c33cda75192d14e9cb4e5a311cee1578a12a31","tokens":498}
+{"ts":"2026-07-12T04:21:08.191Z","type":"note","version":4,"source":{"transcript":"P5.md"},"session_file":"005-notes.json"}
+{"ts":"2026-07-12T04:21:08.199Z","type":"patch:edit","source":{"session_file":"005-notes.json","transcript":"P5.md"},"version":5,"before_hash":"42f2c78a8886fd5f9043d08209c33cda75192d14e9cb4e5a311cee1578a12a31","after_hash":"f7ffc8eb43ecb6300a284cd2858f2aba75a47a26156e71267a74c98779424c2f","tokens":479}
+{"ts":"2026-07-12T04:49:45.988Z","type":"note","version":5,"source":{"transcript":"P6.md"},"session_file":"006-notes.json"}
+{"ts":"2026-07-12T04:49:45.994Z","type":"patch:edit","source":{"session_file":"006-notes.json","transcript":"P6.md"},"version":6,"before_hash":"f7ffc8eb43ecb6300a284cd2858f2aba75a47a26156e71267a74c98779424c2f","after_hash":"51b33419fc1d61dd60791db50d51f401d10ec81c36ef2f0f58210b70f5955908","tokens":534}
+{"ts":"2026-07-12T04:50:21.312Z","type":"freeze","version":6}
