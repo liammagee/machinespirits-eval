@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-12T07:07:27.749Z",
+  "generated": "2026-07-12T07:31:34.631Z",
   "counts": {
     "total": 112,
     "byStatus": {
@@ -239,7 +239,8 @@
           "adaptive-state-v2-s0-structural-support-2dd039c5-v21",
           "adaptive-state-v2-observability-preflight-985bd542-v21",
           "adaptive-state-v2-observability-reliability-4133d7ff-v22",
-          "adaptive-state-v2-s0-exact-channel-346e472a-v23"
+          "adaptive-state-v2-s0-exact-channel-346e472a-v23",
+          "adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23"
         ]
       },
       "tags": [

@@ -223,6 +223,41 @@ remain operative until a bounded canonical confirmation says otherwise.
 
 The zero-call pilot runner, frozen gate, sealed-artifact report, and synthetic
 pass/stop tests were implemented without fitting the heads to the S0 data.
-The implementation must be committed and pushed from a clean tree before the
-single canonical pilot execution. This checkpoint therefore records no pilot
-result and makes no representation claim.
+The implementation was committed and pushed at `e68b5ee0`. Its first execution
+attempt stopped before creating a run, reading the dataset, or fitting a head
+because the generic run-plan validator rejected an explicitly empty optional
+model allowlist. Commit `bd8f47ec` removed that invalid field and made dry-run
+construct and validate the full evidence plan; a clean-tree dry run then passed.
+
+## Canonical pilot outcome
+
+Sealed run `adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23` analyzed the
+unchanged S0 exact-channel dataset with zero model calls:
+
+- 24 dialogues, 144 scored transitions, and 12 independent latent clusters;
+- 84/84 fixed heads converged;
+- the oracle instrument and both oracle calibration gates passed;
+- lean DAG was worse than no-state on both co-primary targets: log-loss deltas
+  `-0.5212` and `-0.5013`, and Brier deltas `-0.0485` and `-0.0674`;
+- lean DAG improved both targets only in Hethel, not in Marrick or Ravensmark,
+  and improved under neither held-out latent generator;
+- exact-renderer transfer was positive for both deterministic surfaces, but it
+  could not rescue the failed world- and generator-transfer gates;
+- DAG trajectory and field trajectory were still worse than no-state and did
+  not provide the frozen incremental or matched-stale evidence.
+
+The prospective decision is therefore `do_not_run_canonical_s2`, with
+`confirmation_candidate: null`, `validated_winner: null`, and policy
+optimization blocked. Prediction content SHA-256 is
+`fd28a83c357df94584356480818c673cf67b4b54c9589ef71b1e670adc2ce3c3`;
+report content SHA-256 is
+`a9f01ae60173e4e9eaa20141e8e83c8b8400c137acbe9f9ffe7c3f8a60d4673a`.
+The seal verifies seven artifacts and two chained events.
+
+This result is stronger than the earlier v1 proxy stop because it tests the
+canonical policy-invariant representation ladder on the exact public-event
+channel. It is still bounded to three authored worlds, two synthetic latent
+kernels, two exact renderers, and the frozen fixed head. It does not show that
+learner state is impossible to estimate, that ordinary language is invalid, or
+that humans cannot benefit. It shows that this state representation and head do
+not justify confirmation or policy optimization on the present critical path.

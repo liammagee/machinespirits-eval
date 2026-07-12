@@ -29,6 +29,7 @@ links:
     - adaptive-state-v2-observability-preflight-985bd542-v21
     - adaptive-state-v2-observability-reliability-4133d7ff-v22
     - adaptive-state-v2-s0-exact-channel-346e472a-v23
+    - adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23
 tags:
   - adaptive-tutor
   - learner-state
@@ -359,3 +360,19 @@ passing S2 confirmation candidate and authorize S2 implementation; it cannot
 name a validated winner, launch S2, or open policy optimization. The canonical
 pilot data remain uninspected until this implementation is committed and pushed
 from a clean tree.
+
+2026-07-12 Codex v2.3 canonical-pilot outcome: The pre-analysis implementation
+was committed and pushed at `e68b5ee0`. A first launch stopped before artifacts
+or dataset access on an invalid optional run-plan field; `bd8f47ec` repaired the
+field and strengthened dry-run to validate the full evidence plan. Clean sealed
+run `adaptive-state-v2-s1-canonical-pilot-bd8f47ec-v23` then completed with zero
+model calls, 24 dialogues, 144 transitions, 12 independent latent clusters,
+84/84 converged heads, and a passing oracle instrument. The learner-state screen
+stopped: lean DAG was worse than no-state on both targets (log-loss `-0.5212`,
+`-0.5013`; Brier `-0.0485`, `-0.0674`), improved both targets in only one world
+and neither held-out generator, and the richer rungs were worse still and did
+not clear matched-stale/incremental evidence. Exact-renderer transfer was
+positive but cannot rescue world/generator failure. The sealed decision is
+`do_not_run_canonical_s2`, with no confirmation candidate, no validated winner,
+and policy optimization blocked. Report content SHA-256 is
+`a9f01ae60173e4e9eaa20141e8e83c8b8400c137acbe9f9ffe7c3f8a60d4673a`.
