@@ -1,0 +1,136 @@
+{
+  "createdAt": "2026-07-12T05:57:03.575Z",
+  "note": "raw run payloads; bundle is the archive of record, per the evidence-bundle convention",
+  "files": [
+    {
+      "file": "performances/P1.json",
+      "bytes": 3531372,
+      "sha256": "15f4443f04be9e43741eedd6967d88ca55c220a4749e9cc9faa076761d58d856"
+    },
+    {
+      "file": "performances/P1.log",
+      "bytes": 169772,
+      "sha256": "4a9d5904a284c9a8a3955e887e1d3f47b2131e6fedd1568af6220aa89dc3edeb"
+    },
+    {
+      "file": "performances/P2.json",
+      "bytes": 3506291,
+      "sha256": "7f42c185f1f4ccefe2b41f5cbd3318de1a7b3a967c2ec53bf0f669c6dfcbc499"
+    },
+    {
+      "file": "performances/P2.log",
+      "bytes": 167781,
+      "sha256": "d8917b503096f4716b4199cb037c491abea209699bc28165339223ebc5599b8a"
+    },
+    {
+      "file": "performances/P3.json",
+      "bytes": 3716407,
+      "sha256": "6b5ec580e3aa9ec10ad14e4852e481cc13654fbf00ca744c8164429c8479b0db"
+    },
+    {
+      "file": "performances/P3.log",
+      "bytes": 165526,
+      "sha256": "690649c86a03393893a3afe6314931cf3ab2442ae13dfe5b3e9f79b3ce66c2c8"
+    },
+    {
+      "file": "performances/P4.json",
+      "bytes": 2607143,
+      "sha256": "4042f4856d6df20e2035f2dab3e164822745fdbcec71611ae21ae57f6832963d"
+    },
+    {
+      "file": "performances/P4.log",
+      "bytes": 132697,
+      "sha256": "63d29f33c720e3ef6ba87d3332d83198f5c2dab6e76595303a34f5ea8e5d2634"
+    },
+    {
+      "file": "performances/P5.json",
+      "bytes": 3613140,
+      "sha256": "80b60a2cbb3c7bf153a476f0490f89dc8cf8374b06db9629b564e887a26feee2"
+    },
+    {
+      "file": "performances/P5.log",
+      "bytes": 168935,
+      "sha256": "2440329f620b47bec97ec4be95b5597f78d7bad743e2f6c9e292761d74d46f44"
+    },
+    {
+      "file": "performances/P6.json",
+      "bytes": 3790389,
+      "sha256": "2655d35f9024a648d2d2ac03fbdada4db1355960ac3c4fcdae2ba5abaecc3516"
+    },
+    {
+      "file": "performances/P6.log",
+      "bytes": 163747,
+      "sha256": "0bd34395e6fa951d04f74a2d069722afde51d9923e24e0af8308d7de9e858567"
+    },
+    {
+      "file": "performances/P7.json",
+      "bytes": 3493953,
+      "sha256": "b8a66ada32400954f360e5834cbe5885638c4800791e63650ea9c14b702a57fc"
+    },
+    {
+      "file": "performances/P7.log",
+      "bytes": 162130,
+      "sha256": "89fa034b5636e7b7cdef7750068117e84282d0928adcdc7b906592508214d69b"
+    },
+    {
+      "file": "performances/P8.json",
+      "bytes": 3569203,
+      "sha256": "3d3b816f811d639f42e100e6b49d13a343821104fd2c10fd0d90e6c340469f4c"
+    },
+    {
+      "file": "performances/P8.log",
+      "bytes": 163976,
+      "sha256": "c0567a6a1e6619cc71e852d32c1bf790979172b314fc102a639d7127d1ad79ce"
+    },
+    {
+      "file": "traces/2026-07-12T02-05-51-088Z.jsonl",
+      "bytes": 116141,
+      "sha256": "ccd783a640569e0438d42580ee7035ef0ba273c6f8e2a0ee9617146758848013"
+    },
+    {
+      "file": "traces/2026-07-12T02-05-54-394Z.jsonl",
+      "bytes": 180933,
+      "sha256": "f6471a5d15c33fdbd4f8166f97acfd7b386a40e9c2cde1628e65e0bb7844afe0"
+    },
+    {
+      "file": "traces/2026-07-12T02-16-46-315Z.jsonl",
+      "bytes": 3502638,
+      "sha256": "c1cff0aad4ea8278c16fa585550a697413449e96b56d84ab0bfd26cea1beccdc"
+    },
+    {
+      "file": "traces/2026-07-12T02-35-22-055Z.jsonl",
+      "bytes": 4731937,
+      "sha256": "1e0597496c10c72d287fa483efdd9bee8c461100b1c012f4a45eae967902e249"
+    },
+    {
+      "file": "traces/2026-07-12T03-10-11-407Z.jsonl",
+      "bytes": 4070006,
+      "sha256": "f08bb7671c05dc62728c1668d11d7f1603d7429e29e0545bc98f9cbb9d02686f"
+    },
+    {
+      "file": "traces/2026-07-12T03-34-21-660Z.jsonl",
+      "bytes": 2764565,
+      "sha256": "5eb35a60e64b692ca6da91ab722494b4b6736b6967cbb82b8c235c7e8bbec7e0"
+    },
+    {
+      "file": "traces/2026-07-12T03-53-00-764Z.jsonl",
+      "bytes": 4501689,
+      "sha256": "3ec6c65f6146f156fbe95eb47895519912e8d4b243763654bfd5fb354035e99e"
+    },
+    {
+      "file": "traces/2026-07-12T04-21-08-397Z.jsonl",
+      "bytes": 4553182,
+      "sha256": "a12196c8e3df18be01b789dbad6e4e8094ed43e9100d6ed1bad7ccdf38e7ba4c"
+    },
+    {
+      "file": "traces/2026-07-12T04-50-34-593Z.jsonl",
+      "bytes": 4195884,
+      "sha256": "a865dbd44af50a9d16c66adc297e67a1353abafca487918240eeb7abc6a30ca8"
+    },
+    {
+      "file": "traces/2026-07-12T05-15-34-153Z.jsonl",
+      "bytes": 3611062,
+      "sha256": "95b76bd5d19abf8c01fe5e0bc05a9044ab9e0b380c36de397d8d1cca7545044e"
+    }
+  ]
+}
