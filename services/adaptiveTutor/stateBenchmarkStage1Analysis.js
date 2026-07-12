@@ -306,6 +306,16 @@ function auditPublicAnalyzerCall(call, premisesByWorld) {
     failures.push('public_world_not_redacted');
   }
   if (scanForbiddenKeys(input).length) failures.push('forbidden_analyzer_input_key');
+  const benchmarkTransition = call.analyzer_artifacts?.parsed_output?.benchmark_transition;
+  if (
+    !benchmarkTransition ||
+    !['retract', 'derive', 'adopt', 'none'].includes(benchmarkTransition.family) ||
+    typeof benchmarkTransition.evidence_span !== 'string' ||
+    !benchmarkTransition.evidence_span.trim() ||
+    !String(input.learnerText || '').includes(benchmarkTransition.evidence_span)
+  ) {
+    failures.push('analyzer_benchmark_transition_evidence_span');
+  }
   const prior = input.priorPublicLearnerState;
   if (
     !prior ||
@@ -656,10 +666,11 @@ function controlSensitivity(rows, generators, realizers) {
 
 function analyzerEventFamilyRecovery(rows, config) {
   const floor = config.paid_execution_contract.public_turn_analyzer.recovery_floor;
+  const agrees = (row) =>
+    row.descriptive_analyzer_alignment?.analyzer_next_event_family ===
+    row.targets?.next_dag_event_family;
   const rate = (subset) =>
-    subset.length
-      ? subset.filter((row) => row.descriptive_analyzer_alignment?.agrees === true).length / subset.length
-      : 0;
+    subset.length ? subset.filter(agrees).length / subset.length : 0;
   const overall = rate(rows);
   const byGenerator = Object.fromEntries(
     config.critical_path.latent_generators.map((generator) => [
@@ -691,6 +702,100 @@ function analyzerEventFamilyRecovery(rows, config) {
     label_owner: 'frozen_transition_harness',
     disagreements_relabel_or_exclude_rows: false,
   };
+}
+
+function auditAnalyzerTransitionBindings(rows, dialogues, calls) {
+  const failures = [];
+  const dialogueById = new Map(dialogues.map((dialogue) => [dialogue.id, dialogue]));
+  const analyzerCallByTurn = new Map(
+    calls
+      .filter((call) => call.matrix_scored_call && call.role === 'public_turn_analyzer')
+      .map((call) => [`${call.job_id}:${call.turn}`, call]),
+  );
+  for (const row of rows) {
+    const realizedTurn = Number(row.turn) + 1;
+    const dialogue = dialogueById.get(row.groups?.dialogue_id);
+    const observation = dialogue?.observations?.find(
+      (candidate) => Number(candidate?.turn) === realizedTurn,
+    );
+    const analyzerCall = analyzerCallByTurn.get(`${row.groups?.dialogue_id}:${realizedTurn}`);
+    const rowFamily = row.descriptive_analyzer_alignment?.analyzer_next_event_family;
+    const observationFamily = observation?.benchmark_transition?.family;
+    const parsedFamily = analyzerCall?.analyzer_artifacts?.parsed_output?.benchmark_transition?.family;
+    const harnessFamily = row.targets?.next_dag_event_family;
+    if (
+      !['retract', 'derive', 'adopt', 'none'].includes(rowFamily) ||
+      hashCanonicalJson(row.descriptive_analyzer_alignment?.analyzer_next_event_families) !==
+        hashCanonicalJson([rowFamily]) ||
+      rowFamily !== observationFamily ||
+      rowFamily !== parsedFamily
+    ) {
+      failures.push('analyzer_transition_binding_mismatch');
+    }
+    if (row.descriptive_analyzer_alignment?.agrees !== (rowFamily === harnessFamily)) {
+      failures.push('analyzer_alignment_flag_mismatch');
+    }
+  }
+  return failures;
+}
+
+function emptyPriorPublicLearnerState() {
+  return {
+    adopted_premise_ids: [],
+    voiced_derived_facts: [],
+    prior_hypotheses: [],
+    asserted_answers: [],
+  };
+}
+
+function advancePriorPublicLearnerState(previous, deterministicUpdate) {
+  const next = clone(previous || emptyPriorPublicLearnerState());
+  const accepted = deterministicUpdate?.accepted || {};
+  const adopted = new Set(next.adopted_premise_ids || []);
+  for (const premiseId of accepted.retract || []) adopted.delete(String(premiseId));
+  for (const premiseId of accepted.adopt || []) adopted.add(String(premiseId));
+  next.adopted_premise_ids = [...adopted].sort();
+  const derived = new Map(
+    (next.voiced_derived_facts || []).map((fact) => [hashCanonicalJson(fact), clone(fact)]),
+  );
+  for (const fact of accepted.derive || []) derived.set(hashCanonicalJson(fact), clone(fact));
+  next.voiced_derived_facts = [...derived.values()];
+  if (typeof accepted.hypothesis === 'string' && accepted.hypothesis.trim()) {
+    next.prior_hypotheses = [...new Set([...(next.prior_hypotheses || []), accepted.hypothesis.trim()])];
+  }
+  if (typeof accepted.assertAnswer === 'string' && accepted.assertAnswer.trim()) {
+    next.asserted_answers = [...new Set([...(next.asserted_answers || []), accepted.assertAnswer.trim()])];
+  }
+  return next;
+}
+
+function auditPriorPublicLearnerStateSequence(calls) {
+  const failures = [];
+  const byDialogue = new Map();
+  for (const call of calls.filter(
+    (candidate) => candidate.matrix_scored_call && candidate.role === 'public_turn_analyzer',
+  )) {
+    const values = byDialogue.get(call.job_id) || [];
+    values.push(call);
+    byDialogue.set(call.job_id, values);
+  }
+  for (const values of byDialogue.values()) {
+    let expected = emptyPriorPublicLearnerState();
+    const ordered = values.sort((left, right) => Number(left.turn) - Number(right.turn));
+    if (ordered.some((call, index) => Number(call.turn) !== index + 1)) {
+      failures.push('prior_public_learner_state_sequence_mismatch');
+    }
+    for (const call of ordered) {
+      if (hashCanonicalJson(call.public_model_input?.priorPublicLearnerState) !== hashCanonicalJson(expected)) {
+        failures.push('prior_public_learner_state_sequence_mismatch');
+      }
+      expected = advancePriorPublicLearnerState(
+        expected,
+        call.analyzer_artifacts?.deterministic_update,
+      );
+    }
+  }
+  return failures;
 }
 
 export function auditAdaptiveStateStage1Dataset(dataset, plan, config, { repoRoot = path.resolve('.') } = {}) {
@@ -754,6 +859,10 @@ export function auditAdaptiveStateStage1Dataset(dataset, plan, config, { repoRoo
     .filter((call) => call.role === 'public_turn_analyzer')
     .flatMap((call) => auditPublicAnalyzerCall(call, premisesByWorld));
   if (analyzerInputFailures.length) failures.push(...analyzerInputFailures);
+  const analyzerTransitionBindingFailures = auditAnalyzerTransitionBindings(rows, dialogues, calls);
+  if (analyzerTransitionBindingFailures.length) failures.push(...analyzerTransitionBindingFailures);
+  const priorPublicLearnerStateFailures = auditPriorPublicLearnerStateSequence(calls);
+  if (priorPublicLearnerStateFailures.length) failures.push(...priorPublicLearnerStateFailures);
 
   const matrix = auditMatrix(dialogues, rows, plan);
   failures.push(...matrix.failures);
@@ -835,7 +944,9 @@ export function auditAdaptiveStateStage1Dataset(dataset, plan, config, { repoRoo
     public_analyzer_event_family_recovery: recovery,
     donor_use_counts: Object.fromEntries(stable(donorUses.keys()).map((id) => [id, donorUses.get(id)])),
     analyzer_harness_disagreements: rows.filter(
-      (row) => row.descriptive_analyzer_alignment?.agrees === false,
+      (row) =>
+        row.descriptive_analyzer_alignment?.analyzer_next_event_family !==
+        row.targets?.next_dag_event_family,
     ).length,
   };
 }

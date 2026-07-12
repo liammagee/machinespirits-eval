@@ -569,6 +569,66 @@ test('S1 evaluator rejects mutated reconstructible call artifacts', () => {
   assert.ok(audit.failures.includes('analyzer_artifact_hash'));
 });
 
+test('S1 audit binds each explicit family across row, dialogue observation, and parsed analyzer output', () => {
+  const badRow = structuredClone(completeDataset);
+  badRow.rows[0].descriptive_analyzer_alignment.analyzer_next_event_family =
+    badRow.rows[0].descriptive_analyzer_alignment.analyzer_next_event_family === 'none' ? 'adopt' : 'none';
+  assert.ok(
+    auditAdaptiveStateStage1Dataset(badRow, plan, config, { repoRoot: ROOT }).failures.includes(
+      'analyzer_transition_binding_mismatch',
+    ),
+  );
+
+  const badObservation = structuredClone(completeDataset);
+  const row = badObservation.rows[0];
+  const dialogue = badObservation.dialogues.find((candidate) => candidate.id === row.groups.dialogue_id);
+  dialogue.observations.find((observation) => observation.turn === row.turn + 1).benchmark_transition.family =
+    row.descriptive_analyzer_alignment.analyzer_next_event_family === 'none' ? 'adopt' : 'none';
+  assert.ok(
+    auditAdaptiveStateStage1Dataset(badObservation, plan, config, { repoRoot: ROOT }).failures.includes(
+      'analyzer_transition_binding_mismatch',
+    ),
+  );
+
+  const badParsedOutput = structuredClone(completeDataset);
+  const parsedRow = badParsedOutput.rows[0];
+  const analyzerCall = badParsedOutput.calls.find(
+    (call) =>
+      call.matrix_scored_call &&
+      call.role === 'public_turn_analyzer' &&
+      call.job_id === parsedRow.groups.dialogue_id &&
+      call.turn === parsedRow.turn + 1,
+  );
+  analyzerCall.analyzer_artifacts.parsed_output.benchmark_transition.family =
+    parsedRow.descriptive_analyzer_alignment.analyzer_next_event_family === 'none' ? 'adopt' : 'none';
+  assert.ok(
+    auditAdaptiveStateStage1Dataset(badParsedOutput, plan, config, { repoRoot: ROOT }).failures.includes(
+      'analyzer_transition_binding_mismatch',
+    ),
+  );
+});
+
+test('S1 audit revalidates saved benchmark evidence spans against the learner text', () => {
+  const mutated = structuredClone(completeDataset);
+  const call = mutated.calls.find((candidate) => candidate.role === 'public_turn_analyzer');
+  call.analyzer_artifacts.parsed_output.benchmark_transition.evidence_span =
+    'not an exact substring of the learner turn';
+  const audit = auditAdaptiveStateStage1Dataset(mutated, plan, config, { repoRoot: ROOT });
+  assert.ok(audit.failures.includes('analyzer_benchmark_transition_evidence_span'));
+});
+
+test('S1 audit reconstructs each prior public learner state from preceding deterministic updates', () => {
+  const mutated = structuredClone(completeDataset);
+  const calls = mutated.calls.filter(
+    (candidate) => candidate.matrix_scored_call && candidate.role === 'public_turn_analyzer',
+  );
+  const firstDialogueId = calls[0].job_id;
+  const secondTurn = calls.find((candidate) => candidate.job_id === firstDialogueId && candidate.turn === 2);
+  secondTurn.public_model_input.priorPublicLearnerState.prior_hypotheses.push('fabricated prior state');
+  const audit = auditAdaptiveStateStage1Dataset(mutated, plan, config, { repoRoot: ROOT });
+  assert.ok(audit.failures.includes('prior_public_learner_state_sequence_mismatch'));
+});
+
 test('S1 structural audit rejects incomplete representations, non-oracle leakage, and stale reconstruction drift', () => {
   const incomplete = structuredClone(completeDataset);
   delete incomplete.rows[0].representations.field_stale;
@@ -623,9 +683,19 @@ test('S1 structural audit enforces exact matrix roles, analyzer postprocessing, 
   );
 });
 
-test('S1 blocks the fixed-eight confirmation prerequisite when analyzer event-family recovery is too weak', () => {
+test('S1 event-family recovery recomputes equality and never trusts the stored agrees flag', () => {
+  const flagsOnly = structuredClone(completeDataset);
+  for (const row of flagsOnly.rows) row.descriptive_analyzer_alignment.agrees = false;
+  const flagsAudit = auditAdaptiveStateStage1Dataset(flagsOnly, plan, config, { repoRoot: ROOT });
+  assert.equal(flagsAudit.public_analyzer_event_family_recovery.passed, true);
+  assert.ok(flagsAudit.failures.includes('analyzer_alignment_flag_mismatch'));
+
   const weak = structuredClone(completeDataset);
-  for (const row of weak.rows) row.descriptive_analyzer_alignment.agrees = false;
+  for (const row of weak.rows) {
+    row.descriptive_analyzer_alignment.analyzer_next_event_family =
+      row.targets.next_dag_event_family === 'none' ? 'adopt' : 'none';
+    row.descriptive_analyzer_alignment.agrees = false;
+  }
   const audit = auditAdaptiveStateStage1Dataset(weak, plan, config, { repoRoot: ROOT });
   assert.equal(audit.public_analyzer_event_family_recovery.passed, false);
   assert.ok(audit.failures.includes('public_analyzer_event_family_recovery_below_floor'));

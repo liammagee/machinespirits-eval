@@ -42,7 +42,8 @@ const EXPECTED_VERSION = '2.1';
 const S0_REPORT_FILE = 'stage0-contract-report.json';
 const S0_PLAN_FILE = 'critical-path-plan.json';
 const S0_MANIFEST_FILE = 'dataset-manifest.json';
-const FORBIDDEN_ANALYZER_INPUT_KEY = /(?:^|_)(?:future|target|oracle|hidden|private|answer_key)(?:_|$)/iu;
+const FORBIDDEN_ANALYZER_INPUT_KEY =
+  /(?:^|_)(?:future|target|oracle|hidden|private|answer_key|event_family|event_ids|required_realizer_output|proof_transition)(?:_|$)/iu;
 const SHA256 = /^[0-9a-f]{64}$/u;
 
 function clone(value) {

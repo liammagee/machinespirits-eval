@@ -270,6 +270,7 @@ function validateCanonicalS1Transaction({
     parent: verifiedS0,
     runSeed: verification.plan.randomization.masterSeed,
     cliVersions,
+    supersedes: verification.plan.lineage?.supersedes || [],
   });
   validateAdaptiveStateHistoricalS1RunPlan({ sealedPlan: verification.plan, expectedCurrentPlan: expectedPlan });
   if (

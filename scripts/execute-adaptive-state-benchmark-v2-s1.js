@@ -67,6 +67,7 @@ Required:
   --confirm-paid-s1-v2.1        Explicit paid-execution acknowledgement
 
 Options:
+  --supersedes-stopped-s1 <dir>  Sealed stopped v2.1 S1 replaced by this run
   --label <id>                  Default: adaptive-state-v2-s1-technical-pilot
   --run-seed <n>                Artifact job-order seed. Default: 20260712
   --config <path>               Default: config/adaptive-state-benchmark-v2.yaml
@@ -162,7 +163,102 @@ export function adaptiveStateStage1StaticExecutionContract({ config, configPath 
   };
 }
 
-export function executionRunPlan({ plan, config, configPath, parent, runSeed, cliVersions }) {
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function stage1MatrixContract(plan) {
+  return {
+    version: plan.version,
+    stage: plan.stage,
+    paid: plan.paid,
+    axes: plan.axes,
+    counts: plan.counts,
+    jobs: plan.jobs,
+  };
+}
+
+function stage1SemanticDesignContract(plan) {
+  const contract = JSON.parse(JSON.stringify(plan));
+  delete contract.label;
+  delete contract.design_sha256;
+  return contract;
+}
+
+export function validateAdaptiveStateStage1SupersededStoppedRun({
+  supersededRunDir,
+  replacementPlan,
+  replacementParent,
+  configPath,
+} = {}) {
+  if (!supersededRunDir || !replacementPlan || !replacementParent || !configPath) {
+    throw new Error('S1 supersedes validation requires a stopped run, replacement plan, S0 parent, and config path');
+  }
+  const runDir = path.resolve(supersededRunDir);
+  const verification = assertExperimentRun(runDir);
+  const sealedPlan = verification.plan;
+  if (
+    verification.seal?.status !== 'stopped' ||
+    sealedPlan?.runner !== 'scripts/execute-adaptive-state-benchmark-v2-s1.js' ||
+    sealedPlan?.metadata?.stage !== 's1_technical_pilot' ||
+    String(sealedPlan?.metadata?.benchmarkVersion) !== '2.1' ||
+    sealedPlan?.metadata?.paid !== true
+  ) {
+    throw new Error('S1 supersedes source must be a sealed stopped paid v2.1 S1 technical pilot, never a completed run');
+  }
+  const criticalPlan = readJson(path.join(runDir, 'critical-path-plan.json'));
+  validateAdaptiveStateCriticalPathPlan(criticalPlan);
+  const report = readJson(path.join(runDir, 'stage1-technical-report.json'));
+  validateAdaptiveStateStage1ReportContentSha256(report);
+  if (
+    criticalPlan.label !== sealedPlan.runId ||
+    sealedPlan.metadata?.designSha256 !== criticalPlan.design_sha256 ||
+    hashCanonicalJson(sealedPlan.intent?.criticalPath) !== hashCanonicalJson(criticalPlan) ||
+    verification.seal.metadata?.runPlanSha256 !== verification.seal.planSha256 ||
+    verification.seal.metadata?.stage1ReportSha256 !== report.content_sha256 ||
+    report.status !== 'stop' ||
+    report.decision !== 'stop_and_repair_s1' ||
+    verification.seal.metadata?.decision !== 'stop_and_repair_s1'
+  ) {
+    throw new Error('S1 supersedes source must carry a stopped, non-passing stop_and_repair_s1 verdict');
+  }
+  if (
+    sealedPlan.lineage?.parentRunId !== replacementParent.run_id ||
+    sealedPlan.metadata?.parentS0ReportSha256 !== replacementParent.report_sha256
+  ) {
+    throw new Error('S1 supersedes source does not share the replacement run\'s sealed S0 parent');
+  }
+  if (
+    hashCanonicalJson(stage1SemanticDesignContract(criticalPlan)) !==
+      hashCanonicalJson(stage1SemanticDesignContract(replacementPlan)) ||
+    criticalPlan.config_sha256 !== replacementPlan.config_sha256 ||
+    sealedPlan.hashes?.config !== hashFile(path.resolve(configPath)) ||
+    hashCanonicalJson(stage1MatrixContract(criticalPlan)) !==
+      hashCanonicalJson(stage1MatrixContract(replacementPlan))
+  ) {
+    throw new Error('S1 supersedes source does not share the replacement v2.1 design, config, and exact matrix');
+  }
+  if (sealedPlan.runId === replacementPlan.label) {
+    throw new Error('S1 replacement must use a new label instead of overwriting the stopped run');
+  }
+  return {
+    run_id: sealedPlan.runId,
+    run_dir: runDir,
+    plan_sha256: verification.seal.planSha256,
+    seal_inventory_sha256: verification.seal.inventorySha256,
+    report_sha256: report.content_sha256,
+  };
+}
+
+export function executionRunPlan({
+  plan,
+  config,
+  configPath,
+  parent,
+  runSeed,
+  cliVersions,
+  supersedes = [],
+}) {
   const git = captureGitFingerprint({ repoRoot: ROOT });
   delete git.repoRoot;
   const realizer = Object.fromEntries(config.critical_path.language_realizers.map((row) => [row.id, row]));
@@ -199,7 +295,7 @@ export function executionRunPlan({ plan, config, configPath, parent, runSeed, cl
     hashes: staticContract.hashes,
     masterSeed: runSeed,
     jobs: plan.jobs,
-    lineage: { parentRunId: parent.run_id, resumeOf: null, supersedes: [] },
+    lineage: { parentRunId: parent.run_id, resumeOf: null, supersedes },
     intent: {
       criticalPath: plan,
       claimBoundary: config.claim_boundary,
@@ -261,6 +357,7 @@ async function main(argv = process.argv.slice(2)) {
   const parentRunDir = resolveFromRoot(parentArg);
   const configPath = resolveFromRoot(arg(argv, 'config', DEFAULT_CONFIG));
   const outRoot = resolveFromRoot(arg(argv, 'out', DEFAULT_OUT));
+  const supersededArg = arg(argv, 'supersedes-stopped-s1');
   const label = arg(argv, 'label', 'adaptive-state-v2-s1-technical-pilot');
   const runSeed = Number(arg(argv, 'run-seed', '20260712'));
   if (!Number.isSafeInteger(runSeed)) throw new Error('--run-seed must be a safe integer');
@@ -272,9 +369,25 @@ async function main(argv = process.argv.slice(2)) {
   const parent = validateAdaptiveStateStage1Parent({ parentRunDir, config, configPath, repoRoot: ROOT });
   const plan = buildAdaptiveStateCriticalPathPlan(config, { stage: 's1_technical_pilot', label });
   validateAdaptiveStateCriticalPathPlan(plan);
+  const superseded = supersededArg
+    ? validateAdaptiveStateStage1SupersededStoppedRun({
+        supersededRunDir: resolveFromRoot(supersededArg),
+        replacementPlan: plan,
+        replacementParent: parent,
+        configPath,
+      })
+    : null;
   const runDir = path.join(outRoot, label);
   const cliVersions = { codex: cliFingerprint('codex'), claude: cliFingerprint('claude') };
-  const runPlan = executionRunPlan({ plan, config, configPath, parent, runSeed, cliVersions });
+  const runPlan = executionRunPlan({
+    plan,
+    config,
+    configPath,
+    parent,
+    runSeed,
+    cliVersions,
+    supersedes: superseded ? [superseded.run_id] : [],
+  });
   const created = createRunPlan(runDir, runPlan);
   writeExclusive(path.join(runDir, 'critical-path-plan.json'), canonicalJson(plan, { space: 2, trailingNewline: true }));
   appendRunEvent(runDir, {
